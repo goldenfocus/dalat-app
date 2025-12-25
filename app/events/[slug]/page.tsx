@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { RsvpButton } from "@/components/events/rsvp-button";
 import { EventActions } from "@/components/events/event-actions";
+import { AddToCalendar } from "@/components/events/add-to-calendar";
 import type { Event, EventCounts, Rsvp, Profile } from "@/lib/types";
 
 interface PageProps {
@@ -260,6 +261,16 @@ export default async function EventPage({ params }: PageProps) {
                   goingSpots={counts?.going_spots ?? 0}
                   currentRsvp={currentRsvp}
                   isLoggedIn={isLoggedIn}
+                />
+
+                {/* Add to calendar */}
+                <AddToCalendar
+                  title={event.title}
+                  description={event.description}
+                  location={event.location_name}
+                  startsAt={event.starts_at}
+                  endsAt={event.ends_at}
+                  url={`https://dalat.app/events/${event.slug}`}
                 />
               </CardContent>
             </Card>
