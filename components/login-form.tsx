@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Card,
@@ -15,7 +17,14 @@ export function LoginForm({
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("flex flex-col gap-4", className)} {...props}>
+      <Link
+        href="/"
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to events
+      </Link>
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Welcome to dalat.app</CardTitle>
