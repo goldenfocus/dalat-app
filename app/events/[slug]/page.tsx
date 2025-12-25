@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { format } from "date-fns";
 import { ArrowLeft, Calendar, MapPin, Users, ExternalLink, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { RsvpButton } from "@/components/events/rsvp-button";
 import { EventActions } from "@/components/events/event-actions";
 import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { CopyAddress } from "@/components/events/copy-address";
+import { formatInDaLat } from "@/lib/timezone";
 import type { Event, EventCounts, Rsvp, Profile } from "@/lib/types";
 
 interface PageProps {
@@ -195,12 +195,12 @@ export default async function EventPage({ params }: PageProps) {
                   <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="font-medium">
-                      {format(new Date(event.starts_at), "EEEE, MMMM d")}
+                      {formatInDaLat(event.starts_at, "EEEE, MMMM d")}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(event.starts_at), "h:mm a")}
+                      {formatInDaLat(event.starts_at, "h:mm a")}
                       {event.ends_at &&
-                        ` - ${format(new Date(event.ends_at), "h:mm a")}`}
+                        ` - ${formatInDaLat(event.ends_at, "h:mm a")}`}
                     </p>
                   </div>
                 </div>

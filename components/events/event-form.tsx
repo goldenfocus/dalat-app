@@ -2,13 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
+import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import type { Event } from "@/lib/types";
 
 interface EventFormProps {
@@ -33,9 +33,8 @@ export function EventForm({ userId, event }: EventFormProps) {
 
   const isEditing = !!event;
 
-  // Parse existing event date/time for default values
-  const defaultDate = event ? format(new Date(event.starts_at), "yyyy-MM-dd") : "";
-  const defaultTime = event ? format(new Date(event.starts_at), "HH:mm") : "";
+  // Parse existing event date/time in Da Lat timezone
+  const defaults = event ? getDateTimeInDaLat(event.starts_at) : { date: "", time: "" };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,7 +56,8 @@ export function EventForm({ userId, event }: EventFormProps) {
       return;
     }
 
-    const startsAt = new Date(`${date}T${time}`).toISOString();
+    // Convert Da Lat time to UTC for storage
+    const startsAt = toUTCFromDaLat(date, time);
     const capacity = capacityStr ? parseInt(capacityStr, 10) : null;
 
     const supabase = createClient();
@@ -155,17 +155,17 @@ export function EventForm({ userId, event }: EventFormProps) {
                 id="date"
                 name="date"
                 type="date"
-                defaultValue={defaultDate}
+                defaultValue={defaults.date}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="time">Time *</Label>
+              <Label htmlFor="time">Time * <span className="text-muted-foreground font-normal">(Da Lat)</span></Label>
               <Input
                 id="time"
                 name="time"
                 type="time"
-                defaultValue={defaultTime}
+                defaultValue={defaults.time}
                 required
               />
             </div>

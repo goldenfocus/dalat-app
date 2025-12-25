@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { format } from "date-fns";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatInDaLat } from "@/lib/timezone";
 import type { Event, EventCounts } from "@/lib/types";
 
 interface EventCardProps {
@@ -39,8 +39,8 @@ export function EventCard({ event, counts }: EventCardProps) {
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               <span>
-                {format(new Date(event.starts_at), "EEE, MMM d")} &middot;{" "}
-                {format(new Date(event.starts_at), "h:mm a")}
+                {formatInDaLat(event.starts_at, "EEE, MMM d")} &middot;{" "}
+                {formatInDaLat(event.starts_at, "h:mm a")}
               </span>
             </div>
 

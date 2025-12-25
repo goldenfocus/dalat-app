@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { formatInDaLat, DALAT_TIMEZONE } from "@/lib/timezone";
 
 interface AddToCalendarProps {
   title: string;
@@ -20,12 +21,21 @@ interface AddToCalendarProps {
   url: string;
 }
 
-function formatDateForGoogle(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+// Format date for Google Calendar (YYYYMMDDTHHmmss)
+function formatDateForGoogle(isoString: string): string {
+  return formatInDaLat(isoString, "yyyyMMdd'T'HHmmss");
 }
 
-function formatDateForICS(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+// Format date for ICS (YYYYMMDDTHHmmss)
+function formatDateForICS(isoString: string): string {
+  return formatInDaLat(isoString, "yyyyMMdd'T'HHmmss");
+}
+
+// Add 2 hours to an ISO string
+function addTwoHours(isoString: string): string {
+  const date = new Date(isoString);
+  date.setHours(date.getHours() + 2);
+  return date.toISOString();
 }
 
 function generateGoogleCalendarUrl({
@@ -38,9 +48,8 @@ function generateGoogleCalendarUrl({
   endsAt,
   url,
 }: AddToCalendarProps): string {
-  const start = new Date(startsAt);
   // Default to 2 hours if no end time
-  const end = endsAt ? new Date(endsAt) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  const endTime = endsAt || addTwoHours(startsAt);
 
   // Use full address if available (best for Google Calendar search)
   // Otherwise use location name with Da Lat suffix
@@ -61,9 +70,10 @@ function generateGoogleCalendarUrl({
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: title,
-    dates: `${formatDateForGoogle(start)}/${formatDateForGoogle(end)}`,
+    dates: `${formatDateForGoogle(startsAt)}/${formatDateForGoogle(endTime)}`,
     details: details.trim(),
     location,
+    ctz: DALAT_TIMEZONE, // Display in Da Lat timezone
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -79,10 +89,9 @@ function generateICSContent({
   endsAt,
   url,
 }: AddToCalendarProps): string {
-  const start = new Date(startsAt);
   // Default to 2 hours if no end time
-  const end = endsAt ? new Date(endsAt) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
-  const now = new Date();
+  const endTime = endsAt || addTwoHours(startsAt);
+  const nowFormatted = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
   // For ICS, prefer address, then location name with maps URL
   let location = "";
@@ -96,6 +105,7 @@ function generateICSContent({
     location = googleMapsUrl;
   }
 
+  // ICS with timezone (TZID parameter tells calendar app the local time)
   const icsContent = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -103,10 +113,10 @@ function generateICSContent({
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `DTSTART:${formatDateForICS(start)}`,
-    `DTEND:${formatDateForICS(end)}`,
-    `DTSTAMP:${formatDateForICS(now)}`,
-    `UID:${start.getTime()}@dalat.app`,
+    `DTSTART;TZID=${DALAT_TIMEZONE}:${formatDateForICS(startsAt)}`,
+    `DTEND;TZID=${DALAT_TIMEZONE}:${formatDateForICS(endTime)}`,
+    `DTSTAMP:${nowFormatted}Z`,
+    `UID:${new Date(startsAt).getTime()}@dalat.app`,
     `SUMMARY:${title}`,
     `DESCRIPTION:${(description || "").replace(/\n/g, "\\n")}\\n\\nEvent page: ${url}`,
     `LOCATION:${location}`,
