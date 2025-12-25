@@ -33,34 +33,7 @@ export function GoogleButton() {
       ) : (
         <>
           <GoogleIcon className="w-5 h-5 mr-2" />
-          Google
-        </>
-      )}
-    </Button>
-  );
-}
-
-export function ZaloButton() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  function signInWithZalo() {
-    setIsLoading(true);
-    window.location.href = "/api/auth/zalo";
-  }
-
-  return (
-    <Button
-      type="button"
-      className="w-full h-12 text-base justify-center bg-[#0068FF] hover:bg-[#0055DD] text-white"
-      onClick={signInWithZalo}
-      disabled={isLoading}
-    >
-      {isLoading ? (
-        "Connecting..."
-      ) : (
-        <>
-          <ZaloIcon className="w-5 h-5 mr-2" />
-          Zalo
+          Continue with Google
         </>
       )}
     </Button>
@@ -90,21 +63,9 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-function ZaloIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none">
-      <path
-        d="M5 6h14v3H9.5l9.5 9v3H5v-3h9.5L5 9V6z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 export function OAuthButtons() {
   return (
     <div className="space-y-3">
-      <ZaloButton />
       <GoogleButton />
     </div>
   );
