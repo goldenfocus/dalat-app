@@ -59,6 +59,25 @@ async function getCurrentUserRsvp(eventId: string): Promise<Rsvp | null> {
   return data as Rsvp | null;
 }
 
+async function getWaitlistPosition(eventId: string, userId: string | null): Promise<number | null> {
+  if (!userId) return null;
+
+  const supabase = await createClient();
+
+  // Get all waitlist entries ordered by created_at (FIFO)
+  const { data } = await supabase
+    .from("rsvps")
+    .select("user_id")
+    .eq("event_id", eventId)
+    .eq("status", "waitlist")
+    .order("created_at", { ascending: true });
+
+  if (!data) return null;
+
+  const position = data.findIndex((rsvp) => rsvp.user_id === userId);
+  return position >= 0 ? position + 1 : null; // 1-indexed position
+}
+
 async function getAttendees(eventId: string): Promise<(Rsvp & { profiles: Profile })[]> {
   const supabase = await createClient();
 
@@ -88,11 +107,13 @@ export default async function EventPage({ params }: PageProps) {
     notFound();
   }
 
-  const [counts, currentRsvp, attendees, currentUserId] = await Promise.all([
+  const currentUserId = await getCurrentUserId();
+
+  const [counts, currentRsvp, attendees, waitlistPosition] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAttendees(event.id),
-    getCurrentUserId(),
+    getWaitlistPosition(event.id, currentUserId),
   ]);
 
   const isLoggedIn = !!currentUserId;
@@ -267,6 +288,7 @@ export default async function EventPage({ params }: PageProps) {
                   goingSpots={counts?.going_spots ?? 0}
                   currentRsvp={currentRsvp}
                   isLoggedIn={isLoggedIn}
+                  waitlistPosition={waitlistPosition}
                 />
 
                 {/* Add to calendar */}

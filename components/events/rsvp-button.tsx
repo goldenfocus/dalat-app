@@ -12,6 +12,7 @@ interface RsvpButtonProps {
   goingSpots: number;
   currentRsvp: Rsvp | null;
   isLoggedIn: boolean;
+  waitlistPosition: number | null;
 }
 
 export function RsvpButton({
@@ -20,6 +21,7 @@ export function RsvpButton({
   goingSpots,
   currentRsvp,
   isLoggedIn,
+  waitlistPosition,
 }: RsvpButtonProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -101,9 +103,14 @@ export function RsvpButton({
         >
           {isPending ? "Leaving..." : "Leave waitlist"}
         </Button>
-        <p className="text-sm text-orange-600 text-center">
-          You&apos;re on the waitlist
-        </p>
+        <div className="text-center space-y-1">
+          <p className="text-sm text-orange-600 font-medium">
+            You&apos;re #{waitlistPosition} on the waitlist
+          </p>
+          <p className="text-xs text-muted-foreground">
+            You&apos;ll automatically get a spot when one opens up
+          </p>
+        </div>
         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
       </div>
     );
