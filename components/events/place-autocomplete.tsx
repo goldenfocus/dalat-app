@@ -29,38 +29,53 @@ const MIN_CHARS = 3;
 
 export function PlaceAutocomplete({ onPlaceSelect, defaultValue }: PlaceAutocompleteProps) {
   const [query, setQuery] = useState(defaultValue?.name || "");
-  const [suggestions, setSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [suggestions, setSuggestions] = useState<google.maps.places.AutocompleteSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(defaultValue || null);
+  const [isReady, setIsReady] = useState(false);
 
-  const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesService = useRef<google.maps.places.PlacesService | null>(null);
   const sessionToken = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Google Places services
+  // Load Google Maps script with async loading
   useEffect(() => {
-    if (typeof google === "undefined") {
-      // Load Google Maps script
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.async = true;
-      script.onload = initServices;
-      document.head.appendChild(script);
-    } else {
-      initServices();
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      console.error("Google Maps API key not found");
+      return;
     }
 
-    function initServices() {
-      autocompleteService.current = new google.maps.places.AutocompleteService();
-      // PlacesService needs a DOM element (can be hidden)
-      const div = document.createElement("div");
-      placesService.current = new google.maps.places.PlacesService(div);
+    // Check if already loaded
+    if (typeof google !== "undefined" && google.maps?.places) {
       sessionToken.current = new google.maps.places.AutocompleteSessionToken();
+      setIsReady(true);
+      return;
     }
+
+    // Load script asynchronously
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
+    script.async = true;
+    script.defer = true;
+
+    script.onload = () => {
+      // Wait for google.maps.places to be available
+      const checkReady = setInterval(() => {
+        if (typeof google !== "undefined" && google.maps?.places) {
+          clearInterval(checkReady);
+          sessionToken.current = new google.maps.places.AutocompleteSessionToken();
+          setIsReady(true);
+        }
+      }, 100);
+
+      // Timeout after 5 seconds
+      setTimeout(() => clearInterval(checkReady), 5000);
+    };
+
+    document.head.appendChild(script);
 
     return () => {
       if (debounceTimer.current) {
@@ -80,32 +95,34 @@ export function PlaceAutocomplete({ onPlaceSelect, defaultValue }: PlaceAutocomp
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const searchPlaces = useCallback((searchQuery: string) => {
-    if (!autocompleteService.current || searchQuery.length < MIN_CHARS) {
+  const searchPlaces = useCallback(async (searchQuery: string) => {
+    if (!isReady || searchQuery.length < MIN_CHARS) {
       setSuggestions([]);
       return;
     }
 
     setIsLoading(true);
 
-    autocompleteService.current.getPlacePredictions(
-      {
+    try {
+      // Use new AutocompleteSuggestion API
+      const request: google.maps.places.AutocompleteRequest = {
         input: searchQuery,
         sessionToken: sessionToken.current!,
-        componentRestrictions: { country: "vn" }, // Restrict to Vietnam
-        types: ["establishment", "geocode"], // Places and addresses
-      },
-      (predictions, status) => {
-        setIsLoading(false);
-        if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-          setSuggestions(predictions);
-          setIsOpen(true);
-        } else {
-          setSuggestions([]);
-        }
-      }
-    );
-  }, []);
+        includedRegionCodes: ["vn"], // Restrict to Vietnam
+        includedPrimaryTypes: ["establishment", "geocode"],
+      };
+
+      const { suggestions } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+
+      setSuggestions(suggestions || []);
+      setIsOpen(suggestions && suggestions.length > 0);
+    } catch (error) {
+      console.error("Places search error:", error);
+      setSuggestions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isReady]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -132,39 +149,40 @@ export function PlaceAutocomplete({ onPlaceSelect, defaultValue }: PlaceAutocomp
     }
   };
 
-  const handleSelectPlace = (prediction: google.maps.places.AutocompletePrediction) => {
-    if (!placesService.current) return;
+  const handleSelectPlace = async (suggestion: google.maps.places.AutocompleteSuggestion) => {
+    if (!suggestion.placePrediction) return;
 
     setIsLoading(true);
     setIsOpen(false);
 
-    // Get place details (uses same session token = bundled billing)
-    placesService.current.getDetails(
-      {
-        placeId: prediction.place_id,
-        sessionToken: sessionToken.current!,
-        fields: ["name", "formatted_address", "place_id", "url"], // Only what we need
-      },
-      (place, status) => {
-        setIsLoading(false);
+    try {
+      // Use new Place API to get details
+      const place = new google.maps.places.Place({
+        id: suggestion.placePrediction.placeId,
+      });
 
-        // Create new session token for next search
-        sessionToken.current = new google.maps.places.AutocompleteSessionToken();
+      await place.fetchFields({
+        fields: ["displayName", "formattedAddress", "googleMapsURI"],
+      });
 
-        if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-          const selectedPlaceData: Place = {
-            placeId: place.place_id || prediction.place_id,
-            name: place.name || prediction.structured_formatting.main_text,
-            address: place.formatted_address || prediction.description,
-            googleMapsUrl: place.url || `https://www.google.com/maps/place/?q=place_id:${prediction.place_id}`,
-          };
+      // Create new session token for next search
+      sessionToken.current = new google.maps.places.AutocompleteSessionToken();
 
-          setQuery(place.name || prediction.structured_formatting.main_text);
-          setSelectedPlace(selectedPlaceData);
-          onPlaceSelect(selectedPlaceData);
-        }
-      }
-    );
+      const selectedPlaceData: Place = {
+        placeId: suggestion.placePrediction.placeId,
+        name: place.displayName || suggestion.placePrediction.mainText?.text || "",
+        address: place.formattedAddress || suggestion.placePrediction.text?.text || "",
+        googleMapsUrl: place.googleMapsURI || `https://www.google.com/maps/place/?q=place_id:${suggestion.placePrediction.placeId}`,
+      };
+
+      setQuery(selectedPlaceData.name);
+      setSelectedPlace(selectedPlaceData);
+      onPlaceSelect(selectedPlaceData);
+    } catch (error) {
+      console.error("Place details error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClear = () => {
@@ -190,6 +208,7 @@ export function PlaceAutocomplete({ onPlaceSelect, defaultValue }: PlaceAutocomp
           placeholder="Search for a place in Vietnam..."
           className="pl-9 pr-9"
           autoComplete="off"
+          disabled={!isReady}
         />
         {isLoading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
@@ -213,22 +232,27 @@ export function PlaceAutocomplete({ onPlaceSelect, defaultValue }: PlaceAutocomp
       {/* Suggestions dropdown */}
       {isOpen && suggestions.length > 0 && (
         <ul className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
-          {suggestions.map((prediction) => (
-            <li key={prediction.place_id}>
-              <button
-                type="button"
-                onClick={() => handleSelectPlace(prediction)}
-                className="w-full px-3 py-2 text-left hover:bg-muted transition-colors"
-              >
-                <p className="font-medium text-sm">
-                  {prediction.structured_formatting.main_text}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {prediction.structured_formatting.secondary_text}
-                </p>
-              </button>
-            </li>
-          ))}
+          {suggestions.map((suggestion) => {
+            const prediction = suggestion.placePrediction;
+            if (!prediction) return null;
+
+            return (
+              <li key={prediction.placeId}>
+                <button
+                  type="button"
+                  onClick={() => handleSelectPlace(suggestion)}
+                  className="w-full px-3 py-2 text-left hover:bg-muted transition-colors"
+                >
+                  <p className="font-medium text-sm">
+                    {prediction.mainText?.text}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {prediction.secondaryText?.text}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
 
