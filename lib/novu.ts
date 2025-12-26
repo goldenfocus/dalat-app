@@ -2,7 +2,19 @@ import { Novu } from '@novu/node';
 import { createHmac } from 'crypto';
 import type { Locale } from '@/lib/types';
 
-const novu = new Novu(process.env.NOVU_SECRET_KEY!);
+// Lazy-initialized Novu client to avoid failing at module load time
+// when only generateSubscriberHash is needed
+let novuClient: Novu | null = null;
+
+function getNovu(): Novu {
+  if (!novuClient) {
+    if (!process.env.NOVU_SECRET_KEY) {
+      throw new Error('NOVU_SECRET_KEY environment variable is required');
+    }
+    novuClient = new Novu(process.env.NOVU_SECRET_KEY);
+  }
+  return novuClient;
+}
 
 // Generate HMAC hash for secure subscriber authentication
 export function generateSubscriberHash(subscriberId: string): string {
@@ -52,7 +64,7 @@ export async function notifyWaitlistPromotion(
 ) {
   const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
 
-  await novu.trigger('waitlist-promotion', {
+  await getNovu().trigger('waitlist-promotion', {
     to: { subscriberId },
     payload: {
       message: translations.waitlistPromotion[locale](eventTitle),
@@ -71,7 +83,7 @@ export async function notifyEventReminder(
 ) {
   const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
 
-  await novu.trigger('event-reminder', {
+  await getNovu().trigger('event-reminder', {
     to: { subscriberId },
     payload: {
       message: translations.eventReminder[locale](eventTitle, eventTime),
@@ -89,7 +101,7 @@ export async function notifyConfirmAttendance(
 ) {
   const baseUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
 
-  await novu.trigger('confirm-attendance', {
+  await getNovu().trigger('confirm-attendance', {
     to: { subscriberId },
     payload: {
       message: translations.confirmAttendance[locale](eventTitle),
@@ -110,7 +122,7 @@ export async function notifyWaitlistPositionUpdate(
 ) {
   const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
 
-  await novu.trigger('waitlist-position-update', {
+  await getNovu().trigger('waitlist-position-update', {
     to: { subscriberId },
     payload: {
       message: translations.waitlistPosition[locale](eventTitle, position),
@@ -129,7 +141,7 @@ export async function notifyOrganizerNewRsvp(
 ) {
   const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
 
-  await novu.trigger('new-rsvp-organizer', {
+  await getNovu().trigger('new-rsvp-organizer', {
     to: { subscriberId },
     payload: {
       message: translations.newRsvp[locale](eventTitle, attendeeName),
@@ -145,7 +157,7 @@ export async function createOrUpdateSubscriber(
   firstName?: string,
   locale?: Locale
 ) {
-  await novu.subscribers.identify(subscriberId, {
+  await getNovu().subscribers.identify(subscriberId, {
     email,
     firstName,
     locale,
