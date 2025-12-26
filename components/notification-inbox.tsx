@@ -55,9 +55,6 @@ export function NotificationInbox({ subscriberId, subscriberHash }: Notification
             width: '20px',
             height: '20px',
           },
-          inboxFooter: {
-            display: 'none',
-          },
         },
       }}
     />
