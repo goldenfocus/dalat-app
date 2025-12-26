@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ArrowLeft, Calendar, MapPin, Users, ExternalLink, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { RsvpButton } from "@/components/events/rsvp-button";
 import { EventActions } from "@/components/events/event-actions";
 import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { CopyAddress } from "@/components/events/copy-address";
+import { ConfirmAttendanceHandler } from "@/components/events/confirm-attendance-handler";
 import { formatInDaLat } from "@/lib/timezone";
 import type { Event, EventCounts, Rsvp, Profile } from "@/lib/types";
 
@@ -125,6 +127,10 @@ export default async function EventPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen">
+      <Suspense fallback={null}>
+        <ConfirmAttendanceHandler eventId={event.id} />
+      </Suspense>
+
       {/* Header */}
       <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-4xl items-center justify-between mx-auto px-4">

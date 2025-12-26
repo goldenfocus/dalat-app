@@ -24,6 +24,26 @@ export function generateSubscriberHash(subscriberId: string): string {
 }
 
 const translations = {
+  rsvpConfirmation: {
+    en: (title: string) => `✅ You're going to "${title}"!`,
+    fr: (title: string) => `✅ Vous participez à "${title}" !`,
+    vi: (title: string) => `✅ Bạn sẽ tham gia "${title}"!`,
+  },
+  rsvpConfirmationBody: {
+    en: (desc: string | null) => desc ? `Remember: ${desc}` : 'See you there!',
+    fr: (desc: string | null) => desc ? `À retenir : ${desc}` : 'À bientôt !',
+    vi: (desc: string | null) => desc ? `Lưu ý: ${desc}` : 'Hẹn gặp bạn!',
+  },
+  confirmAttendance24h: {
+    en: (title: string, time: string) => `📅 "${title}" is tomorrow at ${time}. Are you still coming?`,
+    fr: (title: string, time: string) => `📅 "${title}" demain à ${time}. Vous venez toujours ?`,
+    vi: (title: string, time: string) => `📅 "${title}" vào ngày mai lúc ${time}. Bạn vẫn đến chứ?`,
+  },
+  finalReminder2h: {
+    en: (title: string, location: string) => `🚀 "${title}" starts in 2 hours at ${location}!`,
+    fr: (title: string, location: string) => `🚀 "${title}" commence dans 2h à ${location} !`,
+    vi: (title: string, location: string) => `🚀 "${title}" bắt đầu trong 2 giờ tại ${location}!`,
+  },
   waitlistPromotion: {
     en: (title: string) => `🎉 You got a spot for "${title}"! See you there.`,
     fr: (title: string) => `🎉 Vous avez une place pour "${title}" ! À bientôt.`,
@@ -53,8 +73,72 @@ const translations = {
     viewEvent: { en: 'View Event', fr: 'Voir', vi: 'Xem sự kiện' },
     yes: { en: 'Yes, coming', fr: 'Oui', vi: 'Có, tôi đến' },
     no: { en: "Can't make it", fr: 'Non', vi: 'Không thể đến' },
+    getDirections: { en: 'Get Directions', fr: 'Itinéraire', vi: 'Chỉ đường' },
   },
 };
+
+export async function notifyRsvpConfirmation(
+  subscriberId: string,
+  locale: Locale,
+  eventTitle: string,
+  eventSlug: string,
+  eventDescription: string | null
+) {
+  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
+
+  await getNovu().trigger('rsvp-confirmation', {
+    to: { subscriberId },
+    payload: {
+      subject: translations.rsvpConfirmation[locale](eventTitle),
+      body: translations.rsvpConfirmationBody[locale](eventDescription),
+      primaryActionLabel: translations.buttons.viewEvent[locale],
+      primaryActionUrl: eventUrl,
+    },
+  });
+}
+
+export async function notifyConfirmAttendance24h(
+  subscriberId: string,
+  locale: Locale,
+  eventTitle: string,
+  eventTime: string,
+  eventSlug: string
+) {
+  const baseUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
+
+  await getNovu().trigger('confirm-attendance-24h', {
+    to: { subscriberId },
+    payload: {
+      subject: translations.confirmAttendance24h[locale](eventTitle, eventTime),
+      primaryActionLabel: translations.buttons.yes[locale],
+      primaryActionUrl: `${baseUrl}?confirm=yes`,
+      secondaryActionLabel: translations.buttons.no[locale],
+      secondaryActionUrl: `${baseUrl}?confirm=no`,
+    },
+  });
+}
+
+export async function notifyFinalReminder2h(
+  subscriberId: string,
+  locale: Locale,
+  eventTitle: string,
+  locationName: string,
+  googleMapsUrl: string | null,
+  eventSlug: string
+) {
+  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
+
+  await getNovu().trigger('final-reminder-2h', {
+    to: { subscriberId },
+    payload: {
+      subject: translations.finalReminder2h[locale](eventTitle, locationName),
+      primaryActionLabel: googleMapsUrl
+        ? translations.buttons.getDirections[locale]
+        : translations.buttons.viewEvent[locale],
+      primaryActionUrl: googleMapsUrl || eventUrl,
+    },
+  });
+}
 
 export async function notifyWaitlistPromotion(
   subscriberId: string,
