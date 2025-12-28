@@ -58,7 +58,9 @@ async function isCurrentUser(profileId: string): Promise<boolean> {
 export default async function ProfilePage({ params }: PageProps) {
   const { username: rawUsername } = await params;
   // Strip @ prefix if present (supports both /@username and /username)
-  const username = rawUsername.startsWith("@") ? rawUsername.slice(1) : rawUsername;
+  // URL decode first in case @ is encoded as %40
+  const decoded = decodeURIComponent(rawUsername);
+  const username = decoded.startsWith("@") ? decoded.slice(1) : decoded;
   const profile = await getProfile(username);
 
   if (!profile) {
