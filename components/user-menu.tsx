@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useTransition } from "react";
-import { LogOut, Moon, Sun, Laptop, User, Globe } from "lucide-react";
+import Link from "next/link";
+import { LogOut, Moon, Sun, Laptop, User, Globe, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   DropdownMenu,
@@ -78,6 +79,16 @@ export function UserMenu({ avatarUrl, displayName, username, userId, currentLoca
         <DropdownMenuLabel className="font-normal">
           <p className="font-medium truncate">{displayName || username || "User"}</p>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        {/* Profile settings */}
+        <DropdownMenuItem asChild>
+          <Link href="/settings/profile" className="cursor-pointer">
+            <Settings className="w-4 h-4 mr-2" />
+            Edit profile
+          </Link>
+        </DropdownMenuItem>
+
         <DropdownMenuSeparator />
 
         {/* Theme submenu */}

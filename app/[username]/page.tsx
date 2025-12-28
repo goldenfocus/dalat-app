@@ -110,7 +110,7 @@ export default async function ProfilePage({ params }: PageProps) {
             {profile.bio && <p className="mt-2">{profile.bio}</p>}
             {isOwner && (
               <Link
-                href="/settings"
+                href="/settings/profile"
                 className="text-sm text-primary hover:underline mt-2 inline-block"
               >
                 Edit profile
