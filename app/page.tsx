@@ -132,7 +132,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t py-6">
         <div className="container max-w-4xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>Events without the noise</p>
+          <p>Made with ❤️ for Đà Lạt</p>
         </div>
       </footer>
     </main>
