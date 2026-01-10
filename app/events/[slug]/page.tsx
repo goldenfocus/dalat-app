@@ -9,6 +9,7 @@ import { EventActions } from "@/components/events/event-actions";
 import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { CopyAddress } from "@/components/events/copy-address";
 import { ConfirmAttendanceHandler } from "@/components/events/confirm-attendance-handler";
+import { AttendeeList } from "@/components/events/attendee-list";
 import { formatInDaLat } from "@/lib/timezone";
 import type { Event, EventCounts, Rsvp, Profile } from "@/lib/types";
 
@@ -93,6 +94,19 @@ async function getAttendees(eventId: string): Promise<(Rsvp & { profiles: Profil
   return (data ?? []) as (Rsvp & { profiles: Profile })[];
 }
 
+async function getWaitlist(eventId: string): Promise<(Rsvp & { profiles: Profile })[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("rsvps")
+    .select("*, profiles(*)")
+    .eq("event_id", eventId)
+    .eq("status", "waitlist")
+    .order("created_at", { ascending: true });
+
+  return (data ?? []) as (Rsvp & { profiles: Profile })[];
+}
+
 async function getCurrentUserId(): Promise<string | null> {
   const supabase = await createClient();
   const {
@@ -111,10 +125,11 @@ export default async function EventPage({ params }: PageProps) {
 
   const currentUserId = await getCurrentUserId();
 
-  const [counts, currentRsvp, attendees, waitlistPosition] = await Promise.all([
+  const [counts, currentRsvp, attendees, waitlist, waitlistPosition] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAttendees(event.id),
+    getWaitlist(event.id),
     getWaitlistPosition(event.id, currentUserId),
   ]);
 
@@ -173,43 +188,7 @@ export default async function EventPage({ params }: PageProps) {
             </div>
 
             {/* Attendees */}
-            {attendees.length > 0 && (
-              <Card>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold mb-3">
-                    Who&apos;s going ({attendees.length})
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {attendees.map((rsvp) => (
-                      <div
-                        key={rsvp.id}
-                        className="flex items-center gap-2 bg-muted px-3 py-1.5 rounded-full text-sm"
-                      >
-                        {rsvp.profiles?.avatar_url ? (
-                          <img
-                            src={rsvp.profiles.avatar_url}
-                            alt=""
-                            className="w-5 h-5 rounded-full"
-                          />
-                        ) : (
-                          <div className="w-5 h-5 rounded-full bg-primary/20" />
-                        )}
-                        <span>
-                          {rsvp.profiles?.display_name ||
-                            rsvp.profiles?.username ||
-                            "Anonymous"}
-                        </span>
-                        {rsvp.plus_ones > 0 && (
-                          <span className="text-muted-foreground">
-                            +{rsvp.plus_ones}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <AttendeeList attendees={attendees} waitlist={waitlist} />
           </div>
 
           {/* Sidebar */}
