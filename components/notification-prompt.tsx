@@ -1,99 +1,51 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Bell, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { usePushNotifications } from '@/lib/hooks/use-push-notifications';
-import { triggerHaptic } from '@/lib/haptics';
-import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 
-const DISMISSED_KEY = 'notification-prompt-dismissed';
+const PROMPTED_KEY = 'notification-prompted';
 
+/**
+ * Auto-subscribes logged-in users to push notifications.
+ * The browser will show its native permission dialog.
+ * If granted, user is subscribed. If denied, we don't ask again.
+ * Users can always manage this in Settings.
+ */
 export function NotificationPrompt() {
   const { permission, isSubscribed, isLoading, subscribe, isSupported } = usePushNotifications();
-  const [dismissed, setDismissed] = useState(true); // Start hidden to prevent flash
-  const [isSubscribing, setIsSubscribing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const hasPrompted = useRef(false);
 
   useEffect(() => {
-    // Check if user previously dismissed the prompt
-    const wasDismissed = localStorage.getItem(DISMISSED_KEY);
-    setDismissed(!!wasDismissed);
+    // Only run once per mount
+    if (hasPrompted.current) return;
+
+    // Don't auto-prompt if:
+    // - Not supported
+    // - Already subscribed
+    // - Already prompted before (denied or dismissed browser dialog)
+    // - Still loading
+    if (!isSupported || isSubscribed || isLoading) return;
+    if (permission === 'denied') return;
+    if (localStorage.getItem(PROMPTED_KEY)) return;
 
     // Check if user is logged in
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setIsLoggedIn(!!user);
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      if (hasPrompted.current) return;
+
+      hasPrompted.current = true;
+      localStorage.setItem(PROMPTED_KEY, 'true');
+
+      // Small delay to not be jarring on page load
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // This triggers the browser's native permission dialog
+      await subscribe();
     });
-  }, []);
+  }, [isSupported, isSubscribed, isLoading, permission, subscribe]);
 
-  // Don't show if:
-  // - Not logged in
-  // - Not supported
-  // - Already subscribed
-  // - Permission denied (they blocked it)
-  // - User dismissed the prompt
-  // - Still loading initial state
-  if (!isLoggedIn || !isSupported || isSubscribed || permission === 'denied' || dismissed || isLoading) {
-    return null;
-  }
-
-  const handleEnable = async () => {
-    triggerHaptic('medium');
-    setIsSubscribing(true);
-    const success = await subscribe();
-    setIsSubscribing(false);
-
-    if (!success) {
-      // If they denied, hide the prompt
-      localStorage.setItem(DISMISSED_KEY, 'true');
-      setDismissed(true);
-    }
-  };
-
-  const handleDismiss = () => {
-    triggerHaptic('selection');
-    localStorage.setItem(DISMISSED_KEY, 'true');
-    setDismissed(true);
-  };
-
-  return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-4 duration-300 sm:left-auto sm:right-4 sm:max-w-sm">
-      <div className="flex items-start gap-3 rounded-lg border bg-background p-4 shadow-lg">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-          <Bell className="h-5 w-5 text-primary" />
-        </div>
-        <div className="flex-1 space-y-2">
-          <p className="text-sm font-medium">Enable notifications</p>
-          <p className="text-xs text-muted-foreground">
-            Get alerts for event reminders and updates on your device
-          </p>
-          <div className="flex gap-2 pt-1">
-            <button
-              onClick={handleEnable}
-              disabled={isSubscribing}
-              className={cn(
-                "rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors",
-                "hover:bg-primary/90 disabled:opacity-50"
-              )}
-            >
-              {isSubscribing ? 'Enabling...' : 'Enable'}
-            </button>
-            <button
-              onClick={handleDismiss}
-              className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted"
-            >
-              Not now
-            </button>
-          </div>
-        </div>
-        <button
-          onClick={handleDismiss}
-          className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
+  // This component doesn't render anything - it just auto-triggers
+  return null;
 }

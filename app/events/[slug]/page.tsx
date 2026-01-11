@@ -12,6 +12,7 @@ import { CopyAddress } from "@/components/events/copy-address";
 import { ConfirmAttendanceHandler } from "@/components/events/confirm-attendance-handler";
 import { AttendeeList } from "@/components/events/attendee-list";
 import { EventMediaDisplay } from "@/components/events/event-media-display";
+import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { Linkify } from "@/lib/linkify";
@@ -289,8 +290,14 @@ export default async function EventPage({ params, searchParams }: PageProps) {
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Event image/video - clickable to view full */}
-            {event.image_url && (
+            {event.image_url ? (
               <EventMediaDisplay src={event.image_url} alt={event.title} />
+            ) : (
+              <EventDefaultImage
+                title={event.title}
+                className="w-full rounded-lg"
+                priority
+              />
             )}
 
             {/* Title and description */}
