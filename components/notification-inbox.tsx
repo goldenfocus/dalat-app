@@ -54,6 +54,7 @@ export function NotificationInbox({ subscriberId, subscriberHash }: Notification
           bellIcon: {
             width: '20px',
             height: '20px',
+            color: isDark ? 'hsl(0 0% 98%)' : 'hsl(0 0% 9%)',
           },
         },
       }}
