@@ -12,15 +12,20 @@ import type {
 // ============================================
 
 export async function getDashboardOverview(): Promise<DashboardOverview | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_dashboard_overview");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_dashboard_overview");
 
-  if (error) {
-    console.error("Error fetching dashboard overview:", error);
+    if (error) {
+      console.error("Error fetching dashboard overview:", error);
+      return null;
+    }
+
+    return data as DashboardOverview;
+  } catch (e) {
+    console.error("Exception fetching dashboard overview:", e);
     return null;
   }
-
-  return data as DashboardOverview;
 }
 
 // ============================================
@@ -28,29 +33,39 @@ export async function getDashboardOverview(): Promise<DashboardOverview | null> 
 // ============================================
 
 export async function getUserGrowth(daysBack = 30): Promise<TimeSeriesDataPoint[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_user_growth", {
-    days_back: daysBack,
-  });
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_user_growth", {
+      days_back: daysBack,
+    });
 
-  if (error) {
-    console.error("Error fetching user growth:", error);
+    if (error) {
+      console.error("Error fetching user growth:", error);
+      return [];
+    }
+
+    return (data ?? []) as TimeSeriesDataPoint[];
+  } catch (e) {
+    console.error("Exception fetching user growth:", e);
     return [];
   }
-
-  return (data ?? []) as TimeSeriesDataPoint[];
 }
 
 export async function getRoleDistribution(): Promise<RoleDistribution[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_role_distribution");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_role_distribution");
 
-  if (error) {
-    console.error("Error fetching role distribution:", error);
+    if (error) {
+      console.error("Error fetching role distribution:", error);
+      return [];
+    }
+
+    return (data ?? []) as RoleDistribution[];
+  } catch (e) {
+    console.error("Exception fetching role distribution:", e);
     return [];
   }
-
-  return (data ?? []) as RoleDistribution[];
 }
 
 // ============================================
