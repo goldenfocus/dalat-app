@@ -5,9 +5,15 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Shield, User, Loader2 } from "lucide-react";
+import { Search, Shield, User, Loader2, CheckCircle, XCircle } from "lucide-react";
 import type { Profile, UserRole } from "@/lib/types";
 import { ROLE_HIERARCHY } from "@/lib/types";
+
+interface UpdateStatus {
+  type: "success" | "error";
+  message: string;
+  userId: string;
+}
 
 interface UserManagementTableProps {
   users: Profile[];
@@ -40,10 +46,19 @@ const ROLE_LABELS: Record<UserRole, string> = {
   user: "User",
 };
 
+const ERROR_MESSAGES: Record<string, string> = {
+  not_authenticated: "You must be logged in",
+  not_authorized: "You don't have permission to change roles",
+  invalid_role: "Invalid role selected",
+  cannot_demote_self: "You cannot demote yourself",
+  user_not_found: "User not found",
+};
+
 export function UserManagementTable({ users }: UserManagementTableProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [status, setStatus] = useState<UpdateStatus | null>(null);
 
   const filteredUsers = users.filter((user) => {
     const searchLower = search.toLowerCase();
@@ -56,19 +71,49 @@ export function UserManagementTable({ users }: UserManagementTableProps) {
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     setUpdating(userId);
+    setStatus(null);
     const supabase = createClient();
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({ role: newRole })
-      .eq("id", userId);
+    const { data, error } = await supabase.rpc("admin_update_user_role", {
+      p_user_id: userId,
+      p_new_role: newRole,
+    });
 
     if (error) {
       console.error("Failed to update role:", error);
+      setStatus({
+        type: "error",
+        message: "Database error: " + error.message,
+        userId,
+      });
+      setUpdating(null);
+      return;
     }
 
+    if (!data?.ok) {
+      const errorKey = data?.error || "unknown";
+      setStatus({
+        type: "error",
+        message: ERROR_MESSAGES[errorKey] || `Error: ${errorKey}`,
+        userId,
+      });
+      setUpdating(null);
+      router.refresh();
+      return;
+    }
+
+    setStatus({
+      type: "success",
+      message: `Role updated to ${ROLE_LABELS[newRole]}`,
+      userId,
+    });
     setUpdating(null);
     router.refresh();
+
+    // Clear success message after 3 seconds
+    setTimeout(() => {
+      setStatus((prev) => (prev?.userId === userId ? null : prev));
+    }, 3000);
   };
 
   return (
@@ -142,23 +187,41 @@ export function UserManagementTable({ users }: UserManagementTableProps) {
                   </div>
                 </td>
                 <td className="p-3">
-                  <div className="flex items-center gap-2">
-                    {updating === user.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <select
-                        value={user.role}
-                        onChange={(e) =>
-                          handleRoleChange(user.id, e.target.value as UserRole)
-                        }
-                        className={`text-xs px-2 py-1 rounded-full border font-medium cursor-pointer ${ROLE_COLORS[user.role]}`}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      {updating === user.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <select
+                          value={user.role}
+                          onChange={(e) =>
+                            handleRoleChange(user.id, e.target.value as UserRole)
+                          }
+                          className={`text-xs px-2 py-1 rounded-full border font-medium cursor-pointer ${ROLE_COLORS[user.role]}`}
+                        >
+                          {ROLE_OPTIONS.map((role) => (
+                            <option key={role} value={role}>
+                              {ROLE_LABELS[role]}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    {status?.userId === user.id && (
+                      <div
+                        className={`flex items-center gap-1 text-xs ${
+                          status.type === "success"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
                       >
-                        {ROLE_OPTIONS.map((role) => (
-                          <option key={role} value={role}>
-                            {ROLE_LABELS[role]}
-                          </option>
-                        ))}
-                      </select>
+                        {status.type === "success" ? (
+                          <CheckCircle className="w-3 h-3" />
+                        ) : (
+                          <XCircle className="w-3 h-3" />
+                        )}
+                        {status.message}
+                      </div>
                     )}
                   </div>
                 </td>

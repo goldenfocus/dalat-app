@@ -17,7 +17,8 @@ import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { Linkify } from "@/lib/linkify";
-import type { Event, EventCounts, Rsvp, Profile, Organizer } from "@/lib/types";
+import { MomentsPreview } from "@/components/moments";
+import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -220,6 +221,76 @@ async function getCurrentUserId(): Promise<string | null> {
   return user?.id ?? null;
 }
 
+async function getMomentsPreview(eventId: string): Promise<MomentWithProfile[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase.rpc("get_event_moments", {
+    p_event_id: eventId,
+    p_limit: 4,
+    p_offset: 0,
+  });
+
+  return (data ?? []) as MomentWithProfile[];
+}
+
+async function getMomentCounts(eventId: string): Promise<MomentCounts | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase.rpc("get_moment_counts", {
+    p_event_id: eventId,
+  });
+
+  return data as MomentCounts | null;
+}
+
+async function getEventSettings(eventId: string): Promise<EventSettings | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("event_settings")
+    .select("*")
+    .eq("event_id", eventId)
+    .single();
+
+  return data as EventSettings | null;
+}
+
+async function canUserPostMoment(eventId: string, userId: string | null, creatorId: string): Promise<boolean> {
+  if (!userId) return false;
+
+  // Creator can always post
+  if (userId === creatorId) return true;
+
+  const supabase = await createClient();
+  const settings = await getEventSettings(eventId);
+
+  // If no settings or not enabled, only creator can post
+  if (!settings?.moments_enabled) return false;
+
+  switch (settings.moments_who_can_post) {
+    case "anyone":
+      return true;
+    case "rsvp":
+      const { data: rsvp } = await supabase
+        .from("rsvps")
+        .select("status")
+        .eq("event_id", eventId)
+        .eq("user_id", userId)
+        .single();
+      return rsvp?.status && ["going", "waitlist", "interested"].includes(rsvp.status);
+    case "confirmed":
+      const { data: confirmedRsvp } = await supabase
+        .from("rsvps")
+        .select("status")
+        .eq("event_id", eventId)
+        .eq("user_id", userId)
+        .single();
+      return confirmedRsvp?.status === "going";
+    default:
+      return false;
+  }
+}
+
 export default async function EventPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const result = await getEvent(slug);
@@ -249,7 +320,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   const currentUserId = await getCurrentUserId();
 
-  const [counts, currentRsvp, attendees, waitlist, interested, waitlistPosition, organizerEvents] = await Promise.all([
+  const [counts, currentRsvp, attendees, waitlist, interested, waitlistPosition, organizerEvents, momentsPreview, momentCounts, canPostMoment] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAttendees(event.id),
@@ -257,6 +328,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getInterestedUsers(event.id),
     getWaitlistPosition(event.id, currentUserId),
     event.organizer_id ? getOrganizerEvents(event.organizer_id) : Promise.resolve([]),
+    getMomentsPreview(event.id),
+    getMomentCounts(event.id),
+    canUserPostMoment(event.id, currentUserId, event.created_by),
   ]);
 
   const isLoggedIn = !!currentUserId;
@@ -450,6 +524,14 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 </Link>
               </CardContent>
             </Card>
+
+            {/* Moments preview */}
+            <MomentsPreview
+              eventSlug={event.slug}
+              moments={momentsPreview}
+              counts={momentCounts}
+              canPost={canPostMoment}
+            />
 
             {/* More from organizer */}
             {event.organizers && organizerEvents.length > 1 && (

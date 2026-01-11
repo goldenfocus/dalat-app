@@ -132,14 +132,10 @@ export default async function EventMomentsPage({ params }: PageProps) {
   const t = await getTranslations("moments");
   const tCommon = await getTranslations("common");
 
-  const [moments, canPost, settings] = await Promise.all([
+  const [moments, canPost] = await Promise.all([
     getMoments(event.id),
     canUserPost(event.id),
-    getEventSettings(event.id),
   ]);
-
-  // Check if moments are enabled (default: enabled for event creator, disabled for others)
-  const momentsEnabled = settings?.moments_enabled ?? false;
 
   return (
     <main className="min-h-screen">
@@ -173,7 +169,7 @@ export default async function EventMomentsPage({ params }: PageProps) {
         </div>
 
         {/* Moments grid */}
-        <MomentGrid moments={moments} eventSlug={slug} />
+        <MomentGrid moments={moments} />
 
         {/* CTA for users who can post but haven't yet */}
         {moments.length === 0 && canPost && (

@@ -7,11 +7,10 @@ import type { MomentWithProfile } from "@/lib/types";
 
 interface MomentGridProps {
   moments: MomentWithProfile[];
-  eventSlug: string;
   emptyState?: boolean;
 }
 
-export function MomentGrid({ moments, eventSlug, emptyState = true }: MomentGridProps) {
+export function MomentGrid({ moments, emptyState = true }: MomentGridProps) {
   const t = useTranslations("moments");
 
   if (moments.length === 0 && emptyState) {
@@ -29,7 +28,7 @@ export function MomentGrid({ moments, eventSlug, emptyState = true }: MomentGrid
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
       {moments.map((moment) => (
-        <MomentCard key={moment.id} moment={moment} eventSlug={eventSlug} />
+        <MomentCard key={moment.id} moment={moment} />
       ))}
     </div>
   );

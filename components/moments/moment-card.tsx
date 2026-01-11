@@ -1,19 +1,16 @@
 "use client";
 
 import { Link } from "@/lib/i18n/routing";
-import { formatDistanceToNow } from "date-fns";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import type { MomentWithProfile } from "@/lib/types";
 
 interface MomentCardProps {
   moment: MomentWithProfile;
-  eventSlug: string;
 }
 
-export function MomentCard({ moment, eventSlug }: MomentCardProps) {
+export function MomentCard({ moment }: MomentCardProps) {
   const isVideo = isVideoUrl(moment.media_url);
-  const timeAgo = formatDistanceToNow(new Date(moment.created_at), { addSuffix: true });
 
   return (
     <Link
