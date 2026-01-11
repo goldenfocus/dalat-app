@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { BadgeClearer } from "@/components/badge-clearer";
+import { NotificationPrompt } from "@/components/notification-prompt";
 import "./globals.css";
 
 const siteUrl = "https://dalat.app";
@@ -40,6 +41,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <BadgeClearer />
+          <NotificationPrompt />
           {children}
         </ThemeProvider>
       </body>
