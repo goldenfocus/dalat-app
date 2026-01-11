@@ -73,17 +73,22 @@ export async function getRoleDistribution(): Promise<RoleDistribution[]> {
 // ============================================
 
 export async function getEventActivity(daysBack = 30): Promise<EventActivityData[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_event_activity", {
-    days_back: daysBack,
-  });
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_event_activity", {
+      days_back: daysBack,
+    });
 
-  if (error) {
-    console.error("Error fetching event activity:", error);
+    if (error) {
+      console.error("Error fetching event activity:", error);
+      return [];
+    }
+
+    return (data ?? []) as EventActivityData[];
+  } catch (e) {
+    console.error("Exception fetching event activity:", e);
     return [];
   }
-
-  return (data ?? []) as EventActivityData[];
 }
 
 // ============================================
@@ -91,17 +96,22 @@ export async function getEventActivity(daysBack = 30): Promise<EventActivityData
 // ============================================
 
 export async function getRsvpTrends(daysBack = 30): Promise<RsvpTrendsData[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_rsvp_trends", {
-    days_back: daysBack,
-  });
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_rsvp_trends", {
+      days_back: daysBack,
+    });
 
-  if (error) {
-    console.error("Error fetching RSVP trends:", error);
+    if (error) {
+      console.error("Error fetching RSVP trends:", error);
+      return [];
+    }
+
+    return (data ?? []) as RsvpTrendsData[];
+  } catch (e) {
+    console.error("Exception fetching RSVP trends:", e);
     return [];
   }
-
-  return (data ?? []) as RsvpTrendsData[];
 }
 
 // ============================================
@@ -116,16 +126,21 @@ export interface VerificationQueueStats {
 }
 
 export async function getVerificationQueueStats(): Promise<VerificationQueueStats | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_verification_queue_stats");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_verification_queue_stats");
 
-  if (error) {
-    console.error("Error fetching verification queue stats:", error);
+    if (error) {
+      console.error("Error fetching verification queue stats:", error);
+      return null;
+    }
+
+    // RPC returns array with single row
+    return data?.[0] ?? null;
+  } catch (e) {
+    console.error("Exception fetching verification queue stats:", e);
     return null;
   }
-
-  // RPC returns array with single row
-  return data?.[0] ?? null;
 }
 
 // ============================================
@@ -142,15 +157,20 @@ export interface ExtractionStats {
 }
 
 export async function getExtractionStats(): Promise<ExtractionStats | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_extraction_stats");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_extraction_stats");
 
-  if (error) {
-    console.error("Error fetching extraction stats:", error);
+    if (error) {
+      console.error("Error fetching extraction stats:", error);
+      return null;
+    }
+
+    return data?.[0] ?? null;
+  } catch (e) {
+    console.error("Exception fetching extraction stats:", e);
     return null;
   }
-
-  return data?.[0] ?? null;
 }
 
 // ============================================
@@ -165,15 +185,20 @@ export interface FestivalStats {
 }
 
 export async function getFestivalStats(): Promise<FestivalStats | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_festival_stats");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_festival_stats");
 
-  if (error) {
-    console.error("Error fetching festival stats:", error);
+    if (error) {
+      console.error("Error fetching festival stats:", error);
+      return null;
+    }
+
+    return data?.[0] ?? null;
+  } catch (e) {
+    console.error("Exception fetching festival stats:", e);
     return null;
   }
-
-  return data?.[0] ?? null;
 }
 
 // ============================================
@@ -187,15 +212,20 @@ export interface NotificationStats {
 }
 
 export async function getNotificationStats(): Promise<NotificationStats | null> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_notification_stats");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_notification_stats");
 
-  if (error) {
-    console.error("Error fetching notification stats:", error);
+    if (error) {
+      console.error("Error fetching notification stats:", error);
+      return null;
+    }
+
+    return data?.[0] ?? null;
+  } catch (e) {
+    console.error("Exception fetching notification stats:", e);
     return null;
   }
-
-  return data?.[0] ?? null;
 }
 
 // ============================================
@@ -214,35 +244,50 @@ export interface FullDashboardData {
 }
 
 export async function getFullDashboardData(): Promise<FullDashboardData> {
-  // Fetch all data in parallel
-  const [
-    overview,
-    userGrowth,
-    roleDistribution,
-    eventActivity,
-    rsvpTrends,
-    verificationQueue,
-    extractionStats,
-    festivalStats,
-  ] = await Promise.all([
-    getDashboardOverview(),
-    getUserGrowth(30),
-    getRoleDistribution(),
-    getEventActivity(30),
-    getRsvpTrends(30),
-    getVerificationQueueStats(),
-    getExtractionStats(),
-    getFestivalStats(),
-  ]);
+  try {
+    // Fetch all data in parallel
+    const [
+      overview,
+      userGrowth,
+      roleDistribution,
+      eventActivity,
+      rsvpTrends,
+      verificationQueue,
+      extractionStats,
+      festivalStats,
+    ] = await Promise.all([
+      getDashboardOverview(),
+      getUserGrowth(30),
+      getRoleDistribution(),
+      getEventActivity(30),
+      getRsvpTrends(30),
+      getVerificationQueueStats(),
+      getExtractionStats(),
+      getFestivalStats(),
+    ]);
 
-  return {
-    overview,
-    userGrowth,
-    roleDistribution,
-    eventActivity,
-    rsvpTrends,
-    verificationQueue,
-    extractionStats,
-    festivalStats,
-  };
+    return {
+      overview,
+      userGrowth,
+      roleDistribution,
+      eventActivity,
+      rsvpTrends,
+      verificationQueue,
+      extractionStats,
+      festivalStats,
+    };
+  } catch (e) {
+    console.error("Exception fetching full dashboard data:", e);
+    // Return empty/null values on error
+    return {
+      overview: null,
+      userGrowth: [],
+      roleDistribution: [],
+      eventActivity: [],
+      rsvpTrends: [],
+      verificationQueue: null,
+      extractionStats: null,
+      festivalStats: null,
+    };
+  }
 }

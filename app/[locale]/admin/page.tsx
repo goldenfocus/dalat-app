@@ -36,11 +36,11 @@ export default async function AdminDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Users"
-          value={overview?.users.total ?? 0}
-          subtitle={`+${overview?.users.new_this_week ?? 0} this week`}
+          value={overview?.users?.total ?? 0}
+          subtitle={`+${overview?.users?.new_this_week ?? 0} this week`}
           icon={Users}
           trend={
-            overview?.users.new_this_week
+            overview?.users?.new_this_week
               ? {
                   value: Math.round(
                     ((overview.users.new_this_week / Math.max(overview.users.total - overview.users.new_this_week, 1)) * 100)
@@ -52,26 +52,26 @@ export default async function AdminDashboard() {
         />
         <StatCard
           title="Published Events"
-          value={overview?.events.published ?? 0}
-          subtitle={`${overview?.events.draft ?? 0} drafts`}
+          value={overview?.events?.published ?? 0}
+          subtitle={`${overview?.events?.draft ?? 0} drafts`}
           icon={Calendar}
         />
         <StatCard
           title="Total RSVPs"
-          value={overview?.rsvps.total ?? 0}
-          subtitle={`${overview?.rsvps.going ?? 0} going`}
+          value={overview?.rsvps?.total ?? 0}
+          subtitle={`${overview?.rsvps?.going ?? 0} going`}
           icon={PartyPopper}
         />
         <StatCard
           title="Push Notifications"
-          value={overview?.notifications.users_with_push ?? 0}
+          value={overview?.notifications?.users_with_push ?? 0}
           subtitle="Users with notifications enabled"
           icon={Bell}
         />
       </div>
 
       {/* Verification Queue Alert (if pending) */}
-      {overview?.verification_queue.pending ? (
+      {overview?.verification_queue?.pending ? (
         <div className="rounded-lg border-2 border-yellow-500/50 bg-yellow-500/10 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -143,10 +143,10 @@ export default async function AdminDashboard() {
                 Organizers
               </p>
               <p className="text-2xl font-bold">
-                {overview?.organizers.total ?? 0}
+                {overview?.organizers?.total ?? 0}
               </p>
               <p className="text-xs text-muted-foreground">
-                {overview?.organizers.verified ?? 0} verified
+                {overview?.organizers?.verified ?? 0} verified
               </p>
             </div>
           </div>
