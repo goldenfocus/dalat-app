@@ -14,13 +14,18 @@ import type { Profile, UserRole } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
 
 async function getProfile(userId: string): Promise<Profile | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
-  return data;
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+    return data;
+  } catch (e) {
+    console.error("Exception fetching profile in admin layout:", e);
+    return null;
+  }
 }
 
 export default async function AdminLayout({
@@ -28,17 +33,23 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
+  let user = null;
+  let profile: Profile | null = null;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (e) {
+    console.error("Exception getting user in admin layout:", e);
+    redirect("/auth/login");
+  }
 
   if (!user) {
     redirect("/auth/login");
   }
 
-  const profile = await getProfile(user.id);
+  profile = await getProfile(user.id);
 
   // Roles that can access admin section:
   // admin, moderator, organizer_verified, contributor

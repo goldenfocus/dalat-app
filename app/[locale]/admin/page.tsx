@@ -38,7 +38,7 @@ export default async function AdminDashboard() {
           title="Total Users"
           value={overview?.users?.total ?? 0}
           subtitle={`+${overview?.users?.new_this_week ?? 0} this week`}
-          icon={Users}
+          icon={<Users className="h-6 w-6 text-primary" />}
           trend={
             overview?.users?.new_this_week
               ? {
@@ -54,19 +54,19 @@ export default async function AdminDashboard() {
           title="Published Events"
           value={overview?.events?.published ?? 0}
           subtitle={`${overview?.events?.draft ?? 0} drafts`}
-          icon={Calendar}
+          icon={<Calendar className="h-6 w-6 text-primary" />}
         />
         <StatCard
           title="Total RSVPs"
           value={overview?.rsvps?.total ?? 0}
           subtitle={`${overview?.rsvps?.going ?? 0} going`}
-          icon={PartyPopper}
+          icon={<PartyPopper className="h-6 w-6 text-primary" />}
         />
         <StatCard
           title="Push Notifications"
           value={overview?.notifications?.users_with_push ?? 0}
           subtitle="Users with notifications enabled"
-          icon={Bell}
+          icon={<Bell className="h-6 w-6 text-primary" />}
         />
       </div>
 
