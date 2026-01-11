@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
+import { isVideoUrl } from "@/lib/media-utils";
 import type { Event, EventCounts } from "@/lib/types";
 
 interface EventCardProps {
@@ -23,11 +24,22 @@ export function EventCard({ event, counts }: EventCardProps) {
       <Card className="overflow-hidden hover:border-foreground/20 transition-colors">
         {event.image_url && (
           <div className="aspect-[2/1] relative overflow-hidden">
-            <img
-              src={event.image_url}
-              alt={event.title}
-              className="object-cover w-full h-full"
-            />
+            {isVideoUrl(event.image_url) ? (
+              <video
+                src={event.image_url}
+                className="object-cover w-full h-full"
+                muted
+                loop
+                playsInline
+                autoPlay
+              />
+            ) : (
+              <img
+                src={event.image_url}
+                alt={event.title}
+                className="object-cover w-full h-full"
+              />
+            )}
           </div>
         )}
         <CardContent className="p-4">

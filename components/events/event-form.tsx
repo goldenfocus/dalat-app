@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
+import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import type { Event } from "@/lib/types";
 
@@ -30,6 +31,9 @@ export function EventForm({ userId, event }: EventFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    event?.image_url ?? null
+  );
 
   const isEditing = !!event;
 
@@ -70,6 +74,7 @@ export function EventForm({ userId, event }: EventFormProps) {
           .update({
             title,
             description: description || null,
+            image_url: imageUrl,
             starts_at: startsAt,
             location_name: locationName || null,
             address: address || null,
@@ -146,6 +151,22 @@ export function EventForm({ userId, event }: EventFormProps) {
               className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
+
+          {/* Event image/video */}
+          {isEditing ? (
+            <div className="space-y-2">
+              <Label>Event flyer or video</Label>
+              <EventMediaUpload
+                eventId={event.id}
+                currentMediaUrl={imageUrl}
+                onMediaChange={setImageUrl}
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground py-2">
+              You can add a flyer image or video after creating the event.
+            </p>
+          )}
 
           {/* Date and time */}
           <div className="grid gap-4 sm:grid-cols-2">

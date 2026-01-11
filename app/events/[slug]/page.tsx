@@ -11,6 +11,7 @@ import { CopyAddress } from "@/components/events/copy-address";
 import { ConfirmAttendanceHandler } from "@/components/events/confirm-attendance-handler";
 import { AttendeeList } from "@/components/events/attendee-list";
 import { formatInDaLat } from "@/lib/timezone";
+import { isVideoUrl } from "@/lib/media-utils";
 import type { Event, EventCounts, Rsvp, Profile } from "@/lib/types";
 
 interface PageProps {
@@ -166,14 +167,26 @@ export default async function EventPage({ params }: PageProps) {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Event image */}
+            {/* Event image/video */}
             {event.image_url && (
               <div className="aspect-video rounded-lg overflow-hidden">
-                <img
-                  src={event.image_url}
-                  alt={event.title}
-                  className="object-cover w-full h-full"
-                />
+                {isVideoUrl(event.image_url) ? (
+                  <video
+                    src={event.image_url}
+                    className="object-cover w-full h-full"
+                    controls
+                    muted
+                    loop
+                    playsInline
+                    autoPlay
+                  />
+                ) : (
+                  <img
+                    src={event.image_url}
+                    alt={event.title}
+                    className="object-cover w-full h-full"
+                  />
+                )}
               </div>
             )}
 
