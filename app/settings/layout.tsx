@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { ArrowLeft, Settings } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { AuthButton } from "@/components/auth-button";
+import { SettingsTabs } from "@/components/settings/settings-tabs";
 
-export default function SettingsLayout({
+export default async function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const t = await getTranslations("settings");
+
   return (
     <main className="min-h-screen">
       {/* Header */}
@@ -22,14 +26,17 @@ export default function SettingsLayout({
             </Link>
             <div className="flex items-center gap-2">
               <Settings className="w-4 h-4 text-muted-foreground" />
-              <h1 className="font-semibold">Settings</h1>
+              <h1 className="font-semibold">{t("settings")}</h1>
             </div>
           </div>
           <AuthButton />
         </div>
       </nav>
 
-      <div className="container max-w-2xl mx-auto px-4 py-8">{children}</div>
+      <div className="container max-w-2xl mx-auto px-4 py-6">
+        <SettingsTabs />
+        <div className="mt-6">{children}</div>
+      </div>
     </main>
   );
 }

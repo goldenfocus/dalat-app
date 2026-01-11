@@ -1,7 +1,39 @@
-// Service Worker for dalat.app push notifications
-// This runs in the background even when the app is closed
+// Service Worker for dalat.app
+// Handles push notifications and app updates
+//
+// IMPORTANT: Update SW_VERSION when deploying new features
+// This triggers the update flow for all users
+const SW_VERSION = '1.0.0';
 
 const APP_URL = self.location.origin;
+
+// Install: Take over immediately (don't wait for old SW to die)
+self.addEventListener('install', (event) => {
+  console.log(`[SW] Installing version ${SW_VERSION}`);
+  self.skipWaiting();
+});
+
+// Activate: Claim all clients immediately
+self.addEventListener('activate', (event) => {
+  console.log(`[SW] Activating version ${SW_VERSION}`);
+  event.waitUntil(
+    clients.claim().then(() => {
+      // Notify all clients that a new version is active
+      clients.matchAll({ type: 'window' }).then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'SW_UPDATED', version: SW_VERSION });
+        });
+      });
+    })
+  );
+});
+
+// Handle messages from the client
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'GET_VERSION') {
+    event.ports[0].postMessage({ version: SW_VERSION });
+  }
+});
 
 // Handle push notifications
 self.addEventListener('push', (event) => {

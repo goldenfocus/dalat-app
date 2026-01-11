@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { LogOut, Moon, Sun, Laptop, User, Globe, Settings, ExternalLink, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -30,6 +31,8 @@ interface UserMenuProps {
 export function UserMenu({ avatarUrl, displayName, username, userId, currentLocale }: UserMenuProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const t = useTranslations("userMenu");
+  const tCommon = useTranslations("common");
   const [mounted, setMounted] = useState(false);
   const [locale, setLocale] = useState<Locale>(currentLocale);
   const [isPending, startTransition] = useTransition();
@@ -94,7 +97,7 @@ export function UserMenu({ avatarUrl, displayName, username, userId, currentLoca
             )}
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate group-hover/profile:text-primary transition-colors">
-                {displayName || username || "User"}
+                {displayName || username || tCommon("user")}
               </p>
               {username && (
                 <p className="text-sm text-muted-foreground truncate">@{username}</p>
@@ -108,8 +111,15 @@ export function UserMenu({ avatarUrl, displayName, username, userId, currentLoca
         {/* Profile settings */}
         <DropdownMenuItem asChild>
           <Link href="/settings/profile" className="cursor-pointer">
+            <User className="w-4 h-4 mr-2" />
+            {t("editProfile")}
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="cursor-pointer">
             <Settings className="w-4 h-4 mr-2" />
-            Edit profile
+            {t("settings")}
           </Link>
         </DropdownMenuItem>
 
