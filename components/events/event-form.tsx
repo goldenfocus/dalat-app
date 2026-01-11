@@ -19,14 +19,20 @@ interface EventFormProps {
 }
 
 /**
- * Sanitize a string into a valid slug format
+ * Sanitize a string into a valid slug format (while typing)
  */
 function sanitizeSlug(input: string): string {
   return input
     .toLowerCase()
     .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
     .replace(/-+/g, "-");
+}
+
+/**
+ * Final cleanup of slug (on blur/submit) - removes leading/trailing dashes
+ */
+function finalizeSlug(input: string): string {
+  return sanitizeSlug(input).replace(/^-+|-+$/g, "");
 }
 
 /**
@@ -119,6 +125,10 @@ export function EventForm({ userId, event }: EventFormProps) {
     setSlugTouched(true);
   };
 
+  const handleSlugBlur = () => {
+    setSlug(finalizeSlug(slug));
+  };
+
   // Parse existing event date/time in Da Lat timezone
   const defaults = event ? getDateTimeInDaLat(event.starts_at) : { date: "", time: "" };
 
@@ -174,8 +184,9 @@ export function EventForm({ userId, event }: EventFormProps) {
         };
 
         // Include slug if editable and changed
-        if (slugEditable && slug && slug !== event.slug) {
-          updateData.slug = slug;
+        const cleanSlug = finalizeSlug(slug);
+        if (slugEditable && cleanSlug && cleanSlug !== event.slug) {
+          updateData.slug = cleanSlug;
         }
 
         const { error: updateError } = await supabase
@@ -195,8 +206,9 @@ export function EventForm({ userId, event }: EventFormProps) {
       } else {
         // Create new event
         // Use custom slug if provided and valid, otherwise auto-generate
-        const finalSlug = slugEditable && slug && slugStatus === "available"
-          ? slug
+        const cleanSlug = finalizeSlug(slug);
+        const finalSlug = slugEditable && cleanSlug && slugStatus === "available"
+          ? cleanSlug
           : generateSlug(title);
 
         const { data, error: insertError } = await supabase
@@ -271,6 +283,7 @@ export function EventForm({ userId, event }: EventFormProps) {
                   id="slug"
                   value={slug}
                   onChange={handleSlugChange}
+                  onBlur={handleSlugBlur}
                   placeholder="my-event"
                   className="rounded-l-none"
                 />
