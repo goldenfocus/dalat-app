@@ -453,10 +453,13 @@
       "requireApprovalHelp": "Review moments before they appear publicly"
     },
     "moderation": {
+      "title": "Moderation Queue",
       "pendingCount": "{count} pending",
+      "noPending": "No pending moments to review",
       "approve": "Approve",
       "reject": "Reject",
-      "remove": "Remove"
+      "remove": "Remove",
+      "viewQueue": "View moderation queue"
     },
     "errors": {
       "notAllowed": "You don't have permission to post moments here",

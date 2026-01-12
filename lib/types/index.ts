@@ -381,3 +381,9 @@ export interface MomentCounts {
   published_count: number;
   pending_count: number;
 }
+
+export interface MomentLikeStatus {
+  moment_id: string;
+  liked: boolean;
+  count: number;
+}

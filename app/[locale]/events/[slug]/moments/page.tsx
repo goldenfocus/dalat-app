@@ -5,8 +5,10 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { MomentGrid } from "@/components/moments";
+import { InfiniteMomentGrid } from "@/components/moments";
 import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
+
+const INITIAL_PAGE_SIZE = 20;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -56,22 +58,20 @@ async function getEventSettings(eventId: string): Promise<EventSettings | null> 
   return data as EventSettings | null;
 }
 
-async function getMoments(eventId: string): Promise<MomentWithProfile[]> {
+async function getMoments(eventId: string): Promise<{ moments: MomentWithProfile[]; hasMore: boolean }> {
   const supabase = await createClient();
 
   const { data } = await supabase.rpc("get_event_moments", {
     p_event_id: eventId,
-    p_limit: 50,
+    p_limit: INITIAL_PAGE_SIZE,
     p_offset: 0,
   });
 
-  return (data ?? []) as MomentWithProfile[];
-}
+  const moments = (data ?? []) as MomentWithProfile[];
+  // If we got exactly PAGE_SIZE, there might be more
+  const hasMore = moments.length === INITIAL_PAGE_SIZE;
 
-async function getCurrentUserId(): Promise<string | null> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user?.id ?? null;
+  return { moments, hasMore };
 }
 
 async function canUserPost(eventId: string): Promise<boolean> {
@@ -132,7 +132,7 @@ export default async function EventMomentsPage({ params }: PageProps) {
   const t = await getTranslations("moments");
   const tCommon = await getTranslations("common");
 
-  const [moments, canPost] = await Promise.all([
+  const [{ moments, hasMore }, canPost] = await Promise.all([
     getMoments(event.id),
     canUserPost(event.id),
   ]);
@@ -168,8 +168,12 @@ export default async function EventMomentsPage({ params }: PageProps) {
           <p className="text-muted-foreground">{event.title}</p>
         </div>
 
-        {/* Moments grid */}
-        <MomentGrid moments={moments} />
+        {/* Infinite scroll moments grid */}
+        <InfiniteMomentGrid
+          eventId={event.id}
+          initialMoments={moments}
+          initialHasMore={hasMore}
+        />
 
         {/* CTA for users who can post but haven't yet */}
         {moments.length === 0 && canPost && (

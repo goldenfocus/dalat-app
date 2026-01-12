@@ -3,13 +3,15 @@
 import { Link } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
+import { LikeButton } from "./like-button";
 import type { MomentWithProfile } from "@/lib/types";
 
 interface MomentCardProps {
   moment: MomentWithProfile;
+  likeStatus?: { liked: boolean; count: number };
 }
 
-export function MomentCard({ moment }: MomentCardProps) {
+export function MomentCard({ moment, likeStatus }: MomentCardProps) {
   const isVideo = isVideoUrl(moment.media_url);
 
   return (
@@ -48,6 +50,18 @@ export function MomentCard({ moment }: MomentCardProps) {
           </div>
         )}
 
+        {/* Like button (top right) */}
+        {likeStatus && (
+          <div className="absolute top-2 right-2 z-10">
+            <LikeButton
+              momentId={moment.id}
+              initialLiked={likeStatus.liked}
+              initialCount={likeStatus.count}
+              size="sm"
+            />
+          </div>
+        )}
+
         {/* Overlay with user info */}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
           <div className="flex items-center gap-2">
@@ -60,7 +74,7 @@ export function MomentCard({ moment }: MomentCardProps) {
             ) : (
               <div className="w-6 h-6 rounded-full bg-white/20" />
             )}
-            <span className="text-white text-xs font-medium truncate">
+            <span className="text-white text-xs font-medium truncate flex-1">
               {moment.display_name || moment.username || "Anonymous"}
             </span>
           </div>

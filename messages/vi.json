@@ -453,10 +453,13 @@
       "requireApprovalHelp": "Xem xét khoảnh khắc trước khi hiển thị công khai"
     },
     "moderation": {
+      "title": "Hàng chờ Duyệt",
       "pendingCount": "{count} đang chờ",
+      "noPending": "Không có khoảnh khắc nào cần duyệt",
       "approve": "Duyệt",
       "reject": "Từ chối",
-      "remove": "Xóa"
+      "remove": "Xóa",
+      "viewQueue": "Xem hàng chờ duyệt"
     },
     "errors": {
       "notAllowed": "Bạn không có quyền đăng khoảnh khắc ở đây",

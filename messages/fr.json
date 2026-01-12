@@ -453,10 +453,13 @@
       "requireApprovalHelp": "Vérifier les moments avant publication"
     },
     "moderation": {
+      "title": "File de modération",
       "pendingCount": "{count} en attente",
+      "noPending": "Aucun moment en attente",
       "approve": "Approuver",
       "reject": "Rejeter",
-      "remove": "Supprimer"
+      "remove": "Supprimer",
+      "viewQueue": "Voir la file de modération"
     },
     "errors": {
       "notAllowed": "Vous n'avez pas la permission de publier ici",

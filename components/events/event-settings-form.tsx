@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Users, Shield, Loader2, Check } from "lucide-react";
+import { Camera, Users, Shield, Loader2, Check, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
@@ -11,15 +12,20 @@ import type { EventSettings, MomentsWhoCanPost } from "@/lib/types";
 
 interface EventSettingsFormProps {
   eventId: string;
+  eventSlug: string;
   initialSettings: EventSettings | null;
+  pendingCount: number;
 }
 
 export function EventSettingsForm({
   eventId,
+  eventSlug,
   initialSettings,
+  pendingCount,
 }: EventSettingsFormProps) {
   const router = useRouter();
   const t = useTranslations("eventSettings");
+  const tModeration = useTranslations("moments.moderation");
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
 
@@ -212,6 +218,29 @@ export function EventSettingsForm({
             />
           </div>
         </button>
+      )}
+
+      {/* Moderation Queue Link - Only shown when require approval is enabled */}
+      {momentsEnabled && requireApproval && (
+        <Link
+          href={`/events/${eventSlug}/moderation`}
+          className="w-full flex items-center justify-between p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 transition-all duration-200 animate-in fade-in slide-in-from-top-2 active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-3">
+            <Shield className="w-5 h-5 text-muted-foreground" />
+            <div className="text-left">
+              <p className="text-sm font-medium text-foreground">
+                {tModeration("viewQueue")}
+              </p>
+              {pendingCount > 0 && (
+                <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  {tModeration("pendingCount", { count: pendingCount })}
+                </p>
+              )}
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </Link>
       )}
 
       {/* Save Button */}
