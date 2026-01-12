@@ -115,9 +115,30 @@
   "eventActions": {
     "eventOptions": "Options de l'événement",
     "editEvent": "Modifier l'événement",
+    "eventSettings": "Paramètres de l'événement",
     "deleteEvent": "Supprimer l'événement",
     "deleteConfirm": "Supprimer ?",
     "deleting": "Suppression..."
+  },
+  "eventSettings": {
+    "title": "Paramètres de l'événement",
+    "backToEvent": "Retour à l'événement",
+    "enableMoments": "Activer les Moments",
+    "enableMomentsDescription": "Permettre aux participants de partager photos, vidéos et textes",
+    "whoCanPostTitle": "Qui peut publier ?",
+    "whoCanPost": {
+      "anyone": "Tout le monde",
+      "anyoneDescription": "Tous les visiteurs peuvent publier des moments",
+      "rsvp": "Inscrits uniquement",
+      "rsvpDescription": "Seuls ceux qui ont RSVP peuvent publier",
+      "confirmed": "Confirmés uniquement",
+      "confirmedDescription": "Seuls les participants confirmés peuvent publier"
+    },
+    "requireApproval": "Approbation requise",
+    "requireApprovalDescription": "Vérifier les moments avant qu'ils n'apparaissent publiquement",
+    "saveSettings": "Enregistrer les paramètres",
+    "saving": "Enregistrement...",
+    "saved": "Enregistré !"
   },
   "calendar": {
     "addToCalendar": "Ajouter au calendrier",

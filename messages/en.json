@@ -115,9 +115,30 @@
   "eventActions": {
     "eventOptions": "Event options",
     "editEvent": "Edit event",
+    "eventSettings": "Event settings",
     "deleteEvent": "Delete event",
     "deleteConfirm": "Delete?",
     "deleting": "Deleting..."
+  },
+  "eventSettings": {
+    "title": "Event Settings",
+    "backToEvent": "Back to event",
+    "enableMoments": "Enable Moments",
+    "enableMomentsDescription": "Let attendees share photos, videos, and text",
+    "whoCanPostTitle": "Who can post?",
+    "whoCanPost": {
+      "anyone": "Anyone",
+      "anyoneDescription": "All visitors can post moments",
+      "rsvp": "RSVPed only",
+      "rsvpDescription": "Only people who RSVP'd can post",
+      "confirmed": "Confirmed only",
+      "confirmedDescription": "Only confirmed attendees can post"
+    },
+    "requireApproval": "Require Approval",
+    "requireApprovalDescription": "Review moments before they appear publicly",
+    "saveSettings": "Save Settings",
+    "saving": "Saving...",
+    "saved": "Saved!"
   },
   "calendar": {
     "addToCalendar": "Add to calendar",

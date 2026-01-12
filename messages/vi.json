@@ -115,9 +115,30 @@
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",
     "editEvent": "Chỉnh sửa sự kiện",
+    "eventSettings": "Cài đặt sự kiện",
     "deleteEvent": "Xóa sự kiện",
     "deleteConfirm": "Xóa?",
     "deleting": "Đang xóa..."
+  },
+  "eventSettings": {
+    "title": "Cài đặt sự kiện",
+    "backToEvent": "Quay lại sự kiện",
+    "enableMoments": "Bật Khoảnh khắc",
+    "enableMomentsDescription": "Cho phép người tham gia chia sẻ ảnh, video và văn bản",
+    "whoCanPostTitle": "Ai có thể đăng?",
+    "whoCanPost": {
+      "anyone": "Bất kỳ ai",
+      "anyoneDescription": "Tất cả khách có thể đăng khoảnh khắc",
+      "rsvp": "Chỉ người đã đăng ký",
+      "rsvpDescription": "Chỉ người đã RSVP mới có thể đăng",
+      "confirmed": "Chỉ người đã xác nhận",
+      "confirmedDescription": "Chỉ người đã xác nhận tham gia mới có thể đăng"
+    },
+    "requireApproval": "Yêu cầu duyệt",
+    "requireApprovalDescription": "Xem xét khoảnh khắc trước khi hiển thị công khai",
+    "saveSettings": "Lưu cài đặt",
+    "saving": "Đang lưu...",
+    "saved": "Đã lưu!"
   },
   "calendar": {
     "addToCalendar": "Thêm vào lịch",
