@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import {
   Shield,
@@ -67,36 +68,38 @@ export default async function AdminLayout({
   const isModerator = hasRoleLevel(profile.role, "moderator");
   const isOrganizerVerified = hasRoleLevel(profile.role, "organizer_verified");
 
+  const t = await getTranslations("admin");
+
   // Build nav items based on role
   const navItems = [
-    { href: "/admin", label: "Dashboard", icon: Shield, show: true },
+    { href: "/admin", label: t("navDashboard"), icon: Shield, show: true },
     {
       href: "/admin/organizers",
-      label: "Organizers",
+      label: t("navOrganizers"),
       icon: Building2,
       show: isModerator,
     },
     {
       href: "/admin/festivals",
-      label: "Festivals",
+      label: t("navFestivals"),
       icon: PartyPopper,
       show: isOrganizerVerified,
     },
     {
       href: "/admin/extract",
-      label: "AI Extract",
+      label: t("navAiExtract"),
       icon: Sparkles,
       show: true,
     },
     {
       href: "/admin/verifications",
-      label: "Verifications",
+      label: t("navVerifications"),
       icon: ShieldCheck,
       show: isAdmin,
     },
     {
       href: "/admin/users",
-      label: "Users",
+      label: t("navUsers"),
       icon: Users,
       show: isAdmin,
     },
@@ -118,12 +121,12 @@ export default async function AdminLayout({
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-sm font-medium">
               <Shield className="w-3 h-3" />
               {profile.role === "admin"
-                ? "Admin"
+                ? t("roleAdmin")
                 : profile.role === "moderator"
-                ? "Moderator"
+                ? t("roleModerator")
                 : profile.role === "organizer_verified"
-                ? "Organizer"
-                : "Contributor"}
+                ? t("roleOrganizer")
+                : t("roleContributor")}
             </div>
           </div>
 

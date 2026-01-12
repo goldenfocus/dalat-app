@@ -1,4 +1,5 @@
 import { Link } from "@/lib/i18n/routing";
+import { getTranslations } from "next-intl/server";
 import {
   Building2,
   Sparkles,
@@ -21,6 +22,7 @@ import {
 } from "@/components/admin/analytics";
 
 export default async function AdminDashboard() {
+  const t = await getTranslations("admin");
   const dashboardData = await getFullDashboardData();
   const { overview } = dashboardData;
 
@@ -28,18 +30,18 @@ export default async function AdminDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
         <p className="mt-2 text-muted-foreground">
-          Platform analytics, verification queue, and management tools.
+          {t("dashboardDescription")}
         </p>
       </div>
 
       {/* Summary Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
-          title="Total Users"
+          title={t("totalUsers")}
           value={overview?.users?.total ?? 0}
-          subtitle={`+${overview?.users?.new_this_week ?? 0} this week`}
+          subtitle={`+${overview?.users?.new_this_week ?? 0} ${t("thisWeek")}`}
           icon={<Users className="h-6 w-6 text-primary" />}
           trend={
             overview?.users?.new_this_week
@@ -47,19 +49,19 @@ export default async function AdminDashboard() {
                   value: Math.round(
                     ((overview.users.new_this_week / Math.max(overview.users.total - overview.users.new_this_week, 1)) * 100)
                   ),
-                  label: "vs last week",
+                  label: t("vsLastWeek"),
                 }
               : undefined
           }
         />
         <StatCard
-          title="Connections"
+          title={t("connections")}
           value={dashboardData.sessionStats?.total_logins ?? 0}
-          subtitle={`${dashboardData.sessionStats?.active_today ?? 0} active today`}
+          subtitle={`${dashboardData.sessionStats?.active_today ?? 0} ${t("activeToday")}`}
           icon={<LogIn className="h-6 w-6 text-primary" />}
         />
         <StatCard
-          title="Last Login"
+          title={t("lastLogin")}
           value={
             dashboardData.sessionStats?.last_login_at
               ? new Date(dashboardData.sessionStats.last_login_at).toLocaleTimeString("en-US", {
@@ -74,26 +76,26 @@ export default async function AdminDashboard() {
                   month: "short",
                   day: "numeric",
                 })
-              : "No data"
+              : t("noData") ?? "No data"
           }
           icon={<Clock className="h-6 w-6 text-primary" />}
         />
         <StatCard
-          title="Published Events"
+          title={t("publishedEvents")}
           value={overview?.events?.published ?? 0}
-          subtitle={`${overview?.events?.draft ?? 0} drafts`}
+          subtitle={`${overview?.events?.draft ?? 0} ${t("drafts")}`}
           icon={<Calendar className="h-6 w-6 text-primary" />}
         />
         <StatCard
-          title="Total RSVPs"
+          title={t("totalRsvps")}
           value={overview?.rsvps?.total ?? 0}
-          subtitle={`${overview?.rsvps?.going ?? 0} going`}
+          subtitle={`${overview?.rsvps?.going ?? 0} ${t("goingCount")}`}
           icon={<PartyPopper className="h-6 w-6 text-primary" />}
         />
         <StatCard
-          title="Push Notifications"
+          title={t("pushNotifications")}
           value={overview?.notifications?.users_with_push ?? 0}
-          subtitle="Users with notifications enabled"
+          subtitle={t("usersWithNotifications")}
           icon={<Bell className="h-6 w-6 text-primary" />}
         />
       </div>
@@ -106,11 +108,13 @@ export default async function AdminDashboard() {
               <ShieldCheck className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
               <div>
                 <p className="font-semibold text-yellow-700 dark:text-yellow-300">
-                  {overview.verification_queue.pending} Pending Verification
-                  Request{overview.verification_queue.pending !== 1 ? "s" : ""}
+                  {overview.verification_queue.pending}{" "}
+                  {overview.verification_queue.pending !== 1
+                    ? t("pendingVerifications")
+                    : t("pendingVerification")}
                 </p>
                 <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                  Organizers are waiting for approval
+                  {t("organizersWaiting")}
                 </p>
               </div>
             </div>
@@ -118,7 +122,7 @@ export default async function AdminDashboard() {
               href="/admin/verifications"
               className="rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-600 transition-colors"
             >
-              Review Now
+              {t("reviewNow")}
             </Link>
           </div>
         </div>
@@ -150,13 +154,13 @@ export default async function AdminDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Festivals
+                {t("festivals")}
               </p>
               <p className="text-2xl font-bold">
                 {dashboardData.festivalStats?.total_festivals ?? 0}
               </p>
               <p className="text-xs text-muted-foreground">
-                {dashboardData.festivalStats?.active_festivals ?? 0} active
+                {dashboardData.festivalStats?.active_festivals ?? 0} {t("active")}
               </p>
             </div>
           </div>
@@ -168,13 +172,13 @@ export default async function AdminDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Organizers
+                {t("organizers")}
               </p>
               <p className="text-2xl font-bold">
                 {overview?.organizers?.total ?? 0}
               </p>
               <p className="text-xs text-muted-foreground">
-                {overview?.organizers?.verified ?? 0} verified
+                {overview?.organizers?.verified ?? 0} {t("verified")}
               </p>
             </div>
           </div>
@@ -186,13 +190,13 @@ export default async function AdminDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                AI Extractions
+                {t("aiExtract")}
               </p>
               <p className="text-2xl font-bold">
                 {dashboardData.extractionStats?.total_extractions ?? 0}
               </p>
               <p className="text-xs text-muted-foreground">
-                {dashboardData.extractionStats?.success_rate ?? 0}% success rate
+                {dashboardData.extractionStats?.success_rate ?? 0}% {t("successRate")}
               </p>
             </div>
           </div>
@@ -201,35 +205,35 @@ export default async function AdminDashboard() {
 
       {/* Quick Actions */}
       <div className="rounded-lg border bg-card p-6">
-        <h2 className="mb-4 text-lg font-semibold">Quick Actions</h2>
+        <h2 className="mb-4 text-lg font-semibold">{t("quickActions")}</h2>
         <div className="flex flex-wrap gap-3">
           <Link
             href="/admin/organizers/new"
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Building2 className="h-4 w-4" />
-            Add Organizer
+            {t("addOrganizer")}
           </Link>
           <Link
             href="/admin/extract"
             className="inline-flex items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
           >
             <Sparkles className="h-4 w-4" />
-            Extract from Poster
+            {t("extractFromPoster")}
           </Link>
           <Link
             href="/admin/festivals/new"
             className="inline-flex items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
           >
             <PartyPopper className="h-4 w-4" />
-            Create Festival
+            {t("createFestival")}
           </Link>
           <Link
             href="/admin/verifications"
             className="inline-flex items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
           >
             <ShieldCheck className="h-4 w-4" />
-            Review Verifications
+            {t("reviewVerifications")}
           </Link>
         </div>
       </div>
