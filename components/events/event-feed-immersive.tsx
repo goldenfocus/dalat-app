@@ -61,10 +61,12 @@ async function getEventCounts(eventIds: string[]) {
 
 function FloatingTabs({
   activeTab,
-  lifecycleCounts
+  lifecycleCounts,
+  labels
 }: {
   activeTab: EventLifecycle;
   lifecycleCounts?: { upcoming: number; happening: number; past: number };
+  labels: { upcoming: string; happening: string; past: string };
 }) {
   return (
     <Suspense fallback={null}>
@@ -74,6 +76,7 @@ function FloatingTabs({
         useUrlNavigation
         counts={lifecycleCounts}
         hideEmptyTabs={!!lifecycleCounts}
+        labels={labels}
       />
     </Suspense>
   );
@@ -88,6 +91,12 @@ export async function EventFeedImmersive({
   const counts = await getEventCounts(eventIds);
   const t = await getTranslations("home");
 
+  const tabLabels = {
+    upcoming: t("tabs.upcoming"),
+    happening: t("tabs.happening"),
+    past: t("tabs.past"),
+  };
+
   if (events.length === 0) {
     const emptyMessage =
       lifecycle === "happening"
@@ -100,7 +109,7 @@ export async function EventFeedImmersive({
       <div className="h-[100dvh] flex flex-col bg-black text-white">
         {/* Floating tabs */}
         <div className="absolute top-14 left-0 right-0 z-40 px-3">
-          <FloatingTabs activeTab={lifecycle} lifecycleCounts={lifecycleCounts} />
+          <FloatingTabs activeTab={lifecycle} lifecycleCounts={lifecycleCounts} labels={tabLabels} />
         </div>
 
         <div className="flex-1 flex items-center justify-center">
@@ -108,7 +117,7 @@ export async function EventFeedImmersive({
             <p className="text-lg mb-2">{emptyMessage}</p>
             {lifecycle === "upcoming" && (
               <p className="text-white/60 text-sm">
-                Be the first to create an event in Da Lat!
+                {t("createFirst")}
               </p>
             )}
           </div>
@@ -121,7 +130,7 @@ export async function EventFeedImmersive({
     <div className="h-[100dvh] relative">
       {/* Floating tabs below the header */}
       <div className="absolute top-14 left-0 right-0 z-40 px-3">
-        <FloatingTabs activeTab={lifecycle} lifecycleCounts={lifecycleCounts} />
+        <FloatingTabs activeTab={lifecycle} lifecycleCounts={lifecycleCounts} labels={tabLabels} />
       </div>
 
       {/* Scrollable event cards */}

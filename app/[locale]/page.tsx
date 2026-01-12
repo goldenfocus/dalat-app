@@ -119,10 +119,12 @@ async function EventsFeed({ lifecycle }: { lifecycle: EventLifecycle }) {
 
 function DesktopTabs({
   activeTab,
-  lifecycleCounts
+  lifecycleCounts,
+  labels
 }: {
   activeTab: EventLifecycle;
   lifecycleCounts: { upcoming: number; happening: number; past: number };
+  labels: { upcoming: string; happening: string; past: string };
 }) {
   return (
     <Suspense fallback={<div className="h-10 bg-muted rounded-lg animate-pulse" />}>
@@ -131,6 +133,7 @@ function DesktopTabs({
         useUrlNavigation
         counts={lifecycleCounts}
         hideEmptyTabs
+        labels={labels}
       />
     </Suspense>
   );
@@ -213,7 +216,15 @@ export default async function Home({ searchParams }: PageProps) {
 
           {/* Tabs */}
           <div className="mb-6">
-            <DesktopTabs activeTab={activeTab} lifecycleCounts={lifecycleCounts} />
+            <DesktopTabs
+              activeTab={activeTab}
+              lifecycleCounts={lifecycleCounts}
+              labels={{
+                upcoming: t("tabs.upcoming"),
+                happening: t("tabs.happening"),
+                past: t("tabs.past"),
+              }}
+            />
           </div>
 
           <Suspense
