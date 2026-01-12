@@ -122,7 +122,6 @@ export default async function MomentPage({ params }: PageProps) {
                 controls
                 playsInline
                 autoPlay
-                muted
                 loop
               />
             ) : (

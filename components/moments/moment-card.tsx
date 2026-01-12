@@ -4,6 +4,7 @@ import { Link } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { LikeButton } from "./like-button";
+import { Play } from "lucide-react";
 import type { MomentWithProfile } from "@/lib/types";
 
 interface MomentCardProps {
@@ -24,13 +25,21 @@ export function MomentCard({ moment, likeStatus }: MomentCardProps) {
         {/* Media content */}
         {moment.content_type !== "text" && moment.media_url && (
           isVideo ? (
-            <video
-              src={moment.media_url}
-              className="w-full h-full object-cover"
-              muted
-              loop
-              playsInline
-            />
+            <>
+              <video
+                src={moment.media_url}
+                className="w-full h-full object-cover"
+                muted
+                loop
+                playsInline
+              />
+              {/* Play button overlay for videos */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
+                  <Play className="w-6 h-6 text-white fill-white ml-0.5" />
+                </div>
+              </div>
+            </>
           ) : (
             <img
               src={moment.media_url}
