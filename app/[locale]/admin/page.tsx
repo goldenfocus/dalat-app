@@ -76,7 +76,7 @@ export default async function AdminDashboard() {
                   month: "short",
                   day: "numeric",
                 })
-              : t("noData") ?? "No data"
+              : t("noData")
           }
           icon={<Clock className="h-6 w-6 text-primary" />}
         />

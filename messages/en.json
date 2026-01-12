@@ -287,7 +287,8 @@
     "roleAdmin": "Admin",
     "roleModerator": "Moderator",
     "roleOrganizer": "Organizer",
-    "roleContributor": "Contributor"
+    "roleContributor": "Contributor",
+    "noData": "No data"
   },
   "extraction": {
     "title": "AI Event Extraction",

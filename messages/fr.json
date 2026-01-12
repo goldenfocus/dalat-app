@@ -287,7 +287,8 @@
     "roleAdmin": "Admin",
     "roleModerator": "Modérateur",
     "roleOrganizer": "Organisateur",
-    "roleContributor": "Contributeur"
+    "roleContributor": "Contributeur",
+    "noData": "Aucune donnée"
   },
   "extraction": {
     "title": "Extraction d'événements par IA",

@@ -287,7 +287,8 @@
     "roleAdmin": "Quản trị viên",
     "roleModerator": "Điều hành viên",
     "roleOrganizer": "Tổ chức",
-    "roleContributor": "Đóng góp viên"
+    "roleContributor": "Đóng góp viên",
+    "noData": "Không có dữ liệu"
   },
   "extraction": {
     "title": "Trích xuất sự kiện bằng AI",
