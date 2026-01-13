@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { EmailAuthForm } from "./email-auth-form";
 
 export function GoogleButton() {
   const t = useTranslations("auth");
@@ -65,10 +66,27 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-export function OAuthButtons() {
+function Divider({ text }: { text: string }) {
   return (
-    <div className="space-y-3">
+    <div className="relative my-6">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t" />
+      </div>
+      <div className="relative flex justify-center text-xs uppercase">
+        <span className="bg-card px-2 text-muted-foreground">{text}</span>
+      </div>
+    </div>
+  );
+}
+
+export function OAuthButtons() {
+  const t = useTranslations("auth");
+
+  return (
+    <div>
       <GoogleButton />
+      <Divider text={t("orContinueWith")} />
+      <EmailAuthForm />
     </div>
   );
 }
