@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Link } from "@/lib/i18n/routing";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { AuthButton } from "@/components/auth-button";
@@ -8,12 +8,13 @@ import { LocalePicker } from "@/components/locale-picker";
 import { EventCard } from "@/components/events/event-card";
 import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
+import { EventSearchBar } from "@/components/events/event-search-bar";
 import { PastContentFeed } from "@/components/feed";
 import { Button } from "@/components/ui/button";
 import type { Event, EventCounts } from "@/lib/types";
 
 type PageProps = {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string }>;
 };
 
 function parseLifecycle(tab: string | undefined): EventLifecycle {
@@ -21,8 +22,25 @@ function parseLifecycle(tab: string | undefined): EventLifecycle {
   return "upcoming";
 }
 
-async function getEventsByLifecycle(lifecycle: EventLifecycle) {
+async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: string) {
   const supabase = await createClient();
+
+  // Use search RPC if there's a query, otherwise use lifecycle RPC
+  if (searchQuery && searchQuery.trim()) {
+    const { data: events, error } = await supabase
+      .rpc("search_events", {
+        p_query: searchQuery.trim(),
+        p_lifecycle: lifecycle,
+        p_limit: 20,
+      });
+
+    if (error) {
+      console.error("Error searching events:", error);
+      return [];
+    }
+
+    return events as Event[];
+  }
 
   const { data: events, error } = await supabase
     .rpc("get_events_by_lifecycle", {
@@ -84,15 +102,23 @@ async function getLifecycleCounts() {
   };
 }
 
-async function EventsFeed({ lifecycle }: { lifecycle: EventLifecycle }) {
-  const events = await getEventsByLifecycle(lifecycle);
+async function EventsFeed({
+  lifecycle,
+  searchQuery,
+}: {
+  lifecycle: EventLifecycle;
+  searchQuery?: string;
+}) {
+  const events = await getEventsByLifecycle(lifecycle, searchQuery);
   const eventIds = events.map((e) => e.id);
   const counts = await getEventCounts(eventIds);
   const t = await getTranslations("home");
 
   if (events.length === 0) {
-    const emptyMessage =
-      lifecycle === "happening"
+    // Different message for search vs no results
+    const emptyMessage = searchQuery
+      ? t("search.noResults", { query: searchQuery })
+      : lifecycle === "happening"
         ? t("noHappening")
         : lifecycle === "past"
           ? t("noPast")
@@ -101,9 +127,14 @@ async function EventsFeed({ lifecycle }: { lifecycle: EventLifecycle }) {
     return (
       <div className="text-center py-12 text-muted-foreground">
         <p className="mb-4">{emptyMessage}</p>
-        {lifecycle === "upcoming" && (
+        {lifecycle === "upcoming" && !searchQuery && (
           <Link href="/events/new" prefetch={false}>
             <Button>{t("createFirst")}</Button>
+          </Link>
+        )}
+        {searchQuery && (
+          <Link href="/">
+            <Button variant="outline">{t("search.clearSearch")}</Button>
           </Link>
         )}
       </div>
@@ -144,6 +175,7 @@ function DesktopTabs({
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
   const activeTab = parseLifecycle(params.tab);
+  const searchQuery = params.q ?? "";
   const [t, tNav, lifecycleCounts] = await Promise.all([
     getTranslations("home"),
     getTranslations("nav"),
@@ -218,8 +250,15 @@ export default async function Home({ searchParams }: PageProps) {
         {/* Main content */}
         <div className="flex-1 container max-w-4xl mx-auto px-4 py-8">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
-            <p className="text-muted-foreground">{t("subtitle")}</p>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
+                <p className="text-muted-foreground">{t("subtitle")}</p>
+              </div>
+              <Suspense fallback={null}>
+                <EventSearchBar className="w-64 flex-shrink-0" />
+              </Suspense>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -254,7 +293,7 @@ export default async function Home({ searchParams }: PageProps) {
               </div>
             }
           >
-            <EventsFeed lifecycle={activeTab} />
+            <EventsFeed lifecycle={activeTab} searchQuery={searchQuery} />
           </Suspense>
         </div>
       </main>

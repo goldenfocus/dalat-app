@@ -11,6 +11,7 @@ import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/transla
 import type { Profile, Event, ContentLocale, Locale } from "@/lib/types";
 import { generateProfileMetadata } from "@/lib/metadata";
 import { JsonLd, generatePersonSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
+import { ClaimProfileBanner, GhostProfileBadge } from "@/components/profile/claim-profile-banner";
 
 interface PageProps {
   params: Promise<{ username: string; locale: string }>;
@@ -59,6 +60,19 @@ async function isCurrentUser(profileId: string): Promise<boolean> {
     data: { user },
   } = await supabase.auth.getUser();
   return user?.id === profileId;
+}
+
+async function isUserLoggedIn(): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return !!user;
+}
+
+function isGhostProfile(bio: string | null): boolean {
+  if (!bio) return false;
+  return bio.includes("auto-created from Facebook Events");
 }
 
 interface BioTranslations {
@@ -143,11 +157,17 @@ export default async function ProfilePage({ params }: PageProps) {
     getTranslations("common"),
   ]);
 
-  const [events, isOwner, bioTranslations] = await Promise.all([
+  const [events, isOwner, isLoggedIn, bioTranslations] = await Promise.all([
     getUserEvents(profile.id),
     isCurrentUser(profile.id),
+    isUserLoggedIn(),
     getBioTranslations(profile.id, profile.bio, profile.bio_source_locale, locale),
   ]);
+
+  // Check if this is a ghost profile (auto-created from Facebook import)
+  const isGhost = isGhostProfile(profile.bio);
+  // Show claim banner to logged-in users who don't own this ghost profile
+  const showClaimBanner = isGhost && isLoggedIn && !isOwner;
 
   const upcomingEvents = events.filter(
     (e) => new Date(e.starts_at) > new Date()
@@ -184,6 +204,15 @@ export default async function ProfilePage({ params }: PageProps) {
       </nav>
 
       <div className="container max-w-4xl mx-auto px-4 py-8">
+        {/* Claim profile banner for ghost profiles */}
+        {showClaimBanner && (
+          <ClaimProfileBanner
+            ghostProfileId={profile.id}
+            ghostDisplayName={profile.display_name || profile.username || t("anonymous")}
+            eventCount={events.length}
+          />
+        )}
+
         {/* Profile header */}
         <div className="flex items-start gap-6 mb-8">
           {profile.avatar_url ? (
@@ -196,9 +225,12 @@ export default async function ProfilePage({ params }: PageProps) {
             <div className="w-24 h-24 rounded-full bg-primary/20" />
           )}
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">
-              {profile.display_name || profile.username || tCommon("anonymous")}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold">
+                {profile.display_name || profile.username || tCommon("anonymous")}
+              </h1>
+              {isGhost && <GhostProfileBadge />}
+            </div>
             {profile.username && (
               <p className="text-muted-foreground">@{profile.username}</p>
             )}

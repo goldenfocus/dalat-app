@@ -9,6 +9,7 @@ import { formatInDaLat } from "@/lib/timezone";
 import type { Organizer, Event, Locale } from "@/lib/types";
 import { generateOrganizerMetadata } from "@/lib/metadata";
 import { JsonLd, generateOrganizationSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
+import { ClaimOrganizerBanner, UnclaimedOrganizerBadge } from "@/components/organizers/claim-organizer-banner";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -33,6 +34,14 @@ async function getOrganizerEvents(organizerId: string): Promise<Event[]> {
     .eq("status", "published")
     .order("starts_at", { ascending: true });
   return data ?? [];
+}
+
+async function isUserLoggedIn(): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return !!user;
 }
 
 // Generate SEO metadata for organizer pages
@@ -61,7 +70,15 @@ export default async function OrganizerPage({ params }: PageProps) {
     notFound();
   }
 
-  const events = await getOrganizerEvents(organizer.id);
+  const [events, isLoggedIn] = await Promise.all([
+    getOrganizerEvents(organizer.id),
+    isUserLoggedIn(),
+  ]);
+
+  // Check if organizer is unclaimed (no owner)
+  const isUnclaimed = !organizer.owner_id;
+  // Show claim banner to logged-in users for unclaimed organizers
+  const showClaimBanner = isUnclaimed && isLoggedIn && !organizer.is_verified;
 
   // Split into upcoming and past
   const now = new Date();
@@ -97,6 +114,15 @@ export default async function OrganizerPage({ params }: PageProps) {
       </nav>
 
       <div className="container max-w-4xl mx-auto px-4 py-8">
+        {/* Claim organizer banner for unclaimed organizers */}
+        {showClaimBanner && (
+          <ClaimOrganizerBanner
+            organizerSlug={organizer.slug}
+            organizerName={organizer.name}
+            eventCount={events.length}
+          />
+        )}
+
         {/* Organizer header */}
         <div className="flex items-start gap-6 mb-8">
           {organizer.logo_url ? (
@@ -113,10 +139,13 @@ export default async function OrganizerPage({ params }: PageProps) {
             </div>
           )}
           <div className="flex-1">
-            <h1 className="text-3xl font-bold flex items-center gap-2">
+            <h1 className="text-3xl font-bold flex items-center gap-2 flex-wrap">
               {organizer.name}
               {organizer.is_verified && (
                 <BadgeCheck className="w-6 h-6 text-primary" />
+              )}
+              {isUnclaimed && !organizer.is_verified && (
+                <UnclaimedOrganizerBadge />
               )}
             </h1>
             {organizer.description && (
