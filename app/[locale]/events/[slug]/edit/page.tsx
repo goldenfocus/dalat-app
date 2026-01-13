@@ -3,7 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { EventForm } from "@/components/events/event-form";
-import type { Event, Sponsor, EventSponsor } from "@/lib/types";
+import type { Event, Sponsor, EventSponsor, UserRole } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -32,8 +32,17 @@ export default async function EditEventPage({ params }: PageProps) {
     notFound();
   }
 
-  // Check if user is the creator
-  if (event.created_by !== user.id) {
+  // Check if user is the creator or an admin
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const isCreator = event.created_by === user.id;
+  const isAdmin = (profile?.role as UserRole) === "admin";
+
+  if (!isCreator && !isAdmin) {
     redirect(`/events/${slug}`);
   }
 
