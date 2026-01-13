@@ -34,3 +34,49 @@ For icon-only buttons, use `p-2 -ml-2` instead.
 2. Add `active:` states for immediate touch feedback on mobile
 3. Use negative margins to maintain visual alignment when adding padding
 4. Test on actual mobile devices - hover states don't help there
+
+## AI-Enhanced Text Input
+
+Use `AIEnhanceTextarea` for any text field where users write content that could benefit from AI polishing (descriptions, bios, posts, etc.). A sparkles button appears when there's text - clicking it sends the text to Claude for enhancement.
+
+### Usage
+
+```tsx
+import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
+
+// Basic - sparkles button appears when user types
+<AIEnhanceTextarea name="description" rows={3} />
+
+// With context hint (helps AI understand what to optimize for)
+<AIEnhanceTextarea
+  name="bio"
+  context="a user profile bio"
+  defaultValue={user.bio}
+/>
+
+// Controlled mode
+<AIEnhanceTextarea
+  value={text}
+  onChange={setText}
+  context="a social media post"
+/>
+```
+
+### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `context` | `string` | Hint for AI (e.g., "an event description", "a casual bio") |
+| `hideEnhance` | `boolean` | Hide the sparkles button |
+| `value` / `onChange` | controlled | For controlled components |
+| `defaultValue` | `string` | For uncontrolled components |
+| ...rest | textarea props | All standard textarea props supported |
+
+### API
+
+The component calls `POST /api/enhance-text` with:
+```json
+{ "text": "user's text", "context": "optional context hint" }
+```
+
+Returns: `{ "enhanced": "improved text" }`

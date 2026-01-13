@@ -13,6 +13,7 @@ import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
 import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
+import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
@@ -470,12 +471,12 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
           {/* Info */}
           <div className="space-y-2">
             <Label htmlFor="description">Info</Label>
-            <textarea
+            <AIEnhanceTextarea
               id="description"
               name="description"
               defaultValue={event?.description ?? ""}
               rows={3}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              context="an event description for a local community event in Da Lat, Vietnam"
             />
           </div>
 
