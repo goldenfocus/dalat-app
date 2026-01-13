@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
-import { SponsorForm } from "@/components/events/sponsor-form";
+import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
@@ -78,6 +78,9 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
   const [selectedDate, setSelectedDate] = useState<Date | null>(
     event?.starts_at ? new Date(event.starts_at) : null
   );
+
+  // Draft sponsors state (for new events)
+  const [draftSponsors, setDraftSponsors] = useState<DraftSponsor[]>([]);
 
   // Check slug availability with debounce
   useEffect(() => {
@@ -294,6 +297,11 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
             return;
           }
 
+          // Create sponsors for the new event
+          if (draftSponsors.length > 0) {
+            await createSponsorsForEvent(data.id, draftSponsors);
+          }
+
           router.push(`/events/${data.slug}`);
         }
       }
@@ -464,16 +472,21 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
             </p>
           </div>
 
-          {/* Sponsors (only when editing) */}
-          {isEditing && event && (
-            <div className="pt-4 border-t">
+          {/* Sponsors */}
+          <div className="pt-4 border-t">
+            {isEditing && event ? (
               <SponsorForm
                 eventId={event.id}
                 initialSponsors={initialSponsors}
                 onChange={() => {}}
               />
-            </div>
-          )}
+            ) : (
+              <SponsorForm
+                draftSponsors={draftSponsors}
+                onDraftChange={setDraftSponsors}
+              />
+            )}
+          </div>
 
           {error && (
             <p className="text-sm text-red-500">{error}</p>
