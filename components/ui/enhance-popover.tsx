@@ -2,16 +2,45 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { Sparkles, Wand2, X, Loader2 } from "lucide-react";
+import { Sparkles, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCustomEnhanceChips } from "@/lib/hooks/use-custom-enhance-chips";
 
-// Default enhancement directions
+// Animation phrases that cycle during enhancement
+const ANIMATION_PHRASES = [
+  "Polishing your words",
+  "Refining the prose",
+  "Adding some sparkle",
+  "Making it shine",
+  "Crafting the perfect tone",
+];
+
+// Default enhancement directions with SPECIFIC, ACTIONABLE prompts
 const DEFAULT_CHIPS = [
-  { id: "fun", label: "More fun", direction: "Make it more fun and playful" },
-  { id: "formal", label: "Formal", direction: "Make it more formal and professional" },
-  { id: "shorter", label: "Shorter", direction: "Make it more concise" },
-  { id: "detailed", label: "Detailed", direction: "Add more detail and depth" },
+  {
+    id: "fun",
+    label: "More fun",
+    direction:
+      "Rewrite to be playful and conversational. Use shorter sentences, casual language, and inject personality. Add warmth and a touch of humor where it fits naturally.",
+  },
+  {
+    id: "formal",
+    label: "Formal",
+    direction:
+      "Rewrite in a polished, professional tone. Use precise vocabulary, complete sentences, and maintain a respectful, business-appropriate style. Remove casual expressions.",
+  },
+  {
+    id: "shorter",
+    label: "Shorter",
+    direction:
+      "Cut this to roughly half the length. Remove filler words, combine redundant points, and tighten every sentence. Keep only the essential message.",
+  },
+  {
+    id: "detailed",
+    label: "Detailed",
+    direction:
+      "Expand with vivid details and descriptive language. Add depth, context, and richness. Roughly double the length while keeping the core message clear.",
+  },
 ];
 
 interface EnhancePopoverProps {
@@ -29,25 +58,35 @@ export function EnhancePopover({
   isEnhancing,
   triggerRef,
 }: EnhancePopoverProps) {
-  const [selectedChip, setSelectedChip] = React.useState<string | null>(null);
-  const [customDirection, setCustomDirection] = React.useState("");
+  const [selectedChipId, setSelectedChipId] = React.useState<string | null>(null);
+  const [editablePrompt, setEditablePrompt] = React.useState("");
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
+  const [animationPhrase, setAnimationPhrase] = React.useState(ANIMATION_PHRASES[0]);
   const popoverRef = React.useRef<HTMLDivElement>(null);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const { chips: customChips, addOrUpdateChip, removeChip } = useCustomEnhanceChips();
+
+  // Cycle animation phrases while enhancing
+  React.useEffect(() => {
+    if (!isEnhancing) return;
+    let index = 0;
+    const interval = setInterval(() => {
+      index = (index + 1) % ANIMATION_PHRASES.length;
+      setAnimationPhrase(ANIMATION_PHRASES[index]);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [isEnhancing]);
 
   // Calculate position relative to trigger
   React.useEffect(() => {
     if (isOpen && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const popoverWidth = 280;
+      const popoverWidth = 320;
       const padding = 8;
 
-      // Position above and to the left of the trigger
       let left = rect.right - popoverWidth;
       const top = rect.top - padding;
 
-      // Keep within viewport
       if (left < padding) left = padding;
       if (left + popoverWidth > window.innerWidth - padding) {
         left = window.innerWidth - popoverWidth - padding;
@@ -87,10 +126,24 @@ export function EnhancePopover({
   // Reset state when closing
   React.useEffect(() => {
     if (!isOpen) {
-      setSelectedChip(null);
-      setCustomDirection("");
+      setSelectedChipId(null);
+      setEditablePrompt("");
     }
   }, [isOpen]);
+
+  // When a chip is selected, populate the editable prompt
+  const handleChipClick = (chipId: string, direction: string) => {
+    if (selectedChipId === chipId) {
+      // Deselect
+      setSelectedChipId(null);
+      setEditablePrompt("");
+    } else {
+      setSelectedChipId(chipId);
+      setEditablePrompt(direction);
+      // Focus the textarea after a brief delay for the UI to update
+      setTimeout(() => textareaRef.current?.focus(), 50);
+    }
+  };
 
   const handleQuickEnhance = async () => {
     await onEnhance();
@@ -98,33 +151,20 @@ export function EnhancePopover({
   };
 
   const handleDirectedEnhance = async () => {
-    const direction = customDirection.trim() ||
-      DEFAULT_CHIPS.find(c => c.id === selectedChip)?.direction ||
-      customChips.find(c => c.id === selectedChip)?.direction;
+    const prompt = editablePrompt.trim();
+    if (!prompt) return;
 
-    if (direction) {
-      // Save custom directions for future use
-      if (customDirection.trim()) {
-        addOrUpdateChip(customDirection.trim());
-      }
-      await onEnhance(direction);
-      onClose();
+    // Save custom prompts (if it's not a default chip's exact text)
+    const isDefaultPrompt = DEFAULT_CHIPS.some((c) => c.direction === prompt);
+    if (!isDefaultPrompt) {
+      addOrUpdateChip(prompt);
     }
+
+    await onEnhance(prompt);
+    onClose();
   };
 
-  const handleChipClick = (chipId: string) => {
-    setSelectedChip(chipId === selectedChip ? null : chipId);
-    setCustomDirection(""); // Clear custom input when selecting preset
-  };
-
-  const handleCustomInputChange = (value: string) => {
-    setCustomDirection(value);
-    if (value.trim()) {
-      setSelectedChip(null); // Clear chip selection when typing custom
-    }
-  };
-
-  const canApply = selectedChip || customDirection.trim();
+  const canApply = editablePrompt.trim().length > 0;
 
   if (!isOpen) return null;
 
@@ -138,14 +178,11 @@ export function EnhancePopover({
         transform: "translateY(-100%)",
       }}
       className={cn(
-        "z-50 w-[280px] rounded-xl p-3",
-        // Glass morphism effect
-        "bg-popover/95 backdrop-blur-xl",
-        "border border-border/50",
-        "shadow-xl shadow-black/20",
-        // Animation
-        "animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2",
-        "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+        "z-50 w-[320px] rounded-xl p-3",
+        "bg-popover backdrop-blur-sm",
+        "border border-border",
+        "shadow-lg",
+        "animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200"
       )}
     >
       {/* Quick Enhance Option */}
@@ -155,46 +192,45 @@ export function EnhancePopover({
         disabled={isEnhancing}
         className={cn(
           "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg",
-          "text-left transition-all",
-          "hover:bg-accent active:scale-[0.98]",
+          "text-left transition-colors",
+          "hover:bg-accent active:bg-accent/80",
           "disabled:opacity-50 disabled:cursor-not-allowed"
         )}
       >
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20">
-          <Sparkles className="w-4 h-4 text-violet-400" />
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-secondary">
+          <Sparkles className="w-4 h-4 text-foreground" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium">Enhance</div>
           <div className="text-xs text-muted-foreground">Auto-improve your text</div>
         </div>
-        {isEnhancing && <Loader2 className="w-4 h-4 animate-spin" />}
       </button>
 
       {/* Divider */}
-      <div className="my-2 h-px bg-border/50" />
+      <div className="my-2 h-px bg-border" />
 
       {/* Directed Enhancement */}
       <div className="px-1">
         <div className="flex items-center gap-2 px-2 mb-2">
-          <Wand2 className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs font-medium text-muted-foreground">Guide the magic</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            Or guide the enhancement
+          </span>
         </div>
 
         {/* Chips Grid */}
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {/* Default chips */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
           {DEFAULT_CHIPS.map((chip) => (
             <button
               key={chip.id}
               type="button"
-              onClick={() => handleChipClick(chip.id)}
+              onClick={() => handleChipClick(chip.id, chip.direction)}
               disabled={isEnhancing}
               className={cn(
-                "px-2.5 py-1.5 text-xs rounded-full transition-all",
-                "border active:scale-95",
-                selectedChip === chip.id
-                  ? "bg-violet-500/20 border-violet-500/50 text-violet-300"
-                  : "bg-muted/50 border-transparent hover:bg-muted text-muted-foreground hover:text-foreground"
+                "px-2.5 py-1.5 text-xs rounded-full transition-colors",
+                "border",
+                selectedChipId === chip.id
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-secondary border-border hover:bg-accent text-muted-foreground hover:text-foreground"
               )}
             >
               {chip.label}
@@ -204,19 +240,19 @@ export function EnhancePopover({
 
         {/* Custom chips from user */}
         {customChips.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-2">
+          <div className="flex flex-wrap gap-1.5 mb-3">
             {customChips.map((chip) => (
               <div key={chip.id} className="relative group">
                 <button
                   type="button"
-                  onClick={() => handleChipClick(chip.id)}
+                  onClick={() => handleChipClick(chip.id, chip.direction)}
                   disabled={isEnhancing}
                   className={cn(
-                    "px-2.5 py-1.5 text-xs rounded-full transition-all",
-                    "border active:scale-95 pr-6",
-                    selectedChip === chip.id
-                      ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
-                      : "bg-muted/30 border-border/30 hover:bg-muted/50 text-muted-foreground hover:text-foreground"
+                    "px-2.5 py-1.5 text-xs rounded-full transition-colors",
+                    "border pr-6",
+                    selectedChipId === chip.id
+                      ? "bg-foreground text-background border-foreground"
+                      : "bg-muted/50 border-border/50 hover:bg-muted text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {chip.label}
@@ -226,8 +262,12 @@ export function EnhancePopover({
                   onClick={(e) => {
                     e.stopPropagation();
                     removeChip(chip.id);
+                    if (selectedChipId === chip.id) {
+                      setSelectedChipId(null);
+                      setEditablePrompt("");
+                    }
                   }}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-muted-foreground/20 transition-opacity"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-background/20 transition-opacity"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -236,28 +276,43 @@ export function EnhancePopover({
           </div>
         )}
 
-        {/* Custom Input */}
+        {/* Editable Prompt Preview */}
         <div className="relative">
-          <input
-            ref={inputRef}
-            type="text"
-            value={customDirection}
-            onChange={(e) => handleCustomInputChange(e.target.value)}
+          <textarea
+            ref={textareaRef}
+            value={editablePrompt}
+            onChange={(e) => {
+              setEditablePrompt(e.target.value);
+              // Clear chip selection when manually editing
+              if (selectedChipId) {
+                const selectedChip =
+                  DEFAULT_CHIPS.find((c) => c.id === selectedChipId) ||
+                  customChips.find((c) => c.id === selectedChipId);
+                if (selectedChip && e.target.value !== selectedChip.direction) {
+                  setSelectedChipId(null);
+                }
+              }
+            }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && canApply && !isEnhancing) {
+              if (e.key === "Enter" && e.metaKey && canApply && !isEnhancing) {
+                e.preventDefault();
                 handleDirectedEnhance();
               }
             }}
-            placeholder="Or describe what you want..."
+            placeholder="Click a chip or describe what you want..."
             disabled={isEnhancing}
+            rows={3}
             className={cn(
-              "w-full px-3 py-2 text-sm rounded-lg",
-              "bg-muted/30 border border-border/30",
+              "w-full px-3 py-2 text-sm rounded-lg resize-none",
+              "bg-secondary/50 border border-border",
               "placeholder:text-muted-foreground/50",
-              "focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50",
+              "focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring",
               "disabled:opacity-50"
             )}
           />
+          <div className="absolute bottom-2 right-2 text-[10px] text-muted-foreground/50">
+            ⌘ Enter
+          </div>
         </div>
 
         {/* Apply Button */}
@@ -266,17 +321,17 @@ export function EnhancePopover({
           onClick={handleDirectedEnhance}
           disabled={!canApply || isEnhancing}
           className={cn(
-            "w-full mt-2 px-3 py-2 text-sm font-medium rounded-lg",
-            "transition-all active:scale-[0.98]",
+            "w-full mt-2 px-3 py-2.5 text-sm font-medium rounded-lg",
+            "transition-colors",
             canApply
-              ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white hover:from-violet-500 hover:to-fuchsia-500"
+              ? "bg-primary text-primary-foreground hover:bg-primary/90"
               : "bg-muted text-muted-foreground cursor-not-allowed"
           )}
         >
           {isEnhancing ? (
             <span className="flex items-center justify-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Enhancing...
+              <span className="animate-pulse">{animationPhrase}...</span>
             </span>
           ) : (
             "Apply"
@@ -286,7 +341,6 @@ export function EnhancePopover({
     </div>
   );
 
-  // Use portal to render at document root
   if (typeof window === "undefined") return null;
   return createPortal(content, document.body);
 }

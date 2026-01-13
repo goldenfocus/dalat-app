@@ -108,7 +108,7 @@ const AIEnhanceTextarea = React.forwardRef<
                 "absolute bottom-2 right-2 p-1.5 rounded-md transition-all",
                 "text-muted-foreground hover:text-foreground hover:bg-muted",
                 "active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed",
-                isPopoverOpen && "text-violet-400 bg-violet-500/10",
+                isPopoverOpen && "text-foreground bg-accent",
                 isEnhancing && "animate-pulse"
               )}
               title="Enhance with AI"
