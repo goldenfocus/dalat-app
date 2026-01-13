@@ -631,5 +631,29 @@
     "viewEvent": "Xem sự kiện",
     "share": "Chia sẻ",
     "shareSuccess": "Đã sao chép liên kết!"
+  },
+  "organizerPortal": {
+    "title": "Cổng Người Tổ Chức",
+    "dashboard": "Bảng điều khiển",
+    "festivals": "Lễ hội",
+    "events": "Sự kiện",
+    "profile": "Hồ sơ",
+    "organizer": "Người tổ chức",
+    "noOrganizerLinked": "Chưa có hồ sơ người tổ chức nào được liên kết với tài khoản của bạn",
+    "contactAdmin": "Liên hệ hỗ trợ để liên kết hồ sơ người tổ chức của bạn",
+    "myEvents": "Sự kiện của tôi",
+    "myFestivals": "Lễ hội của tôi",
+    "totalRsvps": "Tổng RSVP",
+    "upcomingEvents": "Sự kiện sắp tới",
+    "noEventsYet": "Chưa có sự kiện nào",
+    "noFestivalsYet": "Chưa có lễ hội nào",
+    "createFirstEvent": "Tạo sự kiện đầu tiên của bạn",
+    "createFirstFestival": "Tạo lễ hội đầu tiên của bạn",
+    "recentActivity": "Hoạt động gần đây",
+    "quickActions": "Thao tác nhanh",
+    "createEvent": "Tạo sự kiện",
+    "createFestival": "Tạo lễ hội",
+    "viewAllEvents": "Xem tất cả sự kiện",
+    "viewAllFestivals": "Xem tất cả lễ hội"
   }
 }

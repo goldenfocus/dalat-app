@@ -631,5 +631,29 @@
     "viewEvent": "Voir l'événement",
     "share": "Partager",
     "shareSuccess": "Lien copié !"
+  },
+  "organizerPortal": {
+    "title": "Portail Organisateur",
+    "dashboard": "Tableau de bord",
+    "festivals": "Festivals",
+    "events": "Événements",
+    "profile": "Profil",
+    "organizer": "Organisateur",
+    "noOrganizerLinked": "Aucun profil d'organisateur lié à votre compte",
+    "contactAdmin": "Contactez le support pour lier votre profil d'organisateur",
+    "myEvents": "Mes événements",
+    "myFestivals": "Mes festivals",
+    "totalRsvps": "Total RSVPs",
+    "upcomingEvents": "Événements à venir",
+    "noEventsYet": "Pas encore d'événements",
+    "noFestivalsYet": "Pas encore de festivals",
+    "createFirstEvent": "Créer votre premier événement",
+    "createFirstFestival": "Créer votre premier festival",
+    "recentActivity": "Activité récente",
+    "quickActions": "Actions rapides",
+    "createEvent": "Créer un événement",
+    "createFestival": "Créer un festival",
+    "viewAllEvents": "Voir tous les événements",
+    "viewAllFestivals": "Voir tous les festivals"
   }
 }
