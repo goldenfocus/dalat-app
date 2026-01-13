@@ -173,10 +173,14 @@ export async function POST(request: Request) {
       };
     });
 
+    let firstEventId: string | null = null;
+
     if (eventInserts.length > 0) {
-      const { error: eventsError } = await supabase
+      const { data: createdEvents, error: eventsError } = await supabase
         .from("events")
-        .insert(eventInserts);
+        .insert(eventInserts)
+        .select("id")
+        .order("starts_at", { ascending: true });
 
       if (eventsError) {
         console.error("Events creation error:", eventsError);
@@ -188,6 +192,9 @@ export async function POST(request: Request) {
         );
       }
 
+      // Get the first event ID for sponsor linking
+      firstEventId = createdEvents?.[0]?.id || null;
+
       // Update the series with generation watermark
       await supabase
         .from("event_series")
@@ -198,6 +205,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       series,
+      slug: series.slug,
+      first_event_id: firstEventId,
       instances_created: eventInserts.length,
     });
   } catch (error) {

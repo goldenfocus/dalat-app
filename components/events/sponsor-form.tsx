@@ -460,7 +460,13 @@ export async function createSponsorsForEvent(
           .from("sponsor-logos")
           .getPublicUrl(fileName);
         logoUrl = publicUrl;
+      } else {
+        // Upload failed - clear blob URL to avoid saving invalid reference
+        logoUrl = null;
       }
+    } else if (logoUrl?.startsWith("blob:")) {
+      // Clear any blob URLs that weren't meant to be uploaded
+      logoUrl = null;
     }
 
     // Create sponsor

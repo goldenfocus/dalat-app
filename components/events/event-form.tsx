@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
+import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
 import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
@@ -68,6 +69,12 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
   const isEditing = !!event;
   const slugEditable = canEditSlug(isEditing);
 
+  // Title state (controlled for FlyerBuilder integration)
+  const [title, setTitle] = useState(event?.title ?? "");
+
+  // Pending file for upload (only for new events with file/generated image)
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+
   // Slug state
   const [slug, setSlug] = useState(event?.slug ?? "");
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
@@ -121,15 +128,25 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
     return () => clearTimeout(timer);
   }, [slug, slugTouched, isEditing, event?.slug]);
 
-  // Auto-suggest slug from title when creating (if user hasn't manually edited)
+  // Handle title change and auto-suggest slug
   const handleTitleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (newTitle: string) => {
+      setTitle(newTitle);
       if (!isEditing && !slugTouched && slugEditable) {
-        const suggested = suggestSlug(e.target.value);
+        const suggested = suggestSlug(newTitle);
         setSlug(suggested);
       }
     },
     [isEditing, slugTouched, slugEditable]
+  );
+
+  // Handle image change from FlyerBuilder
+  const handleImageChange = useCallback(
+    (url: string | null, file?: File) => {
+      setImageUrl(url);
+      setPendingFile(file ?? null);
+    },
+    []
   );
 
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,12 +172,58 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
   // Parse existing event date/time in Da Lat timezone
   const defaults = event ? getDateTimeInDaLat(event.starts_at) : { date: "", time: "" };
 
+  // Helper to upload image (file or base64) to Supabase storage
+  async function uploadImage(
+    supabase: ReturnType<typeof createClient>,
+    eventId: string
+  ): Promise<string | null> {
+    // If we have a pending file, upload it
+    if (pendingFile) {
+      const ext = pendingFile.name.split(".").pop()?.toLowerCase() || "jpg";
+      const fileName = `${eventId}/${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("event-media")
+        .upload(fileName, pendingFile, { cacheControl: "3600", upsert: true });
+
+      if (uploadError) throw new Error("Failed to upload image");
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("event-media")
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    }
+
+    // If imageUrl is a base64/data URL (from AI generation), upload it
+    if (imageUrl?.startsWith("data:")) {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const ext = blob.type.split("/")[1] || "png";
+      const fileName = `${eventId}/${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("event-media")
+        .upload(fileName, blob, { cacheControl: "3600", upsert: true });
+
+      if (uploadError) throw new Error("Failed to upload generated image");
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("event-media")
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    }
+
+    // Otherwise return the URL as-is (external URL or null)
+    return imageUrl;
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const date = formData.get("date") as string;
     const time = formData.get("time") as string;
@@ -170,7 +233,7 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
     const externalChatUrl = formData.get("external_chat_url") as string;
     const capacityStr = formData.get("capacity") as string;
 
-    if (!title || !date || !time) {
+    if (!title.trim() || !date || !time) {
       setError("Title, date, and time are required");
       return;
     }
@@ -271,6 +334,12 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
           }
 
           const seriesData = await response.json();
+
+          // Create sponsors for the first event in the series
+          if (draftSponsors.length > 0 && seriesData.first_event_id) {
+            await createSponsorsForEvent(seriesData.first_event_id, draftSponsors);
+          }
+
           router.push(`/series/${seriesData.slug}`);
         } else {
           // Single event - direct insert
@@ -278,7 +347,7 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
             .from("events")
             .insert({
               slug: finalSlug,
-              title,
+              title: title.trim(),
               description: description || null,
               starts_at: startsAt,
               location_name: locationName || null,
@@ -297,6 +366,20 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
             return;
           }
 
+          // Upload image if we have one (file, base64, or URL)
+          try {
+            const finalImageUrl = await uploadImage(supabase, data.id);
+            if (finalImageUrl) {
+              await supabase
+                .from("events")
+                .update({ image_url: finalImageUrl })
+                .eq("id", data.id);
+            }
+          } catch {
+            // Image upload failed but event was created - continue
+            console.error("Failed to upload event image");
+          }
+
           // Create sponsors for the new event
           if (draftSponsors.length > 0) {
             await createSponsorsForEvent(data.id, draftSponsors);
@@ -312,33 +395,35 @@ export function EventForm({ userId, event, initialSponsors = [] }: EventFormProp
     <form onSubmit={handleSubmit}>
       <Card>
         <CardContent className="p-6 space-y-6">
-          {/* Event image/video - TOP of form */}
+          {/* Event flyer and title */}
           {isEditing ? (
-            <EventMediaUpload
-              eventId={event.id}
-              currentMediaUrl={imageUrl}
-              onMediaChange={setImageUrl}
-            />
+            <>
+              <EventMediaUpload
+                eventId={event.id}
+                currentMediaUrl={imageUrl}
+                onMediaChange={setImageUrl}
+              />
+              <div className="space-y-2">
+                <Label htmlFor="title">Event title *</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  placeholder="Coffee & Code"
+                  value={title}
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                  required
+                />
+              </div>
+            </>
           ) : (
-            <div className="aspect-[2/1] rounded-lg border-2 border-dashed border-muted-foreground/25 flex items-center justify-center bg-muted/30">
-              <p className="text-sm text-muted-foreground text-center px-4">
-                Add a flyer after creating the event
-              </p>
-            </div>
-          )}
-
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Event title *</Label>
-            <Input
-              id="title"
-              name="title"
-              placeholder="Coffee & Code"
-              defaultValue={event?.title ?? ""}
-              onChange={handleTitleChange}
-              required
+            <FlyerBuilder
+              title={title}
+              onTitleChange={handleTitleChange}
+              imageUrl={imageUrl}
+              onImageChange={handleImageChange}
+              defaultTitle=""
             />
-          </div>
+          )}
 
           {/* Custom URL Slug */}
           {slugEditable && (
