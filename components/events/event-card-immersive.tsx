@@ -63,7 +63,7 @@ export function EventCardImmersive({ event, counts }: EventCardImmersiveProps) {
         </div>
 
         {/* Info area with gradient overlay */}
-        <div className="absolute bottom-0 inset-x-0">
+        <div className="absolute bottom-0 inset-x-0 z-20">
           <div className="bg-gradient-to-t from-black via-black/80 to-transparent pt-20 pb-8 px-5">
             <h2 className="text-white font-semibold text-2xl mb-3 line-clamp-2 drop-shadow-lg">
               {event.title}

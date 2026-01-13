@@ -87,7 +87,7 @@ export default async function OrganizerLayout({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Organizer Header */}
-      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container flex h-14 items-center justify-between mx-auto px-4">
           <div className="flex items-center gap-6">
             <Link

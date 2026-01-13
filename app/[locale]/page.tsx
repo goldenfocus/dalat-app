@@ -193,7 +193,7 @@ export default async function Home({ searchParams }: PageProps) {
       {/* Desktop: Traditional layout with header/footer */}
       <main className="hidden lg:flex min-h-screen flex-col">
         {/* Header */}
-        <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <div className="container flex h-14 max-w-4xl items-center justify-between mx-auto px-4">
             <div className="flex items-center gap-2">
               <Link href="/" className="font-bold text-lg">

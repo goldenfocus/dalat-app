@@ -84,7 +84,7 @@ export default async function OrganizerPage({ params }: PageProps) {
       {/* JSON-LD Structured Data for SEO/AEO */}
       <JsonLd data={[organizationSchema, breadcrumbSchema]} />
       {/* Header */}
-      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container flex h-14 max-w-4xl items-center mx-auto px-4">
           <Link
             href="/"

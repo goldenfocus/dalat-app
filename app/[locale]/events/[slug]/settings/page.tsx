@@ -55,7 +55,7 @@ export default async function EventSettingsPage({ params }: PageProps) {
   return (
     <main className="min-h-screen">
       {/* Header */}
-      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container flex h-14 max-w-2xl items-center mx-auto px-4">
           <Link
             href={`/events/${slug}`}
