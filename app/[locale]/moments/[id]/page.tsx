@@ -11,7 +11,7 @@ import { formatInDaLat } from "@/lib/timezone";
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
-import type { Moment, Event, Profile, ContentLocale } from "@/lib/types";
+import type { Moment, Event, Profile, ContentLocale, Locale } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -408,7 +408,7 @@ export default async function MomentPage({ params }: PageProps) {
                     <h3 className="font-semibold line-clamp-2">{event.title}</h3>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                       <Calendar className="w-4 h-4" />
-                      <span>{formatInDaLat(event.starts_at, "EEE, MMM d")}</span>
+                      <span>{formatInDaLat(event.starts_at, "EEE, MMM d", locale as Locale)}</span>
                     </div>
                     {event.location_name && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">

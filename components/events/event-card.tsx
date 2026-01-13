@@ -2,13 +2,13 @@
 
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
-import type { Event, EventCounts } from "@/lib/types";
+import type { Event, EventCounts, Locale } from "@/lib/types";
 
 interface EventCardProps {
   event: Event;
@@ -17,6 +17,7 @@ interface EventCardProps {
 
 export function EventCard({ event, counts }: EventCardProps) {
   const t = useTranslations("events");
+  const locale = useLocale() as Locale;
 
   const spotsText = event.capacity
     ? `${counts?.going_spots ?? 0}/${event.capacity}`
@@ -73,8 +74,8 @@ export function EventCard({ event, counts }: EventCardProps) {
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               <span>
-                {formatInDaLat(event.starts_at, "EEE, MMM d")} &middot;{" "}
-                {formatInDaLat(event.starts_at, "h:mm a")}
+                {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} &middot;{" "}
+                {formatInDaLat(event.starts_at, "h:mm a", locale)}
               </span>
             </div>
 

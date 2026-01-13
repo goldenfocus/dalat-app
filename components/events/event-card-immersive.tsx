@@ -2,12 +2,13 @@
 
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { ImmersiveImage } from "@/components/events/immersive-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
-import type { Event, EventCounts } from "@/lib/types";
+import type { Event, EventCounts, Locale } from "@/lib/types";
 
 interface EventCardImmersiveProps {
   event: Event;
@@ -15,6 +16,9 @@ interface EventCardImmersiveProps {
 }
 
 export function EventCardImmersive({ event, counts }: EventCardImmersiveProps) {
+  const locale = useLocale() as Locale;
+  const t = useTranslations("events");
+
   const spotsText = event.capacity
     ? `${counts?.going_spots ?? 0}/${event.capacity}`
     : `${counts?.going_spots ?? 0}`;
@@ -69,8 +73,8 @@ export function EventCardImmersive({ event, counts }: EventCardImmersiveProps) {
               <div className="flex items-center gap-2.5 drop-shadow-md">
                 <Calendar className="w-4 h-4 flex-shrink-0" />
                 <span className="text-sm">
-                  {formatInDaLat(event.starts_at, "EEE, MMM d")} &middot;{" "}
-                  {formatInDaLat(event.starts_at, "h:mm a")}
+                  {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} &middot;{" "}
+                  {formatInDaLat(event.starts_at, "h:mm a", locale)}
                 </span>
               </div>
 
@@ -84,18 +88,18 @@ export function EventCardImmersive({ event, counts }: EventCardImmersiveProps) {
               <div className="flex items-center gap-2.5 drop-shadow-md">
                 <Users className="w-4 h-4 flex-shrink-0" />
                 <span className="text-sm">
-                  {spotsText} going
+                  {spotsText} {t("going")}
                   {isFull && (
-                    <span className="ml-1 text-orange-400">(Full)</span>
+                    <span className="ml-1 text-orange-400">({t("full")})</span>
                   )}
                   {(counts?.interested_count ?? 0) > 0 && (
                     <span className="ml-1 text-white/70">
-                      &middot; {counts?.interested_count} interested
+                      &middot; {counts?.interested_count} {t("interested")}
                     </span>
                   )}
                   {(counts?.waitlist_count ?? 0) > 0 && (
                     <span className="ml-1 text-white/70">
-                      &middot; {counts?.waitlist_count} waitlist
+                      &middot; {counts?.waitlist_count} {t("waitlist")}
                     </span>
                   )}
                 </span>

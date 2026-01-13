@@ -2,18 +2,20 @@ import { Link } from "@/lib/i18n/routing";
 import { Calendar, BadgeCheck, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
-import type { Event, Organizer } from "@/lib/types";
+import type { Event, Organizer, Locale } from "@/lib/types";
 
 interface MoreFromOrganizerProps {
   organizer: Organizer;
   events: Event[];
   currentEventId: string;
+  locale?: Locale;
 }
 
 export function MoreFromOrganizer({
   organizer,
   events,
   currentEventId,
+  locale,
 }: MoreFromOrganizerProps) {
   // Filter out current event and get up to 3 upcoming events
   const upcomingEvents = events
@@ -63,7 +65,7 @@ export function MoreFromOrganizer({
                 <p className="font-medium truncate">{event.title}</p>
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  {formatInDaLat(event.starts_at, "MMM d")}
+                  {formatInDaLat(event.starts_at, "MMM d", locale)}
                   {event.location_name && ` · ${event.location_name}`}
                 </p>
               </div>

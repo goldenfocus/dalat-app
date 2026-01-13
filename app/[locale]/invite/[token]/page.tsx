@@ -2,12 +2,13 @@ import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { Calendar, MapPin, Check, X, HelpCircle, Download, ArrowRight } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatInDaLat } from "@/lib/timezone";
 import { InviteRsvpButtons } from "./rsvp-buttons";
+import type { Locale } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -89,7 +90,10 @@ async function getInvitation(token: string) {
 export default async function InvitePage({ params, searchParams }: PageProps) {
   const { token } = await params;
   const query = await searchParams;
-  const t = await getTranslations("invite");
+  const [t, locale] = await Promise.all([
+    getTranslations("invite"),
+    getLocale(),
+  ]);
 
   const invitation = await getInvitation(token);
 
@@ -173,11 +177,11 @@ export default async function InvitePage({ params, searchParams }: PageProps) {
                 <Calendar className="w-5 h-5 text-primary mt-0.5" />
                 <div>
                   <p className="font-medium">
-                    {formatInDaLat(event.starts_at, "EEEE, MMMM d")}
+                    {formatInDaLat(event.starts_at, "EEEE, MMMM d", locale as Locale)}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {formatInDaLat(event.starts_at, "h:mm a")}
-                    {event.ends_at && ` - ${formatInDaLat(event.ends_at, "h:mm a")}`}
+                    {formatInDaLat(event.starts_at, "h:mm a", locale as Locale)}
+                    {event.ends_at && ` - ${formatInDaLat(event.ends_at, "h:mm a", locale as Locale)}`}
                   </p>
                 </div>
               </div>

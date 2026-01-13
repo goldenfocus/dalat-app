@@ -6,7 +6,7 @@ import { ArrowLeft, Calendar, MapPin, Users, ExternalLink, Link2 } from "lucide-
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
-import type { ContentLocale } from "@/lib/types";
+import type { ContentLocale, Locale } from "@/lib/types";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { RsvpButton } from "@/components/events/rsvp-button";
@@ -500,12 +500,12 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="font-medium">
-                      {formatInDaLat(event.starts_at, "EEEE, MMMM d")}
+                      {formatInDaLat(event.starts_at, "EEEE, MMMM d", locale as Locale)}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {formatInDaLat(event.starts_at, "h:mm a")}
+                      {formatInDaLat(event.starts_at, "h:mm a", locale as Locale)}
                       {event.ends_at &&
-                        ` - ${formatInDaLat(event.ends_at, "h:mm a")}`}
+                        ` - ${formatInDaLat(event.ends_at, "h:mm a", locale as Locale)}`}
                     </p>
                   </div>
                 </div>
@@ -638,6 +638,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 organizer={event.organizers}
                 events={organizerEvents}
                 currentEventId={event.id}
+                locale={locale as Locale}
               />
             )}
           </div>

@@ -10,14 +10,14 @@ import {
   ExternalLink,
   CalendarPlus,
 } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { describeRRule, getShortRRuleLabel } from "@/lib/recurrence";
-import type { EventSeries, Event, Profile, Organizer } from "@/lib/types";
+import type { EventSeries, Event, Profile, Organizer, Locale } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -130,7 +130,10 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
 
 export default async function SeriesPage({ params }: PageProps) {
   const { slug } = await params;
-  const t = await getTranslations();
+  const [t, locale] = await Promise.all([
+    getTranslations(),
+    getLocale(),
+  ]);
 
   const data = await getSeriesData(slug);
 
@@ -273,18 +276,18 @@ export default async function SeriesPage({ params }: PageProps) {
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
                           <span className="text-xs text-muted-foreground uppercase">
-                            {formatInDaLat(event.starts_at, "EEE")}
+                            {formatInDaLat(event.starts_at, "EEE", locale as Locale)}
                           </span>
                           <span className="text-lg font-bold text-primary">
-                            {formatInDaLat(event.starts_at, "d")}
+                            {formatInDaLat(event.starts_at, "d", locale as Locale)}
                           </span>
                         </div>
                         <div>
                           <p className="font-medium">
-                            {formatInDaLat(event.starts_at, "EEEE, MMMM d")}
+                            {formatInDaLat(event.starts_at, "EEEE, MMMM d", locale as Locale)}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {formatInDaLat(event.starts_at, "h:mm a")}
+                            {formatInDaLat(event.starts_at, "h:mm a", locale as Locale)}
                           </p>
                         </div>
                       </div>

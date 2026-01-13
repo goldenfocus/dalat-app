@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import { ArrowLeft, Calendar, MapPin, BadgeCheck, ExternalLink } from "lucide-react";
+import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
-import type { Organizer, Event } from "@/lib/types";
+import type { Organizer, Event, Locale } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -33,6 +34,7 @@ async function getOrganizerEvents(organizerId: string): Promise<Event[]> {
 
 export default async function OrganizerPage({ params }: PageProps) {
   const { slug } = await params;
+  const locale = await getLocale();
   const organizer = await getOrganizer(slug);
 
   if (!organizer) {
@@ -146,7 +148,7 @@ export default async function OrganizerPage({ params }: PageProps) {
                       <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a")}
+                          {formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a", locale as Locale)}
                         </span>
                         {event.location_name && (
                           <span className="flex items-center gap-1">
@@ -186,7 +188,7 @@ export default async function OrganizerPage({ params }: PageProps) {
                   <div>
                     <p className="font-medium">{event.title}</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatInDaLat(event.starts_at, "MMM d, yyyy")}
+                      {formatInDaLat(event.starts_at, "MMM d, yyyy", locale as Locale)}
                     </p>
                   </div>
                 </Link>

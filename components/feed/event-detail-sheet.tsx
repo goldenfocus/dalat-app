@@ -2,6 +2,7 @@
 
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, X } from "lucide-react";
+import { useLocale } from "next-intl";
 import {
   Dialog,
   DialogPortal,
@@ -11,6 +12,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Button } from "@/components/ui/button";
 import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
+import type { Locale } from "@/lib/types";
 
 interface EventDetailSheetProps {
   open: boolean;
@@ -35,6 +37,8 @@ export function EventDetailSheet({
   eventStartsAt,
   eventLocationName,
 }: EventDetailSheetProps) {
+  const locale = useLocale() as Locale;
+
   const handleViewEvent = () => {
     triggerHaptic("selection");
   };
@@ -80,8 +84,8 @@ export function EventDetailSheet({
               <div className="flex items-center gap-2.5">
                 <Calendar className="w-4 h-4 flex-shrink-0" />
                 <span className="text-sm">
-                  {formatInDaLat(eventStartsAt, "EEEE, MMMM d")} &middot;{" "}
-                  {formatInDaLat(eventStartsAt, "h:mm a")}
+                  {formatInDaLat(eventStartsAt, "EEEE, MMMM d", locale)} &middot;{" "}
+                  {formatInDaLat(eventStartsAt, "h:mm a", locale)}
                 </span>
               </div>
 
