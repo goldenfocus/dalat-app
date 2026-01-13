@@ -303,8 +303,6 @@ export default async function MomentPage({ params }: PageProps) {
                 className="w-full h-full object-contain"
                 controls
                 playsInline
-                autoPlay
-                loop
               />
             ) : (
               <img
