@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const { title } = await request.json();
+    const { title, customPrompt } = await request.json();
 
-    if (!title?.trim()) {
+    if (!title?.trim() && !customPrompt?.trim()) {
       return NextResponse.json(
-        { error: "Event title is required" },
+        { error: "Event title or custom prompt is required" },
         { status: 400 }
       );
     }
@@ -28,9 +28,8 @@ export async function POST(request: Request) {
       model: "gemini-2.0-flash-exp-image-generation",
     });
 
-    // TODO: Craft your ideal prompt for Da Lat event flyers
-    // This is where you can customize the aesthetic!
-    const prompt = `Create a vibrant, eye-catching event poster background for "${title}".
+    // Use custom prompt if provided, otherwise generate default
+    const prompt = customPrompt?.trim() || `Create a vibrant, eye-catching event poster background for "${title}".
 
 Style: Modern event flyer aesthetic with warm Vietnamese highland colors.
 Setting: Inspired by Da Lat, Vietnam - misty mountains, pine forests, French colonial architecture, flower fields.
@@ -38,12 +37,27 @@ Mood: Atmospheric, inviting, energetic yet sophisticated.
 Important: Do NOT include any text or lettering in the image. Create only the visual background.
 Aspect ratio: 2:1 landscape orientation.`;
 
+    console.log("[generate-flyer] Calling Gemini with prompt:", prompt.slice(0, 100) + "...");
+
     const result = await model.generateContent(prompt);
     const response = result.response;
+
+    // Debug: Log full response structure
+    console.log("[generate-flyer] Response candidates:", JSON.stringify({
+      candidatesCount: response.candidates?.length ?? 0,
+      finishReason: response.candidates?.[0]?.finishReason,
+      partsCount: response.candidates?.[0]?.content?.parts?.length ?? 0,
+      partTypes: response.candidates?.[0]?.content?.parts?.map(p =>
+        "inlineData" in p ? `inline:${p.inlineData?.mimeType}` :
+        "text" in p ? "text" :
+        Object.keys(p).join(",")
+      ),
+    }, null, 2));
 
     // Extract the image from the response
     const parts = response.candidates?.[0]?.content?.parts;
     if (!parts) {
+      console.error("[generate-flyer] No parts in response. Full response:", JSON.stringify(response, null, 2));
       throw new Error("No response from AI model");
     }
 
@@ -53,8 +67,15 @@ Aspect ratio: 2:1 landscape orientation.`;
     );
 
     if (!imagePart || !("inlineData" in imagePart)) {
+      console.error("[generate-flyer] No image part found. Parts:", JSON.stringify(parts.map(p =>
+        "inlineData" in p ? { type: "inlineData", mime: p.inlineData?.mimeType } :
+        "text" in p ? { type: "text", preview: (p.text as string)?.slice(0, 100) } :
+        { type: "unknown", keys: Object.keys(p) }
+      ), null, 2));
       throw new Error("No image generated");
     }
+
+    console.log("[generate-flyer] Successfully generated image:", imagePart.inlineData!.mimeType);
 
     const base64Data = imagePart.inlineData!.data;
     const mimeType = imagePart.inlineData!.mimeType;

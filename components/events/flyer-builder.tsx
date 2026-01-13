@@ -21,6 +21,17 @@ interface FlyerBuilderProps {
   onImageChange: (url: string | null, file?: File) => void;
 }
 
+// Generate default prompt from event data
+function generateDefaultPrompt(title: string): string {
+  return `Create a vibrant, eye-catching event poster background for "${title || "an event"}".
+
+Style: Modern event flyer aesthetic with warm Vietnamese highland colors.
+Setting: Inspired by Da Lat, Vietnam - misty mountains, pine forests, French colonial architecture, flower fields.
+Mood: Atmospheric, inviting, energetic yet sophisticated.
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`;
+}
+
 export function FlyerBuilder({
   title,
   onTitleChange,
@@ -28,6 +39,8 @@ export function FlyerBuilder({
   onImageChange,
 }: FlyerBuilderProps) {
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [showPromptEditor, setShowPromptEditor] = useState(false);
+  const [prompt, setPrompt] = useState("");
   const [urlInput, setUrlInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingUrl, setIsLoadingUrl] = useState(false);
@@ -130,9 +143,18 @@ export function FlyerBuilder({
     }
   };
 
+  // Open prompt editor with pre-generated prompt
+  const handleOpenPromptEditor = () => {
+    setError(null);
+    setPrompt(generateDefaultPrompt(title));
+    setShowPromptEditor(true);
+    setShowUrlInput(false);
+  };
+
+  // Actually generate the image with the current prompt
   const handleGenerate = async () => {
-    if (!title.trim()) {
-      setError("Add title first");
+    if (!prompt.trim()) {
+      setError("Prompt is empty");
       return;
     }
     setError(null);
@@ -142,7 +164,7 @@ export function FlyerBuilder({
       const response = await fetch("/api/generate-flyer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim() }),
+        body: JSON.stringify({ title: title.trim(), customPrompt: prompt.trim() }),
       });
 
       if (!response.ok) {
@@ -154,6 +176,7 @@ export function FlyerBuilder({
       revokeExistingBlobUrl();
       setPreviewUrl(data.imageUrl);
       onImageChange(data.imageUrl);
+      setShowPromptEditor(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
     } finally {
@@ -235,10 +258,57 @@ export function FlyerBuilder({
         )}
       </div>
 
-      {/* Actions - minimal icon buttons */}
-      <div className="flex items-center gap-2">
-        {showUrlInput ? (
-          <div className="flex-1 flex gap-2">
+      {/* Actions - minimal icon buttons or expanded editors */}
+      <div className="space-y-3">
+        {showPromptEditor ? (
+          /* AI Prompt Editor */
+          <div className="space-y-2">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe the image you want to generate..."
+              rows={6}
+              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowPromptEditor(false);
+                  setPrompt("");
+                  setError(null);
+                }}
+                disabled={isGenerating}
+              >
+                Cancel
+              </Button>
+              <div className="flex-1" />
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleGenerate}
+                disabled={isGenerating || !prompt.trim()}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        ) : showUrlInput ? (
+          /* URL Input */
+          <div className="flex gap-2">
             <Input
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
@@ -275,7 +345,8 @@ export function FlyerBuilder({
             </Button>
           </div>
         ) : (
-          <>
+          /* Default icon buttons */
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               size="icon"
@@ -291,7 +362,7 @@ export function FlyerBuilder({
               size="icon"
               variant="outline"
               className="h-9 w-9 border-dashed"
-              onClick={handleGenerate}
+              onClick={handleOpenPromptEditor}
               disabled={isGenerating}
             >
               {isGenerating ? (
@@ -300,7 +371,7 @@ export function FlyerBuilder({
                 <Sparkles className="w-4 h-4" />
               )}
             </Button>
-          </>
+          </div>
         )}
       </div>
 
