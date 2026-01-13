@@ -41,7 +41,7 @@
     "noHappening": "現在開催中のイベントはありません。",
     "noPast": "過去のイベントはまだありません。",
     "createFirst": "最初のイベントを作成",
-    "footer": "ベトナム・ダラットへの愛を込めて",
+    "footer": "ベトナム・ダラットへの<heart></heart>を込めて",
     "tabs": {
       "upcoming": "予定",
       "happening": "開催中",
@@ -501,6 +501,8 @@
       "uploading": "アップロード中...",
       "aiMagic": "AIマジック",
       "generating": "作成中...",
+      "creatingArtwork": "アートワーク作成中...",
+      "almostThere": "もう少し...",
       "generationFailed": "アバターの生成に失敗しました。もう一度お試しください。",
       "orPickDefault": "またはデフォルトを選択",
       "continue": "続ける",

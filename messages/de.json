@@ -41,7 +41,7 @@
     "noHappening": "Gerade finden keine Events statt.",
     "noPast": "Noch keine vergangenen Events.",
     "createFirst": "Erstes Event erstellen",
-    "footer": "Mit Liebe für Da Lat, Vietnam gemacht",
+    "footer": "Mit <heart></heart> für Da Lat, Vietnam gemacht",
     "tabs": {
       "upcoming": "Demnächst",
       "happening": "Jetzt",
@@ -501,6 +501,8 @@
       "uploading": "Wird hochgeladen...",
       "aiMagic": "KI-Magie",
       "generating": "Wird erstellt...",
+      "creatingArtwork": "Kunstwerk wird erstellt...",
+      "almostThere": "Fast fertig...",
       "generationFailed": "Avatar konnte nicht erstellt werden. Bitte erneut versuchen.",
       "orPickDefault": "Oder Standard wählen",
       "continue": "Weiter",

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Heart } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { CONTENT_LOCALES, type ContentLocale } from "@/lib/types";
 
@@ -34,9 +35,16 @@ export function GlobalFooter() {
   return (
     <footer className="border-t py-6 mt-auto">
       <div className="container max-w-4xl mx-auto px-4 space-y-3">
-        {/* Translated footer text with heart */}
+        {/* Translated footer text with heart icon */}
         <p className="text-center text-sm text-muted-foreground flex items-center justify-center gap-1.5">
-          {t("footer")}
+          {t.rich("footer", {
+            heart: () => (
+              <Heart
+                className="w-4 h-4 text-red-500 fill-red-500 inline-block"
+                aria-label="love"
+              />
+            ),
+          })}
         </p>
 
         {/* Attribution */}

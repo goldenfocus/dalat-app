@@ -156,9 +156,12 @@ export default async function Home({ searchParams }: PageProps) {
       <div className="lg:hidden h-[100dvh] relative">
         {/* Floating mini-header */}
         <nav className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-3 bg-gradient-to-b from-black/70 via-black/40 to-transparent">
-          <Link href="/" className="font-bold text-white text-sm drop-shadow-lg">
-            dalat.app
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link href="/" className="font-bold text-white text-sm drop-shadow-lg">
+              dalat.app
+            </Link>
+            <LocalePicker variant="overlay" />
+          </div>
           <div className="flex items-center gap-1">
             <Link href="/events/new" prefetch={false}>
               <Button
@@ -170,7 +173,6 @@ export default async function Home({ searchParams }: PageProps) {
                 {tNav("events")}
               </Button>
             </Link>
-            <LocalePicker variant="overlay" />
             <Suspense>
               <AuthButton />
             </Suspense>
@@ -193,9 +195,12 @@ export default async function Home({ searchParams }: PageProps) {
         {/* Header */}
         <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-14 max-w-4xl items-center justify-between mx-auto px-4">
-            <Link href="/" className="font-bold text-lg">
-              dalat.app
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/" className="font-bold text-lg">
+                dalat.app
+              </Link>
+              <LocalePicker />
+            </div>
             <div className="flex items-center gap-2">
               <Link href="/events/new" prefetch={false}>
                 <Button size="sm" variant="outline">
@@ -203,7 +208,6 @@ export default async function Home({ searchParams }: PageProps) {
                   {tNav("events")}
                 </Button>
               </Link>
-              <LocalePicker />
               <Suspense>
                 <AuthButton />
               </Suspense>

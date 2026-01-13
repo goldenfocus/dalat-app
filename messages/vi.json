@@ -41,7 +41,7 @@
     "noHappening": "Không có sự kiện nào đang diễn ra.",
     "noPast": "Chưa có sự kiện nào đã qua.",
     "createFirst": "Tạo sự kiện đầu tiên",
-    "footer": "Được tạo với tình yêu dành cho Đà Lạt, Việt Nam",
+    "footer": "Được tạo với <heart></heart> dành cho Đà Lạt, Việt Nam",
     "tabs": {
       "upcoming": "Sắp tới",
       "happening": "Đang diễn ra",
@@ -501,6 +501,8 @@
       "uploading": "Đang tải...",
       "aiMagic": "AI Sáng tạo",
       "generating": "Đang tạo...",
+      "creatingArtwork": "Đang vẽ...",
+      "almostThere": "Sắp xong...",
       "generationFailed": "Không thể tạo ảnh đại diện. Vui lòng thử lại.",
       "orPickDefault": "Hoặc chọn mặc định",
       "continue": "Tiếp tục",

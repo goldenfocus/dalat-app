@@ -41,7 +41,7 @@
     "noHappening": "Tiada acara sedang berlangsung sekarang.",
     "noPast": "Belum ada acara lepas.",
     "createFirst": "Cipta acara pertama",
-    "footer": "Dibuat dengan kasih sayang untuk Da Lat, Vietnam",
+    "footer": "Dibuat dengan <heart></heart> untuk Da Lat, Vietnam",
     "tabs": {
       "upcoming": "Akan Datang",
       "happening": "Sekarang",
@@ -501,6 +501,8 @@
       "uploading": "Memuat naik...",
       "aiMagic": "Keajaiban AI",
       "generating": "Mencipta...",
+      "creatingArtwork": "Mencipta karya seni...",
+      "almostThere": "Hampir siap...",
       "generationFailed": "Gagal menjana avatar. Sila cuba lagi.",
       "orPickDefault": "Atau pilih lalai",
       "continue": "Teruskan",

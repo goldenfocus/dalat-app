@@ -41,7 +41,7 @@
     "noHappening": "현재 진행 중인 이벤트가 없습니다.",
     "noPast": "지난 이벤트가 아직 없습니다.",
     "createFirst": "첫 번째 이벤트 만들기",
-    "footer": "베트남 달랏을 사랑하는 마음으로 만들었습니다",
+    "footer": "<heart></heart>을 담아 베트남 달랏을 위해 만들었습니다",
     "tabs": {
       "upcoming": "예정",
       "happening": "진행 중",
@@ -501,6 +501,8 @@
       "uploading": "업로드 중...",
       "aiMagic": "AI 마법",
       "generating": "생성 중...",
+      "creatingArtwork": "아트워크 생성 중...",
+      "almostThere": "거의 완료...",
       "generationFailed": "아바타 생성에 실패했습니다. 다시 시도해 주세요.",
       "orPickDefault": "또는 기본값 선택",
       "continue": "계속",

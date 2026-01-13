@@ -41,7 +41,7 @@
     "noHappening": "Aucun événement en cours.",
     "noPast": "Pas encore d'événements passés.",
     "createFirst": "Créer le premier événement",
-    "footer": "Fait avec amour pour Đà Lạt, Vietnam",
+    "footer": "Fait avec <heart></heart> pour Đà Lạt, Vietnam",
     "tabs": {
       "upcoming": "À venir",
       "happening": "En cours",
@@ -501,6 +501,8 @@
       "uploading": "Téléchargement...",
       "aiMagic": "Magie IA",
       "generating": "Création...",
+      "creatingArtwork": "Création de l'œuvre...",
+      "almostThere": "Presque fini...",
       "generationFailed": "Échec de la génération. Veuillez réessayer.",
       "orPickDefault": "Ou choisissez un défaut",
       "continue": "Continuer",

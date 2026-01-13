@@ -41,7 +41,7 @@
     "noHappening": "目前没有正在进行的活动。",
     "noPast": "暂无过去的活动。",
     "createFirst": "创建第一个活动",
-    "footer": "为越南大叻用心打造",
+    "footer": "为越南大叻<heart></heart>打造",
     "tabs": {
       "upcoming": "即将举行",
       "happening": "进行中",
@@ -501,6 +501,8 @@
       "uploading": "上传中...",
       "aiMagic": "AI魔法",
       "generating": "生成中...",
+      "creatingArtwork": "正在创作...",
+      "almostThere": "即将完成...",
       "generationFailed": "头像生成失败，请重试。",
       "orPickDefault": "或选择默认头像",
       "continue": "继续",
