@@ -95,8 +95,10 @@ async function main() {
     const reasons: string[] = [];
 
     // Check if we need to set organizer_id
-    if (!event.organizer_id && event.profiles?.display_name) {
-      const displayName = event.profiles.display_name as string;
+    // profiles is returned as a single object due to created_by FK, but TS infers array
+    const profile = Array.isArray(event.profiles) ? event.profiles[0] : event.profiles;
+    if (!event.organizer_id && profile?.display_name) {
+      const displayName = profile.display_name as string;
       const slug = slugify(displayName);
 
       // Try to match by name or slug
