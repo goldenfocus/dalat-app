@@ -70,9 +70,18 @@ async function isUserLoggedIn(): Promise<boolean> {
   return !!user;
 }
 
-function isGhostProfile(bio: string | null): boolean {
-  if (!bio) return false;
-  return bio.includes("auto-created from Facebook Events");
+function isGhostProfile(profile: { is_ghost?: boolean; bio: string | null }): boolean {
+  // Primary check: use the database column
+  if (profile.is_ghost) return true;
+
+  // Fallback: check bio text patterns (for backwards compatibility)
+  if (!profile.bio) return false;
+  return (
+    profile.bio.includes("auto-created from Facebook Events") ||
+    profile.bio.includes("auto-created from Facebook") ||
+    profile.bio.includes("Contact us to claim it") ||
+    profile.bio.includes("Want to claim an event?")
+  );
 }
 
 interface BioTranslations {
@@ -165,7 +174,7 @@ export default async function ProfilePage({ params }: PageProps) {
   ]);
 
   // Check if this is a ghost profile (auto-created from Facebook import)
-  const isGhost = isGhostProfile(profile.bio);
+  const isGhost = isGhostProfile(profile);
   // Show claim banner to logged-in users who don't own this ghost profile
   const showClaimBanner = isGhost && isLoggedIn && !isOwner;
 

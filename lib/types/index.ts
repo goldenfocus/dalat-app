@@ -84,6 +84,7 @@ export interface Profile {
   avatar_url: string | null;
   locale: Locale;
   role: UserRole;
+  is_ghost?: boolean;
   created_at: string;
   updated_at: string;
 }
