@@ -815,5 +815,39 @@
     "cancel": "취소",
     "generating": "생성 중...",
     "generate": "생성"
+  },
+  "archive": {
+    "events": "이벤트",
+    "eventsIn": "{year}년 {month} 이벤트",
+    "description": "베트남 달랏에서 {year}년 {month}에 열리는 이벤트를 탐색하세요",
+    "thisMonth": "이번 달",
+    "thisMonthDescription": "달랏에서 이번 달 열리는 이벤트",
+    "thisWeek": "이번 주",
+    "thisWeekDescription": "달랏에서 이번 주 열리는 이벤트",
+    "noEvents": "{year}년 {month}에 이벤트가 없습니다",
+    "noEventsThisMonth": "이번 달 이벤트가 없습니다",
+    "noEventsThisWeek": "이번 주 이벤트가 없습니다",
+    "eventCount": "{count}개 이벤트",
+    "previousMonth": "이전",
+    "nextMonth": "다음",
+    "backToHome": "돌아가기",
+    "browseAllEvents": "모든 이벤트 보기",
+    "viewThisMonth": "이번 달 보기",
+    "viewThisWeek": "이번 주 보기",
+    "browseArchive": "아카이브 보기",
+    "months": {
+      "january": "1월",
+      "february": "2월",
+      "march": "3월",
+      "april": "4월",
+      "may": "5월",
+      "june": "6월",
+      "july": "7월",
+      "august": "8월",
+      "september": "9월",
+      "october": "10월",
+      "november": "11월",
+      "december": "12월"
+    }
   }
 }

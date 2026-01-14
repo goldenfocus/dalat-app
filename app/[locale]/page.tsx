@@ -176,9 +176,10 @@ export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
   const activeTab = parseLifecycle(params.tab);
   const searchQuery = params.q ?? "";
-  const [t, tNav, lifecycleCounts] = await Promise.all([
+  const [t, tNav, tArchive, lifecycleCounts] = await Promise.all([
     getTranslations("home"),
     getTranslations("nav"),
+    getTranslations("archive"),
     getLifecycleCounts(),
   ]);
 
@@ -295,6 +296,15 @@ export default async function Home({ searchParams }: PageProps) {
           >
             <EventsFeed lifecycle={activeTab} searchQuery={searchQuery} />
           </Suspense>
+
+          {/* Archive link for past events */}
+          {activeTab === "past" && (
+            <div className="mt-8 text-center">
+              <Link href="/events/this-month" className="text-sm text-muted-foreground hover:text-foreground">
+                {tArchive("browseArchive")} →
+              </Link>
+            </div>
+          )}
         </div>
       </main>
     </>

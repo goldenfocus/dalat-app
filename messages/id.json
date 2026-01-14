@@ -815,5 +815,39 @@
     "cancel": "Batal",
     "generating": "Membuat...",
     "generate": "Buat"
+  },
+  "archive": {
+    "events": "Acara",
+    "eventsIn": "Acara di {month} {year}",
+    "description": "Temukan acara di Da Lat, Vietnam pada {month} {year}",
+    "thisMonth": "Bulan Ini",
+    "thisMonthDescription": "Acara bulan ini di Da Lat",
+    "thisWeek": "Minggu Ini",
+    "thisWeekDescription": "Acara minggu ini di Da Lat",
+    "noEvents": "Tidak ada acara di {month} {year}",
+    "noEventsThisMonth": "Tidak ada acara bulan ini",
+    "noEventsThisWeek": "Tidak ada acara minggu ini",
+    "eventCount": "{count} acara",
+    "previousMonth": "Sebelumnya",
+    "nextMonth": "Selanjutnya",
+    "backToHome": "Kembali",
+    "browseAllEvents": "Lihat semua acara",
+    "viewThisMonth": "Lihat bulan ini",
+    "viewThisWeek": "Lihat minggu ini",
+    "browseArchive": "Jelajahi arsip",
+    "months": {
+      "january": "Januari",
+      "february": "Februari",
+      "march": "Maret",
+      "april": "April",
+      "may": "Mei",
+      "june": "Juni",
+      "july": "Juli",
+      "august": "Agustus",
+      "september": "September",
+      "october": "Oktober",
+      "november": "November",
+      "december": "Desember"
+    }
   }
 }

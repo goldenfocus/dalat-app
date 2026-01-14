@@ -822,5 +822,39 @@
     "cancel": "Annuler",
     "generating": "Génération...",
     "generate": "Générer"
+  },
+  "archive": {
+    "events": "Événements",
+    "eventsIn": "Événements en {month} {year}",
+    "description": "Découvrez les événements de {month} {year} à Da Lat, Vietnam",
+    "thisMonth": "Ce mois-ci",
+    "thisMonthDescription": "Événements ce mois-ci à Da Lat",
+    "thisWeek": "Cette semaine",
+    "thisWeekDescription": "Événements cette semaine à Da Lat",
+    "noEvents": "Aucun événement en {month} {year}",
+    "noEventsThisMonth": "Aucun événement ce mois-ci",
+    "noEventsThisWeek": "Aucun événement cette semaine",
+    "eventCount": "{count, plural, one {# événement} other {# événements}}",
+    "previousMonth": "Précédent",
+    "nextMonth": "Suivant",
+    "backToHome": "Retour",
+    "browseAllEvents": "Voir tous les événements",
+    "viewThisMonth": "Voir ce mois-ci",
+    "viewThisWeek": "Voir cette semaine",
+    "browseArchive": "Parcourir les archives",
+    "months": {
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin",
+      "july": "Juillet",
+      "august": "Août",
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre"
+    }
   }
 }

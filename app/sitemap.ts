@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { allLocales } from '@/lib/i18n/config';
+import { getMonthSlug, isPastMonth } from '@/lib/events/archive-utils';
 
 const baseUrl = 'https://dalat.app';
 
@@ -11,12 +12,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = [
     { path: '', priority: 1.0, changeFrequency: 'daily' as const },
     { path: '/events/new', priority: 0.6, changeFrequency: 'monthly' as const },
+    { path: '/events/this-month', priority: 0.8, changeFrequency: 'daily' as const },
+    { path: '/events/this-week', priority: 0.8, changeFrequency: 'daily' as const },
     { path: '/settings', priority: 0.4, changeFrequency: 'monthly' as const },
     { path: '/auth/login', priority: 0.5, changeFrequency: 'monthly' as const },
   ];
 
   // Fetch dynamic content
-  const [eventsResult, festivalsResult, organizersResult] = await Promise.all([
+  const [eventsResult, festivalsResult, organizersResult, monthsResult] = await Promise.all([
     supabase
       .from('events')
       .select('slug, updated_at')
@@ -28,11 +31,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     supabase
       .from('organizers')
       .select('slug, updated_at'),
+    supabase.rpc('get_months_with_events'),
   ]);
 
   const events = eventsResult.data ?? [];
   const festivals = festivalsResult.data ?? [];
   const organizers = organizersResult.data ?? [];
+  const monthsWithEvents = (monthsResult.data ?? []) as { year: number; month: number; event_count: number }[];
 
   const sitemapEntries: MetadataRoute.Sitemap = [];
 
@@ -98,6 +103,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         alternates: {
           languages: Object.fromEntries(
             allLocales.map(l => [l, `${baseUrl}/${l}/organizers/${organizer.slug}`])
+          ),
+        },
+      });
+    }
+  }
+
+  // Add monthly archive pages
+  for (const { year, month } of monthsWithEvents) {
+    const monthSlug = getMonthSlug(month);
+    const path = `/events/${year}/${monthSlug}`;
+    const past = isPastMonth(year, month);
+
+    for (const locale of allLocales) {
+      sitemapEntries.push({
+        url: `${baseUrl}/${locale}${path}`,
+        lastModified: new Date(),
+        changeFrequency: past ? 'monthly' : 'daily',
+        priority: past ? 0.5 : 0.7,
+        alternates: {
+          languages: Object.fromEntries(
+            allLocales.map(l => [l, `${baseUrl}/${l}${path}`])
           ),
         },
       });

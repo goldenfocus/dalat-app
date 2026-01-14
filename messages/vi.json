@@ -815,5 +815,39 @@
     "cancel": "Hủy",
     "generating": "Đang tạo...",
     "generate": "Tạo"
+  },
+  "archive": {
+    "events": "Sự kiện",
+    "eventsIn": "Sự kiện trong {month} {year}",
+    "description": "Khám phá các sự kiện diễn ra vào {month} {year} tại Đà Lạt, Việt Nam",
+    "thisMonth": "Tháng này",
+    "thisMonthDescription": "Các sự kiện diễn ra trong tháng này tại Đà Lạt",
+    "thisWeek": "Tuần này",
+    "thisWeekDescription": "Các sự kiện diễn ra trong tuần này tại Đà Lạt",
+    "noEvents": "Không có sự kiện trong {month} {year}",
+    "noEventsThisMonth": "Không có sự kiện trong tháng này",
+    "noEventsThisWeek": "Không có sự kiện trong tuần này",
+    "eventCount": "{count, plural, one {# sự kiện} other {# sự kiện}}",
+    "previousMonth": "Trước",
+    "nextMonth": "Sau",
+    "backToHome": "Quay lại",
+    "browseAllEvents": "Xem tất cả sự kiện",
+    "viewThisMonth": "Xem tháng này",
+    "viewThisWeek": "Xem tuần này",
+    "browseArchive": "Xem lưu trữ",
+    "months": {
+      "january": "Tháng Một",
+      "february": "Tháng Hai",
+      "march": "Tháng Ba",
+      "april": "Tháng Tư",
+      "may": "Tháng Năm",
+      "june": "Tháng Sáu",
+      "july": "Tháng Bảy",
+      "august": "Tháng Tám",
+      "september": "Tháng Chín",
+      "october": "Tháng Mười",
+      "november": "Tháng Mười Một",
+      "december": "Tháng Mười Hai"
+    }
   }
 }

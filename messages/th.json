@@ -815,5 +815,39 @@
     "cancel": "ยกเลิก",
     "generating": "กำลังสร้าง...",
     "generate": "สร้าง"
+  },
+  "archive": {
+    "events": "กิจกรรม",
+    "eventsIn": "กิจกรรมใน{month} {year}",
+    "description": "ค้นพบกิจกรรมในดาลัด เวียดนาม ใน{month} {year}",
+    "thisMonth": "เดือนนี้",
+    "thisMonthDescription": "กิจกรรมเดือนนี้ในดาลัด",
+    "thisWeek": "สัปดาห์นี้",
+    "thisWeekDescription": "กิจกรรมสัปดาห์นี้ในดาลัด",
+    "noEvents": "ไม่มีกิจกรรมใน{month} {year}",
+    "noEventsThisMonth": "ไม่มีกิจกรรมเดือนนี้",
+    "noEventsThisWeek": "ไม่มีกิจกรรมสัปดาห์นี้",
+    "eventCount": "{count} กิจกรรม",
+    "previousMonth": "ก่อนหน้า",
+    "nextMonth": "ถัดไป",
+    "backToHome": "กลับ",
+    "browseAllEvents": "ดูกิจกรรมทั้งหมด",
+    "viewThisMonth": "ดูเดือนนี้",
+    "viewThisWeek": "ดูสัปดาห์นี้",
+    "browseArchive": "ดูคลังข้อมูล",
+    "months": {
+      "january": "มกราคม",
+      "february": "กุมภาพันธ์",
+      "march": "มีนาคม",
+      "april": "เมษายน",
+      "may": "พฤษภาคม",
+      "june": "มิถุนายน",
+      "july": "กรกฎาคม",
+      "august": "สิงหาคม",
+      "september": "กันยายน",
+      "october": "ตุลาคม",
+      "november": "พฤศจิกายน",
+      "december": "ธันวาคม"
+    }
   }
 }

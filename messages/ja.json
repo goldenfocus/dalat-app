@@ -815,5 +815,39 @@
     "cancel": "キャンセル",
     "generating": "生成中...",
     "generate": "生成"
+  },
+  "archive": {
+    "events": "イベント",
+    "eventsIn": "{year}年{month}のイベント",
+    "description": "ベトナム・ダラットで{year}年{month}に開催されるイベントを探す",
+    "thisMonth": "今月",
+    "thisMonthDescription": "ダラットで今月開催されるイベント",
+    "thisWeek": "今週",
+    "thisWeekDescription": "ダラットで今週開催されるイベント",
+    "noEvents": "{year}年{month}のイベントはありません",
+    "noEventsThisMonth": "今月のイベントはありません",
+    "noEventsThisWeek": "今週のイベントはありません",
+    "eventCount": "{count}件のイベント",
+    "previousMonth": "前月",
+    "nextMonth": "翌月",
+    "backToHome": "戻る",
+    "browseAllEvents": "すべてのイベントを見る",
+    "viewThisMonth": "今月を見る",
+    "viewThisWeek": "今週を見る",
+    "browseArchive": "アーカイブを見る",
+    "months": {
+      "january": "1月",
+      "february": "2月",
+      "march": "3月",
+      "april": "4月",
+      "may": "5月",
+      "june": "6月",
+      "july": "7月",
+      "august": "8月",
+      "september": "9月",
+      "october": "10月",
+      "november": "11月",
+      "december": "12月"
+    }
   }
 }

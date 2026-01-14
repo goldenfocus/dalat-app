@@ -815,5 +815,39 @@
     "cancel": "Batal",
     "generating": "Menjana...",
     "generate": "Jana"
+  },
+  "archive": {
+    "events": "Acara",
+    "eventsIn": "Acara pada {month} {year}",
+    "description": "Temui acara di Da Lat, Vietnam pada {month} {year}",
+    "thisMonth": "Bulan Ini",
+    "thisMonthDescription": "Acara bulan ini di Da Lat",
+    "thisWeek": "Minggu Ini",
+    "thisWeekDescription": "Acara minggu ini di Da Lat",
+    "noEvents": "Tiada acara pada {month} {year}",
+    "noEventsThisMonth": "Tiada acara bulan ini",
+    "noEventsThisWeek": "Tiada acara minggu ini",
+    "eventCount": "{count} acara",
+    "previousMonth": "Sebelum",
+    "nextMonth": "Seterus",
+    "backToHome": "Kembali",
+    "browseAllEvents": "Lihat semua acara",
+    "viewThisMonth": "Lihat bulan ini",
+    "viewThisWeek": "Lihat minggu ini",
+    "browseArchive": "Layari arkib",
+    "months": {
+      "january": "Januari",
+      "february": "Februari",
+      "march": "Mac",
+      "april": "April",
+      "may": "Mei",
+      "june": "Jun",
+      "july": "Julai",
+      "august": "Ogos",
+      "september": "September",
+      "october": "Oktober",
+      "november": "November",
+      "december": "Disember"
+    }
   }
 }
