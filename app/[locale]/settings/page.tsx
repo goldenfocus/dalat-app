@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ThemeSelector } from "@/components/settings/theme-selector";
 import { LanguageSelector } from "@/components/settings/language-selector";
 import { NotificationSettings } from "@/components/settings/notification-settings";
+import { PasswordSettings } from "@/components/settings/password-settings";
 import { SignOutButton } from "@/components/settings/sign-out-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Locale } from "@/lib/types";
@@ -79,7 +80,8 @@ export default async function SettingsPage() {
             {t("accountDescription")}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <PasswordSettings userEmail={user.email || ""} />
           <SignOutButton />
         </CardContent>
       </Card>

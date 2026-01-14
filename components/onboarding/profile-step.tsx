@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { detectBrowserLocale } from "@/lib/locale";
+import { PasswordPromptDialog } from "./password-prompt-dialog";
 import type { Locale } from "@/lib/types";
 
 interface ProfileStepProps {
@@ -32,6 +33,7 @@ export function ProfileStep({
   const tProfile = useTranslations("profile");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
 
   // Form state
   const [username, setUsername] = useState("");
@@ -137,9 +139,15 @@ export function ProfileStep({
         return;
       }
 
-      router.push(redirectTo);
-      router.refresh();
+      // Show password prompt dialog before redirecting
+      setShowPasswordPrompt(true);
     });
+  }
+
+  function handlePasswordPromptComplete() {
+    setShowPasswordPrompt(false);
+    router.push(redirectTo);
+    router.refresh();
   }
 
   return (
@@ -255,6 +263,12 @@ export function ProfileStep({
           )}
         </Button>
       </form>
+
+      {/* Password setup prompt */}
+      <PasswordPromptDialog
+        open={showPasswordPrompt}
+        onComplete={handlePasswordPromptComplete}
+      />
     </div>
   );
 }

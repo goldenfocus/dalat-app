@@ -82,6 +82,11 @@
     "accountCreatedCheckEmail": "Account created! Check your email to confirm.",
     "signInOrCreateHint": "New here? We'll create your account automatically.",
     "or": "or",
+    "continueWithEmail": "Continue with email",
+    "wellEmailYouLink": "We'll email you a sign-in link",
+    "orUsePassword": "or sign in with password",
+    "signInWithPassword": "Sign in with password",
+    "cancel": "Cancel",
     "sendMagicLink": "Send me a magic link",
     "magicLinkSent": "Magic link sent! Check your email.",
     "somethingWentWrong": "Something went wrong. Please try again.",
@@ -348,7 +353,12 @@
     "language": "Language",
     "languageDescription": "Choose your preferred language",
     "account": "Account",
-    "accountDescription": "Manage your account"
+    "accountDescription": "Manage your account",
+    "password": {
+      "setOrChangePassword": "Set or change password",
+      "savePassword": "Save password",
+      "passwordUpdated": "Password updated!"
+    }
   },
   "notifications": {
     "enable": "Enable notifications",
@@ -359,7 +369,12 @@
     "unavailableDescription": "Your browser doesn't support push notifications. Try using a modern browser or install the app.",
     "blocked": "Notifications blocked",
     "blockedDescription": "You've blocked notifications for this app. To enable them, update your browser settings.",
-    "detailedInfo": "Notifications will appear on your lock screen and notification center with sound and vibration (where supported)."
+    "detailedInfo": "Notifications will appear on your lock screen and notification center with sound and vibration (where supported).",
+    "notificationStyle": "Notification style",
+    "soundAndVibration": "Sound & Vibration",
+    "soundOnly": "Sound only",
+    "vibrationOnly": "Vibration only",
+    "silent": "Silent"
   },
   "userMenu": {
     "editProfile": "Edit profile",
@@ -565,6 +580,13 @@
       "invalidUsername": "Invalid username format",
       "saving": "Setting up...",
       "complete": "Complete Setup"
+    },
+    "passwordPrompt": {
+      "title": "Set a password?",
+      "description": "For quicker login next time. You can always use magic link or Google instead.",
+      "setPassword": "Set Password",
+      "skip": "Skip for now",
+      "passwordSet": "Password set!"
     }
   },
   "empty": {
