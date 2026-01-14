@@ -46,6 +46,11 @@
       "upcoming": "예정",
       "happening": "진행 중",
       "past": "지난"
+    },
+    "search": {
+      "placeholder": "이벤트 검색...",
+      "noResults": "\"{query}\"에 대한 이벤트를 찾을 수 없습니다",
+      "clearSearch": "검색 지우기"
     }
   },
   "auth": {

@@ -46,6 +46,11 @@
       "upcoming": "予定",
       "happening": "開催中",
       "past": "過去"
+    },
+    "search": {
+      "placeholder": "イベントを検索...",
+      "noResults": "「{query}」に一致するイベントが見つかりません",
+      "clearSearch": "検索をクリア"
     }
   },
   "auth": {

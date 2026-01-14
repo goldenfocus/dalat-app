@@ -46,6 +46,11 @@
       "upcoming": "Akan Datang",
       "happening": "Sekarang",
       "past": "Lepas"
+    },
+    "search": {
+      "placeholder": "Cari acara...",
+      "noResults": "Tiada acara dijumpai untuk \"{query}\"",
+      "clearSearch": "Padam carian"
     }
   },
   "auth": {

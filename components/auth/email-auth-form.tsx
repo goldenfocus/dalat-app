@@ -128,7 +128,7 @@ export function EmailAuthForm() {
       )}
 
       {success && (
-        <Alert>
+        <Alert variant="success">
           <Mail className="h-4 w-4" />
           <AlertDescription>{success}</AlertDescription>
         </Alert>

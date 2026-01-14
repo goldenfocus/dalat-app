@@ -46,6 +46,11 @@
       "upcoming": "Sắp tới",
       "happening": "Đang diễn ra",
       "past": "Đã qua"
+    },
+    "search": {
+      "placeholder": "Tìm kiếm sự kiện...",
+      "noResults": "Không tìm thấy sự kiện cho \"{query}\"",
+      "clearSearch": "Xóa tìm kiếm"
     }
   },
   "auth": {

@@ -46,6 +46,11 @@
       "upcoming": "Demnächst",
       "happening": "Jetzt",
       "past": "Vergangen"
+    },
+    "search": {
+      "placeholder": "Events suchen...",
+      "noResults": "Keine Events gefunden für \"{query}\"",
+      "clearSearch": "Suche löschen"
     }
   },
   "auth": {

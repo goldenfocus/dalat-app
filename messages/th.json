@@ -46,6 +46,11 @@
       "upcoming": "กำลังจะมา",
       "happening": "ตอนนี้",
       "past": "ผ่านไปแล้ว"
+    },
+    "search": {
+      "placeholder": "ค้นหากิจกรรม...",
+      "noResults": "ไม่พบกิจกรรมสำหรับ \"{query}\"",
+      "clearSearch": "ล้างการค้นหา"
     }
   },
   "auth": {

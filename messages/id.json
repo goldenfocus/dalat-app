@@ -46,6 +46,11 @@
       "upcoming": "Mendatang",
       "happening": "Sekarang",
       "past": "Selesai"
+    },
+    "search": {
+      "placeholder": "Cari acara...",
+      "noResults": "Tidak ada acara ditemukan untuk \"{query}\"",
+      "clearSearch": "Hapus pencarian"
     }
   },
   "auth": {

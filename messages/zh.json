@@ -46,6 +46,11 @@
       "upcoming": "即将举行",
       "happening": "进行中",
       "past": "已结束"
+    },
+    "search": {
+      "placeholder": "搜索活动...",
+      "noResults": "未找到"{query}"相关活动",
+      "clearSearch": "清除搜索"
     }
   },
   "auth": {

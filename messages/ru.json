@@ -46,6 +46,11 @@
       "upcoming": "Предстоящие",
       "happening": "Сейчас",
       "past": "Прошедшие"
+    },
+    "search": {
+      "placeholder": "Поиск событий...",
+      "noResults": "Событий по запросу \"{query}\" не найдено",
+      "clearSearch": "Очистить поиск"
     }
   },
   "auth": {
