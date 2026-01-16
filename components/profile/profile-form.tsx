@@ -46,8 +46,12 @@ export function ProfileForm({
       setUsernameError("Username must be 20 characters or less");
       return false;
     }
-    if (!/^[a-z0-9_]+$/.test(value)) {
-      setUsernameError("Only lowercase letters, numbers, and underscores");
+    if (!/^[a-z0-9][a-z0-9._-]*[a-z0-9]$/.test(value) && !/^[a-z0-9]{3}$/.test(value)) {
+      setUsernameError("Letters, numbers, dots, dashes, underscores. Must start/end with letter or number.");
+      return false;
+    }
+    if (/[._-]{2,}/.test(value)) {
+      setUsernameError("Cannot have consecutive dots, dashes, or underscores");
       return false;
     }
     setUsernameError(null);
@@ -119,7 +123,7 @@ export function ProfileForm({
                 name="username"
                 placeholder="yourname"
                 required
-                pattern="[a-z0-9_]{3,20}"
+                pattern="[a-z0-9][a-z0-9._-]*[a-z0-9]|[a-z0-9]{3}"
                 onChange={(e) => {
                   const value = e.target.value.toLowerCase();
                   e.target.value = value;
@@ -131,7 +135,7 @@ export function ProfileForm({
               <p className="text-sm text-red-500">{usernameError}</p>
             )}
             <p className="text-xs text-muted-foreground">
-              3-20 characters. Letters, numbers, and underscores only.
+              3-20 characters. Letters, numbers, dots, dashes, underscores.
             </p>
           </div>
 
