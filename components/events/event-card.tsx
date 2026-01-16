@@ -5,6 +5,7 @@ import { Calendar, MapPin, Users } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
+import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
@@ -13,9 +14,11 @@ import type { Event, EventCounts, Locale } from "@/lib/types";
 interface EventCardProps {
   event: Event;
   counts?: EventCounts;
+  seriesRrule?: string;
+  seriesSlug?: string;
 }
 
-export function EventCard({ event, counts }: EventCardProps) {
+export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
 
@@ -61,6 +64,12 @@ export function EventCard({ event, counts }: EventCardProps) {
               title={event.title}
               className="object-cover w-full h-full"
             />
+          )}
+          {/* Series badge */}
+          {seriesRrule && (
+            <div className="absolute top-2 left-2">
+              <SeriesBadge rrule={seriesRrule} variant="overlay" />
+            </div>
           )}
         </div>
 

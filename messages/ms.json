@@ -91,6 +91,9 @@
     "passwordResetSuccess": "Kata laluan berjaya diset semula! Anda boleh log masuk sekarang.",
     "emailRequired": "Sila masukkan emel anda",
     "or": "atau",
+    "continueWithEmail": "Teruskan dengan e-mel",
+    "wellEmailYouLink": "Kami akan hantar pautan log masuk",
+    "orUsePassword": "atau log masuk dengan kata laluan",
     "sendMagicLink": "Hantar pautan ajaib",
     "magicLinkSent": "Pautan ajaib dihantar! Semak emel anda."
   },

@@ -236,6 +236,16 @@ export interface EventCounts {
   interested_count: number;
 }
 
+/**
+ * Event with series metadata from deduplicated feed RPC.
+ * Extends Event with series info for badge display.
+ */
+export interface EventWithSeriesData extends Event {
+  series_slug: string | null;
+  series_rrule: string | null;
+  is_recurring: boolean;
+}
+
 // ============================================
 // Verification Request Types
 // ============================================

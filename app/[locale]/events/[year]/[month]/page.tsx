@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { locales, type Locale } from "@/lib/i18n/routing";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { MonthNavigation } from "@/components/events/month-navigation";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -25,7 +25,7 @@ type PageProps = {
 
 // Generate static pages for all past months with events
 export async function generateStaticParams() {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
   const { data: monthsWithEvents } = await supabase.rpc("get_months_with_events");
 
   if (!monthsWithEvents) return [];

@@ -91,6 +91,9 @@
     "signInOrCreateHint": "Mới đến? Chúng tôi sẽ tự động tạo tài khoản cho bạn.",
     "emailRequired": "Vui lòng nhập email của bạn",
     "or": "hoặc",
+    "continueWithEmail": "Tiếp tục với email",
+    "wellEmailYouLink": "Chúng tôi sẽ gửi liên kết đăng nhập",
+    "orUsePassword": "hoặc đăng nhập bằng mật khẩu",
     "sendMagicLink": "Gửi liên kết đăng nhập",
     "magicLinkSent": "Đã gửi liên kết! Kiểm tra email của bạn."
   },
@@ -121,6 +124,7 @@
     "moreFrom": "Thêm từ {organizer}",
     "viewAllEvents": "Xem tất cả sự kiện",
     "notFound": "Không tìm thấy sự kiện",
+    "partOfSeries": "Thuộc {seriesName}",
     "lifecycle": {
       "live": "Trực tiếp",
       "ended": "Đã kết thúc"
