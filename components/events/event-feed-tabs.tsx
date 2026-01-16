@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { Link } from "@/lib/i18n/routing";
 import { cn } from "@/lib/utils";
 import { Calendar, Radio, History } from "lucide-react";
 
@@ -71,22 +72,20 @@ export function EventFeedTabs({
         const count = counts?.[tab.id];
         const label = labels?.[tab.id] ?? tab.defaultLabel;
 
-        return (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
-            className={cn(
-              "flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-all",
-              "active:scale-95",
-              isFloating
-                ? isActive
-                  ? "bg-white/20 text-white shadow-sm"
-                  : "text-white/70 hover:text-white"
-                : isActive
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-            )}
-          >
+        const tabClassName = cn(
+          "flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-all",
+          "active:scale-95",
+          isFloating
+            ? isActive
+              ? "bg-white/20 text-white shadow-sm"
+              : "text-white/70 hover:text-white"
+            : isActive
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+        );
+
+        const tabContent = (
+          <>
             <Icon className={cn("h-4 w-4", tab.id === "happening" && isActive && "animate-pulse")} />
             <span>{label}</span>
             {count !== undefined && count > 0 && (
@@ -101,6 +100,30 @@ export function EventFeedTabs({
                 ({count})
               </span>
             )}
+          </>
+        );
+
+        // Past tab navigates to archive page instead of query param
+        if (tab.id === "past") {
+          return (
+            <Link
+              key={tab.id}
+              href="/events/this-month"
+              onClick={() => onTabChange?.("past")}
+              className={tabClassName}
+            >
+              {tabContent}
+            </Link>
+          );
+        }
+
+        return (
+          <button
+            key={tab.id}
+            onClick={() => handleTabChange(tab.id)}
+            className={tabClassName}
+          >
+            {tabContent}
           </button>
         );
       })}
