@@ -275,43 +275,30 @@ async function getUserFeedback(eventId: string): Promise<UserFeedback | null> {
   return null;
 }
 
-async function getAttendees(eventId: string): Promise<(Rsvp & { profiles: Profile })[]> {
-  const supabase = await createClient();
-
-  const { data } = await supabase
-    .from("rsvps")
-    .select("*, profiles(*)")
-    .eq("event_id", eventId)
-    .eq("status", "going")
-    .order("created_at", { ascending: true });
-
-  return (data ?? []) as (Rsvp & { profiles: Profile })[];
+// Combined RSVP fetch - reduces 3 parallel queries to 1
+interface AllRsvpsResult {
+  attendees: (Rsvp & { profiles: Profile })[];
+  waitlist: (Rsvp & { profiles: Profile })[];
+  interested: (Rsvp & { profiles: Profile })[];
 }
 
-async function getWaitlist(eventId: string): Promise<(Rsvp & { profiles: Profile })[]> {
+async function getAllRsvps(eventId: string): Promise<AllRsvpsResult> {
   const supabase = await createClient();
 
   const { data } = await supabase
     .from("rsvps")
     .select("*, profiles(*)")
     .eq("event_id", eventId)
-    .eq("status", "waitlist")
+    .in("status", ["going", "waitlist", "interested"])
     .order("created_at", { ascending: true });
 
-  return (data ?? []) as (Rsvp & { profiles: Profile })[];
-}
+  const rsvps = (data ?? []) as (Rsvp & { profiles: Profile })[];
 
-async function getInterestedUsers(eventId: string): Promise<(Rsvp & { profiles: Profile })[]> {
-  const supabase = await createClient();
-
-  const { data } = await supabase
-    .from("rsvps")
-    .select("*, profiles(*)")
-    .eq("event_id", eventId)
-    .eq("status", "interested")
-    .order("created_at", { ascending: true });
-
-  return (data ?? []) as (Rsvp & { profiles: Profile })[];
+  return {
+    attendees: rsvps.filter((r) => r.status === "going"),
+    waitlist: rsvps.filter((r) => r.status === "waitlist"),
+    interested: rsvps.filter((r) => r.status === "interested"),
+  };
 }
 
 async function getCurrentUserId(): Promise<string | null> {
@@ -504,12 +491,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserId = await getCurrentUserId();
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
-  const [counts, currentRsvp, attendees, waitlist, interested, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations] = await Promise.all([
+  // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
+  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
-    getAttendees(event.id),
-    getWaitlist(event.id),
-    getInterestedUsers(event.id),
+    getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
     getWaitlistPosition(event.id, currentUserId),
     getUserFeedback(event.id),
     getFeedbackStats(event.id),
@@ -520,6 +506,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getEventSponsors(event.id),
     getEventTranslations(event.id, event.title, event.description, event.source_locale, locale),
   ]);
+
+  // Destructure combined RSVP result
+  const { attendees, waitlist, interested } = allRsvps;
 
   const isLoggedIn = !!currentUserId;
   const isCreator = currentUserId === event.created_by;

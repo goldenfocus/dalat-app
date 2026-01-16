@@ -157,12 +157,13 @@ export async function EventFeedImmersive({
 
       {/* Scrollable event cards with scroll restoration */}
       <EventFeedImmersiveClient eventCount={events.length} activeTab={lifecycle}>
-        {events.map((event) => (
+        {events.map((event, index) => (
           <EventCardImmersive
             key={event.id}
             event={event}
             counts={counts[event.id]}
             seriesRrule={event.series_rrule ?? undefined}
+            priority={index === 0}
           />
         ))}
       </EventFeedImmersiveClient>

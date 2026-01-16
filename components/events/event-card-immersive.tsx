@@ -16,9 +16,10 @@ interface EventCardImmersiveProps {
   counts?: EventCounts;
   seriesRrule?: string;
   seriesSlug?: string;
+  priority?: boolean;
 }
 
-export function EventCardImmersive({ event, counts, seriesRrule }: EventCardImmersiveProps) {
+export function EventCardImmersive({ event, counts, seriesRrule, priority = false }: EventCardImmersiveProps) {
   const locale = useLocale() as Locale;
   const t = useTranslations("events");
 
@@ -54,7 +55,7 @@ export function EventCardImmersive({ event, counts, seriesRrule }: EventCardImme
                 autoPlay
               />
             ) : (
-              <ImmersiveImage src={event.image_url!} alt={event.title} />
+              <ImmersiveImage src={event.image_url!} alt={event.title} priority={priority} />
             )
           ) : (
             <EventDefaultImage

@@ -73,6 +73,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       >
         <ScrollRestorationProvider>
           <div className="min-h-screen flex flex-col">
+            <PerformanceMonitor />
             <BadgeClearer />
             <NotificationPrompt />
             <SwUpdateHandler />
