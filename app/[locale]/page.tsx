@@ -237,14 +237,19 @@ export default async function Home({ searchParams }: PageProps) {
                     Events
                   </Button>
                 </Link>
-                <Link href="/map">
+                <Link href="/business">
                   <Button size="sm" variant="ghost" className="text-sm">
-                    Map
+                    Business
                   </Button>
                 </Link>
-                <Link href="/calendar">
+                <Link href="/services">
                   <Button size="sm" variant="ghost" className="text-sm">
-                    Calendar
+                    Services
+                  </Button>
+                </Link>
+                <Link href="/guide">
+                  <Button size="sm" variant="ghost" className="text-sm">
+                    Guide to Dalat
                   </Button>
                 </Link>
               </div>
