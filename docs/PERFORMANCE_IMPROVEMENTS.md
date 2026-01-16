@@ -12,6 +12,22 @@ This document tracks performance optimizations made to the codebase.
 | Double image removal | ~50% bandwidth savings on images | ✅ Complete |
 | Recharts code-splitting | ~200KB off initial bundle | ✅ Complete |
 | Middleware regex pre-compilation | Minor CPU savings | ✅ Complete |
+| LCP image prioritization | Faster image discovery | ✅ Complete |
+
+---
+
+## Lighthouse Baseline (Jan 16, 2026)
+
+| Metric | Score | Status |
+|--------|-------|--------|
+| Performance | 73% | Needs improvement |
+| Accessibility | 91% | Good |
+| SEO | 100% | Excellent |
+| Best Practices | 100% | Excellent |
+| LCP | 7.8s | 🔴 Over 2.5s target |
+| FCP | 1.5s | ✅ Good |
+| TBT | 30ms | ✅ Good |
+| CLS | 0.00 | ✅ Excellent |
 
 ---
 
@@ -115,6 +131,29 @@ Replaced blurred background image with CSS gradient overlay:
 - `components/admin/analytics/index.ts`
 
 **Impact:** ~200KB removed from initial page loads
+
+---
+
+### 6. LCP Image Prioritization (`components/events/immersive-image.tsx`)
+
+**Problem:** First event card image had 1.6s resource load delay because browser didn't know to prioritize it.
+
+**Solution:**
+- Added `priority` prop to `ImmersiveImage` component
+- Set `fetchpriority="high"` and `loading="eager"` for priority images
+- Pass `priority={index === 0}` to first card in feed
+
+**Lighthouse verification:**
+```
+fetchpriority=high applied: ✅
+Request is discoverable: ✅
+lazy load not applied: ✅
+```
+
+**Files modified:**
+- `components/events/immersive-image.tsx`
+- `components/events/event-card-immersive.tsx`
+- `components/events/event-feed-immersive.tsx`
 
 ---
 
