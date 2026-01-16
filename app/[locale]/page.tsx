@@ -50,12 +50,32 @@ async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: str
     }));
   }
 
-  // Use deduplicated RPC - shows one entry per recurring series
-  const { data: events, error } = await supabase
+  // Try deduplicated RPC first, fallback to standard if not available
+  let { data: events, error } = await supabase
     .rpc("get_events_by_lifecycle_deduplicated", {
       p_lifecycle: lifecycle,
       p_limit: 20,
     });
+
+  // Fallback to non-deduplicated function if the new one doesn't exist
+  if (error?.code === "PGRST202") {
+    const fallback = await supabase.rpc("get_events_by_lifecycle", {
+      p_lifecycle: lifecycle,
+      p_limit: 20,
+    });
+    events = fallback.data;
+    error = fallback.error;
+    
+    // Map to expected format with null series data
+    if (events && !error) {
+      return (events as Event[]).map((e) => ({
+        ...e,
+        series_slug: null,
+        series_rrule: null,
+        is_recurring: !!e.series_id,
+      }));
+    }
+  }
 
   if (error) {
     console.error("Error fetching events:", error);
