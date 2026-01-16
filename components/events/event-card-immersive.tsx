@@ -5,6 +5,7 @@ import { Calendar, MapPin, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { ImmersiveImage } from "@/components/events/immersive-image";
+import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
@@ -13,9 +14,11 @@ import type { Event, EventCounts, Locale } from "@/lib/types";
 interface EventCardImmersiveProps {
   event: Event;
   counts?: EventCounts;
+  seriesRrule?: string;
+  seriesSlug?: string;
 }
 
-export function EventCardImmersive({ event, counts }: EventCardImmersiveProps) {
+export function EventCardImmersive({ event, counts, seriesRrule }: EventCardImmersiveProps) {
   const locale = useLocale() as Locale;
   const t = useTranslations("events");
 
@@ -59,6 +62,12 @@ export function EventCardImmersive({ event, counts }: EventCardImmersiveProps) {
               className="absolute inset-0 w-full h-full object-contain"
               priority
             />
+          )}
+          {/* Series badge - positioned with safe area for notch */}
+          {seriesRrule && (
+            <div className="absolute top-[env(safe-area-inset-top,12px)] left-4 z-10 pt-3">
+              <SeriesBadge rrule={seriesRrule} variant="overlay" />
+            </div>
           )}
         </div>
 

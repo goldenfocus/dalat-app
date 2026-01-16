@@ -133,6 +133,7 @@
     "moreFrom": "More from {organizer}",
     "viewAllEvents": "View all events",
     "notFound": "Event not found",
+    "partOfSeries": "Part of {seriesName}",
     "lifecycle": {
       "live": "Live",
       "ended": "Ended"

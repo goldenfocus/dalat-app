@@ -11,7 +11,8 @@ import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-fe
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { PastContentFeed } from "@/components/feed";
 import { Button } from "@/components/ui/button";
-import type { Event, EventCounts } from "@/lib/types";
+import type { Event, EventCounts, EventWithSeriesData } from "@/lib/types";
+import type { Locale } from "@/lib/i18n/routing";
 
 type PageProps = {
   searchParams: Promise<{ tab?: string; q?: string }>;
@@ -22,10 +23,10 @@ function parseLifecycle(tab: string | undefined): EventLifecycle {
   return "upcoming";
 }
 
-async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: string) {
+async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: string): Promise<EventWithSeriesData[]> {
   const supabase = await createClient();
 
-  // Use search RPC if there's a query, otherwise use lifecycle RPC
+  // Use search RPC if there's a query (doesn't have deduplication yet)
   if (searchQuery && searchQuery.trim()) {
     const { data: events, error } = await supabase
       .rpc("search_events", {
@@ -39,11 +40,18 @@ async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: str
       return [];
     }
 
-    return events as Event[];
+    // Search results don't have series data, add nulls
+    return (events as Event[]).map((e) => ({
+      ...e,
+      series_slug: null,
+      series_rrule: null,
+      is_recurring: !!e.series_id,
+    }));
   }
 
+  // Use deduplicated RPC - shows one entry per recurring series
   const { data: events, error } = await supabase
-    .rpc("get_events_by_lifecycle", {
+    .rpc("get_events_by_lifecycle_deduplicated", {
       p_lifecycle: lifecycle,
       p_limit: 20,
     });
@@ -53,7 +61,7 @@ async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: str
     return [];
   }
 
-  return events as Event[];
+  return events as EventWithSeriesData[];
 }
 
 async function getEventCounts(eventIds: string[]) {
@@ -144,7 +152,12 @@ async function EventsFeed({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {events.map((event) => (
-        <EventCard key={event.id} event={event} counts={counts[event.id]} />
+        <EventCard
+          key={event.id}
+          event={event}
+          counts={counts[event.id]}
+          seriesRrule={event.series_rrule ?? undefined}
+        />
       ))}
     </div>
   );
