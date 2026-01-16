@@ -1,5 +1,17 @@
 # dalat.app Development Guidelines
 
+## ⚠️ Critical: Next.js Proxy (NOT Middleware)
+
+**DO NOT rename `proxy.ts` to `middleware.ts`** - this will break production!
+
+Next.js 16 deprecated the "middleware" convention in favor of "proxy":
+- File must be named: `proxy.ts` (not `middleware.ts`)
+- Function must be named: `proxy` (not `middleware`)
+
+If you see warnings about middleware, the solution is to use `proxy.ts`, NOT to rename it to `middleware.ts`.
+
+See: https://nextjs.org/docs/messages/middleware-to-proxy
+
 ## Mobile-First Touch Targets
 
 All interactive elements must have a minimum touch target of 44x44px for mobile usability.
