@@ -26,6 +26,10 @@ type PageProps = {
 // Generate static pages for all past months with events
 export async function generateStaticParams() {
   const supabase = createStaticClient();
+  
+  // If env vars are not available, skip static generation
+  if (!supabase) return [];
+  
   const { data: monthsWithEvents } = await supabase.rpc("get_months_with_events");
 
   if (!monthsWithEvents) return [];

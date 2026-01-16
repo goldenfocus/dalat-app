@@ -58,7 +58,7 @@ export function AttendeeList({ attendees, waitlist, interested = [] }: AttendeeL
   if (attendees.length === 0 && waitlist.length === 0 && interested.length === 0) return null;
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardContent className="p-4">
         <h3 className="font-semibold mb-3">
           {t("whosGoing", { count: attendees.length })}
