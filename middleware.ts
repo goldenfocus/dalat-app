@@ -1,17 +1,7 @@
-/**
- * ⚠️  CRITICAL: DO NOT RENAME THIS FILE TO middleware.ts
- * 
- * Next.js 16 uses the "proxy" convention, not "middleware".
- * - File must be named: proxy.ts
- * - Function must be named: proxy
- * 
- * Renaming to middleware.ts WILL BREAK PRODUCTION.
- * See: https://nextjs.org/docs/messages/middleware-to-proxy
- */
 import { updateSession } from "@/lib/supabase/proxy";
 import { type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   return await updateSession(request);
 }
 
