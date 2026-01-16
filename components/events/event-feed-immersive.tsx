@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { EventCardImmersive } from "./event-card-immersive";
+import { EventFeedImmersiveClient } from "./event-feed-immersive-client";
 import { EventFeedTabs, type EventLifecycle } from "./event-feed-tabs";
 import type { Event, EventCounts, EventWithSeriesData } from "@/lib/types";
 
@@ -154,8 +155,8 @@ export async function EventFeedImmersive({
         <FloatingTabs activeTab={lifecycle} lifecycleCounts={lifecycleCounts} labels={tabLabels} />
       </div>
 
-      {/* Scrollable event cards */}
-      <div className="h-[100dvh] overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide">
+      {/* Scrollable event cards with scroll restoration */}
+      <EventFeedImmersiveClient eventCount={events.length} activeTab={lifecycle}>
         {events.map((event) => (
           <EventCardImmersive
             key={event.id}
@@ -164,7 +165,7 @@ export async function EventFeedImmersive({
             seriesRrule={event.series_rrule ?? undefined}
           />
         ))}
-      </div>
+      </EventFeedImmersiveClient>
     </div>
   );
 }
