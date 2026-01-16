@@ -91,6 +91,9 @@
     "passwordResetSuccess": "Passwort erfolgreich zurückgesetzt! Du kannst dich jetzt anmelden.",
     "emailRequired": "Bitte geben Sie Ihre E-Mail ein",
     "or": "oder",
+    "continueWithEmail": "Mit E-Mail fortfahren",
+    "wellEmailYouLink": "Wir senden Ihnen einen Anmeldelink",
+    "orUsePassword": "oder mit Passwort anmelden",
     "sendMagicLink": "Magic Link senden",
     "magicLinkSent": "Magic Link gesendet! Überprüfen Sie Ihre E-Mail."
   },

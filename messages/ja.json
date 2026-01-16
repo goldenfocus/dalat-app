@@ -91,6 +91,9 @@
     "passwordResetSuccess": "パスワードがリセットされました！ログインできます。",
     "emailRequired": "メールアドレスを入力してください",
     "or": "または",
+    "continueWithEmail": "メールで続ける",
+    "wellEmailYouLink": "サインインリンクをメールでお送りします",
+    "orUsePassword": "またはパスワードでサインイン",
     "sendMagicLink": "マジックリンクを送信",
     "magicLinkSent": "マジックリンクを送信しました！メールを確認してください。"
   },

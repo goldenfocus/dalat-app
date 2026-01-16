@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, createBrowserClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 /**
@@ -30,5 +30,16 @@ export async function createClient() {
         },
       },
     },
+  );
+}
+
+/**
+ * Client for build-time static generation (generateStaticParams).
+ * Uses anon key without cookies - suitable for public data queries only.
+ */
+export function createStaticClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
   );
 }

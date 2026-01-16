@@ -91,6 +91,9 @@
     "passwordResetSuccess": "Пароль успешно сброшен! Теперь вы можете войти.",
     "emailRequired": "Пожалуйста, введите email",
     "or": "или",
+    "continueWithEmail": "Продолжить с email",
+    "wellEmailYouLink": "Мы отправим вам ссылку для входа",
+    "orUsePassword": "или войти с паролем",
     "sendMagicLink": "Отправить magic link",
     "magicLinkSent": "Magic link отправлен! Проверьте почту."
   },

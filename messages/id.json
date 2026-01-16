@@ -91,6 +91,9 @@
     "passwordResetSuccess": "Kata sandi berhasil direset! Anda sekarang dapat masuk.",
     "emailRequired": "Silakan masukkan email Anda",
     "or": "atau",
+    "continueWithEmail": "Lanjutkan dengan email",
+    "wellEmailYouLink": "Kami akan mengirim tautan masuk",
+    "orUsePassword": "atau masuk dengan kata sandi",
     "sendMagicLink": "Kirim tautan ajaib",
     "magicLinkSent": "Tautan ajaib terkirim! Periksa email Anda."
   },

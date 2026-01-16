@@ -3,17 +3,18 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { EventCardImmersive } from "./event-card-immersive";
 import { EventFeedTabs, type EventLifecycle } from "./event-feed-tabs";
-import type { Event, EventCounts } from "@/lib/types";
+import type { EventCounts, EventWithSeriesData } from "@/lib/types";
 
 interface EventFeedImmersiveProps {
   lifecycle?: EventLifecycle;
   lifecycleCounts?: { upcoming: number; happening: number; past: number };
 }
 
-async function getEventsByLifecycle(lifecycle: EventLifecycle) {
+async function getEventsByLifecycle(lifecycle: EventLifecycle): Promise<EventWithSeriesData[]> {
   const supabase = await createClient();
 
-  const { data: events, error } = await supabase.rpc("get_events_by_lifecycle", {
+  // Use deduplicated RPC - shows one entry per recurring series
+  const { data: events, error } = await supabase.rpc("get_events_by_lifecycle_deduplicated", {
     p_lifecycle: lifecycle,
     p_limit: 20,
   });
@@ -23,7 +24,7 @@ async function getEventsByLifecycle(lifecycle: EventLifecycle) {
     return [];
   }
 
-  return events as Event[];
+  return events as EventWithSeriesData[];
 }
 
 async function getEventCounts(eventIds: string[]) {
@@ -140,6 +141,7 @@ export async function EventFeedImmersive({
             key={event.id}
             event={event}
             counts={counts[event.id]}
+            seriesRrule={event.series_rrule ?? undefined}
           />
         ))}
       </div>

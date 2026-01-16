@@ -91,6 +91,9 @@
     "passwordResetSuccess": "密码重置成功！您现在可以登录了。",
     "emailRequired": "请输入您的邮箱",
     "or": "或",
+    "continueWithEmail": "使用邮箱继续",
+    "wellEmailYouLink": "我们将发送登录链接到您的邮箱",
+    "orUsePassword": "或使用密码登录",
     "sendMagicLink": "发送登录链接",
     "magicLinkSent": "登录链接已发送！请查收邮件。"
   },

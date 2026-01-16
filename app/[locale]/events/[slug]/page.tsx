@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { ArrowLeft, Calendar, MapPin, Users, ExternalLink, Link2 } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, ExternalLink, Link2, Repeat } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
@@ -12,6 +12,7 @@ import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { RsvpButton } from "@/components/events/rsvp-button";
 import { FeedbackBadge } from "@/components/events/event-feedback";
+import { SeriesBadge } from "@/components/events/series-badge";
 import { EventActions } from "@/components/events/event-actions";
 import { InviteModal } from "@/components/events/invite-modal";
 import { AddToCalendar } from "@/components/events/add-to-calendar";
@@ -25,7 +26,7 @@ import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { Linkify } from "@/lib/linkify";
 import { MomentsPreview } from "@/components/moments";
 import { SponsorDisplay } from "@/components/events/sponsor-display";
-import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole } from "@/lib/types";
+import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -85,8 +86,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+type EventWithJoins = Event & {
+  profiles: Profile;
+  organizers: Organizer | null;
+  event_series: Pick<EventSeries, "slug" | "title" | "rrule"> | null;
+};
+
 type GetEventResult =
-  | { type: "found"; event: Event & { profiles: Profile; organizers: Organizer | null } }
+  | { type: "found"; event: EventWithJoins }
   | { type: "redirect"; newSlug: string }
   | { type: "not_found" };
 
@@ -96,12 +103,12 @@ async function getEvent(slug: string): Promise<GetEventResult> {
   // First, try to find by current slug
   const { data: event, error } = await supabase
     .from("events")
-    .select("*, profiles(*), organizers(*)")
+    .select("*, profiles(*), organizers(*), event_series(slug, title, rrule)")
     .eq("slug", slug)
     .single();
 
   if (!error && event) {
-    return { type: "found", event: event as Event & { profiles: Profile; organizers: Organizer | null } };
+    return { type: "found", event: event as EventWithJoins };
   }
 
   // If not found, check if this is an old slug that needs redirect
@@ -559,6 +566,21 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             {/* Title and description */}
             <div>
               <h1 className="text-3xl font-bold mb-2">{eventTranslations.title}</h1>
+              {/* Series context - show if this event is part of a recurring series */}
+              {event.event_series && (
+                <Link
+                  href={`/series/${event.event_series.slug}`}
+                  className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
+                >
+                  <Repeat className="w-3.5 h-3.5" />
+                  <span>
+                    {t("partOfSeries", { seriesName: event.event_series.title })}
+                  </span>
+                  {event.event_series.rrule && (
+                    <SeriesBadge rrule={event.event_series.rrule} className="ml-1" />
+                  )}
+                </Link>
+              )}
               {/* Show translation indicator with original */}
               {eventTranslations.isTranslated && eventTranslations.sourceLocale && (
                 <TranslatedFrom
