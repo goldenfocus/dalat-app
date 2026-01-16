@@ -6,25 +6,41 @@ import { Check, X, HelpCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { InvitationRsvpStatus } from "@/lib/types";
 
+// Helper to check if event is past (mirrors database logic)
+function isEventPast(startsAt: string, endsAt: string | null): boolean {
+  const now = new Date();
+  if (endsAt) {
+    return new Date(endsAt) < now;
+  }
+  // Default: 4 hours after start
+  const startDate = new Date(startsAt);
+  const defaultEnd = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
+  return defaultEnd < now;
+}
+
 interface InviteRsvpButtonsProps {
   token: string;
   currentResponse: InvitationRsvpStatus | null;
   compact?: boolean;
   autoRsvp?: string;
+  startsAt: string;
+  endsAt: string | null;
 }
 
-export function InviteRsvpButtons({ token, currentResponse, compact, autoRsvp }: InviteRsvpButtonsProps) {
+export function InviteRsvpButtons({ token, currentResponse, compact, autoRsvp, startsAt, endsAt }: InviteRsvpButtonsProps) {
   const t = useTranslations("invite");
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [response, setResponse] = useState<InvitationRsvpStatus | null>(currentResponse);
   const [error, setError] = useState<string | null>(null);
 
-  // Handle auto-RSVP from email link
+  const isPast = isEventPast(startsAt, endsAt);
+
+  // Handle auto-RSVP from email link (only if event isn't past)
   useEffect(() => {
-    if (autoRsvp && !currentResponse && ["going", "interested", "cancelled"].includes(autoRsvp)) {
+    if (autoRsvp && !currentResponse && !isPast && ["going", "interested", "cancelled"].includes(autoRsvp)) {
       handleRsvp(autoRsvp as InvitationRsvpStatus);
     }
-  }, [autoRsvp, currentResponse]);
+  }, [autoRsvp, currentResponse, isPast]);
 
   const handleRsvp = async (newResponse: InvitationRsvpStatus) => {
     setSubmitting(newResponse);
@@ -55,6 +71,15 @@ export function InviteRsvpButtons({ token, currentResponse, compact, autoRsvp }:
       setSubmitting(null);
     }
   };
+
+  // Event has ended - show message instead of buttons
+  if (isPast) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-sm text-muted-foreground">{t("eventEnded")}</p>
+      </div>
+    );
+  }
 
   if (compact) {
     return (

@@ -241,6 +241,8 @@ export default async function InvitePage({ params, searchParams }: PageProps) {
                   token={token}
                   currentResponse={invitation.rsvp_status}
                   compact
+                  startsAt={event.starts_at}
+                  endsAt={event.ends_at}
                 />
               </div>
             ) : (
@@ -252,6 +254,8 @@ export default async function InvitePage({ params, searchParams }: PageProps) {
                   token={token}
                   currentResponse={null}
                   autoRsvp={autoRsvp}
+                  startsAt={event.starts_at}
+                  endsAt={event.ends_at}
                 />
               </div>
             )}

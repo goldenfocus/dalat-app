@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
@@ -5,6 +6,7 @@ import { locales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { MonthNavigation } from "@/components/events/month-navigation";
+import { PastContentFeed } from "@/components/feed";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { getMonthSlug, getAdjacentMonths } from "@/lib/events/archive-utils";
@@ -149,6 +151,11 @@ export default async function ThisMonthPage({ params }: PageProps) {
                 : t("eventCount", { count: events.length })}
             </p>
           </div>
+
+          {/* Recent moments carousel */}
+          <Suspense fallback={null}>
+            <PastContentFeed />
+          </Suspense>
 
           {/* Month navigation - top */}
           <div className="mb-6">

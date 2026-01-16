@@ -127,36 +127,6 @@ export async function EventFeedImmersive({
     );
   }
 
-  // For Past tab, show content carousel first
-  if (lifecycle === "past") {
-    return (
-      <div className="h-[100dvh] relative flex flex-col bg-black">
-        {/* Floating tabs below the header */}
-        <div className="absolute top-14 left-0 right-0 z-40 px-3">
-          <FloatingTabs activeTab={lifecycle} lifecycleCounts={lifecycleCounts} labels={tabLabels} />
-        </div>
-
-        {/* Content carousel section */}
-        <div className="pt-28 pb-4 flex-shrink-0">
-          <Suspense fallback={null}>
-            <PastContentFeed />
-          </Suspense>
-        </div>
-
-        {/* Scrollable event cards */}
-        <div className="flex-1 overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide">
-          {events.map((event) => (
-            <EventCardImmersive
-              key={event.id}
-              event={event}
-              counts={counts[event.id]}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="h-[100dvh] relative">
       {/* Floating tabs below the header */}

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
+import { permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { AuthButton } from "@/components/auth-button";
@@ -9,12 +10,12 @@ import { EventCard } from "@/components/events/event-card";
 import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
-import { PastContentFeed } from "@/components/feed";
 import { Button } from "@/components/ui/button";
 import type { Event, EventCounts, EventWithSeriesData } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
 
 type PageProps = {
+  params: Promise<{ locale: Locale }>;
   searchParams: Promise<{ tab?: string; q?: string }>;
 };
 
@@ -185,14 +186,21 @@ function DesktopTabs({
   );
 }
 
-export default async function Home({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const activeTab = parseLifecycle(params.tab);
-  const searchQuery = params.q ?? "";
-  const [t, tNav, tArchive, lifecycleCounts] = await Promise.all([
+export default async function Home({ params, searchParams }: PageProps) {
+  const { locale } = await params;
+  const search = await searchParams;
+  const activeTab = parseLifecycle(search.tab);
+
+  // Permanent redirect: Past tab now lives at /events/this-month for SEO
+  if (activeTab === "past") {
+    const queryString = search.q ? `?q=${encodeURIComponent(search.q)}` : "";
+    permanentRedirect(`/${locale}/events/this-month${queryString}`);
+  }
+
+  const searchQuery = search.q ?? "";
+  const [t, tNav, lifecycleCounts] = await Promise.all([
     getTranslations("home"),
     getTranslations("nav"),
-    getTranslations("archive"),
     getLifecycleCounts(),
   ]);
 
@@ -288,13 +296,6 @@ export default async function Home({ searchParams }: PageProps) {
             />
           </div>
 
-          {/* Content carousel for Past tab */}
-          {activeTab === "past" && (
-            <Suspense fallback={null}>
-              <PastContentFeed />
-            </Suspense>
-          )}
-
           <Suspense
             fallback={
               <div className="grid gap-4 sm:grid-cols-2">
@@ -309,15 +310,6 @@ export default async function Home({ searchParams }: PageProps) {
           >
             <EventsFeed lifecycle={activeTab} searchQuery={searchQuery} />
           </Suspense>
-
-          {/* Archive link for past events */}
-          {activeTab === "past" && (
-            <div className="mt-8 text-center">
-              <Link href="/events/this-month" className="text-sm text-muted-foreground hover:text-foreground">
-                {tArchive("browseArchive")} →
-              </Link>
-            </div>
-          )}
         </div>
       </main>
     </>

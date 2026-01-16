@@ -5,30 +5,56 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { EventFeedback } from "./event-feedback";
 import type { Rsvp } from "@/lib/types";
 
 interface RsvpButtonProps {
   eventId: string;
+  eventTitle?: string;
   capacity: number | null;
   goingSpots: number;
   currentRsvp: Rsvp | null;
   isLoggedIn: boolean;
   waitlistPosition: number | null;
+  startsAt: string;
+  endsAt: string | null;
+  existingFeedback?: {
+    rating?: string;
+    comment?: string;
+    marked_no_show?: boolean;
+  } | null;
+}
+
+// Helper to check if event is past (mirrors database logic)
+function isEventPast(startsAt: string, endsAt: string | null): boolean {
+  const now = new Date();
+  if (endsAt) {
+    return new Date(endsAt) < now;
+  }
+  // Default: 4 hours after start
+  const startDate = new Date(startsAt);
+  const defaultEnd = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
+  return defaultEnd < now;
 }
 
 export function RsvpButton({
   eventId,
+  eventTitle = "",
   capacity,
   goingSpots,
   currentRsvp,
   isLoggedIn,
   waitlistPosition,
+  startsAt,
+  endsAt,
+  existingFeedback,
 }: RsvpButtonProps) {
   const router = useRouter();
   const t = useTranslations("rsvp");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  const isPast = isEventPast(startsAt, endsAt);
   const isFull = capacity ? goingSpots >= capacity : false;
   const isGoing = currentRsvp?.status === "going";
   const isWaitlist = currentRsvp?.status === "waitlist";
@@ -136,6 +162,18 @@ export function RsvpButton({
 
       router.refresh();
     });
+  }
+
+  // STATE: Event has ended - show feedback UI
+  if (isPast) {
+    return (
+      <EventFeedback
+        eventId={eventId}
+        eventTitle={eventTitle}
+        currentRsvpStatus={currentRsvp?.status ?? null}
+        existingFeedback={existingFeedback}
+      />
+    );
   }
 
   // STATE: User is going

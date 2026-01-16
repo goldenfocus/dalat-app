@@ -150,6 +150,25 @@ async function getEventCounts(eventId: string): Promise<EventCounts | null> {
   return data as EventCounts | null;
 }
 
+interface FeedbackStats {
+  total: number;
+  positive_percentage: number | null;
+  amazing: number;
+  good: number;
+  okay: number;
+  not_great: number;
+}
+
+async function getFeedbackStats(eventId: string): Promise<FeedbackStats | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase.rpc("get_event_feedback_stats", {
+    p_event_id: eventId,
+  });
+
+  return data as FeedbackStats | null;
+}
+
 async function getCurrentUserRsvp(eventId: string): Promise<Rsvp | null> {
   const supabase = await createClient();
 
@@ -186,6 +205,48 @@ async function getWaitlistPosition(eventId: string, userId: string | null): Prom
 
   const position = data.findIndex((rsvp) => rsvp.user_id === userId);
   return position >= 0 ? position + 1 : null; // 1-indexed position
+}
+
+interface UserFeedback {
+  rating?: string;
+  comment?: string;
+  marked_no_show?: boolean;
+}
+
+async function getUserFeedback(eventId: string): Promise<UserFeedback | null> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  // Check if user marked as no-show
+  const { data: rsvp } = await supabase
+    .from("rsvps")
+    .select("marked_no_show")
+    .eq("event_id", eventId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (rsvp?.marked_no_show) {
+    return { marked_no_show: true };
+  }
+
+  // Check for actual feedback
+  const { data: feedback } = await supabase
+    .from("event_feedback")
+    .select("rating, comment")
+    .eq("event_id", eventId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (feedback) {
+    return { rating: feedback.rating, comment: feedback.comment ?? undefined };
+  }
+
+  return null;
 }
 
 async function getAttendees(eventId: string): Promise<(Rsvp & { profiles: Profile })[]> {
@@ -417,13 +478,15 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserId = await getCurrentUserId();
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
-  const [counts, currentRsvp, attendees, waitlist, interested, waitlistPosition, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations] = await Promise.all([
+  const [counts, currentRsvp, attendees, waitlist, interested, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAttendees(event.id),
     getWaitlist(event.id),
     getInterestedUsers(event.id),
     getWaitlistPosition(event.id, currentUserId),
+    getUserFeedback(event.id),
+    getFeedbackStats(event.id),
     event.organizer_id ? getOrganizerEvents(event.organizer_id) : Promise.resolve([]),
     getMomentsPreview(event.id),
     getMomentCounts(event.id),
@@ -636,12 +699,26 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 {/* RSVP button */}
                 <RsvpButton
                   eventId={event.id}
+                  eventTitle={event.title}
                   capacity={event.capacity}
                   goingSpots={counts?.going_spots ?? 0}
                   currentRsvp={currentRsvp}
                   isLoggedIn={isLoggedIn}
                   waitlistPosition={waitlistPosition}
+                  startsAt={event.starts_at}
+                  endsAt={event.ends_at}
+                  existingFeedback={userFeedback}
                 />
+
+                {/* Feedback stats for past events */}
+                {feedbackStats && feedbackStats.total > 0 && (
+                  <div className="flex justify-center">
+                    <FeedbackBadge
+                      positivePercentage={feedbackStats.positive_percentage}
+                      totalFeedback={feedbackStats.total}
+                    />
+                  </div>
+                )}
 
                 {/* Add to calendar */}
                 <AddToCalendar

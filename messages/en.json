@@ -152,6 +152,20 @@
     "waitlistPosition": "You're #{position} on the waitlist",
     "waitlistAutoPromote": "You'll automatically get a spot when one opens up"
   },
+  "feedback": {
+    "howWasIt": "How was the event?",
+    "amazing": "Amazing",
+    "good": "Good",
+    "okay": "Okay",
+    "notGreat": "Not great",
+    "commentPlaceholder": "Any thoughts to share? (optional)",
+    "submit": "Submit feedback",
+    "didNotAttend": "I didn't go",
+    "thankYou": "Thanks for your feedback!",
+    "markedNoShow": "Got it, thanks for letting us know.",
+    "eventEnded": "This event has ended",
+    "positiveRating": "{percentage}% positive ({count} reviews)"
+  },
   "eventForm": {
     "createEvent": "Create Event",
     "editEvent": "Edit Event",
@@ -317,8 +331,8 @@
     "usernameTaken": "Username is already taken",
     "usernameMinLength": "Username must be at least 3 characters",
     "usernameMaxLength": "Username must be 20 characters or less",
-    "usernameFormat": "Only lowercase letters, numbers, and underscores",
-    "usernameHelp": "3-20 characters. Letters, numbers, and underscores only.",
+    "usernameFormat": "Letters, numbers, dots, dashes, underscores. Must start/end with letter or number.",
+    "usernameHelp": "3-20 characters. Letters, numbers, dots, dashes, underscores.",
     "displayName": "Display name",
     "displayNamePlaceholder": "Your Name",
     "displayNameHelp": "How your name appears on events and your profile",
@@ -630,7 +644,8 @@
     "addToCalendar": "Add to calendar",
     "viewEventPage": "View event page",
     "poweredBy": "Powered by",
-    "rsvpFailed": "Failed to save response. Please try again."
+    "rsvpFailed": "Failed to save response. Please try again.",
+    "eventEnded": "This event has ended"
   },
   "moments": {
     "moments": "Moments",
