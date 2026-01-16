@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyRsvpConfirmation, scheduleEventReminders } from '@/lib/novu';
+import { notifyRsvpConfirmation, scheduleEventReminders, scheduleFeedbackRequest } from '@/lib/novu';
 import type { Locale } from '@/lib/types';
 
 export async function POST(request: Request) {
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       .single(),
     supabase
       .from('events')
-      .select('title, slug, description, starts_at, location_name, google_maps_url')
+      .select('title, slug, description, starts_at, ends_at, location_name, google_maps_url')
       .eq('id', eventId)
       .single(),
   ]);
@@ -47,19 +47,30 @@ export async function POST(request: Request) {
       event.description
     );
 
-    // Schedule 24h and 2h reminders
-    const scheduled = await scheduleEventReminders(
-      user.id,
-      locale,
-      eventId,
-      event.title,
-      event.slug,
-      event.starts_at,
-      event.location_name,
-      event.google_maps_url
-    );
+    // Schedule 24h and 2h reminders + feedback request (all in parallel)
+    const [reminders, feedback] = await Promise.all([
+      scheduleEventReminders(
+        user.id,
+        locale,
+        eventId,
+        event.title,
+        event.slug,
+        event.starts_at,
+        event.location_name,
+        event.google_maps_url
+      ),
+      scheduleFeedbackRequest(
+        user.id,
+        locale,
+        eventId,
+        event.title,
+        event.slug,
+        event.starts_at,
+        event.ends_at
+      ),
+    ]);
 
-    return NextResponse.json({ success: true, scheduled });
+    return NextResponse.json({ success: true, scheduled: { ...reminders, ...feedback } });
   } catch (error) {
     console.error('RSVP notification error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

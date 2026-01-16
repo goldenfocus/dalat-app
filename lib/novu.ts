@@ -87,6 +87,17 @@ const translations = {
     no: { en: "Can't make it", fr: 'Non', vi: 'Không thể đến' },
     getDirections: { en: 'Get Directions', fr: 'Itinéraire', vi: 'Chỉ đường' },
     changePlans: { en: 'Change plans', fr: 'Modifier', vi: 'Thay đổi' },
+    shareFeedback: { en: 'Share feedback', fr: 'Donner mon avis', vi: 'Chia sẻ nhận xét' },
+  },
+  feedbackRequest: {
+    en: (title: string) => `How was "${title}"?`,
+    fr: (title: string) => `Comment était "${title}" ?`,
+    vi: (title: string) => `"${title}" thế nào?`,
+  },
+  feedbackRequestBody: {
+    en: 'Tap to share your experience with the organizer',
+    fr: 'Appuyez pour partager votre avis',
+    vi: 'Nhấn để chia sẻ trải nghiệm của bạn',
   },
   email: {
     clickToConfirm: { en: 'Click below to confirm:', fr: 'Cliquez ci-dessous pour confirmer :', vi: 'Nhấn bên dưới để xác nhận:' },
@@ -333,6 +344,35 @@ export async function notifyOrganizerNewRsvp(
   ]);
 }
 
+export async function notifyFeedbackRequest(
+  subscriberId: string,
+  locale: Locale,
+  eventTitle: string,
+  eventSlug: string
+) {
+  const notifLocale = getNotificationLocale(locale);
+  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
+
+  await Promise.all([
+    getNovu().trigger('feedback-request', {
+      to: { subscriberId },
+      payload: {
+        subject: translations.feedbackRequest[notifLocale](eventTitle),
+        body: translations.feedbackRequestBody[notifLocale],
+        primaryActionLabel: translations.buttons.shareFeedback[notifLocale],
+        primaryActionUrl: eventUrl,
+      },
+    }),
+    sendPushToUser(subscriberId, {
+      title: translations.feedbackRequest[notifLocale](eventTitle),
+      body: translations.feedbackRequestBody[notifLocale],
+      url: eventUrl,
+      tag: `feedback-${eventSlug}`,
+      requireInteraction: true,
+    }),
+  ]);
+}
+
 export async function createOrUpdateSubscriber(
   subscriberId: string,
   email?: string,
@@ -508,6 +548,52 @@ export async function scheduleEventReminders(
   }
 
   return results;
+}
+
+// Schedule feedback request for after event ends
+// Called at RSVP time, triggered 3 hours after event ends
+export async function scheduleFeedbackRequest(
+  subscriberId: string,
+  locale: Locale,
+  eventId: string,
+  eventTitle: string,
+  eventSlug: string,
+  startsAt: string,
+  endsAt: string | null
+) {
+  const notifLocale = getNotificationLocale(locale);
+  const now = new Date();
+
+  // Calculate when event ends (use ends_at or starts_at + 4 hours)
+  const eventEnd = endsAt
+    ? new Date(endsAt)
+    : new Date(new Date(startsAt).getTime() + 4 * 60 * 60 * 1000);
+
+  // Schedule feedback request for 3 hours after event ends
+  const feedbackTime = new Date(eventEnd.getTime() + 3 * 60 * 60 * 1000);
+
+  // Only schedule if it's in the future
+  if (feedbackTime <= now) {
+    return { scheduledFeedback: false };
+  }
+
+  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
+
+  await getNovu().trigger('feedback-request-scheduled', {
+    to: { subscriberId },
+    payload: {
+      eventId,
+      eventTitle,
+      eventSlug,
+      subject: translations.feedbackRequest[notifLocale](eventTitle),
+      body: translations.feedbackRequestBody[notifLocale],
+      primaryActionLabel: translations.buttons.shareFeedback[notifLocale],
+      primaryActionUrl: eventUrl,
+      delayTill: feedbackTime.toISOString(),
+    },
+  });
+
+  return { scheduledFeedback: true, scheduledFor: feedbackTime.toISOString() };
 }
 
 // ============================================
