@@ -56,17 +56,32 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
 
     return (
         <div className="relative h-screen overflow-hidden">
-            {/* Top Section - Search & Date Presets */}
-            <div className="absolute top-0 left-0 right-0 z-[1000] p-4 bg-gradient-to-b from-white via-white to-transparent">
-                <SearchBar
-                    onFilterClick={() => setIsFilterOpen(true)}
-                    className="mb-3"
-                />
-                <DatePresets />
+            {/* Header Section */}
+            <div className="absolute top-0 left-0 right-0 z-[1000] bg-white border-b border-gray-100">
+                <div className="px-4 pt-4 pb-3">
+                    {/* Title & Subtitle */}
+                    <div className="mb-4">
+                        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                            Events in DaLat
+                        </h1>
+                        <p className="text-sm text-gray-600">
+                            Discover what's happening in DaLat
+                        </p>
+                    </div>
+
+                    {/* Search Bar */}
+                    <SearchBar
+                        onFilterClick={() => setIsFilterOpen(true)}
+                        className="mb-3"
+                    />
+
+                    {/* Date Presets */}
+                    <DatePresets />
+                </div>
             </div>
 
-            {/* Map */}
-            <div className="absolute inset-0">
+            {/* Map - with top padding for header */}
+            <div className="absolute inset-0 pt-[180px]">
                 <MapContainer
                     center={defaultCenter}
                     zoom={defaultZoom}
