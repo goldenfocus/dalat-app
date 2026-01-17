@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ImageIcon, X, Upload, Loader2, Send, Type } from "lucide-react";
+import { ImageIcon, X, Upload, Loader2, Send, Type, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,43 +23,35 @@ interface MomentFormProps {
 
 type ContentMode = "media" | "text";
 
+interface UploadItem {
+  id: string;
+  file: File;
+  previewUrl: string;
+  isVideo: boolean;
+  status: "uploading" | "uploaded" | "error";
+  mediaUrl?: string;
+  error?: string;
+}
+
 export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentFormProps) {
   const t = useTranslations("moments");
   const router = useRouter();
 
   const [mode, setMode] = useState<ContentMode>("media");
-  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewIsVideo, setPreviewIsVideo] = useState(false);
+  const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [caption, setCaption] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadMedia = async (file: File) => {
-    setError(null);
-
-    const validationError = validateMediaFile(file);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    // Create preview immediately
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
-    setPreviewIsVideo(file.type.startsWith("video/"));
-
-    setIsUploading(true);
-
+  const uploadFile = async (file: File, itemId: string) => {
     try {
       const supabase = createClient();
 
-      // Generate unique filename: {event_id}/{user_id}/{timestamp}.{ext}
+      // Generate unique filename: {event_id}/{user_id}/{timestamp}_{random}.{ext}
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${eventId}/${userId}/${Date.now()}.${ext}`;
+      const fileName = `${eventId}/${userId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
       // Upload media
       const { error: uploadError } = await supabase.storage
@@ -78,22 +70,62 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         .from("moments")
         .getPublicUrl(fileName);
 
-      setMediaUrl(publicUrl);
+      setUploads(prev => prev.map(item =>
+        item.id === itemId
+          ? { ...item, status: "uploaded" as const, mediaUrl: publicUrl }
+          : item
+      ));
       triggerHaptic("light");
     } catch (err) {
       console.error("Upload error:", err);
-      setError(t("errors.uploadFailed"));
-      setPreviewUrl(null);
-      setPreviewIsVideo(false);
-    } finally {
-      setIsUploading(false);
+      setUploads(prev => prev.map(item =>
+        item.id === itemId
+          ? { ...item, status: "error" as const, error: t("errors.uploadFailed") }
+          : item
+      ));
+    }
+  };
+
+  const addFiles = (files: FileList | File[]) => {
+    setError(null);
+    const fileArray = Array.from(files);
+
+    const newUploads: UploadItem[] = [];
+
+    for (const file of fileArray) {
+      const validationError = validateMediaFile(file);
+      if (validationError) {
+        setError(validationError);
+        continue;
+      }
+
+      const itemId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const previewUrl = URL.createObjectURL(file);
+      const isVideo = file.type.startsWith("video/");
+
+      newUploads.push({
+        id: itemId,
+        file,
+        previewUrl,
+        isVideo,
+        status: "uploading",
+      });
+    }
+
+    if (newUploads.length === 0) return;
+
+    setUploads(prev => [...prev, ...newUploads]);
+
+    // Start uploading each file
+    for (const item of newUploads) {
+      uploadFile(item.file, item.id);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      uploadMedia(file);
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      addFiles(files);
     }
     e.target.value = "";
   };
@@ -102,9 +134,9 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     e.preventDefault();
     setIsDragOver(false);
 
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      uploadMedia(file);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      addFiles(files);
     }
   };
 
@@ -118,15 +150,21 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     setIsDragOver(false);
   }, []);
 
-  const handleRemoveMedia = () => {
-    setMediaUrl(null);
-    setPreviewUrl(null);
-    setPreviewIsVideo(false);
+  const handleRemoveUpload = (itemId: string) => {
+    setUploads(prev => {
+      const item = prev.find(u => u.id === itemId);
+      if (item) {
+        URL.revokeObjectURL(item.previewUrl);
+      }
+      return prev.filter(u => u.id !== itemId);
+    });
   };
 
   const handlePost = async () => {
     // Validate content
-    if (mode === "media" && !mediaUrl) {
+    const readyUploads = uploads.filter(u => u.status === "uploaded" && u.mediaUrl);
+
+    if (mode === "media" && readyUploads.length === 0) {
       setError(t("errors.uploadFailed"));
       return;
     }
@@ -139,31 +177,56 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
     try {
       const supabase = createClient();
+      const textContent = caption.trim() || null;
 
-      const contentType = mode === "text" ? "text" : (previewIsVideo ? "video" : "photo");
+      if (mode === "text") {
+        // Text-only moment
+        const { data, error: postError } = await supabase.rpc("create_moment", {
+          p_event_id: eventId,
+          p_content_type: "text",
+          p_media_url: null,
+          p_text_content: textContent,
+        });
 
-      const { data, error: postError } = await supabase.rpc("create_moment", {
-        p_event_id: eventId,
-        p_content_type: contentType,
-        p_media_url: mode === "media" ? mediaUrl : null,
-        p_text_content: caption.trim() || null,
-      });
-
-      if (postError) {
-        if (postError.message.includes("not_allowed_to_post")) {
-          setError(t("errors.notAllowed"));
-        } else {
+        if (postError) {
+          if (postError.message.includes("not_allowed_to_post")) {
+            setError(t("errors.notAllowed"));
+            return;
+          }
           throw postError;
         }
-        return;
-      }
 
-      // Trigger translation for text content (fire-and-forget)
-      const textContent = caption.trim();
-      if (data?.moment_id && textContent) {
-        triggerTranslation("moment", data.moment_id, [
-          { field_name: "text_content", text: textContent },
-        ]);
+        if (data?.moment_id && textContent) {
+          triggerTranslation("moment", data.moment_id, [
+            { field_name: "text_content", text: textContent },
+          ]);
+        }
+      } else {
+        // Create a moment for each uploaded file
+        for (const upload of readyUploads) {
+          const contentType = upload.isVideo ? "video" : "photo";
+
+          const { data, error: postError } = await supabase.rpc("create_moment", {
+            p_event_id: eventId,
+            p_content_type: contentType,
+            p_media_url: upload.mediaUrl,
+            p_text_content: textContent,
+          });
+
+          if (postError) {
+            if (postError.message.includes("not_allowed_to_post")) {
+              setError(t("errors.notAllowed"));
+              return;
+            }
+            throw postError;
+          }
+
+          if (data?.moment_id && textContent) {
+            triggerTranslation("moment", data.moment_id, [
+              { field_name: "text_content", text: textContent },
+            ]);
+          }
+        }
       }
 
       triggerHaptic("medium");
@@ -182,9 +245,11 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     }
   };
 
+  const isUploading = uploads.some(u => u.status === "uploading");
+  const readyCount = uploads.filter(u => u.status === "uploaded" && u.mediaUrl).length;
   const canPost = mode === "text"
     ? caption.trim().length > 0
-    : !!mediaUrl;
+    : readyCount > 0;
 
   return (
     <div className="space-y-4">
@@ -214,76 +279,85 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
       {/* Media upload area */}
       {mode === "media" && (
-        <div
-          className={cn(
-            "relative aspect-square rounded-lg overflow-hidden bg-muted border-2 transition-colors cursor-pointer group",
-            isDragOver
-              ? "border-primary border-dashed"
-              : previewUrl
-                ? "border-transparent"
-                : "border-dashed border-muted-foreground/30 hover:border-muted-foreground/50"
-          )}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onClick={() => !previewUrl && fileInputRef.current?.click()}
-        >
-          {previewUrl ? (
-            <>
-              {previewIsVideo ? (
-                <video
-                  src={previewUrl}
-                  className="w-full h-full object-cover"
-                  muted
-                  loop
-                  playsInline
-                  autoPlay
-                />
-              ) : (
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              )}
+        <div className="space-y-3">
+          {/* Preview grid */}
+          {uploads.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {uploads.map((upload) => (
+                <div
+                  key={upload.id}
+                  className="relative aspect-square rounded-lg overflow-hidden bg-muted"
+                >
+                  {upload.isVideo ? (
+                    <video
+                      src={upload.previewUrl}
+                      className="w-full h-full object-cover"
+                      muted
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      src={upload.previewUrl}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
 
-              {/* Remove button */}
+                  {/* Upload status overlay */}
+                  {upload.status === "uploading" && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    </div>
+                  )}
+
+                  {upload.status === "error" && (
+                    <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
+                      <X className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+
+                  {/* Remove button */}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveUpload(upload.id)}
+                    className="absolute top-1 right-1 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70 active:scale-95 transition-all"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Add more button */}
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveMedia();
-                }}
-                className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+                className="aspect-square rounded-lg border-2 border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 flex items-center justify-center transition-colors"
               >
-                <X className="w-4 h-4" />
+                <Plus className="w-6 h-6 text-muted-foreground" />
               </button>
+            </div>
+          )}
 
-              {/* Upload overlay on hover */}
-              {!isUploading && (
-                <div
-                  className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fileInputRef.current?.click();
-                  }}
-                >
-                  <Upload className="w-8 h-8 text-white" />
-                </div>
+          {/* Empty state drop zone */}
+          {uploads.length === 0 && (
+            <div
+              className={cn(
+                "relative aspect-square rounded-lg overflow-hidden bg-muted border-2 transition-colors cursor-pointer",
+                isDragOver
+                  ? "border-primary border-dashed"
+                  : "border-dashed border-muted-foreground/30 hover:border-muted-foreground/50"
               )}
-            </>
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-              {isUploading ? (
-                <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
-              ) : (
-                <>
-                  <ImageIcon className="w-12 h-12 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground text-center px-4">
-                    {t("uploadMedia")}
-                  </span>
-                </>
-              )}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                <ImageIcon className="w-12 h-12 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground text-center px-4">
+                  {t("uploadMedia")}
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -318,7 +392,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         ) : (
           <>
             <Send className="w-4 h-4 mr-2" />
-            {t("postMoment")}
+            {readyCount > 1 ? t("postMoments", { count: readyCount }) : t("postMoment")}
           </>
         )}
       </Button>
@@ -329,6 +403,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         accept={ALL_ALLOWED_TYPES.join(",")}
         onChange={handleFileSelect}
         className="hidden"
+        multiple
       />
     </div>
   );
