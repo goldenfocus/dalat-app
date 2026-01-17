@@ -1,8 +1,18 @@
 "use client";
 
-import { LeafletAdapter } from "./adapters/leaflet-adapter";
+import dynamic from "next/dynamic";
 import { GoogleMapsAdapter } from "./adapters/google-maps-adapter";
 import type { MapAdapterProps, MapProvider } from "./types";
+
+// Dynamically import Leaflet adapter with toggled off SSR to prevent window error
+const LeafletAdapter = dynamic(
+    () => import("./adapters/leaflet-adapter").then((mod) => mod.LeafletAdapter),
+    { ssr: false }
+);
+// const LeafletAdapter = dynamic(() => import("./adapters/leaflet-adapter"), { ssr: false });
+// The above line works if default export. But we use named export.
+// Correct usage:
+// const LeafletAdapter = dynamic(() => import('./adapters/leaflet-adapter').then(mod => mod.LeafletAdapter), { ssr: false });
 
 interface UnifiedMapProps extends MapAdapterProps {
     provider?: MapProvider;
