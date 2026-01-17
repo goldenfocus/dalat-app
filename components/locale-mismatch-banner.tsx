@@ -3,10 +3,40 @@
 import * as React from "react";
 import { X, Globe } from "lucide-react";
 import { Link, usePathname } from "@/lib/i18n/routing";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { CONTENT_LOCALES, LOCALE_FLAGS, LOCALE_NAMES, type ContentLocale } from "@/lib/types";
 
 const STORAGE_KEY = "locale-mismatch-dismissed";
+
+// Messages in the user's BROWSER language (not the URL locale)
+// This way an English speaker on a French page sees English text
+const MESSAGES: Record<ContentLocale, { message: string; switch: string; dismiss: string }> = {
+  en: {
+    message: "This page is in a different language.",
+    switch: "View in English",
+    dismiss: "Keep current language",
+  },
+  fr: {
+    message: "Cette page est dans une autre langue.",
+    switch: "Voir en français",
+    dismiss: "Garder la langue actuelle",
+  },
+  vi: {
+    message: "Trang này đang ở ngôn ngữ khác.",
+    switch: "Xem bằng tiếng Việt",
+    dismiss: "Giữ ngôn ngữ hiện tại",
+  },
+  // Fallback to English for other locales
+  ko: { message: "This page is in a different language.", switch: "View in 한국어", dismiss: "Keep current language" },
+  zh: { message: "This page is in a different language.", switch: "View in 中文", dismiss: "Keep current language" },
+  ru: { message: "This page is in a different language.", switch: "View in Русский", dismiss: "Keep current language" },
+  ja: { message: "This page is in a different language.", switch: "View in 日本語", dismiss: "Keep current language" },
+  ms: { message: "This page is in a different language.", switch: "View in Bahasa Melayu", dismiss: "Keep current language" },
+  th: { message: "This page is in a different language.", switch: "View in ไทย", dismiss: "Keep current language" },
+  de: { message: "This page is in a different language.", switch: "View in Deutsch", dismiss: "Keep current language" },
+  es: { message: "This page is in a different language.", switch: "View in Español", dismiss: "Keep current language" },
+  id: { message: "This page is in a different language.", switch: "View in Indonesia", dismiss: "Keep current language" },
+};
 
 /**
  * Detects browser's preferred locale from navigator.languages
@@ -34,7 +64,6 @@ function detectBrowserLocale(): ContentLocale | null {
  * Permanently dismissed once closed.
  */
 export function LocaleMismatchBanner() {
-  const t = useTranslations("common");
   const urlLocale = useLocale() as ContentLocale;
   const pathname = usePathname();
   const [browserLocale, setBrowserLocale] = React.useState<ContentLocale | null>(null);
@@ -72,7 +101,7 @@ export function LocaleMismatchBanner() {
 
         <div className="flex-1 min-w-0">
           <p className="text-sm text-muted-foreground">
-            {t("localeMismatch.message", { language: LOCALE_NAMES[browserLocale] })}
+            {MESSAGES[browserLocale].message}
           </p>
           <Link
             href={pathname}
@@ -82,14 +111,14 @@ export function LocaleMismatchBanner() {
             className="inline-flex items-center gap-1.5 mt-1 text-sm font-medium text-primary hover:underline"
           >
             <Globe className="w-3.5 h-3.5" />
-            {t("localeMismatch.switch", { language: LOCALE_NAMES[browserLocale] })}
+            {MESSAGES[browserLocale].switch}
           </Link>
         </div>
 
         <button
           type="button"
           onClick={handleDismiss}
-          aria-label={t("localeMismatch.dismiss")}
+          aria-label={MESSAGES[browserLocale].dismiss}
           className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
         >
           <X className="w-4 h-4" />
