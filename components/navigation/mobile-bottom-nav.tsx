@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Home, Plus, Camera } from "lucide-react";
+import { Home, Plus, Sparkles } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 
@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   {
     key: "moments",
     href: "/moments",
-    icon: Camera,
+    icon: Sparkles,
     labelKey: "moments",
     isCenter: false,
   },
