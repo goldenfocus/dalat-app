@@ -98,7 +98,7 @@ export function EventsFeed({ events }: EventsPageProps) {
                 {/* GRID VIEW */}
                 {viewMode === 'grid' && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {events.map((event) => (
+                        {filteredEvents.map((event) => (
                             <Link key={event.id} href={`/events/${event.slug || event.id}`} className="block group">
                                 <div className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow border border-gray-100 h-full flex flex-col">
                                     {/* Image */}

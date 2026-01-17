@@ -1,40 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Link } from "@/lib/i18n/routing";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-interface BackButtonProps {
-  fallbackHref?: string;
-  children: React.ReactNode;
-  className?: string;
-}
-
-export function BackButton({
-  fallbackHref = "/",
-  children,
-  className,
-}: BackButtonProps) {
+export function BackButton() {
   const router = useRouter();
-  const [canGoBack, setCanGoBack] = useState(false);
-
-  useEffect(() => {
-    // Check if we have meaningful history to go back to
-    // history.length > 1 means there's at least one page before this one
-    setCanGoBack(window.history.length > 1);
-  }, []);
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (canGoBack) {
-      e.preventDefault();
-      router.back();
-    }
-    // If no history, let the Link navigate to fallbackHref
-  };
 
   return (
-    <Link href={fallbackHref} onClick={handleClick} className={className}>
-      {children}
-    </Link>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => router.back()}
+      className="mb-4 text-gray-500 hover:text-gray-900 pl-0 -ml-2"
+    >
+      <ArrowLeft className="w-4 h-4 mr-1" />
+      Back
+    </Button>
   );
 }

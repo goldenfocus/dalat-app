@@ -58,16 +58,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Get translated content for the current locale
   const translations = isValidContentLocale(locale)
     ? await getTranslationsWithFallback(
-        "event",
-        event.id,
-        locale as ContentLocale,
-        {
-          title: event.title,
-          description: event.description,
-          text_content: null,
-          bio: null,
-        }
-      )
+      "event",
+      event.id,
+      locale as ContentLocale,
+      {
+        title: event.title,
+        description: event.description,
+        text_content: null,
+        bio: null,
+      }
+    )
     : { title: event.title, description: event.description };
 
   const title = translations.title || event.title;
@@ -534,6 +534,12 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   );
 
   return (
+import { BackButton } from "@/components/ui/back-button";
+
+  // ... existing imports ...
+
+  // Inside EventPage return:
+  return (
     <main className="min-h-screen">
       {/* JSON-LD Structured Data for SEO/AEO */}
       <JsonLd data={[eventSchema, breadcrumbSchema]} />
@@ -559,6 +565,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
       />
 
       <div className="container max-w-4xl mx-auto px-4 py-8">
+        <BackButton />
+
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
