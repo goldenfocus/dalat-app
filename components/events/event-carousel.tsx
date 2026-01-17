@@ -43,7 +43,7 @@ export function EventCarousel({
         <div
             ref={scrollContainerRef}
             className={cn(
-                "flex gap-4 overflow-x-auto px-4 pb-4 pt-2 snap-x snap-mandatory scrollbar-hide",
+                "flex gap-4 overflow-x-auto px-4 snap-x snap-mandatory scrollbar-hide",
                 className
             )}
         >

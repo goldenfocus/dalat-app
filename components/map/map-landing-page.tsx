@@ -115,12 +115,13 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
             </div>
 
             {/* Carousel Area - Flex Item 2 (Separate Section) */}
-            <div className="bg-background border-t border-border p-4 pb-20 lg:pb-4 z-10 w-full overflow-hidden shrink-0">
+            <div className="bg-background border-t border-border z-10 w-full overflow-hidden shrink-0">
                 <EventCarousel
                     events={filteredEvents}
                     counts={counts}
                     selectedEventId={selectedEvent?.id}
                     onEventSelect={handleEventSelect}
+                    className="py-4 pb-24 lg:pb-8"
                 />
             </div>
 

@@ -73,7 +73,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         disableTransitionOnChange
       >
         <ScrollRestorationProvider>
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen flex flex-col overflow-x-hidden max-w-[100vw]">
             <PerformanceMonitor />
             <BadgeClearer />
             <NotificationPrompt />

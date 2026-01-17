@@ -50,7 +50,7 @@ export function DatePresets({ onPresetChange, onDateSelect, className }: DatePre
 
     return (
         <>
-            <div className={cn("flex gap-2", className)}>
+            <div className={cn("flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0", className)}>
                 {presets.map((preset) => (
                     <button
                         key={preset.value}

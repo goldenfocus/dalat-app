@@ -70,7 +70,15 @@
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
   }
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
 }
 
 a[href="https://novu.co"] {

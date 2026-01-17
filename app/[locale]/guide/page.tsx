@@ -25,40 +25,77 @@ export default async function GuidePage() {
             </header>
 
             {/* Main Content */}
-            <main className="container max-w-4xl mx-auto px-4 py-16">
-                <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
-                        <Book className="w-10 h-10 text-green-600 dark:text-green-400" />
+            <main className="container max-w-4xl mx-auto px-4 py-12">
+                <div className="text-center mb-12">
+                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-green-500 shadow-xl shadow-green-500/20 mb-8 transform -rotate-3">
+                        <Book className="w-12 h-12 text-white" />
                     </div>
 
-                    <h2 className="text-4xl font-extrabold mb-4 tracking-tight text-foreground">Guide to Dalat</h2>
-                    <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                        Your comprehensive guide to exploring DaLat - from must-see attractions to local tips.
-                        This section is currently under development.
+                    <h2 className="text-5xl font-extrabold mb-6 tracking-tight text-foreground">Welcome to Da Lat</h2>
+                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                        Your comprehensive handbook for living, visiting, and thriving in the City of Eternal Spring.
                     </p>
+                </div>
 
-                    <div className="flex gap-4 justify-center">
-                        <Link href="/">
-                            <Button variant="outline">
-                                Back to Events
-                            </Button>
-                        </Link>
-                        <Link href="/events/new">
-                            <Button className="bg-green-600 hover:bg-green-700">
-                                Create Event
-                            </Button>
-                        </Link>
+                <div className="space-y-6 max-w-2xl mx-auto">
+                    {/* Expat Living Card */}
+                    <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
+                        <div className="p-6">
+                            <div className="flex items-start gap-4 mb-4">
+                                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" /><path d="M3.6 9h16.8" /><path d="M3.6 15h16.8" /><path d="M11.5 3a17 17 0 0 0 0 18" /><path d="M12.5 3a17 17 0 0 0 0 18" /></svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-bold text-foreground">Expat Living in Da Lat</h3>
+                                    <p className="text-sm text-muted-foreground">Essential information for settling in</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                {[
+                                    { title: "Visa & Immigration", icon: "arrow-right" },
+                                    { title: "Housing & Rentals", icon: "arrow-right" },
+                                    { title: "Healthcare & Hospitals", icon: "arrow-right" },
+                                    { title: "Banking & Finance", icon: "arrow-right" },
+                                ].map((item) => (
+                                    <button key={item.title} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted transition-colors group">
+                                        <span className="text-base font-medium text-foreground/80 group-hover:text-foreground">{item.title}</span>
+                                        <svg className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" /></svg>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button className="mt-4 text-blue-600 dark:text-blue-400 font-semibold text-sm flex items-center gap-2 hover:underline px-3 pb-2">
+                                View all <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6" /></svg>
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="mt-16 p-8 bg-card rounded-lg border border-border max-w-2xl mx-auto">
-                        <h3 className="font-semibold text-lg mb-4 text-foreground">Coming Soon</h3>
-                        <ul className="text-left space-y-2 text-muted-foreground">
-                            <li>• Top attractions and landmarks</li>
-                            <li>• Local tips and recommendations</li>
-                            <li>• Cultural insights and etiquette</li>
-                            <li>• Best times to visit</li>
-                            <li>• Hidden gems and off-the-beaten-path spots</li>
-                        </ul>
+                    {/* Helpful Links Card */}
+                    <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
+                        <div className="p-6">
+                            <div className="flex items-start gap-4 mb-4">
+                                <div className="w-14 h-14 rounded-2xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-7 h-7 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-bold text-foreground">Helpful Links</h3>
+                                    <p className="text-sm text-muted-foreground">Curated resources for daily life</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                {[
+                                    { title: "Emergency Numbers", icon: "arrow-right" },
+                                    { title: "Public Transport Routes", icon: "arrow-right" },
+                                ].map((item) => (
+                                    <button key={item.title} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted transition-colors group">
+                                        <span className="text-base font-medium text-foreground/80 group-hover:text-foreground">{item.title}</span>
+                                        <svg className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" /></svg>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
