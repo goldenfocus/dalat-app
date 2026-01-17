@@ -24,6 +24,12 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
           <LocalePicker />
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/moments"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md"
+          >
+            {tNav("moments")}
+          </Link>
           {actions}
           <Link href="/events/new" prefetch={false}>
             <Button size="sm" variant="outline">

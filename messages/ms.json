@@ -29,6 +29,7 @@
   },
   "nav": {
     "events": "Acara",
+    "moments": "Momen",
     "settings": "Tetapan",
     "signIn": "Log masuk",
     "signOut": "Log keluar"
@@ -36,6 +37,8 @@
   "home": {
     "title": "Acara di Da Lat",
     "subtitle": "Temui apa yang berlaku di Da Lat",
+    "trendingMoments": "Momen trending",
+    "viewAllMoments": "Lihat semua",
     "noEvents": "Tiada acara untuk dipaparkan.",
     "noUpcoming": "Belum ada acara akan datang.",
     "noHappening": "Tiada acara sedang berlangsung sekarang.",
@@ -587,6 +590,13 @@
   },
   "moments": {
     "moments": "Momen",
+    "discoverySubtitle": "Arkib visual Da Lat daripada acara terkini",
+    "discoveryDescription": "Terokai foto dan video yang dikongsi komuniti di acara Da Lat.",
+    "filters": {
+      "all": "Semua",
+      "photos": "Foto",
+      "videos": "Video"
+    },
     "noMoments": "Belum ada momen",
     "beFirst": "Jadilah yang pertama berkongsi momen dari acara ini!",
     "shareYourMoment": "Kongsi momen anda",

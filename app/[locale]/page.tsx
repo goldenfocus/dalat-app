@@ -4,7 +4,7 @@ import { Link } from "@/lib/i18n/routing";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
-import { Plus } from "lucide-react";
+import { Camera, Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { AuthButton } from "@/components/auth-button";
@@ -14,8 +14,9 @@ import { EventCard } from "@/components/events/event-card";
 import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
+import { MomentsSpotlight } from "@/components/home/moments-spotlight";
 import { Button } from "@/components/ui/button";
-import type { Event, EventCounts, EventWithSeriesData } from "@/lib/types";
+import type { Event, EventCounts, EventWithSeriesData, MomentWithEvent } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
 
 type PageProps = {
@@ -136,6 +137,22 @@ async function getLifecycleCounts() {
   };
 }
 
+async function getTrendingMoments(): Promise<MomentWithEvent[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_feed_moments", {
+    p_limit: 10,
+    p_offset: 0,
+    p_content_types: ["photo", "video"],
+  });
+
+  if (error) {
+    console.error("Error fetching trending moments:", error);
+    return [];
+  }
+
+  return (data ?? []) as MomentWithEvent[];
+}
+
 async function EventsFeed({
   lifecycle,
   searchQuery,
@@ -235,16 +252,17 @@ export default async function Home({ params, searchParams }: PageProps) {
   }
 
   const searchQuery = search.q ?? "";
-  const [t, tNav, lifecycleCounts] = await Promise.all([
+  const [t, tNav, lifecycleCounts, trendingMoments] = await Promise.all([
     getTranslations("home"),
     getTranslations("nav"),
     getLifecycleCounts(),
+    getTrendingMoments(),
   ]);
 
   return (
     <>
       {/* Mobile: Full immersive experience */}
-      <div className="lg:hidden h-[100dvh] relative">
+      <div className="lg:hidden h-[100dvh] relative pb-[calc(4rem+env(safe-area-inset-bottom))]">
         {/* Floating mini-header */}
         <nav className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-3 bg-gradient-to-b from-black/70 via-black/40 to-transparent">
           <div className="flex items-center gap-1">
@@ -254,6 +272,16 @@ export default async function Home({ params, searchParams }: PageProps) {
             <LocalePicker variant="overlay" />
           </div>
           <div className="flex items-center gap-1">
+            <Link href="/moments" prefetch={false}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-white hover:bg-white/20 hover:text-white drop-shadow-lg"
+              >
+                <Camera className="w-4 h-4 mr-1" />
+                {tNav("moments")}
+              </Button>
+            </Link>
             <Link href="/events/new" prefetch={false}>
               <Button
                 size="sm"
@@ -297,6 +325,14 @@ export default async function Home({ params, searchParams }: PageProps) {
                 <EventSearchBar className="w-64 flex-shrink-0" />
               </Suspense>
             </div>
+          </div>
+
+          <div className="mb-8">
+            <MomentsSpotlight
+              title={t("trendingMoments")}
+              viewAllLabel={t("viewAllMoments")}
+              moments={trendingMoments}
+            />
           </div>
 
           {/* Tabs */}

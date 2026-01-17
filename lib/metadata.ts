@@ -9,6 +9,7 @@
 
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n/routing";
+import { isVideoUrl } from "@/lib/media-utils";
 
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "dalat.app";
@@ -267,5 +268,62 @@ export function generateSeriesMetadata(
     image: series.image_url || undefined,
     type: "article",
     keywords: [series.title, "recurring event", "series", "Da Lat"],
+  });
+}
+
+/**
+ * Generate metadata for the global moments discovery page
+ */
+export function generateMomentsDiscoveryMetadata(
+  locale: Locale,
+  title: string,
+  description: string
+): Metadata {
+  return generateLocalizedMetadata({
+    locale,
+    path: "/moments",
+    title,
+    description,
+    type: "website",
+    keywords: ["moments", "photos", "videos", "Da Lat"],
+  });
+}
+
+/**
+ * Generate metadata for an individual moment page
+ */
+export function generateMomentMetadata(
+  moment: {
+    id: string;
+    created_at: string;
+    text_content: string | null;
+    media_url: string | null;
+    content_type: string;
+    user_id: string;
+    profiles?: { display_name: string | null; username: string | null };
+    events?: { title: string | null };
+  },
+  locale: Locale
+): Metadata {
+  const userName = moment.profiles?.display_name || moment.profiles?.username || "Someone";
+  const eventTitle = moment.events?.title || "an event";
+  const description = moment.text_content
+    ? moment.text_content.slice(0, 150)
+    : `${userName} shared a moment from ${eventTitle}`;
+
+  const title = `${userName}'s moment at ${eventTitle}`;
+  const fallbackOg = `${SITE_URL}/${locale}/moments/${moment.id}/opengraph-image`;
+  const image = moment.media_url && !isVideoUrl(moment.media_url) ? moment.media_url : fallbackOg;
+
+  return generateLocalizedMetadata({
+    locale,
+    path: `/moments/${moment.id}`,
+    title,
+    description,
+    image,
+    type: "article",
+    author: userName,
+    publishedTime: moment.created_at,
+    keywords: [userName, eventTitle, "moment", "Da Lat"],
   });
 }

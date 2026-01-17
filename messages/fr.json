@@ -34,6 +34,7 @@
   },
   "nav": {
     "events": "Événements",
+    "moments": "Moments",
     "settings": "Paramètres",
     "signIn": "Connexion",
     "signOut": "Déconnexion"
@@ -41,6 +42,8 @@
   "home": {
     "title": "Événements à Da Lat",
     "subtitle": "Découvrez ce qui se passe à Da Lat",
+    "trendingMoments": "Moments tendance",
+    "viewAllMoments": "Voir tout",
     "noEvents": "Aucun événement à afficher.",
     "noUpcoming": "Pas encore d'événements à venir.",
     "noHappening": "Aucun événement en cours.",
@@ -599,6 +602,13 @@
   },
   "moments": {
     "moments": "Moments",
+    "discoverySubtitle": "L’archive visuelle de Da Lat des événements récents",
+    "discoveryDescription": "Découvrez des photos et des vidéos partagées par la communauté lors d’événements à Da Lat.",
+    "filters": {
+      "all": "Tous",
+      "photos": "Photos",
+      "videos": "Vidéos"
+    },
     "noMoments": "Pas encore de moments",
     "beFirst": "Soyez le premier à partager un moment de cet événement !",
     "shareYourMoment": "Partagez votre moment",

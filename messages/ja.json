@@ -29,6 +29,7 @@
   },
   "nav": {
     "events": "イベント",
+    "moments": "モーメント",
     "settings": "設定",
     "signIn": "ログイン",
     "signOut": "ログアウト"
@@ -36,6 +37,8 @@
   "home": {
     "title": "ダラットのイベント",
     "subtitle": "ダラットで開催されるイベントを探そう",
+    "trendingMoments": "注目のモーメント",
+    "viewAllMoments": "すべて見る",
     "noEvents": "表示するイベントがありません。",
     "noUpcoming": "予定されているイベントはまだありません。",
     "noHappening": "現在開催中のイベントはありません。",
@@ -587,6 +590,13 @@
   },
   "moments": {
     "moments": "モーメント",
+    "discoverySubtitle": "最近のイベントから見るダラットのビジュアルアーカイブ",
+    "discoveryDescription": "ダラットのイベントで共有された写真や動画を探索しましょう。",
+    "filters": {
+      "all": "すべて",
+      "photos": "写真",
+      "videos": "動画"
+    },
     "noMoments": "まだモーメントがありません",
     "beFirst": "このイベントの最初のモーメントを共有しましょう！",
     "shareYourMoment": "モーメントを共有",

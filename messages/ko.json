@@ -29,6 +29,7 @@
   },
   "nav": {
     "events": "이벤트",
+    "moments": "모먼트",
     "settings": "설정",
     "signIn": "로그인",
     "signOut": "로그아웃"
@@ -36,6 +37,8 @@
   "home": {
     "title": "달랏의 이벤트",
     "subtitle": "달랏에서 무슨 일이 일어나고 있는지 확인하세요",
+    "trendingMoments": "인기 모먼트",
+    "viewAllMoments": "모두 보기",
     "noEvents": "표시할 이벤트가 없습니다.",
     "noUpcoming": "예정된 이벤트가 아직 없습니다.",
     "noHappening": "현재 진행 중인 이벤트가 없습니다.",
@@ -587,6 +590,13 @@
   },
   "moments": {
     "moments": "모먼트",
+    "discoverySubtitle": "최근 이벤트로 보는 달랏의 비주얼 아카이브",
+    "discoveryDescription": "달랏 이벤트에서 커뮤니티가 공유한 사진과 동영상을 둘러보세요.",
+    "filters": {
+      "all": "전체",
+      "photos": "사진",
+      "videos": "동영상"
+    },
     "noMoments": "아직 모먼트가 없습니다",
     "beFirst": "이 이벤트의 첫 번째 모먼트를 공유해 보세요!",
     "shareYourMoment": "모먼트 공유하기",

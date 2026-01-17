@@ -29,6 +29,7 @@
   },
   "nav": {
     "events": "Acara",
+    "moments": "Momen",
     "settings": "Pengaturan",
     "signIn": "Masuk",
     "signOut": "Keluar"
@@ -36,6 +37,8 @@
   "home": {
     "title": "Acara di Da Lat",
     "subtitle": "Temukan apa yang sedang terjadi di Da Lat",
+    "trendingMoments": "Momen tren",
+    "viewAllMoments": "Lihat semua",
     "noEvents": "Tidak ada acara untuk ditampilkan.",
     "noUpcoming": "Belum ada acara mendatang.",
     "noHappening": "Tidak ada acara yang sedang berlangsung.",
@@ -587,6 +590,13 @@
   },
   "moments": {
     "moments": "Momen",
+    "discoverySubtitle": "Arsip visual Da Lat dari acara terbaru",
+    "discoveryDescription": "Jelajahi foto dan video yang dibagikan komunitas di acara Da Lat.",
+    "filters": {
+      "all": "Semua",
+      "photos": "Foto",
+      "videos": "Video"
+    },
     "noMoments": "Belum ada momen",
     "beFirst": "Jadilah yang pertama membagikan momen dari acara ini!",
     "shareYourMoment": "Bagikan momen Anda",

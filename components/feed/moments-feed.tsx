@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MomentReelCard } from "./moment-reel-card";
-import type { MomentWithEvent, MomentLikeStatus } from "@/lib/types";
+import type { MomentContentType, MomentWithEvent, MomentLikeStatus } from "@/lib/types";
 
 const PAGE_SIZE = 10;
 
@@ -11,6 +11,7 @@ interface MomentsFeedProps {
   initialMoments: MomentWithEvent[];
   initialLikes: MomentLikeStatus[];
   hasMore: boolean;
+  contentTypes?: MomentContentType[];
 }
 
 /**
@@ -21,7 +22,10 @@ export function MomentsFeed({
   initialMoments,
   initialLikes,
   hasMore: initialHasMore,
+  contentTypes = ["photo", "video"],
 }: MomentsFeedProps) {
+  const contentKey = contentTypes.join(",");
+  const contentKeyRef = useRef(contentKey);
   const [moments, setMoments] = useState(initialMoments);
   const [likeStatuses, setLikeStatuses] = useState<Map<string, MomentLikeStatus>>(
     () => new Map(initialLikes.map((l) => [l.moment_id, l]))
@@ -69,7 +73,7 @@ export function MomentsFeed({
     const { data } = await supabase.rpc("get_feed_moments", {
       p_limit: PAGE_SIZE,
       p_offset: moments.length,
-      p_content_types: ["photo", "video"],
+      p_content_types: contentTypes,
     });
 
     const newMoments = (data ?? []) as MomentWithEvent[];
@@ -98,7 +102,35 @@ export function MomentsFeed({
     }
 
     setIsLoading(false);
-  }, [isLoading, hasMore, moments.length]);
+  }, [isLoading, hasMore, moments.length, contentTypes]);
+
+  const resetFeed = useCallback(async () => {
+    setIsLoading(true);
+    const supabase = createClient();
+    const { data } = await supabase.rpc("get_feed_moments", {
+      p_limit: PAGE_SIZE,
+      p_offset: 0,
+      p_content_types: contentTypes,
+    });
+
+    const newMoments = (data ?? []) as MomentWithEvent[];
+    setHasMore(newMoments.length === PAGE_SIZE);
+    setMoments(newMoments);
+    setActiveIndex(0);
+
+    if (newMoments.length > 0) {
+      const { data: likes } = await supabase.rpc("get_moment_like_counts", {
+        p_moment_ids: newMoments.map((m) => m.id),
+      });
+      if (likes) {
+        setLikeStatuses(new Map((likes as MomentLikeStatus[]).map((l) => [l.moment_id, l])));
+      }
+    } else {
+      setLikeStatuses(new Map());
+    }
+
+    setIsLoading(false);
+  }, [contentTypes]);
 
   // Observe the load-more trigger element
   useEffect(() => {
@@ -118,6 +150,13 @@ export function MomentsFeed({
     return () => observer.disconnect();
   }, [loadMore]);
 
+  // Reset feed when content types change
+  useEffect(() => {
+    if (contentKeyRef.current === contentKey) return;
+    contentKeyRef.current = contentKey;
+    resetFeed();
+  }, [contentKey, resetFeed]);
+
   // Empty state
   if (moments.length === 0) {
     return (
@@ -136,7 +175,7 @@ export function MomentsFeed({
     <div className="flex justify-center bg-black min-h-screen">
       <div
         ref={containerRef}
-        className="w-full max-w-lg lg:max-w-xl h-[100dvh] overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide"
+        className="w-full max-w-lg lg:max-w-xl h-[100dvh] overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0"
       >
         {moments.map((moment, index) => (
           <MomentReelCard

@@ -11,6 +11,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { isVideoUrl } from "@/lib/media-utils";
 import { formatInDaLat } from "@/lib/timezone";
+import { generateMomentMetadata } from "@/lib/metadata";
+import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/structured-data";
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
@@ -182,41 +184,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Moment not found" };
   }
 
-  const userName = moment.profiles?.display_name || moment.profiles?.username || "Someone";
-  const eventTitle = moment.events?.title || "an event";
-  const description = moment.text_content
-    ? moment.text_content.slice(0, 150)
-    : `${userName} shared a moment from ${eventTitle}`;
-
-  return {
-    title: `${userName}'s moment at ${eventTitle} | dalat.app`,
-    description,
-    openGraph: {
-      title: `${userName}'s moment at ${eventTitle}`,
-      description,
-      type: "article",
-      url: `/moments/${id}`,
-      siteName: "dalat.app",
-      ...(moment.media_url && !isVideoUrl(moment.media_url) && {
-        images: [
-          {
-            url: moment.media_url,
-            width: 1200,
-            height: 630,
-            alt: `Moment from ${eventTitle}`,
-          },
-        ],
-      }),
-    },
-    twitter: {
-      card: moment.media_url ? "summary_large_image" : "summary",
-      title: `${userName}'s moment at ${eventTitle}`,
-      description,
-      ...(moment.media_url && !isVideoUrl(moment.media_url) && {
-        images: [moment.media_url],
-      }),
-    },
-  };
+  const locale = await getLocale();
+  return generateMomentMetadata(moment, locale as Locale);
 }
 
 export default async function MomentPage({ params }: PageProps) {
@@ -246,10 +215,9 @@ export default async function MomentPage({ params }: PageProps) {
 
   const canModerate = isEventCreator || isAdminOrMod;
 
-  const [t, tCommon, tEvents, locale] = await Promise.all([
+  const [t, tCommon, locale] = await Promise.all([
     getTranslations("moments"),
     getTranslations("common"),
-    getTranslations("events"),
     getLocale(),
   ]);
 
@@ -277,8 +245,19 @@ export default async function MomentPage({ params }: PageProps) {
   );
   const hasNavigation = prevId || nextId;
 
+  const momentSchema = generateMomentSchema(moment, locale);
+  const breadcrumbSchema = generateBreadcrumbSchema(
+    [
+      { name: "Home", url: "/" },
+      { name: t("moments"), url: "/moments" },
+      { name: event.title, url: `/events/${event.slug}` },
+    ],
+    locale
+  );
+
   return (
     <main className="min-h-screen">
+      <JsonLd data={[momentSchema, breadcrumbSchema]} />
       {/* Header */}
       <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container flex h-14 max-w-4xl items-center mx-auto px-4">

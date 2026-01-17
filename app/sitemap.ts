@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages that exist for all locales
   const staticPages = [
     { path: '', priority: 1.0, changeFrequency: 'daily' as const },
+    { path: '/moments', priority: 0.7, changeFrequency: 'daily' as const },
     { path: '/events/new', priority: 0.6, changeFrequency: 'monthly' as const },
     { path: '/events/this-month', priority: 0.8, changeFrequency: 'daily' as const },
     { path: '/events/this-week', priority: 0.8, changeFrequency: 'daily' as const },
@@ -19,7 +20,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Fetch dynamic content
-  const [eventsResult, festivalsResult, organizersResult, monthsResult] = await Promise.all([
+  const recentMomentCutoff = new Date();
+  recentMomentCutoff.setDate(recentMomentCutoff.getDate() - 90);
+
+  const [eventsResult, festivalsResult, organizersResult, monthsResult, momentsResult] = await Promise.all([
     supabase
       .from('events')
       .select('slug, updated_at')
@@ -32,12 +36,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from('organizers')
       .select('slug, updated_at'),
     supabase.rpc('get_months_with_events'),
+    supabase
+      .from('moments')
+      .select('id, created_at, updated_at, events(slug, updated_at)')
+      .eq('status', 'published')
+      .gte('created_at', recentMomentCutoff.toISOString()),
   ]);
 
   const events = eventsResult.data ?? [];
   const festivals = festivalsResult.data ?? [];
   const organizers = organizersResult.data ?? [];
   const monthsWithEvents = (monthsResult.data ?? []) as { year: number; month: number; event_count: number }[];
+  const moments = (momentsResult.data ?? []) as Array<{
+    id: string;
+    created_at: string;
+    updated_at: string;
+    events?: { slug: string; updated_at: string } | null;
+  }>;
 
   const sitemapEntries: MetadataRoute.Sitemap = [];
 
@@ -124,6 +139,47 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         alternates: {
           languages: Object.fromEntries(
             allLocales.map(l => [l, `${baseUrl}/${l}${path}`])
+          ),
+        },
+      });
+    }
+  }
+
+  // Add global moments
+  for (const moment of moments) {
+    for (const locale of allLocales) {
+      sitemapEntries.push({
+        url: `${baseUrl}/${locale}/moments/${moment.id}`,
+        lastModified: new Date(moment.updated_at || moment.created_at),
+        changeFrequency: 'weekly',
+        priority: 0.6,
+        alternates: {
+          languages: Object.fromEntries(
+            allLocales.map(l => [l, `${baseUrl}/${l}/moments/${moment.id}`])
+          ),
+        },
+      });
+    }
+  }
+
+  // Add event moments galleries
+  const eventMomentSlugs = new Map<string, string>();
+  moments.forEach((moment) => {
+    if (moment.events?.slug) {
+      eventMomentSlugs.set(moment.events.slug, moment.events.updated_at || moment.updated_at);
+    }
+  });
+
+  for (const [slug, updatedAt] of eventMomentSlugs.entries()) {
+    for (const locale of allLocales) {
+      sitemapEntries.push({
+        url: `${baseUrl}/${locale}/events/${slug}/moments`,
+        lastModified: new Date(updatedAt),
+        changeFrequency: 'weekly',
+        priority: 0.55,
+        alternates: {
+          languages: Object.fromEntries(
+            allLocales.map(l => [l, `${baseUrl}/${l}/events/${slug}/moments`])
           ),
         },
       });
