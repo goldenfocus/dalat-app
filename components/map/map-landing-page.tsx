@@ -19,9 +19,55 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+    // State for filtered events
+    const [filteredEvents, setFilteredEvents] = useState<Event[]>(events);
+
+    // Update filtered events when initial events change (e.g. initial load)
+    // useEffect(() => {
+    //     setFilteredEvents(events);
+    // }, [events]);
+
     // When an event is selected from the map or carousel
     const handleEventSelect = (event: Event) => {
         setSelectedEvent(event);
+    };
+
+    const handleApplyFilters = (filters: any) => {
+        console.log("Applying filters:", filters);
+
+        const { searchQuery, dateRange, categories, priceFilter } = filters;
+
+        let result = [...events];
+
+        // 1. Filter by Search Query
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            result = result.filter(event =>
+                event.title.toLowerCase().includes(query) ||
+                (event.location_name && event.location_name.toLowerCase().includes(query)) ||
+                (event.description && event.description.toLowerCase().includes(query))
+            );
+        }
+
+        // 2. Filter by Date Range
+        if (dateRange && dateRange.start && dateRange.end) {
+            const start = new Date(dateRange.start).getTime();
+            const end = new Date(dateRange.end).getTime();
+
+            result = result.filter(event => {
+                const eventTime = new Date(event.starts_at).getTime();
+                return eventTime >= start && eventTime <= end;
+            });
+        }
+
+        // 3. Filter by Category & Price
+        // Note: Event type currently lacks 'category' and 'price/is_free' fields.
+        // We will skip these filters for now until the backend supports them.
+        // if (categories.length > 0) { ... }
+        // if (priceFilter !== 'all') { ... }
+
+        setFilteredEvents(result);
+        setIsFilterOpen(false);
     };
 
     return (
@@ -57,7 +103,7 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
             <div className="flex-1 relative mb-16 lg:mb-0">
                 <UnifiedMap
                     provider="leaflet" // Can be switched to "google"
-                    events={events}
+                    events={filteredEvents}
                     selectedEventId={selectedEvent?.id}
                     onEventSelect={handleEventSelect}
                     className="h-full w-full"
@@ -66,7 +112,7 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
                 {/* Floating Carousel at Bottom */}
                 <div className="absolute bottom-4 left-0 right-0 z-[1000]">
                     <EventCarousel
-                        events={events} // In future: filter to visible events
+                        events={filteredEvents}
                         counts={counts}
                         selectedEventId={selectedEvent?.id}
                         onEventSelect={handleEventSelect}
@@ -74,29 +120,11 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
                 </div>
             </div>
 
-            {/* Bottom Sheet - Only shows when detailed info is needed?? 
-          Or maybe we keep it dormant? 
-          Actually, the Carousel handles the "preview". 
-          Let's keep BottomSheet for now but maybe it opens on double tap or something else?
-          Or maybe selecting an event in carousel opens the bottom sheet?
-          
-          For now, let's keep it simple: Carousel is the main way to browse.
-          Tapping a carousel item selects it (highlights on map).
-          Tapping it AGAIN or a "View Details" button could open the full page.
-          
-          The previous BottomSheet was essentially a preview. 
-          Let's hide the Bottom Sheet for now as the Carousel serves the same purpose 
-          but horizontal. Or we can keep it as a "Detail View" overlay.
-      */}
-
             {/* Filter Panel */}
             <FilterPanel
                 isOpen={isFilterOpen}
                 onClose={() => setIsFilterOpen(false)}
-                onApplyFilters={(filters) => {
-                    console.log("Filters applied:", filters);
-                    setIsFilterOpen(false);
-                }}
+                onApplyFilters={handleApplyFilters}
             />
         </div>
     );
