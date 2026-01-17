@@ -76,6 +76,8 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           placeholder={placeholder}
           className={cn(
             "flex-1 bg-transparent outline-none text-sm min-w-0",
+            // Hide native WebKit clear button (we have our own)
+            "[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden",
             isOverlay
               ? "text-white placeholder:text-white/50"
               : "text-foreground placeholder:text-muted-foreground"
