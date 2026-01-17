@@ -21,8 +21,11 @@ export default async function OGImage({ params }: Props) {
     .eq("id", id)
     .single();
 
-  const userName = moment?.profiles?.display_name || moment?.profiles?.username || "Someone";
-  const eventTitle = moment?.events?.title || "Da Lat event";
+  // Supabase returns profiles/events as arrays due to join typing, but .single() ensures one record
+  const profile = Array.isArray(moment?.profiles) ? moment.profiles[0] : moment?.profiles;
+  const event = Array.isArray(moment?.events) ? moment.events[0] : moment?.events;
+  const userName = profile?.display_name || profile?.username || "Someone";
+  const eventTitle = event?.title || "Da Lat event";
   const isVideo = moment?.media_url ? isVideoUrl(moment.media_url) : false;
 
   if (moment?.media_url && !isVideo && moment.content_type !== "text") {

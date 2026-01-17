@@ -47,7 +47,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const festivals = festivalsResult.data ?? [];
   const organizers = organizersResult.data ?? [];
   const monthsWithEvents = (monthsResult.data ?? []) as { year: number; month: number; event_count: number }[];
-  const moments = (momentsResult.data ?? []) as Array<{
+  const momentsRaw = momentsResult.data ?? [];
+  // Supabase returns events as array due to join typing, normalize to single object
+  const moments = momentsRaw.map((m) => ({
+    id: m.id as string,
+    created_at: m.created_at as string,
+    updated_at: m.updated_at as string,
+    events: Array.isArray(m.events) ? m.events[0] : m.events,
+  })) as Array<{
     id: string;
     created_at: string;
     updated_at: string;
