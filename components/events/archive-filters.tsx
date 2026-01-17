@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Clock, Users, Camera, X } from "lucide-react";
+import { Clock, Users, Camera, X, ArrowUpDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   DropdownMenu,
