@@ -522,6 +522,17 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     ? `${counts?.going_spots ?? 0}/${event.capacity}`
     : `${counts?.going_spots ?? 0}`;
 
+  // Check if event is past (same logic as rsvp-button)
+  const isPast = (() => {
+    const now = new Date();
+    if (event.ends_at) {
+      return new Date(event.ends_at) < now;
+    }
+    const startDate = new Date(event.starts_at);
+    const defaultEnd = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
+    return defaultEnd < now;
+  })();
+
   // Generate structured data for SEO and AEO
   const eventSchema = generateEventSchema(event, locale, counts?.going_spots);
   const breadcrumbSchema = generateBreadcrumbSchema(
@@ -667,7 +678,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     <Users className="w-5 h-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium">
-                        {spotsText} {t("going")}
+                        {spotsText} {isPast ? t("went") : t("going")}
                         {(counts?.interested_count ?? 0) > 0 && (
                           <span className="text-muted-foreground font-normal">
                             {" "}· {counts?.interested_count} {t("interested")}
