@@ -50,7 +50,9 @@
     "search": {
       "placeholder": "イベントを検索...",
       "noResults": "「{query}」に一致するイベントが見つかりません",
-      "clearSearch": "検索をクリア"
+      "clearSearch": "検索をクリア",
+      "viewAll": "View all results for \"{query}\"",
+      "searchFor": "Search for \"{query}\""
     }
   },
   "auth": {
@@ -852,6 +854,28 @@
       "october": "10月",
       "november": "11月",
       "december": "12月"
-    }
+    },
+    "search": "Search events...",
+    "sortBy": "Sort by",
+    "sortRecent": "Recent",
+    "sortPopular": "Popular",
+    "sortRich": "Most photos",
+    "filterMyEvents": "Events I went to",
+    "clearFilters": "Clear filters",
+    "noResults": "No events match your search"
+  },
+  "search": {
+    "title": "{query} events in Da Lat",
+    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "breadcrumb": "Search: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "{count, plural, one {# event found} other {# events found}}",
+    "noResults": "No events found",
+    "noResultsHint": "Try a different search term or browse all events",
+    "browseAll": "Browse all events",
+    "back": "Back",
+    "happeningNow": "Happening Now",
+    "upcoming": "Upcoming",
+    "past": "Past Events"
   }
 }
