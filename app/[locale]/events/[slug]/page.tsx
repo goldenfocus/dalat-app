@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
+import { BackButton } from "@/components/ui/back-button";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
@@ -533,12 +534,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     locale
   );
 
-  return (
-import { BackButton } from "@/components/ui/back-button";
-
-  // ... existing imports ...
-
-  // Inside EventPage return:
   return (
     <main className="min-h-screen">
       {/* JSON-LD Structured Data for SEO/AEO */}
