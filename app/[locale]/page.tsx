@@ -32,11 +32,12 @@ async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: str
   const supabase = await createClient();
 
   // Use search RPC if there's a query (doesn't have deduplication yet)
+  // Search across all lifecycles ('all' hits the ELSE clause in SQL, skipping lifecycle filter)
   if (searchQuery && searchQuery.trim()) {
     const { data: events, error } = await supabase
       .rpc("search_events", {
         p_query: searchQuery.trim(),
-        p_lifecycle: lifecycle,
+        p_lifecycle: "all",
         p_limit: 20,
       });
 
