@@ -25,7 +25,12 @@
     "unknown": "Inconnu",
     "unknownUser": "Utilisateur inconnu",
     "previous": "Précédent",
-    "next": "Suivant"
+    "next": "Suivant",
+    "localeMismatch": {
+      "message": "Cette page est dans une autre langue. Passer en {language} ?",
+      "switch": "Voir en {language}",
+      "dismiss": "Garder la langue actuelle"
+    }
   },
   "nav": {
     "events": "Événements",
