@@ -458,12 +458,12 @@ export function generateWebSiteSchema(locale: string) {
     description: "Discover events, festivals, and community gatherings in Da Lat, Vietnam",
     inLanguage: locale,
 
-    // Search action for sitelinks search box
+    // Search action for sitelinks search box (SEO)
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/${locale}?q={search_term_string}`,
+        urlTemplate: `${SITE_URL}/${locale}/search/{search_term_string}`,
       },
       "query-input": "required name=search_term_string",
     },
