@@ -827,6 +827,20 @@
     "generating": "Đang tạo...",
     "generate": "Tạo"
   },
+  "search": {
+    "title": "Sự kiện {query} tại Đà Lạt",
+    "description": "Tìm các sự kiện, workshop và hoạt động {query} tại Đà Lạt, Việt Nam. Khám phá các hoạt động {query} sắp tới và đã qua.",
+    "breadcrumb": "Tìm kiếm: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "{count, plural, one {# sự kiện} other {# sự kiện}}",
+    "noResults": "Không tìm thấy sự kiện",
+    "noResultsHint": "Thử từ khóa khác hoặc xem tất cả sự kiện",
+    "browseAll": "Xem tất cả sự kiện",
+    "back": "Quay lại",
+    "happeningNow": "Đang diễn ra",
+    "upcoming": "Sắp tới",
+    "past": "Đã qua"
+  },
   "archive": {
     "events": "Sự kiện",
     "eventsIn": "Sự kiện trong {month} {year}",

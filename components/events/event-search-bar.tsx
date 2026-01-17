@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SearchInput } from "@/components/ui/search-input";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,18 @@ interface EventSearchBarProps {
   placeholder?: string;
 }
 
+/**
+ * Convert search query to URL-friendly slug
+ * "Cherry Blossom" → "cherry-blossom"
+ */
+function toSearchSlug(query: string): string {
+  return query
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
 export function EventSearchBar({
   className,
   variant = "default",
@@ -19,39 +31,38 @@ export function EventSearchBar({
 }: EventSearchBarProps) {
   const t = useTranslations("home");
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
-  const initialQuery = searchParams.get("q") ?? "";
+  // Extract current query from pathname if on search page
+  const searchMatch = pathname.match(/\/search\/([^/]+)/);
+  const initialQuery = searchMatch
+    ? decodeURIComponent(searchMatch[1]).replace(/-/g, " ")
+    : "";
   const [query, setQuery] = useState(initialQuery);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const params = new URLSearchParams(searchParams.toString());
-
     if (query.trim()) {
-      params.set("q", query.trim());
+      const slug = toSearchSlug(query);
+      if (slug) {
+        startTransition(() => {
+          router.push(`/search/${slug}`);
+        });
+      }
     } else {
-      params.delete("q");
+      // Empty search goes to home
+      startTransition(() => {
+        router.push("/");
+      });
     }
-
-    // Keep the tab parameter if present
-    const url = params.toString() ? `/?${params.toString()}` : "/";
-
-    startTransition(() => {
-      router.push(url);
-    });
   };
 
   const handleClear = () => {
     setQuery("");
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("q");
-    const url = params.toString() ? `/?${params.toString()}` : "/";
-
     startTransition(() => {
-      router.push(url);
+      router.push("/");
     });
   };
 

@@ -222,6 +222,18 @@ export default async function Home({ params, searchParams }: PageProps) {
     permanentRedirect(`/${locale}/events/this-month${queryString}`);
   }
 
+  // Permanent redirect: Search queries now live at /search/[query] for SEO
+  if (search.q && search.q.trim()) {
+    const slug = search.q
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+    if (slug) {
+      permanentRedirect(`/${locale}/search/${slug}`);
+    }
+  }
+
   const searchQuery = search.q ?? "";
   const [t, tNav, lifecycleCounts] = await Promise.all([
     getTranslations("home"),

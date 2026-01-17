@@ -66,11 +66,19 @@ export function ArchiveFilters({
     checkAuthAndFetchAttended();
   }, [events]);
 
-  // Handle global search - navigates to home with query param
+  // Handle global search - navigates to /search/[slug]
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/?q=${encodeURIComponent(searchQuery.trim())}`);
+      // Convert to URL-friendly slug: "Cherry Blossom" → "cherry-blossom"
+      const slug = searchQuery
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+      if (slug) {
+        router.push(`/search/${slug}`);
+      }
     }
   };
 
