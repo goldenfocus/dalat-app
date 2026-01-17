@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
+import { SearchInput } from "@/components/ui/search-input";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Event, EventCounts } from "@/lib/types";
@@ -129,24 +130,12 @@ export function ArchiveFilters({
   return (
     <div className={cn("flex items-center gap-2", className)}>
       {/* Search input */}
-      <div className="relative flex-1">
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t("search")}
-          className="w-full bg-muted border border-border rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => setSearchQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
+      <SearchInput
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder={t("search")}
+        className="flex-1"
+      />
 
       {/* Sort dropdown - icon only */}
       <DropdownMenu>
