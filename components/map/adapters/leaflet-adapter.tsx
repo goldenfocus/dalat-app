@@ -58,48 +58,16 @@ const Marker = dynamic(
 // However, standard import of { useMap } from 'react-leaflet' often throws 'window is not defined' during SSR.
 // So we need to lazy load the RecenterControl too.
 
-const RecenterControl = dynamic(
+// Unified Map Controls Component
+const MapControls = dynamic(
     () => import("react-leaflet").then((mod) => {
         const { useMap } = mod;
-        // Dynamically import Lucide icon to avoid SSR issues with the map
-        // Actually we can just use SVG directly or import standard if we are in client component file
-        // Since LeafletAdapter is "use client", we can import Lucide at top level?
-        // But RecenterControl is inside dynamic... let's use a simple SVG or text for now to be safe, 
-        // OR better: use the same style as Zoom controls.
-
-        return function RecenterControlInner({ center }: { center: [number, number] }) {
+        return function MapControlsInner({ center }: { center: [number, number] }) {
             const map = useMap();
             return (
-                <div className="leaflet-bottom leaflet-right" style={{ marginBottom: "80px", marginRight: "10px", pointerEvents: "auto", zIndex: 1000 }}>
-                    <div className="leaflet-control leaflet-bar">
-                        <button
-                            className="bg-white hover:bg-gray-50 text-gray-600 p-0 cursor-pointer flex items-center justify-center w-[34px] h-[34px] bg-white border-b-0 rounded-sm shadow-md"
-                            onClick={() => map.flyTo(center, 14)}
-                            title="Center on Xuan Huong Lake"
-                            type="button"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <circle cx="12" cy="12" r="2" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            );
-        };
-    }),
-    { ssr: false }
-);
-
-// Custom Zoom Control Component
-const CustomZoomControl = dynamic(
-    () => import("react-leaflet").then((mod) => {
-        const { useMap } = mod;
-        return function CustomZoomControlInner() {
-            const map = useMap();
-            return (
-                <div className="leaflet-bottom leaflet-right" style={{ marginBottom: "130px", marginRight: "10px", pointerEvents: "auto", zIndex: 1000 }}>
+                <div className="leaflet-bottom leaflet-right" style={{ marginBottom: "20px", marginRight: "10px", pointerEvents: "auto", zIndex: 1000 }}>
                     <div className="flex flex-col gap-2">
+                        {/* Zoom In */}
                         <button
                             className="bg-white hover:bg-gray-50 text-gray-600 font-light text-2xl p-0 cursor-pointer flex items-center justify-center w-[34px] h-[34px] bg-white rounded-sm shadow-md"
                             onClick={() => map.zoomIn()}
@@ -108,6 +76,8 @@ const CustomZoomControl = dynamic(
                         >
                             +
                         </button>
+
+                        {/* Zoom Out */}
                         <button
                             className="bg-white hover:bg-gray-50 text-gray-600 font-light text-2xl p-0 cursor-pointer flex items-center justify-center w-[34px] h-[34px] bg-white rounded-sm shadow-md"
                             onClick={() => map.zoomOut()}
@@ -115,6 +85,19 @@ const CustomZoomControl = dynamic(
                             type="button"
                         >
                             −
+                        </button>
+
+                        {/* Recenter */}
+                        <button
+                            className="bg-white hover:bg-gray-50 text-gray-600 p-0 cursor-pointer flex items-center justify-center w-[34px] h-[34px] bg-white rounded-sm shadow-md mt-2"
+                            onClick={() => map.flyTo(center, 14)}
+                            title="Center on Xuan Huong Lake"
+                            type="button"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <circle cx="12" cy="12" r="2" />
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -164,8 +147,7 @@ export function LeafletAdapter({
                 style={{ background: "#f9fafb" }}
                 zoomControl={false}
             >
-                <CustomZoomControl />
-                <RecenterControl center={lakesideCenter} />
+                <MapControls center={lakesideCenter} />
 
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
