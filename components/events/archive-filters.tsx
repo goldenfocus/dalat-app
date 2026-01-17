@@ -129,12 +129,12 @@ export function ArchiveFilters({
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {/* Search input */}
+      {/* Search input - constrained width on desktop for visual consistency */}
       <SearchInput
         value={searchQuery}
         onChange={setSearchQuery}
         placeholder={t("search")}
-        className="flex-1"
+        className="flex-1 max-w-sm"
       />
 
       {/* Sort dropdown - icon only */}
