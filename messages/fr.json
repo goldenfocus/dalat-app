@@ -120,6 +120,7 @@
   },
   "events": {
     "going": "participant(s)",
+    "went": "ont participé",
     "interested": "intéressé(s)",
     "waitlist": "en attente",
     "onWaitlist": "sur liste d'attente",

@@ -113,6 +113,7 @@
   },
   "events": {
     "going": "참석",
+    "went": "참석함",
     "interested": "관심 있음",
     "waitlist": "대기자 명단",
     "onWaitlist": "대기 중",

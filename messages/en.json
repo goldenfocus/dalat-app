@@ -122,6 +122,7 @@
   },
   "events": {
     "going": "going",
+    "went": "went",
     "interested": "interested",
     "waitlist": "waitlist",
     "onWaitlist": "on waitlist",

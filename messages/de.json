@@ -113,6 +113,7 @@
   },
   "events": {
     "going": "dabei",
+    "went": "waren dabei",
     "interested": "interessiert",
     "waitlist": "Warteliste",
     "onWaitlist": "auf Warteliste",

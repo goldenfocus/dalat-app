@@ -18,6 +18,17 @@ interface EventCardProps {
   seriesSlug?: string;
 }
 
+// Check if event is past (same logic as rsvp-button)
+function isEventPast(startsAt: string, endsAt: string | null): boolean {
+  const now = new Date();
+  if (endsAt) {
+    return new Date(endsAt) < now;
+  }
+  const startDate = new Date(startsAt);
+  const defaultEnd = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
+  return defaultEnd < now;
+}
+
 export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
@@ -29,6 +40,8 @@ export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
   const isFull = event.capacity
     ? (counts?.going_spots ?? 0) >= event.capacity
     : false;
+
+  const isPast = isEventPast(event.starts_at, event.ends_at);
 
   const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
   const imageIsVideo = isVideoUrl(event.image_url);
@@ -98,7 +111,7 @@ export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               <span>
-                {spotsText} {t("going")}
+                {spotsText} {isPast ? t("went") : t("going")}
                 {isFull && (
                   <span className="ml-1 text-orange-500">({t("full")})</span>
                 )}

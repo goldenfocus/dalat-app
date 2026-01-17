@@ -113,6 +113,7 @@
   },
   "events": {
     "going": "hadir",
+    "went": "telah hadir",
     "interested": "tertarik",
     "waitlist": "daftar tunggu",
     "onWaitlist": "di daftar tunggu",

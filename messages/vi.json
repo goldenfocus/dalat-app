@@ -113,6 +113,7 @@
   },
   "events": {
     "going": "tham gia",
+    "went": "đã tham gia",
     "interested": "quan tâm",
     "waitlist": "chờ",
     "onWaitlist": "trong danh sách chờ",

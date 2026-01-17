@@ -113,6 +113,7 @@
   },
   "events": {
     "going": "пойдут",
+    "went": "пошли",
     "interested": "интересуются",
     "waitlist": "в очереди",
     "onWaitlist": "в очереди",

@@ -113,6 +113,7 @@
   },
   "events": {
     "going": "参加",
+    "went": "参加済み",
     "interested": "興味あり",
     "waitlist": "キャンセル待ち",
     "onWaitlist": "キャンセル待ち中",

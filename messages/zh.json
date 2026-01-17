@@ -113,6 +113,7 @@
   },
   "events": {
     "going": "参加",
+    "went": "已参加",
     "interested": "感兴趣",
     "waitlist": "等候名单",
     "onWaitlist": "等候中",
