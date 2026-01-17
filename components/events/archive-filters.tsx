@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Clock, Users, Camera, X, ArrowUpDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Clock, Users, Camera, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   DropdownMenu,
@@ -35,6 +36,7 @@ export function ArchiveFilters({
   className,
 }: ArchiveFiltersProps) {
   const t = useTranslations("archive");
+  const router = useRouter();
   const [sort, setSort] = useState<SortOption>("recent");
   const [showMyEvents, setShowMyEvents] = useState(false);
   const [myEventIds, setMyEventIds] = useState<Set<string>>(new Set());
@@ -45,11 +47,13 @@ export function ArchiveFilters({
   useEffect(() => {
     const checkAuthAndFetchAttended = async () => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       if (user) {
         setIsLoggedIn(true);
-        const eventIds = events.map(e => e.id);
+        const eventIds = events.map((e) => e.id);
         const { data } = await supabase.rpc("get_user_attended_event_ids", {
           p_event_ids: eventIds,
         });
@@ -62,20 +66,17 @@ export function ArchiveFilters({
     checkAuthAndFetchAttended();
   }, [events]);
 
-  // Memoized sorting and filtering
+  // Handle global search - navigates to home with query param
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  // Memoized sorting and filtering (no search - that's global now)
   const sortedAndFilteredEvents = useMemo(() => {
     let result = [...events];
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (e) =>
-          e.title.toLowerCase().includes(query) ||
-          e.location_name?.toLowerCase().includes(query) ||
-          e.description?.toLowerCase().includes(query)
-      );
-    }
 
     // Apply "my events" filter
     if (showMyEvents && myEventIds.size > 0) {
@@ -87,7 +88,9 @@ export function ArchiveFilters({
       switch (sort) {
         case "recent":
           // Most recent first
-          return new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime();
+          return (
+            new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()
+          );
         case "popular":
           // Most attendees first
           const aSpots = counts[a.id]?.going_spots ?? 0;
@@ -104,7 +107,7 @@ export function ArchiveFilters({
     });
 
     return result;
-  }, [events, counts, momentsCounts, sort, showMyEvents, myEventIds, searchQuery]);
+  }, [events, counts, momentsCounts, sort, showMyEvents, myEventIds]);
 
   // Notify parent of filtered events
   useEffect(() => {
@@ -120,22 +123,22 @@ export function ArchiveFilters({
       case "rich":
         return Camera;
       default:
-        return ArrowUpDown;
+        return Clock;
     }
   };
 
   const SortIcon = getSortIcon();
-  const hasActiveFilters = showMyEvents || searchQuery.trim();
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {/* Search input - constrained width on desktop for visual consistency */}
-      <SearchInput
-        value={searchQuery}
-        onChange={setSearchQuery}
-        placeholder={t("search")}
-        className="flex-1 max-w-sm"
-      />
+      {/* Global search - navigates to home with query */}
+      <form onSubmit={handleSearch} className="flex-1 max-w-sm">
+        <SearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={t("search")}
+        />
+      </form>
 
       {/* Sort dropdown - icon only */}
       <DropdownMenu>
@@ -151,7 +154,10 @@ export function ArchiveFilters({
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuRadioGroup value={sort} onValueChange={(v) => setSort(v as SortOption)}>
+          <DropdownMenuRadioGroup
+            value={sort}
+            onValueChange={(v) => setSort(v as SortOption)}
+          >
             <DropdownMenuRadioItem value="recent" className="gap-2">
               <Clock className="w-4 h-4" />
               {t("sortRecent")}
@@ -182,13 +188,10 @@ export function ArchiveFilters({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Active filter indicator */}
-      {hasActiveFilters && (
+      {/* Clear filter button - only show if "my events" is active */}
+      {showMyEvents && (
         <button
-          onClick={() => {
-            setSearchQuery("");
-            setShowMyEvents(false);
-          }}
+          onClick={() => setShowMyEvents(false)}
           className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors active:scale-95"
           aria-label={t("clearFilters")}
         >
