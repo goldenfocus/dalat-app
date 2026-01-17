@@ -139,11 +139,22 @@ async function getLifecycleCounts() {
 
 async function getTrendingMoments(): Promise<MomentWithEvent[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_feed_moments", {
+
+  // Try new trending RPC, fallback to feed_moments if not available
+  let { data, error } = await supabase.rpc("get_trending_moments", {
     p_limit: 10,
-    p_offset: 0,
-    p_content_types: ["photo", "video"],
   });
+
+  // Fallback to get_feed_moments if trending RPC doesn't exist yet
+  if (error?.code === "PGRST202") {
+    const fallback = await supabase.rpc("get_feed_moments", {
+      p_limit: 10,
+      p_offset: 0,
+      p_content_types: ["photo", "video"],
+    });
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error) {
     console.error("Error fetching trending moments:", error);

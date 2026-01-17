@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { MomentsFeed } from "@/components/feed";
+import { MomentsFeed } from "@/components/feed/moments-feed";
 import { MomentsFilterBar, type MomentsFilterOption } from "./moments-filter-bar";
 import { InfiniteMomentDiscoveryGrid } from "./infinite-moment-discovery-grid";
 import type { MomentContentType, MomentLikeStatus, MomentWithEvent } from "@/lib/types";
