@@ -25,7 +25,12 @@
     "unknown": "Unknown",
     "unknownUser": "Unknown User",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "localeMismatch": {
+      "message": "This page is in a different language. Switch to {language}?",
+      "switch": "View in {language}",
+      "dismiss": "Keep current language"
+    }
   },
   "nav": {
     "events": "Events",

@@ -25,7 +25,12 @@
     "unknown": "Không xác định",
     "unknownUser": "Người dùng không xác định",
     "previous": "Trước",
-    "next": "Tiếp"
+    "next": "Tiếp",
+    "localeMismatch": {
+      "message": "Trang này đang ở ngôn ngữ khác. Chuyển sang {language}?",
+      "switch": "Xem bằng {language}",
+      "dismiss": "Giữ ngôn ngữ hiện tại"
+    }
   },
   "nav": {
     "events": "Sự kiện",
