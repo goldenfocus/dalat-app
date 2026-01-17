@@ -71,19 +71,19 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
     };
 
     return (
-        <div className="relative h-screen overflow-hidden bg-gray-50 flex flex-col">
+        <div className="relative h-screen overflow-hidden bg-background flex flex-col">
             {/* Top Navigation */}
             <TopNav />
 
             {/* Map Header Section */}
-            <div className="relative z-[1000] bg-white border-b border-gray-100 shadow-sm">
+            <div className="relative z-[1000] bg-background border-b border-border shadow-sm">
                 <div className="px-4 pt-4 pb-3">
                     {/* Title & Subtitle */}
                     <div className="mb-4">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                        <h1 className="text-3xl font-extrabold text-foreground mb-1 tracking-tight">
                             Events in DaLat
                         </h1>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                             Discover what's happening in DaLat
                         </p>
                     </div>
@@ -115,7 +115,7 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
             </div>
 
             {/* Carousel Area - Flex Item 2 (Separate Section) */}
-            <div className="bg-white border-t border-gray-100 p-4 pb-20 lg:pb-4 z-10 w-full overflow-hidden shrink-0">
+            <div className="bg-background border-t border-border p-4 pb-20 lg:pb-4 z-10 w-full overflow-hidden shrink-0">
                 <EventCarousel
                     events={filteredEvents}
                     counts={counts}

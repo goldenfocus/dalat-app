@@ -36,7 +36,7 @@ export function EventsFeed({ events }: EventsPageProps) {
     const sortedDates = Object.keys(groupedEvents).sort();
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-background">
             {/* Shared Header */}
             <TopNav />
 
@@ -44,8 +44,8 @@ export function EventsFeed({ events }: EventsPageProps) {
                 {/* Page Title & Search */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-1">Events in Da Lat</h1>
-                        <p className="text-gray-500">Discover what's happening in Da Lat</p>
+                        <h1 className="text-4xl font-extrabold text-foreground mb-1 tracking-tight">Events in Da Lat</h1>
+                        <p className="text-muted-foreground">Discover what's happening in Da Lat</p>
                     </div>
 
                     <div className="relative w-full md:w-96">
@@ -54,7 +54,7 @@ export function EventsFeed({ events }: EventsPageProps) {
                         </div>
                         <input
                             type="text"
-                            className="block w-full pl-10 pr-10 py-2 border border-gray-200 rounded-full bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
+                            className="block w-full pl-10 pr-10 py-2 border border-border rounded-full bg-muted focus:bg-background focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
                             placeholder="Search events..."
                         />
                         {/* View Toggle */}
@@ -62,13 +62,13 @@ export function EventsFeed({ events }: EventsPageProps) {
                             <div className="flex bg-gray-200 rounded-full p-1 mr-1">
                                 <button
                                     onClick={() => setViewMode("grid")}
-                                    className={`p-1 rounded-full ${viewMode === 'grid' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`p-1 rounded-full ${viewMode === 'grid' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
                                     <Grid className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => setViewMode("list")}
-                                    className={`p-1 rounded-full ${viewMode === 'list' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`p-1 rounded-full ${viewMode === 'list' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
                                     <ListIcon className="w-4 h-4" />
                                 </button>
@@ -78,12 +78,12 @@ export function EventsFeed({ events }: EventsPageProps) {
                 </div>
 
                 {/* Filters/Tabs */}
-                <div className="w-full bg-gray-100 p-1 rounded-lg flex mb-8 max-w-md">
+                <div className="w-full bg-muted p-1 rounded-lg flex mb-8 max-w-md">
                     <button
                         onClick={() => setFilterType("upcoming")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${filterType === "upcoming"
-                            ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-500 hover:text-gray-700"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
                             }`}
                     >
                         <Calendar className="w-4 h-4" />
@@ -92,8 +92,8 @@ export function EventsFeed({ events }: EventsPageProps) {
                     <button
                         onClick={() => setFilterType("past")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${filterType === "past"
-                            ? "bg-white text-gray-900 shadow-sm"
-                            : "text-gray-500 hover:text-gray-700"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
                             }`}
                     >
                         <span className="text-lg">↺</span>
@@ -106,7 +106,7 @@ export function EventsFeed({ events }: EventsPageProps) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredEvents.map((event) => (
                             <Link key={event.id} href={`/events/${event.slug || event.id}`} className="block group">
-                                <div className="bg-white rounded-xl overflow-hidden hover:shadow-lg transition-shadow border border-gray-100 h-full flex flex-col">
+                                <div className="bg-card rounded-xl overflow-hidden hover:shadow-lg transition-shadow border border-border h-full flex flex-col">
                                     {/* Image */}
                                     <div className="relative aspect-[3/4] bg-gray-100 overflow-hidden">
                                         {event.image_url ? (
@@ -133,12 +133,12 @@ export function EventsFeed({ events }: EventsPageProps) {
 
                                     {/* Content */}
                                     <div className="p-4 flex-1 flex flex-col">
-                                        <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-2">
+                                        <h3 className="font-bold text-foreground text-lg mb-2 line-clamp-2">
                                             {event.title}
                                         </h3>
-                                        <div className="mt-auto space-y-2 text-sm text-gray-600">
+                                        <div className="mt-auto space-y-2 text-sm text-muted-foreground">
                                             <div className="flex items-center gap-2">
-                                                <Calendar className="w-4 h-4 text-gray-400" />
+                                                <Calendar className="w-4 h-4 text-muted-foreground" />
                                                 <span>{format(new Date(event.starts_at), "EEE, MMM d • h:mm a")}</span>
                                             </div>
                                             {event.location_name && (
@@ -164,17 +164,17 @@ export function EventsFeed({ events }: EventsPageProps) {
 
                             return (
                                 <section key={dateStr}>
-                                    <h2 className="text-lg font-bold text-gray-900 mb-4 sticky top-16 bg-white py-2 z-10 border-b border-gray-100">
+                                    <h2 className="text-lg font-bold text-foreground mb-4 sticky top-16 bg-background py-2 z-10 border-b border-border">
                                         {format(dateObj, "EEEE, MMMM d")}
                                     </h2>
                                     <div className="space-y-4">
                                         {dateEvents.map((event) => (
                                             <Link key={event.id} href={`/events/${event.slug || event.id}`} className="block group">
-                                                <div className="flex bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                                                <div className="flex bg-card border border-border rounded-xl overflow-hidden hover:shadow-md transition-shadow">
                                                     {/* Date Box (Desktop) */}
-                                                    <div className="hidden sm:flex flex-col items-center justify-center w-20 bg-gray-50 border-r border-gray-100 p-2 text-center">
+                                                    <div className="hidden sm:flex flex-col items-center justify-center w-20 bg-muted border-r border-border p-2 text-center">
                                                         <span className="text-xs text-red-500 font-bold uppercase">{format(new Date(event.starts_at), "MMM")}</span>
-                                                        <span className="text-xl font-bold text-gray-900">{format(new Date(event.starts_at), "d")}</span>
+                                                        <span className="text-xl font-bold text-foreground">{format(new Date(event.starts_at), "d")}</span>
                                                     </div>
 
                                                     {/* Image (Small) */}
@@ -193,10 +193,10 @@ export function EventsFeed({ events }: EventsPageProps) {
                                                                 <span className="text-xs font-semibold text-[#16a34a] mb-1 block">
                                                                     {format(new Date(event.starts_at), "h:mm a")}
                                                                 </span>
-                                                                <h3 className="font-bold text-gray-900 group-hover:text-[#16a34a] transition-colors line-clamp-1 mb-1">
+                                                                <h3 className="font-bold text-foreground group-hover:text-[#16a34a] transition-colors line-clamp-1 mb-1">
                                                                     {event.title}
                                                                 </h3>
-                                                                <div className="flex items-center text-sm text-gray-500 gap-1">
+                                                                <div className="flex items-center text-sm text-muted-foreground gap-1">
                                                                     <MapPin className="w-3.5 h-3.5" />
                                                                     <span className="line-clamp-1">{event.location_name || "Location TBA"}</span>
                                                                 </div>

@@ -61,8 +61,8 @@ export default async function HomePage() {
   return (
     <Suspense
       fallback={
-        <div className="h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-gray-500">Loading...</div>
+        <div className="h-screen flex items-center justify-center bg-background">
+          <div className="text-muted-foreground">Loading...</div>
         </div>
       }
     >

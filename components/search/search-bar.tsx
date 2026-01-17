@@ -16,7 +16,7 @@ export function SearchBar({ onFilterClick, className }: SearchBarProps) {
                 <input
                     type="text"
                     placeholder="Search events, places..."
-                    className="w-full h-12 pl-10 pr-12 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    className="w-full h-12 pl-10 pr-12 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 />
                 <button
                     onClick={onFilterClick}

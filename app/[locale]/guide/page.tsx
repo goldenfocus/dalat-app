@@ -7,9 +7,9 @@ export default async function GuidePage() {
     const t = await getTranslations();
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background">
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+            <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
                 <div className="container flex h-14 max-w-7xl items-center justify-between mx-auto px-4">
                     <div className="flex items-center gap-4">
                         <Link
@@ -27,12 +27,12 @@ export default async function GuidePage() {
             {/* Main Content */}
             <main className="container max-w-4xl mx-auto px-4 py-16">
                 <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-6">
-                        <Book className="w-10 h-10 text-green-600" />
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
+                        <Book className="w-10 h-10 text-green-600 dark:text-green-400" />
                     </div>
 
-                    <h2 className="text-3xl font-bold mb-4">Guide to Dalat</h2>
-                    <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+                    <h2 className="text-4xl font-extrabold mb-4 tracking-tight text-foreground">Guide to Dalat</h2>
+                    <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
                         Your comprehensive guide to exploring DaLat - from must-see attractions to local tips.
                         This section is currently under development.
                     </p>
@@ -50,9 +50,9 @@ export default async function GuidePage() {
                         </Link>
                     </div>
 
-                    <div className="mt-16 p-8 bg-white rounded-lg border border-gray-200 max-w-2xl mx-auto">
-                        <h3 className="font-semibold text-lg mb-4">Coming Soon</h3>
-                        <ul className="text-left space-y-2 text-gray-600">
+                    <div className="mt-16 p-8 bg-card rounded-lg border border-border max-w-2xl mx-auto">
+                        <h3 className="font-semibold text-lg mb-4 text-foreground">Coming Soon</h3>
+                        <ul className="text-left space-y-2 text-muted-foreground">
                             <li>• Top attractions and landmarks</li>
                             <li>• Local tips and recommendations</li>
                             <li>• Cultural insights and etiquette</li>

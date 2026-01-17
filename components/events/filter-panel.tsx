@@ -82,7 +82,7 @@ export function FilterPanel({ isOpen, onClose, onApplyFilters }: FilterPanelProp
             />
 
             {/* Filter Panel */}
-            <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-[1001] overflow-y-auto">
+            <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-background shadow-2xl z-[1001] overflow-y-auto border-l border-border">
                 <div className="p-6">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
@@ -220,9 +220,9 @@ export function FilterPanel({ isOpen, onClose, onApplyFilters }: FilterPanelProp
 
                     {/* Active Filters Summary */}
                     {(selectedCategories.length > 0 || priceFilter !== "all" || searchQuery || startDate || endDate) && (
-                        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <p className="text-xs font-semibold text-gray-600 mb-2">Active Filters:</p>
-                            <div className="space-y-1 text-xs text-gray-700">
+                        <div className="mt-6 p-4 bg-muted rounded-lg border border-border">
+                            <p className="text-xs font-semibold text-muted-foreground mb-2">Active Filters:</p>
+                            <div className="space-y-1 text-xs text-muted-foreground">
                                 {selectedCategories.length > 0 && (
                                     <p>• {selectedCategories.length} categories selected</p>
                                 )}
