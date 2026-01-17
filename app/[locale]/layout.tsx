@@ -6,6 +6,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { BadgeClearer } from "@/components/badge-clearer";
 import { NotificationPrompt } from "@/components/notification-prompt";
 import { SwUpdateHandler } from "@/components/sw-update-handler";
+import { LocaleMismatchBanner } from "@/components/locale-mismatch-banner";
 import { GlobalFooter } from "@/components/global-footer";
 import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-context";
 import { PerformanceMonitor } from "@/components/performance-monitor";
@@ -77,6 +78,7 @@ export default async function LocaleLayout({ children, params }: Props) {
             <BadgeClearer />
             <NotificationPrompt />
             <SwUpdateHandler />
+            <LocaleMismatchBanner />
             <main className="flex-1">{children}</main>
             <GlobalFooter />
           </div>
