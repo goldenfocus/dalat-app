@@ -97,6 +97,62 @@ export default async function GuidePage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Group Directory Card */}
+                    <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
+                        <div className="p-6">
+                            <div className="flex items-start gap-4 mb-4">
+                                <div className="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-7 h-7 text-orange-600 dark:text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-bold text-foreground">Group Directory</h3>
+                                    <p className="text-sm text-muted-foreground">Connect with local communities</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                {[
+                                    { title: "Expat Community", icon: "arrow-right" },
+                                    { title: "Digital Nomads", icon: "arrow-right" },
+                                    { title: "Language Exchange", icon: "arrow-right" },
+                                ].map((item) => (
+                                    <button key={item.title} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted transition-colors group">
+                                        <span className="text-base font-medium text-foreground/80 group-hover:text-foreground">{item.title}</span>
+                                        <svg className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" /></svg>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Services Card */}
+                    <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
+                        <div className="p-6">
+                            <div className="flex items-start gap-4 mb-4">
+                                <div className="w-14 h-14 rounded-2xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-7 h-7 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-bold text-foreground">Services</h3>
+                                    <p className="text-sm text-muted-foreground">Find trusted local professionals</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                {[
+                                    { title: "Home Maintenance", icon: "arrow-right" },
+                                    { title: "Delivery Services", icon: "arrow-right" },
+                                    { title: "Legal & Consulting", icon: "arrow-right" },
+                                ].map((item) => (
+                                    <button key={item.title} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted transition-colors group">
+                                        <span className="text-base font-medium text-foreground/80 group-hover:text-foreground">{item.title}</span>
+                                        <svg className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" /></svg>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
