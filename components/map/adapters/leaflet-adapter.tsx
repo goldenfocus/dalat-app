@@ -35,7 +35,7 @@ const createCustomIcon = (isSelected: boolean) => {
     });
 };
 
-// Leaflet specific imports handling
+// React-Leaflet components must be imported dynamically for Next.js (SSR issues)
 const MapContainer = dynamic(
     () => import("react-leaflet").then((mod) => mod.MapContainer),
     { ssr: false }
@@ -49,10 +49,40 @@ const Marker = dynamic(
     { ssr: false }
 );
 
-// Inner component for Leaflet specifics requiring static imports
-// We'll define this in a separate file or handle state differently
-// For now, let's keep it simple: we reconstruct the map when provider changes
+// Recenter Control Component - must also be dynamic to access useMap context safely?
+// Actually, useMap hook will fail if the component using it is not rendered inside MapContainer.
+// Since MapContainer is dynamic, any child using useMap should ideally be imported within the context or be safe.
+// The best pattern here is to define RecenterControl as a regular component but only render it INSIDE MapContainer
+// AND ensure MapContainer is only mounted on client.
 
+// However, standard import of { useMap } from 'react-leaflet' often throws 'window is not defined' during SSR.
+// So we need to lazy load the RecenterControl too.
+
+const RecenterControl = dynamic(
+    () => import("react-leaflet").then((mod) => {
+        const { useMap } = mod;
+        return function RecenterControlInner({ center }: { center: [number, number] }) {
+            const map = useMap();
+            return (
+                <div className="leaflet-bottom leaflet-right" style={{ marginBottom: "80px", marginRight: "10px", pointerEvents: "auto", zIndex: 1000 }}>
+                    <div className="leaflet-control leaflet-bar">
+                        <button
+                            className="bg-white hover:bg-gray-100 text-gray-800 font-bold p-2 cursor-pointer flex items-center justify-center w-[34px] h-[34px] bg-white border-b-0 rounded-sm shadow-md"
+                            onClick={() => map.flyTo(center, 14)}
+                            title="Center on Xuan Huong Lake"
+                            type="button"
+                        >
+                            🎯
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+    }),
+    { ssr: false }
+);
+
+// Inner component for Leaflet specifics requiring static imports
 export function LeafletAdapter({
     events,
     selectedEventId,
@@ -80,6 +110,9 @@ export function LeafletAdapter({
         (event) => event.latitude && event.longitude
     );
 
+    // Xuan Huong Lake Center
+    const lakesideCenter: [number, number] = [11.942, 108.443];
+
     return (
         <div className={className}>
             <MapContainer
@@ -87,8 +120,10 @@ export function LeafletAdapter({
                 zoom={defaultZoom}
                 className="h-full w-full"
                 style={{ background: "#f9fafb" }}
-                zoomControl={false}
+                zoomControl={true}
             >
+                <RecenterControl center={lakesideCenter} />
+
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
                     url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"

@@ -99,8 +99,8 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
                 </div>
             </div>
 
-            {/* Map Area - Fills remaining space */}
-            <div className="flex-1 relative mb-16 lg:mb-0">
+            {/* Map Area - Flex Item 1 */}
+            <div className="flex-1 relative min-h-[50vh]">
                 <UnifiedMap
                     provider="leaflet" // Can be switched to "google"
                     events={filteredEvents}
@@ -108,16 +108,16 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
                     onEventSelect={handleEventSelect}
                     className="h-full w-full"
                 />
+            </div>
 
-                {/* Floating Carousel at Bottom */}
-                <div className="absolute bottom-4 left-0 right-0 z-[1000]">
-                    <EventCarousel
-                        events={filteredEvents}
-                        counts={counts}
-                        selectedEventId={selectedEvent?.id}
-                        onEventSelect={handleEventSelect}
-                    />
-                </div>
+            {/* Carousel Area - Flex Item 2 (Separate Section) */}
+            <div className="bg-white border-t border-gray-100 p-4 pb-20 lg:pb-4 z-10 w-full overflow-hidden shrink-0">
+                <EventCarousel
+                    events={filteredEvents}
+                    counts={counts}
+                    selectedEventId={selectedEvent?.id}
+                    onEventSelect={handleEventSelect}
+                />
             </div>
 
             {/* Filter Panel */}
