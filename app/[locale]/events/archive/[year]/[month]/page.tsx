@@ -1,6 +1,5 @@
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
@@ -8,8 +7,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
-import { EventCard } from "@/components/events/event-card";
 import { MonthNavigation } from "@/components/events/month-navigation";
+import { ArchiveEventsList } from "@/components/events/archive-events-list";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import {
@@ -120,6 +119,26 @@ async function getEventCounts(eventIds: string[]) {
   return counts;
 }
 
+async function getMomentsCounts(eventIds: string[]) {
+  if (eventIds.length === 0) return {};
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_events_moments_counts", {
+    p_event_ids: eventIds,
+  });
+
+  if (error) {
+    console.error("Error fetching moments counts:", error);
+    return {};
+  }
+
+  const counts: Record<string, number> = {};
+  for (const row of data || []) {
+    counts[row.event_id] = row.moments_count;
+  }
+  return counts;
+}
+
 export default async function MonthlyArchivePage({ params }: PageProps) {
   const { locale, year, month } = await params;
   setRequestLocale(locale);
@@ -135,7 +154,12 @@ export default async function MonthlyArchivePage({ params }: PageProps) {
 
   const events = await getEventsByMonth(parsed.year, parsed.month);
   const eventIds = events.map((e) => e.id);
-  const counts = await getEventCounts(eventIds);
+
+  // Fetch counts in parallel for better performance
+  const [counts, momentsCounts] = await Promise.all([
+    getEventCounts(eventIds),
+    getMomentsCounts(eventIds),
+  ]);
 
   // Breadcrumb structured data
   const breadcrumbSchema = generateBreadcrumbSchema(
@@ -209,13 +233,13 @@ export default async function MonthlyArchivePage({ params }: PageProps) {
             />
           </div>
 
-          {/* Events grid */}
+          {/* Events list with filters */}
           {events.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {events.map((event) => (
-                <EventCard key={event.id} event={event} counts={counts[event.id]} />
-              ))}
-            </div>
+            <ArchiveEventsList
+              events={events}
+              counts={counts}
+              momentsCounts={momentsCounts}
+            />
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <p className="mb-4">{t("noEvents", { month: monthName, year: parsed.year })}</p>

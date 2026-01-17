@@ -654,6 +654,7 @@
     "beFirst": "Be the first to share a moment from this event!",
     "shareYourMoment": "Share your moment",
     "postMoment": "Post moment",
+    "postMoments": "Post {count} moments",
     "posting": "Posting...",
     "delete": "Delete",
     "deleting": "Deleting...",
@@ -903,6 +904,14 @@
       "october": "October",
       "november": "November",
       "december": "December"
-    }
+    },
+    "search": "Search events...",
+    "sortBy": "Sort by",
+    "sortRecent": "Recent",
+    "sortPopular": "Popular",
+    "sortRich": "Most photos",
+    "filterMyEvents": "Events I went to",
+    "clearFilters": "Clear filters",
+    "noResults": "No events match your search"
   }
 }
