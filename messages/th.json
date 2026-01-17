@@ -29,6 +29,7 @@
   },
   "nav": {
     "events": "กิจกรรม",
+    "moments": "โมเมนต์",
     "settings": "การตั้งค่า",
     "signIn": "เข้าสู่ระบบ",
     "signOut": "ออกจากระบบ"
@@ -36,6 +37,8 @@
   "home": {
     "title": "กิจกรรมในดาลัด",
     "subtitle": "ค้นพบสิ่งที่เกิดขึ้นในดาลัด",
+    "trendingMoments": "โมเมนต์ยอดนิยม",
+    "viewAllMoments": "ดูทั้งหมด",
     "noEvents": "ไม่มีกิจกรรมให้แสดง",
     "noUpcoming": "ยังไม่มีกิจกรรมที่กำลังจะมาถึง",
     "noHappening": "ไม่มีกิจกรรมที่กำลังเกิดขึ้นในขณะนี้",
@@ -586,8 +589,15 @@
     "rsvpFailed": "บันทึกคำตอบไม่สำเร็จ กรุณาลองอีกครั้ง"
   },
   "moments": {
-    "moments": "Moments",
-    "noMoments": "ยังไม่มี moments",
+    "moments": "โมเมนต์",
+    "discoverySubtitle": "คลังภาพของดาลัดจากกิจกรรมล่าสุด",
+    "discoveryDescription": "สำรวจรูปภาพและวิดีโอที่ชุมชนแชร์จากกิจกรรมในดาลัด",
+    "filters": {
+      "all": "ทั้งหมด",
+      "photos": "รูปภาพ",
+      "videos": "วิดีโอ"
+    },
+    "noMoments": "ยังไม่มีโมเมนต์",
     "beFirst": "เป็นคนแรกที่แชร์ moment จากกิจกรรมนี้!",
     "shareYourMoment": "แชร์ moment ของคุณ",
     "postMoment": "โพสต์ moment",

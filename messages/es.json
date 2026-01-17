@@ -29,6 +29,7 @@
   },
   "nav": {
     "events": "Eventos",
+    "moments": "Momentos",
     "settings": "Configuración",
     "signIn": "Iniciar sesión",
     "signOut": "Cerrar sesión"
@@ -36,6 +37,8 @@
   "home": {
     "title": "Eventos en Da Lat",
     "subtitle": "Descubre lo que pasa en Da Lat",
+    "trendingMoments": "Momentos destacados",
+    "viewAllMoments": "Ver todo",
     "noEvents": "No hay eventos para mostrar.",
     "noUpcoming": "Aún no hay eventos próximos.",
     "noHappening": "No hay eventos en curso ahora.",
@@ -586,8 +589,15 @@
     "rsvpFailed": "Error al guardar respuesta. Por favor intenta de nuevo."
   },
   "moments": {
-    "moments": "Moments",
-    "noMoments": "Aún no hay moments",
+    "moments": "Momentos",
+    "discoverySubtitle": "El archivo visual de Da Lat de eventos recientes",
+    "discoveryDescription": "Explora fotos y videos compartidos por la comunidad en eventos de Da Lat.",
+    "filters": {
+      "all": "Todo",
+      "photos": "Fotos",
+      "videos": "Videos"
+    },
+    "noMoments": "Aún no hay momentos",
     "beFirst": "¡Sé el primero en compartir un moment de este evento!",
     "shareYourMoment": "Comparte tu moment",
     "postMoment": "Publicar moment",

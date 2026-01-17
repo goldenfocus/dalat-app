@@ -34,6 +34,7 @@
   },
   "nav": {
     "events": "Events",
+    "moments": "Moments",
     "settings": "Settings",
     "signIn": "Sign in",
     "signOut": "Sign out"
@@ -41,6 +42,8 @@
   "home": {
     "title": "Events in Da Lat",
     "subtitle": "Discover what's happening in Da Lat",
+    "trendingMoments": "Trending Moments",
+    "viewAllMoments": "See all",
     "noEvents": "No events to show.",
     "noUpcoming": "No upcoming events yet.",
     "noHappening": "No events happening right now.",
@@ -655,6 +658,13 @@
   },
   "moments": {
     "moments": "Moments",
+    "discoverySubtitle": "Da Lat’s visual archive from recent events",
+    "discoveryDescription": "Explore photos and videos shared by the community at Da Lat events.",
+    "filters": {
+      "all": "All",
+      "photos": "Photos",
+      "videos": "Videos"
+    },
     "noMoments": "No moments yet",
     "beFirst": "Be the first to share a moment from this event!",
     "shareYourMoment": "Share your moment",

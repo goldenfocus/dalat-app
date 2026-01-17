@@ -34,6 +34,7 @@
   },
   "nav": {
     "events": "Sự kiện",
+    "moments": "Khoảnh khắc",
     "settings": "Cài đặt",
     "signIn": "Đăng nhập",
     "signOut": "Đăng xuất"
@@ -41,6 +42,8 @@
   "home": {
     "title": "Sự kiện tại Đà Lạt",
     "subtitle": "Khám phá những gì đang diễn ra ở Đà Lạt",
+    "trendingMoments": "Khoảnh khắc nổi bật",
+    "viewAllMoments": "Xem tất cả",
     "noEvents": "Không có sự kiện nào.",
     "noUpcoming": "Chưa có sự kiện sắp tới.",
     "noHappening": "Không có sự kiện nào đang diễn ra.",
@@ -593,6 +596,13 @@
   },
   "moments": {
     "moments": "Khoảnh khắc",
+    "discoverySubtitle": "Kho ảnh Đà Lạt từ các sự kiện gần đây",
+    "discoveryDescription": "Khám phá ảnh và video do cộng đồng chia sẻ tại các sự kiện ở Đà Lạt.",
+    "filters": {
+      "all": "Tất cả",
+      "photos": "Ảnh",
+      "videos": "Video"
+    },
     "noMoments": "Chưa có khoảnh khắc nào",
     "beFirst": "Hãy là người đầu tiên chia sẻ khoảnh khắc từ sự kiện này!",
     "shareYourMoment": "Chia sẻ khoảnh khắc",

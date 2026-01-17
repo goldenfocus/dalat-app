@@ -8,7 +8,7 @@
  * Reference: https://schema.org
  */
 
-import type { Event, Profile, Organizer, Festival, EventSeries } from "@/lib/types";
+import type { Event, Profile, Organizer, Festival, EventSeries, Moment } from "@/lib/types";
 
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "dalat.app";
@@ -420,6 +420,89 @@ export function generateEventSeriesSchema(
   };
 
   return schema;
+}
+
+/**
+ * Generate SocialMediaPosting schema for moment pages
+ * https://schema.org/SocialMediaPosting
+ */
+export function generateMomentSchema(
+  moment: Moment & { profiles?: Profile; events?: Event },
+  locale: string
+) {
+  const momentUrl = `${SITE_URL}/${locale}/moments/${moment.id}`;
+  const userName = moment.profiles?.display_name || moment.profiles?.username || "Someone";
+  const userIdentifier = moment.profiles?.username || moment.user_id;
+  const eventTitle = moment.events?.title || "Event";
+  const eventSlug = moment.events?.slug || "";
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "SocialMediaPosting",
+    headline: `${userName}'s moment at ${eventTitle}`,
+    url: momentUrl,
+    datePublished: moment.created_at,
+    author: {
+      "@type": "Person",
+      name: userName,
+      url: `${SITE_URL}/${locale}/${userIdentifier}`,
+    },
+    about: eventSlug
+      ? {
+          "@type": "Event",
+          name: eventTitle,
+          url: `${SITE_URL}/${locale}/events/${eventSlug}`,
+        }
+      : {
+          "@type": "Event",
+          name: eventTitle,
+        },
+    contentLocation: {
+      "@type": "Place",
+      name: "Da Lat, Vietnam",
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: DA_LAT_GEO.latitude,
+        longitude: DA_LAT_GEO.longitude,
+      },
+    },
+    ...(moment.text_content && { articleBody: moment.text_content }),
+  };
+
+  if (moment.media_url && moment.content_type === "photo") {
+    schema.image = [moment.media_url];
+  }
+
+  if (moment.media_url && moment.content_type === "video") {
+    schema.video = {
+      "@type": "VideoObject",
+      contentUrl: moment.media_url,
+      uploadDate: moment.created_at,
+      name: `${userName}'s moment at ${eventTitle}`,
+    };
+  }
+
+  return schema;
+}
+
+/**
+ * Generate ItemList schema for the global moments discovery page
+ * https://schema.org/ItemList
+ */
+export function generateMomentsDiscoverySchema(
+  moments: Array<Pick<Moment, "id">>,
+  locale: string
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Moments",
+    itemListElement: moments.map((moment, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${SITE_URL}/${locale}/moments/${moment.id}`,
+    })),
+  };
 }
 
 /**

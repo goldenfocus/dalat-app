@@ -29,6 +29,7 @@
   },
   "nav": {
     "events": "活动",
+    "moments": "瞬间",
     "settings": "设置",
     "signIn": "登录",
     "signOut": "退出"
@@ -36,6 +37,8 @@
   "home": {
     "title": "大叻活动",
     "subtitle": "发现大叻正在发生的事",
+    "trendingMoments": "热门瞬间",
+    "viewAllMoments": "查看全部",
     "noEvents": "暂无活动显示。",
     "noUpcoming": "暂无即将举行的活动。",
     "noHappening": "目前没有正在进行的活动。",
@@ -586,8 +589,15 @@
     "rsvpFailed": "保存回复失败。请重试。"
   },
   "moments": {
-    "moments": "动态",
-    "noMoments": "暂无动态",
+    "moments": "瞬间",
+    "discoverySubtitle": "来自近期活动的大叻影像档案",
+    "discoveryDescription": "探索社区在大叻活动中分享的照片与视频。",
+    "filters": {
+      "all": "全部",
+      "photos": "照片",
+      "videos": "视频"
+    },
+    "noMoments": "暂无瞬间",
     "beFirst": "成为第一个分享此活动动态的人！",
     "shareYourMoment": "分享您的动态",
     "postMoment": "发布动态",

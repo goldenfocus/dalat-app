@@ -5,15 +5,35 @@ import type { MomentWithEvent, MomentLikeStatus } from "@/lib/types";
 
 const INITIAL_PAGE_SIZE = 10;
 
-export const metadata: Metadata = {
-  title: "Feed | dalat.app",
-  description: "Discover moments from past events in Da Lat",
-  openGraph: {
+const SITE_URL = "https://dalat.app";
+
+interface PageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const canonicalUrl = `${SITE_URL}/${locale}/moments`;
+  const pageUrl = `${SITE_URL}/${locale}/feed`;
+
+  return {
     title: "Feed | dalat.app",
     description: "Discover moments from past events in Da Lat",
-    type: "website",
-  },
-};
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: "Feed | dalat.app",
+      description: "Discover moments from past events in Da Lat",
+      type: "website",
+      url: pageUrl,
+    },
+    robots: {
+      index: false,
+      follow: true,
+    },
+  };
+}
 
 async function getFeedMoments(): Promise<MomentWithEvent[]> {
   const supabase = await createClient();

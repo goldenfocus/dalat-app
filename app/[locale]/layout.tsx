@@ -11,6 +11,7 @@ import { GlobalFooter } from "@/components/global-footer";
 import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-context";
 import { PerformanceMonitor } from "@/components/performance-monitor";
 import { routing, type Locale } from "@/lib/i18n/routing";
+import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 
 const siteUrl = "https://dalat.app";
 
@@ -79,7 +80,10 @@ export default async function LocaleLayout({ children, params }: Props) {
             <NotificationPrompt />
             <SwUpdateHandler />
             <LocaleMismatchBanner />
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
+              {children}
+            </main>
+            <MobileBottomNav />
             <GlobalFooter />
           </div>
         </ScrollRestorationProvider>
