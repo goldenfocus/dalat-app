@@ -11,9 +11,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "dalat.app",
+    title: "dalat.app · Events · People · Moments · Love",
+    description: "Discover and organize events in Da Lat",
+    url: siteUrl,
   },
   twitter: {
     card: "summary_large_image",
+    title: "dalat.app · Events · People · Moments · Love",
+    description: "Discover and organize events in Da Lat",
   },
 };
 
