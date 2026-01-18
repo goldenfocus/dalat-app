@@ -57,8 +57,10 @@
     },
     "search": {
       "placeholder": "Search events...",
-      "noResults": "No events found for \"{query}\"",
-      "clearSearch": "Clear search"
+      "noResults": "No events found",
+      "clearSearch": "Clear search",
+      "viewAll": "View all results for \"{query}\"",
+      "searchFor": "Search for \"{query}\""
     }
   },
   "auth": {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Clock, Users, Camera, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
@@ -13,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import { SearchInput } from "@/components/ui/search-input";
+import { InstantSearch } from "@/components/search/instant-search";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { Event, EventCounts } from "@/lib/types";
@@ -36,12 +35,10 @@ export function ArchiveFilters({
   className,
 }: ArchiveFiltersProps) {
   const t = useTranslations("archive");
-  const router = useRouter();
   const [sort, setSort] = useState<SortOption>("recent");
   const [showMyEvents, setShowMyEvents] = useState(false);
   const [myEventIds, setMyEventIds] = useState<Set<string>>(new Set());
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Check auth status and fetch user's attended events
   useEffect(() => {
@@ -66,23 +63,7 @@ export function ArchiveFilters({
     checkAuthAndFetchAttended();
   }, [events]);
 
-  // Handle global search - navigates to /search/[slug]
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Convert to URL-friendly slug: "Cherry Blossom" → "cherry-blossom"
-      const slug = searchQuery
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "");
-      if (slug) {
-        router.push(`/search/${slug}`);
-      }
-    }
-  };
-
-  // Memoized sorting and filtering (no search - that's global now)
+  // Memoized sorting and filtering
   const sortedAndFilteredEvents = useMemo(() => {
     let result = [...events];
 
@@ -139,14 +120,8 @@ export function ArchiveFilters({
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {/* Global search - navigates to home with query */}
-      <form onSubmit={handleSearch} className="flex-1 max-w-sm">
-        <SearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder={t("search")}
-        />
-      </form>
+      {/* Instant search with dropdown suggestions */}
+      <InstantSearch className="flex-1 max-w-sm" placeholder={t("search")} />
 
       {/* Sort dropdown - icon only */}
       <DropdownMenu>
