@@ -73,20 +73,9 @@ export function MomentCard({ moment, likeStatus }: MomentCardProps) {
 
         {/* Overlay with user info */}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-          <div className="flex items-center gap-2">
-            {moment.avatar_url ? (
-              <img
-                src={moment.avatar_url}
-                alt=""
-                className="w-6 h-6 rounded-full border border-white/20"
-              />
-            ) : (
-              <div className="w-6 h-6 rounded-full bg-white/20" />
-            )}
-            <span className="text-white text-xs font-medium truncate flex-1">
-              {moment.display_name || moment.username || "Anonymous"}
-            </span>
-          </div>
+          <span className="text-white text-sm font-medium drop-shadow-sm">
+            {moment.display_name || moment.username || "Anonymous"}
+          </span>
           {moment.text_content && moment.content_type !== "text" && (
             <p className="text-white/80 text-xs mt-1 line-clamp-1">
               {moment.text_content}
