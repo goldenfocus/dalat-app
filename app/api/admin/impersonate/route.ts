@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import {
-  getGodModeCookieName,
-  getSuperAdminUsername,
-} from "@/lib/god-mode";
+import { getGodModeCookieName } from "@/lib/god-mode";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -19,11 +16,11 @@ export async function POST(request: Request) {
   // Verify caller is super admin
   const { data: adminProfile } = await supabase
     .from("profiles")
-    .select("username")
+    .select("role")
     .eq("id", user.id)
     .single();
 
-  if (adminProfile?.username !== getSuperAdminUsername()) {
+  if (adminProfile?.role !== "superadmin") {
     return NextResponse.json({ error: "not_authorized" }, { status: 403 });
   }
 

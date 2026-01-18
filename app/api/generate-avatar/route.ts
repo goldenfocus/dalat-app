@@ -18,6 +18,26 @@ function sanitizeDisplayName(name: string | undefined): string {
     .trim();
 }
 
+// Sanitize custom prompt to prevent prompt injection
+function sanitizeCustomPrompt(prompt: string | undefined): string {
+  if (!prompt?.trim()) return "";
+  // Remove potentially harmful characters and limit length
+  return prompt
+    .replace(/["'\n\r]/g, " ")
+    .replace(/\s+/g, " ")
+    .slice(0, 200)
+    .trim();
+}
+
+type AvatarStyle = "male" | "female" | "neutral" | "custom";
+
+const styleDescriptions: Record<AvatarStyle, string> = {
+  male: "masculine-presenting person with strong, defined features",
+  female: "feminine-presenting person with soft, elegant features",
+  neutral: "person with androgynous, gender-neutral features that could be any gender",
+  custom: "", // Will use custom prompt
+};
+
 export async function POST(request: Request) {
   try {
     // Auth check
@@ -52,7 +72,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { displayName } = await request.json();
+    const { displayName, style = "neutral", customPrompt } = await request.json();
 
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     if (!apiKey) {
@@ -71,13 +91,28 @@ export async function POST(request: Request) {
       } as never,
     });
 
-    // Sanitize and build name context
+    // Sanitize inputs
     const sanitizedName = sanitizeDisplayName(displayName);
+    const sanitizedCustomPrompt = sanitizeCustomPrompt(customPrompt);
+    const avatarStyle = (style as AvatarStyle) || "neutral";
+
+    // Build name context
     const nameContext = sanitizedName
       ? `for someone named ${sanitizedName}`
       : "for a friendly person";
 
+    // Build style context
+    let styleContext: string;
+    if (avatarStyle === "custom" && sanitizedCustomPrompt) {
+      styleContext = `The avatar should depict: ${sanitizedCustomPrompt}`;
+    } else {
+      const styleDesc = styleDescriptions[avatarStyle] || styleDescriptions.neutral;
+      styleContext = `The avatar should depict a ${styleDesc}`;
+    }
+
     const prompt = `Create a beautiful, artistic avatar portrait ${nameContext}.
+
+${styleContext}
 
 Style: Dreamy, ethereal digital art inspired by Da Lat, Vietnam's misty highlands.
 Colors: Soft pastels with hints of misty purple, pine forest green, warm sunset orange, and flower pink.

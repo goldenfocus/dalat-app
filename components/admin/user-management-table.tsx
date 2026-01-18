@@ -30,6 +30,7 @@ interface UserManagementTableProps {
 }
 
 const ROLE_OPTIONS: UserRole[] = [
+  "superadmin",
   "admin",
   "moderator",
   "organizer_verified",
@@ -39,6 +40,7 @@ const ROLE_OPTIONS: UserRole[] = [
 ];
 
 const ROLE_COLORS: Record<UserRole, string> = {
+  superadmin: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   admin: "bg-red-500/10 text-red-600 border-red-500/20",
   moderator: "bg-purple-500/10 text-purple-600 border-purple-500/20",
   organizer_verified: "bg-green-500/10 text-green-600 border-green-500/20",
@@ -48,6 +50,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
 };
 
 const ROLE_LABELS: Record<UserRole, string> = {
+  superadmin: "Super Admin",
   admin: "Admin",
   moderator: "Moderator",
   organizer_verified: "Verified Organizer",

@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
+import { TagList } from "@/components/events/tag-badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
@@ -88,9 +89,16 @@ export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
 
         {/* Text area */}
         <CardContent className="p-4">
-          <h3 className="font-semibold text-lg mb-2 line-clamp-1">
+          <h3 className="font-semibold text-lg mb-1 line-clamp-1">
             {event.title}
           </h3>
+
+          {/* AI Tags */}
+          {event.ai_tags && event.ai_tags.length > 0 && (
+            <div className="mb-2">
+              <TagList tags={event.ai_tags} maxDisplay={3} />
+            </div>
+          )}
 
           <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">

@@ -51,6 +51,31 @@ async function triggerEventTranslation(
   });
 }
 
+/**
+ * Trigger AI processing for an event (fire-and-forget)
+ * - Auto-tagging with category tags
+ * - Spam detection (auto-hides if high confidence spam)
+ */
+async function triggerAIProcessing(eventId: string) {
+  // Fire and forget - don't block the user
+  Promise.all([
+    // Auto-tag the event
+    fetch('/api/admin/tag-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId }),
+    }),
+    // Check for spam
+    fetch('/api/admin/spam-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId, autoHide: true }),
+    }),
+  ]).catch((error) => {
+    console.error('AI processing trigger failed:', error);
+  });
+}
+
 interface EventFormProps {
   userId: string;
   event?: Event;
@@ -442,9 +467,10 @@ export function EventForm({
             await createSponsorsForEvent(seriesData.first_event_id, draftSponsors);
           }
 
-          // Trigger translation for the first event (fire-and-forget)
+          // Trigger AI processing for the first event (fire-and-forget)
           if (seriesData.first_event_id) {
             triggerEventTranslation(seriesData.first_event_id, title.trim(), description || null);
+            triggerAIProcessing(seriesData.first_event_id);
           }
 
           router.push(`/series/${seriesData.slug}`);
@@ -492,8 +518,9 @@ export function EventForm({
             await createSponsorsForEvent(data.id, draftSponsors);
           }
 
-          // Trigger translation in background (fire-and-forget)
+          // Trigger AI processing in background (fire-and-forget)
           triggerEventTranslation(data.id, title.trim(), description || null);
+          triggerAIProcessing(data.id);
 
           router.push(`/events/${data.slug}`);
         }

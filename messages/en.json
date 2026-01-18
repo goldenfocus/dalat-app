@@ -365,7 +365,25 @@
       "button": "Claim This Profile",
       "communityImported": "Community Imported"
     },
-    "eventsHosted": "{count} events hosted"
+    "eventsHosted": "{count} events hosted",
+    "cancel": "Cancel",
+    "avatarStyle": {
+      "male": "Masculine",
+      "maleDesc": "Strong, defined features",
+      "female": "Feminine",
+      "femaleDesc": "Soft, elegant features",
+      "neutral": "Neutral",
+      "neutralDesc": "Gender-neutral style",
+      "custom": "Custom",
+      "customDesc": "Describe your avatar"
+    },
+    "avatarDialog": {
+      "title": "Create AI Avatar",
+      "description": "Choose a style for your AI-generated avatar",
+      "generate": "Generate Avatar",
+      "customPlaceholder": "Describe your ideal avatar... (e.g., a friendly wizard with a purple hat, an astronaut with flowers)",
+      "customHint": "Tip: Use the sparkles button to enhance your description"
+    }
   },
   "settings": {
     "settings": "Settings",

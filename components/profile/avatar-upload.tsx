@@ -12,6 +12,7 @@ interface AvatarUploadProps {
   currentAvatarUrl: string | null;
   onAvatarChange: (url: string | null) => void;
   size?: "sm" | "md" | "lg";
+  aiAvatarButton?: React.ReactNode;
 }
 
 const sizeClasses = {
@@ -31,6 +32,7 @@ export function AvatarUpload({
   currentAvatarUrl,
   onAvatarChange,
   size = "lg",
+  aiAvatarButton,
 }: AvatarUploadProps) {
   const t = useTranslations("profile");
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatarUrl);
@@ -171,11 +173,11 @@ export function AvatarUpload({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-end gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end gap-4">
         {/* Avatar preview */}
         <div
           className={cn(
-            "relative rounded-full overflow-hidden bg-muted border-2 transition-colors cursor-pointer group",
+            "relative rounded-full overflow-hidden bg-muted border-2 transition-colors cursor-pointer group shrink-0",
             sizeClasses[size],
             isDragOver
               ? "border-primary border-dashed"
@@ -215,8 +217,8 @@ export function AvatarUpload({
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-col gap-2">
+        {/* Actions - wrap on mobile */}
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant="outline"
@@ -236,6 +238,8 @@ export function AvatarUpload({
               </>
             )}
           </Button>
+
+          {aiAvatarButton}
 
           {previewUrl && (
             <Button

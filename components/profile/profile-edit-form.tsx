@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, AlertCircle, Sparkles } from "lucide-react";
+import { Check, Loader2, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AvatarUpload } from "./avatar-upload";
+import { AIAvatarDialog } from "./ai-avatar-dialog";
 import { cn } from "@/lib/utils";
 import { triggerTranslation } from "@/lib/translations-client";
 import type { Profile } from "@/lib/types";
@@ -42,9 +43,6 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     null
   );
 
-  // AI generation state
-  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
-  const [avatarError, setAvatarError] = useState<string | null>(null);
 
   // Debounced username availability check
   useEffect(() => {
@@ -111,63 +109,6 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     setAvatarUrl(url);
     setSuccess(false);
   }, []);
-
-  const handleGenerateAIAvatar = async () => {
-    setAvatarError(null);
-    setIsGeneratingAvatar(true);
-
-    try {
-      const response = await fetch("/api/generate-avatar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to generate avatar");
-      }
-
-      const { imageUrl } = await response.json();
-
-      // Convert base64 to blob and upload to storage
-      const base64Data = imageUrl.split(",")[1];
-      const mimeType = imageUrl.split(";")[0].split(":")[1];
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: mimeType });
-
-      // Upload to storage
-      const supabase = createClient();
-      const ext = mimeType.split("/")[1] || "png";
-      const fileName = `${profile.id}/${Date.now()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(fileName, blob, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(fileName);
-
-      setAvatarUrl(publicUrl);
-      setSuccess(false);
-    } catch (err) {
-      console.error("AI avatar generation error:", err);
-      setAvatarError(err instanceof Error ? err.message : t("uploadFailed"));
-    } finally {
-      setIsGeneratingAvatar(false);
-    }
-  };
 
   const hasChanges =
     avatarUrl !== profile.avatar_url ||
@@ -244,37 +185,22 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
           {/* Avatar */}
           <div className="space-y-3">
             <Label>{t("profilePhoto")}</Label>
-            <div className="flex items-end gap-4">
-              <AvatarUpload
-                userId={profile.id}
-                currentAvatarUrl={avatarUrl}
-                onAvatarChange={handleAvatarChange}
-                size="lg"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateAIAvatar}
-                disabled={isGeneratingAvatar}
-                className="flex items-center gap-2"
-              >
-                {isGeneratingAvatar ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {t("generating")}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    {t("generateAI")}
-                  </>
-                )}
-              </Button>
-            </div>
-            {avatarError && (
-              <p className="text-sm text-destructive">{avatarError}</p>
-            )}
+            <AvatarUpload
+              userId={profile.id}
+              currentAvatarUrl={avatarUrl}
+              onAvatarChange={handleAvatarChange}
+              size="lg"
+              aiAvatarButton={
+                <AIAvatarDialog
+                  profileId={profile.id}
+                  displayName={displayName}
+                  onAvatarGenerated={(url) => {
+                    setAvatarUrl(url);
+                    setSuccess(false);
+                  }}
+                />
+              }
+            />
           </div>
 
           {/* Username */}

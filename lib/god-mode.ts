@@ -4,7 +4,6 @@ import type { Profile } from "@/lib/types";
 import type { User } from "@supabase/supabase-js";
 
 const GOD_MODE_COOKIE = "god_mode_user_id";
-const SUPER_ADMIN_USERNAME = "yan";
 
 export interface GodModeState {
   isActive: boolean;
@@ -49,7 +48,7 @@ export async function getEffectiveUser(): Promise<EffectiveUserResult> {
     .single();
 
   // Check if current user is super admin
-  const isSuperAdmin = realProfile?.username === SUPER_ADMIN_USERNAME;
+  const isSuperAdmin = realProfile?.role === "superadmin";
 
   // Check for God mode cookie
   const cookieStore = await cookies();
@@ -97,11 +96,11 @@ export async function canUseGodMode(): Promise<boolean> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username")
+    .select("role")
     .eq("id", user.id)
     .single();
 
-  return profile?.username === SUPER_ADMIN_USERNAME;
+  return profile?.role === "superadmin";
 }
 
 /**
@@ -109,11 +108,4 @@ export async function canUseGodMode(): Promise<boolean> {
  */
 export function getGodModeCookieName(): string {
   return GOD_MODE_COOKIE;
-}
-
-/**
- * Get the super admin username
- */
-export function getSuperAdminUsername(): string {
-  return SUPER_ADMIN_USERNAME;
 }

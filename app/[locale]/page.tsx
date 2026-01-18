@@ -14,13 +14,14 @@ import { EventCard } from "@/components/events/event-card";
 import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
+import { TagFilter } from "@/components/events/tag-filter";
 import { Button } from "@/components/ui/button";
 import type { Event, EventCounts, EventWithSeriesData } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ tab?: string; q?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string; tag?: string }>;
 };
 
 function parseLifecycle(tab: string | undefined): EventLifecycle {
@@ -28,7 +29,11 @@ function parseLifecycle(tab: string | undefined): EventLifecycle {
   return "upcoming";
 }
 
-async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: string): Promise<EventWithSeriesData[]> {
+async function getEventsByLifecycle(
+  lifecycle: EventLifecycle,
+  searchQuery?: string,
+  tagFilter?: string
+): Promise<EventWithSeriesData[]> {
   const supabase = await createClient();
 
   // Use search RPC if there's a query (doesn't have deduplication yet)
@@ -47,6 +52,56 @@ async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: str
     }
 
     // Search results don't have series data, add nulls
+    let results = (events as Event[]).map((e) => ({
+      ...e,
+      series_slug: null,
+      series_rrule: null,
+      is_recurring: !!e.series_id,
+    }));
+
+    // Apply tag filter client-side for search results
+    if (tagFilter) {
+      results = results.filter((e) => e.ai_tags?.includes(tagFilter));
+    }
+
+    return results;
+  }
+
+  // If tag filter is specified, use tag-specific query
+  if (tagFilter) {
+    const { data: events, error } = await supabase.rpc("get_events_by_tag", {
+      p_tag: tagFilter,
+      p_limit: 20,
+      p_offset: 0,
+    });
+
+    // Fallback to manual filter if RPC doesn't exist yet
+    if (error?.code === "PGRST202") {
+      const now = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+      const { data: fallbackEvents } = await supabase
+        .from("events")
+        .select("*")
+        .eq("status", "published")
+        .contains("ai_tags", [tagFilter])
+        .gt("starts_at", now)
+        .order("starts_at", { ascending: true })
+        .limit(20);
+
+      if (fallbackEvents) {
+        return (fallbackEvents as Event[]).map((e) => ({
+          ...e,
+          series_slug: null,
+          series_rrule: null,
+          is_recurring: !!e.series_id,
+        }));
+      }
+    }
+
+    if (error) {
+      console.error("Error fetching events by tag:", error);
+      return [];
+    }
+
     return (events as Event[]).map((e) => ({
       ...e,
       series_slug: null,
@@ -70,7 +125,7 @@ async function getEventsByLifecycle(lifecycle: EventLifecycle, searchQuery?: str
     });
     events = fallback.data;
     error = fallback.error;
-    
+
     // Map to expected format with null series data
     if (events && !error) {
       return (events as Event[]).map((e) => ({
@@ -139,11 +194,13 @@ async function getLifecycleCounts() {
 async function EventsFeed({
   lifecycle,
   searchQuery,
+  tagFilter,
 }: {
   lifecycle: EventLifecycle;
   searchQuery?: string;
+  tagFilter?: string;
 }) {
-  const events = await getEventsByLifecycle(lifecycle, searchQuery);
+  const events = await getEventsByLifecycle(lifecycle, searchQuery, tagFilter);
   const eventIds = events.map((e) => e.id);
   const counts = await getEventCounts(eventIds);
   const t = await getTranslations("home");
@@ -235,6 +292,7 @@ export default async function Home({ params, searchParams }: PageProps) {
   }
 
   const searchQuery = search.q ?? "";
+  const tagFilter = search.tag;
   const [t, tNav, lifecycleCounts] = await Promise.all([
     getTranslations("home"),
     getTranslations("nav"),
@@ -312,6 +370,13 @@ export default async function Home({ params, searchParams }: PageProps) {
             />
           </div>
 
+          {/* Tag Filter */}
+          <div className="mb-6">
+            <Suspense fallback={<div className="h-8" />}>
+              <TagFilter selectedTag={tagFilter} />
+            </Suspense>
+          </div>
+
           <Suspense
             fallback={
               <div className="grid gap-4 sm:grid-cols-2">
@@ -324,7 +389,7 @@ export default async function Home({ params, searchParams }: PageProps) {
               </div>
             }
           >
-            <EventsFeed lifecycle={activeTab} searchQuery={searchQuery} />
+            <EventsFeed lifecycle={activeTab} searchQuery={searchQuery} tagFilter={tagFilter} />
           </Suspense>
         </div>
       </main>
