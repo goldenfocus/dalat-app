@@ -22,10 +22,12 @@ export async function GET(request: NextRequest) {
 
   // Build OR filter for all expanded terms
   // Each term searches title, description, and location_name
+  // PostgREST reserved chars (commas, dots, parens) require double-quoted values
   const orFilters = expandedTerms
     .map((term) => {
-      const escaped = term.replace(/[%_]/g, "\\$&"); // Escape SQL wildcards
-      return `title.ilike.%${escaped}%,description.ilike.%${escaped}%,location_name.ilike.%${escaped}%`;
+      // Escape double quotes by doubling, then escape SQL wildcards
+      const escaped = term.replace(/"/g, '""').replace(/[%_]/g, "\\$&");
+      return `title.ilike."%${escaped}%",description.ilike."%${escaped}%",location_name.ilike."%${escaped}%"`;
     })
     .join(",");
 

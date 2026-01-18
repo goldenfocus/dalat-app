@@ -79,10 +79,12 @@ async function searchEvents(query: string): Promise<Event[]> {
   const expandedTerms = await expandSearchQuery(query);
 
   // Build OR filter for all expanded terms
+  // PostgREST reserved chars (commas, dots, parens) require double-quoted values
+  // Double quotes inside values must be escaped by doubling them
   const orFilters = expandedTerms
     .map((term) => {
-      const escaped = term.replace(/[%_]/g, "\\$&");
-      return `title.ilike.%${escaped}%,description.ilike.%${escaped}%,location_name.ilike.%${escaped}%`;
+      const escaped = term.replace(/"/g, '""').replace(/[%_]/g, "\\$&");
+      return `title.ilike."%${escaped}%",description.ilike."%${escaped}%",location_name.ilike."%${escaped}%"`;
     })
     .join(",");
 
