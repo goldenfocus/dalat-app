@@ -7,6 +7,7 @@ import {
   checkDuplicateByUrl,
   generateMapsUrl,
   createEmptyResult,
+  downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
 
@@ -41,6 +42,13 @@ export async function processFacebookEvents(
       // Generate unique slug
       const slug = await generateUniqueSlug(supabase, slugify(normalized.title));
 
+      // Download and re-upload image to our storage (external CDN URLs expire)
+      const imageUrl = await downloadAndUploadImage(
+        supabase,
+        normalized.imageUrl,
+        slug
+      );
+
       // Insert event
       const { error } = await supabase.from("events").insert({
         slug,
@@ -52,7 +60,7 @@ export async function processFacebookEvents(
         address: normalized.address,
         google_maps_url: normalized.mapsUrl,
         external_chat_url: event.url,
-        image_url: normalized.imageUrl,
+        image_url: imageUrl,
         status: "published",
         timezone: "Asia/Ho_Chi_Minh",
         organizer_id: organizerId,

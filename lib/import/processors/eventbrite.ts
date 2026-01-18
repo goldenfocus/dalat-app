@@ -7,6 +7,7 @@ import {
   checkDuplicateByUrl,
   generateMapsUrl,
   createEmptyResult,
+  downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
 
@@ -37,6 +38,13 @@ export async function processEventbriteEvents(
       );
       const slug = await generateUniqueSlug(supabase, slugify(normalized.title));
 
+      // Download and re-upload image to our storage (external CDN URLs expire)
+      const imageUrl = await downloadAndUploadImage(
+        supabase,
+        normalized.imageUrl,
+        slug
+      );
+
       // Detect platform from URL
       let platform = "eventbrite";
       if (event.url?.includes("meetup.com")) platform = "meetup";
@@ -52,7 +60,7 @@ export async function processEventbriteEvents(
         address: normalized.address,
         google_maps_url: normalized.mapsUrl,
         external_chat_url: event.url,
-        image_url: normalized.imageUrl,
+        image_url: imageUrl,
         status: "published",
         timezone: "Asia/Ho_Chi_Minh",
         organizer_id: organizerId,

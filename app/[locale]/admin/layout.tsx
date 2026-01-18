@@ -56,6 +56,7 @@ export default async function AdminLayout({
 
   // Roles that can access admin section (organizers use /organizer portal instead)
   const allowedRoles: UserRole[] = [
+    "superadmin",
     "admin",
     "moderator",
     "contributor",
@@ -64,7 +65,8 @@ export default async function AdminLayout({
     redirect("/");
   }
 
-  const isAdmin = profile.role === "admin";
+  // superadmin has all admin permissions
+  const isAdmin = profile.role === "admin" || profile.role === "superadmin";
   const isModerator = hasRoleLevel(profile.role, "moderator");
 
   const t = await getTranslations("admin");
@@ -113,11 +115,13 @@ export default async function AdminLayout({
             </Link>
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-sm font-medium">
               <Shield className="w-3 h-3" />
-              {profile.role === "admin"
-                ? t("roleAdmin")
-                : profile.role === "moderator"
-                ? t("roleModerator")
-                : t("roleContributor")}
+              {profile.role === "superadmin"
+                ? "Super Admin"
+                : profile.role === "admin"
+                  ? t("roleAdmin")
+                  : profile.role === "moderator"
+                    ? t("roleModerator")
+                    : t("roleContributor")}
             </div>
           </div>
 

@@ -7,6 +7,7 @@ import {
   checkDuplicateByUrl,
   parseEventDate,
   createEmptyResult,
+  downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
 
@@ -54,6 +55,9 @@ export async function processTikTokPosts(
       const slug = await generateUniqueSlug(supabase, slugify(extracted.title));
       const coverImage = post.videoMeta?.coverUrl || post.covers?.[0];
 
+      // Download and re-upload image to our storage (external CDN URLs expire)
+      const imageUrl = await downloadAndUploadImage(supabase, coverImage, slug);
+
       const { error } = await supabase.from("events").insert({
         slug,
         title: extracted.title,
@@ -61,7 +65,7 @@ export async function processTikTokPosts(
         starts_at: startsAt,
         location_name: extracted.location || post.locationCreated,
         external_chat_url: postUrl,
-        image_url: coverImage,
+        image_url: imageUrl,
         status: "pending_review",
         timezone: "Asia/Ho_Chi_Minh",
         source_platform: "tiktok",

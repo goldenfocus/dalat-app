@@ -149,3 +149,86 @@ export interface ProcessResult {
 export function createEmptyResult(): ProcessResult {
   return { processed: 0, skipped: 0, errors: 0, details: [] };
 }
+
+/**
+ * Download an image from an external URL and upload it to Supabase Storage.
+ * Returns the permanent public URL, or null if the download/upload fails.
+ *
+ * This prevents dependency on external CDN URLs (Facebook, Instagram, etc.)
+ * which often expire after hours or days.
+ */
+export async function downloadAndUploadImage(
+  supabase: SupabaseClient,
+  externalUrl: string | null | undefined,
+  eventSlug: string
+): Promise<string | null> {
+  if (!externalUrl) return null;
+
+  try {
+    // Fetch the image from external URL
+    const response = await fetch(externalUrl, {
+      headers: {
+        // Some CDNs require a user agent
+        "User-Agent":
+          "Mozilla/5.0 (compatible; DalatApp/1.0; +https://dalat.app)",
+      },
+    });
+
+    if (!response.ok) {
+      console.warn(
+        `Failed to download image from ${externalUrl}: ${response.status}`
+      );
+      return null;
+    }
+
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    const buffer = await response.arrayBuffer();
+
+    // Skip if too small (likely an error page) or too large
+    if (buffer.byteLength < 1000) {
+      console.warn(`Image too small, likely invalid: ${externalUrl}`);
+      return null;
+    }
+    if (buffer.byteLength > 10 * 1024 * 1024) {
+      console.warn(`Image too large (>10MB), skipping: ${externalUrl}`);
+      return null;
+    }
+
+    // Determine file extension from content type
+    const extMap: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/jpg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif",
+    };
+    const ext = extMap[contentType] || "jpg";
+
+    // Generate unique filename: eventSlug/timestamp.ext
+    const fileName = `${eventSlug}/${Date.now()}.${ext}`;
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from("event-media")
+      .upload(fileName, buffer, {
+        contentType,
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.warn(`Failed to upload image for ${eventSlug}:`, uploadError);
+      return null;
+    }
+
+    // Get public URL
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("event-media").getPublicUrl(fileName);
+
+    return publicUrl;
+  } catch (error) {
+    console.warn(`Error downloading/uploading image from ${externalUrl}:`, error);
+    return null;
+  }
+}

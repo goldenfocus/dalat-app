@@ -7,6 +7,7 @@ import {
   checkDuplicateByUrl,
   parseEventDate,
   createEmptyResult,
+  downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
 
@@ -49,6 +50,13 @@ export async function processInstagramPosts(
 
       const slug = await generateUniqueSlug(supabase, slugify(extracted.title));
 
+      // Download and re-upload image to our storage (external CDN URLs expire)
+      const imageUrl = await downloadAndUploadImage(
+        supabase,
+        post.displayUrl || post.images?.[0],
+        slug
+      );
+
       const { error } = await supabase.from("events").insert({
         slug,
         title: extracted.title,
@@ -56,7 +64,7 @@ export async function processInstagramPosts(
         starts_at: startsAt,
         location_name: extracted.location || post.locationName,
         external_chat_url: post.url,
-        image_url: post.displayUrl || post.images?.[0],
+        image_url: imageUrl,
         status: "pending_review", // IG events need manual review
         timezone: "Asia/Ho_Chi_Minh",
         source_platform: "instagram",
