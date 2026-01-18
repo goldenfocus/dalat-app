@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Shield, User, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Shield, User, Loader2, CheckCircle, XCircle, Eye } from "lucide-react";
 import type { Profile, UserRole } from "@/lib/types";
 import { ROLE_HIERARCHY } from "@/lib/types";
 
@@ -24,9 +25,12 @@ interface UserAuthData {
 interface UserManagementTableProps {
   users: Profile[];
   authDataMap: Map<string, UserAuthData>;
+  canImpersonate?: boolean;
+  currentUserId?: string;
 }
 
 const ROLE_OPTIONS: UserRole[] = [
+  "superadmin",
   "admin",
   "moderator",
   "organizer_verified",
@@ -36,6 +40,7 @@ const ROLE_OPTIONS: UserRole[] = [
 ];
 
 const ROLE_COLORS: Record<UserRole, string> = {
+  superadmin: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   admin: "bg-red-500/10 text-red-600 border-red-500/20",
   moderator: "bg-purple-500/10 text-purple-600 border-purple-500/20",
   organizer_verified: "bg-green-500/10 text-green-600 border-green-500/20",
@@ -45,6 +50,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
 };
 
 const ROLE_LABELS: Record<UserRole, string> = {
+  superadmin: "Super Admin",
   admin: "Admin",
   moderator: "Moderator",
   organizer_verified: "Verified Organizer",
@@ -61,11 +67,40 @@ const ERROR_MESSAGES: Record<string, string> = {
   user_not_found: "User not found",
 };
 
-export function UserManagementTable({ users, authDataMap }: UserManagementTableProps) {
+export function UserManagementTable({
+  users,
+  authDataMap,
+  canImpersonate = false,
+  currentUserId,
+}: UserManagementTableProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
   const [status, setStatus] = useState<UpdateStatus | null>(null);
+  const [impersonating, setImpersonating] = useState<string | null>(null);
+
+  const handleImpersonate = async (targetUserId: string) => {
+    setImpersonating(targetUserId);
+    try {
+      const res = await fetch("/api/admin/impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId }),
+      });
+
+      if (res.ok) {
+        router.push("/");
+        router.refresh();
+      } else {
+        const data = await res.json();
+        console.error("Impersonation failed:", data.error);
+        setImpersonating(null);
+      }
+    } catch (error) {
+      console.error("Impersonation failed:", error);
+      setImpersonating(null);
+    }
+  };
 
   const filteredUsers = users.filter((user) => {
     const searchLower = search.toLowerCase();
@@ -176,6 +211,22 @@ export function UserManagementTable({ users, authDataMap }: UserManagementTableP
               <tr key={user.id} className="hover:bg-muted/30">
                 <td className="p-3">
                   <div className="flex items-center gap-3">
+                    {canImpersonate && user.id !== currentUserId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleImpersonate(user.id)}
+                        disabled={impersonating === user.id}
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10 shrink-0"
+                        title={`View as ${user.display_name || user.username || "this user"}`}
+                      >
+                        {impersonating === user.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </Button>
+                    )}
                     {user.avatar_url ? (
                       <img
                         src={user.avatar_url}

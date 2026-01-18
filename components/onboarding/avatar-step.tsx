@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, Sparkles, Loader2, Camera, User } from "lucide-react";
+import { Upload, Sparkles, Loader2, Camera, User, UserCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { DefaultAvatars } from "./default-avatars";
+
+type AvatarStyle = "male" | "female" | "neutral" | "custom";
 
 interface AvatarStepProps {
   userId: string;
@@ -32,6 +42,11 @@ export function AvatarStep({
   const [generationStage, setGenerationStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // AI Avatar dialog state
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [selectedStyle, setSelectedStyle] = useState<AvatarStyle>("neutral");
+  const [customPrompt, setCustomPrompt] = useState("");
 
   // Multi-stage loading messages for AI generation
   const generationStages = [
@@ -153,7 +168,11 @@ export function AvatarStep({
       const response = await fetch("/api/generate-avatar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName }),
+        body: JSON.stringify({
+          displayName,
+          style: selectedStyle,
+          customPrompt: selectedStyle === "custom" ? customPrompt : undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -178,6 +197,10 @@ export function AvatarStep({
       const publicUrl = await uploadToStorage(blob, ext);
       setPreviewUrl(publicUrl);
       setSelectedDefault(null);
+      setShowAIDialog(false);
+      // Reset dialog state for next time
+      setSelectedStyle("neutral");
+      setCustomPrompt("");
     } catch (err) {
       console.error("AI generation error:", err);
       setError(err instanceof Error ? err.message : t("avatarStep.generationFailed"));
@@ -270,7 +293,7 @@ export function AvatarStep({
 
         <button
           type="button"
-          onClick={handleGenerateAI}
+          onClick={() => setShowAIDialog(true)}
           disabled={isLoading}
           className={cn(
             "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
@@ -279,16 +302,10 @@ export function AvatarStep({
             oauthAvatarUrl ? "border-muted" : "col-span-2 border-muted"
           )}
         >
-          {isGenerating ? (
-            <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-          )}
-          <span className="text-sm font-medium">
-            {isGenerating ? generationStages[generationStage] : t("avatarStep.aiMagic")}
-          </span>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-sm font-medium">{t("avatarStep.aiMagic")}</span>
         </button>
       </div>
 
@@ -329,6 +346,115 @@ export function AvatarStep({
         onChange={handleFileSelect}
         className="hidden"
       />
+
+      {/* AI Avatar Customization Dialog */}
+      <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              {tProfile("avatarDialog.title")}
+            </DialogTitle>
+            <DialogDescription>{tProfile("avatarDialog.description")}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Style Selection */}
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  { value: "male", label: tProfile("avatarStyle.male"), desc: tProfile("avatarStyle.maleDesc"), icon: <User className="w-5 h-5" /> },
+                  { value: "female", label: tProfile("avatarStyle.female"), desc: tProfile("avatarStyle.femaleDesc"), icon: <UserCircle className="w-5 h-5" /> },
+                  { value: "neutral", label: tProfile("avatarStyle.neutral"), desc: tProfile("avatarStyle.neutralDesc"), icon: <Sparkles className="w-5 h-5" /> },
+                  { value: "custom", label: tProfile("avatarStyle.custom"), desc: tProfile("avatarStyle.customDesc"), icon: <Sparkles className="w-5 h-5" /> },
+                ] as const
+              ).map((style) => (
+                <button
+                  key={style.value}
+                  type="button"
+                  onClick={() => setSelectedStyle(style.value)}
+                  disabled={isGenerating}
+                  className={cn(
+                    "flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all",
+                    "hover:bg-accent active:scale-95 disabled:opacity-50",
+                    selectedStyle === style.value
+                      ? "border-primary bg-primary/5"
+                      : "border-transparent bg-muted/50"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "p-2 rounded-full",
+                      selectedStyle === style.value
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {style.icon}
+                  </div>
+                  <span className="font-medium text-sm">{style.label}</span>
+                  <span className="text-xs text-muted-foreground text-center">
+                    {style.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Prompt Input */}
+            {selectedStyle === "custom" && (
+              <div className="space-y-2">
+                <AIEnhanceTextarea
+                  value={customPrompt}
+                  onChange={setCustomPrompt}
+                  placeholder={tProfile("avatarDialog.customPlaceholder")}
+                  context="an AI avatar style description"
+                  rows={3}
+                  className="resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {tProfile("avatarDialog.customHint")}
+                </p>
+              </div>
+            )}
+
+            {/* Error */}
+            {error && (
+              <p className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+                {error}
+              </p>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowAIDialog(false)}
+              disabled={isGenerating}
+            >
+              {tProfile("cancel")}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleGenerateAI}
+              disabled={isGenerating || (selectedStyle === "custom" && !customPrompt.trim())}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {generationStages[generationStage]}
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  {tProfile("avatarDialog.generate")}
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

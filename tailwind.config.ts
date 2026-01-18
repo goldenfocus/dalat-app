@@ -57,6 +57,30 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        ripple: {
+          "0%": { width: "0px", height: "0px", opacity: "0.4" },
+          "100%": { width: "500px", height: "500px", opacity: "0" },
+        },
+        "press-in": {
+          "0%": { transform: "scale(1)" },
+          "100%": { transform: "scale(0.97)" },
+        },
+        "press-out": {
+          "0%": { transform: "scale(0.97)" },
+          "100%": { transform: "scale(1)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+      },
+      animation: {
+        ripple: "ripple 0.6s ease-out forwards",
+        "press-in": "press-in 0.1s ease-out forwards",
+        "press-out": "press-out 0.2s ease-out forwards",
+        shimmer: "shimmer 2s infinite linear",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

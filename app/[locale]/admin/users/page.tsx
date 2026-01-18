@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { UserManagementTable } from "@/components/admin/user-management-table";
+import { canUseGodMode } from "@/lib/god-mode";
 
 interface UserAuthData {
   user_id: string;
@@ -49,6 +50,9 @@ export default async function AdminUsersPage() {
     authData.map((item) => [item.user_id, item])
   );
 
+  // Check if current user can impersonate (super admin only)
+  const canImpersonate = await canUseGodMode();
+
   return (
     <div className="space-y-6">
       <div>
@@ -58,7 +62,12 @@ export default async function AdminUsersPage() {
         </p>
       </div>
 
-      <UserManagementTable users={users} authDataMap={authDataMap} />
+      <UserManagementTable
+        users={users}
+        authDataMap={authDataMap}
+        canImpersonate={canImpersonate}
+        currentUserId={user.id}
+      />
     </div>
   );
 }

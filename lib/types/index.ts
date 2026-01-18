@@ -54,6 +54,7 @@ export interface ContentTranslation {
 // Extended role hierarchy
 export type UserRole =
   | 'user'
+  | 'superadmin'
   | 'admin'
   | 'moderator'
   | 'organizer_verified'
@@ -62,6 +63,7 @@ export type UserRole =
 
 // Role hierarchy levels (higher = more permissions)
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
+  superadmin: 200,
   admin: 100,
   moderator: 80,
   organizer_verified: 60,
@@ -205,6 +207,12 @@ export interface Event {
   updated_at: string;
   // Translation tracking
   source_locale: string | null;
+  // AI features
+  ai_tags: string[];
+  ai_tags_updated_at: string | null;
+  spam_score: number;
+  spam_reason: string | null;
+  spam_checked_at: string | null;
   // Series fields (for recurring event instances)
   series_id: string | null;
   series_instance_date: string | null;

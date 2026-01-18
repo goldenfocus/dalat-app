@@ -327,7 +327,25 @@
     "generating": "Đang tạo...",
     "upcomingEvents": "Sự kiện sắp tới",
     "pastEvents": "Sự kiện đã qua",
-    "noEventsYet": "Chưa có sự kiện nào"
+    "noEventsYet": "Chưa có sự kiện nào",
+    "cancel": "Hủy",
+    "avatarStyle": {
+      "male": "Nam tính",
+      "maleDesc": "Đường nét mạnh mẽ",
+      "female": "Nữ tính",
+      "femaleDesc": "Đường nét dịu dàng",
+      "neutral": "Trung tính",
+      "neutralDesc": "Phong cách phi giới tính",
+      "custom": "Tùy chỉnh",
+      "customDesc": "Mô tả avatar của bạn"
+    },
+    "avatarDialog": {
+      "title": "Tạo AI Avatar",
+      "description": "Chọn phong cách cho avatar AI của bạn",
+      "generate": "Tạo Avatar",
+      "customPlaceholder": "Mô tả avatar lý tưởng của bạn... (ví dụ: phù thủy thân thiện với mũ tím, phi hành gia với hoa)",
+      "customHint": "Mẹo: Dùng nút lấp lánh để AI cải thiện mô tả của bạn"
+    }
   },
   "settings": {
     "settings": "Cài đặt",
