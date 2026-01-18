@@ -2,7 +2,9 @@
 
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
-import { User, Settings, ExternalLink, Shield, Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { User, Settings, ExternalLink, Shield, Building2, LogOut, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,16 +19,33 @@ interface UserMenuProps {
   displayName: string | null;
   username: string | null;
   role: UserRole;
+  isGodMode?: boolean;
 }
 
 // Roles that can access /admin panel (organizers use /organizer portal instead)
 const ADMIN_ROLES: UserRole[] = ["superadmin", "admin", "moderator", "contributor"];
 
-export function UserMenu({ avatarUrl, displayName, username, role }: UserMenuProps) {
-  const hasAdminAccess = ADMIN_ROLES.includes(role);
-  const isOrganizer = role === "organizer_verified";
+export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = false }: UserMenuProps) {
+  const router = useRouter();
+  const [isExiting, setIsExiting] = useState(false);
+
+  // Hide admin access when in God Mode (full immersion)
+  const hasAdminAccess = !isGodMode && ADMIN_ROLES.includes(role);
+  const isOrganizer = !isGodMode && role === "organizer_verified";
   const t = useTranslations("userMenu");
   const tCommon = useTranslations("common");
+
+  const handleExitGodMode = async () => {
+    setIsExiting(true);
+    try {
+      await fetch("/api/admin/exit-impersonation", { method: "POST" });
+      router.push("/admin/users");
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to exit God Mode:", error);
+      setIsExiting(false);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -109,6 +128,24 @@ export function UserMenu({ avatarUrl, displayName, username, role }: UserMenuPro
                 <Building2 className="w-4 h-4 mr-2" />
                 {t("organizerPortal")}
               </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+
+        {isGodMode && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={handleExitGodMode}
+              disabled={isExiting}
+              className="cursor-pointer text-amber-600 focus:text-amber-600 focus:bg-amber-50 dark:focus:bg-amber-950"
+            >
+              {isExiting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <LogOut className="w-4 h-4 mr-2" />
+              )}
+              {t("exitGodMode")}
             </DropdownMenuItem>
           </>
         )}

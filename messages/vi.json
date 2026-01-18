@@ -64,7 +64,7 @@
     }
   },
   "auth": {
-    "welcomeTitle": "Chào mừng đến với dalat.app",
+    "welcomeTitle": "Chào mừng đến với ĐàLạt.app",
     "signInDescription": "Đăng nhập để khám phá các sự kiện tại Đà Lạt",
     "continueWithGoogle": "Tiếp tục với Google",
     "connecting": "Đang kết nối...",
@@ -161,7 +161,7 @@
     "titleRequired": "Tiêu đề sự kiện *",
     "titlePlaceholder": "Cà phê & Lập trình",
     "eventUrl": "URL sự kiện",
-    "eventUrlPrefix": "dalat.app/events/",
+    "eventUrlPrefix": "ĐàLạt.app/events/",
     "urlPlaceholder": "su-kien-cua-toi",
     "urlAvailable": "URL này khả dụng",
     "urlTaken": "URL này đã được sử dụng. Vui lòng chọn URL khác.",
@@ -384,7 +384,8 @@
     "themeDark": "Tối",
     "themeSystem": "Hệ thống",
     "language": "Ngôn ngữ",
-    "signOut": "Đăng xuất"
+    "signOut": "Đăng xuất",
+    "exitGodMode": "Thoát chế độ xem"
   },
   "admin": {
     "dashboard": "Bảng điều khiển Admin",
@@ -544,7 +545,7 @@
     "saveNewPassword": "Lưu mật khẩu mới"
   },
   "onboarding": {
-    "welcome": "Chào mừng đến với dalat.app",
+    "welcome": "Chào mừng đến với ĐàLạt.app",
     "letsSetup": "Hãy thiết lập hồ sơ của bạn",
     "continue": "Tiếp tục",
     "avatarStep": {

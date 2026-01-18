@@ -1,20 +1,18 @@
 import { Link } from "@/lib/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import { Button } from "./ui/button";
-import { createClient } from "@/lib/supabase/server";
 import { UserMenu } from "./user-menu";
 import { NotificationInbox } from "./notification-inbox";
 import { generateSubscriberHash } from "@/lib/novu";
+import { getEffectiveUser } from "@/lib/god-mode";
 
 export async function AuthButton() {
-  const supabase = await createClient();
   const t = await getTranslations("nav");
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Get effective user (respects God Mode impersonation)
+  const { user, profile, godMode } = await getEffectiveUser();
 
-  if (!user) {
+  if (!user || !profile) {
     return (
       <Button asChild size="sm" variant="outline">
         <Link href="/auth/login">{t("signIn")}</Link>
@@ -22,24 +20,22 @@ export async function AuthButton() {
     );
   }
 
-  // Fetch profile for avatar and role
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("avatar_url, display_name, username, role")
-    .eq("id", user.id)
-    .single();
-
   // Generate HMAC hash for secure Novu authentication
-  const subscriberHash = generateSubscriberHash(user.id);
+  // Use real user ID for notifications, not impersonated user
+  const subscriberHash = generateSubscriberHash(godMode.isActive ? godMode.realAdminId! : user.id);
 
   return (
     <div className="flex items-center gap-2">
-      <NotificationInbox subscriberId={user.id} subscriberHash={subscriberHash} />
+      <NotificationInbox
+        subscriberId={godMode.isActive ? godMode.realAdminId! : user.id}
+        subscriberHash={subscriberHash}
+      />
       <UserMenu
-        avatarUrl={profile?.avatar_url || null}
-        displayName={profile?.display_name || null}
-        username={profile?.username || null}
-        role={profile?.role || "user"}
+        avatarUrl={profile.avatar_url}
+        displayName={profile.display_name}
+        username={profile.username}
+        role={profile.role}
+        isGodMode={godMode.isActive}
       />
     </div>
   );

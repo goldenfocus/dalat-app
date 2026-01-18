@@ -64,7 +64,7 @@
     }
   },
   "auth": {
-    "welcomeTitle": "Welcome to dalat.app",
+    "welcomeTitle": "Welcome to ĐàLạt.app",
     "signInDescription": "Sign in to discover events in Da Lat",
     "continueWithGoogle": "Continue with Google",
     "connecting": "Connecting...",
@@ -109,7 +109,7 @@
     "setNewPassword": "Set new password",
     "passwordResetSuccess": "Password reset successfully! You can now sign in.",
     "verifyTitle": "Confirm your email",
-    "verifyDescription": "Click the button below to complete sign in to dalat.app",
+    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
     "verifyButton": "Complete Sign In",
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
@@ -185,7 +185,7 @@
     "titlePlaceholder": "Coffee & Code",
     "eventUrl": "Event URL",
     "url": "URL",
-    "eventUrlPrefix": "dalat.app/events/",
+    "eventUrlPrefix": "ĐàLạt.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "This URL is available",
     "urlTaken": "This URL is already taken. Please choose a different one.",
@@ -430,7 +430,8 @@
     "themeDark": "Dark",
     "themeSystem": "System",
     "language": "Language",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "exitGodMode": "Exit God Mode"
   },
   "admin": {
     "dashboard": "Admin Dashboard",
@@ -598,7 +599,7 @@
     "saveNewPassword": "Save new password"
   },
   "onboarding": {
-    "welcome": "Welcome to dalat.app",
+    "welcome": "Welcome to ĐàLạt.app",
     "letsSetup": "Let's set up your profile",
     "continue": "Continue",
     "avatarStep": {
