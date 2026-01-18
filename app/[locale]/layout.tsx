@@ -11,6 +11,8 @@ import { GlobalFooter } from "@/components/global-footer";
 import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-context";
 import { PerformanceMonitor } from "@/components/performance-monitor";
 import { routing, type Locale } from "@/lib/i18n/routing";
+import { getEffectiveUser } from "@/lib/god-mode";
+import { GodModeIndicator } from "@/components/god-mode-indicator";
 
 const siteUrl = "https://dalat.app";
 
@@ -64,6 +66,9 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   const messages = await getMessages();
 
+  // Check God mode state
+  const { godMode } = await getEffectiveUser();
+
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <ThemeProvider
@@ -81,6 +86,9 @@ export default async function LocaleLayout({ children, params }: Props) {
             <LocaleMismatchBanner />
             <main className="flex-1">{children}</main>
             <GlobalFooter />
+            {godMode.isActive && godMode.targetProfile && (
+              <GodModeIndicator targetProfile={godMode.targetProfile} />
+            )}
           </div>
         </ScrollRestorationProvider>
       </ThemeProvider>
