@@ -16,7 +16,7 @@ export function EventDefaultImage({
   priority = false
 }: EventDefaultImageProps) {
   return (
-    <picture className={className}>
+    <picture className={className} style={{ display: "block" }}>
       {/* Mobile version for screens < 768px */}
       <source
         media="(max-width: 767px)"
@@ -27,11 +27,11 @@ export function EventDefaultImage({
         media="(min-width: 768px)"
         srcSet="/images/defaults/event-default-desktop.png"
       />
-      {/* Fallback image */}
+      {/* Fallback image - w-full h-full object-cover to fill container */}
       <img
         src="/images/defaults/event-default-desktop.png"
         alt={`${title} - DaLat.app default event image`}
-        className={className}
+        className="w-full h-full object-cover"
         loading={priority ? "eager" : "lazy"}
       />
     </picture>
