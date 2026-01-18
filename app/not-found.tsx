@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { Home, Mountain, Coffee, Flower2 } from "lucide-react";
+import { ThemeProvider } from "next-themes";
 import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-svh flex-col bg-background">
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <div className="flex min-h-svh flex-col bg-background">
       {/* Simple header with logo */}
       <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container flex h-14 max-w-4xl items-center mx-auto px-4">
@@ -60,5 +67,6 @@ export default function NotFound() {
         </div>
       </main>
     </div>
+    </ThemeProvider>
   );
 }
