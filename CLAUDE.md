@@ -5,9 +5,7 @@
 **IMPORTANT:** This project uses Next.js 16 which renamed middleware to proxy.
 
 - ✅ Use `proxy.ts` for request interception/middleware logic
-- ❌ Do NOT create or modify `middleware.ts` (deprecated)
-
-The `middleware.ts` file exists only for backwards compatibility and re-exports from `proxy.ts`.
+- ❌ Do NOT create `middleware.ts` — Next.js 16 forbids having both files
 
 ## Mobile-First Touch Targets
 
