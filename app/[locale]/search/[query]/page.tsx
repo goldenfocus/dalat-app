@@ -11,6 +11,7 @@ import { EventCard } from "@/components/events/event-card";
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
+import { expandSearchQuery } from "@/lib/search/expand-query";
 import type { Event, EventCounts } from "@/lib/types";
 import type { Metadata } from "next";
 
@@ -74,18 +75,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 async function searchEvents(query: string): Promise<Event[]> {
   const supabase = await createClient();
 
-  const { data: events, error } = await supabase.rpc("search_events", {
-    p_query: query,
-    p_lifecycle: "all",
-    p_limit: 50,
-  });
+  // Expand query with AI (translations + synonyms)
+  const expandedTerms = await expandSearchQuery(query);
+
+  // Build OR filter for all expanded terms
+  const orFilters = expandedTerms
+    .map((term) => {
+      const escaped = term.replace(/[%_]/g, "\\$&");
+      return `title.ilike.%${escaped}%,description.ilike.%${escaped}%,location_name.ilike.%${escaped}%`;
+    })
+    .join(",");
+
+  const { data: events, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("status", "published")
+    .or(orFilters)
+    .order("starts_at", { ascending: false })
+    .limit(50);
 
   if (error) {
     console.error("Error searching events:", error);
     return [];
   }
 
-  return events as Event[];
+  return (events || []) as Event[];
 }
 
 async function getEventCounts(eventIds: string[]) {
