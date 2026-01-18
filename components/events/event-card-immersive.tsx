@@ -73,7 +73,7 @@ export function EventCardImmersive({ event, counts, seriesRrule, priority = fals
           ) : (
             <EventDefaultImage
               title={event.title}
-              className="absolute inset-0 w-full h-full object-contain"
+              className="absolute inset-0 w-full h-full object-cover"
               priority
             />
           )}

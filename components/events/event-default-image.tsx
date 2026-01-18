@@ -10,10 +10,10 @@ interface EventDefaultImageProps {
  * Responsive default event image component
  * Serves mobile or desktop version based on screen size
  */
-export function EventDefaultImage({ 
-  title, 
+export function EventDefaultImage({
+  title,
   className = "",
-  priority = false 
+  priority = false
 }: EventDefaultImageProps) {
   return (
     <picture className={className}>
