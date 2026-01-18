@@ -116,11 +116,12 @@ async function main() {
 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // Get all scraped events (have source_platform set)
+  // Get ALL events with image URLs (not just scraped ones)
+  // Manual events might also have pasted external CDN URLs
   const { data: events, error: eventsError } = await supabase
     .from("events")
     .select("id, slug, title, image_url, source_platform, source_metadata")
-    .not("source_platform", "is", null)
+    .not("image_url", "is", null)
     .order("created_at", { ascending: false });
 
   if (eventsError) {
@@ -128,10 +129,10 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Found ${events?.length ?? 0} scraped events\n`);
+  console.log(`Found ${events?.length ?? 0} events with images\n`);
 
   if (!events || events.length === 0) {
-    console.log("✅ No scraped events found!");
+    console.log("✅ No events with images found!");
     process.exit(0);
   }
 
@@ -152,6 +153,7 @@ async function main() {
   }
 
   let fixed = 0;
+  let cleared = 0;
   let failed = 0;
   let skipped = 0;
 
@@ -161,7 +163,7 @@ async function main() {
     console.log(`   Current URL: ${event.image_url?.substring(0, 60)}...`);
 
     if (dryRun) {
-      console.log("   ⏩ Would attempt to download and re-upload");
+      console.log("   ⏩ Would attempt to download and re-upload (or clear if expired)");
       skipped++;
       continue;
     }
@@ -185,7 +187,7 @@ async function main() {
     }
 
     if (newImageUrl) {
-      // Update the event
+      // Update the event with the new permanent URL
       const { error: updateError } = await supabase
         .from("events")
         .update({ image_url: newImageUrl })
@@ -199,8 +201,20 @@ async function main() {
         fixed++;
       }
     } else {
-      console.log("   ⚠️ Could not download image (likely expired)");
-      failed++;
+      // Image expired - set to null so app shows default image
+      console.log("   ⚠️ Image expired, setting to null (will show default)");
+      const { error: updateError } = await supabase
+        .from("events")
+        .update({ image_url: null })
+        .eq("id", event.id);
+
+      if (updateError) {
+        console.log(`   ❌ Failed to clear: ${updateError.message}`);
+        failed++;
+      } else {
+        console.log(`   ✅ Cleared broken URL`);
+        cleared++;
+      }
     }
 
     // Small delay to avoid rate limiting
@@ -212,8 +226,9 @@ async function main() {
 ║                    Fix Images Summary                          ║
 ╠════════════════════════════════════════════════════════════════╣
 ║  Events checked: ${needsFixing.length.toString().padEnd(42)}
-║  Successfully fixed: ${fixed.toString().padEnd(39)}
-║  Failed (expired): ${failed.toString().padEnd(41)}
+║  Re-uploaded to storage: ${fixed.toString().padEnd(35)}
+║  Cleared (will show default): ${cleared.toString().padEnd(30)}
+║  Failed: ${failed.toString().padEnd(51)}
 ║  Skipped (dry run): ${skipped.toString().padEnd(40)}
 ╚════════════════════════════════════════════════════════════════╝
 `);

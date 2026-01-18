@@ -20,7 +20,7 @@ interface UserMenuProps {
 }
 
 // Roles that can access /admin panel (organizers use /organizer portal instead)
-const ADMIN_ROLES: UserRole[] = ["admin", "moderator", "contributor"];
+const ADMIN_ROLES: UserRole[] = ["superadmin", "admin", "moderator", "contributor"];
 
 export function UserMenu({ avatarUrl, displayName, username, role }: UserMenuProps) {
   const hasAdminAccess = ADMIN_ROLES.includes(role);
