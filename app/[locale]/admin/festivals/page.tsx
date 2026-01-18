@@ -40,8 +40,8 @@ export default async function AdminFestivalsPage() {
 
   const profile = await getProfile(user.id);
 
-  // Only admins can access festivals in admin panel (organizers use /organizer portal)
-  if (!profile || profile.role !== "admin") {
+  // Only admins/superadmins can access festivals in admin panel (organizers use /organizer portal)
+  if (!profile || (profile.role !== "admin" && profile.role !== "superadmin")) {
     redirect("/");
   }
 
