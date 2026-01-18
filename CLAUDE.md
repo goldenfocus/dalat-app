@@ -1,5 +1,14 @@
 # dalat.app Development Guidelines
 
+## Next.js 16: Use proxy.ts NOT middleware.ts
+
+**IMPORTANT:** This project uses Next.js 16 which renamed middleware to proxy.
+
+- ✅ Use `proxy.ts` for request interception/middleware logic
+- ❌ Do NOT create or modify `middleware.ts` (deprecated)
+
+The `middleware.ts` file exists only for backwards compatibility and re-exports from `proxy.ts`.
+
 ## Mobile-First Touch Targets
 
 All interactive elements must have a minimum touch target of 44x44px for mobile usability.
