@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Camera, X, Upload, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -36,6 +36,11 @@ export function AvatarUpload({
 }: AvatarUploadProps) {
   const t = useTranslations("profile");
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatarUrl);
+
+  // Sync previewUrl when currentAvatarUrl changes externally (e.g., AI avatar generation)
+  useEffect(() => {
+    setPreviewUrl(currentAvatarUrl);
+  }, [currentAvatarUrl]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
