@@ -162,6 +162,8 @@ export async function updateSession(request: NextRequest) {
     pathWithoutLocale.startsWith("/events") ||
     pathWithoutLocale.startsWith("/festivals") ||
     pathWithoutLocale.startsWith("/organizers") ||
+    pathWithoutLocale.startsWith("/moments") ||  // Public moments discovery
+    pathWithoutLocale.startsWith("/feed") ||  // Public moments feed
     pathWithoutLocale.startsWith("/@");  // Public profile pages
 
   if (!user && !isPublicRoute) {
