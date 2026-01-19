@@ -44,16 +44,17 @@ export async function EventFeedImmersive({
   lifecycle = "upcoming",
   lifecycleCounts
 }: EventFeedImmersiveProps) {
-  // Use cached data fetching for faster TTFB
-  const events = await getCachedEventsByLifecycle(lifecycle);
-  const eventIds = events.map((e) => e.id);
-  const locale = await getLocale();
+  try {
+    // Use cached data fetching for faster TTFB
+    const events = await getCachedEventsByLifecycle(lifecycle);
+    const eventIds = events.map((e) => e.id);
+    const locale = await getLocale();
 
-  const [counts, eventTranslations, t] = await Promise.all([
-    getCachedEventCountsBatch(eventIds),
-    getEventTranslationsBatch(eventIds, locale as ContentLocale),
-    getTranslations("home"),
-  ]);
+    const [counts, eventTranslations, t] = await Promise.all([
+      getCachedEventCountsBatch(eventIds),
+      getEventTranslationsBatch(eventIds, locale as ContentLocale),
+      getTranslations("home"),
+    ]);
 
   const tabLabels = {
     upcoming: t("tabs.upcoming"),
@@ -133,4 +134,14 @@ export async function EventFeedImmersive({
       </EventFeedImmersiveClient>
     </div>
   );
+  } catch (err) {
+    console.error("EventFeedImmersive error:", err);
+    // Return a fallback UI instead of throwing
+    return (
+      <div className="h-[100dvh] flex flex-col items-center justify-center bg-black text-white">
+        <p className="text-lg mb-2">Unable to load events</p>
+        <p className="text-white/60 text-sm">Please try again later</p>
+      </div>
+    );
+  }
 }

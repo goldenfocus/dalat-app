@@ -249,31 +249,36 @@ export async function getEventTranslationsBatch(
     return new Map();
   }
 
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { data: translations } = await supabase
-    .from('content_translations')
-    .select('content_id, field_name, translated_text')
-    .eq('content_type', 'event')
-    .in('content_id', eventIds)
-    .eq('target_locale', targetLocale)
-    .in('field_name', ['title', 'description']);
+    const { data: translations } = await supabase
+      .from('content_translations')
+      .select('content_id, field_name, translated_text')
+      .eq('content_type', 'event')
+      .in('content_id', eventIds)
+      .eq('target_locale', targetLocale)
+      .in('field_name', ['title', 'description']);
 
-  const result = new Map<string, { title: string; description: string | null }>();
+    const result = new Map<string, { title: string; description: string | null }>();
 
-  if (translations) {
-    for (const t of translations) {
-      const existing = result.get(t.content_id) || { title: '', description: null };
-      if (t.field_name === 'title') {
-        existing.title = t.translated_text;
-      } else if (t.field_name === 'description') {
-        existing.description = t.translated_text;
+    if (translations) {
+      for (const t of translations) {
+        const existing = result.get(t.content_id) || { title: '', description: null };
+        if (t.field_name === 'title') {
+          existing.title = t.translated_text;
+        } else if (t.field_name === 'description') {
+          existing.description = t.translated_text;
+        }
+        result.set(t.content_id, existing);
       }
-      result.set(t.content_id, existing);
     }
-  }
 
-  return result;
+    return result;
+  } catch (err) {
+    console.error("Exception in getEventTranslationsBatch:", err);
+    return new Map();
+  }
 }
 
 /**
