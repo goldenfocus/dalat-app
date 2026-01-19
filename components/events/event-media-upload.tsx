@@ -178,7 +178,8 @@ export function EventMediaUpload({
         });
 
       if (uploadError) {
-        throw uploadError;
+        console.error("Supabase upload error:", uploadError);
+        throw new Error(uploadError.message || "Storage upload failed");
       }
 
       // Get public URL
@@ -189,7 +190,13 @@ export function EventMediaUpload({
       await handleMediaUpdate(publicUrl);
     } catch (err) {
       console.error("Upload error:", err);
-      setError("Failed to upload. Please try again.");
+      const message = err instanceof Error ? err.message : "Unknown error";
+      // Show specific error for RLS violations
+      if (message.includes("policy") || message.includes("permission") || message.includes("row-level security")) {
+        setError("Permission denied. You may not have rights to edit this event.");
+      } else {
+        setError(`Failed to upload: ${message}`);
+      }
       setPreviewUrl(currentMediaUrl);
       setPreviewIsVideo(isVideoUrl(currentMediaUrl));
     } finally {
