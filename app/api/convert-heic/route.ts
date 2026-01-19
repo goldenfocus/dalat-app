@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const sharp = require("sharp");
+const convert = require("heic-convert");
 
-// Allow larger files and longer execution
-export const maxDuration = 30;
+// Allow larger files and longer execution for HEIC conversion
+export const maxDuration = 60;
 
 /**
- * POST: Convert HEIC/HEIF to JPEG using Sharp
+ * POST: Convert HEIC/HEIF to JPEG using heic-convert (pure JS)
  * Accepts multipart form data with a "file" field
  */
 export async function POST(request: NextRequest) {
@@ -45,12 +45,14 @@ export async function POST(request: NextRequest) {
 
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const inputBuffer = Buffer.from(arrayBuffer);
 
-    // Use Sharp to convert HEIC to JPEG
-    const jpegBuffer = await sharp(buffer)
-      .jpeg({ quality: 90 })
-      .toBuffer();
+    // Use heic-convert (pure JS, works on all platforms)
+    const jpegBuffer = await convert({
+      buffer: inputBuffer,
+      format: "JPEG",
+      quality: 0.9,
+    });
 
     console.log(
       "[API] Conversion complete, output size:",
@@ -69,13 +71,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("[API] HEIC conversion error:", error);
 
-    // Check for Sharp-specific errors
     const message =
       error instanceof Error ? error.message : "Conversion failed";
 
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

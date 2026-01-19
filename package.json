@@ -30,6 +30,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "heic-convert": "^2.1.0",
     "heic2any": "^0.0.4",
     "lucide-react": "^0.511.0",
     "next": "latest",
