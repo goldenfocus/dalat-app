@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Camera, X, Loader2, Send, Plus, AlertCircle, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { cn } from "@/lib/utils";
 import {
   validateMediaFile,
@@ -397,12 +398,13 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
       {/* Caption input - shared or per-image */}
       {readyCount <= 1 ? (
         // Single image: use shared caption
-        <textarea
+        <AIEnhanceTextarea
           value={caption}
-          onChange={(e) => setCaption(e.target.value)}
+          onChange={setCaption}
           placeholder={t("addCaption")}
           className="w-full min-h-[80px] p-3 rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow"
           maxLength={500}
+          context="a moment caption for a photo or video shared at an event"
         />
       ) : (
         // Multiple images: per-image captions with optional shared default
@@ -410,12 +412,13 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           {/* Shared caption that applies to images without custom caption */}
           <div className="space-y-1">
             <label className="text-sm text-muted-foreground">{t("sharedCaption")}</label>
-            <textarea
+            <AIEnhanceTextarea
               value={caption}
-              onChange={(e) => setCaption(e.target.value)}
+              onChange={setCaption}
               placeholder={t("sharedCaptionPlaceholder")}
               className="w-full min-h-[60px] p-3 rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow text-sm"
               maxLength={500}
+              context="a moment caption for photos or videos shared at an event"
             />
           </div>
           {/* Individual captions for each uploaded image */}
