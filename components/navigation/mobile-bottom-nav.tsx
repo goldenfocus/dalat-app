@@ -65,7 +65,7 @@ export function MobileBottomNav() {
               aria-label={label}
               className={`flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-95 ${
                 item.isCenter
-                  ? "bg-primary text-primary-foreground shadow-lg -mt-6 h-12 w-12"
+                  ? "bg-foreground text-background -mt-3"
                   : isActive
                     ? "text-foreground"
                     : "text-muted-foreground"

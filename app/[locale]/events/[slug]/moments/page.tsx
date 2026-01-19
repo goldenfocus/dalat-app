@@ -152,11 +152,13 @@ export default async function EventMomentsPage({ params }: PageProps) {
           </Link>
 
           {canPost && (
-            <Link href={`/events/${slug}/moments/new`}>
-              <Button size="sm" className="active:scale-95 transition-transform">
-                <Plus className="w-4 h-4 mr-1" />
-                {t("shareYourMoment")}
-              </Button>
+            <Link
+              href={`/events/${slug}/moments/new`}
+              className="-mr-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
+              aria-label={t("shareYourMoment")}
+            >
+              <Plus className="w-4 h-4" />
+              <span className="text-sm">{t("share")}</span>
             </Link>
           )}
         </div>
