@@ -49,8 +49,11 @@ export async function POST(request: Request) {
 
     // Transcribe with Whisper
     const apiKey = process.env.OPENAI_API_KEY;
+    console.log("[blog/transcribe] OPENAI_API_KEY exists:", !!apiKey, "length:", apiKey?.length);
     if (!apiKey) {
-      console.error("[blog/transcribe] OPENAI_API_KEY not found in environment");
+      // Log available env vars (keys only) to debug
+      const envKeys = Object.keys(process.env).filter(k => k.includes('OPENAI') || k.includes('API'));
+      console.error("[blog/transcribe] OPENAI_API_KEY not found. Related env vars:", envKeys);
       return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 });
     }
     const openai = new OpenAI({ apiKey });
