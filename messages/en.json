@@ -355,7 +355,7 @@
     "uploadFailed": "Failed to upload image. Please try again.",
     "removeFailed": "Failed to remove image",
     "saving": "Saving...",
-    "saveChanges": "Save changes",
+    "saved": "Saved",
     "continue": "Continue",
     "generateAI": "AI Avatar",
     "generating": "Creating...",

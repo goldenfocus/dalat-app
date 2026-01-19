@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,28 +20,91 @@ interface ProfileEditFormProps {
 
 const BIO_MAX_LENGTH = 160;
 
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
 export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const router = useRouter();
   const t = useTranslations("profile");
-  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   // Form state
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(
-    profile.avatar_url
-  );
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatar_url);
   const [username, setUsername] = useState(profile.username || "");
   const [displayName, setDisplayName] = useState(profile.display_name || "");
   const [bio, setBio] = useState(profile.bio || "");
 
+  // Track last saved values to avoid redundant saves
+  const lastSavedRef = useRef({
+    username: profile.username || "",
+    displayName: profile.display_name || "",
+    bio: profile.bio || "",
+  });
+
   // Validation state
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [usernameChecking, setUsernameChecking] = useState(false);
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
-    null
-  );
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
+  // Autosave function
+  const saveProfile = useCallback(
+    async (fields: { username?: string; displayName?: string; bio?: string }) => {
+      setSaveStatus("saving");
+      setError(null);
+
+      const supabase = createClient();
+      const updates: Partial<Profile> = {};
+
+      if (fields.username !== undefined && fields.username !== lastSavedRef.current.username) {
+        updates.username = fields.username || null;
+      }
+      if (fields.displayName !== undefined && fields.displayName !== lastSavedRef.current.displayName) {
+        updates.display_name = fields.displayName.trim() || null;
+      }
+      if (fields.bio !== undefined && fields.bio !== lastSavedRef.current.bio) {
+        updates.bio = fields.bio.trim() || null;
+      }
+
+      // Nothing to save
+      if (Object.keys(updates).length === 0) {
+        setSaveStatus("idle");
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update(updates)
+        .eq("id", profile.id);
+
+      if (updateError) {
+        setSaveStatus("error");
+        if (updateError.message.includes("valid_username")) {
+          setError("Invalid username format");
+        } else if (updateError.message.includes("unique")) {
+          setError("Username is already taken");
+        } else {
+          setError(updateError.message);
+        }
+        return;
+      }
+
+      // Update last saved values
+      if (fields.username !== undefined) lastSavedRef.current.username = fields.username;
+      if (fields.displayName !== undefined) lastSavedRef.current.displayName = fields.displayName;
+      if (fields.bio !== undefined) lastSavedRef.current.bio = fields.bio;
+
+      // Trigger translation for bio if it changed
+      if (fields.bio && fields.bio.trim() !== (profile.bio || "")) {
+        triggerTranslation("profile", profile.id, [
+          { field_name: "bio", text: fields.bio.trim() },
+        ]);
+      }
+
+      setSaveStatus("saved");
+      router.refresh();
+    },
+    [profile.id, profile.bio, router]
+  );
 
   // Debounced username availability check
   useEffect(() => {
@@ -89,97 +151,94 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [username, profile.username, profile.id]);
+  }, [username, profile.username, profile.id, t]);
+
+  // Autosave username after validation passes
+  useEffect(() => {
+    if (usernameAvailable === true && username !== lastSavedRef.current.username) {
+      saveProfile({ username });
+    }
+  }, [usernameAvailable, username, saveProfile]);
+
+  // Autosave displayName and bio with debounce
+  useEffect(() => {
+    const hasDisplayNameChange = displayName !== lastSavedRef.current.displayName;
+    const hasBioChange = bio !== lastSavedRef.current.bio;
+
+    if (!hasDisplayNameChange && !hasBioChange) return;
+
+    const timer = setTimeout(() => {
+      saveProfile({ displayName, bio });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [displayName, bio, saveProfile]);
+
+  // Auto-hide "Saved" status after 2 seconds
+  useEffect(() => {
+    if (saveStatus === "saved") {
+      const timer = setTimeout(() => setSaveStatus("idle"), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveStatus]);
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
     setUsername(value);
-    setSuccess(false);
   };
 
   const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     if (value.length <= BIO_MAX_LENGTH) {
       setBio(value);
-      setSuccess(false);
     }
   };
 
-  const handleAvatarChange = useCallback((url: string | null) => {
-    setAvatarUrl(url);
-    setSuccess(false);
-  }, []);
+  const handleAvatarChange = useCallback(
+    async (url: string | null) => {
+      setAvatarUrl(url);
 
-  const hasChanges =
-    avatarUrl !== profile.avatar_url ||
-    username !== (profile.username || "") ||
-    displayName !== (profile.display_name || "") ||
-    bio !== (profile.bio || "");
+      // Auto-save avatar immediately
+      if (url !== profile.avatar_url) {
+        setSaveStatus("saving");
+        const supabase = createClient();
+        const { error: saveError } = await supabase
+          .from("profiles")
+          .update({ avatar_url: url })
+          .eq("id", profile.id);
 
-  const canSubmit =
-    hasChanges &&
-    !usernameChecking &&
-    !usernameError &&
-    (usernameAvailable !== false || username === profile.username);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setSuccess(false);
-
-    if (!canSubmit) return;
-
-    startTransition(async () => {
-      const supabase = createClient();
-
-      const updates: Partial<Profile> = {
-        avatar_url: avatarUrl,
-        display_name: displayName.trim() || null,
-        bio: bio.trim() || null,
-      };
-
-      // Only update username if it changed
-      if (username !== profile.username) {
-        updates.username = username || null;
-      }
-
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update(updates)
-        .eq("id", profile.id);
-
-      if (updateError) {
-        if (updateError.message.includes("valid_username")) {
-          setError("Invalid username format");
-        } else if (updateError.message.includes("unique")) {
-          setError("Username is already taken");
+        if (saveError) {
+          setSaveStatus("error");
+          setError(saveError.message);
         } else {
-          setError(updateError.message);
+          setSaveStatus("saved");
+          router.refresh();
         }
-        return;
       }
-
-      // Trigger translation for bio if it changed (fire-and-forget)
-      const newBio = bio.trim();
-      if (newBio && newBio !== (profile.bio || "")) {
-        triggerTranslation("profile", profile.id, [
-          { field_name: "bio", text: newBio },
-        ]);
-      }
-
-      setSuccess(true);
-      router.refresh();
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(false), 3000);
-    });
-  }
+    },
+    [profile.id, profile.avatar_url, router]
+  );
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t("editProfile")}</CardTitle>
+          {/* Save status indicator */}
+          <div className="h-6 flex items-center">
+            {saveStatus === "saving" && (
+              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                {t("saving")}
+              </span>
+            )}
+            {saveStatus === "saved" && (
+              <span className="text-sm text-green-600 flex items-center gap-1.5">
+                <Check className="w-3 h-3" />
+                {t("saved")}
+              </span>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-8">
           {/* Avatar */}
@@ -194,10 +253,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                 <AIAvatarDialog
                   profileId={profile.id}
                   displayName={displayName}
-                  onAvatarGenerated={(url) => {
-                    setAvatarUrl(url);
-                    setSuccess(false);
-                  }}
+                  onAvatarGenerated={(url) => handleAvatarChange(url)}
                 />
               }
             />
@@ -243,9 +299,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               username !== profile.username && (
                 <p className="text-sm text-green-600">{t("usernameAvailable")}</p>
               )}
-            <p className="text-xs text-muted-foreground">
-              {t("usernameHelp")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("usernameHelp")}</p>
           </div>
 
           {/* Display Name */}
@@ -255,16 +309,11 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               id="display_name"
               name="display_name"
               value={displayName}
-              onChange={(e) => {
-                setDisplayName(e.target.value);
-                setSuccess(false);
-              }}
+              onChange={(e) => setDisplayName(e.target.value)}
               placeholder={t("displayNamePlaceholder")}
               maxLength={50}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("displayNameHelp")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("displayNameHelp")}</p>
           </div>
 
           {/* Bio */}
@@ -293,48 +342,18 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               rows={3}
               className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none"
             />
-            <p className="text-xs text-muted-foreground">
-              {t("bioHelp")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("bioHelp")}</p>
           </div>
 
           {/* Error message */}
-          {error && (
+          {saveStatus === "error" && error && (
             <div className="flex items-center gap-2 text-destructive text-sm">
               <AlertCircle className="w-4 h-4" />
               {error}
             </div>
           )}
-
-          {/* Success message */}
-          {success && (
-            <div className="flex items-center gap-2 text-green-600 text-sm">
-              <Check className="w-4 h-4" />
-              {t("profileUpdated")}
-            </div>
-          )}
-
-          {/* Submit */}
-          <div className="flex items-center gap-4">
-            <Button type="submit" disabled={isPending || !canSubmit}>
-              {isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {t("saving")}
-                </>
-              ) : (
-                t("saveChanges")
-              )}
-            </Button>
-
-            {hasChanges && !isPending && (
-              <p className="text-sm text-muted-foreground">
-                {t("unsavedChanges")}
-              </p>
-            )}
-          </div>
         </CardContent>
       </Card>
-    </form>
+    </div>
   );
 }

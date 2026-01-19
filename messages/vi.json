@@ -321,7 +321,7 @@
     "uploadFailed": "Tải lên thất bại. Vui lòng thử lại.",
     "removeFailed": "Không thể xóa ảnh",
     "saving": "Đang lưu...",
-    "saveChanges": "Lưu thay đổi",
+    "saved": "Đã lưu",
     "continue": "Tiếp tục",
     "generateAI": "AI Avatar",
     "generating": "Đang tạo...",
