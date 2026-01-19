@@ -395,6 +395,30 @@ export function EventMediaUpload({
     }
   };
 
+  // Convert image URL to base64 (client-side fetch works for external URLs)
+  const fetchImageAsBase64 = async (url: string): Promise<{ base64: string; mimeType: string } | null> => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return null;
+      const blob = await response.blob();
+      const mimeType = blob.type || "image/png";
+
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          // Remove data URL prefix to get raw base64
+          const base64 = dataUrl.split(",")[1];
+          resolve({ base64, mimeType });
+        };
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  };
+
   // Refine existing image with AI
   const handleRefine = async () => {
     if (!previewUrl || !refinementPrompt.trim()) return;
@@ -402,15 +426,28 @@ export function EventMediaUpload({
     setIsGenerating(true);
 
     try {
+      // Try to fetch image as base64 client-side (works for external URLs like Facebook)
+      const imageData = await fetchImageAsBase64(previewUrl);
+
+      const requestBody: Record<string, string | undefined> = {
+        context: "event-cover",
+        entityId: eventId,
+        refinementPrompt: refinementPrompt.trim(),
+      };
+
+      if (imageData) {
+        // Use base64 data (works for external/Facebook URLs)
+        requestBody.imageBase64 = imageData.base64;
+        requestBody.imageMimeType = imageData.mimeType;
+      } else {
+        // Fallback to URL (works for our own storage URLs)
+        requestBody.existingImageUrl = previewUrl;
+      }
+
       const response = await fetch("/api/ai/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          context: "event-cover",
-          entityId: eventId,
-          existingImageUrl: previewUrl,
-          refinementPrompt: refinementPrompt.trim(),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {

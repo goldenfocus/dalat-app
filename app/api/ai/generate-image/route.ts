@@ -18,6 +18,10 @@ interface GenerateImageRequest {
   existingImageUrl?: string;
   refinementPrompt?: string;
   entityId?: string;
+  /** Base64-encoded image data for refinement (alternative to existingImageUrl) */
+  imageBase64?: string;
+  /** MIME type when using imageBase64 */
+  imageMimeType?: string;
 }
 
 export async function POST(request: Request) {
@@ -31,6 +35,8 @@ export async function POST(request: Request) {
       existingImageUrl,
       refinementPrompt,
       entityId,
+      imageBase64,
+      imageMimeType,
     } = body;
 
     // Validate context
@@ -43,13 +49,16 @@ export async function POST(request: Request) {
 
     let imageUrl: string;
 
-    // Refinement mode
-    if (existingImageUrl && refinementPrompt) {
+    // Refinement mode - supports both URL and base64 input
+    const hasImageSource = existingImageUrl || (imageBase64 && imageMimeType);
+    if (hasImageSource && refinementPrompt) {
       imageUrl = await refineImage({
         context,
         existingImageUrl,
         refinementPrompt,
         entityId,
+        imageBase64,
+        imageMimeType,
       });
     } else {
       // New generation mode

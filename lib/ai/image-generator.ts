@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@supabase/supabase-js";
+import { expandPersonaMentions } from "./personas";
 
 // Gemini model for image generation
 const MODEL_NAME = "gemini-3-pro-image-preview";
@@ -77,9 +78,13 @@ interface GenerateOptions {
 
 interface RefineOptions {
   context: ImageContext;
-  existingImageUrl: string;
+  existingImageUrl?: string;
   refinementPrompt: string;
   entityId?: string;
+  /** Base64-encoded image data (alternative to existingImageUrl) */
+  imageBase64?: string;
+  /** MIME type when using imageBase64 */
+  imageMimeType?: string;
 }
 
 /**
@@ -188,8 +193,11 @@ export async function generateImage(options: GenerateOptions): Promise<string> {
 
   console.log(`[image-generator] Generating ${context} image`);
 
+  // Expand any @persona mentions into full descriptions
+  const expandedPrompt = expandPersonaMentions(prompt);
+
   const model = getModel();
-  const result = await model.generateContent(prompt);
+  const result = await model.generateContent(expandedPrompt);
   const { data, mimeType } = extractImage(result);
 
   const publicUrl = await uploadImage(data, mimeType, context, entityId);
@@ -199,30 +207,65 @@ export async function generateImage(options: GenerateOptions): Promise<string> {
 }
 
 /**
+ * Check if the refinement prompt explicitly requests text/lettering
+ */
+function wantsText(prompt: string): boolean {
+  const textPatterns = [
+    /add\s+(.*?\s+)?text/i,
+    /add\s+(.*?\s+)?title/i,
+    /write\s/i,
+    /lettering/i,
+    /caption/i,
+    /overlay\s+(.*?\s+)?text/i,
+    /put\s+(.*?\s+)?text/i,
+    /include\s+(.*?\s+)?text/i,
+  ];
+  return textPatterns.some((pattern) => pattern.test(prompt));
+}
+
+/**
  * Refine an existing image with AI
  */
 export async function refineImage(options: RefineOptions): Promise<string> {
-  const { context, existingImageUrl, refinementPrompt, entityId } = options;
+  const { context, existingImageUrl, refinementPrompt, entityId, imageBase64, imageMimeType } = options;
 
   console.log(`[image-generator] Refining ${context} image`);
 
-  // Fetch existing image
-  const imageResponse = await fetch(existingImageUrl);
-  if (!imageResponse.ok) {
-    throw new Error("Failed to fetch existing image");
+  let base64Image: string;
+  let mimeType: string;
+
+  // Use provided base64 data or fetch from URL
+  if (imageBase64 && imageMimeType) {
+    base64Image = imageBase64;
+    mimeType = imageMimeType;
+  } else if (existingImageUrl) {
+    const imageResponse = await fetch(existingImageUrl);
+    if (!imageResponse.ok) {
+      throw new Error("Failed to fetch existing image");
+    }
+    const imageBuffer = await imageResponse.arrayBuffer();
+    base64Image = Buffer.from(imageBuffer).toString("base64");
+    mimeType = imageResponse.headers.get("content-type") || "image/png";
+  } else {
+    throw new Error("Either imageBase64 or existingImageUrl must be provided");
   }
 
-  const imageBuffer = await imageResponse.arrayBuffer();
-  const base64Image = Buffer.from(imageBuffer).toString("base64");
-  const mimeType = imageResponse.headers.get("content-type") || "image/png";
+  // Expand any @persona mentions into full descriptions
+  const expandedRefinement = expandPersonaMentions(refinementPrompt);
+
+  // Build prompt - allow text if user explicitly requests it
+  const allowText = wantsText(refinementPrompt);
+  const textRestriction = allowText
+    ? "- You may add text as requested by the user"
+    : "- NO text, NO lettering, NO words";
 
   const prompt = `Edit this image based on the following instructions:
 
-${refinementPrompt}
+${expandedRefinement}
 
 Important:
 - Keep the overall style and color palette consistent
-- NO text, NO lettering, NO words
+${textRestriction}
 - Keep it professional and polished`;
 
   const model = getModel();
