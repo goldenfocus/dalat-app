@@ -35,15 +35,80 @@ interface EventMediaUploadProps {
   autoSave?: boolean;
 }
 
-// Generate default prompt from event data
-function generateDefaultPrompt(title: string): string {
-  return `Create a vibrant, eye-catching event poster background for "${title || "an event"}".
+// Style presets for AI image generation
+type StylePreset = "artistic" | "futuristic" | "realistic" | "nature" | "custom";
+
+interface PresetConfig {
+  id: StylePreset;
+  labelKey: string;
+  getPrompt: (title: string) => string;
+}
+
+const STYLE_PRESETS: PresetConfig[] = [
+  {
+    id: "artistic",
+    labelKey: "presetArtistic",
+    getPrompt: (title: string) => `Create a vibrant, eye-catching event poster background for "${title || "an event"}".
 
 Style: Modern event flyer aesthetic with warm Vietnamese highland colors.
 Setting: Inspired by Đà Lạt, Vietnam - misty mountains, pine forests, French colonial architecture, flower fields.
 Mood: Atmospheric, inviting, energetic yet sophisticated.
 Important: Do NOT include any text or lettering in the image. Create only the visual background.
-Aspect ratio: 2:1 landscape orientation.`;
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+  {
+    id: "futuristic",
+    labelKey: "presetFuturistic",
+    getPrompt: (title: string) => `Create a futuristic, high-tech event poster background for "${title || "an event"}".
+
+Style: Cyberpunk aesthetic with neon accents, holographic elements, and sleek geometric shapes.
+Colors: Deep blues, electric purples, cyan highlights, and subtle pink/magenta glows.
+Elements: Abstract digital grids, light trails, glowing particles, circuit-like patterns.
+Mood: Cutting-edge, innovative, forward-thinking, high-energy.
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+  {
+    id: "realistic",
+    labelKey: "presetRealistic",
+    getPrompt: (title: string) => `Create a photorealistic event poster background for "${title || "an event"}".
+
+Style: Ultra-realistic photography style, HDR quality, professional lighting.
+Setting: An elegant venue or scenic location that matches the event theme.
+Technical: Sharp details, natural depth of field, cinematic color grading.
+Mood: Professional, polished, premium quality.
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+  {
+    id: "nature",
+    labelKey: "presetNature",
+    getPrompt: (title: string) => `Create an organic, nature-inspired event poster background for "${title || "an event"}".
+
+Style: Botanical and natural aesthetic with flowing organic shapes.
+Elements: Lush foliage, flowers, natural textures, earthy tones with pops of vibrant color.
+Colors: Greens, terracotta, warm earth tones, soft pastels.
+Mood: Fresh, organic, sustainable, harmonious with nature.
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+  {
+    id: "custom",
+    labelKey: "presetCustom",
+    getPrompt: (title: string) => `Create an event poster background for "${title || "an event"}".
+
+Style: [Describe your preferred style]
+Colors: [Specify color palette]
+Elements: [List visual elements you want]
+Mood: [Describe the atmosphere]
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+];
+
+// Generate default prompt from event data (using artistic preset)
+function generateDefaultPrompt(title: string): string {
+  return STYLE_PRESETS[0].getPrompt(title);
 }
 
 export function EventMediaUpload({
@@ -104,6 +169,7 @@ export function EventMediaUpload({
   // AI generation state
   const [showPromptEditor, setShowPromptEditor] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [selectedPreset, setSelectedPreset] = useState<StylePreset>("artistic");
   const [isGenerating, setIsGenerating] = useState(false);
   const [showRefinement, setShowRefinement] = useState(false);
   const [refinementPrompt, setRefinementPrompt] = useState("");
@@ -168,18 +234,22 @@ export function EventMediaUpload({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Upload failed");
+        const message = data.error || "Upload failed";
+        if (message.includes("authorized") || message.includes("permission")) {
+          setError("Permission denied. You may not have rights to edit this event.");
+        } else {
+          setError(`Failed to upload: ${message}`);
+        }
+        setPreviewUrl(currentMediaUrl);
+        setPreviewIsVideo(isVideoUrl(currentMediaUrl));
+        return;
       }
 
       await handleMediaUpdate(data.url);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Upload error:", err);
       const message = err instanceof Error ? err.message : "Unknown error";
-      if (message.includes("authorized") || message.includes("permission")) {
-        setError("Permission denied. You may not have rights to edit this event.");
-      } else {
-        setError(`Failed to upload: ${message}`);
-      }
+      setError(`Failed to upload: ${message}`);
       setPreviewUrl(currentMediaUrl);
       setPreviewIsVideo(isVideoUrl(currentMediaUrl));
     } finally {
@@ -450,15 +520,52 @@ export function EventMediaUpload({
       <div className="space-y-3">
         {showPromptEditor ? (
           /* AI Prompt Editor */
-          <div className="space-y-2">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder={t("promptPlaceholder")}
-              rows={6}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              autoFocus
-            />
+          <div className="space-y-3">
+            {/* Style Presets */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("stylePreset")}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {STYLE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPreset(preset.id);
+                      setPrompt(preset.getPrompt(eventTitle || ""));
+                    }}
+                    disabled={isGenerating}
+                    className={cn(
+                      "px-3 py-1.5 text-sm rounded-full border transition-colors",
+                      selectedPreset === preset.id
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background hover:bg-muted border-input"
+                    )}
+                  >
+                    {t(preset.labelKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Prompt Textarea */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("promptLabel")}
+              </label>
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder={t("promptPlaceholder")}
+                rows={8}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("promptHint")}
+              </p>
+            </div>
+
             <div className="flex gap-2">
               <Button
                 type="button"
@@ -467,6 +574,7 @@ export function EventMediaUpload({
                 onClick={() => {
                   setShowPromptEditor(false);
                   setPrompt("");
+                  setSelectedPreset("artistic");
                   setError(null);
                 }}
                 disabled={isGenerating}
