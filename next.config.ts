@@ -8,9 +8,8 @@ const nextConfig: NextConfig = {
   // cacheComponents: true,
 
   // Explicitly expose server-side env vars
-  // (Vercel should do this automatically, but being explicit helps debugging)
   env: {
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY,
   },
 };
 

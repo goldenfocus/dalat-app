@@ -5,15 +5,25 @@ import OpenAI from "openai";
 // Whisper transcription can take 30-60s for longer audio
 export const maxDuration = 60;
 
-// Check env var at module load time
-const OPENAI_KEY = process.env.OPENAI_API_KEY;
+// Check env var at module load time (try both names)
+const OPENAI_KEY = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
 
 // GET: Diagnostic endpoint to check if env vars are configured
 export async function GET() {
+  // List all env vars containing certain keywords (keys only, not values)
+  const allEnvKeys = Object.keys(process.env);
+  const relevantKeys = allEnvKeys.filter(k =>
+    k.includes('OPENAI') || k.includes('API_KEY') || k.includes('KEY')
+  );
+
   const envCheck = {
-    OPENAI_API_KEY: !!OPENAI_KEY,
+    OPENAI_API_KEY_exists: !!process.env.OPENAI_API_KEY,
+    OPENAI_KEY_exists: !!process.env.OPENAI_KEY,
+    resolved_key_exists: !!OPENAI_KEY,
     keyLength: OPENAI_KEY?.length ?? 0,
     keyPrefix: OPENAI_KEY?.substring(0, 7) ?? "missing",
+    relevantEnvVars: relevantKeys,
+    totalEnvVars: allEnvKeys.length,
     timestamp: new Date().toISOString(),
   };
 
