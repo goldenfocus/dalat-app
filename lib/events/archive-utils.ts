@@ -77,19 +77,23 @@ export function getAdjacentMonths(
     nextYear += 1;
   }
 
-  // Don't allow navigation before app launch (2024) or too far into future
+  // Don't allow navigation before app launch (2024)
   const minYear = 2024;
-  const maxYear = currentYear + 1;
 
   const prev =
     prevYear >= minYear
       ? { year: prevYear, month: prevMonth, slug: getMonthSlug(prevMonth) }
       : null;
 
-  const next =
-    nextYear <= maxYear
-      ? { year: nextYear, month: nextMonth, slug: getMonthSlug(nextMonth) }
-      : null;
+  // Don't allow navigation to future months (archive is for past events)
+  // Allow current month since it may have past events
+  const isNextInFuture =
+    nextYear > currentYear ||
+    (nextYear === currentYear && nextMonth > currentMonth);
+
+  const next = isNextInFuture
+    ? null
+    : { year: nextYear, month: nextMonth, slug: getMonthSlug(nextMonth) };
 
   return { prev, next };
 }
