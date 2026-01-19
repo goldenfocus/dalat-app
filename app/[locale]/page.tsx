@@ -4,7 +4,6 @@ import { Link } from "@/lib/i18n/routing";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
-import { Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { AuthButton } from "@/components/auth-button";
@@ -341,16 +340,6 @@ export default async function Home({ params, searchParams }: PageProps) {
             <LocalePicker variant="overlay" />
           </div>
           <div className="flex items-center gap-1">
-            <Link href="/events/new" prefetch={false}>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-white hover:bg-white/20 hover:text-white drop-shadow-lg"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                {tNav("events")}
-              </Button>
-            </Link>
             <Suspense>
               <AuthButton />
             </Suspense>
