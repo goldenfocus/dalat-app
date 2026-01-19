@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Languages } from "lucide-react";
+import { BlogCoverImage } from "@/components/blog/blog-cover-image";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
@@ -118,16 +118,10 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Cover Image */}
           {post.cover_image_url && (
-            <div className="relative aspect-[2/1] rounded-xl overflow-hidden mb-8 bg-muted">
-              <Image
-                src={post.cover_image_url}
-                alt={translations.translated_title}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 768px) 100vw, 768px"
-              />
-            </div>
+            <BlogCoverImage
+              src={post.cover_image_url}
+              alt={translations.translated_title}
+            />
           )}
 
           {/* Meta */}
