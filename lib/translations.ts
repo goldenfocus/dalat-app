@@ -239,6 +239,44 @@ export function isValidContentLocale(locale: string): locale is ContentLocale {
 }
 
 /**
+ * Batch fetch translations for multiple events (efficient for list pages)
+ */
+export async function getEventTranslationsBatch(
+  eventIds: string[],
+  targetLocale: ContentLocale
+): Promise<Map<string, { title: string; description: string | null }>> {
+  if (eventIds.length === 0) {
+    return new Map();
+  }
+
+  const supabase = await createClient();
+
+  const { data: translations } = await supabase
+    .from('content_translations')
+    .select('content_id, field_name, translated_text')
+    .eq('content_type', 'event')
+    .in('content_id', eventIds)
+    .eq('target_locale', targetLocale)
+    .in('field_name', ['title', 'description']);
+
+  const result = new Map<string, { title: string; description: string | null }>();
+
+  if (translations) {
+    for (const t of translations) {
+      const existing = result.get(t.content_id) || { title: '', description: null };
+      if (t.field_name === 'title') {
+        existing.title = t.translated_text;
+      } else if (t.field_name === 'description') {
+        existing.description = t.translated_text;
+      }
+      result.set(t.content_id, existing);
+    }
+  }
+
+  return result;
+}
+
+/**
  * Batch fetch translations for multiple blog posts (efficient for list pages)
  */
 export async function getBlogTranslationsBatch(

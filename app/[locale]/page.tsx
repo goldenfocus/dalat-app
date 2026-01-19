@@ -15,8 +15,9 @@ import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-fe
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { MomentsSpotlight } from "@/components/home/moments-spotlight";
 import { Button } from "@/components/ui/button";
-import type { Event, EventCounts, EventWithSeriesData, MomentWithEvent } from "@/lib/types";
+import type { Event, EventCounts, EventWithSeriesData, MomentWithEvent, ContentLocale } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
+import { getEventTranslationsBatch } from "@/lib/translations";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
@@ -221,15 +222,20 @@ async function EventsFeed({
   lifecycle,
   searchQuery,
   tagFilter,
+  locale,
 }: {
   lifecycle: EventLifecycle;
   searchQuery?: string;
   tagFilter?: string;
+  locale: Locale;
 }) {
   const events = await getEventsByLifecycle(lifecycle, searchQuery, tagFilter);
   const eventIds = events.map((e) => e.id);
-  const counts = await getEventCounts(eventIds);
-  const t = await getTranslations("home");
+  const [counts, eventTranslations, t] = await Promise.all([
+    getEventCounts(eventIds),
+    getEventTranslationsBatch(eventIds, locale as ContentLocale),
+    getTranslations("home"),
+  ]);
 
   if (events.length === 0) {
     // Different message for search vs no results
@@ -260,14 +266,18 @@ async function EventsFeed({
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      {events.map((event) => (
-        <EventCard
-          key={event.id}
-          event={event}
-          counts={counts[event.id]}
-          seriesRrule={event.series_rrule ?? undefined}
-        />
-      ))}
+      {events.map((event) => {
+        const translation = eventTranslations.get(event.id);
+        return (
+          <EventCard
+            key={event.id}
+            event={event}
+            counts={counts[event.id]}
+            seriesRrule={event.series_rrule ?? undefined}
+            translatedTitle={translation?.title || undefined}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -407,7 +417,7 @@ export default async function Home({ params, searchParams }: PageProps) {
               </div>
             }
           >
-            <EventsFeed lifecycle={activeTab} searchQuery={searchQuery} tagFilter={tagFilter} />
+            <EventsFeed lifecycle={activeTab} searchQuery={searchQuery} tagFilter={tagFilter} locale={locale} />
           </Suspense>
         </div>
       </main>

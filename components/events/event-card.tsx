@@ -17,6 +17,7 @@ interface EventCardProps {
   counts?: EventCounts;
   seriesRrule?: string;
   seriesSlug?: string;
+  translatedTitle?: string;
 }
 
 // Check if event is past (same logic as rsvp-button)
@@ -30,7 +31,7 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
   return defaultEnd < now;
 }
 
-export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
+export function EventCard({ event, counts, seriesRrule, translatedTitle }: EventCardProps) {
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
 
@@ -46,6 +47,7 @@ export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
 
   const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
   const imageIsVideo = isVideoUrl(event.image_url);
+  const displayTitle = translatedTitle || event.title;
 
   return (
     <Link
@@ -69,13 +71,13 @@ export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
             ) : (
               <img
                 src={event.image_url!}
-                alt={event.title}
+                alt={displayTitle}
                 className="object-cover w-full h-full transition-transform group-hover:scale-105"
               />
             )
           ) : (
             <EventDefaultImage
-              title={event.title}
+              title={displayTitle}
               className="object-cover w-full h-full"
             />
           )}
@@ -90,7 +92,7 @@ export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
         {/* Text area */}
         <CardContent className="p-4">
           <h3 className="font-semibold text-lg mb-1 line-clamp-1">
-            {event.title}
+            {displayTitle}
           </h3>
 
           {/* AI Tags - icon only for clean look */}

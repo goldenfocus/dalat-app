@@ -1,10 +1,11 @@
 import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { EventCardImmersive } from "./event-card-immersive";
 import { EventFeedImmersiveClient } from "./event-feed-immersive-client";
 import { EventFeedTabs, type EventLifecycle } from "./event-feed-tabs";
-import type { Event, EventCounts, EventWithSeriesData } from "@/lib/types";
+import { getEventTranslationsBatch } from "@/lib/translations";
+import type { Event, EventCounts, EventWithSeriesData, ContentLocale } from "@/lib/types";
 
 interface EventFeedImmersiveProps {
   lifecycle?: EventLifecycle;
@@ -110,8 +111,12 @@ export async function EventFeedImmersive({
 }: EventFeedImmersiveProps) {
   const events = await getEventsByLifecycle(lifecycle);
   const eventIds = events.map((e) => e.id);
-  const counts = await getEventCounts(eventIds);
-  const t = await getTranslations("home");
+  const locale = await getLocale();
+  const [counts, eventTranslations, t] = await Promise.all([
+    getEventCounts(eventIds),
+    getEventTranslationsBatch(eventIds, locale as ContentLocale),
+    getTranslations("home"),
+  ]);
 
   const tabLabels = {
     upcoming: t("tabs.upcoming"),
@@ -157,15 +162,19 @@ export async function EventFeedImmersive({
 
       {/* Scrollable event cards with scroll restoration */}
       <EventFeedImmersiveClient eventCount={events.length} activeTab={lifecycle}>
-        {events.map((event, index) => (
-          <EventCardImmersive
-            key={event.id}
-            event={event}
-            counts={counts[event.id]}
-            seriesRrule={event.series_rrule ?? undefined}
-            priority={index === 0}
-          />
-        ))}
+        {events.map((event, index) => {
+          const translation = eventTranslations.get(event.id);
+          return (
+            <EventCardImmersive
+              key={event.id}
+              event={event}
+              counts={counts[event.id]}
+              seriesRrule={event.series_rrule ?? undefined}
+              priority={index === 0}
+              translatedTitle={translation?.title || undefined}
+            />
+          );
+        })}
       </EventFeedImmersiveClient>
     </div>
   );

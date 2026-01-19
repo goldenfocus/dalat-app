@@ -17,6 +17,7 @@ interface EventCardImmersiveProps {
   seriesRrule?: string;
   seriesSlug?: string;
   priority?: boolean;
+  translatedTitle?: string;
 }
 
 // Check if event is past (same logic as rsvp-button)
@@ -30,7 +31,7 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
   return defaultEnd < now;
 }
 
-export function EventCardImmersive({ event, counts, seriesRrule, priority = false }: EventCardImmersiveProps) {
+export function EventCardImmersive({ event, counts, seriesRrule, priority = false, translatedTitle }: EventCardImmersiveProps) {
   const locale = useLocale() as Locale;
   const t = useTranslations("events");
 
@@ -47,6 +48,7 @@ export function EventCardImmersive({ event, counts, seriesRrule, priority = fals
   // Treat default image URLs as "no image" to use responsive EventDefaultImage
   const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
   const imageIsVideo = isVideoUrl(event.image_url);
+  const displayTitle = translatedTitle || event.title;
 
   return (
     <Link
@@ -68,11 +70,11 @@ export function EventCardImmersive({ event, counts, seriesRrule, priority = fals
                 autoPlay
               />
             ) : (
-              <ImmersiveImage src={event.image_url!} alt={event.title} priority={priority} />
+              <ImmersiveImage src={event.image_url!} alt={displayTitle} priority={priority} />
             )
           ) : (
             <EventDefaultImage
-              title={event.title}
+              title={displayTitle}
               className="absolute inset-0 w-full h-full object-cover"
               priority
             />
@@ -89,7 +91,7 @@ export function EventCardImmersive({ event, counts, seriesRrule, priority = fals
         <div className="absolute bottom-0 inset-x-0 z-20">
           <div className="bg-gradient-to-t from-black via-black/80 to-transparent pt-20 pb-8 px-5">
             <h2 className="text-white font-semibold text-2xl mb-3 line-clamp-2 drop-shadow-lg">
-              {event.title}
+              {displayTitle}
             </h2>
 
             <div className="flex flex-col gap-2 text-white/90">
