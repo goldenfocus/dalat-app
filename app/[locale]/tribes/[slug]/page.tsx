@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps) {
   const { data: tribe } = await supabase.from("tribes").select("name, description, cover_image_url").eq("slug", slug).single();
   if (!tribe) return { title: "Tribe not found" };
   return {
-    title: `${tribe.name} | dalat.app`,
+    title: `${tribe.name} | ĐàLạt.app`,
     description: tribe.description,
     openGraph: { title: tribe.name, description: tribe.description || undefined, images: tribe.cover_image_url ? [tribe.cover_image_url] : undefined },
   };

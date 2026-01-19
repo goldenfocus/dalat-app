@@ -59,7 +59,7 @@
     }
   },
   "auth": {
-    "welcomeTitle": "Selamat datang ke dalat.app",
+    "welcomeTitle": "Selamat datang ke ĐàLạt.app",
     "signInDescription": "Log masuk untuk menemui acara di Da Lat",
     "continueWithGoogle": "Teruskan dengan Google",
     "connecting": "Menyambung...",
@@ -155,7 +155,7 @@
     "titleRequired": "Tajuk acara *",
     "titlePlaceholder": "Kopi & Kod",
     "eventUrl": "URL Acara",
-    "eventUrlPrefix": "dalat.app/events/",
+    "eventUrlPrefix": "ĐàLạt.app/events/",
     "urlPlaceholder": "acara-saya",
     "urlAvailable": "URL ini tersedia",
     "urlTaken": "URL ini sudah diambil. Sila pilih yang lain.",
@@ -520,7 +520,7 @@
     "saveNewPassword": "Simpan kata laluan baru"
   },
   "onboarding": {
-    "welcome": "Selamat datang ke dalat.app",
+    "welcome": "Selamat datang ke ĐàLạt.app",
     "letsSetup": "Mari sediakan profil anda",
     "continue": "Teruskan",
     "avatarStep": {

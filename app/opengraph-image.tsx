@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 
-export const alt = "dalat.app · Events · People · Moments · Love";
+export const alt = "ĐàLạt.app · Events · People · Moments · Love";
 export const size = {
   width: 1200,
   height: 630,
@@ -71,7 +71,7 @@ export default async function Image() {
               letterSpacing: "-2px",
             }}
           >
-            dalat.app
+            ĐàLạt.app
           </div>
 
           {/* Tagline */}

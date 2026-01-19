@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const recentMomentCutoff = new Date();
   recentMomentCutoff.setDate(recentMomentCutoff.getDate() - 90);
 
-  const [eventsResult, festivalsResult, organizersResult, monthsResult, momentsResult] = await Promise.all([
+  const [eventsResult, festivalsResult, organizersResult, monthsResult, momentsResult, blogPostsResult] = await Promise.all([
     supabase
       .from('events')
       .select('slug, updated_at')
@@ -41,6 +41,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('id, created_at, updated_at, events(slug, updated_at)')
       .eq('status', 'published')
       .gte('created_at', recentMomentCutoff.toISOString()),
+    supabase
+      .from('blog_posts')
+      .select('slug, published_at, updated_at, blog_categories(slug)')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false }),
   ]);
 
   const events = eventsResult.data ?? [];
@@ -48,6 +53,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const organizers = organizersResult.data ?? [];
   const monthsWithEvents = (monthsResult.data ?? []) as { year: number; month: number; event_count: number }[];
   const momentsRaw = momentsResult.data ?? [];
+  const blogPostsRaw = blogPostsResult.data ?? [];
+  const blogPosts = blogPostsRaw.map((p) => {
+    const categories = p.blog_categories;
+    const category = Array.isArray(categories) ? categories[0] : categories;
+    return {
+      slug: p.slug as string,
+      published_at: p.published_at as string,
+      updated_at: p.updated_at as string,
+      category_slug: ((category as { slug: string } | null)?.slug) ?? 'changelog',
+    };
+  });
   // Supabase returns events as array due to join typing, normalize to single object
   const moments = momentsRaw.map((m) => ({
     id: m.id as string,
@@ -187,6 +203,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         alternates: {
           languages: Object.fromEntries(
             allLocales.map(l => [l, `${baseUrl}/${l}/events/${slug}/moments`])
+          ),
+        },
+      });
+    }
+  }
+
+  // Add blog list page
+  for (const locale of allLocales) {
+    sitemapEntries.push({
+      url: `${baseUrl}/${locale}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.7,
+      alternates: {
+        languages: Object.fromEntries(
+          allLocales.map(l => [l, `${baseUrl}/${l}/blog`])
+        ),
+      },
+    });
+  }
+
+  // Add blog posts
+  for (const post of blogPosts) {
+    for (const locale of allLocales) {
+      sitemapEntries.push({
+        url: `${baseUrl}/${locale}/blog/${post.category_slug}/${post.slug}`,
+        lastModified: new Date(post.updated_at || post.published_at),
+        changeFrequency: 'monthly',
+        priority: 0.65,
+        alternates: {
+          languages: Object.fromEntries(
+            allLocales.map(l => [l, `${baseUrl}/${l}/blog/${post.category_slug}/${post.slug}`])
           ),
         },
       });

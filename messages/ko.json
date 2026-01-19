@@ -59,7 +59,7 @@
     }
   },
   "auth": {
-    "welcomeTitle": "dalat.app에 오신 것을 환영합니다",
+    "welcomeTitle": "ĐàLạt.app에 오신 것을 환영합니다",
     "signInDescription": "달랏의 이벤트를 발견하려면 로그인하세요",
     "continueWithGoogle": "Google로 계속하기",
     "connecting": "연결 중...",
@@ -155,7 +155,7 @@
     "titleRequired": "이벤트 제목 *",
     "titlePlaceholder": "커피 & 코드",
     "eventUrl": "이벤트 URL",
-    "eventUrlPrefix": "dalat.app/events/",
+    "eventUrlPrefix": "ĐàLạt.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "이 URL을 사용할 수 있습니다",
     "urlTaken": "이 URL은 이미 사용 중입니다. 다른 것을 선택해 주세요.",
@@ -520,7 +520,7 @@
     "saveNewPassword": "새 비밀번호 저장"
   },
   "onboarding": {
-    "welcome": "dalat.app에 오신 것을 환영합니다",
+    "welcome": "ĐàLạt.app에 오신 것을 환영합니다",
     "letsSetup": "프로필을 설정해 보겠습니다",
     "continue": "계속",
     "avatarStep": {

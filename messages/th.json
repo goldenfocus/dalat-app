@@ -59,7 +59,7 @@
     }
   },
   "auth": {
-    "welcomeTitle": "ยินดีต้อนรับสู่ dalat.app",
+    "welcomeTitle": "ยินดีต้อนรับสู่ ĐàLạt.app",
     "signInDescription": "เข้าสู่ระบบเพื่อค้นพบกิจกรรมในดาลัด",
     "continueWithGoogle": "ดำเนินการต่อด้วย Google",
     "connecting": "กำลังเชื่อมต่อ...",
@@ -155,7 +155,7 @@
     "titleRequired": "ชื่อกิจกรรม *",
     "titlePlaceholder": "กาแฟ & โค้ด",
     "eventUrl": "URL กิจกรรม",
-    "eventUrlPrefix": "dalat.app/events/",
+    "eventUrlPrefix": "ĐàLạt.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "URL นี้ใช้ได้",
     "urlTaken": "URL นี้ถูกใช้แล้ว กรุณาเลือกอันอื่น",
@@ -520,7 +520,7 @@
     "saveNewPassword": "บันทึกรหัสผ่านใหม่"
   },
   "onboarding": {
-    "welcome": "ยินดีต้อนรับสู่ dalat.app",
+    "welcome": "ยินดีต้อนรับสู่ ĐàLạt.app",
     "letsSetup": "มาตั้งค่าโปรไฟล์ของคุณกัน",
     "continue": "ดำเนินการต่อ",
     "avatarStep": {

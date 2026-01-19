@@ -59,7 +59,7 @@
     }
   },
   "auth": {
-    "welcomeTitle": "dalat.appへようこそ",
+    "welcomeTitle": "ĐàLạt.appへようこそ",
     "signInDescription": "ログインしてダラットのイベントを見つけよう",
     "continueWithGoogle": "Googleで続ける",
     "connecting": "接続中...",
@@ -155,7 +155,7 @@
     "titleRequired": "イベントタイトル *",
     "titlePlaceholder": "コーヒー＆コード",
     "eventUrl": "イベントURL",
-    "eventUrlPrefix": "dalat.app/events/",
+    "eventUrlPrefix": "ĐàLạt.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "このURLは利用可能です",
     "urlTaken": "このURLは既に使用されています。別のURLを選んでください。",
@@ -520,7 +520,7 @@
     "saveNewPassword": "新しいパスワードを保存"
   },
   "onboarding": {
-    "welcome": "dalat.appへようこそ",
+    "welcome": "ĐàLạt.appへようこそ",
     "letsSetup": "プロフィールを設定しましょう",
     "continue": "続ける",
     "avatarStep": {

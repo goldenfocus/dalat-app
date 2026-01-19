@@ -9,9 +9,10 @@
  */
 
 import type { Event, Profile, Organizer, Festival, EventSeries, Moment } from "@/lib/types";
+import type { BlogPostFull } from "@/lib/types/blog";
 
 const SITE_URL = "https://dalat.app";
-const SITE_NAME = "dalat.app";
+const SITE_NAME = "ĐàLạt.app";
 
 // Da Lat, Vietnam coordinates
 const DA_LAT_GEO = {
@@ -584,6 +585,76 @@ export function generateFAQSchema(
         text: faq.answer,
       },
     })),
+  };
+
+  return schema;
+}
+
+/**
+ * Generate Article schema for blog posts
+ * https://schema.org/Article
+ */
+export function generateBlogArticleSchema(
+  post: BlogPostFull,
+  locale: string
+) {
+  const articleUrl = `${SITE_URL}/${locale}/blog/${post.category_slug || "changelog"}/${post.slug}`;
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.meta_description || post.story_content.slice(0, 160),
+    url: articleUrl,
+    datePublished: post.published_at || post.created_at,
+    dateModified: post.published_at || post.created_at,
+
+    // Image
+    ...(post.cover_image_url && {
+      image: [post.cover_image_url],
+    }),
+
+    // Author (the dalat.app team)
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+
+    // Publisher
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/icon-512.png`,
+      },
+    },
+
+    // Article section/category
+    ...(post.category_name && {
+      articleSection: post.category_name,
+    }),
+
+    // Keywords
+    ...(post.seo_keywords && post.seo_keywords.length > 0 && {
+      keywords: post.seo_keywords.join(", "),
+    }),
+
+    // Main content
+    articleBody: post.story_content,
+
+    // Word count (rough estimate)
+    wordCount: post.story_content.split(/\s+/).length,
+
+    inLanguage: locale,
+
+    // Main entity of page
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": articleUrl,
+    },
   };
 
   return schema;

@@ -59,7 +59,7 @@
     }
   },
   "auth": {
-    "welcomeTitle": "欢迎来到 dalat.app",
+    "welcomeTitle": "欢迎来到 ĐàLạt.app",
     "signInDescription": "登录以发现大叻的活动",
     "continueWithGoogle": "使用 Google 继续",
     "connecting": "连接中...",
@@ -155,7 +155,7 @@
     "titleRequired": "活动标题 *",
     "titlePlaceholder": "咖啡与代码",
     "eventUrl": "活动链接",
-    "eventUrlPrefix": "dalat.app/events/",
+    "eventUrlPrefix": "ĐàLạt.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "此链接可用",
     "urlTaken": "此链接已被使用。请选择其他链接。",
@@ -520,7 +520,7 @@
     "saveNewPassword": "保存新密码"
   },
   "onboarding": {
-    "welcome": "欢迎来到 dalat.app",
+    "welcome": "欢迎来到 ĐàLạt.app",
     "letsSetup": "让我们设置您的资料",
     "continue": "继续",
     "avatarStep": {

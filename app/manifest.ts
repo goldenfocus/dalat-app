@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "dalat.app · Events · People · Moments · Love",
-    short_name: "dalat.app",
+    name: "ĐàLạt.app · Events · People · Moments · Love",
+    short_name: "ĐàLạt.app",
     description: "Discover and organize events in Da Lat",
     start_url: "/",
     display: "standalone",

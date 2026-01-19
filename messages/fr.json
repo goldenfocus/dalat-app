@@ -64,7 +64,7 @@
     }
   },
   "auth": {
-    "welcomeTitle": "Bienvenue sur dalat.app",
+    "welcomeTitle": "Bienvenue sur ĐàLạt.app",
     "signInDescription": "Connectez-vous pour découvrir les événements à Da Lat",
     "continueWithGoogle": "Continuer avec Google",
     "connecting": "Connexion...",
@@ -107,7 +107,7 @@
     "sendMagicLink": "Envoyez-moi un lien magique",
     "magicLinkSent": "Lien magique envoyé ! Vérifiez votre email.",
     "verifyTitle": "Confirmez votre email",
-    "verifyDescription": "Cliquez sur le bouton ci-dessous pour vous connecter à dalat.app",
+    "verifyDescription": "Cliquez sur le bouton ci-dessous pour vous connecter à ĐàLạt.app",
     "verifyButton": "Terminer la connexion",
     "verifyConfirming": "Confirmation...",
     "verifyHint": "Cette étape supplémentaire empêche les scanners de sécurité d'invalider votre lien.",
@@ -167,7 +167,7 @@
     "titleRequired": "Titre de l'événement *",
     "titlePlaceholder": "Café & Code",
     "eventUrl": "URL de l'événement",
-    "eventUrlPrefix": "dalat.app/events/",
+    "eventUrlPrefix": "ĐàLạt.app/events/",
     "urlPlaceholder": "mon-evenement",
     "urlAvailable": "Cette URL est disponible",
     "urlTaken": "Cette URL est déjà prise. Veuillez en choisir une autre.",
@@ -532,7 +532,7 @@
     "saveNewPassword": "Enregistrer le nouveau mot de passe"
   },
   "onboarding": {
-    "welcome": "Bienvenue sur dalat.app",
+    "welcome": "Bienvenue sur ĐàLạt.app",
     "letsSetup": "Configurons votre profil",
     "continue": "Continuer",
     "avatarStep": {

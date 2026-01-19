@@ -59,7 +59,7 @@
     }
   },
   "auth": {
-    "welcomeTitle": "Добро пожаловать в dalat.app",
+    "welcomeTitle": "Добро пожаловать в ĐàLạt.app",
     "signInDescription": "Войдите, чтобы узнать о событиях в Далате",
     "continueWithGoogle": "Продолжить с Google",
     "connecting": "Подключение...",
@@ -155,7 +155,7 @@
     "titleRequired": "Название события *",
     "titlePlaceholder": "Кофе и код",
     "eventUrl": "URL события",
-    "eventUrlPrefix": "dalat.app/events/",
+    "eventUrlPrefix": "ĐàLạt.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "Этот URL доступен",
     "urlTaken": "Этот URL уже занят. Выберите другой.",
@@ -520,7 +520,7 @@
     "saveNewPassword": "Сохранить новый пароль"
   },
   "onboarding": {
-    "welcome": "Добро пожаловать в dalat.app",
+    "welcome": "Добро пожаловать в ĐàLạt.app",
     "letsSetup": "Давайте настроим ваш профиль",
     "continue": "Продолжить",
     "avatarStep": {

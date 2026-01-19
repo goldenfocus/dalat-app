@@ -5,7 +5,7 @@ import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/transla
 import type { ContentLocale } from "@/lib/types";
 
 export const runtime = "edge";
-export const alt = "Event on dalat.app";
+export const alt = "Event on ĐàLạt.app";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -109,7 +109,7 @@ export default async function OGImage({ params }: Props) {
               )}
             </div>
           </div>
-          {/* dalat.app branding */}
+          {/* ĐàLạt.app branding */}
           <div
             style={{
               position: "absolute",
@@ -123,7 +123,7 @@ export default async function OGImage({ params }: Props) {
               fontWeight: 600,
             }}
           >
-            dalat.app
+            ĐàLạt.app
           </div>
         </div>
       ),
@@ -174,7 +174,7 @@ export default async function OGImage({ params }: Props) {
             position: "relative",
           }}
         >
-          {/* Top: dalat.app branding */}
+          {/* Top: ĐàLạt.app branding */}
           <div
             style={{
               display: "flex",
@@ -205,7 +205,7 @@ export default async function OGImage({ params }: Props) {
                 color: "white",
               }}
             >
-              dalat.app
+              ĐàLạt.app
             </span>
           </div>
 

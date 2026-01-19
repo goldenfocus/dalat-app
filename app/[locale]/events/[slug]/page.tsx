@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const eventDate = formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a");
   const description = eventDescription
     ? `${eventDescription.slice(0, 150)}${eventDescription.length > 150 ? "..." : ""}`
-    : `${eventDate}${event.location_name ? ` · ${event.location_name}` : ""} · dalat.app`;
+    : `${eventDate}${event.location_name ? ` · ${event.location_name}` : ""} · ĐàLạt.app`;
 
   // Use absolute URL with locale for proper link previews on messaging apps
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}`;
@@ -86,14 +86,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const ogImageUrl = `https://dalat.app/${locale}/events/${slug}/opengraph-image`;
 
   return {
-    title: `${title} | dalat.app`,
+    title: `${title} | ĐàLạt.app`,
     description,
     openGraph: {
       title,
       description,
       type: "website",
       url: canonicalUrl,
-      siteName: "dalat.app",
+      siteName: "ĐàLạt.app",
       images: [
         {
           url: ogImageUrl,

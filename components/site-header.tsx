@@ -19,7 +19,7 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
       <div className="container flex h-14 max-w-4xl items-center justify-between mx-auto px-4">
         <div className="flex items-center gap-2">
           <Link href="/" className="font-bold text-lg">
-            dalat.app
+            ĐàLạt.app
           </Link>
           <LocalePicker />
         </div>

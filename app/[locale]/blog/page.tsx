@@ -1,0 +1,113 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { createClient } from "@/lib/supabase/server";
+import { SiteHeader } from "@/components/site-header";
+import { BlogPostGrid } from "@/components/blog/blog-post-grid";
+import { CategoryTabs } from "@/components/blog/category-tabs";
+import { generateLocalizedMetadata } from "@/lib/metadata";
+import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
+import type { Locale } from "@/lib/i18n/routing";
+import type { BlogPostWithCategory, BlogCategory } from "@/lib/types/blog";
+
+interface PageProps {
+  params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ category?: string }>;
+}
+
+async function getBlogPosts(categorySlug?: string): Promise<BlogPostWithCategory[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_blog_posts", {
+    p_category_slug: categorySlug || null,
+    p_limit: 20,
+    p_offset: 0,
+  });
+
+  if (error) {
+    console.error("Failed to fetch blog posts:", error);
+    return [];
+  }
+
+  return (data ?? []) as BlogPostWithCategory[];
+}
+
+async function getCategories(): Promise<BlogCategory[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("blog_categories")
+    .select("*")
+    .order("sort_order");
+
+  if (error) {
+    console.error("Failed to fetch categories:", error);
+    return [];
+  }
+
+  return data ?? [];
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+
+  return generateLocalizedMetadata({
+    locale,
+    path: "/blog",
+    title: "Blog",
+    description: "Product updates, release notes, and stories from the ĐàLạt.app team.",
+    keywords: ["dalat", "blog", "changelog", "updates", "release notes"],
+    type: "website",
+  });
+}
+
+export default async function BlogPage({ params, searchParams }: PageProps) {
+  const { locale } = await params;
+  const { category: categorySlug } = await searchParams;
+
+  const [posts, categories] = await Promise.all([
+    getBlogPosts(categorySlug),
+    getCategories(),
+  ]);
+
+  const breadcrumbSchema = generateBreadcrumbSchema(
+    [
+      { name: "Home", url: "/" },
+      { name: "Blog", url: "/blog" },
+    ],
+    locale
+  );
+
+  return (
+    <>
+      <JsonLd data={breadcrumbSchema} />
+      <SiteHeader />
+
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-4xl px-4 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Blog</h1>
+            <p className="text-muted-foreground">
+              Product updates, release notes, and stories from the team.
+            </p>
+          </div>
+
+          {/* Category Tabs */}
+          <CategoryTabs
+            categories={categories}
+            activeCategory={categorySlug}
+          />
+
+          {/* Posts Grid */}
+          {posts.length > 0 ? (
+            <BlogPostGrid posts={posts} />
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No posts yet. Check back soon!</p>
+            </div>
+          )}
+        </div>
+      </main>
+    </>
+  );
+}

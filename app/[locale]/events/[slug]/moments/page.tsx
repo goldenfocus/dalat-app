@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `Moments - ${event.title} | dalat.app`,
+    title: `Moments - ${event.title} | ĐàLạt.app`,
     description: `Photos and videos from ${event.title}`,
   };
 }

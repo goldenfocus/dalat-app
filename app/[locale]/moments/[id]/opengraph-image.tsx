@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isVideoUrl } from "@/lib/media-utils";
 
 export const runtime = "edge";
-export const alt = "Moment on dalat.app";
+export const alt = "Moment on ĐàLạt.app";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -76,7 +76,7 @@ export default async function OGImage({ params }: Props) {
                 color: "rgba(255,255,255,0.9)",
               }}
             >
-              {userName} · dalat.app
+              {userName} · ĐàLạt.app
             </div>
           </div>
         </div>
@@ -103,7 +103,7 @@ export default async function OGImage({ params }: Props) {
           color: "white",
         }}
       >
-        <div style={{ fontSize: 28, fontWeight: 600 }}>dalat.app</div>
+        <div style={{ fontSize: 28, fontWeight: 600 }}>ĐàLạt.app</div>
         <div style={{ fontSize: 50, fontWeight: 700, lineHeight: 1.2 }}>
           {eventTitle.length > 48 ? `${eventTitle.slice(0, 45)}...` : eventTitle}
         </div>

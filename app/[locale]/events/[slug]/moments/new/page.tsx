@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `Share a Moment - ${event.title} | dalat.app`,
+    title: `Share a Moment - ${event.title} | ĐàLạt.app`,
   };
 }
 

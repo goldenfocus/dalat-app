@@ -30,7 +30,7 @@ export function EventDefaultImage({
       {/* Fallback image - w-full h-full object-cover to fill container */}
       <img
         src="/images/defaults/event-default-desktop.png"
-        alt={`${title} - DaLat.app default event image`}
+        alt={`${title} - ĐàLạt.app default event image`}
         className="w-full h-full object-cover"
         loading={priority ? "eager" : "lazy"}
       />

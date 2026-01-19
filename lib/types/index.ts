@@ -675,3 +675,9 @@ export interface RecurrencePreset {
   rrule: string;
   description?: string;
 }
+
+// ============================================
+// Blog Types (re-export from blog.ts)
+// ============================================
+
+export * from './blog';

@@ -336,7 +336,7 @@ export default async function Home({ params, searchParams }: PageProps) {
         <nav className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-3 bg-gradient-to-b from-black/70 via-black/40 to-transparent">
           <div className="flex items-center gap-1">
             <Link href="/" className="font-bold text-white text-sm drop-shadow-lg">
-              dalat.app
+              ĐàLạt.app
             </Link>
             <LocalePicker variant="overlay" />
           </div>

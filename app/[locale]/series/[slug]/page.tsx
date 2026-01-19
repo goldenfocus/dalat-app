@@ -56,17 +56,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const recurrenceLabel = getShortRRuleLabel(series.rrule);
   const description = series.description
     ? `${series.description.slice(0, 150)}${series.description.length > 150 ? "..." : ""}`
-    : `${recurrenceLabel}${series.location_name ? ` · ${series.location_name}` : ""} · dalat.app`;
+    : `${recurrenceLabel}${series.location_name ? ` · ${series.location_name}` : ""} · ĐàLạt.app`;
 
   return {
-    title: `${series.title} | dalat.app`,
+    title: `${series.title} | ĐàLạt.app`,
     description,
     openGraph: {
       title: series.title,
       description,
       type: "website",
       url: `/series/${slug}`,
-      siteName: "dalat.app",
+      siteName: "ĐàLạt.app",
       ...(series.image_url && {
         images: [{ url: series.image_url, width: 1200, height: 630, alt: series.title }],
       }),

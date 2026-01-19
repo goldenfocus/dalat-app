@@ -1,0 +1,63 @@
+{
+  "_comment": "Known Da Lat venues for automated event scraping. Add Facebook URLs manually.",
+  "venues": [
+    {
+      "name": "Maze Bar Da Lat",
+      "website": "https://www.facebook.com/mazebar.dalat",
+      "facebookUrl": "https://www.facebook.com/mazebar.dalat",
+      "type": "bar"
+    },
+    {
+      "name": "Hangout Coffee",
+      "website": null,
+      "facebookUrl": null,
+      "type": "cafe"
+    },
+    {
+      "name": "Dingo Bar",
+      "website": null,
+      "facebookUrl": null,
+      "type": "bar"
+    },
+    {
+      "name": "Escape Bar",
+      "website": null,
+      "facebookUrl": null,
+      "type": "bar"
+    },
+    {
+      "name": "Wooden House Dalat",
+      "website": null,
+      "facebookUrl": null,
+      "type": "cafe"
+    },
+    {
+      "name": "V Cafe",
+      "website": null,
+      "facebookUrl": null,
+      "type": "cafe"
+    },
+    {
+      "name": "100 Roofs Cafe",
+      "website": null,
+      "facebookUrl": null,
+      "type": "cafe"
+    }
+  ],
+  "instructions": {
+    "how_to_add_venues": [
+      "1. Find the venue on Facebook",
+      "2. Copy their Facebook page URL",
+      "3. Add it to this file under facebookUrl",
+      "4. Run the Apify task to scrape their events"
+    ],
+    "apify_task_setup": [
+      "1. Go to https://console.apify.com/actors/pratikdani~facebook-event-scraper",
+      "2. Create a new Task with these settings:",
+      "   - startUrls: array of Facebook page URLs from this file",
+      "   - Add webhook pointing to: https://dalat.app/api/import/apify-webhook",
+      "3. Set up a daily schedule (e.g., 6:00 AM UTC)",
+      "4. Events will automatically import when the task runs"
+    ]
+  }
+}

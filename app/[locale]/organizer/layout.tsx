@@ -95,7 +95,7 @@ export default async function OrganizerLayout({
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">dalat.app</span>
+              <span className="hidden sm:inline">ĐàLạt.app</span>
             </Link>
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 text-sm font-medium">
               <Building2 className="w-3 h-3" />

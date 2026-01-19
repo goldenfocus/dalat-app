@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await response.json();
 
   return {
-    title: `You're invited to ${data.event.title} | dalat.app`,
+    title: `You're invited to ${data.event.title} | ĐàLạt.app`,
     description: `${data.inviter.name} invited you to ${data.event.title}`,
   };
 }
@@ -287,7 +287,7 @@ export default async function InvitePage({ params, searchParams }: PageProps) {
         <p className="text-center text-sm text-muted-foreground mt-6">
           {t("poweredBy")}{" "}
           <Link href="/" className="text-primary hover:underline">
-            dalat.app
+            ĐàLạt.app
           </Link>
         </p>
       </div>
