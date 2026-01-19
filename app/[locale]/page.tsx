@@ -14,7 +14,6 @@ import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { MomentsSpotlight } from "@/components/home/moments-spotlight";
-import { TagFilter } from "@/components/events/tag-filter";
 import { Button } from "@/components/ui/button";
 import type { Event, EventCounts, EventWithSeriesData, MomentWithEvent } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
@@ -394,13 +393,6 @@ export default async function Home({ params, searchParams }: PageProps) {
                 past: t("tabs.past"),
               }}
             />
-          </div>
-
-          {/* Tag Filter */}
-          <div className="mb-6">
-            <Suspense fallback={<div className="h-8" />}>
-              <TagFilter selectedTag={tagFilter} />
-            </Suspense>
           </div>
 
           <Suspense
