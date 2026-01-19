@@ -310,6 +310,9 @@ export function FlyerBuilder({
       if (imageData) {
         requestBody.imageBase64 = imageData.base64;
         requestBody.imageMimeType = imageData.mimeType;
+      } else if (previewUrl.startsWith("blob:")) {
+        // Blob URL failed to convert - shouldn't happen but handle gracefully
+        throw new Error("Unable to process local image. Try uploading again.");
       } else {
         requestBody.existingImageUrl = previewUrl;
       }

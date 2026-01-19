@@ -245,6 +245,9 @@ export function EventMediaUpload({
         return;
       }
 
+      // Update preview to permanent URL before revoking blob
+      setPreviewUrl(data.url);
+      setPreviewIsVideo(isVideoUrl(data.url));
       await handleMediaUpdate(data.url);
     } catch (err: unknown) {
       console.error("Upload error:", err);
@@ -439,6 +442,9 @@ export function EventMediaUpload({
         // Use base64 data (works for external/Facebook URLs)
         requestBody.imageBase64 = imageData.base64;
         requestBody.imageMimeType = imageData.mimeType;
+      } else if (previewUrl.startsWith("blob:")) {
+        // Blob URLs can't be sent to the server - this means the upload didn't complete
+        throw new Error("Please wait for the image to finish uploading before refining");
       } else {
         // Fallback to URL (works for our own storage URLs)
         requestBody.existingImageUrl = previewUrl;
