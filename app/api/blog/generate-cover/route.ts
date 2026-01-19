@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { generateCoverImage } from "@/lib/blog/cover-generator";
+import { generateCoverImage, refineCoverImage } from "@/lib/blog/cover-generator";
 
 export async function POST(request: Request) {
   try {
     // Verify user is admin
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -30,14 +32,27 @@ export async function POST(request: Request) {
 
     // Get inputs
     const body = await request.json();
-    const { title, content, category } = body;
+    const { title, content, category, existingImageUrl, refinementPrompt } = body;
 
     if (!title) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
 
-    // Build a custom prompt based on the content
-    const customPrompt = `Create an abstract, artistic cover image for a blog post about: ${title}
+    // Generate slug from title for file naming
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 50);
+
+    let imageUrl: string;
+
+    // Refinement mode: edit existing image
+    if (existingImageUrl && refinementPrompt) {
+      imageUrl = await refineCoverImage(slug, existingImageUrl, refinementPrompt);
+    } else {
+      // New generation mode
+      const customPrompt = `Create an abstract, artistic cover image for a blog post about: ${title}
 
 Context: ${content?.slice(0, 200) || "A blog post about technology and community events"}
 Category: ${category || "general"}
@@ -52,14 +67,8 @@ Style guidelines:
 - Landscape orientation (16:9 aspect ratio)
 - Professional and polished feel`;
 
-    // Generate slug from title for file naming
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 50);
-
-    const imageUrl = await generateCoverImage(slug, customPrompt);
+      imageUrl = await generateCoverImage(slug, customPrompt);
+    }
 
     return NextResponse.json({ imageUrl });
   } catch (error) {

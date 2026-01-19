@@ -52,6 +52,84 @@ export async function generateCoverImage(
   console.log("[cover-generator] Generating cover for:", postSlug);
 
   const result = await model.generateContent(prompt);
+
+  return await extractAndUploadImage(result, postSlug, supabaseUrl, supabaseServiceKey);
+}
+
+/**
+ * Refine an existing cover image based on user feedback
+ * Sends the current image + refinement instructions to Gemini
+ */
+export async function refineCoverImage(
+  postSlug: string,
+  existingImageUrl: string,
+  refinementPrompt: string
+): Promise<string> {
+  const apiKey = process.env.GOOGLE_AI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GOOGLE_AI_API_KEY not configured");
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error("Supabase service credentials not configured");
+  }
+
+  // Fetch the existing image
+  console.log("[cover-generator] Fetching existing image:", existingImageUrl);
+  const imageResponse = await fetch(existingImageUrl);
+  if (!imageResponse.ok) {
+    throw new Error("Failed to fetch existing image");
+  }
+
+  const imageBuffer = await imageResponse.arrayBuffer();
+  const base64Image = Buffer.from(imageBuffer).toString("base64");
+  const mimeType = imageResponse.headers.get("content-type") || "image/png";
+
+  // Set up Gemini with image editing capability
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: "gemini-3-pro-image-preview",
+    generationConfig: {
+      responseModalities: ["TEXT", "IMAGE"],
+    } as never,
+  });
+
+  const prompt = `Edit this blog cover image based on the following instructions:
+
+${refinementPrompt}
+
+Important:
+- Keep the overall style and color palette consistent
+- Maintain landscape orientation (16:9)
+- NO text, NO lettering, NO words
+- Keep it professional and polished`;
+
+  console.log("[cover-generator] Refining cover for:", postSlug);
+
+  const result = await model.generateContent([
+    {
+      inlineData: {
+        mimeType,
+        data: base64Image,
+      },
+    },
+    prompt,
+  ]);
+
+  return await extractAndUploadImage(result, postSlug, supabaseUrl, supabaseServiceKey);
+}
+
+/**
+ * Extract image from Gemini response and upload to Supabase
+ */
+async function extractAndUploadImage(
+  result: { response: { candidates?: Array<{ content?: { parts?: Array<unknown> } }> } },
+  postSlug: string,
+  supabaseUrl: string,
+  supabaseServiceKey: string
+): Promise<string> {
   const response = result.response;
 
   // Extract the image from the response
@@ -62,16 +140,20 @@ export async function generateCoverImage(
   }
 
   const imagePart = parts.find(
-    (part) => "inlineData" in part && part.inlineData?.mimeType?.startsWith("image/")
-  );
+    (part) =>
+      typeof part === "object" &&
+      part !== null &&
+      "inlineData" in part &&
+      (part as { inlineData?: { mimeType?: string } }).inlineData?.mimeType?.startsWith("image/")
+  ) as { inlineData: { data: string; mimeType: string } } | undefined;
 
-  if (!imagePart || !("inlineData" in imagePart)) {
+  if (!imagePart) {
     console.error("[cover-generator] No image part found");
     throw new Error("No image generated");
   }
 
-  const base64Data = imagePart.inlineData!.data;
-  const mimeType = imagePart.inlineData!.mimeType;
+  const base64Data = imagePart.inlineData.data;
+  const mimeType = imagePart.inlineData.mimeType;
   const ext = mimeType.split("/")[1] || "png";
 
   // Convert base64 to buffer
@@ -95,9 +177,9 @@ export async function generateCoverImage(
   }
 
   // Get the public URL
-  const { data: { publicUrl } } = supabase.storage
-    .from("blog-media")
-    .getPublicUrl(fileName);
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("blog-media").getPublicUrl(fileName);
 
   console.log("[cover-generator] Generated cover:", publicUrl);
   return publicUrl;

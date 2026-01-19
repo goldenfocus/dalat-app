@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save, Eye, ImageIcon, Sparkles } from "lucide-react";
+import { Loader2, Save, Eye, ImageIcon, Sparkles, Wand2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { triggerTranslation } from "@/lib/translations-client";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
@@ -62,18 +62,27 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
   const [ctaUrl, setCtaUrl] = useState(post.suggested_cta_url || "");
   const [ctaText, setCtaText] = useState(post.suggested_cta_text || "");
   const [areasChanged, setAreasChanged] = useState(post.areas_changed?.join(", ") || "");
+  const [refinementPrompt, setRefinementPrompt] = useState("");
 
-  const generateCover = async (): Promise<string | null> => {
+  const generateCover = async (refineExisting?: boolean): Promise<string | null> => {
     if (!storyContent.trim()) return null;
+
+    const payload: Record<string, string> = {
+      title,
+      content: storyContent.slice(0, 500),
+      category: categories.find((c) => c.id === categoryId)?.slug || "changelog",
+    };
+
+    // If refining, include existing image and refinement prompt
+    if (refineExisting && coverImageUrl && refinementPrompt.trim()) {
+      payload.existingImageUrl = coverImageUrl;
+      payload.refinementPrompt = refinementPrompt.trim();
+    }
 
     const res = await fetch("/api/blog/generate-cover", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        content: storyContent.slice(0, 500),
-        category: categories.find((c) => c.id === categoryId)?.slug || "changelog",
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
@@ -155,6 +164,33 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
     } catch (err) {
       console.error("Failed to generate cover:", err);
       setError(err instanceof Error ? err.message : "Failed to generate cover");
+    } finally {
+      setIsGeneratingCover(false);
+    }
+  };
+
+  const handleRefineCover = async () => {
+    if (!coverImageUrl) {
+      setError("No existing image to refine");
+      return;
+    }
+    if (!refinementPrompt.trim()) {
+      setError("Please describe how you'd like to modify the image");
+      return;
+    }
+
+    setIsGeneratingCover(true);
+    setError(null);
+
+    try {
+      const imageUrl = await generateCover(true);
+      if (imageUrl) {
+        setCoverImageUrl(imageUrl);
+        setRefinementPrompt(""); // Clear after successful refinement
+      }
+    } catch (err) {
+      console.error("Failed to refine cover:", err);
+      setError(err instanceof Error ? err.message : "Failed to refine cover");
     } finally {
       setIsGeneratingCover(false);
     }
@@ -327,6 +363,34 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
               )}
               Generate Cover
             </button>
+
+            {/* Refinement UI - appears when image exists */}
+            {coverImageUrl && (
+              <div className="pt-2 border-t space-y-2">
+                <label className="block text-xs text-muted-foreground">
+                  Refine this image
+                </label>
+                <textarea
+                  value={refinementPrompt}
+                  onChange={(e) => setRefinementPrompt(e.target.value)}
+                  placeholder="e.g., Add more purple tones, make it more abstract, add circuit patterns..."
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
+                />
+                <button
+                  onClick={handleRefineCover}
+                  disabled={isGeneratingCover || !refinementPrompt.trim()}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-violet-600 text-white hover:bg-violet-700 transition-colors text-sm disabled:opacity-50"
+                >
+                  {isGeneratingCover ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wand2 className="h-4 w-4" />
+                  )}
+                  Refine Image
+                </button>
+              </div>
+            )}
           </div>
 
           {/* SEO */}
