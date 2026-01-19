@@ -227,27 +227,34 @@ export function UserManagementTable({
                         )}
                       </Button>
                     )}
-                    {user.avatar_url ? (
-                      <img
-                        src={user.avatar_url}
-                        alt=""
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                        <User className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div>
-                      <div className="font-medium">
-                        {user.display_name || user.username || "Anonymous"}
-                      </div>
-                      {user.username && (
-                        <div className="text-xs text-muted-foreground">
-                          @{user.username}
+                    <a
+                      href={user.username ? `/@${user.username}` : `/${user.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                    >
+                      {user.avatar_url ? (
+                        <img
+                          src={user.avatar_url}
+                          alt=""
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                          <User className="w-4 h-4 text-muted-foreground" />
                         </div>
                       )}
-                    </div>
+                      <div>
+                        <div className="font-medium hover:underline">
+                          {user.display_name || user.username || "Anonymous"}
+                        </div>
+                        {user.username && (
+                          <div className="text-xs text-muted-foreground">
+                            @{user.username}
+                          </div>
+                        )}
+                      </div>
+                    </a>
                   </div>
                 </td>
                 <td className="p-3">
