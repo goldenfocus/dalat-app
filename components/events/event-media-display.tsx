@@ -43,7 +43,7 @@ export function EventMediaDisplay({
       <button
         type="button"
         onClick={() => setLightboxOpen(true)}
-        className="w-full rounded-lg overflow-hidden relative group cursor-pointer max-h-[60vh] md:aspect-video md:max-h-none"
+        className="w-full rounded-lg overflow-hidden relative group cursor-pointer aspect-[3/4] max-h-[60vh] md:aspect-video md:max-h-none"
         aria-label="View full flyer"
       >
         <Image
