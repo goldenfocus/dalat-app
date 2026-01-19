@@ -6,7 +6,6 @@ import { ArrowLeft, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
-import { BlogLikeButton } from "@/components/blog/blog-like-button";
 import { BlogShareButtons } from "@/components/blog/blog-share-buttons";
 import { TechnicalAccordion } from "@/components/blog/technical-accordion";
 import { CtaButton } from "@/components/blog/cta-button";
@@ -15,7 +14,7 @@ import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateBlogArticleSchema } from "@/lib/structured-data";
 import type { Locale } from "@/lib/i18n/routing";
-import type { BlogPostFull, BlogPostLikeStatus } from "@/lib/types/blog";
+import type { BlogPostFull } from "@/lib/types/blog";
 
 interface PageProps {
   params: Promise<{ locale: Locale; category: string; slug: string }>;
@@ -33,16 +32,6 @@ async function getBlogPost(slug: string): Promise<BlogPostFull | null> {
   }
 
   return data[0] as BlogPostFull;
-}
-
-async function getLikeStatus(postId: string): Promise<BlogPostLikeStatus | null> {
-  const supabase = await createClient();
-
-  const { data } = await supabase.rpc("get_blog_post_like_status", {
-    p_post_id: postId,
-  });
-
-  return data as BlogPostLikeStatus | null;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -79,7 +68,6 @@ export default async function BlogPostPage({ params }: PageProps) {
     // Could redirect here, but for now just show the post
   }
 
-  const likeStatus = await getLikeStatus(post.id);
   const publishedDate = post.published_at
     ? new Date(post.published_at)
     : new Date(post.created_at);
@@ -166,13 +154,8 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* Divider */}
           <hr className="my-8 border-border" />
 
-          {/* Like and Share */}
-          <div className="flex items-center justify-between mb-8">
-            <BlogLikeButton
-              postId={post.id}
-              initialLiked={likeStatus?.liked ?? false}
-              initialCount={likeStatus?.count ?? post.like_count ?? 0}
-            />
+          {/* Share */}
+          <div className="flex items-center justify-center mb-8">
             <BlogShareButtons
               title={post.title}
               url={`/blog/${actualCategory}/${slug}`}

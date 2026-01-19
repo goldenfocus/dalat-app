@@ -1,25 +1,20 @@
 "use client";
 
 import { Share2 } from "lucide-react";
-import { LikeButton } from "@/components/moments/like-button";
 import { triggerHaptic } from "@/lib/haptics";
 
 interface MomentEngagementBarProps {
   momentId: string;
   eventTitle: string;
-  liked?: boolean;
-  likeCount?: number;
 }
 
 /**
  * Right-side engagement bar (TikTok-style).
- * Contains like button and share action.
+ * Contains share action with prominent styling.
  */
 export function MomentEngagementBar({
   momentId,
   eventTitle,
-  liked = false,
-  likeCount = 0,
 }: MomentEngagementBarProps) {
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,25 +45,13 @@ export function MomentEngagementBar({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {/* Like button - reusing existing component */}
-      <div className="flex flex-col items-center">
-        <LikeButton
-          momentId={momentId}
-          initialLiked={liked}
-          initialCount={likeCount}
-          size="md"
-        />
-      </div>
-
-      {/* Share button */}
-      <button
-        onClick={handleShare}
-        className="flex flex-col items-center gap-1 p-2 text-white/80 hover:text-white transition-colors active:scale-95"
-        aria-label="Share"
-      >
-        <Share2 className="w-5 h-5" />
-      </button>
-    </div>
+    <button
+      onClick={handleShare}
+      className="flex flex-col items-center gap-1 p-3 rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-all active:scale-95"
+      aria-label="Share this moment"
+    >
+      <Share2 className="w-6 h-6" />
+      <span className="text-xs font-medium">Share</span>
+    </button>
   );
 }
