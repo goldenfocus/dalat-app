@@ -48,7 +48,12 @@ export async function POST(request: Request) {
     const audioFile = new File([audioBlob], "audio.webm", { type: "audio/webm" });
 
     // Transcribe with Whisper
-    const openai = new OpenAI();
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error("[blog/transcribe] OPENAI_API_KEY not found in environment");
+      return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 });
+    }
+    const openai = new OpenAI({ apiKey });
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: "whisper-1",
