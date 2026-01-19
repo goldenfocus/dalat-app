@@ -1,8 +1,46 @@
 // Client-side media conversion utilities
 
 /**
+ * Convert HEIC/HEIF image to JPEG using server-side Sharp
+ * More reliable than client-side heic2any for various HEIC codec variants
+ */
+async function convertHeicServerSide(file: File): Promise<File> {
+  console.log("[HEIC] Using server-side conversion for:", file.name);
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch("/api/convert-heic", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(error.error || "Server-side conversion failed");
+  }
+
+  const jpegBlob = await response.blob();
+  const newName = response.headers.get("X-Original-Name") ||
+    file.name.replace(/\.(heic|heif)$/i, ".jpg");
+
+  const convertedFile = new File([jpegBlob], newName, {
+    type: "image/jpeg",
+  });
+
+  console.log(
+    "[HEIC] Server conversion complete:",
+    convertedFile.name,
+    "size:",
+    convertedFile.size
+  );
+
+  return convertedFile;
+}
+
+/**
  * Convert HEIC/HEIF image to JPEG
- * Uses dynamic import to avoid WASM loading issues in Next.js production builds
+ * Tries client-side heic2any first, falls back to server-side Sharp if that fails
  */
 export async function convertHeicToJpeg(file: File): Promise<File> {
   console.log("[HEIC] Starting conversion for:", file.name, "size:", file.size);
@@ -43,8 +81,11 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
 
     return convertedFile;
   } catch (error) {
-    console.error("[HEIC] Conversion failed:", error);
-    throw error;
+    console.error("[HEIC] Client-side conversion failed:", error);
+    console.log("[HEIC] Falling back to server-side conversion...");
+
+    // Fall back to server-side conversion
+    return convertHeicServerSide(file);
   }
 }
 
