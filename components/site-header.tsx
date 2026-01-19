@@ -1,10 +1,8 @@
 import { Suspense } from "react";
-import { Plus } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { Film, Plus } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButton } from "@/components/auth-button";
 import { LocalePicker } from "@/components/locale-picker";
-import { Button } from "@/components/ui/button";
 
 interface SiteHeaderProps {
   /** Optional content to render on the right side before AuthButton */

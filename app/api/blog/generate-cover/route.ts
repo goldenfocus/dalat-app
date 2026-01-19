@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     // Get inputs
     const body = await request.json();
-    const { title, content, category, existingImageUrl, refinementPrompt } = body;
+    const { title, content, category, existingImageUrl, refinementPrompt, customPrompt } = body;
 
     if (!title) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
@@ -51,8 +51,10 @@ export async function POST(request: Request) {
     if (existingImageUrl && refinementPrompt) {
       imageUrl = await refineCoverImage(slug, existingImageUrl, refinementPrompt);
     } else {
-      // New generation mode
-      const customPrompt = `Create an abstract, artistic cover image for a blog post about: ${title}
+      // Use custom prompt if provided, otherwise build default
+      const prompt =
+        customPrompt ||
+        `Create an abstract, artistic cover image for a blog post about: ${title}
 
 Context: ${content?.slice(0, 200) || "A blog post about technology and community events"}
 Category: ${category || "general"}
@@ -67,7 +69,7 @@ Style guidelines:
 - Landscape orientation (16:9 aspect ratio)
 - Professional and polished feel`;
 
-      imageUrl = await generateCoverImage(slug, customPrompt);
+      imageUrl = await generateCoverImage(slug, prompt);
     }
 
     return NextResponse.json({ imageUrl });

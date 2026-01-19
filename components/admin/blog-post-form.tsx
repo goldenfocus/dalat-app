@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save, Eye, ImageIcon, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Save, Eye, ImageIcon, Sparkles, Wand2, ChevronDown, ChevronUp } from "lucide-react";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { createClient } from "@/lib/supabase/client";
 import { triggerTranslation } from "@/lib/translations-client";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
@@ -63,10 +64,32 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
   const [ctaText, setCtaText] = useState(post.suggested_cta_text || "");
   const [areasChanged, setAreasChanged] = useState(post.areas_changed?.join(", ") || "");
   const [refinementPrompt, setRefinementPrompt] = useState("");
+  const [showCustomizePrompt, setShowCustomizePrompt] = useState(false);
+  const [showRefinement, setShowRefinement] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // Build the default prompt from current form values
+  const buildDefaultPrompt = () => {
+    const categorySlug = categories.find((c) => c.id === categoryId)?.slug || "general";
+    return `Create an abstract, artistic cover image for a blog post about: ${title}
+
+Context: ${storyContent?.slice(0, 200) || "A blog post about technology and community events"}
+Category: ${categorySlug}
+
+Style guidelines:
+- Modern, clean, tech-forward aesthetic
+- Purple and blue gradient background inspired by dalat.app branding
+- Abstract geometric shapes or flowing lines relevant to the topic
+- Subtle visual elements that hint at the subject matter
+- Atmospheric depth with soft glow effects
+- NO text, NO lettering, NO words
+- Landscape orientation (16:9 aspect ratio)
+- Professional and polished feel`;
+  };
+
+  const [customPrompt, setCustomPrompt] = useState("");
 
   const generateCover = async (refineExisting?: boolean): Promise<string | null> => {
-    if (!storyContent.trim()) return null;
-
     const payload: Record<string, string> = {
       title,
       content: storyContent.slice(0, 500),
@@ -77,6 +100,9 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
     if (refineExisting && coverImageUrl && refinementPrompt.trim()) {
       payload.existingImageUrl = coverImageUrl;
       payload.refinementPrompt = refinementPrompt.trim();
+    } else if (showCustomizePrompt && customPrompt.trim()) {
+      // Use custom prompt if provided
+      payload.customPrompt = customPrompt.trim();
     }
 
     const res = await fetch("/api/blog/generate-cover", {
@@ -330,27 +356,69 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
           {/* Cover Image */}
           <div className="p-4 rounded-lg border bg-card space-y-3">
             <label className="block text-sm font-medium">Cover Image</label>
+
+            {/* Image preview - clickable to zoom */}
             {coverImageUrl ? (
-              <div className="relative aspect-video rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                className="relative aspect-video rounded-lg overflow-hidden w-full cursor-zoom-in group"
+              >
                 <Image
                   src={coverImageUrl}
                   alt="Cover"
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform group-hover:scale-105"
                 />
-              </div>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium">
+                    Click to preview
+                  </span>
+                </div>
+              </button>
             ) : (
               <div className="aspect-video rounded-lg bg-muted flex items-center justify-center">
                 <ImageIcon className="w-8 h-8 text-muted-foreground" />
               </div>
             )}
-            <input
-              type="text"
-              value={coverImageUrl}
-              onChange={(e) => setCoverImageUrl(e.target.value)}
-              placeholder="Image URL"
-              className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+
+            {/* Lightbox for full-size view */}
+            <ImageLightbox
+              src={coverImageUrl}
+              alt="Cover preview"
+              isOpen={lightboxOpen}
+              onClose={() => setLightboxOpen(false)}
             />
+
+            {/* Customize prompt toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                if (!showCustomizePrompt && !customPrompt) {
+                  setCustomPrompt(buildDefaultPrompt());
+                }
+                setShowCustomizePrompt(!showCustomizePrompt);
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-muted/50 hover:bg-muted transition-colors text-sm"
+            >
+              <span className="text-muted-foreground">Customize prompt</span>
+              {showCustomizePrompt ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+
+            {showCustomizePrompt && (
+              <textarea
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                rows={8}
+                className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-xs font-mono resize-none"
+              />
+            )}
+
+            {/* Generate button */}
             <button
               onClick={handleGenerateCover}
               disabled={isGeneratingCover}
@@ -361,35 +429,52 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
               ) : (
                 <Sparkles className="h-4 w-4" />
               )}
-              Generate Cover
+              {coverImageUrl ? "Regenerate" : "Generate Cover"}
             </button>
 
-            {/* Refinement UI - appears when image exists */}
+            {/* Refinement - collapsible, only when image exists */}
             {coverImageUrl && (
-              <div className="pt-2 border-t space-y-2">
-                <label className="block text-xs text-muted-foreground">
-                  Refine this image
-                </label>
-                <textarea
-                  value={refinementPrompt}
-                  onChange={(e) => setRefinementPrompt(e.target.value)}
-                  placeholder="e.g., Add more purple tones, make it more abstract, add circuit patterns..."
-                  rows={2}
-                  className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
-                />
+              <>
                 <button
-                  onClick={handleRefineCover}
-                  disabled={isGeneratingCover || !refinementPrompt.trim()}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-violet-600 text-white hover:bg-violet-700 transition-colors text-sm disabled:opacity-50"
+                  type="button"
+                  onClick={() => setShowRefinement(!showRefinement)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 transition-colors text-sm"
                 >
-                  {isGeneratingCover ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
+                  <span className="flex items-center gap-2 text-violet-400">
                     <Wand2 className="h-4 w-4" />
+                    Refine this image
+                  </span>
+                  {showRefinement ? (
+                    <ChevronUp className="h-4 w-4 text-violet-400" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-violet-400" />
                   )}
-                  Refine Image
                 </button>
-              </div>
+
+                {showRefinement && (
+                  <div className="space-y-2 pl-2 border-l-2 border-violet-500/30">
+                    <textarea
+                      value={refinementPrompt}
+                      onChange={(e) => setRefinementPrompt(e.target.value)}
+                      placeholder="e.g., Add more purple tones, make it more abstract, add circuit patterns..."
+                      rows={2}
+                      className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm resize-none"
+                    />
+                    <button
+                      onClick={handleRefineCover}
+                      disabled={isGeneratingCover || !refinementPrompt.trim()}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-violet-600 text-white hover:bg-violet-700 transition-colors text-sm disabled:opacity-50"
+                    >
+                      {isGeneratingCover ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="h-4 w-4" />
+                      )}
+                      Apply Refinement
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
