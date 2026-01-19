@@ -22,41 +22,10 @@ export function InfiniteMomentGrid({
 }: InfiniteMomentGridProps) {
   const t = useTranslations("moments");
   const [moments, setMoments] = useState<MomentWithProfile[]>(initialMoments);
-  const [likeStatuses, setLikeStatuses] = useState<Record<string, { liked: boolean; count: number }>>({});
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isLoading, setIsLoading] = useState(false);
   const [offset, setOffset] = useState(initialMoments.length);
   const loaderRef = useRef<HTMLDivElement>(null);
-
-  // Fetch like statuses for a batch of moment IDs
-  const fetchLikeStatuses = useCallback(async (momentIds: string[]) => {
-    if (momentIds.length === 0) return;
-
-    const supabase = createClient();
-    const { data, error } = await supabase.rpc("get_moment_like_counts", {
-      p_moment_ids: momentIds,
-    });
-
-    if (error) {
-      console.error("Failed to fetch like statuses:", error);
-      return;
-    }
-
-    if (data) {
-      const newStatuses: Record<string, { liked: boolean; count: number }> = {};
-      (data as { moment_id: string; liked: boolean; count: number }[]).forEach((item) => {
-        newStatuses[item.moment_id] = { liked: item.liked, count: item.count };
-      });
-      setLikeStatuses((prev) => ({ ...prev, ...newStatuses }));
-    }
-  }, []);
-
-  // Fetch likes for initial moments on mount
-  useEffect(() => {
-    if (initialMoments.length > 0) {
-      fetchLikeStatuses(initialMoments.map((m) => m.id));
-    }
-  }, [initialMoments, fetchLikeStatuses]);
 
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -82,15 +51,10 @@ export function InfiniteMomentGrid({
       setHasMore(false);
     }
 
-    // Fetch like statuses for new moments
-    if (newMoments.length > 0) {
-      fetchLikeStatuses(newMoments.map((m) => m.id));
-    }
-
     setMoments((prev) => [...prev, ...newMoments]);
     setOffset((prev) => prev + newMoments.length);
     setIsLoading(false);
-  }, [eventId, offset, isLoading, hasMore, fetchLikeStatuses]);
+  }, [eventId, offset, isLoading, hasMore]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -127,7 +91,6 @@ export function InfiniteMomentGrid({
           <MomentCard
             key={moment.id}
             moment={moment}
-            likeStatus={likeStatuses[moment.id]}
           />
         ))}
       </div>

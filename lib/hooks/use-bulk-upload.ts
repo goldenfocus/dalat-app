@@ -494,6 +494,7 @@ export function useBulkUpload(eventId: string, userId: string) {
       const { data, error } = await supabaseRef.current.rpc("create_moments_batch", {
         p_event_id: state.eventId,
         p_moments: batchData,
+        p_user_id: state.userId, // Support God Mode: attribute to effective user
       });
 
       if (error) throw error;

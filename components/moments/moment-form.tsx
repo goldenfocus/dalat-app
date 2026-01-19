@@ -3,14 +3,16 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Camera, X, Loader2, Send, Plus } from "lucide-react";
+import { Camera, X, Loader2, Send, Plus, AlertCircle, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   validateMediaFile,
   ALL_ALLOWED_TYPES,
+  needsConversion,
 } from "@/lib/media-utils";
+import { convertIfNeeded } from "@/lib/media-conversion";
 import { triggerHaptic } from "@/lib/haptics";
 import { triggerTranslation } from "@/lib/translations-client";
 
@@ -26,7 +28,7 @@ interface UploadItem {
   file: File;
   previewUrl: string;
   isVideo: boolean;
-  status: "uploading" | "uploaded" | "error";
+  status: "converting" | "uploading" | "uploaded" | "error";
   mediaUrl?: string;
   error?: string;
 }
@@ -44,16 +46,59 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
   const uploadFile = async (file: File, itemId: string) => {
     try {
+      let fileToUpload = file;
+
+      // Convert if needed (HEIC → JPEG, MOV → MP4)
+      if (needsConversion(file)) {
+        setUploads(prev => prev.map(item =>
+          item.id === itemId
+            ? { ...item, status: "converting" as const }
+            : item
+        ));
+
+        try {
+          fileToUpload = await convertIfNeeded(file);
+          // Update preview with converted file
+          const newPreviewUrl = URL.createObjectURL(fileToUpload);
+          setUploads(prev => prev.map(item => {
+            if (item.id === itemId) {
+              URL.revokeObjectURL(item.previewUrl);
+              return {
+                ...item,
+                previewUrl: newPreviewUrl,
+                isVideo: fileToUpload.type.startsWith("video/"),
+                status: "uploading" as const,
+              };
+            }
+            return item;
+          }));
+        } catch (err) {
+          console.error("Conversion error:", err);
+          setUploads(prev => prev.map(item =>
+            item.id === itemId
+              ? { ...item, status: "error" as const, error: err instanceof Error ? err.message : "Conversion failed" }
+              : item
+          ));
+          return;
+        }
+      }
+
+      setUploads(prev => prev.map(item =>
+        item.id === itemId && item.status !== "error"
+          ? { ...item, status: "uploading" as const }
+          : item
+      ));
+
       const supabase = createClient();
 
-      // Generate unique filename: {event_id}/{user_id}/{timestamp}_{random}.{ext}
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      // Generate unique filename (use converted file's extension)
+      const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
       const fileName = `${eventId}/${userId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
       // Upload media
       const { error: uploadError } = await supabase.storage
         .from("moments")
-        .upload(fileName, file, {
+        .upload(fileName, fileToUpload, {
           cacheControl: "3600",
           upsert: false,
         });
@@ -98,7 +143,8 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
       const itemId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const previewUrl = URL.createObjectURL(file);
-      const isVideo = file.type.startsWith("video/");
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const isVideo = file.type.startsWith("video/") || ext === "mov";
 
       newUploads.push({
         id: itemId,
@@ -181,6 +227,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           p_content_type: contentType,
           p_media_url: upload.mediaUrl,
           p_text_content: textContent,
+          p_user_id: userId, // Support God Mode: attribute to effective user
         });
 
         if (postError) {
@@ -214,7 +261,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     }
   };
 
-  const isUploading = uploads.some(u => u.status === "uploading");
+  const isUploading = uploads.some(u => u.status === "uploading" || u.status === "converting");
   const readyCount = uploads.filter(u => u.status === "uploaded" && u.mediaUrl).length;
   const canPost = readyCount > 0;
 
@@ -246,6 +293,13 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
                 )}
 
                 {/* Upload status overlay */}
+                {upload.status === "converting" && (
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1">
+                    <RefreshCw className="w-6 h-6 text-white animate-spin" />
+                    <span className="text-xs text-white/80">Converting...</span>
+                  </div>
+                )}
+
                 {upload.status === "uploading" && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <Loader2 className="w-6 h-6 text-white animate-spin" />
@@ -254,7 +308,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
                 {upload.status === "error" && (
                   <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
-                    <X className="w-6 h-6 text-white" />
+                    <AlertCircle className="w-6 h-6 text-white" />
                   </div>
                 )}
 

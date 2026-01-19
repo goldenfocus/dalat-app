@@ -5,27 +5,18 @@ import { useTranslations } from "next-intl";
 import { Camera, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { MomentCard } from "./moment-card";
-import type { MomentContentType, MomentLikeStatus, MomentWithEvent } from "@/lib/types";
+import type { MomentContentType, MomentWithEvent } from "@/lib/types";
 
 const PAGE_SIZE = 18;
 
 interface InfiniteMomentDiscoveryGridProps {
   initialMoments: MomentWithEvent[];
-  initialLikes: MomentLikeStatus[];
   initialHasMore: boolean;
   contentTypes: MomentContentType[];
 }
 
-function buildLikeMap(likes: MomentLikeStatus[]) {
-  return likes.reduce<Record<string, { liked: boolean; count: number }>>((acc, like) => {
-    acc[like.moment_id] = { liked: like.liked, count: like.count };
-    return acc;
-  }, {});
-}
-
 export function InfiniteMomentDiscoveryGrid({
   initialMoments,
-  initialLikes,
   initialHasMore,
   contentTypes,
 }: InfiniteMomentDiscoveryGridProps) {
@@ -34,9 +25,6 @@ export function InfiniteMomentDiscoveryGrid({
   const contentKeyRef = useRef(contentKey);
 
   const [moments, setMoments] = useState<MomentWithEvent[]>(initialMoments);
-  const [likeStatuses, setLikeStatuses] = useState<Record<string, { liked: boolean; count: number }>>(
-    () => buildLikeMap(initialLikes)
-  );
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isLoading, setIsLoading] = useState(false);
   const [offset, setOffset] = useState(initialMoments.length);
@@ -60,17 +48,6 @@ export function InfiniteMomentDiscoveryGrid({
 
     const newMoments = (data ?? []) as MomentWithEvent[];
     const nextHasMore = newMoments.length === PAGE_SIZE;
-
-    if (newMoments.length > 0) {
-      const { data: likes } = await supabase.rpc("get_moment_like_counts", {
-        p_moment_ids: newMoments.map((m) => m.id),
-      });
-
-      if (likes) {
-        const likeMap = buildLikeMap(likes as MomentLikeStatus[]);
-        setLikeStatuses((prev) => (replace ? likeMap : { ...prev, ...likeMap }));
-      }
-    }
 
     if (replace) {
       setMoments(newMoments);
@@ -131,7 +108,6 @@ export function InfiniteMomentDiscoveryGrid({
           <MomentCard
             key={moment.id}
             moment={moment}
-            likeStatus={likeStatuses[moment.id]}
           />
         ))}
       </div>

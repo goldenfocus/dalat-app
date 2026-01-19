@@ -8,11 +8,10 @@ import { VideoPlayer } from "./video-player";
 import { MomentEngagementBar } from "./moment-engagement-bar";
 import { EventAttributionPill } from "./event-attribution-pill";
 import { EventDetailSheet } from "./event-detail-sheet";
-import type { MomentWithEvent, MomentLikeStatus } from "@/lib/types";
+import type { MomentWithEvent } from "@/lib/types";
 
 interface MomentReelCardProps {
   moment: MomentWithEvent;
-  likeStatus: MomentLikeStatus | undefined;
   isActive: boolean;
   index: number;
 }
@@ -23,7 +22,6 @@ interface MomentReelCardProps {
  */
 export function MomentReelCard({
   moment,
-  likeStatus,
   isActive,
   index,
 }: MomentReelCardProps) {
@@ -79,8 +77,6 @@ export function MomentReelCard({
       <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20">
         <MomentEngagementBar
           momentId={moment.id}
-          liked={likeStatus?.liked ?? false}
-          likeCount={likeStatus?.count ?? 0}
           eventTitle={moment.event_title}
         />
       </div>

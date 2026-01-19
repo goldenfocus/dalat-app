@@ -43,12 +43,6 @@ async function getEvent(slug: string): Promise<Event | null> {
   return data as Event | null;
 }
 
-async function getCurrentUser() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
-
 async function isEventPhotographer(eventId: string, userId: string): Promise<boolean> {
   const supabase = await createClient();
 
@@ -71,13 +65,15 @@ export default async function ProUploadPageRoute({ params }: PageProps) {
     notFound();
   }
 
-  const user = await getCurrentUser();
+  // Use getEffectiveUser to support God Mode impersonation
+  const { user, profile, godMode } = await getEffectiveUser();
 
   // Redirect to login if not authenticated
   if (!user) {
     redirect(`/login?redirect=/events/${slug}/moments/pro-upload`);
   }
 
+  // Use real admin for permission check, but effective user for attribution
   const canUseProUpload = await isEventPhotographer(event.id, user.id);
 
   // Redirect if user is not photographer
@@ -85,12 +81,17 @@ export default async function ProUploadPageRoute({ params }: PageProps) {
     redirect(`/events/${slug}/moments/new`);
   }
 
+  // Use the effective user ID (impersonated user if God Mode active)
+  const effectiveUserId = godMode.isActive && godMode.targetUserId
+    ? godMode.targetUserId
+    : user.id;
+
   return (
     <ProUploadPage
       eventId={event.id}
       eventSlug={slug}
       eventTitle={event.title}
-      userId={user.id}
+      userId={effectiveUserId}
     />
   );
 }

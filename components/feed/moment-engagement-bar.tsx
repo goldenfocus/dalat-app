@@ -6,9 +6,9 @@ import { triggerHaptic } from "@/lib/haptics";
 
 interface MomentEngagementBarProps {
   momentId: string;
-  liked: boolean;
-  likeCount: number;
   eventTitle: string;
+  liked?: boolean;
+  likeCount?: number;
 }
 
 /**
@@ -17,9 +17,9 @@ interface MomentEngagementBarProps {
  */
 export function MomentEngagementBar({
   momentId,
-  liked,
-  likeCount,
   eventTitle,
+  liked = false,
+  likeCount = 0,
 }: MomentEngagementBarProps) {
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();

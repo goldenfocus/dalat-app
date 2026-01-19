@@ -9,7 +9,7 @@ import {
 import { generateMomentsDiscoveryMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentsDiscoverySchema } from "@/lib/structured-data";
 import type { Locale } from "@/lib/i18n/routing";
-import type { MomentLikeStatus, MomentWithEvent } from "@/lib/types";
+import type { MomentWithEvent } from "@/lib/types";
 
 const INITIAL_PAGE_SIZE = 12;
 
@@ -34,22 +34,6 @@ async function getMoments(): Promise<MomentWithEvent[]> {
   return (data ?? []) as MomentWithEvent[];
 }
 
-async function getMomentLikes(momentIds: string[]): Promise<MomentLikeStatus[]> {
-  if (momentIds.length === 0) return [];
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_moment_like_counts", {
-    p_moment_ids: momentIds,
-  });
-
-  if (error) {
-    console.error("Failed to fetch like counts:", error);
-    return [];
-  }
-
-  return (data ?? []) as MomentLikeStatus[];
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "moments" });
@@ -63,7 +47,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function MomentsDiscoveryPage({ params }: PageProps) {
   const { locale } = await params;
   const moments = await getMoments();
-  const likeStatuses = await getMomentLikes(moments.map((m) => m.id));
   const hasMore = moments.length === INITIAL_PAGE_SIZE;
   const t = await getTranslations({ locale, namespace: "moments" });
 
@@ -82,7 +65,6 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
       <div className="lg:hidden">
         <MomentsDiscoveryMobile
           initialMoments={moments}
-          initialLikes={likeStatuses}
           initialHasMore={hasMore}
         />
       </div>
@@ -92,7 +74,6 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
         <div className="flex-1 container max-w-5xl mx-auto px-4 py-8">
           <MomentsDiscoveryDesktop
             initialMoments={moments}
-            initialLikes={likeStatuses}
             initialHasMore={hasMore}
           />
         </div>

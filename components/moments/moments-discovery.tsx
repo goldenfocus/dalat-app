@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { MomentsFeed } from "@/components/feed/moments-feed";
 import { MomentsFilterBar, type MomentsFilterOption } from "./moments-filter-bar";
 import { InfiniteMomentDiscoveryGrid } from "./infinite-moment-discovery-grid";
-import type { MomentContentType, MomentLikeStatus, MomentWithEvent } from "@/lib/types";
+import type { MomentContentType, MomentWithEvent } from "@/lib/types";
 
 const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> = [
   { key: "all", contentTypes: ["photo", "video"] },
@@ -15,7 +15,6 @@ const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> =
 
 interface MomentsDiscoveryProps {
   initialMoments: MomentWithEvent[];
-  initialLikes: MomentLikeStatus[];
   initialHasMore: boolean;
 }
 
@@ -41,7 +40,6 @@ function useMomentFilters() {
 
 export function MomentsDiscoveryMobile({
   initialMoments,
-  initialLikes,
   initialHasMore,
 }: MomentsDiscoveryProps) {
   const t = useTranslations("moments");
@@ -65,7 +63,6 @@ export function MomentsDiscoveryMobile({
 
       <MomentsFeed
         initialMoments={initialMoments}
-        initialLikes={initialLikes}
         hasMore={initialHasMore}
         contentTypes={activeConfig.contentTypes}
       />
@@ -75,7 +72,6 @@ export function MomentsDiscoveryMobile({
 
 export function MomentsDiscoveryDesktop({
   initialMoments,
-  initialLikes,
   initialHasMore,
 }: MomentsDiscoveryProps) {
   const t = useTranslations("moments");
@@ -97,7 +93,6 @@ export function MomentsDiscoveryDesktop({
 
       <InfiniteMomentDiscoveryGrid
         initialMoments={initialMoments}
-        initialLikes={initialLikes}
         initialHasMore={initialHasMore}
         contentTypes={activeConfig.contentTypes}
       />

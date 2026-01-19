@@ -3,33 +3,28 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MomentReelCard } from "./moment-reel-card";
-import type { MomentContentType, MomentWithEvent, MomentLikeStatus } from "@/lib/types";
+import type { MomentContentType, MomentWithEvent } from "@/lib/types";
 
 const PAGE_SIZE = 10;
 
 interface MomentsFeedProps {
   initialMoments: MomentWithEvent[];
-  initialLikes: MomentLikeStatus[];
   hasMore: boolean;
   contentTypes?: MomentContentType[];
 }
 
 /**
  * Main feed container with vertical scroll-snap.
- * Handles infinite scroll, active index tracking, and like status management.
+ * Handles infinite scroll and active index tracking.
  */
 export function MomentsFeed({
   initialMoments,
-  initialLikes,
   hasMore: initialHasMore,
   contentTypes = ["photo", "video"],
 }: MomentsFeedProps) {
   const contentKey = contentTypes.join(",");
   const contentKeyRef = useRef(contentKey);
   const [moments, setMoments] = useState(initialMoments);
-  const [likeStatuses, setLikeStatuses] = useState<Map<string, MomentLikeStatus>>(
-    () => new Map(initialLikes.map((l) => [l.moment_id, l]))
-  );
   const [activeIndex, setActiveIndex] = useState(0);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,21 +78,6 @@ export function MomentsFeed({
     }
 
     if (newMoments.length > 0) {
-      // Fetch like statuses for new moments
-      const { data: likes } = await supabase.rpc("get_moment_like_counts", {
-        p_moment_ids: newMoments.map((m) => m.id),
-      });
-
-      if (likes) {
-        setLikeStatuses((prev) => {
-          const next = new Map(prev);
-          (likes as MomentLikeStatus[]).forEach((l) => {
-            next.set(l.moment_id, l);
-          });
-          return next;
-        });
-      }
-
       setMoments((prev) => [...prev, ...newMoments]);
     }
 
@@ -117,18 +97,6 @@ export function MomentsFeed({
     setHasMore(newMoments.length === PAGE_SIZE);
     setMoments(newMoments);
     setActiveIndex(0);
-
-    if (newMoments.length > 0) {
-      const { data: likes } = await supabase.rpc("get_moment_like_counts", {
-        p_moment_ids: newMoments.map((m) => m.id),
-      });
-      if (likes) {
-        setLikeStatuses(new Map((likes as MomentLikeStatus[]).map((l) => [l.moment_id, l])));
-      }
-    } else {
-      setLikeStatuses(new Map());
-    }
-
     setIsLoading(false);
   }, [contentTypes]);
 
@@ -181,7 +149,6 @@ export function MomentsFeed({
           <MomentReelCard
             key={moment.id}
             moment={moment}
-            likeStatus={likeStatuses.get(moment.id)}
             isActive={activeIndex === index}
             index={index}
           />

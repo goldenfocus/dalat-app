@@ -5,6 +5,7 @@ import { ArrowLeft, Camera } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { MomentForm } from "@/components/moments";
+import { getEffectiveUser } from "@/lib/god-mode";
 import type { Event, EventSettings } from "@/lib/types";
 
 interface PageProps {
@@ -52,12 +53,6 @@ async function getEventSettings(eventId: string): Promise<EventSettings | null> 
     .single();
 
   return data as EventSettings | null;
-}
-
-async function getCurrentUser() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
 }
 
 async function canUserPost(eventId: string, userId: string): Promise<boolean> {
@@ -112,13 +107,15 @@ export default async function NewMomentPage({ params }: PageProps) {
     notFound();
   }
 
-  const user = await getCurrentUser();
+  // Use getEffectiveUser to support God Mode impersonation
+  const { user, godMode } = await getEffectiveUser();
 
   // Redirect to login if not authenticated
   if (!user) {
     redirect(`/login?redirect=/events/${slug}/moments/new`);
   }
 
+  // Use real admin for permission check
   const canPost = await canUserPost(event.id, user.id);
 
   // Redirect if user can't post
@@ -128,6 +125,11 @@ export default async function NewMomentPage({ params }: PageProps) {
 
   // Check if user is event creator (photographer)
   const isPhotographer = event.created_by === user.id;
+
+  // Use the effective user ID (impersonated user if God Mode active)
+  const effectiveUserId = godMode.isActive && godMode.targetUserId
+    ? godMode.targetUserId
+    : user.id;
 
   const t = await getTranslations("moments");
   const tCommon = await getTranslations("common");
@@ -158,7 +160,7 @@ export default async function NewMomentPage({ params }: PageProps) {
         <MomentForm
           eventId={event.id}
           eventSlug={slug}
-          userId={user.id}
+          userId={effectiveUserId}
         />
 
         {/* Pro Upload Link - Only for photographers */}
