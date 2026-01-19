@@ -236,3 +236,54 @@ export const getCachedEventCounts = unstable_cache(
     tags: [CACHE_TAGS.events],
   }
 );
+
+/**
+ * Cached batch event counts for multiple events.
+ * More efficient than individual calls for list views.
+ */
+export const getCachedEventCountsBatch = unstable_cache(
+  async (eventIds: string[]): Promise<Record<string, EventCounts>> => {
+    if (eventIds.length === 0) return {};
+
+    const supabase = await createClient();
+
+    const { data: rsvps, error } = await supabase
+      .from("rsvps")
+      .select("event_id, status, plus_ones")
+      .in("event_id", eventIds);
+
+    if (error) {
+      console.error("Error fetching batch event counts:", error);
+      return {};
+    }
+
+    const counts: Record<string, EventCounts> = {};
+
+    for (const eventId of eventIds) {
+      const eventRsvps = rsvps?.filter((r) => r.event_id === eventId) || [];
+      const goingRsvps = eventRsvps.filter((r) => r.status === "going");
+      const waitlistRsvps = eventRsvps.filter((r) => r.status === "waitlist");
+      const interestedRsvps = eventRsvps.filter(
+        (r) => r.status === "interested"
+      );
+
+      counts[eventId] = {
+        event_id: eventId,
+        going_count: goingRsvps.length,
+        waitlist_count: waitlistRsvps.length,
+        going_spots: goingRsvps.reduce(
+          (sum, r) => sum + 1 + (r.plus_ones || 0),
+          0
+        ),
+        interested_count: interestedRsvps.length,
+      };
+    }
+
+    return counts;
+  },
+  ["event-counts-batch"],
+  {
+    revalidate: 30, // 30 seconds
+    tags: [CACHE_TAGS.events],
+  }
+);

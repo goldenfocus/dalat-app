@@ -49,8 +49,9 @@ export function ImmersiveImage({ src, alt, children, priority = false }: Immersi
         src={src}
         alt={alt}
         fill
-        sizes="100vw"
+        sizes="(max-width: 768px) 100vw, 50vw"
         priority={priority}
+        fetchPriority={priority ? "high" : "auto"}
         onLoad={handleLoad}
         className={`z-10 ${useObjectCover ? "object-cover" : "object-contain"}`}
       />
