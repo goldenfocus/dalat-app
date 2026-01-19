@@ -2,9 +2,27 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import OpenAI from "openai";
 
+// Whisper transcription can take 30-60s for longer audio
+export const maxDuration = 60;
+
+// Check env var at module load time
+const OPENAI_KEY = process.env.OPENAI_API_KEY;
+
+// GET: Diagnostic endpoint to check if env vars are configured
+export async function GET() {
+  const envCheck = {
+    OPENAI_API_KEY: !!OPENAI_KEY,
+    keyLength: OPENAI_KEY?.length ?? 0,
+    keyPrefix: OPENAI_KEY?.substring(0, 7) ?? "missing",
+    timestamp: new Date().toISOString(),
+  };
+
+  return NextResponse.json(envCheck);
+}
+
 export async function POST(request: Request) {
   try {
-    // Verify user is admin
+    // Verify user has blog permission
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -36,10 +54,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Audio URL is required" }, { status: 400 });
     }
 
+    // Check API key before fetching audio (fail fast)
+    if (!OPENAI_KEY) {
+      console.error("[blog/transcribe] OPENAI_API_KEY not configured at module load");
+      return NextResponse.json({
+        error: "Transcription service not configured",
+        debug: {
+          envVarExists: false,
+          hint: "OPENAI_API_KEY environment variable is missing"
+        }
+      }, { status: 503 });
+    }
+
     // Fetch the audio file
     const audioResponse = await fetch(audioUrl);
     if (!audioResponse.ok) {
-      return NextResponse.json({ error: "Failed to fetch audio file" }, { status: 400 });
+      return NextResponse.json({
+        error: "Failed to fetch audio file",
+        status: audioResponse.status
+      }, { status: 400 });
     }
 
     const audioBlob = await audioResponse.blob();
@@ -48,19 +81,10 @@ export async function POST(request: Request) {
     const audioFile = new File([audioBlob], "audio.webm", { type: "audio/webm" });
 
     // Transcribe with Whisper
-    const apiKey = process.env.OPENAI_API_KEY;
-    console.log("[blog/transcribe] OPENAI_API_KEY exists:", !!apiKey, "length:", apiKey?.length);
-    if (!apiKey) {
-      // Log available env vars (keys only) to debug
-      const envKeys = Object.keys(process.env).filter(k => k.includes('OPENAI') || k.includes('API'));
-      console.error("[blog/transcribe] OPENAI_API_KEY not found. Related env vars:", envKeys);
-      return NextResponse.json({ error: "OpenAI API key not configured" }, { status: 500 });
-    }
-    const openai = new OpenAI({ apiKey });
+    const openai = new OpenAI({ apiKey: OPENAI_KEY });
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile,
       model: "whisper-1",
-      language: "en", // Can be changed based on user preference
     });
 
     return NextResponse.json({ transcript: transcription.text });
