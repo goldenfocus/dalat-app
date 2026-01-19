@@ -51,7 +51,7 @@ export function EventMediaDisplay({
           src={src}
           alt={alt}
           fill
-          sizes="(max-width: 768px) 100vw, 80vw"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 960px"
           className="object-contain md:object-cover transition-transform group-hover:scale-[1.02]"
           priority={priority}
         />
