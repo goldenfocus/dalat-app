@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
-import { TagList } from "@/components/events/tag-badge";
+import { IconTagList } from "@/components/events/tag-badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
@@ -93,10 +93,10 @@ export function EventCard({ event, counts, seriesRrule }: EventCardProps) {
             {event.title}
           </h3>
 
-          {/* AI Tags */}
+          {/* AI Tags - icon only for clean look */}
           {event.ai_tags && event.ai_tags.length > 0 && (
             <div className="mb-2">
-              <TagList tags={event.ai_tags} maxDisplay={3} />
+              <IconTagList tags={event.ai_tags} maxDisplay={4} />
             </div>
           )}
 

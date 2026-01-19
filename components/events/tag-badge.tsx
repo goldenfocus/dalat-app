@@ -1,6 +1,23 @@
 "use client";
 
-import { TAG_CONFIG, type EventTag } from "@/lib/constants/event-tags";
+import { TAG_CONFIG, type EventTag, type TagIconName } from "@/lib/constants/event-tags";
+import {
+  Music, Flower2, Brain, Dumbbell, Footprints, Palette,
+  Camera, ChefHat, Wrench, GraduationCap, Compass, Mountain,
+  Trophy, Users, Handshake, PartyPopper, Sparkles, UtensilsCrossed,
+  Coffee, Store, Wine, Tent, Mic2, Frame, Theater, Film,
+  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake,
+  type LucideIcon
+} from "lucide-react";
+
+// Map icon names to actual components
+const ICON_MAP: Record<TagIconName, LucideIcon> = {
+  Music, Flower2, Brain, Dumbbell, Footprints, Palette,
+  Camera, ChefHat, Wrench, GraduationCap, Compass, Mountain,
+  Trophy, Users, Handshake, PartyPopper, Sparkles, UtensilsCrossed,
+  Coffee, Store, Wine, Tent, Mic2, Frame, Theater, Film,
+  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake,
+};
 
 interface TagBadgeProps {
   tag: EventTag;
@@ -63,6 +80,38 @@ export function TagList({ tags, maxDisplay = 3, size = "sm", onTagClick }: TagLi
         <span className="text-[10px] text-muted-foreground self-center">
           +{remainingCount}
         </span>
+      )}
+    </div>
+  );
+}
+
+// Icon-only tag display for minimal UI
+interface IconTagListProps {
+  tags: string[];
+  maxDisplay?: number;
+}
+
+export function IconTagList({ tags, maxDisplay = 4 }: IconTagListProps) {
+  const validTags = tags.filter((t): t is EventTag => t in TAG_CONFIG);
+
+  if (validTags.length === 0) return null;
+
+  const displayTags = validTags.slice(0, maxDisplay);
+  const remainingCount = validTags.length - maxDisplay;
+
+  return (
+    <div className="flex items-center gap-2 text-muted-foreground">
+      {displayTags.map((tag) => {
+        const config = TAG_CONFIG[tag];
+        const IconComponent = ICON_MAP[config.icon];
+        return (
+          <span key={tag} title={config.label}>
+            <IconComponent className="w-3.5 h-3.5" />
+          </span>
+        );
+      })}
+      {remainingCount > 0 && (
+        <span className="text-[10px]">+{remainingCount}</span>
       )}
     </div>
   );
