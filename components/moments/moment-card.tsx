@@ -8,14 +8,17 @@ import type { MomentWithProfile } from "@/lib/types";
 
 interface MomentCardProps {
   moment: MomentWithProfile;
+  /** Navigation origin context: "moments" for discovery, "event" for event-specific */
+  from?: "moments" | "event";
 }
 
-export function MomentCard({ moment }: MomentCardProps) {
+export function MomentCard({ moment, from }: MomentCardProps) {
   const isVideo = isVideoUrl(moment.media_url);
+  const href = from ? `/moments/${moment.id}?from=${from}` : `/moments/${moment.id}`;
 
   return (
     <Link
-      href={`/moments/${moment.id}`}
+      href={href}
       className="block touch-manipulation"
       onClick={() => triggerHaptic("selection")}
     >

@@ -91,6 +91,7 @@ export function InfiniteMomentGrid({
           <MomentCard
             key={moment.id}
             moment={moment}
+            from="event"
           />
         ))}
       </div>

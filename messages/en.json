@@ -695,6 +695,10 @@
     "moments": "Moments",
     "discoverySubtitle": "Đà Lạt's visual archive from recent events",
     "discoveryDescription": "Explore photos and videos shared by the community at Đà Lạt events.",
+    "discoveryMode": "Discovery",
+    "differentEvent": "From a different event",
+    "prevEvent": "Prev event",
+    "nextEvent": "Next event",
     "filters": {
       "all": "All",
       "photos": "Photos",

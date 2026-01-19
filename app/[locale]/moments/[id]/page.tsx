@@ -36,6 +36,7 @@ const dateFnsLocales: Record<Locale, typeof enUS> = {
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }
 
 type MomentWithDetails = Moment & {
@@ -61,9 +62,12 @@ async function getMoment(id: string): Promise<MomentWithDetails | null> {
 interface AdjacentMoments {
   prevId: string | null;
   nextId: string | null;
+  prevEventId: string | null;
+  nextEventId: string | null;
 }
 
-async function getAdjacentMoments(
+// Get adjacent moments within the same event (used when navigating from event page)
+async function getEventAdjacentMoments(
   eventId: string,
   currentCreatedAt: string,
   currentId: string
@@ -126,7 +130,33 @@ async function getAdjacentMoments(
     nextId = firstMoment?.id || null;
   }
 
-  return { prevId, nextId };
+  return { prevId, nextId, prevEventId: eventId, nextEventId: eventId };
+}
+
+// Get adjacent moments in the global feed (used when navigating from discovery page)
+async function getFeedAdjacentMoments(
+  currentCreatedAt: string,
+  currentId: string
+): Promise<AdjacentMoments> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_feed_adjacent_moments", {
+    p_current_id: currentId,
+    p_current_created_at: currentCreatedAt,
+    p_content_types: ["photo", "video"],
+  });
+
+  if (error || !data || data.length === 0) {
+    return { prevId: null, nextId: null, prevEventId: null, nextEventId: null };
+  }
+
+  const result = data[0];
+  return {
+    prevId: result.prev_id,
+    nextId: result.next_id,
+    prevEventId: result.prev_event_id,
+    nextEventId: result.next_event_id,
+  };
 }
 
 interface MomentTranslations {
@@ -188,8 +218,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return generateMomentMetadata(moment, locale as Locale);
 }
 
-export default async function MomentPage({ params }: PageProps) {
+export default async function MomentPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { from } = await searchParams;
   const supabase = await createClient();
   const moment = await getMoment(id);
 
@@ -237,13 +268,23 @@ export default async function MomentPage({ params }: PageProps) {
     locale
   );
 
-  // Get adjacent moments for navigation
-  const { prevId, nextId } = await getAdjacentMoments(
-    moment.event_id,
-    moment.created_at,
-    moment.id
-  );
+  // Determine navigation mode based on where user came from
+  const isDiscoveryMode = from === "moments";
+
+  // Get adjacent moments for navigation (global feed or event-scoped)
+  const { prevId, nextId, prevEventId, nextEventId } = isDiscoveryMode
+    ? await getFeedAdjacentMoments(moment.created_at, moment.id)
+    : await getEventAdjacentMoments(moment.event_id, moment.created_at, moment.id);
+
   const hasNavigation = prevId || nextId;
+
+  // Check if navigating to a different event (for visual transition indicator)
+  const prevCrossesEvent = prevEventId && prevEventId !== moment.event_id;
+  const nextCrossesEvent = nextEventId && nextEventId !== moment.event_id;
+
+  // Build navigation URLs with context preservation
+  const navParam = isDiscoveryMode ? "?from=moments" : "";
+  const backUrl = isDiscoveryMode ? "/moments" : `/events/${event.slug}/moments`;
 
   const momentSchema = generateMomentSchema(moment, locale);
   const breadcrumbSchema = generateBreadcrumbSchema(
@@ -260,14 +301,20 @@ export default async function MomentPage({ params }: PageProps) {
       <JsonLd data={[momentSchema, breadcrumbSchema]} />
       {/* Header */}
       <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 max-w-4xl items-center mx-auto px-4">
+        <div className="container flex h-14 max-w-4xl items-center justify-between mx-auto px-4">
           <Link
-            href={`/events/${event.slug}/moments`}
+            href={backUrl}
             className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{tCommon("back")}</span>
           </Link>
+          {/* Discovery mode indicator */}
+          {isDiscoveryMode && (
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+              {t("discoveryMode")}
+            </span>
+          )}
         </div>
       </nav>
 
@@ -296,18 +343,24 @@ export default async function MomentPage({ params }: PageProps) {
               <>
                 {prevId && (
                   <Link
-                    href={`/moments/${prevId}`}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-70 hover:opacity-100 active:scale-95 transition-all"
+                    href={`/moments/${prevId}${navParam}`}
+                    className={`absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full text-white opacity-70 hover:opacity-100 active:scale-95 transition-all ${
+                      prevCrossesEvent ? "bg-primary/70 ring-2 ring-primary/50" : "bg-black/50"
+                    }`}
                     aria-label={tCommon("previous")}
+                    title={prevCrossesEvent ? t("differentEvent") : undefined}
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </Link>
                 )}
                 {nextId && (
                   <Link
-                    href={`/moments/${nextId}`}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white opacity-70 hover:opacity-100 active:scale-95 transition-all"
+                    href={`/moments/${nextId}${navParam}`}
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full text-white opacity-70 hover:opacity-100 active:scale-95 transition-all ${
+                      nextCrossesEvent ? "bg-primary/70 ring-2 ring-primary/50" : "bg-black/50"
+                    }`}
                     aria-label={tCommon("next")}
+                    title={nextCrossesEvent ? t("differentEvent") : undefined}
                   >
                     <ChevronRight className="w-6 h-6" />
                   </Link>
@@ -322,21 +375,25 @@ export default async function MomentPage({ params }: PageProps) {
           <div className="flex justify-between mb-6">
             {prevId ? (
               <Link
-                href={`/moments/${prevId}`}
-                className="flex items-center gap-1 text-muted-foreground hover:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
+                href={`/moments/${prevId}${navParam}`}
+                className={`flex items-center gap-1 hover:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg ${
+                  prevCrossesEvent ? "text-primary" : "text-muted-foreground"
+                }`}
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span>{tCommon("previous")}</span>
+                <span>{prevCrossesEvent ? t("prevEvent") : tCommon("previous")}</span>
               </Link>
             ) : (
               <div />
             )}
             {nextId && (
               <Link
-                href={`/moments/${nextId}`}
-                className="flex items-center gap-1 text-muted-foreground hover:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
+                href={`/moments/${nextId}${navParam}`}
+                className={`flex items-center gap-1 hover:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg ${
+                  nextCrossesEvent ? "text-primary" : "text-muted-foreground"
+                }`}
               >
-                <span>{tCommon("next")}</span>
+                <span>{nextCrossesEvent ? t("nextEvent") : tCommon("next")}</span>
                 <ChevronRight className="w-4 h-4" />
               </Link>
             )}

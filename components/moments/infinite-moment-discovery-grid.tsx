@@ -108,6 +108,7 @@ export function InfiniteMomentDiscoveryGrid({
           <MomentCard
             key={moment.id}
             moment={moment}
+            from="moments"
           />
         ))}
       </div>
