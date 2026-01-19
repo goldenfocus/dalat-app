@@ -530,6 +530,25 @@ export interface MomentLikeStatus {
   count: number;
 }
 
+// Grouped moment for profile timeline (subset of fields)
+export interface GroupedMoment {
+  id: string;
+  content_type: MomentContentType;
+  media_url: string | null;
+  text_content: string | null;
+  created_at: string;
+}
+
+// Event group with its moments for profile timeline
+export interface EventMomentsGroup {
+  event_id: string;
+  event_slug: string;
+  event_title: string;
+  event_starts_at: string;
+  event_image_url: string | null;
+  moments: GroupedMoment[];
+}
+
 // ============================================
 // Event Invitation Types
 // ============================================

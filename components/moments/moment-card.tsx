@@ -5,12 +5,20 @@ import { Link } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { Play } from "lucide-react";
-import type { MomentWithProfile } from "@/lib/types";
+import type { MomentContentType } from "@/lib/types";
+
+// Minimal moment shape needed for display
+interface MomentForCard {
+  id: string;
+  content_type: MomentContentType;
+  media_url: string | null;
+  text_content: string | null;
+}
 
 interface MomentCardProps {
-  moment: MomentWithProfile;
-  /** Navigation origin context: "moments" for discovery, "event" for event-specific */
-  from?: "moments" | "event";
+  moment: MomentForCard;
+  /** Navigation origin context: "moments" for discovery, "event" for event-specific, "profile" for profile timeline */
+  from?: "moments" | "event" | "profile";
 }
 
 export function MomentCard({ moment, from }: MomentCardProps) {

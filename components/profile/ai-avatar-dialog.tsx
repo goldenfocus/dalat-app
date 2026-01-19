@@ -1,5 +1,6 @@
 "use client";
 
+// v2: Preview flow with zoom and refinement presets
 import { useState, useCallback } from "react";
 import {
   Sparkles,
