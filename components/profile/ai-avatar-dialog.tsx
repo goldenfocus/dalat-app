@@ -97,17 +97,25 @@ export function AIAvatarDialog({
       ? `for someone named ${displayName.slice(0, 50)}`
       : "for a friendly person";
 
-    let styleContext: string;
+    // For custom prompts, use the user's description as the primary direction
     if (selectedStyle === "custom" && customPrompt.trim()) {
-      styleContext = `The avatar should depict: ${customPrompt.slice(0, 200)}`;
-    } else {
-      const styleDesc = styleDescriptions[selectedStyle] || styleDescriptions.neutral;
-      styleContext = `The avatar should depict a ${styleDesc}`;
+      return `Create a portrait avatar ${nameContext}.
+
+${customPrompt.slice(0, 300)}
+
+Technical requirements:
+- Square 1:1 aspect ratio
+- Centered composition suitable for circular avatar crop
+- Do NOT include any text or lettering
+- High quality, detailed image`;
     }
+
+    // For preset styles, use the Đà Lạt-inspired artistic style
+    const styleDesc = styleDescriptions[selectedStyle] || styleDescriptions.neutral;
 
     return `Create a beautiful, artistic avatar portrait ${nameContext}.
 
-${styleContext}
+The avatar should depict a ${styleDesc}
 
 Style: Dreamy, ethereal digital art inspired by Đà Lạt, Vietnam's misty highlands.
 Colors: Soft pastels with hints of misty purple, pine forest green, warm sunset orange, and flower pink.
