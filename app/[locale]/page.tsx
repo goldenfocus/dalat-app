@@ -238,19 +238,33 @@ async function EventsFeed({
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {events.map((event) => {
-        const translation = eventTranslations.get(event.id);
-        return (
-          <EventCard
-            key={event.id}
-            event={event}
-            counts={counts[event.id]}
-            seriesRrule={event.series_rrule ?? undefined}
-            translatedTitle={translation?.title || undefined}
-          />
-        );
-      })}
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2">
+        {events.map((event) => {
+          const translation = eventTranslations.get(event.id);
+          return (
+            <EventCard
+              key={event.id}
+              event={event}
+              counts={counts[event.id]}
+              seriesRrule={event.series_rrule ?? undefined}
+              translatedTitle={translation?.title || undefined}
+            />
+          );
+        })}
+      </div>
+
+      {/* Show archive link when viewing past events */}
+      {lifecycle === "past" && (
+        <div className="text-center py-4">
+          <Link
+            href="/events/this-month"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {t("browseArchive")} →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -281,12 +295,6 @@ export default async function Home({ params, searchParams }: PageProps) {
   const { locale } = await params;
   const search = await searchParams;
   const activeTab = parseLifecycle(search.tab);
-
-  // Permanent redirect: Past tab now lives at /events/this-month for SEO
-  if (activeTab === "past") {
-    const queryString = search.q ? `?q=${encodeURIComponent(search.q)}` : "";
-    permanentRedirect(`/${locale}/events/this-month${queryString}`);
-  }
 
   // Permanent redirect: Search queries now live at /search/[query] for SEO
   if (search.q && search.q.trim()) {

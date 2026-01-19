@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Link } from "@/lib/i18n/routing";
 import { cn } from "@/lib/utils";
 import { Calendar, Radio, History } from "lucide-react";
 
@@ -102,20 +101,6 @@ export function EventFeedTabs({
             )}
           </>
         );
-
-        // Past tab navigates to archive page instead of query param
-        if (tab.id === "past") {
-          return (
-            <Link
-              key={tab.id}
-              href="/events/this-month"
-              onClick={() => onTabChange?.("past")}
-              className={tabClassName}
-            >
-              {tabContent}
-            </Link>
-          );
-        }
 
         return (
           <button
