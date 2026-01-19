@@ -47,12 +47,14 @@ export const getCachedEventsByLifecycle = unstable_cache(
 
       // Fallback to non-deduplicated function if the new one doesn't exist
       if (error?.code === "PGRST202") {
+        console.log("[cache] Falling back to get_events_by_lifecycle for", lifecycle);
         const fallback = await supabase.rpc("get_events_by_lifecycle", {
           p_lifecycle: lifecycle,
           p_limit: 20,
         });
         data = fallback.data;
         error = fallback.error;
+        console.log("[cache] Fallback result:", data?.length ?? 0, "events");
 
         // Map to expected format with null series data
         if (data && !error) {
@@ -76,7 +78,7 @@ export const getCachedEventsByLifecycle = unstable_cache(
       return [];
     }
   },
-  ["events-by-lifecycle"],
+  ["events-by-lifecycle-v2"], // v2: added fallback for missing deduplicated RPC
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.events],
