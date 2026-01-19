@@ -50,6 +50,33 @@ For icon-only buttons, use `p-2 -ml-2` instead.
 3. Use negative margins to maintain visual alignment when adding padding
 4. Test on actual mobile devices - hover states don't help there
 
+## ISR Caching with Supabase
+
+**IMPORTANT:** When using `unstable_cache` from Next.js, always use `createStaticClient()` instead of `createClient()`.
+
+| Context | Client to Use |
+|---------|---------------|
+| Server Components (with request) | `createClient()` |
+| `unstable_cache` functions | `createStaticClient()` |
+| `generateStaticParams` | `createStaticClient()` |
+
+**Why:** `createClient()` calls `cookies()` which requires an HTTP request context. During ISR (Incremental Static Regeneration), there's no request, so it fails silently and returns empty data.
+
+```tsx
+// ❌ WRONG - will fail silently in ISR
+export const getCachedData = unstable_cache(async () => {
+  const supabase = await createClient(); // Uses cookies()
+  // ...
+});
+
+// ✅ CORRECT - works in ISR context
+export const getCachedData = unstable_cache(async () => {
+  const supabase = createStaticClient(); // No cookies needed
+  if (!supabase) return [];
+  // ...
+});
+```
+
 ## AI-Enhanced Text Input
 
 Use `AIEnhanceTextarea` for any text field where users write content that could benefit from AI polishing (descriptions, bios, posts, etc.). A sparkles button appears when there's text - clicking it sends the text to Claude for enhancement.
