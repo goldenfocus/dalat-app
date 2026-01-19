@@ -1,14 +1,14 @@
-"use client";
-
 interface EventDefaultImageProps {
   title: string;
   className?: string;
   priority?: boolean;
 }
 
+const DEFAULT_IMAGE_URL = "/images/defaults/event-default-desktop.png";
+
 /**
- * Responsive default event image component
- * Serves mobile or desktop version based on screen size
+ * Default event image component - uses a single clean image for all screen sizes.
+ * CSS object-cover handles cropping for different aspect ratios.
  */
 export function EventDefaultImage({
   title,
@@ -16,33 +16,18 @@ export function EventDefaultImage({
   priority = false
 }: EventDefaultImageProps) {
   return (
-    <picture className={className} style={{ display: "block" }}>
-      {/* Mobile version for screens < 768px */}
-      <source
-        media="(max-width: 767px)"
-        srcSet="/images/defaults/event-default-mobile.png"
-      />
-      {/* Desktop version for screens >= 768px */}
-      <source
-        media="(min-width: 768px)"
-        srcSet="/images/defaults/event-default-desktop.png"
-      />
-      {/* Fallback image - w-full h-full object-cover to fill container */}
-      <img
-        src="/images/defaults/event-default-desktop.png"
-        alt={`${title} - ĐàLạt.app default event image`}
-        className="w-full h-full object-cover"
-        loading={priority ? "eager" : "lazy"}
-      />
-    </picture>
+    <img
+      src={DEFAULT_IMAGE_URL}
+      alt={`${title} - ĐàLạt.app default event image`}
+      className={`w-full h-full object-cover ${className}`}
+      loading={priority ? "eager" : "lazy"}
+    />
   );
 }
 
 /**
- * Get the appropriate default image URL for SSR or direct usage
+ * Get the default image URL for SSR or direct usage
  */
-export function getDefaultEventImageUrl(isMobile: boolean = false): string {
-  return isMobile 
-    ? "/images/defaults/event-default-mobile.png"
-    : "/images/defaults/event-default-desktop.png";
+export function getDefaultEventImageUrl(): string {
+  return DEFAULT_IMAGE_URL;
 }
