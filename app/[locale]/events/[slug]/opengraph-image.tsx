@@ -35,6 +35,9 @@ export default async function OGImage({ params }: Props) {
         description: event.description,
         text_content: null,
         bio: null,
+        story_content: null,
+        technical_content: null,
+        meta_description: null,
       }
     );
     title = translations.title || event.title;

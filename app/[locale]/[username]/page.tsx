@@ -115,6 +115,9 @@ async function getBioTranslations(
       description: null,
       text_content: null,
       bio: originalBio,
+      story_content: null,
+      technical_content: null,
+      meta_description: null,
     }
   );
 

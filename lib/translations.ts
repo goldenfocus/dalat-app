@@ -123,6 +123,9 @@ export async function getEventWithTranslations(
       description: event.description,
       text_content: null,
       bio: null,
+      story_content: null,
+      technical_content: null,
+      meta_description: null,
     }
   );
 
@@ -186,6 +189,9 @@ export async function getMomentWithTranslations(
       description: null,
       text_content: moment.text_content,
       bio: null,
+      story_content: null,
+      technical_content: null,
+      meta_description: null,
     }
   );
 
@@ -230,4 +236,105 @@ export async function triggerTranslation(
  */
 export function isValidContentLocale(locale: string): locale is ContentLocale {
   return CONTENT_LOCALES.includes(locale as ContentLocale);
+}
+
+/**
+ * Batch fetch translations for multiple blog posts (efficient for list pages)
+ */
+export async function getBlogTranslationsBatch(
+  postIds: string[],
+  targetLocale: ContentLocale
+): Promise<Map<string, { title: string; story_content: string }>> {
+  const supabase = await createClient();
+
+  const { data: translations } = await supabase
+    .from('content_translations')
+    .select('content_id, field_name, translated_text')
+    .eq('content_type', 'blog')
+    .in('content_id', postIds)
+    .eq('target_locale', targetLocale)
+    .in('field_name', ['title', 'story_content']);
+
+  const result = new Map<string, { title: string; story_content: string }>();
+
+  if (translations) {
+    for (const t of translations) {
+      const existing = result.get(t.content_id) || { title: '', story_content: '' };
+      if (t.field_name === 'title') {
+        existing.title = t.translated_text;
+      } else if (t.field_name === 'story_content') {
+        existing.story_content = t.translated_text;
+      }
+      result.set(t.content_id, existing);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Blog post with translations
+ */
+export interface TranslatedBlogFields {
+  translated_title: string;
+  translated_story_content: string;
+  translated_technical_content: string;
+  translated_meta_description: string | null;
+  is_translated: boolean;
+}
+
+/**
+ * Fetch translations for a blog post
+ */
+export async function getBlogTranslations(
+  blogPostId: string,
+  targetLocale: ContentLocale,
+  originalFields: {
+    title: string;
+    story_content: string;
+    technical_content: string;
+    meta_description: string | null;
+    source_locale?: string | null;
+  }
+): Promise<TranslatedBlogFields> {
+  const sourceLocale = originalFields.source_locale || 'en';
+
+  // If target is same as source, return original content
+  if (targetLocale === sourceLocale) {
+    return {
+      translated_title: originalFields.title,
+      translated_story_content: originalFields.story_content,
+      translated_technical_content: originalFields.technical_content,
+      translated_meta_description: originalFields.meta_description,
+      is_translated: false,
+    };
+  }
+
+  const translations = await getTranslationsWithFallback(
+    'blog',
+    blogPostId,
+    targetLocale,
+    {
+      title: originalFields.title,
+      description: null,
+      text_content: null,
+      bio: null,
+      story_content: originalFields.story_content,
+      technical_content: originalFields.technical_content,
+      meta_description: originalFields.meta_description,
+    }
+  );
+
+  const hasTranslations =
+    translations.title !== originalFields.title ||
+    translations.story_content !== originalFields.story_content ||
+    translations.technical_content !== originalFields.technical_content;
+
+  return {
+    translated_title: translations.title || originalFields.title,
+    translated_story_content: translations.story_content || originalFields.story_content,
+    translated_technical_content: translations.technical_content || originalFields.technical_content,
+    translated_meta_description: translations.meta_description,
+    is_translated: hasTranslations,
+  };
 }

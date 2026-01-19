@@ -38,10 +38,11 @@ export async function generateCoverImage(
     throw new Error("Supabase service credentials not configured");
   }
 
-  // Generate the image with Gemini 2.0
+  // Generate the image with Gemini 3 Pro Image (Nano Banana Pro)
+  // Best quality model for artistic image generation with advanced reasoning
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-exp",
+    model: "gemini-3-pro-image-preview",
     generationConfig: {
       responseModalities: ["TEXT", "IMAGE"],
     } as never, // Type workaround

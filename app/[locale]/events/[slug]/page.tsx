@@ -66,6 +66,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           description: event.description,
           text_content: null,
           bio: null,
+          story_content: null,
+          technical_content: null,
+          meta_description: null,
         }
       )
     : { title: event.title, description: event.description };
@@ -442,6 +445,9 @@ async function getEventTranslations(
       description: originalDescription,
       text_content: null,
       bio: null,
+      story_content: null,
+      technical_content: null,
+      meta_description: null,
     }
   );
 

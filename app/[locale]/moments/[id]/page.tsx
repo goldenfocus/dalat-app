@@ -190,6 +190,9 @@ async function getMomentTranslations(
       description: null,
       text_content: originalTextContent,
       bio: null,
+      story_content: null,
+      technical_content: null,
+      meta_description: null,
     }
   );
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, Eye, ImageIcon, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { triggerTranslation } from "@/lib/translations-client";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import type { BlogCategory, BlogPostStatus, BlogPostSource } from "@/lib/types/blog";
 import Image from "next/image";
@@ -62,11 +63,46 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
   const [ctaText, setCtaText] = useState(post.suggested_cta_text || "");
   const [areasChanged, setAreasChanged] = useState(post.areas_changed?.join(", ") || "");
 
+  const generateCover = async (): Promise<string | null> => {
+    if (!storyContent.trim()) return null;
+
+    const res = await fetch("/api/blog/generate-cover", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title,
+        content: storyContent.slice(0, 500),
+        category: categories.find((c) => c.id === categoryId)?.slug || "changelog",
+      }),
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data.imageUrl;
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
 
     try {
+      let finalCoverUrl = coverImageUrl;
+
+      // Auto-generate cover if publishing without one
+      const isPublishing = status === "published" || status === "experimental";
+      if (isPublishing && !coverImageUrl && storyContent.trim()) {
+        setIsGeneratingCover(true);
+        try {
+          const generatedUrl = await generateCover();
+          if (generatedUrl) {
+            finalCoverUrl = generatedUrl;
+            setCoverImageUrl(generatedUrl);
+          }
+        } finally {
+          setIsGeneratingCover(false);
+        }
+      }
+
       const supabase = createClient();
       const { error: updateError } = await supabase.rpc("admin_update_blog_post", {
         p_post_id: post.id,
@@ -74,7 +110,7 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
         p_slug: slug,
         p_story_content: storyContent,
         p_technical_content: technicalContent,
-        p_cover_image_url: coverImageUrl || null,
+        p_cover_image_url: finalCoverUrl || null,
         p_status: status,
         p_category_id: categoryId || null,
         p_meta_description: metaDescription || null,
@@ -85,6 +121,14 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
       });
 
       if (updateError) throw updateError;
+
+      // Re-trigger translation when content changes (fire-and-forget)
+      triggerTranslation("blog", post.id, [
+        { field_name: "title", text: title },
+        { field_name: "story_content", text: storyContent },
+        { field_name: "technical_content", text: technicalContent },
+        { field_name: "meta_description", text: metaDescription },
+      ]);
 
       router.refresh();
       router.push("/admin/blog");
@@ -106,20 +150,8 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
     setError(null);
 
     try {
-      const res = await fetch("/api/blog/generate-cover", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          content: storyContent.slice(0, 500),
-          category: categories.find((c) => c.id === categoryId)?.slug || "changelog",
-        }),
-      });
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      setCoverImageUrl(data.imageUrl);
+      const imageUrl = await generateCover();
+      if (imageUrl) setCoverImageUrl(imageUrl);
     } catch (err) {
       console.error("Failed to generate cover:", err);
       setError(err instanceof Error ? err.message : "Failed to generate cover");
