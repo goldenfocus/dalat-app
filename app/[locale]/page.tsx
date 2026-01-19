@@ -13,9 +13,8 @@ import { EventCard } from "@/components/events/event-card";
 import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
-import { MomentsSpotlight } from "@/components/home/moments-spotlight";
 import { Button } from "@/components/ui/button";
-import type { Event, EventCounts, EventWithSeriesData, MomentWithEvent, ContentLocale } from "@/lib/types";
+import type { Event, EventCounts, EventWithSeriesData, ContentLocale } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
 import { getEventTranslationsBatch } from "@/lib/translations";
 
@@ -191,32 +190,6 @@ async function getLifecycleCounts() {
   };
 }
 
-async function getTrendingMoments(): Promise<MomentWithEvent[]> {
-  const supabase = await createClient();
-
-  // Try new trending RPC, fallback to feed_moments if not available
-  let { data, error } = await supabase.rpc("get_trending_moments", {
-    p_limit: 10,
-  });
-
-  // Fallback to get_feed_moments if trending RPC doesn't exist yet
-  if (error?.code === "PGRST202") {
-    const fallback = await supabase.rpc("get_feed_moments", {
-      p_limit: 10,
-      p_offset: 0,
-      p_content_types: ["photo", "video"],
-    });
-    data = fallback.data;
-    error = fallback.error;
-  }
-
-  if (error) {
-    console.error("Error fetching trending moments:", error);
-    return [];
-  }
-
-  return (data ?? []) as MomentWithEvent[];
-}
 
 async function EventsFeed({
   lifecycle,
@@ -329,11 +302,9 @@ export default async function Home({ params, searchParams }: PageProps) {
 
   const searchQuery = search.q ?? "";
   const tagFilter = search.tag;
-  const [t, tNav, lifecycleCounts, trendingMoments] = await Promise.all([
+  const [t, lifecycleCounts] = await Promise.all([
     getTranslations("home"),
-    getTranslations("nav"),
     getLifecycleCounts(),
-    getTrendingMoments(),
   ]);
 
   return (
@@ -382,14 +353,6 @@ export default async function Home({ params, searchParams }: PageProps) {
                 <EventSearchBar className="w-64 flex-shrink-0" />
               </Suspense>
             </div>
-          </div>
-
-          <div className="mb-8">
-            <MomentsSpotlight
-              title={t("trendingMoments")}
-              viewAllLabel={t("viewAllMoments")}
-              moments={trendingMoments}
-            />
           </div>
 
           {/* Tabs */}
