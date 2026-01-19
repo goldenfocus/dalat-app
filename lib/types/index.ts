@@ -97,6 +97,7 @@ export interface Profile {
   locale: Locale;
   role: UserRole;
   is_ghost?: boolean;
+  can_blog?: boolean;
   created_at: string;
   updated_at: string;
 }

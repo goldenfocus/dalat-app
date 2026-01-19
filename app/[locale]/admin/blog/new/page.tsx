@@ -40,8 +40,13 @@ export default async function NewBlogPostPage() {
 
   const profile = await getProfile(user.id);
 
-  // Only admins/superadmins can access blog admin
-  if (!profile || (profile.role !== "admin" && profile.role !== "superadmin")) {
+  // Check blog permission: admin/superadmin role OR can_blog flag
+  const canBlog =
+    profile?.role === "admin" ||
+    profile?.role === "superadmin" ||
+    profile?.can_blog === true;
+
+  if (!profile || !canBlog) {
     redirect("/");
   }
 

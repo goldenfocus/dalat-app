@@ -20,12 +20,18 @@ export async function POST(request: Request) {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, can_blog")
       .eq("id", user.id)
       .single();
 
-    if (!profile || !["admin", "superadmin"].includes(profile.role)) {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    // Check blog permission: admin/superadmin role OR can_blog flag
+    const canBlog =
+      profile?.role === "admin" ||
+      profile?.role === "superadmin" ||
+      profile?.can_blog === true;
+
+    if (!profile || !canBlog) {
+      return NextResponse.json({ error: "Blog access required" }, { status: 403 });
     }
 
     // Parse input

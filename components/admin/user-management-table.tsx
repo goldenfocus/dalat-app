@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, Shield, User, Loader2, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Search, Shield, User, Loader2, CheckCircle, XCircle, Eye, PenLine } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import type { Profile, UserRole } from "@/lib/types";
 import { ROLE_HIERARCHY } from "@/lib/types";
 
@@ -76,6 +77,7 @@ export function UserManagementTable({
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [updatingBlog, setUpdatingBlog] = useState<string | null>(null);
   const [status, setStatus] = useState<UpdateStatus | null>(null);
   const [impersonating, setImpersonating] = useState<string | null>(null);
 
@@ -158,6 +160,40 @@ export function UserManagementTable({
     }, 3000);
   };
 
+  const handleBlogToggle = async (userId: string, canBlog: boolean) => {
+    setUpdatingBlog(userId);
+    setStatus(null);
+    const supabase = createClient();
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ can_blog: canBlog })
+      .eq("id", userId);
+
+    if (error) {
+      console.error("Failed to update blog permission:", error);
+      setStatus({
+        type: "error",
+        message: "Failed to update blog permission",
+        userId,
+      });
+      setUpdatingBlog(null);
+      return;
+    }
+
+    setStatus({
+      type: "success",
+      message: canBlog ? "Blog access granted" : "Blog access removed",
+      userId,
+    });
+    setUpdatingBlog(null);
+    router.refresh();
+
+    setTimeout(() => {
+      setStatus((prev) => (prev?.userId === userId ? null : prev));
+    }, 3000);
+  };
+
   return (
     <div className="space-y-4">
       {/* Search */}
@@ -195,6 +231,9 @@ export function UserManagementTable({
             <tr>
               <th className="text-left p-3 font-medium text-sm">User</th>
               <th className="text-left p-3 font-medium text-sm">Role</th>
+              <th className="text-center p-3 font-medium text-sm hidden sm:table-cell">
+                Blog
+              </th>
               <th className="text-left p-3 font-medium text-sm hidden md:table-cell">
                 Logins
               </th>
@@ -293,6 +332,24 @@ export function UserManagementTable({
                         )}
                         {status.message}
                       </div>
+                    )}
+                  </div>
+                </td>
+                <td className="p-3 hidden sm:table-cell">
+                  <div className="flex justify-center">
+                    {/* Superadmin/admin always have blog access via role */}
+                    {user.role === "superadmin" || user.role === "admin" ? (
+                      <span title="Has blog access via admin role">
+                        <PenLine className="w-4 h-4 text-muted-foreground" />
+                      </span>
+                    ) : updatingBlog === user.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Switch
+                        checked={user.can_blog ?? false}
+                        onCheckedChange={(checked) => handleBlogToggle(user.id, checked)}
+                        aria-label={`Toggle blog access for ${user.display_name || user.username || "user"}`}
+                      />
                     )}
                   </div>
                 </td>
