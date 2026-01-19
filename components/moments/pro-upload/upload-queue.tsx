@@ -24,13 +24,14 @@ export function UploadQueue({ files, onRemove, onRetry }: UploadQueueProps) {
   const sortedFiles = useMemo(() => {
     const statusPriority: Record<FileUploadState["status"], number> = {
       error: 0,
-      uploading: 1,
-      validating: 2,
-      retrying: 3,
-      saving: 4,
-      uploaded: 5,
-      queued: 6,
-      complete: 7,
+      converting: 1,
+      uploading: 2,
+      validating: 3,
+      retrying: 4,
+      saving: 5,
+      uploaded: 6,
+      queued: 7,
+      complete: 8,
     };
 
     return Array.from(files.values()).sort((a, b) => {

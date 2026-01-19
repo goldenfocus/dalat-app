@@ -5,6 +5,7 @@
 export type FileUploadStatus =
   | 'queued'      // In queue, not yet started
   | 'validating'  // Checking file type/size
+  | 'converting'  // Converting HEIC/MOV to web format
   | 'uploading'   // Uploading to Supabase storage
   | 'uploaded'    // In storage, pending database insert
   | 'saving'      // Being saved to database in batch
@@ -34,6 +35,7 @@ export interface FileUploadState {
 export interface BulkUploadStats {
   total: number;
   queued: number;
+  converting: number;
   uploading: number;
   uploaded: number;
   saving: number;

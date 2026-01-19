@@ -32,6 +32,7 @@ export function UploadQueueItem({ file, onRemove, onRetry }: UploadQueueItemProp
   const statusIcon = {
     queued: <Clock className="w-4 h-4 text-muted-foreground" />,
     validating: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
+    converting: <Loader2 className="w-4 h-4 text-amber-500 animate-spin" />,
     uploading: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
     uploaded: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
     saving: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
@@ -43,6 +44,7 @@ export function UploadQueueItem({ file, onRemove, onRetry }: UploadQueueItemProp
   const statusText = {
     queued: t("statusQueued"),
     validating: t("statusValidating"),
+    converting: t("statusConverting"),
     uploading: t("statusUploading"),
     uploaded: t("statusUploaded"),
     saving: t("statusSaving"),
@@ -51,7 +53,7 @@ export function UploadQueueItem({ file, onRemove, onRetry }: UploadQueueItemProp
     error: file.error || t("statusError"),
   };
 
-  const isActive = ["validating", "uploading", "uploaded", "saving", "retrying"].includes(
+  const isActive = ["validating", "converting", "uploading", "uploaded", "saving", "retrying"].includes(
     file.status
   );
   const canRemove = ["queued", "error", "complete"].includes(file.status);

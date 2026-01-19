@@ -2,7 +2,12 @@
 
 import { useReducer, useCallback, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { validateMediaFile, ALLOWED_MEDIA_TYPES } from "@/lib/media-utils";
+import {
+  validateMediaFile,
+  ALLOWED_MEDIA_TYPES,
+  needsConversion,
+} from "@/lib/media-utils";
+import { convertIfNeeded } from "@/lib/media-conversion";
 import type {
   BulkUploadState,
   BulkUploadAction,
@@ -22,6 +27,7 @@ function calculateStats(files: Map<string, FileUploadState>): BulkUploadStats {
   const stats: BulkUploadStats = {
     total: files.size,
     queued: 0,
+    converting: 0,
     uploading: 0,
     uploaded: 0,
     saving: 0,
@@ -33,6 +39,9 @@ function calculateStats(files: Map<string, FileUploadState>): BulkUploadStats {
     switch (file.status) {
       case "queued":
         stats.queued++;
+        break;
+      case "converting":
+        stats.converting++;
         break;
       case "validating":
       case "uploading":
@@ -58,7 +67,12 @@ function calculateStats(files: Map<string, FileUploadState>): BulkUploadStats {
 }
 
 function getFileMediaType(file: File): FileMediaType {
-  return file.type.startsWith("video/") ? "video" : "photo";
+  // Check type or extension for video
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (file.type.startsWith("video/") || ext === "mov") {
+    return "video";
+  }
+  return "photo";
 }
 
 function bulkUploadReducer(
@@ -284,6 +298,7 @@ function bulkUploadReducer(
         stats: {
           total: 0,
           queued: 0,
+          converting: 0,
           uploading: 0,
           uploaded: 0,
           saving: 0,
@@ -309,6 +324,7 @@ export function useBulkUpload(eventId: string, userId: string) {
     stats: {
       total: 0,
       queued: 0,
+      converting: 0,
       uploading: 0,
       uploaded: 0,
       saving: 0,
@@ -370,17 +386,49 @@ export function useBulkUpload(eventId: string, userId: string) {
       return;
     }
 
+    let fileToUpload = file;
+
+    // Convert if needed (HEIC → JPEG, MOV → MP4)
+    if (needsConversion(file)) {
+      dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting" } });
+      try {
+        fileToUpload = await convertIfNeeded(file);
+        // Update preview with converted file
+        const newPreviewUrl = URL.createObjectURL(fileToUpload);
+        dispatch({
+          type: "UPDATE_FILE",
+          id,
+          updates: {
+            previewUrl: newPreviewUrl,
+            type: getFileMediaType(fileToUpload),
+          },
+        });
+      } catch (err) {
+        dispatch({
+          type: "UPDATE_FILE",
+          id,
+          updates: {
+            status: "error",
+            error: err instanceof Error ? err.message : "Conversion failed",
+          },
+        });
+        activeUploadsRef.current.delete(id);
+        scheduleNextProcess();
+        return;
+      }
+    }
+
     dispatch({ type: "UPDATE_FILE", id, updates: { status: "uploading" } });
 
     try {
-      // Generate unique filename
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      // Generate unique filename (use converted file's extension)
+      const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
       const fileName = `${state.eventId}/${state.userId}/${Date.now()}_${id.slice(0, 8)}.${ext}`;
 
       // Upload to Supabase storage
       const { error: uploadError } = await supabaseRef.current.storage
         .from("moments")
-        .upload(fileName, file, {
+        .upload(fileName, fileToUpload, {
           cacheControl: "3600",
           upsert: false,
         });
@@ -504,12 +552,21 @@ export function useBulkUpload(eventId: string, userId: string) {
   return {
     state,
     addFiles: (files: File[]) => {
-      // Filter to only allowed types
-      const validFiles = files.filter((f) =>
-        [...ALLOWED_MEDIA_TYPES.image, ...ALLOWED_MEDIA_TYPES.gif, ...ALLOWED_MEDIA_TYPES.video].includes(
-          f.type as never
-        )
-      );
+      // Filter to only allowed types (including convertible formats)
+      const allAllowedTypes = [
+        ...ALLOWED_MEDIA_TYPES.image,
+        ...ALLOWED_MEDIA_TYPES.gif,
+        ...ALLOWED_MEDIA_TYPES.video,
+        ...ALLOWED_MEDIA_TYPES.convertible.image,
+        ...ALLOWED_MEDIA_TYPES.convertible.video,
+      ];
+      const validFiles = files.filter((f) => {
+        // Check MIME type
+        if (allAllowedTypes.includes(f.type as never)) return true;
+        // Also check extension as fallback
+        const ext = f.name.split(".").pop()?.toLowerCase();
+        return ext === "heic" || ext === "heif" || ext === "mov";
+      });
       if (validFiles.length > 0) {
         dispatch({ type: "ADD_FILES", files: validFiles });
       }

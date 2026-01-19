@@ -1,0 +1,147 @@
+// Client-side media conversion utilities
+import heic2any from "heic2any";
+
+/**
+ * Convert HEIC/HEIF image to JPEG
+ * Runs entirely client-side using heic2any library
+ */
+export async function convertHeicToJpeg(file: File): Promise<File> {
+  const blob = await heic2any({
+    blob: file,
+    toType: "image/jpeg",
+    quality: 0.9,
+  });
+
+  // heic2any can return a single blob or array of blobs (for multi-image HEIC)
+  const resultBlob = Array.isArray(blob) ? blob[0] : blob;
+
+  // Create new file with .jpg extension
+  const newName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
+  return new File([resultBlob], newName, { type: "image/jpeg" });
+}
+
+/**
+ * Convert MOV video to MP4 using CloudConvert API
+ * Uploads to CloudConvert, converts, and returns the converted file
+ */
+export async function convertMovToMp4(
+  file: File,
+  onProgress?: (status: string) => void
+): Promise<File> {
+  onProgress?.("Preparing conversion...");
+
+  // Step 1: Create conversion job
+  const createResponse = await fetch("/api/convert-video", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ filename: file.name, filesize: file.size }),
+  });
+
+  if (!createResponse.ok) {
+    const error = await createResponse.json();
+    throw new Error(error.error || "Failed to create conversion job");
+  }
+
+  const { jobId, uploadUrl, uploadFields } = await createResponse.json();
+
+  // Step 2: Upload file to CloudConvert
+  onProgress?.("Uploading video...");
+  const formData = new FormData();
+  // CloudConvert requires fields to be added before the file
+  if (uploadFields) {
+    Object.entries(uploadFields).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+  }
+  formData.append("file", file);
+
+  const uploadResponse = await fetch(uploadUrl, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error("Failed to upload video for conversion");
+  }
+
+  // Step 3: Poll for completion
+  onProgress?.("Converting to MP4...");
+  const result = await pollConversionJob(jobId, onProgress);
+
+  // Step 4: Download converted file
+  onProgress?.("Downloading converted video...");
+  const mp4Response = await fetch(result.downloadUrl);
+  if (!mp4Response.ok) {
+    throw new Error("Failed to download converted video");
+  }
+
+  const mp4Blob = await mp4Response.blob();
+  const newName = file.name.replace(/\.mov$/i, ".mp4");
+  return new File([mp4Blob], newName, { type: "video/mp4" });
+}
+
+/**
+ * Poll CloudConvert job until completion
+ */
+async function pollConversionJob(
+  jobId: string,
+  onProgress?: (status: string) => void
+): Promise<{ downloadUrl: string }> {
+  const maxAttempts = 120; // 10 minutes max (5s intervals)
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
+    const response = await fetch(`/api/convert-video?jobId=${jobId}`);
+    if (!response.ok) {
+      throw new Error("Failed to check conversion status");
+    }
+
+    const data = await response.json();
+
+    if (data.status === "finished") {
+      return { downloadUrl: data.downloadUrl };
+    }
+
+    if (data.status === "error") {
+      throw new Error(data.error || "Conversion failed");
+    }
+
+    // Update progress
+    if (data.progress) {
+      onProgress?.(`Converting... ${Math.round(data.progress * 100)}%`);
+    }
+
+    // Wait before next poll
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    attempts++;
+  }
+
+  throw new Error("Conversion timed out");
+}
+
+/**
+ * Convert file if needed, returns original file if no conversion required
+ */
+export async function convertIfNeeded(
+  file: File,
+  onProgress?: (status: string) => void
+): Promise<File> {
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  const isHeic =
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    ext === "heic" ||
+    ext === "heif";
+  const isMov = file.type === "video/quicktime" || ext === "mov";
+
+  if (isHeic) {
+    onProgress?.("Converting HEIC to JPEG...");
+    return convertHeicToJpeg(file);
+  }
+
+  if (isMov) {
+    return convertMovToMp4(file, onProgress);
+  }
+
+  return file;
+}

@@ -19,7 +19,9 @@ import {
   validateMediaFile,
   isVideoUrl,
   ALL_ALLOWED_TYPES,
+  needsConversion,
 } from "@/lib/media-utils";
+import { convertIfNeeded } from "@/lib/media-conversion";
 
 interface EventMediaUploadProps {
   eventId: string;
@@ -33,7 +35,7 @@ function generateDefaultPrompt(title: string): string {
   return `Create a vibrant, eye-catching event poster background for "${title || "an event"}".
 
 Style: Modern event flyer aesthetic with warm Vietnamese highland colors.
-Setting: Inspired by Da Lat, Vietnam - misty mountains, pine forests, French colonial architecture, flower fields.
+Setting: Inspired by Đà Lạt, Vietnam - misty mountains, pine forests, French colonial architecture, flower fields.
 Mood: Atmospheric, inviting, energetic yet sophisticated.
 Important: Do NOT include any text or lettering in the image. Create only the visual background.
 Aspect ratio: 2:1 landscape orientation.`;
@@ -51,6 +53,8 @@ export function EventMediaUpload({
     isVideoUrl(currentMediaUrl)
   );
   const [isUploading, setIsUploading] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
+  const [convertStatus, setConvertStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,6 +71,7 @@ export function EventMediaUpload({
 
   const uploadMedia = async (file: File) => {
     setError(null);
+    setConvertStatus(null);
 
     const validationError = validateMediaFile(file);
     if (validationError) {
@@ -77,15 +82,44 @@ export function EventMediaUpload({
     // Create preview immediately
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
-    setPreviewIsVideo(file.type.startsWith("video/"));
+    setPreviewIsVideo(
+      file.type.startsWith("video/") || file.name.toLowerCase().endsWith(".mov")
+    );
+
+    let fileToUpload = file;
+
+    // Convert if needed (HEIC → JPEG, MOV → MP4)
+    if (needsConversion(file)) {
+      setIsConverting(true);
+      try {
+        fileToUpload = await convertIfNeeded(file, setConvertStatus);
+        // Update preview with converted file
+        URL.revokeObjectURL(objectUrl);
+        const newObjectUrl = URL.createObjectURL(fileToUpload);
+        setPreviewUrl(newObjectUrl);
+        setPreviewIsVideo(fileToUpload.type.startsWith("video/"));
+      } catch (err) {
+        console.error("Conversion error:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to convert file"
+        );
+        setPreviewUrl(currentMediaUrl);
+        setPreviewIsVideo(isVideoUrl(currentMediaUrl));
+        setIsConverting(false);
+        return;
+      } finally {
+        setIsConverting(false);
+        setConvertStatus(null);
+      }
+    }
 
     setIsUploading(true);
 
     try {
       const supabase = createClient();
 
-      // Generate unique filename
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      // Generate unique filename (use converted file's extension)
+      const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
       const fileName = `${eventId}/${Date.now()}.${ext}`;
 
       // Delete old media if exists
@@ -99,7 +133,7 @@ export function EventMediaUpload({
       // Upload new media
       const { error: uploadError } = await supabase.storage
         .from("event-media")
-        .upload(fileName, file, {
+        .upload(fileName, fileToUpload, {
           cacheControl: "3600",
           upsert: true,
         });
@@ -260,7 +294,7 @@ export function EventMediaUpload({
     }
   };
 
-  const isLoading = isUploading || isLoadingUrl || isGenerating;
+  const isLoading = isUploading || isLoadingUrl || isGenerating || isConverting;
 
   return (
     <div className="space-y-3">
@@ -328,8 +362,11 @@ export function EventMediaUpload({
 
         {/* Loading overlay */}
         {isLoading && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
             <Loader2 className="w-8 h-8 text-white animate-spin" />
+            {convertStatus && (
+              <span className="text-sm text-white">{convertStatus}</span>
+            )}
           </div>
         )}
       </div>
@@ -479,7 +516,8 @@ export function EventMediaUpload({
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <p className="text-xs text-muted-foreground">
-        JPEG, PNG, WebP, GIF (up to 15MB), or MP4/WebM video (up to 50MB)
+        JPEG, PNG, WebP, HEIC, GIF (up to 15MB), or MP4/WebM/MOV video (up to
+        50MB)
       </p>
     </div>
   );

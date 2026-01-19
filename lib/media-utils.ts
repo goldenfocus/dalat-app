@@ -42,6 +42,11 @@ export const ALLOWED_MEDIA_TYPES = {
   image: ["image/jpeg", "image/png", "image/webp"],
   gif: ["image/gif"],
   video: ["video/mp4", "video/webm"],
+  // Formats that require conversion before upload
+  convertible: {
+    image: ["image/heic", "image/heif"],
+    video: ["video/quicktime"], // MOV
+  },
 } as const;
 
 // All allowed types as a flat array (for file input accept)
@@ -49,7 +54,24 @@ export const ALL_ALLOWED_TYPES = [
   ...ALLOWED_MEDIA_TYPES.image,
   ...ALLOWED_MEDIA_TYPES.gif,
   ...ALLOWED_MEDIA_TYPES.video,
+  ...ALLOWED_MEDIA_TYPES.convertible.image,
+  ...ALLOWED_MEDIA_TYPES.convertible.video,
 ];
+
+// Check if file needs conversion before upload
+export function needsConversion(file: File): "heic" | "mov" | null {
+  if (ALLOWED_MEDIA_TYPES.convertible.image.includes(file.type as never)) {
+    return "heic";
+  }
+  if (ALLOWED_MEDIA_TYPES.convertible.video.includes(file.type as never)) {
+    return "mov";
+  }
+  // Also check file extension as fallback (some browsers report wrong MIME)
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (ext === "heic" || ext === "heif") return "heic";
+  if (ext === "mov") return "mov";
+  return null;
+}
 
 // Validate file and return error message if invalid
 export function validateMediaFile(file: File): string | null {
@@ -60,12 +82,26 @@ export function validateMediaFile(file: File): string | null {
   const isVideo = ALLOWED_MEDIA_TYPES.video.includes(
     file.type as (typeof ALLOWED_MEDIA_TYPES.video)[number]
   );
+  const isConvertibleImage = ALLOWED_MEDIA_TYPES.convertible.image.includes(
+    file.type as (typeof ALLOWED_MEDIA_TYPES.convertible.image)[number]
+  );
+  const isConvertibleVideo = ALLOWED_MEDIA_TYPES.convertible.video.includes(
+    file.type as (typeof ALLOWED_MEDIA_TYPES.convertible.video)[number]
+  );
 
-  if (!isImage && !isGif && !isVideo) {
-    return "Unsupported format. Use JPEG, PNG, WebP, GIF, MP4, or WebM";
+  // Also check extension as fallback
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  const isHeicByExt = ext === "heic" || ext === "heif";
+  const isMovByExt = ext === "mov";
+
+  const isValidImage = isImage || isConvertibleImage || isHeicByExt;
+  const isValidVideo = isVideo || isConvertibleVideo || isMovByExt;
+
+  if (!isValidImage && !isGif && !isValidVideo) {
+    return "Unsupported format. Use JPEG, PNG, WebP, HEIC, GIF, MP4, WebM, or MOV";
   }
 
-  if (isImage && file.size > MEDIA_SIZE_LIMITS.image) {
+  if ((isValidImage || isHeicByExt) && file.size > MEDIA_SIZE_LIMITS.image) {
     return "Images must be less than 10MB";
   }
 
@@ -73,7 +109,7 @@ export function validateMediaFile(file: File): string | null {
     return "GIFs must be less than 15MB";
   }
 
-  if (isVideo && file.size > MEDIA_SIZE_LIMITS.video) {
+  if ((isValidVideo || isMovByExt) && file.size > MEDIA_SIZE_LIMITS.video) {
     return "Videos must be less than 50MB";
   }
 

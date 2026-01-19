@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ProUploadPage } from "@/components/moments/pro-upload";
+import { getEffectiveUser } from "@/lib/god-mode";
 import type { Event } from "@/lib/types";
 
 interface PageProps {
