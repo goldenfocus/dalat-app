@@ -873,7 +873,7 @@
     "eventTitlePlaceholder": "Tên sự kiện",
     "stylePreset": "Phong cách",
     "promptLabel": "Mô tả",
-    "promptPlaceholder": "Mô tả hình ảnh bạn muốn tạo...",
+    "promptPlaceholder": "Mô tả poster sự kiện... (tip: @username để thêm bạn)",
     "promptHint": "Chỉnh sửa mô tả để tùy chỉnh phong cách",
     "presetArtistic": "Nghệ thuật",
     "presetFuturistic": "Tương lai",

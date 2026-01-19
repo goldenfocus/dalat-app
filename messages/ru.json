@@ -835,7 +835,7 @@
     "eventTitlePlaceholder": "Название события",
     "stylePreset": "Стиль",
     "promptLabel": "Запрос",
-    "promptPlaceholder": "Опишите изображение, которое хотите сгенерировать...",
+    "promptPlaceholder": "Опишите постер события... (совет: @username добавит вас)",
     "promptHint": "Отредактируйте запрос для настройки стиля",
     "presetArtistic": "Художественный",
     "presetFuturistic": "Футуристический",

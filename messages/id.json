@@ -835,7 +835,7 @@
     "eventTitlePlaceholder": "Judul acara",
     "stylePreset": "Gaya",
     "promptLabel": "Prompt",
-    "promptPlaceholder": "Jelaskan gambar yang ingin Anda buat...",
+    "promptPlaceholder": "Jelaskan poster acara... (tip: @username menambahkan Anda)",
     "promptHint": "Edit prompt untuk menyesuaikan gaya",
     "presetArtistic": "Artistik",
     "presetFuturistic": "Futuristik",

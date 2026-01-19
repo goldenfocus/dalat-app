@@ -835,7 +835,7 @@
     "eventTitlePlaceholder": "Título del evento",
     "stylePreset": "Estilo",
     "promptLabel": "Prompt",
-    "promptPlaceholder": "Describe la imagen que quieres generar...",
+    "promptPlaceholder": "Describe tu cartel de evento... (tip: @username te incluye)",
     "promptHint": "Edita el prompt para personalizar el estilo",
     "presetArtistic": "Artístico",
     "presetFuturistic": "Futurista",

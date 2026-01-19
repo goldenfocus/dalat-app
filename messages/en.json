@@ -233,7 +233,7 @@
     "eventTitlePlaceholder": "Event title",
     "stylePreset": "Style",
     "promptLabel": "Prompt",
-    "promptPlaceholder": "Describe the image you want to generate...",
+    "promptPlaceholder": "Describe your event poster... (tip: @username includes you)",
     "promptHint": "Edit the prompt to customize the style",
     "presetArtistic": "Artistic",
     "presetFuturistic": "Futuristic",

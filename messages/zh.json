@@ -835,7 +835,7 @@
     "eventTitlePlaceholder": "活动标题",
     "stylePreset": "风格",
     "promptLabel": "提示词",
-    "promptPlaceholder": "描述您想生成的图片...",
+    "promptPlaceholder": "描述您的活动海报... (提示: @username 可添加您)",
     "promptHint": "编辑提示词以自定义风格",
     "presetArtistic": "艺术风",
     "presetFuturistic": "未来风",

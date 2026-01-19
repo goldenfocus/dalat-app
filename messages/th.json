@@ -835,7 +835,7 @@
     "eventTitlePlaceholder": "ชื่อกิจกรรม",
     "stylePreset": "สไตล์",
     "promptLabel": "คำอธิบาย",
-    "promptPlaceholder": "อธิบายรูปภาพที่คุณต้องการสร้าง...",
+    "promptPlaceholder": "อธิบายโปสเตอร์กิจกรรม... (tip: @username เพิ่มคุณ)",
     "promptHint": "แก้ไขคำอธิบายเพื่อปรับแต่งสไตล์",
     "presetArtistic": "ศิลปะ",
     "presetFuturistic": "ล้ำยุค",

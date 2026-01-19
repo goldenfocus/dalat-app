@@ -835,7 +835,7 @@
     "eventTitlePlaceholder": "Event-Titel",
     "stylePreset": "Stil",
     "promptLabel": "Prompt",
-    "promptPlaceholder": "Beschreiben Sie das Bild, das Sie generieren möchten...",
+    "promptPlaceholder": "Beschreiben Sie Ihr Poster... (Tipp: @username fügt Sie hinzu)",
     "promptHint": "Bearbeiten Sie den Prompt um den Stil anzupassen",
     "presetArtistic": "Künstlerisch",
     "presetFuturistic": "Futuristisch",

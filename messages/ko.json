@@ -835,7 +835,7 @@
     "eventTitlePlaceholder": "이벤트 제목",
     "stylePreset": "스타일",
     "promptLabel": "프롬프트",
-    "promptPlaceholder": "생성하려는 이미지를 설명하세요...",
+    "promptPlaceholder": "이벤트 포스터를 설명하세요... (팁: @username으로 본인 추가)",
     "promptHint": "프롬프트를 편집하여 스타일을 맞춤설정하세요",
     "presetArtistic": "예술적",
     "presetFuturistic": "미래적",

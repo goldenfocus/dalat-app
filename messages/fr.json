@@ -861,7 +861,7 @@
     "eventTitlePlaceholder": "Titre de l'événement",
     "stylePreset": "Style",
     "promptLabel": "Prompt",
-    "promptPlaceholder": "Décrivez l'image que vous souhaitez générer...",
+    "promptPlaceholder": "Décrivez votre affiche... (astuce: @username vous inclut)",
     "promptHint": "Modifiez le prompt pour personnaliser le style",
     "presetArtistic": "Artistique",
     "presetFuturistic": "Futuriste",
