@@ -58,7 +58,8 @@
       "clearSearch": "清除搜索",
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
-    }
+    },
+    "browseArchive": "浏览档案"
   },
   "auth": {
     "welcomeTitle": "欢迎来到 ĐàLạt.app",

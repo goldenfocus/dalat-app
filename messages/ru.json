@@ -58,7 +58,8 @@
       "clearSearch": "Очистить поиск",
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
-    }
+    },
+    "browseArchive": "Архив"
   },
   "auth": {
     "welcomeTitle": "Добро пожаловать в ĐàLạt.app",

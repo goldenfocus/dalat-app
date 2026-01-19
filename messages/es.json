@@ -58,7 +58,8 @@
       "clearSearch": "Borrar búsqueda",
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
-    }
+    },
+    "browseArchive": "Explorar archivo"
   },
   "auth": {
     "welcomeTitle": "Bienvenido a ĐàLạt.app",

@@ -58,7 +58,8 @@
       "clearSearch": "Padam carian",
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
-    }
+    },
+    "browseArchive": "Layari arkib"
   },
   "auth": {
     "welcomeTitle": "Selamat datang ke ĐàLạt.app",

@@ -58,7 +58,8 @@
       "clearSearch": "검색 지우기",
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
-    }
+    },
+    "browseArchive": "아카이브 보기"
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.app에 오신 것을 환영합니다",

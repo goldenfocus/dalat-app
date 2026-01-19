@@ -63,7 +63,8 @@
       "clearSearch": "Xóa tìm kiếm",
       "viewAll": "Xem tất cả kết quả cho \"{query}\"",
       "searchFor": "Tìm kiếm \"{query}\""
-    }
+    },
+    "browseArchive": "Xem lưu trữ"
   },
   "auth": {
     "welcomeTitle": "Chào mừng đến với ĐàLạt.app",
