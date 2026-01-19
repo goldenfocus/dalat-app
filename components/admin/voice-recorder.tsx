@@ -153,16 +153,20 @@ export function VoiceRecorder({ onTranscript, onError, disabled }: VoiceRecorder
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("blog-audio").getPublicUrl(fileName);
+      // Get signed URL (bucket is private, so we need a temporary signed URL)
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from("blog-audio")
+        .createSignedUrl(fileName, 300); // 5 minutes expiry
+
+      if (signedError || !signedData?.signedUrl) {
+        throw new Error("Failed to create signed URL for audio");
+      }
 
       // Call transcription API
       const res = await fetch("/api/blog/transcribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audioUrl: publicUrl }),
+        body: JSON.stringify({ audioUrl: signedData.signedUrl }),
       });
 
       const data = await res.json();
