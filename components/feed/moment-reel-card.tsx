@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Home } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
@@ -65,10 +66,12 @@ export function MomentReelCard({
             className="inline-flex items-center gap-2.5 active:opacity-80 transition-opacity"
           >
             {moment.avatar_url ? (
-              <img
+              <Image
                 src={moment.avatar_url}
                 alt=""
-                className="w-9 h-9 rounded-full ring-2 ring-white/20"
+                width={36}
+                height={36}
+                className="w-9 h-9 rounded-full ring-2 ring-white/20 object-cover"
               />
             ) : (
               <div className="w-9 h-9 rounded-full bg-white/20 ring-2 ring-white/20" />

@@ -15,6 +15,7 @@ import { routing, type Locale } from "@/lib/i18n/routing";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { getEffectiveUser } from "@/lib/god-mode";
 import { GodModeIndicator } from "@/components/god-mode-indicator";
+import { QueryProvider } from "@/lib/providers/query-provider";
 
 const siteUrl = "https://dalat.app";
 
@@ -73,30 +74,32 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <ScrollRestorationProvider>
-          <div className="min-h-screen flex flex-col">
-            <PerformanceMonitor />
-            <BadgeClearer />
-            <NotificationPrompt />
-            <SwUpdateHandler />
-            <LocaleMismatchBanner />
-            <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
-              {children}
-            </main>
-            <MobileBottomNav />
-            <GlobalFooter />
-            {godMode.isActive && godMode.targetProfile && (
-              <GodModeIndicator targetProfile={godMode.targetProfile} />
-            )}
-          </div>
-        </ScrollRestorationProvider>
-      </ThemeProvider>
+      <QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ScrollRestorationProvider>
+            <div className="min-h-screen flex flex-col">
+              <PerformanceMonitor />
+              <BadgeClearer />
+              <NotificationPrompt />
+              <SwUpdateHandler />
+              <LocaleMismatchBanner />
+              <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
+                {children}
+              </main>
+              <MobileBottomNav />
+              <GlobalFooter />
+              {godMode.isActive && godMode.targetProfile && (
+                <GodModeIndicator targetProfile={godMode.targetProfile} />
+              )}
+            </div>
+          </ScrollRestorationProvider>
+        </ThemeProvider>
+      </QueryProvider>
     </NextIntlClientProvider>
   );
 }

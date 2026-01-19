@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { MomentReelCard } from "./moment-reel-card";
+import { useMomentsFeed } from "@/lib/hooks/use-supabase-query";
 import type { MomentContentType, MomentWithEvent } from "@/lib/types";
-
-const PAGE_SIZE = 10;
 
 interface MomentsFeedProps {
   initialMoments: MomentWithEvent[];
@@ -16,21 +14,30 @@ interface MomentsFeedProps {
 /**
  * Main feed container with vertical scroll-snap.
  * Handles infinite scroll and active index tracking.
+ *
+ * Uses TanStack Query for caching and background refetching.
  */
 export function MomentsFeed({
   initialMoments,
-  hasMore: initialHasMore,
   contentTypes = ["photo", "video"],
 }: MomentsFeedProps) {
-  const contentKey = contentTypes.join(",");
-  const contentKeyRef = useRef(contentKey);
-  const [moments, setMoments] = useState(initialMoments);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [hasMore, setHasMore] = useState(initialHasMore);
-  const [isLoading, setIsLoading] = useState(false);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Use TanStack Query for infinite scroll with caching
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useMomentsFeed(contentTypes, initialMoments);
+
+  // Flatten pages into single array of moments
+  const moments = useMemo(
+    () => data?.pages.flat() ?? initialMoments,
+    [data?.pages, initialMoments]
+  );
 
   // Track active card via IntersectionObserver
   useEffect(() => {
@@ -58,57 +65,15 @@ export function MomentsFeed({
     return () => observer.disconnect();
   }, [moments.length]);
 
-  // Infinite scroll: load more when reaching bottom
-  const loadMore = useCallback(async () => {
-    if (isLoading || !hasMore) return;
-    setIsLoading(true);
-
-    const supabase = createClient();
-
-    const { data } = await supabase.rpc("get_feed_moments", {
-      p_limit: PAGE_SIZE,
-      p_offset: moments.length,
-      p_content_types: contentTypes,
-    });
-
-    const newMoments = (data ?? []) as MomentWithEvent[];
-
-    if (newMoments.length < PAGE_SIZE) {
-      setHasMore(false);
-    }
-
-    if (newMoments.length > 0) {
-      setMoments((prev) => [...prev, ...newMoments]);
-    }
-
-    setIsLoading(false);
-  }, [isLoading, hasMore, moments.length, contentTypes]);
-
-  const resetFeed = useCallback(async () => {
-    setIsLoading(true);
-    const supabase = createClient();
-    const { data } = await supabase.rpc("get_feed_moments", {
-      p_limit: PAGE_SIZE,
-      p_offset: 0,
-      p_content_types: contentTypes,
-    });
-
-    const newMoments = (data ?? []) as MomentWithEvent[];
-    setHasMore(newMoments.length === PAGE_SIZE);
-    setMoments(newMoments);
-    setActiveIndex(0);
-    setIsLoading(false);
-  }, [contentTypes]);
-
-  // Observe the load-more trigger element
+  // Observe the load-more trigger element for infinite scroll
   useEffect(() => {
     const trigger = loadMoreRef.current;
     if (!trigger) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
         }
       },
       { rootMargin: "200px" }
@@ -116,14 +81,7 @@ export function MomentsFeed({
 
     observer.observe(trigger);
     return () => observer.disconnect();
-  }, [loadMore]);
-
-  // Reset feed when content types change
-  useEffect(() => {
-    if (contentKeyRef.current === contentKey) return;
-    contentKeyRef.current = contentKey;
-    resetFeed();
-  }, [contentKey, resetFeed]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // Empty state
   if (moments.length === 0) {
@@ -155,12 +113,12 @@ export function MomentsFeed({
         ))}
 
         {/* Infinite scroll trigger */}
-        {hasMore && (
+        {hasNextPage && (
           <div
             ref={loadMoreRef}
             className="h-20 flex items-center justify-center bg-black"
           >
-            {isLoading && (
+            {isFetchingNextPage && (
               <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             )}
           </div>

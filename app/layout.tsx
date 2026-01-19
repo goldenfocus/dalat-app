@@ -35,6 +35,17 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning>
+      <head>
+        {/* Resource hints for faster connections to critical domains */}
+        <link
+          rel="preconnect"
+          href="https://aljcmodwjqlznzcydyor.supabase.co"
+        />
+        <link
+          rel="dns-prefetch"
+          href="https://aljcmodwjqlznzcydyor.supabase.co"
+        />
+      </head>
       <body className={`${geistSans.className} antialiased`}>
         {children}
       </body>

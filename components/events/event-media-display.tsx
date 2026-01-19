@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Expand } from "lucide-react";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { isVideoUrl } from "@/lib/media-utils";
@@ -38,10 +39,12 @@ export function EventMediaDisplay({ src, alt }: EventMediaDisplayProps) {
         className="w-full rounded-lg overflow-hidden relative group cursor-pointer max-h-[60vh] md:aspect-video md:max-h-none"
         aria-label="View full flyer"
       >
-        <img
+        <Image
           src={src}
           alt={alt}
-          className="w-full h-auto object-contain md:h-full md:object-cover transition-transform group-hover:scale-[1.02]"
+          fill
+          sizes="(max-width: 768px) 100vw, 80vw"
+          className="object-contain md:object-cover transition-transform group-hover:scale-[1.02]"
         />
         {/* Expand overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">

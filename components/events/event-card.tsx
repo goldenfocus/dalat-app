@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
@@ -9,6 +10,8 @@ import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
+import { cloudflareLoader } from "@/lib/image-cdn";
+import { usePrefetch } from "@/lib/prefetch";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 interface EventCardProps {
@@ -33,6 +36,12 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
 export function EventCard({ event, counts, seriesRrule, translatedTitle }: EventCardProps) {
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
+  const { prefetchEvent, prefetchEventCounts } = usePrefetch();
+
+  const handlePrefetch = () => {
+    prefetchEvent(event.slug);
+    prefetchEventCounts(event.id);
+  };
 
   const spotsText = event.capacity
     ? `${counts?.going_spots ?? 0}/${event.capacity}`
@@ -53,6 +62,8 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle }: Event
       href={`/events/${event.slug}`}
       className="block touch-manipulation"
       onClick={() => triggerHaptic("selection")}
+      onMouseEnter={handlePrefetch}
+      onTouchStart={handlePrefetch}
     >
       <Card className="overflow-hidden hover:border-foreground/20 transition-all duration-150 active:scale-[0.98] active:opacity-90">
         {/* Image area */}
@@ -68,10 +79,13 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle }: Event
                 autoPlay
               />
             ) : (
-              <img
+              <Image
+                loader={cloudflareLoader}
                 src={event.image_url!}
                 alt={displayTitle}
-                className="object-cover w-full h-full transition-transform group-hover:scale-105"
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover transition-transform group-hover:scale-105"
               />
             )
           ) : (
