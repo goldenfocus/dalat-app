@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     const isCreator = event.created_by === user.id;
-    const isAdmin = profile?.role === "admin";
+    const isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
 
     if (!isCreator && !isAdmin) {
       return NextResponse.json(

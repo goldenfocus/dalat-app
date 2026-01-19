@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     .single();
 
   // Only admins can batch tag (rate limiting/cost concerns)
-  if (profile?.role !== "admin") {
+  if (profile?.role !== "admin" && profile?.role !== "superadmin") {
     return NextResponse.json({ error: "not_authorized" }, { status: 403 });
   }
 
