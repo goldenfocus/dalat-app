@@ -4,8 +4,6 @@ import { useState, useCallback } from "react";
 import {
   Sparkles,
   Loader2,
-  User,
-  UserCircle,
   Wand2,
   Check,
   RotateCcw,
@@ -44,10 +42,35 @@ const styleDescriptions: Record<AvatarStyle, string> = {
   custom: "",
 };
 
+// Gender symbol SVG icons
+const MaleSymbol = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+    <circle cx="10" cy="14" r="5" />
+    <path d="M19 5l-5.4 5.4" />
+    <path d="M15 5h4v4" />
+  </svg>
+);
+
+const FemaleSymbol = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+    <circle cx="12" cy="9" r="5" />
+    <path d="M12 14v7" />
+    <path d="M9 18h6" />
+  </svg>
+);
+
+const NeutralSymbol = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+    <circle cx="12" cy="12" r="5" />
+    <path d="M12 2v5" />
+    <path d="M12 17v5" />
+  </svg>
+);
+
 const styleIcons: Record<AvatarStyle, React.ReactNode> = {
-  male: <User className="w-5 h-5" />,
-  female: <UserCircle className="w-5 h-5" />,
-  neutral: <Sparkles className="w-5 h-5" />,
+  male: <MaleSymbol />,
+  female: <FemaleSymbol />,
+  neutral: <NeutralSymbol />,
   custom: <Sparkles className="w-5 h-5" />,
 };
 
