@@ -263,6 +263,9 @@
     },
     "requireApproval": "Require Approval",
     "requireApprovalDescription": "Review moments before they appear publicly",
+    "retranslate": "Regenerate Translations",
+    "retranslateDescription": "Re-translate title and description to all 12 languages",
+    "retranslated": "Translations Regenerated!",
     "saveSettings": "Save Settings",
     "saving": "Saving...",
     "saved": "Saved!"

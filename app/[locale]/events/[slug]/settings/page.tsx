@@ -26,7 +26,7 @@ export default async function EventSettingsPage({ params }: PageProps) {
   // Fetch the event
   const { data: event, error } = await supabase
     .from("events")
-    .select("id, slug, title, created_by")
+    .select("id, slug, title, description, created_by")
     .eq("slug", slug)
     .single();
 
@@ -77,6 +77,8 @@ export default async function EventSettingsPage({ params }: PageProps) {
         <EventSettingsForm
           eventId={event.id}
           eventSlug={event.slug}
+          eventTitle={event.title}
+          eventDescription={event.description}
           initialSettings={settings as EventSettings | null}
           pendingCount={pendingCount}
         />

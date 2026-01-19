@@ -2,17 +2,20 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Users, Shield, Loader2, Check, ChevronRight } from "lucide-react";
+import { Camera, Users, Shield, Loader2, Check, ChevronRight, Languages } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { triggerHaptic } from "@/lib/haptics";
+import { triggerTranslation } from "@/lib/translations-client";
 import { cn } from "@/lib/utils";
 import type { EventSettings, MomentsWhoCanPost } from "@/lib/types";
 
 interface EventSettingsFormProps {
   eventId: string;
   eventSlug: string;
+  eventTitle: string;
+  eventDescription: string | null;
   initialSettings: EventSettings | null;
   pendingCount: number;
 }
@@ -20,6 +23,8 @@ interface EventSettingsFormProps {
 export function EventSettingsForm({
   eventId,
   eventSlug,
+  eventTitle,
+  eventDescription,
   initialSettings,
   pendingCount,
 }: EventSettingsFormProps) {
@@ -39,6 +44,8 @@ export function EventSettingsForm({
   const [requireApproval, setRequireApproval] = useState(
     initialSettings?.moments_require_approval ?? false
   );
+  const [isRetranslating, setIsRetranslating] = useState(false);
+  const [retranslated, setRetranslated] = useState(false);
 
   const handleSave = () => {
     triggerHaptic("selection");
@@ -242,6 +249,66 @@ export function EventSettingsForm({
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </Link>
       )}
+
+      {/* Retranslate Button */}
+      <button
+        type="button"
+        onClick={() => {
+          triggerHaptic("selection");
+          setIsRetranslating(true);
+          setRetranslated(false);
+
+          const fields: { field_name: "title" | "description"; text: string }[] = [
+            { field_name: "title", text: eventTitle },
+          ];
+          if (eventDescription) {
+            fields.push({ field_name: "description", text: eventDescription });
+          }
+
+          triggerTranslation("event", eventId, fields);
+
+          // Show success after a short delay (translation happens in background)
+          setTimeout(() => {
+            setIsRetranslating(false);
+            setRetranslated(true);
+            setTimeout(() => setRetranslated(false), 3000);
+          }, 1500);
+        }}
+        disabled={isRetranslating}
+        className={cn(
+          "w-full flex items-center justify-between p-4 rounded-lg border transition-all duration-200",
+          retranslated
+            ? "border-green-500 bg-green-500/10"
+            : "border-border hover:border-primary/50 hover:bg-muted/50 active:scale-[0.98]"
+        )}
+      >
+        <div className="flex items-center gap-3">
+          <Languages
+            className={cn(
+              "w-5 h-5",
+              retranslated ? "text-green-500" : "text-muted-foreground"
+            )}
+          />
+          <div className="text-left">
+            <p
+              className={cn(
+                "text-sm font-medium",
+                retranslated ? "text-green-600 dark:text-green-400" : "text-foreground"
+              )}
+            >
+              {retranslated ? t("retranslated") : t("retranslate")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("retranslateDescription")}
+            </p>
+          </div>
+        </div>
+        {isRetranslating ? (
+          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+        ) : retranslated ? (
+          <Check className="w-4 h-4 text-green-500" />
+        ) : null}
+      </button>
 
       {/* Save Button */}
       <button
