@@ -350,7 +350,14 @@
       "customHint": "Mẹo: Dùng nút lấp lánh để AI cải thiện mô tả của bạn",
       "refineExisting": "Tinh chỉnh avatar hiện tại",
       "refinementPlaceholder": "ví dụ: Làm cho nhiều màu sắc hơn, thêm ánh sáng huyền bí...",
-      "applyRefinement": "Áp dụng tinh chỉnh"
+      "applyRefinement": "Áp dụng tinh chỉnh",
+      "previewTitle": "Avatar của bạn",
+      "previewDescription": "Nhấp vào ảnh để xem kích thước đầy đủ, hoặc tinh chỉnh thêm",
+      "clickToZoom": "Nhấp để xem kích thước đầy đủ",
+      "quickRefine": "Tinh chỉnh nhanh",
+      "customRefinePlaceholder": "Hoặc mô tả thay đổi của riêng bạn...",
+      "tryAgain": "Thử lại",
+      "useThis": "Dùng ảnh này"
     }
   },
   "settings": {
@@ -926,5 +933,11 @@
     "filterMyEvents": "Sự kiện tôi tham gia",
     "clearFilters": "Xóa bộ lọc",
     "noResults": "Không tìm thấy sự kiện"
+  },
+  "about": {
+    "title": "Dalat.app",
+    "description": "Nền tảng cộng đồng để khám phá sự kiện tại Đà Lạt, Việt Nam.",
+    "tagline": "Hòa nhạc, chợ phiên, workshop và các buổi họp mặt tại thành phố ngàn hoa.",
+    "openSource": "Mã nguồn mở"
   }
 }

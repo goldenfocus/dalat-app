@@ -895,5 +895,11 @@
     "happeningNow": "Happening Now",
     "upcoming": "Upcoming",
     "past": "Past Events"
+  },
+  "about": {
+    "title": "Dalat.app",
+    "description": "แพลตฟอร์มชุมชนสำหรับค้นหากิจกรรมในดาลัด เวียดนาม",
+    "tagline": "คอนเสิร์ต ตลาด เวิร์กช็อป และการพบปะในเมืองแห่งฤดูใบไม้ผลินิรันดร์",
+    "openSource": "โอเพนซอร์ส"
   }
 }

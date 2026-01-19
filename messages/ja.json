@@ -895,5 +895,11 @@
     "happeningNow": "Happening Now",
     "upcoming": "Upcoming",
     "past": "Past Events"
+  },
+  "about": {
+    "title": "Dalat.app",
+    "description": "ベトナム・ダラットのイベントを発見するコミュニティプラットフォーム。",
+    "tagline": "永遠の春の街で開催されるコンサート、マーケット、ワークショップ、そして交流会。",
+    "openSource": "オープンソース"
   }
 }

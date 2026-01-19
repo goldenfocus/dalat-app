@@ -895,5 +895,11 @@
     "happeningNow": "Happening Now",
     "upcoming": "Upcoming",
     "past": "Past Events"
+  },
+  "about": {
+    "title": "Dalat.app",
+    "description": "Платформа сообщества для поиска событий в Далате, Вьетнам.",
+    "tagline": "Концерты, рынки, мастер-классы и встречи в городе вечной весны.",
+    "openSource": "Открытый исходный код"
   }
 }

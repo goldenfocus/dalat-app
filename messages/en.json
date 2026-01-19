@@ -397,7 +397,14 @@
       "customHint": "Tip: Use the sparkles button to enhance your description",
       "refineExisting": "Refine current avatar",
       "refinementPlaceholder": "e.g., Make it more colorful, add a mystical glow...",
-      "applyRefinement": "Apply refinement"
+      "applyRefinement": "Apply refinement",
+      "previewTitle": "Your Avatar",
+      "previewDescription": "Click the image to view full size, or refine it further",
+      "clickToZoom": "Click to view full size",
+      "quickRefine": "Quick refinements",
+      "customRefinePlaceholder": "Or describe your own changes...",
+      "tryAgain": "Try Again",
+      "useThis": "Use This"
     }
   },
   "settings": {
@@ -998,5 +1005,11 @@
     "filterMyEvents": "Events I went to",
     "clearFilters": "Clear filters",
     "noResults": "No events match your search"
+  },
+  "about": {
+    "title": "Dalat.app",
+    "description": "A community platform for discovering events in Đà Lạt, Vietnam.",
+    "tagline": "Concerts, markets, workshops, and gatherings in the city of eternal spring.",
+    "openSource": "Open source"
   }
 }

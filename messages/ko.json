@@ -895,5 +895,11 @@
     "happeningNow": "Happening Now",
     "upcoming": "Upcoming",
     "past": "Past Events"
+  },
+  "about": {
+    "title": "Dalat.app",
+    "description": "베트남 달랏의 이벤트를 발견하는 커뮤니티 플랫폼.",
+    "tagline": "영원한 봄의 도시에서 열리는 콘서트, 마켓, 워크숍, 그리고 모임.",
+    "openSource": "오픈 소스"
   }
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Github } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { GlobalFooter } from "@/components/global-footer";
@@ -34,13 +35,13 @@ async function getAboutPosts(): Promise<BlogPostWithCategory[]> {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "about" });
 
   return generateLocalizedMetadata({
     locale,
     path: "/about",
-    title: "About",
-    description:
-      "Dalat.app is an open-source community platform for discovering events in Đà Lạt, Vietnam.",
+    title: t("title"),
+    description: t("description"),
     keywords: ["about", "open source", "community", "Đà Lạt", "Vietnam"],
     type: "website",
   });
@@ -48,6 +49,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function AboutPage({ params }: PageProps) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "about" });
 
   const aboutPosts = await getAboutPosts();
 
@@ -70,7 +72,7 @@ export default async function AboutPage({ params }: PageProps) {
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
-      { name: "About", url: "/about" },
+      { name: t("title"), url: "/about" },
     ],
     locale
   );
@@ -85,12 +87,12 @@ export default async function AboutPage({ params }: PageProps) {
           {/* Header */}
           <header className="mb-12 text-center">
             <h1 className="text-3xl font-bold tracking-tight mb-4">
-              Dalat.app
+              {t("title")}
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              A community platform for discovering events in Đà Lạt, Vietnam.
+              {t("description")}
               <br />
-              Concerts, markets, workshops, and gatherings in the city of eternal spring.
+              {t("tagline")}
             </p>
 
             {/* Open source badge - minimal */}
@@ -101,7 +103,7 @@ export default async function AboutPage({ params }: PageProps) {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
             >
               <Github className="w-4 h-4" />
-              <span>Open source</span>
+              <span>{t("openSource")}</span>
             </a>
           </header>
 

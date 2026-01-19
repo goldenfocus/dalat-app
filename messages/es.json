@@ -895,5 +895,11 @@
     "happeningNow": "Happening Now",
     "upcoming": "Upcoming",
     "past": "Past Events"
+  },
+  "about": {
+    "title": "Dalat.app",
+    "description": "Una plataforma comunitaria para descubrir eventos en Đà Lạt, Vietnam.",
+    "tagline": "Conciertos, mercados, talleres y encuentros en la ciudad de la eterna primavera.",
+    "openSource": "Código abierto"
   }
 }
