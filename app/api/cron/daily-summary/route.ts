@@ -7,11 +7,13 @@ import {
   type DailySummaryOutput,
 } from "@/lib/blog/daily-summary-prompt";
 
-// Use service role for cron jobs
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy init - created on first request, not at build time
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function GET(request: Request) {
   // Verify cron secret (Vercel sends this in Authorization header)
@@ -104,6 +106,7 @@ export async function GET(request: Request) {
     });
 
     // 3. Get changelog category ID
+    const supabase = getSupabase();
     const { data: category } = await supabase
       .from("blog_categories")
       .select("id")
