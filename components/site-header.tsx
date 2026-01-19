@@ -9,9 +9,7 @@ interface SiteHeaderProps {
   actions?: React.ReactNode;
 }
 
-export async function SiteHeader({ actions }: SiteHeaderProps) {
-  const tNav = await getTranslations("nav");
-
+export function SiteHeader({ actions }: SiteHeaderProps) {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-14 max-w-4xl items-center justify-between mx-auto px-4">
@@ -21,20 +19,23 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
           </Link>
           <LocalePicker />
         </div>
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1">
           <Link
             href="/moments"
-            className="hidden sm:flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md"
+            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+            aria-label="Moments"
           >
-            {tNav("moments")}
+            <Film className="w-5 h-5" />
+          </Link>
+          <Link
+            href="/events/new"
+            prefetch={false}
+            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+            aria-label="Create event"
+          >
+            <Plus className="w-5 h-5" />
           </Link>
           {actions}
-          <Link href="/events/new" prefetch={false} className="hidden lg:block">
-            <Button size="sm" variant="outline" className="px-3">
-              <Plus className="w-4 h-4 mr-1" />
-              <span>{tNav("events")}</span>
-            </Button>
-          </Link>
           <Suspense>
             <AuthButton />
           </Suspense>
