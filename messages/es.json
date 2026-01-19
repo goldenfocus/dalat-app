@@ -35,8 +35,8 @@
     "signOut": "Cerrar sesión"
   },
   "home": {
-    "title": "Eventos en Da Lat",
-    "subtitle": "Descubre lo que pasa en Da Lat",
+    "title": "Eventos en Đà Lạt",
+    "subtitle": "Descubre lo que pasa en Đà Lạt",
     "trendingMoments": "Momentos destacados",
     "viewAllMoments": "Ver todo",
     "noEvents": "No hay eventos para mostrar.",
@@ -44,7 +44,7 @@
     "noHappening": "No hay eventos en curso ahora.",
     "noPast": "Aún no hay eventos pasados.",
     "createFirst": "Crear el primer evento",
-    "footer": "Hecho con <heart></heart> para Da Lat, Vietnam",
+    "footer": "Hecho con <heart></heart> para Đà Lạt, Vietnam",
     "tabs": {
       "upcoming": "Próximos",
       "happening": "Ahora",
@@ -60,7 +60,7 @@
   },
   "auth": {
     "welcomeTitle": "Bienvenido a ĐàLạt.app",
-    "signInDescription": "Inicia sesión para descubrir eventos en Da Lat",
+    "signInDescription": "Inicia sesión para descubrir eventos en Đà Lạt",
     "continueWithGoogle": "Continuar con Google",
     "connecting": "Conectando...",
     "backToEvents": "Volver a eventos",
@@ -168,7 +168,7 @@
     "date": "Fecha",
     "dateRequired": "Fecha *",
     "time": "Hora",
-    "timeRequired": "Hora * (Da Lat)",
+    "timeRequired": "Hora * (Đà Lạt)",
     "location": "Ubicación",
     "locationRequired": "Ubicación *",
     "locationPlaceholder": "Buscar un lugar en Vietnam...",
@@ -551,10 +551,10 @@
   "empty": {
     "noEventsYet": "Aún no hay eventos",
     "noUpcomingEvents": "Aún no hay eventos próximos.",
-    "beFirstToCreate": "¡Sé el primero en crear un evento en Da Lat!"
+    "beFirstToCreate": "¡Sé el primero en crear un evento en Đà Lạt!"
   },
   "time": {
-    "daLat": "Da Lat"
+    "daLat": "Đà Lạt"
   },
   "invite": {
     "inviteGuests": "Invitar Invitados",
@@ -592,8 +592,8 @@
   },
   "moments": {
     "moments": "Momentos",
-    "discoverySubtitle": "El archivo visual de Da Lat de eventos recientes",
-    "discoveryDescription": "Explora fotos y videos compartidos por la comunidad en eventos de Da Lat.",
+    "discoverySubtitle": "El archivo visual de Đà Lạt de eventos recientes",
+    "discoveryDescription": "Explora fotos y videos compartidos por la comunidad en eventos de Đà Lạt.",
     "filters": {
       "all": "Todo",
       "photos": "Fotos",
@@ -610,9 +610,7 @@
     "deleteConfirm": "Esto eliminará permanentemente este moment. Esta acción no se puede deshacer.",
     "deleteError": "Error al eliminar moment. Por favor intenta de nuevo.",
     "addCaption": "Agregar descripción...",
-    "captionPlaceholder": "¿Qué está pasando?",
-    "uploadMedia": "Subir foto o video",
-    "textOnly": "Solo texto",
+    "tapToUpload": "Toca para agregar fotos o videos",
     "pending": "Pendiente de aprobación",
     "published": "Publicado",
     "viewMoments": "Ver moments",
@@ -835,11 +833,11 @@
   "archive": {
     "events": "Eventos",
     "eventsIn": "Eventos en {month} {year}",
-    "description": "Descubre eventos en Da Lat, Vietnam en {month} {year}",
+    "description": "Descubre eventos en Đà Lạt, Vietnam en {month} {year}",
     "thisMonth": "Este mes",
-    "thisMonthDescription": "Eventos este mes en Da Lat",
+    "thisMonthDescription": "Eventos este mes en Đà Lạt",
     "thisWeek": "Esta semana",
-    "thisWeekDescription": "Eventos esta semana en Da Lat",
+    "thisWeekDescription": "Eventos esta semana en Đà Lạt",
     "noEvents": "No hay eventos en {month} {year}",
     "noEventsThisMonth": "No hay eventos este mes",
     "noEventsThisWeek": "No hay eventos esta semana",
@@ -875,8 +873,8 @@
     "noResults": "No events match your search"
   },
   "search": {
-    "title": "{query} events in Da Lat",
-    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "title": "{query} events in Đà Lạt",
+    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
     "breadcrumb": "Search: {query}",
     "resultsFor": "\"{query}\"",
     "resultCount": "{count, plural, one {# event found} other {# events found}}",

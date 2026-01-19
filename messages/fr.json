@@ -40,8 +40,8 @@
     "signOut": "Déconnexion"
   },
   "home": {
-    "title": "Événements à Da Lat",
-    "subtitle": "Découvrez ce qui se passe à Da Lat",
+    "title": "Événements à Đà Lạt",
+    "subtitle": "Découvrez ce qui se passe à Đà Lạt",
     "trendingMoments": "Moments tendance",
     "viewAllMoments": "Voir tout",
     "noEvents": "Aucun événement à afficher.",
@@ -65,7 +65,7 @@
   },
   "auth": {
     "welcomeTitle": "Bienvenue sur ĐàLạt.app",
-    "signInDescription": "Connectez-vous pour découvrir les événements à Da Lat",
+    "signInDescription": "Connectez-vous pour découvrir les événements à Đà Lạt",
     "continueWithGoogle": "Continuer avec Google",
     "connecting": "Connexion...",
     "backToEvents": "Retour aux événements",
@@ -180,7 +180,7 @@
     "date": "Date",
     "dateRequired": "Date *",
     "time": "Heure",
-    "timeRequired": "Heure * (Da Lat)",
+    "timeRequired": "Heure * (Đà Lạt)",
     "location": "Lieu",
     "locationRequired": "Lieu *",
     "locationPlaceholder": "Rechercher un lieu au Vietnam...",
@@ -563,10 +563,10 @@
   "empty": {
     "noEventsYet": "Pas encore d'événements",
     "noUpcomingEvents": "Pas encore d'événements à venir.",
-    "beFirstToCreate": "Soyez le premier à créer un événement à Da Lat !"
+    "beFirstToCreate": "Soyez le premier à créer un événement à Đà Lạt !"
   },
   "time": {
-    "daLat": "Da Lat"
+    "daLat": "Đà Lạt"
   },
   "invite": {
     "inviteGuests": "Inviter des amis",
@@ -604,8 +604,8 @@
   },
   "moments": {
     "moments": "Moments",
-    "discoverySubtitle": "L’archive visuelle de Da Lat des événements récents",
-    "discoveryDescription": "Découvrez des photos et des vidéos partagées par la communauté lors d’événements à Da Lat.",
+    "discoverySubtitle": "L’archive visuelle de Đà Lạt des événements récents",
+    "discoveryDescription": "Découvrez des photos et des vidéos partagées par la communauté lors d’événements à Đà Lạt.",
     "filters": {
       "all": "Tous",
       "photos": "Photos",
@@ -622,9 +622,7 @@
     "deleteConfirm": "Ce moment sera définitivement supprimé. Cette action est irréversible.",
     "deleteError": "Impossible de supprimer le moment. Veuillez réessayer.",
     "addCaption": "Ajouter une légende...",
-    "captionPlaceholder": "Que se passe-t-il ?",
-    "uploadMedia": "Télécharger photo ou vidéo",
-    "textOnly": "Texte uniquement",
+    "tapToUpload": "Appuyez pour ajouter des photos ou vidéos",
     "pending": "En attente d'approbation",
     "published": "Publié",
     "viewMoments": "Voir les moments",
@@ -847,11 +845,11 @@
   "archive": {
     "events": "Événements",
     "eventsIn": "Événements en {month} {year}",
-    "description": "Découvrez les événements de {month} {year} à Da Lat, Vietnam",
+    "description": "Découvrez les événements de {month} {year} à Đà Lạt, Vietnam",
     "thisMonth": "Ce mois-ci",
-    "thisMonthDescription": "Événements ce mois-ci à Da Lat",
+    "thisMonthDescription": "Événements ce mois-ci à Đà Lạt",
     "thisWeek": "Cette semaine",
-    "thisWeekDescription": "Événements cette semaine à Da Lat",
+    "thisWeekDescription": "Événements cette semaine à Đà Lạt",
     "noEvents": "Aucun événement en {month} {year}",
     "noEventsThisMonth": "Aucun événement ce mois-ci",
     "noEventsThisWeek": "Aucun événement cette semaine",
@@ -887,8 +885,8 @@
     "noResults": "No events match your search"
   },
   "search": {
-    "title": "{query} events in Da Lat",
-    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "title": "{query} events in Đà Lạt",
+    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
     "breadcrumb": "Search: {query}",
     "resultsFor": "\"{query}\"",
     "resultCount": "{count, plural, one {# event found} other {# events found}}",

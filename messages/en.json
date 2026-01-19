@@ -40,8 +40,8 @@
     "signOut": "Sign out"
   },
   "home": {
-    "title": "Events in Da Lat",
-    "subtitle": "Discover what's happening in Da Lat",
+    "title": "Events in Đà Lạt",
+    "subtitle": "Discover what's happening in Đà Lạt",
     "trendingMoments": "Trending Moments",
     "viewAllMoments": "See all",
     "noEvents": "No events to show.",
@@ -49,7 +49,7 @@
     "noHappening": "No events happening right now.",
     "noPast": "No past events yet.",
     "createFirst": "Create the first event",
-    "footer": "Made with <heart></heart> for Da Lat, Vietnam",
+    "footer": "Made with <heart></heart> for Đà Lạt, Vietnam",
     "tabs": {
       "upcoming": "Upcoming",
       "happening": "Now",
@@ -65,7 +65,7 @@
   },
   "auth": {
     "welcomeTitle": "Welcome to ĐàLạt.app",
-    "signInDescription": "Sign in to discover events in Da Lat",
+    "signInDescription": "Sign in to discover events in Đà Lạt",
     "continueWithGoogle": "Continue with Google",
     "connecting": "Connecting...",
     "backToEvents": "Back to events",
@@ -199,7 +199,7 @@
     "date": "Date",
     "dateRequired": "Date *",
     "time": "Time",
-    "timeRequired": "Time * (Da Lat)",
+    "timeRequired": "Time * (Đà Lạt)",
     "location": "Location",
     "locationRequired": "Location *",
     "locationPlaceholder": "Search for a place in Vietnam...",
@@ -637,10 +637,10 @@
   "empty": {
     "noEventsYet": "No events yet",
     "noUpcomingEvents": "No upcoming events yet.",
-    "beFirstToCreate": "Be the first to create an event in Da Lat!"
+    "beFirstToCreate": "Be the first to create an event in Đà Lạt!"
   },
   "time": {
-    "daLat": "Da Lat"
+    "daLat": "Đà Lạt"
   },
   "invite": {
     "inviteGuests": "Invite Guests",
@@ -679,8 +679,8 @@
   },
   "moments": {
     "moments": "Moments",
-    "discoverySubtitle": "Da Lat’s visual archive from recent events",
-    "discoveryDescription": "Explore photos and videos shared by the community at Da Lat events.",
+    "discoverySubtitle": "Đà Lạt's visual archive from recent events",
+    "discoveryDescription": "Explore photos and videos shared by the community at Đà Lạt events.",
     "filters": {
       "all": "All",
       "photos": "Photos",
@@ -698,9 +698,7 @@
     "deleteConfirm": "This will permanently remove this moment. This action cannot be undone.",
     "deleteError": "Failed to delete moment. Please try again.",
     "addCaption": "Add a caption...",
-    "captionPlaceholder": "What's happening?",
-    "uploadMedia": "Upload photo or video",
-    "textOnly": "Text only",
+    "tapToUpload": "Tap to add photos or videos",
     "pending": "Pending approval",
     "published": "Published",
     "viewMoments": "View moments",
@@ -759,6 +757,7 @@
       "allComplete": "All uploads complete!",
       "statusQueued": "Queued",
       "statusValidating": "Validating...",
+      "statusConverting": "Converting...",
       "statusUploading": "Uploading...",
       "statusUploaded": "Processing...",
       "statusSaving": "Saving...",
@@ -909,8 +908,8 @@
     "viewAllFestivals": "View all festivals"
   },
   "search": {
-    "title": "{query} events in Da Lat",
-    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "title": "{query} events in Đà Lạt",
+    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
     "breadcrumb": "Search: {query}",
     "resultsFor": "\"{query}\"",
     "resultCount": "{count, plural, one {# event found} other {# events found}}",
@@ -925,11 +924,11 @@
   "archive": {
     "events": "Events",
     "eventsIn": "Events in {month} {year}",
-    "description": "Discover events happening in {month} {year} in Da Lat, Vietnam",
+    "description": "Discover events happening in {month} {year} in Đà Lạt, Vietnam",
     "thisMonth": "This Month",
-    "thisMonthDescription": "Events happening this month in Da Lat",
+    "thisMonthDescription": "Events happening this month in Đà Lạt",
     "thisWeek": "This Week",
-    "thisWeekDescription": "Events happening this week in Da Lat",
+    "thisWeekDescription": "Events happening this week in Đà Lạt",
     "noEvents": "No events in {month} {year}",
     "noEventsThisMonth": "No events this month",
     "noEventsThisWeek": "No events this week",

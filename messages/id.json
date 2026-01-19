@@ -35,8 +35,8 @@
     "signOut": "Keluar"
   },
   "home": {
-    "title": "Acara di Da Lat",
-    "subtitle": "Temukan apa yang sedang terjadi di Da Lat",
+    "title": "Acara di Đà Lạt",
+    "subtitle": "Temukan apa yang sedang terjadi di Đà Lạt",
     "trendingMoments": "Momen tren",
     "viewAllMoments": "Lihat semua",
     "noEvents": "Tidak ada acara untuk ditampilkan.",
@@ -44,7 +44,7 @@
     "noHappening": "Tidak ada acara yang sedang berlangsung.",
     "noPast": "Belum ada acara yang sudah berlalu.",
     "createFirst": "Buat acara pertama",
-    "footer": "Dibuat dengan <heart></heart> untuk Da Lat, Vietnam",
+    "footer": "Dibuat dengan <heart></heart> untuk Đà Lạt, Vietnam",
     "tabs": {
       "upcoming": "Mendatang",
       "happening": "Sekarang",
@@ -60,7 +60,7 @@
   },
   "auth": {
     "welcomeTitle": "Selamat datang di ĐàLạt.app",
-    "signInDescription": "Masuk untuk menemukan acara di Da Lat",
+    "signInDescription": "Masuk untuk menemukan acara di Đà Lạt",
     "continueWithGoogle": "Lanjutkan dengan Google",
     "connecting": "Menghubungkan...",
     "backToEvents": "Kembali ke acara",
@@ -168,7 +168,7 @@
     "date": "Tanggal",
     "dateRequired": "Tanggal *",
     "time": "Waktu",
-    "timeRequired": "Waktu * (Da Lat)",
+    "timeRequired": "Waktu * (Đà Lạt)",
     "location": "Lokasi",
     "locationRequired": "Lokasi *",
     "locationPlaceholder": "Cari tempat di Vietnam...",
@@ -551,10 +551,10 @@
   "empty": {
     "noEventsYet": "Belum ada acara",
     "noUpcomingEvents": "Belum ada acara mendatang.",
-    "beFirstToCreate": "Jadilah yang pertama membuat acara di Da Lat!"
+    "beFirstToCreate": "Jadilah yang pertama membuat acara di Đà Lạt!"
   },
   "time": {
-    "daLat": "Da Lat"
+    "daLat": "Đà Lạt"
   },
   "invite": {
     "inviteGuests": "Undang Tamu",
@@ -592,8 +592,8 @@
   },
   "moments": {
     "moments": "Momen",
-    "discoverySubtitle": "Arsip visual Da Lat dari acara terbaru",
-    "discoveryDescription": "Jelajahi foto dan video yang dibagikan komunitas di acara Da Lat.",
+    "discoverySubtitle": "Arsip visual Đà Lạt dari acara terbaru",
+    "discoveryDescription": "Jelajahi foto dan video yang dibagikan komunitas di acara Đà Lạt.",
     "filters": {
       "all": "Semua",
       "photos": "Foto",
@@ -610,9 +610,7 @@
     "deleteConfirm": "Ini akan menghapus momen ini secara permanen. Tindakan ini tidak dapat dibatalkan.",
     "deleteError": "Gagal menghapus momen. Silakan coba lagi.",
     "addCaption": "Tambah keterangan...",
-    "captionPlaceholder": "Apa yang sedang terjadi?",
-    "uploadMedia": "Unggah foto atau video",
-    "textOnly": "Hanya teks",
+    "tapToUpload": "Ketuk untuk menambah foto atau video",
     "pending": "Menunggu persetujuan",
     "published": "Dipublikasikan",
     "viewMoments": "Lihat momen",
@@ -835,11 +833,11 @@
   "archive": {
     "events": "Acara",
     "eventsIn": "Acara di {month} {year}",
-    "description": "Temukan acara di Da Lat, Vietnam pada {month} {year}",
+    "description": "Temukan acara di Đà Lạt, Vietnam pada {month} {year}",
     "thisMonth": "Bulan Ini",
-    "thisMonthDescription": "Acara bulan ini di Da Lat",
+    "thisMonthDescription": "Acara bulan ini di Đà Lạt",
     "thisWeek": "Minggu Ini",
-    "thisWeekDescription": "Acara minggu ini di Da Lat",
+    "thisWeekDescription": "Acara minggu ini di Đà Lạt",
     "noEvents": "Tidak ada acara di {month} {year}",
     "noEventsThisMonth": "Tidak ada acara bulan ini",
     "noEventsThisWeek": "Tidak ada acara minggu ini",
@@ -875,8 +873,8 @@
     "noResults": "No events match your search"
   },
   "search": {
-    "title": "{query} events in Da Lat",
-    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "title": "{query} events in Đà Lạt",
+    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
     "breadcrumb": "Search: {query}",
     "resultsFor": "\"{query}\"",
     "resultCount": "{count, plural, one {# event found} other {# events found}}",

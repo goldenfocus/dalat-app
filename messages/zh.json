@@ -610,9 +610,7 @@
     "deleteConfirm": "这将永久删除此动态。此操作无法撤销。",
     "deleteError": "删除动态失败。请重试。",
     "addCaption": "添加说明...",
-    "captionPlaceholder": "发生了什么？",
-    "uploadMedia": "上传照片或视频",
-    "textOnly": "仅文字",
+    "tapToUpload": "点击添加照片或视频",
     "pending": "待审核",
     "published": "已发布",
     "viewMoments": "查看动态",
@@ -875,8 +873,8 @@
     "noResults": "No events match your search"
   },
   "search": {
-    "title": "{query} events in Da Lat",
-    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "title": "{query} events in Đà Lạt",
+    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
     "breadcrumb": "Search: {query}",
     "resultsFor": "\"{query}\"",
     "resultCount": "{count, plural, one {# event found} other {# events found}}",

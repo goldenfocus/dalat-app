@@ -610,9 +610,7 @@
     "deleteConfirm": "このモーメントは完全に削除されます。この操作は取り消せません。",
     "deleteError": "モーメントの削除に失敗しました。もう一度お試しください。",
     "addCaption": "キャプションを追加...",
-    "captionPlaceholder": "何が起きていますか？",
-    "uploadMedia": "写真または動画をアップロード",
-    "textOnly": "テキストのみ",
+    "tapToUpload": "タップして写真または動画を追加",
     "pending": "承認待ち",
     "published": "公開済み",
     "viewMoments": "モーメントを見る",
@@ -875,8 +873,8 @@
     "noResults": "No events match your search"
   },
   "search": {
-    "title": "{query} events in Da Lat",
-    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "title": "{query} events in Đà Lạt",
+    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
     "breadcrumb": "Search: {query}",
     "resultsFor": "\"{query}\"",
     "resultCount": "{count, plural, one {# event found} other {# events found}}",

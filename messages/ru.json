@@ -610,9 +610,7 @@
     "deleteConfirm": "Это навсегда удалит момент. Это действие нельзя отменить.",
     "deleteError": "Не удалось удалить момент. Попробуйте ещё раз.",
     "addCaption": "Добавить подпись...",
-    "captionPlaceholder": "Что происходит?",
-    "uploadMedia": "Загрузить фото или видео",
-    "textOnly": "Только текст",
+    "tapToUpload": "Нажмите, чтобы добавить фото или видео",
     "pending": "Ожидает одобрения",
     "published": "Опубликовано",
     "viewMoments": "Смотреть моменты",
@@ -875,8 +873,8 @@
     "noResults": "No events match your search"
   },
   "search": {
-    "title": "{query} events in Da Lat",
-    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "title": "{query} events in Đà Lạt",
+    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
     "breadcrumb": "Search: {query}",
     "resultsFor": "\"{query}\"",
     "resultCount": "{count, plural, one {# event found} other {# events found}}",

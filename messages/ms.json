@@ -35,8 +35,8 @@
     "signOut": "Log keluar"
   },
   "home": {
-    "title": "Acara di Da Lat",
-    "subtitle": "Temui apa yang berlaku di Da Lat",
+    "title": "Acara di Đà Lạt",
+    "subtitle": "Temui apa yang berlaku di Đà Lạt",
     "trendingMoments": "Momen trending",
     "viewAllMoments": "Lihat semua",
     "noEvents": "Tiada acara untuk dipaparkan.",
@@ -44,7 +44,7 @@
     "noHappening": "Tiada acara sedang berlangsung sekarang.",
     "noPast": "Belum ada acara lepas.",
     "createFirst": "Cipta acara pertama",
-    "footer": "Dibuat dengan <heart></heart> untuk Da Lat, Vietnam",
+    "footer": "Dibuat dengan <heart></heart> untuk Đà Lạt, Vietnam",
     "tabs": {
       "upcoming": "Akan Datang",
       "happening": "Sekarang",
@@ -60,7 +60,7 @@
   },
   "auth": {
     "welcomeTitle": "Selamat datang ke ĐàLạt.app",
-    "signInDescription": "Log masuk untuk menemui acara di Da Lat",
+    "signInDescription": "Log masuk untuk menemui acara di Đà Lạt",
     "continueWithGoogle": "Teruskan dengan Google",
     "connecting": "Menyambung...",
     "backToEvents": "Kembali ke acara",
@@ -168,7 +168,7 @@
     "date": "Tarikh",
     "dateRequired": "Tarikh *",
     "time": "Masa",
-    "timeRequired": "Masa * (Da Lat)",
+    "timeRequired": "Masa * (Đà Lạt)",
     "location": "Lokasi",
     "locationRequired": "Lokasi *",
     "locationPlaceholder": "Cari tempat di Vietnam...",
@@ -551,10 +551,10 @@
   "empty": {
     "noEventsYet": "Belum ada acara",
     "noUpcomingEvents": "Belum ada acara akan datang.",
-    "beFirstToCreate": "Jadilah yang pertama mencipta acara di Da Lat!"
+    "beFirstToCreate": "Jadilah yang pertama mencipta acara di Đà Lạt!"
   },
   "time": {
-    "daLat": "Da Lat"
+    "daLat": "Đà Lạt"
   },
   "invite": {
     "inviteGuests": "Jemput Tetamu",
@@ -592,8 +592,8 @@
   },
   "moments": {
     "moments": "Momen",
-    "discoverySubtitle": "Arkib visual Da Lat daripada acara terkini",
-    "discoveryDescription": "Terokai foto dan video yang dikongsi komuniti di acara Da Lat.",
+    "discoverySubtitle": "Arkib visual Đà Lạt daripada acara terkini",
+    "discoveryDescription": "Terokai foto dan video yang dikongsi komuniti di acara Đà Lạt.",
     "filters": {
       "all": "Semua",
       "photos": "Foto",
@@ -610,9 +610,7 @@
     "deleteConfirm": "Ini akan membuang momen ini secara kekal. Tindakan ini tidak boleh dibuat asal.",
     "deleteError": "Gagal memadam momen. Sila cuba lagi.",
     "addCaption": "Tambah kapsyen...",
-    "captionPlaceholder": "Apa yang berlaku?",
-    "uploadMedia": "Muat naik foto atau video",
-    "textOnly": "Teks sahaja",
+    "tapToUpload": "Ketik untuk tambah foto atau video",
     "pending": "Menunggu kelulusan",
     "published": "Diterbitkan",
     "viewMoments": "Lihat momen",
@@ -835,11 +833,11 @@
   "archive": {
     "events": "Acara",
     "eventsIn": "Acara pada {month} {year}",
-    "description": "Temui acara di Da Lat, Vietnam pada {month} {year}",
+    "description": "Temui acara di Đà Lạt, Vietnam pada {month} {year}",
     "thisMonth": "Bulan Ini",
-    "thisMonthDescription": "Acara bulan ini di Da Lat",
+    "thisMonthDescription": "Acara bulan ini di Đà Lạt",
     "thisWeek": "Minggu Ini",
-    "thisWeekDescription": "Acara minggu ini di Da Lat",
+    "thisWeekDescription": "Acara minggu ini di Đà Lạt",
     "noEvents": "Tiada acara pada {month} {year}",
     "noEventsThisMonth": "Tiada acara bulan ini",
     "noEventsThisWeek": "Tiada acara minggu ini",
@@ -875,8 +873,8 @@
     "noResults": "No events match your search"
   },
   "search": {
-    "title": "{query} events in Da Lat",
-    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "title": "{query} events in Đà Lạt",
+    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
     "breadcrumb": "Search: {query}",
     "resultsFor": "\"{query}\"",
     "resultCount": "{count, plural, one {# event found} other {# events found}}",

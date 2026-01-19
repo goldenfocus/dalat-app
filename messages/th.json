@@ -610,9 +610,7 @@
     "deleteConfirm": "การดำเนินการนี้จะลบ moment นี้อย่างถาวร ไม่สามารถยกเลิกได้",
     "deleteError": "ลบ moment ไม่สำเร็จ กรุณาลองอีกครั้ง",
     "addCaption": "เพิ่มคำอธิบาย...",
-    "captionPlaceholder": "เกิดอะไรขึ้น?",
-    "uploadMedia": "อัปโหลดรูปหรือวิดีโอ",
-    "textOnly": "ข้อความอย่างเดียว",
+    "tapToUpload": "แตะเพื่อเพิ่มรูปหรือวิดีโอ",
     "pending": "รอการอนุมัติ",
     "published": "เผยแพร่แล้ว",
     "viewMoments": "ดู moments",
@@ -875,8 +873,8 @@
     "noResults": "No events match your search"
   },
   "search": {
-    "title": "{query} events in Da Lat",
-    "description": "Find {query} events, workshops, and gatherings in Da Lat, Vietnam. Discover upcoming and past {query} activities.",
+    "title": "{query} events in Đà Lạt",
+    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
     "breadcrumb": "Search: {query}",
     "resultsFor": "\"{query}\"",
     "resultCount": "{count, plural, one {# event found} other {# events found}}",
