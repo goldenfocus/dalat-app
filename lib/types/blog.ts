@@ -3,8 +3,8 @@
 // Human-First, Machine-Complete content model
 // ============================================
 
-export type BlogPostSource = 'github_release' | 'manual';
-export type BlogPostStatus = 'draft' | 'published' | 'archived';
+export type BlogPostSource = 'github_release' | 'manual' | 'daily_summary';
+export type BlogPostStatus = 'draft' | 'experimental' | 'published' | 'deprecated' | 'archived';
 
 export interface BlogCategory {
   id: string;
@@ -47,6 +47,10 @@ export interface BlogPost {
   // Status
   status: BlogPostStatus;
   published_at: string | null;
+
+  // Daily summary metadata (Lane A)
+  summary_date: string | null;
+  areas_changed: string[] | null;
 
   created_at: string;
   updated_at: string;

@@ -13,6 +13,7 @@ import {
   Users,
   Download,
   LayoutDashboard,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Users,
   Download,
   LayoutDashboard,
+  FileText,
 };
 
 interface NavItem {

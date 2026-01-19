@@ -1,0 +1,74 @@
+import { NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+import { createClient } from "@/lib/supabase/server";
+import {
+  CHAT_BLOG_SYSTEM,
+  buildChatBlogPrompt,
+  type ChatBlogInput,
+  type ChatBlogOutput,
+} from "@/lib/blog/chat-blog-prompt";
+
+export async function POST(request: Request) {
+  try {
+    // Verify user is admin
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || !["admin", "superadmin"].includes(profile.role)) {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
+    // Parse input
+    const body = await request.json();
+    const { userInput, category, previousContext } = body as ChatBlogInput;
+
+    if (!userInput?.trim()) {
+      return NextResponse.json({ error: "Input is required" }, { status: 400 });
+    }
+
+    // Generate with Claude
+    const client = new Anthropic();
+    const response = await client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2048,
+      system: CHAT_BLOG_SYSTEM,
+      messages: [
+        {
+          role: "user",
+          content: buildChatBlogPrompt({ userInput, category, previousContext }),
+        },
+      ],
+    });
+
+    const textContent = response.content.find((c) => c.type === "text");
+    if (!textContent || textContent.type !== "text") {
+      return NextResponse.json({ error: "No response from AI" }, { status: 500 });
+    }
+
+    // Parse JSON response
+    let jsonText = textContent.text.trim();
+    if (jsonText.startsWith("```json")) jsonText = jsonText.slice(7);
+    if (jsonText.startsWith("```")) jsonText = jsonText.slice(3);
+    if (jsonText.endsWith("```")) jsonText = jsonText.slice(0, -3);
+
+    const result = JSON.parse(jsonText.trim()) as ChatBlogOutput;
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("[blog/generate] Error:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Generation failed" },
+      { status: 500 }
+    );
+  }
+}

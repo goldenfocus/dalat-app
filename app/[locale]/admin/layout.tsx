@@ -99,6 +99,12 @@ export default async function AdminLayout({
       icon: "Download",
       show: isAdmin,
     },
+    {
+      href: "/admin/blog",
+      label: t("navBlog"),
+      icon: "FileText",
+      show: isAdmin,
+    },
   ].filter((item) => item.show);
 
   // Determine role label
