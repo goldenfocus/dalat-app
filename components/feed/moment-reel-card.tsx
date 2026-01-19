@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Home } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
+import { triggerHaptic } from "@/lib/haptics";
 import { ImmersiveImage } from "@/components/events/immersive-image";
 import { VideoPlayer } from "./video-player";
 import { MomentEngagementBar } from "./moment-engagement-bar";
@@ -50,9 +52,14 @@ export function MomentReelCard({
         )}
       </div>
 
-      {/* User attribution (top-left) */}
-      <div className="absolute top-0 inset-x-0 z-20 pt-[env(safe-area-inset-top)]">
-        <div className="p-4">
+      {/* Top bar: user attribution (left) + home button (right) */}
+      {/* Extra padding to clear floating filter bar on moments discovery page */}
+      <div
+        className="absolute top-0 inset-x-0 z-20"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 3rem)" }}
+      >
+        <div className="px-4 py-2 flex items-center justify-between">
+          {/* User attribution */}
           <Link
             href={`/${moment.username || moment.user_id}`}
             className="inline-flex items-center gap-2.5 active:opacity-80 transition-opacity"
@@ -69,6 +76,16 @@ export function MomentReelCard({
             <span className="text-white font-medium text-sm drop-shadow-lg">
               @{moment.username || "user"}
             </span>
+          </Link>
+
+          {/* Home button - navigate back */}
+          <Link
+            href="/"
+            onClick={() => triggerHaptic("selection")}
+            className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm active:scale-95 transition-transform"
+            aria-label="Go home"
+          >
+            <Home className="w-5 h-5 text-white" />
           </Link>
         </div>
       </div>

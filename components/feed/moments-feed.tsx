@@ -143,7 +143,7 @@ export function MomentsFeed({
     <div className="flex justify-center bg-black min-h-screen">
       <div
         ref={containerRef}
-        className="w-full max-w-lg lg:max-w-xl h-[100dvh] overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0"
+        className="w-full max-w-lg lg:max-w-xl h-[100dvh] overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide"
       >
         {moments.map((moment, index) => (
           <MomentReelCard

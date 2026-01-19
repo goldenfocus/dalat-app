@@ -42,16 +42,16 @@ export function MomentsDiscoveryMobile({
   initialMoments,
   initialHasMore,
 }: MomentsDiscoveryProps) {
-  const t = useTranslations("moments");
   const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur">
-        <div className="px-4 pt-4 pb-3 flex items-center justify-between">
-          <h1 className="text-lg font-semibold">{t("moments")}</h1>
-        </div>
-        <div className="px-4 pb-3">
+    <div className="min-h-screen bg-black text-white relative">
+      {/* Floating filter bar - overlays the video TikTok-style */}
+      <div
+        className="fixed top-0 left-0 right-0 z-40 pointer-events-none"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="px-4 pt-3 pb-2 pointer-events-auto">
           <MomentsFilterBar
             options={options}
             activeKey={activeKey}
