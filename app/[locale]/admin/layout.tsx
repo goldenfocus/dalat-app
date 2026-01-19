@@ -100,6 +100,12 @@ export default async function AdminLayout({
       show: isAdmin,
     },
     {
+      href: "/admin/personas",
+      label: "AI Personas",
+      icon: "Sparkles",
+      show: isAdmin,
+    },
+    {
       href: "/admin/blog",
       label: t("navBlog"),
       icon: "FileText",

@@ -14,6 +14,7 @@ import {
   Download,
   LayoutDashboard,
   FileText,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Download,
   LayoutDashboard,
   FileText,
+  Sparkles,
 };
 
 interface NavItem {

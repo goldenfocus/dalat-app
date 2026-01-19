@@ -124,6 +124,18 @@ export interface Organizer {
   profiles?: Profile;
 }
 
+// AI Persona for image generation @mentions
+export interface Persona {
+  id: string;
+  handle: string;
+  name: string;
+  context: string | null;
+  style: string | null;
+  reference_images: string[];
+  created_at: string;
+  updated_at: string;
+}
+
 // ============================================
 // Tribe Types (V2 - Enhanced Membership System)
 // ============================================

@@ -5,53 +5,75 @@
  * Example: "Add @riley to the poster" includes Riley's reference photos for the AI.
  */
 
-export interface Persona {
-  /** Display name */
-  name: string;
-  /** Handle for @mentions (lowercase) */
-  handle: string;
-  /** URLs to reference images (1-3 photos work best) */
-  referenceImages: string[];
-  /** Brief context for the AI about this person */
-  context?: string;
-  /** Preferred rendering style */
-  style?: string;
+import { createClient } from "@supabase/supabase-js";
+import type { Persona } from "@/lib/types";
+
+// Cache for personas (server-side, revalidates on each request in dev)
+let personasCache: Map<string, Persona> | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 60 * 1000; // 1 minute
+
+/**
+ * Get Supabase client for server-side persona fetching
+ */
+function getSupabase() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error("Supabase credentials not configured");
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey);
 }
 
 /**
- * Known personas for the dalat.app community
- *
- * Add reference images to Supabase storage under 'personas/' bucket,
- * then add the URLs here. 1-3 clear photos per person works best.
+ * Fetch all personas from the database
  */
-export const PERSONAS: Record<string, Persona> = {
-  riley: {
-    name: "Riley",
-    handle: "riley",
-    referenceImages: [
-      // TODO: Add Riley's reference image URLs
-      // e.g., "https://your-supabase.supabase.co/storage/v1/object/public/personas/riley-1.jpg"
-    ],
-    context: "founder of the hackathon",
-    style: "friendly illustrated style",
-  },
-  yan: {
-    name: "Yan",
-    handle: "yan",
-    referenceImages: [
-      // TODO: Add Yan's reference image URLs
-    ],
-    context: "developer and community member",
-  },
-};
+async function fetchPersonas(): Promise<Map<string, Persona>> {
+  const now = Date.now();
+
+  // Return cache if valid
+  if (personasCache && now - cacheTimestamp < CACHE_TTL) {
+    return personasCache;
+  }
+
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from("personas")
+      .select("*")
+      .order("name");
+
+    if (error) {
+      console.error("[personas] Failed to fetch:", error);
+      return personasCache || new Map();
+    }
+
+    // Build handle -> persona map
+    const map = new Map<string, Persona>();
+    for (const persona of data || []) {
+      map.set(persona.handle.toLowerCase(), persona);
+    }
+
+    personasCache = map;
+    cacheTimestamp = now;
+
+    return map;
+  } catch (err) {
+    console.error("[personas] Error fetching:", err);
+    return personasCache || new Map();
+  }
+}
 
 /**
  * Extract all @mentions from a prompt and return matching personas
  */
-export function extractPersonaMentions(prompt: string): {
+export async function extractPersonaMentions(prompt: string): Promise<{
   personas: Persona[];
   cleanedPrompt: string;
-} {
+}> {
+  const personas = await fetchPersonas();
   const mentionPattern = /@(\w+)/g;
   const foundPersonas: Persona[] = [];
   const seenHandles = new Set<string>();
@@ -60,7 +82,7 @@ export function extractPersonaMentions(prompt: string): {
   let match;
   while ((match = mentionPattern.exec(prompt)) !== null) {
     const handle = match[1].toLowerCase();
-    const persona = PERSONAS[handle];
+    const persona = personas.get(handle);
 
     if (persona && !seenHandles.has(handle)) {
       foundPersonas.push(persona);
@@ -70,7 +92,7 @@ export function extractPersonaMentions(prompt: string): {
 
   // Replace @mentions with names in the prompt
   const cleanedPrompt = prompt.replace(mentionPattern, (match, handle) => {
-    const persona = PERSONAS[handle.toLowerCase()];
+    const persona = personas.get(handle.toLowerCase());
     if (persona) {
       const contextHint = persona.context ? ` (${persona.context})` : "";
       return `${persona.name}${contextHint}`;
@@ -84,13 +106,14 @@ export function extractPersonaMentions(prompt: string): {
 /**
  * Check if a prompt contains any persona @mentions
  */
-export function hasPersonaMentions(prompt: string): boolean {
+export async function hasPersonaMentions(prompt: string): Promise<boolean> {
+  const personas = await fetchPersonas();
   const mentionPattern = /@(\w+)/g;
   let match;
 
   while ((match = mentionPattern.exec(prompt)) !== null) {
     const handle = match[1].toLowerCase();
-    if (PERSONAS[handle]) {
+    if (personas.has(handle)) {
       return true;
     }
   }
@@ -102,12 +125,12 @@ export function hasPersonaMentions(prompt: string): boolean {
  * Fetch reference images as base64 for inclusion in AI requests
  */
 export async function fetchPersonaImages(
-  personas: Persona[]
+  personaList: Persona[]
 ): Promise<Array<{ persona: Persona; images: Array<{ data: string; mimeType: string }> }>> {
   const results = await Promise.all(
-    personas.map(async (persona) => {
+    personaList.map(async (persona) => {
       const images = await Promise.all(
-        persona.referenceImages
+        (persona.reference_images || [])
           .filter((url) => url) // Skip empty URLs
           .map(async (url) => {
             try {
@@ -139,6 +162,15 @@ export async function fetchPersonaImages(
 /**
  * Get all persona handles for autocomplete/suggestions
  */
-export function getPersonaHandles(): string[] {
-  return Object.keys(PERSONAS);
+export async function getPersonaHandles(): Promise<string[]> {
+  const personas = await fetchPersonas();
+  return Array.from(personas.keys());
+}
+
+/**
+ * Clear the personas cache (useful after admin updates)
+ */
+export function clearPersonasCache(): void {
+  personasCache = null;
+  cacheTimestamp = 0;
 }

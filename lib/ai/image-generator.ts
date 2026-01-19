@@ -196,8 +196,8 @@ export async function generateImage(options: GenerateOptions): Promise<string> {
   const model = getModel();
 
   // Check for @persona mentions and include reference images
-  if (hasPersonaMentions(prompt)) {
-    const { personas, cleanedPrompt } = extractPersonaMentions(prompt);
+  if (await hasPersonaMentions(prompt)) {
+    const { personas, cleanedPrompt } = await extractPersonaMentions(prompt);
     const personaImages = await fetchPersonaImages(personas);
 
     if (personaImages.length > 0) {
@@ -295,8 +295,8 @@ export async function refineImage(options: RefineOptions): Promise<string> {
   const model = getModel();
 
   // Check for @persona mentions and include reference images
-  if (hasPersonaMentions(refinementPrompt)) {
-    const { personas, cleanedPrompt } = extractPersonaMentions(refinementPrompt);
+  if (await hasPersonaMentions(refinementPrompt)) {
+    const { personas, cleanedPrompt } = await extractPersonaMentions(refinementPrompt);
     const personaImages = await fetchPersonaImages(personas);
 
     if (personaImages.length > 0) {
