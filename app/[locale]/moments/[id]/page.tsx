@@ -274,6 +274,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
 
   // Determine navigation mode based on where user came from
   const isDiscoveryMode = from === "moments";
+  const isProfileMode = from === "profile";
 
   // Get adjacent moments for navigation (global feed or event-scoped)
   const { prevId, nextId, prevEventId, nextEventId } = isDiscoveryMode
@@ -287,8 +288,12 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
   const nextCrossesEvent = nextEventId && nextEventId !== moment.event_id;
 
   // Build navigation URLs with context preservation
-  const navParam = isDiscoveryMode ? "?from=moments" : "";
-  const backUrl = isDiscoveryMode ? "/moments" : `/events/${event.slug}/moments`;
+  const navParam = isDiscoveryMode ? "?from=moments" : isProfileMode ? "?from=profile" : "";
+  const backUrl = isDiscoveryMode
+    ? "/moments"
+    : isProfileMode
+      ? `/${profile?.username || moment.user_id}`
+      : `/events/${event.slug}/moments`;
 
   const momentSchema = generateMomentSchema(moment, locale);
   const breadcrumbSchema = generateBreadcrumbSchema(
@@ -332,6 +337,8 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
                 src={moment.media_url}
                 className="w-full h-full object-contain"
                 controls
+                autoPlay
+                muted
                 playsInline
               />
             ) : (
