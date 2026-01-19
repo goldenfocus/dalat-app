@@ -2,9 +2,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node -e \"const fs=require('fs'); if(fs.existsSync('middleware.ts')){console.error('\\x1b[31mERROR: middleware.ts exists! Next.js 16 uses proxy.ts instead.\\nDelete middleware.ts and use proxy.ts only.\\x1b[0m');process.exit(1)}\"",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . && npm run check:no-middleware",
+    "check:no-middleware": "node -e \"const fs=require('fs'); if(fs.existsSync('middleware.ts')){console.error('\\x1b[31mERROR: middleware.ts exists! Next.js 16 uses proxy.ts instead.\\x1b[0m');process.exit(1)}else{console.log('✓ No middleware.ts (correct for Next.js 16)')}\"",
     "test": "vitest",
     "test:run": "vitest run"
   },

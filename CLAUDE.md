@@ -1,11 +1,19 @@
 # dalat.app Development Guidelines
 
-## Next.js 16: Use proxy.ts NOT middleware.ts
+## ⛔ CRITICAL: NEVER Create middleware.ts
 
-**IMPORTANT:** This project uses Next.js 16 which renamed middleware to proxy.
+**THIS HAS BROKEN PRODUCTION MULTIPLE TIMES. READ CAREFULLY.**
 
-- ✅ Use `proxy.ts` for request interception/middleware logic
-- ❌ Do NOT create `middleware.ts` — Next.js 16 forbids having both files
+Next.js 16 renamed `middleware.ts` to `proxy.ts`. Having both files **crashes the entire app**.
+
+| File | Status |
+|------|--------|
+| `proxy.ts` | ✅ Use this for all request interception |
+| `middleware.ts` | ⛔ **NEVER CREATE THIS FILE** |
+
+The build will fail if `middleware.ts` exists (enforced by `prebuild` script).
+
+**If you need middleware functionality:** Edit `proxy.ts` at the project root. That's it.
 
 ## Mobile-First Touch Targets
 
