@@ -29,6 +29,7 @@ import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { Linkify } from "@/lib/linkify";
 import { MomentsPreview } from "@/components/moments";
 import { SponsorDisplay } from "@/components/events/sponsor-display";
+import { ClickableTagList } from "@/components/events/clickable-tag-list";
 import { SiteHeader } from "@/components/site-header";
 import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries } from "@/lib/types";
 
@@ -619,6 +620,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               {eventTranslations.description && (
                 <div className="text-muted-foreground whitespace-pre-wrap">
                   <Linkify text={eventTranslations.description} />
+                </div>
+              )}
+
+              {/* Clickable tags for category discovery */}
+              {event.ai_tags && event.ai_tags.length > 0 && (
+                <div className="mt-4">
+                  <ClickableTagList tags={event.ai_tags} />
                 </div>
               )}
             </div>
