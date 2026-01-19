@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { User, X, Upload, Loader2, Plus } from "lucide-react";
+import { X, Loader2, ImagePlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,8 +12,8 @@ interface PersonaImageUploadProps {
   onImagesChange: (urls: string[]) => void;
 }
 
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_IMAGES = 3;
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB per file
+const MAX_IMAGES = 5; // More angles = better recognition
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export function PersonaImageUpload({
@@ -21,79 +21,102 @@ export function PersonaImageUpload({
   currentImages,
   onImagesChange,
 }: PersonaImageUploadProps) {
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploadingCount, setUploadingCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = (file: File): string | null => {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return "Only JPG, PNG, and WebP images are allowed";
+      return `${file.name}: Only JPG, PNG, and WebP allowed`;
     }
     if (file.size > MAX_SIZE) {
-      return "File must be under 5MB";
+      return `${file.name}: Must be under 5MB`;
     }
     return null;
   };
 
-  const uploadImage = async (file: File) => {
+  const uploadFiles = async (files: File[]) => {
     setError(null);
 
-    if (currentImages.length >= MAX_IMAGES) {
+    const remainingSlots = MAX_IMAGES - currentImages.length;
+    if (remainingSlots <= 0) {
       setError(`Maximum ${MAX_IMAGES} images allowed`);
       return;
     }
 
-    const validationError = validateFile(file);
-    if (validationError) {
-      setError(validationError);
-      return;
+    // Take only as many files as we have slots for
+    const filesToUpload = files.slice(0, remainingSlots);
+
+    // Validate all files first
+    const errors: string[] = [];
+    const validFiles: File[] = [];
+
+    for (const file of filesToUpload) {
+      const validationError = validateFile(file);
+      if (validationError) {
+        errors.push(validationError);
+      } else {
+        validFiles.push(file);
+      }
     }
 
-    setIsUploading(true);
+    if (errors.length > 0) {
+      setError(errors.join("; "));
+    }
+
+    if (validFiles.length === 0) return;
+
+    setUploadingCount(validFiles.length);
 
     try {
       const supabase = createClient();
-
-      // Use personaId or temp ID
       const id = personaId || `temp-${Date.now()}`;
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const uploadedUrls: string[] = [];
 
-      // Upload
-      const { error: uploadError } = await supabase.storage
-        .from("persona-references")
-        .upload(fileName, file, {
-          cacheControl: "31536000",
-          upsert: false,
-        });
+      // Upload all files in parallel
+      await Promise.all(
+        validFiles.map(async (file) => {
+          const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+          const fileName = `${id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-      if (uploadError) throw uploadError;
+          const { error: uploadError } = await supabase.storage
+            .from("persona-references")
+            .upload(fileName, file, {
+              cacheControl: "31536000",
+              upsert: false,
+            });
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("persona-references").getPublicUrl(fileName);
+          if (uploadError) throw uploadError;
 
-      onImagesChange([...currentImages, publicUrl]);
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("persona-references").getPublicUrl(fileName);
+
+          uploadedUrls.push(publicUrl);
+        })
+      );
+
+      onImagesChange([...currentImages, ...uploadedUrls]);
     } catch (err) {
       console.error("Upload error:", err);
-      setError("Failed to upload. Please try again.");
+      setError("Failed to upload some images. Please try again.");
     } finally {
-      setIsUploading(false);
+      setUploadingCount(0);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadImage(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) uploadFiles(files);
     e.target.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) uploadImage(file);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) uploadFiles(files);
   };
 
   const handleRemove = async (index: number) => {
@@ -113,6 +136,9 @@ export function PersonaImageUpload({
     }
   };
 
+  const isUploading = uploadingCount > 0;
+  const slotsRemaining = MAX_IMAGES - currentImages.length;
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -125,11 +151,12 @@ export function PersonaImageUpload({
         ref={fileInputRef}
         type="file"
         accept={ALLOWED_TYPES.join(",")}
+        multiple
         onChange={handleFileSelect}
         className="hidden"
       />
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
         {/* Existing images */}
         {currentImages.map((url, index) => (
           <div
@@ -154,7 +181,7 @@ export function PersonaImageUpload({
         ))}
 
         {/* Upload slot */}
-        {currentImages.length < MAX_IMAGES && (
+        {slotsRemaining > 0 && (
           <div
             onClick={() => !isUploading && fileInputRef.current?.click()}
             onDragOver={(e) => {
@@ -172,11 +199,18 @@ export function PersonaImageUpload({
             )}
           >
             {isUploading ? (
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <>
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <span className="text-xs text-muted-foreground mt-1">
+                  {uploadingCount} uploading...
+                </span>
+              </>
             ) : (
               <>
-                <Plus className="w-6 h-6 text-muted-foreground mb-1" />
-                <span className="text-xs text-muted-foreground">Add photo</span>
+                <ImagePlus className="w-6 h-6 text-muted-foreground mb-1" />
+                <span className="text-xs text-muted-foreground text-center px-1">
+                  Add {slotsRemaining > 1 ? "photos" : "photo"}
+                </span>
               </>
             )}
           </div>
@@ -185,8 +219,7 @@ export function PersonaImageUpload({
 
       {error && <p className="text-xs text-red-500">{error}</p>}
       <p className="text-xs text-muted-foreground">
-        Upload 1-3 clear reference photos. The AI will use these to recognize
-        and render this person in generated images.
+        Upload 1-5 clear reference photos (select multiple at once). More angles = better AI recognition.
       </p>
     </div>
   );
