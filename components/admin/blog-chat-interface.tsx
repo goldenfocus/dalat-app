@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Send, Sparkles, ArrowRight, RotateCcw, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { triggerTranslation } from "@/lib/translations-client";
 import { VoiceRecorder } from "./voice-recorder";
 import type { BlogCategory } from "@/lib/types/blog";
 import type { ChatBlogOutput } from "@/lib/blog/chat-blog-prompt";
@@ -141,6 +142,16 @@ export function BlogChatInterface({ categories }: BlogChatInterfaceProps) {
       });
 
       if (createError) throw createError;
+
+      // Trigger translation for all translatable fields (fire-and-forget)
+      if (data?.post_id) {
+        triggerTranslation("blog", data.post_id, [
+          { field_name: "title", text: editedTitle },
+          { field_name: "story_content", text: editedStory },
+          { field_name: "technical_content", text: editedTechnical },
+          { field_name: "meta_description", text: generatedContent.meta_description },
+        ]);
+      }
 
       // Redirect to edit page or list
       if (data?.post_id) {

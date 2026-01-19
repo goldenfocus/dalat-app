@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { BlogPostGrid } from "@/components/blog/blog-post-grid";
 import { CategoryTabs } from "@/components/blog/category-tabs";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
+import { getBlogTranslationsBatch } from "@/lib/translations";
 import type { Locale } from "@/lib/i18n/routing";
+import type { ContentLocale } from "@/lib/types";
 import type { BlogPostWithCategory, BlogCategory } from "@/lib/types/blog";
 
 interface PageProps {
@@ -69,6 +70,22 @@ export default async function BlogPage({ params, searchParams }: PageProps) {
     getCategories(),
   ]);
 
+  // Fetch translations for all posts in a single query
+  const postIds = posts.map((p) => p.id);
+  const translations = postIds.length > 0
+    ? await getBlogTranslationsBatch(postIds, locale as ContentLocale)
+    : new Map();
+
+  // Apply translations to posts
+  const translatedPosts = posts.map((post) => {
+    const translation = translations.get(post.id);
+    return {
+      ...post,
+      title: translation?.title || post.title,
+      story_content: translation?.story_content || post.story_content,
+    };
+  });
+
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
@@ -99,8 +116,8 @@ export default async function BlogPage({ params, searchParams }: PageProps) {
           />
 
           {/* Posts Grid */}
-          {posts.length > 0 ? (
-            <BlogPostGrid posts={posts} />
+          {translatedPosts.length > 0 ? (
+            <BlogPostGrid posts={translatedPosts} />
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <p>No posts yet. Check back soon!</p>

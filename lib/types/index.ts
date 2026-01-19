@@ -33,8 +33,8 @@ export const LOCALE_NAMES: Record<ContentLocale, string> = {
 
 // Translation types
 export type TranslationStatus = 'auto' | 'reviewed' | 'edited';
-export type TranslationContentType = 'event' | 'moment' | 'profile';
-export type TranslationFieldName = 'title' | 'description' | 'text_content' | 'bio';
+export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog';
+export type TranslationFieldName = 'title' | 'description' | 'text_content' | 'bio' | 'story_content' | 'technical_content' | 'meta_description';
 
 export interface ContentTranslation {
   id: string;

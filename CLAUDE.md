@@ -87,3 +87,72 @@ The component calls `POST /api/enhance-text` with:
 ```
 
 Returns: `{ "enhanced": "improved text" }`
+
+## Content Translation (The Global Twelve)
+
+**IMPORTANT:** All user-generated content must be translated to support the 12 languages: en, vi, ko, zh, ru, fr, ja, ms, th, de, es, id.
+
+### When to Trigger Translation
+
+After creating or updating any translatable content, call `triggerTranslation()` to translate it to all 12 languages:
+
+```tsx
+import { triggerTranslation } from "@/lib/translations-client";
+
+// After creating content (fire-and-forget)
+triggerTranslation("event", eventId, [
+  { field_name: "title", text: title },
+  { field_name: "description", text: description },
+]);
+```
+
+### Supported Content Types
+
+| Content Type | Translatable Fields |
+|--------------|---------------------|
+| `event` | `title`, `description` |
+| `moment` | `text_content` |
+| `profile` | `bio` |
+| `blog` | `title`, `story_content`, `technical_content`, `meta_description` |
+
+### Rendering Translated Content
+
+For single items, use the appropriate helper:
+```tsx
+import { getBlogTranslations, getEventWithTranslations } from "@/lib/translations";
+
+// Blog post
+const translations = await getBlogTranslations(post.id, locale, { ... });
+
+// Event
+const event = await getEventWithTranslations(slug, locale);
+```
+
+For list pages, use batch fetching for efficiency:
+```tsx
+import { getBlogTranslationsBatch } from "@/lib/translations";
+
+const translations = await getBlogTranslationsBatch(postIds, locale);
+```
+
+### Adding New Content Types
+
+To add translation support for a new content type:
+
+1. **Update types** in `lib/types/index.ts`:
+   - Add to `TranslationContentType` union
+   - Add new fields to `TranslationFieldName` if needed
+
+2. **Create migration** to update database CHECK constraints:
+   - Update `content_translations.content_type` constraint
+   - Update `content_translations.field_name` constraint if new fields
+   - Add `source_locale` column to the new content table
+   - Update RLS policies for the new content type
+
+3. **Trigger translation** in the creation/update flow:
+   - Import `triggerTranslation` from `lib/translations-client.ts`
+   - Call it after successful creation/update
+
+4. **Fetch translations** when rendering:
+   - Use `getTranslationsWithFallback()` for single items
+   - Create a batch function for list pages if needed

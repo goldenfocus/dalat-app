@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, Languages } from "lucide-react";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
@@ -13,7 +13,9 @@ import { MarkdownRenderer } from "@/components/blog/markdown-renderer";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateBlogArticleSchema } from "@/lib/structured-data";
+import { getBlogTranslations } from "@/lib/translations";
 import type { Locale } from "@/lib/i18n/routing";
+import type { ContentLocale } from "@/lib/types";
 import type { BlogPostFull } from "@/lib/types/blog";
 
 interface PageProps {
@@ -62,6 +64,19 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
+  // Fetch translations for this blog post
+  const translations = await getBlogTranslations(
+    post.id,
+    locale as ContentLocale,
+    {
+      title: post.title,
+      story_content: post.story_content,
+      technical_content: post.technical_content,
+      meta_description: post.meta_description,
+      source_locale: (post as BlogPostFull & { source_locale?: string }).source_locale,
+    }
+  );
+
   // Verify category matches (or redirect)
   const actualCategory = post.category_slug || "changelog";
   if (category !== actualCategory) {
@@ -77,7 +92,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       { name: "Home", url: "/" },
       { name: "Blog", url: "/blog" },
       { name: post.category_name || "Changelog", url: `/blog?category=${actualCategory}` },
-      { name: post.title, url: `/blog/${actualCategory}/${slug}` },
+      { name: translations.translated_title, url: `/blog/${actualCategory}/${slug}` },
     ],
     locale
   );
@@ -106,7 +121,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             <div className="relative aspect-[2/1] rounded-xl overflow-hidden mb-8 bg-muted">
               <Image
                 src={post.cover_image_url}
-                alt={post.title}
+                alt={translations.translated_title}
                 fill
                 className="object-cover"
                 priority
@@ -131,16 +146,22 @@ export default async function BlogPostPage({ params }: PageProps) {
               <Calendar className="w-4 h-4" />
               {format(publishedDate, "MMMM d, yyyy")}
             </span>
+            {translations.is_translated && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
+                <Languages className="w-3 h-3" />
+                Translated
+              </span>
+            )}
           </div>
 
           {/* Title */}
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-8">
-            {post.title}
+            {translations.translated_title}
           </h1>
 
           {/* Story Content (Human-readable) */}
           <div className="prose prose-lg dark:prose-invert max-w-none mb-8">
-            <MarkdownRenderer content={post.story_content} />
+            <MarkdownRenderer content={translations.translated_story_content} />
           </div>
 
           {/* CTA Button */}
@@ -157,14 +178,14 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* Share */}
           <div className="flex items-center justify-center mb-8">
             <BlogShareButtons
-              title={post.title}
+              title={translations.translated_title}
               url={`/blog/${actualCategory}/${slug}`}
               shareText={post.social_share_text}
             />
           </div>
 
           {/* Technical Details Accordion */}
-          <TechnicalAccordion content={post.technical_content} />
+          <TechnicalAccordion content={translations.translated_technical_content} />
 
           {/* Related Posts (future) */}
           {/* {post.related_feature_slugs.length > 0 && (
