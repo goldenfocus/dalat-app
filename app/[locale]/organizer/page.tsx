@@ -126,7 +126,7 @@ export default async function OrganizerDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         <StatCard
           title={t("myEvents")}
           value={stats.eventsCount}
@@ -191,7 +191,7 @@ export default async function OrganizerDashboard() {
               return (
                 <div
                   key={event.id}
-                  className="flex items-center justify-between px-6 py-3"
+                  className="flex items-center justify-between px-4 sm:px-6 py-3"
                 >
                   <div className="min-w-0 flex-1">
                     <Link

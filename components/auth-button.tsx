@@ -25,7 +25,7 @@ export async function AuthButton() {
   const subscriberHash = generateSubscriberHash(godMode.isActive ? godMode.realAdminId! : user.id);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 shrink-0">
       <NotificationInbox
         subscriberId={godMode.isActive ? godMode.realAdminId! : user.id}
         subscriberHash={subscriberHash}

@@ -33,7 +33,7 @@ export function SettingsTabs() {
           key={tab.href}
           href={tab.href}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all",
+            "flex-1 flex items-center justify-center gap-2 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all truncate",
             tab.active
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground hover:text-foreground"

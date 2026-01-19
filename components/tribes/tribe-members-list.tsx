@@ -123,7 +123,7 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
                     variant="ghost"
                     size="icon"
                     disabled={processingId === member.user_id}
-                    className="p-2"
+                    className="h-10 w-10"
                   >
                     {processingId === member.user_id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

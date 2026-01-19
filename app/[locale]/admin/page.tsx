@@ -35,7 +35,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Summary Stats Grid */}
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         <StatCard
           title={t("totalUsers")}
           value={overview?.users?.total ?? 0}

@@ -42,7 +42,7 @@ function AttendeeChip({
           className={`w-5 h-5 rounded-full ${isSecondary ? "bg-muted-foreground/20" : "bg-primary/20"}`}
         />
       )}
-      <span>
+      <span className="truncate max-w-[100px]">
         {rsvp.profiles?.display_name || rsvp.profiles?.username}
       </span>
       {rsvp.plus_ones > 0 && (

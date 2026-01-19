@@ -39,7 +39,7 @@ export function UploadStats({ stats, status }: UploadStatsProps) {
       </div>
 
       {/* Stats row */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+      <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-1 text-sm">
         <span className="font-medium">
           {stats.complete} / {stats.total} {t("complete")}
         </span>

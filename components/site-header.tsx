@@ -23,18 +23,18 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
           </Link>
           <LocalePicker />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Link
             href="/moments"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md"
+            className="hidden sm:flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md"
           >
             {tNav("moments")}
           </Link>
           {actions}
           <Link href="/events/new" prefetch={false}>
-            <Button size="sm" variant="outline">
-              <Plus className="w-4 h-4 mr-1" />
-              {tNav("events")}
+            <Button size="sm" variant="outline" className="px-2 sm:px-3">
+              <Plus className="w-4 h-4 sm:mr-1" />
+              <span className="hidden sm:inline">{tNav("events")}</span>
             </Button>
           </Link>
           <Suspense>
