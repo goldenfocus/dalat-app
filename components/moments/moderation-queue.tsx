@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import type { MomentWithProfile } from "@/lib/types";
 
 interface ModerationQueueProps {
@@ -130,17 +131,11 @@ export function ModerationQueue({ moments: initialMoments }: ModerationQueueProp
               <div className="p-4 space-y-3">
                 {/* User info */}
                 <div className="flex items-center gap-2">
-                  {moment.avatar_url ? (
-                    <Image
-                      src={moment.avatar_url}
-                      alt={moment.display_name || moment.username || "User avatar"}
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-muted" />
-                  )}
+                  <UserAvatar
+                    src={moment.avatar_url}
+                    alt={moment.display_name || moment.username || ""}
+                    size="sm"
+                  />
                   <div>
                     <p className="text-sm font-medium">
                       {moment.display_name || moment.username || tCommon("anonymous")}

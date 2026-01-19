@@ -3,6 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { getLocale, getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
@@ -258,15 +259,11 @@ export default async function ProfilePage({ params }: PageProps) {
 
         {/* Profile header */}
         <div className="flex items-start gap-6 mb-8">
-          {profile.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt=""
-              className="w-24 h-24 rounded-full"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-primary/20" />
-          )}
+          <UserAvatar
+            src={profile.avatar_url}
+            alt={profile.display_name || profile.username || ""}
+            size="xl"
+          />
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold">

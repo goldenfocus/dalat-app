@@ -3,6 +3,7 @@
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import type { Rsvp, Profile } from "@/lib/types";
 
 type RsvpWithProfile = Rsvp & { profiles: Profile };
@@ -32,17 +33,12 @@ function AttendeeChip({
           : "bg-muted hover:bg-muted/80"
       }`}
     >
-      {rsvp.profiles?.avatar_url ? (
-        <img
-          src={rsvp.profiles.avatar_url}
-          alt=""
-          className={`w-5 h-5 rounded-full ${isSecondary ? "opacity-60" : ""}`}
-        />
-      ) : (
-        <div
-          className={`w-5 h-5 rounded-full ${isSecondary ? "bg-muted-foreground/20" : "bg-primary/20"}`}
-        />
-      )}
+      <UserAvatar
+        src={rsvp.profiles?.avatar_url}
+        size="xs"
+        className={isSecondary ? "opacity-60" : ""}
+        fallbackClassName={isSecondary ? "bg-muted-foreground/20" : undefined}
+      />
       <span className="truncate max-w-[100px]">
         {rsvp.profiles?.display_name || rsvp.profiles?.username}
       </span>

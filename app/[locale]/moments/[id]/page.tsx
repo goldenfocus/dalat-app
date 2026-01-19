@@ -3,6 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, MapPin } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import {
   vi, ko, zhCN, ru, fr, ja, ms, th, de, es, id as idLocale, enUS
@@ -419,17 +420,11 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
           {/* User */}
           <div className="flex items-center gap-3">
             <Link href={`/${profile?.username || moment.user_id}`}>
-              {profile?.avatar_url ? (
-                <Image
-                  src={profile.avatar_url}
-                  alt={profile?.display_name || profile?.username || "User avatar"}
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-primary/20" />
-              )}
+              <UserAvatar
+                src={profile?.avatar_url}
+                alt={profile?.display_name || profile?.username || ""}
+                size="md"
+              />
             </Link>
             <div className="flex-1">
               <Link
