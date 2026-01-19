@@ -41,8 +41,13 @@ Required in `.env.local` and Vercel:
 
 ```env
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_URL=          # Used by both client AND server code
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=         # Server-only: admin ops (storage uploads, bypassing RLS)
+
+# AI Services
+GOOGLE_AI_API_KEY=                 # Gemini API for cover image generation
+ANTHROPIC_API_KEY=                 # Claude API for text enhancement
 
 # Novu (notifications)
 NEXT_PUBLIC_NOVU_APPLICATION_IDENTIFIER=
@@ -55,6 +60,8 @@ VAPID_PRIVATE_KEY=
 # App
 NEXT_PUBLIC_APP_URL=https://dalat.app
 ```
+
+**Note:** Server-side code uses `NEXT_PUBLIC_SUPABASE_URL` directly—no separate `SUPABASE_URL` needed. The `NEXT_PUBLIC_` prefix just means it's safe to expose to the browser; it works fine server-side too.
 
 ## Push Notifications
 
