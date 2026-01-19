@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { processFacebookEvents } from "@/lib/import/processors/facebook";
 import { processEventbriteEvents } from "@/lib/import/processors/eventbrite";
+import { processLumaEvents } from "@/lib/import/processors/luma";
 
 /**
  * Import a single event from a URL
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
       actorId = "newpo~eventbrite-scraper";
     } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
-      actorId = "newpo~eventbrite-scraper"; // Uses same scraper
+      actorId = "lexis-solutions/lu-ma-scraper";
     } else {
       return NextResponse.json(
         { error: "Unsupported URL. Supported: facebook.com, eventbrite.com, lu.ma/luma.com" },
@@ -46,23 +47,36 @@ export async function POST(request: Request) {
 
     console.log(`URL Import: Starting ${platform} scrape for ${url}`);
 
+    // Build platform-specific input for Apify
+    let apifyInput: Record<string, unknown>;
+    if (platform === "luma") {
+      // Lu.ma scraper expects urls array directly
+      apifyInput = {
+        urls: [url],
+        maxItems: 1,
+      };
+    } else {
+      // Facebook/Eventbrite scrapers use startUrls format
+      apifyInput = {
+        startUrls: [{ url }],
+        maxRequestsPerCrawl: 1,
+      };
+    }
+
     // Call Apify synchronously - wait for result
     const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${apiToken}`;
 
     const runResponse = await fetch(apifyUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        startUrls: [{ url }],
-        maxRequestsPerCrawl: 1,
-      }),
+      body: JSON.stringify(apifyInput),
     });
 
     if (!runResponse.ok) {
       const errorText = await runResponse.text();
       console.error(`URL Import: Apify error - ${runResponse.status}`, errorText);
       return NextResponse.json(
-        { error: `Failed to scrape URL (${runResponse.status})` },
+        { error: `Failed to scrape URL: ${errorText.slice(0, 200)}` },
         { status: 502 }
       );
     }
@@ -87,6 +101,8 @@ export async function POST(request: Request) {
     let result;
     if (platform === "facebook") {
       result = await processFacebookEvents(supabase, items);
+    } else if (platform === "luma") {
+      result = await processLumaEvents(supabase, items);
     } else {
       result = await processEventbriteEvents(supabase, items);
     }
