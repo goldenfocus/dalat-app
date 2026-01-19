@@ -293,8 +293,9 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         {uploads.length > 0 && (
           <div className="space-y-4">
             {uploads.map((upload) => (
-              <div key={upload.id} className="space-y-2">
-                <div className="relative aspect-video rounded-xl overflow-hidden bg-muted">
+              <div key={upload.id} className="rounded-xl border border-border overflow-hidden bg-card">
+                {/* Image/video preview */}
+                <div className="relative aspect-video bg-muted">
                   {upload.isVideo ? (
                     <video
                       src={upload.previewUrl}
@@ -340,14 +341,14 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
                   </button>
                 </div>
 
-                {/* Per-image caption input - shows when upload is complete */}
+                {/* Per-image caption input - directly attached below image */}
                 {upload.status === "uploaded" && (
                   <input
                     type="text"
                     value={upload.caption || ""}
                     onChange={(e) => handleCaptionChange(upload.id, e.target.value)}
                     placeholder={t("addCaption")}
-                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow"
+                    className="w-full px-3 py-3 bg-card text-sm border-t border-border focus:outline-none focus:bg-accent/50 transition-colors"
                     maxLength={500}
                   />
                 )}
