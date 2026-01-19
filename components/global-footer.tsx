@@ -46,6 +46,13 @@ export function GlobalFooter() {
         {/* Links */}
         <p className="text-center text-xs text-muted-foreground/60 flex items-center justify-center gap-3">
           <Link
+            href="/about"
+            className="hover:text-muted-foreground transition-colors"
+          >
+            About
+          </Link>
+          <span>·</span>
+          <Link
             href="/blog"
             className="hover:text-muted-foreground transition-colors"
           >
