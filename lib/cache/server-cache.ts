@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import type {
   Event,
   EventWithSeriesData,
@@ -34,7 +34,12 @@ export const getCachedEventsByLifecycle = unstable_cache(
     lifecycle: "upcoming" | "happening" | "past"
   ): Promise<EventWithSeriesData[]> => {
     try {
-      const supabase = await createClient();
+      // Use static client for ISR context (no cookies needed for public data)
+      const supabase = createStaticClient();
+      if (!supabase) {
+        console.error("Failed to create Supabase client (missing env vars)");
+        return [];
+      }
 
       // Use non-deduplicated RPC (deduplicated one not in prod yet)
       const { data, error } = await supabase.rpc("get_events_by_lifecycle", {
@@ -59,7 +64,7 @@ export const getCachedEventsByLifecycle = unstable_cache(
       return [];
     }
   },
-  ["events-by-lifecycle-v3"], // v3: use working RPC directly
+  ["events-by-lifecycle-v4"], // v4: fix ISR by using static client
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.events],
@@ -72,7 +77,8 @@ export const getCachedEventsByLifecycle = unstable_cache(
  */
 export const getCachedEventsThisWeek = unstable_cache(
   async (): Promise<Event[]> => {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
+    if (!supabase) return [];
 
     const { data, error } = await supabase.rpc("get_events_this_week", {
       p_limit: 50,
@@ -85,7 +91,7 @@ export const getCachedEventsThisWeek = unstable_cache(
 
     return (data as Event[]) || [];
   },
-  ["events-this-week"],
+  ["events-this-week-v2"],
   {
     revalidate: 300, // 5 minutes
     tags: [CACHE_TAGS.events, CACHE_TAGS.eventsLifecycle("upcoming")],
@@ -98,7 +104,8 @@ export const getCachedEventsThisWeek = unstable_cache(
  */
 export const getCachedEventBySlug = unstable_cache(
   async (slug: string): Promise<Event | null> => {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
+    if (!supabase) return null;
 
     const { data, error } = await supabase
       .from("events")
@@ -113,7 +120,7 @@ export const getCachedEventBySlug = unstable_cache(
 
     return data as Event;
   },
-  ["event-by-slug"],
+  ["event-by-slug-v2"],
   {
     revalidate: 300, // 5 minutes
     tags: [CACHE_TAGS.events],
@@ -134,7 +141,8 @@ export const getCachedTranslationsBatch = unstable_cache(
   > => {
     if (contentIds.length === 0) return new Map();
 
-    const supabase = await createClient();
+    const supabase = createStaticClient();
+    if (!supabase) return new Map();
 
     const { data: translations } = await supabase
       .from("content_translations")
@@ -178,7 +186,8 @@ export const getCachedTranslationsBatch = unstable_cache(
  */
 export const getCachedBlogCategories = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
+    if (!supabase) return [];
 
     const { data, error } = await supabase
       .from("blog_categories")
@@ -192,7 +201,7 @@ export const getCachedBlogCategories = unstable_cache(
 
     return data ?? [];
   },
-  ["blog-categories"],
+  ["blog-categories-v2"],
   {
     revalidate: 3600, // 1 hour
     tags: [CACHE_TAGS.blog],
@@ -205,7 +214,8 @@ export const getCachedBlogCategories = unstable_cache(
  */
 export const getCachedEventCounts = unstable_cache(
   async (eventId: string): Promise<EventCounts | null> => {
-    const supabase = await createClient();
+    const supabase = createStaticClient();
+    if (!supabase) return null;
 
     const { data, error } = await supabase
       .from("rsvps")
@@ -255,7 +265,12 @@ export const getCachedEventCountsBatch = unstable_cache(
     try {
       if (eventIds.length === 0) return {};
 
-      const supabase = await createClient();
+      // Use static client for ISR context (no cookies needed for public data)
+      const supabase = createStaticClient();
+      if (!supabase) {
+        console.error("Failed to create Supabase client (missing env vars)");
+        return {};
+      }
 
       const { data: rsvps, error } = await supabase
         .from("rsvps")
