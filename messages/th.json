@@ -30,6 +30,8 @@
   "nav": {
     "events": "กิจกรรม",
     "moments": "โมเมนต์",
+    "blog": "บล็อก",
+    "profile": "โปรไฟล์",
     "settings": "การตั้งค่า",
     "signIn": "เข้าสู่ระบบ",
     "signOut": "ออกจากระบบ"
@@ -284,6 +286,7 @@
   },
   "attendees": {
     "whosGoing": "ใครจะไป ({count})",
+    "whoWent": "ใครที่ไปแล้ว ({count})",
     "waitlist": "รายชื่อรอ ({count})",
     "interested": "สนใจ ({count})"
   },

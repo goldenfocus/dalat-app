@@ -629,7 +629,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             )}
 
             {/* Attendees */}
-            <AttendeeList attendees={attendees} waitlist={waitlist} interested={interested} />
+            <AttendeeList attendees={attendees} waitlist={waitlist} interested={interested} isPast={isPast} />
           </div>
 
           {/* Sidebar */}

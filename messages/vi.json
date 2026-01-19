@@ -35,6 +35,8 @@
   "nav": {
     "events": "Sự kiện",
     "moments": "Khoảnh khắc",
+    "blog": "Blog",
+    "profile": "Hồ sơ",
     "settings": "Cài đặt",
     "signIn": "Đăng nhập",
     "signOut": "Đăng xuất"
@@ -290,6 +292,7 @@
   },
   "attendees": {
     "whosGoing": "Ai sẽ đi ({count})",
+    "whoWent": "Ai đã đi ({count})",
     "waitlist": "Danh sách chờ ({count})",
     "interested": "Quan tâm ({count})"
   },

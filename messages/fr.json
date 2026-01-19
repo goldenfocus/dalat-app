@@ -35,6 +35,8 @@
   "nav": {
     "events": "Événements",
     "moments": "Moments",
+    "blog": "Blog",
+    "profile": "Profil",
     "settings": "Paramètres",
     "signIn": "Connexion",
     "signOut": "Déconnexion"
@@ -159,6 +161,20 @@
     "youreInterested": "Vous êtes intéressé",
     "waitlistPosition": "Vous êtes #{position} sur la liste d'attente",
     "waitlistAutoPromote": "Vous obtiendrez automatiquement une place quand une se libère"
+  },
+  "feedback": {
+    "howWasIt": "Comment était l'événement ?",
+    "amazing": "Incroyable",
+    "good": "Bien",
+    "okay": "Correct",
+    "notGreat": "Pas terrible",
+    "commentPlaceholder": "Des remarques à partager ? (optionnel)",
+    "submit": "Envoyer mon avis",
+    "didNotAttend": "Je n'y suis pas allé",
+    "thankYou": "Merci pour votre avis !",
+    "markedNoShow": "Compris, merci de nous avoir informé.",
+    "eventEnded": "Cet événement est terminé",
+    "positiveRating": "{percentage}% positif ({count} avis)"
   },
   "eventForm": {
     "createEvent": "Créer un événement",
@@ -296,6 +312,7 @@
   },
   "attendees": {
     "whosGoing": "Qui participe ({count})",
+    "whoWent": "Qui a participé ({count})",
     "waitlist": "Liste d'attente ({count})",
     "interested": "Intéressés ({count})"
   },

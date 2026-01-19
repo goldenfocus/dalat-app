@@ -30,6 +30,8 @@
   "nav": {
     "events": "イベント",
     "moments": "モーメント",
+    "blog": "ブログ",
+    "profile": "プロフィール",
     "settings": "設定",
     "signIn": "ログイン",
     "signOut": "ログアウト"
@@ -284,6 +286,7 @@
   },
   "attendees": {
     "whosGoing": "参加者 ({count})",
+    "whoWent": "参加した方々 ({count})",
     "waitlist": "キャンセル待ち ({count})",
     "interested": "興味あり ({count})"
   },

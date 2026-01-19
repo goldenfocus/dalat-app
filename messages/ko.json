@@ -30,6 +30,8 @@
   "nav": {
     "events": "이벤트",
     "moments": "모먼트",
+    "blog": "블로그",
+    "profile": "프로필",
     "settings": "설정",
     "signIn": "로그인",
     "signOut": "로그아웃"
@@ -284,6 +286,7 @@
   },
   "attendees": {
     "whosGoing": "참석자 ({count})",
+    "whoWent": "참석했던 분들 ({count})",
     "waitlist": "대기자 명단 ({count})",
     "interested": "관심 있음 ({count})"
   },

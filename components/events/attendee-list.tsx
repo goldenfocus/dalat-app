@@ -11,6 +11,7 @@ interface AttendeeListProps {
   attendees: RsvpWithProfile[];
   waitlist: RsvpWithProfile[];
   interested?: RsvpWithProfile[];
+  isPast?: boolean;
 }
 
 function AttendeeChip({
@@ -52,7 +53,7 @@ function AttendeeChip({
   );
 }
 
-export function AttendeeList({ attendees, waitlist, interested = [] }: AttendeeListProps) {
+export function AttendeeList({ attendees, waitlist, interested = [], isPast = false }: AttendeeListProps) {
   const t = useTranslations("attendees");
 
   if (attendees.length === 0 && waitlist.length === 0 && interested.length === 0) return null;
@@ -61,7 +62,7 @@ export function AttendeeList({ attendees, waitlist, interested = [] }: AttendeeL
     <Card className="overflow-hidden">
       <CardContent className="p-4">
         <h3 className="font-semibold mb-3">
-          {t("whosGoing", { count: attendees.length })}
+          {isPast ? t("whoWent", { count: attendees.length }) : t("whosGoing", { count: attendees.length })}
         </h3>
         <div className="flex flex-wrap gap-2">
           {attendees.map((rsvp) => (

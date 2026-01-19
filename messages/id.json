@@ -30,6 +30,8 @@
   "nav": {
     "events": "Acara",
     "moments": "Momen",
+    "blog": "Blog",
+    "profile": "Profil",
     "settings": "Pengaturan",
     "signIn": "Masuk",
     "signOut": "Keluar"
@@ -284,6 +286,7 @@
   },
   "attendees": {
     "whosGoing": "Siapa yang hadir ({count})",
+    "whoWent": "Siapa yang telah hadir ({count})",
     "waitlist": "Daftar tunggu ({count})",
     "interested": "Tertarik ({count})"
   },

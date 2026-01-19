@@ -30,6 +30,8 @@
   "nav": {
     "events": "活动",
     "moments": "瞬间",
+    "blog": "博客",
+    "profile": "资料",
     "settings": "设置",
     "signIn": "登录",
     "signOut": "退出"
@@ -284,6 +286,7 @@
   },
   "attendees": {
     "whosGoing": "参加者 ({count})",
+    "whoWent": "已参加 ({count})",
     "waitlist": "等候名单 ({count})",
     "interested": "感兴趣 ({count})"
   },

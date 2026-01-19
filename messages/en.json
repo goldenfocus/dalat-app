@@ -35,6 +35,8 @@
   "nav": {
     "events": "Events",
     "moments": "Moments",
+    "blog": "Blog",
+    "profile": "Profile",
     "settings": "Settings",
     "signIn": "Sign in",
     "signOut": "Sign out"
@@ -324,6 +326,7 @@
   },
   "attendees": {
     "whosGoing": "Who's going ({count})",
+    "whoWent": "Who went ({count})",
     "waitlist": "Waitlist ({count})",
     "interested": "Interested ({count})"
   },

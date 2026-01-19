@@ -30,6 +30,8 @@
   "nav": {
     "events": "События",
     "moments": "Моменты",
+    "blog": "Блог",
+    "profile": "Профиль",
     "settings": "Настройки",
     "signIn": "Войти",
     "signOut": "Выйти"
@@ -284,6 +286,7 @@
   },
   "attendees": {
     "whosGoing": "Кто идёт ({count})",
+    "whoWent": "Кто был ({count})",
     "waitlist": "В очереди ({count})",
     "interested": "Интересуются ({count})"
   },
