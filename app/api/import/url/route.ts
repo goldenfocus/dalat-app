@@ -25,12 +25,12 @@ export async function POST(request: Request) {
     } else if (url.includes("eventbrite.com")) {
       platform = "eventbrite";
       actorId = "newpo~eventbrite-scraper";
-    } else if (url.includes("lu.ma")) {
+    } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
       actorId = "newpo~eventbrite-scraper"; // Uses same scraper
     } else {
       return NextResponse.json(
-        { error: "Unsupported URL. Supported: facebook.com, eventbrite.com, lu.ma" },
+        { error: "Unsupported URL. Supported: facebook.com, eventbrite.com, lu.ma/luma.com" },
         { status: 400 }
       );
     }
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
     // Process the scraped event
     const supabase = createClient(
-      process.env.SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 

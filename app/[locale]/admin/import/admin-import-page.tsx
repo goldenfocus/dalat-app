@@ -485,7 +485,7 @@ export function AdminImportPage() {
                   <Globe className="w-4 h-4 text-purple-600" />
                   <div className="text-xs">
                     <p className="font-medium">Lu.ma</p>
-                    <p className="text-muted-foreground">lu.ma/...</p>
+                    <p className="text-muted-foreground">lu.ma/... or luma.com/...</p>
                   </div>
                 </div>
               </div>

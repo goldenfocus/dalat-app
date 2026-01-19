@@ -68,7 +68,7 @@ export async function GET() {
     } else {
       // Count from database - events with source_platform not null
       const supabase = createClient(
-        process.env.SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
       const { count } = await supabase
