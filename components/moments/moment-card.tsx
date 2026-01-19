@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
@@ -42,11 +43,12 @@ export function MomentCard({ moment, from }: MomentCardProps) {
               </div>
             </>
           ) : (
-            <img
+            <Image
               src={moment.media_url}
-              alt=""
-              className="w-full h-full object-cover transition-transform group-hover:scale-105"
-              loading="lazy"
+              alt={moment.text_content || "Moment photo"}
+              fill
+              className="object-cover transition-transform group-hover:scale-105"
+              sizes="(max-width: 640px) 33vw, 200px"
             />
           )
         )}

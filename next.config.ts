@@ -11,6 +11,17 @@ const nextConfig: NextConfig = {
   env: {
     OPENAI_API_KEY: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY,
   },
+
+  // Configure Next.js Image optimization for external domains
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
 };
 
 export default withNextIntl(nextConfig);

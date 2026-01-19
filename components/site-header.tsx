@@ -31,10 +31,10 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
             {tNav("moments")}
           </Link>
           {actions}
-          <Link href="/events/new" prefetch={false}>
-            <Button size="sm" variant="outline" className="px-2 sm:px-3">
-              <Plus className="w-4 h-4 sm:mr-1" />
-              <span className="hidden sm:inline">{tNav("events")}</span>
+          <Link href="/events/new" prefetch={false} className="hidden lg:block">
+            <Button size="sm" variant="outline" className="px-3">
+              <Plus className="w-4 h-4 mr-1" />
+              <span>{tNav("events")}</span>
             </Button>
           </Link>
           <Suspense>

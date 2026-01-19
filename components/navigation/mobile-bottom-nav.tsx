@@ -2,16 +2,23 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Film, Home, Plus } from "lucide-react";
+import { BookOpen, Film, Plus, User } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 
 const NAV_ITEMS = [
   {
-    key: "events",
-    href: "/",
-    icon: Home,
-    labelKey: "events",
+    key: "moments",
+    href: "/moments",
+    icon: Film,
+    labelKey: "moments",
+    isCenter: false,
+  },
+  {
+    key: "blog",
+    href: "/blog",
+    icon: BookOpen,
+    labelKey: "blog",
     isCenter: false,
   },
   {
@@ -22,10 +29,10 @@ const NAV_ITEMS = [
     isCenter: true,
   },
   {
-    key: "moments",
-    href: "/moments",
-    icon: Film,
-    labelKey: "moments",
+    key: "profile",
+    href: "/settings/profile",
+    icon: User,
+    labelKey: "profile",
     isCenter: false,
   },
 ];
@@ -51,10 +58,11 @@ export function MobileBottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Primary"
     >
-      <div className="mx-auto flex h-16 max-w-md items-center justify-between px-4">
+      <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
         {NAV_ITEMS.map((item) => {
-          const isActive = item.href === "/"
-            ? normalizedPath === "/"
+          // Profile is active for any /settings path
+          const isActive = item.key === "profile"
+            ? normalizedPath.startsWith("/settings")
             : normalizedPath.startsWith(item.href);
           const Icon = item.icon;
           const label = item.labelKey === "create"

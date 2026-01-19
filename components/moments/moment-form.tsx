@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Camera, X, Loader2, Send, Plus, AlertCircle, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -31,10 +31,12 @@ interface UploadItem {
   status: "converting" | "uploading" | "uploaded" | "error";
   mediaUrl?: string;
   error?: string;
+  caption?: string; // Individual caption for this upload
 }
 
 export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentFormProps) {
   const t = useTranslations("moments");
+  const locale = useLocale();
   const router = useRouter();
 
   const [uploads, setUploads] = useState<UploadItem[]>([]);
@@ -213,6 +215,12 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     });
   };
 
+  const handleCaptionChange = (itemId: string, newCaption: string) => {
+    setUploads(prev => prev.map(item =>
+      item.id === itemId ? { ...item, caption: newCaption } : item
+    ));
+  };
+
   const handlePost = async () => {
     const readyUploads = uploads.filter(u => u.status === "uploaded" && u.mediaUrl);
 
@@ -226,11 +234,12 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
     try {
       const supabase = createClient();
-      const textContent = caption.trim() || null;
 
-      // Create a moment for each uploaded file
+      // Create a moment for each uploaded file with its individual caption
       for (const upload of readyUploads) {
         const contentType = upload.isVideo ? "video" : "photo";
+        // Use individual caption if set, otherwise fall back to shared caption
+        const textContent = (upload.caption?.trim() || caption.trim()) || null;
 
         const { data, error: postError } = await supabase.rpc("create_moment", {
           p_event_id: eventId,
@@ -238,6 +247,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           p_media_url: upload.mediaUrl,
           p_text_content: textContent,
           p_user_id: userId, // Support God Mode: attribute to effective user
+          p_source_locale: locale, // Tag with user's current language for accurate translation attribution
         });
 
         if (postError) {
@@ -279,57 +289,68 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     <div className="space-y-4">
       {/* Media upload area */}
       <div className="space-y-3">
-        {/* Preview grid */}
+        {/* Preview list with per-image captions */}
         {uploads.length > 0 && (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-4">
             {uploads.map((upload) => (
-              <div
-                key={upload.id}
-                className="relative aspect-square rounded-xl overflow-hidden bg-muted"
-              >
-                {upload.isVideo ? (
-                  <video
-                    src={upload.previewUrl}
-                    className="w-full h-full object-cover"
-                    muted
-                    playsInline
+              <div key={upload.id} className="space-y-2">
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-muted">
+                  {upload.isVideo ? (
+                    <video
+                      src={upload.previewUrl}
+                      className="w-full h-full object-cover"
+                      muted
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      src={upload.previewUrl}
+                      alt={upload.caption || "Preview"}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+
+                  {/* Upload status overlay */}
+                  {upload.status === "converting" && (
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1">
+                      <RefreshCw className="w-6 h-6 text-white animate-spin" />
+                      <span className="text-xs text-white/80">Converting...</span>
+                    </div>
+                  )}
+
+                  {upload.status === "uploading" && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    </div>
+                  )}
+
+                  {upload.status === "error" && (
+                    <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
+                      <AlertCircle className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+
+                  {/* Remove button */}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveUpload(upload.id)}
+                    className="absolute top-2 right-2 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 active:scale-95 transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Per-image caption input - shows when upload is complete */}
+                {upload.status === "uploaded" && (
+                  <input
+                    type="text"
+                    value={upload.caption || ""}
+                    onChange={(e) => handleCaptionChange(upload.id, e.target.value)}
+                    placeholder={t("addCaption")}
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow"
+                    maxLength={500}
                   />
-                ) : (
-                  <img
-                    src={upload.previewUrl}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
                 )}
-
-                {/* Upload status overlay */}
-                {upload.status === "converting" && (
-                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1">
-                    <RefreshCw className="w-6 h-6 text-white animate-spin" />
-                    <span className="text-xs text-white/80">Converting...</span>
-                  </div>
-                )}
-
-                {upload.status === "uploading" && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 text-white animate-spin" />
-                  </div>
-                )}
-
-                {upload.status === "error" && (
-                  <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
-                    <AlertCircle className="w-6 h-6 text-white" />
-                  </div>
-                )}
-
-                {/* Remove button */}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveUpload(upload.id)}
-                  className="absolute top-1.5 right-1.5 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 active:scale-95 transition-all"
-                >
-                  <X className="w-4 h-4" />
-                </button>
               </div>
             ))}
 
@@ -337,9 +358,10 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="aspect-square rounded-xl border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center transition-all active:scale-95"
+              className="w-full py-3 rounded-xl border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
             >
-              <Plus className="w-8 h-8 text-muted-foreground/60" />
+              <Plus className="w-5 h-5 text-muted-foreground/60" />
+              <span className="text-sm text-muted-foreground">{t("addMore")}</span>
             </button>
           </div>
         )}
@@ -371,14 +393,55 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         )}
       </div>
 
-      {/* Caption input */}
-      <textarea
-        value={caption}
-        onChange={(e) => setCaption(e.target.value)}
-        placeholder={t("addCaption")}
-        className="w-full min-h-[80px] p-3 rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow"
-        maxLength={500}
-      />
+      {/* Caption input - shared or per-image */}
+      {readyCount <= 1 ? (
+        // Single image: use shared caption
+        <textarea
+          value={caption}
+          onChange={(e) => setCaption(e.target.value)}
+          placeholder={t("addCaption")}
+          className="w-full min-h-[80px] p-3 rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow"
+          maxLength={500}
+        />
+      ) : (
+        // Multiple images: per-image captions with optional shared default
+        <div className="space-y-3">
+          {/* Shared caption that applies to images without custom caption */}
+          <div className="space-y-1">
+            <label className="text-sm text-muted-foreground">{t("sharedCaption")}</label>
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder={t("sharedCaptionPlaceholder")}
+              className="w-full min-h-[60px] p-3 rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow text-sm"
+              maxLength={500}
+            />
+          </div>
+          {/* Individual captions for each uploaded image */}
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground">{t("individualCaptions")}</label>
+            {uploads.filter(u => u.status === "uploaded").map((upload, index) => (
+              <div key={upload.id} className="flex gap-2 items-start">
+                <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                  {upload.isVideo ? (
+                    <video src={upload.previewUrl} className="w-full h-full object-cover" muted />
+                  ) : (
+                    <img src={upload.previewUrl} alt="" className="w-full h-full object-cover" />
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={upload.caption ?? ""}
+                  onChange={(e) => handleCaptionChange(upload.id, e.target.value)}
+                  placeholder={caption.trim() ? `${t("usesShared")}` : t("addCaption")}
+                  className="flex-1 p-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow"
+                  maxLength={500}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Error message */}
       {error && (

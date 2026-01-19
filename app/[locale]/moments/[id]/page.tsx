@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
+import Image from "next/image";
 import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, MapPin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -334,10 +335,13 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
                 playsInline
               />
             ) : (
-              <img
+              <Image
                 src={moment.media_url}
-                alt=""
-                className="w-full h-full object-contain"
+                alt={momentTranslations.textContent || `Moment from ${event.title}`}
+                fill
+                className="object-contain"
+                sizes="(max-width: 672px) 100vw, 672px"
+                priority
               />
             )}
 
@@ -409,10 +413,12 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
           <div className="flex items-center gap-3">
             <Link href={`/${profile?.username || moment.user_id}`}>
               {profile?.avatar_url ? (
-                <img
+                <Image
                   src={profile.avatar_url}
-                  alt=""
-                  className="w-10 h-10 rounded-full"
+                  alt={profile?.display_name || profile?.username || "User avatar"}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
                 />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-primary/20" />
@@ -458,10 +464,12 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
               >
                 <div className="flex gap-4">
                   {event.image_url && (
-                    <img
+                    <Image
                       src={event.image_url}
-                      alt=""
-                      className="w-20 h-20 rounded-lg object-cover"
+                      alt={event.title || "Event image"}
+                      width={80}
+                      height={80}
+                      className="rounded-lg object-cover"
                     />
                   )}
                   <div className="flex-1 min-w-0">

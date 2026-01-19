@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Check, X, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -107,10 +108,12 @@ export function ModerationQueue({ moments: initialMoments }: ModerationQueueProp
                       playsInline
                     />
                   ) : (
-                    <img
+                    <Image
                       src={moment.media_url}
-                      alt=""
-                      className="w-full h-full object-contain"
+                      alt={moment.text_content || "Moment photo for review"}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, 600px"
                     />
                   )}
                 </div>
@@ -128,10 +131,12 @@ export function ModerationQueue({ moments: initialMoments }: ModerationQueueProp
                 {/* User info */}
                 <div className="flex items-center gap-2">
                   {moment.avatar_url ? (
-                    <img
+                    <Image
                       src={moment.avatar_url}
-                      alt=""
-                      className="w-8 h-8 rounded-full"
+                      alt={moment.display_name || moment.username || "User avatar"}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-muted" />

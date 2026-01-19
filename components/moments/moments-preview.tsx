@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Camera, ChevronRight } from "lucide-react";
@@ -51,7 +52,7 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
               {moments.slice(0, 4).map((moment) => (
                 <div
                   key={moment.id}
-                  className="w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0"
+                  className="relative w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0"
                 >
                   {moment.content_type !== "text" && moment.media_url ? (
                     isVideoUrl(moment.media_url) ? (
@@ -61,11 +62,12 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                         muted
                       />
                     ) : (
-                      <img
+                      <Image
                         src={moment.media_url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        loading="lazy"
+                        alt={moment.text_content || "Moment thumbnail"}
+                        fill
+                        className="object-cover"
+                        sizes="64px"
                       />
                     )
                   ) : (
