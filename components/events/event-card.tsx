@@ -20,6 +20,7 @@ interface EventCardProps {
   seriesRrule?: string;
   seriesSlug?: string;
   translatedTitle?: string;
+  priority?: boolean;
 }
 
 // Check if event is past (same logic as rsvp-button)
@@ -33,7 +34,7 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
   return defaultEnd < now;
 }
 
-export function EventCard({ event, counts, seriesRrule, translatedTitle }: EventCardProps) {
+export function EventCard({ event, counts, seriesRrule, translatedTitle, priority }: EventCardProps) {
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
   const { prefetchEvent, prefetchEventCounts } = usePrefetch();
@@ -86,6 +87,7 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle }: Event
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 className="object-cover transition-transform group-hover:scale-105"
+                priority={priority}
               />
             )
           ) : (

@@ -4,6 +4,10 @@ import { Link } from "@/lib/i18n/routing";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
+
+// ISR: Cache homepage for 60 seconds for fast LCP
+export const revalidate = 60;
+
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { AuthButton } from "@/components/auth-button";
@@ -17,6 +21,10 @@ import { Button } from "@/components/ui/button";
 import type { Event, EventCounts, EventWithSeriesData, ContentLocale } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
 import { getEventTranslationsBatch } from "@/lib/translations";
+import {
+  getCachedEventsByLifecycle,
+  getCachedEventCountsBatch,
+} from "@/lib/cache/server-cache";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
@@ -202,10 +210,17 @@ async function EventsFeed({
   tagFilter?: string;
   locale: Locale;
 }) {
-  const events = await getEventsByLifecycle(lifecycle, searchQuery, tagFilter);
+  // Use cached functions for default view (no search/tag filter) for fast LCP
+  // Fall back to uncached for search/filter which need real-time results
+  const hasFilters = !!(searchQuery || tagFilter);
+
+  const events = hasFilters
+    ? await getEventsByLifecycle(lifecycle, searchQuery, tagFilter)
+    : await getCachedEventsByLifecycle(lifecycle);
+
   const eventIds = events.map((e) => e.id);
   const [counts, eventTranslations, t] = await Promise.all([
-    getEventCounts(eventIds),
+    hasFilters ? getEventCounts(eventIds) : getCachedEventCountsBatch(eventIds),
     getEventTranslationsBatch(eventIds, locale as ContentLocale),
     getTranslations("home"),
   ]);
@@ -240,7 +255,7 @@ async function EventsFeed({
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
-        {events.map((event) => {
+        {events.map((event, index) => {
           const translation = eventTranslations.get(event.id);
           return (
             <EventCard
@@ -249,6 +264,7 @@ async function EventsFeed({
               counts={counts[event.id]}
               seriesRrule={event.series_rrule ?? undefined}
               translatedTitle={translation?.title || undefined}
+              priority={index < 2}
             />
           );
         })}

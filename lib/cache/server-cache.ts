@@ -36,13 +36,34 @@ export const getCachedEventsByLifecycle = unstable_cache(
     try {
       const supabase = await createClient();
 
-      const { data, error } = await supabase.rpc(
+      // Try deduplicated RPC first
+      let { data, error } = await supabase.rpc(
         "get_events_by_lifecycle_deduplicated",
         {
           p_lifecycle: lifecycle,
           p_limit: 20,
         }
       );
+
+      // Fallback to non-deduplicated function if the new one doesn't exist
+      if (error?.code === "PGRST202") {
+        const fallback = await supabase.rpc("get_events_by_lifecycle", {
+          p_lifecycle: lifecycle,
+          p_limit: 20,
+        });
+        data = fallback.data;
+        error = fallback.error;
+
+        // Map to expected format with null series data
+        if (data && !error) {
+          return (data as Event[]).map((e) => ({
+            ...e,
+            series_slug: null,
+            series_rrule: null,
+            is_recurring: !!e.series_id,
+          }));
+        }
+      }
 
       if (error) {
         console.error("Error fetching events by lifecycle:", error);

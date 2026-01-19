@@ -9,11 +9,86 @@ import {
   Loader2,
   X,
   Check,
+  Upload,
+  Wand2,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { validateMediaFile, ALLOWED_MEDIA_TYPES } from "@/lib/media-utils";
+
+// Style presets for AI image generation
+type StylePreset = "artistic" | "futuristic" | "realistic" | "nature" | "custom";
+
+interface PresetConfig {
+  id: StylePreset;
+  labelKey: string;
+  getPrompt: (title: string) => string;
+}
+
+const STYLE_PRESETS: PresetConfig[] = [
+  {
+    id: "artistic",
+    labelKey: "presetArtistic",
+    getPrompt: (title: string) => `Create a vibrant, eye-catching event poster background for "${title || "an event"}".
+
+Style: Modern event flyer aesthetic with warm Vietnamese highland colors.
+Setting: Inspired by Đà Lạt, Vietnam - misty mountains, pine forests, French colonial architecture, flower fields.
+Mood: Atmospheric, inviting, energetic yet sophisticated.
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+  {
+    id: "futuristic",
+    labelKey: "presetFuturistic",
+    getPrompt: (title: string) => `Create a futuristic, high-tech event poster background for "${title || "an event"}".
+
+Style: Cyberpunk aesthetic with neon accents, holographic elements, and sleek geometric shapes.
+Colors: Deep blues, electric purples, cyan highlights, and subtle pink/magenta glows.
+Elements: Abstract digital grids, light trails, glowing particles, circuit-like patterns.
+Mood: Cutting-edge, innovative, forward-thinking, high-energy.
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+  {
+    id: "realistic",
+    labelKey: "presetRealistic",
+    getPrompt: (title: string) => `Create a photorealistic event poster background for "${title || "an event"}".
+
+Style: Ultra-realistic photography style, HDR quality, professional lighting.
+Setting: An elegant venue or scenic location that matches the event theme.
+Technical: Sharp details, natural depth of field, cinematic color grading.
+Mood: Professional, polished, premium quality.
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+  {
+    id: "nature",
+    labelKey: "presetNature",
+    getPrompt: (title: string) => `Create an organic, nature-inspired event poster background for "${title || "an event"}".
+
+Style: Botanical and natural aesthetic with flowing organic shapes.
+Elements: Lush foliage, flowers, natural textures, earthy tones with pops of vibrant color.
+Colors: Greens, terracotta, warm earth tones, soft pastels.
+Mood: Fresh, organic, sustainable, harmonious with nature.
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+  {
+    id: "custom",
+    labelKey: "presetCustom",
+    getPrompt: (title: string) => `Create an event poster background for "${title || "an event"}".
+
+Style: [Describe your preferred style]
+Colors: [Specify color palette]
+Elements: [List visual elements you want]
+Mood: [Describe the atmosphere]
+Important: Do NOT include any text or lettering in the image. Create only the visual background.
+Aspect ratio: 2:1 landscape orientation.`,
+  },
+];
 
 interface FlyerBuilderProps {
   title: string;
@@ -22,15 +97,9 @@ interface FlyerBuilderProps {
   onImageChange: (url: string | null, file?: File) => void;
 }
 
-// Generate default prompt from event data
+// Generate default prompt from event data (using artistic preset)
 function generateDefaultPrompt(title: string): string {
-  return `Create a vibrant, eye-catching event poster background for "${title || "an event"}".
-
-Style: Modern event flyer aesthetic with warm Vietnamese highland colors.
-Setting: Inspired by Đà Lạt, Vietnam - misty mountains, pine forests, French colonial architecture, flower fields.
-Mood: Atmospheric, inviting, energetic yet sophisticated.
-Important: Do NOT include any text or lettering in the image. Create only the visual background.
-Aspect ratio: 2:1 landscape orientation.`;
+  return STYLE_PRESETS[0].getPrompt(title);
 }
 
 export function FlyerBuilder({
@@ -49,6 +118,9 @@ export function FlyerBuilder({
   const [previewUrl, setPreviewUrl] = useState<string | null>(imageUrl);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<StylePreset>("artistic");
+  const [showRefinement, setShowRefinement] = useState(false);
+  const [refinementPrompt, setRefinementPrompt] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(previewUrl);
 
@@ -194,6 +266,76 @@ export function FlyerBuilder({
     onImageChange(null);
     setUrlInput("");
     setError(null);
+    setShowRefinement(false);
+    setRefinementPrompt("");
+  };
+
+  // Convert image URL to base64 (client-side fetch for external URLs)
+  const fetchImageAsBase64 = async (url: string): Promise<{ base64: string; mimeType: string } | null> => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return null;
+      const blob = await response.blob();
+      const mimeType = blob.type || "image/png";
+
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          const base64 = dataUrl.split(",")[1];
+          resolve({ base64, mimeType });
+        };
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  };
+
+  // Refine existing image with AI
+  const handleRefine = async () => {
+    if (!previewUrl || !refinementPrompt.trim()) return;
+    setError(null);
+    setIsGenerating(true);
+
+    try {
+      const imageData = await fetchImageAsBase64(previewUrl);
+
+      const requestBody: Record<string, string | undefined> = {
+        context: "event-cover",
+        refinementPrompt: refinementPrompt.trim(),
+      };
+
+      if (imageData) {
+        requestBody.imageBase64 = imageData.base64;
+        requestBody.imageMimeType = imageData.mimeType;
+      } else {
+        requestBody.existingImageUrl = previewUrl;
+      }
+
+      const response = await fetch("/api/ai/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || t("generationFailed"));
+      }
+
+      const data = await response.json();
+      revokeExistingBlobUrl();
+      setPreviewUrl(data.imageUrl);
+      onImageChange(data.imageUrl);
+      setRefinementPrompt("");
+      setShowRefinement(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("generationFailed"));
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const hasImage = !!previewUrl;
@@ -264,15 +406,52 @@ export function FlyerBuilder({
       <div className="space-y-3">
         {showPromptEditor ? (
           /* AI Prompt Editor */
-          <div className="space-y-2">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder={t("promptPlaceholder")}
-              rows={6}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              autoFocus
-            />
+          <div className="space-y-3">
+            {/* Style Presets */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("stylePreset")}
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {STYLE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPreset(preset.id);
+                      setPrompt(preset.getPrompt(title));
+                    }}
+                    disabled={isGenerating}
+                    className={cn(
+                      "px-3 py-1.5 text-sm rounded-full border transition-colors",
+                      selectedPreset === preset.id
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background hover:bg-muted border-input"
+                    )}
+                  >
+                    {t(preset.labelKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Prompt Textarea */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("promptLabel")}
+              </label>
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder={t("promptPlaceholder")}
+                rows={8}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("promptHint")}
+              </p>
+            </div>
+
             <div className="flex gap-2">
               <Button
                 type="button"
@@ -281,6 +460,7 @@ export function FlyerBuilder({
                 onClick={() => {
                   setShowPromptEditor(false);
                   setPrompt("");
+                  setSelectedPreset("artistic");
                   setError(null);
                 }}
                 disabled={isGenerating}
@@ -347,33 +527,95 @@ export function FlyerBuilder({
             </Button>
           </div>
         ) : (
-          /* Default icon buttons - larger to match image icon */
-          <div className="flex items-center gap-3">
+          /* Default labeled buttons */
+          <div className="flex gap-2">
             <Button
               type="button"
-              size="icon"
               variant="outline"
-              className="h-12 w-12"
-              onClick={() => setShowUrlInput(true)}
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isGenerating || isLoadingUrl}
             >
-              <LinkIcon className="w-6 h-6" />
+              <Upload className="w-4 h-4" />
+              Upload
             </Button>
-            <div className="flex-1" />
+
             <Button
               type="button"
-              size="icon"
               variant="outline"
-              className="h-12 w-12 border-dashed"
-              onClick={handleOpenPromptEditor}
-              disabled={isGenerating}
+              size="sm"
+              onClick={() => setShowUrlInput(true)}
+              disabled={isGenerating || isLoadingUrl}
             >
-              {isGenerating ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                <Sparkles className="w-6 h-6" />
-              )}
+              <LinkIcon className="w-4 h-4" />
+              Link
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleOpenPromptEditor}
+              disabled={isGenerating || isLoadingUrl}
+            >
+              <Sparkles className="w-4 h-4" />
+              AI
             </Button>
           </div>
+        )}
+
+        {/* Refinement section - only when image exists */}
+        {hasImage && !showPromptEditor && !showUrlInput && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowRefinement(!showRefinement)}
+              disabled={isGenerating || isLoadingUrl}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 transition-colors text-sm disabled:opacity-50"
+            >
+              <span className="flex items-center gap-2 text-violet-400">
+                <Wand2 className="w-4 h-4" />
+                {t("refineImage")}
+              </span>
+              {showRefinement ? (
+                <ChevronUp className="w-4 h-4 text-violet-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-violet-400" />
+              )}
+            </button>
+
+            {showRefinement && (
+              <div className="space-y-2 pl-2 border-l-2 border-violet-500/30">
+                <textarea
+                  value={refinementPrompt}
+                  onChange={(e) => setRefinementPrompt(e.target.value)}
+                  placeholder={t("refinementPlaceholder")}
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm resize-none"
+                  disabled={isGenerating || isLoadingUrl}
+                />
+                <Button
+                  type="button"
+                  onClick={handleRefine}
+                  disabled={isGenerating || isLoadingUrl || !refinementPrompt.trim()}
+                  className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+                  size="sm"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {t("generating")}
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-4 h-4 mr-2" />
+                      {t("applyRefinement")}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
