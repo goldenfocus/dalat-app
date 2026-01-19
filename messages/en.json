@@ -714,6 +714,28 @@
     "rsvpFailed": "Failed to save response. Please try again.",
     "eventEnded": "This event has ended"
   },
+  "celebration": {
+    "title": "Your event is live!",
+    "subtitle": "Invite your friends to join",
+    "quickShare": "Quick Share",
+    "orInviteBy": "or invite by",
+    "emailInvites": "Email Invites",
+    "emailDescription": "Paste emails to send invitations with RSVP tracking",
+    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
+    "addEmails": "Add",
+    "sendInvites": "Send {count} invite(s)",
+    "sending": "Sending...",
+    "sentSuccess": "{count} invite(s) sent!",
+    "tribeInvites": "Invite from Tribe",
+    "tribeDescription": "Invite members from your tribes",
+    "smsInvites": "SMS Invites",
+    "smsDescription": "Send text message invitations",
+    "comingSoon": "Coming soon",
+    "skipForNow": "Skip for now",
+    "viewEvent": "View your event",
+    "copyLink": "Copy link",
+    "copied": "Copied!"
+  },
   "moments": {
     "moments": "Moments",
     "discoverySubtitle": "Đà Lạt's visual archive from recent events",

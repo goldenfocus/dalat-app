@@ -15,6 +15,7 @@ import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
 import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
+import { PostCreationCelebration } from "@/components/events/post-creation-celebration";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
@@ -132,6 +133,15 @@ export function EventForm({
   const tErrors = useTranslations("errors");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  // Celebration modal state (for new events)
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [createdEvent, setCreatedEvent] = useState<{
+    slug: string;
+    title: string;
+    description: string | null;
+    startsAt: string;
+  } | null>(null);
 
   // Determine if we're copying from another event
   const isCopying = !!copyFromEvent;
@@ -522,7 +532,14 @@ export function EventForm({
           triggerEventTranslation(data.id, title.trim(), description || null);
           triggerAIProcessing(data.id);
 
-          router.push(`/events/${data.slug}`);
+          // Show celebration modal instead of immediate redirect
+          setCreatedEvent({
+            slug: data.slug,
+            title: title.trim(),
+            description: description || null,
+            startsAt: startsAt,
+          });
+          setShowCelebration(true);
         }
       }
       } catch (err) {
@@ -749,6 +766,18 @@ export function EventForm({
           </Button>
         </CardContent>
       </Card>
+
+      {/* Post-creation celebration modal */}
+      {createdEvent && (
+        <PostCreationCelebration
+          isOpen={showCelebration}
+          onClose={() => setShowCelebration(false)}
+          eventSlug={createdEvent.slug}
+          eventTitle={createdEvent.title}
+          eventDescription={createdEvent.description}
+          startsAt={createdEvent.startsAt}
+        />
+      )}
     </form>
   );
 }

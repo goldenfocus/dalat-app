@@ -184,6 +184,30 @@ export interface TribeRequest {
   tribes?: Tribe;
 }
 
+// ============================================
+// Invitation Channel Types (Future-proof)
+// ============================================
+
+export type InviteChannel = 'email' | 'sms' | 'whatsapp' | 'zalo' | 'in_app';
+
+export interface InviteRecipient {
+  identifier: string; // email, phone, or user_id depending on channel
+  name?: string;
+}
+
+export interface BulkInviteRequest {
+  eventId: string;
+  channel: InviteChannel;
+  recipients: InviteRecipient[];
+}
+
+export interface InviteResult {
+  identifier: string;
+  success: boolean;
+  error?: string;
+  inviteId?: string;
+}
+
 export interface Event {
   id: string;
   slug: string;
@@ -694,6 +718,94 @@ export interface RecurrencePreset {
   label: string;
   rrule: string;
   description?: string;
+}
+
+// ============================================
+// Live Streaming Types
+// ============================================
+
+export type LiveStreamStatus = 'idle' | 'connecting' | 'live' | 'reconnecting' | 'ended';
+export type StreamChatMessageType = 'text' | 'system' | 'highlight';
+
+export interface LiveStream {
+  id: string;
+  event_id: string;
+  broadcaster_id: string;
+  cf_live_input_id: string | null;
+  cf_stream_key: string | null;
+  cf_playback_url: string | null;
+  title: string | null;
+  angle_label: string;
+  status: LiveStreamStatus;
+  current_viewers: number;
+  peak_viewers: number;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined data
+  profiles?: Profile;
+}
+
+export interface LiveStreamWithBroadcaster {
+  id: string;
+  broadcaster_id: string;
+  broadcaster_name: string | null;
+  broadcaster_avatar: string | null;
+  title: string | null;
+  angle_label: string;
+  status: LiveStreamStatus;
+  cf_playback_url: string | null;
+  current_viewers: number;
+  started_at: string | null;
+}
+
+export interface StreamChatMessage {
+  id: string;
+  event_id: string;
+  user_id: string;
+  content: string;
+  message_type: StreamChatMessageType;
+  is_deleted: boolean;
+  deleted_by: string | null;
+  deleted_at: string | null;
+  created_at: string;
+  // Joined data
+  profiles?: Profile;
+}
+
+export interface StreamChatMessageWithUser {
+  id: string;
+  user_id: string;
+  user_name: string | null;
+  user_avatar: string | null;
+  content: string;
+  message_type: StreamChatMessageType;
+  created_at: string;
+}
+
+// Cloudflare Stream API types
+export interface CloudflareStreamInput {
+  uid: string;
+  rtmps: {
+    url: string;
+    streamKey: string;
+  };
+  rtmpsPlayback: string;
+  webRTC: string;
+  webRTCPlayback: string;
+  srt: {
+    url: string;
+    streamId: string;
+    passphrase: string;
+  };
+  status: {
+    current: {
+      state: 'connected' | 'disconnected';
+    } | null;
+  } | null;
+  created: string;
+  modified: string;
 }
 
 // ============================================
