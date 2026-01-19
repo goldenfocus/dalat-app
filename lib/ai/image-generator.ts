@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@supabase/supabase-js";
-import { expandPersonaMentions } from "./personas";
+import { extractPersonaMentions, fetchPersonaImages, hasPersonaMentions } from "./personas";
 
 // Gemini model for image generation
 const MODEL_NAME = "gemini-3-pro-image-preview";
@@ -193,11 +193,47 @@ export async function generateImage(options: GenerateOptions): Promise<string> {
 
   console.log(`[image-generator] Generating ${context} image`);
 
-  // Expand any @persona mentions into full descriptions
-  const expandedPrompt = expandPersonaMentions(prompt);
-
   const model = getModel();
-  const result = await model.generateContent(expandedPrompt);
+
+  // Check for @persona mentions and include reference images
+  if (hasPersonaMentions(prompt)) {
+    const { personas, cleanedPrompt } = extractPersonaMentions(prompt);
+    const personaImages = await fetchPersonaImages(personas);
+
+    if (personaImages.length > 0) {
+      // Build content array with reference images
+      const contentParts: Array<{ inlineData: { mimeType: string; data: string } } | string> = [];
+
+      // Add reference images with labels
+      for (const { persona, images } of personaImages) {
+        for (const img of images) {
+          contentParts.push({ inlineData: { mimeType: img.mimeType, data: img.data } });
+        }
+        contentParts.push(`The above ${images.length === 1 ? "image is a reference photo" : "images are reference photos"} of ${persona.name}. Use ${images.length === 1 ? "this" : "these"} as visual reference to accurately depict ${persona.name} in the generated image.`);
+      }
+
+      // Add the actual generation prompt
+      const styleHints = personaImages
+        .map(({ persona }) => persona.style)
+        .filter(Boolean)
+        .join(", ");
+      const styleInstruction = styleHints ? `\n\nStyle hint for people: ${styleHints}` : "";
+
+      contentParts.push(`\nNow generate the following image:\n\n${cleanedPrompt}${styleInstruction}`);
+
+      console.log(`[image-generator] Including ${personaImages.reduce((sum, p) => sum + p.images.length, 0)} reference images for ${personaImages.map((p) => p.persona.name).join(", ")}`);
+
+      const result = await model.generateContent(contentParts);
+      const { data, mimeType } = extractImage(result);
+      const publicUrl = await uploadImage(data, mimeType, context, entityId);
+
+      console.log(`[image-generator] Generated ${context} with personas:`, publicUrl);
+      return publicUrl;
+    }
+  }
+
+  // No personas - standard generation
+  const result = await model.generateContent(prompt);
   const { data, mimeType } = extractImage(result);
 
   const publicUrl = await uploadImage(data, mimeType, context, entityId);
@@ -250,25 +286,72 @@ export async function refineImage(options: RefineOptions): Promise<string> {
     throw new Error("Either imageBase64 or existingImageUrl must be provided");
   }
 
-  // Expand any @persona mentions into full descriptions
-  const expandedRefinement = expandPersonaMentions(refinementPrompt);
-
   // Build prompt - allow text if user explicitly requests it
   const allowText = wantsText(refinementPrompt);
   const textRestriction = allowText
     ? "- You may add text as requested by the user"
     : "- NO text, NO lettering, NO words";
 
+  const model = getModel();
+
+  // Check for @persona mentions and include reference images
+  if (hasPersonaMentions(refinementPrompt)) {
+    const { personas, cleanedPrompt } = extractPersonaMentions(refinementPrompt);
+    const personaImages = await fetchPersonaImages(personas);
+
+    if (personaImages.length > 0) {
+      // Build content array: existing image + reference images + prompt
+      const contentParts: Array<{ inlineData: { mimeType: string; data: string } } | string> = [];
+
+      // Add the existing image first
+      contentParts.push({ inlineData: { mimeType, data: base64Image } });
+      contentParts.push("This is the existing image to edit.");
+
+      // Add reference images for each persona
+      for (const { persona, images } of personaImages) {
+        for (const img of images) {
+          contentParts.push({ inlineData: { mimeType: img.mimeType, data: img.data } });
+        }
+        contentParts.push(`The above ${images.length === 1 ? "image is a reference photo" : "images are reference photos"} of ${persona.name}. Use ${images.length === 1 ? "this" : "these"} as visual reference when adding ${persona.name} to the image.`);
+      }
+
+      // Add the refinement prompt
+      const styleHints = personaImages
+        .map(({ persona }) => persona.style)
+        .filter(Boolean)
+        .join(", ");
+      const styleInstruction = styleHints ? `\n- When depicting people, use: ${styleHints}` : "";
+
+      contentParts.push(`\nEdit the first image based on these instructions:
+
+${cleanedPrompt}
+
+Important:
+- Keep the overall style and color palette consistent
+${textRestriction}${styleInstruction}
+- Keep it professional and polished`);
+
+      console.log(`[image-generator] Refining with ${personaImages.reduce((sum, p) => sum + p.images.length, 0)} reference images for ${personaImages.map((p) => p.persona.name).join(", ")}`);
+
+      const result = await model.generateContent(contentParts);
+      const { data, mimeType: newMimeType } = extractImage(result);
+      const publicUrl = await uploadImage(data, newMimeType, context, entityId);
+
+      console.log(`[image-generator] Refined ${context} with personas:`, publicUrl);
+      return publicUrl;
+    }
+  }
+
+  // No personas - standard refinement
   const prompt = `Edit this image based on the following instructions:
 
-${expandedRefinement}
+${refinementPrompt}
 
 Important:
 - Keep the overall style and color palette consistent
 ${textRestriction}
 - Keep it professional and polished`;
 
-  const model = getModel();
   const result = await model.generateContent([
     { inlineData: { mimeType, data: base64Image } },
     prompt,
