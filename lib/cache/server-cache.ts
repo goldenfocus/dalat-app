@@ -36,49 +36,30 @@ export const getCachedEventsByLifecycle = unstable_cache(
     try {
       const supabase = await createClient();
 
-      // Try deduplicated RPC first
-      let { data, error } = await supabase.rpc(
-        "get_events_by_lifecycle_deduplicated",
-        {
-          p_lifecycle: lifecycle,
-          p_limit: 20,
-        }
-      );
-
-      // Fallback to non-deduplicated function if the new one doesn't exist
-      if (error?.code === "PGRST202") {
-        console.log("[cache] Falling back to get_events_by_lifecycle for", lifecycle);
-        const fallback = await supabase.rpc("get_events_by_lifecycle", {
-          p_lifecycle: lifecycle,
-          p_limit: 20,
-        });
-        data = fallback.data;
-        error = fallback.error;
-        console.log("[cache] Fallback result:", data?.length ?? 0, "events");
-
-        // Map to expected format with null series data
-        if (data && !error) {
-          return (data as Event[]).map((e) => ({
-            ...e,
-            series_slug: null,
-            series_rrule: null,
-            is_recurring: !!e.series_id,
-          }));
-        }
-      }
+      // Use non-deduplicated RPC (deduplicated one not in prod yet)
+      const { data, error } = await supabase.rpc("get_events_by_lifecycle", {
+        p_lifecycle: lifecycle,
+        p_limit: 20,
+      });
 
       if (error) {
         console.error("Error fetching events by lifecycle:", error);
         return [];
       }
 
-      return (data as EventWithSeriesData[]) || [];
+      // Map to expected format with null series data
+      return ((data as Event[]) || []).map((e) => ({
+        ...e,
+        series_slug: null,
+        series_rrule: null,
+        is_recurring: !!e.series_id,
+      }));
     } catch (err) {
       console.error("Exception in getCachedEventsByLifecycle:", err);
       return [];
     }
   },
-  ["events-by-lifecycle-v2"], // v2: added fallback for missing deduplicated RPC
+  ["events-by-lifecycle-v3"], // v3: use working RPC directly
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.events],
