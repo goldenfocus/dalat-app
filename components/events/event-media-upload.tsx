@@ -31,6 +31,8 @@ interface EventMediaUploadProps {
   eventTitle?: string;
   currentMediaUrl: string | null;
   onMediaChange: (url: string | null) => void;
+  /** Auto-save image_url to database on upload/generate (default: true) */
+  autoSave?: boolean;
 }
 
 // Generate default prompt from event data
@@ -49,8 +51,40 @@ export function EventMediaUpload({
   eventTitle,
   currentMediaUrl,
   onMediaChange,
+  autoSave = true,
 }: EventMediaUploadProps) {
   const t = useTranslations("flyerBuilder");
+
+  const [showSaved, setShowSaved] = useState(false);
+
+  // Auto-save image_url to database
+  const saveToDatabase = async (url: string | null) => {
+    if (!autoSave) return;
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("events")
+        .update({ image_url: url })
+        .eq("id", eventId);
+
+      if (error) {
+        console.error("Auto-save failed:", error);
+      } else {
+        // Show brief "Saved" indicator
+        setShowSaved(true);
+        setTimeout(() => setShowSaved(false), 2000);
+      }
+    } catch (err) {
+      console.error("Auto-save error:", err);
+    }
+  };
+
+  // Wrapper that saves and notifies parent
+  const handleMediaUpdate = async (url: string | null) => {
+    onMediaChange(url);
+    await saveToDatabase(url);
+  };
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentMediaUrl);
   const [previewIsVideo, setPreviewIsVideo] = useState<boolean>(
     isVideoUrl(currentMediaUrl)
@@ -152,7 +186,7 @@ export function EventMediaUpload({
         data: { publicUrl },
       } = supabase.storage.from("event-media").getPublicUrl(fileName);
 
-      onMediaChange(publicUrl);
+      await handleMediaUpdate(publicUrl);
     } catch (err) {
       console.error("Upload error:", err);
       setError("Failed to upload. Please try again.");
@@ -213,7 +247,7 @@ export function EventMediaUpload({
 
       setPreviewUrl(null);
       setPreviewIsVideo(false);
-      onMediaChange(null);
+      await handleMediaUpdate(null);
     } catch (err) {
       console.error("Remove error:", err);
       setError("Failed to remove. Please try again.");
@@ -236,10 +270,10 @@ export function EventMediaUpload({
       if (!url.protocol.startsWith("http")) throw new Error();
 
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         setPreviewUrl(urlToLoad);
         setPreviewIsVideo(false);
-        onMediaChange(urlToLoad);
+        await handleMediaUpdate(urlToLoad);
         setIsLoadingUrl(false);
         setShowUrlInput(false);
         setUrlInput("");
@@ -292,7 +326,7 @@ export function EventMediaUpload({
       const data = await response.json();
       setPreviewUrl(data.imageUrl);
       setPreviewIsVideo(false);
-      onMediaChange(data.imageUrl);
+      await handleMediaUpdate(data.imageUrl);
       setShowPromptEditor(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("generationFailed"));
@@ -327,7 +361,7 @@ export function EventMediaUpload({
       const data = await response.json();
       setPreviewUrl(data.imageUrl);
       setPreviewIsVideo(false);
-      onMediaChange(data.imageUrl);
+      await handleMediaUpdate(data.imageUrl);
       setRefinementPrompt("");
       setShowRefinement(false);
     } catch (err) {
@@ -401,6 +435,14 @@ export function EventMediaUpload({
           >
             <X className="w-4 h-4" />
           </button>
+        )}
+
+        {/* Auto-save indicator */}
+        {showSaved && (
+          <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-green-500/90 text-white text-xs font-medium flex items-center gap-1">
+            <Check className="w-3 h-3" />
+            Saved
+          </div>
         )}
 
         {/* Loading overlay */}
