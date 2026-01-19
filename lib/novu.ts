@@ -30,7 +30,14 @@ function getNovu(): Novu {
 
 // Generate HMAC hash for secure subscriber authentication
 export function generateSubscriberHash(subscriberId: string): string {
-  return createHmac('sha256', process.env.NOVU_SECRET_KEY!)
+  const secretKey = process.env.NOVU_SECRET_KEY;
+  if (!secretKey) {
+    // Return empty hash if key not configured - notifications won't be secure
+    // but won't crash the app
+    console.warn('[novu] NOVU_SECRET_KEY not configured, using fallback hash');
+    return '';
+  }
+  return createHmac('sha256', secretKey)
     .update(subscriberId)
     .digest('hex');
 }
