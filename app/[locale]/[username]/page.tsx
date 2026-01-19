@@ -8,10 +8,11 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
-import type { Profile, Event, ContentLocale, Locale } from "@/lib/types";
+import type { Profile, Event, ContentLocale, Locale, EventMomentsGroup } from "@/lib/types";
 import { generateProfileMetadata } from "@/lib/metadata";
 import { JsonLd, generatePersonSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { ClaimProfileBanner, GhostProfileBadge } from "@/components/profile/claim-profile-banner";
+import { UserMomentsTimeline } from "@/components/moments/user-moments-timeline";
 
 interface PageProps {
   params: Promise<{ username: string; locale: string }>;
@@ -68,6 +69,35 @@ async function isUserLoggedIn(): Promise<boolean> {
     data: { user },
   } = await supabase.auth.getUser();
   return !!user;
+}
+
+const INITIAL_EVENTS = 5;
+const MOMENTS_PER_EVENT = 6;
+
+async function getUserMoments(userId: string): Promise<{
+  groups: EventMomentsGroup[];
+  hasMore: boolean;
+}> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_user_moments_grouped", {
+    p_user_id: userId,
+    p_event_limit: INITIAL_EVENTS,
+    p_moments_per_event: MOMENTS_PER_EVENT,
+    p_event_offset: 0,
+    p_content_types: ["photo", "video", "text"],
+  });
+
+  if (error) {
+    console.error("Failed to fetch user moments:", error);
+    return { groups: [], hasMore: false };
+  }
+
+  const groups = (data ?? []) as EventMomentsGroup[];
+  return {
+    groups,
+    hasMore: groups.length >= INITIAL_EVENTS,
+  };
 }
 
 function isGhostProfile(profile: { is_ghost?: boolean; bio: string | null }): boolean {
@@ -169,11 +199,12 @@ export default async function ProfilePage({ params }: PageProps) {
     getTranslations("common"),
   ]);
 
-  const [events, isOwner, isLoggedIn, bioTranslations] = await Promise.all([
+  const [events, isOwner, isLoggedIn, bioTranslations, momentsData] = await Promise.all([
     getUserEvents(profile.id),
     isCurrentUser(profile.id),
     isUserLoggedIn(),
     getBioTranslations(profile.id, profile.bio, profile.bio_source_locale, locale),
+    getUserMoments(profile.id),
   ]);
 
   // Check if this is a ghost profile (auto-created from Facebook import)
@@ -324,6 +355,17 @@ export default async function ProfilePage({ params }: PageProps) {
             </p>
           )}
         </div>
+
+        {/* User Moments Timeline */}
+        {momentsData.groups.length > 0 && (
+          <div className="mt-8">
+            <UserMomentsTimeline
+              userId={profile.id}
+              initialGroups={momentsData.groups}
+              initialHasMore={momentsData.hasMore}
+            />
+          </div>
+        )}
       </div>
     </main>
   );

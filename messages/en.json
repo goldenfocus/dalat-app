@@ -371,6 +371,9 @@
     "upcomingEvents": "Upcoming Events",
     "pastEvents": "Past Events",
     "noEventsYet": "No events yet",
+    "moments": "Moments",
+    "noMomentsYet": "No moments yet",
+    "noMomentsHint": "Moments shared from events will appear here",
     "claimBanner": {
       "title": "Is this your profile?",
       "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
