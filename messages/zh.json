@@ -835,7 +835,10 @@
     "promptPlaceholder": "描述您想生成的图片...",
     "cancel": "取消",
     "generating": "生成中...",
-    "generate": "生成"
+    "generate": "生成",
+    "refineImage": "优化此图片",
+    "refinementPlaceholder": "例如：添加更多紫色调，使其更抽象...",
+    "applyRefinement": "应用优化"
   },
   "archive": {
     "events": "活动",

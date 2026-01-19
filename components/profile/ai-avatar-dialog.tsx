@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Loader2, User, UserCircle } from "lucide-react";
+import { Sparkles, Loader2, User, UserCircle, Wand2, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import {
@@ -19,11 +18,19 @@ import { cn } from "@/lib/utils";
 interface AIAvatarDialogProps {
   profileId: string;
   displayName?: string;
+  currentAvatarUrl?: string | null;
   onAvatarGenerated: (url: string) => void;
   disabled?: boolean;
 }
 
 type AvatarStyle = "male" | "female" | "neutral" | "custom";
+
+const styleDescriptions: Record<AvatarStyle, string> = {
+  male: "masculine-presenting person with strong, defined features",
+  female: "feminine-presenting person with soft, elegant features",
+  neutral: "person with androgynous, gender-neutral features that could be any gender",
+  custom: "",
+};
 
 const styleIcons: Record<AvatarStyle, React.ReactNode> = {
   male: <User className="w-5 h-5" />,
@@ -35,6 +42,7 @@ const styleIcons: Record<AvatarStyle, React.ReactNode> = {
 export function AIAvatarDialog({
   profileId,
   displayName,
+  currentAvatarUrl,
   onAvatarGenerated,
   disabled,
 }: AIAvatarDialogProps) {
@@ -44,19 +52,51 @@ export function AIAvatarDialog({
   const [customPrompt, setCustomPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showRefinement, setShowRefinement] = useState(false);
+  const [refinementPrompt, setRefinementPrompt] = useState("");
+
+  // Build style-aware prompt
+  const buildAvatarPrompt = () => {
+    const nameContext = displayName?.trim()
+      ? `for someone named ${displayName.slice(0, 50)}`
+      : "for a friendly person";
+
+    let styleContext: string;
+    if (selectedStyle === "custom" && customPrompt.trim()) {
+      styleContext = `The avatar should depict: ${customPrompt.slice(0, 200)}`;
+    } else {
+      const styleDesc = styleDescriptions[selectedStyle] || styleDescriptions.neutral;
+      styleContext = `The avatar should depict a ${styleDesc}`;
+    }
+
+    return `Create a beautiful, artistic avatar portrait ${nameContext}.
+
+${styleContext}
+
+Style: Dreamy, ethereal digital art inspired by Đà Lạt, Vietnam's misty highlands.
+Colors: Soft pastels with hints of misty purple, pine forest green, warm sunset orange, and flower pink.
+Feel: Warm, welcoming, and slightly magical - like a peaceful morning in the mountains.
+Composition: Abstract or stylized portrait, centered, suitable for a circular avatar crop.
+Background: Soft gradient or gentle atmospheric elements (mist, soft bokeh, subtle nature motifs).
+Important:
+- Abstract/artistic style, NOT photorealistic
+- Do NOT include any text or lettering
+- Square 1:1 aspect ratio
+- Suitable for use as a profile picture`;
+  };
 
   const handleGenerate = async () => {
     setError(null);
     setIsGenerating(true);
 
     try {
-      const response = await fetch("/api/generate-avatar", {
+      const response = await fetch("/api/ai/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          displayName,
-          style: selectedStyle,
-          customPrompt: selectedStyle === "custom" ? customPrompt : undefined,
+          context: "avatar",
+          customPrompt: buildAvatarPrompt(),
+          entityId: profileId,
         }),
       });
 
@@ -66,44 +106,48 @@ export function AIAvatarDialog({
         throw new Error(data.error || "Failed to generate avatar");
       }
 
-      const { imageUrl } = data;
-
-      // Convert base64 to blob and upload to storage
-      const base64Data = imageUrl.split(",")[1];
-      const mimeType = imageUrl.split(";")[0].split(":")[1];
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: mimeType });
-
-      // Upload to storage
-      const supabase = createClient();
-      const ext = mimeType.split("/")[1] || "png";
-      const fileName = `${profileId}/${Date.now()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(fileName, blob, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(fileName);
-
-      onAvatarGenerated(publicUrl);
+      onAvatarGenerated(data.imageUrl);
       setOpen(false);
       // Reset state for next time
       setSelectedStyle("neutral");
       setCustomPrompt("");
     } catch (err) {
       console.error("AI avatar generation error:", err);
+      setError(err instanceof Error ? err.message : t("uploadFailed"));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleRefine = async () => {
+    if (!currentAvatarUrl || !refinementPrompt.trim()) return;
+    setError(null);
+    setIsGenerating(true);
+
+    try {
+      const response = await fetch("/api/ai/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: "avatar",
+          entityId: profileId,
+          existingImageUrl: currentAvatarUrl,
+          refinementPrompt: refinementPrompt.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to refine avatar");
+      }
+
+      onAvatarGenerated(data.imageUrl);
+      setRefinementPrompt("");
+      setShowRefinement(false);
+      setOpen(false);
+    } catch (err) {
+      console.error("AI avatar refinement error:", err);
       setError(err instanceof Error ? err.message : t("uploadFailed"));
     } finally {
       setIsGenerating(false);
@@ -205,6 +249,60 @@ export function AIAvatarDialog({
                 {t("avatarDialog.customHint")}
               </p>
             </div>
+          )}
+
+          {/* Refinement section - only when avatar exists */}
+          {currentAvatarUrl && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowRefinement(!showRefinement)}
+                disabled={isGenerating}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 transition-colors text-sm disabled:opacity-50"
+              >
+                <span className="flex items-center gap-2 text-violet-400">
+                  <Wand2 className="w-4 h-4" />
+                  {t("avatarDialog.refineExisting")}
+                </span>
+                {showRefinement ? (
+                  <ChevronUp className="w-4 h-4 text-violet-400" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-violet-400" />
+                )}
+              </button>
+
+              {showRefinement && (
+                <div className="space-y-2 pl-2 border-l-2 border-violet-500/30">
+                  <textarea
+                    value={refinementPrompt}
+                    onChange={(e) => setRefinementPrompt(e.target.value)}
+                    placeholder={t("avatarDialog.refinementPlaceholder")}
+                    rows={2}
+                    className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm resize-none"
+                    disabled={isGenerating}
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleRefine}
+                    disabled={isGenerating || !refinementPrompt.trim()}
+                    className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+                    size="sm"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {t("generating")}
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="w-4 h-4 mr-2" />
+                        {t("avatarDialog.applyRefinement")}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
 
           {/* Error */}

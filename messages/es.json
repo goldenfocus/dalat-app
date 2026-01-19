@@ -835,7 +835,10 @@
     "promptPlaceholder": "Describe la imagen que quieres generar...",
     "cancel": "Cancelar",
     "generating": "Generando...",
-    "generate": "Generar"
+    "generate": "Generar",
+    "refineImage": "Refinar esta imagen",
+    "refinementPlaceholder": "ej., Agregar tonos morados, hacer más abstracto...",
+    "applyRefinement": "Aplicar refinamiento"
   },
   "archive": {
     "events": "Eventos",

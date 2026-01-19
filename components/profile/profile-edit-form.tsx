@@ -253,6 +253,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                 <AIAvatarDialog
                   profileId={profile.id}
                   displayName={displayName}
+                  currentAvatarUrl={avatarUrl}
                   onAvatarGenerated={(url) => handleAvatarChange(url)}
                 />
               }

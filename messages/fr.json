@@ -861,7 +861,10 @@
     "promptPlaceholder": "Décrivez l'image que vous souhaitez générer...",
     "cancel": "Annuler",
     "generating": "Génération...",
-    "generate": "Générer"
+    "generate": "Générer",
+    "refineImage": "Affiner cette image",
+    "refinementPlaceholder": "ex: Ajouter des tons violets, rendre plus abstrait...",
+    "applyRefinement": "Appliquer les modifications"
   },
   "archive": {
     "events": "Événements",

@@ -835,7 +835,10 @@
     "promptPlaceholder": "生成したい画像を説明してください...",
     "cancel": "キャンセル",
     "generating": "生成中...",
-    "generate": "生成"
+    "generate": "生成",
+    "refineImage": "この画像を調整",
+    "refinementPlaceholder": "例：紫色のトーンを追加、より抽象的に...",
+    "applyRefinement": "調整を適用"
   },
   "archive": {
     "events": "イベント",

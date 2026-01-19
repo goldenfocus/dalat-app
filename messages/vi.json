@@ -347,7 +347,10 @@
       "description": "Chọn phong cách cho avatar AI của bạn",
       "generate": "Tạo Avatar",
       "customPlaceholder": "Mô tả avatar lý tưởng của bạn... (ví dụ: phù thủy thân thiện với mũ tím, phi hành gia với hoa)",
-      "customHint": "Mẹo: Dùng nút lấp lánh để AI cải thiện mô tả của bạn"
+      "customHint": "Mẹo: Dùng nút lấp lánh để AI cải thiện mô tả của bạn",
+      "refineExisting": "Tinh chỉnh avatar hiện tại",
+      "refinementPlaceholder": "ví dụ: Làm cho nhiều màu sắc hơn, thêm ánh sáng huyền bí...",
+      "applyRefinement": "Áp dụng tinh chỉnh"
     }
   },
   "settings": {
@@ -863,7 +866,10 @@
     "promptPlaceholder": "Mô tả hình ảnh bạn muốn tạo...",
     "cancel": "Hủy",
     "generating": "Đang tạo...",
-    "generate": "Tạo"
+    "generate": "Tạo",
+    "refineImage": "Tinh chỉnh ảnh này",
+    "refinementPlaceholder": "ví dụ: Thêm tông màu tím, làm cho nó trừu tượng hơn...",
+    "applyRefinement": "Áp dụng tinh chỉnh"
   },
   "search": {
     "title": "Sự kiện {query} tại Đà Lạt",

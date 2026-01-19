@@ -835,7 +835,10 @@
     "promptPlaceholder": "생성하려는 이미지를 설명하세요...",
     "cancel": "취소",
     "generating": "생성 중...",
-    "generate": "생성"
+    "generate": "생성",
+    "refineImage": "이 이미지 수정하기",
+    "refinementPlaceholder": "예: 보라색 톤 추가, 더 추상적으로 만들기...",
+    "applyRefinement": "수정 적용"
   },
   "archive": {
     "events": "이벤트",

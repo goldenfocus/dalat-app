@@ -835,7 +835,10 @@
     "promptPlaceholder": "Beschreiben Sie das Bild, das Sie generieren möchten...",
     "cancel": "Abbrechen",
     "generating": "Generiere...",
-    "generate": "Generieren"
+    "generate": "Generieren",
+    "refineImage": "Dieses Bild verfeinern",
+    "refinementPlaceholder": "z.B., Mehr lila Töne hinzufügen, abstrakter machen...",
+    "applyRefinement": "Verfeinerung anwenden"
   },
   "archive": {
     "events": "Events",

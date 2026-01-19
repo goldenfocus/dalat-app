@@ -835,7 +835,10 @@
     "promptPlaceholder": "Huraikan imej yang ingin anda jana...",
     "cancel": "Batal",
     "generating": "Menjana...",
-    "generate": "Jana"
+    "generate": "Jana",
+    "refineImage": "Halusi imej ini",
+    "refinementPlaceholder": "cth., Tambah warna ungu, jadikan lebih abstrak...",
+    "applyRefinement": "Gunakan penghalusan"
   },
   "archive": {
     "events": "Acara",

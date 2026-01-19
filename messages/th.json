@@ -835,7 +835,10 @@
     "promptPlaceholder": "อธิบายรูปภาพที่คุณต้องการสร้าง...",
     "cancel": "ยกเลิก",
     "generating": "กำลังสร้าง...",
-    "generate": "สร้าง"
+    "generate": "สร้าง",
+    "refineImage": "ปรับปรุงภาพนี้",
+    "refinementPlaceholder": "เช่น เพิ่มโทนสีม่วง ทำให้ดูเป็นนามธรรมมากขึ้น...",
+    "applyRefinement": "นำการปรับปรุงไปใช้"
   },
   "archive": {
     "events": "กิจกรรม",

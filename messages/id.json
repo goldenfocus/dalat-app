@@ -835,7 +835,10 @@
     "promptPlaceholder": "Jelaskan gambar yang ingin Anda buat...",
     "cancel": "Batal",
     "generating": "Membuat...",
-    "generate": "Buat"
+    "generate": "Buat",
+    "refineImage": "Perbaiki gambar ini",
+    "refinementPlaceholder": "mis., Tambahkan nada ungu, buat lebih abstrak...",
+    "applyRefinement": "Terapkan perbaikan"
   },
   "archive": {
     "events": "Acara",

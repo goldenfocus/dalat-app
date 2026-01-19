@@ -233,7 +233,10 @@
     "promptPlaceholder": "Describe the image you want to generate...",
     "cancel": "Cancel",
     "generating": "Generating...",
-    "generate": "Generate"
+    "generate": "Generate",
+    "refineImage": "Refine this image",
+    "refinementPlaceholder": "e.g., Add more purple tones, make it more abstract...",
+    "applyRefinement": "Apply refinement"
   },
   "eventActions": {
     "eventOptions": "Event options",
@@ -388,7 +391,10 @@
       "description": "Choose a style for your AI-generated avatar",
       "generate": "Generate Avatar",
       "customPlaceholder": "Describe your ideal avatar... (e.g., a friendly wizard with a purple hat, an astronaut with flowers)",
-      "customHint": "Tip: Use the sparkles button to enhance your description"
+      "customHint": "Tip: Use the sparkles button to enhance your description",
+      "refineExisting": "Refine current avatar",
+      "refinementPlaceholder": "e.g., Make it more colorful, add a mystical glow...",
+      "applyRefinement": "Apply refinement"
     }
   },
   "settings": {

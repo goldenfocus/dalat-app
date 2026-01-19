@@ -1,59 +1,17 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createClient } from "@supabase/supabase-js";
-
-const COVER_IMAGE_PROMPT = `Create an abstract, artistic cover image for a tech product blog post.
-
-Style guidelines:
-- Modern, clean, tech-forward aesthetic
-- Purple and blue gradient background inspired by dalat.app branding
-- Abstract geometric shapes or flowing lines
-- Subtle tech elements (code-like patterns, network nodes, light particles)
-- Atmospheric depth with soft glow effects
-- NO text, NO lettering, NO words
-- Landscape orientation (16:9 aspect ratio)
-- Professional and polished feel
-
-The image should feel:
-- Innovative and forward-thinking
-- Warm but professional
-- Suitable for a product changelog or release notes
-- Visually interesting but not distracting from text overlay`;
+import { generateImage, refineImage, buildPrompt } from "@/lib/ai/image-generator";
 
 /**
- * Generate a cover image for a blog post using Gemini 2.0
+ * Generate a cover image for a blog post using Gemini
  * Returns the public URL of the uploaded image
  */
-export async function generateCoverImage(
-  postSlug: string,
-  customPrompt?: string
-): Promise<string> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GOOGLE_AI_API_KEY not configured");
-  }
+export async function generateCoverImage(postSlug: string, customPrompt?: string): Promise<string> {
+  const prompt = customPrompt || buildPrompt("blog-cover", postSlug);
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error("Supabase service credentials not configured");
-  }
-
-  // Generate the image with Gemini 3 Pro Image (Nano Banana Pro)
-  // Best quality model for artistic image generation with advanced reasoning
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-3-pro-image-preview",
-    generationConfig: {
-      responseModalities: ["TEXT", "IMAGE"],
-    } as never, // Type workaround
+  return generateImage({
+    context: "blog-cover",
+    prompt,
+    entityId: postSlug,
   });
-
-  const prompt = customPrompt || COVER_IMAGE_PROMPT;
-  console.log("[cover-generator] Generating cover for:", postSlug);
-
-  const result = await model.generateContent(prompt);
-
-  return await extractAndUploadImage(result, postSlug, supabaseUrl, supabaseServiceKey);
 }
 
 /**
@@ -65,124 +23,12 @@ export async function refineCoverImage(
   existingImageUrl: string,
   refinementPrompt: string
 ): Promise<string> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GOOGLE_AI_API_KEY not configured");
-  }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error("Supabase service credentials not configured");
-  }
-
-  // Fetch the existing image
-  console.log("[cover-generator] Fetching existing image:", existingImageUrl);
-  const imageResponse = await fetch(existingImageUrl);
-  if (!imageResponse.ok) {
-    throw new Error("Failed to fetch existing image");
-  }
-
-  const imageBuffer = await imageResponse.arrayBuffer();
-  const base64Image = Buffer.from(imageBuffer).toString("base64");
-  const mimeType = imageResponse.headers.get("content-type") || "image/png";
-
-  // Set up Gemini with image editing capability
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-3-pro-image-preview",
-    generationConfig: {
-      responseModalities: ["TEXT", "IMAGE"],
-    } as never,
+  return refineImage({
+    context: "blog-cover",
+    existingImageUrl,
+    refinementPrompt,
+    entityId: postSlug,
   });
-
-  const prompt = `Edit this blog cover image based on the following instructions:
-
-${refinementPrompt}
-
-Important:
-- Keep the overall style and color palette consistent
-- Maintain landscape orientation (16:9)
-- NO text, NO lettering, NO words
-- Keep it professional and polished`;
-
-  console.log("[cover-generator] Refining cover for:", postSlug);
-
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType,
-        data: base64Image,
-      },
-    },
-    prompt,
-  ]);
-
-  return await extractAndUploadImage(result, postSlug, supabaseUrl, supabaseServiceKey);
-}
-
-/**
- * Extract image from Gemini response and upload to Supabase
- */
-async function extractAndUploadImage(
-  result: { response: { candidates?: Array<{ content?: { parts?: Array<unknown> } }> } },
-  postSlug: string,
-  supabaseUrl: string,
-  supabaseServiceKey: string
-): Promise<string> {
-  const response = result.response;
-
-  // Extract the image from the response
-  const parts = response.candidates?.[0]?.content?.parts;
-  if (!parts) {
-    console.error("[cover-generator] No parts in response");
-    throw new Error("No response from AI model");
-  }
-
-  const imagePart = parts.find(
-    (part) =>
-      typeof part === "object" &&
-      part !== null &&
-      "inlineData" in part &&
-      (part as { inlineData?: { mimeType?: string } }).inlineData?.mimeType?.startsWith("image/")
-  ) as { inlineData: { data: string; mimeType: string } } | undefined;
-
-  if (!imagePart) {
-    console.error("[cover-generator] No image part found");
-    throw new Error("No image generated");
-  }
-
-  const base64Data = imagePart.inlineData.data;
-  const mimeType = imagePart.inlineData.mimeType;
-  const ext = mimeType.split("/")[1] || "png";
-
-  // Convert base64 to buffer
-  const buffer = Buffer.from(base64Data, "base64");
-
-  // Upload to Supabase storage
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
-  const fileName = `covers/${postSlug}-${Date.now()}.${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("blog-media")
-    .upload(fileName, buffer, {
-      contentType: mimeType,
-      cacheControl: "31536000", // 1 year cache
-      upsert: false,
-    });
-
-  if (uploadError) {
-    console.error("[cover-generator] Upload error:", uploadError);
-    throw new Error(`Failed to upload cover image: ${uploadError.message}`);
-  }
-
-  // Get the public URL
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("blog-media").getPublicUrl(fileName);
-
-  console.log("[cover-generator] Generated cover:", publicUrl);
-  return publicUrl;
 }
 
 /**

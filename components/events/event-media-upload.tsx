@@ -8,7 +8,10 @@ import {
   Loader2,
   Link as LinkIcon,
   Sparkles,
+  Wand2,
   Check,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -68,6 +71,8 @@ export function EventMediaUpload({
   const [showPromptEditor, setShowPromptEditor] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showRefinement, setShowRefinement] = useState(false);
+  const [refinementPrompt, setRefinementPrompt] = useState("");
 
   const uploadMedia = async (file: File) => {
     setError(null);
@@ -268,12 +273,14 @@ export function EventMediaUpload({
     setIsGenerating(true);
 
     try {
-      const response = await fetch("/api/generate-flyer", {
+      const response = await fetch("/api/ai/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          context: "event-cover",
           title: eventTitle?.trim() || "",
           customPrompt: prompt.trim(),
+          entityId: eventId,
         }),
       });
 
@@ -287,6 +294,42 @@ export function EventMediaUpload({
       setPreviewIsVideo(false);
       onMediaChange(data.imageUrl);
       setShowPromptEditor(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("generationFailed"));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Refine existing image with AI
+  const handleRefine = async () => {
+    if (!previewUrl || !refinementPrompt.trim()) return;
+    setError(null);
+    setIsGenerating(true);
+
+    try {
+      const response = await fetch("/api/ai/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: "event-cover",
+          entityId: eventId,
+          existingImageUrl: previewUrl,
+          refinementPrompt: refinementPrompt.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || t("generationFailed"));
+      }
+
+      const data = await response.json();
+      setPreviewUrl(data.imageUrl);
+      setPreviewIsVideo(false);
+      onMediaChange(data.imageUrl);
+      setRefinementPrompt("");
+      setShowRefinement(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("generationFailed"));
     } finally {
@@ -502,6 +545,60 @@ export function EventMediaUpload({
               AI
             </Button>
           </div>
+        )}
+
+        {/* Refinement section - only when image exists */}
+        {previewUrl && !previewIsVideo && !showPromptEditor && !showUrlInput && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowRefinement(!showRefinement)}
+              disabled={isLoading}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 transition-colors text-sm disabled:opacity-50"
+            >
+              <span className="flex items-center gap-2 text-violet-400">
+                <Wand2 className="w-4 h-4" />
+                {t("refineImage")}
+              </span>
+              {showRefinement ? (
+                <ChevronUp className="w-4 h-4 text-violet-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-violet-400" />
+              )}
+            </button>
+
+            {showRefinement && (
+              <div className="space-y-2 pl-2 border-l-2 border-violet-500/30">
+                <textarea
+                  value={refinementPrompt}
+                  onChange={(e) => setRefinementPrompt(e.target.value)}
+                  placeholder={t("refinementPlaceholder")}
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm resize-none"
+                  disabled={isLoading}
+                />
+                <Button
+                  type="button"
+                  onClick={handleRefine}
+                  disabled={isLoading || !refinementPrompt.trim()}
+                  className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+                  size="sm"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {t("generating")}
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-4 h-4 mr-2" />
+                      {t("applyRefinement")}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
