@@ -582,7 +582,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
           <div className="lg:col-span-2 space-y-6">
             {/* Event image/video - clickable to view full */}
             {event.image_url ? (
-              <EventMediaDisplay src={event.image_url} alt={event.title} />
+              <EventMediaDisplay src={event.image_url} alt={event.title} priority />
             ) : (
               <EventDefaultImage
                 title={event.title}

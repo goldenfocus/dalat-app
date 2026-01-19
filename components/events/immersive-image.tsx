@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Image from "next/image";
+import { cloudflareLoader } from "@/lib/image-cdn";
 
 interface ImmersiveImageProps {
   src: string;
@@ -44,6 +45,7 @@ export function ImmersiveImage({ src, alt, children, priority = false }: Immersi
 
       {/* Main image - smart object-fit based on aspect ratio */}
       <Image
+        loader={cloudflareLoader}
         src={src}
         alt={alt}
         fill

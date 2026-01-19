@@ -5,13 +5,20 @@ import Image from "next/image";
 import { Expand } from "lucide-react";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { isVideoUrl } from "@/lib/media-utils";
+import { cloudflareLoader } from "@/lib/image-cdn";
 
 interface EventMediaDisplayProps {
   src: string;
   alt: string;
+  /** Set to true for LCP images (hero images above the fold) */
+  priority?: boolean;
 }
 
-export function EventMediaDisplay({ src, alt }: EventMediaDisplayProps) {
+export function EventMediaDisplay({
+  src,
+  alt,
+  priority = false,
+}: EventMediaDisplayProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const isVideo = isVideoUrl(src);
 
@@ -40,11 +47,13 @@ export function EventMediaDisplay({ src, alt }: EventMediaDisplayProps) {
         aria-label="View full flyer"
       >
         <Image
+          loader={cloudflareLoader}
           src={src}
           alt={alt}
           fill
           sizes="(max-width: 768px) 100vw, 80vw"
           className="object-contain md:object-cover transition-transform group-hover:scale-[1.02]"
+          priority={priority}
         />
         {/* Expand overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
