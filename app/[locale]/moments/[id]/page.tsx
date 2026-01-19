@@ -17,7 +17,7 @@ import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/st
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
-import type { Moment, Event, Profile, ContentLocale, Locale } from "@/lib/types";
+import { hasRoleLevel, type Moment, type Event, type Profile, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
 
 // Map our locales to date-fns locales for relative time formatting
 const dateFnsLocales: Record<Locale, typeof enUS> = {
@@ -245,7 +245,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
       .select("role")
       .eq("id", user.id)
       .single();
-    isAdminOrMod = profile?.role === "admin" || profile?.role === "moderator";
+    isAdminOrMod = profile?.role ? hasRoleLevel(profile.role as UserRole, "moderator") : false;
   }
 
   const canModerate = isEventCreator || isAdminOrMod;

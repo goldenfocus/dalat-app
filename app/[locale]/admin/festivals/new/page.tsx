@@ -3,6 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FestivalForm } from "@/components/admin/festival-form";
+import { hasRoleLevel, type UserRole } from "@/lib/types";
 
 async function getProfile(userId: string) {
   const supabase = await createClient();
@@ -24,7 +25,7 @@ async function getMyOrganizers(userId: string) {
     .eq("id", userId)
     .single();
 
-  if (profile?.role === "admin") {
+  if (profile?.role && hasRoleLevel(profile.role as UserRole, "admin")) {
     // Admin sees all organizers
     const { data } = await supabase
       .from("organizers")

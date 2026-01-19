@@ -9,7 +9,7 @@ import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat } from "lucide-rea
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
-import type { ContentLocale, Locale } from "@/lib/types";
+import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
 import { JsonLd, generateEventSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -522,7 +522,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   const isLoggedIn = !!currentUserId;
   const isCreator = currentUserId === event.created_by;
-  const isAdmin = currentUserRole === "admin";
+  const isAdmin = currentUserRole ? hasRoleLevel(currentUserRole, "admin") : false;
   const canManageEvent = isCreator || isAdmin;
 
   const spotsText = event.capacity

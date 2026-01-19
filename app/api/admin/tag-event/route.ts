@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { tagEvent } from "@/lib/ai/event-tagger";
+import { hasRoleLevel, type UserRole } from "@/lib/types";
 
 /**
  * POST /api/admin/tag-event
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     .eq("id", user.id)
     .single();
 
-  const isAdmin = profile?.role === "admin" || profile?.role === "moderator";
+  const isAdmin = profile?.role ? hasRoleLevel(profile.role as UserRole, "moderator") : false;
   const isCreator = event.created_by === user.id;
 
   if (!isAdmin && !isCreator) {

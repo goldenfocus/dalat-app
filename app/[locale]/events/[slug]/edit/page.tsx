@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 // Increase serverless function timeout
 export const maxDuration = 60;
 import { EventForm } from "@/components/events/event-form";
-import type { Event, Sponsor, EventSponsor, UserRole } from "@/lib/types";
+import { hasRoleLevel, type Event, type Sponsor, type EventSponsor, type UserRole } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -43,7 +43,7 @@ export default async function EditEventPage({ params }: PageProps) {
     .single();
 
   const isCreator = event.created_by === user.id;
-  const isAdmin = (profile?.role as UserRole) === "admin";
+  const isAdmin = profile?.role ? hasRoleLevel(profile.role as UserRole, "admin") : false;
 
   if (!isCreator && !isAdmin) {
     redirect(`/events/${slug}`);
