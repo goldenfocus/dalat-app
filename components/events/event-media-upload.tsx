@@ -155,44 +155,27 @@ export function EventMediaUpload({
     setIsUploading(true);
 
     try {
-      const supabase = createClient();
+      // Use server-side upload API to bypass RLS issues
+      const formData = new FormData();
+      formData.append("file", fileToUpload);
+      formData.append("eventId", eventId);
 
-      // Generate unique filename (use converted file's extension)
-      const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${eventId}/${Date.now()}.${ext}`;
+      const response = await fetch("/api/upload/event-media", {
+        method: "POST",
+        body: formData,
+      });
 
-      // Delete old media if exists
-      if (currentMediaUrl) {
-        const oldPath = currentMediaUrl.split("/event-media/")[1];
-        if (oldPath) {
-          await supabase.storage.from("event-media").remove([oldPath]);
-        }
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Upload failed");
       }
 
-      // Upload new media
-      const { error: uploadError } = await supabase.storage
-        .from("event-media")
-        .upload(fileName, fileToUpload, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error("Supabase upload error:", uploadError);
-        throw new Error(uploadError.message || "Storage upload failed");
-      }
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("event-media").getPublicUrl(fileName);
-
-      await handleMediaUpdate(publicUrl);
+      await handleMediaUpdate(data.url);
     } catch (err) {
       console.error("Upload error:", err);
       const message = err instanceof Error ? err.message : "Unknown error";
-      // Show specific error for RLS violations
-      if (message.includes("policy") || message.includes("permission") || message.includes("row-level security")) {
+      if (message.includes("authorized") || message.includes("permission")) {
         setError("Permission denied. You may not have rights to edit this event.");
       } else {
         setError(`Failed to upload: ${message}`);
