@@ -42,7 +42,7 @@ export default function NotFound() {
               Lost in the mist?
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              Like wandering into an undiscovered corner of Da Lat, this page
+              Like wandering into an undiscovered corner of Đà Lạt, this page
               doesn&apos;t exist. But the journey home is just a click away.
             </p>
           </div>

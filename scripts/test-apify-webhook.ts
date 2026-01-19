@@ -13,14 +13,14 @@ const isDryRun = process.argv.includes("--dry-run");
 const mockFacebookEvents = [
   {
     url: "https://www.facebook.com/events/test-123456789/",
-    name: "Test Concert in Da Lat",
+    name: "Test Concert in Đà Lạt",
     description:
       "A wonderful test concert featuring local artists. Join us for an evening of music under the stars!",
     startDate: "2026-02-15T19:00:00.000Z",
     endDate: "2026-02-15T23:00:00.000Z",
     location: {
       name: "Phố Bên Đồi",
-      city: "Da Lat, Vietnam",
+      city: "Đà Lạt, Vietnam",
       latitude: 11.9404,
       longitude: 108.4583,
     },
@@ -39,7 +39,7 @@ const mockFacebookEvents = [
     startDate: "2026-02-20T14:00:00.000Z",
     location: {
       name: "Dalat Art Space",
-      address: "123 Phan Dinh Phung, Da Lat",
+      address: "123 Phan Dinh Phung, Đà Lạt",
     },
     coverPhoto: "https://example.com/art-workshop.jpg",
     organizedBy: "Event by Dalat Creative Hub",
@@ -65,7 +65,7 @@ Local artisans, food vendors, live music, and more! Tag your friends and come ce
 #dalat #nightmarket #dalatevents #vietnamevents`,
     displayUrl: "https://example.com/night-market.jpg",
     ownerUsername: "dalat_events",
-    locationName: "Da Lat Night Square",
+    locationName: "Đà Lạt Night Square",
     likesCount: 234,
     hashtags: ["dalat", "nightmarket", "dalatevents", "vietnamevents"],
   },

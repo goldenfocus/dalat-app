@@ -101,7 +101,7 @@ export default async function Image() {
               marginTop: "16px",
             }}
           >
-            Discover and organize events in Da Lat
+            Discover and organize events in Đà Lạt
           </div>
         </div>
 

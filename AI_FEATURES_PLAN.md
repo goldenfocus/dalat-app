@@ -106,7 +106,7 @@ lib/ai/event-tagger.ts
 
 **Prompt strategy:**
 ```
-Categorize this Da Lat event with 2-5 tags from this list:
+Categorize this Đà Lạt event with 2-5 tags from this list:
 {TAG_LIST}
 
 Event: {title}

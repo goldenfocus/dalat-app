@@ -24,7 +24,7 @@ The Facebook Event Scraper only scrapes **individual event URLs** you give it - 
 
 ### 🎯 What Needs to Be Built
 
-1. **Venue Discovery Script** - Find Da Lat venues via Google Maps, extract Facebook page URLs
+1. **Venue Discovery Script** - Find Đà Lạt venues via Google Maps, extract Facebook page URLs
 2. **Admin Import Page** - One-click import from pasted Facebook event URL
 3. **Automated Venue Scraping** - Daily scrape of venue Facebook pages for new events
 
@@ -32,14 +32,14 @@ The Facebook Event Scraper only scrapes **individual event URLs** you give it - 
 
 ## Task 1: Venue Discovery Script
 
-Create a script that finds Da Lat venues and extracts their Facebook pages.
+Create a script that finds Đà Lạt venues and extracts their Facebook pages.
 
 ### File: `scripts/discover-dalat-venues.ts`
 
 ```typescript
 #!/usr/bin/env bun
 /**
- * Discover Da Lat venues using Google Places API
+ * Discover Đà Lạt venues using Google Places API
  * Extracts Facebook page URLs for automated event scraping
  *
  * Usage: bun run scripts/discover-dalat-venues.ts
@@ -138,7 +138,7 @@ function extractFacebookUrl(website?: string, name?: string): string | undefined
 
 async function main() {
   console.log("╔════════════════════════════════════════════╗");
-  console.log("║      Da Lat Venue Discovery Script         ║");
+  console.log("║      Đà Lạt Venue Discovery Script         ║");
   console.log("╚════════════════════════════════════════════╝\n");
 
   const venues = await discoverVenues();
@@ -170,7 +170,7 @@ main().catch(console.error);
 Instead of Google Places API (which costs money), use `compass/crawler-google-places` on Apify:
 
 1. Go to: https://apify.com/compass/crawler-google-places
-2. Input: Search "bars Da Lat", "cafes Da Lat", "event venues Da Lat"
+2. Input: Search "bars Đà Lạt", "cafes Đà Lạt", "event venues Đà Lạt"
 3. Output: List of venues with websites
 4. Post-process to extract Facebook URLs
 
@@ -439,8 +439,8 @@ export async function POST(request: Request) {
 
 Since Facebook page event scraping is tricky, consider:
 
-1. **Eventbrite approach**: Eventbrite has location search - use `apify/eventbrite-scraper` with "Da Lat" query
-2. **Google Events approach**: Use `apify/google-search-scraper` to search "events in Da Lat this week"
+1. **Eventbrite approach**: Eventbrite has location search - use `apify/eventbrite-scraper` with "Đà Lạt" query
+2. **Google Events approach**: Use `apify/google-search-scraper` to search "events in Đà Lạt this week"
 
 ---
 
@@ -486,7 +486,7 @@ GOOGLE_PLACES_API_KEY=xxx  # For venue discovery (optional)
 - [ ] Create `/api/import/url` endpoint for single-URL imports
 - [ ] Test single-URL import with a real Facebook event
 - [ ] Create venue discovery script (Google Places or Apify)
-- [ ] Compile list of Da Lat venue Facebook URLs
+- [ ] Compile list of Đà Lạt venue Facebook URLs
 - [ ] Set up Apify saved task with venue URLs
 - [ ] Configure daily schedule for automated scraping
 - [ ] Verify webhook fires and events appear in database

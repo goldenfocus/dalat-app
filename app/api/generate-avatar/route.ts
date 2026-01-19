@@ -114,7 +114,7 @@ export async function POST(request: Request) {
 
 ${styleContext}
 
-Style: Dreamy, ethereal digital art inspired by Da Lat, Vietnam's misty highlands.
+Style: Dreamy, ethereal digital art inspired by Đà Lạt, Vietnam's misty highlands.
 Colors: Soft pastels with hints of misty purple, pine forest green, warm sunset orange, and flower pink.
 Feel: Warm, welcoming, and slightly magical - like a peaceful morning in the mountains.
 Composition: Abstract or stylized portrait, centered, suitable for a circular avatar crop.

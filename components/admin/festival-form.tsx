@@ -26,7 +26,7 @@ export function FestivalForm({ userId, festival, organizers, redirectTo = "/admi
   const [description, setDescription] = useState(festival?.description || "");
   const [startDate, setStartDate] = useState(festival?.start_date || "");
   const [endDate, setEndDate] = useState(festival?.end_date || "");
-  const [locationCity, setLocationCity] = useState(festival?.location_city || "Da Lat");
+  const [locationCity, setLocationCity] = useState(festival?.location_city || "Đà Lạt");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,7 +127,7 @@ export function FestivalForm({ userId, festival, organizers, redirectTo = "/admi
               id="locationCity"
               value={locationCity}
               onChange={(e) => setLocationCity(e.target.value)}
-              placeholder="Da Lat"
+              placeholder="Đà Lạt"
             />
           </div>
 

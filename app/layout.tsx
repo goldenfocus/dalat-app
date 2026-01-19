@@ -7,18 +7,18 @@ const siteUrl = "https://dalat.app";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "ĐàLạt.app · Events · People · Moments · Love",
-  description: "Discover and organize events in Da Lat",
+  description: "Discover and organize events in Đà Lạt",
   openGraph: {
     type: "website",
     siteName: "ĐàLạt.app",
     title: "ĐàLạt.app · Events · People · Moments · Love",
-    description: "Discover and organize events in Da Lat",
+    description: "Discover and organize events in Đà Lạt",
     url: siteUrl,
   },
   twitter: {
     card: "summary_large_image",
     title: "ĐàLạt.app · Events · People · Moments · Love",
-    description: "Discover and organize events in Da Lat",
+    description: "Discover and organize events in Đà Lạt",
   },
 };
 

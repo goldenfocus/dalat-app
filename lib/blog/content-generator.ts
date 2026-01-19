@@ -4,7 +4,7 @@ import type {
   BlogContentGeneratorOutput,
 } from "@/lib/types/blog";
 
-const STORYTELLING_PROMPT = `You are a storyteller for dalat.app, turning technical release notes into engaging human stories. Your readers are event organizers and community members in Da Lat, Vietnam - not developers.
+const STORYTELLING_PROMPT = `You are a storyteller for dalat.app, turning technical release notes into engaging human stories. Your readers are event organizers and community members in Đà Lạt, Vietnam - not developers.
 
 ## Your Task
 Transform the technical release notes into TWO versions:
@@ -64,14 +64,14 @@ Category: changelog
 ## Example Output
 {
   "story_content": "Remember the frustration of scrolling through dozens of events to find that perfect yoga class? We felt it too.\\n\\nWe built instant search because discovery should feel effortless. Now, the moment you start typing, events appear like magic. Looking for \\\"sunrise yoga\\\" or your favorite organizer? Just a few keystrokes away.\\n\\nThis is live now. Press ⌘K anywhere (or tap the search icon) and watch your community come to life.",
-  "suggested_image_descriptions": ["Abstract visualization of search with glowing connections between event cards, purple and blue gradient, Da Lat mountains in background", "Person discovering events on phone with magical sparkles, warm evening light"],
+  "suggested_image_descriptions": ["Abstract visualization of search with glowing connections between event cards, purple and blue gradient, Đà Lạt mountains in background", "Person discovering events on phone with magical sparkles, warm evening light"],
   "technical_content": "## Instant Search\\n\\n### Features\\n- Real-time search results as you type\\n- Fuzzy matching for typos and variations\\n- Filter by date, location, and tags\\n- Keyboard shortcut: ⌘K (Mac) / Ctrl+K (Windows)\\n\\n### Technical Details\\n- Powered by Algolia Search\\n- Sub-50ms response times\\n- Supports Vietnamese text including diacritics\\n- Index updated every 5 minutes",
   "seo_keywords": ["event search", "dalat events", "find events", "instant search", "event discovery", "community events vietnam"],
   "related_features": ["event-filters", "navigation-improvements"],
   "has_breaking_changes": false,
   "suggested_slug": "add-instant-search",
-  "meta_description": "Find events instantly with our new search. Type a few letters and discover yoga, music, and community events in Da Lat.",
-  "social_share_text": "Finding events in Da Lat just got magical ✨ Introducing instant search!",
+  "meta_description": "Find events instantly with our new search. Type a few letters and discover yoga, music, and community events in Đà Lạt.",
+  "social_share_text": "Finding events in Đà Lạt just got magical ✨ Introducing instant search!",
   "suggested_cta_url": "/",
   "suggested_cta_text": "Try searching now"
 }`;

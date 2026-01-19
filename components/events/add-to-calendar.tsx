@@ -55,12 +55,12 @@ function generateGoogleCalendarUrl({
   const endTime = endsAt || addTwoHours(startsAt);
 
   // Use full address if available (best for Google Calendar search)
-  // Otherwise use location name with Da Lat suffix
+  // Otherwise use location name with Đà Lạt suffix
   let location = "";
   if (address) {
     location = address;
   } else if (locationName) {
-    location = `${locationName}, Da Lat, Vietnam`;
+    location = `${locationName}, Đà Lạt, Vietnam`;
   }
 
   // Build description with optional maps link
@@ -76,7 +76,7 @@ function generateGoogleCalendarUrl({
     dates: `${formatDateForGoogle(startsAt)}/${formatDateForGoogle(endTime)}`,
     details: details.trim(),
     location,
-    ctz: DALAT_TIMEZONE, // Display in Da Lat timezone
+    ctz: DALAT_TIMEZONE, // Display in Đà Lạt timezone
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;

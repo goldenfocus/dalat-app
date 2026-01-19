@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Set up automated daily scraping of Da Lat venues via Apify
+ * Set up automated daily scraping of Đà Lạt venues via Apify
  *
  * This script:
  * 1. Creates or updates an Apify Task with venue Facebook URLs

@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     path: "/events/this-week",
     title: t("thisWeek"),
     description: t("thisWeekDescription"),
-    keywords: ["events", "this week", "Da Lat", "weekend", "current"],
+    keywords: ["events", "this week", "Đà Lạt", "weekend", "current"],
   });
 }
 

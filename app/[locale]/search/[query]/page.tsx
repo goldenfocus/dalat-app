@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     path: `/search/${query}`,
     title,
     description,
-    keywords: [decodedQuery, "events", "Da Lat", "Vietnam"],
+    keywords: [decodedQuery, "events", "Đà Lạt", "Vietnam"],
     type: "website",
   });
 }
@@ -207,7 +207,7 @@ export default async function SearchPage({ params }: PageProps) {
         startDate: event.starts_at,
         location: {
           "@type": "Place",
-          name: event.location_name || "Da Lat, Vietnam",
+          name: event.location_name || "Đà Lạt, Vietnam",
         },
       },
     })),

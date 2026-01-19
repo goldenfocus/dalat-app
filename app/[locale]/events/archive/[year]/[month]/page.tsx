@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     path: `/events/${year}/${month}`,
     title,
     description,
-    keywords: ["events", monthName, parsed.year.toString(), "Da Lat"],
+    keywords: ["events", monthName, parsed.year.toString(), "Đà Lạt"],
   });
 }
 

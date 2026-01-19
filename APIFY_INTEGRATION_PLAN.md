@@ -557,7 +557,7 @@ async function extractEventFromCaption(
   const response = await client.messages.create({
     model: "claude-haiku-4-20250514",
     max_tokens: 500,
-    system: `You analyze Instagram captions to detect events in Da Lat, Vietnam.
+    system: `You analyze Instagram captions to detect events in Đà Lạt, Vietnam.
 Return JSON only, no markdown. Structure:
 {
   "isEvent": boolean,
@@ -762,7 +762,7 @@ async function extractEventFromTikTok(client: Anthropic, caption: string) {
   const response = await client.messages.create({
     model: "claude-haiku-4-20250514",
     max_tokens: 500,
-    system: `You analyze TikTok captions to detect events in Da Lat, Vietnam.
+    system: `You analyze TikTok captions to detect events in Đà Lạt, Vietnam.
 Return JSON only: { "isEvent": boolean, "title": string, "description": string, "date": string, "time": string, "location": string }
 Only isEvent=true for clear upcoming event promotions.`,
     messages: [{ role: "user", content: caption }],
@@ -1069,9 +1069,9 @@ Set up schedules for each actor:
 
 | Actor | Schedule | Query |
 |-------|----------|-------|
-| Facebook Events | Daily 6 AM | "Da Lat" |
+| Facebook Events | Daily 6 AM | "Đà Lạt" |
 | Instagram Hashtag | Daily 7 AM | #dalat, #dalatevents |
-| TikTok Location | Weekly Sunday | Da Lat, Vietnam |
+| TikTok Location | Weekly Sunday | Đà Lạt, Vietnam |
 | Event Scraper Pro | Daily 8 AM | Vietnam filter |
 
 ---
@@ -1100,12 +1100,12 @@ const testPayload = {
 const mockEvents = [
   {
     url: "https://www.facebook.com/events/123456789/",
-    name: "Test Concert in Da Lat",
+    name: "Test Concert in Đà Lạt",
     description: "A wonderful test concert featuring local artists.",
     startDate: "2026-02-15T19:00:00.000Z",
     location: {
       name: "Phố Bên Đồi",
-      city: "Da Lat, Vietnam",
+      city: "Đà Lạt, Vietnam",
       latitude: 11.9404,
       longitude: 108.4583,
     },

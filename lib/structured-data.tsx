@@ -14,7 +14,7 @@ import type { BlogPostFull } from "@/lib/types/blog";
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "ĐàLạt.app";
 
-// Da Lat, Vietnam coordinates
+// Đà Lạt, Vietnam coordinates
 const DA_LAT_GEO = {
   latitude: 11.9404,
   longitude: 108.4583,
@@ -68,7 +68,7 @@ export function generateEventSchema(
     "@context": "https://schema.org",
     "@type": "Event",
     name: event.title,
-    description: event.description || `Event in Da Lat, Vietnam`,
+    description: event.description || `Event in Đà Lạt, Vietnam`,
     url: eventUrl,
     startDate: event.starts_at,
     ...(event.ends_at && { endDate: event.ends_at }),
@@ -79,12 +79,12 @@ export function generateEventSchema(
     location: event.location_name || event.address
       ? {
           "@type": "Place",
-          name: event.location_name || "Da Lat, Vietnam",
+          name: event.location_name || "Đà Lạt, Vietnam",
           ...(event.address && {
             address: {
               "@type": "PostalAddress",
               streetAddress: event.address,
-              addressLocality: "Da Lat",
+              addressLocality: "Đà Lạt",
               addressRegion: "Lam Dong",
               addressCountry: "VN",
             },
@@ -98,7 +98,7 @@ export function generateEventSchema(
         }
       : {
           "@type": "Place",
-          name: "Da Lat, Vietnam",
+          name: "Đà Lạt, Vietnam",
           geo: {
             "@type": "GeoCoordinates",
             latitude: DA_LAT_GEO.latitude,
@@ -192,10 +192,10 @@ export function generateOrganizationSchema(
       organizer.instagram_url,
     ].filter(Boolean),
 
-    // Location (Da Lat)
+    // Location (Đà Lạt)
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Da Lat",
+      addressLocality: "Đà Lạt",
       addressRegion: "Lam Dong",
       addressCountry: "VN",
     },
@@ -234,7 +234,7 @@ export function generateFestivalSchema(
     "@type": "Festival",
     name: festival.title,
     ...(festival.subtitle && { alternateName: festival.subtitle }),
-    description: festival.description || `${festival.title} - Festival in Da Lat, Vietnam`,
+    description: festival.description || `${festival.title} - Festival in Đà Lạt, Vietnam`,
     url: festivalUrl,
     startDate: festival.start_date,
     endDate: festival.end_date,
@@ -251,13 +251,13 @@ export function generateFestivalSchema(
     // Location
     location: {
       "@type": "Place",
-      name: festival.location_city || "Da Lat",
+      name: festival.location_city || "Đà Lạt",
       ...(festival.location_description && {
         description: festival.location_description,
       }),
       address: {
         "@type": "PostalAddress",
-        addressLocality: festival.location_city || "Da Lat",
+        addressLocality: festival.location_city || "Đà Lạt",
         addressRegion: "Lam Dong",
         addressCountry: "VN",
       },
@@ -318,7 +318,7 @@ export function generatePersonSchema(
     // Location
     homeLocation: {
       "@type": "Place",
-      name: "Da Lat, Vietnam",
+      name: "Đà Lạt, Vietnam",
       geo: {
         "@type": "GeoCoordinates",
         latitude: DA_LAT_GEO.latitude,
@@ -353,7 +353,7 @@ export function generateEventSeriesSchema(
     "@context": "https://schema.org",
     "@type": "EventSeries",
     name: series.title,
-    description: series.description || `Recurring event series in Da Lat, Vietnam`,
+    description: series.description || `Recurring event series in Đà Lạt, Vietnam`,
     url: seriesUrl,
     startDate: series.first_occurrence,
     ...(series.rrule_until && { endDate: series.rrule_until }),
@@ -367,7 +367,7 @@ export function generateEventSeriesSchema(
             address: {
               "@type": "PostalAddress",
               streetAddress: series.address,
-              addressLocality: "Da Lat",
+              addressLocality: "Đà Lạt",
               addressRegion: "Lam Dong",
               addressCountry: "VN",
             },
@@ -380,7 +380,7 @@ export function generateEventSeriesSchema(
         }
       : {
           "@type": "Place",
-          name: "Da Lat, Vietnam",
+          name: "Đà Lạt, Vietnam",
           geo: {
             "@type": "GeoCoordinates",
             latitude: DA_LAT_GEO.latitude,
@@ -460,7 +460,7 @@ export function generateMomentSchema(
         },
     contentLocation: {
       "@type": "Place",
-      name: "Da Lat, Vietnam",
+      name: "Đà Lạt, Vietnam",
       geo: {
         "@type": "GeoCoordinates",
         latitude: DA_LAT_GEO.latitude,
@@ -537,9 +537,9 @@ export function generateWebSiteSchema(locale: string) {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
-    alternateName: "Da Lat App",
+    alternateName: "Đà Lạt App",
     url: `${SITE_URL}/${locale}`,
-    description: "Discover events, festivals, and community gatherings in Da Lat, Vietnam",
+    description: "Discover events, festivals, and community gatherings in Đà Lạt, Vietnam",
     inLanguage: locale,
 
     // Search action for sitelinks search box (SEO)

@@ -100,7 +100,7 @@ async function extractEventFromCaption(
     const response = await client.messages.create({
       model: "claude-haiku-4-20250514",
       max_tokens: 500,
-      system: `You analyze Instagram captions to detect events in Da Lat, Vietnam.
+      system: `You analyze Instagram captions to detect events in Đà Lạt, Vietnam.
 Return JSON only, no markdown. Structure:
 {
   "isEvent": boolean,

@@ -138,7 +138,7 @@ export function AdminImportPage() {
   const [discoveredVenues, setDiscoveredVenues] = useState<DiscoveredVenue[]>(
     []
   );
-  const [searchQuery, setSearchQuery] = useState("Da Lat Vietnam");
+  const [searchQuery, setSearchQuery] = useState("Đà Lạt Vietnam");
 
   // Schedule status
   const [schedule, setSchedule] = useState<ScheduleStatus | null>(null);
@@ -602,7 +602,7 @@ https://eventbrite.com/e/some-event-tickets-123`}
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="e.g., Da Lat Vietnam, Ho Chi Minh City..."
+                  placeholder="e.g., Đà Lạt Vietnam, Ho Chi Minh City..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1"

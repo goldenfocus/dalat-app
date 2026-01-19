@@ -145,7 +145,7 @@ export async function POST(request: Request) {
       const dateStr = format(date, "yyyy-MM-dd");
       const instanceSlug = `${seriesSlug}-${format(date, "yyyyMMdd")}`;
 
-      // Combine date and time in Da Lat timezone, then convert to UTC
+      // Combine date and time in Đà Lạt timezone, then convert to UTC
       const localDateTime = `${dateStr}T${normalizedTime}`;
       const startsAt = fromZonedTime(localDateTime, DALAT_TIMEZONE);
       const endsAt = new Date(startsAt.getTime() + durationMinutes * 60 * 1000);

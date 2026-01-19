@@ -6,7 +6,7 @@
  *
  * Before running:
  *   1. Sign up at apify.com
- *   2. Run Facebook Events Scraper with query "Da Lat"
+ *   2. Run Facebook Events Scraper with query "Đà Lạt"
  *   3. Export results to scripts/data/facebook-events.json
  *
  * Environment:
@@ -235,7 +235,7 @@ async function main() {
     console.error(`
    To get this file:
    1. Go to https://apify.com/apify/facebook-events-scraper
-   2. Run with input: { "searchQuery": "Da Lat", "maxEvents": 500 }
+   2. Run with input: { "searchQuery": "Đà Lạt", "maxEvents": 500 }
    3. Export results as JSON to ${filePath}
 `);
     process.exit(1);
@@ -419,15 +419,15 @@ async function main() {
         .from("organizers")
         .insert({
           slug: fallbackSlug,
-          name: "Da Lat Events",
-          description: "Events discovered in Da Lat. Want to claim an event? Contact us!",
+          name: "Đà Lạt Events",
+          description: "Events discovered in Đà Lạt. Want to claim an event? Contact us!",
         })
         .select("id")
         .single();
 
       if (newFallback) {
         fallbackOrganizerId = newFallback.id;
-        console.log(`  ✓ Created fallback organizer: Da Lat Events\n`);
+        console.log(`  ✓ Created fallback organizer: Đà Lạt Events\n`);
       }
     }
 
@@ -443,7 +443,7 @@ async function main() {
       email: fallbackEmail,
       email_confirm: false,
       user_metadata: {
-        display_name: "Da Lat Events",
+        display_name: "Đà Lạt Events",
         is_ghost: true,
         is_fallback: true,
       },
@@ -454,9 +454,9 @@ async function main() {
         .from("profiles")
         .update({
           username: fallbackUsername,
-          display_name: "Da Lat Events",
+          display_name: "Đà Lạt Events",
           role: "organizer_pending",
-          bio: "Events discovered in Da Lat. Want to claim an event? Contact us!",
+          bio: "Events discovered in Đà Lạt. Want to claim an event? Contact us!",
           locale: "vi",
         })
         .eq("id", fallbackAuth.user.id);

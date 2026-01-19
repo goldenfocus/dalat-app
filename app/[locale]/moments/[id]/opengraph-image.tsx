@@ -25,7 +25,7 @@ export default async function OGImage({ params }: Props) {
   const profile = Array.isArray(moment?.profiles) ? moment.profiles[0] : moment?.profiles;
   const event = Array.isArray(moment?.events) ? moment.events[0] : moment?.events;
   const userName = profile?.display_name || profile?.username || "Someone";
-  const eventTitle = event?.title || "Da Lat event";
+  const eventTitle = event?.title || "Đà Lạt event";
   const isVideo = moment?.media_url ? isVideoUrl(moment.media_url) : false;
 
   if (moment?.media_url && !isVideo && moment.content_type !== "text") {

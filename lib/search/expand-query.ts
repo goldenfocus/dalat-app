@@ -19,7 +19,7 @@ export async function expandSearchQuery(query: string): Promise<string[]> {
       messages: [
         {
           role: "user",
-          content: `Expand this search query for a Da Lat, Vietnam events app. Return Vietnamese translations and related terms. Output ONLY a JSON array of strings, no explanation.
+          content: `Expand this search query for a Đà Lạt, Vietnam events app. Return Vietnamese translations and related terms. Output ONLY a JSON array of strings, no explanation.
 
 Query: "${query}"
 

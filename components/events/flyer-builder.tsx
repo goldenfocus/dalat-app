@@ -27,7 +27,7 @@ function generateDefaultPrompt(title: string): string {
   return `Create a vibrant, eye-catching event poster background for "${title || "an event"}".
 
 Style: Modern event flyer aesthetic with warm Vietnamese highland colors.
-Setting: Inspired by Da Lat, Vietnam - misty mountains, pine forests, French colonial architecture, flower fields.
+Setting: Inspired by Đà Lạt, Vietnam - misty mountains, pine forests, French colonial architecture, flower fields.
 Mood: Atmospheric, inviting, energetic yet sophisticated.
 Important: Do NOT include any text or lettering in the image. Create only the visual background.
 Aspect ratio: 2:1 landscape orientation.`;

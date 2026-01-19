@@ -29,7 +29,7 @@ export async function tagEvent(
       messages: [
         {
           role: "user",
-          content: `Categorize this Da Lat, Vietnam event with 2-5 tags from this list:
+          content: `Categorize this Đà Lạt, Vietnam event with 2-5 tags from this list:
 ${EVENT_TAGS.join(', ')}
 
 Event: ${title}

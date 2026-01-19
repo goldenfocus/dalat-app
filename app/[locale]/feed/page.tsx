@@ -18,13 +18,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: "Feed | ĐàLạt.app",
-    description: "Discover moments from past events in Da Lat",
+    description: "Discover moments from past events in Đà Lạt",
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
       title: "Feed | ĐàLạt.app",
-      description: "Discover moments from past events in Da Lat",
+      description: "Discover moments from past events in Đà Lạt",
       type: "website",
       url: pageUrl,
     },

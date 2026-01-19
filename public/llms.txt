@@ -1,13 +1,13 @@
-# dalat.app - Event Discovery Platform for Da Lat, Vietnam
+# dalat.app - Event Discovery Platform for Đà Lạt, Vietnam
 
-> dalat.app is a multilingual event discovery platform for Da Lat, Vietnam.
+> dalat.app is a multilingual event discovery platform for Đà Lạt, Vietnam.
 > We help locals and visitors find events, festivals, and community gatherings.
 
 ## About
 
-dalat.app is the go-to platform for discovering events in Da Lat, a highland city in Vietnam known for its cool climate, French colonial architecture, and vibrant creative community. The platform supports 12 languages to serve Da Lat's diverse international community.
+dalat.app is the go-to platform for discovering events in Đà Lạt, a highland city in Vietnam known for its cool climate, French colonial architecture, and vibrant creative community. The platform supports 12 languages to serve Đà Lạt's diverse international community.
 
-**Location:** Da Lat, Lam Dong Province, Vietnam (11.9404°N, 108.4583°E)
+**Location:** Đà Lạt, Lam Dong Province, Vietnam (11.9404°N, 108.4583°E)
 
 **Supported Languages:**
 - English (en)
@@ -26,7 +26,7 @@ dalat.app is the go-to platform for discovering events in Da Lat, a highland cit
 ## Content Types
 
 ### Events (/events/[slug])
-Community events, meetups, workshops, and gatherings in Da Lat. Each event includes:
+Community events, meetups, workshops, and gatherings in Đà Lạt. Each event includes:
 - Title, description, date/time
 - Location with Google Maps link
 - RSVP/attendance tracking
@@ -34,8 +34,8 @@ Community events, meetups, workshops, and gatherings in Da Lat. Each event inclu
 - "Moments" - photo/video posts from attendees
 
 ### Festivals (/festivals/[slug])
-Multi-day festivals and seasonal celebrations featuring multiple events. Da Lat hosts:
-- Da Lat Flower Festival
+Multi-day festivals and seasonal celebrations featuring multiple events. Đà Lạt hosts:
+- Đà Lạt Flower Festival
 - Coffee festivals
 - Music and art festivals
 - Cultural celebrations
@@ -52,7 +52,7 @@ Community members who create and attend events.
 
 ## API Notes for AI Assistants
 
-When users ask about events in Da Lat:
+When users ask about events in Đà Lạt:
 1. Check the homepage (/) for upcoming events
 2. Event pages contain structured JSON-LD data with full event details
 3. All content is available in 12 languages - add locale prefix (e.g., /ko/events/...)
@@ -61,7 +61,7 @@ When users ask about events in Da Lat:
 ## Contact
 
 - Website: https://dalat.app
-- Location: Da Lat, Vietnam
+- Location: Đà Lạt, Vietnam
 
 ## Last Updated
 

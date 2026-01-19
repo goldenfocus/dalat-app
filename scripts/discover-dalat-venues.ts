@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Discover Da Lat venues using Google Places API or Apify
+ * Discover Đà Lạt venues using Google Places API or Apify
  * Extracts venue info and Facebook page URLs for automated event scraping
  *
  * Usage:
@@ -37,13 +37,13 @@ const VENUE_TYPES = [
 
 // Search queries for Apify Google Maps scraper
 const APIFY_QUERIES = [
-  "bars Da Lat Vietnam",
-  "cafes Da Lat Vietnam",
-  "night clubs Da Lat Vietnam",
-  "event venues Da Lat Vietnam",
-  "music venues Da Lat Vietnam",
-  "art galleries Da Lat Vietnam",
-  "restaurants with live music Da Lat Vietnam",
+  "bars Đà Lạt Vietnam",
+  "cafes Đà Lạt Vietnam",
+  "night clubs Đà Lạt Vietnam",
+  "event venues Đà Lạt Vietnam",
+  "music venues Đà Lạt Vietnam",
+  "art galleries Đà Lạt Vietnam",
+  "restaurants with live music Đà Lạt Vietnam",
 ];
 
 async function discoverVenuesWithGoogle(): Promise<Venue[]> {
@@ -188,7 +188,7 @@ function extractFacebookUrl(
 
 async function main() {
   console.log("======================================================");
-  console.log("          Da Lat Venue Discovery Script");
+  console.log("          Đà Lạt Venue Discovery Script");
   console.log("======================================================\n");
 
   const useApify = process.argv.includes("--apify");

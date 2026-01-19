@@ -1,7 +1,7 @@
 # Session Handover: dalat.app
 
 ## Project Overview
-**dalat.app** is a community events platform for Da Lat, Vietnam. Think Luma/Partiful but localized for the Vietnamese market with trilingual support.
+**dalat.app** is a community events platform for Đà Lạt, Vietnam. Think Luma/Partiful but localized for the Vietnamese market with trilingual support.
 
 ## Tech Stack
 - **Framework**: Next.js 16 (App Router)

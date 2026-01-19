@@ -12,7 +12,7 @@ export interface SpamResult {
  * Detect if an event is spam (service ads masquerading as events).
  * Uses claude-haiku for cost efficiency.
  *
- * Common spam patterns in Da Lat:
+ * Common spam patterns in Đà Lạt:
  * - "Hút Hầm Cầu" (septic tank pumping)
  * - Transportation/taxi services
  * - Repair/maintenance services
@@ -58,7 +58,7 @@ export async function classifySpam(
       messages: [
         {
           role: "user",
-          content: `Classify if this is a legitimate community event or spam/service ad for Da Lat, Vietnam.
+          content: `Classify if this is a legitimate community event or spam/service ad for Đà Lạt, Vietnam.
 
 Event: ${title}
 ${description ? `Description: ${description.slice(0, 500)}` : ''}

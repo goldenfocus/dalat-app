@@ -1,7 +1,7 @@
 -- Time-based event archive queries
 -- Supports SEO-friendly URLs like /events/2026/january
 
--- Get events for a specific month (in Da Lat timezone)
+-- Get events for a specific month (in Đà Lạt timezone)
 CREATE OR REPLACE FUNCTION get_events_by_month(
   p_year int,
   p_month int,  -- 1-12
@@ -25,7 +25,7 @@ $$;
 GRANT EXECUTE ON FUNCTION get_events_by_month(int, int, int) TO anon, authenticated;
 
 COMMENT ON FUNCTION get_events_by_month IS
-'Returns published events for a specific year/month in Da Lat timezone.
+'Returns published events for a specific year/month in Đà Lạt timezone.
 Used for archive pages like /events/2026/january';
 
 
@@ -54,7 +54,7 @@ COMMENT ON FUNCTION get_months_with_events IS
 Used for sitemap generation and month navigation.';
 
 
--- Get events for the current week (Monday to Sunday, Da Lat timezone)
+-- Get events for the current week (Monday to Sunday, Đà Lạt timezone)
 CREATE OR REPLACE FUNCTION get_events_this_week(
   p_limit int DEFAULT 50
 )
@@ -76,11 +76,11 @@ $$;
 GRANT EXECUTE ON FUNCTION get_events_this_week(int) TO anon, authenticated;
 
 COMMENT ON FUNCTION get_events_this_week IS
-'Returns published events starting this week (Monday-Sunday) in Da Lat timezone.
+'Returns published events starting this week (Monday-Sunday) in Đà Lạt timezone.
 Used for /events/this-week page.';
 
 
--- Get events for the current month (Da Lat timezone)
+-- Get events for the current month (Đà Lạt timezone)
 CREATE OR REPLACE FUNCTION get_events_this_month(
   p_limit int DEFAULT 50
 )
@@ -102,5 +102,5 @@ $$;
 GRANT EXECUTE ON FUNCTION get_events_this_month(int) TO anon, authenticated;
 
 COMMENT ON FUNCTION get_events_this_month IS
-'Returns published events starting this month in Da Lat timezone.
+'Returns published events starting this month in Đà Lạt timezone.
 Used for /events/this-month page.';

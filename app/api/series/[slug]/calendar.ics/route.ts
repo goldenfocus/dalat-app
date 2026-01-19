@@ -73,7 +73,7 @@ export async function GET(request: Request, { params }: Params) {
   if (series.address) {
     location = series.address;
   } else if (series.location_name) {
-    location = `${series.location_name}, Da Lat, Vietnam`;
+    location = `${series.location_name}, Đà Lạt, Vietnam`;
   }
 
   // Build description

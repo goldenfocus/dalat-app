@@ -153,7 +153,7 @@ export function EventForm({
       website_url: es.sponsors?.website_url || "",
     }));
 
-    // Get time from source event in Da Lat timezone
+    // Get time from source event in Đà Lạt timezone
     const sourceDateTime = getDateTimeInDaLat(copyFromEvent.starts_at);
 
     return {
@@ -290,7 +290,7 @@ export function EventForm({
     }
   };
 
-  // Parse existing event date/time in Da Lat timezone
+  // Parse existing event date/time in Đà Lạt timezone
   // For copying: use the calculated next day and same time
   const defaults = event
     ? getDateTimeInDaLat(event.starts_at)
@@ -374,7 +374,7 @@ export function EventForm({
       return;
     }
 
-    // Convert Da Lat time to UTC for storage
+    // Convert Đà Lạt time to UTC for storage
     const startsAt = toUTCFromDaLat(date, time);
     const capacity = capacityStr ? parseInt(capacityStr, 10) : null;
 
@@ -613,7 +613,7 @@ export function EventForm({
               name="description"
               defaultValue={event?.description ?? copyDefaults?.description ?? ""}
               rows={3}
-              context="an event description for a local community event in Da Lat, Vietnam"
+              context="an event description for a local community event in Đà Lạt, Vietnam"
             />
           </div>
 

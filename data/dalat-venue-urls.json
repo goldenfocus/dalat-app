@@ -1,8 +1,8 @@
 {
-  "_comment": "Known Da Lat venues for automated event scraping. Add Facebook URLs manually.",
+  "_comment": "Known Đà Lạt venues for automated event scraping. Add Facebook URLs manually.",
   "venues": [
     {
-      "name": "Maze Bar Da Lat",
+      "name": "Maze Bar Đà Lạt",
       "website": "https://www.facebook.com/mazebar.dalat",
       "facebookUrl": "https://www.facebook.com/mazebar.dalat",
       "type": "bar"

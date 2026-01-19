@@ -135,7 +135,7 @@ export default async function OGImage({ params }: Props) {
   const eventDate = event
     ? formatInDaLat(event.starts_at, "EEE, MMM d · h:mm a")
     : "";
-  const location = event?.location_name || "Da Lat";
+  const location = event?.location_name || "Đà Lạt";
 
   return new ImageResponse(
     (

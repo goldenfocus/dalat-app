@@ -82,7 +82,7 @@ export function generateLocalizedMetadata({
 
     // Keywords
     ...(keywords.length > 0 && {
-      keywords: [...keywords, "Da Lat", "Vietnam", "events", "ĐàLạt.app"],
+      keywords: [...keywords, "Đà Lạt", "Vietnam", "events", "ĐàLạt.app"],
     }),
 
     // Canonical and alternates
@@ -157,8 +157,8 @@ export function generateProfileMetadata(
   const description = profile.bio
     ? `${profile.bio.slice(0, 150)}${profile.bio.length > 150 ? "..." : ""}`
     : eventCount
-    ? `${name} has organized ${eventCount} events in Da Lat, Vietnam`
-    : `${name}'s profile on ĐàLạt.app - Event discovery in Da Lat, Vietnam`;
+    ? `${name} has organized ${eventCount} events in Đà Lạt, Vietnam`
+    : `${name}'s profile on ĐàLạt.app - Event discovery in Đà Lạt, Vietnam`;
 
   // Use username if available, otherwise fall back to user ID for URL
   const profileIdentifier = profile.username || profile.id;
@@ -190,8 +190,8 @@ export function generateOrganizerMetadata(
   const description = organizer.description
     ? `${organizer.description.slice(0, 150)}${organizer.description.length > 150 ? "..." : ""}`
     : eventCount
-    ? `${organizer.name} has organized ${eventCount} events in Da Lat, Vietnam`
-    : `${organizer.name} - Event organizer in Da Lat, Vietnam`;
+    ? `${organizer.name} has organized ${eventCount} events in Đà Lạt, Vietnam`
+    : `${organizer.name} - Event organizer in Đà Lạt, Vietnam`;
 
   return generateLocalizedMetadata({
     locale,
@@ -225,8 +225,8 @@ export function generateFestivalMetadata(
     : festival.subtitle
     ? festival.subtitle
     : eventCount
-    ? `${festival.title} - Festival with ${eventCount} events in Da Lat, Vietnam`
-    : `${festival.title} - Festival in Da Lat, Vietnam`;
+    ? `${festival.title} - Festival with ${eventCount} events in Đà Lạt, Vietnam`
+    : `${festival.title} - Festival in Đà Lạt, Vietnam`;
 
   return generateLocalizedMetadata({
     locale,
@@ -235,7 +235,7 @@ export function generateFestivalMetadata(
     description,
     image: festival.cover_image_url || undefined,
     type: "article",
-    keywords: [festival.title, "festival", "Da Lat"],
+    keywords: [festival.title, "festival", "Đà Lạt"],
     publishedTime: festival.start_date,
   });
 }
@@ -257,8 +257,8 @@ export function generateSeriesMetadata(
   const description = series.description
     ? `${series.description.slice(0, 150)}${series.description.length > 150 ? "..." : ""}`
     : upcomingCount
-    ? `${series.title} - Recurring event series with ${upcomingCount} upcoming dates in Da Lat`
-    : `${series.title} - Recurring event series in Da Lat, Vietnam`;
+    ? `${series.title} - Recurring event series with ${upcomingCount} upcoming dates in Đà Lạt`
+    : `${series.title} - Recurring event series in Đà Lạt, Vietnam`;
 
   return generateLocalizedMetadata({
     locale,
@@ -267,7 +267,7 @@ export function generateSeriesMetadata(
     description,
     image: series.image_url || undefined,
     type: "article",
-    keywords: [series.title, "recurring event", "series", "Da Lat"],
+    keywords: [series.title, "recurring event", "series", "Đà Lạt"],
   });
 }
 
@@ -285,7 +285,7 @@ export function generateMomentsDiscoveryMetadata(
     title,
     description,
     type: "website",
-    keywords: ["moments", "photos", "videos", "Da Lat"],
+    keywords: ["moments", "photos", "videos", "Đà Lạt"],
   });
 }
 
@@ -324,6 +324,6 @@ export function generateMomentMetadata(
     type: "article",
     author: userName,
     publishedTime: moment.created_at,
-    keywords: [userName, eventTitle, "moment", "Da Lat"],
+    keywords: [userName, eventTitle, "moment", "Đà Lạt"],
   });
 }

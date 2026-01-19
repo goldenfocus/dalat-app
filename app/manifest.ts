@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "ĐàLạt.app · Events · People · Moments · Love",
     short_name: "ĐàLạt.app",
-    description: "Discover and organize events in Da Lat",
+    description: "Discover and organize events in Đà Lạt",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
