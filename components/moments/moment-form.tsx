@@ -45,11 +45,17 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = async (file: File, itemId: string) => {
+    console.log("[Upload] Starting upload for:", file.name, "type:", file.type, "size:", file.size);
+
     try {
       let fileToUpload = file;
 
       // Convert if needed (HEIC → JPEG, MOV → MP4)
-      if (needsConversion(file)) {
+      const conversionNeeded = needsConversion(file);
+      console.log("[Upload] needsConversion result:", conversionNeeded);
+
+      if (conversionNeeded) {
+        console.log("[Upload] Conversion needed, setting status to converting");
         setUploads(prev => prev.map(item =>
           item.id === itemId
             ? { ...item, status: "converting" as const }
@@ -57,7 +63,10 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         ));
 
         try {
+          console.log("[Upload] Calling convertIfNeeded...");
           fileToUpload = await convertIfNeeded(file);
+          console.log("[Upload] Conversion complete:", fileToUpload.name, fileToUpload.type, fileToUpload.size);
+
           // Update preview with converted file
           const newPreviewUrl = URL.createObjectURL(fileToUpload);
           setUploads(prev => prev.map(item => {
@@ -73,7 +82,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
             return item;
           }));
         } catch (err) {
-          console.error("Conversion error:", err);
+          console.error("[Upload] Conversion error:", err);
           setUploads(prev => prev.map(item =>
             item.id === itemId
               ? { ...item, status: "error" as const, error: err instanceof Error ? err.message : "Conversion failed" }
@@ -83,6 +92,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         }
       }
 
+      console.log("[Upload] Proceeding to upload:", fileToUpload.name, fileToUpload.type);
       setUploads(prev => prev.map(item =>
         item.id === itemId && item.status !== "error"
           ? { ...item, status: "uploading" as const }

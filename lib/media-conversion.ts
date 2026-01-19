@@ -1,23 +1,51 @@
 // Client-side media conversion utilities
-import heic2any from "heic2any";
 
 /**
  * Convert HEIC/HEIF image to JPEG
- * Runs entirely client-side using heic2any library
+ * Uses dynamic import to avoid WASM loading issues in Next.js production builds
  */
 export async function convertHeicToJpeg(file: File): Promise<File> {
-  const blob = await heic2any({
-    blob: file,
-    toType: "image/jpeg",
-    quality: 0.9,
-  });
+  console.log("[HEIC] Starting conversion for:", file.name, "size:", file.size);
 
-  // heic2any can return a single blob or array of blobs (for multi-image HEIC)
-  const resultBlob = Array.isArray(blob) ? blob[0] : blob;
+  try {
+    // Dynamic import to ensure WASM loads properly at runtime
+    const heic2any = (await import("heic2any")).default;
 
-  // Create new file with .jpg extension
-  const newName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
-  return new File([resultBlob], newName, { type: "image/jpeg" });
+    console.log("[HEIC] heic2any loaded, starting conversion...");
+
+    const blob = await heic2any({
+      blob: file,
+      toType: "image/jpeg",
+      quality: 0.9,
+    });
+
+    console.log("[HEIC] Conversion complete, blob result:", blob);
+
+    // heic2any can return a single blob or array of blobs (for multi-image HEIC)
+    const resultBlob = Array.isArray(blob) ? blob[0] : blob;
+
+    if (!resultBlob || resultBlob.size === 0) {
+      throw new Error("HEIC conversion produced empty result");
+    }
+
+    // Create new file with .jpg extension
+    const newName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
+    const convertedFile = new File([resultBlob], newName, {
+      type: "image/jpeg",
+    });
+
+    console.log(
+      "[HEIC] Created converted file:",
+      convertedFile.name,
+      "size:",
+      convertedFile.size
+    );
+
+    return convertedFile;
+  } catch (error) {
+    console.error("[HEIC] Conversion failed:", error);
+    throw error;
+  }
 }
 
 /**
@@ -134,14 +162,21 @@ export async function convertIfNeeded(
     ext === "heif";
   const isMov = file.type === "video/quicktime" || ext === "mov";
 
+  console.log("[Convert] Checking file:", file.name, "type:", file.type, "ext:", ext, "isHeic:", isHeic, "isMov:", isMov);
+
   if (isHeic) {
     onProgress?.("Converting HEIC to JPEG...");
-    return convertHeicToJpeg(file);
+    console.log("[Convert] Starting HEIC conversion...");
+    const result = await convertHeicToJpeg(file);
+    console.log("[Convert] HEIC conversion result:", result.name, result.type, result.size);
+    return result;
   }
 
   if (isMov) {
+    console.log("[Convert] Starting MOV conversion...");
     return convertMovToMp4(file, onProgress);
   }
 
+  console.log("[Convert] No conversion needed, returning original");
   return file;
 }

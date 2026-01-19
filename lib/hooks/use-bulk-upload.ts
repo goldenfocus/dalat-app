@@ -374,12 +374,14 @@ export function useBulkUpload(eventId: string, userId: string) {
   const uploadFile = async (fileState: FileUploadState) => {
     const { id, file } = fileState;
     activeUploadsRef.current.add(id);
+    console.log("[BulkUpload] Starting upload for:", file.name, "type:", file.type, "size:", file.size);
 
     dispatch({ type: "UPDATE_FILE", id, updates: { status: "validating" } });
 
     // Validate
     const error = validateMediaFile(file);
     if (error) {
+      console.log("[BulkUpload] Validation failed:", error);
       dispatch({ type: "UPDATE_FILE", id, updates: { status: "error", error } });
       activeUploadsRef.current.delete(id);
       scheduleNextProcess();
@@ -389,10 +391,17 @@ export function useBulkUpload(eventId: string, userId: string) {
     let fileToUpload = file;
 
     // Convert if needed (HEIC → JPEG, MOV → MP4)
-    if (needsConversion(file)) {
+    const conversionNeeded = needsConversion(file);
+    console.log("[BulkUpload] needsConversion result:", conversionNeeded);
+
+    if (conversionNeeded) {
+      console.log("[BulkUpload] Conversion needed, setting status to converting");
       dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting" } });
       try {
+        console.log("[BulkUpload] Calling convertIfNeeded...");
         fileToUpload = await convertIfNeeded(file);
+        console.log("[BulkUpload] Conversion complete:", fileToUpload.name, fileToUpload.type, fileToUpload.size);
+
         // Update preview with converted file
         const newPreviewUrl = URL.createObjectURL(fileToUpload);
         dispatch({
@@ -404,6 +413,7 @@ export function useBulkUpload(eventId: string, userId: string) {
           },
         });
       } catch (err) {
+        console.error("[BulkUpload] Conversion error:", err);
         dispatch({
           type: "UPDATE_FILE",
           id,
@@ -418,6 +428,7 @@ export function useBulkUpload(eventId: string, userId: string) {
       }
     }
 
+    console.log("[BulkUpload] Proceeding to upload:", fileToUpload.name, fileToUpload.type);
     dispatch({ type: "UPDATE_FILE", id, updates: { status: "uploading" } });
 
     try {
