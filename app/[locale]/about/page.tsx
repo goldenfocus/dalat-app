@@ -3,7 +3,6 @@ import { Github } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
-import { GlobalFooter } from "@/components/global-footer";
 import { BlogStoryCard } from "@/components/blog/blog-story-card";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -119,8 +118,6 @@ export default async function AboutPage({ params }: PageProps) {
           )}
         </div>
       </main>
-
-      <GlobalFooter />
     </>
   );
 }
