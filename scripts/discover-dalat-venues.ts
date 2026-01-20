@@ -128,7 +128,7 @@ async function discoverVenuesWithApify(): Promise<Venue[]> {
   const venues: Venue[] = [];
 
   // Using compass/crawler-google-places actor
-  const actorId = "compass~crawler-google-places";
+  const actorId = "compass/crawler-google-places";
 
   for (const query of APIFY_QUERIES) {
     console.log(`Searching: "${query}"...`);

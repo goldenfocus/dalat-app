@@ -38,14 +38,14 @@ export async function POST(request: Request) {
       platform = "facebook";
       // Check if this is a Facebook search URL
       if (url.includes("/search/events/") || url.includes("facebook.com/events/search/")) {
-        actorId = "apify~facebook-events-scraper";
+        actorId = "apify/facebook-events-scraper";
         isFacebookSearch = true;
       } else {
-        actorId = "pratikdani~facebook-event-scraper";
+        actorId = "pratikdani/facebook-event-scraper";
       }
     } else if (url.includes("eventbrite.com")) {
       platform = "eventbrite";
-      actorId = "newpo~eventbrite-scraper";
+      actorId = "newpo/eventbrite-scraper";
     } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
       actorId = ""; // Not used - we fetch Lu.ma directly

@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     // Use Apify's Google Maps scraper
     // Actor: compass/crawler-google-places
-    const actorId = "compass~crawler-google-places";
+    const actorId = "compass/crawler-google-places";
 
     const response = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${apiToken}`,

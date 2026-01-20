@@ -16,7 +16,7 @@
  */
 
 const APIFY_API = "https://api.apify.com/v2";
-const ACTOR_ID = "pratikdani~facebook-event-scraper";
+const ACTOR_ID = "pratikdani/facebook-event-scraper";
 const TASK_NAME = "dalat-venue-events-daily";
 const WEBHOOK_URL = "https://dalat.app/api/import/apify-webhook";
 
