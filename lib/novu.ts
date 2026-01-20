@@ -642,6 +642,9 @@ export async function notifyUserInvitation(
   const notifLocale = getNotificationLocale(locale);
   const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
 
+  // Ensure user is registered as Novu subscriber (idempotent operation)
+  await createOrUpdateSubscriber(userId, undefined, undefined, locale);
+
   // Format event date/time for display
   const eventDate = new Date(startsAt);
   const formattedDate = eventDate.toLocaleDateString(
