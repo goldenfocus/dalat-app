@@ -172,6 +172,14 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
             organizerName={name || "this organizer"}
             currentLogoUrl={logoUrl}
             onLogoChange={setLogoUrl}
+            aiLogoButton={
+              <AIOrganizerLogoDialog
+                organizerId={organizer?.id}
+                organizerName={name || "this organizer"}
+                currentLogoUrl={logoUrl}
+                onLogoGenerated={setLogoUrl}
+              />
+            }
           />
 
           {/* Name */}

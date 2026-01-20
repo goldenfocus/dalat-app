@@ -1,29 +1,50 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Building2, X, Upload, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AIOrganizerLogoDialog } from "@/components/admin/ai-organizer-logo-dialog";
 
 interface OrganizerLogoUploadProps {
   organizerId?: string;
   organizerName?: string;
   currentLogoUrl: string | null;
   onLogoChange: (url: string | null) => void;
+  size?: "sm" | "md" | "lg";
+  aiLogoButton?: React.ReactNode;
 }
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+const sizeClasses = {
+  sm: "w-16 h-16",
+  md: "w-24 h-24",
+  lg: "w-32 h-32",
+};
+
+const iconSizeClasses = {
+  sm: "w-4 h-4",
+  md: "w-6 h-6",
+  lg: "w-8 h-8",
+};
 
 export function OrganizerLogoUpload({
   organizerId,
   organizerName,
   currentLogoUrl,
   onLogoChange,
+  size = "lg",
+  aiLogoButton,
 }: OrganizerLogoUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogoUrl);
+
+  // Sync previewUrl when currentLogoUrl changes externally (e.g., AI logo generation)
+  useEffect(() => {
+    setPreviewUrl(currentLogoUrl);
+  }, [currentLogoUrl]);
+
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -48,7 +69,7 @@ export function OrganizerLogoUpload({
       return;
     }
 
-    // Create preview
+    // Create preview immediately
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
 
@@ -97,104 +118,156 @@ export function OrganizerLogoUpload({
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) uploadLogo(file);
+    if (file) {
+      uploadLogo(file);
+    }
+    // Reset input so same file can be selected again
     e.target.value = "";
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+
+      const file = e.dataTransfer.files?.[0];
+      if (file && file.type.startsWith("image/")) {
+        uploadLogo(file);
+      }
+    },
+    [organizerId, currentLogoUrl]
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) uploadLogo(file);
-  };
+  }, []);
 
-  const handleRemove = () => {
-    setPreviewUrl(null);
-    onLogoChange(null);
+  const handleRemove = async () => {
+    if (!currentLogoUrl) return;
+
+    setIsUploading(true);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+
+      // Extract path from URL
+      const oldPath = currentLogoUrl.split("/organizer-logos/")[1];
+      if (oldPath) {
+        await supabase.storage.from("organizer-logos").remove([oldPath]);
+      }
+
+      setPreviewUrl(null);
+      onLogoChange(null);
+    } catch (err) {
+      console.error("Remove error:", err);
+      setError("Failed to remove logo");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
-    <div className="space-y-2">
-      <p className="text-sm font-medium">Logo</p>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept={ALLOWED_TYPES.join(",")}
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-
-      <div
-        onClick={() => !isUploading && fileInputRef.current?.click()}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragOver(true);
-        }}
-        onDragLeave={() => setIsDragOver(false)}
-        onDrop={handleDrop}
-        className={cn(
-          "relative w-32 h-32 rounded-lg border-2 border-dashed cursor-pointer transition-colors overflow-hidden",
-          isDragOver
-            ? "border-primary bg-primary/10"
-            : "border-muted-foreground/25 hover:border-muted-foreground/50",
-          isUploading && "pointer-events-none"
-        )}
-      >
-        {previewUrl ? (
-          <>
+    <div className="space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+        {/* Logo preview */}
+        <div
+          className={cn(
+            "relative rounded-lg overflow-hidden bg-muted border-2 transition-colors cursor-pointer group shrink-0",
+            sizeClasses[size],
+            isDragOver
+              ? "border-primary border-dashed"
+              : "border-transparent hover:border-muted-foreground/20"
+          )}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {previewUrl ? (
             <img
               src={previewUrl}
-              alt="Logo preview"
+              alt="Logo"
               className="w-full h-full object-cover"
             />
-            {!isUploading && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                className="absolute top-1 right-1 h-6 w-6"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemove();
-                }}
-              >
-                <X className="w-3 h-3" />
-              </Button>
-            )}
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <Building2 className="w-8 h-8 mb-2" />
-            <span className="text-xs">Upload logo</span>
-          </div>
-        )}
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-primary/10">
+              <Building2
+                className={cn("text-muted-foreground", iconSizeClasses[size])}
+              />
+            </div>
+          )}
 
-        {isUploading && (
-          <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          {/* Overlay on hover */}
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            {isUploading ? (
+              <Loader2
+                className={cn(
+                  "text-white animate-spin",
+                  iconSizeClasses[size]
+                )}
+              />
+            ) : (
+              <Upload className={cn("text-white", iconSizeClasses[size])} />
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Actions - wrap on mobile */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4" />
+                Upload Logo
+              </>
+            )}
+          </Button>
+
+          {aiLogoButton}
+
+          {previewUrl && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleRemove}
+              disabled={isUploading}
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <X className="w-4 h-4" />
+              Remove
+            </Button>
+          )}
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={ALLOWED_TYPES.join(",")}
+          onChange={handleFileSelect}
+          className="hidden"
+        />
       </div>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
-      <p className="text-xs text-muted-foreground">
-        Square image recommended. Max 5MB.
-      </p>
-
-      {/* AI Logo Generation */}
-      {organizerName && (
-        <AIOrganizerLogoDialog
-          organizerId={organizerId}
-          organizerName={organizerName}
-          currentLogoUrl={previewUrl}
-          onLogoGenerated={(url) => {
-            setPreviewUrl(url);
-            onLogoChange(url);
-          }}
-          disabled={isUploading}
-        />
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }
