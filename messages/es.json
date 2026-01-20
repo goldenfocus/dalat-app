@@ -563,6 +563,8 @@
   "invite": {
     "inviteGuests": "Invitar Invitados",
     "inviteDescription": "Envía invitaciones por email o comparte por apps de mensajería",
+    "byEmail": "Por email",
+    "findMember": "Buscar miembro",
     "shareVia": "Compartir por",
     "orSendEmail": "o enviar invitaciones por email",
     "emailAddresses": "Direcciones de email",
