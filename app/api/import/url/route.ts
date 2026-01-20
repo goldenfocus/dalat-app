@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       const apifyInput = isFacebookSearch
         ? {
             startUrls: [{ url }],
-            maxEvents: 50, // Limit to 50 events per search
+            maxResults: 50, // Limit to 50 events per search
           }
         : {
             startUrls: [{ url }],
