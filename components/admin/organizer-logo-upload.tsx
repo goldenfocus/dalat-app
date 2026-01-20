@@ -5,9 +5,11 @@ import { Building2, X, Upload, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AIOrganizerLogoDialog } from "@/components/admin/ai-organizer-logo-dialog";
 
 interface OrganizerLogoUploadProps {
   organizerId?: string;
+  organizerName?: string;
   currentLogoUrl: string | null;
   onLogoChange: (url: string | null) => void;
 }
@@ -17,6 +19,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export function OrganizerLogoUpload({
   organizerId,
+  organizerName,
   currentLogoUrl,
   onLogoChange,
 }: OrganizerLogoUploadProps) {
@@ -178,6 +181,20 @@ export function OrganizerLogoUpload({
       <p className="text-xs text-muted-foreground">
         Square image recommended. Max 5MB.
       </p>
+
+      {/* AI Logo Generation */}
+      {organizerName && (
+        <AIOrganizerLogoDialog
+          organizerId={organizerId}
+          organizerName={organizerName}
+          currentLogoUrl={previewUrl}
+          onLogoGenerated={(url) => {
+            setPreviewUrl(url);
+            onLogoChange(url);
+          }}
+          disabled={isUploading}
+        />
+      )}
     </div>
   );
 }

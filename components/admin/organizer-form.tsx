@@ -38,6 +38,7 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
   const [logoUrl, setLogoUrl] = useState<string | null>(
     organizer?.logo_url ?? null
   );
+  const [name, setName] = useState(organizer?.name ?? "");
 
   const isEditing = !!organizer;
 
@@ -81,8 +82,10 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
 
   // Auto-suggest slug from name
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setName(newName);
     if (!isEditing && !slugTouched) {
-      setSlug(suggestSlug(e.target.value));
+      setSlug(suggestSlug(newName));
     }
   };
 
@@ -166,6 +169,7 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
           {/* Logo upload */}
           <OrganizerLogoUpload
             organizerId={organizer?.id}
+            organizerName={name || "this organizer"}
             currentLogoUrl={logoUrl}
             onLogoChange={setLogoUrl}
           />
@@ -177,7 +181,7 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
               id="name"
               name="name"
               placeholder="Phố Bên Đồi"
-              defaultValue={organizer?.name ?? ""}
+              value={name}
               onChange={handleNameChange}
               required
             />

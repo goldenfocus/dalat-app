@@ -10,6 +10,7 @@ import {
   downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
+import { triggerTranslation } from "@/lib/translations-client";
 
 export async function processEventbriteEvents(
   supabase: SupabaseClient,
@@ -51,7 +52,7 @@ export async function processEventbriteEvents(
       if (event.url?.includes("meetup.com")) platform = "meetup";
       if (event.url?.includes("lu.ma")) platform = "luma";
 
-      const { error } = await supabase.from("events").insert({
+      const { data: newEvent, error } = await supabase.from("events").insert({
         slug,
         title: normalized.title,
         description: normalized.description,
@@ -72,13 +73,28 @@ export async function processEventbriteEvents(
           price_display: event.ticket_availability?.minimum_ticket_price?.display,
           imported_at: new Date().toISOString(),
         },
-      });
+      }).select("id").single();
 
       if (error) {
         result.errors++;
         result.details.push(`Error: ${normalized.title} - ${error.message}`);
       } else {
         result.processed++;
+
+        // Trigger translation to all 12 languages
+        if (newEvent?.id) {
+          const fieldsToTranslate = [];
+          if (normalized.title) {
+            fieldsToTranslate.push({ field_name: "title" as const, text: normalized.title });
+          }
+          if (normalized.description) {
+            fieldsToTranslate.push({ field_name: "description" as const, text: normalized.description });
+          }
+
+          if (fieldsToTranslate.length > 0) {
+            triggerTranslation("event", newEvent.id, fieldsToTranslate);
+          }
+        }
       }
     } catch (err) {
       result.errors++;

@@ -800,11 +800,23 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   }
                   className="flex items-center gap-3 hover:bg-muted p-2 -m-2 rounded-lg transition-colors"
                 >
-                  {event.organizers?.logo_url || event.profiles?.avatar_url ? (
+                  {event.organizers ? (
+                    event.organizers.logo_url ? (
+                      <img
+                        src={event.organizers.logo_url}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                        {event.organizers.name?.charAt(0).toUpperCase() || "O"}
+                      </div>
+                    )
+                  ) : event.profiles?.avatar_url ? (
                     <img
-                      src={(event.organizers?.logo_url || event.profiles?.avatar_url) ?? undefined}
+                      src={event.profiles.avatar_url}
                       alt=""
-                      className="w-10 h-10 rounded-full"
+                      className="w-10 h-10 rounded-full object-cover"
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-primary/20" />
