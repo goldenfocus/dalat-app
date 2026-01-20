@@ -225,6 +225,13 @@ export async function POST(
 
     try {
       const inviteeLocale = (inviteeProfile.locale as Locale) || 'en';
+      console.log('[POST /invitations] About to send notification:', {
+        userId,
+        inviteeLocale,
+        eventTitle: event.title,
+        eventSlug: event.slug,
+      });
+
       await notifyUserInvitation(
         userId,
         inviteeLocale,
@@ -235,6 +242,8 @@ export async function POST(
         inviterName
       );
 
+      console.log('[POST /invitations] Notification sent successfully for userId:', userId);
+
       // Update status to sent (or resent for existing invitations)
       await supabase
         .from('event_invitations')
@@ -243,8 +252,18 @@ export async function POST(
 
       results.push({ userId, username, success: true, token: existingInvitation.token });
     } catch (error) {
-      console.error('Failed to send user invite notification:', error);
-      results.push({ userId, username, success: false, error: 'Failed to send notification' });
+      console.error('[POST /invitations] Failed to send user invite notification:', {
+        userId,
+        username,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      results.push({
+        userId,
+        username,
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to send notification'
+      });
     }
   }
 
