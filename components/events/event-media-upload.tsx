@@ -409,25 +409,56 @@ export function EventMediaUpload({
     }
   };
 
-  // Convert image URL to base64 (client-side fetch works for external URLs)
+  // Convert image URL to base64 with compression (client-side fetch works for external URLs)
   const fetchImageAsBase64 = async (url: string): Promise<{ base64: string; mimeType: string } | null> => {
     try {
       const response = await fetch(url);
       if (!response.ok) return null;
       const blob = await response.blob();
-      const mimeType = blob.type || "image/png";
 
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const dataUrl = reader.result as string;
-          // Remove data URL prefix to get raw base64
-          const base64 = dataUrl.split(",")[1];
-          resolve({ base64, mimeType });
-        };
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
+      // Load image to get dimensions
+      const img = new Image();
+      const imageUrl = URL.createObjectURL(blob);
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = imageUrl;
       });
+
+      // Resize if too large (max 1536px on longest side to keep under API limits)
+      const maxSize = 1536;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxSize || height > maxSize) {
+        if (width > height) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        } else {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+      }
+
+      // Draw resized image to canvas
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        URL.revokeObjectURL(imageUrl);
+        return null;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Convert to base64 with compression (0.85 quality for JPEG)
+      const mimeType = blob.type.startsWith("image/") ? blob.type : "image/jpeg";
+      const dataUrl = canvas.toDataURL(mimeType, 0.85);
+      const base64 = dataUrl.split(",")[1];
+
+      URL.revokeObjectURL(imageUrl);
+      return { base64, mimeType };
     } catch {
       return null;
     }
