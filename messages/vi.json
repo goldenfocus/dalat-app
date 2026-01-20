@@ -882,5 +882,40 @@
     "filterMyEvents": "Sự kiện tôi tham gia",
     "clearFilters": "Xóa bộ lọc",
     "noResults": "Không tìm thấy sự kiện"
+  },
+  "filters": {
+    "title": "Bộ lọc",
+    "categories": "Danh mục",
+    "price": "Giá",
+    "priceAll": "Tất cả sự kiện",
+    "priceFree": "Chỉ miễn phí",
+    "pricePaid": "Chỉ có phí",
+    "dateRange": "Khoảng thời gian",
+    "distance": "Khoảng cách",
+    "nearMe": "Gần tôi",
+    "thisWeekend": "Cuối tuần này",
+    "freeEvents": "Sự kiện miễn phí",
+    "trending": "Xu hướng",
+    "apply": "Áp dụng bộ lọc",
+    "clear": "Xóa tất cả",
+    "activeFilters": "Bộ lọc đang hoạt động",
+    "viewMode": {
+      "list": "Danh sách",
+      "grid": "Lưới",
+      "map": "Bản đồ",
+      "calendar": "Lịch"
+    },
+    "calendarView": {
+      "month": "Tháng",
+      "week": "Tuần",
+      "day": "Ngày",
+      "agenda": "Chương trình"
+    }
+  },
+  "geolocation": {
+    "requestPermission": "Bật vị trí để xem sự kiện gần bạn",
+    "permissionDenied": "Quyền truy cập vị trí bị từ chối",
+    "errorTimeout": "Yêu cầu vị trí hết thời gian",
+    "enable": "Bật vị trí"
   }
 }

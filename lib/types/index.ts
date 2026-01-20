@@ -669,3 +669,55 @@ export interface RecurrencePreset {
   rrule: string;
   description?: string;
 }
+
+// ============================================
+// FILTER & CATEGORY TYPES
+// ============================================
+
+export type PriceType = 'free' | 'paid' | 'donation' | 'free_with_rsvp';
+
+export interface EventCategory {
+  id: string;
+  name_en: string;
+  name_vi: string | null;
+  icon: string | null;
+  color: string | null;
+  sort_order: number;
+  is_active: boolean;
+}
+
+export interface EventWithFilterData extends Event {
+  price_type: PriceType;
+  price_amount: number | null;
+  price_currency: string;
+  price_note: string | null;
+  distance_km: number | null;
+  category_ids: string[];
+  categories?: EventCategory[];
+}
+
+export interface EventFilters {
+  lifecycle: 'upcoming' | 'happening' | 'past';
+  categories: string[];
+  priceFilter: 'all' | 'free' | 'paid';
+  searchQuery: string;
+  dateRange?: { start: Date; end: Date };
+  userLocation?: { lat: number; lng: number };
+  radiusKm?: number;
+  viewMode: 'list' | 'grid' | 'map' | 'calendar';
+  calendarView?: 'month' | 'week' | 'day' | 'agenda';
+}
+
+export interface UserLocation {
+  lat: number;
+  lng: number;
+  accuracy: number;
+  timestamp: number;
+}
+
+export interface GeolocationState {
+  location: UserLocation | null;
+  loading: boolean;
+  error: string | null;
+  permissionState: 'granted' | 'denied' | 'prompt' | null;
+}

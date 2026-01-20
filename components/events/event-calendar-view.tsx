@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks } from "date-fns";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, parseISO, addDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { EventCard } from "./event-card";
 import type { Event, EventCounts } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { downloadMultiEventICS } from "@/lib/utils/ics-export";
 
 interface EventCalendarViewProps {
     events: Event[];
     counts: Record<string, EventCounts>;
 }
 
-type ViewMode = "month" | "week" | "day";
+type ViewMode = "month" | "week" | "day" | "agenda";
 
 export function EventCalendarView({ events, counts }: EventCalendarViewProps) {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -81,6 +82,57 @@ export function EventCalendarView({ events, counts }: EventCalendarViewProps) {
         return eventsByDate[dateKey] || [];
     };
 
+    // Group events for Agenda view (next 90 days)
+    const agendaEvents = useMemo(() => {
+        const today = new Date();
+        const futureDate = addDays(today, 90);
+
+        // Filter events in the next 90 days
+        const filtered = events.filter(event => {
+            const eventDate = new Date(event.starts_at);
+            return eventDate >= today && eventDate <= futureDate;
+        });
+
+        // Sort by date
+        filtered.sort((a, b) =>
+            new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
+        );
+
+        // Group by date
+        const grouped: Record<string, Event[]> = {};
+        filtered.forEach(event => {
+            const dateKey = format(new Date(event.starts_at), "yyyy-MM-dd");
+            if (!grouped[dateKey]) {
+                grouped[dateKey] = [];
+            }
+            grouped[dateKey].push(event);
+        });
+
+        return grouped;
+    }, [events]);
+
+    const handleExportCalendar = () => {
+        // Export all visible events based on current view
+        let eventsToExport: Event[] = [];
+
+        if (viewMode === "agenda") {
+            eventsToExport = Object.values(agendaEvents).flat();
+        } else if (viewMode === "day") {
+            eventsToExport = getEventsForDay(currentDate);
+        } else if (viewMode === "week") {
+            eventsToExport = calendarDays.flatMap(day => getEventsForDay(day));
+        } else {
+            eventsToExport = calendarDays
+                .filter(day => isSameMonth(day, currentDate))
+                .flatMap(day => getEventsForDay(day));
+        }
+
+        if (eventsToExport.length > 0) {
+            const filename = `dalat-events-${format(currentDate, "yyyy-MM")}`;
+            downloadMultiEventICS(eventsToExport, filename);
+        }
+    };
+
     return (
         <div className="h-[calc(100vh-4rem)] flex flex-col lg:flex-row">
             {/* Calendar Section */}
@@ -89,40 +141,53 @@ export function EventCalendarView({ events, counts }: EventCalendarViewProps) {
                 <div className="mb-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-2xl font-bold">
-                            {format(currentDate, "MMMM yyyy")}
+                            {viewMode === "agenda" ? "Upcoming Events" : format(currentDate, "MMMM yyyy")}
                         </h2>
                         <div className="flex items-center gap-2">
                             <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={handleToday}
+                                onClick={handleExportCalendar}
                                 className="border-gray-200"
                             >
-                                Today
+                                <Download className="w-4 h-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Export</span>
                             </Button>
-                            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={handlePrevious}
-                                    className="rounded-none border-r border-gray-200"
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={handleNext}
-                                    className="rounded-none"
-                                >
-                                    <ChevronRight className="w-4 h-4" />
-                                </Button>
-                            </div>
+                            {viewMode !== "agenda" && (
+                                <>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={handleToday}
+                                        className="border-gray-200"
+                                    >
+                                        Today
+                                    </Button>
+                                    <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handlePrevious}
+                                            className="rounded-none border-r border-gray-200"
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={handleNext}
+                                            className="rounded-none"
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
 
                     {/* View Mode Selector */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                         <Button
                             size="sm"
                             variant={viewMode === "month" ? "default" : "outline"}
@@ -146,6 +211,14 @@ export function EventCalendarView({ events, counts }: EventCalendarViewProps) {
                             className={viewMode === "day" ? "bg-green-600 hover:bg-green-700" : "border-gray-200"}
                         >
                             Day
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant={viewMode === "agenda" ? "default" : "outline"}
+                            onClick={() => setViewMode("agenda")}
+                            className={viewMode === "agenda" ? "bg-green-600 hover:bg-green-700" : "border-gray-200"}
+                        >
+                            Agenda
                         </Button>
                     </div>
                 </div>
@@ -281,10 +354,40 @@ export function EventCalendarView({ events, counts }: EventCalendarViewProps) {
                         </div>
                     </div>
                 )}
+
+                {/* Agenda View */}
+                {viewMode === "agenda" && (
+                    <div className="space-y-8">
+                        {Object.entries(agendaEvents).length > 0 ? (
+                            Object.entries(agendaEvents).map(([dateKey, dayEvents]) => {
+                                const date = parseISO(dateKey);
+                                return (
+                                    <div key={dateKey} className="bg-white rounded-lg border border-gray-200 p-6">
+                                        <h3 className="font-bold text-xl mb-4 text-green-600">
+                                            {format(date, "EEEE, MMMM d, yyyy")}
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {dayEvents.map((event) => (
+                                                <EventCard key={event.id} event={event} counts={counts[event.id]} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="bg-white rounded-lg border border-gray-200 p-12">
+                                <div className="text-center text-gray-500">
+                                    <CalendarIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                    <p className="text-lg">No upcoming events in the next 90 days</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Selected Date Events - Desktop Sidebar */}
-            {selectedDate && viewMode !== "day" && (
+            {selectedDate && viewMode !== "day" && viewMode !== "agenda" && (
                 <div className="lg:w-96 border-t lg:border-t-0 lg:border-l border-gray-200 p-4 lg:p-6 overflow-y-auto bg-gray-50">
                     <h3 className="font-bold text-lg mb-4">
                         {format(selectedDate, "EEEE, MMM d")}

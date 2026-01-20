@@ -1,19 +1,38 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { EventMapView } from "@/components/events/event-map-view";
+import { MapLandingPage } from "@/components/map/map-landing-page";
 import type { Event, EventCounts } from "@/lib/types";
-import { getTranslations } from "next-intl/server";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 
 async function getEvents() {
     const supabase = await createClient();
 
-    const { data: events, error } = await supabase
-        .rpc("get_events_by_lifecycle", {
+    // Try using filter_events RPC first, fallback to get_events_by_lifecycle
+    try {
+        const { data: events, error } = await supabase.rpc("filter_events", {
             p_lifecycle: "upcoming",
-            p_limit: 100,
+            p_categories: null,
+            p_price_filter: null,
+            p_search_query: null,
+            p_start_date: null,
+            p_end_date: null,
+            p_user_lat: null,
+            p_user_lng: null,
+            p_radius_km: null,
+            p_limit: 500,
         });
+
+        if (!error && events) {
+            return events as Event[];
+        }
+    } catch (err) {
+        console.log("filter_events RPC not available, using fallback");
+    }
+
+    // Fallback to old RPC
+    const { data: events, error } = await supabase.rpc("get_events_by_lifecycle", {
+        p_lifecycle: "upcoming",
+        p_limit: 500,
+    });
 
     if (error) {
         console.error("Error fetching events:", error);
@@ -57,36 +76,16 @@ export default async function MapPage() {
     const events = await getEvents();
     const eventIds = events.map((e) => e.id);
     const counts = await getEventCounts(eventIds);
-    const t = await getTranslations("nav");
 
     return (
-        <div className="min-h-screen bg-white">
-            {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-                <div className="container flex h-14 max-w-7xl items-center justify-between mx-auto px-4">
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href="/"
-                            className="flex items-center gap-2 text-sm font-medium hover:text-green-600 transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Back
-                        </Link>
-                        <h1 className="font-bold text-lg">Events Map</h1>
-                    </div>
+        <Suspense
+            fallback={
+                <div className="h-screen flex items-center justify-center bg-gray-50">
+                    <div className="text-gray-500">Loading map...</div>
                 </div>
-            </header>
-
-            {/* Map View */}
-            <Suspense
-                fallback={
-                    <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
-                        <div className="text-gray-500">Loading map...</div>
-                    </div>
-                }
-            >
-                <EventMapView events={events} counts={counts} />
-            </Suspense>
-        </div>
+            }
+        >
+            <MapLandingPage events={events} counts={counts} />
+        </Suspense>
     );
 }

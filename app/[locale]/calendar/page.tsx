@@ -9,7 +9,45 @@ import { ArrowLeft } from "lucide-react";
 async function getEvents() {
     const supabase = await createClient();
 
-    // Get all upcoming and happening events for calendar
+    // Try using filter_events RPC first, fallback to get_events_by_lifecycle
+    try {
+        const { data: upcomingEvents, error: upcomingError } = await supabase.rpc("filter_events", {
+            p_lifecycle: "upcoming",
+            p_categories: null,
+            p_price_filter: null,
+            p_search_query: null,
+            p_start_date: null,
+            p_end_date: null,
+            p_user_lat: null,
+            p_user_lng: null,
+            p_radius_km: null,
+            p_limit: 200,
+        });
+
+        const { data: happeningEvents, error: happeningError } = await supabase.rpc("filter_events", {
+            p_lifecycle: "happening",
+            p_categories: null,
+            p_price_filter: null,
+            p_search_query: null,
+            p_start_date: null,
+            p_end_date: null,
+            p_user_lat: null,
+            p_user_lng: null,
+            p_radius_km: null,
+            p_limit: 50,
+        });
+
+        if (!upcomingError && !happeningError) {
+            return [
+                ...(upcomingEvents || []),
+                ...(happeningEvents || []),
+            ] as Event[];
+        }
+    } catch (err) {
+        console.log("filter_events RPC not available, using fallback");
+    }
+
+    // Fallback to old RPC
     const { data: upcomingEvents } = await supabase
         .rpc("get_events_by_lifecycle", {
             p_lifecycle: "upcoming",

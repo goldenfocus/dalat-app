@@ -106,7 +106,7 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
             {/* Map Area - Flex Item 1 */}
             <div className="flex-1 relative min-h-[50vh]">
                 <UnifiedMap
-                    provider="leaflet" // Can be switched to "google"
+                    provider="google" // Switched to Google Maps for premium experience
                     events={filteredEvents}
                     selectedEventId={selectedEvent?.id}
                     onEventSelect={handleEventSelect}

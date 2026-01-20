@@ -853,5 +853,40 @@
       "november": "11월",
       "december": "12월"
     }
+  },
+  "filters": {
+    "title": "Filters",
+    "categories": "Categories",
+    "price": "Price",
+    "priceAll": "All Events",
+    "priceFree": "Free Only",
+    "pricePaid": "Paid Only",
+    "dateRange": "Date Range",
+    "distance": "Distance",
+    "nearMe": "Near Me",
+    "thisWeekend": "This Weekend",
+    "freeEvents": "Free Events",
+    "trending": "Trending",
+    "apply": "Apply Filters",
+    "clear": "Clear All",
+    "activeFilters": "Active Filters",
+    "viewMode": {
+      "list": "List",
+      "grid": "Grid",
+      "map": "Map",
+      "calendar": "Calendar"
+    },
+    "calendarView": {
+      "month": "Month",
+      "week": "Week",
+      "day": "Day",
+      "agenda": "Agenda"
+    }
+  },
+  "geolocation": {
+    "requestPermission": "Enable location to see events near you",
+    "permissionDenied": "Location permission denied",
+    "errorTimeout": "Location request timed out",
+    "enable": "Enable Location"
   }
 }

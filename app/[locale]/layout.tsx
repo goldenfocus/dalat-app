@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ThemeProvider } from "next-themes";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import { Toaster } from "sonner";
 import { BadgeClearer } from "@/components/badge-clearer";
 import { NotificationPrompt } from "@/components/notification-prompt";
 import { SwUpdateHandler } from "@/components/sw-update-handler";
@@ -80,6 +81,7 @@ export default async function LocaleLayout({ children, params }: Props) {
             <NotificationPrompt />
             <SwUpdateHandler />
             <LocaleMismatchBanner />
+            <Toaster position="top-center" richColors closeButton />
             <main className="flex-1 pb-16 lg:pb-0">{children}</main>
             <GlobalFooter />
             <BottomNav />
