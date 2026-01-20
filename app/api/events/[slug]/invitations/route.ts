@@ -32,8 +32,17 @@ export async function POST(
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });
   }
 
-  // Only event creator can send invitations
-  if (event.created_by !== user.id) {
+  // Check if user can send invitations (creator, admin, or superadmin)
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'superadmin';
+  const isCreator = event.created_by === user.id;
+
+  if (!isCreator && !isAdmin) {
     return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
   }
 
