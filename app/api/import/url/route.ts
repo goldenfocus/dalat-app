@@ -4,6 +4,9 @@ import { processFacebookEvents } from "@/lib/import/processors/facebook";
 import { processEventbriteEvents } from "@/lib/import/processors/eventbrite";
 import { processLumaEvents } from "@/lib/import/processors/luma";
 
+// Extend timeout for Vercel Pro (scrapers can be slow)
+export const maxDuration = 60;
+
 /**
  * Import a single event from a URL
  * Uses Apify to scrape the event, then processes it through our import pipeline
@@ -28,7 +31,7 @@ export async function POST(request: Request) {
       actorId = "newpo~eventbrite-scraper";
     } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
-      actorId = "lexis-solutions~lu-ma-scraper";
+      actorId = ""; // Not used - we fetch Lu.ma directly
     } else {
       return NextResponse.json(
         { error: "Unsupported URL. Supported: facebook.com, eventbrite.com, lu.ma/luma.com" },
@@ -36,61 +39,64 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check Apify config
-    const apiToken = process.env.APIFY_API_TOKEN;
-    if (!apiToken) {
-      return NextResponse.json(
-        { error: "Apify not configured" },
-        { status: 503 }
-      );
-    }
-
     console.log(`URL Import: Starting ${platform} scrape for ${url}`);
 
-    // Build platform-specific input for Apify
-    let apifyInput: Record<string, unknown>;
+    let items: unknown[];
+
     if (platform === "luma") {
-      // Lu.ma scraper expects urls array directly
-      apifyInput = {
-        urls: [url],
-        maxItems: 1,
-      };
+      // Fetch Lu.ma directly - no Apify needed
+      const lumaData = await fetchLumaEvent(url);
+      if (!lumaData) {
+        return NextResponse.json(
+          { error: "Could not fetch Lu.ma event. Make sure the URL is a direct event link (e.g., lu.ma/abc123)" },
+          { status: 404 }
+        );
+      }
+      items = [lumaData];
+      console.log(`URL Import: Got Lu.ma event: ${lumaData.title}`);
     } else {
-      // Facebook/Eventbrite scrapers use startUrls format
-      apifyInput = {
+      // Use Apify for Facebook/Eventbrite
+      const apiToken = process.env.APIFY_API_TOKEN;
+      if (!apiToken) {
+        return NextResponse.json(
+          { error: "Apify not configured" },
+          { status: 503 }
+        );
+      }
+
+      const apifyInput = {
         startUrls: [{ url }],
         maxRequestsPerCrawl: 1,
       };
+
+      const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${apiToken}`;
+
+      const runResponse = await fetch(apifyUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(apifyInput),
+      });
+
+      if (!runResponse.ok) {
+        const errorText = await runResponse.text();
+        console.error(`URL Import: Apify error - ${runResponse.status}`, errorText);
+        return NextResponse.json(
+          { error: `Failed to scrape URL: ${errorText.slice(0, 200)}` },
+          { status: 502 }
+        );
+      }
+
+      items = await runResponse.json();
+
+      if (!items || items.length === 0) {
+        return NextResponse.json(
+          { error: "No event data found at URL" },
+          { status: 404 }
+        );
+      }
+
+      console.log(`URL Import: Got ${items.length} items from Apify`);
     }
-
-    // Call Apify synchronously - wait for result
-    const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${apiToken}`;
-
-    const runResponse = await fetch(apifyUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(apifyInput),
-    });
-
-    if (!runResponse.ok) {
-      const errorText = await runResponse.text();
-      console.error(`URL Import: Apify error - ${runResponse.status}`, errorText);
-      return NextResponse.json(
-        { error: `Failed to scrape URL: ${errorText.slice(0, 200)}` },
-        { status: 502 }
-      );
-    }
-
-    const items = await runResponse.json();
-
-    if (!items || items.length === 0) {
-      return NextResponse.json(
-        { error: "No event data found at URL" },
-        { status: 404 }
-      );
-    }
-
-    console.log(`URL Import: Got ${items.length} items from Apify`);
 
     // Process the scraped event
     const supabase = createClient(
@@ -141,5 +147,65 @@ export async function POST(request: Request) {
       { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * Fetch Lu.ma event directly from their API
+ * Lu.ma exposes event data at api.lu.ma/url?url=<event-url>
+ */
+async function fetchLumaEvent(eventUrl: string) {
+  try {
+    // Lu.ma's public API endpoint
+    const apiUrl = `https://api.lu.ma/url?url=${encodeURIComponent(eventUrl)}`;
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; DalatApp/1.0)",
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Lu.ma API error: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+
+    // Lu.ma returns event data in a specific structure
+    const event = data.event || data;
+    if (!event || !event.name) {
+      console.error("Lu.ma: No event data in response", data);
+      return null;
+    }
+
+    // Transform to our expected format
+    return {
+      url: eventUrl,
+      title: event.name,
+      name: event.name,
+      description: event.description || event.description_md,
+      start: event.start_at,
+      end: event.end_at,
+      startDate: event.start_at,
+      endDate: event.end_at,
+      location: event.geo_address_info?.full_address || event.location_name,
+      venue: event.location_name,
+      address: event.geo_address_info?.full_address,
+      city: event.geo_address_info?.city,
+      latitude: event.geo_latitude,
+      longitude: event.geo_longitude,
+      organizer: event.hosts?.[0]?.name,
+      hostName: event.hosts?.[0]?.name,
+      imageUrl: event.cover_url,
+      coverImage: event.cover_url,
+      attendeeCount: event.guest_count,
+      isFree: !event.ticket_info?.is_paid,
+      price: event.ticket_info?.price_range,
+    };
+  } catch (error) {
+    console.error("Lu.ma fetch error:", error);
+    return null;
   }
 }
