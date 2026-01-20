@@ -13,7 +13,8 @@ import {
 
 export async function processFacebookEvents(
   supabase: SupabaseClient,
-  events: FacebookEvent[]
+  events: FacebookEvent[],
+  createdBy?: string
 ): Promise<ProcessResult> {
   const result = createEmptyResult();
 
@@ -64,6 +65,7 @@ export async function processFacebookEvents(
         status: "published",
         timezone: "Asia/Ho_Chi_Minh",
         organizer_id: organizerId,
+        created_by: createdBy,
         source_platform: "facebook",
         source_metadata: {
           going_count: normalized.goingCount,

@@ -13,7 +13,8 @@ import {
 
 export async function processEventbriteEvents(
   supabase: SupabaseClient,
-  events: EventbriteEvent[]
+  events: EventbriteEvent[],
+  createdBy?: string
 ): Promise<ProcessResult> {
   const result = createEmptyResult();
 
@@ -64,6 +65,7 @@ export async function processEventbriteEvents(
         status: "published",
         timezone: "Asia/Ho_Chi_Minh",
         organizer_id: organizerId,
+        created_by: createdBy,
         source_platform: platform,
         source_metadata: {
           is_free: event.is_free,

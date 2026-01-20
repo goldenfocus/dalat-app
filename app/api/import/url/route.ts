@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { processFacebookEvents } from "@/lib/import/processors/facebook";
 import { processEventbriteEvents } from "@/lib/import/processors/eventbrite";
 import { processLumaEvents, type LumaEvent } from "@/lib/import/processors/luma";
@@ -14,6 +15,14 @@ export const maxDuration = 60;
  */
 export async function POST(request: Request) {
   try {
+    // Get authenticated user (import requires login)
+    const serverSupabase = await createServerClient();
+    const { data: { user } } = await serverSupabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
     const { url } = await request.json();
 
     if (!url) {
@@ -107,11 +116,11 @@ export async function POST(request: Request) {
 
     let result;
     if (platform === "facebook") {
-      result = await processFacebookEvents(supabase, items as FacebookEvent[]);
+      result = await processFacebookEvents(supabase, items as FacebookEvent[], user.id);
     } else if (platform === "luma") {
-      result = await processLumaEvents(supabase, items as LumaEvent[]);
+      result = await processLumaEvents(supabase, items as LumaEvent[], user.id);
     } else {
-      result = await processEventbriteEvents(supabase, items as EventbriteEvent[]);
+      result = await processEventbriteEvents(supabase, items as EventbriteEvent[], user.id);
     }
 
     console.log(

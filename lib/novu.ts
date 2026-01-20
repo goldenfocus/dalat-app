@@ -666,15 +666,15 @@ export async function notifyUserInvitation(
   const subject = userInviteTranslations.subject[notifLocale](inviterName, eventTitle);
   const body = userInviteTranslations.body[notifLocale](formattedDate, formattedTime, locationName);
 
+  // Note: Using 'rsvp' workflow which is already configured for inbox notifications
+  // and has the same payload structure. Consider creating a dedicated 'user-event-invitation'
+  // workflow in Novu dashboard for better analytics separation.
   await Promise.all([
-    getNovu().trigger('user-event-invitation', {
+    getNovu().trigger('rsvp', {
       to: { subscriberId: userId },
       payload: {
         subject,
         body,
-        eventTitle,
-        eventSlug,
-        inviterName,
         primaryActionLabel: userInviteTranslations.buttons.viewEvent[notifLocale],
         primaryActionUrl: eventUrl,
       },

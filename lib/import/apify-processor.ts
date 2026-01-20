@@ -45,15 +45,18 @@ export async function processApifyPayload(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  // For automated imports (webhooks), use system user if configured
+  const systemUserId = process.env.SYSTEM_USER_ID;
+
   switch (platform) {
     case "facebook":
-      return processFacebookEvents(supabase, items as FacebookEvent[]);
+      return processFacebookEvents(supabase, items as FacebookEvent[], systemUserId);
     case "instagram":
       return processInstagramPosts(supabase, items as InstagramPost[]);
     case "tiktok":
       return processTikTokPosts(supabase, items as TikTokPost[]);
     case "eventbrite":
-      return processEventbriteEvents(supabase, items as EventbriteEvent[]);
+      return processEventbriteEvents(supabase, items as EventbriteEvent[], systemUserId);
     default:
       console.warn(`Unknown platform for actor: ${actorId}`);
       return {
