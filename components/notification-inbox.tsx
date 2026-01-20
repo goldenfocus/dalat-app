@@ -26,7 +26,7 @@ export function NotificationInbox({ subscriberId, subscriberHash }: Notification
     <Inbox
       applicationIdentifier={process.env.NEXT_PUBLIC_NOVU_APPLICATION_IDENTIFIER!}
       subscriberId={subscriberId}
-      // subscriberHash={subscriberHash} // Enable once HMAC is turned on in Novu dashboard
+      subscriberHash={subscriberHash}
       appearance={{
         baseTheme: isDark ? inboxDarkTheme : undefined,
         variables: {
