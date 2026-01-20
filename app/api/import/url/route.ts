@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { processFacebookEvents } from "@/lib/import/processors/facebook";
 import { processEventbriteEvents } from "@/lib/import/processors/eventbrite";
-import { processLumaEvents } from "@/lib/import/processors/luma";
+import { processLumaEvents, type LumaEvent } from "@/lib/import/processors/luma";
+import type { FacebookEvent, EventbriteEvent } from "@/lib/import/types";
 
 // Extend timeout for Vercel Pro (scrapers can be slow)
 export const maxDuration = 60;
@@ -106,11 +107,11 @@ export async function POST(request: Request) {
 
     let result;
     if (platform === "facebook") {
-      result = await processFacebookEvents(supabase, items);
+      result = await processFacebookEvents(supabase, items as FacebookEvent[]);
     } else if (platform === "luma") {
-      result = await processLumaEvents(supabase, items);
+      result = await processLumaEvents(supabase, items as LumaEvent[]);
     } else {
-      result = await processEventbriteEvents(supabase, items);
+      result = await processEventbriteEvents(supabase, items as EventbriteEvent[]);
     }
 
     console.log(
