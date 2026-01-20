@@ -32,10 +32,17 @@ export async function POST(request: Request) {
     // Determine platform from URL
     let platform: string;
     let actorId: string;
+    let isFacebookSearch = false;
 
     if (url.includes("facebook.com")) {
       platform = "facebook";
-      actorId = "pratikdani~facebook-event-scraper";
+      // Check if this is a Facebook search URL
+      if (url.includes("/search/events/") || url.includes("facebook.com/events/search/")) {
+        actorId = "apify~facebook-events-scraper";
+        isFacebookSearch = true;
+      } else {
+        actorId = "pratikdani~facebook-event-scraper";
+      }
     } else if (url.includes("eventbrite.com")) {
       platform = "eventbrite";
       actorId = "newpo~eventbrite-scraper";
@@ -49,7 +56,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log(`URL Import: Starting ${platform} scrape for ${url}`);
+    console.log(`URL Import: Starting ${platform} scrape for ${url}${isFacebookSearch ? " (search results)" : ""}`);
 
     let items: unknown[];
 
@@ -74,10 +81,16 @@ export async function POST(request: Request) {
         );
       }
 
-      const apifyInput = {
-        startUrls: [{ url }],
-        maxRequestsPerCrawl: 1,
-      };
+      // Configure input based on whether it's a search URL or single event
+      const apifyInput = isFacebookSearch
+        ? {
+            startUrls: [{ url }],
+            maxResults: 50, // Limit to 50 events per search
+          }
+        : {
+            startUrls: [{ url }],
+            maxRequestsPerCrawl: 1,
+          };
 
       const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${apiToken}`;
 
@@ -128,7 +141,18 @@ export async function POST(request: Request) {
     );
 
     if (result.processed > 0) {
-      // Get the created event by external URL
+      // For search results (multiple events), return summary stats
+      if (isFacebookSearch) {
+        return NextResponse.json({
+          success: true,
+          title: `Imported ${result.processed} event${result.processed > 1 ? "s" : ""}`,
+          message: `${result.processed} imported, ${result.skipped} skipped, ${result.errors} errors`,
+          count: result.processed,
+          isMultiple: true,
+        });
+      }
+
+      // For single events, get the created event details
       const { data: event } = await supabase
         .from("events")
         .select("slug, title")
@@ -142,7 +166,7 @@ export async function POST(request: Request) {
       });
     } else if (result.skipped > 0) {
       return NextResponse.json(
-        { error: "Event already exists or is missing required data" },
+        { error: isFacebookSearch ? `${result.skipped} events already exist or missing data` : "Event already exists or is missing required data" },
         { status: 409 }
       );
     } else {

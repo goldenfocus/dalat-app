@@ -195,7 +195,7 @@ export function AdminImportPage() {
       if (response.ok) {
         setResult({
           success: true,
-          message: `Imported: ${data.title}`,
+          message: data.message || `Imported: ${data.title}`,
           eventSlug: data.slug,
         });
         setUrl("");
@@ -417,7 +417,7 @@ export function AdminImportPage() {
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <Input
-                  placeholder="https://facebook.com/events/123456789..."
+                  placeholder="Paste event URL or Facebook search URL..."
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSingleImport()}
@@ -463,6 +463,10 @@ export function AdminImportPage() {
                 </div>
               )}
 
+              <Tip>
+                <strong>Pro tip:</strong> You can paste a Facebook search URL (e.g., facebook.com/search/events/?q=da%20lat) to import multiple events at once!
+              </Tip>
+
               {/* Supported URLs */}
               <div className="grid sm:grid-cols-3 gap-3 pt-2">
                 <div className="flex items-center gap-2 p-2 rounded-lg border">
@@ -470,7 +474,7 @@ export function AdminImportPage() {
                   <div className="text-xs">
                     <p className="font-medium">Facebook Events</p>
                     <p className="text-muted-foreground">
-                      facebook.com/events/...
+                      Single events or search results
                     </p>
                   </div>
                 </div>
