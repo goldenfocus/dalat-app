@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       platform = "facebook";
       // Check if this is a Facebook search URL
       if (url.includes("/search/events/") || url.includes("facebook.com/events/search/")) {
-        actorId = "apify/facebook-events-scraper";
+        actorId = "scraper-engine/facebook-event-search-scraper";
         isFacebookSearch = true;
       } else {
         actorId = "pratikdani/facebook-event-scraper";
@@ -102,9 +102,16 @@ export async function POST(request: Request) {
 
       if (!runResponse.ok) {
         const errorText = await runResponse.text();
-        console.error(`URL Import: Apify error - ${runResponse.status}`, errorText);
+        console.error(`URL Import: Apify error - ${runResponse.status}`, {
+          actorId,
+          url,
+          errorText,
+        });
         return NextResponse.json(
-          { error: `Failed to scrape URL: ${errorText.slice(0, 200)}` },
+          {
+            error: `Apify scraper failed (${runResponse.status}). Check if the actor "${actorId}" exists and is accessible.`,
+            details: errorText.slice(0, 300),
+          },
           { status: 502 }
         );
       }
