@@ -639,11 +639,14 @@ export async function notifyUserInvitation(
   locationName: string | null,
   inviterName: string
 ) {
+  console.log('[notifyUserInvitation] Starting notification for user:', userId);
   const notifLocale = getNotificationLocale(locale);
   const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
 
   // Ensure user is registered as Novu subscriber (idempotent operation)
+  console.log('[notifyUserInvitation] Registering subscriber:', userId);
   await createOrUpdateSubscriber(userId, undefined, undefined, locale);
+  console.log('[notifyUserInvitation] Subscriber registered successfully');
 
   // Format event date/time for display
   const eventDate = new Date(startsAt);
@@ -669,27 +672,35 @@ export async function notifyUserInvitation(
   const subject = userInviteTranslations.subject[notifLocale](inviterName, eventTitle);
   const body = userInviteTranslations.body[notifLocale](formattedDate, formattedTime, locationName);
 
+  console.log('[notifyUserInvitation] Sending notification:', { subject, body, userId, eventSlug });
+
   // Note: Using 'rsvp' workflow which is already configured for inbox notifications
   // and has the same payload structure. Consider creating a dedicated 'user-event-invitation'
   // workflow in Novu dashboard for better analytics separation.
-  await Promise.all([
-    getNovu().trigger('rsvp', {
-      to: { subscriberId: userId },
-      payload: {
-        subject,
+  try {
+    await Promise.all([
+      getNovu().trigger('rsvp', {
+        to: { subscriberId: userId },
+        payload: {
+          subject,
+          body,
+          primaryActionLabel: userInviteTranslations.buttons.viewEvent[notifLocale],
+          primaryActionUrl: eventUrl,
+        },
+      }),
+      sendPushToUser(userId, {
+        title: subject,
         body,
-        primaryActionLabel: userInviteTranslations.buttons.viewEvent[notifLocale],
-        primaryActionUrl: eventUrl,
-      },
-    }),
-    sendPushToUser(userId, {
-      title: subject,
-      body,
-      url: eventUrl,
-      tag: `invite-${eventSlug}`,
-      requireInteraction: true,
-    }),
-  ]);
+        url: eventUrl,
+        tag: `invite-${eventSlug}`,
+        requireInteraction: true,
+      }),
+    ]);
+    console.log('[notifyUserInvitation] Notification sent successfully');
+  } catch (error) {
+    console.error('[notifyUserInvitation] Failed to send notification:', error);
+    throw error;
+  }
 }
 
 // ============================================
