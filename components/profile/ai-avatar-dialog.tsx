@@ -168,11 +168,23 @@ Important:
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to generate avatar");
+        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to generate avatar");
+        } else {
+          // Non-JSON response (likely from API gateway)
+          const text = await response.text();
+          if (response.status === 413 || text.toLowerCase().includes("too large")) {
+            throw new Error("Request too large. Try a shorter description.");
+          }
+          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
+        }
       }
+
+      const data = await response.json();
 
       // Show preview instead of closing
       setPreviewUrl(data.imageUrl);
@@ -206,11 +218,23 @@ Important:
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to refine avatar");
+        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to refine avatar");
+        } else {
+          // Non-JSON response (likely from API gateway)
+          const text = await response.text();
+          if (response.status === 413 || text.toLowerCase().includes("too large")) {
+            throw new Error("Image is too large to refine. Try generating a new avatar instead.");
+          }
+          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
+        }
       }
+
+      const data = await response.json();
 
       // Update preview with refined result
       setPreviewUrl(data.imageUrl);

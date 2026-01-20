@@ -242,8 +242,19 @@ export function FlyerBuilder({
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || t("generationFailed"));
+        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const data = await response.json();
+          throw new Error(data.error || t("generationFailed"));
+        } else {
+          // Non-JSON response (likely from API gateway)
+          const text = await response.text();
+          if (response.status === 413 || text.toLowerCase().includes("too large")) {
+            throw new Error("Request too large. Try a shorter prompt.");
+          }
+          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
+        }
       }
 
       const data = await response.json();
@@ -324,8 +335,19 @@ export function FlyerBuilder({
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || t("generationFailed"));
+        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const data = await response.json();
+          throw new Error(data.error || t("generationFailed"));
+        } else {
+          // Non-JSON response (likely from API gateway)
+          const text = await response.text();
+          if (response.status === 413 || text.toLowerCase().includes("too large")) {
+            throw new Error("Image is too large to refine. Try uploading a smaller image or using the AI generation instead.");
+          }
+          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
+        }
       }
 
       const data = await response.json();

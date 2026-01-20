@@ -122,6 +122,22 @@ export function AIImageGenerator({
         body: JSON.stringify(payload),
       });
 
+      if (!res.ok) {
+        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
+        const contentType = res.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const data = await res.json();
+          throw new Error(data.error || "Generation failed");
+        } else {
+          // Non-JSON response (likely from API gateway)
+          const text = await res.text();
+          if (res.status === 413 || text.toLowerCase().includes("too large")) {
+            throw new Error("Request too large. Try a shorter prompt.");
+          }
+          throw new Error(`Server error (${res.status}): ${text.slice(0, 100)}`);
+        }
+      }
+
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
@@ -151,6 +167,22 @@ export function AIImageGenerator({
           refinementPrompt: refinementPrompt.trim(),
         }),
       });
+
+      if (!res.ok) {
+        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
+        const contentType = res.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const data = await res.json();
+          throw new Error(data.error || "Refinement failed");
+        } else {
+          // Non-JSON response (likely from API gateway)
+          const text = await res.text();
+          if (res.status === 413 || text.toLowerCase().includes("too large")) {
+            throw new Error("Image is too large to refine. Try uploading a smaller image or generating a new one.");
+          }
+          throw new Error(`Server error (${res.status}): ${text.slice(0, 100)}`);
+        }
+      }
 
       const data = await res.json();
       if (data.error) throw new Error(data.error);

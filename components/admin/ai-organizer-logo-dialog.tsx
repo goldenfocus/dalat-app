@@ -70,12 +70,23 @@ export function AIOrganizerLogoDialog({
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to generate logo");
+        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to generate logo");
+        } else {
+          // Non-JSON response (likely from API gateway)
+          const text = await response.text();
+          if (response.status === 413 || text.toLowerCase().includes("too large")) {
+            throw new Error("Request too large. Try a shorter name.");
+          }
+          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
+        }
       }
 
+      const data = await response.json();
       setPreviewUrl(data.imageUrl);
       setMode("preview");
     } catch (err) {
@@ -107,12 +118,23 @@ export function AIOrganizerLogoDialog({
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to refine logo");
+        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to refine logo");
+        } else {
+          // Non-JSON response (likely from API gateway)
+          const text = await response.text();
+          if (response.status === 413 || text.toLowerCase().includes("too large")) {
+            throw new Error("Image is too large to refine. Try generating a new logo instead.");
+          }
+          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
+        }
       }
 
+      const data = await response.json();
       setPreviewUrl(data.imageUrl);
       setRefinementPrompt("");
     } catch (err) {
