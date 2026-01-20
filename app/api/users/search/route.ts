@@ -29,10 +29,11 @@ export async function GET(request: NextRequest) {
 
   // Search by username prefix (case insensitive)
   // Also search display_name for flexibility
+  // PostgREST requires double-quoting values with wildcards
   const { data: users, error } = await supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url")
-    .or(`username.ilike.${cleanQuery}%,display_name.ilike.%${cleanQuery}%`)
+    .or(`username.ilike."${cleanQuery}%",display_name.ilike."%${cleanQuery}%"`)
     .not("username", "is", null) // Only return users with usernames
     .neq("id", user.id) // Exclude self
     .limit(5);
