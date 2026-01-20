@@ -152,58 +152,94 @@ export async function POST(request: Request) {
 }
 
 /**
- * Fetch Lu.ma event directly from their API
- * Lu.ma exposes event data at api.lu.ma/url?url=<event-url>
+ * Fetch Lu.ma event by scraping the page HTML
+ * Lu.ma embeds event data as JSON in their HTML pages
  */
 async function fetchLumaEvent(eventUrl: string) {
   try {
-    // Lu.ma's public API endpoint
-    const apiUrl = `https://api.lu.ma/url?url=${encodeURIComponent(eventUrl)}`;
-
-    const response = await fetch(apiUrl, {
+    // Fetch the Lu.ma page directly
+    const response = await fetch(eventUrl, {
       headers: {
-        "Accept": "application/json",
+        "Accept": "text/html",
         "User-Agent": "Mozilla/5.0 (compatible; DalatApp/1.0)",
       },
     });
 
     if (!response.ok) {
-      console.error(`Lu.ma API error: ${response.status}`);
+      console.error(`Lu.ma page fetch error: ${response.status}`);
       return null;
     }
 
-    const data = await response.json();
+    const html = await response.text();
 
-    // Lu.ma returns event data in a specific structure
-    const event = data.event || data;
-    if (!event || !event.name) {
-      console.error("Lu.ma: No event data in response", data);
+    // Extract event data from the page - Lu.ma embeds it as JSON
+    // Look for "event":{...} pattern in the HTML
+    const eventMatch = html.match(/"event":\s*(\{[^}]+(?:\{[^}]*\}[^}]*)*\})/);
+    if (!eventMatch) {
+      console.error("Lu.ma: Could not find event data in page");
       return null;
     }
 
-    // Transform to our expected format
+    // Parse the event JSON (it may be partial, so we extract key fields)
+    const eventJson = eventMatch[1];
+
+    // Extract individual fields using regex (more robust than JSON.parse for partial data)
+    const getName = (json: string) => json.match(/"name":"([^"]+)"/)?.[1];
+    const getField = (json: string, field: string) => {
+      const match = json.match(new RegExp(`"${field}":"([^"]+)"`));
+      return match?.[1];
+    };
+
+    const name = getName(eventJson);
+    if (!name) {
+      console.error("Lu.ma: Could not extract event name");
+      return null;
+    }
+
+    // Also try to get host/organizer info
+    const hostMatch = html.match(/"hosts":\s*\[([^\]]+)\]/);
+    let hostName = null;
+    if (hostMatch) {
+      hostName = hostMatch[1].match(/"name":"([^"]+)"/)?.[1];
+    }
+
+    // Get description - might be in description_md or description
+    const descMatch = html.match(/"description(?:_md)?":"((?:[^"\\]|\\.)*)"/);
+    const description = descMatch?.[1]?.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+
+    // Get location info
+    const locationMatch = html.match(/"geo_address_info":\s*\{([^}]+)\}/);
+    let address = null;
+    let city = null;
+    if (locationMatch) {
+      address = locationMatch[1].match(/"full_address":"([^"]+)"/)?.[1];
+      city = locationMatch[1].match(/"city":"([^"]+)"/)?.[1];
+    }
+
+    const venueName = getField(html, "location_name") || getField(eventJson, "venue");
+
     return {
       url: eventUrl,
-      title: event.name,
-      name: event.name,
-      description: event.description || event.description_md,
-      start: event.start_at,
-      end: event.end_at,
-      startDate: event.start_at,
-      endDate: event.end_at,
-      location: event.geo_address_info?.full_address || event.location_name,
-      venue: event.location_name,
-      address: event.geo_address_info?.full_address,
-      city: event.geo_address_info?.city,
-      latitude: event.geo_latitude,
-      longitude: event.geo_longitude,
-      organizer: event.hosts?.[0]?.name,
-      hostName: event.hosts?.[0]?.name,
-      imageUrl: event.cover_url,
-      coverImage: event.cover_url,
-      attendeeCount: event.guest_count,
-      isFree: !event.ticket_info?.is_paid,
-      price: event.ticket_info?.price_range,
+      title: name,
+      name: name,
+      description: description,
+      start: getField(eventJson, "start_at"),
+      end: getField(eventJson, "end_at"),
+      startDate: getField(eventJson, "start_at"),
+      endDate: getField(eventJson, "end_at"),
+      location: address || venueName,
+      venue: venueName,
+      address: address,
+      city: city,
+      latitude: null,
+      longitude: null,
+      organizer: hostName,
+      hostName: hostName,
+      imageUrl: getField(eventJson, "cover_url"),
+      coverImage: getField(eventJson, "cover_url"),
+      attendeeCount: null,
+      isFree: true, // Default to free
+      price: null,
     };
   } catch (error) {
     console.error("Lu.ma fetch error:", error);

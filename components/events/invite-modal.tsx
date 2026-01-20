@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Send, Loader2, Check, X, UserPlus } from "lucide-react";
+import { Send, Loader2, Check, X, UserPlus, Mail, Users } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +51,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
   const [results, setResults] = useState<InviteResult[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Input mode: email entry or username search
+  const [inputMode, setInputMode] = useState<"email" | "username">("email");
+
   // User search state
   const [userResults, setUserResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -62,8 +65,8 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
 
   const eventUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/events/${eventSlug}`;
 
-  // Detect if input is a username search (starts with @)
-  const isUsernameSearch = inputValue.startsWith("@") && inputValue.length > 1;
+  // Username search is active when in username mode and has input
+  const isUsernameSearch = inputMode === "username" && inputValue.length >= 2;
 
   // Debounced user search
   useEffect(() => {
@@ -80,7 +83,8 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
     setIsSearching(true);
     searchTimeoutRef.current = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/users/search?q=${encodeURIComponent(inputValue)}`);
+        // Don't need @ prefix - just pass the search query directly
+        const response = await fetch(`/api/users/search?q=${encodeURIComponent(inputValue.replace(/^@/, ""))}`);
         const data = await response.json();
         setUserResults(data.users || []);
         setShowDropdown(data.users?.length > 0);
@@ -141,8 +145,8 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
   }, [invitees]);
 
   const handleAddEmails = useCallback(() => {
-    // If searching for user, don't add as email
-    if (isUsernameSearch) return;
+    // If in username mode, don't add as email
+    if (inputMode === "username") return;
     if (!inputValue.trim()) return;
 
     const newEmails = parseEmails(inputValue);
@@ -158,7 +162,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
     }
     setInputValue("");
     setError(null);
-  }, [inputValue, invitees, parseEmails, isUsernameSearch]);
+  }, [inputValue, invitees, parseEmails, inputMode]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     // Handle dropdown navigation
@@ -267,6 +271,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
       setError(null);
       setUserResults([]);
       setShowDropdown(false);
+      setInputMode("email");
     }
   };
 
@@ -301,34 +306,58 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
             />
           </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                {t("orSendEmail")}
-              </span>
-            </div>
+          {/* Mode tabs */}
+          <div className="flex rounded-lg bg-muted p-1 gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                setInputMode("email");
+                setInputValue("");
+                setShowDropdown(false);
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                inputMode === "email"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Mail className="w-4 h-4" />
+              {t("byEmail")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setInputMode("username");
+                setInputValue("");
+                inputRef.current?.focus();
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                inputMode === "username"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              {t("findMember")}
+            </button>
           </div>
 
-          {/* Email/Username input */}
+          {/* Input section */}
           <div className="space-y-2">
-            <Label htmlFor="invite-input">{t("emailAddresses")}</Label>
             <div className="relative flex gap-2">
               <div className="relative flex-1">
                 <Input
                   ref={inputRef}
                   id="invite-input"
                   type="text"
-                  placeholder={t("emailOrUsernamePlaceholder")}
+                  placeholder={inputMode === "email" ? t("emailPlaceholder") : t("usernamePlaceholder")}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   onBlur={() => {
                     // Delay to allow click on dropdown
                     setTimeout(() => {
-                      if (!showDropdown) handleAddEmails();
+                      if (!showDropdown && inputMode === "email") handleAddEmails();
                     }, 150);
                   }}
                   disabled={sending}
@@ -375,17 +404,19 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
                   </div>
                 )}
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddEmails}
-                disabled={!inputValue.trim() || sending || isUsernameSearch}
-              >
-                {t("add")}
-              </Button>
+              {inputMode === "email" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAddEmails}
+                  disabled={!inputValue.trim() || sending}
+                >
+                  {t("add")}
+                </Button>
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {t("emailOrUsernameHint")}
+              {inputMode === "email" ? t("emailHint") : t("usernameHint")}
             </p>
           </div>
 
