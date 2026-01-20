@@ -128,7 +128,7 @@ export async function POST(request: Request) {
 
       return NextResponse.json({
         success: true,
-        title: event?.title || items[0].name || "Event",
+        title: event?.title || (items[0] as { name?: string })?.name || "Event",
         slug: event?.slug,
       });
     } else if (result.skipped > 0) {
