@@ -85,7 +85,7 @@ export async function POST(
   for (const { email, name } of emails) {
     const normalizedEmail = email.toLowerCase().trim();
 
-    // Create invitation record
+    // Try to create invitation record
     const { data: invitation, error: insertError } = await supabase
       .from('event_invitations')
       .insert({
@@ -98,13 +98,33 @@ export async function POST(
       .select('id, token, claimed_by')
       .single();
 
+    let existingInvitation = invitation;
+
+    // If duplicate, fetch the existing invitation to resend notification
     if (insertError) {
-      // Handle duplicate
       if (insertError.code === '23505') {
-        results.push({ email, success: false, error: 'Already invited' });
+        const { data: existing } = await supabase
+          .from('event_invitations')
+          .select('id, token, claimed_by')
+          .eq('event_id', event.id)
+          .eq('email', normalizedEmail)
+          .single();
+
+        if (existing) {
+          existingInvitation = existing;
+        } else {
+          results.push({ email, success: false, error: 'Already invited' });
+          continue;
+        }
       } else {
         results.push({ email, success: false, error: insertError.message });
+        continue;
       }
+    }
+
+    // Send email via Novu (works for both new and existing invitations)
+    if (!existingInvitation) {
+      results.push({ email, success: false, error: 'Failed to create invitation' });
       continue;
     }
 
@@ -115,7 +135,6 @@ export async function POST(
       p_name: name || null,
     });
 
-    // Send email via Novu
     try {
       await notifyEventInvitation(
         normalizedEmail,
@@ -127,16 +146,16 @@ export async function POST(
         event.starts_at,
         event.location_name,
         inviterName,
-        invitation.token
+        existingInvitation.token
       );
 
-      // Update status to sent
+      // Update status to sent (or resent for existing invitations)
       await supabase
         .from('event_invitations')
         .update({ status: 'sent', sent_at: new Date().toISOString() })
-        .eq('id', invitation.id);
+        .eq('id', existingInvitation.id);
 
-      results.push({ email, success: true, token: invitation.token });
+      results.push({ email, success: true, token: existingInvitation.token });
     } catch (error) {
       console.error('Failed to send invite email:', error);
       results.push({ email, success: false, error: 'Failed to send email' });
@@ -160,7 +179,7 @@ export async function POST(
     // Use a synthetic email for the unique constraint (user-based invites don't need real email)
     const syntheticEmail = `user-${userId}@dalat.app`;
 
-    // Create invitation record
+    // Try to create invitation record
     const { data: invitation, error: insertError } = await supabase
       .from('event_invitations')
       .insert({
@@ -174,16 +193,36 @@ export async function POST(
       .select('id, token')
       .single();
 
+    let existingInvitation = invitation;
+
+    // If duplicate, fetch the existing invitation to resend notification
     if (insertError) {
       if (insertError.code === '23505') {
-        results.push({ userId, username, success: false, error: 'Already invited' });
+        const { data: existing } = await supabase
+          .from('event_invitations')
+          .select('id, token')
+          .eq('event_id', event.id)
+          .eq('email', syntheticEmail)
+          .single();
+
+        if (existing) {
+          existingInvitation = existing;
+        } else {
+          results.push({ userId, username, success: false, error: 'Already invited' });
+          continue;
+        }
       } else {
         results.push({ userId, username, success: false, error: insertError.message });
+        continue;
       }
+    }
+
+    // Send in-app notification (works for both new and existing invitations)
+    if (!existingInvitation) {
+      results.push({ userId, username, success: false, error: 'Failed to create invitation' });
       continue;
     }
 
-    // Send in-app notification
     try {
       const inviteeLocale = (inviteeProfile.locale as Locale) || 'en';
       await notifyUserInvitation(
@@ -196,13 +235,13 @@ export async function POST(
         inviterName
       );
 
-      // Update status to sent
+      // Update status to sent (or resent for existing invitations)
       await supabase
         .from('event_invitations')
         .update({ status: 'sent', sent_at: new Date().toISOString() })
-        .eq('id', invitation.id);
+        .eq('id', existingInvitation.id);
 
-      results.push({ userId, username, success: true, token: invitation.token });
+      results.push({ userId, username, success: true, token: existingInvitation.token });
     } catch (error) {
       console.error('Failed to send user invite notification:', error);
       results.push({ userId, username, success: false, error: 'Failed to send notification' });
