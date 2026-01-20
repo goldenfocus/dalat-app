@@ -201,13 +201,21 @@ export function AdminImportPage() {
         setUrl("");
         loadHistory();
       } else {
+        // Show detailed error from API, including details field if present
+        const errorMsg = data.error || "Import failed";
+        const fullMessage = data.details
+          ? `${errorMsg}\n\nDetails: ${data.details}`
+          : errorMsg;
         setResult({
           success: false,
-          message: data.error || "Import failed",
+          message: fullMessage,
         });
       }
-    } catch {
-      setResult({ success: false, message: "Network error" });
+    } catch (err) {
+      setResult({
+        success: false,
+        message: `Network error: ${err instanceof Error ? err.message : "Failed to connect to server"}`,
+      });
     } finally {
       setLoading(false);
     }
@@ -239,14 +247,18 @@ export function AdminImportPage() {
         results.push({
           url: importUrl,
           success: response.ok,
-          message: response.ok ? data.title : data.error,
+          message: response.ok
+            ? data.title
+            : data.details
+              ? `${data.error}: ${data.details}`
+              : data.error,
           eventSlug: data.slug,
         });
-      } catch {
+      } catch (err) {
         results.push({
           url: importUrl,
           success: false,
-          message: "Network error",
+          message: `Network error: ${err instanceof Error ? err.message : "Unknown"}`,
         });
       }
 
