@@ -604,6 +604,92 @@ export async function scheduleFeedbackRequest(
 }
 
 // ============================================
+// In-App Event Invitation (for existing users)
+// ============================================
+
+const userInviteTranslations = {
+  subject: {
+    en: (inviter: string, title: string) => `${inviter} invited you to "${title}"`,
+    fr: (inviter: string, title: string) => `${inviter} vous invite à "${title}"`,
+    vi: (inviter: string, title: string) => `${inviter} mời bạn tham gia "${title}"`,
+  },
+  body: {
+    en: (date: string, time: string, location: string | null) =>
+      `${date} at ${time}${location ? ` • ${location}` : ''}`,
+    fr: (date: string, time: string, location: string | null) =>
+      `${date} à ${time}${location ? ` • ${location}` : ''}`,
+    vi: (date: string, time: string, location: string | null) =>
+      `${date} lúc ${time}${location ? ` • ${location}` : ''}`,
+  },
+  buttons: {
+    viewEvent: { en: 'View event', fr: 'Voir l\'événement', vi: 'Xem sự kiện' },
+  },
+};
+
+/**
+ * Send in-app invitation notification to an existing user
+ * Uses Novu inbox + web push (no email)
+ */
+export async function notifyUserInvitation(
+  userId: string,
+  locale: Locale,
+  eventTitle: string,
+  eventSlug: string,
+  startsAt: string,
+  locationName: string | null,
+  inviterName: string
+) {
+  const notifLocale = getNotificationLocale(locale);
+  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
+
+  // Format event date/time for display
+  const eventDate = new Date(startsAt);
+  const formattedDate = eventDate.toLocaleDateString(
+    notifLocale === 'vi' ? 'vi-VN' : notifLocale === 'fr' ? 'fr-FR' : 'en-US',
+    {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'Asia/Ho_Chi_Minh',
+    }
+  );
+  const formattedTime = eventDate.toLocaleTimeString(
+    notifLocale === 'vi' ? 'vi-VN' : notifLocale === 'fr' ? 'fr-FR' : 'en-US',
+    {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Ho_Chi_Minh',
+    }
+  );
+
+  const subject = userInviteTranslations.subject[notifLocale](inviterName, eventTitle);
+  const body = userInviteTranslations.body[notifLocale](formattedDate, formattedTime, locationName);
+
+  await Promise.all([
+    getNovu().trigger('user-event-invitation', {
+      to: { subscriberId: userId },
+      payload: {
+        subject,
+        body,
+        eventTitle,
+        eventSlug,
+        inviterName,
+        primaryActionLabel: userInviteTranslations.buttons.viewEvent[notifLocale],
+        primaryActionUrl: eventUrl,
+      },
+    }),
+    sendPushToUser(userId, {
+      title: subject,
+      body,
+      url: eventUrl,
+      tag: `invite-${eventSlug}`,
+      requireInteraction: true,
+    }),
+  ]);
+}
+
+// ============================================
 // Tribe Notifications
 // ============================================
 

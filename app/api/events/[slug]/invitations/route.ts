@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyEventInvitation } from '@/lib/novu';
+import { notifyEventInvitation, notifyUserInvitation } from '@/lib/novu';
 import type { Locale, InviteQuotaCheck } from '@/lib/types';
 
 interface InviteRequest {
-  emails: Array<{ email: string; name?: string }>;
+  emails?: Array<{ email: string; name?: string }>;
+  users?: Array<{ userId: string; username: string }>;
 }
 
 // POST /api/events/[slug]/invitations - Send invitations
@@ -37,16 +38,17 @@ export async function POST(
   }
 
   const body: InviteRequest = await request.json();
-  const { emails } = body;
+  const { emails = [], users = [] } = body;
 
-  if (!emails || !Array.isArray(emails) || emails.length === 0) {
-    return NextResponse.json({ error: 'emails array required' }, { status: 400 });
+  const totalInvites = emails.length + users.length;
+  if (totalInvites === 0) {
+    return NextResponse.json({ error: 'emails or users array required' }, { status: 400 });
   }
 
   // Check quota before sending
   const { data: quotaCheck } = await supabase.rpc('check_invite_quota', {
     p_user_id: user.id,
-    p_count: emails.length,
+    p_count: totalInvites,
   }) as { data: InviteQuotaCheck | null };
 
   if (!quotaCheck?.allowed) {
@@ -66,11 +68,11 @@ export async function POST(
     .single();
 
   const inviterName = profile?.display_name || profile?.username || 'Someone';
-  const locale = (profile?.locale as Locale) || 'en';
+  const inviterLocale = (profile?.locale as Locale) || 'en';
 
-  const results: Array<{ email: string; success: boolean; error?: string; token?: string }> = [];
+  const results: Array<{ email?: string; userId?: string; username?: string; success: boolean; error?: string; token?: string }> = [];
 
-  // Process each email
+  // Process each email invite
   for (const { email, name } of emails) {
     const normalizedEmail = email.toLowerCase().trim();
 
@@ -109,7 +111,7 @@ export async function POST(
       await notifyEventInvitation(
         normalizedEmail,
         name || null,
-        locale,
+        inviterLocale,
         event.title,
         event.slug,
         event.description,
@@ -129,6 +131,72 @@ export async function POST(
     } catch (error) {
       console.error('Failed to send invite email:', error);
       results.push({ email, success: false, error: 'Failed to send email' });
+    }
+  }
+
+  // Process each user invite (existing users by username)
+  for (const { userId, username } of users) {
+    // Get the invitee's profile for their locale
+    const { data: inviteeProfile } = await supabase
+      .from('profiles')
+      .select('id, locale, display_name')
+      .eq('id', userId)
+      .single();
+
+    if (!inviteeProfile) {
+      results.push({ userId, username, success: false, error: 'User not found' });
+      continue;
+    }
+
+    // Use a synthetic email for the unique constraint (user-based invites don't need real email)
+    const syntheticEmail = `user-${userId}@dalat.app`;
+
+    // Create invitation record
+    const { data: invitation, error: insertError } = await supabase
+      .from('event_invitations')
+      .insert({
+        event_id: event.id,
+        invited_by: user.id,
+        email: syntheticEmail,
+        name: inviteeProfile.display_name || username,
+        status: 'pending',
+        claimed_by: userId, // Pre-link to the user
+      })
+      .select('id, token')
+      .single();
+
+    if (insertError) {
+      if (insertError.code === '23505') {
+        results.push({ userId, username, success: false, error: 'Already invited' });
+      } else {
+        results.push({ userId, username, success: false, error: insertError.message });
+      }
+      continue;
+    }
+
+    // Send in-app notification
+    try {
+      const inviteeLocale = (inviteeProfile.locale as Locale) || 'en';
+      await notifyUserInvitation(
+        userId,
+        inviteeLocale,
+        event.title,
+        event.slug,
+        event.starts_at,
+        event.location_name,
+        inviterName
+      );
+
+      // Update status to sent
+      await supabase
+        .from('event_invitations')
+        .update({ status: 'sent', sent_at: new Date().toISOString() })
+        .eq('id', invitation.id);
+
+      results.push({ userId, username, success: true, token: invitation.token });
+    } catch (error) {
+      console.error('Failed to send user invite notification:', error);
+      results.push({ userId, username, success: false, error: 'Failed to send notification' });
     }
   }
 
