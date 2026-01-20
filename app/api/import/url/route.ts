@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       actorId = "newpo~eventbrite-scraper";
     } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
-      actorId = "lexis-solutions/lu-ma-scraper";
+      actorId = "lexis-solutions~lu-ma-scraper";
     } else {
       return NextResponse.json(
         { error: "Unsupported URL. Supported: facebook.com, eventbrite.com, lu.ma/luma.com" },
