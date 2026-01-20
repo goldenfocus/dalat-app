@@ -674,23 +674,17 @@ export async function notifyUserInvitation(
 
   console.log('[notifyUserInvitation] Sending notification:', { subject, body, userId, eventSlug });
 
-  // Use dedicated 'event-invitation-user' workflow for in-app user invitations
-  // This workflow should be configured in Novu dashboard with inbox notification enabled
+  // Reuse existing 'rsvp' workflow (already configured and working)
+  // It accepts the same payload structure: subject, body, primaryActionLabel, primaryActionUrl
   try {
     await Promise.all([
-      getNovu().trigger('event-invitation-user', {
+      getNovu().trigger('rsvp', {
         to: { subscriberId: userId },
         payload: {
           subject,
           body,
           primaryActionLabel: userInviteTranslations.buttons.viewEvent[notifLocale],
           primaryActionUrl: eventUrl,
-          eventTitle,
-          eventSlug,
-          inviterName,
-          formattedDate,
-          formattedTime,
-          locationName: locationName || '',
         },
       }),
       sendPushToUser(userId, {
