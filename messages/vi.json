@@ -64,7 +64,8 @@
       "viewAll": "Xem tất cả kết quả cho \"{query}\"",
       "searchFor": "Tìm kiếm \"{query}\""
     },
-    "browseArchive": "Xem lưu trữ"
+    "browseArchive": "Xem lưu trữ",
+    "seeAllUpcoming": "Xem tất cả sự kiện sắp tới"
   },
   "auth": {
     "welcomeTitle": "Chào mừng đến với ĐàLạt.app",
@@ -962,5 +963,16 @@
     "noPosts": "Chưa có bài viết. Quay lại sớm nhé!",
     "backToBlog": "Quay lại Blog",
     "translated": "Đã dịch"
+  },
+  "upcomingEvents": {
+    "title": "Sự kiện sắp tới tại Đà Lạt",
+    "titlePage": "Sự kiện sắp tới - Trang {page}",
+    "description": "Xem tất cả sự kiện, workshop và hoạt động sắp tới tại Đà Lạt, Việt Nam.",
+    "breadcrumb": "Sự kiện sắp tới",
+    "backToHome": "Quay lại",
+    "noEvents": "Chưa có sự kiện sắp tới",
+    "eventCount": "{count, plural, one {# sự kiện sắp tới} other {# sự kiện sắp tới}}",
+    "createEvent": "Tạo sự kiện",
+    "seeAll": "Xem tất cả sự kiện sắp tới"
   }
 }

@@ -681,28 +681,16 @@ export async function notifyUserInvitation(
 
   console.log('[notifyUserInvitation] Sending notification:', { subject, body, userId, eventSlug });
 
-  // Reuse existing 'rsvp' workflow (already configured and working)
-  // It accepts the same payload structure: subject, body, primaryActionLabel, primaryActionUrl
+  // Send web push notification only (skip Novu In-App to avoid configuration issues)
   try {
-    await Promise.all([
-      getNovu().trigger('rsvp', {
-        to: { subscriberId: userId },
-        payload: {
-          subject,
-          body,
-          primaryActionLabel: userInviteTranslations.buttons.viewEvent[notifLocale],
-          primaryActionUrl: eventUrl,
-        },
-      }),
-      sendPushToUser(userId, {
-        title: subject,
-        body,
-        url: eventUrl,
-        tag: `invite-${eventSlug}`,
-        requireInteraction: true,
-      }),
-    ]);
-    console.log('[notifyUserInvitation] Notification sent successfully');
+    await sendPushToUser(userId, {
+      title: subject,
+      body,
+      url: eventUrl,
+      tag: `invite-${eventSlug}`,
+      requireInteraction: true,
+    });
+    console.log('[notifyUserInvitation] Push notification sent successfully');
   } catch (error) {
     console.error('[notifyUserInvitation] Failed to send notification:', error);
     throw error;

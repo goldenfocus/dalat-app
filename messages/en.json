@@ -64,7 +64,8 @@
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
     },
-    "browseArchive": "Browse archive by month"
+    "browseArchive": "Browse archive by month",
+    "seeAllUpcoming": "See all upcoming events"
   },
   "auth": {
     "welcomeTitle": "Welcome to ĐàLạt.app",
@@ -1062,5 +1063,16 @@
     "noPosts": "No posts yet. Check back soon!",
     "backToBlog": "Back to Blog",
     "translated": "Translated"
+  },
+  "upcomingEvents": {
+    "title": "Upcoming Events in Đà Lạt",
+    "titlePage": "Upcoming Events - Page {page}",
+    "description": "Browse all upcoming events, workshops, and gatherings in Đà Lạt, Vietnam.",
+    "breadcrumb": "Upcoming Events",
+    "backToHome": "Back",
+    "noEvents": "No upcoming events yet",
+    "eventCount": "{count, plural, one {# upcoming event} other {# upcoming events}}",
+    "createEvent": "Create an event",
+    "seeAll": "See all upcoming events"
   }
 }
