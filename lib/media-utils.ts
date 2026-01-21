@@ -13,7 +13,7 @@ export function isDefaultImageUrl(url: string | null): boolean {
 
 export function isVideoUrl(url: string | null): boolean {
   if (!url) return false;
-  return /\.(mp4|webm)$/i.test(url);
+  return /\.(mp4|webm|mov)$/i.test(url);
 }
 
 export function isGifUrl(url: string | null): boolean {
@@ -41,11 +41,11 @@ export const MEDIA_SIZE_LIMITS = {
 export const ALLOWED_MEDIA_TYPES = {
   image: ["image/jpeg", "image/png", "image/webp"],
   gif: ["image/gif"],
-  video: ["video/mp4", "video/webm"],
+  video: ["video/mp4", "video/webm", "video/quicktime"], // MOV uploads directly now
   // Formats that require conversion before upload
   convertible: {
     image: ["image/heic", "image/heif"],
-    video: ["video/quicktime"], // MOV
+    video: [] as const, // No video conversion needed - MOV plays in modern browsers
   },
 } as const;
 
@@ -59,17 +59,14 @@ export const ALL_ALLOWED_TYPES = [
 ];
 
 // Check if file needs conversion before upload
-export function needsConversion(file: File): "heic" | "mov" | null {
+// Note: MOV files now upload directly without conversion (modern browsers handle them)
+export function needsConversion(file: File): "heic" | null {
   if (ALLOWED_MEDIA_TYPES.convertible.image.includes(file.type as never)) {
     return "heic";
-  }
-  if (ALLOWED_MEDIA_TYPES.convertible.video.includes(file.type as never)) {
-    return "mov";
   }
   // Also check file extension as fallback (some browsers report wrong MIME)
   const ext = file.name.split(".").pop()?.toLowerCase();
   if (ext === "heic" || ext === "heif") return "heic";
-  if (ext === "mov") return "mov";
   return null;
 }
 

@@ -190,6 +190,7 @@ async function pollConversionJob(
 
 /**
  * Convert file if needed, returns original file if no conversion required
+ * Note: MOV files now upload directly without conversion (modern browsers handle them)
  */
 export async function convertIfNeeded(
   file: File,
@@ -201,9 +202,8 @@ export async function convertIfNeeded(
     file.type === "image/heif" ||
     ext === "heic" ||
     ext === "heif";
-  const isMov = file.type === "video/quicktime" || ext === "mov";
 
-  console.log("[Convert] Checking file:", file.name, "type:", file.type, "ext:", ext, "isHeic:", isHeic, "isMov:", isMov);
+  console.log("[Convert] Checking file:", file.name, "type:", file.type, "ext:", ext, "isHeic:", isHeic);
 
   if (isHeic) {
     onProgress?.("Converting HEIC to JPEG...");
@@ -211,11 +211,6 @@ export async function convertIfNeeded(
     const result = await convertHeicToJpeg(file);
     console.log("[Convert] HEIC conversion result:", result.name, result.type, result.size);
     return result;
-  }
-
-  if (isMov) {
-    console.log("[Convert] Starting MOV conversion...");
-    return convertMovToMp4(file, onProgress);
   }
 
   console.log("[Convert] No conversion needed, returning original");
