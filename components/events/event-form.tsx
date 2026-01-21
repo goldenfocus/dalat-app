@@ -404,6 +404,10 @@ export function EventForm({
     const locationName = formData.get("location_name") as string;
     const address = formData.get("address") as string;
     const googleMapsUrl = formData.get("google_maps_url") as string;
+    const latitudeStr = formData.get("latitude") as string;
+    const longitudeStr = formData.get("longitude") as string;
+    const latitude = latitudeStr ? parseFloat(latitudeStr) : null;
+    const longitude = longitudeStr ? parseFloat(longitudeStr) : null;
     const externalChatUrl = formData.get("external_chat_url") as string;
     const onlineLink = formData.get("online_link") as string;
     const capacityStr = formData.get("capacity") as string;
@@ -441,6 +445,8 @@ export function EventForm({
           location_name: locationName || null,
           address: address || null,
           google_maps_url: googleMapsUrl || null,
+          latitude,
+          longitude,
           external_chat_url: externalChatUrl || null,
           is_online: isOnline,
           online_link: isOnline ? (onlineLink || null) : null,
@@ -495,6 +501,8 @@ export function EventForm({
               location_name: locationName || null,
               address: address || null,
               google_maps_url: googleMapsUrl || null,
+              latitude,
+              longitude,
               external_chat_url: externalChatUrl || null,
               is_online: isOnline,
               online_link: isOnline ? (onlineLink || null) : null,
@@ -543,6 +551,8 @@ export function EventForm({
               location_name: locationName || null,
               address: address || null,
               google_maps_url: googleMapsUrl || null,
+              latitude,
+              longitude,
               external_chat_url: externalChatUrl || null,
               is_online: isOnline,
               online_link: isOnline ? (onlineLink || null) : null,
@@ -768,6 +778,8 @@ export function EventForm({
                     name: event.location_name,
                     address: event.address || "",
                     googleMapsUrl: event.google_maps_url || "",
+                    latitude: event.latitude ?? null,
+                    longitude: event.longitude ?? null,
                   }
                 : copyDefaults?.locationName
                   ? {
@@ -775,6 +787,8 @@ export function EventForm({
                       name: copyDefaults.locationName,
                       address: copyDefaults.address,
                       googleMapsUrl: copyDefaults.googleMapsUrl,
+                      latitude: null,
+                      longitude: null,
                     }
                   : null
             }

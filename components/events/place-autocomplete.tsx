@@ -10,6 +10,8 @@ interface Place {
   name: string;
   address: string;
   googleMapsUrl: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 interface PlaceAutocompleteProps {
@@ -188,13 +190,13 @@ export function PlaceAutocomplete({ onPlaceSelect, defaultValue }: PlaceAutocomp
     setIsOpen(false);
 
     try {
-      // Use new Place API to get details
+      // Use new Place API to get details including location
       const place = new google.maps.places.Place({
         id: suggestion.placePrediction.placeId,
       });
 
       await place.fetchFields({
-        fields: ["displayName", "formattedAddress", "googleMapsURI"],
+        fields: ["displayName", "formattedAddress", "googleMapsURI", "location"],
       });
 
       // Create new session token for next search
@@ -205,6 +207,8 @@ export function PlaceAutocomplete({ onPlaceSelect, defaultValue }: PlaceAutocomp
         name: place.displayName || suggestion.placePrediction.mainText?.text || "",
         address: place.formattedAddress || suggestion.placePrediction.text?.text || "",
         googleMapsUrl: place.googleMapsURI || `https://www.google.com/maps/place/?q=place_id:${suggestion.placePrediction.placeId}`,
+        latitude: place.location?.lat() ?? null,
+        longitude: place.location?.lng() ?? null,
       };
 
       setQuery(selectedPlaceData.name);
@@ -294,6 +298,8 @@ export function PlaceAutocomplete({ onPlaceSelect, defaultValue }: PlaceAutocomp
       <input type="hidden" name="location_name" value={selectedPlace?.name || ""} />
       <input type="hidden" name="address" value={selectedPlace?.address || ""} />
       <input type="hidden" name="google_maps_url" value={selectedPlace?.googleMapsUrl || ""} />
+      <input type="hidden" name="latitude" value={selectedPlace?.latitude ?? ""} />
+      <input type="hidden" name="longitude" value={selectedPlace?.longitude ?? ""} />
     </div>
   );
 }

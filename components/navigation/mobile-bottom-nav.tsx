@@ -2,23 +2,23 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { BookOpen, Film, Plus, User, Video } from "lucide-react";
+import { Calendar, MapPin, Plus, User, Video } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 import { GoLiveModal } from "@/components/streaming/GoLiveModal";
 
 const NAV_ITEMS = [
   {
-    key: "moments",
-    href: "/moments",
-    icon: Film,
-    labelKey: "moments",
+    key: "map",
+    href: "/map",
+    icon: MapPin,
+    labelKey: "map",
   },
   {
-    key: "blog",
-    href: "/blog",
-    icon: BookOpen,
-    labelKey: "blog",
+    key: "calendar",
+    href: "/calendar",
+    icon: Calendar,
+    labelKey: "calendar",
   },
   {
     key: "live",

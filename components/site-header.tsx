@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Film, Plus } from "lucide-react";
+import { Calendar, MapPin, Plus } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButton } from "@/components/auth-button";
 import { LocalePicker } from "@/components/locale-picker";
@@ -22,11 +22,18 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
         </div>
         <div className="flex items-center gap-1">
           <Link
-            href="/moments"
+            href="/map"
             className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
-            aria-label="Moments"
+            aria-label="Map"
           >
-            <Film className="w-5 h-5" />
+            <MapPin className="w-5 h-5" />
+          </Link>
+          <Link
+            href="/calendar"
+            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+            aria-label="Calendar"
+          >
+            <Calendar className="w-5 h-5" />
           </Link>
           <Link
             href="/events/new"

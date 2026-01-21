@@ -11,6 +11,8 @@ interface CreateSeriesRequest {
   location_name?: string;
   address?: string;
   google_maps_url?: string;
+  latitude?: number;
+  longitude?: number;
   external_chat_url?: string;
   is_online?: boolean;
   online_link?: string;
@@ -103,6 +105,8 @@ export async function POST(request: Request) {
         location_name: body.location_name?.trim() || null,
         address: body.address?.trim() || null,
         google_maps_url: body.google_maps_url || null,
+        latitude: body.latitude ?? null,
+        longitude: body.longitude ?? null,
         external_chat_url: body.external_chat_url || null,
         is_online: body.is_online || false,
         online_link: body.is_online ? (body.online_link || null) : null,
@@ -166,6 +170,8 @@ export async function POST(request: Request) {
         location_name: body.location_name?.trim() || null,
         address: body.address?.trim() || null,
         google_maps_url: body.google_maps_url || null,
+        latitude: body.latitude ?? null,
+        longitude: body.longitude ?? null,
         external_chat_url: body.external_chat_url || null,
         is_online: body.is_online || false,
         online_link: body.is_online ? (body.online_link || null) : null,
