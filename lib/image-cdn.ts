@@ -196,9 +196,11 @@ export function cloudflareLoader({
     return src;
   }
 
+  // Default quality 60 for faster LCP on slow networks
+  // Still acceptable visual quality, but ~30% smaller files
   const cfOptions = [
     `width=${width}`,
-    `quality=${quality || 75}`,
+    `quality=${quality || 60}`,
     "format=auto",
     "fit=scale-down",
     "metadata=none",
