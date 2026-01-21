@@ -35,6 +35,22 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "ĐàLạt.app",
     url: siteUrl,
+    title: "ĐàLạt.app · Events · People · Moments",
+    description: "Discover and organize events in Đà Lạt",
+    images: [
+      {
+        url: `${siteUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "ĐàLạt.app · Events · People · Moments · Love",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ĐàLạt.app · Events · People · Moments",
+    description: "Discover and organize events in Đà Lạt",
+    images: [`${siteUrl}/og-image.png`],
   },
 };
 
