@@ -534,38 +534,59 @@ export function SponsorForm({
                           sponsor.name.toLowerCase().includes(searchQuery.toLowerCase())
                         )
                         .map((sponsor) => (
-                          <button
+                          <div
                             key={sponsor.id}
-                            type="button"
-                            onClick={() => handleAddExistingSponsor(sponsor)}
-                            className="w-full flex items-center gap-3 p-3 border rounded-lg hover:bg-accent transition-colors text-left"
+                            className="relative flex items-center gap-3 p-3 border rounded-lg hover:bg-accent transition-colors group"
                           >
-                            {/* Logo */}
-                            <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                              {sponsor.logo_url ? (
-                                <img
-                                  src={sponsor.logo_url}
-                                  alt={sponsor.name}
-                                  className="w-full h-full object-contain"
-                                />
-                              ) : (
-                                <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                              )}
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleAddExistingSponsor(sponsor)}
+                              className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                            >
+                              {/* Logo */}
+                              <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                                {sponsor.logo_url ? (
+                                  <img
+                                    src={sponsor.logo_url}
+                                    alt={sponsor.name}
+                                    className="w-full h-full object-contain"
+                                  />
+                                ) : (
+                                  <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                                )}
+                              </div>
 
-                            {/* Name & link */}
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{sponsor.name}</p>
-                              {sponsor.website_url && (
-                                <p className="text-xs text-muted-foreground truncate">
-                                  {sponsor.website_url}
-                                </p>
-                              )}
-                            </div>
+                              {/* Name & link */}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{sponsor.name}</p>
+                                {sponsor.website_url && (
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {sponsor.website_url}
+                                  </p>
+                                )}
+                              </div>
 
-                            {/* Add icon */}
-                            <Plus className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                          </button>
+                              {/* Add icon */}
+                              <Plus className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                            </button>
+
+                            {/* Admin delete button */}
+                            {isAdmin && (
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteSponsor(sponsor, e)}
+                                disabled={deletingId === sponsor.id}
+                                className="flex-shrink-0 p-2 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+                                title="Delete sponsor from master list"
+                              >
+                                {deletingId === sponsor.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <X className="w-4 h-4" />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         ))}
 
                       {existingSponsors.filter(sponsor =>
