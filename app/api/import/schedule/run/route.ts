@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 const APIFY_API = "https://api.apify.com/v2";
 const TASK_NAME = "dalat-venue-events-daily";
@@ -8,10 +9,44 @@ interface ApifyTask {
   name: string;
 }
 
+const RATE_LIMIT = 5; // requests per window
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
 /**
  * Trigger an immediate run of the scraping task
  */
 export async function POST() {
+  // Auth check
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  // Database-backed rate limiting
+  const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
+    p_action: 'import_schedule_run',
+    p_limit: RATE_LIMIT,
+    p_window_ms: RATE_WINDOW_MS,
+  });
+
+  if (rateError) {
+    console.error("[import/schedule/run] Rate limit check failed:", rateError);
+  } else if (!rateCheck?.allowed) {
+    return NextResponse.json(
+      {
+        error: "Rate limit exceeded. Try again later.",
+        remaining: 0,
+        reset_at: rateCheck?.reset_at,
+      },
+      { status: 429 }
+    );
+  }
+
   try {
     const apiToken = process.env.APIFY_API_TOKEN;
     if (!apiToken) {
@@ -76,7 +111,7 @@ export async function POST() {
   } catch (error) {
     console.error("Run trigger error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal error" },
       { status: 500 }
     );
   }

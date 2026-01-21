@@ -1,11 +1,46 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 // Gemini image generation can take 30-60s
 export const maxDuration = 60;
 
+const RATE_LIMIT = 5; // requests per window
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
 export async function POST(request: Request) {
   try {
+    // Auth check
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Database-backed rate limiting
+    const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
+      p_action: 'generate_flyer',
+      p_limit: RATE_LIMIT,
+      p_window_ms: RATE_WINDOW_MS,
+    });
+
+    if (rateError) {
+      console.error("[generate-flyer] Rate limit check failed:", rateError);
+    } else if (!rateCheck?.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded. Try again in an hour.",
+          remaining: 0,
+          reset_at: rateCheck?.reset_at,
+        },
+        { status: 429 }
+      );
+    }
+
     const { title, customPrompt } = await request.json();
 
     if (!title?.trim() && !customPrompt?.trim()) {
@@ -108,9 +143,8 @@ Aspect ratio: 2:1 landscape orientation.`;
       }
     }
 
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: `Failed to generate flyer image: ${errorMessage}` },
+      { error: "Failed to generate flyer image" },
       { status: 500 }
     );
   }

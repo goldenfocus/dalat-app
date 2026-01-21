@@ -179,7 +179,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Internal error",
       },
       { status: 500 }
     );

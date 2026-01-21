@@ -83,9 +83,9 @@ export async function GET() {
           : `⚠️ No Facebook/event actors found. ${availableActors.length} total actors available.`,
     });
   } catch (error) {
+    console.error("Apify test error:", error);
     return NextResponse.json({
       error: "Failed to connect to Apify API",
-      details: error instanceof Error ? error.message : "Unknown error",
       configured: true,
       tokenValid: false,
     });

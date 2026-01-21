@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateCoverImage, refineCoverImage } from "@/lib/blog/cover-generator";
 
+const RATE_LIMIT = 10; // requests per window
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
 export async function POST(request: Request) {
   try {
     // Verify user is admin
@@ -28,6 +31,26 @@ export async function POST(request: Request) {
 
     if (!profile || !canBlog) {
       return NextResponse.json({ error: "Blog access required" }, { status: 403 });
+    }
+
+    // Database-backed rate limiting
+    const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
+      p_action: 'blog_generate_cover',
+      p_limit: RATE_LIMIT,
+      p_window_ms: RATE_WINDOW_MS,
+    });
+
+    if (rateError) {
+      console.error("[blog/generate-cover] Rate limit check failed:", rateError);
+    } else if (!rateCheck?.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded. Try again later.",
+          remaining: 0,
+          reset_at: rateCheck?.reset_at,
+        },
+        { status: 429 }
+      );
     }
 
     // Get inputs
@@ -76,7 +99,7 @@ Style guidelines:
   } catch (error) {
     console.error("[blog/generate-cover] Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Cover generation failed" },
+      { error: "Cover generation failed" },
       { status: 500 }
     );
   }

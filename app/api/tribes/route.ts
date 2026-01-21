@@ -22,7 +22,10 @@ export async function GET(request: Request) {
   if (search) query = query.ilike('name', `%${search}%`);
 
   const { data: tribes, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("Tribes fetch error:", error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
 
   return NextResponse.json({ tribes });
 }
@@ -55,7 +58,10 @@ export async function POST(request: Request) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("Tribe create error:", error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
 
   await supabase.from('tribe_members').insert({ tribe_id: tribe.id, user_id: user.id, role: 'leader' });
 

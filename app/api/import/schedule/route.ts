@@ -89,7 +89,7 @@ export async function GET() {
   } catch (error) {
     console.error("Schedule status error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal error" },
       { status: 500 }
     );
   }
@@ -245,7 +245,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Schedule update error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal error" },
       { status: 500 }
     );
   }

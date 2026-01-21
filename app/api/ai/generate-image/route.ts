@@ -139,12 +139,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "AI generation limit reached. Try again later." }, { status: 429 });
       }
       if (error.message.includes("not configured")) {
-        return NextResponse.json({ error: error.message }, { status: 503 });
+        return NextResponse.json({ error: "AI service not configured" }, { status: 503 });
       }
     }
 
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Generation failed" },
+      { error: "Generation failed" },
       { status: 500 }
     );
   }

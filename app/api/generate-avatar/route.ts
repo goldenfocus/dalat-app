@@ -171,9 +171,8 @@ Important:
       }
     }
 
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: `Failed to generate avatar: ${errorMessage}` },
+      { error: "Failed to generate avatar" },
       { status: 500 }
     );
   }

@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 // Allow longer execution for video conversion polling
 export const maxDuration = 60;
 
 const CLOUDCONVERT_API_KEY = process.env.CLOUDCONVERT_API_KEY;
 const CLOUDCONVERT_API_URL = "https://api.cloudconvert.com/v2";
+
+const RATE_LIMIT = 10; // requests per window
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 interface CloudConvertTask {
   id: string;
@@ -28,6 +32,37 @@ interface CloudConvertJob {
  * POST: Create a new conversion job and return upload URL
  */
 export async function POST(request: NextRequest) {
+  // Auth check
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  // Database-backed rate limiting
+  const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
+    p_action: 'convert_video',
+    p_limit: RATE_LIMIT,
+    p_window_ms: RATE_WINDOW_MS,
+  });
+
+  if (rateError) {
+    console.error("[convert-video] Rate limit check failed:", rateError);
+  } else if (!rateCheck?.allowed) {
+    return NextResponse.json(
+      {
+        error: "Rate limit exceeded. Try again later.",
+        remaining: 0,
+        reset_at: rateCheck?.reset_at,
+      },
+      { status: 429 }
+    );
+  }
+
   if (!CLOUDCONVERT_API_KEY) {
     return NextResponse.json(
       { error: "Video conversion not configured" },
@@ -134,6 +169,17 @@ export async function POST(request: NextRequest) {
  * GET: Check job status and return download URL when complete
  */
 export async function GET(request: NextRequest) {
+  // Auth check (no rate limiting for status checks - they're polling)
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
   if (!CLOUDCONVERT_API_KEY) {
     return NextResponse.json(
       { error: "Video conversion not configured" },

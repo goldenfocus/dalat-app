@@ -86,7 +86,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Apify webhook error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal error" },
       { status: 500 }
     );
   }

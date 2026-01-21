@@ -20,14 +20,14 @@ export async function GET() {
 
     if (error) {
       console.error("History fetch error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "Internal error" }, { status: 500 });
     }
 
     return NextResponse.json({ events: events || [] });
   } catch (error) {
     console.error("History error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal error" },
       { status: 500 }
     );
   }

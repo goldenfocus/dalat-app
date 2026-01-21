@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const convert = require("heic-convert");
@@ -6,11 +7,45 @@ const convert = require("heic-convert");
 // Allow larger files and longer execution for HEIC conversion
 export const maxDuration = 60;
 
+const RATE_LIMIT = 30; // requests per window
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
 /**
  * POST: Convert HEIC/HEIF to JPEG using heic-convert (pure JS)
  * Accepts multipart form data with a "file" field
  */
 export async function POST(request: NextRequest) {
+  // Auth check
+  const supabase = await createClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  // Database-backed rate limiting
+  const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
+    p_action: 'convert_heic',
+    p_limit: RATE_LIMIT,
+    p_window_ms: RATE_WINDOW_MS,
+  });
+
+  if (rateError) {
+    console.error("[convert-heic] Rate limit check failed:", rateError);
+  } else if (!rateCheck?.allowed) {
+    return NextResponse.json(
+      {
+        error: "Rate limit exceeded. Try again later.",
+        remaining: 0,
+        reset_at: rateCheck?.reset_at,
+      },
+      { status: 429 }
+    );
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
@@ -70,10 +105,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("[API] HEIC conversion error:", error);
-
-    const message =
-      error instanceof Error ? error.message : "Conversion failed";
-
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Conversion failed" }, { status: 500 });
   }
 }

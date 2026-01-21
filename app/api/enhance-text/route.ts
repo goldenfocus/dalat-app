@@ -1,8 +1,43 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+const RATE_LIMIT = 20; // requests per window
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 export async function POST(request: Request) {
   try {
+    // Auth check
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Database-backed rate limiting
+    const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
+      p_action: 'enhance_text',
+      p_limit: RATE_LIMIT,
+      p_window_ms: RATE_WINDOW_MS,
+    });
+
+    if (rateError) {
+      console.error("[enhance-text] Rate limit check failed:", rateError);
+    } else if (!rateCheck?.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded. Try again later.",
+          remaining: 0,
+          reset_at: rateCheck?.reset_at,
+        },
+        { status: 429 }
+      );
+    }
+
     const { text, context, direction } = await request.json();
 
     if (!text?.trim()) {

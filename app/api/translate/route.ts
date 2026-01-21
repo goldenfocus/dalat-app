@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { batchTranslateFields } from "@/lib/google-translate";
 import {
-  ContentLocale,
   CONTENT_LOCALES,
   TranslationContentType,
   TranslationFieldName,
 } from "@/lib/types";
+
+const RATE_LIMIT = 50; // requests per window
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 interface TranslateRequest {
   content_type: TranslationContentType;
@@ -32,6 +34,26 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  // Database-backed rate limiting
+  const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
+    p_action: 'translate',
+    p_limit: RATE_LIMIT,
+    p_window_ms: RATE_WINDOW_MS,
+  });
+
+  if (rateError) {
+    console.error("[translate] Rate limit check failed:", rateError);
+  } else if (!rateCheck?.allowed) {
+    return NextResponse.json(
+      {
+        error: "Rate limit exceeded. Try again later.",
+        remaining: 0,
+        reset_at: rateCheck?.reset_at,
+      },
+      { status: 429 }
+    );
   }
 
   try {

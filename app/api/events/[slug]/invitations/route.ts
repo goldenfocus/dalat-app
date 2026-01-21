@@ -117,7 +117,8 @@ export async function POST(
           continue;
         }
       } else {
-        results.push({ email, success: false, error: insertError.message });
+        console.error("Invitation insert error:", insertError);
+        results.push({ email, success: false, error: "Failed to create invitation" });
         continue;
       }
     }
@@ -212,7 +213,8 @@ export async function POST(
           continue;
         }
       } else {
-        results.push({ userId, username, success: false, error: insertError.message });
+        console.error("User invitation insert error:", insertError);
+        results.push({ userId, username, success: false, error: "Failed to create invitation" });
         continue;
       }
     }
@@ -262,7 +264,7 @@ export async function POST(
         userId,
         username,
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to send notification'
+        error: 'Failed to send notification'
       });
     }
   }

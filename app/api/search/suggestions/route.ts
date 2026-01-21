@@ -3,6 +3,17 @@ import { createClient } from "@/lib/supabase/server";
 import { expandSearchQuery } from "@/lib/search/expand-query";
 
 /**
+ * Escape a search term for safe use in PostgREST .or() filters.
+ * This prevents PostgREST filter injection attacks.
+ */
+function escapePostgrestValue(input: string): string {
+  return input
+    .replace(/[\x00-\x1f\x7f]/g, "") // Remove control characters
+    .replace(/"/g, '""') // Escape double quotes (PostgREST uses double-quoted strings)
+    .replace(/[%_]/g, "\\$&"); // Escape SQL LIKE wildcards
+}
+
+/**
  * GET /api/search/suggestions?q=query
  * Returns lightweight event suggestions for instant search
  * Uses AI to expand queries with translations and synonyms
@@ -25,8 +36,8 @@ export async function GET(request: NextRequest) {
   // PostgREST reserved chars (commas, dots, parens) require double-quoted values
   const orFilters = expandedTerms
     .map((term) => {
-      // Escape double quotes by doubling, then escape SQL wildcards
-      const escaped = term.replace(/"/g, '""').replace(/[%_]/g, "\\$&");
+      // Escape to prevent PostgREST filter injection (both from user input and AI output)
+      const escaped = escapePostgrestValue(term);
       return `title.ilike."%${escaped}%",description.ilike."%${escaped}%",location_name.ilike."%${escaped}%"`;
     })
     .join(",");

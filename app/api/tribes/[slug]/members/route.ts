@@ -30,7 +30,10 @@ export async function GET(request: Request, { params }: RouteParams) {
 
   const { data: members, error } = await query;
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("Members fetch error:", error);
+    return NextResponse.json({ error: "Failed to fetch members" }, { status: 500 });
+  }
 
   return NextResponse.json({ members });
 }

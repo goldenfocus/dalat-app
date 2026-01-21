@@ -120,7 +120,7 @@ export async function POST(request: Request) {
     if (seriesError) {
       console.error("Series creation error:", seriesError);
       return NextResponse.json(
-        { error: "Failed to create series: " + seriesError.message },
+        { error: "Failed to create series" },
         { status: 500 }
       );
     }
@@ -187,7 +187,7 @@ export async function POST(request: Request) {
         // Series was created but events failed - clean up
         await supabase.from("event_series").delete().eq("id", series.id);
         return NextResponse.json(
-          { error: "Failed to create event instances: " + eventsError.message },
+          { error: "Failed to create event instances" },
           { status: 500 }
         );
       }
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Create series error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create series" },
+      { error: "Failed to create series" },
       { status: 500 }
     );
   }
@@ -260,7 +260,8 @@ export async function GET(request: Request) {
   const { data: series, error } = await query;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Series fetch error:", error);
+    return NextResponse.json({ error: "Failed to fetch series" }, { status: 500 });
   }
 
   return NextResponse.json({ series });

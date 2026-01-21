@@ -52,7 +52,8 @@ export async function GET(request: Request, { params }: RouteParams) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Contacts fetch error:", error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 
   return NextResponse.json({ contacts });
@@ -133,7 +134,8 @@ export async function POST(request: Request, { params }: RouteParams) {
     .select();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Contacts insert error:", error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 
   return NextResponse.json({
@@ -197,7 +199,8 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     .eq("tribe_id", tribe.id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Contact delete error:", error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

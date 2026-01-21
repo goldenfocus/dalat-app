@@ -8,27 +8,8 @@ export const maxDuration = 60;
 // Check env var at module load time (try both names)
 const OPENAI_KEY = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
 
-// GET: Diagnostic endpoint to check if env vars are configured
-export async function GET() {
-  // List all env vars containing certain keywords (keys only, not values)
-  const allEnvKeys = Object.keys(process.env);
-  const relevantKeys = allEnvKeys.filter(k =>
-    k.includes('OPENAI') || k.includes('API_KEY') || k.includes('KEY')
-  );
-
-  const envCheck = {
-    OPENAI_API_KEY_exists: !!process.env.OPENAI_API_KEY,
-    OPENAI_KEY_exists: !!process.env.OPENAI_KEY,
-    resolved_key_exists: !!OPENAI_KEY,
-    keyLength: OPENAI_KEY?.length ?? 0,
-    keyPrefix: OPENAI_KEY?.substring(0, 7) ?? "missing",
-    relevantEnvVars: relevantKeys,
-    totalEnvVars: allEnvKeys.length,
-    timestamp: new Date().toISOString(),
-  };
-
-  return NextResponse.json(envCheck);
-}
+const RATE_LIMIT = 20; // requests per window
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 export async function POST(request: Request) {
   try {
@@ -54,6 +35,26 @@ export async function POST(request: Request) {
 
     if (!profile || !canBlog) {
       return NextResponse.json({ error: "Blog access required" }, { status: 403 });
+    }
+
+    // Database-backed rate limiting
+    const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
+      p_action: 'blog_transcribe',
+      p_limit: RATE_LIMIT,
+      p_window_ms: RATE_WINDOW_MS,
+    });
+
+    if (rateError) {
+      console.error("[blog/transcribe] Rate limit check failed:", rateError);
+    } else if (!rateCheck?.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded. Try again later.",
+          remaining: 0,
+          reset_at: rateCheck?.reset_at,
+        },
+        { status: 429 }
+      );
     }
 
     // Get audio URL from request
@@ -101,7 +102,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[blog/transcribe] Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Transcription failed" },
+      { error: "Transcription failed" },
       { status: 500 }
     );
   }

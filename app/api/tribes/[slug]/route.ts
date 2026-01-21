@@ -61,7 +61,10 @@ export async function PUT(request: Request, { params }: RouteParams) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("Tribe update error:", error);
+    return NextResponse.json({ error: "Failed to update tribe" }, { status: 500 });
+  }
 
   return NextResponse.json({ tribe: updated });
 }
@@ -82,7 +85,10 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   }
 
   const { error } = await supabase.from('tribes').delete().eq('id', tribe.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("Tribe deletion error:", error);
+    return NextResponse.json({ error: "Failed to delete tribe" }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }

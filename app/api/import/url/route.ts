@@ -188,7 +188,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("URL Import error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Failed to import event" },
       { status: 500 }
     );
   }

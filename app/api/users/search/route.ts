@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 /**
+ * Escape user input for safe use in PostgREST .or() filters.
+ * PostgREST uses double-quoted strings, so we:
+ * 1. Escape double quotes by doubling them
+ * 2. Escape SQL LIKE wildcards (% and _) with backslash
+ * 3. Strip any control characters
+ */
+function escapePostgrestValue(input: string): string {
+  return input
+    .replace(/[\x00-\x1f\x7f]/g, "") // Remove control characters
+    .replace(/"/g, '""') // Escape double quotes
+    .replace(/[%_]/g, "\\$&"); // Escape SQL wildcards
+}
+
+/**
  * GET /api/users/search?q=username
  * Search for users by username prefix
  * Returns basic profile info for autocomplete in invite flows
@@ -27,13 +41,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ users: [] });
   }
 
+  // Escape user input to prevent PostgREST filter injection
+  const escapedQuery = escapePostgrestValue(cleanQuery);
+
   // Search by username prefix (case insensitive)
   // Also search display_name for flexibility
   // PostgREST requires double-quoting values with wildcards
   const { data: users, error } = await supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url")
-    .or(`username.ilike."${cleanQuery}%",display_name.ilike."%${cleanQuery}%"`)
+    .or(`username.ilike."${escapedQuery}%",display_name.ilike."%${escapedQuery}%"`)
     .not("username", "is", null) // Only return users with usernames
     .neq("id", user.id) // Exclude self
     .limit(5);

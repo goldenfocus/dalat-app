@@ -25,7 +25,10 @@ export async function GET(request: Request, { params }: RouteParams) {
     .eq('status', 'pending')
     .order('created_at', { ascending: true });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("Requests fetch error:", error);
+    return NextResponse.json({ error: "Failed to fetch requests" }, { status: 500 });
+  }
 
   return NextResponse.json({ requests });
 }
