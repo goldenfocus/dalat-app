@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import {
   generateImage,
   refineImage,
@@ -9,6 +10,23 @@ import {
 
 // Image generation can take 30-60s
 export const maxDuration = 60;
+
+// Rate limiting config
+const RATE_LIMIT = 10; // requests per window
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+/**
+ * Sanitize custom prompt to prevent prompt injection
+ * Limits length and removes potentially harmful characters
+ */
+function sanitizePrompt(prompt: string | undefined): string {
+  if (!prompt?.trim()) return "";
+  return prompt
+    .replace(/["'\n\r]/g, " ")
+    .replace(/\s+/g, " ")
+    .slice(0, 500)
+    .trim();
+}
 
 interface GenerateImageRequest {
   context: ImageContext;
@@ -26,6 +44,44 @@ interface GenerateImageRequest {
 
 export async function POST(request: Request) {
   try {
+    // Authentication check
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Database-backed rate limiting (survives serverless cold starts)
+    const { data: rateCheck, error: rateError } = await supabase.rpc(
+      "check_rate_limit",
+      {
+        p_action: "generate_image",
+        p_limit: RATE_LIMIT,
+        p_window_ms: RATE_WINDOW_MS,
+      }
+    );
+
+    if (rateError) {
+      console.error("[api/ai/generate-image] Rate limit check failed:", rateError);
+      // Fail open but log the error
+    } else if (!rateCheck?.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded. Try again later.",
+          remaining: 0,
+          reset_at: rateCheck?.reset_at,
+        },
+        { status: 429 }
+      );
+    }
+
     const body: GenerateImageRequest = await request.json();
     const {
       context,
@@ -49,20 +105,24 @@ export async function POST(request: Request) {
 
     let imageUrl: string;
 
+    // Sanitize user-provided prompts to prevent injection
+    const sanitizedCustomPrompt = sanitizePrompt(customPrompt);
+    const sanitizedRefinementPrompt = sanitizePrompt(refinementPrompt);
+
     // Refinement mode - supports both URL and base64 input
     const hasImageSource = existingImageUrl || (imageBase64 && imageMimeType);
-    if (hasImageSource && refinementPrompt) {
+    if (hasImageSource && sanitizedRefinementPrompt) {
       imageUrl = await refineImage({
         context,
         existingImageUrl,
-        refinementPrompt,
+        refinementPrompt: sanitizedRefinementPrompt,
         entityId,
         imageBase64,
         imageMimeType,
       });
     } else {
-      // New generation mode
-      const prompt = customPrompt || buildPrompt(context, title, content);
+      // New generation mode - prefer template-based prompt over custom
+      const prompt = sanitizedCustomPrompt || buildPrompt(context, title, content);
       imageUrl = await generateImage({
         context,
         prompt,
