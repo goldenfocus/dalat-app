@@ -78,7 +78,7 @@ export function TopNavBar() {
 
     return (
         <nav className="hidden lg:flex items-center gap-1 bg-gray-100 rounded-full p-1">
-            {BOTTOM_NAV_ITEMS.filter(item => item.label !== "Add").map((item) => {
+            {BOTTOM_NAV_ITEMS.filter(item => item.label !== "Add" && item.label !== "Me").map((item) => {
                 const isActive =
                     currentPath === item.href ||
                     (item.href !== "/" && currentPath.startsWith(item.href));

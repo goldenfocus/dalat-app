@@ -14,9 +14,10 @@ interface MapLandingPageProps {
     events: Event[];
     counts: Record<string, EventCounts>;
     hideTopNav?: boolean;
+    hideHeader?: boolean;
 }
 
-export function MapLandingPage({ events, counts, hideTopNav = false }: MapLandingPageProps) {
+export function MapLandingPage({ events, counts, hideTopNav = false, hideHeader = false }: MapLandingPageProps) {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -77,32 +78,34 @@ export function MapLandingPage({ events, counts, hideTopNav = false }: MapLandin
             {!hideTopNav && <TopNav />}
 
             {/* Map Header Section */}
-            <div className="relative z-[1000] bg-white border-b border-gray-100 shadow-sm">
-                <div className="px-4 pt-4 pb-3">
-                    {/* Title & Subtitle */}
-                    <div className="mb-4">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                            Events in DaLat
-                        </h1>
-                        <p className="text-sm text-gray-600">
-                            Discover what's happening in DaLat
-                        </p>
+            {!hideHeader && (
+                <div className="relative z-[1000] bg-white border-b border-gray-100 shadow-sm">
+                    <div className="px-4 pt-4 pb-3">
+                        {/* Title & Subtitle */}
+                        <div className="mb-4">
+                            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                                Events in DaLat
+                            </h1>
+                            <p className="text-sm text-gray-600">
+                                Discover what's happening in DaLat
+                            </p>
+                        </div>
+
+                        {/* Search Bar */}
+                        <SearchBar
+                            onFilterClick={() => setIsFilterOpen(true)}
+                            className="mb-3"
+                        />
+
+                        {/* Date Presets */}
+                        <DatePresets
+                            onDateSelect={(range) => {
+                                handleApplyFilters({ dateRange: range });
+                            }}
+                        />
                     </div>
-
-                    {/* Search Bar */}
-                    <SearchBar
-                        onFilterClick={() => setIsFilterOpen(true)}
-                        className="mb-3"
-                    />
-
-                    {/* Date Presets */}
-                    <DatePresets
-                        onDateSelect={(range) => {
-                            handleApplyFilters({ dateRange: range });
-                        }}
-                    />
                 </div>
-            </div>
+            )}
 
             {/* Map Area - Flex Item 1 */}
             <div className="flex-1 relative min-h-[50vh]">

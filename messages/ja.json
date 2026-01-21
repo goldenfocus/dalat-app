@@ -820,6 +820,20 @@
     "generating": "生成中...",
     "generate": "生成"
   },
+  "search": {
+    "title": "ダラットの{query}イベント",
+    "description": "ベトナム・ダラットで{query}イベント、ワークショップ、交流会を見つけましょう。今後および過去の{query}活動をご覧ください。",
+    "breadcrumb": "検索: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "{count}件のイベントが見つかりました",
+    "noResults": "イベントが見つかりません",
+    "noResultsHint": "別の検索語を試すか、すべてのイベントを閲覧してください",
+    "browseAll": "すべてのイベントを閲覧",
+    "back": "戻る",
+    "happeningNow": "開催中",
+    "upcoming": "今後のイベント",
+    "past": "過去のイベント"
+  },
   "archive": {
     "events": "イベント",
     "eventsIn": "{year}年{month}のイベント",

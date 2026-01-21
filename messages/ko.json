@@ -820,6 +820,20 @@
     "generating": "생성 중...",
     "generate": "생성"
   },
+  "search": {
+    "title": "달랏의 {query} 이벤트",
+    "description": "베트남 달랏에서 {query} 이벤트, 워크샵, 모임을 찾아보세요. 예정된 {query} 활동과 지난 활동을 확인하세요.",
+    "breadcrumb": "검색: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "{count}개의 이벤트를 찾았습니다",
+    "noResults": "이벤트를 찾을 수 없습니다",
+    "noResultsHint": "다른 검색어를 시도하거나 모든 이벤트를 둘러보세요",
+    "browseAll": "모든 이벤트 둘러보기",
+    "back": "뒤로",
+    "happeningNow": "진행 중",
+    "upcoming": "예정된 이벤트",
+    "past": "지난 이벤트"
+  },
   "archive": {
     "events": "이벤트",
     "eventsIn": "{year}년 {month} 이벤트",

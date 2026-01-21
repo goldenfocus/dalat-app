@@ -820,6 +820,20 @@
     "generating": "Menjana...",
     "generate": "Jana"
   },
+  "search": {
+    "title": "Acara {query} di Da Lat",
+    "description": "Cari acara, bengkel dan perhimpunan {query} di Da Lat, Vietnam. Temui aktiviti {query} akan datang dan yang lepas.",
+    "breadcrumb": "Carian: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "{count, plural, one {# acara ditemui} other {# acara ditemui}}",
+    "noResults": "Tiada acara ditemui",
+    "noResultsHint": "Cuba istilah carian lain atau layari semua acara",
+    "browseAll": "Layari semua acara",
+    "back": "Kembali",
+    "happeningNow": "Sedang Berlangsung",
+    "upcoming": "Akan Datang",
+    "past": "Acara Lepas"
+  },
   "archive": {
     "events": "Acara",
     "eventsIn": "Acara pada {month} {year}",

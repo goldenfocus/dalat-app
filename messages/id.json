@@ -820,6 +820,20 @@
     "generating": "Membuat...",
     "generate": "Buat"
   },
+  "search": {
+    "title": "Acara {query} di Da Lat",
+    "description": "Temukan acara, lokakarya, dan pertemuan {query} di Da Lat, Vietnam. Temukan kegiatan {query} yang akan datang dan yang sudah berlalu.",
+    "breadcrumb": "Pencarian: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "{count, plural, one {# acara ditemukan} other {# acara ditemukan}}",
+    "noResults": "Tidak ada acara ditemukan",
+    "noResultsHint": "Coba istilah pencarian lain atau jelajahi semua acara",
+    "browseAll": "Jelajahi semua acara",
+    "back": "Kembali",
+    "happeningNow": "Sedang Berlangsung",
+    "upcoming": "Akan Datang",
+    "past": "Acara Sebelumnya"
+  },
   "archive": {
     "events": "Acara",
     "eventsIn": "Acara di {month} {year}",

@@ -190,6 +190,7 @@
     "info": "Thông tin",
     "externalLinkNotCopied": "Liên kết ngoài không được sao chép (mỗi sự kiện thường có liên kết riêng)",
     "limitAttendees": "Giới hạn người tham dự",
+    "categories": "Loại sự kiện",
     "creatingSeries": "Đang tạo chuỗi...",
     "createRecurringEvent": "Tạo sự kiện định kỳ"
   },

@@ -209,6 +209,7 @@
     "maxAttendeesPlaceholder": "Leave empty for unlimited",
     "maxAttendeesHelp": "Once full, new RSVPs go to a waitlist",
     "limitAttendees": "Limit attendees",
+    "categories": "Event Categories",
     "addFlyerLater": "Add a flyer after creating the event",
     "creating": "Creating...",
     "creatingSeries": "Creating series...",

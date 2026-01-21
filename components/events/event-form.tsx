@@ -15,6 +15,7 @@ import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
 import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
+import { CategorySelector, saveCategoryAssignments, fetchEventCategories } from "@/components/events/category-selector";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
@@ -184,6 +185,16 @@ export function EventForm({
   const [hasCapacityLimit, setHasCapacityLimit] = useState(
     !!event?.capacity || !!copyDefaults?.capacity
   );
+
+  // Selected categories state
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  // Load existing categories when editing an event
+  useEffect(() => {
+    if (event?.id) {
+      fetchEventCategories(event.id).then(setSelectedCategories);
+    }
+  }, [event?.id]);
 
   // Check slug availability with debounce
   useEffect(() => {
@@ -392,6 +403,11 @@ export function EventForm({
           return;
         }
 
+        // Save category assignments
+        if (selectedCategories.length > 0) {
+          await saveCategoryAssignments(event.id, selectedCategories);
+        }
+
         // Navigate to new slug if changed, otherwise original
         const finalSlug = slugEditable && slug ? slug : event.slug;
         router.push(`/events/${finalSlug}`);
@@ -442,6 +458,11 @@ export function EventForm({
             await createSponsorsForEvent(seriesData.first_event_id, draftSponsors);
           }
 
+          // Save category assignments for the first event
+          if (selectedCategories.length > 0 && seriesData.first_event_id) {
+            await saveCategoryAssignments(seriesData.first_event_id, selectedCategories);
+          }
+
           // Trigger translation for the first event (fire-and-forget)
           if (seriesData.first_event_id) {
             triggerEventTranslation(seriesData.first_event_id, title.trim(), description || null);
@@ -490,6 +511,11 @@ export function EventForm({
           // Create sponsors for the new event
           if (draftSponsors.length > 0) {
             await createSponsorsForEvent(data.id, draftSponsors);
+          }
+
+          // Save category assignments
+          if (selectedCategories.length > 0) {
+            await saveCategoryAssignments(data.id, selectedCategories);
           }
 
           // Trigger translation in background (fire-and-forget)
@@ -589,6 +615,14 @@ export function EventForm({
               context="an event description for a local community event in Da Lat, Vietnam"
             />
           </div>
+
+          {/* Categories */}
+          <CategorySelector
+            selectedCategories={selectedCategories}
+            onChange={setSelectedCategories}
+            label={t("categories") ?? "Event Categories"}
+            maxSelections={3}
+          />
 
           {/* Date and time */}
           <div className="grid gap-4 sm:grid-cols-2">

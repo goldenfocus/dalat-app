@@ -820,6 +820,20 @@
     "generating": "Generiere...",
     "generate": "Generieren"
   },
+  "search": {
+    "title": "{query} Veranstaltungen in Da Lat",
+    "description": "Finden Sie {query} Veranstaltungen, Workshops und Treffen in Da Lat, Vietnam. Entdecken Sie kommende und vergangene {query} Aktivitäten.",
+    "breadcrumb": "Suche: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "{count, plural, one {# Veranstaltung gefunden} other {# Veranstaltungen gefunden}}",
+    "noResults": "Keine Veranstaltungen gefunden",
+    "noResultsHint": "Versuchen Sie einen anderen Suchbegriff oder durchsuchen Sie alle Veranstaltungen",
+    "browseAll": "Alle Veranstaltungen durchsuchen",
+    "back": "Zurück",
+    "happeningNow": "Gerade jetzt",
+    "upcoming": "Bevorstehend",
+    "past": "Vergangene Veranstaltungen"
+  },
   "archive": {
     "events": "Events",
     "eventsIn": "Events im {month} {year}",

@@ -820,6 +820,20 @@
     "generating": "กำลังสร้าง...",
     "generate": "สร้าง"
   },
+  "search": {
+    "title": "กิจกรรม {query} ในดาลัด",
+    "description": "ค้นหากิจกรรม เวิร์กช็อป และการพบปะ {query} ในดาลัด เวียดนาม ค้นพบกิจกรรม {query} ที่กำลังจะมาถึงและที่ผ่านมา",
+    "breadcrumb": "ค้นหา: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "พบ {count} กิจกรรม",
+    "noResults": "ไม่พบกิจกรรม",
+    "noResultsHint": "ลองคำค้นหาอื่นหรือดูกิจกรรมทั้งหมด",
+    "browseAll": "ดูกิจกรรมทั้งหมด",
+    "back": "กลับ",
+    "happeningNow": "กำลังเกิดขึ้น",
+    "upcoming": "กำลังจะมา",
+    "past": "กิจกรรมที่ผ่านมา"
+  },
   "archive": {
     "events": "กิจกรรม",
     "eventsIn": "กิจกรรมใน{month} {year}",
