@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyEventInvitation, notifyUserInvitation } from '@/lib/novu';
+import { notifyUserInvitation, sendEmailInvitation } from '@/lib/notifications';
 import type { Locale, InviteQuotaCheck } from '@/lib/types';
 
 interface InviteRequest {
@@ -137,18 +137,20 @@ export async function POST(
     });
 
     try {
-      await notifyEventInvitation(
-        normalizedEmail,
-        name || null,
-        inviterLocale,
-        event.title,
-        event.slug,
-        event.description,
-        event.starts_at,
-        event.location_name,
+      await sendEmailInvitation(normalizedEmail, {
+        type: 'event_invitation',
+        userId: `invite-${existingInvitation.token}`,
+        locale: inviterLocale,
+        inviteeEmail: normalizedEmail,
+        inviteeName: name || null,
+        eventTitle: event.title,
+        eventSlug: event.slug,
+        eventDescription: event.description,
+        startsAt: event.starts_at,
+        locationName: event.location_name,
         inviterName,
-        existingInvitation.token
-      );
+        token: existingInvitation.token,
+      });
 
       // Update status to sent (or resent for existing invitations)
       await supabase

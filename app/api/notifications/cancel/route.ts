@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyWaitlistPromotion, scheduleEventReminders } from '@/lib/novu';
+import { notifyWaitlistPromotion } from '@/lib/notifications';
+import { inngest } from '@/lib/inngest';
 import type { Locale } from '@/lib/types';
 
 // Called when someone cancels their RSVP - handles waitlist promotion notification
@@ -19,7 +20,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'eventId required' }, { status: 400 });
   }
 
-  // If no one was promoted, nothing to do
+  // Cancel any scheduled reminders for the user who cancelled
+  await inngest.send({
+    name: 'rsvp/cancelled',
+    data: {
+      userId: user.id,
+      eventId,
+    },
+  });
+
+  // If no one was promoted, nothing more to do
   if (!promotedUserId) {
     return NextResponse.json({ success: true, promoted: false });
   }
@@ -28,7 +38,7 @@ export async function POST(request: Request) {
   const [{ data: event }, { data: promotedProfile }] = await Promise.all([
     supabase
       .from('events')
-      .select('title, slug, starts_at')
+      .select('title, slug, starts_at, ends_at, location_name, google_maps_url')
       .eq('id', eventId)
       .single(),
     supabase
@@ -53,15 +63,21 @@ export async function POST(request: Request) {
       event.slug
     );
 
-    // Schedule reminders for the promoted user
-    await scheduleEventReminders(
-      promotedUserId,
-      locale,
-      eventId,
-      event.title,
-      event.slug,
-      event.starts_at
-    );
+    // Schedule reminders for the promoted user via Inngest
+    await inngest.send({
+      name: 'rsvp/created',
+      data: {
+        userId: promotedUserId,
+        locale,
+        eventId,
+        eventTitle: event.title,
+        eventSlug: event.slug,
+        startsAt: event.starts_at,
+        endsAt: event.ends_at,
+        locationName: event.location_name,
+        googleMapsUrl: event.google_maps_url,
+      },
+    });
 
     return NextResponse.json({ success: true, promoted: true });
   } catch (error) {

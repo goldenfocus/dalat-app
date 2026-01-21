@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { scheduleEventReminders } from '@/lib/novu';
-import type { Locale } from '@/lib/types';
 
 // Schedules reminders for interested users (no immediate confirmation email)
+// TODO: Integrate with Inngest for scheduled reminders
 export async function POST(request: Request) {
   const supabase = await createClient();
 
@@ -19,42 +18,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'eventId required' }, { status: 400 });
   }
 
-  const [{ data: profile }, { data: event }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('locale')
-      .eq('id', user.id)
-      .single(),
-    supabase
-      .from('events')
-      .select('title, slug, starts_at, location_name, google_maps_url')
-      .eq('id', eventId)
-      .single(),
-  ]);
+  const { data: event } = await supabase
+    .from('events')
+    .select('title, slug')
+    .eq('id', eventId)
+    .single();
 
   if (!event) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });
   }
 
-  const locale = (profile?.locale as Locale) || 'en';
+  // TODO: Schedule 24h and 2h reminders via Inngest
+  // For now, just acknowledge the "interested" status
+  // Reminders will be handled by Inngest scheduled functions
 
-  try {
-    // Schedule 24h and 2h reminders (same as going users)
-    // No immediate confirmation - lighter touch for "interested"
-    const scheduled = await scheduleEventReminders(
-      user.id,
-      locale,
-      eventId,
-      event.title,
-      event.slug,
-      event.starts_at,
-      event.location_name,
-      event.google_maps_url
-    );
-
-    return NextResponse.json({ success: true, scheduled });
-  } catch (error) {
-    console.error('Interested notification error:', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
-  }
+  return NextResponse.json({
+    success: true,
+    message: 'Interested status recorded. Reminders will be scheduled via Inngest.',
+  });
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyOrganizerNewRsvp } from '@/lib/novu';
+import { notifyOrganizerNewRsvp } from '@/lib/notifications';
 import type { Locale, InvitationRsvpStatus } from '@/lib/types';
 
 interface RsvpRequest {

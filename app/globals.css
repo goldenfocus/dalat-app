@@ -73,16 +73,6 @@
   }
 }
 
-a[href="https://novu.co"] {
-  display: none !important;
-}
-
-/* Novu bell icon visibility fix */
-[class*="nv-bell"] svg,
-[class*="nv-bell"] svg path {
-  fill: hsl(var(--foreground)) !important;
-}
-
 /* Novu inbox mobile scroll lock - prevents background from moving when swiping in inbox */
 [class*="nv-inbox__popover"],
 [class*="nv-popover"],

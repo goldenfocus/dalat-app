@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyTribeJoinRequest } from '@/lib/novu';
+import { notifyTribeJoinRequest } from '@/lib/notifications';
 
 interface RouteParams { params: Promise<{ slug: string }>; }
 

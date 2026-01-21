@@ -5,7 +5,7 @@ import {
   notifyConfirmAttendance24h,
   notifyFinalReminder2h,
   notifyWaitlistPromotion,
-} from '@/lib/novu';
+} from '@/lib/notifications';
 import type { Locale } from '@/lib/types';
 
 // Test different notification types

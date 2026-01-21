@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyRsvpConfirmation, scheduleEventReminders, scheduleFeedbackRequest } from '@/lib/novu';
+import { notifyRsvpConfirmation } from '@/lib/notifications';
+import { inngest } from '@/lib/inngest';
 import type { Locale } from '@/lib/types';
 
 export async function POST(request: Request) {
@@ -42,41 +43,33 @@ export async function POST(request: Request) {
   try {
     // Send immediate RSVP confirmation
     console.log('[rsvp-notification] Sending confirmation...');
-    await notifyRsvpConfirmation(
+    const result = await notifyRsvpConfirmation(
       user.id,
       locale,
       event.title,
       event.slug,
       event.description
     );
-    console.log('[rsvp-notification] Confirmation sent');
+    console.log('[rsvp-notification] Confirmation sent:', result);
 
-    // Schedule 24h and 2h reminders + feedback request (all in parallel)
-    console.log('[rsvp-notification] Scheduling reminders...');
-    const [reminders, feedback] = await Promise.all([
-      scheduleEventReminders(
-        user.id,
+    // Schedule reminders via Inngest
+    await inngest.send({
+      name: 'rsvp/created',
+      data: {
+        userId: user.id,
         locale,
         eventId,
-        event.title,
-        event.slug,
-        event.starts_at,
-        event.location_name,
-        event.google_maps_url
-      ),
-      scheduleFeedbackRequest(
-        user.id,
-        locale,
-        eventId,
-        event.title,
-        event.slug,
-        event.starts_at,
-        event.ends_at
-      ),
-    ]);
+        eventTitle: event.title,
+        eventSlug: event.slug,
+        startsAt: event.starts_at,
+        endsAt: event.ends_at,
+        locationName: event.location_name,
+        googleMapsUrl: event.google_maps_url,
+      },
+    });
+    console.log('[rsvp-notification] Scheduled reminders via Inngest');
 
-    console.log('[rsvp-notification] Complete:', { reminders, feedback });
-    return NextResponse.json({ success: true, scheduled: { ...reminders, ...feedback } });
+    return NextResponse.json({ success: true, notificationResult: result });
   } catch (error) {
     console.error('[rsvp-notification] Error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
