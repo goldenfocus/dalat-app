@@ -9,6 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { FlyerBuilder } from "@/components/events/flyer-builder";
@@ -19,7 +26,7 @@ import { PostCreationCelebration } from "@/components/events/post-creation-celeb
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
-import type { Event, RecurrenceFormData, Sponsor, EventSponsor, TranslationFieldName } from "@/lib/types";
+import type { Event, RecurrenceFormData, Sponsor, EventSponsor, TranslationFieldName, Organizer } from "@/lib/types";
 
 /**
  * Trigger translation for an event (fire-and-forget)
@@ -220,6 +227,29 @@ export function EventForm({
     !!event?.capacity || !!copyDefaults?.capacity
   );
 
+  // Organizer picker state
+  const [organizerId, setOrganizerId] = useState<string | null>(
+    event?.organizer_id ?? null
+  );
+  const [organizers, setOrganizers] = useState<Pick<Organizer, 'id' | 'name' | 'slug' | 'logo_url'>[]>([]);
+
+  // Fetch organizers on mount
+  useEffect(() => {
+    async function fetchOrganizers() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("organizers")
+        .select("id, name, slug, logo_url")
+        .eq("is_verified", true)
+        .order("name");
+
+      if (data) {
+        setOrganizers(data);
+      }
+    }
+    fetchOrganizers();
+  }, []);
+
   // Check slug availability with debounce
   useEffect(() => {
     if (!slug || !slugTouched) {
@@ -404,6 +434,7 @@ export function EventForm({
           google_maps_url: googleMapsUrl || null,
           external_chat_url: externalChatUrl || null,
           capacity,
+          organizer_id: organizerId,
         };
 
         // Include slug if editable and changed
@@ -461,6 +492,7 @@ export function EventForm({
                 ? new Date(recurrence.endDate).toISOString()
                 : null,
               rrule_count: recurrence.endType === "count" ? recurrence.endCount : null,
+              organizer_id: organizerId,
             }),
           });
 
@@ -500,6 +532,7 @@ export function EventForm({
               capacity,
               created_by: userId,
               status: "published",
+              organizer_id: organizerId,
             })
             .select()
             .single();
@@ -706,6 +739,32 @@ export function EventForm({
               </p>
             )}
           </div>
+
+          {/* Organizer (only show if organizers exist) */}
+          {organizers.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="organizer">{t("organizer")}</Label>
+              <Select
+                value={organizerId ?? "none"}
+                onValueChange={(value) => setOrganizerId(value === "none" ? null : value)}
+              >
+                <SelectTrigger id="organizer">
+                  <SelectValue placeholder={t("selectOrganizer")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("noOrganizer")}</SelectItem>
+                  {organizers.map((org) => (
+                    <SelectItem key={org.id} value={org.id}>
+                      {org.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {t("organizerHelp")}
+              </p>
+            </div>
+          )}
 
           {/* Capacity */}
           <div className="space-y-2">

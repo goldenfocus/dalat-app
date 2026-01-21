@@ -200,7 +200,11 @@
     "externalLinkNotCopied": "Liên kết ngoài không được sao chép (mỗi sự kiện thường có liên kết riêng)",
     "limitAttendees": "Giới hạn người tham dự",
     "creatingSeries": "Đang tạo chuỗi...",
-    "createRecurringEvent": "Tạo sự kiện định kỳ"
+    "createRecurringEvent": "Tạo sự kiện định kỳ",
+    "organizer": "Nhà tổ chức",
+    "selectOrganizer": "Chọn nhà tổ chức",
+    "noOrganizer": "Không có (sự kiện cá nhân)",
+    "organizerHelp": "Liên kết sự kiện với địa điểm hoặc tổ chức"
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",

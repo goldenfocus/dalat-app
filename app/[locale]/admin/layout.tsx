@@ -97,7 +97,7 @@ export default async function AdminLayout({
       href: "/admin/import",
       label: "Import",
       icon: "Download",
-      show: isAdmin,
+      show: isModerator,
     },
     {
       href: "/admin/personas",

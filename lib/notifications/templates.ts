@@ -33,6 +33,14 @@ function getNotificationLocale(locale: Locale): NotificationLocale {
     : 'en';
 }
 
+/**
+ * Get the base URL for notifications.
+ * Falls back to production URL if NEXT_PUBLIC_APP_URL is not set.
+ */
+function getBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL || 'https://dalat.app';
+}
+
 // ============================================
 // Translation strings
 // ============================================
@@ -158,7 +166,7 @@ interface TemplateResult {
 
 function rsvpConfirmationTemplate(payload: RsvpConfirmationPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   const title = translations.rsvpConfirmation[locale](payload.eventTitle);
   const body = translations.rsvpConfirmationBody[locale](payload.eventDescription || null);
@@ -181,7 +189,7 @@ function rsvpConfirmationTemplate(payload: RsvpConfirmationPayload): TemplateRes
 
 function confirmAttendance24hTemplate(payload: ConfirmAttendance24hPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const baseUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const baseUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   const title = translations.confirmAttendance24h[locale](payload.eventTitle, payload.eventTime);
   const body = translations.email.clickToConfirm[locale];
@@ -207,7 +215,7 @@ function confirmAttendance24hTemplate(payload: ConfirmAttendance24hPayload): Tem
 
 function finalReminder2hTemplate(payload: FinalReminder2hPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   const title = translations.finalReminder2h[locale](payload.eventTitle, payload.locationName);
   const body = translations.email.seeYouThere[locale];
@@ -235,7 +243,7 @@ function finalReminder2hTemplate(payload: FinalReminder2hPayload): TemplateResul
 
 function waitlistPromotionTemplate(payload: WaitlistPromotionPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   const title = translations.waitlistPromotion[locale](payload.eventTitle);
   const body = translations.buttons.viewEvent[locale];
@@ -259,7 +267,7 @@ function waitlistPromotionTemplate(payload: WaitlistPromotionPayload): TemplateR
 
 function eventReminderTemplate(payload: EventReminderPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   const title = translations.eventReminder[locale](payload.eventTitle, payload.eventTime);
   const body = translations.buttons.viewEvent[locale];
@@ -282,7 +290,7 @@ function eventReminderTemplate(payload: EventReminderPayload): TemplateResult {
 
 function waitlistPositionTemplate(payload: WaitlistPositionPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   const title = translations.waitlistPosition[locale](payload.eventTitle, payload.position);
   const body = translations.buttons.viewEvent[locale];
@@ -305,7 +313,7 @@ function waitlistPositionTemplate(payload: WaitlistPositionPayload): TemplateRes
 
 function newRsvpTemplate(payload: NewRsvpPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   const title = translations.newRsvp[locale](payload.eventTitle, payload.attendeeName);
   const body = translations.buttons.viewEvent[locale];
@@ -328,7 +336,7 @@ function newRsvpTemplate(payload: NewRsvpPayload): TemplateResult {
 
 function feedbackRequestTemplate(payload: FeedbackRequestPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   const title = translations.feedbackRequest[locale](payload.eventTitle);
   const body = translations.feedbackRequestBody[locale];
@@ -352,7 +360,7 @@ function feedbackRequestTemplate(payload: FeedbackRequestPayload): TemplateResul
 
 function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${payload.token}`;
+  const inviteUrl = `${getBaseUrl()}/invite/${payload.token}`;
 
   // Format date/time
   const eventDate = new Date(payload.startsAt);
@@ -414,7 +422,7 @@ function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResul
 
 function userInvitationTemplate(payload: UserInvitationPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   // Format date/time
   const eventDate = new Date(payload.startsAt);
@@ -449,7 +457,7 @@ function userInvitationTemplate(payload: UserInvitationPayload): TemplateResult 
 
 function tribeJoinRequestTemplate(payload: TribeJoinRequestPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const tribeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/tribes/${payload.tribeSlug}?tab=requests`;
+  const tribeUrl = `${getBaseUrl()}/tribes/${payload.tribeSlug}?tab=requests`;
 
   const title = translations.tribeJoinRequest[locale](payload.requesterName, payload.tribeName);
   const body = translations.buttons.reviewRequests[locale];
@@ -472,7 +480,7 @@ function tribeJoinRequestTemplate(payload: TribeJoinRequestPayload): TemplateRes
 
 function tribeRequestApprovedTemplate(payload: TribeRequestApprovedPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const tribeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/tribes/${payload.tribeSlug}`;
+  const tribeUrl = `${getBaseUrl()}/tribes/${payload.tribeSlug}`;
 
   const title = translations.tribeRequestApproved[locale](payload.tribeName);
   const body = translations.buttons.viewTribe[locale];
@@ -512,7 +520,7 @@ function tribeRequestRejectedTemplate(payload: TribeRequestRejectedPayload): Tem
 
 function tribeNewEventTemplate(payload: TribeNewEventPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${payload.eventSlug}`;
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
 
   const title = translations.tribeNewEvent[locale](payload.eventTitle, payload.tribeName);
   const body = translations.buttons.viewEvent[locale];

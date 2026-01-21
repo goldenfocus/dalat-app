@@ -223,7 +223,11 @@
     "creatingSeries": "Creating series...",
     "saving": "Saving...",
     "saveChanges": "Save changes",
-    "createRecurringEvent": "Create recurring event"
+    "createRecurringEvent": "Create recurring event",
+    "organizer": "Organizer",
+    "selectOrganizer": "Select an organizer",
+    "noOrganizer": "No organizer (personal event)",
+    "organizerHelp": "Associate this event with a venue or organization"
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",
