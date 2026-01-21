@@ -11,9 +11,10 @@ import { Loader2, Eye, EyeOff, Check, KeyRound } from "lucide-react";
 
 interface PasswordSettingsProps {
   userEmail: string;
+  targetUserId?: string | null; // For God Mode - admin changing another user's password
 }
 
-export function PasswordSettings({ userEmail }: PasswordSettingsProps) {
+export function PasswordSettings({ userEmail, targetUserId }: PasswordSettingsProps) {
   const t = useTranslations("settings.password");
   const tAuth = useTranslations("auth");
   const [showForm, setShowForm] = useState(false);
@@ -41,14 +42,30 @@ export function PasswordSettings({ userEmail }: PasswordSettingsProps) {
     setIsLoading(true);
 
     try {
-      const supabase = createClient();
-      const { error: updateError } = await supabase.auth.updateUser({
-        password,
-      });
+      // If God Mode is active, use admin API
+      if (targetUserId) {
+        const res = await fetch("/api/admin/update-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ targetUserId, password }),
+        });
 
-      if (updateError) {
-        setError(updateError.message);
-        return;
+        if (!res.ok) {
+          const data = await res.json();
+          setError(data.error || "Failed to update password");
+          return;
+        }
+      } else {
+        // Normal flow - user updating their own password
+        const supabase = createClient();
+        const { error: updateError } = await supabase.auth.updateUser({
+          password,
+        });
+
+        if (updateError) {
+          setError(updateError.message);
+          return;
+        }
       }
 
       setSuccess(true);
@@ -88,7 +105,7 @@ export function PasswordSettings({ userEmail }: PasswordSettingsProps) {
         className="w-full justify-start"
       >
         <KeyRound className="w-4 h-4 mr-2" />
-        {t("setOrChangePassword")}
+        {targetUserId ? t("changePassword") : t("setOrChangePassword")}
       </Button>
     );
   }

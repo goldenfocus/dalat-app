@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { getEffectiveUser } from "@/lib/god-mode";
 
 // Increase serverless function timeout
 export const maxDuration = 60;
@@ -13,22 +13,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { Locale } from "@/lib/types";
 
 export default async function SettingsPage() {
-  const supabase = await createClient();
   const t = await getTranslations("settings");
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, profile, godMode } = await getEffectiveUser();
 
   if (!user) {
     redirect("/auth/login");
   }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
 
   if (!profile) {
     redirect("/onboarding");
@@ -84,7 +74,10 @@ export default async function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <PasswordSettings userEmail={user.email || ""} />
+          <PasswordSettings
+            userEmail={user.email || ""}
+            targetUserId={godMode.isActive ? godMode.targetUserId : null}
+          />
           <SignOutButton />
         </CardContent>
       </Card>

@@ -381,7 +381,13 @@
     "language": "Ngôn ngữ",
     "languageDescription": "Chọn ngôn ngữ ưa thích của bạn",
     "account": "Tài khoản",
-    "accountDescription": "Quản lý tài khoản của bạn"
+    "accountDescription": "Quản lý tài khoản của bạn",
+    "password": {
+      "setOrChangePassword": "Đặt hoặc đổi mật khẩu",
+      "changePassword": "Đổi mật khẩu",
+      "savePassword": "Lưu mật khẩu",
+      "passwordUpdated": "Đã cập nhật mật khẩu!"
+    }
   },
   "notifications": {
     "enable": "Bật thông báo",

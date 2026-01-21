@@ -457,6 +457,7 @@
     "accountDescription": "Manage your account",
     "password": {
       "setOrChangePassword": "Set or change password",
+      "changePassword": "Change password",
       "savePassword": "Save password",
       "passwordUpdated": "Password updated!"
     }
