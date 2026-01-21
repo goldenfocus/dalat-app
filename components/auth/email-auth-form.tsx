@@ -54,14 +54,15 @@ export function EmailAuthForm() {
 
       // If invalid credentials, try to create account
       if (signInError.message.includes("Invalid login credentials")) {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-            data: { locale },
-          },
-        });
+        const { data: signUpData, error: signUpError } =
+          await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              data: { locale },
+            },
+          });
 
         if (signUpError) {
           // If already registered, it means wrong password
@@ -70,6 +71,13 @@ export function EmailAuthForm() {
           } else {
             setError(signUpError.message);
           }
+        } else if (
+          signUpData.user?.identities &&
+          signUpData.user.identities.length === 0
+        ) {
+          // Supabase returns empty identities for existing confirmed accounts
+          // This means user exists but entered wrong password
+          setError(t("invalidCredentials"));
         } else {
           // New account created - check email
           setSuccess(t("accountCreatedCheckEmail"));
