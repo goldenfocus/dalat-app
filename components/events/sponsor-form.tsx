@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { ImageIcon, X, Plus, Loader2, GripVertical, ExternalLink, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ImageIcon, X, Plus, Loader2, GripVertical, ExternalLink, ChevronDown, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,11 +56,48 @@ export function SponsorForm({
   // Shared state
   const [isExpanded, setIsExpanded] = useState(initialSponsors.length > 0 || draftSponsors.length > 0);
   const [isAdding, setIsAdding] = useState(false);
+  const [addMode, setAddMode] = useState<"existing" | "new">("existing");
+  const [existingSponsors, setExistingSponsors] = useState<Sponsor[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoadingSponsors, setIsLoadingSponsors] = useState(false);
   const [newSponsor, setNewSponsor] = useState({ name: "", website_url: "", logo_url: "" });
   const [newSponsorFile, setNewSponsorFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch existing sponsors when add dialog opens
+  useEffect(() => {
+    if (isAdding && !isDraftMode) {
+      loadExistingSponsors();
+    }
+  }, [isAdding, isDraftMode]);
+
+  const loadExistingSponsors = async () => {
+    setIsLoadingSponsors(true);
+    try {
+      const supabase = createClient();
+
+      // Get all sponsors, ordered by most recently used in events
+      const { data, error: fetchError } = await supabase
+        .from("sponsors")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (fetchError) throw fetchError;
+
+      // Filter out sponsors already linked to this event
+      const alreadyLinkedIds = new Set(sponsors.map(s => s.sponsor_id));
+      const available = (data || []).filter(s => !alreadyLinkedIds.has(s.id));
+
+      setExistingSponsors(available);
+    } catch (err) {
+      console.error("Error loading sponsors:", err);
+    } finally {
+      setIsLoadingSponsors(false);
+    }
+  };
 
   // Upload logo to storage (live mode only)
   const uploadLogo = async (file: File): Promise<string | null> => {
@@ -204,6 +241,56 @@ export function SponsorForm({
     }
   };
 
+  const handleAddExistingSponsor = async (sponsor: Sponsor) => {
+    setError(null);
+
+    if (isDraftMode) {
+      // Draft mode: add to local state
+      const draft: DraftSponsor = {
+        id: `draft-${Date.now()}`,
+        name: sponsor.name,
+        logo_url: sponsor.logo_url || "",
+        website_url: sponsor.website_url || "",
+      };
+
+      const updated = [...draftSponsors, draft];
+      onDraftChange?.(updated);
+      setIsAdding(false);
+    } else {
+      // Live mode: link to event
+      try {
+        const supabase = createClient();
+
+        const sortOrder = sponsors.length;
+        const { error: linkError } = await supabase
+          .from("event_sponsors")
+          .insert({
+            event_id: eventId,
+            sponsor_id: sponsor.id,
+            sort_order: sortOrder,
+          });
+
+        if (linkError) throw linkError;
+
+        const newEventSponsor: EventSponsor & { sponsors: Sponsor } = {
+          event_id: eventId!,
+          sponsor_id: sponsor.id,
+          sort_order: sortOrder,
+          created_at: new Date().toISOString(),
+          sponsors: sponsor,
+        };
+
+        const updatedSponsors = [...sponsors, newEventSponsor];
+        setSponsors(updatedSponsors);
+        onChange?.(updatedSponsors);
+        setIsAdding(false);
+      } catch (err) {
+        console.error("Error adding existing sponsor:", err);
+        setError("Failed to add sponsor");
+      }
+    }
+  };
+
   const handleRemoveSponsor = async (id: string) => {
     if (isDraftMode) {
       // Draft mode: remove from local state
@@ -337,10 +424,132 @@ export function SponsorForm({
             </div>
           )}
 
-          {/* Add new sponsor form */}
+          {/* Add sponsor dialog */}
           {isAdding && (
             <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
-              <div className="flex items-start gap-4">
+              {/* Mode toggle - only in live mode */}
+              {!isDraftMode && (
+                <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setAddMode("existing")}
+                    className={cn(
+                      "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
+                      addMode === "existing"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Select existing
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAddMode("new")}
+                    className={cn(
+                      "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
+                      addMode === "new"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Create new
+                  </button>
+                </div>
+              )}
+
+              {/* Existing sponsors list */}
+              {addMode === "existing" && !isDraftMode && (
+                <div className="space-y-3">
+                  {/* Search bar */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search sponsors..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+
+                  {/* Sponsors list */}
+                  {isLoadingSponsors ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <div className="max-h-64 overflow-y-auto space-y-2">
+                      {existingSponsors
+                        .filter(sponsor =>
+                          sponsor.name.toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                        .map((sponsor) => (
+                          <button
+                            key={sponsor.id}
+                            type="button"
+                            onClick={() => handleAddExistingSponsor(sponsor)}
+                            className="w-full flex items-center gap-3 p-3 border rounded-lg hover:bg-accent transition-colors text-left"
+                          >
+                            {/* Logo */}
+                            <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                              {sponsor.logo_url ? (
+                                <img
+                                  src={sponsor.logo_url}
+                                  alt={sponsor.name}
+                                  className="w-full h-full object-contain"
+                                />
+                              ) : (
+                                <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                              )}
+                            </div>
+
+                            {/* Name & link */}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{sponsor.name}</p>
+                              {sponsor.website_url && (
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {sponsor.website_url}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Add icon */}
+                            <Plus className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                          </button>
+                        ))}
+
+                      {existingSponsors.filter(sponsor =>
+                        sponsor.name.toLowerCase().includes(searchQuery.toLowerCase())
+                      ).length === 0 && (
+                        <p className="text-center py-8 text-sm text-muted-foreground">
+                          {searchQuery ? "No sponsors found" : "No sponsors available"}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsAdding(false);
+                        setSearchQuery("");
+                        setError(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Create new sponsor form */}
+              {(addMode === "new" || isDraftMode) && (
+                <>
+                  <div className="flex items-start gap-4">
                 {/* Logo upload */}
                 <div
                   className={cn(
@@ -398,6 +607,8 @@ export function SponsorForm({
                   size="sm"
                   onClick={() => {
                     setIsAdding(false);
+                    setAddMode("existing");
+                    setSearchQuery("");
                     setNewSponsor({ name: "", website_url: "", logo_url: "" });
                     setNewSponsorFile(null);
                     setError(null);
@@ -414,6 +625,8 @@ export function SponsorForm({
                   Add sponsor
                 </Button>
               </div>
+                </>
+              )}
             </div>
           )}
 
