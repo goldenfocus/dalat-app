@@ -7,6 +7,7 @@ import { MomentsFeed } from "@/components/feed/moments-feed";
 import { MomentsFilterBar, type MomentsFilterOption } from "./moments-filter-bar";
 import { InfiniteMomentDiscoveryGrouped } from "./infinite-moment-discovery-grouped";
 import { MomentsSearch } from "./moments-search";
+import { MomentsSearchOverlay } from "./moments-search-overlay";
 import { MomentCard } from "./moment-card";
 import type { MomentContentType, MomentWithEvent, DiscoveryEventMomentsGroup } from "@/lib/types";
 
@@ -51,21 +52,30 @@ export function MomentsDiscoveryMobile({
   initialHasMore,
 }: MomentsDiscoveryMobileProps) {
   const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-black text-white relative">
-      {/* Floating filter bar - overlays the video TikTok-style */}
+      {/* Floating header bar - overlays the video TikTok-style */}
       <div
         className="fixed top-0 left-0 right-0 z-40 pointer-events-none"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="px-4 pt-3 pb-2 pointer-events-auto">
+        <div className="px-4 pt-3 pb-2 pointer-events-auto flex items-center justify-between gap-3">
           <MomentsFilterBar
             options={options}
             activeKey={activeKey}
             onChange={setActiveKey}
             variant="dark"
           />
+          {/* Search button */}
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="flex-shrink-0 p-2 rounded-full bg-white/10 backdrop-blur-sm text-white/80 hover:text-white active:scale-95 transition-all"
+            aria-label="Search moments"
+          >
+            <Search className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -73,6 +83,12 @@ export function MomentsDiscoveryMobile({
         initialMoments={initialMoments}
         hasMore={initialHasMore}
         contentTypes={activeConfig.contentTypes}
+      />
+
+      {/* Search overlay */}
+      <MomentsSearchOverlay
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
       />
     </div>
   );

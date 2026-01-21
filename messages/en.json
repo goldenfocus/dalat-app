@@ -810,6 +810,9 @@
     "searchHint": "AI-powered visual search",
     "searchNoResults": "No moments found for \"{query}\"",
     "searchResults": "{count} results for \"{query}\"",
+    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
+    "searching": "Searching...",
+    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared",
     "momentPosted": "Moment posted!",
     "momentPending": "Your moment is pending approval",
     "whoCanPost": {
