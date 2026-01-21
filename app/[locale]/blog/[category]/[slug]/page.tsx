@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Languages } from "lucide-react";
 import { BlogCoverImage } from "@/components/blog/blog-cover-image";
 import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
+import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
 import { BlogShareButtons } from "@/components/blog/blog-share-buttons";
 import { TechnicalAccordion } from "@/components/blog/technical-accordion";
@@ -64,6 +65,8 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
+  const t = await getTranslations("blog");
+
   // Fetch translations for this blog post
   const translations = await getBlogTranslations(
     post.id,
@@ -113,7 +116,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg mb-6 w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Blog</span>
+            <span>{t("backToBlog")}</span>
           </Link>
 
           {/* Cover Image */}
@@ -143,7 +146,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             {translations.is_translated && (
               <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
                 <Languages className="w-3 h-3" />
-                Translated
+                {t("translated")}
               </span>
             )}
           </div>

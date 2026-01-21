@@ -1054,5 +1054,13 @@
     "description": "A community platform for discovering events in Đà Lạt, Vietnam.",
     "tagline": "Concerts, markets, workshops, and gatherings in the city of eternal spring.",
     "openSource": "Open source"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Product updates, release notes, and stories from the team.",
+    "allPosts": "All",
+    "noPosts": "No posts yet. Check back soon!",
+    "backToBlog": "Back to Blog",
+    "translated": "Translated"
   }
 }

@@ -8,9 +8,10 @@ import type { BlogCategory } from "@/lib/types/blog";
 interface CategoryTabsProps {
   categories: BlogCategory[];
   activeCategory?: string;
+  allLabel?: string;
 }
 
-export function CategoryTabs({ categories, activeCategory }: CategoryTabsProps) {
+export function CategoryTabs({ categories, activeCategory, allLabel = "All" }: CategoryTabsProps) {
   const pathname = usePathname();
   const baseUrl = pathname.split("/blog")[0] + "/blog";
 
@@ -27,7 +28,7 @@ export function CategoryTabs({ categories, activeCategory }: CategoryTabsProps) 
             : "bg-muted text-muted-foreground hover:bg-muted/80"
         )}
       >
-        All
+        {allLabel}
       </Link>
 
       {/* Category tabs */}

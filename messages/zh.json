@@ -944,5 +944,13 @@
     "description": "发现越南大叻活动的社区平台。",
     "tagline": "在永恒之春的城市里，音乐会、市集、工作坊和聚会。",
     "openSource": "开源"
+  },
+  "blog": {
+    "title": "博客",
+    "subtitle": "产品更新、版本说明和团队动态。",
+    "allPosts": "全部",
+    "noPosts": "暂无文章。敬请期待！",
+    "backToBlog": "返回博客",
+    "translated": "已翻译"
   }
 }

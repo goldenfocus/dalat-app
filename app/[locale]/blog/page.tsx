@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
 import { BlogPostGrid } from "@/components/blog/blog-post-grid";
 import { CategoryTabs } from "@/components/blog/category-tabs";
@@ -65,9 +66,10 @@ export default async function BlogPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
   const { category: categorySlug } = await searchParams;
 
-  const [posts, categories] = await Promise.all([
+  const [posts, categories, t] = await Promise.all([
     getBlogPosts(categorySlug),
     getCategories(),
+    getTranslations("blog"),
   ]);
 
   // Fetch translations for all posts in a single query
@@ -103,9 +105,9 @@ export default async function BlogPage({ params, searchParams }: PageProps) {
         <div className="mx-auto max-w-4xl px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Blog</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">{t("title")}</h1>
             <p className="text-muted-foreground">
-              Product updates, release notes, and stories from the team.
+              {t("subtitle")}
             </p>
           </div>
 
@@ -113,6 +115,7 @@ export default async function BlogPage({ params, searchParams }: PageProps) {
           <CategoryTabs
             categories={categories}
             activeCategory={categorySlug}
+            allLabel={t("allPosts")}
           />
 
           {/* Posts Grid */}
@@ -120,7 +123,7 @@ export default async function BlogPage({ params, searchParams }: PageProps) {
             <BlogPostGrid posts={translatedPosts} />
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              <p>No posts yet. Check back soon!</p>
+              <p>{t("noPosts")}</p>
             </div>
           )}
         </div>

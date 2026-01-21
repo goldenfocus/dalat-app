@@ -954,5 +954,13 @@
     "description": "Nền tảng cộng đồng để khám phá sự kiện tại Đà Lạt, Việt Nam.",
     "tagline": "Hòa nhạc, chợ phiên, workshop và các buổi họp mặt tại thành phố ngàn hoa.",
     "openSource": "Mã nguồn mở"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Cập nhật sản phẩm, ghi chú phiên bản và tin tức từ đội ngũ.",
+    "allPosts": "Tất cả",
+    "noPosts": "Chưa có bài viết. Quay lại sớm nhé!",
+    "backToBlog": "Quay lại Blog",
+    "translated": "Đã dịch"
   }
 }

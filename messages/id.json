@@ -944,5 +944,13 @@
     "description": "Platform komunitas untuk menemukan acara di Đà Lạt, Vietnam.",
     "tagline": "Konser, pasar, lokakarya, dan pertemuan di kota musim semi abadi.",
     "openSource": "Sumber terbuka"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Pembaruan produk, catatan rilis, dan berita dari tim.",
+    "allPosts": "Semua",
+    "noPosts": "Belum ada artikel. Kembali lagi nanti!",
+    "backToBlog": "Kembali ke Blog",
+    "translated": "Diterjemahkan"
   }
 }
