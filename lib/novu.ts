@@ -122,8 +122,10 @@ export async function notifyRsvpConfirmation(
   const notifLocale = getNotificationLocale(locale);
   const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/events/${eventSlug}`;
 
+  console.log('[novu] notifyRsvpConfirmation:', { subscriberId, eventSlug, locale: notifLocale });
+
   // Send both Novu inbox and web push in parallel
-  await Promise.all([
+  const [novuResult, pushResult] = await Promise.allSettled([
     getNovu().trigger('rsvp', {
       to: { subscriberId },
       payload: {
@@ -140,6 +142,11 @@ export async function notifyRsvpConfirmation(
       tag: `rsvp-${eventSlug}`,
     }),
   ]);
+
+  console.log('[novu] notifyRsvpConfirmation results:', {
+    novu: novuResult.status === 'fulfilled' ? 'ok' : novuResult.reason,
+    push: pushResult.status === 'fulfilled' ? pushResult.value : pushResult.reason,
+  });
 }
 
 export async function notifyConfirmAttendance24h(

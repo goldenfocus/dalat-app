@@ -1,5 +1,5 @@
 import webpush from 'web-push';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import type { NotificationMode } from '@/lib/types';
 
 // Configure VAPID details
@@ -9,6 +9,25 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );
+}
+
+/**
+ * Create a service role Supabase client for push notifications.
+ * Service role bypasses RLS so we can query any user's subscriptions.
+ */
+function createServiceClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceKey) {
+    console.error('[web-push] Missing Supabase env vars:', {
+      hasUrl: !!url,
+      hasServiceKey: !!serviceKey,
+    });
+    return null;
+  }
+
+  return createClient(url, serviceKey);
 }
 
 export interface PushNotificationPayload {
@@ -73,18 +92,30 @@ export async function sendPushToUser(
   userId: string,
   payload: PushNotificationPayload
 ): Promise<{ sent: number; failed: number }> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
-  // Get all subscriptions for this user (using service role bypasses RLS)
-  // Include notification_mode to pass to service worker
+  if (!supabase) {
+    console.error('[web-push] Cannot send push: service client not configured');
+    return { sent: 0, failed: 0 };
+  }
+
+  // Get all subscriptions for this user (service role bypasses RLS)
   const { data: subscriptions, error } = await supabase
     .from('push_subscriptions')
     .select('id, endpoint, p256dh, auth, notification_mode')
     .eq('user_id', userId);
 
-  if (error || !subscriptions?.length) {
+  if (error) {
+    console.error('[web-push] Error fetching subscriptions:', error.message);
     return { sent: 0, failed: 0 };
   }
+
+  if (!subscriptions?.length) {
+    console.log('[web-push] No subscriptions found for user:', userId);
+    return { sent: 0, failed: 0 };
+  }
+
+  console.log(`[web-push] Sending to ${subscriptions.length} subscription(s) for user:`, userId);
 
   let sent = 0;
   let failed = 0;
@@ -118,12 +149,14 @@ export async function sendPushToUser(
 
   // Clean up expired subscriptions
   if (expiredIds.length > 0) {
+    console.log(`[web-push] Cleaning up ${expiredIds.length} expired subscription(s)`);
     await supabase
       .from('push_subscriptions')
       .delete()
       .in('id', expiredIds);
   }
 
+  console.log(`[web-push] Result: ${sent} sent, ${failed} failed`);
   return { sent, failed };
 }
 

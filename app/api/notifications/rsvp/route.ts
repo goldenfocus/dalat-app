@@ -37,8 +37,11 @@ export async function POST(request: Request) {
 
   const locale = (profile?.locale as Locale) || 'en';
 
+  console.log('[rsvp-notification] Starting for user:', user.id, 'event:', event.slug);
+
   try {
     // Send immediate RSVP confirmation
+    console.log('[rsvp-notification] Sending confirmation...');
     await notifyRsvpConfirmation(
       user.id,
       locale,
@@ -46,8 +49,10 @@ export async function POST(request: Request) {
       event.slug,
       event.description
     );
+    console.log('[rsvp-notification] Confirmation sent');
 
     // Schedule 24h and 2h reminders + feedback request (all in parallel)
+    console.log('[rsvp-notification] Scheduling reminders...');
     const [reminders, feedback] = await Promise.all([
       scheduleEventReminders(
         user.id,
@@ -70,9 +75,10 @@ export async function POST(request: Request) {
       ),
     ]);
 
+    console.log('[rsvp-notification] Complete:', { reminders, feedback });
     return NextResponse.json({ success: true, scheduled: { ...reminders, ...feedback } });
   } catch (error) {
-    console.error('RSVP notification error:', error);
+    console.error('[rsvp-notification] Error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
