@@ -4,6 +4,10 @@ import { useState, useCallback } from "react";
 import Image from "next/image";
 import { cloudflareLoader } from "@/lib/image-cdn";
 
+// Tiny gradient placeholder for perceived instant loading (only ~150 bytes)
+const BLUR_DATA_URL =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMjIyIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMTExIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNnKSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIi8+PC9zdmc+";
+
 interface ImmersiveImageProps {
   src: string;
   alt: string;
@@ -52,6 +56,8 @@ export function ImmersiveImage({ src, alt, children, priority = false }: Immersi
         sizes="(max-width: 768px) 100vw, 50vw"
         priority={priority}
         fetchPriority={priority ? "high" : "auto"}
+        placeholder="blur"
+        blurDataURL={BLUR_DATA_URL}
         onLoad={handleLoad}
         className={`z-10 ${useObjectCover ? "object-cover" : "object-contain"}`}
       />
