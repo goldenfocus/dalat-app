@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyWaitlistPromotion } from '@/lib/notifications';
+import { notifyWaitlistPromotion, notifyWaitlistPositionUpdate } from '@/lib/notifications';
 import { inngest } from '@/lib/inngest';
 import type { Locale } from '@/lib/types';
 
@@ -78,6 +78,31 @@ export async function POST(request: Request) {
         googleMapsUrl: event.google_maps_url,
       },
     });
+
+    // Notify remaining waitlisted users of their new position
+    const { data: waitlistedUsers } = await supabase
+      .from('rsvps')
+      .select('user_id, profiles(locale)')
+      .eq('event_id', eventId)
+      .eq('status', 'waitlist')
+      .order('created_at', { ascending: true });
+
+    if (waitlistedUsers?.length) {
+      await Promise.all(
+        waitlistedUsers.map((user, index) => {
+          const userProfile = user.profiles as unknown as { locale?: string } | null;
+          const userLocale = (userProfile?.locale as Locale) || 'en';
+
+          return notifyWaitlistPositionUpdate(
+            user.user_id,
+            userLocale,
+            event.title,
+            index + 1,
+            event.slug
+          );
+        })
+      );
+    }
 
     return NextResponse.json({ success: true, promoted: true });
   } catch (error) {
