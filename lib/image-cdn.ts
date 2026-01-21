@@ -196,11 +196,11 @@ export function cloudflareLoader({
     return src;
   }
 
-  // Default quality 60 for faster LCP on slow networks
-  // Still acceptable visual quality, but ~30% smaller files
+  // Default quality 75 (Next.js default) for optimal LCP on slow networks
+  // Balances file size with visual quality for better perceived performance
   const cfOptions = [
     `width=${width}`,
-    `quality=${quality || 60}`,
+    `quality=${quality || 75}`,
     "format=auto",
     "fit=scale-down",
     "metadata=none",
