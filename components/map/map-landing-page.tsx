@@ -13,9 +13,10 @@ import type { Event, EventCounts } from "@/lib/types";
 interface MapLandingPageProps {
     events: Event[];
     counts: Record<string, EventCounts>;
+    hideTopNav?: boolean;
 }
 
-export function MapLandingPage({ events, counts }: MapLandingPageProps) {
+export function MapLandingPage({ events, counts, hideTopNav = false }: MapLandingPageProps) {
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -73,7 +74,7 @@ export function MapLandingPage({ events, counts }: MapLandingPageProps) {
     return (
         <div className="relative h-screen overflow-hidden bg-gray-50 flex flex-col">
             {/* Top Navigation */}
-            <TopNav />
+            {!hideTopNav && <TopNav />}
 
             {/* Map Header Section */}
             <div className="relative z-[1000] bg-white border-b border-gray-100 shadow-sm">

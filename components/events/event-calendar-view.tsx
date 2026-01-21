@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Download, Clock, MapPin } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, parseISO, addDays } from "date-fns";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { EventCard } from "./event-card";
 import type { Event, EventCounts } from "@/lib/types";
@@ -218,7 +219,7 @@ export function EventCalendarView({ events, counts }: EventCalendarViewProps) {
                             onClick={() => setViewMode("agenda")}
                             className={viewMode === "agenda" ? "bg-green-600 hover:bg-green-700" : "border-gray-200"}
                         >
-                            Agenda
+                            All
                         </Button>
                     </div>
                 </div>
@@ -290,48 +291,56 @@ export function EventCalendarView({ events, counts }: EventCalendarViewProps) {
                 {/* Week View */}
                 {viewMode === "week" && (
                     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                        <div className="grid grid-cols-7 gap-px bg-gray-200">
-                            {calendarDays.map((day) => {
-                                const dayEvents = getEventsForDay(day);
-                                const isSelected = selectedDate && isSameDay(day, selectedDate);
-                                const isTodayDate = isToday(day);
+                        {/* Mobile: horizontal scroll */}
+                        <div className="overflow-x-auto">
+                            <div className="flex lg:grid lg:grid-cols-7 min-w-max lg:min-w-0 gap-px bg-gray-200">
+                                {calendarDays.map((day) => {
+                                    const dayEvents = getEventsForDay(day);
+                                    const isSelected = selectedDate && isSameDay(day, selectedDate);
+                                    const isTodayDate = isToday(day);
 
-                                return (
-                                    <div
-                                        key={day.toISOString()}
-                                        className={cn(
-                                            "bg-white p-4 cursor-pointer hover:bg-gray-50 transition-colors",
-                                            isSelected && "bg-green-50 ring-2 ring-green-500"
-                                        )}
-                                        onClick={() => setSelectedDate(day)}
-                                    >
-                                        <div className="text-center mb-3">
-                                            <div className="text-sm text-gray-600">{format(day, "EEE")}</div>
-                                            <div
-                                                className={cn(
-                                                    "text-2xl font-bold",
-                                                    isTodayDate && "text-green-600"
+                                    return (
+                                        <div
+                                            key={day.toISOString()}
+                                            className={cn(
+                                                "bg-white p-3 lg:p-4 cursor-pointer hover:bg-gray-50 transition-colors min-w-[100px] lg:min-w-0",
+                                                isSelected && "bg-green-50 ring-2 ring-green-500"
+                                            )}
+                                            onClick={() => setSelectedDate(day)}
+                                        >
+                                            <div className="text-center mb-2 lg:mb-3">
+                                                <div className="text-xs lg:text-sm text-gray-600">{format(day, "EEE")}</div>
+                                                <div
+                                                    className={cn(
+                                                        "text-lg lg:text-2xl font-bold",
+                                                        isTodayDate && "text-green-600"
+                                                    )}
+                                                >
+                                                    {format(day, "d")}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1 lg:space-y-2">
+                                                {dayEvents.slice(0, 2).map((event) => (
+                                                    <div
+                                                        key={event.id}
+                                                        className="text-xs p-1.5 lg:p-2 bg-green-100 text-green-800 rounded"
+                                                    >
+                                                        <div className="font-medium truncate max-w-[80px] lg:max-w-none">{event.title}</div>
+                                                        <div className="text-green-600 text-[10px] lg:text-xs">
+                                                            {format(new Date(event.starts_at), "h:mm a")}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {dayEvents.length > 2 && (
+                                                    <div className="text-[10px] lg:text-xs text-gray-500 text-center">
+                                                        +{dayEvents.length - 2} more
+                                                    </div>
                                                 )}
-                                            >
-                                                {format(day, "d")}
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            {dayEvents.map((event) => (
-                                                <div
-                                                    key={event.id}
-                                                    className="text-xs p-2 bg-green-100 text-green-800 rounded"
-                                                >
-                                                    <div className="font-medium truncate">{event.title}</div>
-                                                    <div className="text-green-600">
-                                                        {format(new Date(event.starts_at), "h:mm a")}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 )}
@@ -357,18 +366,44 @@ export function EventCalendarView({ events, counts }: EventCalendarViewProps) {
 
                 {/* Agenda View */}
                 {viewMode === "agenda" && (
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                         {Object.entries(agendaEvents).length > 0 ? (
                             Object.entries(agendaEvents).map(([dateKey, dayEvents]) => {
                                 const date = parseISO(dateKey);
+                                const isTodayDate = isToday(date);
                                 return (
-                                    <div key={dateKey} className="bg-white rounded-lg border border-gray-200 p-6">
-                                        <h3 className="font-bold text-xl mb-4 text-green-600">
-                                            {format(date, "EEEE, MMMM d, yyyy")}
-                                        </h3>
-                                        <div className="space-y-4">
+                                    <div key={dateKey}>
+                                        {/* Date Header */}
+                                        <div className="flex items-center gap-4 mb-3">
+                                            <div className={cn(
+                                                "flex flex-col items-center justify-center w-14 h-14 rounded-full",
+                                                isTodayDate ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700"
+                                            )}>
+                                                <span className="text-xs font-semibold uppercase">
+                                                    {format(date, "EEE")}
+                                                </span>
+                                                <span className="text-xl font-bold leading-none">
+                                                    {format(date, "d")}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-gray-900">
+                                                    {format(date, "EEEE")}
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    {format(date, "MMMM yyyy")}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Event Cards */}
+                                        <div className="space-y-3 ml-[72px]">
                                             {dayEvents.map((event) => (
-                                                <EventCard key={event.id} event={event} counts={counts[event.id]} />
+                                                <AgendaEventCard
+                                                    key={event.id}
+                                                    event={event}
+                                                    counts={counts[event.id]}
+                                                />
                                             ))}
                                         </div>
                                     </div>
@@ -407,5 +442,50 @@ export function EventCalendarView({ events, counts }: EventCalendarViewProps) {
                 </div>
             )}
         </div>
+    );
+}
+
+// Compact event card for Agenda view
+function AgendaEventCard({ event }: { event: Event; counts?: EventCounts }) {
+    return (
+        <Link
+            href={`/events/${event.slug || event.id}`}
+            className="block bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+        >
+            <div className="flex">
+                {/* Colored left border */}
+                <div className="w-1 bg-green-500 shrink-0" />
+
+                <div className="flex-1 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                            {/* Event Title */}
+                            <h4 className="font-semibold text-gray-900 line-clamp-2 mb-2">
+                                {event.title}
+                            </h4>
+
+                            {/* Time */}
+                            <div className="flex items-center gap-1.5 text-sm text-gray-600 mb-1">
+                                <Clock className="w-4 h-4 shrink-0" />
+                                <span>{format(new Date(event.starts_at), "h:mm a")}</span>
+                            </div>
+
+                            {/* Location */}
+                            {event.location_name && (
+                                <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                                    <MapPin className="w-4 h-4 shrink-0" />
+                                    <span className="truncate">{event.location_name}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* FREE Badge - shown for all community events */}
+                        <span className="shrink-0 px-2.5 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                            FREE
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </Link>
     );
 }

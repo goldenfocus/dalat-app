@@ -888,5 +888,19 @@
     "permissionDenied": "Location permission denied",
     "errorTimeout": "Location request timed out",
     "enable": "Enable Location"
+  },
+  "search": {
+    "title": "{query} 大叻活动",
+    "description": "在越南大叻寻找 {query} 活动、工作坊和聚会。发现即将举行和过去的 {query} 活动。",
+    "breadcrumb": "搜索: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "{count, plural, one {找到 # 个活动} other {找到 # 个活动}}",
+    "noResults": "未找到活动",
+    "noResultsHint": "尝试其他搜索词或浏览所有活动",
+    "browseAll": "浏览所有活动",
+    "back": "返回",
+    "happeningNow": "进行中",
+    "upcoming": "即将举行",
+    "past": "过去的活动"
   }
 }

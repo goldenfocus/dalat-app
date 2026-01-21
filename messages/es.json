@@ -888,5 +888,19 @@
     "permissionDenied": "Location permission denied",
     "errorTimeout": "Location request timed out",
     "enable": "Enable Location"
+  },
+  "search": {
+    "title": "{query} eventos en Da Lat",
+    "description": "Encuentra eventos de {query}, talleres y reuniones en Da Lat, Vietnam. Descubre actividades de {query} próximas y pasadas.",
+    "breadcrumb": "Buscar: {query}",
+    "resultsFor": "\"{query}\"",
+    "resultCount": "{count, plural, one {# evento encontrado} other {# eventos encontrados}}",
+    "noResults": "No se encontraron eventos",
+    "noResultsHint": "Prueba con otro término de búsqueda o explora todos los eventos",
+    "browseAll": "Explorar todos los eventos",
+    "back": "Volver",
+    "happeningNow": "En curso",
+    "upcoming": "Próximos",
+    "past": "Eventos pasados"
   }
 }
