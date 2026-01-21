@@ -804,6 +804,11 @@
     "published": "Published",
     "viewMoments": "View moments",
     "viewAll": "View all moments",
+    "viewMoreMoments": "View {count} more moments",
+    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
+    "searchHint": "AI-powered visual search",
+    "searchNoResults": "No moments found for \"{query}\"",
+    "searchResults": "{count} results for \"{query}\"",
     "momentPosted": "Moment posted!",
     "momentPending": "Your moment is pending approval",
     "whoCanPost": {
@@ -1088,5 +1093,12 @@
     "eventCount": "{count, plural, one {# upcoming event} other {# upcoming events}}",
     "createEvent": "Create an event",
     "seeAll": "See all upcoming events"
+  },
+  "streaming": {
+    "goLive": "Go Live",
+    "goLiveDescription": "What are you sharing?",
+    "goLivePlaceholder": "Sunset at Xuan Huong Lake...",
+    "goingLive": "Going live...",
+    "goLiveError": "Could not start stream. Please try again."
   }
 }

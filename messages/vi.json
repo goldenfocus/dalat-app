@@ -671,6 +671,11 @@
     "published": "Đã đăng",
     "viewMoments": "Xem khoảnh khắc",
     "viewAll": "Xem tất cả khoảnh khắc",
+    "viewMoreMoments": "Xem thêm {count} khoảnh khắc",
+    "searchPlaceholder": "Tìm kiếm... (vd: chó, hoàng hôn)",
+    "searchHint": "Tìm kiếm bằng AI",
+    "searchNoResults": "Không tìm thấy kết quả cho \"{query}\"",
+    "searchResults": "{count} kết quả cho \"{query}\"",
     "momentPosted": "Đã đăng khoảnh khắc!",
     "momentPending": "Khoảnh khắc đang chờ duyệt",
     "whoCanPost": {
@@ -978,5 +983,12 @@
     "eventCount": "{count, plural, one {# sự kiện sắp tới} other {# sự kiện sắp tới}}",
     "createEvent": "Tạo sự kiện",
     "seeAll": "Xem tất cả sự kiện sắp tới"
+  },
+  "streaming": {
+    "goLive": "Phát trực tiếp",
+    "goLiveDescription": "Bạn đang chia sẻ gì?",
+    "goLivePlaceholder": "Hoàng hôn tại hồ Xuân Hương...",
+    "goingLive": "Đang kết nối...",
+    "goLiveError": "Không thể bắt đầu phát. Vui lòng thử lại."
   }
 }

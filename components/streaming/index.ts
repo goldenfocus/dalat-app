@@ -9,3 +9,4 @@ export { StreamPlayer } from './viewer/StreamPlayer';
 // Shared components
 export { StreamStatusBadge } from './StreamStatusBadge';
 export { WatchLiveButton } from './WatchLiveButton';
+export { GoLiveModal } from './GoLiveModal';

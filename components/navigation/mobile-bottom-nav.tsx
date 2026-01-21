@@ -2,9 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { BookOpen, Film, Plus, User } from "lucide-react";
+import { BookOpen, Film, Plus, User, Video } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
+import { GoLiveModal } from "@/components/streaming/GoLiveModal";
 
 const NAV_ITEMS = [
   {
@@ -18,6 +19,12 @@ const NAV_ITEMS = [
     href: "/blog",
     icon: BookOpen,
     labelKey: "blog",
+  },
+  {
+    key: "live",
+    href: null, // Special case: opens modal
+    icon: Video,
+    labelKey: "goLive",
   },
   {
     key: "create",
@@ -41,6 +48,7 @@ export function MobileBottomNav() {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
   const tCommon = useTranslations("common");
+  const tStreaming = useTranslations("streaming");
   const normalizedPath = normalizePath(pathname);
 
   // Hide nav on immersive moments feed for TikTok-style experience
@@ -56,11 +64,29 @@ export function MobileBottomNav() {
     >
       <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
         {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+
+          // Special case: Go Live button opens modal
+          if (item.key === "live") {
+            return (
+              <GoLiveModal
+                key={item.key}
+                trigger={
+                  <button
+                    aria-label={tStreaming("goLive")}
+                    className="flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-95 text-muted-foreground hover:text-foreground"
+                  >
+                    <Icon className="h-5 w-5" />
+                  </button>
+                }
+              />
+            );
+          }
+
           // Profile is active for any /settings path
           const isActive = item.key === "profile"
             ? normalizedPath.startsWith("/settings")
-            : normalizedPath.startsWith(item.href);
-          const Icon = item.icon;
+            : item.href && normalizedPath.startsWith(item.href);
           const label = item.labelKey === "create"
             ? tCommon("create")
             : tNav(item.labelKey);
@@ -68,7 +94,7 @@ export function MobileBottomNav() {
           return (
             <Link
               key={item.key}
-              href={item.href}
+              href={item.href!}
               prefetch={false}
               onClick={() => triggerHaptic("selection")}
               aria-label={label}

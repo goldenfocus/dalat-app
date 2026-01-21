@@ -3,6 +3,7 @@ import { Film, Plus } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButton } from "@/components/auth-button";
 import { LocalePicker } from "@/components/locale-picker";
+import { GoLiveModal } from "@/components/streaming/GoLiveModal";
 
 interface SiteHeaderProps {
   /** Optional content to render on the right side before AuthButton */
@@ -35,6 +36,9 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
           >
             <Plus className="w-5 h-5" />
           </Link>
+          <div className="hidden sm:block">
+            <GoLiveModal />
+          </div>
           {actions}
           <Suspense>
             <AuthButton />
