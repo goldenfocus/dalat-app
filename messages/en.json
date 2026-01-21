@@ -149,6 +149,9 @@
     "viewAllEvents": "View all events",
     "notFound": "Event not found",
     "partOfSeries": "Part of {seriesName}",
+    "onlineEvent": "Online Event",
+    "joinMeeting": "Join meeting",
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
     "lifecycle": {
       "live": "Live",
       "ended": "Ended"
@@ -231,7 +234,12 @@
     "organizer": "Organizer",
     "selectOrganizer": "Select an organizer",
     "noOrganizer": "No organizer (personal event)",
-    "organizerHelp": "Associate this event with a venue or organization"
+    "organizerHelp": "Associate this event with a venue or organization",
+    "onlineEvent": "This is an online event",
+    "onlineEventHelp": "Online events happen virtually via video call (Zoom, Google Meet, etc.)",
+    "onlineLink": "Meeting link",
+    "onlineLinkPlaceholder": "https://zoom.us/j/...",
+    "onlineLinkHelp": "The link where attendees will join the event"
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",
@@ -254,7 +262,10 @@
     "generate": "Generate",
     "refineImage": "Refine this image",
     "refinementPlaceholder": "e.g., Add more purple tones, make it more abstract...",
-    "applyRefinement": "Apply refinement"
+    "applyRefinement": "Apply refinement",
+    "titlePositionTop": "Title at top",
+    "titlePositionMiddle": "Title in middle",
+    "titlePositionBottom": "Title at bottom"
   },
   "eventActions": {
     "eventOptions": "Event options",

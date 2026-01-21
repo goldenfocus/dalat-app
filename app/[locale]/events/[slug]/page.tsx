@@ -6,7 +6,7 @@ import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
-import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat } from "lucide-react";
+import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat, Video } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
@@ -676,6 +676,32 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     </p>
                   </div>
                 </div>
+
+                {/* Online event indicator */}
+                {event.is_online && (
+                  <div className="flex items-start gap-3">
+                    <Video className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="font-medium">{t("onlineEvent")}</p>
+                      {/* Only show meeting link to RSVPed users */}
+                      {event.online_link && currentRsvp?.status === "going" ? (
+                        <a
+                          href={event.online_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline flex items-center gap-1"
+                        >
+                          {t("joinMeeting")}
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : event.online_link ? (
+                        <p className="text-sm text-muted-foreground">
+                          {t("rsvpToSeeMeetingLink")}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
 
                 {/* Location */}
                 {(event.location_name || event.address) && (

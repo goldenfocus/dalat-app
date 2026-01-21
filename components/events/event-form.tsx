@@ -206,6 +206,14 @@ export function EventForm({
   // Pending file for upload (only for new events with file/generated image)
   const [pendingFile, setPendingFile] = useState<File | null>(null);
 
+  // Title position state (for flyer customization)
+  const [titlePosition, setTitlePosition] = useState<"top" | "middle" | "bottom">(
+    event?.title_position ?? "bottom"
+  );
+
+  // Online event state
+  const [isOnline, setIsOnline] = useState(event?.is_online ?? false);
+
   // Slug state
   const [slug, setSlug] = useState(event?.slug ?? "");
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
@@ -397,6 +405,7 @@ export function EventForm({
     const address = formData.get("address") as string;
     const googleMapsUrl = formData.get("google_maps_url") as string;
     const externalChatUrl = formData.get("external_chat_url") as string;
+    const onlineLink = formData.get("online_link") as string;
     const capacityStr = formData.get("capacity") as string;
 
     if (!title.trim() || !date || !time) {
@@ -433,6 +442,9 @@ export function EventForm({
           address: address || null,
           google_maps_url: googleMapsUrl || null,
           external_chat_url: externalChatUrl || null,
+          is_online: isOnline,
+          online_link: isOnline ? (onlineLink || null) : null,
+          title_position: titlePosition,
           capacity,
           organizer_id: organizerId,
         };
@@ -484,6 +496,9 @@ export function EventForm({
               address: address || null,
               google_maps_url: googleMapsUrl || null,
               external_chat_url: externalChatUrl || null,
+              is_online: isOnline,
+              online_link: isOnline ? (onlineLink || null) : null,
+              title_position: titlePosition,
               capacity,
               rrule,
               starts_at_time: time + ":00", // Convert "19:00" to "19:00:00"
@@ -529,6 +544,9 @@ export function EventForm({
               address: address || null,
               google_maps_url: googleMapsUrl || null,
               external_chat_url: externalChatUrl || null,
+              is_online: isOnline,
+              online_link: isOnline ? (onlineLink || null) : null,
+              title_position: titlePosition,
               capacity,
               created_by: userId,
               status: "published",
@@ -613,6 +631,8 @@ export function EventForm({
               onTitleChange={handleTitleChange}
               imageUrl={imageUrl}
               onImageChange={handleImageChange}
+              titlePosition={titlePosition}
+              onTitlePositionChange={setTitlePosition}
             />
           )}
 
@@ -704,7 +724,41 @@ export function EventForm({
             />
           )}
 
-          {/* Location (Google Places Autocomplete) */}
+          {/* Online event toggle */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="isOnline"
+                checked={isOnline}
+                onCheckedChange={(checked) => setIsOnline(!!checked)}
+              />
+              <Label htmlFor="isOnline" className="cursor-pointer">
+                {t("onlineEvent")}
+              </Label>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t("onlineEventHelp")}
+            </p>
+          </div>
+
+          {/* Online link (when online event) */}
+          {isOnline && (
+            <div className="space-y-2">
+              <Label htmlFor="online_link">{t("onlineLink")}</Label>
+              <Input
+                id="online_link"
+                name="online_link"
+                type="url"
+                placeholder={t("onlineLinkPlaceholder")}
+                defaultValue={event?.online_link ?? ""}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("onlineLinkHelp")}
+              </p>
+            </div>
+          )}
+
+          {/* Location (Google Places Autocomplete) - optional for online events */}
           <PlaceAutocomplete
             onPlaceSelect={() => {}}
             defaultValue={

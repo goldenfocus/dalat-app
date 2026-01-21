@@ -12,6 +12,9 @@ interface CreateSeriesRequest {
   address?: string;
   google_maps_url?: string;
   external_chat_url?: string;
+  is_online?: boolean;
+  online_link?: string;
+  title_position?: "top" | "middle" | "bottom";
   capacity?: number;
   tribe_id?: string;
   organizer_id?: string;
@@ -101,6 +104,9 @@ export async function POST(request: Request) {
         address: body.address?.trim() || null,
         google_maps_url: body.google_maps_url || null,
         external_chat_url: body.external_chat_url || null,
+        is_online: body.is_online || false,
+        online_link: body.is_online ? (body.online_link || null) : null,
+        title_position: body.title_position || "bottom",
         timezone: DALAT_TIMEZONE,
         capacity: body.capacity || null,
         tribe_id: body.tribe_id || null,
@@ -161,6 +167,9 @@ export async function POST(request: Request) {
         address: body.address?.trim() || null,
         google_maps_url: body.google_maps_url || null,
         external_chat_url: body.external_chat_url || null,
+        is_online: body.is_online || false,
+        online_link: body.is_online ? (body.online_link || null) : null,
+        title_position: body.title_position || "bottom",
         timezone: DALAT_TIMEZONE,
         capacity: body.capacity || null,
         tribe_id: body.tribe_id || null,
