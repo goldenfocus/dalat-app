@@ -53,7 +53,7 @@ export default async function LiveViewerPage({ params }: PageProps) {
             imageUrl: event.image_url,
             startsAt: event.starts_at,
             endsAt: event.ends_at,
-            creator: event.profiles as {
+            creator: (Array.isArray(event.profiles) ? event.profiles[0] : event.profiles) as {
               id: string;
               username: string | null;
               display_name: string | null;

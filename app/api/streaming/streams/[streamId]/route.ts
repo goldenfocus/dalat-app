@@ -112,7 +112,8 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: 'Stream not found' }, { status: 404 });
   }
 
-  const isAuthorized = user.id === stream.broadcaster_id || user.id === (stream.events as { created_by: string }).created_by;
+  const eventData = Array.isArray(stream.events) ? stream.events[0] : stream.events;
+  const isAuthorized = user.id === stream.broadcaster_id || user.id === (eventData as { created_by: string })?.created_by;
 
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Not authorized to delete this stream' }, { status: 403 });
