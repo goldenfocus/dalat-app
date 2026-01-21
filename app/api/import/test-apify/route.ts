@@ -32,38 +32,55 @@ export async function GET() {
 
     const data = await response.json();
 
-    // Test 2: Try multiple actors to see which ones are accessible
-    const testActors = [
-      "data-slayer/facebook-search-events",
-      "pratikdani/facebook-event-scraper",
-    ];
+    // Test 2: List all actors available to this account
+    const actorsResponse = await fetch(
+      `https://api.apify.com/v2/acts?token=${apiToken}&limit=100`
+    );
 
-    const actorTests = [];
-    for (const actorId of testActors) {
-      const testRunResponse = await fetch(
-        `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiToken}`,
-        {
-          method: "GET",
-        }
-      );
-
-      actorTests.push({
-        actorId,
-        accessible: testRunResponse.ok,
-        error: testRunResponse.ok ? null : await testRunResponse.text(),
+    if (!actorsResponse.ok) {
+      return NextResponse.json({
+        error: "Cannot list actors",
+        details: await actorsResponse.text(),
       });
     }
+
+    const actorsData = await actorsResponse.json();
+    const availableActors = actorsData.data?.items || [];
+
+    // Filter for Facebook/event related actors
+    const relevantActors = availableActors.filter((actor: any) => {
+      const name = (actor.name || "").toLowerCase();
+      const title = (actor.title || "").toLowerCase();
+      return (
+        name.includes("facebook") ||
+        name.includes("event") ||
+        title.includes("facebook") ||
+        title.includes("event")
+      );
+    });
 
     return NextResponse.json({
       success: true,
       configured: true,
       tokenValid: true,
       tokenPrefix: apiToken.substring(0, 10) + "...",
-      actors: actorTests,
+      totalActorsAvailable: availableActors.length,
+      relevantActors: relevantActors.map((a: any) => ({
+        id: a.id,
+        name: a.name,
+        title: a.title,
+        username: a.username,
+      })),
+      allActors: availableActors.slice(0, 10).map((a: any) => ({
+        id: a.id,
+        name: a.name,
+        title: a.title,
+        username: a.username,
+      })),
       message:
-        actorTests.filter((a) => a.accessible).length > 0
-          ? `✅ Apify configured correctly. ${actorTests.filter((a) => a.accessible).length}/${actorTests.length} actors accessible`
-          : "⚠️ Token is valid but cannot access any tested actors",
+        relevantActors.length > 0
+          ? `✅ Found ${relevantActors.length} Facebook/event actors available`
+          : `⚠️ No Facebook/event actors found. ${availableActors.length} total actors available.`,
     });
   } catch (error) {
     return NextResponse.json({
