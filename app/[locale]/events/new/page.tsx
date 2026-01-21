@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import { ArrowLeft, Copy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getTranslations } from "next-intl/server";
 
 // Increase serverless function timeout
 export const maxDuration = 60;
@@ -46,6 +47,7 @@ async function getCopyFromData(eventId: string): Promise<CopyFromData | null> {
 export default async function NewEventPage({ searchParams }: PageProps) {
   const supabase = await createClient();
   const { copyFrom } = await searchParams;
+  const t = await getTranslations("eventForm");
 
   const {
     data: { user },
@@ -85,9 +87,14 @@ export default async function NewEventPage({ searchParams }: PageProps) {
             <span>Creating from: <strong className="text-foreground">{copyFromData.event.title}</strong></span>
           </div>
         )}
-        <h1 className="text-2xl font-bold mb-8">
-          {isCopying ? "Create Similar Event" : "Create Event"}
-        </h1>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold">
+            {isCopying ? t("pageTitleCopy") : t("pageTitle")}
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            {t("pageSubtitle")}
+          </p>
+        </div>
         <EventForm
           userId={user.id}
           copyFromEvent={copyFromData?.event}

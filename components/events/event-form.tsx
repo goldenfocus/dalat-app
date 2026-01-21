@@ -665,6 +665,9 @@ export function EventForm({
               rows={3}
               context="an event description for a local community event in Đà Lạt, Vietnam"
             />
+            <p className="text-xs text-muted-foreground">
+              {t("infoHelperText")}
+            </p>
           </div>
 
           {/* Date and time */}

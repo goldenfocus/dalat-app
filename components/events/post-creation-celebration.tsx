@@ -12,8 +12,7 @@ import {
   Check,
   Copy,
   MessageCircle,
-  Users,
-  Phone,
+  ChevronDown,
 } from "lucide-react";
 import {
   Dialog,
@@ -25,7 +24,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 
 interface PostCreationCelebrationProps {
   isOpen: boolean;
@@ -246,9 +244,8 @@ export function PostCreationCelebration({
             <PartyPopper className="w-8 h-8 text-white" />
           </div>
           <DialogTitle className="text-2xl">{t("title")}</DialogTitle>
-          <DialogDescription className="text-base">
-            <span className="font-medium text-foreground">{eventTitle}</span>
-            <br />
+          <p className="text-xl font-semibold text-foreground mt-2">{eventTitle}</p>
+          <DialogDescription className="text-base mt-1">
             {t("subtitle")}
           </DialogDescription>
         </DialogHeader>
@@ -304,153 +301,111 @@ export function PostCreationCelebration({
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                {t("orInviteBy")}
+          {/* Collapsible Email Invites Section */}
+          <details className="group border rounded-lg">
+            <summary className="flex items-center justify-between cursor-pointer py-3 px-4 text-sm font-medium hover:bg-muted/50 transition-colors rounded-lg">
+              <span className="flex items-center gap-2">
+                <Send className="w-4 h-4" />
+                {t("personalInvitesTitle")}
               </span>
-            </div>
-          </div>
+              <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="px-4 pb-4 space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {t("emailDescription")}
+              </p>
 
-          {/* Email Invites Section */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Send className="w-4 h-4" />
-              {t("emailInvites")}
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              {t("emailDescription")}
-            </p>
-
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                placeholder={t("emailPlaceholder")}
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onBlur={handleAddEmails}
-                disabled={sending}
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddEmails}
-                disabled={!emailInput.trim() || sending}
-              >
-                {t("addEmails")}
-              </Button>
-            </div>
-
-            {/* Email chips */}
-            {emails.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {emails.map(({ email }) => (
-                  <span
-                    key={email}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
-                  >
-                    {email}
-                    <button
-                      type="button"
-                      onClick={() => removeEmail(email)}
-                      className="hover:text-destructive p-0.5"
-                      disabled={sending}
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder={t("emailPlaceholder")}
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={handleAddEmails}
+                  disabled={sending}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAddEmails}
+                  disabled={!emailInput.trim() || sending}
+                >
+                  {t("addEmails")}
+                </Button>
               </div>
-            )}
 
-            {/* Error message */}
-            {error && <p className="text-sm text-destructive">{error}</p>}
-
-            {/* Results */}
-            {hasResults && (
-              <div className="space-y-2 p-3 bg-muted rounded-lg">
-                {successCount > 0 && (
-                  <p className="text-sm text-green-600 flex items-center gap-2">
-                    <Check className="w-4 h-4" />
-                    {t("sentSuccess", { count: successCount })}
-                  </p>
-                )}
-                {results
-                  .filter((r) => !r.success)
-                  .map((r) => (
-                    <p
-                      key={r.email}
-                      className="text-sm text-destructive flex items-center gap-2"
+              {/* Email chips */}
+              {emails.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {emails.map(({ email }) => (
+                    <span
+                      key={email}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
                     >
-                      <X className="w-4 h-4" />
-                      {r.email}: {r.error}
-                    </p>
+                      {email}
+                      <button
+                        type="button"
+                        onClick={() => removeEmail(email)}
+                        className="hover:text-destructive p-0.5"
+                        disabled={sending}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
                   ))}
-              </div>
-            )}
-
-            {/* Send button */}
-            {emails.length > 0 && (
-              <Button
-                onClick={handleSendInvites}
-                disabled={emails.length === 0 || sending}
-                className="w-full gap-2"
-              >
-                {sending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    {t("sending")}
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    {t("sendInvites", { count: emails.length })}
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-
-          {/* Coming Soon Sections */}
-          <div className="space-y-3 opacity-60">
-            {/* Tribe Invites - Stub */}
-            <div className="p-4 rounded-lg border border-dashed border-muted-foreground/30">
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="font-medium text-sm">{t("tribeInvites")}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("tribeDescription")}
-                  </p>
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  {t("comingSoon")}
-                </Badge>
-              </div>
-            </div>
+              )}
 
-            {/* SMS Invites - Stub */}
-            <div className="p-4 rounded-lg border border-dashed border-muted-foreground/30">
-              <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="font-medium text-sm">{t("smsInvites")}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("smsDescription")}
-                  </p>
+              {/* Error message */}
+              {error && <p className="text-sm text-destructive">{error}</p>}
+
+              {/* Results */}
+              {hasResults && (
+                <div className="space-y-2 p-3 bg-muted rounded-lg">
+                  {successCount > 0 && (
+                    <p className="text-sm text-green-600 flex items-center gap-2">
+                      <Check className="w-4 h-4" />
+                      {t("sentSuccess", { count: successCount })}
+                    </p>
+                  )}
+                  {results
+                    .filter((r) => !r.success)
+                    .map((r) => (
+                      <p
+                        key={r.email}
+                        className="text-sm text-destructive flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" />
+                        {r.email}: {r.error}
+                      </p>
+                    ))}
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  {t("comingSoon")}
-                </Badge>
-              </div>
+              )}
+
+              {/* Send button */}
+              {emails.length > 0 && (
+                <Button
+                  onClick={handleSendInvites}
+                  disabled={emails.length === 0 || sending}
+                  className="w-full gap-2"
+                >
+                  {sending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {t("sending")}
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      {t("sendInvites", { count: emails.length })}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
-          </div>
+          </details>
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-2 pt-2">
