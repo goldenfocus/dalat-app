@@ -76,30 +76,47 @@ export function TopNavBar() {
     const pathname = usePathname();
     const currentPath = pathname?.replace(/^\/[a-z]{2}/, "") || "/";
 
-    return (
-        <nav className="hidden lg:flex items-center gap-1 bg-gray-100 rounded-full p-1">
-            {BOTTOM_NAV_ITEMS.filter(item => item.label !== "Add" && item.label !== "Me").map((item) => {
-                const isActive =
-                    currentPath === item.href ||
-                    (item.href !== "/" && currentPath.startsWith(item.href));
-                const Icon = Icons[item.icon];
+    const navItems = BOTTOM_NAV_ITEMS.filter(item => item.label !== "Add" && item.label !== "Me");
+    const addItem = BOTTOM_NAV_ITEMS.find(item => item.label === "Add");
 
-                return (
-                    <Link
-                        key={item.href + item.label}
-                        href={item.href}
-                        className={cn(
-                            "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all",
-                            isActive
-                                ? "bg-white text-green-600 shadow-sm"
-                                : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
-                        )}
-                    >
-                        <Icon className="w-4 h-4" />
-                        <span>{item.label}</span>
-                    </Link>
-                );
-            })}
+    return (
+        <nav className="hidden lg:flex items-center gap-3">
+            {/* Navigation pills */}
+            <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1">
+                {navItems.map((item) => {
+                    const isActive =
+                        currentPath === item.href ||
+                        (item.href !== "/" && currentPath.startsWith(item.href));
+                    const Icon = Icons[item.icon];
+
+                    return (
+                        <Link
+                            key={item.href + item.label}
+                            href={item.href}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all",
+                                isActive
+                                    ? "bg-white text-green-600 shadow-sm"
+                                    : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                            )}
+                        >
+                            <Icon className="w-4 h-4" />
+                            <span>{item.label}</span>
+                        </Link>
+                    );
+                })}
+            </div>
+
+            {/* Add Event button */}
+            {addItem && (
+                <Link
+                    href={addItem.href}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-full transition-all active:scale-95 shadow-sm"
+                >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Event</span>
+                </Link>
+            )}
         </nav>
     );
 }

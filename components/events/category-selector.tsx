@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { createClient } from "@/lib/supabase/client";
-import { cn } from "@/lib/utils";
 
 export interface EventCategory {
     id: string;
@@ -64,58 +63,24 @@ export function CategorySelector({
         fetchCategories();
     }, []);
 
-    const handleToggle = (categoryId: string) => {
-        if (selectedCategories.includes(categoryId)) {
-            onChange(selectedCategories.filter((id) => id !== categoryId));
-        } else if (selectedCategories.length < maxSelections) {
-            onChange([...selectedCategories, categoryId]);
-        }
-    };
-
-    const isMaxSelected = selectedCategories.length >= maxSelections;
+    // Convert categories to MultiSelect options format
+    const options: MultiSelectOption[] = categories.map((category) => ({
+        value: category.id,
+        label: category.name_en,
+        icon: category.icon,
+    }));
 
     return (
-        <div className="space-y-3">
-            <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">{label}</Label>
-                <span className="text-xs text-muted-foreground">
-                    {selectedCategories.length}/{maxSelections} selected
-                </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {categories.map((category) => {
-                    const isSelected = selectedCategories.includes(category.id);
-                    const isDisabled = !isSelected && isMaxSelected;
-
-                    return (
-                        <label
-                            key={category.id}
-                            className={cn(
-                                "flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all",
-                                isSelected
-                                    ? "border-green-500 bg-green-50"
-                                    : "border-gray-200 hover:border-gray-300",
-                                isDisabled && "opacity-50 cursor-not-allowed"
-                            )}
-                        >
-                            <Checkbox
-                                id={`category-${category.id}`}
-                                checked={isSelected}
-                                disabled={isDisabled}
-                                onCheckedChange={() => handleToggle(category.id)}
-                                className="border-gray-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
-                            />
-                            <span className="text-base">{category.icon}</span>
-                            <span className="text-sm font-medium truncate">
-                                {category.name_en}
-                            </span>
-                        </label>
-                    );
-                })}
-            </div>
-            {loading && (
-                <p className="text-xs text-muted-foreground">Loading categories...</p>
-            )}
+        <div className="space-y-2">
+            <Label className="text-sm font-medium">{label}</Label>
+            <MultiSelect
+                options={options}
+                selected={selectedCategories}
+                onChange={onChange}
+                placeholder={loading ? "Loading categories..." : "Select up to 3 categories"}
+                maxSelections={maxSelections}
+                disabled={loading}
+            />
         </div>
     );
 }

@@ -7,10 +7,10 @@ import { MapLandingPage } from "@/components/map/map-landing-page";
 import { EventCalendarView } from "@/components/events/event-calendar-view";
 import { FilterPanel } from "@/components/events/filter-panel";
 import { Button } from "@/components/ui/button";
-import type { Event, EventCounts, EventFilters } from "@/lib/types";
+import type { EventCounts, EventFilters, EventWithFilterData } from "@/lib/types";
 
 interface ExploreViewProps {
-    events: Event[];
+    events: EventWithFilterData[];
     counts: Record<string, EventCounts>;
 }
 
@@ -56,19 +56,18 @@ export function ExploreView({ events, counts }: ExploreViewProps) {
             });
         }
 
-        // Category filter (when events have category_ids)
+        // Category filter
         if (filters.categories && filters.categories.length > 0) {
             result = result.filter(event => {
-                // Check if event has category_ids (from filter_events RPC)
-                const eventCategories = (event as any).category_ids || [];
+                const eventCategories = event.category_ids || [];
                 return filters.categories!.some(cat => eventCategories.includes(cat));
             });
         }
 
-        // Price filter (when events have is_free field)
+        // Price filter
         if (filters.priceFilter && filters.priceFilter !== "all") {
             result = result.filter(event => {
-                const isFree = (event as any).is_free ?? true; // Default to free if not set
+                const isFree = event.price_type === "free";
                 return filters.priceFilter === "free" ? isFree : !isFree;
             });
         }

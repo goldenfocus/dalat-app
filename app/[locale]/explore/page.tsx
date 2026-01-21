@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { ExploreView } from "@/components/explore/explore-view";
-import type { Event, EventCounts } from "@/lib/types";
+import type { Event, EventCounts, EventWithFilterData } from "@/lib/types";
 
-async function getEvents() {
+async function getEvents(): Promise<EventWithFilterData[]> {
     const supabase = await createClient();
 
-    // Try using filter_events RPC first, fallback to get_events_by_lifecycle
+    // Try using filter_events RPC first (includes category_ids)
     try {
         const { data: upcomingEvents, error: upcomingError } = await supabase.rpc("filter_events", {
             p_lifecycle: "upcoming",
@@ -38,13 +38,13 @@ async function getEvents() {
             return [
                 ...(upcomingEvents || []),
                 ...(happeningEvents || []),
-            ] as Event[];
+            ] as EventWithFilterData[];
         }
     } catch (err) {
         console.log("filter_events RPC not available, using fallback");
     }
 
-    // Fallback to old RPC
+    // Fallback: Use old RPC and manually fetch categories
     const { data: upcomingEvents } = await supabase.rpc("get_events_by_lifecycle", {
         p_lifecycle: "upcoming",
         p_limit: 500,
@@ -55,10 +55,32 @@ async function getEvents() {
         p_limit: 50,
     });
 
-    return [
+    const allEvents = [
         ...(upcomingEvents || []),
         ...(happeningEvents || []),
     ] as Event[];
+
+    // Fetch categories for all events
+    const eventIds = allEvents.map(e => e.id);
+    const { data: categoryAssignments } = await supabase
+        .from("event_category_assignments")
+        .select("event_id, category_id")
+        .in("event_id", eventIds);
+
+    // Map events with their category_ids
+    const eventsWithCategories: EventWithFilterData[] = allEvents.map(event => ({
+        ...event,
+        price_type: "free" as const, // Default for fallback
+        price_amount: null,
+        price_currency: "VND",
+        price_note: null,
+        distance_km: null,
+        category_ids: categoryAssignments
+            ?.filter(ca => ca.event_id === event.id)
+            .map(ca => ca.category_id) || [],
+    }));
+
+    return eventsWithCategories;
 }
 
 async function getEventCounts(eventIds: string[]) {

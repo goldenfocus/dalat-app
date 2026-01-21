@@ -9,17 +9,125 @@ import { formatInDaLat } from "@/lib/timezone";
 import { useLocale } from "next-intl";
 import type { Locale } from "@/lib/types";
 
-// Map styling - matches dalat.app theme
+// Custom map styling - elegant, minimal design that matches dalat.app theme
+// Inspired by modern map designs with muted colors and clean aesthetics
 const MAP_STYLES: google.maps.MapTypeStyle[] = [
+    // Overall map background - soft warm grey
+    {
+        elementType: "geometry",
+        stylers: [{ color: "#f5f5f5" }],
+    },
+    // Labels - subtle and elegant
+    {
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#616161" }],
+    },
+    {
+        elementType: "labels.text.stroke",
+        stylers: [{ color: "#f5f5f5" }],
+    },
+    // Water - soft blue-grey
+    {
+        featureType: "water",
+        elementType: "geometry",
+        stylers: [{ color: "#c9d6df" }],
+    },
+    {
+        featureType: "water",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#9e9e9e" }],
+    },
+    // Roads - clean, minimal
+    {
+        featureType: "road",
+        elementType: "geometry",
+        stylers: [{ color: "#ffffff" }],
+    },
+    {
+        featureType: "road",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#9e9e9e" }],
+    },
+    {
+        featureType: "road.highway",
+        elementType: "geometry",
+        stylers: [{ color: "#dadada" }],
+    },
+    {
+        featureType: "road.highway",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#616161" }],
+    },
+    {
+        featureType: "road.arterial",
+        elementType: "geometry",
+        stylers: [{ color: "#ffffff" }],
+    },
+    {
+        featureType: "road.local",
+        elementType: "geometry",
+        stylers: [{ color: "#ffffff" }],
+    },
+    // Parks and nature - soft green accents
+    {
+        featureType: "poi.park",
+        elementType: "geometry",
+        stylers: [{ color: "#e5f4e3" }],
+    },
+    {
+        featureType: "poi.park",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#6b9a76" }],
+    },
+    // Hide most POI labels for cleaner look
     {
         featureType: "poi",
         elementType: "labels",
-        stylers: [{ visibility: "off" }], // Reduce POI clutter
+        stylers: [{ visibility: "off" }],
     },
+    // Show park labels only
+    {
+        featureType: "poi.park",
+        elementType: "labels",
+        stylers: [{ visibility: "on" }],
+    },
+    // Transit - simplified
     {
         featureType: "transit",
         elementType: "labels",
+        stylers: [{ visibility: "off" }],
+    },
+    {
+        featureType: "transit.station",
+        elementType: "labels",
         stylers: [{ visibility: "simplified" }],
+    },
+    // Administrative boundaries - subtle
+    {
+        featureType: "administrative",
+        elementType: "geometry.stroke",
+        stylers: [{ color: "#c9c9c9" }],
+    },
+    {
+        featureType: "administrative.land_parcel",
+        elementType: "labels",
+        stylers: [{ visibility: "off" }],
+    },
+    {
+        featureType: "administrative.neighborhood",
+        elementType: "labels.text.fill",
+        stylers: [{ color: "#a3a3a3" }],
+    },
+    // Landscape - natural colors
+    {
+        featureType: "landscape.natural",
+        elementType: "geometry",
+        stylers: [{ color: "#f0f0f0" }],
+    },
+    {
+        featureType: "landscape.man_made",
+        elementType: "geometry",
+        stylers: [{ color: "#f5f5f5" }],
     },
 ];
 
@@ -69,18 +177,58 @@ function GoogleMapComponent({
         infoWindowRef.current = new google.maps.InfoWindow();
     }, [defaultCenter, defaultZoom]);
 
-    // Create marker element with category color
+    // Create marker element with refined design
     const createMarkerElement = useCallback((event: Event, isSelected: boolean): HTMLElement => {
         const markerDiv = document.createElement("div");
-        markerDiv.className = `relative ${isSelected ? "z-50" : ""} transition-transform ${isSelected ? "scale-125" : "hover:scale-110"}`;
+        markerDiv.className = "relative cursor-pointer";
+        markerDiv.style.cssText = `
+            transition: transform 0.2s ease-out;
+            transform: ${isSelected ? "scale(1.15)" : "scale(1)"};
+        `;
 
-        // Use green accent color for all markers (consistent with app theme)
-        const color = isSelected ? "#16a34a" : "#22c55e"; // green-600 : green-500
+        // Add hover effect via event listener
+        markerDiv.addEventListener("mouseenter", () => {
+            if (!isSelected) markerDiv.style.transform = "scale(1.1)";
+        });
+        markerDiv.addEventListener("mouseleave", () => {
+            if (!isSelected) markerDiv.style.transform = "scale(1)";
+        });
+
+        // Modern marker design - pill shape with icon
+        const bgColor = isSelected ? "#16a34a" : "#22c55e"; // green-600 : green-500
+        const shadowOpacity = isSelected ? "0.4" : "0.25";
 
         markerDiv.innerHTML = `
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
-                <path d="M12 0C7.58 0 4 3.58 4 8C4 13.54 12 24 12 24C12 24 20 13.54 20 8C20 3.58 16.42 0 12 0ZM12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11Z" fill="${color}"/>
-            </svg>
+            <div style="
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            ">
+                <div style="
+                    background: ${bgColor};
+                    border-radius: 20px;
+                    padding: 6px 10px;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, ${shadowOpacity}), 0 2px 4px rgba(0, 0, 0, 0.1);
+                    border: 2px solid white;
+                ">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div style="
+                    width: 0;
+                    height: 0;
+                    border-left: 6px solid transparent;
+                    border-right: 6px solid transparent;
+                    border-top: 8px solid ${bgColor};
+                    margin-top: -2px;
+                    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.15));
+                "></div>
+            </div>
         `;
 
         return markerDiv;
@@ -205,8 +353,31 @@ function GoogleMapComponent({
                     renderer: {
                         render: ({ count, position }) => {
                             const markerDiv = document.createElement("div");
-                            markerDiv.className = "flex items-center justify-center w-12 h-12 bg-green-600 text-white font-bold rounded-full shadow-lg border-4 border-white hover:scale-110 transition-transform cursor-pointer";
+                            markerDiv.style.cssText = `
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                width: 44px;
+                                height: 44px;
+                                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                                color: white;
+                                font-weight: 700;
+                                font-size: 14px;
+                                border-radius: 50%;
+                                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1);
+                                border: 3px solid white;
+                                cursor: pointer;
+                                transition: transform 0.2s ease-out;
+                            `;
                             markerDiv.textContent = count.toString();
+
+                            // Add hover effect
+                            markerDiv.addEventListener("mouseenter", () => {
+                                markerDiv.style.transform = "scale(1.1)";
+                            });
+                            markerDiv.addEventListener("mouseleave", () => {
+                                markerDiv.style.transform = "scale(1)";
+                            });
 
                             return new google.maps.marker.AdvancedMarkerElement({
                                 map,
@@ -302,17 +473,20 @@ function GoogleMapComponent({
         <div className={`relative ${className}`}>
             <div ref={mapRef} className="w-full h-full" />
 
-            {/* Near Me Button */}
+            {/* Near Me Button - Floating action button style */}
             <button
                 onClick={handleNearMe}
-                className="absolute bottom-24 right-4 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow-lg border border-gray-200 flex items-center gap-2 transition-all active:scale-95"
+                className="absolute bottom-24 right-4 bg-white hover:bg-gray-50 text-gray-700 h-12 px-4 rounded-full shadow-lg border border-gray-100 flex items-center gap-2 transition-all duration-200 active:scale-95 hover:shadow-xl"
                 title="Show my location"
             >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span className="hidden sm:inline font-medium">Near Me</span>
+                <div className="w-5 h-5 relative">
+                    <div className="absolute inset-0 bg-blue-500 rounded-full opacity-0 hover:opacity-20 transition-opacity" />
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3" strokeWidth={2} />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2m0 16v2M2 12h2m16 0h2" />
+                    </svg>
+                </div>
+                <span className="hidden sm:inline font-medium text-sm">Near Me</span>
             </button>
         </div>
     );
