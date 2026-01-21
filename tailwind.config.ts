@@ -8,6 +8,15 @@ export default {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // Optimize for production builds
+  ...(process.env.NODE_ENV === 'production' && {
+    safelist: [
+      // Keep essential utility classes
+      'dark',
+      'light',
+      'antialiased',
+    ],
+  }),
   theme: {
     extend: {
       colors: {

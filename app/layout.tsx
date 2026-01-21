@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "ĐàLạt.app · Events · People · Moments · Love",
+  title: "ĐàLạt.app · Events · People · Moments",
   description: "Discover and organize events in Đà Lạt",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -30,17 +30,11 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  // Optimized OG tags for faster HTML rendering
   openGraph: {
     type: "website",
     siteName: "ĐàLạt.app",
-    title: "ĐàLạt.app · Events · People · Moments · Love",
-    description: "Discover and organize events in Đà Lạt",
     url: siteUrl,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "ĐàLạt.app · Events · People · Moments · Love",
-    description: "Discover and organize events in Đà Lạt",
   },
 };
 

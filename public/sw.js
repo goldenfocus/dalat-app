@@ -1,31 +1,106 @@
 // Service Worker for dalat.app
-// Handles push notifications and app updates
+// Handles push notifications, app updates, and caching for PageSpeed
 //
 // IMPORTANT: Update SW_VERSION when deploying new features
 // This triggers the update flow for all users
-const SW_VERSION = '1.0.0';
+const SW_VERSION = '1.0.1';
 
 const APP_URL = self.location.origin;
 
-// Install: Take over immediately (don't wait for old SW to die)
+// Cache names
+const STATIC_CACHE = 'dalat-static-v1';
+const IMAGE_CACHE = 'dalat-images-v1';
+
+// Static assets to precache (improves FCP on repeat visits)
+const PRECACHE_ASSETS = [
+  '/android-chrome-192x192.png',
+  '/android-chrome-512x512.png',
+  '/manifest.json',
+];
+
+// Install: Precache critical assets
 self.addEventListener('install', (event) => {
   console.log(`[SW] Installing version ${SW_VERSION}`);
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(STATIC_CACHE)
+      .then(cache => cache.addAll(PRECACHE_ASSETS))
+      .then(() => self.skipWaiting())
+  );
 });
 
-// Activate: Claim all clients immediately
+// Activate: Clean old caches and claim clients
 self.addEventListener('activate', (event) => {
   console.log(`[SW] Activating version ${SW_VERSION}`);
   event.waitUntil(
-    clients.claim().then(() => {
-      // Notify all clients that a new version is active
-      clients.matchAll({ type: 'window' }).then((clients) => {
-        clients.forEach((client) => {
-          client.postMessage({ type: 'SW_UPDATED', version: SW_VERSION });
+    Promise.all([
+      // Clean up old caches
+      caches.keys().then(keys =>
+        Promise.all(
+          keys
+            .filter(key => key !== STATIC_CACHE && key !== IMAGE_CACHE)
+            .map(key => caches.delete(key))
+        )
+      ),
+      // Claim all clients
+      clients.claim().then(() => {
+        clients.matchAll({ type: 'window' }).then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ type: 'SW_UPDATED', version: SW_VERSION });
+          });
         });
-      });
-    })
+      }),
+    ])
   );
+});
+
+// Fetch: Cache images for faster LCP on repeat visits
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Only handle GET requests
+  if (request.method !== 'GET') return;
+
+  // Cache Cloudflare-optimized images (LCP optimization)
+  if (url.pathname.startsWith('/cdn-cgi/image/')) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE).then(cache =>
+        cache.match(request).then(cached => {
+          if (cached) return cached;
+          return fetch(request).then(response => {
+            // Only cache successful responses
+            if (response.ok) {
+              cache.put(request, response.clone());
+            }
+            return response;
+          });
+        })
+      )
+    );
+    return;
+  }
+
+  // Cache static assets (fonts, icons)
+  if (
+    url.pathname.match(/\.(woff2?|png|svg|ico)$/) ||
+    url.pathname.startsWith('/_next/static/')
+  ) {
+    event.respondWith(
+      caches.open(STATIC_CACHE).then(cache =>
+        cache.match(request).then(cached => {
+          // Stale-while-revalidate for static assets
+          const fetchPromise = fetch(request).then(response => {
+            if (response.ok) {
+              cache.put(request, response.clone());
+            }
+            return response;
+          });
+          return cached || fetchPromise;
+        })
+      )
+    );
+    return;
+  }
 });
 
 // Handle messages from the client

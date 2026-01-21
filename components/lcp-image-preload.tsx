@@ -17,9 +17,10 @@ export function LcpImagePreload({ imageUrl }: { imageUrl: string | null }) {
   const SUPABASE_PATTERN = /supabase\.co\/storage/;
   const isSupabaseUrl = SUPABASE_PATTERN.test(imageUrl);
 
-  // For mobile LCP (100vw on phones), optimize for 750px width
+  // For mobile LCP (100vw on phones), optimize for 640px width
+  // Most mobile devices are under 640px, so this reduces initial payload
   const optimizedUrl = isSupabaseUrl
-    ? `/cdn-cgi/image/width=750,quality=75,format=auto,fit=scale-down,metadata=none/${imageUrl}`
+    ? `/cdn-cgi/image/width=640,quality=75,format=auto,fit=scale-down,metadata=none/${imageUrl}`
     : imageUrl;
 
   return (
