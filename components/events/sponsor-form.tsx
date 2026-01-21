@@ -60,6 +60,8 @@ export function SponsorForm({
   const [existingSponsors, setExistingSponsors] = useState<Sponsor[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoadingSponsors, setIsLoadingSponsors] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [newSponsor, setNewSponsor] = useState({ name: "", website_url: "", logo_url: "" });
   const [newSponsorFile, setNewSponsorFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -70,8 +72,27 @@ export function SponsorForm({
   useEffect(() => {
     if (isAdding && !isDraftMode) {
       loadExistingSponsors();
+      checkAdminStatus();
     }
   }, [isAdding, isDraftMode]);
+
+  const checkAdminStatus = async () => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      setIsAdmin(profile?.role === "admin" || profile?.role === "superadmin");
+    } catch (err) {
+      console.error("Error checking admin status:", err);
+    }
+  };
 
   const loadExistingSponsors = async () => {
     setIsLoadingSponsors(true);
@@ -316,6 +337,36 @@ export function SponsorForm({
         console.error("Error removing sponsor:", err);
         setError("Failed to remove sponsor");
       }
+    }
+  };
+
+  const handleDeleteSponsor = async (sponsor: Sponsor, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the add action
+
+    const confirmMessage = `Delete "${sponsor.name}" from the master sponsor list?\n\nThis will remove it from ALL events that use this sponsor.`;
+    if (!confirm(confirmMessage)) return;
+
+    setDeletingId(sponsor.id);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+
+      // Delete sponsor (CASCADE will remove event_sponsors links)
+      const { error: deleteError } = await supabase
+        .from("sponsors")
+        .delete()
+        .eq("id", sponsor.id);
+
+      if (deleteError) throw deleteError;
+
+      // Remove from local state
+      setExistingSponsors(prev => prev.filter(s => s.id !== sponsor.id));
+    } catch (err) {
+      console.error("Error deleting sponsor:", err);
+      setError("Failed to delete sponsor");
+    } finally {
+      setDeletingId(null);
     }
   };
 
