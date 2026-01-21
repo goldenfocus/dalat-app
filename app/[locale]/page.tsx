@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
-import dynamic from "next/dynamic";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
@@ -15,20 +14,11 @@ import { AuthButton } from "@/components/auth-button";
 import { LocalePicker } from "@/components/locale-picker";
 import { SiteHeader } from "@/components/site-header";
 import { EventCard } from "@/components/events/event-card";
+import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
+import { EventSearchBar } from "@/components/events/event-search-bar";
 import { Button } from "@/components/ui/button";
 import { LcpImagePreload } from "@/components/lcp-image-preload";
-
-// Dynamic imports for heavy components that aren't critical for FCP
-const EventFeedImmersive = dynamic(
-  () => import("@/components/events/event-feed-immersive").then(mod => ({ default: mod.EventFeedImmersive })),
-  { ssr: true, loading: () => <div className="h-[100dvh] flex items-center justify-center bg-black"><div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin" /></div> }
-);
-
-const EventSearchBar = dynamic(
-  () => import("@/components/events/event-search-bar").then(mod => ({ default: mod.EventSearchBar })),
-  { ssr: false, loading: () => <div className="w-64 h-10 bg-muted animate-pulse rounded-lg" /> }
-);
 import type { Event, EventCounts, EventWithSeriesData, ContentLocale } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
 import { getEventTranslationsBatch } from "@/lib/translations";

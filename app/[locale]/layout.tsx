@@ -1,23 +1,20 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import dynamic from "next/dynamic";
 import { ThemeProvider } from "next-themes";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import { BadgeClearer } from "@/components/badge-clearer";
+import { NotificationPrompt } from "@/components/notification-prompt";
+import { SwUpdateHandler } from "@/components/sw-update-handler";
+import { LocaleMismatchBanner } from "@/components/locale-mismatch-banner";
 import { GlobalFooter } from "@/components/global-footer";
 import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-context";
+import { PerformanceMonitor } from "@/components/performance-monitor";
 import { routing, type Locale } from "@/lib/i18n/routing";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { getEffectiveUser } from "@/lib/god-mode";
+import { GodModeIndicator } from "@/components/god-mode-indicator";
 import { QueryProvider } from "@/lib/providers/query-provider";
-
-// Defer non-critical client components to reduce initial bundle
-const BadgeClearer = dynamic(() => import("@/components/badge-clearer").then(m => ({ default: m.BadgeClearer })), { ssr: false });
-const NotificationPrompt = dynamic(() => import("@/components/notification-prompt").then(m => ({ default: m.NotificationPrompt })), { ssr: false });
-const SwUpdateHandler = dynamic(() => import("@/components/sw-update-handler").then(m => ({ default: m.SwUpdateHandler })), { ssr: false });
-const LocaleMismatchBanner = dynamic(() => import("@/components/locale-mismatch-banner").then(m => ({ default: m.LocaleMismatchBanner })), { ssr: false });
-const PerformanceMonitor = dynamic(() => import("@/components/performance-monitor").then(m => ({ default: m.PerformanceMonitor })), { ssr: false });
-const GodModeIndicator = dynamic(() => import("@/components/god-mode-indicator").then(m => ({ default: m.GodModeIndicator })), { ssr: false });
 
 const siteUrl = "https://dalat.app";
 
