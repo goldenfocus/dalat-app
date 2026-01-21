@@ -12,28 +12,24 @@ const NAV_ITEMS = [
     href: "/moments",
     icon: Film,
     labelKey: "moments",
-    isCenter: false,
   },
   {
     key: "blog",
     href: "/blog",
     icon: BookOpen,
     labelKey: "blog",
-    isCenter: false,
   },
   {
     key: "create",
     href: "/events/new",
     icon: Plus,
     labelKey: "create",
-    isCenter: true,
   },
   {
     key: "profile",
     href: "/settings/profile",
     icon: User,
     labelKey: "profile",
-    isCenter: false,
   },
 ];
 
@@ -77,11 +73,7 @@ export function MobileBottomNav() {
               onClick={() => triggerHaptic("selection")}
               aria-label={label}
               className={`flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-95 ${
-                item.isCenter
-                  ? "bg-foreground text-background -mt-3"
-                  : isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground"
+                isActive ? "text-foreground" : "text-muted-foreground"
               }`}
             >
               <Icon className="h-5 w-5" />
