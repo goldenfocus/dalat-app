@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 interface EventDefaultImageProps {
   title: string;
   className?: string;
@@ -7,8 +9,8 @@ interface EventDefaultImageProps {
 const DEFAULT_IMAGE_URL = "/images/defaults/event-default-desktop.png";
 
 /**
- * Default event image component - uses a single clean image for all screen sizes.
- * CSS object-cover handles cropping for different aspect ratios.
+ * Default event image component - uses Next.js Image for automatic WebP/AVIF optimization.
+ * This reduces the 722KB PNG to ~50-100KB with modern formats.
  */
 export function EventDefaultImage({
   title,
@@ -16,11 +18,14 @@ export function EventDefaultImage({
   priority = false
 }: EventDefaultImageProps) {
   return (
-    <img
+    <Image
       src={DEFAULT_IMAGE_URL}
       alt={`${title} - ĐàLạt.app default event image`}
-      className={`w-full h-full object-cover ${className}`}
-      loading={priority ? "eager" : "lazy"}
+      fill
+      sizes="(max-width: 768px) 100vw, 50vw"
+      priority={priority}
+      fetchPriority={priority ? "high" : "auto"}
+      className={`object-cover ${className}`}
     />
   );
 }

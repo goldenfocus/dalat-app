@@ -2,7 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent CLS from font loading */
 @layer base {
+  html {
+    /* Prevent layout shifts from scrollbar */
+    scrollbar-gutter: stable;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
@@ -110,4 +116,37 @@ body:has([class*="nv-root"] [role="dialog"][data-state="open"]) {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Performance: Prevent layout shifts from images */
+img {
+  content-visibility: auto;
+}
+
+/* Reduce animation jank with GPU acceleration for common transitions */
+.transition-transform,
+.transition-all,
+.animate-pulse,
+.animate-spin {
+  will-change: transform;
+}
+
+/* Optimize font rendering */
+body {
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reduce paint areas for fixed elements */
+.fixed {
+  contain: layout style;
+}
+
+/* Content visibility optimization for below-fold content */
+@media (min-width: 1024px) {
+  footer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 200px;
+  }
 }

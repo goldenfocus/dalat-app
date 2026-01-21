@@ -198,7 +198,7 @@ export function cloudflareLoader({
 
   const cfOptions = [
     `width=${width}`,
-    `quality=${quality || 80}`,
+    `quality=${quality || 75}`,
     "format=auto",
     "fit=scale-down",
     "metadata=none",
