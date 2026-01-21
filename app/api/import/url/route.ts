@@ -38,8 +38,8 @@ export async function POST(request: Request) {
       platform = "facebook";
       // Check if this is a Facebook search URL
       if (url.includes("/search/events/") || url.includes("facebook.com/events/search/")) {
-        // Use official Apify Facebook Events Scraper for search
-        actorId = "apify/facebook-events-scraper";
+        // Use data-slayer scraper - works without login for search
+        actorId = "data-slayer/facebook-search-events";
         isFacebookSearch = true;
       } else {
         actorId = "pratikdani/facebook-event-scraper";

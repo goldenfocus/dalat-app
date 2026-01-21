@@ -32,31 +32,38 @@ export async function GET() {
 
     const data = await response.json();
 
-    // Test 2: Try to run a simple actor to see if execution works
-    const testActorId = "apify/facebook-events-scraper";
-    const testRunResponse = await fetch(
-      `https://api.apify.com/v2/acts/${testActorId}/runs?token=${apiToken}`,
-      {
-        method: "GET",
-      }
-    );
+    // Test 2: Try multiple actors to see which ones are accessible
+    const testActors = [
+      "data-slayer/facebook-search-events",
+      "pratikdani/facebook-event-scraper",
+    ];
 
-    const canAccessActor = testRunResponse.ok;
-    const actorError = testRunResponse.ok
-      ? null
-      : await testRunResponse.text();
+    const actorTests = [];
+    for (const actorId of testActors) {
+      const testRunResponse = await fetch(
+        `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiToken}`,
+        {
+          method: "GET",
+        }
+      );
+
+      actorTests.push({
+        actorId,
+        accessible: testRunResponse.ok,
+        error: testRunResponse.ok ? null : await testRunResponse.text(),
+      });
+    }
 
     return NextResponse.json({
       success: true,
       configured: true,
       tokenValid: true,
       tokenPrefix: apiToken.substring(0, 10) + "...",
-      canAccessActor,
-      actorId: testActorId,
-      actorError: actorError ? actorError.slice(0, 500) : null,
-      message: canAccessActor
-        ? "✅ Apify is configured correctly and actor is accessible"
-        : "⚠️ Token is valid but cannot access facebook-events-scraper actor",
+      actors: actorTests,
+      message:
+        actorTests.filter((a) => a.accessible).length > 0
+          ? `✅ Apify configured correctly. ${actorTests.filter((a) => a.accessible).length}/${actorTests.length} actors accessible`
+          : "⚠️ Token is valid but cannot access any tested actors",
     });
   } catch (error) {
     return NextResponse.json({
