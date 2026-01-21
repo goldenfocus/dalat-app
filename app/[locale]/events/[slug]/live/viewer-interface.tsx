@@ -35,7 +35,7 @@ export function ViewerInterface({
   const { streams, hasLiveStream } = useStreamStatus({ eventId: event.id, enabled: true });
   const liveStream = streams.find((s) => s.status === 'live' || s.status === 'connecting' || s.status === 'reconnecting');
   const totalViewers = streams.reduce((sum, s) => sum + s.current_viewers, 0);
-  const creatorInitials = event.creator.display_name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '??';
+  const creatorInitials = event.creator.display_name?.split(' ')?.map((n) => n[0])?.join('')?.toUpperCase()?.slice(0, 2) || '??';
 
   return (
     <div className="space-y-4">

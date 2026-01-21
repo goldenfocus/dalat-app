@@ -32,6 +32,10 @@ export function StreamPlayer({
   }, []);
 
   useEffect(() => {
+    // Track HLS instance outside the promise for proper cleanup
+    let hlsInstance: InstanceType<typeof import('hls.js').default> | null = null;
+    let mounted = true;
+
     if (!playbackUrl || !videoRef.current) {
       setPlayerState('offline');
       return;
@@ -48,8 +52,12 @@ export function StreamPlayer({
       if (autoplay) video.play().catch(() => {});
     } else {
       import('hls.js').then(({ default: Hls }) => {
+        // Don't setup if component unmounted during dynamic import
+        if (!mounted || !videoRef.current) return;
+
         if (Hls.isSupported()) {
           const hls = new Hls({ lowLatencyMode: true, backBufferLength: 30 });
+          hlsInstance = hls;
           hls.loadSource(hlsUrl);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -63,15 +71,16 @@ export function StreamPlayer({
               onError?.('Stream playback failed');
             }
           });
-          return () => hls.destroy();
         } else {
           setPlayerState('error');
           setErrorMessage('Your browser does not support live streaming');
           onError?.('Browser not supported');
         }
       }).catch(() => {
-        setPlayerState('error');
-        setErrorMessage('Failed to initialize player');
+        if (mounted) {
+          setPlayerState('error');
+          setErrorMessage('Failed to initialize player');
+        }
       });
     }
 
@@ -90,6 +99,8 @@ export function StreamPlayer({
     video.addEventListener('error', handleError);
 
     return () => {
+      mounted = false;
+      hlsInstance?.destroy();
       video.removeEventListener('playing', handlePlaying);
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('waiting', handleWaiting);
