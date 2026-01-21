@@ -38,7 +38,8 @@ export async function POST(request: Request) {
       platform = "facebook";
       // Check if this is a Facebook search URL
       if (url.includes("/search/events/") || url.includes("facebook.com/events/search/")) {
-        actorId = "scraper-engine/facebook-event-search-scraper";
+        // Use official Apify Facebook Events Scraper for search
+        actorId = "apify/facebook-events-scraper";
         isFacebookSearch = true;
       } else {
         actorId = "pratikdani/facebook-event-scraper";
@@ -93,6 +94,8 @@ export async function POST(request: Request) {
           };
 
       const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${apiToken}`;
+
+      console.log(`URL Import: Calling Apify actor "${actorId}" with input:`, JSON.stringify(apifyInput, null, 2));
 
       const runResponse = await fetch(apifyUrl, {
         method: "POST",
