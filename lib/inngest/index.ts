@@ -4,4 +4,5 @@ export {
   processScheduledNotifications,
   onRsvpCreated,
   onRsvpCancelled,
+  onRsvpInterested,
 } from './functions/scheduled-notifications';

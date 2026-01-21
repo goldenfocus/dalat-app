@@ -280,3 +280,71 @@ export const onRsvpCancelled = inngest.createFunction(
     return { cancelled };
   }
 );
+
+/**
+ * Handle user marking "interested" in an event - schedule lighter reminders.
+ *
+ * Interested users get:
+ * - 24h reminder (gentle nudge to RSVP)
+ * - No 2h reminder (not committed)
+ * - No feedback request (didn't attend)
+ */
+export const onRsvpInterested = inngest.createFunction(
+  {
+    id: 'on-rsvp-interested',
+    name: 'Schedule Interested Reminders',
+  },
+  { event: 'rsvp/interested' },
+  async ({ event, step }) => {
+    const {
+      userId,
+      locale,
+      eventId,
+      eventTitle,
+      eventSlug,
+      startsAt,
+    } = event.data;
+
+    const supabase = createServiceClient();
+    if (!supabase) return { error: 'Supabase client not configured' };
+
+    const eventStart = new Date(startsAt);
+    const now = new Date();
+
+    const eventTime = eventStart.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Ho_Chi_Minh',
+    });
+
+    const referenceId = `${eventId}-${userId}-interested`;
+    const scheduled: string[] = [];
+
+    // Schedule 24h reminder only (gentle nudge)
+    const time24hBefore = new Date(eventStart.getTime() - 24 * 60 * 60 * 1000);
+    if (time24hBefore > now) {
+      await step.run('schedule-interested-24h-reminder', async () => {
+        return supabase.from('scheduled_notifications').insert({
+          user_id: userId,
+          type: 'event_reminder',
+          scheduled_for: time24hBefore.toISOString(),
+          payload: {
+            type: 'event_reminder',
+            userId,
+            locale,
+            eventId,
+            eventSlug,
+            eventTitle,
+            eventTime,
+          },
+          reference_type: 'event_interested',
+          reference_id: referenceId,
+        });
+      });
+      scheduled.push('24h');
+    }
+
+    return { scheduled };
+  }
+);

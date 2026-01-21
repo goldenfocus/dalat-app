@@ -4,6 +4,7 @@ import {
   processScheduledNotifications,
   onRsvpCreated,
   onRsvpCancelled,
+  onRsvpInterested,
 } from '@/lib/inngest';
 
 // Create the Inngest API handler
@@ -13,5 +14,6 @@ export const { GET, POST, PUT } = serve({
     processScheduledNotifications,
     onRsvpCreated,
     onRsvpCancelled,
+    onRsvpInterested,
   ],
 });

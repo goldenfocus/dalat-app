@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { inngest } from '@/lib/inngest';
+import type { Locale } from '@/lib/types';
 
 // Schedules reminders for interested users (no immediate confirmation email)
-// TODO: Integrate with Inngest for scheduled reminders
 export async function POST(request: Request) {
   const supabase = await createClient();
 
@@ -18,22 +19,40 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'eventId required' }, { status: 400 });
   }
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('title, slug')
-    .eq('id', eventId)
-    .single();
+  const [{ data: event }, { data: profile }] = await Promise.all([
+    supabase
+      .from('events')
+      .select('title, slug, starts_at')
+      .eq('id', eventId)
+      .single(),
+    supabase
+      .from('profiles')
+      .select('locale')
+      .eq('id', user.id)
+      .single(),
+  ]);
 
   if (!event) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });
   }
 
-  // TODO: Schedule 24h and 2h reminders via Inngest
-  // For now, just acknowledge the "interested" status
-  // Reminders will be handled by Inngest scheduled functions
+  const locale = (profile?.locale as Locale) || 'en';
+
+  // Schedule reminders via Inngest (using interested event for lighter reminders)
+  await inngest.send({
+    name: 'rsvp/interested',
+    data: {
+      userId: user.id,
+      locale,
+      eventId,
+      eventTitle: event.title,
+      eventSlug: event.slug,
+      startsAt: event.starts_at,
+    },
+  });
 
   return NextResponse.json({
     success: true,
-    message: 'Interested status recorded. Reminders will be scheduled via Inngest.',
+    message: 'Interested status recorded. Reminders scheduled.',
   });
 }
