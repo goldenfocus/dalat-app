@@ -158,7 +158,7 @@
     "titleRequired": "Título del evento *",
     "titlePlaceholder": "Café & Código",
     "eventUrl": "URL del Evento",
-    "eventUrlPrefix": "ĐàLạt.app/events/",
+    "eventUrlPrefix": "dalat.app/events/",
     "urlPlaceholder": "mi-evento",
     "urlAvailable": "Esta URL está disponible",
     "urlTaken": "Esta URL ya está en uso. Por favor elige otra.",

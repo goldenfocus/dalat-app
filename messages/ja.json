@@ -158,7 +158,7 @@
     "titleRequired": "イベントタイトル *",
     "titlePlaceholder": "コーヒー＆コード",
     "eventUrl": "イベントURL",
-    "eventUrlPrefix": "ĐàLạt.app/events/",
+    "eventUrlPrefix": "dalat.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "このURLは利用可能です",
     "urlTaken": "このURLは既に使用されています。別のURLを選んでください。",

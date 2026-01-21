@@ -158,7 +158,7 @@
     "titleRequired": "活动标题 *",
     "titlePlaceholder": "咖啡与代码",
     "eventUrl": "活动链接",
-    "eventUrlPrefix": "ĐàLạt.app/events/",
+    "eventUrlPrefix": "dalat.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "此链接可用",
     "urlTaken": "此链接已被使用。请选择其他链接。",

@@ -158,7 +158,7 @@
     "titleRequired": "이벤트 제목 *",
     "titlePlaceholder": "커피 & 코드",
     "eventUrl": "이벤트 URL",
-    "eventUrlPrefix": "ĐàLạt.app/events/",
+    "eventUrlPrefix": "dalat.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "이 URL을 사용할 수 있습니다",
     "urlTaken": "이 URL은 이미 사용 중입니다. 다른 것을 선택해 주세요.",

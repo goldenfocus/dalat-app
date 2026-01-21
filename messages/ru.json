@@ -158,7 +158,7 @@
     "titleRequired": "Название события *",
     "titlePlaceholder": "Кофе и код",
     "eventUrl": "URL события",
-    "eventUrlPrefix": "ĐàLạt.app/events/",
+    "eventUrlPrefix": "dalat.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "Этот URL доступен",
     "urlTaken": "Этот URL уже занят. Выберите другой.",

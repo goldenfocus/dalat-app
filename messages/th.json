@@ -158,7 +158,7 @@
     "titleRequired": "ชื่อกิจกรรม *",
     "titlePlaceholder": "กาแฟ & โค้ด",
     "eventUrl": "URL กิจกรรม",
-    "eventUrlPrefix": "ĐàLạt.app/events/",
+    "eventUrlPrefix": "dalat.app/events/",
     "urlPlaceholder": "my-event",
     "urlAvailable": "URL นี้ใช้ได้",
     "urlTaken": "URL นี้ถูกใช้แล้ว กรุณาเลือกอันอื่น",

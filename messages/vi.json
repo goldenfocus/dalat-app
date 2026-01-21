@@ -164,7 +164,7 @@
     "titleRequired": "Tiêu đề sự kiện *",
     "titlePlaceholder": "Cà phê & Lập trình",
     "eventUrl": "URL sự kiện",
-    "eventUrlPrefix": "ĐàLạt.app/events/",
+    "eventUrlPrefix": "dalat.app/events/",
     "urlPlaceholder": "su-kien-cua-toi",
     "urlAvailable": "URL này khả dụng",
     "urlTaken": "URL này đã được sử dụng. Vui lòng chọn URL khác.",
