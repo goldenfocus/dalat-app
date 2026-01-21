@@ -264,6 +264,17 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
             { field_name: "text_content", text: textContent },
           ]);
         }
+
+        // Fire-and-forget: Generate embedding for visual search (photos only)
+        if (data?.moment_id && contentType === "photo") {
+          fetch("/api/moments/embed", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ momentId: data.moment_id }),
+          }).catch(() => {
+            // Non-critical - ignore embedding failures
+          });
+        }
       }
 
       triggerHaptic("medium");

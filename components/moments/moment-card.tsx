@@ -17,8 +17,8 @@ interface MomentForCard {
 
 interface MomentCardProps {
   moment: MomentForCard;
-  /** Navigation origin context: "moments" for discovery, "event" for event-specific, "profile" for profile timeline */
-  from?: "moments" | "event" | "profile";
+  /** Navigation origin context: "moments" for feed, "event" for event-specific, "profile" for profile timeline, "discovery" for search results */
+  from?: "moments" | "event" | "profile" | "discovery";
 }
 
 export function MomentCard({ moment, from }: MomentCardProps) {

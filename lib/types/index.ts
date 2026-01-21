@@ -590,6 +590,31 @@ export interface EventMomentsGroup {
   moments: GroupedMoment[];
 }
 
+// Grouped moment for discovery feed (includes user info)
+export interface DiscoveryGroupedMoment {
+  id: string;
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  content_type: MomentContentType;
+  media_url: string | null;
+  text_content: string | null;
+  created_at: string;
+}
+
+// Event group for discovery feed (includes location and total count)
+export interface DiscoveryEventMomentsGroup {
+  event_id: string;
+  event_slug: string;
+  event_title: string;
+  event_starts_at: string;
+  event_image_url: string | null;
+  event_location_name: string | null;
+  total_moment_count: number;
+  moments: DiscoveryGroupedMoment[];
+}
+
 // ============================================
 // Event Invitation Types
 // ============================================

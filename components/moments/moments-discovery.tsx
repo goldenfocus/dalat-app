@@ -1,11 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { Camera, Search } from "lucide-react";
 import { MomentsFeed } from "@/components/feed/moments-feed";
 import { MomentsFilterBar, type MomentsFilterOption } from "./moments-filter-bar";
-import { InfiniteMomentDiscoveryGrid } from "./infinite-moment-discovery-grid";
-import type { MomentContentType, MomentWithEvent } from "@/lib/types";
+import { InfiniteMomentDiscoveryGrouped } from "./infinite-moment-discovery-grouped";
+import { MomentsSearch } from "./moments-search";
+import { MomentCard } from "./moment-card";
+import type { MomentContentType, MomentWithEvent, DiscoveryEventMomentsGroup } from "@/lib/types";
 
 const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> = [
   { key: "all", contentTypes: ["photo", "video"] },
@@ -13,8 +16,13 @@ const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> =
   { key: "videos", contentTypes: ["video"] },
 ];
 
-interface MomentsDiscoveryProps {
+interface MomentsDiscoveryMobileProps {
   initialMoments: MomentWithEvent[];
+  initialHasMore: boolean;
+}
+
+interface MomentsDiscoveryDesktopProps {
+  initialGroups: DiscoveryEventMomentsGroup[];
   initialHasMore: boolean;
 }
 
@@ -41,7 +49,7 @@ function useMomentFilters() {
 export function MomentsDiscoveryMobile({
   initialMoments,
   initialHasMore,
-}: MomentsDiscoveryProps) {
+}: MomentsDiscoveryMobileProps) {
   const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
 
   return (
@@ -71,31 +79,90 @@ export function MomentsDiscoveryMobile({
 }
 
 export function MomentsDiscoveryDesktop({
-  initialMoments,
+  initialGroups,
   initialHasMore,
-}: MomentsDiscoveryProps) {
+}: MomentsDiscoveryDesktopProps) {
   const t = useTranslations("moments");
   const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
 
+  // Search state
+  const [searchResults, setSearchResults] = useState<MomentWithEvent[] | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleSearchResults = useCallback((results: MomentWithEvent[] | null, query: string) => {
+    setSearchResults(results);
+    setSearchQuery(query);
+  }, []);
+
+  const handleSearching = useCallback((searching: boolean) => {
+    setIsSearching(searching);
+  }, []);
+
+  const isShowingSearchResults = searchResults !== null;
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t("moments")}</h1>
-          <p className="text-muted-foreground">{t("discoverySubtitle")}</p>
+      {/* Header with title and search */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{t("moments")}</h1>
+            <p className="text-muted-foreground">{t("discoverySubtitle")}</p>
+          </div>
+          <MomentsFilterBar
+            options={options}
+            activeKey={activeKey}
+            onChange={setActiveKey}
+          />
         </div>
-        <MomentsFilterBar
-          options={options}
-          activeKey={activeKey}
-          onChange={setActiveKey}
+
+        {/* Search bar */}
+        <MomentsSearch
+          onResults={handleSearchResults}
+          onSearching={handleSearching}
+          className="max-w-md"
         />
       </div>
 
-      <InfiniteMomentDiscoveryGrid
-        initialMoments={initialMoments}
-        initialHasMore={initialHasMore}
-        contentTypes={activeConfig.contentTypes}
-      />
+      {/* Search results or grouped feed */}
+      {isShowingSearchResults ? (
+        <div className="space-y-4">
+          {/* Search results header */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Search className="w-4 h-4" />
+            {searchResults.length > 0 ? (
+              <span>{t("searchResults", { count: searchResults.length, query: searchQuery })}</span>
+            ) : (
+              <span>{t("searchNoResults", { query: searchQuery })}</span>
+            )}
+          </div>
+
+          {/* Search results grid */}
+          {searchResults.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {searchResults.map((moment) => (
+                <MomentCard
+                  key={moment.id}
+                  moment={moment}
+                  from="discovery"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Camera className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">{t("searchNoResults", { query: searchQuery })}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <InfiniteMomentDiscoveryGrouped
+          initialGroups={initialGroups}
+          initialHasMore={initialHasMore}
+          contentTypes={activeConfig.contentTypes}
+        />
+      )}
     </div>
   );
 }

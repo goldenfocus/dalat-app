@@ -516,6 +516,21 @@ export function useBulkUpload(eventId: string, userId: string) {
         ids,
         momentIds: response.moment_ids,
       });
+
+      // Fire-and-forget: Generate embeddings for visual search
+      // Only for photos (video embedding not yet supported)
+      const photoMomentIds = response.moment_ids.filter((_, idx) =>
+        batchData[idx].content_type === "photo"
+      );
+      if (photoMomentIds.length > 0) {
+        fetch("/api/moments/embed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ momentIds: photoMomentIds }),
+        }).catch((err) => {
+          console.warn("[BulkUpload] Embedding generation failed (non-critical):", err);
+        });
+      }
     } catch (err) {
       dispatch({
         type: "MARK_FILES_ERROR",
