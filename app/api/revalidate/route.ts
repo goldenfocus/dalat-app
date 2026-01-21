@@ -21,28 +21,33 @@ import { CACHE_TAGS } from "@/lib/cache/server-cache";
 export async function POST(request: Request) {
   const supabase = await createClient();
 
-  // Check authorization
+  // Check authorization - webhook secret OR admin user
   const authHeader = request.headers.get("authorization");
   const webhookSecret = process.env.CACHE_REVALIDATE_SECRET;
+  let isAuthorized = false;
 
-  // Allow webhook secret or admin user
-  if (authHeader !== `Bearer ${webhookSecret}`) {
+  // Check webhook secret first (only if configured)
+  if (webhookSecret && authHeader === `Bearer ${webhookSecret}`) {
+    isAuthorized = true;
+  } else {
+    // If secret validation fails or not configured, require admin auth
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
 
-    if (profile?.role !== "admin" && profile?.role !== "superadmin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      isAuthorized = profile?.role === "admin" || profile?.role === "superadmin";
     }
+  }
+
+  if (!isAuthorized) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {

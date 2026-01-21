@@ -16,9 +16,15 @@ function getSupabase() {
 }
 
 export async function GET(request: Request) {
-  // Verify cron secret (Vercel sends this in Authorization header)
+  // Verify cron secret (MANDATORY - Vercel sends this in Authorization header)
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error("[daily-summary] CRON_SECRET not configured");
+    return NextResponse.json({ error: "Not configured" }, { status: 503 });
+  }
+
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     console.log("[daily-summary] Unauthorized request");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -139,7 +145,7 @@ export async function GET(request: Request) {
 
       if (updateError) {
         console.error("[daily-summary] Update error:", updateError);
-        return NextResponse.json({ error: updateError.message }, { status: 500 });
+        return NextResponse.json({ error: "Failed to update summary" }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -173,7 +179,7 @@ export async function GET(request: Request) {
 
     if (insertError) {
       console.error("[daily-summary] Insert error:", insertError);
-      return NextResponse.json({ error: insertError.message }, { status: 500 });
+      return NextResponse.json({ error: "Failed to create summary" }, { status: 500 });
     }
 
     console.log("[daily-summary] Created draft post:", post.id);
@@ -187,7 +193,7 @@ export async function GET(request: Request) {
   } catch (err) {
     console.error("[daily-summary] Error:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Unknown error" },
+      { error: "Internal error" },
       { status: 500 }
     );
   }

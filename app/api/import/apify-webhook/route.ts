@@ -10,11 +10,16 @@ import type { ApifyWebhookPayload } from "@/lib/import/types";
  */
 export async function POST(request: Request) {
   try {
-    // Verify webhook secret
+    // Verify webhook secret (MANDATORY - reject if not configured)
     const authHeader = request.headers.get("authorization");
     const expectedSecret = process.env.APIFY_WEBHOOK_SECRET;
 
-    if (expectedSecret && authHeader !== `Bearer ${expectedSecret}`) {
+    if (!expectedSecret) {
+      console.error("Apify webhook: APIFY_WEBHOOK_SECRET not configured");
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
+    }
+
+    if (authHeader !== `Bearer ${expectedSecret}`) {
       console.error("Apify webhook: Invalid authorization header");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

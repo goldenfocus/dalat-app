@@ -10,6 +10,51 @@ import type { FacebookEvent, EventbriteEvent } from "@/lib/import/types";
 export const maxDuration = 60;
 
 /**
+ * Validate URL to prevent SSRF attacks
+ * Blocks internal networks, localhost, and metadata endpoints
+ */
+function isUrlSafe(urlString: string): boolean {
+  try {
+    const url = new URL(urlString);
+
+    // Only allow http/https protocols
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return false;
+    }
+
+    const hostname = url.hostname.toLowerCase();
+
+    // Block localhost and loopback
+    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1") {
+      return false;
+    }
+
+    // Block private/internal IP ranges
+    const ipv4Match = hostname.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+    if (ipv4Match) {
+      const [, a, b] = ipv4Match.map(Number);
+      // 10.x.x.x
+      if (a === 10) return false;
+      // 172.16.x.x - 172.31.x.x
+      if (a === 172 && b >= 16 && b <= 31) return false;
+      // 192.168.x.x
+      if (a === 192 && b === 168) return false;
+      // 169.254.x.x (link-local, includes AWS metadata)
+      if (a === 169 && b === 254) return false;
+    }
+
+    // Block cloud metadata endpoints
+    if (hostname === "metadata.google.internal" || hostname.endsWith(".internal")) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Import a single event from a URL
  * Uses Apify to scrape the event, then processes it through our import pipeline
  */
@@ -27,6 +72,11 @@ export async function POST(request: Request) {
 
     if (!url) {
       return NextResponse.json({ error: "URL required" }, { status: 400 });
+    }
+
+    // Validate URL to prevent SSRF attacks
+    if (!isUrlSafe(url)) {
+      return NextResponse.json({ error: "Invalid or unsafe URL" }, { status: 400 });
     }
 
     // Determine platform from URL
@@ -111,10 +161,7 @@ export async function POST(request: Request) {
           errorText,
         });
         return NextResponse.json(
-          {
-            error: `Apify scraper failed (${runResponse.status}). Check if the actor "${actorId}" exists and is accessible.`,
-            details: errorText.slice(0, 300),
-          },
+          { error: "Failed to scrape event. Please try again." },
           { status: 502 }
         );
       }
