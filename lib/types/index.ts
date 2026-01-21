@@ -238,6 +238,11 @@ export interface Event {
   ends_at: string | null;
   timezone: string;
   capacity: number | null;
+  // Online event support
+  is_online: boolean;
+  online_link: string | null;
+  // Flyer customization
+  title_position: "top" | "middle" | "bottom";
   status: "draft" | "published" | "cancelled";
   created_by: string;
   created_at: string;
@@ -669,6 +674,11 @@ export interface EventSeries {
   external_chat_url: string | null;
   timezone: string;
   capacity: number | null;
+  // Online event support
+  is_online: boolean;
+  online_link: string | null;
+  // Flyer customization
+  title_position: "top" | "middle" | "bottom";
   tribe_id: string | null;
   organizer_id: string | null;
   created_by: string;
