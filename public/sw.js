@@ -3,7 +3,7 @@
 //
 // IMPORTANT: Update SW_VERSION when deploying new features
 // This triggers the update flow for all users
-const SW_VERSION = '1.0.1';
+const SW_VERSION = '1.0.2';
 
 const APP_URL = self.location.origin;
 
@@ -115,9 +115,15 @@ const VIBRATION_PATTERN = [100, 50, 100];
 
 // Handle push notifications
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
+  console.log('[SW] Push received!', event);
+
+  if (!event.data) {
+    console.log('[SW] Push had no data');
+    return;
+  }
 
   const data = event.data.json();
+  console.log('[SW] Push data:', data);
 
   // Notification mode: sound_and_vibration, sound_only, vibration_only, silent
   const mode = data.notificationMode || 'sound_and_vibration';
@@ -154,8 +160,12 @@ self.addEventListener('push', (event) => {
     navigator.setAppBadge(data.badgeCount).catch(() => {});
   }
 
+  console.log('[SW] Showing notification:', data.title, options);
+
   event.waitUntil(
     self.registration.showNotification(data.title, options)
+      .then(() => console.log('[SW] Notification shown successfully'))
+      .catch(err => console.error('[SW] Failed to show notification:', err))
   );
 });
 
