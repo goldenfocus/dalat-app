@@ -26,7 +26,7 @@ export function NotificationInbox({ subscriberId, subscriberHash }: Notification
     <Inbox
       applicationIdentifier={process.env.NEXT_PUBLIC_NOVU_APPLICATION_IDENTIFIER!}
       subscriberId={subscriberId}
-      subscriberHash={subscriberHash}
+      // subscriberHash={subscriberHash} // Disabled - not configured in Novu dashboard
       appearance={{
         baseTheme: isDark ? inboxDarkTheme : undefined,
         variables: {
