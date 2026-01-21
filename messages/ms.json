@@ -325,7 +325,41 @@
     "generating": "Mencipta...",
     "upcomingEvents": "Acara Akan Datang",
     "pastEvents": "Acara Lepas",
-    "noEventsYet": "Belum ada acara"
+    "noEventsYet": "Belum ada acara",
+    "cancel": "Batal",
+    "avatarStyle": {
+      "male": "Maskulin",
+      "maleDesc": "Ciri-ciri kuat dan jelas",
+      "female": "Feminin",
+      "femaleDesc": "Ciri-ciri lembut dan anggun",
+      "neutral": "Neutral",
+      "neutralDesc": "Gaya neutral jantina",
+      "custom": "Tersuai",
+      "customDesc": "Huraikan avatar anda"
+    },
+    "avatarDialog": {
+      "title": "Cipta Avatar AI",
+      "description": "Pilih gaya untuk avatar yang dijana AI",
+      "generate": "Jana Avatar",
+      "customPlaceholder": "Huraikan avatar ideal anda... (contoh: ahli sihir mesra dengan topi ungu, angkasawan dengan bunga)",
+      "customHint": "Petua: Gunakan butang berkilau untuk meningkatkan penerangan anda",
+      "refineExisting": "Perhalusi avatar semasa",
+      "refinementPlaceholder": "contoh: Jadikan lebih berwarna, tambah cahaya mistik...",
+      "applyRefinement": "Gunakan penambahbaikan",
+      "previewTitle": "Avatar Anda",
+      "previewDescription": "Klik imej untuk melihat saiz penuh, atau teruskan memperhalusi",
+      "clickToZoom": "Klik untuk melihat saiz penuh",
+      "quickRefine": "Penambahbaikan pantas",
+      "customRefinePlaceholder": "Atau huraikan perubahan anda sendiri...",
+      "tryAgain": "Cuba Lagi",
+      "useThis": "Guna Ini",
+      "refinements": {
+        "zoomOnFace": "Zum pada muka",
+        "moreVibrant": "Lebih terang",
+        "softerLook": "Lebih lembut",
+        "addWarmth": "Tambah kehangatan"
+      }
+    }
   },
   "settings": {
     "settings": "Tetapan",

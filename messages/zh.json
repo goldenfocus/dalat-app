@@ -325,7 +325,41 @@
     "generating": "生成中...",
     "upcomingEvents": "即将举行的活动",
     "pastEvents": "过去的活动",
-    "noEventsYet": "暂无活动"
+    "noEventsYet": "暂无活动",
+    "cancel": "取消",
+    "avatarStyle": {
+      "male": "男性化",
+      "maleDesc": "强壮、轮廓分明的特征",
+      "female": "女性化",
+      "femaleDesc": "柔和、优雅的特征",
+      "neutral": "中性",
+      "neutralDesc": "性别中立风格",
+      "custom": "自定义",
+      "customDesc": "描述你的头像"
+    },
+    "avatarDialog": {
+      "title": "创建AI头像",
+      "description": "为AI生成的头像选择一种风格",
+      "generate": "生成头像",
+      "customPlaceholder": "描述你理想的头像... (例如: 戴紫色帽子的友善巫师、手持鲜花的宇航员)",
+      "customHint": "提示: 使用闪光按钮来改善你的描述",
+      "refineExisting": "调整当前头像",
+      "refinementPlaceholder": "例如: 更加多彩、添加神秘光芒...",
+      "applyRefinement": "应用调整",
+      "previewTitle": "你的头像",
+      "previewDescription": "点击图片查看完整大小，或继续调整",
+      "clickToZoom": "点击查看完整大小",
+      "quickRefine": "快速调整",
+      "customRefinePlaceholder": "或描述你想要的更改...",
+      "tryAgain": "重试",
+      "useThis": "使用此头像",
+      "refinements": {
+        "zoomOnFace": "放大脸部",
+        "moreVibrant": "更鲜艳",
+        "softerLook": "更柔和",
+        "addWarmth": "增加暖色调"
+      }
+    }
   },
   "settings": {
     "settings": "设置",

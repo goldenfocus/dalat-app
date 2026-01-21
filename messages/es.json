@@ -325,7 +325,41 @@
     "generating": "Creando...",
     "upcomingEvents": "Próximos eventos",
     "pastEvents": "Eventos pasados",
-    "noEventsYet": "Aún no hay eventos"
+    "noEventsYet": "Aún no hay eventos",
+    "cancel": "Cancelar",
+    "avatarStyle": {
+      "male": "Masculino",
+      "maleDesc": "Rasgos fuertes y definidos",
+      "female": "Femenino",
+      "femaleDesc": "Rasgos suaves y elegantes",
+      "neutral": "Neutral",
+      "neutralDesc": "Estilo de género neutro",
+      "custom": "Personalizado",
+      "customDesc": "Describe tu avatar"
+    },
+    "avatarDialog": {
+      "title": "Crear Avatar IA",
+      "description": "Elige un estilo para tu avatar generado por IA",
+      "generate": "Generar Avatar",
+      "customPlaceholder": "Describe tu avatar ideal... (ej: un mago amigable con sombrero morado, un astronauta con flores)",
+      "customHint": "Consejo: Usa el botón de destellos para mejorar tu descripción",
+      "refineExisting": "Refinar avatar actual",
+      "refinementPlaceholder": "ej: Hacer más colorido, agregar brillo místico...",
+      "applyRefinement": "Aplicar mejoras",
+      "previewTitle": "Tu Avatar",
+      "previewDescription": "Haz clic en la imagen para ver el tamaño completo, o sigue refinando",
+      "clickToZoom": "Clic para ver tamaño completo",
+      "quickRefine": "Mejoras rápidas",
+      "customRefinePlaceholder": "O describe tus propios cambios...",
+      "tryAgain": "Intentar de nuevo",
+      "useThis": "Usar este",
+      "refinements": {
+        "zoomOnFace": "Zoom en rostro",
+        "moreVibrant": "Más vibrante",
+        "softerLook": "Más suave",
+        "addWarmth": "Agregar calidez"
+      }
+    }
   },
   "settings": {
     "settings": "Configuración",

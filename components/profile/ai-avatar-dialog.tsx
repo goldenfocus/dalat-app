@@ -75,12 +75,12 @@ const styleIcons: Record<AvatarStyle, React.ReactNode> = {
   custom: <Sparkles className="w-5 h-5" />,
 };
 
-// Quick refinement presets
+// Quick refinement presets - labelKey maps to profile.avatarDialog.refinements.*
 const REFINEMENT_PRESETS = [
-  { label: "Zoom on face", prompt: "Zoom in closer on the face, making it larger and more prominent in the frame" },
-  { label: "More vibrant", prompt: "Make the colors more vibrant and saturated" },
-  { label: "Softer look", prompt: "Make it softer and more dreamy with gentle lighting" },
-  { label: "Add warmth", prompt: "Add warmer sunset tones and golden lighting" },
+  { labelKey: "zoomOnFace", prompt: "Zoom in closer on the face, making it larger and more prominent in the frame" },
+  { labelKey: "moreVibrant", prompt: "Make the colors more vibrant and saturated" },
+  { labelKey: "softerLook", prompt: "Make it softer and more dreamy with gentle lighting" },
+  { labelKey: "addWarmth", prompt: "Add warmer sunset tones and golden lighting" },
 ];
 
 export function AIAvatarDialog({
@@ -456,13 +456,13 @@ Important:
                   <div className="flex flex-wrap gap-2">
                     {REFINEMENT_PRESETS.map((preset) => (
                       <button
-                        key={preset.label}
+                        key={preset.labelKey}
                         type="button"
                         onClick={() => handleRefine(preset.prompt)}
                         disabled={isGenerating}
                         className="px-3 py-1.5 text-xs rounded-full border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors disabled:opacity-50 disabled:pointer-events-none"
                       >
-                        {preset.label}
+                        {t(`avatarDialog.refinements.${preset.labelKey}`)}
                       </button>
                     ))}
                   </div>

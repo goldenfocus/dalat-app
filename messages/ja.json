@@ -325,7 +325,41 @@
     "generating": "作成中...",
     "upcomingEvents": "今後のイベント",
     "pastEvents": "過去のイベント",
-    "noEventsYet": "まだイベントがありません"
+    "noEventsYet": "まだイベントがありません",
+    "cancel": "キャンセル",
+    "avatarStyle": {
+      "male": "男性的",
+      "maleDesc": "力強く鮮明な特徴",
+      "female": "女性的",
+      "femaleDesc": "柔らかく優雅な特徴",
+      "neutral": "中性的",
+      "neutralDesc": "ジェンダーニュートラルなスタイル",
+      "custom": "カスタム",
+      "customDesc": "アバターを説明してください"
+    },
+    "avatarDialog": {
+      "title": "AIアバターを作成",
+      "description": "AI生成アバターのスタイルを選択してください",
+      "generate": "アバターを生成",
+      "customPlaceholder": "理想のアバターを説明してください... (例: 紫の帽子をかぶった親しみやすい魔法使い、花を持った宇宙飛行士)",
+      "customHint": "ヒント: キラキラボタンで説明を改善できます",
+      "refineExisting": "現在のアバターを調整",
+      "refinementPlaceholder": "例: もっとカラフルに、神秘的な輝きを追加...",
+      "applyRefinement": "調整を適用",
+      "previewTitle": "あなたのアバター",
+      "previewDescription": "画像をクリックして全体を表示、または調整を続けてください",
+      "clickToZoom": "クリックして全体を表示",
+      "quickRefine": "クイック調整",
+      "customRefinePlaceholder": "または変更内容を入力してください...",
+      "tryAgain": "もう一度試す",
+      "useThis": "これを使う",
+      "refinements": {
+        "zoomOnFace": "顔をズーム",
+        "moreVibrant": "より鮮やかに",
+        "softerLook": "より柔らかく",
+        "addWarmth": "暖かみを追加"
+      }
+    }
   },
   "settings": {
     "settings": "設定",

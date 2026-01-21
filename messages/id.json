@@ -325,7 +325,41 @@
     "generating": "Membuat...",
     "upcomingEvents": "Acara Mendatang",
     "pastEvents": "Acara Sebelumnya",
-    "noEventsYet": "Belum ada acara"
+    "noEventsYet": "Belum ada acara",
+    "cancel": "Batal",
+    "avatarStyle": {
+      "male": "Maskulin",
+      "maleDesc": "Fitur kuat dan tegas",
+      "female": "Feminin",
+      "femaleDesc": "Fitur lembut dan elegan",
+      "neutral": "Netral",
+      "neutralDesc": "Gaya netral gender",
+      "custom": "Kustom",
+      "customDesc": "Jelaskan avatar Anda"
+    },
+    "avatarDialog": {
+      "title": "Buat Avatar AI",
+      "description": "Pilih gaya untuk avatar yang dibuat AI",
+      "generate": "Buat Avatar",
+      "customPlaceholder": "Jelaskan avatar ideal Anda... (contoh: penyihir ramah dengan topi ungu, astronot dengan bunga)",
+      "customHint": "Tips: Gunakan tombol berkilau untuk meningkatkan deskripsi Anda",
+      "refineExisting": "Perbaiki avatar saat ini",
+      "refinementPlaceholder": "contoh: Buat lebih berwarna, tambahkan cahaya mistis...",
+      "applyRefinement": "Terapkan perbaikan",
+      "previewTitle": "Avatar Anda",
+      "previewDescription": "Klik gambar untuk melihat ukuran penuh, atau terus perbaiki",
+      "clickToZoom": "Klik untuk melihat ukuran penuh",
+      "quickRefine": "Perbaikan cepat",
+      "customRefinePlaceholder": "Atau jelaskan perubahan Anda sendiri...",
+      "tryAgain": "Coba Lagi",
+      "useThis": "Gunakan Ini",
+      "refinements": {
+        "zoomOnFace": "Zoom pada wajah",
+        "moreVibrant": "Lebih cerah",
+        "softerLook": "Lebih lembut",
+        "addWarmth": "Tambah kehangatan"
+      }
+    }
   },
   "settings": {
     "settings": "Pengaturan",

@@ -358,7 +358,13 @@
       "quickRefine": "Tinh chỉnh nhanh",
       "customRefinePlaceholder": "Hoặc mô tả thay đổi của riêng bạn...",
       "tryAgain": "Thử lại",
-      "useThis": "Dùng ảnh này"
+      "useThis": "Dùng ảnh này",
+      "refinements": {
+        "zoomOnFace": "Phóng to khuôn mặt",
+        "moreVibrant": "Sống động hơn",
+        "softerLook": "Mềm mại hơn",
+        "addWarmth": "Thêm sắc ấm"
+      }
     }
   },
   "settings": {

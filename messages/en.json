@@ -416,7 +416,13 @@
       "quickRefine": "Quick refinements",
       "customRefinePlaceholder": "Or describe your own changes...",
       "tryAgain": "Try Again",
-      "useThis": "Use This"
+      "useThis": "Use This",
+      "refinements": {
+        "zoomOnFace": "Zoom on face",
+        "moreVibrant": "More vibrant",
+        "softerLook": "Softer look",
+        "addWarmth": "Add warmth"
+      }
     }
   },
   "settings": {

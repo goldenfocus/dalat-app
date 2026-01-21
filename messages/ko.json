@@ -325,7 +325,41 @@
     "generating": "생성 중...",
     "upcomingEvents": "다가오는 이벤트",
     "pastEvents": "지난 이벤트",
-    "noEventsYet": "아직 이벤트가 없습니다"
+    "noEventsYet": "아직 이벤트가 없습니다",
+    "cancel": "취소",
+    "avatarStyle": {
+      "male": "남성적",
+      "maleDesc": "강하고 선명한 특징",
+      "female": "여성적",
+      "femaleDesc": "부드럽고 우아한 특징",
+      "neutral": "중성적",
+      "neutralDesc": "성 중립적 스타일",
+      "custom": "사용자 정의",
+      "customDesc": "아바타를 설명하세요"
+    },
+    "avatarDialog": {
+      "title": "AI 아바타 만들기",
+      "description": "AI 생성 아바타의 스타일을 선택하세요",
+      "generate": "아바타 생성",
+      "customPlaceholder": "원하는 아바타를 설명하세요... (예: 보라색 모자를 쓴 친근한 마법사, 꽃과 함께 있는 우주비행사)",
+      "customHint": "팁: 반짝이 버튼으로 설명을 개선하세요",
+      "refineExisting": "현재 아바타 수정",
+      "refinementPlaceholder": "예: 더 화려하게, 신비로운 빛 추가...",
+      "applyRefinement": "수정 적용",
+      "previewTitle": "내 아바타",
+      "previewDescription": "이미지를 클릭하여 전체 크기로 보거나 추가 수정하세요",
+      "clickToZoom": "전체 크기로 보려면 클릭",
+      "quickRefine": "빠른 수정",
+      "customRefinePlaceholder": "또는 원하는 변경사항을 설명하세요...",
+      "tryAgain": "다시 시도",
+      "useThis": "이것 사용",
+      "refinements": {
+        "zoomOnFace": "얼굴 확대",
+        "moreVibrant": "더 선명하게",
+        "softerLook": "더 부드럽게",
+        "addWarmth": "따뜻함 추가"
+      }
+    }
   },
   "settings": {
     "settings": "설정",

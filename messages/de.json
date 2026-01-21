@@ -325,7 +325,41 @@
     "generating": "Wird erstellt...",
     "upcomingEvents": "Kommende Veranstaltungen",
     "pastEvents": "Vergangene Veranstaltungen",
-    "noEventsYet": "Noch keine Veranstaltungen"
+    "noEventsYet": "Noch keine Veranstaltungen",
+    "cancel": "Abbrechen",
+    "avatarStyle": {
+      "male": "Maskulin",
+      "maleDesc": "Starke, definierte Züge",
+      "female": "Feminin",
+      "femaleDesc": "Sanfte, elegante Züge",
+      "neutral": "Neutral",
+      "neutralDesc": "Geschlechtsneutraler Stil",
+      "custom": "Benutzerdefiniert",
+      "customDesc": "Beschreibe deinen Avatar"
+    },
+    "avatarDialog": {
+      "title": "KI-Avatar erstellen",
+      "description": "Wähle einen Stil für deinen KI-generierten Avatar",
+      "generate": "Avatar generieren",
+      "customPlaceholder": "Beschreibe deinen idealen Avatar... (z.B. ein freundlicher Zauberer mit lila Hut, ein Astronaut mit Blumen)",
+      "customHint": "Tipp: Nutze den Funkel-Button, um deine Beschreibung zu verbessern",
+      "refineExisting": "Aktuellen Avatar verfeinern",
+      "refinementPlaceholder": "z.B. Farbenfroher machen, mystisches Leuchten hinzufügen...",
+      "applyRefinement": "Verfeinerung anwenden",
+      "previewTitle": "Dein Avatar",
+      "previewDescription": "Klicke auf das Bild für die volle Größe oder verfeinere es weiter",
+      "clickToZoom": "Klicken für volle Größe",
+      "quickRefine": "Schnelle Verfeinerungen",
+      "customRefinePlaceholder": "Oder beschreibe deine eigenen Änderungen...",
+      "tryAgain": "Erneut versuchen",
+      "useThis": "Diesen verwenden",
+      "refinements": {
+        "zoomOnFace": "Auf Gesicht zoomen",
+        "moreVibrant": "Lebendiger",
+        "softerLook": "Weicher",
+        "addWarmth": "Wärme hinzufügen"
+      }
+    }
   },
   "settings": {
     "settings": "Einstellungen",
