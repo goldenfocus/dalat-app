@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyRsvpConfirmation } from '@/lib/notifications';
+import { notifyRsvpConfirmation, notifyOrganizerNewRsvp } from '@/lib/notifications';
 import { inngest } from '@/lib/inngest';
 import type { Locale } from '@/lib/types';
 
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const { eventId } = await request.json();
+  const { eventId, rsvpStatus } = await request.json();
 
   if (!eventId) {
     return NextResponse.json({ error: 'eventId required' }, { status: 400 });
@@ -22,12 +22,12 @@ export async function POST(request: Request) {
   const [{ data: profile }, { data: event }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('locale')
+      .select('locale, display_name')
       .eq('id', user.id)
       .single(),
     supabase
       .from('events')
-      .select('title, slug, description, starts_at, ends_at, location_name, google_maps_url')
+      .select('title, slug, description, starts_at, ends_at, location_name, google_maps_url, created_by')
       .eq('id', eventId)
       .single(),
   ]);
@@ -51,6 +51,24 @@ export async function POST(request: Request) {
       event.description
     );
     console.log('[rsvp-notification] Confirmation sent:', result);
+
+    // Notify organizer (if not self-RSVP and status is 'going')
+    if (rsvpStatus === 'going' && event.created_by !== user.id) {
+      const { data: organizerProfile } = await supabase
+        .from('profiles')
+        .select('locale')
+        .eq('id', event.created_by)
+        .single();
+
+      await notifyOrganizerNewRsvp(
+        event.created_by,
+        (organizerProfile?.locale as Locale) || 'en',
+        event.title,
+        profile?.display_name || 'Someone',
+        event.slug
+      );
+      console.log('[rsvp-notification] Organizer notified of new RSVP');
+    }
 
     // Schedule reminders via Inngest
     await inngest.send({
