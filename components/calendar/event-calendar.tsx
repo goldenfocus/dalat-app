@@ -17,12 +17,12 @@ interface EventCalendarProps {
   events: Event[];
 }
 
-// Get default view based on screen width
-function getDefaultView(): CalendarView {
-  if (typeof window !== "undefined") {
-    return window.innerWidth >= 1024 ? "month" : "week";
+// Parse view from URL param, returns null if invalid/missing
+function parseViewFromUrl(urlView: string | null): CalendarView | null {
+  if (urlView === "day" || urlView === "week" || urlView === "month") {
+    return urlView;
   }
-  return "week";
+  return null;
 }
 
 export function EventCalendar({ events }: EventCalendarProps) {
@@ -30,14 +30,25 @@ export function EventCalendar({ events }: EventCalendarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Initialize state from URL params or defaults
-  const [view, setView] = useState<CalendarView>(() => {
-    const urlView = searchParams.get("view");
-    if (urlView === "day" || urlView === "week" || urlView === "month") {
-      return urlView;
+  // Track whether view was explicitly set via URL
+  const urlViewParam = searchParams.get("view");
+  const initialViewFromUrl = parseViewFromUrl(urlViewParam);
+
+  // Initialize state from URL params or use "week" as safe default for SSR
+  // The useEffect below will adjust to "month" on desktop after hydration if needed
+  const [view, setView] = useState<CalendarView>(initialViewFromUrl ?? "week");
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  // After hydration, adjust view based on screen width (only if no URL param was set)
+  useEffect(() => {
+    if (!hasHydrated) {
+      setHasHydrated(true);
+      // Only auto-adjust if there was no explicit view in URL
+      if (!initialViewFromUrl && window.innerWidth >= 1024) {
+        setView("month");
+      }
     }
-    return getDefaultView();
-  });
+  }, [hasHydrated, initialViewFromUrl]);
 
   const [currentDate, setCurrentDate] = useState<Date>(() => {
     const urlDate = searchParams.get("date");
@@ -58,12 +69,15 @@ export function EventCalendar({ events }: EventCalendarProps) {
   const [selectedTag, setSelectedTag] = useState<EventTag | null>(null);
 
   // Update URL when view or date changes
+  // Note: searchParams is intentionally NOT in deps - we only push state to URL,
+  // we don't react to URL changes (which would cause an infinite loop)
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams();
     params.set("view", view);
     params.set("date", format(currentDate, "yyyy-MM-dd"));
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [view, currentDate, pathname, router, searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, currentDate, pathname, router]);
 
   // Filter events by selected tag
   const filteredEvents = selectedTag
