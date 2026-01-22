@@ -34,7 +34,9 @@
     "profile": "Perfil",
     "settings": "Configuración",
     "signIn": "Iniciar sesión",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "map": "Mapa",
+    "calendar": "Calendario"
   },
   "home": {
     "title": "Eventos en Đà Lạt",

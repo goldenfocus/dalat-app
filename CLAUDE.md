@@ -191,3 +191,36 @@ To add translation support for a new content type:
 4. **Fetch translations** when rendering:
    - Use `getTranslationsWithFallback()` for single items
    - Create a batch function for list pages if needed
+
+## UI Translations (Static i18n Keys)
+
+**⚠️ BEFORE writing any UI code that uses translation keys, add the keys to ALL 12 locale files first.**
+
+Translation files are in `messages/` directory:
+- `en.json`, `vi.json`, `ko.json`, `zh.json`, `ru.json`, `fr.json`, `ja.json`, `ms.json`, `th.json`, `de.json`, `es.json`, `id.json`
+
+### The Rule
+
+When adding **any** new translation key (e.g., `nav.map`, `home.newFeature`):
+
+1. **First** add the key to ALL 12 locale files with appropriate translations
+2. **Then** write the component code that uses `t("keyName")`
+
+Missing translation keys cause `MISSING_MESSAGE` errors and can break page rendering.
+
+### Quick Reference for Translations
+
+| Language | Code | Example "Map" |
+|----------|------|---------------|
+| English | en | Map |
+| Vietnamese | vi | Bản đồ |
+| Korean | ko | 지도 |
+| Chinese | zh | 地图 |
+| Russian | ru | Карта |
+| French | fr | Carte |
+| Japanese | ja | マップ |
+| Malay | ms | Peta |
+| Thai | th | แผนที่ |
+| German | de | Karte |
+| Spanish | es | Mapa |
+| Indonesian | id | Peta |

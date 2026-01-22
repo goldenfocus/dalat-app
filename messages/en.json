@@ -39,7 +39,9 @@
     "profile": "Profile",
     "settings": "Settings",
     "signIn": "Sign in",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "map": "Map",
+    "calendar": "Calendar"
   },
   "home": {
     "title": "Events in Đà Lạt",

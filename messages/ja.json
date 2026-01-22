@@ -34,7 +34,9 @@
     "profile": "プロフィール",
     "settings": "設定",
     "signIn": "ログイン",
-    "signOut": "ログアウト"
+    "signOut": "ログアウト",
+    "map": "マップ",
+    "calendar": "カレンダー"
   },
   "home": {
     "title": "ダラットのイベント",

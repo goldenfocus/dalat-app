@@ -34,7 +34,9 @@
     "profile": "资料",
     "settings": "设置",
     "signIn": "登录",
-    "signOut": "退出"
+    "signOut": "退出",
+    "map": "地图",
+    "calendar": "日历"
   },
   "home": {
     "title": "大叻活动",

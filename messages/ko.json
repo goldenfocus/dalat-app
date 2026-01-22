@@ -34,7 +34,9 @@
     "profile": "프로필",
     "settings": "설정",
     "signIn": "로그인",
-    "signOut": "로그아웃"
+    "signOut": "로그아웃",
+    "map": "지도",
+    "calendar": "캘린더"
   },
   "home": {
     "title": "달랏의 이벤트",
