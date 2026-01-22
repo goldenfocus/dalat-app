@@ -82,9 +82,9 @@ export function PlaceAutocomplete({ onPlaceSelect, defaultValue }: PlaceAutocomp
     setIsLoadingScript(true);
     scriptLoadedRef.current = true;
 
-    // Load script asynchronously
+    // Load script asynchronously with both places and marker libraries
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,marker&loading=async`;
     script.async = true;
     script.defer = true;
 

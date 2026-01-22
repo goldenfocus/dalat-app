@@ -126,13 +126,25 @@ export function EventMap({ events }: EventMapProps) {
 
     let timeoutId: NodeJS.Timeout;
 
+    let retryCount = 0;
+    const maxRetries = 50; // ~800ms max wait for ref
+
     const initMap = () => {
-      if (!mapRef.current) {
-        console.error("Map container ref not available");
-        return;
-      }
       if (typeof google === "undefined" || !google.maps) {
         console.error("Google Maps not loaded");
+        return;
+      }
+
+      // Wait for ref to be available (DOM might not be ready yet)
+      if (!mapRef.current) {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          requestAnimationFrame(initMap);
+          return;
+        }
+        console.error("Map container ref never became available");
+        setLoadError("Failed to initialize map container");
+        setIsLoading(false);
         return;
       }
 
@@ -194,9 +206,9 @@ export function EventMap({ events }: EventMapProps) {
       };
     }
 
-    // Load script
+    // Load script with both marker and places libraries
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker&loading=async&v=weekly`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker,places&loading=async&v=weekly`;
     script.async = true;
     script.defer = true;
     script.onload = () => {
