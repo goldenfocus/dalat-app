@@ -13,38 +13,47 @@ const NAV_ITEMS = [
     href: "/map",
     icon: MapPin,
     labelKey: "map",
+    requiresAuth: false,
   },
   {
     key: "calendar",
     href: "/calendar",
     icon: Calendar,
     labelKey: "calendar",
+    requiresAuth: false,
   },
   {
     key: "live",
     href: null, // Special case: opens modal
     icon: Video,
     labelKey: "goLive",
+    requiresAuth: true,
   },
   {
     key: "create",
     href: "/events/new",
     icon: Plus,
     labelKey: "create",
+    requiresAuth: true,
   },
   {
     key: "profile",
     href: "/settings/profile",
     icon: User,
     labelKey: "profile",
+    requiresAuth: true,
   },
 ];
+
+interface MobileBottomNavProps {
+  isAuthenticated?: boolean;
+}
 
 function normalizePath(pathname: string) {
   return pathname.replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
 }
 
-export function MobileBottomNav() {
+export function MobileBottomNav({ isAuthenticated = false }: MobileBottomNavProps) {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
   const tCommon = useTranslations("common");
@@ -56,6 +65,11 @@ export function MobileBottomNav() {
     return null;
   }
 
+  // Filter items based on auth status
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.requiresAuth || isAuthenticated
+  );
+
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:hidden"
@@ -63,7 +77,7 @@ export function MobileBottomNav() {
       aria-label="Primary"
     >
       <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
 
           // Special case: Go Live button opens modal

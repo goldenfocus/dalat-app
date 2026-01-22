@@ -68,8 +68,8 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   const messages = await getMessages();
 
-  // Check God mode state
-  const { godMode } = await getEffectiveUser();
+  // Check auth and God mode state
+  const { user, godMode } = await getEffectiveUser();
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
@@ -90,7 +90,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
                 {children}
               </main>
-              <MobileBottomNav />
+              <MobileBottomNav isAuthenticated={!!user} />
               <GlobalFooter />
               {godMode.isActive && godMode.targetProfile && (
                 <GodModeIndicator targetProfile={godMode.targetProfile} />
