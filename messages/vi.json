@@ -999,5 +999,38 @@
     "goLivePlaceholder": "Hoàng hôn tại hồ Xuân Hương...",
     "goingLive": "Đang kết nối...",
     "goLiveError": "Không thể bắt đầu phát. Vui lòng thử lại."
+  },
+  "install": {
+    "banner": {
+      "title": "Cài đặt ứng dụng",
+      "description": "Thêm ĐàLạt.app vào màn hình chính để có trải nghiệm tốt nhất",
+      "install": "Cài đặt",
+      "howTo": "Hướng dẫn cài đặt",
+      "dismiss": "Để sau"
+    },
+    "modal": {
+      "title": "Cài đặt ĐàLạt.app",
+      "description": "Truy cập nhanh từ màn hình chính",
+      "closeModal": "Đóng",
+      "alreadyInstalled": "Đã cài đặt? Mở ứng dụng từ màn hình chính.",
+      "ios": {
+        "title": "iPhone / iPad",
+        "step1": "Nhấn nút Chia sẻ",
+        "step2": "Cuộn xuống và chọn \"Thêm vào màn hình chính\"",
+        "step3": "Nhấn \"Thêm\" để xác nhận"
+      },
+      "android": {
+        "title": "Android",
+        "step1": "Nhấn biểu tượng menu (⋮) trên trình duyệt",
+        "step2": "Chọn \"Thêm vào màn hình chính\" hoặc \"Cài đặt ứng dụng\"",
+        "step3": "Nhấn \"Thêm\" hoặc \"Cài đặt\" để xác nhận"
+      },
+      "desktop": {
+        "title": "Máy tính",
+        "step1": "Tìm biểu tượng cài đặt trên thanh địa chỉ trình duyệt",
+        "step2": "Nhấn \"Cài đặt\" khi được hỏi",
+        "step3": "Ứng dụng sẽ mở trong cửa sổ riêng"
+      }
+    }
   }
 }

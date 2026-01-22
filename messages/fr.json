@@ -993,5 +993,38 @@
     "eventCount": "{count, plural, one {# événement à venir} other {# événements à venir}}",
     "createEvent": "Créer un événement",
     "seeAll": "Voir tous les événements à venir"
+  },
+  "install": {
+    "banner": {
+      "title": "Installer l'application",
+      "description": "Ajoutez ĐàLạt.app à votre écran d'accueil pour une meilleure expérience",
+      "install": "Installer",
+      "howTo": "Comment installer",
+      "dismiss": "Plus tard"
+    },
+    "modal": {
+      "title": "Installer ĐàLạt.app",
+      "description": "Accès rapide depuis votre écran d'accueil",
+      "closeModal": "Fermer",
+      "alreadyInstalled": "Déjà installé ? Ouvrez l'application depuis votre écran d'accueil.",
+      "ios": {
+        "title": "iPhone / iPad",
+        "step1": "Appuyez sur le bouton Partager",
+        "step2": "Faites défiler et appuyez sur \"Sur l'écran d'accueil\"",
+        "step3": "Appuyez sur \"Ajouter\" pour confirmer"
+      },
+      "android": {
+        "title": "Android",
+        "step1": "Appuyez sur l'icône du menu (⋮) dans votre navigateur",
+        "step2": "Appuyez sur \"Ajouter à l'écran d'accueil\" ou \"Installer l'application\"",
+        "step3": "Appuyez sur \"Ajouter\" ou \"Installer\" pour confirmer"
+      },
+      "desktop": {
+        "title": "Ordinateur",
+        "step1": "Recherchez l'icône d'installation dans la barre d'adresse",
+        "step2": "Cliquez sur \"Installer\" lorsque vous y êtes invité",
+        "step3": "L'application s'ouvrira dans sa propre fenêtre"
+      }
+    }
   }
 }

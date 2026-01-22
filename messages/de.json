@@ -955,5 +955,38 @@
     "noPosts": "Noch keine Beiträge. Schauen Sie bald wieder vorbei!",
     "backToBlog": "Zurück zum Blog",
     "translated": "Übersetzt"
+  },
+  "install": {
+    "banner": {
+      "title": "App installieren",
+      "description": "Fügen Sie ĐàLạt.app zu Ihrem Startbildschirm hinzu für das beste Erlebnis",
+      "install": "Installieren",
+      "howTo": "So installieren Sie",
+      "dismiss": "Später"
+    },
+    "modal": {
+      "title": "ĐàLạt.app installieren",
+      "description": "Schneller Zugriff vom Startbildschirm",
+      "closeModal": "Schließen",
+      "alreadyInstalled": "Bereits installiert? Öffnen Sie die App vom Startbildschirm.",
+      "ios": {
+        "title": "iPhone / iPad",
+        "step1": "Tippen Sie auf die Teilen-Schaltfläche",
+        "step2": "Scrollen Sie nach unten und tippen Sie auf \"Zum Home-Bildschirm\"",
+        "step3": "Tippen Sie auf \"Hinzufügen\" zur Bestätigung"
+      },
+      "android": {
+        "title": "Android",
+        "step1": "Tippen Sie auf das Menü-Symbol (⋮) in Ihrem Browser",
+        "step2": "Tippen Sie auf \"Zum Startbildschirm hinzufügen\" oder \"App installieren\"",
+        "step3": "Tippen Sie auf \"Hinzufügen\" oder \"Installieren\" zur Bestätigung"
+      },
+      "desktop": {
+        "title": "Desktop",
+        "step1": "Suchen Sie das Installations-Symbol in der Adressleiste",
+        "step2": "Klicken Sie auf \"Installieren\", wenn Sie dazu aufgefordert werden",
+        "step3": "Die App öffnet sich in einem eigenen Fenster"
+      }
+    }
   }
 }

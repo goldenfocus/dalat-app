@@ -7,6 +7,7 @@ import { BadgeClearer } from "@/components/badge-clearer";
 import { NotificationPrompt } from "@/components/notification-prompt";
 import { SwUpdateHandler } from "@/components/sw-update-handler";
 import { LocaleMismatchBanner } from "@/components/locale-mismatch-banner";
+import { InstallAppBanner } from "@/components/pwa";
 import { GlobalFooter } from "@/components/global-footer";
 import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-context";
 import { PerformanceMonitor } from "@/components/performance-monitor";
@@ -87,6 +88,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <NotificationPrompt />
               <SwUpdateHandler />
               <LocaleMismatchBanner />
+              <InstallAppBanner />
               <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
                 {children}
               </main>

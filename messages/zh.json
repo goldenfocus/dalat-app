@@ -955,5 +955,38 @@
     "noPosts": "暂无文章。敬请期待！",
     "backToBlog": "返回博客",
     "translated": "已翻译"
+  },
+  "install": {
+    "banner": {
+      "title": "安装应用",
+      "description": "将 ĐàLạt.app 添加到主屏幕以获得最佳体验",
+      "install": "安装",
+      "howTo": "如何安装",
+      "dismiss": "稍后再说"
+    },
+    "modal": {
+      "title": "安装 ĐàLạt.app",
+      "description": "从主屏幕快速访问",
+      "closeModal": "关闭",
+      "alreadyInstalled": "已经安装？从主屏幕打开应用。",
+      "ios": {
+        "title": "iPhone / iPad",
+        "step1": "点击分享按钮",
+        "step2": "向下滑动并点击\"添加到主屏幕\"",
+        "step3": "点击\"添加\"确认"
+      },
+      "android": {
+        "title": "Android",
+        "step1": "点击浏览器中的菜单图标 (⋮)",
+        "step2": "点击\"添加到主屏幕\"或\"安装应用\"",
+        "step3": "点击\"添加\"或\"安装\"确认"
+      },
+      "desktop": {
+        "title": "桌面端",
+        "step1": "在浏览器地址栏中查找安装图标",
+        "step2": "在提示时点击\"安装\"",
+        "step3": "应用将在独立窗口中打开"
+      }
+    }
   }
 }

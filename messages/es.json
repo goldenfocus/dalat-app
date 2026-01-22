@@ -957,5 +957,38 @@
     "noPosts": "Aún no hay artículos. ¡Vuelve pronto!",
     "backToBlog": "Volver al Blog",
     "translated": "Traducido"
+  },
+  "install": {
+    "banner": {
+      "title": "Instalar la aplicación",
+      "description": "Añade ĐàLạt.app a tu pantalla de inicio para la mejor experiencia",
+      "install": "Instalar",
+      "howTo": "Cómo instalar",
+      "dismiss": "Ahora no"
+    },
+    "modal": {
+      "title": "Instalar ĐàLạt.app",
+      "description": "Acceso rápido desde tu pantalla de inicio",
+      "closeModal": "Cerrar",
+      "alreadyInstalled": "¿Ya está instalada? Abre la app desde tu pantalla de inicio.",
+      "ios": {
+        "title": "iPhone / iPad",
+        "step1": "Toca el botón Compartir",
+        "step2": "Desplázate hacia abajo y toca \"Añadir a pantalla de inicio\"",
+        "step3": "Toca \"Añadir\" para confirmar"
+      },
+      "android": {
+        "title": "Android",
+        "step1": "Toca el icono del menú (⋮) en tu navegador",
+        "step2": "Toca \"Añadir a pantalla de inicio\" o \"Instalar aplicación\"",
+        "step3": "Toca \"Añadir\" o \"Instalar\" para confirmar"
+      },
+      "desktop": {
+        "title": "Escritorio",
+        "step1": "Busca el icono de instalación en la barra de direcciones",
+        "step2": "Haz clic en \"Instalar\" cuando se te solicite",
+        "step3": "La aplicación se abrirá en su propia ventana"
+      }
+    }
   }
 }

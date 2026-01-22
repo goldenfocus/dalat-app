@@ -1107,5 +1107,38 @@
     "goLivePlaceholder": "Sunset at Xuan Huong Lake...",
     "goingLive": "Going live...",
     "goLiveError": "Could not start stream. Please try again."
+  },
+  "install": {
+    "banner": {
+      "title": "Install the App",
+      "description": "Add ĐàLạt.app to your home screen for the best experience",
+      "install": "Install",
+      "howTo": "How to Install",
+      "dismiss": "Not now"
+    },
+    "modal": {
+      "title": "Install ĐàLạt.app",
+      "description": "Get quick access from your home screen",
+      "closeModal": "Close",
+      "alreadyInstalled": "Already installed? Open the app from your home screen.",
+      "ios": {
+        "title": "iPhone / iPad",
+        "step1": "Tap the Share button",
+        "step2": "Scroll down and tap \"Add to Home Screen\"",
+        "step3": "Tap \"Add\" to confirm"
+      },
+      "android": {
+        "title": "Android",
+        "step1": "Tap the menu icon (⋮) in your browser",
+        "step2": "Tap \"Add to Home screen\" or \"Install app\"",
+        "step3": "Tap \"Add\" or \"Install\" to confirm"
+      },
+      "desktop": {
+        "title": "Desktop",
+        "step1": "Look for the install icon in your browser's address bar",
+        "step2": "Click \"Install\" when prompted",
+        "step3": "The app will open in its own window"
+      }
+    }
   }
 }

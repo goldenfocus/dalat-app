@@ -955,5 +955,38 @@
     "noPosts": "Belum ada artikel. Kembali lagi nanti!",
     "backToBlog": "Kembali ke Blog",
     "translated": "Diterjemahkan"
+  },
+  "install": {
+    "banner": {
+      "title": "Pasang Aplikasi",
+      "description": "Tambahkan ĐàLạt.app ke layar utama untuk pengalaman terbaik",
+      "install": "Pasang",
+      "howTo": "Cara Memasang",
+      "dismiss": "Nanti saja"
+    },
+    "modal": {
+      "title": "Pasang ĐàLạt.app",
+      "description": "Akses cepat dari layar utama Anda",
+      "closeModal": "Tutup",
+      "alreadyInstalled": "Sudah terpasang? Buka aplikasi dari layar utama.",
+      "ios": {
+        "title": "iPhone / iPad",
+        "step1": "Ketuk tombol Bagikan",
+        "step2": "Gulir ke bawah dan ketuk \"Tambahkan ke Layar Utama\"",
+        "step3": "Ketuk \"Tambah\" untuk mengonfirmasi"
+      },
+      "android": {
+        "title": "Android",
+        "step1": "Ketuk ikon menu (⋮) di browser Anda",
+        "step2": "Ketuk \"Tambahkan ke layar utama\" atau \"Pasang aplikasi\"",
+        "step3": "Ketuk \"Tambah\" atau \"Pasang\" untuk mengonfirmasi"
+      },
+      "desktop": {
+        "title": "Desktop",
+        "step1": "Cari ikon pasang di bilah alamat browser",
+        "step2": "Klik \"Pasang\" saat diminta",
+        "step3": "Aplikasi akan terbuka di jendelanya sendiri"
+      }
+    }
   }
 }
