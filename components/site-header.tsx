@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Calendar, MapPin, Plus } from "lucide-react";
+import { Calendar, MapPin, Plus, Film } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButton } from "@/components/auth-button";
 import { LocalePicker } from "@/components/locale-picker";
@@ -37,6 +37,13 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
             aria-label="Calendar"
           >
             <Calendar className="w-5 h-5" />
+          </Link>
+          <Link
+            href="/moments"
+            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+            aria-label="Moments"
+          >
+            <Film className="w-5 h-5" />
           </Link>
           {isAuthenticated && (
             <Link
