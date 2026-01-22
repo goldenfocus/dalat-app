@@ -46,10 +46,24 @@ async function getUpcomingEvents(): Promise<Event[]> {
     p_limit: 50,
   });
 
-  return [
+  const allEvents = [
     ...(events || []),
     ...(happeningEvents || []),
   ] as Event[];
+
+  // Debug: Log event count and coordinate status
+  console.log(`[Map] Total events: ${allEvents.length}`);
+  console.log(`[Map] Events with coordinates: ${allEvents.filter(e => e.latitude && e.longitude).length}`);
+  if (allEvents.length > 0) {
+    console.log(`[Map] Sample event:`, {
+      title: allEvents[0].title,
+      location_name: allEvents[0].location_name,
+      latitude: allEvents[0].latitude,
+      longitude: allEvents[0].longitude,
+    });
+  }
+
+  return allEvents;
 }
 
 function MapLoading() {

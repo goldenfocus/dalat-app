@@ -6,7 +6,7 @@ import { Loader2, Navigation, X } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
-import { getMapStyles, DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
+import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
 import { TagFilterBar } from "@/components/events/tag-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
@@ -126,9 +126,18 @@ export function EventMap({ events }: EventMapProps) {
 
     let timeoutId: NodeJS.Timeout;
 
+    // Check if Google Maps API is fully ready (not just partially loaded)
+    const isGoogleMapsReady = () => {
+      return (
+        typeof google !== "undefined" &&
+        google.maps &&
+        typeof google.maps.Map === "function"
+      );
+    };
+
     const initMap = () => {
-      if (typeof google === "undefined" || !google.maps) {
-        console.error("Google Maps not loaded");
+      if (!isGoogleMapsReady()) {
+        console.error("Google Maps not fully loaded");
         return;
       }
 
@@ -140,20 +149,24 @@ export function EventMap({ events }: EventMapProps) {
       }
 
       try {
-        const theme = resolvedTheme === "dark" ? "dark" : "light";
-
-        const mapInstance = new google.maps.Map(mapRef.current, {
+        // Build map options - mapId controls styling via Cloud Console, so don't set styles
+        const mapOptions: google.maps.MapOptions = {
           center: DALAT_CENTER,
           zoom: DEFAULT_ZOOM,
-          styles: getMapStyles(theme),
           disableDefaultUI: true,
           zoomControl: true,
-          zoomControlOptions: {
-            position: google.maps.ControlPosition.RIGHT_CENTER,
-          },
           mapId: "dalat-events-map",
           gestureHandling: "greedy",
-        });
+        };
+
+        // Only set zoomControlOptions if ControlPosition is available
+        if (google.maps.ControlPosition) {
+          mapOptions.zoomControlOptions = {
+            position: google.maps.ControlPosition.RIGHT_CENTER,
+          };
+        }
+
+        const mapInstance = new google.maps.Map(mapRef.current, mapOptions);
 
         setMap(mapInstance);
         setIsLoading(false);
@@ -176,7 +189,7 @@ export function EventMap({ events }: EventMapProps) {
     }, 15000);
 
     // Check if already loaded
-    if (typeof google !== "undefined" && google.maps) {
+    if (isGoogleMapsReady()) {
       initMap();
       return () => clearTimeout(timeoutId);
     }
@@ -185,7 +198,7 @@ export function EventMap({ events }: EventMapProps) {
     const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
     if (existingScript) {
       const checkReady = setInterval(() => {
-        if (typeof google !== "undefined" && google.maps) {
+        if (isGoogleMapsReady()) {
           clearInterval(checkReady);
           initMap();
         }
@@ -204,7 +217,7 @@ export function EventMap({ events }: EventMapProps) {
     script.defer = true;
     script.onload = () => {
       const checkReady = setInterval(() => {
-        if (typeof google !== "undefined" && google.maps) {
+        if (isGoogleMapsReady()) {
           clearInterval(checkReady);
           initMap();
         }
@@ -222,12 +235,8 @@ export function EventMap({ events }: EventMapProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedTheme]);
 
-  // Update map styles when theme changes
-  useEffect(() => {
-    if (!map) return;
-    const theme = resolvedTheme === "dark" ? "dark" : "light";
-    map.setOptions({ styles: getMapStyles(theme) });
-  }, [map, resolvedTheme]);
+  // Note: Map styles are controlled via Cloud Console when using mapId
+  // Theme-based styling would need to be configured there instead
 
   // Create markers for events
   useEffect(() => {
