@@ -140,3 +140,15 @@ body {
     contain-intrinsic-size: auto 200px;
   }
 }
+
+/* Map marker pulsing animation for "happening now" events */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  70%, 100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}

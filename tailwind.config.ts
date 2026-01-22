@@ -83,12 +83,17 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "pulse-ring": {
+          "0%": { transform: "scale(0.95)", opacity: "1" },
+          "70%, 100%": { transform: "scale(1.3)", opacity: "0" },
+        },
       },
       animation: {
         ripple: "ripple 0.6s ease-out forwards",
         "press-in": "press-in 0.1s ease-out forwards",
         "press-out": "press-out 0.2s ease-out forwards",
         shimmer: "shimmer 2s infinite linear",
+        "pulse-ring": "pulse-ring 1.5s ease-out infinite",
       },
     },
   },

@@ -261,6 +261,14 @@ export const MARKER_COLORS = {
     light: "#16a34a", // green-600
     dark: "#22c55e",  // green-500
   },
+  happening: {
+    light: "#ef4444", // red-500 - "live" events
+    dark: "#f87171",  // red-400
+  },
+  cluster: {
+    light: "#3b82f6", // blue-500 - grouped markers
+    dark: "#60a5fa",  // blue-400
+  },
 };
 
 // Da Lat center coordinates

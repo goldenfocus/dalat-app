@@ -26,7 +26,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-async function getUpcomingEvents(): Promise<Event[]> {
+interface MapData {
+  events: Event[];
+  happeningEventIds: string[];
+}
+
+async function getMapData(): Promise<MapData> {
   const supabase = await createClient();
 
   // Fetch upcoming events with location data
@@ -37,33 +42,24 @@ async function getUpcomingEvents(): Promise<Event[]> {
 
   if (error) {
     console.error("Error fetching events for map:", error);
-    return [];
+    return { events: [], happeningEventIds: [] };
   }
 
-  // Also get happening events
+  // Also get happening events (currently live)
   const { data: happeningEvents } = await supabase.rpc("get_events_by_lifecycle", {
     p_lifecycle: "happening",
     p_limit: 50,
   });
+
+  // Track which events are currently happening for pulsing markers
+  const happeningEventIds = (happeningEvents || []).map((e: Event) => e.id);
 
   const allEvents = [
     ...(events || []),
     ...(happeningEvents || []),
   ] as Event[];
 
-  // Debug: Log event count and coordinate status
-  console.log(`[Map] Total events: ${allEvents.length}`);
-  console.log(`[Map] Events with coordinates: ${allEvents.filter(e => e.latitude && e.longitude).length}`);
-  if (allEvents.length > 0) {
-    console.log(`[Map] Sample event:`, {
-      title: allEvents[0].title,
-      location_name: allEvents[0].location_name,
-      latitude: allEvents[0].latitude,
-      longitude: allEvents[0].longitude,
-    });
-  }
-
-  return allEvents;
+  return { events: allEvents, happeningEventIds };
 }
 
 function MapLoading() {
@@ -75,8 +71,8 @@ function MapLoading() {
 }
 
 async function MapContent() {
-  const events = await getUpcomingEvents();
-  return <EventMap events={events} />;
+  const { events, happeningEventIds } = await getMapData();
+  return <EventMap events={events} happeningEventIds={happeningEventIds} />;
 }
 
 export default async function MapPage({ params }: PageProps) {
