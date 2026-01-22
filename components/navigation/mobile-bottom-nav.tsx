@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Calendar, MapPin, Plus, User, Video, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Plus, User, Video, Film } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 import { GoLiveModal } from "@/components/streaming/GoLiveModal";
@@ -25,7 +25,7 @@ const NAV_ITEMS = [
   {
     key: "moments",
     href: "/moments",
-    icon: Sparkles,
+    icon: Film,
     labelKey: "moments",
     requiresAuth: false,
   },
