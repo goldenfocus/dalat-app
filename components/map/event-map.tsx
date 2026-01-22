@@ -94,6 +94,7 @@ function createUserMarker(): HTMLElement {
 export function EventMap({ events }: EventMapProps) {
   const { resolvedTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedTag, setSelectedTag] = useState<EventTag | null>(null);
@@ -101,6 +102,7 @@ export function EventMap({ events }: EventMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const userMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
+  const mapInitializedRef = useRef(false);
 
   // Filter events by selected tag
   const filteredEvents = selectedTag
@@ -117,36 +119,63 @@ export function EventMap({ events }: EventMapProps) {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       console.error("Google Maps API key not configured");
+      setLoadError("Google Maps API key not configured");
       setIsLoading(false);
       return;
     }
 
+    let timeoutId: NodeJS.Timeout;
+
     const initMap = () => {
-      if (!mapRef.current || !google.maps) return;
+      if (!mapRef.current) {
+        console.error("Map container ref not available");
+        return;
+      }
+      if (typeof google === "undefined" || !google.maps) {
+        console.error("Google Maps not loaded");
+        return;
+      }
 
-      const theme = resolvedTheme === "dark" ? "dark" : "light";
+      try {
+        const theme = resolvedTheme === "dark" ? "dark" : "light";
 
-      const mapInstance = new google.maps.Map(mapRef.current, {
-        center: DALAT_CENTER,
-        zoom: DEFAULT_ZOOM,
-        styles: getMapStyles(theme),
-        disableDefaultUI: true,
-        zoomControl: true,
-        zoomControlOptions: {
-          position: google.maps.ControlPosition.RIGHT_CENTER,
-        },
-        mapId: "dalat-events-map",
-        gestureHandling: "greedy",
-      });
+        const mapInstance = new google.maps.Map(mapRef.current, {
+          center: DALAT_CENTER,
+          zoom: DEFAULT_ZOOM,
+          styles: getMapStyles(theme),
+          disableDefaultUI: true,
+          zoomControl: true,
+          zoomControlOptions: {
+            position: google.maps.ControlPosition.RIGHT_CENTER,
+          },
+          mapId: "dalat-events-map",
+          gestureHandling: "greedy",
+        });
 
-      setMap(mapInstance);
-      setIsLoading(false);
+        setMap(mapInstance);
+        setIsLoading(false);
+        mapInitializedRef.current = true;
+        if (timeoutId) clearTimeout(timeoutId);
+      } catch (err) {
+        console.error("Error initializing map:", err);
+        setLoadError("Failed to initialize map");
+        setIsLoading(false);
+      }
     };
+
+    // Set a timeout to stop loading if map doesn't initialize
+    timeoutId = setTimeout(() => {
+      if (!mapInitializedRef.current) {
+        console.error("Map initialization timed out");
+        setLoadError("Map took too long to load. Please refresh the page.");
+        setIsLoading(false);
+      }
+    }, 15000);
 
     // Check if already loaded
     if (typeof google !== "undefined" && google.maps) {
       initMap();
-      return;
+      return () => clearTimeout(timeoutId);
     }
 
     // Check for existing script
@@ -159,7 +188,10 @@ export function EventMap({ events }: EventMapProps) {
         }
       }, 100);
       setTimeout(() => clearInterval(checkReady), 10000);
-      return;
+      return () => {
+        clearInterval(checkReady);
+        clearTimeout(timeoutId);
+      };
     }
 
     // Load script
@@ -176,7 +208,15 @@ export function EventMap({ events }: EventMapProps) {
       }, 100);
       setTimeout(() => clearInterval(checkReady), 10000);
     };
+    script.onerror = () => {
+      console.error("Failed to load Google Maps script");
+      setLoadError("Failed to load Google Maps");
+      setIsLoading(false);
+    };
     document.head.appendChild(script);
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedTheme]);
 
   // Update map styles when theme changes
@@ -280,7 +320,26 @@ export function EventMap({ events }: EventMapProps) {
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center bg-muted/30">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Loading map...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="h-full flex items-center justify-center bg-muted/30 p-4">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-2">{loadError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-sm text-primary underline hover:no-underline"
+          >
+            Refresh page
+          </button>
+        </div>
       </div>
     );
   }
