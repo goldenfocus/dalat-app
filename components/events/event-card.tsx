@@ -12,6 +12,7 @@ import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { usePrefetch } from "@/lib/prefetch";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 // Tiny gradient placeholder for perceived instant loading
@@ -128,7 +129,7 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle, priorit
             {event.location_name && (
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                <span className="line-clamp-1">{event.location_name}</span>
+                <span className="line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
               </div>
             )}
 

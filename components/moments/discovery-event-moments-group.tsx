@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { Calendar, MapPin, ChevronRight, Play } from "lucide-react";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { DiscoveryEventMomentsGroup as DiscoveryEventMomentsGroupType, DiscoveryGroupedMoment } from "@/lib/types";
 
 interface DiscoveryEventMomentsGroupProps {
@@ -119,7 +120,7 @@ export function DiscoveryEventMomentsGroup({ group }: DiscoveryEventMomentsGroup
               {group.event_location_name && (
                 <span className="flex items-center gap-1 truncate">
                   <MapPin className="w-3 h-3 shrink-0" />
-                  <span className="truncate">{group.event_location_name}</span>
+                  <span className="truncate">{decodeUnicodeEscapes(group.event_location_name)}</span>
                 </span>
               )}
             </div>

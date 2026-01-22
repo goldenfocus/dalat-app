@@ -3,7 +3,7 @@
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import { formatInDaLat } from "@/lib/timezone";
-import { cn } from "@/lib/utils";
+import { cn, decodeUnicodeEscapes } from "@/lib/utils";
 import { MapPin, Clock } from "lucide-react";
 
 interface EventCardFullProps {
@@ -60,7 +60,7 @@ export function EventCardFull({ event, isPast }: EventCardFullProps) {
           {event.location_name && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin className="w-3.5 h-3.5" />
-              <span className="truncate">{event.location_name}</span>
+              <span className="truncate">{decodeUnicodeEscapes(event.location_name)}</span>
             </div>
           )}
 

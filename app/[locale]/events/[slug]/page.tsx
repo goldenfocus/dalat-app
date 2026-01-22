@@ -28,6 +28,7 @@ import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { Linkify } from "@/lib/linkify";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import { MomentsPreview } from "@/components/moments";
 import { SponsorDisplay } from "@/components/events/sponsor-display";
 import { ClickableTagList } from "@/components/events/clickable-tag-list";
@@ -709,7 +710,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div className="space-y-1">
                       {event.location_name && (
-                        <p className="font-medium">{event.location_name}</p>
+                        <p className="font-medium">{decodeUnicodeEscapes(event.location_name)}</p>
                       )}
                       {event.address && (
                         <CopyAddress address={event.address} />

@@ -9,6 +9,7 @@ import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 interface EventCardImmersiveProps {
@@ -106,7 +107,7 @@ export function EventCardImmersive({ event, counts, seriesRrule, priority = fals
               {event.location_name && (
                 <div className="flex items-center gap-2.5 drop-shadow-md">
                   <MapPin className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-sm line-clamp-1">{event.location_name}</span>
+                  <span className="text-sm line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
                 </div>
               )}
 

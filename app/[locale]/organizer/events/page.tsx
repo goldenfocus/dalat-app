@@ -3,6 +3,7 @@ import { ArrowLeft, Plus, Calendar, Users, MapPin, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 
 async function getMyEvents(userId: string) {
   const supabase = await createClient();
@@ -128,7 +129,7 @@ export default async function OrganizerEventsPage() {
                           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                             <MapPin className="h-3 w-3" />
                             <span className="truncate max-w-[200px]">
-                              {event.location_name}
+                              {decodeUnicodeEscapes(event.location_name)}
                             </span>
                           </div>
                         )}

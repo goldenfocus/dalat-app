@@ -2,6 +2,7 @@ import { Link } from "@/lib/i18n/routing";
 import { Calendar, BadgeCheck, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, Organizer, Locale } from "@/lib/types";
 
 interface MoreFromOrganizerProps {
@@ -66,7 +67,7 @@ export function MoreFromOrganizer({
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {formatInDaLat(event.starts_at, "MMM d", locale)}
-                  {event.location_name && ` · ${event.location_name}`}
+                  {event.location_name && ` · ${decodeUnicodeEscapes(event.location_name)}`}
                 </p>
               </div>
             </div>
