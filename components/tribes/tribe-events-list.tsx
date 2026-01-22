@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Calendar, MapPin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, Profile } from "@/lib/types";
 
 interface TribeEventsListProps {
@@ -61,7 +62,7 @@ export function TribeEventsList({ events, locale }: TribeEventsListProps) {
                 {event.location_name && (
                   <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
                     <MapPin className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">{event.location_name}</span>
+                    <span className="truncate">{decodeUnicodeEscapes(event.location_name)}</span>
                   </div>
                 )}
 

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { describeRRule, getShortRRuleLabel } from "@/lib/recurrence";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { EventSeries, Event, Profile, Organizer, Locale } from "@/lib/types";
 
 interface PageProps {
@@ -202,7 +203,7 @@ export default async function SeriesPage({ params }: PageProps) {
                 <div className="flex items-start gap-2 text-muted-foreground">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span>{series.location_name}</span>
+                    <span>{decodeUnicodeEscapes(series.location_name)}</span>
                     {series.address && (
                       <p className="text-sm">{series.address}</p>
                     )}

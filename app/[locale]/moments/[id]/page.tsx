@@ -18,6 +18,7 @@ import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/st
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import { hasRoleLevel, type Moment, type Event, type Profile, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
 
 // Map our locales to date-fns locales for relative time formatting
@@ -483,7 +484,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
                     {event.location_name && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                         <MapPin className="w-4 h-4" />
-                        <span className="truncate">{event.location_name}</span>
+                        <span className="truncate">{decodeUnicodeEscapes(event.location_name)}</span>
                       </div>
                     )}
                   </div>

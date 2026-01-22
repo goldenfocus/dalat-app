@@ -6,6 +6,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Organizer, Event, Locale } from "@/lib/types";
 import { generateOrganizerMetadata } from "@/lib/metadata";
 import { JsonLd, generateOrganizationSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -215,7 +216,7 @@ export default async function OrganizerPage({ params }: PageProps) {
                         {event.location_name && (
                           <span className="flex items-center gap-1">
                             <MapPin className="w-4 h-4" />
-                            {event.location_name}
+                            {decodeUnicodeEscapes(event.location_name)}
                           </span>
                         )}
                       </div>

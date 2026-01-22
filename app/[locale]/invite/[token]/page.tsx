@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatInDaLat } from "@/lib/timezone";
 import { InviteRsvpButtons } from "./rsvp-buttons";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Locale } from "@/lib/types";
 
 interface PageProps {
@@ -191,7 +192,7 @@ export default async function InvitePage({ params, searchParams }: PageProps) {
                   <MapPin className="w-5 h-5 text-primary mt-0.5" />
                   <div>
                     {event.location_name && (
-                      <p className="font-medium">{event.location_name}</p>
+                      <p className="font-medium">{decodeUnicodeEscapes(event.location_name)}</p>
                     )}
                     {event.address && (
                       <p className="text-sm text-muted-foreground">{event.address}</p>

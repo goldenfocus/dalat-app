@@ -12,7 +12,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
-import { cn } from "@/lib/utils";
+import { cn, decodeUnicodeEscapes } from "@/lib/utils";
 
 interface WeekViewProps {
   events: Event[];
@@ -151,7 +151,7 @@ export function WeekView({
                           </h4>
                           <p className="text-xs text-muted-foreground mt-1">
                             {formatInDaLat(event.starts_at, "h:mm a")}
-                            {event.location_name && ` · ${event.location_name}`}
+                            {event.location_name && ` · ${decodeUnicodeEscapes(event.location_name)}`}
                           </p>
                         </div>
                       </div>

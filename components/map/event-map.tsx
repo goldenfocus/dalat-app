@@ -12,6 +12,7 @@ import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
 import { TagFilterBar } from "@/components/events/tag-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
+import { decodeUnicodeEscapes } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Clustering configuration
@@ -906,7 +907,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                 </p>
                 {selectedEvent.location_name && (
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                    📍 {selectedEvent.location_name}
+                    📍 {decodeUnicodeEscapes(selectedEvent.location_name)}
                   </p>
                 )}
               </div>
