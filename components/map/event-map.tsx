@@ -126,23 +126,14 @@ export function EventMap({ events }: EventMapProps) {
 
     let timeoutId: NodeJS.Timeout;
 
-    let retryCount = 0;
-    const maxRetries = 50; // ~800ms max wait for ref
-
     const initMap = () => {
       if (typeof google === "undefined" || !google.maps) {
         console.error("Google Maps not loaded");
         return;
       }
 
-      // Wait for ref to be available (DOM might not be ready yet)
       if (!mapRef.current) {
-        if (retryCount < maxRetries) {
-          retryCount++;
-          requestAnimationFrame(initMap);
-          return;
-        }
-        console.error("Map container ref never became available");
+        console.error("Map container ref not available");
         setLoadError("Failed to initialize map container");
         setIsLoading(false);
         return;
@@ -329,17 +320,6 @@ export function EventMap({ events }: EventMapProps) {
     setSelectedEvent(null);
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center bg-muted/30">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Loading map...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (loadError) {
     return (
       <div className="h-full flex items-center justify-center bg-muted/30 p-4">
@@ -376,9 +356,19 @@ export function EventMap({ events }: EventMapProps) {
         />
       </div>
 
-      {/* Map container */}
+      {/* Map container - always rendered so ref is available */}
       <div className="flex-1 relative">
         <div ref={mapRef} className="w-full h-full" />
+
+        {/* Loading overlay */}
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted/80 z-10">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Loading map...</p>
+            </div>
+          </div>
+        )}
 
         {/* Near Me button */}
         <button
