@@ -602,7 +602,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
             onClick={() => window.location.reload()}
             className="text-sm text-primary underline hover:no-underline"
           >
-            Refresh page
+            {t("refreshPage")}
           </button>
         </div>
       </div>
@@ -613,7 +613,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
     return (
       <div className="h-full flex items-center justify-center bg-muted/30 p-4">
         <p className="text-center text-muted-foreground">
-          Map not available. Google Maps API key not configured.
+          {t("mapNotAvailable")}
         </p>
       </div>
     );
@@ -627,8 +627,9 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
       const end = parseISO(customEndDate);
       return `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
     }
-    return DATE_PRESETS.find(p => p.value === datePreset)?.label || "All";
-  }, [datePreset, customStartDate, customEndDate]);
+    const preset = DATE_PRESETS.find(p => p.value === datePreset);
+    return preset ? t(preset.labelKey) : t("presets.allUpcoming");
+  }, [datePreset, customStartDate, customEndDate, t]);
 
   // Handle custom date selection
   const handleApplyCustomDates = useCallback(() => {
@@ -662,7 +663,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
               }`}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              <span className="text-sm font-medium">Filters</span>
+              <span className="text-sm font-medium">{t("filters")}</span>
               {(selectedTag || datePreset !== "7days") && (
                 <span className="w-2 h-2 rounded-full bg-primary" />
               )}
@@ -672,7 +673,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
               <span>{currentPresetLabel}</span>
             </div>
             <div className="ml-auto text-xs text-muted-foreground">
-              {eventsWithLocation.length} events
+              {t("eventsCount", { count: eventsWithLocation.length })}
             </div>
           </div>
 
@@ -681,7 +682,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
             <div className="px-3 pb-3 space-y-3 border-t pt-3">
               {/* Date range presets */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">Date Range</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("dateRange")}</label>
                 <div className="flex flex-wrap gap-2">
                   {DATE_PRESETS.map(preset => (
                     <button
@@ -696,7 +697,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                           : "border-border hover:border-foreground/50"
                       }`}
                     >
-                      {preset.label}
+                      {t(preset.labelKey)}
                     </button>
                   ))}
                   <Popover open={showCustomDatePicker} onOpenChange={setShowCustomDatePicker}>
@@ -709,15 +710,15 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                         }`}
                       >
                         <CalendarRange className="w-3 h-3" />
-                        {datePreset === "custom" ? currentPresetLabel : "Custom"}
+                        {datePreset === "custom" ? currentPresetLabel : t("presets.custom")}
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-3" align="start">
                       <div className="space-y-3">
-                        <div className="text-sm font-medium">Custom Date Range</div>
+                        <div className="text-sm font-medium">{t("customDateRange")}</div>
                         <div className="flex gap-2">
                           <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">Start</label>
+                            <label className="text-xs text-muted-foreground">{t("start")}</label>
                             <input
                               type="date"
                               value={customStartDate}
@@ -727,7 +728,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">End</label>
+                            <label className="text-xs text-muted-foreground">{t("end")}</label>
                             <input
                               type="date"
                               value={customEndDate}
@@ -742,14 +743,14 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                             onClick={() => setShowCustomDatePicker(false)}
                             className="flex-1 px-3 py-1.5 text-xs border rounded-md hover:bg-muted transition-colors"
                           >
-                            Cancel
+                            {t("cancel")}
                           </button>
                           <button
                             onClick={handleApplyCustomDates}
                             disabled={!customStartDate || !customEndDate}
                             className="flex-1 px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
                           >
-                            Apply
+                            {t("apply")}
                           </button>
                         </div>
                       </div>
@@ -760,7 +761,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
 
               {/* Tag filter */}
               <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">Category</label>
+                <label className="text-xs font-medium text-muted-foreground">{t("category")}</label>
                 <TagFilterBar
                   selectedTag={selectedTag}
                   onTagChange={handleTagChange}
@@ -788,7 +789,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                       : "border-border hover:border-foreground/50"
                   }`}
                 >
-                  {preset.label}
+                  {t(preset.labelKey)}
                 </button>
               ))}
               <Popover open={showCustomDatePicker} onOpenChange={setShowCustomDatePicker}>
@@ -801,15 +802,15 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                     }`}
                   >
                     <CalendarRange className="w-3 h-3" />
-                    {datePreset === "custom" ? currentPresetLabel : "Custom"}
+                    {datePreset === "custom" ? currentPresetLabel : t("presets.custom")}
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-3" align="start">
                   <div className="space-y-3">
-                    <div className="text-sm font-medium">Custom Date Range</div>
+                    <div className="text-sm font-medium">{t("customDateRange")}</div>
                     <div className="flex gap-2">
                       <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground">Start</label>
+                        <label className="text-xs text-muted-foreground">{t("start")}</label>
                         <input
                           type="date"
                           value={customStartDate}
@@ -819,7 +820,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground">End</label>
+                        <label className="text-xs text-muted-foreground">{t("end")}</label>
                         <input
                           type="date"
                           value={customEndDate}
@@ -860,7 +861,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
             </div>
 
             <div className="text-xs text-muted-foreground whitespace-nowrap">
-              {eventsWithLocation.length} events
+              {t("eventsCount", { count: eventsWithLocation.length })}
             </div>
           </div>
         </div>
@@ -875,7 +876,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
           <div className="absolute inset-0 flex items-center justify-center bg-muted/80 z-10">
             <div className="text-center">
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Loading map...</p>
+              <p className="text-sm text-muted-foreground">{t("loadingMap")}</p>
             </div>
           </div>
         )}
@@ -887,7 +888,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
           title="Show my location"
         >
           <Navigation className="w-5 h-5 text-blue-500" />
-          <span className="hidden sm:inline font-medium text-sm">Near Me</span>
+          <span className="hidden sm:inline font-medium text-sm">{t("nearMe")}</span>
         </button>
 
         {/* Selected event card */}
@@ -933,7 +934,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                   title="Get directions"
                 >
                   <Route className="w-4 h-4" />
-                  <span>Directions</span>
+                  <span>{t("directions")}</span>
                 </a>
                 <div className="w-px bg-border" />
                 <a
@@ -948,7 +949,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                   title="Open in Google Maps"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  <span>Maps</span>
+                  <span>{t("openInMaps")}</span>
                 </a>
                 <div className="w-px bg-border" />
                 <a
@@ -963,7 +964,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                   title="Street View"
                 >
                   <Eye className="w-4 h-4" />
-                  <span>Street</span>
+                  <span>{t("streetView")}</span>
                 </a>
               </div>
             )}
@@ -987,8 +988,8 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
             <div className="text-center p-4">
               <p className="text-muted-foreground mb-2">
                 {selectedTag
-                  ? "No events with locations in this category"
-                  : "No events with locations to display"}
+                  ? t("noEventsInCategory")
+                  : t("noEventsWithLocation")}
               </p>
             </div>
           </div>
