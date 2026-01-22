@@ -12,9 +12,15 @@ export function LcpImagePreload({ imageUrl }: { imageUrl: string | null }) {
   const isSupabaseUrl = SUPABASE_PATTERN.test(imageUrl);
 
   if (!isSupabaseUrl) {
-    // Non-Supabase images: simple preload
+    // Non-Supabase images: simple preload (mobile only via media query)
     return (
-      <link rel="preload" as="image" href={imageUrl} fetchPriority="high" />
+      <link
+        rel="preload"
+        as="image"
+        href={imageUrl}
+        fetchPriority="high"
+        media="(max-width: 1023px)"
+      />
     );
   }
 
@@ -22,11 +28,13 @@ export function LcpImagePreload({ imageUrl }: { imageUrl: string | null }) {
   // Widths: 640/750/828px match Next.js deviceSizes for mobile
   // Quality: 75 matches cloudflareLoader default
   // Otherwise preload won't match actual request = double download!
+  // Media query restricts to mobile (<1024px) to avoid "unused preload" warning on desktop
   return (
     <link
       rel="preload"
       as="image"
       fetchPriority="high"
+      media="(max-width: 1023px)"
       imageSrcSet={[
         `/cdn-cgi/image/width=640,quality=75,format=auto,fit=scale-down,metadata=none/${imageUrl} 640w`,
         `/cdn-cgi/image/width=750,quality=75,format=auto,fit=scale-down,metadata=none/${imageUrl} 750w`,

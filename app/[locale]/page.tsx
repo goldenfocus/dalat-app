@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AuthButton } from "@/components/auth-button";
 import { LocalePicker } from "@/components/locale-picker";
 import { SiteHeader } from "@/components/site-header";
+import { MobileMenu } from "@/components/navigation/mobile-menu";
 import { EventCard } from "@/components/events/event-card";
 import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
@@ -373,6 +374,7 @@ export default async function Home({ params, searchParams }: PageProps) {
             <Suspense>
               <AuthButton />
             </Suspense>
+            <MobileMenu variant="overlay" />
           </div>
         </nav>
 
