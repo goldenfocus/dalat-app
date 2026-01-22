@@ -988,5 +988,57 @@
         "step3": "Приложение откроется в отдельном окне"
       }
     }
+  },
+  "mapPage": {
+    "title": "Карта событий",
+    "dateRange": "Диапазон дат",
+    "category": "Категория",
+    "filters": "Фильтры",
+    "eventsCount": "{count} событий",
+    "nearMe": "Рядом",
+    "customDateRange": "Выбрать даты",
+    "start": "Начало",
+    "end": "Конец",
+    "apply": "Применить",
+    "loadingMap": "Загрузка карты...",
+    "noEventsWithLocation": "Нет событий с местоположением",
+    "noEventsInCategory": "Нет событий с местоположением в этой категории",
+    "geolocationNotSupported": "Ваш браузер не поддерживает геолокацию",
+    "locationPermissionError": "Не удалось получить ваше местоположение. Проверьте разрешения браузера.",
+    "directions": "Маршрут",
+    "openInMaps": "Карта",
+    "streetView": "Улица",
+    "presets": {
+      "next7days": "Следующие 7 дней",
+      "next2weeks": "Следующие 2 недели",
+      "nextMonth": "Следующий месяц",
+      "allUpcoming": "Все предстоящие",
+      "custom": "Выбрать"
+    },
+    "cancel": "Отмена",
+    "refreshPage": "Обновить страницу",
+    "mapNotAvailable": "Карта недоступна. API-ключ Google Maps не настроен."
+  },
+  "calendarView": {
+    "days": {
+      "sun": "Вс",
+      "mon": "Пн",
+      "tue": "Вт",
+      "wed": "Ср",
+      "thu": "Чт",
+      "fri": "Пт",
+      "sat": "Сб"
+    },
+    "modes": {
+      "thirtyDays": "30 дней",
+      "list": "Список",
+      "calendar": "Календарь"
+    },
+    "today": "Сегодня",
+    "noUpcomingEvents": "Нет предстоящих событий",
+    "checkBackLater": "Загляните позже за новыми событиями",
+    "eventCount": "{count} событие",
+    "eventsCount": "{count} событий",
+    "noEventsOnThisDay": "В этот день нет событий"
   }
 }

@@ -988,5 +988,57 @@
         "step3": "应用将在独立窗口中打开"
       }
     }
+  },
+  "mapPage": {
+    "title": "活动地图",
+    "dateRange": "日期范围",
+    "category": "类别",
+    "filters": "筛选",
+    "eventsCount": "{count} 个活动",
+    "nearMe": "附近",
+    "customDateRange": "自定义日期",
+    "start": "开始",
+    "end": "结束",
+    "apply": "应用",
+    "loadingMap": "加载地图中...",
+    "noEventsWithLocation": "没有带位置的活动",
+    "noEventsInCategory": "该类别中没有带位置的活动",
+    "geolocationNotSupported": "您的浏览器不支持定位",
+    "locationPermissionError": "无法获取您的位置，请检查浏览器权限。",
+    "directions": "路线",
+    "openInMaps": "地图",
+    "streetView": "街景",
+    "presets": {
+      "next7days": "未来7天",
+      "next2weeks": "未来2周",
+      "nextMonth": "下个月",
+      "allUpcoming": "所有即将到来",
+      "custom": "自定义"
+    },
+    "cancel": "取消",
+    "refreshPage": "刷新页面",
+    "mapNotAvailable": "地图不可用。Google Maps API 密钥未配置。"
+  },
+  "calendarView": {
+    "days": {
+      "sun": "日",
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六"
+    },
+    "modes": {
+      "thirtyDays": "30天",
+      "list": "列表",
+      "calendar": "日历"
+    },
+    "today": "今天",
+    "noUpcomingEvents": "没有即将到来的活动",
+    "checkBackLater": "稍后再来查看新活动",
+    "eventCount": "{count}个活动",
+    "eventsCount": "{count}个活动",
+    "noEventsOnThisDay": "今天没有活动"
   }
 }

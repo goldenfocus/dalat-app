@@ -988,5 +988,57 @@
         "step3": "แอปจะเปิดในหน้าต่างของตัวเอง"
       }
     }
+  },
+  "mapPage": {
+    "title": "แผนที่กิจกรรม",
+    "dateRange": "ช่วงวันที่",
+    "category": "หมวดหมู่",
+    "filters": "ตัวกรอง",
+    "eventsCount": "{count} กิจกรรม",
+    "nearMe": "ใกล้ฉัน",
+    "customDateRange": "กำหนดวันที่",
+    "start": "เริ่ม",
+    "end": "สิ้นสุด",
+    "apply": "นำไปใช้",
+    "loadingMap": "กำลังโหลดแผนที่...",
+    "noEventsWithLocation": "ไม่มีกิจกรรมที่มีตำแหน่ง",
+    "noEventsInCategory": "ไม่มีกิจกรรมที่มีตำแหน่งในหมวดหมู่นี้",
+    "geolocationNotSupported": "เบราว์เซอร์ของคุณไม่รองรับตำแหน่งที่ตั้ง",
+    "locationPermissionError": "ไม่สามารถรับตำแหน่งของคุณได้ กรุณาตรวจสอบสิทธิ์เบราว์เซอร์",
+    "directions": "เส้นทาง",
+    "openInMaps": "แผนที่",
+    "streetView": "ถนน",
+    "presets": {
+      "next7days": "7 วันข้างหน้า",
+      "next2weeks": "2 สัปดาห์ข้างหน้า",
+      "nextMonth": "เดือนหน้า",
+      "allUpcoming": "ทั้งหมดที่จะมา",
+      "custom": "กำหนดเอง"
+    },
+    "cancel": "ยกเลิก",
+    "refreshPage": "รีเฟรชหน้า",
+    "mapNotAvailable": "ไม่สามารถแสดงแผนที่ได้ ยังไม่ได้กำหนดค่า API key ของ Google Maps"
+  },
+  "calendarView": {
+    "days": {
+      "sun": "อา",
+      "mon": "จ",
+      "tue": "อ",
+      "wed": "พ",
+      "thu": "พฤ",
+      "fri": "ศ",
+      "sat": "ส"
+    },
+    "modes": {
+      "thirtyDays": "30 วัน",
+      "list": "รายการ",
+      "calendar": "ปฏิทิน"
+    },
+    "today": "วันนี้",
+    "noUpcomingEvents": "ไม่มีกิจกรรมที่กำลังจะมาถึง",
+    "checkBackLater": "กลับมาตรวจสอบกิจกรรมใหม่ในภายหลัง",
+    "eventCount": "{count} กิจกรรม",
+    "eventsCount": "{count} กิจกรรม",
+    "noEventsOnThisDay": "ไม่มีกิจกรรมในวันนี้"
   }
 }

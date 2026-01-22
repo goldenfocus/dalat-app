@@ -988,5 +988,57 @@
         "step3": "Die App öffnet sich in einem eigenen Fenster"
       }
     }
+  },
+  "mapPage": {
+    "title": "Veranstaltungskarte",
+    "dateRange": "Zeitraum",
+    "category": "Kategorie",
+    "filters": "Filter",
+    "eventsCount": "{count} Veranstaltungen",
+    "nearMe": "In der Nähe",
+    "customDateRange": "Benutzerdefinierter Zeitraum",
+    "start": "Start",
+    "end": "Ende",
+    "apply": "Anwenden",
+    "loadingMap": "Karte wird geladen...",
+    "noEventsWithLocation": "Keine Veranstaltungen mit Standort",
+    "noEventsInCategory": "Keine Veranstaltungen mit Standort in dieser Kategorie",
+    "geolocationNotSupported": "Ihr Browser unterstützt keine Standortbestimmung",
+    "locationPermissionError": "Standort konnte nicht ermittelt werden. Bitte prüfen Sie die Browserberechtigungen.",
+    "directions": "Route",
+    "openInMaps": "Karte",
+    "streetView": "Straße",
+    "presets": {
+      "next7days": "Nächste 7 Tage",
+      "next2weeks": "Nächste 2 Wochen",
+      "nextMonth": "Nächster Monat",
+      "allUpcoming": "Alle kommenden",
+      "custom": "Benutzerdefiniert"
+    },
+    "cancel": "Abbrechen",
+    "refreshPage": "Seite neu laden",
+    "mapNotAvailable": "Karte nicht verfügbar. Google Maps API-Schlüssel nicht konfiguriert."
+  },
+  "calendarView": {
+    "days": {
+      "sun": "So",
+      "mon": "Mo",
+      "tue": "Di",
+      "wed": "Mi",
+      "thu": "Do",
+      "fri": "Fr",
+      "sat": "Sa"
+    },
+    "modes": {
+      "thirtyDays": "30 Tage",
+      "list": "Liste",
+      "calendar": "Kalender"
+    },
+    "today": "Heute",
+    "noUpcomingEvents": "Keine kommenden Veranstaltungen",
+    "checkBackLater": "Schauen Sie später nach neuen Veranstaltungen",
+    "eventCount": "{count} Veranstaltung",
+    "eventsCount": "{count} Veranstaltungen",
+    "noEventsOnThisDay": "Keine Veranstaltungen an diesem Tag"
   }
 }

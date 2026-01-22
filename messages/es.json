@@ -990,5 +990,57 @@
         "step3": "La aplicación se abrirá en su propia ventana"
       }
     }
+  },
+  "mapPage": {
+    "title": "Mapa de Eventos",
+    "dateRange": "Rango de fechas",
+    "category": "Categoría",
+    "filters": "Filtros",
+    "eventsCount": "{count} eventos",
+    "nearMe": "Cerca de mí",
+    "customDateRange": "Fechas personalizadas",
+    "start": "Inicio",
+    "end": "Fin",
+    "apply": "Aplicar",
+    "loadingMap": "Cargando mapa...",
+    "noEventsWithLocation": "No hay eventos con ubicación",
+    "noEventsInCategory": "No hay eventos con ubicación en esta categoría",
+    "geolocationNotSupported": "Tu navegador no soporta geolocalización",
+    "locationPermissionError": "No se pudo obtener tu ubicación. Verifica los permisos del navegador.",
+    "directions": "Cómo llegar",
+    "openInMaps": "Mapa",
+    "streetView": "Calle",
+    "presets": {
+      "next7days": "Próximos 7 días",
+      "next2weeks": "Próximas 2 semanas",
+      "nextMonth": "Próximo mes",
+      "allUpcoming": "Todos los próximos",
+      "custom": "Personalizado"
+    },
+    "cancel": "Cancelar",
+    "refreshPage": "Actualizar página",
+    "mapNotAvailable": "Mapa no disponible. Clave de API de Google Maps no configurada."
+  },
+  "calendarView": {
+    "days": {
+      "sun": "Dom",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb"
+    },
+    "modes": {
+      "thirtyDays": "30 días",
+      "list": "Lista",
+      "calendar": "Calendario"
+    },
+    "today": "Hoy",
+    "noUpcomingEvents": "No hay eventos próximos",
+    "checkBackLater": "Vuelve más tarde para ver nuevos eventos",
+    "eventCount": "{count} evento",
+    "eventsCount": "{count} eventos",
+    "noEventsOnThisDay": "No hay eventos este día"
   }
 }

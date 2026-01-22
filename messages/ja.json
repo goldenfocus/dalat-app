@@ -988,5 +988,57 @@
         "step3": "アプリは独自のウィンドウで開きます"
       }
     }
+  },
+  "mapPage": {
+    "title": "イベントマップ",
+    "dateRange": "日付範囲",
+    "category": "カテゴリ",
+    "filters": "フィルター",
+    "eventsCount": "{count}件のイベント",
+    "nearMe": "現在地",
+    "customDateRange": "カスタム期間",
+    "start": "開始",
+    "end": "終了",
+    "apply": "適用",
+    "loadingMap": "地図を読み込み中...",
+    "noEventsWithLocation": "位置情報のあるイベントがありません",
+    "noEventsInCategory": "このカテゴリに位置情報のあるイベントがありません",
+    "geolocationNotSupported": "お使いのブラウザは位置情報に対応していません",
+    "locationPermissionError": "位置情報を取得できませんでした。ブラウザの権限を確認してください。",
+    "directions": "経路",
+    "openInMaps": "地図",
+    "streetView": "ストリート",
+    "presets": {
+      "next7days": "7日間",
+      "next2weeks": "2週間",
+      "nextMonth": "来月",
+      "allUpcoming": "すべて",
+      "custom": "カスタム"
+    },
+    "cancel": "キャンセル",
+    "refreshPage": "ページを更新",
+    "mapNotAvailable": "マップを利用できません。Google Maps APIキーが設定されていません。"
+  },
+  "calendarView": {
+    "days": {
+      "sun": "日",
+      "mon": "月",
+      "tue": "火",
+      "wed": "水",
+      "thu": "木",
+      "fri": "金",
+      "sat": "土"
+    },
+    "modes": {
+      "thirtyDays": "30日間",
+      "list": "リスト",
+      "calendar": "カレンダー"
+    },
+    "today": "今日",
+    "noUpcomingEvents": "予定されているイベントはありません",
+    "checkBackLater": "後で新しいイベントをご確認ください",
+    "eventCount": "{count}件のイベント",
+    "eventsCount": "{count}件のイベント",
+    "noEventsOnThisDay": "この日のイベントはありません"
   }
 }

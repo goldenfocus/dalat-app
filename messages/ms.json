@@ -988,5 +988,57 @@
         "step3": "Aplikasi akan dibuka dalam tetingkap tersendiri"
       }
     }
+  },
+  "mapPage": {
+    "title": "Peta Acara",
+    "dateRange": "Julat Tarikh",
+    "category": "Kategori",
+    "filters": "Penapis",
+    "eventsCount": "{count} acara",
+    "nearMe": "Berdekatan",
+    "customDateRange": "Tarikh Tersuai",
+    "start": "Mula",
+    "end": "Tamat",
+    "apply": "Gunakan",
+    "loadingMap": "Memuatkan peta...",
+    "noEventsWithLocation": "Tiada acara dengan lokasi",
+    "noEventsInCategory": "Tiada acara dengan lokasi dalam kategori ini",
+    "geolocationNotSupported": "Pelayar anda tidak menyokong geolokasi",
+    "locationPermissionError": "Tidak dapat mendapatkan lokasi anda. Sila semak kebenaran pelayar.",
+    "directions": "Arah",
+    "openInMaps": "Peta",
+    "streetView": "Jalan",
+    "presets": {
+      "next7days": "7 hari akan datang",
+      "next2weeks": "2 minggu akan datang",
+      "nextMonth": "Bulan depan",
+      "allUpcoming": "Semua akan datang",
+      "custom": "Tersuai"
+    },
+    "cancel": "Batal",
+    "refreshPage": "Muat semula halaman",
+    "mapNotAvailable": "Peta tidak tersedia. Kunci API Google Maps tidak dikonfigurasi."
+  },
+  "calendarView": {
+    "days": {
+      "sun": "Ahd",
+      "mon": "Isn",
+      "tue": "Sel",
+      "wed": "Rab",
+      "thu": "Kha",
+      "fri": "Jum",
+      "sat": "Sab"
+    },
+    "modes": {
+      "thirtyDays": "30 hari",
+      "list": "Senarai",
+      "calendar": "Kalendar"
+    },
+    "today": "Hari ini",
+    "noUpcomingEvents": "Tiada acara akan datang",
+    "checkBackLater": "Sila semak kemudian untuk acara baharu",
+    "eventCount": "{count} acara",
+    "eventsCount": "{count} acara",
+    "noEventsOnThisDay": "Tiada acara pada hari ini"
   }
 }

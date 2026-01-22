@@ -554,7 +554,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
     triggerHaptic("selection");
 
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
+      alert(t("geolocationNotSupported"));
       return;
     }
 
@@ -576,17 +576,17 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
             map,
             position: { lat: latitude, lng: longitude },
             content: createUserMarker(),
-            title: "Your location",
+            title: t("nearMe"),
           });
         }
       },
       (error) => {
         console.error("Geolocation error:", error);
-        alert("Unable to get your location. Please check your browser permissions.");
+        alert(t("locationPermissionError"));
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }, [map]);
+  }, [map, t]);
 
   const handleTagChange = useCallback((tag: EventTag | null) => {
     setSelectedTag(tag);

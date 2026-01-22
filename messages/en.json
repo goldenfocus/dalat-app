@@ -1140,5 +1140,57 @@
         "step3": "The app will open in its own window"
       }
     }
+  },
+  "mapPage": {
+    "title": "Event Map",
+    "dateRange": "Date Range",
+    "category": "Category",
+    "filters": "Filters",
+    "eventsCount": "{count} events",
+    "nearMe": "Near Me",
+    "customDateRange": "Custom Date Range",
+    "start": "Start",
+    "end": "End",
+    "apply": "Apply",
+    "loadingMap": "Loading map...",
+    "noEventsWithLocation": "No events with locations to display",
+    "noEventsInCategory": "No events with locations in this category",
+    "geolocationNotSupported": "Geolocation is not supported by your browser",
+    "locationPermissionError": "Unable to get your location. Please check your browser permissions.",
+    "directions": "Directions",
+    "openInMaps": "Maps",
+    "streetView": "Street",
+    "presets": {
+      "next7days": "Next 7 days",
+      "next2weeks": "Next 2 weeks",
+      "nextMonth": "Next month",
+      "allUpcoming": "All upcoming",
+      "custom": "Custom"
+    },
+    "cancel": "Cancel",
+    "refreshPage": "Refresh page",
+    "mapNotAvailable": "Map not available. Google Maps API key not configured."
+  },
+  "calendarView": {
+    "days": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "modes": {
+      "thirtyDays": "30 Days",
+      "list": "List",
+      "calendar": "Calendar"
+    },
+    "today": "Today",
+    "noUpcomingEvents": "No upcoming events",
+    "checkBackLater": "Check back later for new events",
+    "eventCount": "{count} event",
+    "eventsCount": "{count} events",
+    "noEventsOnThisDay": "No events on this day"
   }
 }

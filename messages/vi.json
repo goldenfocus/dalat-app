@@ -1032,5 +1032,57 @@
         "step3": "Ứng dụng sẽ mở trong cửa sổ riêng"
       }
     }
+  },
+  "mapPage": {
+    "title": "Bản đồ Sự kiện",
+    "dateRange": "Khoảng thời gian",
+    "category": "Danh mục",
+    "filters": "Bộ lọc",
+    "eventsCount": "{count} sự kiện",
+    "nearMe": "Gần tôi",
+    "customDateRange": "Tùy chỉnh ngày",
+    "start": "Bắt đầu",
+    "end": "Kết thúc",
+    "apply": "Áp dụng",
+    "loadingMap": "Đang tải bản đồ...",
+    "noEventsWithLocation": "Không có sự kiện nào có vị trí",
+    "noEventsInCategory": "Không có sự kiện nào trong danh mục này",
+    "geolocationNotSupported": "Trình duyệt của bạn không hỗ trợ định vị",
+    "locationPermissionError": "Không thể lấy vị trí của bạn. Vui lòng kiểm tra quyền truy cập.",
+    "directions": "Chỉ đường",
+    "openInMaps": "Bản đồ",
+    "streetView": "Street",
+    "presets": {
+      "next7days": "7 ngày tới",
+      "next2weeks": "2 tuần tới",
+      "nextMonth": "Tháng tới",
+      "allUpcoming": "Tất cả sắp tới",
+      "custom": "Tùy chỉnh"
+    },
+    "cancel": "Hủy",
+    "refreshPage": "Tải lại trang",
+    "mapNotAvailable": "Không thể hiển thị bản đồ. Chưa cấu hình khóa API Google Maps."
+  },
+  "calendarView": {
+    "days": {
+      "sun": "CN",
+      "mon": "T2",
+      "tue": "T3",
+      "wed": "T4",
+      "thu": "T5",
+      "fri": "T6",
+      "sat": "T7"
+    },
+    "modes": {
+      "thirtyDays": "30 ngày",
+      "list": "Danh sách",
+      "calendar": "Lịch"
+    },
+    "today": "Hôm nay",
+    "noUpcomingEvents": "Không có sự kiện sắp tới",
+    "checkBackLater": "Quay lại sau để xem sự kiện mới",
+    "eventCount": "{count} sự kiện",
+    "eventsCount": "{count} sự kiện",
+    "noEventsOnThisDay": "Không có sự kiện trong ngày này"
   }
 }

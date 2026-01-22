@@ -16,6 +16,7 @@ import {
   format,
 } from "date-fns";
 import { Calendar as CalendarIcon, CalendarDays, LayoutGrid, List } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import { formatInDaLat } from "@/lib/timezone";
@@ -39,6 +40,7 @@ export function MonthView({
   selectedDate,
   onDateSelect,
 }: MonthViewProps) {
+  const t = useTranslations("calendarView");
   // Default to "rolling" (Next 30 Days) for event discovery
   const [mode, setMode] = useState<MonthMode>("rolling");
   const today = useMemo(() => startOfDay(new Date()), []);
@@ -96,14 +98,17 @@ export function MonthView({
 
   // Get day headers based on mode
   const dayHeaders = useMemo(() => {
+    const days = [
+      t("days.sun"), t("days.mon"), t("days.tue"), t("days.wed"),
+      t("days.thu"), t("days.fri"), t("days.sat")
+    ];
     if (mode === "rolling") {
       // For rolling view, headers are based on today's day of week
       const todayDayOfWeek = today.getDay();
-      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       return Array.from({ length: 7 }, (_, i) => days[(todayDayOfWeek + i) % 7]);
     }
-    return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  }, [mode, today]);
+    return days;
+  }, [mode, today, t]);
 
   return (
     <div className="h-full flex flex-col">
@@ -120,7 +125,7 @@ export function MonthView({
             )}
           >
             <CalendarDays className="w-3.5 h-3.5" />
-            30 Days
+            {t("modes.thirtyDays")}
           </button>
           <button
             onClick={() => handleModeToggle("list")}
@@ -132,7 +137,7 @@ export function MonthView({
             )}
           >
             <List className="w-3.5 h-3.5" />
-            List
+            {t("modes.list")}
           </button>
           <button
             onClick={() => handleModeToggle("calendar")}
@@ -144,7 +149,7 @@ export function MonthView({
             )}
           >
             <LayoutGrid className="w-3.5 h-3.5" />
-            Calendar
+            {t("modes.calendar")}
           </button>
         </div>
       </div>
@@ -155,9 +160,9 @@ export function MonthView({
           {upcomingEvents.length === 0 ? (
             <div className="text-center py-16">
               <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">No upcoming events</p>
+              <p className="text-muted-foreground">{t("noUpcomingEvents")}</p>
               <p className="text-sm text-muted-foreground/70 mt-1">
-                Check back later for new events
+                {t("checkBackLater")}
               </p>
             </div>
           ) : (
@@ -170,10 +175,10 @@ export function MonthView({
                       "text-sm font-semibold",
                       isToday(date) && "text-primary"
                     )}>
-                      {isToday(date) ? "Today" : format(date, "EEEE, MMM d")}
+                      {isToday(date) ? t("today") : format(date, "EEEE, MMM d")}
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {dayEvents.length} event{dayEvents.length !== 1 ? "s" : ""}
+                      {dayEvents.length === 1 ? t("eventCount", { count: 1 }) : t("eventsCount", { count: dayEvents.length })}
                     </span>
                   </div>
 
@@ -309,7 +314,7 @@ export function MonthView({
 
                 {selectedDateEvents.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-4 text-center">
-                    No events on this day
+                    {t("noEventsOnThisDay")}
                   </p>
                 ) : (
                   <div className="space-y-2">
