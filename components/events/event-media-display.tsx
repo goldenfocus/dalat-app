@@ -33,6 +33,7 @@ export function EventMediaDisplay({
           loop
           playsInline
           autoPlay
+          preload="metadata"
         />
       </div>
     );
@@ -54,6 +55,7 @@ export function EventMediaDisplay({
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 960px"
           className="object-contain md:object-cover transition-transform group-hover:scale-[1.02]"
           priority={priority}
+          fetchPriority={priority ? "high" : "auto"}
         />
         {/* Expand overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">

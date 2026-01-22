@@ -83,6 +83,7 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle, priorit
                 loop
                 playsInline
                 autoPlay
+                preload="metadata"
               />
             ) : (
               <Image
@@ -93,6 +94,7 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle, priorit
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 className="object-cover transition-transform group-hover:scale-105"
                 priority={priority}
+                fetchPriority={priority ? "high" : "auto"}
                 placeholder="blur"
                 blurDataURL={BLUR_DATA_URL}
               />

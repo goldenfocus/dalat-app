@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import { formatInDaLat } from "@/lib/timezone";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
 import { MapPin, Clock } from "lucide-react";
+import { cloudflareLoader } from "@/lib/image-cdn";
 
 interface EventCardFullProps {
   event: Event;
@@ -27,11 +29,14 @@ export function EventCardFull({ event, isPast }: EventCardFullProps) {
       <div className="flex gap-4">
         {/* Event image */}
         {event.image_url ? (
-          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-            <img
+          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted relative">
+            <Image
+              loader={cloudflareLoader}
               src={event.image_url}
               alt=""
-              className="w-full h-full object-cover"
+              fill
+              sizes="80px"
+              className="object-cover"
             />
           </div>
         ) : (

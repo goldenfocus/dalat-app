@@ -69,6 +69,7 @@ export function EventCardImmersive({ event, counts, seriesRrule, priority = fals
                 loop
                 playsInline
                 autoPlay
+                preload="metadata"
               />
             ) : (
               <ImmersiveImage src={event.image_url!} alt={displayTitle} priority={priority} />

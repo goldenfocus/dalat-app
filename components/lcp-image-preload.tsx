@@ -2,7 +2,7 @@
  * LCP Image Preload Component
  *
  * Preloads the hero image for faster LCP on mobile devices.
- * Uses quality=75 (Next.js default) for optimal visual quality and perceived performance.
+ * Uses quality=70 (matches cloudflareLoader default) for optimal LCP on slow networks.
  * Preload widths match Next.js deviceSizes to prevent double downloads.
  */
 export function LcpImagePreload({ imageUrl }: { imageUrl: string | null }) {
@@ -26,7 +26,7 @@ export function LcpImagePreload({ imageUrl }: { imageUrl: string | null }) {
 
   // CRITICAL: srcset widths and quality MUST match cloudflareLoader defaults
   // Widths: 640/750/828px match Next.js deviceSizes for mobile
-  // Quality: 75 matches cloudflareLoader default
+  // Quality: 70 matches cloudflareLoader default
   // Otherwise preload won't match actual request = double download!
   // Media query restricts to mobile (<1024px) to avoid "unused preload" warning on desktop
   return (
@@ -36,9 +36,9 @@ export function LcpImagePreload({ imageUrl }: { imageUrl: string | null }) {
       fetchPriority="high"
       media="(max-width: 1023px)"
       imageSrcSet={[
-        `/cdn-cgi/image/width=640,quality=75,format=auto,fit=scale-down,metadata=none/${imageUrl} 640w`,
-        `/cdn-cgi/image/width=750,quality=75,format=auto,fit=scale-down,metadata=none/${imageUrl} 750w`,
-        `/cdn-cgi/image/width=828,quality=75,format=auto,fit=scale-down,metadata=none/${imageUrl} 828w`,
+        `/cdn-cgi/image/width=640,quality=70,format=auto,fit=scale-down,metadata=none/${imageUrl} 640w`,
+        `/cdn-cgi/image/width=750,quality=70,format=auto,fit=scale-down,metadata=none/${imageUrl} 750w`,
+        `/cdn-cgi/image/width=828,quality=70,format=auto,fit=scale-down,metadata=none/${imageUrl} 828w`,
       ].join(", ")}
       imageSizes="100vw"
     />

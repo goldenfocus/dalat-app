@@ -98,8 +98,8 @@ export const imagePresets = {
   /** Event card image */
   eventCard: { width: 400, fit: "cover" as const },
 
-  /** Event detail hero image */
-  eventHero: { width: 1200, quality: 85 },
+  /** Event detail hero image - quality 70 for better LCP on slow networks */
+  eventHero: { width: 1200, quality: 70 },
 
   /** Avatar/profile picture */
   avatar: { width: 96, height: 96, fit: "cover" as const },
@@ -196,11 +196,11 @@ export function cloudflareLoader({
     return src;
   }
 
-  // Default quality 75 (Next.js default) for optimal LCP on slow networks
+  // Default quality 70 for optimal LCP on slow networks
   // Balances file size with visual quality for better perceived performance
   const cfOptions = [
     `width=${width}`,
-    `quality=${quality || 75}`,
+    `quality=${quality || 70}`,
     "format=auto",
     "fit=scale-down",
     "metadata=none",
