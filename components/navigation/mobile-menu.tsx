@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Menu, X, MapPin, Calendar, BookOpen, Info } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Menu, X, BookOpen, Info } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { triggerHaptic } from "@/lib/haptics";
+import { createClient } from "@/lib/supabase/client";
 
 interface MobileMenuProps {
   /** Use light variant for overlay on dark backgrounds */
@@ -13,7 +14,22 @@ interface MobileMenuProps {
 
 export function MobileMenu({ variant = "default" }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const t = useTranslations("nav");
+
+  // Check auth status client-side
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsAuthenticated(!!user);
+    });
+  }, []);
+
+  // Don't render for authenticated users - they have the avatar dropdown
+  // Show nothing while loading to avoid flash
+  if (isAuthenticated === null || isAuthenticated) {
+    return null;
+  }
 
   const toggleMenu = () => {
     triggerHaptic("selection");
@@ -24,9 +40,8 @@ export function MobileMenu({ variant = "default" }: MobileMenuProps) {
     setIsOpen(false);
   };
 
+  // Only show Blog and About - Map/Calendar are in bottom nav
   const menuItems = [
-    { href: "/map", icon: MapPin, label: t("map") },
-    { href: "/calendar", icon: Calendar, label: t("calendar") },
     { href: "/blog", icon: BookOpen, label: t("blog") },
     { href: "/about", icon: Info, label: t("about") },
   ];
@@ -89,6 +104,18 @@ export function MobileMenu({ variant = "default" }: MobileMenuProps) {
                 })}
               </ul>
             </nav>
+
+            {/* Branding */}
+            <div className="absolute bottom-8 left-0 right-0 px-8 text-center">
+              <a
+                href="https://goldenfocus.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              >
+                Built by goldenfocus.io
+              </a>
+            </div>
           </div>
         </>
       )}

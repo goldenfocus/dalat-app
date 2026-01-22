@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { getTranslations, getLocale } from "next-intl/server";
-import { History } from "lucide-react";
+import { History, CalendarDays } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { EventCardImmersive } from "./event-card-immersive";
 import { EventFeedImmersiveClient } from "./event-feed-immersive-client";
@@ -99,7 +99,7 @@ export async function EventFeedImmersive({
       </div>
 
       {/* Scrollable event cards with scroll restoration */}
-      <EventFeedImmersiveClient eventCount={events.length + (lifecycle === "past" ? 1 : 0)} activeTab={lifecycle}>
+      <EventFeedImmersiveClient eventCount={events.length + 1} activeTab={lifecycle}>
         {events.map((event, index) => {
           const translation = eventTranslations.get(event.id);
           return (
@@ -113,6 +113,24 @@ export async function EventFeedImmersive({
             />
           );
         })}
+
+        {/* See all events card at the end of upcoming events */}
+        {lifecycle === "upcoming" && (
+          <div className="h-[100dvh] snap-start flex flex-col items-center justify-center bg-black text-white px-8">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-white/10 flex items-center justify-center">
+                <CalendarDays className="w-8 h-8 text-white/70" />
+              </div>
+              <p className="text-lg text-white/60 mb-8">{t("seeAllUpcoming")}</p>
+              <Link
+                href="/events/upcoming"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-full active:scale-95 transition-transform"
+              >
+                {t("seeAllUpcoming")} →
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Browse archive card at the end of past events */}
         {lifecycle === "past" && (
