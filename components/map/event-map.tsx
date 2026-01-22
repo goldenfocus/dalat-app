@@ -8,7 +8,7 @@ import Supercluster from "supercluster";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
-import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS, getMapStyles } from "./map-styles";
+import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
 import { TagFilterBar } from "@/components/events/tag-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
@@ -318,14 +318,13 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
       }
 
       try {
-        // Build map options with programmatic styles that match user's theme
-        const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+        // Build map options - mapId controls styling via Cloud Console
         const mapOptions: google.maps.MapOptions = {
           center: DALAT_CENTER,
           zoom: DEFAULT_ZOOM,
           disableDefaultUI: true,
           zoomControl: true,
-          styles: getMapStyles(theme),
+          mapId: "dalat-events-map",
           gestureHandling: "greedy",
         };
 
@@ -413,12 +412,8 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update map styles when theme changes
-  useEffect(() => {
-    if (!map) return;
-    const theme = resolvedTheme === "dark" ? "dark" : "light";
-    map.setOptions({ styles: getMapStyles(theme) });
-  }, [map, resolvedTheme]);
+  // Note: Map styles are controlled via Cloud Console when using mapId
+  // To enable theme switching, create light/dark map styles in Google Cloud Console
 
   // Create markers for events with clustering support
   useEffect(() => {
