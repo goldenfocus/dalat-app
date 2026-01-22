@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
-import { Loader2, Navigation, X } from "lucide-react";
+import { Loader2, Navigation, X, SlidersHorizontal, Calendar } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
@@ -10,6 +10,16 @@ import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
 import { TagFilterBar } from "@/components/events/tag-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
+
+// Date range presets
+type DatePreset = "7days" | "14days" | "30days" | "all";
+
+const DATE_PRESETS: { value: DatePreset; label: string; days: number | null }[] = [
+  { value: "7days", label: "Next 7 days", days: 7 },
+  { value: "14days", label: "Next 2 weeks", days: 14 },
+  { value: "30days", label: "Next month", days: 30 },
+  { value: "all", label: "All upcoming", days: null },
+];
 
 interface EventMapProps {
   events: Event[];
@@ -98,16 +108,44 @@ export function EventMap({ events }: EventMapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedTag, setSelectedTag] = useState<EventTag | null>(null);
+  const [datePreset, setDatePreset] = useState<DatePreset>("7days");
+  const [showFilters, setShowFilters] = useState(false);
 
   const mapRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const userMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
   const mapInitializedRef = useRef(false);
 
-  // Filter events by selected tag
-  const filteredEvents = selectedTag
-    ? events.filter(event => event.ai_tags?.includes(selectedTag))
-    : events;
+  // Calculate date range based on preset
+  const dateRange = useMemo(() => {
+    const preset = DATE_PRESETS.find(p => p.value === datePreset);
+    if (!preset?.days) return null;
+
+    const now = new Date();
+    const end = new Date(now);
+    end.setDate(end.getDate() + preset.days);
+    return { start: now, end };
+  }, [datePreset]);
+
+  // Filter events by date range and tag
+  const filteredEvents = useMemo(() => {
+    let result = events;
+
+    // Filter by date range
+    if (dateRange) {
+      result = result.filter(event => {
+        const eventDate = new Date(event.starts_at);
+        return eventDate >= dateRange.start && eventDate <= dateRange.end;
+      });
+    }
+
+    // Filter by tag
+    if (selectedTag) {
+      result = result.filter(event => event.ai_tags?.includes(selectedTag));
+    }
+
+    return result;
+  }, [events, dateRange, selectedTag]);
 
   // Events with location data
   const eventsWithLocation = filteredEvents.filter(
@@ -384,14 +422,118 @@ export function EventMap({ events }: EventMapProps) {
     );
   }
 
+  // Get current preset label for display
+  const currentPresetLabel = DATE_PRESETS.find(p => p.value === datePreset)?.label || "All";
+
   return (
     <div className="h-full flex flex-col">
-      {/* Tag filter bar */}
-      <div className="p-3 bg-background border-b">
-        <TagFilterBar
-          selectedTag={selectedTag}
-          onTagChange={handleTagChange}
-        />
+      {/* Filter bar */}
+      <div className="bg-background border-b">
+        {/* Mobile: Collapsed filter with button */}
+        <div className="sm:hidden">
+          <div className="p-3 flex items-center gap-2">
+            <button
+              onClick={() => {
+                triggerHaptic("selection");
+                setShowFilters(!showFilters);
+              }}
+              className={`flex items-center gap-2 px-3 py-2 rounded-full border transition-colors ${
+                showFilters || selectedTag || datePreset !== "7days"
+                  ? "bg-primary/10 border-primary text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span className="text-sm font-medium">Filters</span>
+              {(selectedTag || datePreset !== "7days") && (
+                <span className="w-2 h-2 rounded-full bg-primary" />
+              )}
+            </button>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Calendar className="w-3 h-3" />
+              <span>{currentPresetLabel}</span>
+            </div>
+            <div className="ml-auto text-xs text-muted-foreground">
+              {eventsWithLocation.length} events
+            </div>
+          </div>
+
+          {/* Expandable filter panel */}
+          {showFilters && (
+            <div className="px-3 pb-3 space-y-3 border-t pt-3">
+              {/* Date range presets */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Date Range</label>
+                <div className="flex flex-wrap gap-2">
+                  {DATE_PRESETS.map(preset => (
+                    <button
+                      key={preset.value}
+                      onClick={() => {
+                        triggerHaptic("selection");
+                        setDatePreset(preset.value);
+                      }}
+                      className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                        datePreset === preset.value
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border hover:border-foreground/50"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tag filter */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Category</label>
+                <TagFilterBar
+                  selectedTag={selectedTag}
+                  onTagChange={handleTagChange}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop: Always visible filters */}
+        <div className="hidden sm:block p-3">
+          <div className="flex items-center gap-4">
+            {/* Date presets */}
+            <div className="flex items-center gap-2">
+              {DATE_PRESETS.map(preset => (
+                <button
+                  key={preset.value}
+                  onClick={() => {
+                    triggerHaptic("selection");
+                    setDatePreset(preset.value);
+                  }}
+                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                    datePreset === preset.value
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border hover:border-foreground/50"
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="h-4 w-px bg-border" />
+
+            {/* Tag filter */}
+            <div className="flex-1">
+              <TagFilterBar
+                selectedTag={selectedTag}
+                onTagChange={handleTagChange}
+              />
+            </div>
+
+            <div className="text-xs text-muted-foreground whitespace-nowrap">
+              {eventsWithLocation.length} events
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Map container - always rendered so ref is available */}
