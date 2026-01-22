@@ -4,13 +4,16 @@ import { Link } from "@/lib/i18n/routing";
 import { AuthButton } from "@/components/auth-button";
 import { LocalePicker } from "@/components/locale-picker";
 import { GoLiveModal } from "@/components/streaming/GoLiveModal";
+import { getEffectiveUser } from "@/lib/god-mode";
 
 interface SiteHeaderProps {
   /** Optional content to render on the right side before AuthButton */
   actions?: React.ReactNode;
 }
 
-export function SiteHeader({ actions }: SiteHeaderProps) {
+export async function SiteHeader({ actions }: SiteHeaderProps) {
+  const { user } = await getEffectiveUser();
+  const isAuthenticated = !!user;
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-14 max-w-4xl items-center justify-between mx-auto px-4">
@@ -35,17 +38,21 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
           >
             <Calendar className="w-5 h-5" />
           </Link>
-          <Link
-            href="/events/new"
-            prefetch={false}
-            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
-            aria-label="Create event"
-          >
-            <Plus className="w-5 h-5" />
-          </Link>
-          <div className="hidden sm:block">
-            <GoLiveModal />
-          </div>
+          {isAuthenticated && (
+            <Link
+              href="/events/new"
+              prefetch={false}
+              className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+              aria-label="Create event"
+            >
+              <Plus className="w-5 h-5" />
+            </Link>
+          )}
+          {isAuthenticated && (
+            <div className="hidden sm:block">
+              <GoLiveModal />
+            </div>
+          )}
           {actions}
           <Suspense>
             <AuthButton />
