@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { cloudflareLoader } from "@/lib/image-cdn";
 
@@ -21,16 +21,48 @@ interface ImmersiveImageProps {
  *
  * Performance: Uses Next.js Image for automatic WebP/AVIF optimization.
  * Also uses CSS gradient instead of duplicate image for background effect.
+ *
+ * LCP optimization: For priority images, defer aspect ratio detection to avoid
+ * blocking the initial render with a state update.
  */
 export function ImmersiveImage({ src, alt, children, priority = false }: ImmersiveImageProps) {
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
+  const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
 
+  // For priority images, defer aspect ratio calculation to avoid blocking LCP
   const handleLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    if (img.naturalWidth && img.naturalHeight) {
-      setAspectRatio(img.naturalWidth / img.naturalHeight);
+    if (priority) {
+      // Store reference for deferred calculation
+      setImageElement(e.currentTarget);
+    } else {
+      // Non-priority images: calculate immediately
+      const img = e.currentTarget;
+      if (img.naturalWidth && img.naturalHeight) {
+        setAspectRatio(img.naturalWidth / img.naturalHeight);
+      }
     }
-  }, []);
+  }, [priority]);
+
+  // Deferred aspect ratio calculation for priority images
+  useEffect(() => {
+    if (priority && imageElement) {
+      // Use requestIdleCallback to defer calculation until browser is idle
+      const calculateAspectRatio = () => {
+        if (imageElement.naturalWidth && imageElement.naturalHeight) {
+          setAspectRatio(imageElement.naturalWidth / imageElement.naturalHeight);
+        }
+      };
+
+      if ('requestIdleCallback' in window) {
+        const id = window.requestIdleCallback(calculateAspectRatio, { timeout: 500 });
+        return () => window.cancelIdleCallback(id);
+      } else {
+        // Fallback: use setTimeout with a small delay
+        const id = setTimeout(calculateAspectRatio, 100);
+        return () => clearTimeout(id);
+      }
+    }
+  }, [priority, imageElement]);
 
   // Extreme landscape (>2:1) gets cropped to fill
   const useObjectCover = aspectRatio !== null && aspectRatio > 2.0;
