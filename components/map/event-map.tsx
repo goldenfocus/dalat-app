@@ -248,12 +248,41 @@ export function EventMap({ events }: EventMapProps) {
 
     const theme = resolvedTheme === "dark" ? "dark" : "light";
 
+    // Group events by location to handle stacking
+    const locationGroups = new Map<string, Event[]>();
     eventsWithLocation.forEach(event => {
+      const key = `${event.latitude},${event.longitude}`;
+      const group = locationGroups.get(key) || [];
+      group.push(event);
+      locationGroups.set(key, group);
+    });
+
+    // Calculate offset for stacked markers (spiral pattern)
+    const getOffset = (index: number, total: number): { lat: number; lng: number } => {
+      if (total <= 1) return { lat: 0, lng: 0 };
+      // Spiral offset: ~50m radius, increasing angle
+      const angle = (index / total) * 2 * Math.PI;
+      const radius = 0.0004 + (index * 0.0001); // ~40-80m offset
+      return {
+        lat: Math.sin(angle) * radius,
+        lng: Math.cos(angle) * radius,
+      };
+    };
+
+    eventsWithLocation.forEach(event => {
+      const key = `${event.latitude},${event.longitude}`;
+      const group = locationGroups.get(key) || [];
+      const indexInGroup = group.indexOf(event);
+      const offset = getOffset(indexInGroup, group.length);
+
       const markerElement = createMarkerElement(selectedEvent?.id === event.id, theme);
 
       const marker = new google.maps.marker.AdvancedMarkerElement({
         map,
-        position: { lat: event.latitude!, lng: event.longitude! },
+        position: {
+          lat: event.latitude! + offset.lat,
+          lng: event.longitude! + offset.lng,
+        },
         content: markerElement,
         title: event.title,
       });
