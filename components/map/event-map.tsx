@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
-import { Loader2, Navigation, X, SlidersHorizontal, Calendar, CalendarRange } from "lucide-react";
+import { Loader2, Navigation, X, SlidersHorizontal, Calendar, CalendarRange, Route, ExternalLink, Eye } from "lucide-react";
 import { format, startOfDay, endOfDay, isAfter, isBefore, parseISO } from "date-fns";
 import Supercluster from "supercluster";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
-import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
+import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS, getMapStyles } from "./map-styles";
 import { TagFilterBar } from "@/components/events/tag-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
@@ -317,13 +317,14 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
       }
 
       try {
-        // Build map options - mapId controls styling via Cloud Console, so don't set styles
+        // Build map options with programmatic styles that match user's theme
+        const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
         const mapOptions: google.maps.MapOptions = {
           center: DALAT_CENTER,
           zoom: DEFAULT_ZOOM,
           disableDefaultUI: true,
           zoomControl: true,
-          mapId: "dalat-events-map",
+          styles: getMapStyles(theme),
           gestureHandling: "greedy",
         };
 
@@ -409,10 +410,14 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
 
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resolvedTheme]);
+  }, []);
 
-  // Note: Map styles are controlled via Cloud Console when using mapId
-  // Theme-based styling would need to be configured there instead
+  // Update map styles when theme changes
+  useEffect(() => {
+    if (!map) return;
+    const theme = resolvedTheme === "dark" ? "dark" : "light";
+    map.setOptions({ styles: getMapStyles(theme) });
+  }, [map, resolvedTheme]);
 
   // Create markers for events with clustering support
   useEffect(() => {
@@ -911,6 +916,57 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
                 )}
               </div>
             </Link>
+
+            {/* Map action buttons */}
+            {selectedEvent.latitude && selectedEvent.longitude && (
+              <div className="flex border-t border-border">
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${selectedEvent.latitude},${selectedEvent.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    triggerHaptic("selection");
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors active:scale-95"
+                  title="Get directions"
+                >
+                  <Route className="w-4 h-4" />
+                  <span>Directions</span>
+                </a>
+                <div className="w-px bg-border" />
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${selectedEvent.latitude},${selectedEvent.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    triggerHaptic("selection");
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors active:scale-95"
+                  title="Open in Google Maps"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  <span>Maps</span>
+                </a>
+                <div className="w-px bg-border" />
+                <a
+                  href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${selectedEvent.latitude},${selectedEvent.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    triggerHaptic("selection");
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors active:scale-95"
+                  title="Street View"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>Street</span>
+                </a>
+              </div>
+            )}
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
