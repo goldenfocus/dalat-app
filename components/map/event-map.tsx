@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { Loader2, Navigation, X, SlidersHorizontal, Calendar, CalendarRange, Route, ExternalLink, Eye } from "lucide-react";
-import { format, startOfDay, endOfDay, isAfter, isBefore, parseISO } from "date-fns";
+import { format, startOfDay, endOfDay, isAfter, parseISO } from "date-fns";
 import Supercluster from "supercluster";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
-import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS, getMapStyles } from "./map-styles";
+import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
 import { TagFilterBar } from "@/components/events/tag-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
@@ -23,11 +24,12 @@ const CLUSTER_MIN_POINTS = 2; // Minimum points to form a cluster
 // Date range presets
 type DatePreset = "7days" | "14days" | "30days" | "all" | "custom";
 
-const DATE_PRESETS: { value: DatePreset; label: string; days: number | null }[] = [
-  { value: "7days", label: "Next 7 days", days: 7 },
-  { value: "14days", label: "Next 2 weeks", days: 14 },
-  { value: "30days", label: "Next month", days: 30 },
-  { value: "all", label: "All upcoming", days: null },
+// Translation keys for presets - actual labels come from useTranslations
+const DATE_PRESETS: { value: DatePreset; labelKey: string; days: number | null }[] = [
+  { value: "7days", labelKey: "presets.next7days", days: 7 },
+  { value: "14days", labelKey: "presets.next2weeks", days: 14 },
+  { value: "30days", labelKey: "presets.nextMonth", days: 30 },
+  { value: "all", labelKey: "presets.allUpcoming", days: null },
 ];
 
 interface EventMapProps {
@@ -185,6 +187,7 @@ interface EventPointProperties {
 }
 
 export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
+  const t = useTranslations("mapPage");
   // Convert to Set for O(1) lookup
   const happeningSet = useMemo(() => new Set(happeningEventIds), [happeningEventIds]);
   const { resolvedTheme } = useTheme();
@@ -318,14 +321,14 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
       }
 
       try {
-        // Build map options with programmatic styles that match user's theme
-        const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+        // Build map options - using mapId for stable rendering
+        // Note: For dark mode support, set up Cloud-based styling in Google Cloud Console
         const mapOptions: google.maps.MapOptions = {
           center: DALAT_CENTER,
           zoom: DEFAULT_ZOOM,
           disableDefaultUI: true,
           zoomControl: true,
-          styles: getMapStyles(theme),
+          mapId: "dalat-events-map",
           gestureHandling: "greedy",
         };
 
@@ -413,12 +416,9 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update map styles when theme changes
-  useEffect(() => {
-    if (!map) return;
-    const theme = resolvedTheme === "dark" ? "dark" : "light";
-    map.setOptions({ styles: getMapStyles(theme) });
-  }, [map, resolvedTheme]);
+  // Note: Legacy map styles (programmatic) were deprecated March 2025
+  // For dark mode: Create light/dark Map IDs in Google Cloud Console > Map Styles
+  // Then switch mapId based on resolvedTheme
 
   // Create markers for events with clustering support
   useEffect(() => {
