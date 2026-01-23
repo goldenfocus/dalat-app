@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import { Check, Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRouter, usePathname } from "@/lib/i18n/routing";
+import { Link, usePathname } from "@/lib/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LOCALE_FLAGS, LOCALE_NAMES, type Locale } from "@/lib/types";
 
 interface LanguageStepProps {
   currentLocale: Locale;
-  onComplete: (locale: Locale) => void;
+  onComplete: () => void;
 }
 
 // All 12 supported locales
@@ -51,9 +51,7 @@ const LOCALE_GREETINGS: Record<Locale, string> = {
 export function LanguageStep({ currentLocale, onComplete }: LanguageStepProps) {
   const t = useTranslations("onboarding");
   const tSettings = useTranslations("settings");
-  const router = useRouter();
   const pathname = usePathname();
-  const [selectedLocale, setSelectedLocale] = useState<Locale>(currentLocale);
   const [detectedLocale, setDetectedLocale] = useState<Locale | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -71,25 +69,17 @@ export function LanguageStep({ currentLocale, onComplete }: LanguageStepProps) {
         const detected = BROWSER_LOCALE_MAP[browserLang] || BROWSER_LOCALE_MAP[browserLang.split('-')[0]];
         if (detected) {
           setDetectedLocale(detected);
-          // Pre-select detected language if different from current
-          if (detected !== currentLocale) {
-            setSelectedLocale(detected);
-          }
         }
       }
     }
-  }, [currentLocale]);
+  }, []);
 
-  const handleSelectLocale = (locale: Locale) => {
-    setSelectedLocale(locale);
-  };
-
-  const handleContinue = () => {
-    // If language changed, navigate to update locale
-    if (selectedLocale !== currentLocale) {
-      router.replace(pathname, { locale: selectedLocale });
-    }
-    onComplete(selectedLocale);
+  const handleLocaleClick = (locale: Locale) => {
+    if (locale === currentLocale) return;
+    // Set cookie for middleware (1 year expiry, secure in production)
+    const secure = window.location.protocol === "https:" ? ";secure" : "";
+    document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=31536000;samesite=lax${secure}`;
+    // Navigation happens via Link component
   };
 
   return (
@@ -100,13 +90,13 @@ export function LanguageStep({ currentLocale, onComplete }: LanguageStepProps) {
           <Globe className="w-8 h-8 text-primary" />
         </div>
 
-        {/* Animated greeting - shows in selected language */}
+        {/* Animated greeting - shows in current language */}
         <div
-          key={selectedLocale}
+          key={currentLocale}
           className="h-8 flex items-center justify-center animate-in fade-in slide-in-from-bottom-2 duration-300"
         >
           <span className="text-xl font-medium text-primary">
-            {LOCALE_GREETINGS[selectedLocale]} 👋
+            {LOCALE_GREETINGS[currentLocale]} 👋
           </span>
         </div>
       </div>
@@ -119,14 +109,16 @@ export function LanguageStep({ currentLocale, onComplete }: LanguageStepProps) {
       {/* Language grid with staggered reveal */}
       <div className="grid grid-cols-3 gap-2">
         {ALL_LOCALES.map((locale, index) => {
-          const isSelected = selectedLocale === locale;
+          const isSelected = currentLocale === locale;
           const isDetected = detectedLocale === locale;
 
           return (
-            <button
+            <Link
               key={locale}
-              type="button"
-              onClick={() => handleSelectLocale(locale)}
+              href={pathname}
+              locale={locale}
+              replace
+              onClick={() => handleLocaleClick(locale)}
               style={{
                 animationDelay: mounted ? `${index * 30}ms` : '0ms',
               }}
@@ -165,20 +157,20 @@ export function LanguageStep({ currentLocale, onComplete }: LanguageStepProps) {
               <span className="text-xs font-medium truncate w-full text-center">
                 {LOCALE_NAMES[locale]}
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>
 
       {/* Detected hint - now translated */}
-      {detectedLocale && detectedLocale !== selectedLocale && (
+      {detectedLocale && detectedLocale !== currentLocale && (
         <p className="text-xs text-center text-muted-foreground animate-in fade-in duration-500">
           {t("languageStep.detected")} {LOCALE_FLAGS[detectedLocale]} {LOCALE_NAMES[detectedLocale]}
         </p>
       )}
 
       {/* Continue button */}
-      <Button onClick={handleContinue} className="w-full">
+      <Button onClick={() => onComplete()} className="w-full">
         {t("continue")}
       </Button>
     </div>
