@@ -16,8 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
-import { VenuePicker } from "@/components/events/venue-picker";
+import { LocationPicker, type SelectedLocation } from "@/components/events/location-picker";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
@@ -34,7 +33,8 @@ import { ChevronDown, Settings } from "lucide-react";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
-import type { Event, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer } from "@/lib/types";
+import type { Event, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole } from "@/lib/types";
+import { hasRoleLevel } from "@/lib/types";
 
 /**
  * Trigger translation for an event (fire-and-forget)
@@ -94,6 +94,7 @@ async function triggerAIProcessing(eventId: string) {
 
 interface EventFormProps {
   userId: string;
+  userRole?: UserRole;
   event?: Event;
   initialSponsors?: (EventSponsor & { sponsors: Sponsor })[];
   // For "Create Similar Event" feature
@@ -141,6 +142,7 @@ type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 export function EventForm({
   userId,
+  userRole = "user",
   event,
   initialSponsors = [],
   copyFromEvent,
@@ -149,6 +151,8 @@ export function EventForm({
   pendingMomentsCount = 0,
 }: EventFormProps) {
   const router = useRouter();
+  // Only moderators and above can select organizers
+  const canSelectOrganizer = hasRoleLevel(userRole, "moderator");
   const t = useTranslations("eventForm");
   const tErrors = useTranslations("errors");
   const [isPending, startTransition] = useTransition();
@@ -445,10 +449,20 @@ export function EventForm({
     const externalChatUrl = formData.get("external_chat_url") as string;
     const onlineLink = formData.get("online_link") as string;
     const capacityStr = formData.get("capacity") as string;
+    const venueIdFromForm = formData.get("venue_id") as string;
 
     if (!title.trim() || !date || !time) {
       setError(tErrors("titleDateTimeRequired"));
       return;
+    }
+
+    // For new events, prevent past dates
+    if (!isEditing) {
+      const today = getTodayDateString();
+      if (date < today) {
+        setError(tErrors("pastDateNotAllowed") || "Cannot create events in the past");
+        return;
+      }
     }
 
     // Validate slug if editable
@@ -487,7 +501,7 @@ export function EventForm({
           title_position: titlePosition,
           capacity,
           organizer_id: organizerId,
-          venue_id: venueId,
+          venue_id: venueIdFromForm || null,
         };
 
         // Include slug if editable and changed
@@ -551,7 +565,7 @@ export function EventForm({
                 : null,
               rrule_count: recurrence.endType === "count" ? recurrence.endCount : null,
               organizer_id: organizerId,
-              venue_id: venueId,
+              venue_id: venueIdFromForm || null,
             }),
           });
 
@@ -597,7 +611,7 @@ export function EventForm({
               created_by: userId,
               status: "published",
               organizer_id: organizerId,
-              venue_id: venueId,
+              venue_id: venueIdFromForm || null,
             })
             .select()
             .single();
@@ -806,13 +820,13 @@ export function EventForm({
             </div>
           )}
 
-          {/* Location (Google Places Autocomplete) - optional for online events */}
-          <PlaceAutocomplete
-            onPlaceSelect={() => {}}
+          {/* Location - unified venue + address picker */}
+          <LocationPicker
             defaultValue={
               event?.location_name
                 ? {
-                    placeId: "",
+                    type: event.venue_id ? "venue" : "place",
+                    venueId: event.venue_id ?? undefined,
                     name: event.location_name,
                     address: event.address || "",
                     googleMapsUrl: event.google_maps_url || "",
@@ -821,7 +835,7 @@ export function EventForm({
                   }
                 : copyDefaults?.locationName
                   ? {
-                      placeId: "",
+                      type: "place",
                       name: copyDefaults.locationName,
                       address: copyDefaults.address,
                       googleMapsUrl: copyDefaults.googleMapsUrl,
@@ -830,19 +844,8 @@ export function EventForm({
                     }
                   : null
             }
+            defaultVenueId={event?.venue_id}
           />
-
-          {/* Venue picker */}
-          <div className="space-y-2">
-            <Label htmlFor="venue">{t("venue")}</Label>
-            <VenuePicker
-              value={venueId}
-              onChange={(id) => setVenueId(id)}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t("venueHelp")}
-            </p>
-          </div>
 
           {/* External link */}
           <div className="space-y-2">
@@ -861,8 +864,8 @@ export function EventForm({
             )}
           </div>
 
-          {/* Organizer (only show if organizers exist) */}
-          {organizers.length > 0 && (
+          {/* Organizer (only show for moderators+ if organizers exist) */}
+          {canSelectOrganizer && organizers.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="organizer">{t("organizer")}</Label>
               <Select
