@@ -99,7 +99,7 @@ export async function EventFeedImmersive({
       </div>
 
       {/* Scrollable event cards with scroll restoration */}
-      <EventFeedImmersiveClient eventCount={events.length + 1} activeTab={lifecycle}>
+      <EventFeedImmersiveClient eventCount={events.length + 1} activeTab={lifecycle} subtitle={t("subtitle")}>
         {events.map((event, index) => {
           const translation = eventTranslations.get(event.id);
           return (
