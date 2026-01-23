@@ -22,12 +22,19 @@ import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
 import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
+import { EventSettingsForm } from "@/components/events/event-settings-form";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { PostCreationCelebration } from "@/components/events/post-creation-celebration";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown, Settings } from "lucide-react";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
-import type { Event, RecurrenceFormData, Sponsor, EventSponsor, TranslationFieldName, Organizer } from "@/lib/types";
+import type { Event, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer } from "@/lib/types";
 
 /**
  * Trigger translation for an event (fire-and-forget)
@@ -92,6 +99,9 @@ interface EventFormProps {
   // For "Create Similar Event" feature
   copyFromEvent?: Event;
   copyFromSponsors?: (EventSponsor & { sponsors: Sponsor })[];
+  // For inline settings (moments config, retranslate, etc.)
+  initialSettings?: EventSettings | null;
+  pendingMomentsCount?: number;
 }
 
 /**
@@ -135,6 +145,8 @@ export function EventForm({
   initialSponsors = [],
   copyFromEvent,
   copyFromSponsors = [],
+  initialSettings,
+  pendingMomentsCount = 0,
 }: EventFormProps) {
   const router = useRouter();
   const t = useTranslations("eventForm");
@@ -719,6 +731,7 @@ export function EventForm({
                 type="date"
                 defaultValue={defaults.date}
                 onChange={handleDateChange}
+                min={!isEditing ? new Date().toISOString().split("T")[0] : undefined}
                 required
               />
             </div>
@@ -883,20 +896,49 @@ export function EventForm({
           </div>
 
           {/* Sponsors */}
-          <div className="pt-4 border-t">
-            {isEditing && event ? (
-              <SponsorForm
-                eventId={event.id}
-                initialSponsors={initialSponsors}
-                onChange={() => {}}
-              />
-            ) : (
-              <SponsorForm
-                draftSponsors={draftSponsors}
-                onDraftChange={setDraftSponsors}
-              />
-            )}
-          </div>
+          <Collapsible className="pt-4 border-t">
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+              <span>{t("sponsors") || "Sponsors"}</span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              {isEditing && event ? (
+                <SponsorForm
+                  eventId={event.id}
+                  initialSponsors={initialSponsors}
+                  onChange={() => {}}
+                />
+              ) : (
+                <SponsorForm
+                  draftSponsors={draftSponsors}
+                  onDraftChange={setDraftSponsors}
+                />
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Settings (only when editing) */}
+          {isEditing && event && (
+            <Collapsible className="pt-4 border-t">
+              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                <span className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  {t("settings") || "Settings"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4">
+                <EventSettingsForm
+                  eventId={event.id}
+                  eventSlug={event.slug}
+                  eventTitle={title}
+                  eventDescription={event.description}
+                  initialSettings={initialSettings ?? null}
+                  pendingCount={pendingMomentsCount}
+                />
+              </CollapsibleContent>
+            </Collapsible>
+          )}
 
           {error && (
             <p className="text-sm text-red-500">{error}</p>
