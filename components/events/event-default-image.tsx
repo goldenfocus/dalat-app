@@ -15,6 +15,10 @@ const BLUR_DATA_URL =
 /**
  * Default event image component - uses Next.js Image for automatic WebP/AVIF optimization.
  * This reduces the 722KB PNG to ~50-100KB with modern formats.
+ *
+ * Uses the same aspect ratio constraints as EventMediaDisplay:
+ * - Mobile: 3:4 aspect with max 60vh height
+ * - Desktop: 16:9 aspect ratio
  */
 export function EventDefaultImage({
   title,
@@ -22,17 +26,19 @@ export function EventDefaultImage({
   priority = false
 }: EventDefaultImageProps) {
   return (
-    <Image
-      src={DEFAULT_IMAGE_URL}
-      alt={`${title} - ĐàLạt.app default event image`}
-      fill
-      sizes="(max-width: 768px) 100vw, 50vw"
-      priority={priority}
-      fetchPriority={priority ? "high" : "auto"}
-      placeholder="blur"
-      blurDataURL={BLUR_DATA_URL}
-      className={`object-cover ${className}`}
-    />
+    <div className={`relative w-full rounded-lg overflow-hidden aspect-[3/4] max-h-[60vh] md:aspect-video md:max-h-none ${className}`}>
+      <Image
+        src={DEFAULT_IMAGE_URL}
+        alt={`${title} - ĐàLạt.app default event image`}
+        fill
+        sizes="(max-width: 768px) 100vw, 50vw"
+        priority={priority}
+        fetchPriority={priority ? "high" : "auto"}
+        placeholder="blur"
+        blurDataURL={BLUR_DATA_URL}
+        className="object-cover"
+      />
+    </div>
   );
 }
 

@@ -604,11 +604,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             {event.image_url ? (
               <EventMediaDisplay src={event.image_url} alt={event.title} priority />
             ) : (
-              <EventDefaultImage
-                title={event.title}
-                className="w-full rounded-lg"
-                priority
-              />
+              <EventDefaultImage title={event.title} priority />
             )}
 
             {/* Title and description */}
