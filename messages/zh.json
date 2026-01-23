@@ -389,7 +389,9 @@
     "soundAndVibration": "声音和振动",
     "soundOnly": "仅声音",
     "vibrationOnly": "仅振动",
-    "silent": "静音"
+    "silent": "静音",
+    "iosInstallRequired": "安装应用以接收通知",
+    "iosInstallDescription": "要在 iPhone 上接收推送通知，请点击分享按钮并选择\"添加到主屏幕\"，然后启用通知。"
   },
   "userMenu": {
     "editProfile": "编辑资料",

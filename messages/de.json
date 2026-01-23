@@ -389,7 +389,9 @@
     "soundAndVibration": "Ton und Vibration",
     "soundOnly": "Nur Ton",
     "vibrationOnly": "Nur Vibration",
-    "silent": "Lautlos"
+    "silent": "Lautlos",
+    "iosInstallRequired": "App installieren für Benachrichtigungen",
+    "iosInstallDescription": "Um Push-Benachrichtigungen auf dem iPhone zu erhalten, tippen Sie auf die Teilen-Taste und wählen Sie \"Zum Home-Bildschirm\", dann aktivieren Sie Benachrichtigungen."
   },
   "userMenu": {
     "editProfile": "Profil bearbeiten",

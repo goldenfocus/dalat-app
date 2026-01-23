@@ -389,7 +389,9 @@
     "soundAndVibration": "소리와 진동",
     "soundOnly": "소리만",
     "vibrationOnly": "진동만",
-    "silent": "무음"
+    "silent": "무음",
+    "iosInstallRequired": "알림을 받으려면 앱 설치 필요",
+    "iosInstallDescription": "iPhone에서 푸시 알림을 받으려면 공유 버튼을 누르고 \"홈 화면에 추가\"를 선택한 다음 알림을 활성화하세요."
   },
   "userMenu": {
     "editProfile": "프로필 편집",

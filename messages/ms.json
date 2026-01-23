@@ -389,7 +389,9 @@
     "soundAndVibration": "Bunyi dan getaran",
     "soundOnly": "Bunyi sahaja",
     "vibrationOnly": "Getaran sahaja",
-    "silent": "Senyap"
+    "silent": "Senyap",
+    "iosInstallRequired": "Pasang aplikasi untuk pemberitahuan",
+    "iosInstallDescription": "Untuk menerima pemberitahuan push di iPhone, ketik butang Kongsi dan pilih \"Tambah ke Skrin Utama\", kemudian aktifkan pemberitahuan."
   },
   "userMenu": {
     "editProfile": "Edit profil",

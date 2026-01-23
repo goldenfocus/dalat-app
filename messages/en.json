@@ -479,7 +479,9 @@
     "soundAndVibration": "Sound & Vibration",
     "soundOnly": "Sound only",
     "vibrationOnly": "Vibration only",
-    "silent": "Silent"
+    "silent": "Silent",
+    "iosInstallRequired": "Install app for notifications",
+    "iosInstallDescription": "To receive push notifications on iPhone, tap the Share button and select \"Add to Home Screen\", then enable notifications."
   },
   "userMenu": {
     "editProfile": "Edit profile",

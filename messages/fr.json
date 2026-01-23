@@ -416,7 +416,9 @@
     "soundAndVibration": "Son et vibration",
     "soundOnly": "Son uniquement",
     "vibrationOnly": "Vibration uniquement",
-    "silent": "Silencieux"
+    "silent": "Silencieux",
+    "iosInstallRequired": "Installez l'appli pour les notifications",
+    "iosInstallDescription": "Pour recevoir des notifications push sur iPhone, appuyez sur le bouton Partager et sélectionnez \"Sur l'écran d'accueil\", puis activez les notifications."
   },
   "userMenu": {
     "editProfile": "Modifier le profil",

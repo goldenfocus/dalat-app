@@ -406,7 +406,9 @@
     "soundAndVibration": "Âm thanh & Rung",
     "soundOnly": "Chỉ âm thanh",
     "vibrationOnly": "Chỉ rung",
-    "silent": "Im lặng"
+    "silent": "Im lặng",
+    "iosInstallRequired": "Cài đặt ứng dụng để nhận thông báo",
+    "iosInstallDescription": "Để nhận thông báo đẩy trên iPhone, nhấn nút Chia sẻ và chọn \"Thêm vào Màn hình chính\", sau đó bật thông báo."
   },
   "userMenu": {
     "editProfile": "Chỉnh sửa hồ sơ",

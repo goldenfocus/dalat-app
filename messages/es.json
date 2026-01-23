@@ -389,7 +389,9 @@
     "soundAndVibration": "Sonido y vibración",
     "soundOnly": "Solo sonido",
     "vibrationOnly": "Solo vibración",
-    "silent": "Silencioso"
+    "silent": "Silencioso",
+    "iosInstallRequired": "Instala la app para notificaciones",
+    "iosInstallDescription": "Para recibir notificaciones push en iPhone, toca el botón Compartir y selecciona \"Añadir a pantalla de inicio\", luego activa las notificaciones."
   },
   "userMenu": {
     "editProfile": "Editar perfil",

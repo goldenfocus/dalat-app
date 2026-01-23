@@ -11,6 +11,8 @@ interface UsePushNotificationsReturn {
   subscribe: () => Promise<boolean>;
   unsubscribe: () => Promise<boolean>;
   isSupported: boolean;
+  isIOSPWA: boolean;
+  isIOSSafari: boolean;
 }
 
 function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
@@ -24,11 +26,33 @@ function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
   return outputArray.buffer as ArrayBuffer;
 }
 
+// Detect if running on iOS
+function isIOS(): boolean {
+  if (typeof window === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+// Detect if running as installed PWA (standalone mode)
+function isStandalone(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(display-mode: standalone)').matches ||
+    // iOS Safari adds this when installed to home screen
+    ('standalone' in window.navigator && (window.navigator as { standalone?: boolean }).standalone === true);
+}
+
 export function usePushNotifications(): UsePushNotificationsReturn {
   const [permission, setPermission] = useState<PushPermission>('default');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+
+  const isiOSDevice = isIOS();
+  const isStandaloneMode = isStandalone();
+
+  // On iOS, push is only supported in standalone PWA mode (iOS 16.4+)
+  const isIOSPWA = isiOSDevice && isStandaloneMode;
+  const isIOSSafari = isiOSDevice && !isStandaloneMode;
 
   const isSupported = typeof window !== 'undefined' &&
     'serviceWorker' in navigator &&
@@ -143,6 +167,18 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     }
   }, [isSupported, registration]);
 
+  // Log for debugging iOS issues
+  useEffect(() => {
+    if (isiOSDevice) {
+      console.log('[push] iOS device detected', {
+        isStandalone: isStandaloneMode,
+        isSupported,
+        hasPushManager: typeof window !== 'undefined' && 'PushManager' in window,
+        hasNotification: typeof window !== 'undefined' && 'Notification' in window,
+      });
+    }
+  }, [isiOSDevice, isStandaloneMode, isSupported]);
+
   return {
     permission,
     isSubscribed,
@@ -150,5 +186,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     subscribe,
     unsubscribe,
     isSupported,
+    isIOSPWA,
+    isIOSSafari,
   };
 }

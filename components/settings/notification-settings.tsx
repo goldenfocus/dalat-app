@@ -10,6 +10,7 @@ import {
   Vibrate,
   VolumeX,
   Check,
+  Share,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
@@ -50,6 +51,7 @@ export function NotificationSettings() {
     subscribe,
     unsubscribe,
     isSupported,
+    isIOSSafari,
   } = usePushNotifications();
 
   const [mode, setMode] = useState<NotificationMode>("sound_and_vibration");
@@ -88,6 +90,19 @@ export function NotificationSettings() {
       });
     });
   };
+
+  // Special message for iOS Safari users - they need to install the PWA first
+  if (isIOSSafari) {
+    return (
+      <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 text-blue-700 dark:text-blue-300">
+        <Share className="w-5 h-5 mt-0.5 flex-shrink-0" />
+        <div className="space-y-1">
+          <p className="text-sm font-medium">{t("iosInstallRequired")}</p>
+          <p className="text-xs opacity-80">{t("iosInstallDescription")}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isSupported) {
     return (
