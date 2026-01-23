@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
 import { VenueHoursBadge } from "./venue-hours-badge";
+import { triggerHaptic } from "@/lib/haptics";
 import type { VenueListItem } from "@/lib/types";
 
 interface VenueCardProps {
@@ -18,7 +19,7 @@ export function VenueCard({ venue, className }: VenueCardProps) {
   const TypeIcon = typeConfig.icon;
 
   return (
-    <Link href={`/venues/${venue.slug}`}>
+    <Link href={`/venues/${venue.slug}`} onClick={() => triggerHaptic("selection")}>
       <Card
         className={cn(
           "overflow-hidden hover:border-primary/50 transition-all active:scale-[0.98]",

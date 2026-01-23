@@ -27,6 +27,7 @@ import { generateVenueMetadata } from "@/lib/metadata";
 import { JsonLd, generateLocalBusinessSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
 import { VenueHoursBadge } from "@/components/venues/venue-hours-badge";
+import { getTranslationsWithFallback } from "@/lib/translations";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -109,6 +110,24 @@ export default async function VenuePage({ params }: PageProps) {
   const { venue, upcoming_events, happening_now, past_events_count, recent_activity } = venueData;
   const isLoggedIn = await isUserLoggedIn();
 
+  // Fetch translations for venue name and description
+  const venueTranslations = await getTranslationsWithFallback(
+    "venue",
+    venue.id,
+    locale as Locale,
+    {
+      title: venue.name,
+      description: venue.description,
+      text_content: null,
+      bio: null,
+      story_content: null,
+      technical_content: null,
+      meta_description: null,
+    }
+  );
+  const translatedName = venueTranslations.title ?? venue.name;
+  const translatedDescription = venueTranslations.description ?? venue.description;
+
   const isUnclaimed = !venue.owner_id;
   const showClaimBanner = isUnclaimed && isLoggedIn && !venue.is_verified;
 
@@ -120,7 +139,7 @@ export default async function VenuePage({ params }: PageProps) {
     [
       { name: "Home", url: "/" },
       { name: t("title"), url: "/venues" },
-      { name: venue.name, url: `/venues/${venue.slug}` },
+      { name: translatedName, url: `/venues/${venue.slug}` },
     ],
     locale
   );
@@ -179,7 +198,7 @@ export default async function VenuePage({ params }: PageProps) {
           {venue.logo_url ? (
             <img
               src={venue.logo_url}
-              alt={venue.name}
+              alt={translatedName}
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border-4 border-background shadow-lg bg-background"
             />
           ) : (
@@ -195,7 +214,7 @@ export default async function VenuePage({ params }: PageProps) {
           <div className={venue.cover_photo_url ? "flex-1 pt-12 sm:pt-14" : "flex-1"}>
             {/* Name and badges */}
             <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 flex-wrap">
-              {venue.name}
+              {translatedName}
               {venue.is_verified && (
                 <BadgeCheck className="w-6 h-6 text-primary flex-shrink-0" />
               )}
@@ -243,13 +262,13 @@ export default async function VenuePage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Action buttons */}
+        {/* Action buttons - min-h-11 ensures 44px touch targets */}
         <div className="flex flex-wrap gap-2 mb-6">
           <a
             href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 min-h-11 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all"
           >
             <Route className="w-4 h-4" />
             {t("getDirections")}
@@ -260,7 +279,7 @@ export default async function VenuePage({ params }: PageProps) {
               href={venue.website_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 min-h-11 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
             >
               <Globe className="w-4 h-4" />
               Website
@@ -270,7 +289,7 @@ export default async function VenuePage({ params }: PageProps) {
           {venue.phone && (
             <a
               href={`tel:${venue.phone}`}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 min-h-11 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
             >
               <Phone className="w-4 h-4" />
               {venue.phone}
@@ -280,7 +299,7 @@ export default async function VenuePage({ params }: PageProps) {
           {venue.email && (
             <a
               href={`mailto:${venue.email}`}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 min-h-11 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
             >
               <Mail className="w-4 h-4" />
               Email
@@ -361,10 +380,10 @@ export default async function VenuePage({ params }: PageProps) {
         )}
 
         {/* About section */}
-        {venue.description && (
+        {translatedDescription && (
           <section className="mb-8">
             <h2 className="text-xl font-semibold mb-3">{t("about")}</h2>
-            <p className="text-muted-foreground whitespace-pre-wrap">{venue.description}</p>
+            <p className="text-muted-foreground whitespace-pre-wrap">{translatedDescription}</p>
           </section>
         )}
 

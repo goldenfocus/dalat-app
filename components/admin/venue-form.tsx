@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { VENUE_TYPES, VENUE_TYPE_CONFIG } from "@/lib/constants/venue-types";
+import { triggerTranslation } from "@/lib/translations-client";
 import type { Venue, VenueType, OperatingHours } from "@/lib/types";
 
 interface VenueFormProps {
@@ -247,12 +248,42 @@ export function VenueForm({ venue }: VenueFormProps) {
           setError(updateError.message);
           return;
         }
+
+        // Trigger translation for updated venue
+        const fields: { field_name: "title" | "description"; text: string }[] = [];
+        if (name.trim()) {
+          fields.push({ field_name: "title", text: name.trim() });
+        }
+        if (description?.trim()) {
+          fields.push({ field_name: "description", text: description.trim() });
+        }
+        if (fields.length > 0) {
+          triggerTranslation("venue", venue.id, fields);
+        }
       } else {
-        const { error: insertError } = await supabase.from("venues").insert(data);
+        const { data: insertedVenue, error: insertError } = await supabase
+          .from("venues")
+          .insert(data)
+          .select("id")
+          .single();
 
         if (insertError) {
           setError(insertError.message);
           return;
+        }
+
+        // Trigger translation for new venue
+        if (insertedVenue) {
+          const fields: { field_name: "title" | "description"; text: string }[] = [];
+          if (name.trim()) {
+            fields.push({ field_name: "title", text: name.trim() });
+          }
+          if (description?.trim()) {
+            fields.push({ field_name: "description", text: description.trim() });
+          }
+          if (fields.length > 0) {
+            triggerTranslation("venue", insertedVenue.id, fields);
+          }
         }
       }
 
