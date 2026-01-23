@@ -26,7 +26,30 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt 
     minute: "2-digit",
   });
 
-  const shareMessage = `${eventTitle}\n${formattedDate}\n\n${eventUrl}`;
+  // Truncate description to ~100 chars at word boundary
+  const truncateDescription = (desc: string | null, maxLength = 100) => {
+    if (!desc) return null;
+    if (desc.length <= maxLength) return desc;
+    const truncated = desc.slice(0, maxLength);
+    const lastSpace = truncated.lastIndexOf(" ");
+    return lastSpace > 0 ? truncated.slice(0, lastSpace) + "..." : truncated + "...";
+  };
+
+  const descriptionSnippet = truncateDescription(eventDescription);
+
+  const shareMessage = [
+    "🎉 You're invited!",
+    "",
+    eventTitle,
+    `📅 ${formattedDate}`,
+    descriptionSnippet ? "" : null,
+    descriptionSnippet,
+    "",
+    `👉 ${eventUrl}`,
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
+
   const encodedMessage = encodeURIComponent(shareMessage);
   const encodedUrl = encodeURIComponent(eventUrl);
 
