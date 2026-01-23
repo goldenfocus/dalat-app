@@ -18,6 +18,7 @@ import { formatInDaLat } from "@/lib/timezone";
 import { generateMomentMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/structured-data";
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
+import { CommentsSection } from "@/components/comments";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { ExpandableMomentImage } from "@/components/moments/expandable-moment-image";
 import { MomentImagePreloader } from "@/components/moments/moment-image-preloader";
@@ -546,6 +547,14 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
               {t("viewAll")} →
             </Link>
           </div>
+
+          {/* Comments section */}
+          <CommentsSection
+            targetType="moment"
+            targetId={moment.id}
+            contentOwnerId={moment.user_id}
+            currentUserId={user?.id}
+          />
         </div>
       </div>
 
