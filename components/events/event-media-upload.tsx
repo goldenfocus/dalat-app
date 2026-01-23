@@ -31,6 +31,7 @@ import {
   isVideoUrl,
   ALL_ALLOWED_TYPES,
   needsConversion,
+  generateSmartFilename,
 } from "@/lib/media-utils";
 import { convertIfNeeded } from "@/lib/media-conversion";
 import { DisintegrationEffect } from "@/components/ui/disintegration-effect";
@@ -277,7 +278,7 @@ export function EventMediaUpload({
         // Direct Supabase upload for other buckets (venues, etc.)
         const supabase = createClient();
         const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
-        const fileName = `${eventId}/${Date.now()}.${ext}`;
+        const fileName = generateSmartFilename(fileToUpload.name, eventId, ext);
 
         const { error: uploadError } = await supabase.storage
           .from(bucket)
@@ -617,7 +618,10 @@ export function EventMediaUpload({
         onDragLeave={handleDragLeave}
         onClick={() => fileInputRef.current?.click()}
       >
-        {previewUrl ? (
+        {isDisintegrating ? (
+          /* Dark background for particles to fly over */
+          <div className="w-full h-full bg-black" />
+        ) : previewUrl ? (
           previewIsVideo ? (
             <video
               src={previewUrl}

@@ -7,7 +7,7 @@ import { getTranslations } from "next-intl/server";
 // Increase serverless function timeout
 export const maxDuration = 60;
 import { EventForm } from "@/components/events/event-form";
-import type { Event, Sponsor, EventSponsor } from "@/lib/types";
+import type { Event, Sponsor, EventSponsor, UserRole } from "@/lib/types";
 
 interface PageProps {
   searchParams: Promise<{ copyFrom?: string }>;
@@ -57,6 +57,13 @@ export default async function NewEventPage({ searchParams }: PageProps) {
     redirect("/auth/login");
   }
 
+  // Fetch user profile to get role
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
   // If copying from another event, fetch its data
   let copyFromData: CopyFromData | null = null;
   if (copyFrom) {
@@ -97,6 +104,7 @@ export default async function NewEventPage({ searchParams }: PageProps) {
         </div>
         <EventForm
           userId={user.id}
+          userRole={(profile?.role as UserRole) ?? "user"}
           copyFromEvent={copyFromData?.event}
           copyFromSponsors={copyFromData?.sponsors}
         />

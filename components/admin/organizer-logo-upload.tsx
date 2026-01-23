@@ -5,6 +5,7 @@ import { Building2, X, Upload, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { generateSmartFilename } from "@/lib/media-utils";
 
 interface OrganizerLogoUploadProps {
   organizerId?: string;
@@ -84,7 +85,7 @@ export function OrganizerLogoUpload({
       // Use organizerId or temp ID for new organizers
       const id = organizerId || `temp-${Date.now()}`;
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${id}/${Date.now()}.${ext}`;
+      const fileName = generateSmartFilename(file.name, id, ext);
 
       // Delete old logo if exists
       if (currentLogoUrl) {

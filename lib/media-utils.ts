@@ -70,6 +70,51 @@ export function needsConversion(file: File): "heic" | null {
   return null;
 }
 
+/**
+ * Generate a smart, SEO-friendly filename from an original filename or context.
+ *
+ * @param originalName - The original filename (without extension) or descriptive context
+ * @param prefix - Optional prefix for organization (e.g., entity ID, user ID)
+ * @param ext - File extension (without dot)
+ * @returns A sanitized filename with timestamp for uniqueness
+ *
+ * @example
+ * generateSmartFilename("My Cool Event Photo.jpg", "event-123", "jpg")
+ * // Returns: "event-123/my-cool-event-photo-1abc2de3.jpg"
+ *
+ * generateSmartFilename("IMG_20240115_123456.jpg", undefined, "jpg")
+ * // Returns: "img-20240115-123456-1abc2de3.jpg"
+ */
+export function generateSmartFilename(
+  originalName: string,
+  prefix?: string,
+  ext: string = "jpg"
+): string {
+  // Clean the extension (remove leading dot if present)
+  const cleanExt = ext.replace(/^\./, "").toLowerCase();
+
+  // Remove file extension from original name if present
+  const nameWithoutExt = originalName.replace(/\.[^.]+$/, "");
+
+  // Sanitize the name
+  const sanitized = nameWithoutExt
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with hyphens
+    .replace(/-+/g, "-") // Collapse multiple hyphens
+    .replace(/^-|-$/g, "") // Trim leading/trailing hyphens
+    .slice(0, 50); // Limit length
+
+  // Use "upload" as fallback if name is empty after sanitization
+  const smartName = sanitized || "upload";
+
+  // Add base36 timestamp for uniqueness (shorter than full timestamp)
+  const timestamp = Date.now().toString(36);
+
+  // Build the full path
+  const filename = `${smartName}-${timestamp}.${cleanExt}`;
+  return prefix ? `${prefix}/${filename}` : filename;
+}
+
 // Validate file and return error message if invalid
 export function validateMediaFile(file: File): string | null {
   const isImage = ALLOWED_MEDIA_TYPES.image.includes(

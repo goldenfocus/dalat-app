@@ -346,10 +346,26 @@ export function EventForm({
     setSlug(finalizeSlug(slug));
   };
 
+  // Get today's date in local timezone (for min date validation)
+  const getTodayDateString = useCallback(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  }, []);
+
   // Track selected date for recurrence picker
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const dateStr = e.target.value;
     if (dateStr) {
+      // For new events, prevent selecting past dates
+      if (!isEditing) {
+        const today = getTodayDateString();
+        if (dateStr < today) {
+          // Reset to today if user somehow selects a past date
+          e.target.value = today;
+          setSelectedDate(new Date(today + "T12:00:00"));
+          return;
+        }
+      }
       setSelectedDate(new Date(dateStr + "T12:00:00"));
     } else {
       setSelectedDate(null);
@@ -731,7 +747,7 @@ export function EventForm({
                 type="date"
                 defaultValue={defaults.date}
                 onChange={handleDateChange}
-                min={!isEditing ? new Date().toISOString().split("T")[0] : undefined}
+                min={!isEditing ? getTodayDateString() : undefined}
                 required
               />
             </div>

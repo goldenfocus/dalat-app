@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
+import { generateSmartFilename } from "@/lib/media-utils";
 
 // Lazy init - created on first request, not at build time
 function getSupabaseAdmin() {
@@ -87,9 +88,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate filename
+    // Generate smart filename from original file name
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const fileName = `${eventId}/${Date.now()}.${ext}`;
+    const fileName = generateSmartFilename(file.name, eventId, ext);
 
     // Convert File to Buffer for upload
     const arrayBuffer = await file.arrayBuffer();

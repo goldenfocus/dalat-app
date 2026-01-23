@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
-  generateImage,
-  refineImage,
+  generateImageWithMetadata,
+  refineImageWithMetadata,
   buildPrompt,
   PROMPT_TEMPLATES,
   type ImageContext,
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
     // Refinement mode - supports both URL and base64 input
     const hasImageSource = existingImageUrl || (imageBase64 && imageMimeType);
     if (hasImageSource && sanitizedRefinementPrompt) {
-      imageUrl = await refineImage({
+      const result = await refineImageWithMetadata({
         context,
         existingImageUrl,
         refinementPrompt: sanitizedRefinementPrompt,
@@ -120,14 +120,16 @@ export async function POST(request: Request) {
         imageBase64,
         imageMimeType,
       });
+      imageUrl = result.url;
     } else {
       // New generation mode - prefer template-based prompt over custom
       const prompt = sanitizedCustomPrompt || buildPrompt(context, title, content);
-      imageUrl = await generateImage({
+      const result = await generateImageWithMetadata({
         context,
         prompt,
         entityId,
       });
+      imageUrl = result.url;
     }
 
     return NextResponse.json({ imageUrl });

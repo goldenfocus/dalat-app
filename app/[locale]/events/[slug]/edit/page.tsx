@@ -90,6 +90,7 @@ export default async function EditEventPage({ params }: PageProps) {
         <h1 className="text-2xl font-bold mb-8">Edit Event</h1>
         <EventForm
           userId={user.id}
+          userRole={(profile?.role as UserRole) ?? "user"}
           event={event as Event}
           initialSponsors={sponsors}
           initialSettings={settings as EventSettings | null}

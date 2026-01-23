@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { generateSmartFilename } from "@/lib/media-utils";
 
 interface AvatarUploadProps {
   userId: string;
@@ -79,9 +80,9 @@ export function AvatarUpload({
     try {
       const supabase = createClient();
 
-      // Generate unique filename
+      // Generate smart filename from original file name
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${userId}/${Date.now()}.${ext}`;
+      const fileName = generateSmartFilename(file.name, userId, ext);
 
       // Delete old avatar if exists
       if (currentAvatarUrl) {

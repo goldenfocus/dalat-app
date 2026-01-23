@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { generateSmartFilename } from "@/lib/media-utils";
 import { DefaultAvatars } from "./default-avatars";
 
 type AvatarStyle = "male" | "female" | "neutral" | "custom";
@@ -85,7 +86,9 @@ export function AvatarStep({
 
   const uploadToStorage = async (file: File | Blob, ext: string = "jpg"): Promise<string> => {
     const supabase = createClient();
-    const fileName = `${userId}/${Date.now()}.${ext}`;
+    // Generate smart filename - use original name if available, otherwise "avatar"
+    const originalName = file instanceof File ? file.name : "avatar";
+    const fileName = generateSmartFilename(originalName, userId, ext);
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")

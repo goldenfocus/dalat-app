@@ -49,13 +49,67 @@ export function DisintegrationEffect({
     const rect = container.getBoundingClientRect();
     setDimensions({ width: rect.width, height: rect.height });
 
+    // Helper to create fallback particles (when CORS prevents pixel reading)
+    const createFallbackParticles = (width: number, height: number): Particle[] => {
+      const particles: Particle[] = [];
+      // Use gradient colors as fallback
+      const colors = [
+        "rgba(100, 100, 120, 1)",
+        "rgba(80, 80, 100, 1)",
+        "rgba(120, 120, 140, 1)",
+        "rgba(90, 90, 110, 1)",
+      ];
+
+      for (let y = 0; y < height; y += PARTICLE_SIZE) {
+        for (let x = 0; x < width; x += PARTICLE_SIZE) {
+          const normalizedX = x / width;
+          const delay = (1 - normalizedX) * 800;
+
+          particles.push({
+            x,
+            y,
+            originX: x,
+            originY: y,
+            vx: (Math.random() - 0.3) * 3,
+            vy: (Math.random() - 0.7) * 4,
+            size: PARTICLE_SIZE + Math.random() * 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1,
+            delay,
+          });
+        }
+      }
+      return particles;
+    };
+
+    // Start the animation with particles
+    const startAnimation = (particles: Particle[]) => {
+      particlesRef.current = particles;
+      setPhase("tremor");
+      startTimeRef.current = performance.now();
+
+      setTimeout(() => {
+        setPhase("disintegrate");
+        startTimeRef.current = performance.now();
+      }, TREMOR_DURATION);
+    };
+
     // Load image and create particles
     const img = new Image();
     img.crossOrigin = "anonymous";
+
+    img.onerror = () => {
+      // Image failed to load - use fallback particles
+      startAnimation(createFallbackParticles(rect.width, rect.height));
+    };
+
     img.onload = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+      if (!ctx) {
+        startAnimation(createFallbackParticles(rect.width, rect.height));
+        return;
+      }
 
       canvas.width = rect.width;
       canvas.height = rect.height;
@@ -79,48 +133,46 @@ export function DisintegrationEffect({
 
       ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
 
-      // Sample pixels and create particles
-      const imageData = ctx.getImageData(0, 0, rect.width, rect.height);
-      const particles: Particle[] = [];
+      // Try to sample pixels - may fail due to CORS
+      let particles: Particle[];
+      try {
+        const imageData = ctx.getImageData(0, 0, rect.width, rect.height);
+        particles = [];
 
-      for (let y = 0; y < rect.height; y += PARTICLE_SIZE) {
-        for (let x = 0; x < rect.width; x += PARTICLE_SIZE) {
-          const i = (y * rect.width + x) * 4;
-          const r = imageData.data[i];
-          const g = imageData.data[i + 1];
-          const b = imageData.data[i + 2];
-          const a = imageData.data[i + 3];
+        for (let y = 0; y < rect.height; y += PARTICLE_SIZE) {
+          for (let x = 0; x < rect.width; x += PARTICLE_SIZE) {
+            const i = (y * rect.width + x) * 4;
+            const r = imageData.data[i];
+            const g = imageData.data[i + 1];
+            const b = imageData.data[i + 2];
+            const a = imageData.data[i + 3];
 
-          if (a < 10) continue; // Skip transparent pixels
+            if (a < 10) continue; // Skip transparent pixels
 
-          // Calculate delay based on position (right-to-left wave)
-          const normalizedX = x / rect.width;
-          const delay = (1 - normalizedX) * 800; // Right side starts first
+            // Calculate delay based on position (right-to-left wave)
+            const normalizedX = x / rect.width;
+            const delay = (1 - normalizedX) * 800; // Right side starts first
 
-          particles.push({
-            x: x,
-            y: y,
-            originX: x,
-            originY: y,
-            vx: (Math.random() - 0.3) * 3, // Slight rightward bias
-            vy: (Math.random() - 0.7) * 4, // Upward bias
-            size: PARTICLE_SIZE + Math.random() * 2,
-            color: `rgba(${r}, ${g}, ${b}, ${a / 255})`,
-            alpha: 1,
-            delay: delay,
-          });
+            particles.push({
+              x: x,
+              y: y,
+              originX: x,
+              originY: y,
+              vx: (Math.random() - 0.3) * 3, // Slight rightward bias
+              vy: (Math.random() - 0.7) * 4, // Upward bias
+              size: PARTICLE_SIZE + Math.random() * 2,
+              color: `rgba(${r}, ${g}, ${b}, ${a / 255})`,
+              alpha: 1,
+              delay: delay,
+            });
+          }
         }
+      } catch {
+        // CORS error - use fallback particles
+        particles = createFallbackParticles(rect.width, rect.height);
       }
 
-      particlesRef.current = particles;
-      setPhase("tremor");
-      startTimeRef.current = performance.now();
-
-      // Start tremor phase, then disintegrate
-      setTimeout(() => {
-        setPhase("disintegrate");
-        startTimeRef.current = performance.now();
-      }, TREMOR_DURATION);
+      startAnimation(particles);
     };
 
     img.src = imageUrl;
