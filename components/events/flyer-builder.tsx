@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { RotatingPhrase } from "@/components/ui/rotating-phrase";
 import { validateMediaFile, ALLOWED_MEDIA_TYPES } from "@/lib/media-utils";
 
 // Style presets for AI image generation
@@ -451,8 +452,9 @@ export function FlyerBuilder({
 
         {/* Loading overlay */}
         {(isGenerating || isLoadingUrl) && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 px-4">
             <Loader2 className="w-8 h-8 text-white animate-spin" />
+            <RotatingPhrase className="text-sm text-white/90 text-center max-w-xs" />
           </div>
         )}
       </div>

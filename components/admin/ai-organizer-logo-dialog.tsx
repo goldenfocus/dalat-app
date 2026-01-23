@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { RotatingPhrase } from "@/components/ui/rotating-phrase";
 
 interface AIOrganizerLogoDialogProps {
   organizerId?: string;
@@ -385,9 +386,7 @@ export function AIOrganizerLogoDialog({
 
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-              <p className="text-sm text-muted-foreground">
-                This may take 30-60 seconds
-              </p>
+              <RotatingPhrase className="text-sm text-muted-foreground text-center max-w-xs" />
             </div>
           </>
         ) : (

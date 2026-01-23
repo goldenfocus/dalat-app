@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { RotatingPhrase } from "@/components/ui/rotating-phrase";
 import Image from "next/image";
 
 interface AIAvatarDialogProps {
@@ -34,7 +35,7 @@ interface AIAvatarDialogProps {
 }
 
 type AvatarStyle = "male" | "female" | "neutral" | "custom";
-type DialogMode = "selection" | "preview";
+type DialogMode = "selection" | "generating" | "preview";
 
 const styleDescriptions: Record<AvatarStyle, string> = {
   male: "masculine-presenting person with strong, defined features",
@@ -156,6 +157,7 @@ Important:
   const handleGenerate = async () => {
     setError(null);
     setIsGenerating(true);
+    setMode("generating");
 
     try {
       const response = await fetch("/api/ai/generate-image", {
@@ -192,6 +194,7 @@ Important:
     } catch (err) {
       console.error("AI avatar generation error:", err);
       setError(err instanceof Error ? err.message : t("uploadFailed"));
+      setMode("selection"); // Go back to selection on error
     } finally {
       setIsGenerating(false);
     }
@@ -401,6 +404,24 @@ Important:
                     </>
                   )}
                 </Button>
+              </div>
+            </>
+          ) : mode === "generating" ? (
+            <>
+              {/* GENERATING MODE */}
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  {t("avatarDialog.generatingTitle")}
+                </DialogTitle>
+                <DialogDescription>
+                  {t("avatarDialog.generatingDescription")}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+                <RotatingPhrase className="text-sm text-muted-foreground text-center max-w-xs" />
               </div>
             </>
           ) : (
