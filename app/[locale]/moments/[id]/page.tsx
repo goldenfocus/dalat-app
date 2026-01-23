@@ -255,126 +255,81 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function MomentPage({ params, searchParams }: PageProps) {
-  let id: string;
-  let from: string | undefined;
-
-  try {
-    const resolvedParams = await params;
-    const resolvedSearchParams = await searchParams;
-    id = resolvedParams.id;
-    from = resolvedSearchParams.from;
-  } catch (err) {
-    console.error("[Moments] Error resolving params:", err);
-    notFound();
-  }
+  const { id } = await params;
+  const { from } = await searchParams;
 
   const supabase = await createClient();
-  let moment: Awaited<ReturnType<typeof getMoment>>;
-
-  try {
-    moment = await getMoment(id);
-  } catch (err) {
-    console.error("[Moments] Error fetching moment:", err);
-    notFound();
-  }
+  const moment = await getMoment(id);
 
   if (!moment) {
     notFound();
   }
 
-  // TypeScript doesn't narrow after notFound(), so we assert here
-  const m = moment as NonNullable<typeof moment>;
-
   // Get current user and check permissions
-  let user;
-  try {
-    const authResult = await supabase.auth.getUser();
-    user = authResult.data?.user;
-  } catch (err) {
-    console.error("[Moments] Error getting user:", err);
-    user = null;
-  }
-
-  const isOwner = user?.id === m.user_id;
-  const isEventCreator = user?.id === m.events.created_by;
+  const { data: { user } } = await supabase.auth.getUser();
+  const isOwner = user?.id === moment.user_id;
+  const isEventCreator = user?.id === moment.events.created_by;
 
   // Check if user is admin or moderator
   let isAdminOrMod = false;
   if (user) {
-    try {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      isAdminOrMod = profile?.role ? hasRoleLevel(profile.role as UserRole, "moderator") : false;
-    } catch (err) {
-      console.error("[Moments] Error checking admin role:", err);
-    }
+    const { data: userProfile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isAdminOrMod = userProfile?.role ? hasRoleLevel(userProfile.role as UserRole, "moderator") : false;
   }
 
   const canModerate = isEventCreator || isAdminOrMod;
 
-  let t, tCommon, locale;
-  try {
-    [t, tCommon, locale] = await Promise.all([
-      getTranslations("moments"),
-      getTranslations("common"),
-      getLocale(),
-    ]);
-  } catch (err) {
-    console.error("[Moments] Error getting translations:", err);
-    throw err;  // Re-throw to see which translation is failing
-  }
+  const [t, tCommon, locale] = await Promise.all([
+    getTranslations("moments"),
+    getTranslations("common"),
+    getLocale(),
+  ]);
 
-  console.log("[Moments] Step 1: event/profile");
-  const event = m.events;
-  const profile = m.profiles;
-  const isVideo = isVideoUrl(m.media_url);
+  const event = moment.events;
+  const profile = moment.profiles;
+  const isVideo = isVideoUrl(moment.media_url);
 
-  console.log("[Moments] Step 2: timeAgo");
-  const timeAgo = formatDistanceToNow(new Date(m.created_at), {
+  const timeAgo = formatDistanceToNow(new Date(moment.created_at), {
     addSuffix: true,
     locale: dateFnsLocales[locale as Locale],
   });
 
-  console.log("[Moments] Step 3: momentTranslations");
   // Get translations for text content
   const momentTranslations = await getMomentTranslations(
-    m.id,
-    m.text_content,
-    m.source_locale,
+    moment.id,
+    moment.text_content,
+    moment.source_locale,
     locale
   );
 
-  console.log("[Moments] Step 4: navigation mode");
   // Determine navigation mode based on where user came from
   const isDiscoveryMode = from === "moments";
   const isProfileMode = from === "profile";
 
-  console.log("[Moments] Step 5: adjacent moments");
   // Get adjacent moments for navigation (global feed or event-scoped)
   const { prevId, nextId, prevEventId, nextEventId, prevMediaUrl, nextMediaUrl } = isDiscoveryMode
-    ? await getFeedAdjacentMoments(m.created_at, m.id)
-    : await getEventAdjacentMoments(m.event_id, m.created_at, m.id);
+    ? await getFeedAdjacentMoments(moment.created_at, moment.id)
+    : await getEventAdjacentMoments(moment.event_id, moment.created_at, moment.id);
 
-  console.log("[Moments] Step 6: navigation vars");
   const hasNavigation = prevId || nextId;
 
   // Check if navigating to a different event (for visual transition indicator)
-  const prevCrossesEvent = prevEventId && prevEventId !== m.event_id;
-  const nextCrossesEvent = nextEventId && nextEventId !== m.event_id;
+  const prevCrossesEvent = prevEventId && prevEventId !== moment.event_id;
+  const nextCrossesEvent = nextEventId && nextEventId !== moment.event_id;
 
   // Build navigation URLs with context preservation
   const navParam = isDiscoveryMode ? "?from=moments" : isProfileMode ? "?from=profile" : "";
   const backUrl = isDiscoveryMode
     ? "/moments"
     : isProfileMode
-      ? `/${profile?.username || m.user_id}`
+      ? `/${profile?.username || moment.user_id}`
       : `/events/${event.slug}/moments`;
 
-  console.log("[Moments] Step 7: schema generation");
-  const momentSchema = generateMomentSchema(m, locale);
+  const momentSchema = generateMomentSchema(moment, locale);
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
@@ -423,12 +378,12 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
 
       <div className="container max-w-2xl mx-auto px-4 py-6">
         {/* Media display with navigation */}
-        {m.content_type !== "text" && m.media_url && (
+        {moment.content_type !== "text" && moment.media_url && (
           <div className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-6 group">
             {isVideo ? (
               <video
-                key={m.id}
-                src={m.media_url}
+                key={moment.id}
+                src={moment.media_url}
                 className="w-full h-full object-contain"
                 controls
                 autoPlay
@@ -437,7 +392,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
               />
             ) : (
               <ExpandableMomentImage
-                src={m.media_url}
+                src={moment.media_url}
                 alt={momentTranslations.textContent || `Moment from ${event.title}`}
               />
             )}
@@ -475,7 +430,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
         )}
 
         {/* Navigation for text-only moments */}
-        {m.content_type === "text" && hasNavigation && (
+        {moment.content_type === "text" && hasNavigation && (
           <div className="flex justify-between mb-6">
             {prevId ? (
               <Link
@@ -508,7 +463,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
         <div className="space-y-4">
           {/* User */}
           <div className="flex items-center gap-3">
-            <Link href={`/${profile?.username || m.user_id}`}>
+            <Link href={`/${profile?.username || moment.user_id}`}>
               <UserAvatar
                 src={profile?.avatar_url}
                 alt={profile?.display_name || profile?.username || ""}
@@ -517,7 +472,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
             </Link>
             <div className="flex-1">
               <Link
-                href={`/${profile?.username || m.user_id}`}
+                href={`/${profile?.username || moment.user_id}`}
                 className="font-medium hover:underline"
               >
                 {profile?.display_name || profile?.username || tCommon("anonymous")}
@@ -526,7 +481,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
             </div>
             {/* Delete button for owner/moderators */}
             <DeleteMomentButton
-              momentId={m.id}
+              momentId={moment.id}
               eventSlug={event.slug}
               isOwner={isOwner}
               canModerate={canModerate}
