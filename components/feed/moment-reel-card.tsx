@@ -53,7 +53,7 @@ export function MomentReelCard({
     >
       {/* Media area - fills viewport */}
       <div className="absolute inset-0 overflow-hidden">
-        {moment.media_url && (
+        {moment.media_url ? (
           isVideo ? (
             <VideoPlayer
               src={moment.media_url}
@@ -65,6 +65,12 @@ export function MomentReelCard({
           ) : (
             <ImmersiveImage src={moment.media_url} alt="" />
           )
+        ) : moment.event_image_url ? (
+          // Fallback: show event image if no moment media
+          <ImmersiveImage src={moment.event_image_url} alt="" />
+        ) : (
+          // No media at all: gradient background for text-only moments
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900" />
         )}
       </div>
 
