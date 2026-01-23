@@ -36,8 +36,8 @@ export function MobileBottomNav() {
   const tNav = useTranslations("nav");
   const normalizedPath = normalizePath(pathname);
 
-  // Hide nav on immersive moments feed for TikTok-style experience
-  if (normalizedPath === "/moments") {
+  // Hide nav on immersive feeds (homepage, moments) for fullscreen experience
+  if (normalizedPath === "/" || normalizedPath === "/moments") {
     return null;
   }
 

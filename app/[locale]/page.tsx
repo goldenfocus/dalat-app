@@ -347,8 +347,8 @@ export default async function Home({ params, searchParams }: PageProps) {
 
   return (
     <>
-      {/* Mobile: Full immersive experience */}
-      <div className="lg:hidden h-[100dvh] relative pb-[calc(4rem+env(safe-area-inset-bottom))]">
+      {/* Mobile: Full immersive experience (no bottom padding - nav hidden) */}
+      <div className="lg:hidden h-[100dvh] relative">
         {/* Floating mini-header */}
         <nav className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-3 bg-gradient-to-b from-black/70 via-black/40 to-transparent">
           <div className="flex items-center gap-1">

@@ -2,12 +2,15 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useScrollRestoration } from "@/lib/contexts/scroll-restoration-context";
+import { EventFeedTabs, type EventLifecycle } from "./event-feed-tabs";
 
 interface EventFeedImmersiveClientProps {
   children: ReactNode;
   eventCount: number;
-  activeTab: string;
+  activeTab: EventLifecycle;
   subtitle?: string;
+  tabLabels: { upcoming: string; happening: string; past: string };
+  lifecycleCounts?: { upcoming: number; happening: number; past: number };
 }
 
 export function EventFeedImmersiveClient({
@@ -15,6 +18,8 @@ export function EventFeedImmersiveClient({
   eventCount,
   activeTab,
   subtitle,
+  tabLabels,
+  lifecycleCounts,
 }: EventFeedImmersiveClientProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { saveEventFeedPosition, getEventFeedPosition, clearEventFeedPosition } =
@@ -80,6 +85,22 @@ export function EventFeedImmersiveClient({
       ref={containerRef}
       className="h-[100dvh] overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide"
     >
+      {/* Floating tabs - fade out on scroll */}
+      <div
+        className={`fixed top-14 left-0 right-0 z-40 px-3 transition-opacity duration-300 lg:hidden ${
+          hasScrolled ? "opacity-0 pointer-events-none" : "opacity-100"
+        }`}
+      >
+        <EventFeedTabs
+          activeTab={activeTab}
+          variant="floating"
+          useUrlNavigation
+          counts={lifecycleCounts}
+          hideEmptyTabs={!!lifecycleCounts}
+          labels={tabLabels}
+        />
+      </div>
+
       {/* Floating subtitle - fades out on scroll */}
       {subtitle && (
         <div

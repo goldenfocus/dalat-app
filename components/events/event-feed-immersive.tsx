@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { getTranslations, getLocale } from "next-intl/server";
 import { History, CalendarDays } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
@@ -15,29 +14,6 @@ import type { ContentLocale } from "@/lib/types";
 interface EventFeedImmersiveProps {
   lifecycle?: EventLifecycle;
   lifecycleCounts?: { upcoming: number; happening: number; past: number };
-}
-
-function FloatingTabs({
-  activeTab,
-  lifecycleCounts,
-  labels
-}: {
-  activeTab: EventLifecycle;
-  lifecycleCounts?: { upcoming: number; happening: number; past: number };
-  labels: { upcoming: string; happening: string; past: string };
-}) {
-  return (
-    <Suspense fallback={null}>
-      <EventFeedTabs
-        activeTab={activeTab}
-        variant="floating"
-        useUrlNavigation
-        counts={lifecycleCounts}
-        hideEmptyTabs={!!lifecycleCounts}
-        labels={labels}
-      />
-    </Suspense>
-  );
 }
 
 export async function EventFeedImmersive({
@@ -71,10 +47,17 @@ export async function EventFeedImmersive({
           : t("noUpcoming");
 
     return (
-      <div className="h-[100dvh] flex flex-col bg-black text-white">
-        {/* Floating tabs */}
+      <div className="h-[100dvh] flex flex-col bg-black text-white relative">
+        {/* Floating tabs - always visible on empty state */}
         <div className="absolute top-14 left-0 right-0 z-40 px-3">
-          <FloatingTabs activeTab={lifecycle} lifecycleCounts={lifecycleCounts} labels={tabLabels} />
+          <EventFeedTabs
+            activeTab={lifecycle}
+            variant="floating"
+            useUrlNavigation
+            counts={lifecycleCounts}
+            hideEmptyTabs={!!lifecycleCounts}
+            labels={tabLabels}
+          />
         </div>
 
         <div className="flex-1 flex items-center justify-center">
@@ -93,13 +76,14 @@ export async function EventFeedImmersive({
 
   return (
     <div className="h-[100dvh] relative">
-      {/* Floating tabs below the header */}
-      <div className="absolute top-14 left-0 right-0 z-40 px-3">
-        <FloatingTabs activeTab={lifecycle} lifecycleCounts={lifecycleCounts} labels={tabLabels} />
-      </div>
-
       {/* Scrollable event cards with scroll restoration */}
-      <EventFeedImmersiveClient eventCount={events.length + 1} activeTab={lifecycle} subtitle={t("subtitle")}>
+      <EventFeedImmersiveClient
+        eventCount={events.length + 1}
+        activeTab={lifecycle}
+        subtitle={t("subtitle")}
+        tabLabels={tabLabels}
+        lifecycleCounts={lifecycleCounts}
+      >
         {events.map((event, index) => {
           const translation = eventTranslations.get(event.id);
           return (
