@@ -386,9 +386,11 @@ function feedbackRequestTemplate(payload: FeedbackRequestPayload): TemplateResul
 
 function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  const inviteUrl = `${getBaseUrl()}/invite/${payload.token}`;
+  // Use English for email invites - recipient may not speak inviter's language
+  // The invite page will display in recipient's browser locale anyway
+  const inviteUrl = `${getBaseUrl()}/en/invite/${payload.token}`;
 
-  // Format date/time
+  // Format date/time for in-app/push (uses inviter's locale)
   const eventDate = new Date(payload.startsAt);
   const formattedDate = eventDate.toLocaleDateString(
     locale === 'vi' ? 'vi-VN' : locale === 'fr' ? 'fr-FR' : 'en-US',
@@ -398,6 +400,14 @@ function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResul
     locale === 'vi' ? 'vi-VN' : locale === 'fr' ? 'fr-FR' : 'en-US',
     { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Ho_Chi_Minh' }
   );
+
+  // Format date/time for email (always English)
+  const emailFormattedDate = eventDate.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Ho_Chi_Minh'
+  });
+  const emailFormattedTime = eventDate.toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Ho_Chi_Minh'
+  });
 
   const inviteTranslations = {
     subject: {
@@ -419,6 +429,10 @@ function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResul
   const title = inviteTranslations.subject[locale];
   const body = inviteTranslations.body[locale];
 
+  // Email uses English with English-formatted dates
+  const emailTitle = inviteTranslations.subject.en;
+  const emailBody = `${emailFormattedDate} at ${emailFormattedTime}${payload.locationName ? ` • ${payload.locationName}` : ''}`;
+
   return {
     inApp: {
       title,
@@ -434,14 +448,14 @@ function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResul
       requireInteraction: true,
     },
     email: {
-      title,
-      body,
-      subject: title,
+      title: emailTitle,
+      body: emailBody,
+      subject: emailTitle,
       primaryActionUrl: `${inviteUrl}?rsvp=going`,
-      primaryActionLabel: inviteTranslations.buttons.going[locale],
+      primaryActionLabel: inviteTranslations.buttons.going.en,
       secondaryActionUrl: `${inviteUrl}?rsvp=cancelled`,
-      secondaryActionLabel: inviteTranslations.buttons.notGoing[locale],
-      html: generateEventInvitationEmailHtml(payload, locale, inviteUrl, formattedDate, formattedTime),
+      secondaryActionLabel: inviteTranslations.buttons.notGoing.en,
+      html: generateEventInvitationEmailHtml(payload, 'en', inviteUrl, emailFormattedDate, emailFormattedTime),
     },
   };
 }
