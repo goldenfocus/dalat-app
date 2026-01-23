@@ -49,6 +49,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   useEffect(() => {
     fetchNotifications();
 
+    let pollInterval: NodeJS.Timeout | null = null;
+
     const channel = supabase
       .channel(`notifications:${userId}`)
       .on(
@@ -60,6 +62,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
+          console.log('[notification-bell] Realtime INSERT received:', payload.new);
           const newNotification = payload.new as Notification;
           setNotifications((prev) => [newNotification, ...prev].slice(0, 20));
           setUnreadCount((prev) => prev + 1);
@@ -74,6 +77,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
+          console.log('[notification-bell] Realtime UPDATE received:', payload.new);
           const updated = payload.new as Notification;
           setNotifications((prev) =>
             prev.map((n) => (n.id === updated.id ? updated : n))
@@ -85,10 +89,25 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           });
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log('[notification-bell] Realtime subscription status:', status);
+        if (err) {
+          console.error('[notification-bell] Realtime subscription error:', err);
+        }
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('[notification-bell] Realtime failed, falling back to polling');
+          // Fallback: poll every 30 seconds if realtime fails
+          pollInterval = setInterval(() => {
+            fetchNotifications();
+          }, 30000);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
     };
   }, [supabase, userId, fetchNotifications]);
 
