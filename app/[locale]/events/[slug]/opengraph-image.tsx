@@ -1,13 +1,18 @@
 import { ImageResponse } from "next/og";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import { formatInDaLat } from "@/lib/timezone";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import type { ContentLocale } from "@/lib/types";
 
-export const runtime = "edge";
+// Use Node.js runtime for better ISR caching support
+export const runtime = "nodejs";
 export const alt = "Event on ĐàLạt.app";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+// Cache generated OG images for 1 hour - critical for WhatsApp/social previews
+// Without caching, the ~1.5s generation time exceeds WhatsApp's timeout
+export const revalidate = 3600;
 
 interface Props {
   params: Promise<{ slug: string; locale: string }>;
@@ -15,13 +20,26 @@ interface Props {
 
 export default async function OGImage({ params }: Props) {
   const { slug, locale } = await params;
-  const supabase = await createClient();
+  // Use static client for ISR context (no cookies needed for public event data)
+  const supabase = createStaticClient();
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("id, title, description, image_url, location_name, starts_at")
-    .eq("slug", slug)
-    .single();
+  let event: {
+    id: string;
+    title: string;
+    description: string | null;
+    image_url: string | null;
+    location_name: string | null;
+    starts_at: string;
+  } | null = null;
+
+  if (supabase) {
+    const { data } = await supabase
+      .from("events")
+      .select("id, title, description, image_url, location_name, starts_at")
+      .eq("slug", slug)
+      .single();
+    event = data;
+  }
 
   // Get translated title for the current locale
   let title = event?.title || "Event";
