@@ -17,6 +17,7 @@ import { RsvpButton } from "@/components/events/rsvp-button";
 import { FeedbackBadge } from "@/components/events/event-feedback";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { EventActions } from "@/components/events/event-actions";
+import { EventSettingsSheet } from "@/components/events/event-settings-sheet";
 import { InviteModal } from "@/components/events/invite-modal";
 import { EventShareButton } from "@/components/events/event-share-button";
 import { AddToCalendar } from "@/components/events/add-to-calendar";
@@ -505,7 +506,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
-  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations] = await Promise.all([
+  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
@@ -518,6 +519,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     canUserPostMoment(event.id, currentUserId, event.created_by),
     getEventSponsors(event.id),
     getEventTranslations(event.id, event.title, event.description, event.source_locale, locale),
+    getEventSettings(event.id),
   ]);
 
   // Destructure combined RSVP result
@@ -588,6 +590,14 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   eventDescription={event.description}
                   startsAt={event.starts_at}
                   imageUrl={event.image_url}
+                />
+                <EventSettingsSheet
+                  eventId={event.id}
+                  eventSlug={event.slug}
+                  eventTitle={event.title}
+                  eventDescription={event.description}
+                  initialSettings={eventSettings}
+                  pendingCount={momentCounts?.pending_count ?? 0}
                 />
                 <EventActions eventId={event.id} eventSlug={event.slug} />
               </>

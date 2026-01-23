@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Users, Shield, Loader2, Check, ChevronRight, Languages } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -47,31 +47,59 @@ export function EventSettingsForm({
   const [isRetranslating, setIsRetranslating] = useState(false);
   const [retranslated, setRetranslated] = useState(false);
 
-  const handleSave = () => {
+  // Auto-save function - called whenever a setting changes
+  const saveSettings = useCallback(
+    (updates: {
+      moments_enabled?: boolean;
+      moments_who_can_post?: MomentsWhoCanPost;
+      moments_require_approval?: boolean;
+    }) => {
+      const supabase = createClient();
+
+      startTransition(async () => {
+        const { error } = await supabase.from("event_settings").upsert(
+          {
+            event_id: eventId,
+            moments_enabled: updates.moments_enabled ?? momentsEnabled,
+            moments_who_can_post: updates.moments_who_can_post ?? whoCanPost,
+            moments_require_approval: updates.moments_require_approval ?? requireApproval,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "event_id" }
+        );
+
+        if (error) {
+          console.error("Failed to save settings:", error);
+          return;
+        }
+
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+        router.refresh();
+      });
+    },
+    [eventId, momentsEnabled, whoCanPost, requireApproval, router]
+  );
+
+  // Handlers that update state AND auto-save
+  const handleMomentsToggle = () => {
+    const newValue = !momentsEnabled;
     triggerHaptic("selection");
-    const supabase = createClient();
+    setMomentsEnabled(newValue);
+    saveSettings({ moments_enabled: newValue });
+  };
 
-    startTransition(async () => {
-      const { error } = await supabase.from("event_settings").upsert(
-        {
-          event_id: eventId,
-          moments_enabled: momentsEnabled,
-          moments_who_can_post: whoCanPost,
-          moments_require_approval: requireApproval,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "event_id" }
-      );
+  const handleWhoCanPostChange = (value: MomentsWhoCanPost) => {
+    triggerHaptic("selection");
+    setWhoCanPost(value);
+    saveSettings({ moments_who_can_post: value });
+  };
 
-      if (error) {
-        console.error("Failed to save settings:", error);
-        return;
-      }
-
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-      router.refresh();
-    });
+  const handleRequireApprovalToggle = () => {
+    const newValue = !requireApproval;
+    triggerHaptic("selection");
+    setRequireApproval(newValue);
+    saveSettings({ moments_require_approval: newValue });
   };
 
   const whoCanPostOptions: { value: MomentsWhoCanPost; label: string; description: string }[] = [
@@ -82,13 +110,27 @@ export function EventSettingsForm({
 
   return (
     <div className="space-y-6">
+      {/* Save Status Indicator */}
+      {(isPending || saved) && (
+        <div className="flex items-center justify-center gap-2 text-sm animate-in fade-in duration-200">
+          {isPending ? (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+              <span className="text-muted-foreground">{t("saving")}</span>
+            </>
+          ) : (
+            <>
+              <Check className="w-3 h-3 text-green-600" />
+              <span className="text-green-600">{t("saved")}</span>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Moments Toggle */}
       <button
         type="button"
-        onClick={() => {
-          triggerHaptic("selection");
-          setMomentsEnabled(!momentsEnabled);
-        }}
+        onClick={handleMomentsToggle}
         className={cn(
           "w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200",
           momentsEnabled
@@ -144,10 +186,7 @@ export function EventSettingsForm({
               <button
                 key={option.value}
                 type="button"
-                onClick={() => {
-                  triggerHaptic("selection");
-                  setWhoCanPost(option.value);
-                }}
+                onClick={() => handleWhoCanPostChange(option.value)}
                 className={cn(
                   "w-full flex items-center justify-between p-3 rounded-lg border transition-all duration-200",
                   whoCanPost === option.value
@@ -179,10 +218,7 @@ export function EventSettingsForm({
       {momentsEnabled && (
         <button
           type="button"
-          onClick={() => {
-            triggerHaptic("selection");
-            setRequireApproval(!requireApproval);
-          }}
+          onClick={handleRequireApprovalToggle}
           className={cn(
             "w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200 animate-in fade-in slide-in-from-top-2",
             requireApproval
@@ -308,33 +344,6 @@ export function EventSettingsForm({
         ) : retranslated ? (
           <Check className="w-4 h-4 text-green-500" />
         ) : null}
-      </button>
-
-      {/* Save Button */}
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={isPending}
-        className={cn(
-          "w-full flex items-center justify-center gap-2 p-3 rounded-lg font-medium transition-all duration-200",
-          saved
-            ? "bg-green-600 text-white"
-            : "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
-        )}
-      >
-        {isPending ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            {t("saving")}
-          </>
-        ) : saved ? (
-          <>
-            <Check className="w-4 h-4" />
-            {t("saved")}
-          </>
-        ) : (
-          t("saveSettings")
-        )}
       </button>
     </div>
   );
