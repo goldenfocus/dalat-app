@@ -639,6 +639,7 @@
     "sentSuccess": "{count}개 초대가 성공적으로 전송되었습니다!",
     "copied": "복사됨!",
     "share": "공유",
+    "youreInvited": "초대받으셨습니다!",
     "copyLink": "링크 복사",
     "invitedBy": "{name}님이 다음에 초대했습니다",
     "eventCancelled": "이벤트 취소됨",

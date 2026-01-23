@@ -639,6 +639,7 @@
     "sentSuccess": "ส่ง {count} คำเชิญสำเร็จ!",
     "copied": "คัดลอกแล้ว!",
     "share": "แชร์",
+    "youreInvited": "คุณได้รับเชิญ!",
     "copyLink": "คัดลอกลิงก์",
     "invitedBy": "{name} เชิญคุณไป",
     "eventCancelled": "กิจกรรมถูกยกเลิก",

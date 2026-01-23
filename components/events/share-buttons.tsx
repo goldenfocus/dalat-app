@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Check, Copy, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +14,7 @@ interface ShareButtonsProps {
 
 export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt }: ShareButtonsProps) {
   const t = useTranslations("invite");
+  const locale = useLocale();
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
 
@@ -22,9 +23,9 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt 
     setCanShare(typeof navigator !== "undefined" && !!navigator.share);
   }, []);
 
-  // Format date for share message
+  // Format date for share message using user's locale
   const eventDate = new Date(startsAt);
-  const formattedDate = eventDate.toLocaleDateString("en-US", {
+  const formattedDate = eventDate.toLocaleDateString(locale, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -43,11 +44,14 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt 
 
   const descriptionSnippet = truncateDescription(eventDescription);
 
+  // Build share message in user's language
+  const shareMessage = `${eventUrl}\n🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`;
+
   const handleNativeShare = async () => {
     try {
       await navigator.share({
         title: eventTitle,
-        text: `🎉 You're invited!\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
+        text: `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
         url: eventUrl,
       });
     } catch (err) {
@@ -60,7 +64,8 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt 
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(eventUrl);
+      // Copy full share message including URL
+      await navigator.clipboard.writeText(shareMessage);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
