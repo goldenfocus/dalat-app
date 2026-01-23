@@ -91,6 +91,7 @@
     "checkEmailForConfirmation": "Periksa email Anda untuk tautan konfirmasi",
     "accountCreatedCheckEmail": "Akun dibuat! Periksa email Anda untuk konfirmasi.",
     "signInOrCreateHint": "Baru di sini? Kami akan membuat akun Anda secara otomatis.",
+    "signInWithPassword": "Masuk dengan kata sandi",
     "somethingWentWrong": "Terjadi kesalahan. Silakan coba lagi.",
     "resetPassword": "Reset kata sandi",
     "resetPasswordDescription": "Masukkan email Anda untuk menerima tautan reset kata sandi",
@@ -589,6 +590,13 @@
       "invalidUsername": "Format username tidak valid",
       "saving": "Menyiapkan...",
       "complete": "Selesai"
+    },
+    "passwordPrompt": {
+      "title": "Atur kata sandi cadangan?",
+      "description": "Opsional: Atur kata sandi untuk login cepat via email. Anda tetap bisa menggunakan Google.",
+      "setPassword": "Atur Kata Sandi",
+      "skip": "Lewati",
+      "passwordSet": "Kata sandi berhasil diatur!"
     }
   },
   "empty": {
@@ -957,6 +965,13 @@
     "noPosts": "Belum ada artikel. Kembali lagi nanti!",
     "backToBlog": "Kembali ke Blog",
     "translated": "Diterjemahkan"
+  },
+  "streaming": {
+    "goLive": "Mulai Siaran",
+    "goLiveDescription": "Apa yang kamu bagikan?",
+    "goLivePlaceholder": "Matahari terbenam di Danau Xuan Huong...",
+    "goingLive": "Memulai siaran...",
+    "goLiveError": "Tidak dapat memulai siaran. Silakan coba lagi."
   },
   "install": {
     "banner": {

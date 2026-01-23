@@ -704,8 +704,8 @@
       "complete": "Complete Setup"
     },
     "passwordPrompt": {
-      "title": "Set a password?",
-      "description": "For quicker login next time. You can always use magic link or Google instead.",
+      "title": "Set a backup password?",
+      "description": "Optional: Set a password for quick email login. You can always use Google instead.",
       "setPassword": "Set Password",
       "skip": "Skip for now",
       "passwordSet": "Password set!"

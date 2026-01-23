@@ -91,6 +91,7 @@
     "checkEmailForConfirmation": "確認リンクをメールでご確認ください",
     "accountCreatedCheckEmail": "アカウントが作成されました！メールで確認してください。",
     "signInOrCreateHint": "初めてですか？自動的にアカウントを作成します。",
+    "signInWithPassword": "パスワードでログイン",
     "somethingWentWrong": "問題が発生しました。もう一度お試しください。",
     "resetPassword": "パスワードリセット",
     "resetPasswordDescription": "パスワードリセットリンクを受け取るにはメールを入力してください",
@@ -589,6 +590,13 @@
       "invalidUsername": "ユーザー名の形式が無効です",
       "saving": "設定中...",
       "complete": "設定完了"
+    },
+    "passwordPrompt": {
+      "title": "バックアップパスワードを設定？",
+      "description": "オプション：メールで素早くログインするためのパスワードを設定できます。Googleログインも引き続き使用可能です。",
+      "setPassword": "パスワードを設定",
+      "skip": "スキップ",
+      "passwordSet": "パスワードを設定しました！"
     }
   },
   "empty": {
@@ -957,6 +965,13 @@
     "noPosts": "まだ記事がありません。またお越しください！",
     "backToBlog": "ブログに戻る",
     "translated": "翻訳済み"
+  },
+  "streaming": {
+    "goLive": "ライブ配信",
+    "goLiveDescription": "何をシェアしますか？",
+    "goLivePlaceholder": "スアンフォン湖の夕日...",
+    "goingLive": "配信を開始中...",
+    "goLiveError": "配信を開始できませんでした。もう一度お試しください。"
   },
   "install": {
     "banner": {

@@ -90,16 +90,18 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         }
       )
       .subscribe((status, err) => {
-        console.log('[notification-bell] Realtime subscription status:', status);
-        if (err) {
-          console.error('[notification-bell] Realtime subscription error:', err);
-        }
+        // Suppress expected mismatch errors - Supabase Realtime requires
+        // server-side configuration for filtered subscriptions. Polling fallback works fine.
+        const isMismatchError = err?.message?.includes('mismatch');
+
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.warn('[notification-bell] Realtime failed, falling back to polling');
-          // Fallback: poll every 30 seconds if realtime fails
+          // Silently fall back to polling when realtime isn't available
           pollInterval = setInterval(() => {
             fetchNotifications();
           }, 30000);
+        } else if (err && !isMismatchError) {
+          // Only log unexpected errors
+          console.error('[notification-bell] Realtime error:', err);
         }
       });
 

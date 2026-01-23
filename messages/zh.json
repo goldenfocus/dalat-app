@@ -91,6 +91,7 @@
     "checkEmailForConfirmation": "请查看邮箱中的确认链接",
     "accountCreatedCheckEmail": "账户已创建！请查看邮箱进行验证。",
     "signInOrCreateHint": "新用户？我们将自动为您创建账户。",
+    "signInWithPassword": "使用密码登录",
     "somethingWentWrong": "出了点问题。请重试。",
     "resetPassword": "重置密码",
     "resetPasswordDescription": "输入您的邮箱以接收密码重置链接",
@@ -589,6 +590,13 @@
       "invalidUsername": "用户名格式无效",
       "saving": "设置中...",
       "complete": "完成设置"
+    },
+    "passwordPrompt": {
+      "title": "设置备用密码？",
+      "description": "可选：设置密码以便快速邮箱登录。您也可以继续使用 Google 登录。",
+      "setPassword": "设置密码",
+      "skip": "暂时跳过",
+      "passwordSet": "密码设置成功！"
     }
   },
   "empty": {
@@ -957,6 +965,13 @@
     "noPosts": "暂无文章。敬请期待！",
     "backToBlog": "返回博客",
     "translated": "已翻译"
+  },
+  "streaming": {
+    "goLive": "开始直播",
+    "goLiveDescription": "你在分享什么？",
+    "goLivePlaceholder": "春香湖的日落...",
+    "goingLive": "正在开始直播...",
+    "goLiveError": "无法开始直播，请重试。"
   },
   "install": {
     "banner": {

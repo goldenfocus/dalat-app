@@ -106,6 +106,7 @@
     "passwordResetSuccess": "Mot de passe réinitialisé ! Vous pouvez maintenant vous connecter.",
     "accountCreatedCheckEmail": "Compte créé ! Vérifiez votre email pour confirmer.",
     "signInOrCreateHint": "Nouveau ? Nous créerons votre compte automatiquement.",
+    "signInWithPassword": "Se connecter avec mot de passe",
     "emailRequired": "Veuillez entrer votre email",
     "or": "ou",
     "continueWithEmail": "Continuer avec email",
@@ -616,6 +617,13 @@
       "invalidUsername": "Format de pseudo invalide",
       "saving": "Configuration...",
       "complete": "Terminer"
+    },
+    "passwordPrompt": {
+      "title": "Définir un mot de passe de secours ?",
+      "description": "Optionnel : Définissez un mot de passe pour une connexion rapide par email. Vous pouvez toujours utiliser Google.",
+      "setPassword": "Définir le mot de passe",
+      "skip": "Passer",
+      "passwordSet": "Mot de passe défini !"
     }
   },
   "empty": {
@@ -995,6 +1003,13 @@
     "eventCount": "{count, plural, one {# événement à venir} other {# événements à venir}}",
     "createEvent": "Créer un événement",
     "seeAll": "Voir tous les événements à venir"
+  },
+  "streaming": {
+    "goLive": "Passer en direct",
+    "goLiveDescription": "Que partagez-vous ?",
+    "goLivePlaceholder": "Coucher de soleil au lac Xuan Huong...",
+    "goingLive": "Passage en direct...",
+    "goLiveError": "Impossible de démarrer le stream. Veuillez réessayer."
   },
   "install": {
     "banner": {

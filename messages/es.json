@@ -91,6 +91,7 @@
     "checkEmailForConfirmation": "Revisa tu correo para el enlace de confirmación",
     "accountCreatedCheckEmail": "¡Cuenta creada! Revisa tu correo para confirmar.",
     "signInOrCreateHint": "¿Eres nuevo? Crearemos tu cuenta automáticamente.",
+    "signInWithPassword": "Iniciar sesión con contraseña",
     "somethingWentWrong": "Algo salió mal. Por favor intenta de nuevo.",
     "resetPassword": "Restablecer contraseña",
     "resetPasswordDescription": "Ingresa tu correo para recibir un enlace de restablecimiento",
@@ -589,6 +590,13 @@
       "invalidUsername": "Formato de usuario inválido",
       "saving": "Configurando...",
       "complete": "Completar"
+    },
+    "passwordPrompt": {
+      "title": "¿Establecer contraseña de respaldo?",
+      "description": "Opcional: Establece una contraseña para inicio rápido por email. También puedes usar Google.",
+      "setPassword": "Establecer contraseña",
+      "skip": "Omitir",
+      "passwordSet": "¡Contraseña establecida!"
     }
   },
   "empty": {
@@ -959,6 +967,13 @@
     "noPosts": "Aún no hay artículos. ¡Vuelve pronto!",
     "backToBlog": "Volver al Blog",
     "translated": "Traducido"
+  },
+  "streaming": {
+    "goLive": "Transmitir en vivo",
+    "goLiveDescription": "¿Qué estás compartiendo?",
+    "goLivePlaceholder": "Atardecer en el lago Xuan Huong...",
+    "goingLive": "Iniciando transmisión...",
+    "goLiveError": "No se pudo iniciar la transmisión. Inténtalo de nuevo."
   },
   "install": {
     "banner": {

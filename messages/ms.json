@@ -91,6 +91,7 @@
     "checkEmailForConfirmation": "Semak e-mel anda untuk pautan pengesahan",
     "accountCreatedCheckEmail": "Akaun dicipta! Semak e-mel anda untuk mengesahkan.",
     "signInOrCreateHint": "Baru di sini? Kami akan cipta akaun anda secara automatik.",
+    "signInWithPassword": "Log masuk dengan kata laluan",
     "somethingWentWrong": "Sesuatu tidak kena. Sila cuba lagi.",
     "resetPassword": "Set semula kata laluan",
     "resetPasswordDescription": "Masukkan e-mel anda untuk menerima pautan set semula kata laluan",
@@ -589,6 +590,13 @@
       "invalidUsername": "Format nama pengguna tidak sah",
       "saving": "Menyediakan...",
       "complete": "Selesai"
+    },
+    "passwordPrompt": {
+      "title": "Tetapkan kata laluan sandaran?",
+      "description": "Pilihan: Tetapkan kata laluan untuk log masuk pantas melalui e-mel. Anda masih boleh gunakan Google.",
+      "setPassword": "Tetapkan Kata Laluan",
+      "skip": "Langkau",
+      "passwordSet": "Kata laluan ditetapkan!"
     }
   },
   "empty": {
@@ -957,6 +965,13 @@
     "noPosts": "Belum ada artikel. Sila datang semula!",
     "backToBlog": "Kembali ke Blog",
     "translated": "Diterjemah"
+  },
+  "streaming": {
+    "goLive": "Mulakan Siaran",
+    "goLiveDescription": "Apa yang anda kongsi?",
+    "goLivePlaceholder": "Matahari terbenam di Tasik Xuan Huong...",
+    "goingLive": "Memulakan siaran...",
+    "goLiveError": "Tidak dapat memulakan siaran. Sila cuba lagi."
   },
   "install": {
     "banner": {

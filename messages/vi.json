@@ -106,6 +106,7 @@
     "passwordResetSuccess": "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.",
     "accountCreatedCheckEmail": "Đã tạo tài khoản! Kiểm tra email để xác nhận.",
     "signInOrCreateHint": "Mới đến? Chúng tôi sẽ tự động tạo tài khoản cho bạn.",
+    "signInWithPassword": "Đăng nhập bằng mật khẩu",
     "emailRequired": "Vui lòng nhập email của bạn",
     "or": "hoặc",
     "continueWithEmail": "Tiếp tục với email",
@@ -607,6 +608,13 @@
       "invalidUsername": "Định dạng tên người dùng không hợp lệ",
       "saving": "Đang thiết lập...",
       "complete": "Hoàn tất"
+    },
+    "passwordPrompt": {
+      "title": "Đặt mật khẩu dự phòng?",
+      "description": "Tùy chọn: Đặt mật khẩu để đăng nhập nhanh bằng email. Bạn vẫn có thể dùng Google.",
+      "setPassword": "Đặt mật khẩu",
+      "skip": "Bỏ qua",
+      "passwordSet": "Đã đặt mật khẩu!"
     }
   },
   "empty": {

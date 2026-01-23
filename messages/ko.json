@@ -91,6 +91,7 @@
     "checkEmailForConfirmation": "확인 링크가 포함된 이메일을 확인하세요",
     "accountCreatedCheckEmail": "계정이 생성되었습니다! 이메일을 확인하여 인증하세요.",
     "signInOrCreateHint": "처음이신가요? 자동으로 계정을 만들어 드립니다.",
+    "signInWithPassword": "비밀번호로 로그인",
     "somethingWentWrong": "문제가 발생했습니다. 다시 시도해 주세요.",
     "resetPassword": "비밀번호 재설정",
     "resetPasswordDescription": "비밀번호 재설정 링크를 받으려면 이메일을 입력하세요",
@@ -589,6 +590,13 @@
       "invalidUsername": "잘못된 사용자명 형식",
       "saving": "설정 중...",
       "complete": "설정 완료"
+    },
+    "passwordPrompt": {
+      "title": "백업 비밀번호 설정?",
+      "description": "선택 사항: 이메일 빠른 로그인용 비밀번호를 설정하세요. Google 로그인도 가능합니다.",
+      "setPassword": "비밀번호 설정",
+      "skip": "건너뛰기",
+      "passwordSet": "비밀번호가 설정되었습니다!"
     }
   },
   "empty": {
@@ -957,6 +965,13 @@
     "noPosts": "아직 게시물이 없습니다. 곧 다시 확인해 주세요!",
     "backToBlog": "블로그로 돌아가기",
     "translated": "번역됨"
+  },
+  "streaming": {
+    "goLive": "라이브 시작",
+    "goLiveDescription": "무엇을 공유하시나요?",
+    "goLivePlaceholder": "쑤안흐엉 호수의 일몰...",
+    "goingLive": "라이브 시작 중...",
+    "goLiveError": "스트림을 시작할 수 없습니다. 다시 시도해 주세요."
   },
   "install": {
     "banner": {

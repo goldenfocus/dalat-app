@@ -91,6 +91,7 @@
     "checkEmailForConfirmation": "Prüfe deine E-Mail für den Bestätigungslink",
     "accountCreatedCheckEmail": "Konto erstellt! Prüfe deine E-Mail zur Bestätigung.",
     "signInOrCreateHint": "Neu hier? Wir erstellen automatisch ein Konto für dich.",
+    "signInWithPassword": "Mit Passwort anmelden",
     "somethingWentWrong": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "resetPassword": "Passwort zurücksetzen",
     "resetPasswordDescription": "Gib deine E-Mail ein, um einen Link zum Zurücksetzen zu erhalten",
@@ -589,6 +590,13 @@
       "invalidUsername": "Ungültiges Benutzernamenformat",
       "saving": "Wird eingerichtet...",
       "complete": "Fertigstellen"
+    },
+    "passwordPrompt": {
+      "title": "Backup-Passwort festlegen?",
+      "description": "Optional: Lege ein Passwort für schnelle E-Mail-Anmeldung fest. Du kannst weiterhin Google verwenden.",
+      "setPassword": "Passwort festlegen",
+      "skip": "Überspringen",
+      "passwordSet": "Passwort festgelegt!"
     }
   },
   "empty": {
@@ -957,6 +965,13 @@
     "noPosts": "Noch keine Beiträge. Schauen Sie bald wieder vorbei!",
     "backToBlog": "Zurück zum Blog",
     "translated": "Übersetzt"
+  },
+  "streaming": {
+    "goLive": "Live gehen",
+    "goLiveDescription": "Was teilst du?",
+    "goLivePlaceholder": "Sonnenuntergang am Xuan Huong See...",
+    "goingLive": "Geht live...",
+    "goLiveError": "Stream konnte nicht gestartet werden. Bitte erneut versuchen."
   },
   "install": {
     "banner": {

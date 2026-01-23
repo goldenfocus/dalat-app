@@ -91,6 +91,7 @@
     "checkEmailForConfirmation": "Проверьте почту для подтверждения",
     "accountCreatedCheckEmail": "Аккаунт создан! Проверьте почту для подтверждения.",
     "signInOrCreateHint": "Впервые здесь? Мы автоматически создадим ваш аккаунт.",
+    "signInWithPassword": "Войти с паролем",
     "somethingWentWrong": "Что-то пошло не так. Попробуйте ещё раз.",
     "resetPassword": "Сбросить пароль",
     "resetPasswordDescription": "Введите email для получения ссылки сброса пароля",
@@ -589,6 +590,13 @@
       "invalidUsername": "Неверный формат имени пользователя",
       "saving": "Настройка...",
       "complete": "Завершить"
+    },
+    "passwordPrompt": {
+      "title": "Установить резервный пароль?",
+      "description": "Опционально: Установите пароль для быстрого входа по email. Вы всегда можете использовать Google.",
+      "setPassword": "Установить пароль",
+      "skip": "Пропустить",
+      "passwordSet": "Пароль установлен!"
     }
   },
   "empty": {
@@ -957,6 +965,13 @@
     "noPosts": "Пока нет статей. Загляните позже!",
     "backToBlog": "Вернуться в блог",
     "translated": "Переведено"
+  },
+  "streaming": {
+    "goLive": "Начать трансляцию",
+    "goLiveDescription": "Чем вы делитесь?",
+    "goLivePlaceholder": "Закат на озере Суан Хыонг...",
+    "goingLive": "Запуск трансляции...",
+    "goLiveError": "Не удалось начать трансляцию. Пожалуйста, попробуйте снова."
   },
   "install": {
     "banner": {

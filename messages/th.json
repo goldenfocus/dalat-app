@@ -91,6 +91,7 @@
     "checkEmailForConfirmation": "ตรวจสอบอีเมลของคุณเพื่อยืนยัน",
     "accountCreatedCheckEmail": "สร้างบัญชีแล้ว! ตรวจสอบอีเมลเพื่อยืนยัน",
     "signInOrCreateHint": "ใหม่ที่นี่? เราจะสร้างบัญชีให้คุณโดยอัตโนมัติ",
+    "signInWithPassword": "เข้าสู่ระบบด้วยรหัสผ่าน",
     "somethingWentWrong": "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
     "resetPassword": "รีเซ็ตรหัสผ่าน",
     "resetPasswordDescription": "ใส่อีเมลของคุณเพื่อรับลิงก์รีเซ็ตรหัสผ่าน",
@@ -589,6 +590,13 @@
       "invalidUsername": "รูปแบบชื่อผู้ใช้ไม่ถูกต้อง",
       "saving": "กำลังตั้งค่า...",
       "complete": "เสร็จสิ้น"
+    },
+    "passwordPrompt": {
+      "title": "ตั้งรหัสผ่านสำรอง?",
+      "description": "ตัวเลือก: ตั้งรหัสผ่านเพื่อเข้าสู่ระบบทางอีเมลได้เร็วขึ้น คุณยังสามารถใช้ Google ได้",
+      "setPassword": "ตั้งรหัสผ่าน",
+      "skip": "ข้าม",
+      "passwordSet": "ตั้งรหัสผ่านแล้ว!"
     }
   },
   "empty": {
@@ -957,6 +965,13 @@
     "noPosts": "ยังไม่มีบทความ กลับมาใหม่เร็วๆ นี้!",
     "backToBlog": "กลับไปยังบล็อก",
     "translated": "แปลแล้ว"
+  },
+  "streaming": {
+    "goLive": "ถ่ายทอดสด",
+    "goLiveDescription": "คุณกำลังแชร์อะไร?",
+    "goLivePlaceholder": "พระอาทิตย์ตกที่ทะเลสาบเซวียนเฮือง...",
+    "goingLive": "กำลังเริ่มถ่ายทอดสด...",
+    "goLiveError": "ไม่สามารถเริ่มสตรีมได้ กรุณาลองอีกครั้ง"
   },
   "install": {
     "banner": {
