@@ -30,8 +30,22 @@ Summarize today's development work for the team and community.
   "one_line_summary": "Fixed search, improved mobile nav, experimenting with dark mode",
   "experiments": ["Dark mode toggle (WIP)"],
   "has_breaking_changes": false,
-  "suggested_status": "draft"
+  "suggested_status": "draft",
+  "image_prompt": "Abstract visualization of search and navigation..."
 }
+
+## Image Prompt Guidelines
+Generate a unique, creative image_prompt that visually represents the day's work:
+- VARY the style each day: geometric, organic, landscape, abstract, symbolic
+- Draw from the primary area: Events (calendars, gathering), Moments (photos, memories), Auth (keys, locks), Performance (speed, lightning), etc.
+- Incorporate Đà Lạt vibes when fitting: misty mountains, pine forests, flowers, French architecture
+- Be creative and specific - avoid generic "tech" imagery
+- NO text in images, just visuals
+- Examples:
+  - Events: "Floating paper lanterns at dusk over misty valley, warm amber glow"
+  - Performance: "Abstract speed lines through a geometric tunnel, cool blue tones"
+  - Auth: "Golden key fragments assembling in mid-air, soft bokeh background"
+  - Moments: "Polaroid photos scattered like falling leaves in autumn light"
 
 ## Area Classification
 - Events: Event creation, editing, RSVPs, search
@@ -67,6 +81,7 @@ export interface DailySummaryOutput {
   experiments: string[];
   has_breaking_changes: boolean;
   suggested_status: "draft" | "experimental" | "published";
+  image_prompt: string;
 }
 
 export function buildDailySummaryPrompt(commits: Commit[], date: string): string {

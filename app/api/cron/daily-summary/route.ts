@@ -6,6 +6,7 @@ import {
   buildDailySummaryPrompt,
   type DailySummaryOutput,
 } from "@/lib/blog/daily-summary-prompt";
+import { generateCoverImage } from "@/lib/blog/cover-generator";
 
 // Lazy init - created on first request, not at build time
 function getSupabase() {
@@ -122,7 +123,7 @@ export async function GET(request: Request) {
     // 4. Check if a summary for today already exists
     const { data: existingPost } = await supabase
       .from("blog_posts")
-      .select("id")
+      .select("id, slug, cover_image_url")
       .eq("summary_date", today)
       .eq("source", "daily_summary")
       .single();
@@ -148,11 +149,38 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Failed to update summary" }, { status: 500 });
       }
 
+      // Generate cover image if missing
+      let coverImageUrl = existingPost.cover_image_url;
+      if (!coverImageUrl && summary.image_prompt) {
+        try {
+          console.log("[daily-summary] Generating missing cover image...");
+          const enhancedPrompt = `${summary.image_prompt}
+
+Style requirements:
+- NO text, NO lettering, NO words in the image
+- Landscape orientation (16:9)
+- High quality, professional look
+- Suitable as a blog post cover image`;
+
+          coverImageUrl = await generateCoverImage(existingPost.slug, enhancedPrompt);
+
+          await supabase
+            .from("blog_posts")
+            .update({ cover_image_url: coverImageUrl })
+            .eq("id", existingPost.id);
+
+          console.log("[daily-summary] Cover image generated:", coverImageUrl);
+        } catch (imageErr) {
+          console.error("[daily-summary] Cover image generation failed:", imageErr);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         updated: true,
         post_id: existingPost.id,
         has_narrative: summary.has_meaningful_narrative,
+        cover_image_url: coverImageUrl,
       });
     }
 
@@ -186,13 +214,42 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Failed to create summary" }, { status: 500 });
     }
 
-    console.log("[daily-summary] Created draft post:", post.id);
+    console.log("[daily-summary] Created post:", post.id);
+
+    // 6. Generate cover image (fire-and-forget, don't fail if this errors)
+    let coverImageUrl: string | null = null;
+    if (summary.image_prompt) {
+      try {
+        console.log("[daily-summary] Generating cover image...");
+        const enhancedPrompt = `${summary.image_prompt}
+
+Style requirements:
+- NO text, NO lettering, NO words in the image
+- Landscape orientation (16:9)
+- High quality, professional look
+- Suitable as a blog post cover image`;
+
+        coverImageUrl = await generateCoverImage(slug, enhancedPrompt);
+
+        // Update post with cover image
+        await supabase
+          .from("blog_posts")
+          .update({ cover_image_url: coverImageUrl })
+          .eq("id", post.id);
+
+        console.log("[daily-summary] Cover image generated:", coverImageUrl);
+      } catch (imageErr) {
+        console.error("[daily-summary] Cover image generation failed:", imageErr);
+        // Continue without cover image - not critical
+      }
+    }
 
     return NextResponse.json({
       success: true,
       post_id: post.id,
       has_narrative: summary.has_meaningful_narrative,
       areas_changed: summary.areas_changed,
+      cover_image_url: coverImageUrl,
     });
   } catch (err) {
     console.error("[daily-summary] Error:", err);
