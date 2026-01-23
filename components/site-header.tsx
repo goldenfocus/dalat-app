@@ -3,7 +3,6 @@ import { Calendar, MapPin, Plus, Film } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButton } from "@/components/auth-button";
 import { LocalePicker } from "@/components/locale-picker";
-import { GoLiveModal } from "@/components/streaming/GoLiveModal";
 import { getEffectiveUser } from "@/lib/god-mode";
 
 interface SiteHeaderProps {
@@ -54,11 +53,6 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
             >
               <Plus className="w-5 h-5" />
             </Link>
-          )}
-          {isAuthenticated && (
-            <div className="hidden sm:block">
-              <GoLiveModal />
-            </div>
           )}
           {actions}
           <Suspense>

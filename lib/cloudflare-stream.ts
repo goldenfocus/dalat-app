@@ -10,6 +10,7 @@
  * See: https://developers.cloudflare.com/stream/webrtc-beta/
  */
 
+import { createHmac, timingSafeEqual } from 'crypto';
 import type { CloudflareStreamInput } from '@/lib/types';
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';
@@ -43,10 +44,19 @@ interface LiveInputStatus {
  * Check if Cloudflare Stream is configured
  */
 export function isCloudflareStreamConfigured(): boolean {
-  return !!(
-    process.env.CLOUDFLARE_ACCOUNT_ID &&
-    process.env.CLOUDFLARE_STREAM_API_TOKEN
-  );
+  const hasAccountId = !!process.env.CLOUDFLARE_ACCOUNT_ID;
+  const hasApiToken = !!process.env.CLOUDFLARE_STREAM_API_TOKEN;
+  const isConfigured = hasAccountId && hasApiToken;
+
+  if (!isConfigured) {
+    console.error('[Cloudflare Stream] Missing environment variables:', {
+      CLOUDFLARE_ACCOUNT_ID: hasAccountId ? '✓ present' : '✗ MISSING',
+      CLOUDFLARE_STREAM_API_TOKEN: hasApiToken ? '✓ present' : '✗ MISSING',
+      NODE_ENV: process.env.NODE_ENV,
+    });
+  }
+
+  return isConfigured;
 }
 
 /**
@@ -218,8 +228,12 @@ export function verifyWebhookSignature(
   const webhookSecret = process.env.CLOUDFLARE_STREAM_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.warn('CLOUDFLARE_STREAM_WEBHOOK_SECRET not set, skipping signature verification');
-    return true; // Allow in development
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[Cloudflare Stream] CLOUDFLARE_STREAM_WEBHOOK_SECRET required in production');
+      return false;
+    }
+    console.warn('[Cloudflare Stream] Skipping signature verification (dev only)');
+    return true;
   }
 
   // Parse the signature header
@@ -247,15 +261,13 @@ export function verifyWebhookSignature(
   }
 
   // Compute expected signature
-  const crypto = require('crypto');
   const signedPayload = `${timestamp}.${payload}`;
-  const expectedSignature = crypto
-    .createHmac('sha256', webhookSecret)
+  const expectedSignature = createHmac('sha256', webhookSecret)
     .update(signedPayload)
     .digest('hex');
 
   // Constant-time comparison
-  return crypto.timingSafeEqual(
+  return timingSafeEqual(
     Buffer.from(sig1),
     Buffer.from(expectedSignature)
   );
