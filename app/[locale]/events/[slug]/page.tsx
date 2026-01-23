@@ -2,7 +2,6 @@ import { notFound, redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
@@ -553,26 +552,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     locale
   );
 
-  // Preload LCP image for faster rendering
-  const preloadImageUrl = event.image_url
-    ? optimizedImageUrl(event.image_url, imagePresets.eventHero)
-    : null;
-
   return (
     <main className="min-h-screen">
       {/* JSON-LD Structured Data for SEO/AEO */}
       <JsonLd data={[eventSchema, breadcrumbSchema]} />
-
-      {/* Preload LCP image - browser starts fetching before React hydration */}
-      {preloadImageUrl && (
-        <link
-          rel="preload"
-          as="image"
-          href={preloadImageUrl}
-          // @ts-expect-error - fetchpriority is valid HTML but not in React types yet
-          fetchpriority="high"
-        />
-      )}
 
       <Suspense fallback={null}>
         <ConfirmAttendanceHandler eventId={event.id} />
