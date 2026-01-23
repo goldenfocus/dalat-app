@@ -5,7 +5,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { EventMap } from "@/components/map/event-map";
-import type { Event } from "@/lib/types";
+import type { Event, VenueMapMarker } from "@/lib/types";
 import type { Metadata } from "next";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 
@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 interface MapData {
   events: Event[];
   happeningEventIds: string[];
+  venues: VenueMapMarker[];
 }
 
 async function getMapData(): Promise<MapData> {
@@ -42,7 +43,7 @@ async function getMapData(): Promise<MapData> {
 
   if (error) {
     console.error("Error fetching events for map:", error);
-    return { events: [], happeningEventIds: [] };
+    return { events: [], happeningEventIds: [], venues: [] };
   }
 
   // Also get happening events (currently live)
@@ -59,7 +60,21 @@ async function getMapData(): Promise<MapData> {
     ...(happeningEvents || []),
   ] as Event[];
 
-  return { events: allEvents, happeningEventIds };
+  // Fetch venues for map display
+  const { data: venues, error: venuesError } = await supabase.rpc("get_venues_for_map", {
+    p_types: null,
+    p_limit: 200,
+  });
+
+  if (venuesError) {
+    console.error("Error fetching venues for map:", venuesError);
+  }
+
+  return {
+    events: allEvents,
+    happeningEventIds,
+    venues: (venues || []) as VenueMapMarker[],
+  };
 }
 
 function MapLoading() {
@@ -71,8 +86,8 @@ function MapLoading() {
 }
 
 async function MapContent() {
-  const { events, happeningEventIds } = await getMapData();
-  return <EventMap events={events} happeningEventIds={happeningEventIds} />;
+  const { events, happeningEventIds, venues } = await getMapData();
+  return <EventMap events={events} happeningEventIds={happeningEventIds} venues={venues} />;
 }
 
 export default async function MapPage({ params }: PageProps) {

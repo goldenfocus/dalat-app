@@ -7,8 +7,11 @@ import { Loader2, Navigation, X, Route, ExternalLink, Eye } from "lucide-react";
 import { startOfDay, endOfDay, isAfter, parseISO } from "date-fns";
 import Supercluster from "supercluster";
 import { Link } from "@/lib/i18n/routing";
-import type { Event } from "@/lib/types";
+import type { Event, VenueMapMarker } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
+import { createVenueMarkerElement } from "./venue-marker";
+import { VenuePopupCard } from "./venue-popup-card";
+import { VENUE_MARKER_COLORS } from "@/lib/constants/venue-types";
 import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
 import { MapFilterBar, type DatePreset } from "./map-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
@@ -32,6 +35,7 @@ const DATE_PRESET_DAYS: Record<DatePreset, number | null> = {
 interface EventMapProps {
   events: Event[];
   happeningEventIds?: string[];
+  venues?: VenueMapMarker[];
 }
 
 // Create a marker element using safe DOM methods (no innerHTML with user data)
@@ -183,7 +187,7 @@ interface EventPointProperties {
   isHappening: boolean;
 }
 
-export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
+export function EventMap({ events, happeningEventIds = [], venues = [] }: EventMapProps) {
   const t = useTranslations("mapPage");
   // Convert to Set for O(1) lookup
   const happeningSet = useMemo(() => new Set(happeningEventIds), [happeningEventIds]);
@@ -192,6 +196,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedVenue, setSelectedVenue] = useState<VenueMapMarker | null>(null);
   const [selectedTags, setSelectedTags] = useState<EventTag[]>([]);
   const [datePreset, setDatePreset] = useState<DatePreset>("7days");
   const [customStartDate, setCustomStartDate] = useState<string>("");
@@ -199,6 +204,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
 
   const mapRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
+  const venueMarkersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const userMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
   const mapInitializedRef = useRef(false);
   const [currentZoom, setCurrentZoom] = useState(DEFAULT_ZOOM);
@@ -562,6 +568,67 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
     });
   }, [map, eventsWithLocation, eventsById, clusterIndex, currentZoom, selectedEvent?.id, resolvedTheme, happeningSet]);
 
+  // Create venue markers
+  useEffect(() => {
+    if (!map || typeof google === "undefined" || !google.maps?.marker) return;
+    if (!venues.length) return;
+
+    // Clear existing venue markers
+    venueMarkersRef.current.forEach(marker => marker.map = null);
+    venueMarkersRef.current = [];
+
+    const theme = resolvedTheme === "dark" ? "dark" : "light";
+
+    venues.forEach(venue => {
+      const markerElement = createVenueMarkerElement(
+        theme,
+        venue.upcoming_event_count,
+        venue.has_happening_now,
+        selectedVenue?.id === venue.id
+      );
+
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        map,
+        position: { lat: venue.latitude, lng: venue.longitude },
+        content: markerElement,
+        title: venue.name,
+      });
+
+      marker.addListener("click", () => {
+        triggerHaptic("selection");
+        setSelectedEvent(null); // Clear event selection
+        setSelectedVenue(venue);
+
+        // Update venue marker styles
+        venueMarkersRef.current.forEach(m => {
+          const el = m.content as HTMLElement;
+          if (el && el.getAttribute("data-venue-marker")) {
+            const isSelected = m === marker;
+            el.style.transform = isSelected ? "scale(1.15)" : "scale(1)";
+            const pill = el.querySelector("[data-marker-pill]") as HTMLElement;
+            if (pill) {
+              const markerIsHappening = el.getAttribute("data-happening") === "true";
+              const upcomingCount = parseInt(el.getAttribute("data-upcoming-count") || "0");
+              let bgColor: string;
+              if (markerIsHappening) {
+                bgColor = VENUE_MARKER_COLORS.happening[theme];
+              } else if (upcomingCount > 0) {
+                bgColor = VENUE_MARKER_COLORS.active[theme];
+              } else {
+                bgColor = VENUE_MARKER_COLORS.default[theme];
+              }
+              pill.style.background = bgColor;
+            }
+          }
+        });
+
+        map.panTo({ lat: venue.latitude, lng: venue.longitude });
+      });
+
+      venueMarkersRef.current.push(marker);
+    });
+  }, [map, venues, selectedVenue?.id, resolvedTheme]);
+
   // Handle "Near Me" button
   const handleNearMe = useCallback(() => {
     triggerHaptic("selection");
@@ -759,6 +826,14 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
               <X className="w-4 h-4" />
             </button>
           </div>
+        )}
+
+        {/* Selected venue card */}
+        {selectedVenue && !selectedEvent && (
+          <VenuePopupCard
+            venue={selectedVenue}
+            onClose={() => setSelectedVenue(null)}
+          />
         )}
 
         {/* Empty state */}
