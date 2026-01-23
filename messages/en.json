@@ -638,53 +638,6 @@
     },
     "eventsHosted": "{count} events"
   },
-  "venues": {
-    "title": "Venues",
-    "viewVenue": "View Venue",
-    "upcomingEvents": "Upcoming Events",
-    "pastEvents": "Past Events",
-    "noUpcomingEvents": "No upcoming events scheduled",
-    "eventsHere": "{count} events here",
-    "happeningNow": "Happening Now",
-    "about": "About",
-    "hours": "Hours",
-    "openNow": "Open Now",
-    "closedNow": "Closed",
-    "openUntil": "Open until {time}",
-    "opensAt": "Opens at {time}",
-    "getDirections": "Get Directions",
-    "claimVenue": "Claim this venue",
-    "claimDescription": "Are you the owner? Claim this page to manage it.",
-    "verified": "Verified",
-    "recentActivity": "{count} people visited events here recently",
-    "noVenuesFound": "No venues found",
-    "types": {
-      "cafe": "Cafe",
-      "bar": "Bar",
-      "restaurant": "Restaurant",
-      "gallery": "Gallery",
-      "park": "Park",
-      "hotel": "Hotel",
-      "coworking": "Coworking",
-      "community_center": "Community Center",
-      "outdoor": "Outdoor",
-      "homestay": "Homestay",
-      "other": "Other"
-    },
-    "amenities": {
-      "wifi": "WiFi",
-      "parking": "Parking",
-      "outdoorSeating": "Outdoor Seating",
-      "petFriendly": "Pet Friendly",
-      "wheelchair": "Wheelchair Accessible"
-    },
-    "priceRange": {
-      "$": "Budget-friendly",
-      "$$": "Moderate",
-      "$$$": "Upscale",
-      "$$$$": "Fine dining"
-    }
-  },
   "festival": {
     "title": "Festivals",
     "editFestival": "Edit Festival",
