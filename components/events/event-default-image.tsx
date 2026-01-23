@@ -1,4 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
+import { Expand } from "lucide-react";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 
 interface EventDefaultImageProps {
   title: string;
@@ -19,26 +24,50 @@ const BLUR_DATA_URL =
  * Uses the same aspect ratio constraints as EventMediaDisplay:
  * - Mobile: 3:4 aspect with max 60vh height
  * - Desktop: 16:9 aspect ratio
+ *
+ * Clickable to open lightbox, matching EventMediaDisplay behavior.
  */
 export function EventDefaultImage({
   title,
   className = "",
   priority = false
 }: EventDefaultImageProps) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
   return (
-    <div className={`relative w-full rounded-lg overflow-hidden aspect-[3/4] max-h-[60vh] md:aspect-video md:max-h-none ${className}`}>
-      <Image
+    <>
+      <button
+        type="button"
+        onClick={() => setLightboxOpen(true)}
+        className={`w-full rounded-lg overflow-hidden relative group cursor-pointer aspect-[3/4] max-h-[60vh] md:aspect-video md:max-h-none mx-auto ${className}`}
+        aria-label="View full image"
+      >
+        <Image
+          src={DEFAULT_IMAGE_URL}
+          alt={`${title} - ĐàLạt.app default event image`}
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority={priority}
+          fetchPriority={priority ? "high" : "auto"}
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
+          className="object-cover transition-transform group-hover:scale-[1.02]"
+        />
+        {/* Expand overlay on hover */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-3">
+            <Expand className="w-6 h-6 text-white" />
+          </div>
+        </div>
+      </button>
+
+      <ImageLightbox
         src={DEFAULT_IMAGE_URL}
         alt={`${title} - ĐàLạt.app default event image`}
-        fill
-        sizes="(max-width: 768px) 100vw, 50vw"
-        priority={priority}
-        fetchPriority={priority ? "high" : "auto"}
-        placeholder="blur"
-        blurDataURL={BLUR_DATA_URL}
-        className="object-cover"
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
       />
-    </div>
+    </>
   );
 }
 
