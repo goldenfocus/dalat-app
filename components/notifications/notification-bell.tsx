@@ -115,6 +115,15 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
   // Mark a single notification as read
   const handleMarkRead = async (notificationId: string) => {
+    // Optimistic update first - update UI immediately
+    setNotifications((prev) =>
+      prev.map((n) =>
+        n.id === notificationId ? { ...n, read: true, read_at: new Date().toISOString() } : n
+      )
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    // Then persist to database
     const { error } = await supabase
       .from('notifications')
       .update({ read: true, read_at: new Date().toISOString() })
@@ -122,16 +131,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
     if (error) {
       console.error('[notification-bell] Error marking read:', error.message);
-      return;
+      // Optionally: revert optimistic update on error
     }
-
-    // Optimistic update
-    setNotifications((prev) =>
-      prev.map((n) =>
-        n.id === notificationId ? { ...n, read: true, read_at: new Date().toISOString() } : n
-      )
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
   };
 
   // Mark all notifications as read

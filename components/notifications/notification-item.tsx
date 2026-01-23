@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 interface NotificationItemProps {
   notification: Notification;
-  onRead?: (id: string) => void;
+  onRead?: (id: string) => void | Promise<void>;
 }
 
 function getNotificationIcon(type: NotificationType) {
@@ -43,9 +43,10 @@ function getNotificationIcon(type: NotificationType) {
 export function NotificationItem({ notification, onRead }: NotificationItemProps) {
   const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    // Mark as read first and wait for it to complete before navigating
     if (!notification.read && onRead) {
-      onRead(notification.id);
+      await onRead(notification.id);
     }
 
     // Navigate to primary action URL if available
