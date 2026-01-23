@@ -33,6 +33,7 @@ import {
   needsConversion,
 } from "@/lib/media-utils";
 import { convertIfNeeded } from "@/lib/media-conversion";
+import { DisintegrationEffect } from "@/components/ui/disintegration-effect";
 
 interface EventMediaUploadProps {
   eventId: string;
@@ -193,6 +194,10 @@ export function EventMediaUpload({
   const [isRemoving, setIsRemoving] = useState(false);
   const [removePhrase, setRemovePhrase] = useState<{ title: string; description: string } | null>(null);
 
+  // Disintegration animation state
+  const [isDisintegrating, setIsDisintegrating] = useState(false);
+  const [disintegrateUrl, setDisintegrateUrl] = useState<string | null>(null);
+
   const uploadMedia = async (file: File) => {
     setError(null);
     setConvertStatus(null);
@@ -336,6 +341,29 @@ export function EventMediaUpload({
     e.preventDefault();
     setIsDragOver(false);
   }, []);
+
+  // Start disintegration animation (for images only)
+  const handleStartDisintegration = () => {
+    if (!previewUrl || previewIsVideo) {
+      // For videos, just remove directly
+      handleRemove();
+      return;
+    }
+
+    // Close dialog and start disintegration
+    setShowRemoveConfirm(false);
+    setDisintegrateUrl(previewUrl);
+    setIsDisintegrating(true);
+  };
+
+  // Called when disintegration animation completes
+  const handleDisintegrationComplete = async () => {
+    setIsDisintegrating(false);
+    setDisintegrateUrl(null);
+
+    // Now actually remove the file
+    await handleRemove();
+  };
 
   const handleRemove = async () => {
     if (!currentMediaUrl) return;
@@ -659,6 +687,15 @@ export function EventMediaUpload({
             )}
           </div>
         )}
+
+        {/* Disintegration effect overlay */}
+        {isDisintegrating && disintegrateUrl && (
+          <DisintegrationEffect
+            imageUrl={disintegrateUrl}
+            isActive={isDisintegrating}
+            onComplete={handleDisintegrationComplete}
+          />
+        )}
       </div>
 
       {/* Actions - conditionally show editors or buttons */}
@@ -904,7 +941,7 @@ export function EventMediaUpload({
           onKeyDown={(e) => {
             if (e.key === "Enter" && !isRemoving) {
               e.preventDefault();
-              handleRemove();
+              handleStartDisintegration();
             }
           }}
         >
@@ -951,7 +988,7 @@ export function EventMediaUpload({
             </Button>
             <Button
               variant="destructive"
-              onClick={handleRemove}
+              onClick={handleStartDisintegration}
               disabled={isRemoving}
               className="px-3 py-2"
             >
