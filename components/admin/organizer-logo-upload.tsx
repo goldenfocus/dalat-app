@@ -13,6 +13,8 @@ interface OrganizerLogoUploadProps {
   onLogoChange: (url: string | null) => void;
   size?: "sm" | "md" | "lg";
   aiLogoButton?: React.ReactNode;
+  /** Storage bucket name (default: "organizer-logos") */
+  bucket?: string;
 }
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
@@ -37,6 +39,7 @@ export function OrganizerLogoUpload({
   onLogoChange,
   size = "lg",
   aiLogoButton,
+  bucket = "organizer-logos",
 }: OrganizerLogoUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogoUrl);
 
@@ -85,15 +88,15 @@ export function OrganizerLogoUpload({
 
       // Delete old logo if exists
       if (currentLogoUrl) {
-        const oldPath = currentLogoUrl.split("/organizer-logos/")[1];
+        const oldPath = currentLogoUrl.split(`/${bucket}/`)[1];
         if (oldPath) {
-          await supabase.storage.from("organizer-logos").remove([oldPath]);
+          await supabase.storage.from(bucket).remove([oldPath]);
         }
       }
 
       // Upload
       const { error: uploadError } = await supabase.storage
-        .from("organizer-logos")
+        .from(bucket)
         .upload(fileName, file, {
           cacheControl: "3600",
           upsert: true,
@@ -103,7 +106,7 @@ export function OrganizerLogoUpload({
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from("organizer-logos").getPublicUrl(fileName);
+      } = supabase.storage.from(bucket).getPublicUrl(fileName);
 
       onLogoChange(publicUrl);
     } catch (err) {
@@ -135,7 +138,7 @@ export function OrganizerLogoUpload({
         uploadLogo(file);
       }
     },
-    [organizerId, currentLogoUrl]
+    [organizerId, currentLogoUrl, bucket]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -158,9 +161,9 @@ export function OrganizerLogoUpload({
       const supabase = createClient();
 
       // Extract path from URL
-      const oldPath = currentLogoUrl.split("/organizer-logos/")[1];
+      const oldPath = currentLogoUrl.split(`/${bucket}/`)[1];
       if (oldPath) {
-        await supabase.storage.from("organizer-logos").remove([oldPath]);
+        await supabase.storage.from(bucket).remove([oldPath]);
       }
 
       setPreviewUrl(null);

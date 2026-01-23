@@ -50,6 +50,29 @@ Important:
 - NO text or company name
 - Abstract/symbolic representation
 - Suitable for small display sizes`,
+
+  "venue-logo": (name: string) => `Create a minimal, modern logo design for "${name || "a venue"}".
+
+Style: Clean, geometric, hospitality brand identity
+Colors: Warm, inviting palette that works on light and dark backgrounds
+Important:
+- Square format (1:1 aspect ratio)
+- Simple, recognizable shape suggesting hospitality/gathering
+- NO text or venue name
+- Abstract/symbolic representation
+- Suitable for small display sizes`,
+
+  "venue-cover": (name: string) => `Create an atmospheric cover image for "${name || "a venue"}".
+
+Style: Modern interior/exterior photography aesthetic, warm and inviting
+Setting: A beautiful venue space - could be cafe, restaurant, bar, or event space
+Mood: Welcoming, sophisticated, cozy yet professional
+Elements: Soft lighting, ambient atmosphere, hint of Vietnamese highland charm
+Important:
+- Do NOT include any text or lettering
+- Landscape orientation (2:1 aspect ratio)
+- Focus on atmosphere and ambiance, not specific people
+- Professional and polished feel`,
 } as const;
 
 export type ImageContext = keyof typeof PROMPT_TEMPLATES;
@@ -60,6 +83,8 @@ export const STORAGE_BUCKETS: Record<ImageContext, string> = {
   "blog-cover": "blog-media",
   avatar: "avatars",
   "organizer-logo": "organizer-logos",
+  "venue-logo": "venue-media",
+  "venue-cover": "venue-media",
 };
 
 // Storage folder prefixes
@@ -68,6 +93,8 @@ export const STORAGE_FOLDERS: Record<ImageContext, string> = {
   "blog-cover": "covers",
   avatar: "",
   "organizer-logo": "",
+  "venue-logo": "logos",
+  "venue-cover": "covers",
 };
 
 interface GenerateOptions {

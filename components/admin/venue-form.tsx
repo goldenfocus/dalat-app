@@ -2,12 +2,17 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
+import { OrganizerLogoUpload } from "@/components/admin/organizer-logo-upload";
+import { AIOrganizerLogoDialog } from "@/components/admin/ai-organizer-logo-dialog";
+import { EventMediaUpload } from "@/components/events/event-media-upload";
+import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
 import { VENUE_TYPES, VENUE_TYPE_CONFIG } from "@/lib/constants/venue-types";
 import { triggerTranslation } from "@/lib/translations-client";
 import type { Venue, VenueType, OperatingHours } from "@/lib/types";
@@ -65,9 +70,11 @@ export function VenueForm({ venue }: VenueFormProps) {
     venue?.cover_photo_url ?? null
   );
 
-  // Location
-  const [latitude, setLatitude] = useState(venue?.latitude?.toString() ?? "");
-  const [longitude, setLongitude] = useState(venue?.longitude?.toString() ?? "");
+  // Location (managed by PlaceAutocomplete)
+  const [latitude, setLatitude] = useState<number | null>(venue?.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(venue?.longitude ?? null);
+  const [address, setAddress] = useState(venue?.address ?? "");
+  const [googleMapsUrl, setGoogleMapsUrl] = useState(venue?.google_maps_url ?? "");
 
   // Operating hours
   const [operatingHours, setOperatingHours] = useState<OperatingHours>(
@@ -158,8 +165,6 @@ export function VenueForm({ venue }: VenueFormProps) {
 
     const formData = new FormData(e.currentTarget);
     const description = formData.get("description") as string;
-    const address = formData.get("address") as string;
-    const googleMapsUrl = formData.get("google_maps_url") as string;
     const websiteUrl = formData.get("website_url") as string;
     const facebookUrl = formData.get("facebook_url") as string;
     const instagramUrl = formData.get("instagram_url") as string;
@@ -190,16 +195,8 @@ export function VenueForm({ venue }: VenueFormProps) {
       return;
     }
 
-    if (!latitude || !longitude) {
-      setError("Location coordinates are required");
-      return;
-    }
-
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      setError("Invalid coordinates");
+    if (latitude === null || longitude === null) {
+      setError("Location is required - search for the venue location above");
       return;
     }
 
@@ -216,8 +213,8 @@ export function VenueForm({ venue }: VenueFormProps) {
         slug: cleanSlug,
         description: description || null,
         venue_type: venueType,
-        latitude: lat,
-        longitude: lng,
+        latitude,
+        longitude,
         address: address || null,
         google_maps_url: googleMapsUrl || null,
         logo_url: logoUrl,
@@ -300,27 +297,38 @@ export function VenueForm({ venue }: VenueFormProps) {
           <CardContent className="p-6 space-y-6">
             <h2 className="font-semibold">Basic Information</h2>
 
-            {/* Logo URL */}
+            {/* Logo */}
             <div className="space-y-2">
-              <Label htmlFor="logo_url">Logo URL</Label>
-              <Input
-                id="logo_url"
-                type="url"
-                placeholder="https://..."
-                value={logoUrl ?? ""}
-                onChange={(e) => setLogoUrl(e.target.value || null)}
+              <Label>Logo</Label>
+              <OrganizerLogoUpload
+                organizerId={venue?.id}
+                organizerName={name}
+                bucket="venue-media"
+                currentLogoUrl={logoUrl}
+                onLogoChange={setLogoUrl}
+                aiLogoButton={
+                  <AIOrganizerLogoDialog
+                    organizerId={venue?.id}
+                    organizerName={name || "venue"}
+                    currentLogoUrl={logoUrl}
+                    onLogoGenerated={setLogoUrl}
+                    context="venue-logo"
+                  />
+                }
               />
             </div>
 
-            {/* Cover Photo URL */}
+            {/* Cover Photo */}
             <div className="space-y-2">
-              <Label htmlFor="cover_photo_url">Cover Photo URL</Label>
-              <Input
-                id="cover_photo_url"
-                type="url"
-                placeholder="https://..."
-                value={coverPhotoUrl ?? ""}
-                onChange={(e) => setCoverPhotoUrl(e.target.value || null)}
+              <Label>Cover Photo</Label>
+              <EventMediaUpload
+                eventId={venue?.id || `temp-${Date.now()}`}
+                eventTitle={name}
+                bucket="venue-media"
+                currentMediaUrl={coverPhotoUrl}
+                onMediaChange={(url) => setCoverPhotoUrl(url)}
+                autoSave={false}
+                aiContext="venue-cover"
               />
             </div>
 
@@ -439,109 +447,97 @@ export function VenueForm({ venue }: VenueFormProps) {
         {/* Location */}
         <Card>
           <CardContent className="p-6 space-y-6">
-            <h2 className="font-semibold">Location</h2>
+            <h2 className="font-semibold">Location *</h2>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="latitude">Latitude *</Label>
-                <Input
-                  id="latitude"
-                  type="number"
-                  step="any"
-                  placeholder="11.9404"
-                  value={latitude}
-                  onChange={(e) => setLatitude(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="longitude">Longitude *</Label>
-                <Input
-                  id="longitude"
-                  type="number"
-                  step="any"
-                  placeholder="108.4583"
-                  value={longitude}
-                  onChange={(e) => setLongitude(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
+            <PlaceAutocomplete
+              onPlaceSelect={(place) => {
+                if (place) {
+                  setLatitude(place.latitude);
+                  setLongitude(place.longitude);
+                  setAddress(place.address);
+                  setGoogleMapsUrl(place.googleMapsUrl);
+                } else {
+                  setLatitude(null);
+                  setLongitude(null);
+                  setAddress("");
+                  setGoogleMapsUrl("");
+                }
+              }}
+              defaultValue={
+                venue
+                  ? {
+                      placeId: "",
+                      name: venue.name,
+                      address: venue.address || "",
+                      googleMapsUrl: venue.google_maps_url || "",
+                      latitude: venue.latitude,
+                      longitude: venue.longitude,
+                    }
+                  : null
+              }
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                name="address"
-                placeholder="123 Phan Đình Phùng, Ward 2"
-                defaultValue={venue?.address ?? ""}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="google_maps_url">Google Maps URL</Label>
-              <Input
-                id="google_maps_url"
-                name="google_maps_url"
-                type="url"
-                placeholder="https://maps.google.com/..."
-                defaultValue={venue?.google_maps_url ?? ""}
-              />
-            </div>
+            {latitude !== null && longitude !== null && (
+              <p className="text-xs text-muted-foreground">
+                Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+              </p>
+            )}
           </CardContent>
         </Card>
 
-        {/* Operating Hours */}
-        <Card>
-          <CardContent className="p-6 space-y-6">
-            <h2 className="font-semibold">Operating Hours</h2>
+        {/* Operating Hours - Collapsible */}
+        <details className="group border rounded-xl overflow-hidden">
+          <summary className="flex items-center justify-between px-5 py-4 bg-muted/50 hover:bg-muted transition-colors cursor-pointer list-none active:scale-[0.99] [&::-webkit-details-marker]:hidden">
+            <span className="font-semibold">Operating Hours</span>
+            <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="p-6 space-y-3">
+            {DAYS.map((day) => {
+              const hours = operatingHours[day];
+              const isClosed = hours === "closed";
 
-            <div className="space-y-3">
-              {DAYS.map((day) => {
-                const hours = operatingHours[day];
-                const isClosed = hours === "closed";
-
-                return (
-                  <div key={day} className="flex items-center gap-4">
-                    <span className="w-24 capitalize text-sm">{day}</span>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={isClosed}
-                        onChange={(e) => updateDayHours(day, "closed", e.target.checked)}
-                        className="h-4 w-4 rounded border-input"
+              return (
+                <div key={day} className="flex items-center gap-4">
+                  <span className="w-24 capitalize text-sm">{day}</span>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={isClosed}
+                      onChange={(e) => updateDayHours(day, "closed", e.target.checked)}
+                      className="h-4 w-4 rounded border-input"
+                    />
+                    <span className="text-sm text-muted-foreground">Closed</span>
+                  </label>
+                  {!isClosed && typeof hours === "object" && (
+                    <>
+                      <Input
+                        type="time"
+                        value={hours.open}
+                        onChange={(e) => updateDayHours(day, "open", e.target.value)}
+                        className="w-32"
                       />
-                      <span className="text-sm text-muted-foreground">Closed</span>
-                    </label>
-                    {!isClosed && typeof hours === "object" && (
-                      <>
-                        <Input
-                          type="time"
-                          value={hours.open}
-                          onChange={(e) => updateDayHours(day, "open", e.target.value)}
-                          className="w-32"
-                        />
-                        <span className="text-muted-foreground">to</span>
-                        <Input
-                          type="time"
-                          value={hours.close}
-                          onChange={(e) => updateDayHours(day, "close", e.target.value)}
-                          className="w-32"
-                        />
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                      <span className="text-muted-foreground">to</span>
+                      <Input
+                        type="time"
+                        value={hours.close}
+                        onChange={(e) => updateDayHours(day, "close", e.target.value)}
+                        className="w-32"
+                      />
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </details>
 
-        {/* Amenities */}
-        <Card>
-          <CardContent className="p-6 space-y-6">
-            <h2 className="font-semibold">Amenities</h2>
-
+        {/* Amenities - Collapsible */}
+        <details className="group border rounded-xl overflow-hidden">
+          <summary className="flex items-center justify-between px-5 py-4 bg-muted/50 hover:bg-muted transition-colors cursor-pointer list-none active:scale-[0.99] [&::-webkit-details-marker]:hidden">
+            <span className="font-semibold">Amenities</span>
+            <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="p-6">
             <div className="grid gap-4 sm:grid-cols-2">
               {[
                 { id: "has_wifi", label: "WiFi available" },
@@ -564,14 +560,16 @@ export function VenueForm({ venue }: VenueFormProps) {
                 </label>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </details>
 
-        {/* Contact & Links */}
-        <Card>
-          <CardContent className="p-6 space-y-6">
-            <h2 className="font-semibold">Contact & Links</h2>
-
+        {/* Contact & Links - Collapsible */}
+        <details className="group border rounded-xl overflow-hidden">
+          <summary className="flex items-center justify-between px-5 py-4 bg-muted/50 hover:bg-muted transition-colors cursor-pointer list-none active:scale-[0.99] [&::-webkit-details-marker]:hidden">
+            <span className="font-semibold">Contact & Links</span>
+            <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="p-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
@@ -634,8 +632,8 @@ export function VenueForm({ venue }: VenueFormProps) {
                 />
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </details>
 
         {/* Submit */}
         <Card>

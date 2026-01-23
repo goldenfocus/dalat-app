@@ -19,6 +19,8 @@ interface AIOrganizerLogoDialogProps {
   currentLogoUrl?: string | null;
   onLogoGenerated: (url: string) => void;
   disabled?: boolean;
+  /** AI context for image generation (default: "organizer-logo") */
+  context?: "organizer-logo" | "venue-logo";
 }
 
 type DialogMode = "preview" | "generating";
@@ -36,6 +38,7 @@ export function AIOrganizerLogoDialog({
   currentLogoUrl,
   onLogoGenerated,
   disabled,
+  context = "organizer-logo",
 }: AIOrganizerLogoDialogProps) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>("generating");
@@ -64,7 +67,7 @@ export function AIOrganizerLogoDialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          context: "organizer-logo",
+          context,
           title: organizerName,
           entityId: organizerId,
         }),
@@ -111,7 +114,7 @@ export function AIOrganizerLogoDialog({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          context: "organizer-logo",
+          context,
           entityId: organizerId,
           existingImageUrl: imageToRefine,
           refinementPrompt: prompt,

@@ -31,8 +31,12 @@ interface EventMediaUploadProps {
   eventTitle?: string;
   currentMediaUrl: string | null;
   onMediaChange: (url: string | null) => void;
-  /** Auto-save image_url to database on upload/generate (default: true) */
+  /** Auto-save image_url to database on upload/generate (default: true for events) */
   autoSave?: boolean;
+  /** Storage bucket name (default: "event-media"). When not "event-media", uses direct Supabase upload. */
+  bucket?: string;
+  /** AI context for image generation (default: "event-cover") */
+  aiContext?: "event-cover" | "venue-cover";
 }
 
 // Style presets for AI image generation
@@ -117,6 +121,8 @@ export function EventMediaUpload({
   currentMediaUrl,
   onMediaChange,
   autoSave = true,
+  bucket = "event-media",
+  aiContext = "event-cover",
 }: EventMediaUploadProps) {
   const t = useTranslations("flyerBuilder");
 
@@ -221,34 +227,59 @@ export function EventMediaUpload({
     setIsUploading(true);
 
     try {
-      // Use server-side upload API to bypass RLS issues
-      const formData = new FormData();
-      formData.append("file", fileToUpload);
-      formData.append("eventId", eventId);
+      let finalUrl: string;
 
-      const response = await fetch("/api/upload/event-media", {
-        method: "POST",
-        body: formData,
-      });
+      if (bucket === "event-media") {
+        // Use server-side upload API for events (bypasses RLS issues)
+        const formData = new FormData();
+        formData.append("file", fileToUpload);
+        formData.append("eventId", eventId);
 
-      const data = await response.json();
+        const response = await fetch("/api/upload/event-media", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (!response.ok) {
-        const message = data.error || "Upload failed";
-        if (message.includes("authorized") || message.includes("permission")) {
-          setError("Permission denied. You may not have rights to edit this event.");
-        } else {
-          setError(`Failed to upload: ${message}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          const message = data.error || "Upload failed";
+          if (message.includes("authorized") || message.includes("permission")) {
+            setError("Permission denied. You may not have rights to edit this event.");
+          } else {
+            setError(`Failed to upload: ${message}`);
+          }
+          setPreviewUrl(currentMediaUrl);
+          setPreviewIsVideo(isVideoUrl(currentMediaUrl));
+          return;
         }
-        setPreviewUrl(currentMediaUrl);
-        setPreviewIsVideo(isVideoUrl(currentMediaUrl));
-        return;
+
+        finalUrl = data.url;
+      } else {
+        // Direct Supabase upload for other buckets (venues, etc.)
+        const supabase = createClient();
+        const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
+        const fileName = `${eventId}/${Date.now()}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(fileName, fileToUpload, {
+            cacheControl: "3600",
+            upsert: true,
+          });
+
+        if (uploadError) {
+          throw new Error(uploadError.message);
+        }
+
+        const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName);
+        finalUrl = publicUrl;
       }
 
       // Update preview to permanent URL before revoking blob
-      setPreviewUrl(data.url);
-      setPreviewIsVideo(isVideoUrl(data.url));
-      await handleMediaUpdate(data.url);
+      setPreviewUrl(finalUrl);
+      setPreviewIsVideo(isVideoUrl(finalUrl));
+      await handleMediaUpdate(finalUrl);
     } catch (err: unknown) {
       console.error("Upload error:", err);
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -280,7 +311,7 @@ export function EventMediaUpload({
         uploadMedia(file);
       }
     },
-    [eventId, currentMediaUrl]
+    [eventId, currentMediaUrl, bucket]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -303,9 +334,9 @@ export function EventMediaUpload({
       const supabase = createClient();
 
       // Extract path from URL
-      const oldPath = currentMediaUrl.split("/event-media/")[1];
+      const oldPath = currentMediaUrl.split(`/${bucket}/`)[1];
       if (oldPath) {
-        await supabase.storage.from("event-media").remove([oldPath]);
+        await supabase.storage.from(bucket).remove([oldPath]);
       }
 
       setPreviewUrl(null);
@@ -374,7 +405,7 @@ export function EventMediaUpload({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          context: "event-cover",
+          context: aiContext,
           title: eventTitle?.trim() || "",
           customPrompt: prompt.trim(),
           entityId: eventId,
@@ -475,7 +506,7 @@ export function EventMediaUpload({
       const imageData = await fetchImageAsBase64(previewUrl);
 
       const requestBody: Record<string, string | undefined> = {
-        context: "event-cover",
+        context: aiContext,
         entityId: eventId,
         refinementPrompt: refinementPrompt.trim(),
       };
