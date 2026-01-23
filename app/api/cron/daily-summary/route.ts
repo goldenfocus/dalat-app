@@ -39,9 +39,19 @@ export async function GET(request: Request) {
 
     // Try both names - Vercel might have issues with GITHUB_TOKEN
     const githubToken = process.env.DALAT_GITHUB_TOKEN || process.env.GITHUB_TOKEN;
+
+    // Debug: log what env vars exist (not values)
+    const envKeys = Object.keys(process.env).filter(k => k.includes('GITHUB') || k.includes('DALAT') || k.includes('CRON'));
+    console.log("[daily-summary] Available env vars:", envKeys);
+    console.log("[daily-summary] DALAT_GITHUB_TOKEN exists:", !!process.env.DALAT_GITHUB_TOKEN);
+    console.log("[daily-summary] GITHUB_TOKEN exists:", !!process.env.GITHUB_TOKEN);
+
     if (!githubToken) {
       console.error("[daily-summary] GITHUB_TOKEN not configured");
-      return NextResponse.json({ error: "GitHub token not configured" }, { status: 500 });
+      return NextResponse.json({
+        error: "GitHub token not configured",
+        debug: { envKeys, hasDalat: !!process.env.DALAT_GITHUB_TOKEN, hasGithub: !!process.env.GITHUB_TOKEN }
+      }, { status: 500 });
     }
 
     // Get repo info from env or default
