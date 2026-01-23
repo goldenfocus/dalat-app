@@ -71,6 +71,13 @@ Push notifications are enabled by default for logged-in users. The system uses:
 
 Users can manage notifications in Settings.
 
+## Claude Code Notes
+
+**Supabase CLI Access:** The Supabase CLI is logged in and linked to this project. You can run migrations and database commands directly:
+- `npx supabase db push` - Push pending migrations
+- `npx supabase migration list` - List migration status
+- For direct SQL, use the Management API (token is in macOS Keychain under "Supabase CLI")
+
 ## Tech Stack
 
 - Next.js 14+ (App Router)
