@@ -665,6 +665,7 @@
     "sendInvites": "Envoyer {count} invitation(s)",
     "sentSuccess": "{count} invitation(s) envoyée(s) avec succès !",
     "copied": "Copié !",
+    "share": "Partager",
     "copyLink": "Copier le lien",
     "invitedBy": "{name} vous invite à",
     "eventCancelled": "Événement annulé",

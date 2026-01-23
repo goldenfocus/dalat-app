@@ -638,6 +638,7 @@
     "sendInvites": "{count}件の招待を送信",
     "sentSuccess": "{count}件の招待が正常に送信されました！",
     "copied": "コピーしました！",
+    "share": "共有",
     "copyLink": "リンクをコピー",
     "invitedBy": "{name}さんからの招待",
     "eventCancelled": "イベントがキャンセルされました",

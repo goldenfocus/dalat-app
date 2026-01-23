@@ -656,6 +656,7 @@
     "sendInvites": "Gửi {count} lời mời",
     "sentSuccess": "Đã gửi thành công {count} lời mời!",
     "copied": "Đã sao chép!",
+    "share": "Chia sẻ",
     "copyLink": "Sao chép link",
     "invitedBy": "{name} mời bạn tham gia",
     "eventCancelled": "Sự kiện đã hủy",

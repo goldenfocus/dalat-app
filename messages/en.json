@@ -755,6 +755,7 @@
     "sendInvites": "Send {count} invite(s)",
     "sentSuccess": "{count} invite(s) sent successfully!",
     "copied": "Copied!",
+    "share": "Share",
     "copyLink": "Copy link",
     "invitedBy": "{name} invited you to",
     "eventCancelled": "Event Cancelled",

@@ -638,6 +638,7 @@
     "sendInvites": "{count} Einladung(en) senden",
     "sentSuccess": "{count} Einladung(en) erfolgreich gesendet!",
     "copied": "Kopiert!",
+    "share": "Teilen",
     "copyLink": "Link kopieren",
     "invitedBy": "{name} lädt dich ein zu",
     "eventCancelled": "Event abgesagt",

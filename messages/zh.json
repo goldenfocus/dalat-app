@@ -638,6 +638,7 @@
     "sendInvites": "发送 {count} 个邀请",
     "sentSuccess": "成功发送 {count} 个邀请！",
     "copied": "已复制！",
+    "share": "分享",
     "copyLink": "复制链接",
     "invitedBy": "{name} 邀请您参加",
     "eventCancelled": "活动已取消",

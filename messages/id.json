@@ -638,6 +638,7 @@
     "sendInvites": "Kirim {count} undangan",
     "sentSuccess": "{count} undangan berhasil dikirim!",
     "copied": "Disalin!",
+    "share": "Bagikan",
     "copyLink": "Salin tautan",
     "invitedBy": "{name} mengundang Anda ke",
     "eventCancelled": "Acara Dibatalkan",
