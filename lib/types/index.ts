@@ -27,8 +27,8 @@ export const LOCALE_FLAGS: Record<ContentLocale, string> = {
 
 export const LOCALE_NAMES: Record<ContentLocale, string> = {
   en: 'English', vi: 'Tiếng Việt', ko: '한국어', zh: '中文',
-  ru: 'Русский', fr: 'Français', ja: '日本語', ms: 'Bahasa Melayu',
-  th: 'ไทย', de: 'Deutsch', es: 'Español', id: 'Indonesia'
+  ru: 'Русский', fr: 'Français', ja: '日本語', ms: 'Melayu',
+  th: 'ไทย', de: 'Deutsch', es: 'Español', id: 'Indonesian'
 };
 
 // Translation types
