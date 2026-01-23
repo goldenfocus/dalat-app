@@ -37,7 +37,8 @@ export async function GET(request: Request) {
 
     console.log(`[daily-summary] Fetching commits since ${since}`);
 
-    const githubToken = process.env.GITHUB_TOKEN;
+    // Try both names - Vercel might have issues with GITHUB_TOKEN
+    const githubToken = process.env.DALAT_GITHUB_TOKEN || process.env.GITHUB_TOKEN;
     if (!githubToken) {
       console.error("[daily-summary] GITHUB_TOKEN not configured");
       return NextResponse.json({ error: "GitHub token not configured" }, { status: 500 });
