@@ -87,9 +87,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Use absolute URL with locale for proper link previews on messaging apps
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}`;
 
-  // Explicit OG image URL for WhatsApp compatibility
-  // Use the /og-image route which has explicit cache headers for fast responses
-  const ogImageUrl = `https://dalat.app/${locale}/events/${slug}/og-image`;
+  // For OG image: use the event's actual image if available (instant, already on CDN)
+  // Only fall back to generated og-image route for events without images
+  const ogImageUrl = event.image_url
+    ? event.image_url
+    : `https://dalat.app/${locale}/events/${slug}/og-image`;
 
   return {
     title: `${title} | ĐàLạt.app`,
@@ -103,9 +105,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: [
         {
           url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          type: "image/png",
+          // Only specify dimensions for generated images
+          ...(event.image_url ? {} : { width: 1200, height: 630, type: "image/png" }),
         },
       ],
     },
