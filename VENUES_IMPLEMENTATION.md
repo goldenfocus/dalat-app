@@ -27,7 +27,7 @@ Update this as you complete phases:
 
 - [x] Phase 0: Data Migration Strategy
 - [x] Phase 1: Database & Types
-- [ ] Phase 2: Venues Discovery Page (`/venues`)
+- [x] Phase 2: Venues Discovery Page (`/venues`)
 - [ ] Phase 3: Map Integration
 - [ ] Phase 4: Venue Profile Page (`/venues/[slug]`)
 - [ ] Phase 5: Admin Venue Management
