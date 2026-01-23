@@ -33,7 +33,7 @@ export const LOCALE_NAMES: Record<ContentLocale, string> = {
 
 // Translation types
 export type TranslationStatus = 'auto' | 'reviewed' | 'edited';
-export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog' | 'venue';
+export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog' | 'venue' | 'comment';
 export type TranslationFieldName = 'title' | 'description' | 'text_content' | 'bio' | 'story_content' | 'technical_content' | 'meta_description';
 
 export interface ContentTranslation {
@@ -977,6 +977,66 @@ export interface CloudflareStreamInput {
   } | null;
   created: string;
   modified: string;
+}
+
+// ============================================
+// Comment Types
+// ============================================
+
+export type CommentTargetType = 'event' | 'moment';
+
+export interface Comment {
+  id: string;
+  target_type: CommentTargetType;
+  target_id: string;
+  parent_id: string | null;
+  user_id: string;
+  content: string;
+  is_deleted: boolean;
+  deleted_at: string | null;
+  deleted_by: string | null;
+  is_edited: boolean;
+  edited_at: string | null;
+  source_locale: string | null;
+  reply_count: number;
+  is_hidden: boolean;
+  moderation_note: string | null;
+  moderated_by: string | null;
+  moderated_at: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined data
+  profiles?: Profile;
+}
+
+export interface CommentWithProfile {
+  id: string;
+  parent_id: string | null;
+  user_id: string;
+  content: string;
+  is_deleted: boolean;
+  is_edited: boolean;
+  edited_at: string | null;
+  reply_count: number;
+  source_locale: string | null;
+  created_at: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+
+export interface CommentCounts {
+  target_type: CommentTargetType;
+  target_id: string;
+  total_count: number;
+  top_level_count: number;
+}
+
+export interface MutedThread {
+  id: string;
+  user_id: string;
+  thread_id: string;
+  muted_at: string;
 }
 
 // ============================================
