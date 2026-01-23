@@ -1018,6 +1018,7 @@
     "loadingMap": "地図を読み込み中...",
     "noEventsWithLocation": "位置情報のあるイベントがありません",
     "noEventsInCategory": "このカテゴリに位置情報のあるイベントがありません",
+    "noCategoriesInDateRange": "この期間にはカテゴリがありません",
     "geolocationNotSupported": "お使いのブラウザは位置情報に対応していません",
     "locationPermissionError": "位置情報を取得できませんでした。ブラウザの権限を確認してください。",
     "directions": "経路",

@@ -1020,6 +1020,7 @@
     "loadingMap": "Cargando mapa...",
     "noEventsWithLocation": "No hay eventos con ubicación",
     "noEventsInCategory": "No hay eventos con ubicación en esta categoría",
+    "noCategoriesInDateRange": "No hay categorías disponibles en este rango de fechas",
     "geolocationNotSupported": "Tu navegador no soporta geolocalización",
     "locationPermissionError": "No se pudo obtener tu ubicación. Verifica los permisos del navegador.",
     "directions": "Cómo llegar",

@@ -70,8 +70,9 @@ interface MapFilterBarProps {
   customEndDate: string;
   onCustomStartDateChange: (date: string) => void;
   onCustomEndDateChange: (date: string) => void;
-  selectedTag: EventTag | null;
-  onTagChange: (tag: EventTag | null) => void;
+  selectedTags: EventTag[];
+  onTagsChange: (tags: EventTag[]) => void;
+  categoryCounts: Record<EventTag, number>;
   eventCount: number;
 }
 
@@ -82,22 +83,29 @@ export function MapFilterBar({
   customEndDate,
   onCustomStartDateChange,
   onCustomEndDateChange,
-  selectedTag,
-  onTagChange,
+  selectedTags,
+  onTagsChange,
+  categoryCounts,
   eventCount,
 }: MapFilterBarProps) {
   const t = useTranslations("mapPage");
   const tCat = useTranslations("categories");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+  const [showCategoryDrawer, setShowCategoryDrawer] = useState(false);
+
+  // Filter to only show categories with events
+  const availableCategories = useMemo(() => {
+    return FEATURED_TAGS.filter(({ tag }) => (categoryCounts[tag] || 0) > 0);
+  }, [categoryCounts]);
 
   // Count active filters
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (datePreset !== "7days") count++;
-    if (selectedTag) count++;
+    if (selectedTags.length > 0) count += selectedTags.length;
     return count;
-  }, [datePreset, selectedTag]);
+  }, [datePreset, selectedTags]);
 
   // Get current date preset label
   const currentDateLabel = useMemo(() => {
@@ -123,19 +131,29 @@ export function MapFilterBar({
     }
   }, [customStartDate, customEndDate, onDatePresetChange]);
 
-  const handleTagSelect = useCallback(
+  // Toggle tag in multi-select array
+  const handleTagToggle = useCallback(
     (tag: EventTag) => {
       triggerHaptic("selection");
-      onTagChange(selectedTag === tag ? null : tag);
+      if (selectedTags.includes(tag)) {
+        onTagsChange(selectedTags.filter((t) => t !== tag));
+      } else {
+        onTagsChange([...selectedTags, tag]);
+      }
     },
-    [selectedTag, onTagChange]
+    [selectedTags, onTagsChange]
   );
 
   const handleClearFilters = useCallback(() => {
     triggerHaptic("selection");
     onDatePresetChange("7days");
-    onTagChange(null);
-  }, [onDatePresetChange, onTagChange]);
+    onTagsChange([]);
+  }, [onDatePresetChange, onTagsChange]);
+
+  const handleClearCategories = useCallback(() => {
+    triggerHaptic("selection");
+    onTagsChange([]);
+  }, [onTagsChange]);
 
   return (
     <div className="bg-background border-b">
@@ -187,9 +205,11 @@ export function MapFilterBar({
           onCustomStartDateChange={onCustomStartDateChange}
           onCustomEndDateChange={onCustomEndDateChange}
           onApplyCustomDates={handleApplyCustomDates}
-          selectedTag={selectedTag}
-          onTagChange={handleTagSelect}
+          selectedTags={selectedTags}
+          onTagToggle={handleTagToggle}
           onClearFilters={handleClearFilters}
+          availableCategories={availableCategories}
+          categoryCounts={categoryCounts}
           activeFilterCount={activeFilterCount}
         />
       </div>
@@ -264,73 +284,38 @@ export function MapFilterBar({
             </PopoverContent>
           </Popover>
 
-          {/* Category dropdown */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all hover:border-foreground/30",
-                  selectedTag
-                    ? "bg-primary/5 border-primary/30 text-foreground"
-                    : "border-border text-muted-foreground"
-                )}
-              >
-                {selectedTag ? (
-                  <>
-                    {(() => {
-                      const tagConfig = FEATURED_TAGS.find((t) => t.tag === selectedTag);
-                      const Icon = tagConfig?.icon || Tent;
-                      return <Icon className="w-4 h-4" />;
-                    })()}
-                    <span>{tCat(selectedTag)}</span>
-                  </>
-                ) : (
-                  <>
-                    <Tent className="w-4 h-4" />
-                    <span>{tCat("all")}</span>
-                  </>
-                )}
-                <ChevronDown className="w-4 h-4 opacity-50" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-3" align="start">
-              <div className="grid grid-cols-2 gap-1.5">
-                {/* All categories option */}
-                <button
-                  onClick={() => {
-                    triggerHaptic("selection");
-                    onTagChange(null);
-                  }}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors",
-                    !selectedTag
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-muted text-muted-foreground"
-                  )}
-                >
-                  <Check className={cn("w-4 h-4", !selectedTag ? "opacity-100" : "opacity-0")} />
-                  <span>{tCat("all")}</span>
-                </button>
+          {/* Category drawer trigger */}
+          <button
+            onClick={() => {
+              triggerHaptic("selection");
+              setShowCategoryDrawer(true);
+            }}
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all hover:border-foreground/30",
+              selectedTags.length > 0
+                ? "bg-primary/5 border-primary/30 text-foreground"
+                : "border-border text-muted-foreground"
+            )}
+          >
+            <Tent className="w-4 h-4" />
+            <span>
+              {selectedTags.length > 0
+                ? `${t("category")} (${selectedTags.length})`
+                : tCat("all")}
+            </span>
+            <ChevronDown className="w-4 h-4 opacity-50" />
+          </button>
 
-                {/* Category options */}
-                {FEATURED_TAGS.map(({ tag, icon: Icon }) => (
-                  <button
-                    key={tag}
-                    onClick={() => handleTagSelect(tag)}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors",
-                      selectedTag === tag
-                        ? "bg-primary/10 text-primary"
-                        : "hover:bg-muted text-muted-foreground"
-                    )}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span className="truncate">{tCat(tag)}</span>
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+          {/* Desktop Category Drawer */}
+          <CategoryDrawer
+            open={showCategoryDrawer}
+            onOpenChange={setShowCategoryDrawer}
+            selectedTags={selectedTags}
+            onTagToggle={handleTagToggle}
+            onClearCategories={handleClearCategories}
+            availableCategories={availableCategories}
+            categoryCounts={categoryCounts}
+          />
 
           {/* Clear filters */}
           {activeFilterCount > 0 && (
@@ -364,9 +349,11 @@ interface MobileFilterSheetProps {
   onCustomStartDateChange: (date: string) => void;
   onCustomEndDateChange: (date: string) => void;
   onApplyCustomDates: () => void;
-  selectedTag: EventTag | null;
-  onTagChange: (tag: EventTag) => void;
+  selectedTags: EventTag[];
+  onTagToggle: (tag: EventTag) => void;
   onClearFilters: () => void;
+  availableCategories: { tag: EventTag; icon: LucideIcon }[];
+  categoryCounts: Record<EventTag, number>;
   activeFilterCount: number;
 }
 
@@ -380,9 +367,11 @@ function MobileFilterSheet({
   onCustomStartDateChange,
   onCustomEndDateChange,
   onApplyCustomDates,
-  selectedTag,
-  onTagChange,
+  selectedTags,
+  onTagToggle,
   onClearFilters,
+  availableCategories,
+  categoryCounts,
   activeFilterCount,
 }: MobileFilterSheetProps) {
   const t = useTranslations("mapPage");
@@ -478,31 +467,171 @@ function MobileFilterSheet({
 
             {/* Category Section */}
             <div className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground">{t("category")}</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {FEATURED_TAGS.map(({ tag, icon: Icon }) => (
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">{t("category")}</h3>
+                {selectedTags.length > 0 && (
                   <button
-                    key={tag}
-                    onClick={() => onTagChange(tag)}
-                    className={cn(
-                      "flex flex-col items-center gap-2 p-3 rounded-xl transition-all active:scale-95",
-                      selectedTag === tag
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted hover:bg-muted/80"
-                    )}
+                    onClick={() => {
+                      triggerHaptic("selection");
+                      selectedTags.forEach((tag) => onTagToggle(tag));
+                    }}
+                    className="text-xs text-muted-foreground hover:text-foreground"
                   >
-                    <Icon className="w-5 h-5" />
-                    <span className="text-xs font-medium truncate w-full text-center">
-                      {tCat(tag)}
-                    </span>
+                    {tCat("clear")} ({selectedTags.length})
                   </button>
-                ))}
+                )}
               </div>
+              {availableCategories.length > 0 ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {availableCategories.map(({ tag, icon: Icon }) => {
+                    const isSelected = selectedTags.includes(tag);
+                    const count = categoryCounts[tag] || 0;
+                    return (
+                      <button
+                        key={tag}
+                        onClick={() => onTagToggle(tag)}
+                        className={cn(
+                          "relative flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all active:scale-95",
+                          isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted hover:bg-muted/80"
+                        )}
+                      >
+                        {isSelected && (
+                          <div className="absolute top-1.5 right-1.5">
+                            <Check className="w-3.5 h-3.5" />
+                          </div>
+                        )}
+                        <Icon className="w-5 h-5" />
+                        <span className="text-xs font-medium truncate w-full text-center">
+                          {tCat(tag)}
+                        </span>
+                        <span className={cn(
+                          "text-[10px]",
+                          isSelected ? "text-primary-foreground/70" : "text-muted-foreground"
+                        )}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t("noCategoriesInDateRange")}
+                </p>
+              )}
             </div>
           </div>
 
           {/* Done button */}
           <div className="p-4 border-t bg-background">
+            <button
+              onClick={() => onOpenChange(false)}
+              className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium active:scale-[0.98] transition-transform"
+            >
+              Done
+            </button>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    </Dialog>
+  );
+}
+
+// Desktop Category Drawer (slides from left)
+interface CategoryDrawerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedTags: EventTag[];
+  onTagToggle: (tag: EventTag) => void;
+  onClearCategories: () => void;
+  availableCategories: { tag: EventTag; icon: LucideIcon }[];
+  categoryCounts: Record<EventTag, number>;
+}
+
+function CategoryDrawer({
+  open,
+  onOpenChange,
+  selectedTags,
+  onTagToggle,
+  onClearCategories,
+  availableCategories,
+  categoryCounts,
+}: CategoryDrawerProps) {
+  const t = useTranslations("mapPage");
+  const tCat = useTranslations("categories");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogPortal>
+        <DialogOverlay className="bg-black/40" />
+        <DialogPrimitive.Content
+          className="fixed left-0 top-0 bottom-0 z-50 w-80 bg-background shadow-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left duration-300"
+          aria-describedby={undefined}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-4 border-b">
+            <DialogPrimitive.Title className="text-lg font-semibold">
+              {t("category")}
+            </DialogPrimitive.Title>
+            <div className="flex items-center gap-2">
+              {selectedTags.length > 0 && (
+                <button
+                  onClick={onClearCategories}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+                >
+                  {tCat("clear")} ({selectedTags.length})
+                </button>
+              )}
+              <DialogPrimitive.Close className="p-2 -m-2 rounded-full hover:bg-muted transition-colors">
+                <X className="w-5 h-5" />
+              </DialogPrimitive.Close>
+            </div>
+          </div>
+
+          {/* Category list */}
+          <div className="p-4 overflow-y-auto max-h-[calc(100vh-140px)]">
+            {availableCategories.length > 0 ? (
+              <div className="space-y-2">
+                {availableCategories.map(({ tag, icon: Icon }) => {
+                  const isSelected = selectedTags.includes(tag);
+                  const count = categoryCounts[tag] || 0;
+                  return (
+                    <button
+                      key={tag}
+                      onClick={() => onTagToggle(tag)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all active:scale-[0.98]",
+                        isSelected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted hover:bg-muted/80"
+                      )}
+                    >
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <span className="flex-1 text-left font-medium">
+                        {tCat(tag)}
+                      </span>
+                      <span className={cn(
+                        "text-sm",
+                        isSelected ? "text-primary-foreground/70" : "text-muted-foreground"
+                      )}>
+                        {count}
+                      </span>
+                      {isSelected && <Check className="w-5 h-5 flex-shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                {t("noCategoriesInDateRange")}
+              </p>
+            )}
+          </div>
+
+          {/* Done button */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-background">
             <button
               onClick={() => onOpenChange(false)}
               className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium active:scale-[0.98] transition-transform"

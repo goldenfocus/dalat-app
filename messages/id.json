@@ -1018,6 +1018,7 @@
     "loadingMap": "Memuat peta...",
     "noEventsWithLocation": "Tidak ada acara dengan lokasi",
     "noEventsInCategory": "Tidak ada acara dengan lokasi di kategori ini",
+    "noCategoriesInDateRange": "Tidak ada kategori dalam rentang tanggal ini",
     "geolocationNotSupported": "Browser Anda tidak mendukung geolokasi",
     "locationPermissionError": "Tidak dapat mendapatkan lokasi Anda. Silakan periksa izin browser.",
     "directions": "Petunjuk",

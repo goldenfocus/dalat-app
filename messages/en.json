@@ -1170,6 +1170,7 @@
     "loadingMap": "Loading map...",
     "noEventsWithLocation": "No events with locations to display",
     "noEventsInCategory": "No events with locations in this category",
+    "noCategoriesInDateRange": "No categories available in this date range",
     "geolocationNotSupported": "Geolocation is not supported by your browser",
     "locationPermissionError": "Unable to get your location. Please check your browser permissions.",
     "directions": "Directions",

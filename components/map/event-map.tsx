@@ -192,7 +192,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [selectedTag, setSelectedTag] = useState<EventTag | null>(null);
+  const [selectedTags, setSelectedTags] = useState<EventTag[]>([]);
   const [datePreset, setDatePreset] = useState<DatePreset>("7days");
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
@@ -225,25 +225,43 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
     return { start: now, end };
   }, [datePreset, customStartDate, customEndDate]);
 
-  // Filter events by date range and tag
-  const filteredEvents = useMemo(() => {
-    let result = events;
+  // Events filtered by date only (used for category counts)
+  const dateFilteredEvents = useMemo(() => {
+    if (!dateRange) return events;
+    return events.filter(event => {
+      const eventDate = new Date(event.starts_at);
+      return eventDate >= dateRange.start && eventDate <= dateRange.end;
+    });
+  }, [events, dateRange]);
 
-    // Filter by date range
-    if (dateRange) {
-      result = result.filter(event => {
-        const eventDate = new Date(event.starts_at);
-        return eventDate >= dateRange.start && eventDate <= dateRange.end;
+  // Compute category counts from date-filtered events (with location)
+  const categoryCounts = useMemo(() => {
+    const eventsWithLoc = dateFilteredEvents.filter(e => e.latitude && e.longitude);
+    const counts: Partial<Record<EventTag, number>> = {};
+
+    // Count events per tag
+    eventsWithLoc.forEach(event => {
+      event.ai_tags?.forEach(tag => {
+        counts[tag as EventTag] = (counts[tag as EventTag] || 0) + 1;
       });
-    }
+    });
 
-    // Filter by tag
-    if (selectedTag) {
-      result = result.filter(event => event.ai_tags?.includes(selectedTag));
+    return counts as Record<EventTag, number>;
+  }, [dateFilteredEvents]);
+
+  // Filter events by date range and tags (multi-select OR logic)
+  const filteredEvents = useMemo(() => {
+    let result = dateFilteredEvents;
+
+    // Filter by tags (OR logic - match ANY selected tag)
+    if (selectedTags.length > 0) {
+      result = result.filter(event =>
+        selectedTags.some(tag => event.ai_tags?.includes(tag))
+      );
     }
 
     return result;
-  }, [events, dateRange, selectedTag]);
+  }, [dateFilteredEvents, selectedTags]);
 
   // Events with location data
   const eventsWithLocation = filteredEvents.filter(
@@ -619,11 +637,12 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
         customEndDate={customEndDate}
         onCustomStartDateChange={setCustomStartDate}
         onCustomEndDateChange={setCustomEndDate}
-        selectedTag={selectedTag}
-        onTagChange={(tag) => {
-          setSelectedTag(tag);
+        selectedTags={selectedTags}
+        onTagsChange={(tags) => {
+          setSelectedTags(tags);
           setSelectedEvent(null);
         }}
+        categoryCounts={categoryCounts}
         eventCount={eventsWithLocation.length}
       />
 
@@ -747,7 +766,7 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
           <div className="absolute inset-0 flex items-center justify-center bg-background/80">
             <div className="text-center p-4">
               <p className="text-muted-foreground mb-2">
-                {selectedTag
+                {selectedTags.length > 0
                   ? t("noEventsInCategory")
                   : t("noEventsWithLocation")}
               </p>

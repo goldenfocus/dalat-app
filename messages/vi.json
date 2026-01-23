@@ -1062,6 +1062,7 @@
     "loadingMap": "Đang tải bản đồ...",
     "noEventsWithLocation": "Không có sự kiện nào có vị trí",
     "noEventsInCategory": "Không có sự kiện nào trong danh mục này",
+    "noCategoriesInDateRange": "Không có danh mục nào trong khoảng thời gian này",
     "geolocationNotSupported": "Trình duyệt của bạn không hỗ trợ định vị",
     "locationPermissionError": "Không thể lấy vị trí của bạn. Vui lòng kiểm tra quyền truy cập.",
     "directions": "Chỉ đường",

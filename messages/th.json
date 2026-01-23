@@ -1018,6 +1018,7 @@
     "loadingMap": "กำลังโหลดแผนที่...",
     "noEventsWithLocation": "ไม่มีกิจกรรมที่มีตำแหน่ง",
     "noEventsInCategory": "ไม่มีกิจกรรมที่มีตำแหน่งในหมวดหมู่นี้",
+    "noCategoriesInDateRange": "ไม่มีหมวดหมู่ในช่วงวันที่นี้",
     "geolocationNotSupported": "เบราว์เซอร์ของคุณไม่รองรับตำแหน่งที่ตั้ง",
     "locationPermissionError": "ไม่สามารถรับตำแหน่งของคุณได้ กรุณาตรวจสอบสิทธิ์เบราว์เซอร์",
     "directions": "เส้นทาง",

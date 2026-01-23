@@ -1018,6 +1018,7 @@
     "loadingMap": "Загрузка карты...",
     "noEventsWithLocation": "Нет событий с местоположением",
     "noEventsInCategory": "Нет событий с местоположением в этой категории",
+    "noCategoriesInDateRange": "Нет категорий в этом диапазоне дат",
     "geolocationNotSupported": "Ваш браузер не поддерживает геолокацию",
     "locationPermissionError": "Не удалось получить ваше местоположение. Проверьте разрешения браузера.",
     "directions": "Маршрут",

@@ -1018,6 +1018,7 @@
     "loadingMap": "지도 로딩 중...",
     "noEventsWithLocation": "위치가 있는 이벤트가 없습니다",
     "noEventsInCategory": "이 카테고리에 위치가 있는 이벤트가 없습니다",
+    "noCategoriesInDateRange": "이 기간에 사용 가능한 카테고리가 없습니다",
     "geolocationNotSupported": "브라우저가 위치 서비스를 지원하지 않습니다",
     "locationPermissionError": "위치를 가져올 수 없습니다. 브라우저 권한을 확인하세요.",
     "directions": "길찾기",

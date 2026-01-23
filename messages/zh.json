@@ -1018,6 +1018,7 @@
     "loadingMap": "加载地图中...",
     "noEventsWithLocation": "没有带位置的活动",
     "noEventsInCategory": "该类别中没有带位置的活动",
+    "noCategoriesInDateRange": "此日期范围内没有类别",
     "geolocationNotSupported": "您的浏览器不支持定位",
     "locationPermissionError": "无法获取您的位置，请检查浏览器权限。",
     "directions": "路线",

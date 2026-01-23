@@ -1056,6 +1056,7 @@
     "loadingMap": "Chargement de la carte...",
     "noEventsWithLocation": "Aucun événement avec localisation",
     "noEventsInCategory": "Aucun événement avec localisation dans cette catégorie",
+    "noCategoriesInDateRange": "Aucune catégorie disponible dans cette période",
     "geolocationNotSupported": "La géolocalisation n'est pas supportée",
     "locationPermissionError": "Impossible d'obtenir votre position. Vérifiez les permissions.",
     "directions": "Itinéraire",

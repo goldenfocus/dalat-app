@@ -1018,6 +1018,7 @@
     "loadingMap": "Karte wird geladen...",
     "noEventsWithLocation": "Keine Veranstaltungen mit Standort",
     "noEventsInCategory": "Keine Veranstaltungen mit Standort in dieser Kategorie",
+    "noCategoriesInDateRange": "Keine Kategorien in diesem Zeitraum verfügbar",
     "geolocationNotSupported": "Ihr Browser unterstützt keine Standortbestimmung",
     "locationPermissionError": "Standort konnte nicht ermittelt werden. Bitte prüfen Sie die Browserberechtigungen.",
     "directions": "Route",
