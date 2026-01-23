@@ -4,6 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { AuthButton } from "@/components/auth-button";
 import { SettingsTabs } from "@/components/settings/settings-tabs";
 
+// Force dynamic rendering to ensure correct locale translations
+export const dynamic = "force-dynamic";
+
 export default async function SettingsLayout({
   children,
 }: {

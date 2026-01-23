@@ -5,6 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { VerificationRequestForm } from "@/components/settings/verification-request-form";
 import type { VerificationRequest } from "@/lib/types";
 
+// Force dynamic rendering to ensure correct locale translations
+export const dynamic = "force-dynamic";
+
 async function getExistingRequest(userId: string) {
   const supabase = await createClient();
 

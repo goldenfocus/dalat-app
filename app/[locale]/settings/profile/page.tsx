@@ -3,6 +3,9 @@ import { getEffectiveUser } from "@/lib/god-mode";
 import { ProfileEditForm } from "@/components/profile/profile-edit-form";
 import type { Profile } from "@/lib/types";
 
+// Force dynamic rendering to ensure correct locale translations
+export const dynamic = "force-dynamic";
+
 export default async function ProfileSettingsPage() {
   const { user, profile } = await getEffectiveUser();
 

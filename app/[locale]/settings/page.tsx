@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getEffectiveUser } from "@/lib/god-mode";
 
+// Force dynamic rendering to ensure correct locale translations
+export const dynamic = "force-dynamic";
+
 // Increase serverless function timeout
 export const maxDuration = 60;
 import { ThemeSelector } from "@/components/settings/theme-selector";
