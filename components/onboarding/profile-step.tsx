@@ -19,6 +19,7 @@ interface ProfileStepProps {
   avatarUrl: string | null;
   onBack: () => void;
   redirectTo?: string;
+  hasEmailAuth?: boolean; // If true, user signed up with email/password and already has a password
 }
 
 export function ProfileStep({
@@ -27,6 +28,7 @@ export function ProfileStep({
   avatarUrl,
   onBack,
   redirectTo = "/",
+  hasEmailAuth = false,
 }: ProfileStepProps) {
   const router = useRouter();
   const t = useTranslations("onboarding");
@@ -139,8 +141,14 @@ export function ProfileStep({
         return;
       }
 
-      // Show password prompt dialog before redirecting
-      setShowPasswordPrompt(true);
+      // For email auth users, they already have a password - redirect directly
+      // For OAuth users (Google), offer to set a backup password
+      if (hasEmailAuth) {
+        router.push(redirectTo);
+        router.refresh();
+      } else {
+        setShowPasswordPrompt(true);
+      }
     });
   }
 

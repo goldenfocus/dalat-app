@@ -15,6 +15,7 @@ interface OnboardingFlowProps {
   defaultDisplayName?: string;
   oauthAvatarUrl?: string | null;
   redirectTo?: string;
+  authProvider?: string; // "email" | "google" - determines if user already has password
 }
 
 export function OnboardingFlow({
@@ -22,6 +23,7 @@ export function OnboardingFlow({
   defaultDisplayName,
   oauthAvatarUrl,
   redirectTo = "/",
+  authProvider = "email",
 }: OnboardingFlowProps) {
   const t = useTranslations("onboarding");
   const tSettings = useTranslations("settings");
@@ -113,6 +115,7 @@ export function OnboardingFlow({
               avatarUrl={selectedAvatarUrl}
               onBack={handleBackToAvatar}
               redirectTo={redirectTo}
+              hasEmailAuth={authProvider === "email"}
             />
           )}
         </CardContent>

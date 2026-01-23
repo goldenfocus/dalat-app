@@ -37,6 +37,10 @@ export default async function OnboardingPage() {
     user.user_metadata?.picture ||
     null;
 
+  // Get auth provider to determine if user already has a password
+  // "email" means they signed up with email/password, "google" means OAuth
+  const authProvider = (user.app_metadata?.provider as string) || "email";
+
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
@@ -44,6 +48,7 @@ export default async function OnboardingPage() {
           userId={user.id}
           defaultDisplayName={defaultDisplayName}
           oauthAvatarUrl={oauthAvatarUrl}
+          authProvider={authProvider}
         />
       </div>
     </main>
