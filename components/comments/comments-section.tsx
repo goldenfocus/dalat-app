@@ -237,20 +237,11 @@ export function CommentsSection({
         </h2>
       </div>
 
-      {/* Comment form at top for logged in users */}
-      {currentUserId && (
+      {/* Comment form at top for new comments (not replies) */}
+      {currentUserId && !replyingTo && (
         <div className="mb-6">
           <CommentForm
             onSubmit={handleSubmit}
-            replyingTo={
-              replyingTo
-                ? {
-                    id: replyingTo.id,
-                    name: replyingTo.display_name || replyingTo.username || "Anonymous",
-                  }
-                : undefined
-            }
-            onCancelReply={() => setReplyingTo(null)}
             disabled={submitting}
             aiContext={`a comment on ${targetType === "event" ? "an event" : "a moment"}`}
           />
@@ -263,10 +254,14 @@ export function CommentsSection({
         loading={loading}
         currentUserId={currentUserId}
         isContentOwner={isContentOwner}
+        replyingToId={replyingTo?.id}
+        isSubmittingReply={submitting}
         onReply={(comment) => {
           triggerHaptic("selection");
           setReplyingTo(comment);
         }}
+        onSubmitReply={handleSubmit}
+        onCancelReply={() => setReplyingTo(null)}
         onDelete={handleDelete}
         onMuteThread={handleMuteThread}
         onLoadReplies={handleLoadReplies}
