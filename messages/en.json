@@ -1141,6 +1141,21 @@
       }
     }
   },
+  "categories": {
+    "all": "All categories",
+    "clear": "Clear",
+    "music": "Music",
+    "food": "Food",
+    "coffee": "Coffee",
+    "yoga": "Yoga",
+    "art": "Art",
+    "workshop": "Workshop",
+    "meetup": "Meetup",
+    "party": "Party",
+    "hiking": "Hiking",
+    "wellness": "Wellness",
+    "festival": "Festival"
+  },
   "mapPage": {
     "title": "Event Map",
     "dateRange": "Date Range",

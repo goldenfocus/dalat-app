@@ -989,6 +989,21 @@
       }
     }
   },
+  "categories": {
+    "all": "모든 카테고리",
+    "clear": "지우기",
+    "music": "음악",
+    "food": "음식",
+    "coffee": "커피",
+    "yoga": "요가",
+    "art": "예술",
+    "workshop": "워크숍",
+    "meetup": "모임",
+    "party": "파티",
+    "hiking": "하이킹",
+    "wellness": "웰니스",
+    "festival": "축제"
+  },
   "mapPage": {
     "title": "이벤트 지도",
     "dateRange": "날짜 범위",

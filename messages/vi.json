@@ -1033,6 +1033,21 @@
       }
     }
   },
+  "categories": {
+    "all": "Tất cả danh mục",
+    "clear": "Xóa",
+    "music": "Âm nhạc",
+    "food": "Ẩm thực",
+    "coffee": "Cà phê",
+    "yoga": "Yoga",
+    "art": "Nghệ thuật",
+    "workshop": "Hội thảo",
+    "meetup": "Gặp gỡ",
+    "party": "Tiệc",
+    "hiking": "Leo núi",
+    "wellness": "Sức khỏe",
+    "festival": "Lễ hội"
+  },
   "mapPage": {
     "title": "Bản đồ Sự kiện",
     "dateRange": "Khoảng thời gian",

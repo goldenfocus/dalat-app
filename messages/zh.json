@@ -989,6 +989,21 @@
       }
     }
   },
+  "categories": {
+    "all": "所有类别",
+    "clear": "清除",
+    "music": "音乐",
+    "food": "美食",
+    "coffee": "咖啡",
+    "yoga": "瑜伽",
+    "art": "艺术",
+    "workshop": "工作坊",
+    "meetup": "聚会",
+    "party": "派对",
+    "hiking": "远足",
+    "wellness": "健康",
+    "festival": "节日"
+  },
   "mapPage": {
     "title": "活动地图",
     "dateRange": "日期范围",

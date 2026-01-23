@@ -1027,6 +1027,21 @@
       }
     }
   },
+  "categories": {
+    "all": "Toutes les catégories",
+    "clear": "Effacer",
+    "music": "Musique",
+    "food": "Gastronomie",
+    "coffee": "Café",
+    "yoga": "Yoga",
+    "art": "Art",
+    "workshop": "Atelier",
+    "meetup": "Rencontre",
+    "party": "Fête",
+    "hiking": "Randonnée",
+    "wellness": "Bien-être",
+    "festival": "Festival"
+  },
   "mapPage": {
     "title": "Carte des événements",
     "dateRange": "Période",

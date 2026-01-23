@@ -3,34 +3,31 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
-import { Loader2, Navigation, X, SlidersHorizontal, Calendar, CalendarRange, Route, ExternalLink, Eye } from "lucide-react";
-import { format, startOfDay, endOfDay, isAfter, parseISO } from "date-fns";
+import { Loader2, Navigation, X, Route, ExternalLink, Eye } from "lucide-react";
+import { startOfDay, endOfDay, isAfter, parseISO } from "date-fns";
 import Supercluster from "supercluster";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
 import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
-import { TagFilterBar } from "@/components/events/tag-filter-bar";
+import { MapFilterBar, type DatePreset } from "./map-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Clustering configuration
 const CLUSTER_RADIUS = 60; // Cluster radius in pixels
 const CLUSTER_MAX_ZOOM = 15; // Stop clustering at this zoom level
 const CLUSTER_MIN_POINTS = 2; // Minimum points to form a cluster
 
-// Date range presets
-type DatePreset = "7days" | "14days" | "30days" | "all" | "custom";
-
-// Translation keys for presets - actual labels come from useTranslations
-const DATE_PRESETS: { value: DatePreset; labelKey: string; days: number | null }[] = [
-  { value: "7days", labelKey: "presets.next7days", days: 7 },
-  { value: "14days", labelKey: "presets.next2weeks", days: 14 },
-  { value: "30days", labelKey: "presets.nextMonth", days: 30 },
-  { value: "all", labelKey: "presets.allUpcoming", days: null },
-];
+// Date preset days lookup
+const DATE_PRESET_DAYS: Record<DatePreset, number | null> = {
+  "7days": 7,
+  "14days": 14,
+  "30days": 30,
+  "all": null,
+  "custom": null,
+};
 
 interface EventMapProps {
   events: Event[];
@@ -197,10 +194,8 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedTag, setSelectedTag] = useState<EventTag | null>(null);
   const [datePreset, setDatePreset] = useState<DatePreset>("7days");
-  const [showFilters, setShowFilters] = useState(false);
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
-  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
 
   const mapRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
@@ -221,12 +216,12 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
       return null;
     }
 
-    const preset = DATE_PRESETS.find(p => p.value === datePreset);
-    if (!preset?.days) return null;
+    const days = DATE_PRESET_DAYS[datePreset];
+    if (!days) return null;
 
     const now = new Date();
     const end = new Date(now);
-    end.setDate(end.getDate() + preset.days);
+    end.setDate(end.getDate() + days);
     return { start: now, end };
   }, [datePreset, customStartDate, customEndDate]);
 
@@ -588,11 +583,6 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
     );
   }, [map, t]);
 
-  const handleTagChange = useCallback((tag: EventTag | null) => {
-    setSelectedTag(tag);
-    setSelectedEvent(null);
-  }, []);
-
   if (loadError) {
     return (
       <div className="h-full flex items-center justify-center bg-muted/30 p-4">
@@ -619,253 +609,23 @@ export function EventMap({ events, happeningEventIds = [] }: EventMapProps) {
     );
   }
 
-  // Get current preset label for display
-  const currentPresetLabel = useMemo(() => {
-    if (datePreset === "custom" && customStartDate && customEndDate) {
-      // Format as "Jan 22 - Feb 15"
-      const start = parseISO(customStartDate);
-      const end = parseISO(customEndDate);
-      return `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
-    }
-    const preset = DATE_PRESETS.find(p => p.value === datePreset);
-    return preset ? t(preset.labelKey) : t("presets.allUpcoming");
-  }, [datePreset, customStartDate, customEndDate, t]);
-
-  // Handle custom date selection
-  const handleApplyCustomDates = useCallback(() => {
-    if (customStartDate && customEndDate) {
-      const start = parseISO(customStartDate);
-      const end = parseISO(customEndDate);
-      if (isAfter(end, start) || format(start, "yyyy-MM-dd") === format(end, "yyyy-MM-dd")) {
-        setDatePreset("custom");
-        setShowCustomDatePicker(false);
-        triggerHaptic("selection");
-      }
-    }
-  }, [customStartDate, customEndDate]);
-
   return (
     <div className="h-full flex flex-col">
-      {/* Filter bar */}
-      <div className="bg-background border-b">
-        {/* Mobile: Collapsed filter with button */}
-        <div className="sm:hidden">
-          <div className="p-3 flex items-center gap-2">
-            <button
-              onClick={() => {
-                triggerHaptic("selection");
-                setShowFilters(!showFilters);
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-full border transition-colors ${
-                showFilters || selectedTag || datePreset !== "7days"
-                  ? "bg-primary/10 border-primary text-primary"
-                  : "border-border text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span className="text-sm font-medium">{t("filters")}</span>
-              {(selectedTag || datePreset !== "7days") && (
-                <span className="w-2 h-2 rounded-full bg-primary" />
-              )}
-            </button>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Calendar className="w-3 h-3" />
-              <span>{currentPresetLabel}</span>
-            </div>
-            <div className="ml-auto text-xs text-muted-foreground">
-              {t("eventsCount", { count: eventsWithLocation.length })}
-            </div>
-          </div>
-
-          {/* Expandable filter panel */}
-          {showFilters && (
-            <div className="px-3 pb-3 space-y-3 border-t pt-3">
-              {/* Date range presets */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">{t("dateRange")}</label>
-                <div className="flex flex-wrap gap-2">
-                  {DATE_PRESETS.map(preset => (
-                    <button
-                      key={preset.value}
-                      onClick={() => {
-                        triggerHaptic("selection");
-                        setDatePreset(preset.value);
-                      }}
-                      className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                        datePreset === preset.value
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "border-border hover:border-foreground/50"
-                      }`}
-                    >
-                      {t(preset.labelKey)}
-                    </button>
-                  ))}
-                  <Popover open={showCustomDatePicker} onOpenChange={setShowCustomDatePicker}>
-                    <PopoverTrigger asChild>
-                      <button
-                        className={`px-3 py-1.5 text-xs rounded-full border transition-colors flex items-center gap-1 ${
-                          datePreset === "custom"
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "border-border hover:border-foreground/50"
-                        }`}
-                      >
-                        <CalendarRange className="w-3 h-3" />
-                        {datePreset === "custom" ? currentPresetLabel : t("presets.custom")}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-3" align="start">
-                      <div className="space-y-3">
-                        <div className="text-sm font-medium">{t("customDateRange")}</div>
-                        <div className="flex gap-2">
-                          <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">{t("start")}</label>
-                            <input
-                              type="date"
-                              value={customStartDate}
-                              onChange={(e) => setCustomStartDate(e.target.value)}
-                              min={format(new Date(), "yyyy-MM-dd")}
-                              className="block w-full px-2 py-1.5 text-sm border rounded-md bg-background"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">{t("end")}</label>
-                            <input
-                              type="date"
-                              value={customEndDate}
-                              onChange={(e) => setCustomEndDate(e.target.value)}
-                              min={customStartDate || format(new Date(), "yyyy-MM-dd")}
-                              className="block w-full px-2 py-1.5 text-sm border rounded-md bg-background"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex gap-2 pt-1">
-                          <button
-                            onClick={() => setShowCustomDatePicker(false)}
-                            className="flex-1 px-3 py-1.5 text-xs border rounded-md hover:bg-muted transition-colors"
-                          >
-                            {t("cancel")}
-                          </button>
-                          <button
-                            onClick={handleApplyCustomDates}
-                            disabled={!customStartDate || !customEndDate}
-                            className="flex-1 px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-                          >
-                            {t("apply")}
-                          </button>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-
-              {/* Tag filter */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">{t("category")}</label>
-                <TagFilterBar
-                  selectedTag={selectedTag}
-                  onTagChange={handleTagChange}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Desktop: Always visible filters */}
-        <div className="hidden sm:block p-3">
-          <div className="flex items-center gap-4">
-            {/* Date presets */}
-            <div className="flex items-center gap-2">
-              {DATE_PRESETS.map(preset => (
-                <button
-                  key={preset.value}
-                  onClick={() => {
-                    triggerHaptic("selection");
-                    setDatePreset(preset.value);
-                  }}
-                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                    datePreset === preset.value
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "border-border hover:border-foreground/50"
-                  }`}
-                >
-                  {t(preset.labelKey)}
-                </button>
-              ))}
-              <Popover open={showCustomDatePicker} onOpenChange={setShowCustomDatePicker}>
-                <PopoverTrigger asChild>
-                  <button
-                    className={`px-3 py-1.5 text-xs rounded-full border transition-colors flex items-center gap-1 ${
-                      datePreset === "custom"
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "border-border hover:border-foreground/50"
-                    }`}
-                  >
-                    <CalendarRange className="w-3 h-3" />
-                    {datePreset === "custom" ? currentPresetLabel : t("presets.custom")}
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-3" align="start">
-                  <div className="space-y-3">
-                    <div className="text-sm font-medium">{t("customDateRange")}</div>
-                    <div className="flex gap-2">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground">{t("start")}</label>
-                        <input
-                          type="date"
-                          value={customStartDate}
-                          onChange={(e) => setCustomStartDate(e.target.value)}
-                          min={format(new Date(), "yyyy-MM-dd")}
-                          className="block w-full px-2 py-1.5 text-sm border rounded-md bg-background"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground">{t("end")}</label>
-                        <input
-                          type="date"
-                          value={customEndDate}
-                          onChange={(e) => setCustomEndDate(e.target.value)}
-                          min={customStartDate || format(new Date(), "yyyy-MM-dd")}
-                          className="block w-full px-2 py-1.5 text-sm border rounded-md bg-background"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2 pt-1">
-                      <button
-                        onClick={() => setShowCustomDatePicker(false)}
-                        className="flex-1 px-3 py-1.5 text-xs border rounded-md hover:bg-muted transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleApplyCustomDates}
-                        disabled={!customStartDate || !customEndDate}
-                        className="flex-1 px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="h-4 w-px bg-border" />
-
-            {/* Tag filter */}
-            <div className="flex-1">
-              <TagFilterBar
-                selectedTag={selectedTag}
-                onTagChange={handleTagChange}
-              />
-            </div>
-
-            <div className="text-xs text-muted-foreground whitespace-nowrap">
-              {t("eventsCount", { count: eventsWithLocation.length })}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* New unified filter bar */}
+      <MapFilterBar
+        datePreset={datePreset}
+        onDatePresetChange={setDatePreset}
+        customStartDate={customStartDate}
+        customEndDate={customEndDate}
+        onCustomStartDateChange={setCustomStartDate}
+        onCustomEndDateChange={setCustomEndDate}
+        selectedTag={selectedTag}
+        onTagChange={(tag) => {
+          setSelectedTag(tag);
+          setSelectedEvent(null);
+        }}
+        eventCount={eventsWithLocation.length}
+      />
 
       {/* Map container - always rendered so ref is available */}
       <div className="flex-1 relative">

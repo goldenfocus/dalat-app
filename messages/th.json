@@ -989,6 +989,21 @@
       }
     }
   },
+  "categories": {
+    "all": "ทุกหมวดหมู่",
+    "clear": "ล้าง",
+    "music": "ดนตรี",
+    "food": "อาหาร",
+    "coffee": "กาแฟ",
+    "yoga": "โยคะ",
+    "art": "ศิลปะ",
+    "workshop": "เวิร์คช็อป",
+    "meetup": "พบปะ",
+    "party": "ปาร์ตี้",
+    "hiking": "เดินป่า",
+    "wellness": "สุขภาพ",
+    "festival": "เทศกาล"
+  },
   "mapPage": {
     "title": "แผนที่กิจกรรม",
     "dateRange": "ช่วงวันที่",

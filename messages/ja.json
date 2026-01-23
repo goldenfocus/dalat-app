@@ -989,6 +989,21 @@
       }
     }
   },
+  "categories": {
+    "all": "すべてのカテゴリ",
+    "clear": "クリア",
+    "music": "音楽",
+    "food": "フード",
+    "coffee": "コーヒー",
+    "yoga": "ヨガ",
+    "art": "アート",
+    "workshop": "ワークショップ",
+    "meetup": "ミートアップ",
+    "party": "パーティー",
+    "hiking": "ハイキング",
+    "wellness": "ウェルネス",
+    "festival": "フェスティバル"
+  },
   "mapPage": {
     "title": "イベントマップ",
     "dateRange": "日付範囲",

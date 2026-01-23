@@ -989,6 +989,21 @@
       }
     }
   },
+  "categories": {
+    "all": "Alle Kategorien",
+    "clear": "Löschen",
+    "music": "Musik",
+    "food": "Essen",
+    "coffee": "Kaffee",
+    "yoga": "Yoga",
+    "art": "Kunst",
+    "workshop": "Workshop",
+    "meetup": "Treffen",
+    "party": "Party",
+    "hiking": "Wandern",
+    "wellness": "Wellness",
+    "festival": "Festival"
+  },
   "mapPage": {
     "title": "Veranstaltungskarte",
     "dateRange": "Zeitraum",

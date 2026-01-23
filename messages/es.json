@@ -991,6 +991,21 @@
       }
     }
   },
+  "categories": {
+    "all": "Todas las categorías",
+    "clear": "Limpiar",
+    "music": "Música",
+    "food": "Comida",
+    "coffee": "Café",
+    "yoga": "Yoga",
+    "art": "Arte",
+    "workshop": "Taller",
+    "meetup": "Encuentro",
+    "party": "Fiesta",
+    "hiking": "Senderismo",
+    "wellness": "Bienestar",
+    "festival": "Festival"
+  },
   "mapPage": {
     "title": "Mapa de Eventos",
     "dateRange": "Rango de fechas",

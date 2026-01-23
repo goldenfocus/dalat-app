@@ -989,6 +989,21 @@
       }
     }
   },
+  "categories": {
+    "all": "Semua kategori",
+    "clear": "Kosongkan",
+    "music": "Muzik",
+    "food": "Makanan",
+    "coffee": "Kopi",
+    "yoga": "Yoga",
+    "art": "Seni",
+    "workshop": "Bengkel",
+    "meetup": "Pertemuan",
+    "party": "Parti",
+    "hiking": "Mendaki",
+    "wellness": "Kesihatan",
+    "festival": "Perayaan"
+  },
   "mapPage": {
     "title": "Peta Acara",
     "dateRange": "Julat Tarikh",
