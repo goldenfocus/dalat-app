@@ -299,7 +299,7 @@ export function AvatarStep({
             "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
             "hover:bg-accent hover:border-primary/50 active:scale-95",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-border-muted
+            oauthAvatarUrl ? "border-muted" : "col-span-2 border-muted"
           )}
         >
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
