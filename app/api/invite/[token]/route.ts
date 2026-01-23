@@ -1,62 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-// GET /api/invite/[token] - Get invitation details (public)
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ token: string }> }
-) {
-  const supabase = await createClient();
-  const { token } = await params;
-
-  // Get invitation with event details
-  const { data: invitation, error } = await supabase
-    .from('event_invitations')
-    .select(`
-      id,
-      email,
-      name,
-      status,
-      rsvp_status,
-      claimed_by,
-      responded_at,
-      events (
-        id,
-        slug,
-        title,
-        description,
-        image_url,
-        location_name,
-        address,
-        google_maps_url,
-        starts_at,
-        ends_at,
-        timezone,
-        status
-      ),
-      profiles:invited_by (
-        display_name,
-        username,
-        avatar_url
-      )
-    `)
-    .eq('token', token)
-    .single();
-
-  if (error || !invitation) {
-    return NextResponse.json({ error: 'Invitation not found' }, { status: 404 });
-  }
-
-  // Mark as viewed if first time
-  if (invitation.status === 'sent') {
-    await supabase
-      .from('event_invitations')
-      .update({ status: 'viewed', viewed_at: new Date().toISOString() })
-      .eq('token', token);
-  }
-
-  // Check if event is still valid
-  const event = invitation.events as unknown as {
+// Types for the invitation data from the RPC function
+type InvitationData = {
+  id: string;
+  email: string;
+  name: string | null;
+  status: string;
+  rsvp_status: string | null;
+  claimed_by: string | null;
+  responded_at: string | null;
+  event: {
     id: string;
     slug: string;
     title: string;
@@ -70,16 +24,47 @@ export async function GET(
     timezone: string;
     status: string;
   };
-
-  if (!event || event.status === 'cancelled') {
-    return NextResponse.json({ error: 'Event is no longer available' }, { status: 410 });
-  }
-
-  const inviter = invitation.profiles as unknown as {
+  inviter: {
     display_name: string | null;
     username: string | null;
     avatar_url: string | null;
   };
+};
+
+// GET /api/invite/[token] - Get invitation details (public)
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ token: string }> }
+) {
+  const supabase = await createClient();
+  const { token } = await params;
+
+  // Use SECURITY DEFINER function to bypass events RLS
+  // This allows anonymous users to view invite details for private tribe events
+  const { data, error } = await supabase.rpc('get_invitation_by_token', {
+    p_token: token,
+  });
+
+  if (error || !data) {
+    return NextResponse.json({ error: 'Invitation not found' }, { status: 404 });
+  }
+
+  const invitation = data as InvitationData;
+
+  // Mark as viewed if first time
+  if (invitation.status === 'sent') {
+    await supabase
+      .from('event_invitations')
+      .update({ status: 'viewed', viewed_at: new Date().toISOString() })
+      .eq('token', token);
+  }
+
+  // Check if event is still valid
+  if (!invitation.event || invitation.event.status === 'cancelled') {
+    return NextResponse.json({ error: 'Event is no longer available' }, { status: 410 });
+  }
+
+  const { event, inviter } = invitation;
 
   return NextResponse.json({
     invitation: {

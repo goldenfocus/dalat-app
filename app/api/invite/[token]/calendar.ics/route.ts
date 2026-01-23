@@ -1,39 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-// GET /api/invite/[token]/calendar.ics - Download ICS calendar file
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ token: string }> }
-) {
-  const supabase = await createClient();
-  const { token } = await params;
-
-  // Get invitation with event details
-  const { data: invitation, error } = await supabase
-    .from('event_invitations')
-    .select(`
-      id,
-      events (
-        id,
-        slug,
-        title,
-        description,
-        location_name,
-        address,
-        starts_at,
-        ends_at,
-        timezone
-      )
-    `)
-    .eq('token', token)
-    .single();
-
-  if (error || !invitation) {
-    return NextResponse.json({ error: 'Invitation not found' }, { status: 404 });
-  }
-
-  const event = invitation.events as unknown as {
+// Types for the invitation data from the RPC function
+type InvitationData = {
+  id: string;
+  event: {
     id: string;
     slug: string;
     title: string;
@@ -44,6 +15,28 @@ export async function GET(
     ends_at: string | null;
     timezone: string;
   };
+};
+
+// GET /api/invite/[token]/calendar.ics - Download ICS calendar file
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ token: string }> }
+) {
+  const supabase = await createClient();
+  const { token } = await params;
+
+  // Use SECURITY DEFINER function to bypass events RLS
+  // This allows anonymous users to download calendar for private tribe events
+  const { data, error } = await supabase.rpc('get_invitation_by_token', {
+    p_token: token,
+  });
+
+  if (error || !data) {
+    return NextResponse.json({ error: 'Invitation not found' }, { status: 404 });
+  }
+
+  const invitation = data as InvitationData;
+  const event = invitation.event;
 
   if (!event) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });

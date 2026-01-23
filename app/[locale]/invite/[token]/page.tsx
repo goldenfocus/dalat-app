@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { formatInDaLat } from "@/lib/timezone";
 import { InviteRsvpButtons } from "./rsvp-buttons";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import type { Locale } from "@/lib/types";
+import type { Locale, InvitationRsvpStatus } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -37,45 +37,50 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-async function getInvitation(token: string) {
+// Types for the invitation data from the RPC function
+type InvitationData = {
+  id: string;
+  email: string;
+  name: string | null;
+  status: string;
+  rsvp_status: InvitationRsvpStatus | null;
+  claimed_by: string | null;
+  responded_at: string | null;
+  event: {
+    id: string;
+    slug: string;
+    title: string;
+    description: string | null;
+    image_url: string | null;
+    location_name: string | null;
+    address: string | null;
+    google_maps_url: string | null;
+    starts_at: string;
+    ends_at: string | null;
+    timezone: string;
+    status: string;
+  };
+  inviter: {
+    display_name: string | null;
+    username: string | null;
+    avatar_url: string | null;
+  };
+};
+
+async function getInvitation(token: string): Promise<InvitationData | null> {
   const supabase = await createClient();
 
-  const { data: invitation, error } = await supabase
-    .from("event_invitations")
-    .select(`
-      id,
-      email,
-      name,
-      status,
-      rsvp_status,
-      claimed_by,
-      responded_at,
-      events (
-        id,
-        slug,
-        title,
-        description,
-        image_url,
-        location_name,
-        address,
-        google_maps_url,
-        starts_at,
-        ends_at,
-        timezone,
-        status
-      ),
-      profiles:invited_by (
-        display_name,
-        username,
-        avatar_url
-      )
-    `)
-    .eq("token", token)
-    .single();
+  // Use SECURITY DEFINER function to bypass events RLS
+  // This allows anonymous users to view invite details for private tribe events
+  const { data, error } = await supabase.rpc("get_invitation_by_token", {
+    p_token: token,
+  });
 
-  if (error || !invitation) {
+  if (error || !data) {
     return null;
   }
+
+  const invitation = data as InvitationData;
 
   // Mark as viewed if first time
   if (invitation.status === "sent") {
@@ -102,30 +107,9 @@ export default async function InvitePage({ params, searchParams }: PageProps) {
     notFound();
   }
 
-  // Type assertions for Supabase joined data
-  type EventData = {
-    id: string;
-    slug: string;
-    title: string;
-    description: string | null;
-    image_url: string | null;
-    location_name: string | null;
-    address: string | null;
-    google_maps_url: string | null;
-    starts_at: string;
-    ends_at: string | null;
-    timezone: string;
-    status: string;
-  };
-
-  type InviterData = {
-    display_name: string | null;
-    username: string | null;
-    avatar_url: string | null;
-  };
-
-  const event = invitation.events as unknown as EventData;
-  const inviter = invitation.profiles as unknown as InviterData;
+  // Extract event and inviter from the typed invitation data
+  const event = invitation.event;
+  const inviter = invitation.inviter;
 
   if (!event || event.status === "cancelled") {
     return (
