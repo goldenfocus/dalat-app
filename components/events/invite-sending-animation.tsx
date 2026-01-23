@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Check, X, Loader2 } from "lucide-react";
 import { MatrixText } from "@/components/ui/matrix-text";
+import { MatrixRain } from "@/components/ui/matrix-rain";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 
@@ -151,15 +152,38 @@ export function InviteSendingAnimation({
     const summaryTimeout = setTimeout(() => {
       setShowSummary(true);
 
-      // Fire confetti if any successes
+      // Fire confetti if any successes - multiple bursts for impact!
       const successCount = results.filter((r) => r.success).length;
       if (successCount > 0) {
+        // First burst - center
         confetti({
-          particleCount: successCount * 30,
+          particleCount: 100,
           spread: 70,
-          origin: { y: 0.6 },
-          colors: ["#00ff41", "#00cc33", "#009926"],
+          origin: { y: 0.6, x: 0.5 },
+          colors: ["#00ff41", "#00cc33", "#009926", "#00ff00"],
         });
+
+        // Second burst - left side (delayed)
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0, y: 0.6 },
+            colors: ["#00ff41", "#00cc33", "#009926"],
+          });
+        }, 150);
+
+        // Third burst - right side (delayed)
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1, y: 0.6 },
+            colors: ["#00ff41", "#00cc33", "#009926"],
+          });
+        }, 300);
       }
 
       onAnimationComplete?.();
@@ -176,9 +200,9 @@ export function InviteSendingAnimation({
       {/* Matrix-style background overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-emerald-950/20 to-black/90 rounded-lg" />
 
-      {/* Falling characters effect (CSS-based, subtle) */}
-      <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
-        <div className="matrix-rain" />
+      {/* Real Matrix rain effect with falling characters */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-lg">
+        <MatrixRain opacity={0.3} speed={4} density={25} className="w-full h-full" />
       </div>
 
       {/* Content */}
@@ -273,27 +297,6 @@ export function InviteSendingAnimation({
         )}
       </div>
 
-      {/* CSS for matrix rain effect */}
-      <style jsx>{`
-        .matrix-rain {
-          background: linear-gradient(
-            180deg,
-            transparent,
-            rgba(0, 255, 65, 0.03) 50%,
-            transparent
-          );
-          background-size: 100% 20px;
-          animation: rain 2s linear infinite;
-        }
-        @keyframes rain {
-          0% {
-            background-position: 0 -100%;
-          }
-          100% {
-            background-position: 0 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 }
