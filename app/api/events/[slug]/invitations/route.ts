@@ -67,8 +67,17 @@ export async function POST(
 
   const results: Array<{ email?: string; userId?: string; username?: string; success: boolean; error?: string; token?: string }> = [];
 
+  // Helper to add delay between sends (Resend rate limit: 1 email/second on free tier)
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
   // Process each email invite
-  for (const { email, name } of emails) {
+  for (let i = 0; i < emails.length; i++) {
+    const { email, name } = emails[i];
+
+    // Add delay between emails to respect rate limits (skip first one)
+    if (i > 0) {
+      await delay(1000);
+    }
     const normalizedEmail = email.toLowerCase().trim();
 
     // Try to create invitation record
@@ -152,7 +161,13 @@ export async function POST(
   }
 
   // Process each user invite (existing users by username)
-  for (const { userId, username } of users) {
+  for (let i = 0; i < users.length; i++) {
+    const { userId, username } = users[i];
+
+    // Add delay between notifications to respect rate limits (skip first one)
+    if (i > 0) {
+      await delay(1000);
+    }
     // Get the invitee's profile for their locale
     const { data: inviteeProfile } = await supabase
       .from('profiles')
