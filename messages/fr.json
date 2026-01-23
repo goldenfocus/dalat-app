@@ -650,6 +650,8 @@
     "inviteGuests": "Inviter des amis",
     "inviteDescription": "Envoyez des invitations par email ou partagez via messagerie",
     "shareVia": "Partager via",
+    "byEmail": "Par email",
+    "findMember": "Trouver un membre",
     "orSendEmail": "ou envoyer par email",
     "emailAddresses": "Adresses email",
     "emailPlaceholder": "Entrez les adresses email",

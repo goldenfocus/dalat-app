@@ -623,6 +623,8 @@
     "inviteGuests": "ゲストを招待",
     "inviteDescription": "メールで招待状を送るか、メッセージアプリで共有",
     "shareVia": "共有",
+    "byEmail": "メールで",
+    "findMember": "メンバーを探す",
     "orSendEmail": "またはメールで招待を送る",
     "emailAddresses": "メールアドレス",
     "emailPlaceholder": "メールアドレスを入力",

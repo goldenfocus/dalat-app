@@ -19,11 +19,9 @@ import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { Button } from "@/components/ui/button";
-import { LcpImagePreload } from "@/components/lcp-image-preload";
 import type { Event, EventCounts, EventWithSeriesData, ContentLocale } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
 import { getEventTranslationsBatch } from "@/lib/translations";
-import { isDefaultImageUrl, isVideoUrl } from "@/lib/media-utils";
 import {
   getCachedEventsByLifecycle,
   getCachedEventCountsBatch,
@@ -342,24 +340,13 @@ export default async function Home({ params, searchParams }: PageProps) {
   const searchQuery = search.q ?? "";
   const tagFilter = search.tag;
 
-  // Fetch events early to get LCP image URL for preloading
-  const [t, lifecycleCounts, events] = await Promise.all([
+  const [t, lifecycleCounts] = await Promise.all([
     getTranslations("home"),
     getLifecycleCounts(),
-    getCachedEventsByLifecycle(activeTab),
   ]);
-
-  // Get the first event's image URL for LCP preloading (mobile hero image)
-  const firstEventWithImage = events.find(
-    (e) => e.image_url && !isDefaultImageUrl(e.image_url) && !isVideoUrl(e.image_url)
-  );
-  const lcpImageUrl = firstEventWithImage?.image_url ?? null;
 
   return (
     <>
-      {/* Preload LCP image for faster mobile rendering */}
-      <LcpImagePreload imageUrl={lcpImageUrl} />
-
       {/* Mobile: Full immersive experience */}
       <div className="lg:hidden h-[100dvh] relative pb-[calc(4rem+env(safe-area-inset-bottom))]">
         {/* Floating mini-header */}

@@ -623,6 +623,8 @@
     "inviteGuests": "邀请宾客",
     "inviteDescription": "发送邮件邀请或通过即时通讯应用分享",
     "shareVia": "分享至",
+    "byEmail": "通过邮件",
+    "findMember": "查找成员",
     "orSendEmail": "或发送邮件邀请",
     "emailAddresses": "邮箱地址",
     "emailPlaceholder": "输入邮箱地址",

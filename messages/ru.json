@@ -623,6 +623,8 @@
     "inviteGuests": "Пригласить гостей",
     "inviteDescription": "Отправьте приглашения по email или поделитесь в мессенджерах",
     "shareVia": "Поделиться через",
+    "byEmail": "По email",
+    "findMember": "Найти участника",
     "orSendEmail": "или отправить по email",
     "emailAddresses": "Email адреса",
     "emailPlaceholder": "Введите email адреса",

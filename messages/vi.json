@@ -641,6 +641,8 @@
     "inviteGuests": "Mời khách",
     "inviteDescription": "Gửi lời mời qua email hoặc chia sẻ qua ứng dụng nhắn tin",
     "shareVia": "Chia sẻ qua",
+    "byEmail": "Qua email",
+    "findMember": "Tìm thành viên",
     "orSendEmail": "hoặc gửi email mời",
     "emailAddresses": "Địa chỉ email",
     "emailPlaceholder": "Nhập địa chỉ email",

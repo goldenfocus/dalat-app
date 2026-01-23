@@ -623,6 +623,8 @@
     "inviteGuests": "게스트 초대",
     "inviteDescription": "이메일 초대장을 보내거나 메시징 앱으로 공유하세요",
     "shareVia": "공유하기",
+    "byEmail": "이메일로",
+    "findMember": "멤버 찾기",
     "orSendEmail": "또는 이메일 초대 보내기",
     "emailAddresses": "이메일 주소",
     "emailPlaceholder": "이메일 주소 입력",
