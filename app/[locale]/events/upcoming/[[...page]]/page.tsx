@@ -263,7 +263,6 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
                     event={event}
                     counts={counts[event.id]}
                     translatedTitle={translation?.title || undefined}
-                    priority={index < 2}
                   />
                 );
               })}

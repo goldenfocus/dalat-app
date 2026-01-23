@@ -92,7 +92,6 @@ export async function EventFeedImmersive({
               event={event}
               counts={counts[event.id]}
               seriesRrule={event.series_rrule ?? undefined}
-              priority={index === 0}
               translatedTitle={translation?.title || undefined}
             />
           );

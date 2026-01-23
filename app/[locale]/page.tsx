@@ -265,7 +265,6 @@ async function EventsFeed({
               counts={counts[event.id]}
               seriesRrule={event.series_rrule ?? undefined}
               translatedTitle={translation?.title || undefined}
-              priority={index < 2}
             />
           );
         })}

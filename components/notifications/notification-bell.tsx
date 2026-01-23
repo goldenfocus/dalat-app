@@ -94,8 +94,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           // Realtime is working - no polling needed
           console.log('[notification-bell] Realtime connected');
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          // Realtime failed - fall back to polling
-          console.warn('[notification-bell] Realtime unavailable, using polling');
+          // Realtime failed - fall back to polling (expected in some environments)
+          if (process.env.NODE_ENV === 'development') {
+            console.info('[notification-bell] Realtime unavailable, using polling');
+          }
           pollInterval = setInterval(() => {
             fetchNotifications();
           }, 30000);
