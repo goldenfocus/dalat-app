@@ -33,7 +33,7 @@ export const LOCALE_NAMES: Record<ContentLocale, string> = {
 
 // Translation types
 export type TranslationStatus = 'auto' | 'reviewed' | 'edited';
-export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog';
+export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog' | 'venue';
 export type TranslationFieldName = 'title' | 'description' | 'text_content' | 'bio' | 'story_content' | 'technical_content' | 'meta_description';
 
 export interface ContentTranslation {
@@ -122,6 +122,126 @@ export interface Organizer {
   updated_at: string;
   // Joined data
   profiles?: Profile;
+}
+
+// ============================================
+// Venue Types (WHERE events happen)
+// ============================================
+
+export type VenueType =
+  | 'cafe'
+  | 'bar'
+  | 'restaurant'
+  | 'gallery'
+  | 'park'
+  | 'hotel'
+  | 'coworking'
+  | 'community_center'
+  | 'outdoor'
+  | 'homestay'
+  | 'other';
+
+export interface OperatingHours {
+  monday?: { open: string; close: string } | 'closed';
+  tuesday?: { open: string; close: string } | 'closed';
+  wednesday?: { open: string; close: string } | 'closed';
+  thursday?: { open: string; close: string } | 'closed';
+  friday?: { open: string; close: string } | 'closed';
+  saturday?: { open: string; close: string } | 'closed';
+  sunday?: { open: string; close: string } | 'closed';
+}
+
+export interface VenuePhoto {
+  url: string;
+  caption?: string;
+  sort_order: number;
+}
+
+export interface Venue {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  venue_type: VenueType | null;
+
+  // Location (required)
+  latitude: number;
+  longitude: number;
+  address: string | null;
+  google_maps_url: string | null;
+  google_place_id: string | null;
+
+  // Contact
+  website_url: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  zalo_url: string | null;
+  phone: string | null;
+  email: string | null;
+
+  // Details
+  operating_hours: OperatingHours | null;
+  has_wifi: boolean;
+  has_parking: boolean;
+  has_outdoor_seating: boolean;
+  is_pet_friendly: boolean;
+  is_wheelchair_accessible: boolean;
+
+  // Enhanced
+  capacity: number | null;
+  price_range: '$' | '$$' | '$$$' | '$$$$' | null;
+  tags: string[];
+  cuisine_types: string[];
+  photos: VenuePhoto[];
+
+  // Media
+  logo_url: string | null;
+  cover_photo_url: string | null;
+
+  // Meta
+  owner_id: string | null;
+  is_verified: boolean;
+  priority_score: number;
+  total_events_hosted: number;
+  last_event_at: string | null;
+  source_locale: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+
+  // Joined data
+  profiles?: Profile;
+}
+
+// Venue for map display (minimal data)
+export interface VenueMapMarker {
+  id: string;
+  slug: string;
+  name: string;
+  venue_type: string | null;
+  latitude: number;
+  longitude: number;
+  logo_url: string | null;
+  is_verified: boolean;
+  upcoming_event_count: number;
+  has_happening_now: boolean;
+}
+
+// Venue for discovery list
+export interface VenueListItem {
+  id: string;
+  slug: string;
+  name: string;
+  venue_type: string | null;
+  logo_url: string | null;
+  cover_photo_url: string | null;
+  address: string | null;
+  is_verified: boolean;
+  price_range: string | null;
+  tags: string[];
+  operating_hours: OperatingHours | null;
+  upcoming_event_count: number;
+  has_happening_now: boolean;
 }
 
 // AI Persona for image generation @mentions
@@ -227,6 +347,7 @@ export interface Event {
   tribe_id: string | null;
   tribe_visibility: TribeEventVisibility;
   organizer_id: string | null;
+  venue_id: string | null;  // WHERE the event happens (physical location)
   title: string;
   description: string | null;
   image_url: string | null;
@@ -266,6 +387,7 @@ export interface Event {
   profiles?: Profile;
   tribes?: Tribe;
   organizers?: Organizer;
+  venues?: Venue;  // WHERE the event happens
   event_series?: EventSeries;
 }
 
