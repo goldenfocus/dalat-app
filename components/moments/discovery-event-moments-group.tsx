@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { format } from "date-fns";
-import { Calendar, MapPin, ChevronRight, Play } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Play, MessageCircle } from "lucide-react";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { decodeUnicodeEscapes } from "@/lib/utils";
@@ -12,9 +12,11 @@ import type { DiscoveryEventMomentsGroup as DiscoveryEventMomentsGroupType, Disc
 
 interface DiscoveryEventMomentsGroupProps {
   group: DiscoveryEventMomentsGroupType;
+  /** Map of moment ID to comment count */
+  commentCounts?: Map<string, number>;
 }
 
-function DiscoveryMomentCard({ moment }: { moment: DiscoveryGroupedMoment }) {
+function DiscoveryMomentCard({ moment, commentCount }: { moment: DiscoveryGroupedMoment; commentCount?: number }) {
   const isVideo = isVideoUrl(moment.media_url);
   const href = `/moments/${moment.id}?from=discovery`;
 
@@ -63,12 +65,23 @@ function DiscoveryMomentCard({ moment }: { moment: DiscoveryGroupedMoment }) {
           </div>
         )}
 
+        {/* Comment count badge */}
+        {commentCount != null && commentCount > 0 && (
+          <div
+            className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs pointer-events-none"
+            aria-label={`${commentCount} ${commentCount === 1 ? "comment" : "comments"}`}
+            role="status"
+          >
+            <MessageCircle className="w-3 h-3" />
+            <span>{commentCount}</span>
+          </div>
+        )}
       </article>
     </Link>
   );
 }
 
-export function DiscoveryEventMomentsGroup({ group }: DiscoveryEventMomentsGroupProps) {
+export function DiscoveryEventMomentsGroup({ group, commentCounts }: DiscoveryEventMomentsGroupProps) {
   const t = useTranslations("moments");
   const eventDate = new Date(group.event_starts_at);
   const remainingCount = group.total_moment_count - group.moments.length;
@@ -118,7 +131,11 @@ export function DiscoveryEventMomentsGroup({ group }: DiscoveryEventMomentsGroup
       {/* Moments grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {group.moments.map((moment) => (
-          <DiscoveryMomentCard key={moment.id} moment={moment} />
+          <DiscoveryMomentCard
+            key={moment.id}
+            moment={moment}
+            commentCount={commentCounts?.get(moment.id)}
+          />
         ))}
       </div>
 

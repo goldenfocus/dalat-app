@@ -8,9 +8,11 @@ import type { EventMomentsGroup as EventMomentsGroupType } from "@/lib/types";
 
 interface ProfileEventMomentsGroupProps {
   group: EventMomentsGroupType;
+  /** Map of moment ID to comment count */
+  commentCounts?: Map<string, number>;
 }
 
-export function ProfileEventMomentsGroup({ group }: ProfileEventMomentsGroupProps) {
+export function ProfileEventMomentsGroup({ group, commentCounts }: ProfileEventMomentsGroupProps) {
   const eventDate = new Date(group.event_starts_at);
 
   return (
@@ -37,6 +39,7 @@ export function ProfileEventMomentsGroup({ group }: ProfileEventMomentsGroupProp
             key={moment.id}
             moment={moment}
             from="profile"
+            commentCount={commentCounts?.get(moment.id)}
           />
         ))}
       </div>

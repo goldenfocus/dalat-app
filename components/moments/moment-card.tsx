@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
-import { Play } from "lucide-react";
+import { Play, MessageCircle } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import type { MomentContentType } from "@/lib/types";
 
@@ -20,9 +20,11 @@ interface MomentCardProps {
   moment: MomentForCard;
   /** Navigation origin context: "moments" for feed, "event" for event-specific, "profile" for profile timeline, "discovery" for search results */
   from?: "moments" | "event" | "profile" | "discovery";
+  /** Comment count to display as badge (only shown if > 0) */
+  commentCount?: number;
 }
 
-export function MomentCard({ moment, from }: MomentCardProps) {
+export function MomentCard({ moment, from, commentCount }: MomentCardProps) {
   const isVideo = isVideoUrl(moment.media_url);
   const href = from ? `/moments/${moment.id}?from=${from}` : `/moments/${moment.id}`;
 
@@ -69,6 +71,18 @@ export function MomentCard({ moment, from }: MomentCardProps) {
             <p className="text-center line-clamp-4 text-sm">
               {moment.text_content}
             </p>
+          </div>
+        )}
+
+        {/* Comment count badge */}
+        {commentCount != null && commentCount > 0 && (
+          <div
+            className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs pointer-events-none"
+            aria-label={`${commentCount} ${commentCount === 1 ? "comment" : "comments"}`}
+            role="status"
+          >
+            <MessageCircle className="w-3 h-3" />
+            <span>{commentCount}</span>
           </div>
         )}
       </article>

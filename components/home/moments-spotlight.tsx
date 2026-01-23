@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import { Link } from "@/lib/i18n/routing";
 import { MomentCard } from "@/components/moments";
+import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
 import type { MomentWithEvent } from "@/lib/types";
 
 interface MomentsSpotlightProps {
@@ -11,6 +13,10 @@ interface MomentsSpotlightProps {
 }
 
 export function MomentsSpotlight({ title, viewAllLabel, moments }: MomentsSpotlightProps) {
+  // Fetch comment counts for all spotlight moments
+  const momentIds = useMemo(() => moments.map(m => m.id), [moments]);
+  const { counts: commentCounts } = useMomentCommentCounts(momentIds);
+
   if (moments.length === 0) return null;
 
   return (
@@ -24,7 +30,7 @@ export function MomentsSpotlight({ title, viewAllLabel, moments }: MomentsSpotli
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
         {moments.map((moment) => (
           <div key={moment.id} className="w-44 flex-shrink-0">
-            <MomentCard moment={moment} />
+            <MomentCard moment={moment} commentCount={commentCounts.get(moment.id)} />
           </div>
         ))}
       </div>

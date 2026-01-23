@@ -18,6 +18,7 @@ import { FeedbackBadge } from "@/components/events/event-feedback";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { EventActions } from "@/components/events/event-actions";
 import { InviteModal } from "@/components/events/invite-modal";
+import { EventShareButton } from "@/components/events/event-share-button";
 import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { CopyAddress } from "@/components/events/copy-address";
 import { ConfirmAttendanceHandler } from "@/components/events/confirm-attendance-handler";
@@ -570,17 +571,25 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
       <SiteHeader
         actions={
-          canManageEvent ? (
-            <>
-              <InviteModal
-                eventSlug={event.slug}
-                eventTitle={event.title}
-                eventDescription={event.description}
-                startsAt={event.starts_at}
-              />
-              <EventActions eventId={event.id} eventSlug={event.slug} />
-            </>
-          ) : undefined
+          <>
+            <EventShareButton
+              eventSlug={event.slug}
+              eventTitle={event.title}
+              eventDescription={event.description}
+              startsAt={event.starts_at}
+            />
+            {canManageEvent && (
+              <>
+                <InviteModal
+                  eventSlug={event.slug}
+                  eventTitle={event.title}
+                  eventDescription={event.description}
+                  startsAt={event.starts_at}
+                />
+                <EventActions eventId={event.id} eventSlug={event.slug} />
+              </>
+            )}
+          </>
         }
       />
 

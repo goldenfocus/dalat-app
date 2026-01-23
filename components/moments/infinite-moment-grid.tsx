@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Camera } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { MomentCard } from "./moment-card";
+import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
 import type { MomentWithProfile } from "@/lib/types";
 
 const PAGE_SIZE = 20;
@@ -26,6 +27,10 @@ export function InfiniteMomentGrid({
   const [isLoading, setIsLoading] = useState(false);
   const [offset, setOffset] = useState(initialMoments.length);
   const loaderRef = useRef<HTMLDivElement>(null);
+
+  // Fetch comment counts for all visible moments
+  const momentIds = useMemo(() => moments.map(m => m.id), [moments]);
+  const { counts: commentCounts } = useMomentCommentCounts(momentIds);
 
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -92,6 +97,7 @@ export function InfiniteMomentGrid({
             key={moment.id}
             moment={moment}
             from="event"
+            commentCount={commentCounts.get(moment.id)}
           />
         ))}
       </div>

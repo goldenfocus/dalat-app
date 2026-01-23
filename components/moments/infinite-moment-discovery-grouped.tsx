@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Loader2, Camera } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DiscoveryEventMomentsGroup } from "./discovery-event-moments-group";
+import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
 import type { DiscoveryEventMomentsGroup as DiscoveryEventMomentsGroupType, MomentContentType } from "@/lib/types";
 
 const EVENTS_PER_PAGE = 5;
@@ -31,6 +32,12 @@ export function InfiniteMomentDiscoveryGrouped({
 
   // Memoize content types as a string for dependency tracking
   const contentKey = useMemo(() => contentTypes.join(","), [contentTypes]);
+
+  // Collect all moment IDs from all groups for batch comment count fetch
+  const allMomentIds = useMemo(() => {
+    return groups.flatMap(group => group.moments.map(m => m.id));
+  }, [groups]);
+  const { counts: commentCounts } = useMomentCommentCounts(allMomentIds);
 
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -129,7 +136,11 @@ export function InfiniteMomentDiscoveryGrouped({
         </div>
       ) : (
         groups.map((group) => (
-          <DiscoveryEventMomentsGroup key={group.event_id} group={group} />
+          <DiscoveryEventMomentsGroup
+            key={group.event_id}
+            group={group}
+            commentCounts={commentCounts}
+          />
         ))
       )}
 

@@ -415,25 +415,90 @@ export async function isThreadMuted(threadId: string): Promise<boolean> {
 // ============================================
 
 /**
- * Get comment counts for multiple targets at once
+ * Get comment counts for multiple targets at once (optimized single query)
+ * Groups targets by type and executes one query per type for efficiency
  */
 export async function getCommentCountsBatch(
   targets: Array<{ type: CommentTargetType; id: string }>
 ): Promise<Map<string, CommentCounts>> {
   const results = new Map<string, CommentCounts>();
 
-  // Fetch counts in parallel
-  const counts = await Promise.all(
-    targets.map(async ({ type, id }) => {
-      const count = await getCommentCount(type, id);
-      return { key: `${type}:${id}`, count };
-    })
-  );
+  if (targets.length === 0) {
+    return results;
+  }
 
-  for (const { key, count } of counts) {
-    if (count) {
-      results.set(key, count);
+  const supabase = await createClient();
+
+  // Group targets by type
+  const byType = new Map<CommentTargetType, string[]>();
+  for (const { type, id } of targets) {
+    if (!byType.has(type)) {
+      byType.set(type, []);
     }
+    byType.get(type)!.push(id);
+  }
+
+  // Fetch counts for each type using optimized batch RPC
+  const queries = Array.from(byType.entries()).map(async ([type, ids]) => {
+    const { data, error } = await supabase.rpc('get_comment_counts_batch', {
+      p_target_type: type,
+      p_target_ids: ids,
+    });
+
+    if (error) {
+      console.error('[comments] Error fetching batch counts:', error.message);
+      return [];
+    }
+
+    return (data || []).map((row: { target_id: string; total_count: number; top_level_count: number }) => ({
+      key: `${type}:${row.target_id}`,
+      counts: {
+        target_type: type,
+        target_id: row.target_id,
+        total_count: row.total_count,
+        top_level_count: row.top_level_count,
+      } as CommentCounts,
+    }));
+  });
+
+  const allResults = await Promise.all(queries);
+
+  for (const typeResults of allResults) {
+    for (const { key, counts } of typeResults) {
+      results.set(key, counts);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Get comment counts for multiple moments (simplified API for grid views)
+ * Returns a map of moment ID -> total count (not including reply breakdown)
+ */
+export async function getMomentCommentCounts(
+  momentIds: string[]
+): Promise<Map<string, number>> {
+  const results = new Map<string, number>();
+
+  if (momentIds.length === 0) {
+    return results;
+  }
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc('get_comment_counts_batch', {
+    p_target_type: 'moment',
+    p_target_ids: momentIds,
+  });
+
+  if (error) {
+    console.error('[comments] Error fetching moment counts:', error.message);
+    return results;
+  }
+
+  for (const row of data || []) {
+    results.set(row.target_id, row.total_count);
   }
 
   return results;

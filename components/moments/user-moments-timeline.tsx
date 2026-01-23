@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Camera, Image as ImageIcon, Video } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ProfileEventMomentsGroup } from "./profile-event-moments-group";
+import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
 import type { EventMomentsGroup, MomentContentType } from "@/lib/types";
 
 const EVENTS_PER_PAGE = 5;
@@ -32,6 +33,12 @@ export function UserMomentsTimeline({
   const [offset, setOffset] = useState(initialGroups.length);
   const [filter, setFilter] = useState<ContentFilter>("all");
   const loaderRef = useRef<HTMLDivElement>(null);
+
+  // Collect all moment IDs from all groups for batch comment count fetch
+  const allMomentIds = useMemo(() => {
+    return groups.flatMap(group => group.moments.map(m => m.id));
+  }, [groups]);
+  const { counts: commentCounts } = useMomentCommentCounts(allMomentIds);
 
   // Convert filter to content types array for RPC
   const getContentTypes = (f: ContentFilter): MomentContentType[] => {
@@ -168,7 +175,11 @@ export function UserMomentsTimeline({
       ) : (
         <div className="space-y-6">
           {groups.map((group) => (
-            <ProfileEventMomentsGroup key={group.event_id} group={group} />
+            <ProfileEventMomentsGroup
+              key={group.event_id}
+              group={group}
+              commentCounts={commentCounts}
+            />
           ))}
         </div>
       )}
