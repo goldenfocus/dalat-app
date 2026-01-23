@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { MessageCircle, MoreHorizontal, Trash2, Pencil, BellOff, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { MessageCircle, MoreHorizontal, Trash2, Pencil, BellOff, ChevronDown, ChevronUp, X, Send, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,8 +21,16 @@ interface CommentItemProps {
   currentUserId?: string;
   /** Whether this comment is by the content owner */
   isContentOwner?: boolean;
+  /** Whether this comment is currently being replied to */
+  isReplying?: boolean;
+  /** Whether the reply is being submitted */
+  isSubmittingReply?: boolean;
   /** Callback to start replying */
   onReply?: (comment: CommentWithProfile) => void;
+  /** Callback to submit reply inline */
+  onSubmitReply?: (content: string) => void;
+  /** Callback to cancel reply */
+  onCancelReply?: () => void;
   /** Callback to edit comment */
   onEdit?: (commentId: string, newContent: string) => Promise<void>;
   /** Callback to delete comment */
@@ -37,17 +45,23 @@ interface CommentItemProps {
   onLoadReplies?: () => void;
   /** Whether this is a reply (for indentation) */
   isReply?: boolean;
+  /** Whether this is an optimistic (pending) comment */
+  isPending?: boolean;
 }
 
 /**
  * Single comment with author info, content, and actions.
- * Supports nested replies (one level).
+ * Supports nested replies (one level) and inline reply form.
  */
 export function CommentItem({
   comment,
   currentUserId,
   isContentOwner = false,
+  isReplying = false,
+  isSubmittingReply = false,
   onReply,
+  onSubmitReply,
+  onCancelReply,
   onEdit,
   onDelete,
   onMuteThread,
@@ -55,10 +69,13 @@ export function CommentItem({
   repliesLoading = false,
   onLoadReplies,
   isReply = false,
+  isPending = false,
 }: CommentItemProps) {
   const t = useTranslations("comments");
   const [showReplies, setShowReplies] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
   const isOwnComment = currentUserId === comment.user_id;
   const canModerate = isContentOwner && !isOwnComment;
@@ -75,9 +92,40 @@ export function CommentItem({
     setRelativeTime(formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }));
   }, [comment.created_at]);
 
+  // Focus reply input when replying starts
+  useEffect(() => {
+    if (isReplying && replyInputRef.current) {
+      replyInputRef.current.focus();
+    }
+  }, [isReplying]);
+
+  // Auto-expand replies when replying to show the new reply
+  useEffect(() => {
+    if (isReplying && comment.reply_count > 0 && !showReplies) {
+      setShowReplies(true);
+      if (!replies?.length) {
+        onLoadReplies?.();
+      }
+    }
+  }, [isReplying, comment.reply_count, showReplies, replies?.length, onLoadReplies]);
+
   const handleReply = () => {
     triggerHaptic("selection");
     onReply?.(comment);
+  };
+
+  const handleSubmitReply = () => {
+    const trimmed = replyContent.trim();
+    if (!trimmed || isSubmittingReply) return;
+    triggerHaptic("selection");
+    onSubmitReply?.(trimmed);
+    setReplyContent("");
+  };
+
+  const handleCancelReply = () => {
+    triggerHaptic("light");
+    setReplyContent("");
+    onCancelReply?.();
   };
 
   const handleDelete = async () => {
@@ -105,7 +153,7 @@ export function CommentItem({
   };
 
   return (
-    <div className={isReply ? "pl-10" : ""}>
+    <div className={`${isReply ? "pl-10" : ""} ${isPending ? "opacity-60" : ""}`}>
       <div className="flex gap-3">
         {/* Avatar */}
         <Avatar className="w-8 h-8 flex-shrink-0">
@@ -125,10 +173,15 @@ export function CommentItem({
                   ({t("edited")})
                 </span>
               )}
+              {isPending && (
+                <span className="text-xs text-muted-foreground italic">
+                  (sending...)
+                </span>
+              )}
             </div>
 
             {/* Actions dropdown */}
-            {showActions && !comment.is_deleted && (
+            {showActions && !comment.is_deleted && !isPending && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -176,9 +229,9 @@ export function CommentItem({
           </p>
 
           {/* Reply button + thread toggle */}
-          {!comment.is_deleted && !isReply && (
+          {!comment.is_deleted && !isReply && !isPending && (
             <div className="flex items-center gap-4 mt-2">
-              {onReply && (
+              {onReply && !isReplying && (
                 <button
                   onClick={handleReply}
                   className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -208,11 +261,58 @@ export function CommentItem({
               )}
             </div>
           )}
+
+          {/* Inline reply form */}
+          {isReplying && (
+            <div className="mt-3 flex gap-2 items-end">
+              <div className="flex-1">
+                <textarea
+                  ref={replyInputRef}
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder={t("replyPlaceholder", { name: displayName })}
+                  disabled={isSubmittingReply}
+                  rows={1}
+                  className="w-full resize-none min-h-[40px] max-h-[100px] px-3 py-2 text-sm rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmitReply();
+                    }
+                    if (e.key === "Escape") {
+                      handleCancelReply();
+                    }
+                  }}
+                />
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleCancelReply}
+                disabled={isSubmittingReply}
+                className="h-10 w-10 flex-shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+              <Button
+                size="icon"
+                onClick={handleSubmitReply}
+                disabled={!replyContent.trim() || isSubmittingReply}
+                className="h-10 w-10 flex-shrink-0"
+              >
+                {isSubmittingReply ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Nested replies */}
-      {showReplies && comment.reply_count > 0 && (
+      {(showReplies || isReplying) && (comment.reply_count > 0 || replies?.length) && (
         <div className="mt-3 space-y-3">
           {repliesLoading ? (
             <div className="pl-10 text-sm text-muted-foreground">
@@ -228,6 +328,7 @@ export function CommentItem({
                 onEdit={onEdit}
                 onDelete={onDelete}
                 isReply
+                isPending={reply.id.startsWith("temp-")}
               />
             ))
           )}

@@ -2,11 +2,10 @@
 
 import { useState, useRef } from "react";
 import { Send, Loader2, X } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { Button } from "@/components/ui/button";
 import { triggerHaptic } from "@/lib/haptics";
-import type { Locale } from "@/lib/types";
 
 interface CommentFormProps {
   /** Callback when comment is submitted */
@@ -39,7 +38,6 @@ export function CommentForm({
   aiContext = "a comment on a community event",
 }: CommentFormProps) {
   const t = useTranslations("comments");
-  const locale = useLocale() as Locale;
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);

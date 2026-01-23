@@ -12,7 +12,6 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { CommentList } from "./comment-list";
 import { CommentForm } from "./comment-form";
 import { triggerHaptic } from "@/lib/haptics";
-import { inngest } from "@/lib/inngest/client";
 import type { CommentWithProfile, CommentTargetType, Locale } from "@/lib/types";
 
 interface CommentsSheetProps {
@@ -52,6 +51,10 @@ export function CommentsSheet({
   initialCount = 0,
   onCountChange,
 }: CommentsSheetProps) {
+  // Note: eventSlug and contentTitle are passed for API compatibility but not currently used
+  void eventSlug;
+  void contentTitle;
+
   const t = useTranslations("comments");
   const locale = useLocale() as Locale;
 
@@ -148,11 +151,34 @@ export function CommentsSheet({
     }
   };
 
-  // Submit a new comment
+  // Create an optimistic comment for instant UI feedback
+  const createOptimisticComment = (content: string, parentId?: string): CommentWithProfile => {
+    const tempId = `temp-${Date.now()}`;
+    return {
+      id: tempId,
+      user_id: currentUserId!,
+      content,
+      parent_id: parentId || null,
+      is_edited: false,
+      is_deleted: false,
+      edited_at: null,
+      source_locale: locale,
+      created_at: new Date().toISOString(),
+      reply_count: 0,
+      username: null,
+      display_name: null,
+      avatar_url: null,
+    };
+  };
+
+  // Submit a new top-level comment with optimistic update
   const handleSubmit = async (content: string) => {
     if (!currentUserId) return;
 
-    setSubmitting(true);
+    // Optimistic update - add comment immediately
+    const optimisticComment = createOptimisticComment(content);
+    setComments((prev) => [optimisticComment, ...prev]);
+    onCountChange?.((initialCount || 0) + 1);
     triggerHaptic("selection");
 
     try {
@@ -163,41 +189,118 @@ export function CommentsSheet({
           targetType,
           targetId,
           content,
-          parentId: replyingTo?.id,
           sourceLocale: locale,
         }),
       });
 
       const data = await response.json();
 
-      if (data.ok && data.comment) {
-        if (replyingTo) {
-          // Add to replies map
-          setRepliesMap((prev) => {
-            const next = new Map(prev);
-            const existing = next.get(replyingTo.id) || [];
-            next.set(replyingTo.id, [...existing, data.comment]);
-            return next;
-          });
-          // Update reply count on parent
-          setComments((prev) =>
-            prev.map((c) =>
-              c.id === replyingTo.id
-                ? { ...c, reply_count: c.reply_count + 1 }
-                : c
-            )
-          );
-        } else {
-          // Add to top of comments list
-          setComments((prev) => [data.comment, ...prev]);
-          onCountChange?.((initialCount || 0) + 1);
-        }
+      // Handle API errors - remove optimistic comment
+      if (!response.ok || data.error) {
+        console.error("[comments] API error:", data.error);
+        setComments((prev) => prev.filter((c) => c.id !== optimisticComment.id));
+        onCountChange?.(initialCount || 0);
+        return;
+      }
 
-        setReplyingTo(null);
+      if (data.ok && data.comment) {
+        // Replace optimistic comment with real comment
+        setComments((prev) =>
+          prev.map((c) => (c.id === optimisticComment.id ? data.comment : c))
+        );
         triggerHaptic("medium");
       }
     } catch (error) {
       console.error("[comments] Error submitting comment:", error);
+      // Remove optimistic comment on error
+      setComments((prev) => prev.filter((c) => c.id !== optimisticComment.id));
+      onCountChange?.(initialCount || 0);
+    }
+  };
+
+  // Submit a reply with optimistic update (inline reply)
+  const handleSubmitReply = async (content: string) => {
+    if (!currentUserId || !replyingTo) return;
+
+    const parentId = replyingTo.id;
+
+    // Optimistic update - add reply immediately
+    const optimisticReply = createOptimisticComment(content, parentId);
+    setRepliesMap((prev) => {
+      const next = new Map(prev);
+      const existing = next.get(parentId) || [];
+      next.set(parentId, [...existing, optimisticReply]);
+      return next;
+    });
+    // Update reply count immediately
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === parentId ? { ...c, reply_count: c.reply_count + 1 } : c
+      )
+    );
+    setReplyingTo(null);
+    triggerHaptic("selection");
+    setSubmitting(true);
+
+    try {
+      const response = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetType,
+          targetId,
+          content,
+          parentId,
+          sourceLocale: locale,
+        }),
+      });
+
+      const data = await response.json();
+
+      // Handle API errors - remove optimistic reply
+      if (!response.ok || data.error) {
+        console.error("[comments] API error:", data.error);
+        setRepliesMap((prev) => {
+          const next = new Map(prev);
+          const replies = next.get(parentId) || [];
+          next.set(parentId, replies.filter((r) => r.id !== optimisticReply.id));
+          return next;
+        });
+        setComments((prev) =>
+          prev.map((c) =>
+            c.id === parentId ? { ...c, reply_count: c.reply_count - 1 } : c
+          )
+        );
+        return;
+      }
+
+      if (data.ok && data.comment) {
+        // Replace optimistic reply with real reply
+        setRepliesMap((prev) => {
+          const next = new Map(prev);
+          const replies = next.get(parentId) || [];
+          next.set(
+            parentId,
+            replies.map((r) => (r.id === optimisticReply.id ? data.comment : r))
+          );
+          return next;
+        });
+        triggerHaptic("medium");
+      }
+    } catch (error) {
+      console.error("[comments] Error submitting reply:", error);
+      // Remove optimistic reply on error
+      setRepliesMap((prev) => {
+        const next = new Map(prev);
+        const replies = next.get(parentId) || [];
+        next.set(parentId, replies.filter((r) => r.id !== optimisticReply.id));
+        return next;
+      });
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === parentId ? { ...c, reply_count: c.reply_count - 1 } : c
+        )
+      );
     } finally {
       setSubmitting(false);
     }
@@ -290,10 +393,14 @@ export function CommentsSheet({
               loading={loading}
               currentUserId={currentUserId}
               isContentOwner={isContentOwner}
+              replyingToId={replyingTo?.id}
+              isSubmittingReply={submitting}
               onReply={(comment) => {
                 triggerHaptic("selection");
                 setReplyingTo(comment);
               }}
+              onSubmitReply={handleSubmitReply}
+              onCancelReply={() => setReplyingTo(null)}
               onDelete={handleDelete}
               onMuteThread={handleMuteThread}
               onLoadReplies={handleLoadReplies}
@@ -305,20 +412,11 @@ export function CommentsSheet({
             />
           </div>
 
-          {/* Comment form (sticky at bottom) */}
-          {currentUserId && (
+          {/* Comment form (sticky at bottom) - only for top-level comments */}
+          {currentUserId && !replyingTo && (
             <div className="flex-shrink-0 border-t p-4 pb-safe">
               <CommentForm
                 onSubmit={handleSubmit}
-                replyingTo={
-                  replyingTo
-                    ? {
-                        id: replyingTo.id,
-                        name: replyingTo.display_name || replyingTo.username || "Anonymous",
-                      }
-                    : undefined
-                }
-                onCancelReply={() => setReplyingTo(null)}
                 disabled={submitting}
                 aiContext={`a comment on ${targetType === "event" ? "an event" : "a moment"}`}
               />

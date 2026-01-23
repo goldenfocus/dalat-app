@@ -15,8 +15,16 @@ interface CommentListProps {
   currentUserId?: string;
   /** Whether current user is the content owner */
   isContentOwner?: boolean;
+  /** ID of comment currently being replied to */
+  replyingToId?: string;
+  /** Whether reply is being submitted */
+  isSubmittingReply?: boolean;
   /** Callback to reply to a comment */
   onReply?: (comment: CommentWithProfile) => void;
+  /** Callback to submit reply */
+  onSubmitReply?: (content: string) => void;
+  /** Callback to cancel reply */
+  onCancelReply?: () => void;
   /** Callback to edit a comment */
   onEdit?: (commentId: string, newContent: string) => Promise<void>;
   /** Callback to delete a comment */
@@ -45,7 +53,11 @@ export function CommentList({
   loading = false,
   currentUserId,
   isContentOwner = false,
+  replyingToId,
+  isSubmittingReply = false,
   onReply,
+  onSubmitReply,
+  onCancelReply,
   onEdit,
   onDelete,
   onMuteThread,
@@ -88,13 +100,18 @@ export function CommentList({
           comment={comment}
           currentUserId={currentUserId}
           isContentOwner={isContentOwner}
+          isReplying={replyingToId === comment.id}
+          isSubmittingReply={isSubmittingReply && replyingToId === comment.id}
           onReply={onReply}
+          onSubmitReply={onSubmitReply}
+          onCancelReply={onCancelReply}
           onEdit={onEdit}
           onDelete={onDelete}
           onMuteThread={onMuteThread}
           replies={repliesMap?.get(comment.id)}
           repliesLoading={loadingReplies?.has(comment.id)}
           onLoadReplies={() => handleLoadReplies(comment.id)}
+          isPending={comment.id.startsWith("temp-")}
         />
       ))}
 
