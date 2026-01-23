@@ -20,7 +20,7 @@ export function VenuePopupCard({ venue, onClose }: VenuePopupCardProps) {
 
   return (
     <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-background rounded-xl shadow-xl border border-border overflow-hidden">
-      <Link href={`/venues/${venue.slug}`} className="block">
+      <Link href={`/venues/${venue.slug}`} className="block" onClick={() => triggerHaptic("selection")}>
         <div className="p-4">
           <div className="flex items-start gap-3">
             {/* Logo or type icon */}
@@ -117,9 +117,10 @@ export function VenuePopupCard({ venue, onClose }: VenuePopupCardProps) {
       <button
         onClick={(e) => {
           e.stopPropagation();
+          triggerHaptic("selection");
           onClose();
         }}
-        className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center"
+        className="absolute top-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center active:scale-95 transition-transform"
         aria-label="Close"
       >
         <X className="w-4 h-4" />

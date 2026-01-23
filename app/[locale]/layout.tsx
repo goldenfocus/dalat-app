@@ -94,7 +94,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
                 {children}
               </main>
-              <MobileBottomNav isAuthenticated={!!user} />
+              <MobileBottomNav />
               <GlobalFooter />
               {godMode.isActive && godMode.targetProfile && (
                 <GodModeIndicator targetProfile={godMode.targetProfile} />

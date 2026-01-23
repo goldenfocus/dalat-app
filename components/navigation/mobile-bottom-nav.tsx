@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Calendar, MapPin, Plus, User, Film } from "lucide-react";
+import { Calendar, MapPin, Film } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 
@@ -12,61 +12,34 @@ const NAV_ITEMS = [
     href: "/map",
     icon: MapPin,
     labelKey: "map",
-    requiresAuth: false,
   },
   {
     key: "calendar",
     href: "/calendar",
     icon: Calendar,
     labelKey: "calendar",
-    requiresAuth: false,
   },
   {
     key: "moments",
     href: "/moments",
     icon: Film,
     labelKey: "moments",
-    requiresAuth: false,
-  },
-  {
-    key: "create",
-    href: "/events/new",
-    icon: Plus,
-    labelKey: "create",
-    requiresAuth: true,
-  },
-  {
-    key: "profile",
-    href: "/settings/profile",
-    icon: User,
-    labelKey: "profile",
-    requiresAuth: true,
   },
 ];
-
-interface MobileBottomNavProps {
-  isAuthenticated?: boolean;
-}
 
 function normalizePath(pathname: string) {
   return pathname.replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
 }
 
-export function MobileBottomNav({ isAuthenticated = false }: MobileBottomNavProps) {
+export function MobileBottomNav() {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
-  const tCommon = useTranslations("common");
   const normalizedPath = normalizePath(pathname);
 
   // Hide nav on immersive moments feed for TikTok-style experience
   if (normalizedPath === "/moments") {
     return null;
   }
-
-  // Filter items based on auth status
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.requiresAuth || isAuthenticated
-  );
 
   return (
     <nav
@@ -75,21 +48,15 @@ export function MobileBottomNav({ isAuthenticated = false }: MobileBottomNavProp
       aria-label="Primary"
     >
       <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
-        {visibleItems.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-
-          // Profile is active for any /settings path
-          const isActive = item.key === "profile"
-            ? normalizedPath.startsWith("/settings")
-            : item.href && normalizedPath.startsWith(item.href);
-          const label = item.labelKey === "create"
-            ? tCommon("create")
-            : tNav(item.labelKey);
+          const isActive = normalizedPath.startsWith(item.href);
+          const label = tNav(item.labelKey);
 
           return (
             <Link
               key={item.key}
-              href={item.href!}
+              href={item.href}
               prefetch={false}
               onClick={() => triggerHaptic("selection")}
               aria-label={label}

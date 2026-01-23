@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { cloudflareLoader } from "@/lib/image-cdn";
-import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, MapPin, Plus } from "lucide-react";
+import { AuthButton } from "@/components/auth-button";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -331,12 +333,27 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
             <ArrowLeft className="w-4 h-4" />
             <span>{tCommon("back")}</span>
           </Link>
-          {/* Discovery mode indicator */}
-          {isDiscoveryMode && (
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-              {t("discoveryMode")}
-            </span>
-          )}
+          <div className="flex items-center gap-1">
+            {/* Discovery mode indicator */}
+            {isDiscoveryMode && (
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full mr-2">
+                {t("discoveryMode")}
+              </span>
+            )}
+            {user && (
+              <Link
+                href="/events/new"
+                prefetch={false}
+                className="flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+                aria-label="Create event"
+              >
+                <Plus className="w-5 h-5" />
+              </Link>
+            )}
+            <Suspense>
+              <AuthButton />
+            </Suspense>
+          </div>
         </div>
       </nav>
 

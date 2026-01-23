@@ -1,10 +1,12 @@
 import { Suspense } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Plus } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import type { Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { EventMap } from "@/components/map/event-map";
+import { AuthButton } from "@/components/auth-button";
+import { getEffectiveUser } from "@/lib/god-mode";
 import type { Event, VenueMapMarker } from "@/lib/types";
 import type { Metadata } from "next";
 import { generateLocalizedMetadata } from "@/lib/metadata";
@@ -94,11 +96,14 @@ export default async function MapPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const { user } = await getEffectiveUser();
+  const isAuthenticated = !!user;
+
   return (
     <main className="h-[100dvh] flex flex-col">
       {/* Header */}
       <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 max-w-5xl items-center mx-auto px-4">
+        <div className="container flex h-14 max-w-5xl items-center justify-between mx-auto px-4">
           <Link
             href="/"
             className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
@@ -106,6 +111,21 @@ export default async function MapPage({ params }: PageProps) {
             <ArrowLeft className="w-4 h-4" />
             <span>Event Map</span>
           </Link>
+          <div className="flex items-center gap-1">
+            {isAuthenticated && (
+              <Link
+                href="/events/new"
+                prefetch={false}
+                className="flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+                aria-label="Create event"
+              >
+                <Plus className="w-5 h-5" />
+              </Link>
+            )}
+            <Suspense>
+              <AuthButton />
+            </Suspense>
+          </div>
         </div>
       </nav>
 

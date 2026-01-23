@@ -48,7 +48,7 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
             <Link
               href="/events/new"
               prefetch={false}
-              className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+              className="flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
               aria-label="Create event"
             >
               <Plus className="w-5 h-5" />
