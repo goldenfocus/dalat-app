@@ -1,9 +1,11 @@
 /**
  * Backfill script to add latitude/longitude coordinates to existing events
  *
- * Uses Google Places API to get coordinates from:
- * 1. place_id extracted from google_maps_url (most accurate)
- * 2. Geocoding from address field (fallback)
+ * Strategy (in order):
+ * 1. Extract coordinates from google_maps_url (if embedded @lat,lng)
+ * 2. Geocode address using OpenStreetMap Nominatim
+ * 3. Geocode location_name as fallback
+ * 4. Default to Da Lat city center for remaining events
  *
  * Run with: npx tsx scripts/backfill-event-coordinates.ts
  */
@@ -16,75 +18,59 @@ config({ path: ".env.local" });
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!;
+
+// Da Lat city center - fallback for events we can't geocode
+const DALAT_CENTER = { lat: 11.9404, lng: 108.4583 };
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
   process.exit(1);
 }
 
-if (!GOOGLE_MAPS_API_KEY) {
-  console.error("Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY");
-  process.exit(1);
-}
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-// Extract place_id from Google Maps URL
-function extractPlaceId(url: string | null): string | null {
+// Extract coordinates from Google Maps URL (e.g., @11.9404,108.4583,15z)
+function extractCoordsFromUrl(url: string | null): { lat: number; lng: number } | null {
   if (!url) return null;
 
-  // Format: https://www.google.com/maps/place/?q=place_id:ChIJ...
-  const placeIdMatch = url.match(/place_id[=:]([A-Za-z0-9_-]+)/);
-  if (placeIdMatch) return placeIdMatch[1];
-
-  // Format: /place/.../@lat,lng,zoom/data=...!1s0x...!2s...
-  // The place_id is sometimes encoded in the data parameter
-  const dataMatch = url.match(/!1s(0x[a-f0-9]+:[a-f0-9]+)/i);
-  if (dataMatch) return dataMatch[1];
+  // Pattern: @lat,lng,zoom or @lat,lng
+  const match = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+  if (match) {
+    const lat = parseFloat(match[1]);
+    const lng = parseFloat(match[2]);
+    // Validate it's a reasonable lat/lng (not zoom level etc)
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return { lat, lng };
+    }
+  }
 
   return null;
 }
 
-// Get coordinates from place_id using Places API
-async function getCoordinatesFromPlaceId(placeId: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=geometry&key=${GOOGLE_MAPS_API_KEY}`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.status === "OK" && data.result?.geometry?.location) {
-      return {
-        lat: data.result.geometry.location.lat,
-        lng: data.result.geometry.location.lng,
-      };
-    }
-    return null;
-  } catch (error) {
-    console.error(`Error fetching place details for ${placeId}:`, error);
-    return null;
-  }
-}
-
-// Get coordinates from address using Geocoding API
+// Get coordinates from address using OpenStreetMap Nominatim (free, no API key)
 async function getCoordinatesFromAddress(address: string): Promise<{ lat: number; lng: number } | null> {
   try {
-    // Add "Vietnam" to improve accuracy for local addresses
-    const searchAddress = address.includes("Vietnam") ? address : `${address}, Vietnam`;
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(searchAddress)}&key=${GOOGLE_MAPS_API_KEY}`;
-    const response = await fetch(url);
+    // Add "Da Lat, Vietnam" to improve accuracy for local addresses
+    const searchAddress = address.includes("Vietnam") || address.includes("Việt Nam")
+      ? address
+      : `${address}, Da Lat, Vietnam`;
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}&limit=1`;
+
+    const response = await fetch(url, {
+      headers: {
+        // Nominatim requires a User-Agent header
+        "User-Agent": "dalat-app/1.0 (https://dalat.app)",
+      },
+    });
+
     const data = await response.json();
 
-    if (data.status === "OK" && data.results?.[0]?.geometry?.location) {
+    if (data && data.length > 0 && data[0].lat && data[0].lon) {
       return {
-        lat: data.results[0].geometry.location.lat,
-        lng: data.results[0].geometry.location.lng,
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon),
       };
-    }
-
-    // Debug: show why it failed
-    if (data.status !== "OK") {
-      console.log(`    API status: ${data.status} - ${data.error_message || "no error message"}`);
     }
 
     return null;
@@ -101,8 +87,7 @@ async function backfillEventCoordinates() {
   const { data: events, error } = await supabase
     .from("events")
     .select("id, title, address, location_name, google_maps_url")
-    .is("latitude", null)
-    .not("address", "is", null);
+    .is("latitude", null);
 
   if (error) {
     console.error("Error fetching events:", error);
@@ -119,59 +104,80 @@ async function backfillEventCoordinates() {
   let successCount = 0;
   let failCount = 0;
 
+  let urlExtracted = 0;
+  let geocoded = 0;
+  let defaulted = 0;
+
   for (const event of events) {
     console.log(`Processing: ${event.title}`);
 
     let coordinates: { lat: number; lng: number } | null = null;
+    let source = "";
 
-    // Try place_id first (most accurate)
-    const placeId = extractPlaceId(event.google_maps_url);
-    if (placeId) {
-      console.log(`  - Found place_id: ${placeId}`);
-      coordinates = await getCoordinatesFromPlaceId(placeId);
+    // 1. Try extracting from Google Maps URL first (instant, no API call)
+    coordinates = extractCoordsFromUrl(event.google_maps_url);
+    if (coordinates) {
+      source = "url";
+      urlExtracted++;
+      console.log(`  - Extracted from URL: (${coordinates.lat}, ${coordinates.lng})`);
     }
 
-    // Fallback to geocoding from address
+    // 2. Try geocoding from address
     if (!coordinates && event.address) {
       console.log(`  - Geocoding address: ${event.address}`);
       coordinates = await getCoordinatesFromAddress(event.address);
+      if (coordinates) {
+        source = "geocoded";
+        geocoded++;
+      }
+      // Rate limit only for API calls
+      await new Promise((resolve) => setTimeout(resolve, 1100));
     }
 
-    // Last resort: try location_name
+    // 3. Fallback: try location_name
     if (!coordinates && event.location_name) {
       console.log(`  - Geocoding location name: ${event.location_name}`);
       coordinates = await getCoordinatesFromAddress(event.location_name);
-    }
-
-    if (coordinates) {
-      const { error: updateError } = await supabase
-        .from("events")
-        .update({
-          latitude: coordinates.lat,
-          longitude: coordinates.lng,
-        })
-        .eq("id", event.id);
-
-      if (updateError) {
-        console.log(`  ✗ Failed to update: ${updateError.message}`);
-        failCount++;
-      } else {
-        console.log(`  ✓ Updated: (${coordinates.lat}, ${coordinates.lng})`);
-        successCount++;
+      if (coordinates) {
+        source = "geocoded";
+        geocoded++;
       }
-    } else {
-      console.log(`  ✗ Could not find coordinates`);
-      failCount++;
+      await new Promise((resolve) => setTimeout(resolve, 1100));
     }
 
-    // Rate limiting: wait 100ms between API calls
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // 4. Last resort: default to Da Lat center
+    if (!coordinates) {
+      coordinates = DALAT_CENTER;
+      source = "default";
+      defaulted++;
+      console.log(`  - Defaulting to Da Lat center`);
+    }
+
+    // Update the event
+    const { error: updateError } = await supabase
+      .from("events")
+      .update({
+        latitude: coordinates.lat,
+        longitude: coordinates.lng,
+      })
+      .eq("id", event.id);
+
+    if (updateError) {
+      console.log(`  ✗ Failed to update: ${updateError.message}`);
+      failCount++;
+    } else {
+      console.log(`  ✓ Updated [${source}]: (${coordinates.lat}, ${coordinates.lng})`);
+      successCount++;
+    }
   }
 
   console.log(`\n--- Summary ---`);
-  console.log(`Success: ${successCount}`);
-  console.log(`Failed: ${failCount}`);
   console.log(`Total: ${events.length}`);
+  console.log(`Success: ${successCount}`);
+  console.log(`  - From URL: ${urlExtracted}`);
+  console.log(`  - Geocoded: ${geocoded}`);
+  console.log(`  - Defaulted to Da Lat center: ${defaulted}`);
+  console.log(`Failed: ${failCount}`);
 }
 
 backfillEventCoordinates().catch(console.error);

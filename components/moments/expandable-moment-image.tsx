@@ -21,7 +21,7 @@ export function ExpandableMomentImage({ src, alt }: ExpandableMomentImageProps) 
     <>
       <button
         onClick={() => setIsLightboxOpen(true)}
-        className="absolute inset-0 w-full h-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="group absolute inset-0 w-full h-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         aria-label="Expand image"
       >
         <Image
