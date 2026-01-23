@@ -107,7 +107,14 @@
     "wellEmailYouLink": "我们将发送登录链接到您的邮箱",
     "orUsePassword": "或使用密码登录",
     "sendMagicLink": "发送登录链接",
-    "magicLinkSent": "登录链接已发送！请查收邮件。"
+    "magicLinkSent": "登录链接已发送！请查收邮件。",
+    "successTitle": "就快完成了！",
+    "successSubtitle": "我们已向以下邮箱发送了链接",
+    "successHint": "点击链接开始探索大叻的活动",
+    "checkSpamHint": "请查看收件箱（或垃圾邮件，没关系的）",
+    "resendEmail": "没收到？重新发送",
+    "resending": "发送中...",
+    "emailResent": "已发送！请再次查看"
   },
   "errors": {
     "somethingWentWrong": "抱歉，出了点问题。",

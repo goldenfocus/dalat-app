@@ -107,7 +107,14 @@
     "wellEmailYouLink": "Мы отправим вам ссылку для входа",
     "orUsePassword": "или войти с паролем",
     "sendMagicLink": "Отправить magic link",
-    "magicLinkSent": "Magic link отправлен! Проверьте почту."
+    "magicLinkSent": "Magic link отправлен! Проверьте почту.",
+    "successTitle": "Почти готово!",
+    "successSubtitle": "Мы отправили ссылку на",
+    "successHint": "Нажмите, чтобы открыть события в Далате",
+    "checkSpamHint": "Проверьте входящие (или спам, мы не осудим)",
+    "resendEmail": "Не получили? Отправить ещё раз",
+    "resending": "Отправляем...",
+    "emailResent": "Отправлено! Проверьте ещё раз"
   },
   "errors": {
     "somethingWentWrong": "Извините, что-то пошло не так.",

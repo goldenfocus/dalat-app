@@ -87,6 +87,10 @@ export default {
           "0%": { transform: "scale(0.95)", opacity: "1" },
           "70%, 100%": { transform: "scale(1.3)", opacity: "0" },
         },
+        "bounce-gentle": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
       },
       animation: {
         ripple: "ripple 0.6s ease-out forwards",
@@ -94,6 +98,7 @@ export default {
         "press-out": "press-out 0.2s ease-out forwards",
         shimmer: "shimmer 2s infinite linear",
         "pulse-ring": "pulse-ring 1.5s ease-out infinite",
+        "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
       },
     },
   },

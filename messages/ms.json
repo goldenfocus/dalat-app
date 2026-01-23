@@ -107,7 +107,14 @@
     "wellEmailYouLink": "Kami akan hantar pautan log masuk",
     "orUsePassword": "atau log masuk dengan kata laluan",
     "sendMagicLink": "Hantar pautan ajaib",
-    "magicLinkSent": "Pautan ajaib dihantar! Semak emel anda."
+    "magicLinkSent": "Pautan ajaib dihantar! Semak emel anda.",
+    "successTitle": "Hampir siap!",
+    "successSubtitle": "Kami telah hantar pautan ajaib ke",
+    "successHint": "Klik untuk mula meneroka acara di Đà Lạt",
+    "checkSpamHint": "Semak peti masuk anda (atau spam, kami tak kisah)",
+    "resendEmail": "Tak terima? Hantar semula",
+    "resending": "Menghantar...",
+    "emailResent": "Dihantar! Semak sekali lagi"
   },
   "errors": {
     "somethingWentWrong": "Maaf, sesuatu tidak kena.",

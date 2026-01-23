@@ -121,7 +121,14 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "successTitle": "You're almost in!",
+    "successSubtitle": "We sent a magic link to",
+    "successHint": "Click it to start discovering events in Đà Lạt",
+    "checkSpamHint": "Check your inbox (or spam folder, we won't judge)",
+    "resendEmail": "Didn't get it? Resend",
+    "resending": "Sending...",
+    "emailResent": "Sent! Check your inbox again"
   },
   "errors": {
     "somethingWentWrong": "Sorry, something went wrong.",
@@ -679,6 +686,10 @@
     "welcome": "Welcome to ĐàLạt.app",
     "letsSetup": "Let's set up your profile",
     "continue": "Continue",
+    "languageStep": {
+      "detected": "Detected:",
+      "greeting": "Hello!"
+    },
     "avatarStep": {
       "subtitle": "Choose how you want to appear",
       "preview": "Your avatar preview",

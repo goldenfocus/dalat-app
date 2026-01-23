@@ -113,7 +113,14 @@
     "wellEmailYouLink": "Chúng tôi sẽ gửi liên kết đăng nhập",
     "orUsePassword": "hoặc đăng nhập bằng mật khẩu",
     "sendMagicLink": "Gửi liên kết đăng nhập",
-    "magicLinkSent": "Đã gửi liên kết! Kiểm tra email của bạn."
+    "magicLinkSent": "Đã gửi liên kết! Kiểm tra email của bạn.",
+    "successTitle": "Sắp xong rồi!",
+    "successSubtitle": "Chúng tôi đã gửi liên kết đến",
+    "successHint": "Nhấp vào để bắt đầu khám phá sự kiện tại Đà Lạt",
+    "checkSpamHint": "Kiểm tra hộp thư đến (hoặc thư rác, không sao đâu)",
+    "resendEmail": "Không nhận được? Gửi lại",
+    "resending": "Đang gửi...",
+    "emailResent": "Đã gửi! Kiểm tra lại hộp thư"
   },
   "errors": {
     "somethingWentWrong": "Xin lỗi, đã xảy ra lỗi.",
@@ -585,6 +592,10 @@
     "welcome": "Chào mừng đến với ĐàLạt.app",
     "letsSetup": "Hãy thiết lập hồ sơ của bạn",
     "continue": "Tiếp tục",
+    "languageStep": {
+      "detected": "Đã phát hiện:",
+      "greeting": "Xin chào!"
+    },
     "avatarStep": {
       "subtitle": "Chọn cách bạn muốn xuất hiện",
       "preview": "Xem trước ảnh đại diện",

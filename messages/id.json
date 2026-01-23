@@ -107,7 +107,14 @@
     "wellEmailYouLink": "Kami akan mengirim tautan masuk",
     "orUsePassword": "atau masuk dengan kata sandi",
     "sendMagicLink": "Kirim tautan ajaib",
-    "magicLinkSent": "Tautan ajaib terkirim! Periksa email Anda."
+    "magicLinkSent": "Tautan ajaib terkirim! Periksa email Anda.",
+    "successTitle": "Hampir selesai!",
+    "successSubtitle": "Kami sudah kirim tautan ajaib ke",
+    "successHint": "Klik untuk mulai menjelajahi acara di Đà Lạt",
+    "checkSpamHint": "Cek inbox kamu (atau spam, kita nggak judge)",
+    "resendEmail": "Belum dapat? Kirim ulang",
+    "resending": "Mengirim...",
+    "emailResent": "Terkirim! Cek lagi ya"
   },
   "errors": {
     "somethingWentWrong": "Maaf, terjadi kesalahan.",

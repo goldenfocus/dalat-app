@@ -107,7 +107,14 @@
     "wellEmailYouLink": "サインインリンクをメールでお送りします",
     "orUsePassword": "またはパスワードでサインイン",
     "sendMagicLink": "マジックリンクを送信",
-    "magicLinkSent": "マジックリンクを送信しました！メールを確認してください。"
+    "magicLinkSent": "マジックリンクを送信しました！メールを確認してください。",
+    "successTitle": "あと少しです！",
+    "successSubtitle": "マジックリンクを送信しました",
+    "successHint": "クリックしてダラットのイベントを発見しましょう",
+    "checkSpamHint": "受信トレイを確認してください（迷惑メールフォルダもね）",
+    "resendEmail": "届きませんか？再送信",
+    "resending": "送信中...",
+    "emailResent": "送信完了！もう一度確認してください"
   },
   "errors": {
     "somethingWentWrong": "申し訳ありません、問題が発生しました。",

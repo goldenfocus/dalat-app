@@ -107,7 +107,14 @@
     "wellEmailYouLink": "Wir senden Ihnen einen Anmeldelink",
     "orUsePassword": "oder mit Passwort anmelden",
     "sendMagicLink": "Magic Link senden",
-    "magicLinkSent": "Magic Link gesendet! Überprüfen Sie Ihre E-Mail."
+    "magicLinkSent": "Magic Link gesendet! Überprüfen Sie Ihre E-Mail.",
+    "successTitle": "Fast geschafft!",
+    "successSubtitle": "Wir haben einen Magic Link gesendet an",
+    "successHint": "Klicke darauf, um Events in Đà Lạt zu entdecken",
+    "checkSpamHint": "Prüfe deinen Posteingang (oder Spam, wir urteilen nicht)",
+    "resendEmail": "Nicht erhalten? Erneut senden",
+    "resending": "Wird gesendet...",
+    "emailResent": "Gesendet! Prüfe erneut"
   },
   "errors": {
     "somethingWentWrong": "Entschuldigung, etwas ist schiefgelaufen.",

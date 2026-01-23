@@ -107,7 +107,14 @@
     "wellEmailYouLink": "Te enviaremos un enlace de inicio de sesión",
     "orUsePassword": "o inicia sesión con contraseña",
     "sendMagicLink": "Envíame un enlace mágico",
-    "magicLinkSent": "¡Enlace mágico enviado! Revisa tu email."
+    "magicLinkSent": "¡Enlace mágico enviado! Revisa tu email.",
+    "successTitle": "¡Ya casi está!",
+    "successSubtitle": "Enviamos un enlace mágico a",
+    "successHint": "Haz clic para descubrir eventos en Đà Lạt",
+    "checkSpamHint": "Revisa tu bandeja de entrada (o spam, no juzgamos)",
+    "resendEmail": "¿No lo recibiste? Reenviar",
+    "resending": "Enviando...",
+    "emailResent": "¡Enviado! Revisa de nuevo"
   },
   "errors": {
     "somethingWentWrong": "Lo sentimos, algo salió mal.",

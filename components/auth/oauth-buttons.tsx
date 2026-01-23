@@ -81,12 +81,17 @@ function Divider({ text }: { text: string }) {
 
 export function OAuthButtons() {
   const t = useTranslations("auth");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   return (
     <div>
-      <GoogleButton />
-      <Divider text={t("orContinueWith")} />
-      <EmailAuthForm />
+      {!showSuccess && (
+        <>
+          <GoogleButton />
+          <Divider text={t("orContinueWith")} />
+        </>
+      )}
+      <EmailAuthForm onSuccessChange={setShowSuccess} />
     </div>
   );
 }

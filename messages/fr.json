@@ -120,7 +120,14 @@
     "verifyConfirming": "Confirmation...",
     "verifyHint": "Cette étape supplémentaire empêche les scanners de sécurité d'invalider votre lien.",
     "verifyInvalidTitle": "Lien invalide",
-    "verifyInvalidDescription": "Ce lien de vérification est invalide ou a expiré."
+    "verifyInvalidDescription": "Ce lien de vérification est invalide ou a expiré.",
+    "successTitle": "Vous y êtes presque !",
+    "successSubtitle": "Nous avons envoyé un lien magique à",
+    "successHint": "Cliquez dessus pour découvrir les événements à Đà Lạt",
+    "checkSpamHint": "Vérifiez votre boîte de réception (ou les spams, on ne juge pas)",
+    "resendEmail": "Pas reçu ? Renvoyer",
+    "resending": "Envoi en cours...",
+    "emailResent": "Envoyé ! Vérifiez à nouveau"
   },
   "errors": {
     "somethingWentWrong": "Désolé, une erreur s'est produite.",
