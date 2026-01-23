@@ -654,7 +654,8 @@
     "addToCalendar": "カレンダーに追加",
     "viewEventPage": "イベントページを見る",
     "poweredBy": "提供",
-    "rsvpFailed": "回答の保存に失敗しました。もう一度お試しください。"
+    "rsvpFailed": "回答の保存に失敗しました。もう一度お試しください。",
+    "eventEnded": "このイベントは終了しました"
   },
   "moments": {
     "moments": "モーメント",

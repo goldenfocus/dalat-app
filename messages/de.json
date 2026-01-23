@@ -654,7 +654,8 @@
     "addToCalendar": "Zum Kalender hinzufügen",
     "viewEventPage": "Event-Seite ansehen",
     "poweredBy": "Unterstützt von",
-    "rsvpFailed": "Antwort konnte nicht gespeichert werden. Bitte versuche es erneut."
+    "rsvpFailed": "Antwort konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "eventEnded": "Diese Veranstaltung ist beendet"
   },
   "moments": {
     "moments": "Moments",

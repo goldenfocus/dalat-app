@@ -43,6 +43,7 @@ export interface NotificationContent {
 export interface EmailNotificationContent extends NotificationContent {
   subject: string;
   html?: string;
+  text?: string; // Plain text alternative for better deliverability
   replyTo?: string;
 }
 
@@ -173,8 +174,12 @@ export interface EventInvitationPayload extends BaseNotificationPayload {
   eventTitle: string;
   eventSlug: string;
   eventDescription: string | null;
+  eventImageUrl: string | null;
   startsAt: string;
+  endsAt: string | null;
   locationName: string | null;
+  address: string | null;
+  googleMapsUrl: string | null;
   inviterName: string;
   token: string;
 }

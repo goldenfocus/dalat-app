@@ -24,7 +24,7 @@ export async function POST(
   // Get the event by slug
   const { data: event } = await supabase
     .from('events')
-    .select('id, title, slug, description, starts_at, location_name, created_by')
+    .select('id, title, slug, description, image_url, starts_at, ends_at, location_name, address, google_maps_url, created_by')
     .eq('slug', slug)
     .single();
 
@@ -141,8 +141,12 @@ export async function POST(
         eventTitle: event.title,
         eventSlug: event.slug,
         eventDescription: event.description,
+        eventImageUrl: event.image_url,
         startsAt: event.starts_at,
+        endsAt: event.ends_at,
         locationName: event.location_name,
+        address: event.address,
+        googleMapsUrl: event.google_maps_url,
         inviterName,
         token: existingInvitation.token,
       });

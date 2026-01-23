@@ -40,12 +40,14 @@ export async function sendEmailNotification(
 
   try {
     const html = content.html || generateDefaultEmailHtml(content);
+    const text = content.text || generateDefaultEmailText(content);
 
     const result = await client.emails.send({
       from: 'Dalat Events <events@dalat.app>',
       to,
       subject: content.subject,
       html,
+      text, // Plain text alternative for better deliverability
       replyTo,
     });
 
@@ -109,6 +111,7 @@ export async function sendBulkEmails(
       to: email.to,
       subject: email.content.subject,
       html: email.content.html || generateDefaultEmailHtml(email.content),
+      text: email.content.text || generateDefaultEmailText(email.content),
     }));
 
     try {
@@ -174,4 +177,29 @@ function generateDefaultEmailHtml(content: EmailNotificationContent): string {
 </body>
 </html>
   `.trim();
+}
+
+/**
+ * Generate plain text email from notification content.
+ * Important for email deliverability - spam filters prefer emails with text alternatives.
+ */
+function generateDefaultEmailText(content: EmailNotificationContent): string {
+  const lines: string[] = [
+    content.title,
+    '',
+    content.body,
+    '',
+  ];
+
+  if (content.primaryActionUrl) {
+    lines.push(`${content.primaryActionLabel || 'Click here'}: ${content.primaryActionUrl}`);
+  }
+
+  if (content.secondaryActionUrl) {
+    lines.push(`${content.secondaryActionLabel || 'Alternative'}: ${content.secondaryActionUrl}`);
+  }
+
+  lines.push('', '---', 'Sent via Dalat Events (https://dalat.app)');
+
+  return lines.join('\n');
 }

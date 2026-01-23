@@ -654,7 +654,8 @@
     "addToCalendar": "Agregar al calendario",
     "viewEventPage": "Ver página del evento",
     "poweredBy": "Impulsado por",
-    "rsvpFailed": "Error al guardar respuesta. Por favor intenta de nuevo."
+    "rsvpFailed": "Error al guardar respuesta. Por favor intenta de nuevo.",
+    "eventEnded": "Este evento ha terminado"
   },
   "moments": {
     "moments": "Momentos",

@@ -456,8 +456,61 @@ function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResul
       secondaryActionUrl: `${inviteUrl}?rsvp=cancelled`,
       secondaryActionLabel: inviteTranslations.buttons.notGoing.en,
       html: generateEventInvitationEmailHtml(payload, 'en', inviteUrl, emailFormattedDate, emailFormattedTime),
+      text: generateEventInvitationEmailText(payload, inviteUrl, emailFormattedDate, emailFormattedTime),
     },
   };
+}
+
+/**
+ * Generate plain text email for event invitations.
+ * Critical for email deliverability - spam filters prefer multipart emails.
+ */
+function generateEventInvitationEmailText(
+  payload: EventInvitationPayload,
+  inviteUrl: string,
+  formattedDate: string,
+  formattedTime: string
+): string {
+  const lines: string[] = [
+    `You're Invited!`,
+    '',
+    payload.inviteeName ? `Hey ${payload.inviteeName},` : 'Hey there,',
+    '',
+    `${payload.inviterName} wants you at:`,
+    '',
+    payload.eventTitle,
+    '',
+    `WHEN: ${formattedDate} at ${formattedTime}`,
+  ];
+
+  if (payload.locationName) {
+    lines.push(`WHERE: ${payload.locationName}`);
+    if (payload.address) {
+      lines.push(`       ${payload.address}`);
+    }
+  }
+
+  if (payload.eventDescription) {
+    lines.push('', 'ABOUT:', payload.eventDescription.slice(0, 500));
+  }
+
+  lines.push(
+    '',
+    '---',
+    '',
+    `Count me in! ${inviteUrl}?rsvp=going`,
+    '',
+    `Maybe: ${inviteUrl}?rsvp=interested`,
+    '',
+    `View full details: ${inviteUrl}`,
+    '',
+    "Can't wait to see you there!",
+    '',
+    '---',
+    'Sent via Dalat Events (https://dalat.app)',
+  );
+
+  return lines.join('\n');
 }
 
 function userInvitationTemplate(payload: UserInvitationPayload): TemplateResult {
@@ -697,10 +750,27 @@ function generateEventInvitationEmailHtml(
   formattedTime: string
 ): string {
   const buttonLabels = {
-    going: { en: "Yes, I'm going", fr: 'Oui, je viens', vi: 'Có, tôi sẽ đến' },
+    going: { en: "Count me in!", fr: 'Je viens !', vi: 'Tôi sẽ đến!' },
     maybe: { en: 'Maybe', fr: 'Peut-être', vi: 'Có thể' },
-    notGoing: { en: "Can't make it", fr: 'Non, désolé', vi: 'Không thể đến' },
   };
+
+  const labels = {
+    greeting: { en: 'Hey', fr: 'Salut', vi: 'Chào' },
+    invitedYou: { en: 'wants you at', fr: 'vous invite à', vi: 'mời bạn đến' },
+    joinUs: { en: "Join us for something special!", fr: 'Rejoignez-nous !', vi: 'Hãy cùng tham gia!' },
+    when: { en: 'When', fr: 'Quand', vi: 'Khi nào' },
+    where: { en: 'Where', fr: 'Où', vi: 'Ở đâu' },
+    getDirections: { en: 'Get directions', fr: 'Itinéraire', vi: 'Chỉ đường' },
+    about: { en: 'About this event', fr: "À propos de l'événement", vi: 'Về sự kiện' },
+    seeDetails: { en: 'See full details', fr: 'Voir les détails', vi: 'Xem chi tiết' },
+    footer: { en: "Can't wait to see you there!", fr: 'On a hâte de vous voir !', vi: 'Mong gặp bạn ở đó!' },
+  };
+
+  // Format end time if available
+  const endTime = payload.endsAt
+    ? new Date(payload.endsAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Ho_Chi_Minh' })
+    : null;
+  const timeRange = endTime ? `${formattedTime} - ${endTime}` : formattedTime;
 
   return `
 <!DOCTYPE html>
@@ -708,41 +778,100 @@ function generateEventInvitationEmailHtml(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're Invited!</title>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 24px;">You're Invited!</h1>
-  </div>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f3f4f6;">
+  <div style="padding: 20px;">
+    <!-- Main Card -->
+    <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
 
-  <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 12px 12px;">
-    ${payload.inviteeName ? `<p style="font-size: 16px;">Hi ${payload.inviteeName},</p>` : '<p>Hi there,</p>'}
+      <!-- Event Image/Flyer -->
+      ${payload.eventImageUrl ? `
+      <div style="width: 100%; max-height: 300px; overflow: hidden;">
+        <img src="${payload.eventImageUrl}" alt="${payload.eventTitle}" style="width: 100%; height: auto; display: block; object-fit: cover;" />
+      </div>
+      ` : `
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+        <p style="color: rgba(255,255,255,0.9); font-size: 18px; margin: 0;">✨ ${labels.joinUs[locale]} ✨</p>
+      </div>
+      `}
 
-    <p style="font-size: 16px;">${payload.inviterName} invited you to:</p>
+      <!-- Content -->
+      <div style="padding: 30px;">
+        <!-- Greeting -->
+        <p style="font-size: 16px; color: #6b7280; margin: 0 0 8px 0;">
+          ${labels.greeting[locale]}${payload.inviteeName ? ` ${payload.inviteeName}` : ''},
+        </p>
+        <p style="font-size: 18px; margin: 0 0 24px 0;">
+          <strong>${payload.inviterName}</strong> ${labels.invitedYou[locale]}:
+        </p>
 
-    <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
-      <h2 style="margin: 0 0 10px 0; color: #1f2937;">${payload.eventTitle}</h2>
-      <p style="margin: 5px 0; color: #6b7280;">📅 ${formattedDate} at ${formattedTime}</p>
-      ${payload.locationName ? `<p style="margin: 5px 0; color: #6b7280;">📍 ${payload.locationName}</p>` : ''}
-      ${payload.eventDescription ? `<p style="margin: 15px 0 0 0; color: #4b5563;">${payload.eventDescription.slice(0, 200)}${payload.eventDescription.length > 200 ? '...' : ''}</p>` : ''}
+        <!-- Event Title -->
+        <h1 style="font-size: 28px; font-weight: 700; color: #1f2937; margin: 0 0 24px 0; line-height: 1.2;">
+          ${payload.eventTitle}
+        </h1>
+
+        <!-- Event Details -->
+        <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+          <!-- When -->
+          <div style="display: flex; margin-bottom: 16px;">
+            <div style="width: 24px; margin-right: 12px; text-align: center;">📅</div>
+            <div>
+              <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">${labels.when[locale]}</p>
+              <p style="font-size: 16px; font-weight: 600; margin: 0; color: #1f2937;">${formattedDate}</p>
+              <p style="font-size: 14px; color: #4b5563; margin: 4px 0 0 0;">${timeRange}</p>
+            </div>
+          </div>
+
+          <!-- Where -->
+          ${payload.locationName ? `
+          <div style="display: flex;">
+            <div style="width: 24px; margin-right: 12px; text-align: center;">📍</div>
+            <div>
+              <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">${labels.where[locale]}</p>
+              <p style="font-size: 16px; font-weight: 600; margin: 0; color: #1f2937;">${payload.locationName}</p>
+              ${payload.address ? `<p style="font-size: 14px; color: #4b5563; margin: 4px 0 0 0;">${payload.address}</p>` : ''}
+              ${payload.googleMapsUrl ? `<a href="${payload.googleMapsUrl}" style="font-size: 14px; color: #667eea; text-decoration: none; display: inline-block; margin-top: 8px;">🗺️ ${labels.getDirections[locale]} →</a>` : ''}
+            </div>
+          </div>
+          ` : ''}
+        </div>
+
+        <!-- Description -->
+        ${payload.eventDescription ? `
+        <div style="margin-bottom: 24px;">
+          <p style="font-size: 12px; color: #6b7280; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">${labels.about[locale]}</p>
+          <p style="font-size: 15px; color: #4b5563; margin: 0; white-space: pre-wrap;">${payload.eventDescription.length > 500 ? payload.eventDescription.slice(0, 500) + '...' : payload.eventDescription}</p>
+        </div>
+        ` : ''}
+
+        <!-- CTA Buttons -->
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${inviteUrl}?rsvp=going" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 40px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 18px; box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.5);">
+            ${buttonLabels.going[locale]} 🎉
+          </a>
+        </div>
+        <div style="text-align: center; margin-bottom: 24px;">
+          <a href="${inviteUrl}?rsvp=interested" style="display: inline-block; background: #f3f4f6; color: #4b5563; padding: 12px 28px; border-radius: 50px; text-decoration: none; font-weight: 500; font-size: 14px;">
+            ${buttonLabels.maybe[locale]}
+          </a>
+        </div>
+
+        <!-- View Details Link -->
+        <p style="text-align: center; margin: 0;">
+          <a href="${inviteUrl}" style="color: #667eea; text-decoration: none; font-size: 14px;">${labels.seeDetails[locale]} →</a>
+        </p>
+      </div>
     </div>
 
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${inviteUrl}?rsvp=going" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin: 5px;">
-        ${buttonLabels.going[locale]}
-      </a>
-      <a href="${inviteUrl}?rsvp=interested" style="display: inline-block; background: #f3f4f6; color: #374151; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin: 5px;">
-        ${buttonLabels.maybe[locale]}
-      </a>
+    <!-- Footer -->
+    <div style="text-align: center; padding: 24px 20px;">
+      <p style="font-size: 14px; color: #6b7280; margin: 0 0 8px 0;">${labels.footer[locale]}</p>
+      <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+        Sent via <a href="https://dalat.app" style="color: #667eea; text-decoration: none;">ĐàLạt.app</a>
+      </p>
     </div>
-
-    <p style="font-size: 14px; color: #6b7280; margin-top: 30px; text-align: center;">
-      <a href="${inviteUrl}" style="color: #667eea;">View event details</a>
-    </p>
   </div>
-
-  <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 20px;">
-    Sent via Dalat Events
-  </p>
 </body>
 </html>
   `.trim();

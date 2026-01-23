@@ -654,7 +654,8 @@
     "addToCalendar": "Tambah ke kalender",
     "viewEventPage": "Lihat halaman acara",
     "poweredBy": "Didukung oleh",
-    "rsvpFailed": "Gagal menyimpan respons. Silakan coba lagi."
+    "rsvpFailed": "Gagal menyimpan respons. Silakan coba lagi.",
+    "eventEnded": "Acara ini telah berakhir"
   },
   "moments": {
     "moments": "Momen",

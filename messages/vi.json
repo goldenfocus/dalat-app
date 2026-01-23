@@ -672,7 +672,8 @@
     "addToCalendar": "Thêm vào lịch",
     "viewEventPage": "Xem trang sự kiện",
     "poweredBy": "Được cung cấp bởi",
-    "rsvpFailed": "Không thể lưu câu trả lời. Vui lòng thử lại."
+    "rsvpFailed": "Không thể lưu câu trả lời. Vui lòng thử lại.",
+    "eventEnded": "Sự kiện này đã kết thúc"
   },
   "moments": {
     "moments": "Khoảnh khắc",

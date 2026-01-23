@@ -654,7 +654,8 @@
     "addToCalendar": "添加到日历",
     "viewEventPage": "查看活动页面",
     "poweredBy": "技术支持",
-    "rsvpFailed": "保存回复失败。请重试。"
+    "rsvpFailed": "保存回复失败。请重试。",
+    "eventEnded": "此活动已结束"
   },
   "moments": {
     "moments": "瞬间",

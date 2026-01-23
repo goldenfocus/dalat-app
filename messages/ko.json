@@ -654,7 +654,8 @@
     "addToCalendar": "캘린더에 추가",
     "viewEventPage": "이벤트 페이지 보기",
     "poweredBy": "제공",
-    "rsvpFailed": "응답 저장에 실패했습니다. 다시 시도해 주세요."
+    "rsvpFailed": "응답 저장에 실패했습니다. 다시 시도해 주세요.",
+    "eventEnded": "이 이벤트는 종료되었습니다"
   },
   "moments": {
     "moments": "모먼트",
