@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, Pencil, Settings, Trash2, Copy } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Copy } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -28,10 +28,6 @@ export function EventActions({ eventId, eventSlug }: EventActionsProps) {
 
   function handleEdit() {
     router.push(`/events/${eventSlug}/edit`);
-  }
-
-  function handleSettings() {
-    router.push(`/events/${eventSlug}/settings`);
   }
 
   function handleCreateSimilar() {
@@ -99,10 +95,6 @@ export function EventActions({ eventId, eventSlug }: EventActionsProps) {
         <DropdownMenuItem onClick={handleEdit}>
           <Pencil className="w-4 h-4 mr-2" />
           {t("editEvent")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSettings}>
-          <Settings className="w-4 h-4 mr-2" />
-          {t("eventSettings")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleCreateSimilar}>
