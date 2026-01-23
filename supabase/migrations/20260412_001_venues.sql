@@ -222,10 +222,11 @@ LANGUAGE sql STABLE AS $$
         AND starts_at > now() - interval '30 days'
       ),
       'total_visitors', (
-        SELECT COALESCE(SUM(ec.going_spots), 0)::int
-        FROM event_counts ec
-        JOIN events e ON e.id = ec.event_id
+        SELECT COALESCE(COUNT(DISTINCT r.user_id), 0)::int
+        FROM rsvps r
+        JOIN events e ON e.id = r.event_id
         WHERE e.venue_id = v.id
+        AND r.status = 'going'
         AND e.starts_at > now() - interval '90 days'
       )
     )

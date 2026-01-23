@@ -1199,5 +1199,23 @@
       "$$$": "고급",
       "$$$$": "최고급"
     }
+  },
+  "comments": {
+    "title": "댓글",
+    "add": "댓글 추가",
+    "placeholder": "댓글을 작성하세요...",
+    "postComment": "게시",
+    "reply": "답글",
+    "replyTo": "{name}님에게 답글 작성 중",
+    "edit": "수정",
+    "delete": "삭제",
+    "deleted": "[삭제됨]",
+    "edited": "수정됨",
+    "noComments": "아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!",
+    "loadMore": "더 많은 댓글 보기",
+    "viewReplies": "{count, plural, one {# 답글} other {# 답글}} 보기",
+    "hideReplies": "답글 숨기기",
+    "mute": "알림 끄기",
+    "unmute": "알림 켜기"
   }
 }

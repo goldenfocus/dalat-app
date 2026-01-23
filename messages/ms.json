@@ -1199,5 +1199,23 @@
       "$$$": "Mewah",
       "$$$$": "Sangat Mewah"
     }
+  },
+  "comments": {
+    "title": "Komen",
+    "add": "Tambah komen",
+    "placeholder": "Tulis komen...",
+    "postComment": "Hantar",
+    "reply": "Balas",
+    "replyTo": "Membalas {name}",
+    "edit": "Edit",
+    "delete": "Padam",
+    "deleted": "[dipadam]",
+    "edited": "diedit",
+    "noComments": "Tiada komen lagi. Jadilah yang pertama!",
+    "loadMore": "Muat lebih banyak",
+    "viewReplies": "Lihat {count, plural, one {# balasan} other {# balasan}}",
+    "hideReplies": "Sembunyikan balasan",
+    "mute": "Matikan pemberitahuan",
+    "unmute": "Hidupkan pemberitahuan"
   }
 }

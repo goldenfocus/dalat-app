@@ -2,29 +2,39 @@
 
 import { Share2, Volume2, VolumeX } from "lucide-react";
 import { triggerHaptic } from "@/lib/haptics";
+import { CommentsButton } from "@/components/comments";
 
 interface MomentEngagementBarProps {
   momentId: string;
   eventTitle: string;
+  eventSlug: string;
+  momentOwnerId: string;
+  currentUserId?: string;
   /** Whether this moment is a video */
   isVideo?: boolean;
   /** Current mute state (only relevant for videos) */
   isMuted?: boolean;
   /** Callback to toggle mute state */
   onMuteToggle?: () => void;
+  /** Initial comment count */
+  commentCount?: number;
 }
 
 /**
  * Right-side engagement bar (TikTok-style).
  * Vertically stacked actions at bottom-right.
- * Contains share + mute toggle (for videos).
+ * Contains comments, share, and mute toggle (for videos).
  */
 export function MomentEngagementBar({
   momentId,
   eventTitle,
+  eventSlug,
+  momentOwnerId,
+  currentUserId,
   isVideo = false,
   isMuted = true,
   onMuteToggle,
+  commentCount,
 }: MomentEngagementBarProps) {
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -66,6 +76,18 @@ export function MomentEngagementBar({
 
   return (
     <div className="flex flex-col items-center gap-3">
+      {/* Comments button */}
+      <CommentsButton
+        targetType="moment"
+        targetId={momentId}
+        eventSlug={eventSlug}
+        contentTitle={eventTitle}
+        contentOwnerId={momentOwnerId}
+        currentUserId={currentUserId}
+        initialCount={commentCount}
+        className={buttonBaseClass}
+      />
+
       {/* Share button */}
       <button
         onClick={handleShare}

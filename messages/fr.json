@@ -1226,5 +1226,23 @@
       "$$$": "Haut de gamme",
       "$$$$": "Luxe"
     }
+  },
+  "comments": {
+    "title": "Commentaires",
+    "add": "Ajouter un commentaire",
+    "placeholder": "Écrire un commentaire...",
+    "postComment": "Publier",
+    "reply": "Répondre",
+    "replyTo": "Réponse à {name}",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleted": "[supprimé]",
+    "edited": "modifié",
+    "noComments": "Aucun commentaire. Soyez le premier à commenter!",
+    "loadMore": "Charger plus",
+    "viewReplies": "Voir {count, plural, one {# réponse} other {# réponses}}",
+    "hideReplies": "Masquer les réponses",
+    "mute": "Désactiver les notifications",
+    "unmute": "Activer les notifications"
   }
 }

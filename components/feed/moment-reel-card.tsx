@@ -73,6 +73,8 @@ export function MomentReelCard({
         <MomentEngagementBar
           momentId={moment.id}
           eventTitle={moment.event_title}
+          eventSlug={moment.event_slug}
+          momentOwnerId={moment.user_id}
           isVideo={isVideo}
           isMuted={isMuted}
           onMuteToggle={handleMuteToggle}

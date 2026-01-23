@@ -17,6 +17,10 @@ import type {
   TribeRequestApprovedPayload,
   TribeRequestRejectedPayload,
   TribeNewEventPayload,
+  CommentOnEventPayload,
+  CommentOnMomentPayload,
+  ReplyToCommentPayload,
+  ThreadActivityPayload,
   NotificationPayload,
 } from './types';
 
@@ -134,6 +138,27 @@ const translations = {
     fr: (event: string, tribe: string) => `Nouvel événement "${event}" dans ${tribe}`,
     vi: (event: string, tribe: string) => `Sự kiện mới "${event}" trong ${tribe}`,
   },
+  // Comment notifications
+  commentOnEvent: {
+    en: (commenter: string, event: string) => `${commenter} commented on "${event}"`,
+    fr: (commenter: string, event: string) => `${commenter} a commenté "${event}"`,
+    vi: (commenter: string, event: string) => `${commenter} đã bình luận về "${event}"`,
+  },
+  commentOnMoment: {
+    en: (commenter: string) => `${commenter} commented on your moment`,
+    fr: (commenter: string) => `${commenter} a commenté votre moment`,
+    vi: (commenter: string) => `${commenter} đã bình luận về khoảnh khắc của bạn`,
+  },
+  replyToComment: {
+    en: (replier: string) => `${replier} replied to your comment`,
+    fr: (replier: string) => `${replier} a répondu à votre commentaire`,
+    vi: (replier: string) => `${replier} đã trả lời bình luận của bạn`,
+  },
+  threadActivity: {
+    en: (count: number, title: string) => `${count} new ${count === 1 ? 'comment' : 'comments'} on "${title}"`,
+    fr: (count: number, title: string) => `${count} ${count === 1 ? 'nouveau commentaire' : 'nouveaux commentaires'} sur "${title}"`,
+    vi: (count: number, title: string) => `${count} bình luận mới về "${title}"`,
+  },
   buttons: {
     viewEvent: { en: 'View Event', fr: 'Voir', vi: 'Xem sự kiện' },
     yes: { en: 'Yes, coming', fr: 'Oui', vi: 'Có, tôi đến' },
@@ -143,6 +168,7 @@ const translations = {
     shareFeedback: { en: 'Share feedback', fr: 'Donner mon avis', vi: 'Chia sẻ nhận xét' },
     reviewRequests: { en: 'Review requests', fr: 'Voir les demandes', vi: 'Xem yêu cầu' },
     viewTribe: { en: 'View tribe', fr: 'Voir la tribu', vi: 'Xem tribe' },
+    viewComments: { en: 'View comments', fr: 'Voir les commentaires', vi: 'Xem bình luận' },
   },
   email: {
     clickToConfirm: { en: 'Click below to confirm:', fr: 'Cliquez ci-dessous pour confirmer :', vi: 'Nhấn bên dưới để xác nhận:' },
@@ -542,6 +568,110 @@ function tribeNewEventTemplate(payload: TribeNewEventPayload): TemplateResult {
 }
 
 // ============================================
+// Comment Notification Templates
+// ============================================
+
+function commentOnEventTemplate(payload: CommentOnEventPayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}?comment=${payload.commentId}`;
+
+  const title = translations.commentOnEvent[locale](payload.commenterName, payload.eventTitle);
+  const body = payload.commentPreview;
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: eventUrl,
+      primaryActionLabel: translations.buttons.viewComments[locale],
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: eventUrl,
+      tag: `comment-event-${payload.eventId}`,
+    },
+  };
+}
+
+function commentOnMomentTemplate(payload: CommentOnMomentPayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+  const momentUrl = `${getBaseUrl()}/events/${payload.eventSlug}/moments/${payload.momentId}?comment=true`;
+
+  const title = translations.commentOnMoment[locale](payload.commenterName);
+  const body = payload.commentPreview;
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: momentUrl,
+      primaryActionLabel: translations.buttons.viewComments[locale],
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: momentUrl,
+      tag: `comment-moment-${payload.momentId}`,
+    },
+  };
+}
+
+function replyToCommentTemplate(payload: ReplyToCommentPayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+
+  // Build URL based on content type
+  const url = payload.contentType === 'event'
+    ? `${getBaseUrl()}/events/${payload.eventSlug}?comment=${payload.commentId}`
+    : `${getBaseUrl()}/events/${payload.eventSlug}/moments/${payload.contentId}?comment=${payload.commentId}`;
+
+  const title = translations.replyToComment[locale](payload.replierName);
+  const body = payload.commentPreview;
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: url,
+      primaryActionLabel: translations.buttons.viewComments[locale],
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: url,
+      tag: `reply-${payload.parentCommentId}`,
+    },
+  };
+}
+
+function threadActivityTemplate(payload: ThreadActivityPayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+
+  // Build URL based on content type
+  const url = payload.contentType === 'event'
+    ? `${getBaseUrl()}/events/${payload.eventSlug}?thread=${payload.threadId}`
+    : `${getBaseUrl()}/events/${payload.eventSlug}/moments/${payload.contentId}?thread=${payload.threadId}`;
+
+  const title = translations.threadActivity[locale](payload.activityCount, payload.contentTitle);
+  const body = translations.buttons.viewComments[locale];
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: url,
+      primaryActionLabel: translations.buttons.viewComments[locale],
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: url,
+      tag: `thread-${payload.threadId}`,
+    },
+  };
+}
+
+// ============================================
 // Email HTML Generator for Event Invitations
 // ============================================
 
@@ -638,6 +768,15 @@ export function getNotificationTemplate(payload: NotificationPayload): TemplateR
       return tribeRequestRejectedTemplate(payload);
     case 'tribe_new_event':
       return tribeNewEventTemplate(payload);
+    // Comment notifications
+    case 'comment_on_event':
+      return commentOnEventTemplate(payload);
+    case 'comment_on_moment':
+      return commentOnMomentTemplate(payload);
+    case 'reply_to_comment':
+      return replyToCommentTemplate(payload);
+    case 'thread_activity':
+      return threadActivityTemplate(payload);
     default:
       throw new Error(`Unknown notification type: ${(payload as NotificationPayload).type}`);
   }

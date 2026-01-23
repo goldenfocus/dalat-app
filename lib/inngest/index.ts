@@ -6,3 +6,4 @@ export {
   onRsvpCancelled,
   onRsvpInterested,
 } from './functions/scheduled-notifications';
+export { onCommentCreated } from './functions/comment-notifications';

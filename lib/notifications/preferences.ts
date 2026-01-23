@@ -48,6 +48,13 @@ const DEFAULT_CHANNELS: Record<NotificationType, NotificationChannel[]> = {
   tribe_request_approved: ['in_app', 'push'],
   tribe_request_rejected: ['in_app'],
   tribe_new_event: ['in_app', 'push'],
+
+  // Comment notifications - in-app + push for direct interactions
+  comment_on_event: ['in_app', 'push'],
+  comment_on_moment: ['in_app', 'push'],
+  reply_to_comment: ['in_app', 'push'],
+  // Thread activity is lower priority - in-app only
+  thread_activity: ['in_app'],
 };
 
 /**

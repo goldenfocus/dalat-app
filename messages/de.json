@@ -1199,5 +1199,23 @@
       "$$$": "Gehoben",
       "$$$$": "Premium"
     }
+  },
+  "comments": {
+    "title": "Kommentare",
+    "add": "Kommentar hinzufügen",
+    "placeholder": "Kommentar schreiben...",
+    "postComment": "Posten",
+    "reply": "Antworten",
+    "replyTo": "Antwort an {name}",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "deleted": "[gelöscht]",
+    "edited": "bearbeitet",
+    "noComments": "Noch keine Kommentare. Sei der Erste!",
+    "loadMore": "Mehr laden",
+    "viewReplies": "{count, plural, one {# Antwort} other {# Antworten}} anzeigen",
+    "hideReplies": "Antworten ausblenden",
+    "mute": "Benachrichtigungen aus",
+    "unmute": "Benachrichtigungen an"
   }
 }

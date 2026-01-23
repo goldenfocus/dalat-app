@@ -18,7 +18,12 @@ export type NotificationType =
   | 'tribe_join_request'
   | 'tribe_request_approved'
   | 'tribe_request_rejected'
-  | 'tribe_new_event';
+  | 'tribe_new_event'
+  // Comment notifications
+  | 'comment_on_event'
+  | 'comment_on_moment'
+  | 'reply_to_comment'
+  | 'thread_activity';
 
 export type NotificationChannel = 'in_app' | 'push' | 'email';
 
@@ -205,6 +210,51 @@ export interface TribeNewEventPayload extends BaseNotificationPayload {
   tribeName: string;
 }
 
+// ============================================
+// Comment Notification Payloads
+// ============================================
+
+export type CommentTargetType = 'event' | 'moment';
+
+export interface CommentOnEventPayload extends BaseNotificationPayload {
+  type: 'comment_on_event';
+  eventId: string;
+  eventSlug: string;
+  eventTitle: string;
+  commentId: string;
+  commenterName: string;
+  commentPreview: string;
+}
+
+export interface CommentOnMomentPayload extends BaseNotificationPayload {
+  type: 'comment_on_moment';
+  momentId: string;
+  eventSlug: string;
+  commenterName: string;
+  commentPreview: string;
+}
+
+export interface ReplyToCommentPayload extends BaseNotificationPayload {
+  type: 'reply_to_comment';
+  contentType: CommentTargetType;
+  contentId: string;
+  eventSlug: string;
+  commentId: string;
+  parentCommentId: string;
+  replierName: string;
+  commentPreview: string;
+}
+
+export interface ThreadActivityPayload extends BaseNotificationPayload {
+  type: 'thread_activity';
+  contentType: CommentTargetType;
+  contentId: string;
+  eventSlug: string;
+  contentTitle: string;
+  threadId: string;
+  activityCount: number;
+}
+
 export type NotificationPayload =
   | RsvpConfirmationPayload
   | ConfirmAttendance24hPayload
@@ -219,7 +269,12 @@ export type NotificationPayload =
   | TribeJoinRequestPayload
   | TribeRequestApprovedPayload
   | TribeRequestRejectedPayload
-  | TribeNewEventPayload;
+  | TribeNewEventPayload
+  // Comment notifications
+  | CommentOnEventPayload
+  | CommentOnMomentPayload
+  | ReplyToCommentPayload
+  | ThreadActivityPayload;
 
 // ============================================
 // Notify Options

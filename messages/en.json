@@ -1327,5 +1327,23 @@
       "$$$": "Upscale",
       "$$$$": "Fine dining"
     }
+  },
+  "comments": {
+    "title": "Comments",
+    "add": "Add comment",
+    "placeholder": "Write a comment...",
+    "postComment": "Post",
+    "reply": "Reply",
+    "replyTo": "Replying to {name}",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleted": "[deleted]",
+    "edited": "edited",
+    "noComments": "No comments yet. Be the first to comment!",
+    "loadMore": "Load more comments",
+    "viewReplies": "View {count, plural, one {# reply} other {# replies}}",
+    "hideReplies": "Hide replies",
+    "mute": "Mute thread",
+    "unmute": "Unmute thread"
   }
 }

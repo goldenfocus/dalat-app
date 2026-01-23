@@ -814,6 +814,24 @@
     "recentMoments": "Momentos recientes",
     "viewAll": "Ver todo"
   },
+  "comments": {
+    "title": "Comentarios",
+    "add": "Agregar comentario",
+    "placeholder": "Escribe un comentario...",
+    "postComment": "Publicar",
+    "reply": "Responder",
+    "replyTo": "Respondiendo a {name}",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleted": "[eliminado]",
+    "edited": "editado",
+    "noComments": "Aún no hay comentarios",
+    "loadMore": "Cargar más comentarios",
+    "viewReplies": "Ver {count} respuestas",
+    "hideReplies": "Ocultar respuestas",
+    "mute": "Silenciar hilo",
+    "unmute": "Dejar de silenciar hilo"
+  },
   "contacts": {
     "title": "Contactos",
     "dragDropCsv": "Arrastra y suelta un archivo CSV",

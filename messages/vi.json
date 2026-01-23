@@ -1225,5 +1225,23 @@
       "$$$": "Cao cấp",
       "$$$$": "Sang trọng"
     }
+  },
+  "comments": {
+    "title": "Bình luận",
+    "add": "Thêm bình luận",
+    "placeholder": "Viết bình luận...",
+    "postComment": "Đăng",
+    "reply": "Trả lời",
+    "replyTo": "Đang trả lời {name}",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "deleted": "[đã xóa]",
+    "edited": "đã chỉnh sửa",
+    "noComments": "Chưa có bình luận. Hãy là người đầu tiên bình luận!",
+    "loadMore": "Xem thêm bình luận",
+    "viewReplies": "Xem {count, plural, one {# trả lời} other {# trả lời}}",
+    "hideReplies": "Ẩn trả lời",
+    "mute": "Tắt thông báo",
+    "unmute": "Bật thông báo"
   }
 }

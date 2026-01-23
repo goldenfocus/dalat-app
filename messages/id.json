@@ -814,6 +814,24 @@
     "recentMoments": "Momen Terbaru",
     "viewAll": "Lihat semua"
   },
+  "comments": {
+    "title": "Komentar",
+    "add": "Tambah komentar",
+    "placeholder": "Tulis komentar...",
+    "postComment": "Posting",
+    "reply": "Balas",
+    "replyTo": "Membalas {name}",
+    "edit": "Edit",
+    "delete": "Hapus",
+    "deleted": "[dihapus]",
+    "edited": "diedit",
+    "noComments": "Belum ada komentar",
+    "loadMore": "Muat lebih banyak komentar",
+    "viewReplies": "Lihat {count} balasan",
+    "hideReplies": "Sembunyikan balasan",
+    "mute": "Bisukan thread",
+    "unmute": "Bunyikan thread"
+  },
   "contacts": {
     "title": "Kontak",
     "dragDropCsv": "Seret & lepas file CSV",

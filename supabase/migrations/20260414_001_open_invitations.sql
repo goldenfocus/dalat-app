@@ -5,8 +5,9 @@
 -- Update RLS Policy
 -- ============================================
 
--- Drop the restrictive insert policy
+-- Drop any existing insert policies
 DROP POLICY IF EXISTS "Event creators can create invitations" ON event_invitations;
+DROP POLICY IF EXISTS "Any authenticated user can create invitations" ON event_invitations;
 
 -- Create a new policy allowing any authenticated user to invite
 CREATE POLICY "Any authenticated user can create invitations"

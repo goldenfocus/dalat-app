@@ -1199,5 +1199,23 @@
       "$$$": "高級",
       "$$$$": "最高級"
     }
+  },
+  "comments": {
+    "title": "コメント",
+    "add": "コメントを追加",
+    "placeholder": "コメントを入力...",
+    "postComment": "投稿",
+    "reply": "返信",
+    "replyTo": "{name}さんに返信中",
+    "edit": "編集",
+    "delete": "削除",
+    "deleted": "[削除済み]",
+    "edited": "編集済み",
+    "noComments": "まだコメントはありません。最初のコメントを投稿してください!",
+    "loadMore": "もっと見る",
+    "viewReplies": "{count, plural, one {# 件の返信} other {# 件の返信}}を表示",
+    "hideReplies": "返信を非表示",
+    "mute": "通知をオフ",
+    "unmute": "通知をオン"
   }
 }

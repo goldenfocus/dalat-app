@@ -1199,5 +1199,23 @@
       "$$$": "高档",
       "$$$$": "豪华"
     }
+  },
+  "comments": {
+    "title": "评论",
+    "add": "添加评论",
+    "placeholder": "写一条评论...",
+    "postComment": "发布",
+    "reply": "回复",
+    "replyTo": "正在回复 {name}",
+    "edit": "编辑",
+    "delete": "删除",
+    "deleted": "[已删除]",
+    "edited": "已编辑",
+    "noComments": "暂无评论。成为第一个评论的人！",
+    "loadMore": "加载更多评论",
+    "viewReplies": "查看 {count, plural, one {# 条回复} other {# 条回复}}",
+    "hideReplies": "隐藏回复",
+    "mute": "静音话题",
+    "unmute": "取消静音"
   }
 }
