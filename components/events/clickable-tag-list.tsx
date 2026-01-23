@@ -1,6 +1,7 @@
 "use client";
 
 import { Link } from "@/lib/i18n/routing";
+import { useTranslations } from "next-intl";
 import { TAG_CONFIG, type EventTag, type TagIconName } from "@/lib/constants/event-tags";
 import {
   Music, Flower2, Brain, Dumbbell, Footprints, Palette,
@@ -31,6 +32,7 @@ interface ClickableTagListProps {
  * Ghost style with icon + label, touch-friendly (44px min tap target).
  */
 export function ClickableTagList({ tags, maxDisplay = 5 }: ClickableTagListProps) {
+  const t = useTranslations("eventTags");
   const validTags = tags.filter((t): t is EventTag => t in TAG_CONFIG);
 
   if (validTags.length === 0) return null;
@@ -50,7 +52,7 @@ export function ClickableTagList({ tags, maxDisplay = 5 }: ClickableTagListProps
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border/50 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all touch-manipulation"
           >
             <IconComponent className="w-4 h-4" />
-            <span>{config.label}</span>
+            <span>{t(tag)}</span>
           </Link>
         );
       })}

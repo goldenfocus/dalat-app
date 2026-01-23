@@ -24,7 +24,7 @@ import { ConfirmAttendanceHandler } from "@/components/events/confirm-attendance
 import { AttendeeList } from "@/components/events/attendee-list";
 import { EventMediaDisplay } from "@/components/events/event-media-display";
 import { EventDefaultImage } from "@/components/events/event-default-image";
-import { formatInDaLat } from "@/lib/timezone";
+import { formatInDaLat, formatInDaLatAsync } from "@/lib/timezone";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { Linkify } from "@/lib/linkify";
 import { decodeUnicodeEscapes } from "@/lib/utils";
@@ -552,6 +552,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     locale
   );
 
+  // Pre-compute localized date strings (async to ensure correct locale loading)
+  const [formattedDate, formattedStartTime, formattedEndTime] = await Promise.all([
+    formatInDaLatAsync(event.starts_at, "EEEE, MMMM d", locale as Locale),
+    formatInDaLatAsync(event.starts_at, "h:mm a", locale as Locale),
+    event.ends_at ? formatInDaLatAsync(event.ends_at, "h:mm a", locale as Locale) : Promise.resolve(null),
+  ]);
+
   return (
     <main className="min-h-screen">
       {/* JSON-LD Structured Data for SEO/AEO */}
@@ -651,12 +658,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="font-medium">
-                      {formatInDaLat(event.starts_at, "EEEE, MMMM d", locale as Locale)}
+                      {formattedDate}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {formatInDaLat(event.starts_at, "h:mm a", locale as Locale)}
-                      {event.ends_at &&
-                        ` - ${formatInDaLat(event.ends_at, "h:mm a", locale as Locale)}`}
+                      {formattedStartTime}
+                      {formattedEndTime && ` - ${formattedEndTime}`}
                     </p>
                   </div>
                 </div>

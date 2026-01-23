@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Loader2, Navigation, X, Route, ExternalLink, Eye } from "lucide-react";
 import { startOfDay, endOfDay, isAfter, parseISO } from "date-fns";
 import Supercluster from "supercluster";
@@ -189,6 +189,7 @@ interface EventPointProperties {
 
 export function EventMap({ events, happeningEventIds = [], venues = [] }: EventMapProps) {
   const t = useTranslations("mapPage");
+  const locale = useLocale();
   // Convert to Set for O(1) lookup
   const happeningSet = useMemo(() => new Set(happeningEventIds), [happeningEventIds]);
   const { resolvedTheme } = useTheme();
@@ -412,7 +413,7 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
 
     // Load script with both marker and places libraries
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker,places&loading=async&v=weekly`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker,places&loading=async&v=weekly&language=${locale}&region=VN`;
     script.async = true;
     script.defer = true;
     script.onload = () => {

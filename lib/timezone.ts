@@ -72,7 +72,9 @@ export function toUTCFromDaLat(date: string, time: string): string {
 }
 
 /**
- * Format a UTC ISO string as Đà Lạt time
+ * Format a UTC ISO string as Đà Lạt time (synchronous version).
+ * Uses cached locales - falls back to English if locale not yet loaded.
+ * For Server Components, prefer formatInDaLatAsync to ensure correct locale.
  * @param isoString - UTC ISO string from database
  * @param formatStr - date-fns format string
  * @param locale - Optional locale for translated day/month names
@@ -80,6 +82,20 @@ export function toUTCFromDaLat(date: string, time: string): string {
  */
 export function formatInDaLat(isoString: string, formatStr: string, locale?: Locale): string {
   const options = locale ? { locale: getDateFnsLocale(locale) } : undefined;
+  return formatInTimeZone(new Date(isoString), DALAT_TIMEZONE, formatStr, options);
+}
+
+/**
+ * Format a UTC ISO string as Đà Lạt time (async version).
+ * Awaits locale loading to ensure correct localization in Server Components.
+ * @param isoString - UTC ISO string from database
+ * @param formatStr - date-fns format string
+ * @param locale - Optional locale for translated day/month names
+ * @returns Formatted string in Đà Lạt timezone
+ */
+export async function formatInDaLatAsync(isoString: string, formatStr: string, locale?: Locale): Promise<string> {
+  const localeObj = locale ? await loadDateFnsLocale(locale) : undefined;
+  const options = localeObj ? { locale: localeObj } : undefined;
   return formatInTimeZone(new Date(isoString), DALAT_TIMEZONE, formatStr, options);
 }
 

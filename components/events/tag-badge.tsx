@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { TAG_CONFIG, type EventTag, type TagIconName } from "@/lib/constants/event-tags";
 import {
   Music, Flower2, Brain, Dumbbell, Footprints, Palette,
@@ -26,6 +27,7 @@ interface TagBadgeProps {
 }
 
 export function TagBadge({ tag, size = "sm", onClick }: TagBadgeProps) {
+  const t = useTranslations("eventTags");
   const config = TAG_CONFIG[tag];
   if (!config) return null;
 
@@ -45,7 +47,7 @@ export function TagBadge({ tag, size = "sm", onClick }: TagBadgeProps) {
         ${onClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
       `}
     >
-      {config.label}
+      {t(tag)}
     </Component>
   );
 }
@@ -92,7 +94,8 @@ interface IconTagListProps {
 }
 
 export function IconTagList({ tags, maxDisplay = 4 }: IconTagListProps) {
-  const validTags = tags.filter((t): t is EventTag => t in TAG_CONFIG);
+  const t = useTranslations("eventTags");
+  const validTags = tags.filter((tag): tag is EventTag => tag in TAG_CONFIG);
 
   if (validTags.length === 0) return null;
 
@@ -105,7 +108,7 @@ export function IconTagList({ tags, maxDisplay = 4 }: IconTagListProps) {
         const config = TAG_CONFIG[tag];
         const IconComponent = ICON_MAP[config.icon];
         return (
-          <span key={tag} title={config.label}>
+          <span key={tag} title={t(tag)}>
             <IconComponent className="w-3.5 h-3.5" />
           </span>
         );
