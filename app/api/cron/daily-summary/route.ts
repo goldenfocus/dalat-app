@@ -156,8 +156,9 @@ export async function GET(request: Request) {
       });
     }
 
-    // 5. Create new draft post
+    // 5. Create new post
     const slug = `daily-update-${today}`;
+    const finalStatus = summary.suggested_status || "draft";
 
     const { data: post, error: insertError } = await supabase
       .from("blog_posts")
@@ -167,7 +168,10 @@ export async function GET(request: Request) {
         story_content: summary.story_content || "",
         technical_content: summary.technical_content,
         source: "daily_summary",
-        status: summary.suggested_status || "draft",
+        status: finalStatus,
+        // IMPORTANT: Set published_at when status is published, otherwise it stays NULL
+        // and the post gets sorted to the end due to ORDER BY published_at DESC NULLS LAST
+        published_at: finalStatus === "published" ? new Date().toISOString() : null,
         category_id: category?.id,
         summary_date: today,
         areas_changed: summary.areas_changed,
