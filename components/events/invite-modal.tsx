@@ -6,7 +6,6 @@ import { Send, Loader2, Check, X, UserPlus, Mail, Users } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -290,9 +289,6 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("inviteGuests")}</DialogTitle>
-          <DialogDescription>
-            {t("inviteDescription")}
-          </DialogDescription>
         </DialogHeader>
 
         {/* Show animation when sending, otherwise show form */}
@@ -427,9 +423,6 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
                 </Button>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {inputMode === "email" ? t("emailHint") : t("usernameHint")}
-            </p>
           </div>
 
           {/* Invitee chips */}
