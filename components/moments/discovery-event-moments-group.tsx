@@ -63,20 +63,6 @@ function DiscoveryMomentCard({ moment }: { moment: DiscoveryGroupedMoment }) {
           </div>
         )}
 
-        {/* User avatar overlay - bottom left */}
-        {moment.avatar_url && (
-          <div className="absolute bottom-2 left-2 pointer-events-none">
-            <div className="w-7 h-7 rounded-full overflow-hidden border-2 border-white/80 shadow-sm">
-              <Image
-                src={moment.avatar_url}
-                alt={moment.display_name || moment.username || "User"}
-                width={28}
-                height={28}
-                className="object-cover"
-              />
-            </div>
-          </div>
-        )}
       </article>
     </Link>
   );
