@@ -1,9 +1,10 @@
 import { Suspense } from "react";
-import { ArrowLeft, Building2, Loader2 } from "lucide-react";
+import { ArrowLeft, Building2 } from "lucide-react";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { VenueCard } from "@/components/venues/venue-card";
+import { VenueCardSkeleton } from "@/components/venues/venue-card-skeleton";
 import { VenueTypeFilter } from "@/components/venues/venue-type-filter";
 import type { VenueListItem, VenueType, Locale } from "@/lib/types";
 import type { Metadata } from "next";
@@ -47,22 +48,7 @@ function VenuesLoading() {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {[...Array(4)].map((_, i) => (
-        <div
-          key={i}
-          className="rounded-lg border bg-card animate-pulse"
-        >
-          <div className="aspect-[2/1] bg-muted" />
-          <div className="p-4 space-y-3">
-            <div className="flex gap-3">
-              <div className="w-12 h-12 rounded-lg bg-muted" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-muted rounded w-3/4" />
-                <div className="h-3 bg-muted rounded w-1/2" />
-              </div>
-            </div>
-            <div className="h-3 bg-muted rounded w-full" />
-          </div>
-        </div>
+        <VenueCardSkeleton key={i} />
       ))}
     </div>
   );
@@ -77,8 +63,11 @@ async function VenuesGrid({ type }: { type?: string }) {
     return (
       <div className="text-center py-16">
         <Building2 className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-        <p className="text-muted-foreground">
-          {type ? `No ${type} venues found` : "No venues found"}
+        <p className="text-lg font-medium text-muted-foreground mb-1">
+          {t("noVenues")}
+        </p>
+        <p className="text-sm text-muted-foreground/70">
+          {t("noVenuesDescription")}
         </p>
       </div>
     );

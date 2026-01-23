@@ -462,16 +462,16 @@ export default async function VenuePage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Social links */}
+        {/* Social links - with proper touch targets */}
         {(venue.facebook_url || venue.instagram_url || venue.zalo_url) && (
           <section className="border-t border-border pt-6">
-            <div className="flex gap-4">
+            <div className="flex gap-2 -ml-3">
               {venue.facebook_url && (
                 <a
                   href={venue.facebook_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                  className="text-sm text-primary hover:underline flex items-center gap-1 px-3 py-2 rounded-lg active:scale-95 transition-all"
                 >
                   Facebook
                   <ExternalLink className="w-3 h-3" />
@@ -482,7 +482,7 @@ export default async function VenuePage({ params }: PageProps) {
                   href={venue.instagram_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                  className="text-sm text-primary hover:underline flex items-center gap-1 px-3 py-2 rounded-lg active:scale-95 transition-all"
                 >
                   Instagram
                   <ExternalLink className="w-3 h-3" />
@@ -493,7 +493,7 @@ export default async function VenuePage({ params }: PageProps) {
                   href={venue.zalo_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                  className="text-sm text-primary hover:underline flex items-center gap-1 px-3 py-2 rounded-lg active:scale-95 transition-all"
                 >
                   Zalo
                   <ExternalLink className="w-3 h-3" />
