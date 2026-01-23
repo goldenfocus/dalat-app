@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShareButtons } from "./share-buttons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { InviteSendingAnimation } from "./invite-sending-animation";
 
 interface InviteModalProps {
   eventSlug: string;
@@ -294,6 +295,13 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
           </DialogDescription>
         </DialogHeader>
 
+        {/* Show animation when sending, otherwise show form */}
+        {sending ? (
+          <InviteSendingAnimation
+            invitees={invitees}
+            results={results.length > 0 ? results : null}
+          />
+        ) : (
         <div className="space-y-4 py-4">
           {/* Share buttons */}
           <div>
@@ -496,19 +504,11 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
             disabled={invitees.length === 0 || sending}
             className="w-full gap-2"
           >
-            {sending ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {t("sending")}
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4" />
-                {t("sendInvites", { count: invitees.length })}
-              </>
-            )}
+            <Send className="w-4 h-4" />
+            {t("sendInvites", { count: invitees.length })}
           </Button>
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );
