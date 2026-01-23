@@ -4,6 +4,7 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { Link, usePathname } from "@/lib/i18n/routing";
 import { useLocale } from "next-intl";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { CONTENT_LOCALES, LOCALE_FLAGS, type ContentLocale } from "@/lib/types";
 
@@ -26,13 +27,15 @@ interface LocalePickerProps {
   /** Visual variant for different backgrounds */
   variant?: "default" | "overlay";
   className?: string;
+  /** User ID to update profile locale preference */
+  userId?: string;
 }
 
 /**
  * Compact language picker showing current locale flag.
  * Opens a popover grid with all 12 locales for instant switching.
  */
-export function LocalePicker({ variant = "default", className }: LocalePickerProps) {
+export function LocalePicker({ variant = "default", className, userId }: LocalePickerProps) {
   const locale = useLocale() as ContentLocale;
   const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -93,9 +96,25 @@ export function LocalePicker({ variant = "default", className }: LocalePickerPro
     };
   }, [isOpen]);
 
-  const handleLocaleClick = () => {
+  const handleLocaleClick = (newLocale: ContentLocale) => {
     // Close immediately for instant feel
     setIsOpen(false);
+
+    // Set cookie for middleware (1 year expiry, secure in production)
+    const secure = window.location.protocol === 'https:' ? ';secure' : '';
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000;samesite=lax${secure}`;
+
+    // Update profile in database if user is logged in
+    if (userId) {
+      const supabase = createClient();
+      supabase
+        .from("profiles")
+        .update({ locale: newLocale })
+        .eq("id", userId)
+        .then(() => {
+          // Silent update - navigation already happened via Link
+        });
+    }
   };
 
   return (
@@ -148,7 +167,7 @@ export function LocalePicker({ variant = "default", className }: LocalePickerPro
                   href={pathname}
                   locale={loc}
                   replace
-                  onClick={handleLocaleClick}
+                  onClick={() => handleLocaleClick(loc)}
                   className={cn(
                     "flex items-center justify-center w-11 h-11 rounded-lg text-2xl",
                     "transition-all duration-100",

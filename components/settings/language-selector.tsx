@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { Check, Loader2 } from "lucide-react";
+import { useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { LOCALE_NAMES, LOCALE_FLAGS, SUPPORTED_LOCALES } from "@/lib/locale";
 import { useRouter, usePathname } from "@/lib/i18n/routing";
@@ -10,19 +11,18 @@ import type { Locale } from "@/lib/types";
 
 interface LanguageSelectorProps {
   userId: string;
-  currentLocale: Locale;
 }
 
-export function LanguageSelector({ userId, currentLocale }: LanguageSelectorProps) {
+export function LanguageSelector({ userId }: LanguageSelectorProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [locale, setLocale] = useState<Locale>(currentLocale);
+  // Use URL locale (from next-intl) instead of profile.locale for consistency
+  const currentLocale = useLocale() as Locale;
   const [isPending, startTransition] = useTransition();
 
   const changeLocale = (newLocale: Locale) => {
-    if (newLocale === locale) return;
+    if (newLocale === currentLocale) return;
 
-    setLocale(newLocale);
     const supabase = createClient();
     startTransition(async () => {
       // Update profile in database
@@ -43,8 +43,8 @@ export function LanguageSelector({ userId, currentLocale }: LanguageSelectorProp
   return (
     <div className="grid grid-cols-3 gap-3">
       {SUPPORTED_LOCALES.map((l) => {
-        const isSelected = locale === l;
-        const isChanging = isPending && locale === l;
+        const isSelected = currentLocale === l;
+        const isChanging = isPending && currentLocale === l;
         return (
           <button
             key={l}

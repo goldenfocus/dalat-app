@@ -9,6 +9,12 @@ interface MomentsHeaderProps {
   isAuthenticated: boolean;
 }
 
+/**
+ * @deprecated This component is no longer used in the main moments feed.
+ * The immersive TikTok-style feed now uses a floating filter bar
+ * (in MomentsDiscoveryMobile) instead of this header.
+ * Keeping for potential future use or reference.
+ */
 export function MomentsHeader({ authButton, isAuthenticated }: MomentsHeaderProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);

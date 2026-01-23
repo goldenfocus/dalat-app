@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Home } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
 import { Link } from "@/lib/i18n/routing";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { isVideoUrl } from "@/lib/media-utils";
@@ -21,7 +20,8 @@ interface MomentReelCardProps {
 
 /**
  * Full-screen moment card for the TikTok-style feed.
- * Shows media with user attribution, engagement bar, and event pill.
+ * Clean layout: content fills screen, user info at bottom-left,
+ * engagement actions at bottom-right, filter bar floats above.
  */
 export function MomentReelCard({
   moment,
@@ -29,8 +29,21 @@ export function MomentReelCard({
   index,
 }: MomentReelCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
   const isVideo = isVideoUrl(moment.media_url);
+
+  // Reset mute when scrolling away from this card
+  useEffect(() => {
+    if (!isActive) {
+      setIsMuted(true);
+    }
+  }, [isActive]);
+
+  const handleMuteToggle = useCallback(() => {
+    setIsMuted((prev) => !prev);
+    triggerHaptic("selection");
+  }, []);
 
   return (
     <article
@@ -46,6 +59,8 @@ export function MomentReelCard({
               src={moment.media_url}
               isActive={isActive}
               poster={moment.event_image_url || undefined}
+              isMuted={isMuted}
+              onMuteToggle={handleMuteToggle}
             />
           ) : (
             <ImmersiveImage src={moment.media_url} alt="" />
@@ -53,17 +68,24 @@ export function MomentReelCard({
         )}
       </div>
 
-      {/* Top bar: user attribution (left) + home button (right) */}
-      {/* Extra padding to clear floating filter bar on moments discovery page */}
-      <div
-        className="absolute top-0 inset-x-0 z-20"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 3rem)" }}
-      >
-        <div className="px-4 py-2 flex items-center justify-between">
-          {/* User attribution */}
+      {/* Engagement bar - bottom right, above the caption area */}
+      <div className="absolute right-4 bottom-36 z-30">
+        <MomentEngagementBar
+          momentId={moment.id}
+          eventTitle={moment.event_title}
+          isVideo={isVideo}
+          isMuted={isMuted}
+          onMuteToggle={handleMuteToggle}
+        />
+      </div>
+
+      {/* Bottom overlay with user, caption, and event pill */}
+      <div className="absolute bottom-0 inset-x-0 z-20 pb-[env(safe-area-inset-bottom)]">
+        <div className="bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-24 pb-6 px-4">
+          {/* User attribution - now at bottom */}
           <Link
             href={`/${moment.username || moment.user_id}`}
-            className="inline-flex items-center gap-2.5 active:opacity-80 transition-opacity"
+            className="inline-flex items-center gap-2.5 mb-3 active:opacity-80 transition-opacity"
           >
             <UserAvatar
               src={moment.avatar_url}
@@ -71,37 +93,14 @@ export function MomentReelCard({
               className="ring-2 ring-white/20"
               fallbackClassName="bg-white/20"
             />
-            <span className="text-white font-medium text-sm drop-shadow-lg">
+            <span className="text-white font-medium text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               @{moment.username || "user"}
             </span>
           </Link>
 
-          {/* Home button - navigate back */}
-          <Link
-            href="/"
-            onClick={() => triggerHaptic("selection")}
-            className="p-2.5 rounded-full bg-black/40 backdrop-blur-sm active:scale-95 transition-transform"
-            aria-label="Go home"
-          >
-            <Home className="w-5 h-5 text-white" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Engagement bar (right side, vertically centered) */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20">
-        <MomentEngagementBar
-          momentId={moment.id}
-          eventTitle={moment.event_title}
-        />
-      </div>
-
-      {/* Bottom overlay with caption and event pill */}
-      <div className="absolute bottom-0 inset-x-0 z-20 pb-[env(safe-area-inset-bottom)]">
-        <div className="bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-20 pb-6 px-4">
           {/* Caption */}
           {moment.text_content && (
-            <p className="text-white text-sm mb-4 line-clamp-3 drop-shadow-lg max-w-[80%]">
+            <p className="text-white text-sm mb-4 line-clamp-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] max-w-[75%]">
               {moment.text_content}
             </p>
           )}

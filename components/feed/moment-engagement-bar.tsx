@@ -1,20 +1,30 @@
 "use client";
 
-import { Share2 } from "lucide-react";
+import { Share2, Volume2, VolumeX } from "lucide-react";
 import { triggerHaptic } from "@/lib/haptics";
 
 interface MomentEngagementBarProps {
   momentId: string;
   eventTitle: string;
+  /** Whether this moment is a video */
+  isVideo?: boolean;
+  /** Current mute state (only relevant for videos) */
+  isMuted?: boolean;
+  /** Callback to toggle mute state */
+  onMuteToggle?: () => void;
 }
 
 /**
  * Right-side engagement bar (TikTok-style).
- * Contains share action with prominent styling.
+ * Vertically stacked actions at bottom-right.
+ * Contains share + mute toggle (for videos).
  */
 export function MomentEngagementBar({
   momentId,
   eventTitle,
+  isVideo = false,
+  isMuted = true,
+  onMuteToggle,
 }: MomentEngagementBarProps) {
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -44,14 +54,43 @@ export function MomentEngagementBar({
     }
   };
 
+  const handleMuteToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    triggerHaptic("selection");
+    onMuteToggle?.();
+  };
+
+  const buttonBaseClass =
+    "flex flex-col items-center gap-1 p-3 rounded-full bg-black/40 backdrop-blur-sm text-white active:scale-95 active:bg-black/60 transition-all";
+
   return (
-    <button
-      onClick={handleShare}
-      className="flex flex-col items-center gap-1 p-3 rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 transition-all active:scale-95"
-      aria-label="Share this moment"
-    >
-      <Share2 className="w-6 h-6" />
-      <span className="text-xs font-medium">Share</span>
-    </button>
+    <div className="flex flex-col items-center gap-3">
+      {/* Share button */}
+      <button
+        onClick={handleShare}
+        className={buttonBaseClass}
+        aria-label="Share this moment"
+      >
+        <Share2 className="w-6 h-6" />
+        <span className="text-xs font-medium">Share</span>
+      </button>
+
+      {/* Mute toggle - only for videos */}
+      {isVideo && onMuteToggle && (
+        <button
+          onClick={handleMuteToggle}
+          className={buttonBaseClass}
+          aria-label={isMuted ? "Unmute video" : "Mute video"}
+        >
+          {isMuted ? (
+            <VolumeX className="w-6 h-6" />
+          ) : (
+            <Volume2 className="w-6 h-6" />
+          )}
+          <span className="text-xs font-medium">{isMuted ? "Sound" : "Mute"}</span>
+        </button>
+      )}
+    </div>
   );
 }

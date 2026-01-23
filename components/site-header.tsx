@@ -20,7 +20,7 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
           <Link href="/" className="font-bold text-lg">
             ĐàLạt.app
           </Link>
-          <LocalePicker />
+          <LocalePicker userId={user?.id} />
         </div>
         <div className="flex items-center gap-1">
           <Link

@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
-import { AuthButton } from "@/components/auth-button";
-import { MomentsHeader } from "@/components/moments/moments-header";
 import {
   MomentsDiscoveryDesktop,
   MomentsDiscoveryMobile,
 } from "@/components/moments/moments-discovery";
 import { generateMomentsDiscoveryMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentsDiscoverySchema } from "@/lib/structured-data";
-import { getEffectiveUser } from "@/lib/god-mode";
 import type { Locale } from "@/lib/i18n/routing";
 import type { MomentWithEvent, DiscoveryEventMomentsGroup } from "@/lib/types";
 
@@ -81,11 +77,10 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
   const { locale } = await params;
 
   // Fetch both flat (mobile) and grouped (desktop) data in parallel
-  const [moments, groupedData, t, { user }] = await Promise.all([
+  const [moments, groupedData, t] = await Promise.all([
     getMoments(),
     getMomentsGrouped(),
     getTranslations({ locale, namespace: "moments" }),
-    getEffectiveUser(),
   ]);
 
   const mobileHasMore = moments.length === INITIAL_PAGE_SIZE;
@@ -102,16 +97,8 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
   return (
     <>
       <JsonLd data={[discoverySchema, breadcrumbSchema]} />
-      {/* Mobile: TikTok-style flat feed with minimal overlay header */}
+      {/* Mobile: TikTok-style immersive feed with floating filter bar */}
       <div className="lg:hidden">
-        <MomentsHeader
-          isAuthenticated={!!user}
-          authButton={
-            <Suspense>
-              <AuthButton />
-            </Suspense>
-          }
-        />
         <MomentsDiscoveryMobile
           initialMoments={moments}
           initialHasMore={mobileHasMore}

@@ -61,21 +61,24 @@ export function MomentsDiscoveryMobile({
         className="fixed top-0 left-0 right-0 z-40 pointer-events-none"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="px-4 pt-3 pb-2 pointer-events-auto flex items-center justify-between gap-3">
-          <MomentsFilterBar
-            options={options}
-            activeKey={activeKey}
-            onChange={setActiveKey}
-            variant="dark"
-          />
-          {/* Search button */}
-          <button
-            onClick={() => setIsSearchOpen(true)}
-            className="flex-shrink-0 p-2 rounded-full bg-white/10 backdrop-blur-sm text-white/80 hover:text-white active:scale-95 transition-all"
-            aria-label="Search moments"
-          >
-            <Search className="w-5 h-5" />
-          </button>
+        {/* Gradient background for better visibility over varied content */}
+        <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent">
+          <div className="px-4 pt-3 pb-4 pointer-events-auto flex items-center justify-between gap-3">
+            <MomentsFilterBar
+              options={options}
+              activeKey={activeKey}
+              onChange={setActiveKey}
+              variant="dark"
+            />
+            {/* Search button */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="flex-shrink-0 p-2.5 rounded-full bg-white/10 backdrop-blur-sm text-white/90 hover:text-white hover:bg-white/20 active:scale-95 transition-all"
+              aria-label="Search moments"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
 

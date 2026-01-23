@@ -9,30 +9,43 @@ interface VideoPlayerProps {
   src: string;
   isActive: boolean;
   poster?: string;
+  /** Controlled mute state from parent */
+  isMuted: boolean;
+  /** Callback to toggle mute state */
+  onMuteToggle: () => void;
 }
 
 /**
  * Autoplay video component for the feed.
  * Plays when visible and active, pauses when scrolled away.
- * Tap to toggle mute/unmute with visual feedback.
+ * Tap anywhere to toggle mute/unmute with center feedback.
+ * Mute state is controlled by parent (engagement bar has the visible toggle).
  */
-export function VideoPlayer({ src, isActive, poster }: VideoPlayerProps) {
+export function VideoPlayer({
+  src,
+  isActive,
+  poster,
+  isMuted,
+  onMuteToggle,
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [showHint, setShowHint] = useState(true);
   const [showFeedback, setShowFeedback] = useState(false);
 
   useIntersectionVideo(videoRef, isActive);
 
-  // Reset state when video source changes
+  // Sync muted prop with video element
   useEffect(() => {
-    setIsMuted(true);
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  // Reset loading and hint state when video source changes
+  useEffect(() => {
     setIsLoading(true);
     setShowHint(true);
-    if (videoRef.current) {
-      videoRef.current.muted = true;
-    }
   }, [src]);
 
   // Auto-hide hint after 3 seconds
@@ -43,18 +56,14 @@ export function VideoPlayer({ src, isActive, poster }: VideoPlayerProps) {
   }, [showHint, isActive]);
 
   const handleTap = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.muted = !video.muted;
-    setIsMuted(video.muted);
     setShowHint(false);
     triggerHaptic("selection");
+    onMuteToggle();
 
     // Show brief center feedback
     setShowFeedback(true);
     setTimeout(() => setShowFeedback(false), 600);
-  }, []);
+  }, [onMuteToggle]);
 
   const handleLoadedData = useCallback(() => {
     setIsLoading(false);
@@ -101,15 +110,6 @@ export function VideoPlayer({ src, isActive, poster }: VideoPlayerProps) {
           </div>
         </div>
       )}
-
-      {/* Corner mute indicator - always visible */}
-      <div className="absolute bottom-6 left-4 p-2.5 rounded-full bg-black/50 backdrop-blur-sm pointer-events-none">
-        {isMuted ? (
-          <VolumeX className="w-5 h-5 text-white/90" />
-        ) : (
-          <Volume2 className="w-5 h-5 text-white/90" />
-        )}
-      </div>
     </div>
   );
 }

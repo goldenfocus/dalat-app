@@ -64,7 +64,7 @@ export default async function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LanguageSelector userId={user.id} currentLocale={(profile.locale as Locale) || "en"} />
+          <LanguageSelector userId={user.id} />
         </CardContent>
       </Card>
 
