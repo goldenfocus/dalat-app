@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
+import { VenuePicker } from "@/components/events/venue-picker";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
@@ -241,6 +242,11 @@ export function EventForm({
   );
   const [organizers, setOrganizers] = useState<Pick<Organizer, 'id' | 'name' | 'slug' | 'logo_url'>[]>([]);
 
+  // Venue picker state
+  const [venueId, setVenueId] = useState<string | null>(
+    event?.venue_id ?? null
+  );
+
   // Fetch organizers on mount
   useEffect(() => {
     async function fetchOrganizers() {
@@ -453,6 +459,7 @@ export function EventForm({
           title_position: titlePosition,
           capacity,
           organizer_id: organizerId,
+          venue_id: venueId,
         };
 
         // Include slug if editable and changed
@@ -516,6 +523,7 @@ export function EventForm({
                 : null,
               rrule_count: recurrence.endType === "count" ? recurrence.endCount : null,
               organizer_id: organizerId,
+              venue_id: venueId,
             }),
           });
 
@@ -561,6 +569,7 @@ export function EventForm({
               created_by: userId,
               status: "published",
               organizer_id: organizerId,
+              venue_id: venueId,
             })
             .select()
             .single();
@@ -793,6 +802,18 @@ export function EventForm({
                   : null
             }
           />
+
+          {/* Venue picker */}
+          <div className="space-y-2">
+            <Label htmlFor="venue">{t("venue")}</Label>
+            <VenuePicker
+              value={venueId}
+              onChange={(id) => setVenueId(id)}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t("venueHelp")}
+            </p>
+          </div>
 
           {/* External link */}
           <div className="space-y-2">
