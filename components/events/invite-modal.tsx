@@ -354,7 +354,11 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  onBlur={() => {
+                  onBlur={(e) => {
+                    // Don't add emails if clicking the Add button (it will handle it)
+                    const relatedTarget = e.relatedTarget as HTMLElement | null;
+                    if (relatedTarget?.closest('button')) return;
+
                     // Delay to allow click on dropdown
                     setTimeout(() => {
                       if (!showDropdown && inputMode === "email") handleAddEmails();
