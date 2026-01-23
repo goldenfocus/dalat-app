@@ -64,8 +64,23 @@ async function getMoment(id: string): Promise<MomentWithDetails | null> {
 
   if (error || !data) return null;
 
-  // If the event or profile was deleted, treat as not found
-  if (!data.profiles || !data.events) return null;
+  // Validate that required related data exists and has required fields
+  // This handles: deleted events/profiles, corrupted data, RLS restrictions
+  const event = data.events;
+  const profile = data.profiles;
+
+  if (!profile || !event) return null;
+
+  // Ensure event has all required fields for rendering
+  if (!event.slug || !event.title || !event.starts_at || !event.created_by) {
+    console.error(`Moment ${id} has event with missing required fields:`, {
+      slug: event.slug,
+      title: event.title,
+      starts_at: event.starts_at,
+      created_by: event.created_by,
+    });
+    return null;
+  }
 
   return data as MomentWithDetails;
 }
