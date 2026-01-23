@@ -72,13 +72,13 @@ export default async function AdminLayout({
     {
       href: "/admin/organizers",
       label: t("navOrganizers"),
-      icon: "Building2",
+      icon: "Store",
       show: isModerator,
     },
     {
       href: "/admin/venues",
       label: t("navVenues"),
-      icon: "MapPin",
+      icon: "Building2",
       show: isModerator,
     },
     {

@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Shield,
   Building2,
+  Store,
   PartyPopper,
   ShieldCheck,
   Users,
@@ -24,6 +25,7 @@ import type { UserRole } from "@/lib/types";
 const ICON_MAP: Record<string, LucideIcon> = {
   Shield,
   Building2,
+  Store,
   PartyPopper,
   ShieldCheck,
   Users,
