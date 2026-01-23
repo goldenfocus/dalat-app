@@ -574,6 +574,10 @@
     "welcome": "Bienvenido a ĐàLạt.app",
     "letsSetup": "Configuremos tu perfil",
     "continue": "Continuar",
+    "languageStep": {
+      "detected": "Detectado:",
+      "greeting": "¡Hola!"
+    },
     "avatarStep": {
       "subtitle": "Elige cómo quieres aparecer",
       "preview": "Vista previa del avatar",

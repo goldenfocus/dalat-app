@@ -574,6 +574,10 @@
     "welcome": "ĐàLạt.appへようこそ",
     "letsSetup": "プロフィールを設定しましょう",
     "continue": "続ける",
+    "languageStep": {
+      "detected": "検出:",
+      "greeting": "こんにちは!"
+    },
     "avatarStep": {
       "subtitle": "表示方法を選択",
       "preview": "アバタープレビュー",

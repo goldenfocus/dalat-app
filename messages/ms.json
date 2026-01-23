@@ -574,6 +574,10 @@
     "welcome": "Selamat datang ke ĐàLạt.app",
     "letsSetup": "Mari sediakan profil anda",
     "continue": "Teruskan",
+    "languageStep": {
+      "detected": "Dikesan:",
+      "greeting": "Selamat!"
+    },
     "avatarStep": {
       "subtitle": "Pilih penampilan anda",
       "preview": "Pratonton avatar",

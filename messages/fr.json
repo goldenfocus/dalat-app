@@ -601,6 +601,10 @@
     "welcome": "Bienvenue sur ĐàLạt.app",
     "letsSetup": "Configurons votre profil",
     "continue": "Continuer",
+    "languageStep": {
+      "detected": "Détecté :",
+      "greeting": "Bonjour !"
+    },
     "avatarStep": {
       "subtitle": "Choisissez votre apparence",
       "preview": "Aperçu de votre avatar",

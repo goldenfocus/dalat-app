@@ -574,6 +574,10 @@
     "welcome": "欢迎来到 ĐàLạt.app",
     "letsSetup": "让我们设置您的资料",
     "continue": "继续",
+    "languageStep": {
+      "detected": "已检测:",
+      "greeting": "你好!"
+    },
     "avatarStep": {
       "subtitle": "选择您的外观",
       "preview": "头像预览",

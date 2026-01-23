@@ -574,6 +574,10 @@
     "welcome": "ĐàLạt.app에 오신 것을 환영합니다",
     "letsSetup": "프로필을 설정해 보겠습니다",
     "continue": "계속",
+    "languageStep": {
+      "detected": "감지됨:",
+      "greeting": "안녕하세요!"
+    },
     "avatarStep": {
       "subtitle": "표시 방법을 선택하세요",
       "preview": "아바타 미리보기",

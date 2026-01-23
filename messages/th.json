@@ -574,6 +574,10 @@
     "welcome": "ยินดีต้อนรับสู่ ĐàLạt.app",
     "letsSetup": "มาตั้งค่าโปรไฟล์ของคุณกัน",
     "continue": "ดำเนินการต่อ",
+    "languageStep": {
+      "detected": "ตรวจพบ:",
+      "greeting": "สวัสดี!"
+    },
     "avatarStep": {
       "subtitle": "เลือกรูปลักษณ์ของคุณ",
       "preview": "ตัวอย่างอวาตาร์",

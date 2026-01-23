@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2, AlertCircle, ArrowLeft, User } from "lucide-react";
 import { useTranslations } from "next-intl";
+import confetti from "canvas-confetti";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,35 @@ import { cn } from "@/lib/utils";
 import { detectBrowserLocale } from "@/lib/locale";
 import { PasswordPromptDialog } from "./password-prompt-dialog";
 import type { Locale } from "@/lib/types";
+
+// Celebration confetti burst
+function triggerCelebration() {
+  const duration = 2000;
+  const end = Date.now() + duration;
+
+  const colors = ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1", "#84c5f8"];
+
+  (function frame() {
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.7 },
+      colors,
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.7 },
+      colors,
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  })();
+}
 
 interface ProfileStepProps {
   userId: string;
@@ -144,6 +174,7 @@ export function ProfileStep({
       // For email auth users, they already have a password - redirect directly
       // For OAuth users (Google), offer to set a backup password
       if (hasEmailAuth) {
+        triggerCelebration();
         router.push(redirectTo);
         router.refresh();
       } else {
@@ -154,6 +185,7 @@ export function ProfileStep({
 
   function handlePasswordPromptComplete() {
     setShowPasswordPrompt(false);
+    triggerCelebration();
     router.push(redirectTo);
     router.refresh();
   }
