@@ -25,7 +25,12 @@
     "unknown": "Tidak diketahui",
     "unknownUser": "Pengguna tidak diketahui",
     "previous": "Sebelum",
-    "next": "Seterusnya"
+    "next": "Seterusnya",
+    "localeMismatch": {
+      "message": "This page is in a different language. Switch to {language}?",
+      "switch": "View in {language}",
+      "dismiss": "Keep current language"
+    }
   },
   "nav": {
     "events": "Acara",
@@ -62,7 +67,8 @@
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
     },
-    "browseArchive": "Layari arkib"
+    "browseArchive": "Layari arkib",
+    "seeAllUpcoming": "See all upcoming events"
   },
   "auth": {
     "welcomeTitle": "Selamat datang ke ĐàLạt.app",
@@ -114,7 +120,15 @@
     "checkSpamHint": "Semak peti masuk anda (atau spam, kami tak kisah)",
     "resendEmail": "Tak terima? Hantar semula",
     "resending": "Menghantar...",
-    "emailResent": "Dihantar! Semak sekali lagi"
+    "emailResent": "Dihantar! Semak sekali lagi",
+    "cancel": "Cancel",
+    "verifyTitle": "Confirm your email",
+    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
+    "verifyButton": "Complete Sign In",
+    "verifyConfirming": "Confirming...",
+    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
+    "verifyInvalidTitle": "Invalid Link",
+    "verifyInvalidDescription": "This verification link is invalid or has expired."
   },
   "errors": {
     "somethingWentWrong": "Maaf, sesuatu tidak kena.",
@@ -147,7 +161,11 @@
     "lifecycle": {
       "live": "Langsung",
       "ended": "Tamat"
-    }
+    },
+    "partOfSeries": "Part of {seriesName}",
+    "onlineEvent": "Online Event",
+    "joinMeeting": "Join meeting",
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
   },
   "rsvp": {
     "imGoing": "Saya hadir",
@@ -204,7 +222,26 @@
     "externalLinkNotCopied": "Pautan luaran tidak disalin (setiap acara biasanya ada pautan sendiri)",
     "limitAttendees": "Had peserta",
     "creatingSeries": "Mencipta siri...",
-    "createRecurringEvent": "Cipta acara berulang"
+    "createRecurringEvent": "Cipta acara berulang",
+    "pageTitle": "Kongsi sesuatu dengan komuniti",
+    "pageTitleCopy": "Cipta acara hebat yang lain",
+    "pageSubtitle": "Setiap acara menghubungkan Da Lat lebih erat.",
+    "infoHelperText": "Penerangan yang baik menjawab: Apa yang berlaku? Untuk siapa? Apa suasananya?",
+    "organizer": "Penganjur",
+    "selectOrganizer": "Pilih penganjur",
+    "noOrganizer": "Tiada penganjur (acara peribadi)",
+    "organizerHelp": "Kaitkan acara ini dengan tempat atau organisasi",
+    "venue": "Tempat",
+    "selectVenue": "Pilih tempat",
+    "noVenue": "Tiada tempat dipilih",
+    "venueHelp": "Di mana acara berlangsung. Memilih tempat akan mengisi alamat secara automatik.",
+    "onlineEvent": "Ini adalah acara dalam talian",
+    "onlineEventHelp": "Acara dalam talian berlaku secara maya melalui panggilan video (Zoom, Google Meet, dll.)",
+    "onlineLink": "Pautan mesyuarat",
+    "onlineLinkPlaceholder": "https://zoom.us/j/...",
+    "onlineLinkHelp": "Pautan di mana peserta akan menyertai acara",
+    "sponsors": "Penaja",
+    "settings": "Tetapan"
   },
   "eventActions": {
     "eventOptions": "Pilihan acara",
@@ -231,6 +268,9 @@
     },
     "requireApproval": "Perlu Kelulusan",
     "requireApprovalDescription": "Semak momen sebelum ia muncul secara awam",
+    "retranslate": "Jana semula terjemahan",
+    "retranslateDescription": "Terjemah semula tajuk dan penerangan ke 12 bahasa",
+    "retranslated": "Terjemahan dijana semula!",
     "saveSettings": "Simpan Tetapan",
     "saving": "Menyimpan...",
     "saved": "Disimpan!"
@@ -239,8 +279,7 @@
     "addToCalendar": "Tambah ke kalendar",
     "googleCalendar": "Google Calendar",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "Tambah seluruh siri",
-    "pastFestivals": "Festival Lalu"
+    "addEntireSeries": "Tambah seluruh siri"
   },
   "series": {
     "recurringSeries": "Siri Berulang",
@@ -330,7 +369,6 @@
     "uploadFailed": "Gagal memuat naik imej. Sila cuba lagi.",
     "removeFailed": "Gagal mengalih keluar imej",
     "saving": "Menyimpan...",
-    "saveChanges": "Simpan perubahan",
     "continue": "Teruskan",
     "generateAI": "Avatar AI",
     "generating": "Mencipta...",
@@ -372,7 +410,18 @@
         "softerLook": "Lebih lembut",
         "addWarmth": "Tambah kehangatan"
       }
-    }
+    },
+    "saved": "Saved",
+    "moments": "Moments",
+    "noMomentsYet": "No moments yet",
+    "noMomentsHint": "Moments shared from events will appear here",
+    "claimBanner": {
+      "title": "Is this your profile?",
+      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
+      "button": "Claim This Profile",
+      "communityImported": "Community Imported"
+    },
+    "eventsHosted": "{count} events hosted"
   },
   "settings": {
     "settings": "Tetapan",
@@ -383,7 +432,13 @@
     "language": "Bahasa",
     "languageDescription": "Pilih bahasa pilihan anda",
     "account": "Akaun",
-    "accountDescription": "Urus akaun anda"
+    "accountDescription": "Urus akaun anda",
+    "password": {
+      "setOrChangePassword": "Set or change password",
+      "changePassword": "Change password",
+      "savePassword": "Save password",
+      "passwordUpdated": "Password updated!"
+    }
   },
   "notifications": {
     "enable": "Aktifkan pemberitahuan",
@@ -413,7 +468,8 @@
     "themeDark": "Gelap",
     "themeSystem": "Sistem",
     "language": "Bahasa",
-    "signOut": "Log keluar"
+    "signOut": "Log keluar",
+    "exitGodMode": "Exit God Mode"
   },
   "admin": {
     "dashboard": "Papan Pemuka Admin",
@@ -463,7 +519,21 @@
     "roleModerator": "Moderator",
     "roleOrganizer": "Penganjur",
     "roleContributor": "Penyumbang",
-    "noData": "Tiada data"
+    "noData": "Tiada data",
+    "navBlog": "Blog",
+    "blog": "Blog Posts",
+    "blogDescription": "Manage blog posts and changelogs",
+    "newPost": "New Post",
+    "noPosts": "No blog posts yet",
+    "createFirstPost": "Create your first post",
+    "statusDraft": "Draft",
+    "statusExperimental": "Experimental",
+    "statusPublished": "Published",
+    "statusDeprecated": "Deprecated",
+    "statusArchived": "Archived",
+    "sourceManual": "Manual",
+    "sourceGithub": "GitHub",
+    "sourceDailySummary": "Daily Summary"
   },
   "verification": {
     "requestSubmitted": "Permintaan Dihantar!",
@@ -528,7 +598,14 @@
     "website": "Laman web",
     "upcomingEvents": "Acara Akan Datang",
     "pastEvents": "Acara Lepas",
-    "noEventsYet": "Belum ada acara"
+    "noEventsYet": "Belum ada acara",
+    "claimBanner": {
+      "title": "Is this your organization?",
+      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
+      "button": "Claim This Profile",
+      "unclaimed": "Unclaimed"
+    },
+    "eventsHosted": "{count} events"
   },
   "festival": {
     "title": "Festival",
@@ -548,7 +625,8 @@
     "communitySideEvents": "Acara Komuniti",
     "noUpdatesYet": "Belum ada kemas kini. Nantikan!",
     "moreDetailsSoon": "Maklumat lanjut akan datang.",
-    "activeUpcoming": "Aktif & Akan Datang"
+    "activeUpcoming": "Aktif & Akan Datang",
+    "pastFestivals": "Past Festivals"
   },
   "analytics": {
     "created": "Dicipta",
@@ -627,8 +705,6 @@
     "shareVia": "Kongsi melalui",
     "byEmail": "Melalui e-mel",
     "findMember": "Cari ahli",
-    "orSendEmail": "atau hantar jemputan e-mel",
-    "emailAddresses": "Alamat e-mel",
     "emailPlaceholder": "Masukkan alamat e-mel",
     "smartPlaceholder": "E-mel atau @nama pengguna",
     "emailHint": "Tampal berbilang e-mel (dipisahkan dengan koma, ruang atau baris baru)",
@@ -659,7 +735,121 @@
     "viewEventPage": "Lihat halaman acara",
     "poweredBy": "Dikuasakan oleh",
     "rsvpFailed": "Gagal menyimpan respons. Sila cuba lagi.",
-    "eventEnded": "Acara ini telah berakhir"
+    "eventEnded": "Acara ini telah berakhir",
+    "celebrationTitle": "Jemputan dihantar!",
+    "celebrationPhrases": [
+      "Anda baru sahaja menjadikan Đà Lạt lebih terhubung",
+      "Pembina komuniti seperti anda membuat perbezaan sebenar",
+      "Terima kasih kerana menyatukan orang ramai",
+      "Kesan riak dari jemputan anda bermula sekarang",
+      "Anda sedang membantu membina sesuatu yang indah",
+      "Setiap pertemuan hebat bermula dengan satu jemputan",
+      "Anda adalah sebab persahabatan terjalin",
+      "Terima kasih kerana menyebarkan berita",
+      "Acara terbaik adalah yang didengar daripada rakan",
+      "Anda adalah penghubung — dunia memerlukan lebih ramai seperti anda",
+      "Seseorang akan berseronok kerana anda",
+      "Anda baru menanam benih untuk kenangan baru",
+      "Komuniti tidak membina sendiri — terima kasih kerana menjadi sebahagian daripadanya",
+      "Jemputan anda mencipta keajaiban dunia sebenar",
+      "Lebih ramai orang, lebih banyak cerita untuk dikongsi",
+      "Anda menjadikan Kota Musim Bunga Abadi lebih hangat",
+      "Di sebalik setiap acara hebat adalah seseorang yang berkongsinya",
+      "Terima kasih kerana menjadi orang yang menghulurkan tangan dahulu",
+      "Jemputan anda mungkin mencerahkan minggu seseorang",
+      "Satu jemputan boleh mengubah segalanya",
+      "Anda sedang menulis bab seterusnya dalam cerita seseorang",
+      "Beginilah komuniti berkembang — satu jemputan pada satu masa",
+      "Rangkaian anda kini rangkaian kami. Selamat datang.",
+      "Terima kasih kerana mempercayakan rakan-rakan anda",
+      "Anda baru sahaja memperluaskan keluarga Đà Lạt",
+      "Sejujurnya: orang seperti anda menjadikan ini mungkin",
+      "Jemputan terbaik adalah jemputan peribadi. Terima kasih.",
+      "Anda bukan sekadar menjemput — anda menyertakan",
+      "Kalendar seseorang menjadi lebih menarik",
+      "Terima kasih kerana murah hati dengan hubungan anda",
+      "Anda membantu menukar orang asing menjadi rakan",
+      "Pokok-pokok pain merestui keputusan anda",
+      "Lebih ramai orang, lebih banyak kenangan, lebih banyak keajaiban",
+      "Anda adalah jambatan antara seseorang dan masa yang indah",
+      "Komuniti berkembang kerana orang seperti anda",
+      "Jemputan anda adalah jemputan untuk dimiliki",
+      "Terima kasih kerana berkongsi apa yang anda sukai",
+      "Anda baru memberikan seseorang sebab untuk keluar",
+      "Pengalaman terbaik adalah pengalaman yang dikongsi",
+      "Anda sedang membina jambatan, satu jemputan pada satu masa",
+      "FOMO seseorang baru bertukar menjadi JOMO",
+      "Terima kasih kerana menjadi rakan yang berkongsi kebaikan",
+      "Anda sedang membuat ruang untuk orang lain di meja",
+      "Inilah rupa komuniti",
+      "Kemurahan hati anda dengan jemputan dicatat dan dihargai",
+      "Anda bukan hanya membesarkan acara — anda membesarkan hubungan",
+      "Terima kasih kerana percaya ini berbaloi dikongsi",
+      "Seseorang baru disertakan kerana anda",
+      "Anda adalah sebab ini akan diingati",
+      "Tenaga positif tersebar melalui orang seperti anda",
+      "Jemputan anda adalah peluang orang lain",
+      "Terima kasih kerana mencipta ruang untuk lebih ramai",
+      "Anda sedang membantu menulis cerita Đà Lạt",
+      "Perkara terbaik dalam hidup adalah untuk dikongsi",
+      "Anda baru menjadikan dunia sedikit lebih kecil",
+      "Terima kasih kerana menjadi penyerta, bukan pengecualian",
+      "Rakan-rakan anda akan bertemu rakan-rakan kami",
+      "Beginilah keajaiban berlaku",
+      "Anda adalah percikan yang menyalakan api",
+      "Terima kasih kerana memikirkan orang lain",
+      "Peti masuk seseorang menjadi lebih gembira",
+      "Anda sedang mencipta momen sebelum ia berlaku",
+      "Lebih banyak suara, lebih kaya perbualan",
+      "Terima kasih kerana menambah kepelbagaian",
+      "Anda adalah bukti komuniti masih hidup",
+      "Jemputan anda lebih penting daripada yang anda sangka",
+      "Kalendar sosial seseorang berterima kasih kepada anda",
+      "Anda sedang mencipta hubungan yang mungkin bertahan seumur hidup",
+      "Terima kasih kerana menjadi sebahagian daripada penyelesaian",
+      "Rangkaian terbaik berlaku di acara seperti ini",
+      "Seseorang berasa diingati kerana anda",
+      "Kemurahan hati anda berjangkit",
+      "Inilah komuniti dalam tindakan",
+      "Terima kasih kerana menjadi orang yang menghubungi dahulu",
+      "Anda sedang membantu orang mencari kumpulan mereka",
+      "Kenangan kegemaran seterusnya seseorang bermula dengan jemputan ini",
+      "Lembah menjadi lebih meriah",
+      "Terima kasih kerana menjadi pembina jambatan",
+      "Anda adalah rakan yang semua orang perlukan",
+      "Jemputan anda adalah hadiah yang dibungkus dengan kemungkinan",
+      "Beginilah rupa mengambil berat tentang orang lain",
+      "Terima kasih kerana tidak menyimpan kebaikan untuk diri sendiri",
+      "Anda sedang membantu Đà Lạt menjadi versi terbaiknya",
+      "Seseorang baru dapat sebab untuk berkata ya",
+      "Jemputan anda mungkin menjadi kemuncak minggu mereka",
+      "Terima kasih kerana murah hati dengan kegembiraan",
+      "Anda sedang mencipta ruang untuk hubungan",
+      "Kabus sedang menyingkir dan rakan-rakan anda sedang datang",
+      "Terima kasih kerana berfikir lebih besar daripada diri sendiri",
+      "Anda adalah sebab komuniti wujud",
+      "Malam seseorang baru dirancang",
+      "Kebaikan anda dalam menjemput tidak akan dilupakan",
+      "Beginilah rasa kepunyaan bermula",
+      "Terima kasih kerana menjadi rakan yang suka berkongsi",
+      "Anda sedang mencipta ruang untuk cerita baru",
+      "Seseorang berasa diingati",
+      "Lebih ramai lebih meriah — dan anda menjadikannya lebih meriah",
+      "Terima kasih kerana menjadi sebahagian daripada perjalanan ini",
+      "Anda sedang membantu mencipta acara yang anda mahu lihat",
+      "Pengembaraan seterusnya seseorang baru bermula",
+      "Jemputan anda adalah undi kepercayaan kepada hubungan",
+      "Terima kasih kerana membina sesuatu yang lebih besar daripada diri sendiri",
+      "Anda menjadikan Đà Lạt terasa seperti rumah",
+      "Seseorang baru mengetahui tempat kegemaran baru mereka",
+      "Komuniti terbaik dibina oleh mereka yang menjemput",
+      "Terima kasih kerana menjadi kuasa untuk hubungan",
+      "Anda adalah sebab bilik akan penuh",
+      "Teruskan menjadi penghubung seperti anda"
+    ],
+    "usernamePlaceholder": "Search by name or username",
+    "usernameHint": "Type at least 2 characters to search",
+    "noInvitees": "Please add at least one person to invite"
   },
   "moments": {
     "moments": "Momen",
@@ -752,8 +942,24 @@
       "statusError": "Gagal",
       "retry": "Cuba Semula",
       "remove": "Alih keluar",
-      "proUploadLink": "Ada 100+ foto? Gunakan Muat Naik Pro"
-    }
+      "proUploadLink": "Ada 100+ foto? Gunakan Muat Naik Pro",
+      "statusConverting": "Converting..."
+    },
+    "discoveryMode": "Discovery",
+    "differentEvent": "From a different event",
+    "prevEvent": "Prev event",
+    "nextEvent": "Next event",
+    "share": "Share",
+    "postMoments": "Post {count} moments",
+    "addMore": "Add more",
+    "viewMoreMoments": "View {count} more moments",
+    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
+    "searchHint": "AI-powered visual search",
+    "searchNoResults": "No moments found for \"{query}\"",
+    "searchResults": "{count} results for \"{query}\"",
+    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
+    "searching": "Searching...",
+    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
   },
   "tribes": {
     "title": "Suku",
@@ -914,7 +1120,24 @@
     "generate": "Jana",
     "refineImage": "Halusi imej ini",
     "refinementPlaceholder": "cth., Tambah warna ungu, jadikan lebih abstrak...",
-    "applyRefinement": "Gunakan penghalusan"
+    "applyRefinement": "Gunakan penghalusan",
+    "remove": "Padam",
+    "removing": "Memadamkan...",
+    "removeImagePhrases": [
+      { "title": "Ucap selamat tinggal? 👋", "description": "Karya agung ini akan lenyap selamanya! Poof! ✨" },
+      { "title": "Bye bye cantik? 💔", "description": "Hilang. Kaput. Tamat. Tak boleh undo! 🙈" },
+      { "title": "Masuk lubang hitam? 🕳️", "description": "Gambar ni dah siap packing dan sedia untuk pergi 🧳" },
+      { "title": "Ghostkan gambar ni? 👻", "description": "Sekali dah pergi, kabus pun tak boleh bawa balik 🌫️" },
+      { "title": "Lempar jauh-jauh? 🚀", "description": "Parti pixel ni nak tamat! 🎉" },
+      { "title": "Lepaskan? ❄️", "description": "Sejuk tak pernah ganggu gambar ni..." },
+      { "title": "Bye kawan? 🥺", "description": "Gambar ni percaya kau sampai akhir..." },
+      { "title": "Masa kemas? ✨", "description": "Bagi joy tak? Nampaknya tak! 🧹" },
+      { "title": "RIP gambar? 💀", "description": "Semoga rehat dengan aman di alam digital 🪦" },
+      { "title": "Hantar pergi? 📦", "description": "Destinasi seterusnya: tong sampah di awan ☁️" }
+    ],
+    "titlePositionTop": "Title at top",
+    "titlePositionMiddle": "Title in middle",
+    "titlePositionBottom": "Title at bottom"
   },
   "archive": {
     "events": "Acara",
@@ -1213,6 +1436,7 @@
     "postComment": "Hantar",
     "reply": "Balas",
     "replyTo": "Membalas {name}",
+    "replyPlaceholder": "Balas kepada {name}...",
     "edit": "Edit",
     "delete": "Padam",
     "deleted": "[dipadam]",
@@ -1223,5 +1447,36 @@
     "hideReplies": "Sembunyikan balasan",
     "mute": "Matikan pemberitahuan",
     "unmute": "Hidupkan pemberitahuan"
+  },
+  "feedback": {
+    "howWasIt": "How was the event?",
+    "amazing": "Amazing",
+    "good": "Good",
+    "okay": "Okay",
+    "notGreat": "Not great",
+    "commentPlaceholder": "Any thoughts to share? (optional)",
+    "submit": "Submit feedback",
+    "didNotAttend": "I didn't go",
+    "thankYou": "Thanks for your feedback!",
+    "markedNoShow": "Got it, thanks for letting us know.",
+    "eventEnded": "This event has ended",
+    "positiveRating": "{percentage}% positive ({count} reviews)"
+  },
+  "celebration": {
+    "title": "You just made Da Lat better!",
+    "subtitle": "The more the merrier. Spread the word.",
+    "quickShare": "Quick Share",
+    "personalInvitesTitle": "Want to send personal invites?",
+    "emailInvites": "Email Invites",
+    "emailDescription": "Paste emails to send invitations with RSVP tracking",
+    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
+    "addEmails": "Add",
+    "sendInvites": "Send {count} invite(s)",
+    "sending": "Sending...",
+    "sentSuccess": "{count} invite(s) sent!",
+    "skipForNow": "Done",
+    "viewEvent": "See your event live",
+    "copyLink": "Copy link",
+    "copied": "Copied!"
   }
 }

@@ -25,7 +25,12 @@
     "unknown": "Unbekannt",
     "unknownUser": "Unbekannter Benutzer",
     "previous": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "localeMismatch": {
+      "message": "This page is in a different language. Switch to {language}?",
+      "switch": "View in {language}",
+      "dismiss": "Keep current language"
+    }
   },
   "nav": {
     "events": "Events",
@@ -62,7 +67,8 @@
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
     },
-    "browseArchive": "Archiv durchsuchen"
+    "browseArchive": "Archiv durchsuchen",
+    "seeAllUpcoming": "See all upcoming events"
   },
   "auth": {
     "welcomeTitle": "Willkommen bei ĐàLạt.app",
@@ -114,7 +120,15 @@
     "checkSpamHint": "Prüfe deinen Posteingang (oder Spam, wir urteilen nicht)",
     "resendEmail": "Nicht erhalten? Erneut senden",
     "resending": "Wird gesendet...",
-    "emailResent": "Gesendet! Prüfe erneut"
+    "emailResent": "Gesendet! Prüfe erneut",
+    "cancel": "Cancel",
+    "verifyTitle": "Confirm your email",
+    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
+    "verifyButton": "Complete Sign In",
+    "verifyConfirming": "Confirming...",
+    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
+    "verifyInvalidTitle": "Invalid Link",
+    "verifyInvalidDescription": "This verification link is invalid or has expired."
   },
   "errors": {
     "somethingWentWrong": "Entschuldigung, etwas ist schiefgelaufen.",
@@ -147,7 +161,11 @@
     "lifecycle": {
       "live": "Live",
       "ended": "Beendet"
-    }
+    },
+    "partOfSeries": "Part of {seriesName}",
+    "onlineEvent": "Online Event",
+    "joinMeeting": "Join meeting",
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
   },
   "rsvp": {
     "imGoing": "Ich bin dabei",
@@ -204,7 +222,26 @@
     "externalLinkNotCopied": "Externer Link nicht kopiert (jedes Event hat normalerweise seinen eigenen Link)",
     "limitAttendees": "Teilnehmer begrenzen",
     "creatingSeries": "Serie wird erstellt...",
-    "createRecurringEvent": "Wiederkehrendes Event erstellen"
+    "createRecurringEvent": "Wiederkehrendes Event erstellen",
+    "pageTitle": "Teile etwas mit der Community",
+    "pageTitleCopy": "Ein weiteres großartiges Event erstellen",
+    "pageSubtitle": "Jedes Event verbindet Da Lat ein bisschen mehr.",
+    "infoHelperText": "Gute Beschreibungen beantworten: Was passiert? Für wen? Was ist die Stimmung?",
+    "organizer": "Veranstalter",
+    "selectOrganizer": "Veranstalter auswählen",
+    "noOrganizer": "Kein Veranstalter (persönliches Event)",
+    "organizerHelp": "Event mit einem Ort oder einer Organisation verknüpfen",
+    "venue": "Veranstaltungsort",
+    "selectVenue": "Veranstaltungsort auswählen",
+    "noVenue": "Kein Veranstaltungsort ausgewählt",
+    "venueHelp": "Wo das Event stattfindet. Die Adresse wird automatisch ausgefüllt.",
+    "onlineEvent": "Dies ist ein Online-Event",
+    "onlineEventHelp": "Online-Events finden virtuell per Videoanruf statt (Zoom, Google Meet, etc.)",
+    "onlineLink": "Meeting-Link",
+    "onlineLinkPlaceholder": "https://zoom.us/j/...",
+    "onlineLinkHelp": "Der Link, über den Teilnehmer dem Event beitreten",
+    "sponsors": "Sponsoren",
+    "settings": "Einstellungen"
   },
   "eventActions": {
     "eventOptions": "Event-Optionen",
@@ -231,6 +268,9 @@
     },
     "requireApproval": "Freigabe erforderlich",
     "requireApprovalDescription": "Moments vor der Veröffentlichung prüfen",
+    "retranslate": "Übersetzungen neu generieren",
+    "retranslateDescription": "Titel und Beschreibung in alle 12 Sprachen neu übersetzen",
+    "retranslated": "Übersetzungen neu generiert!",
     "saveSettings": "Einstellungen speichern",
     "saving": "Wird gespeichert...",
     "saved": "Gespeichert!"
@@ -239,8 +279,7 @@
     "addToCalendar": "Zum Kalender hinzufügen",
     "googleCalendar": "Google Kalender",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "Gesamte Serie hinzufügen",
-    "pastFestivals": "Vergangene Festivals"
+    "addEntireSeries": "Gesamte Serie hinzufügen"
   },
   "series": {
     "recurringSeries": "Wiederkehrende Serie",
@@ -330,7 +369,6 @@
     "uploadFailed": "Bildupload fehlgeschlagen. Bitte versuche es erneut.",
     "removeFailed": "Bild konnte nicht entfernt werden",
     "saving": "Wird gespeichert...",
-    "saveChanges": "Änderungen speichern",
     "continue": "Weiter",
     "generateAI": "KI-Avatar",
     "generating": "Wird erstellt...",
@@ -372,7 +410,18 @@
         "softerLook": "Weicher",
         "addWarmth": "Wärme hinzufügen"
       }
-    }
+    },
+    "saved": "Saved",
+    "moments": "Moments",
+    "noMomentsYet": "No moments yet",
+    "noMomentsHint": "Moments shared from events will appear here",
+    "claimBanner": {
+      "title": "Is this your profile?",
+      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
+      "button": "Claim This Profile",
+      "communityImported": "Community Imported"
+    },
+    "eventsHosted": "{count} events hosted"
   },
   "settings": {
     "settings": "Einstellungen",
@@ -383,7 +432,13 @@
     "language": "Sprache",
     "languageDescription": "Wähle deine bevorzugte Sprache",
     "account": "Konto",
-    "accountDescription": "Verwalte dein Konto"
+    "accountDescription": "Verwalte dein Konto",
+    "password": {
+      "setOrChangePassword": "Set or change password",
+      "changePassword": "Change password",
+      "savePassword": "Save password",
+      "passwordUpdated": "Password updated!"
+    }
   },
   "notifications": {
     "enable": "Benachrichtigungen aktivieren",
@@ -413,7 +468,8 @@
     "themeDark": "Dunkel",
     "themeSystem": "System",
     "language": "Sprache",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "exitGodMode": "Exit God Mode"
   },
   "admin": {
     "dashboard": "Admin-Dashboard",
@@ -463,7 +519,21 @@
     "roleModerator": "Moderator",
     "roleOrganizer": "Veranstalter",
     "roleContributor": "Mitwirkender",
-    "noData": "Keine Daten"
+    "noData": "Keine Daten",
+    "navBlog": "Blog",
+    "blog": "Blog Posts",
+    "blogDescription": "Manage blog posts and changelogs",
+    "newPost": "New Post",
+    "noPosts": "No blog posts yet",
+    "createFirstPost": "Create your first post",
+    "statusDraft": "Draft",
+    "statusExperimental": "Experimental",
+    "statusPublished": "Published",
+    "statusDeprecated": "Deprecated",
+    "statusArchived": "Archived",
+    "sourceManual": "Manual",
+    "sourceGithub": "GitHub",
+    "sourceDailySummary": "Daily Summary"
   },
   "verification": {
     "requestSubmitted": "Anfrage gesendet!",
@@ -528,7 +598,14 @@
     "website": "Webseite",
     "upcomingEvents": "Kommende Veranstaltungen",
     "pastEvents": "Vergangene Veranstaltungen",
-    "noEventsYet": "Noch keine Veranstaltungen"
+    "noEventsYet": "Noch keine Veranstaltungen",
+    "claimBanner": {
+      "title": "Is this your organization?",
+      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
+      "button": "Claim This Profile",
+      "unclaimed": "Unclaimed"
+    },
+    "eventsHosted": "{count} events"
   },
   "festival": {
     "title": "Festivals",
@@ -548,7 +625,8 @@
     "communitySideEvents": "Community-Veranstaltungen",
     "noUpdatesYet": "Noch keine Updates. Bleib dran!",
     "moreDetailsSoon": "Mehr Details folgen bald.",
-    "activeUpcoming": "Aktiv & Kommend"
+    "activeUpcoming": "Aktiv & Kommend",
+    "pastFestivals": "Past Festivals"
   },
   "analytics": {
     "created": "Erstellt",
@@ -627,8 +705,6 @@
     "shareVia": "Teilen über",
     "byEmail": "Per E-Mail",
     "findMember": "Mitglied suchen",
-    "orSendEmail": "oder E-Mail-Einladungen senden",
-    "emailAddresses": "E-Mail-Adressen",
     "emailPlaceholder": "E-Mail-Adressen eingeben",
     "smartPlaceholder": "E-Mail oder @Benutzername",
     "emailHint": "Mehrere E-Mails einfügen (getrennt durch Komma, Leerzeichen oder Zeilenumbruch)",
@@ -659,7 +735,121 @@
     "viewEventPage": "Event-Seite ansehen",
     "poweredBy": "Unterstützt von",
     "rsvpFailed": "Antwort konnte nicht gespeichert werden. Bitte versuche es erneut.",
-    "eventEnded": "Diese Veranstaltung ist beendet"
+    "eventEnded": "Diese Veranstaltung ist beendet",
+    "celebrationTitle": "Einladungen versendet!",
+    "celebrationPhrases": [
+      "Du hast Đà Lạt gerade ein bisschen mehr verbunden gemacht",
+      "Community-Builder wie du machen den Unterschied",
+      "Danke, dass du Menschen zusammenbringst",
+      "Der Welleneffekt deiner Einladung beginnt jetzt",
+      "Du hilfst dabei, etwas Schönes aufzubauen",
+      "Jedes großartige Treffen beginnt mit einer Einladung",
+      "Du bist der Grund, warum Freundschaften entstehen",
+      "Danke, dass du die Nachricht verbreitest",
+      "Die besten Events sind die, von denen man durch Freunde erfährt",
+      "Du bist ein Verbinder — die Welt braucht mehr von solchen Menschen",
+      "Jemand wird dank dir eine tolle Zeit haben",
+      "Du hast gerade Samen für neue Erinnerungen gesät",
+      "Community baut sich nicht von selbst — danke, dass du Teil davon bist",
+      "Deine Einladungen schaffen echte Magie",
+      "Je mehr Menschen, desto mehr Geschichten zu erzählen",
+      "Du machst die Stadt des ewigen Frühlings noch wärmer",
+      "Hinter jedem großartigen Event steht jemand, der es geteilt hat",
+      "Danke, dass du der Typ bist, der den ersten Schritt macht",
+      "Deine Einladung könnte jemandes Woche erhellen",
+      "Eine Einladung kann alles verändern",
+      "Du schreibst das nächste Kapitel in jemandes Geschichte",
+      "So wachsen Communities — eine Einladung nach der anderen",
+      "Dein Netzwerk ist jetzt unser Netzwerk. Willkommen.",
+      "Danke, dass du uns deine Freunde anvertraust",
+      "Du hast gerade die Đà Lạt-Familie erweitert",
+      "Ehrlich: Menschen wie du machen das möglich",
+      "Die beste Einladung ist persönlich. Danke.",
+      "Du lädst nicht nur ein — du schließt ein",
+      "Jemandes Kalender ist gerade viel interessanter geworden",
+      "Danke, dass du großzügig mit deinen Kontakten bist",
+      "Du hilfst dabei, Fremde zu Freunden zu machen",
+      "Die Kiefern stimmen deiner Entscheidung zu",
+      "Mehr Menschen, mehr Erinnerungen, mehr Magie",
+      "Du bist die Brücke zwischen jemandem und einer tollen Zeit",
+      "Community gedeiht wegen Menschen wie dir",
+      "Deine Einladung ist eine Einladung dazuzugehören",
+      "Danke, dass du teilst, was du liebst",
+      "Du hast jemandem gerade einen Grund gegeben rauszugehen",
+      "Die besten Erlebnisse sind geteilte Erlebnisse",
+      "Du baust Brücken, eine Einladung nach der anderen",
+      "Jemandes FOMO hat sich gerade in JOMO verwandelt",
+      "Danke, dass du der Freund bist, der Gutes teilt",
+      "Du machst Platz für andere am Tisch",
+      "So sieht Community aus",
+      "Deine Großzügigkeit mit Einladungen wird bemerkt und geschätzt",
+      "Du baust nicht nur ein Event auf — du baust Verbindungen auf",
+      "Danke, dass du glaubst, dass es wert ist geteilt zu werden",
+      "Jemand wurde gerade dank dir einbezogen",
+      "Du bist der Grund, warum das unvergesslich wird",
+      "Gute Energie verbreitet sich durch Menschen wie dich",
+      "Deine Einladung ist jemand anderes Chance",
+      "Danke, dass du Platz für mehr schaffst",
+      "Du hilfst dabei, die Geschichte von Đà Lạt zu schreiben",
+      "Die besten Dinge im Leben sind zum Teilen da",
+      "Du hast die Welt gerade ein bisschen kleiner gemacht",
+      "Danke, dass du ein Einschließer bist, kein Ausschließer",
+      "Deine Freunde werden unsere Freunde treffen",
+      "So passiert Magie",
+      "Du bist der Funke, der das Feuer entfacht",
+      "Danke, dass du an andere denkst",
+      "Jemandes Postfach ist gerade viel glücklicher geworden",
+      "Du erschaffst Momente, bevor sie passieren",
+      "Je mehr Stimmen, desto reicher das Gespräch",
+      "Danke, dass du zur Vielfalt beiträgst",
+      "Du bist der Beweis, dass Community lebendig ist",
+      "Deine Einladung bedeutet mehr als du denkst",
+      "Jemandes sozialer Kalender dankt dir",
+      "Du schaffst Verbindungen, die ein Leben lang halten können",
+      "Danke, dass du Teil der Lösung bist",
+      "Das beste Networking passiert bei Events wie diesem",
+      "Jemand hat sich dank dir erinnert gefühlt",
+      "Deine Großzügigkeit ist ansteckend",
+      "Das ist Community in Aktion",
+      "Danke, dass du den ersten Schritt machst",
+      "Du hilfst Menschen, ihre Leute zu finden",
+      "Jemandes nächste Lieblingserinnerung beginnt mit dieser Einladung",
+      "Das Tal ist gerade ein bisschen lebendiger geworden",
+      "Danke, dass du ein Brückenbauer bist",
+      "Du bist der Freund, den jeder braucht",
+      "Deine Einladung ist ein Geschenk voller Möglichkeiten",
+      "So sieht es aus, für andere da zu sein",
+      "Danke, dass du Gutes nicht für dich behältst",
+      "Du hilfst Đà Lạt, seine beste Version zu werden",
+      "Jemand hat gerade einen Grund bekommen, ja zu sagen",
+      "Deine Einladung könnte der Höhepunkt ihrer Woche sein",
+      "Danke, dass du großzügig mit Freude bist",
+      "Du schaffst Raum für Verbindung",
+      "Der Nebel lichtet sich und deine Freunde kommen",
+      "Danke, dass du größer denkst als du selbst",
+      "Du bist der Grund, warum Community existiert",
+      "Jemandes Abend wurde gerade geplant",
+      "Deine Freundlichkeit beim Einladen bleibt nicht unbemerkt",
+      "So beginnt Zugehörigkeit",
+      "Danke, dass du der Freund bist, der teilt",
+      "Du schaffst Raum für neue Geschichten",
+      "Jemand hat sich gerade erinnert gefühlt",
+      "Je mehr, desto besser — und du hast es besser gemacht",
+      "Danke, dass du Teil dieser Reise bist",
+      "Du hilfst dabei, die Events zu schaffen, die du sehen willst",
+      "Jemandes nächstes Abenteuer hat gerade begonnen",
+      "Deine Einladung ist ein Vertrauensvotum für Verbindung",
+      "Danke, dass du etwas Größeres als dich selbst aufbaust",
+      "Du machst Đà Lạt zu einem Zuhause",
+      "Jemand hat gerade seinen neuen Lieblingsort entdeckt",
+      "Die besten Communities werden von denen gebaut, die einladen",
+      "Danke, dass du eine Kraft für Verbindung bist",
+      "Du bist der Grund, warum der Raum voll sein wird",
+      "Bleib der Verbinder, der du bist"
+    ],
+    "usernamePlaceholder": "Search by name or username",
+    "usernameHint": "Type at least 2 characters to search",
+    "noInvitees": "Please add at least one person to invite"
   },
   "moments": {
     "moments": "Moments",
@@ -752,8 +942,24 @@
       "statusError": "Fehlgeschlagen",
       "retry": "Wiederholen",
       "remove": "Entfernen",
-      "proUploadLink": "Über 100 Fotos? Pro-Upload verwenden"
-    }
+      "proUploadLink": "Über 100 Fotos? Pro-Upload verwenden",
+      "statusConverting": "Converting..."
+    },
+    "discoveryMode": "Discovery",
+    "differentEvent": "From a different event",
+    "prevEvent": "Prev event",
+    "nextEvent": "Next event",
+    "share": "Share",
+    "postMoments": "Post {count} moments",
+    "addMore": "Add more",
+    "viewMoreMoments": "View {count} more moments",
+    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
+    "searchHint": "AI-powered visual search",
+    "searchNoResults": "No moments found for \"{query}\"",
+    "searchResults": "{count} results for \"{query}\"",
+    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
+    "searching": "Searching...",
+    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
   },
   "tribes": {
     "title": "Tribes",
@@ -914,7 +1120,24 @@
     "generate": "Generieren",
     "refineImage": "Dieses Bild verfeinern",
     "refinementPlaceholder": "z.B., Mehr lila Töne hinzufügen, abstrakter machen...",
-    "applyRefinement": "Verfeinerung anwenden"
+    "applyRefinement": "Verfeinerung anwenden",
+    "remove": "Entfernen",
+    "removing": "Wird entfernt...",
+    "removeImagePhrases": [
+      { "title": "Tschüss sagen? 👋", "description": "Dieses Meisterwerk verschwindet für immer! Puff! ✨" },
+      { "title": "Bye bye Schönheit? 💔", "description": "Weg. Kaputt. Finito. Kein Zurück! 🙈" },
+      { "title": "Ins Nichts? 🕳️", "description": "Dieses Bild hat gepackt und ist abfahrbereit 🧳" },
+      { "title": "Geistern lassen? 👻", "description": "Einmal weg, bringt selbst der Nebel es nicht zurück 🌫️" },
+      { "title": "Wegschleudern? 🚀", "description": "Diese Pixel-Party endet gleich! 🎉" },
+      { "title": "Loslassen? ❄️", "description": "Die Kälte hat dieses Bild nie gestört..." },
+      { "title": "Lebwohl Freund? 🥺", "description": "Dieses Bild hat bis zum Ende an dich geglaubt..." },
+      { "title": "Ausmisten? ✨", "description": "Macht es glücklich? Anscheinend nicht! 🧹" },
+      { "title": "R.I.P. Bild? 💀", "description": "Möge es in Frieden im digitalen Jenseits ruhen 🪦" },
+      { "title": "Wegschicken? 📦", "description": "Nächster Halt: Papierkorb in der Cloud ☁️" }
+    ],
+    "titlePositionTop": "Title at top",
+    "titlePositionMiddle": "Title in middle",
+    "titlePositionBottom": "Title at bottom"
   },
   "archive": {
     "events": "Events",
@@ -1213,6 +1436,7 @@
     "postComment": "Posten",
     "reply": "Antworten",
     "replyTo": "Antwort an {name}",
+    "replyPlaceholder": "Antwort an {name}...",
     "edit": "Bearbeiten",
     "delete": "Löschen",
     "deleted": "[gelöscht]",
@@ -1223,5 +1447,36 @@
     "hideReplies": "Antworten ausblenden",
     "mute": "Benachrichtigungen aus",
     "unmute": "Benachrichtigungen an"
+  },
+  "feedback": {
+    "howWasIt": "How was the event?",
+    "amazing": "Amazing",
+    "good": "Good",
+    "okay": "Okay",
+    "notGreat": "Not great",
+    "commentPlaceholder": "Any thoughts to share? (optional)",
+    "submit": "Submit feedback",
+    "didNotAttend": "I didn't go",
+    "thankYou": "Thanks for your feedback!",
+    "markedNoShow": "Got it, thanks for letting us know.",
+    "eventEnded": "This event has ended",
+    "positiveRating": "{percentage}% positive ({count} reviews)"
+  },
+  "celebration": {
+    "title": "You just made Da Lat better!",
+    "subtitle": "The more the merrier. Spread the word.",
+    "quickShare": "Quick Share",
+    "personalInvitesTitle": "Want to send personal invites?",
+    "emailInvites": "Email Invites",
+    "emailDescription": "Paste emails to send invitations with RSVP tracking",
+    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
+    "addEmails": "Add",
+    "sendInvites": "Send {count} invite(s)",
+    "sending": "Sending...",
+    "sentSuccess": "{count} invite(s) sent!",
+    "skipForNow": "Done",
+    "viewEvent": "See your event live",
+    "copyLink": "Copy link",
+    "copied": "Copied!"
   }
 }

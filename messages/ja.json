@@ -25,7 +25,12 @@
     "unknown": "不明",
     "unknownUser": "不明なユーザー",
     "previous": "前へ",
-    "next": "次へ"
+    "next": "次へ",
+    "localeMismatch": {
+      "message": "This page is in a different language. Switch to {language}?",
+      "switch": "View in {language}",
+      "dismiss": "Keep current language"
+    }
   },
   "nav": {
     "events": "イベント",
@@ -62,7 +67,8 @@
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
     },
-    "browseArchive": "アーカイブを見る"
+    "browseArchive": "アーカイブを見る",
+    "seeAllUpcoming": "See all upcoming events"
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.appへようこそ",
@@ -114,7 +120,15 @@
     "checkSpamHint": "受信トレイを確認してください（迷惑メールフォルダもね）",
     "resendEmail": "届きませんか？再送信",
     "resending": "送信中...",
-    "emailResent": "送信完了！もう一度確認してください"
+    "emailResent": "送信完了！もう一度確認してください",
+    "cancel": "Cancel",
+    "verifyTitle": "Confirm your email",
+    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
+    "verifyButton": "Complete Sign In",
+    "verifyConfirming": "Confirming...",
+    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
+    "verifyInvalidTitle": "Invalid Link",
+    "verifyInvalidDescription": "This verification link is invalid or has expired."
   },
   "errors": {
     "somethingWentWrong": "申し訳ありません、問題が発生しました。",
@@ -147,7 +161,11 @@
     "lifecycle": {
       "live": "開催中",
       "ended": "終了"
-    }
+    },
+    "partOfSeries": "Part of {seriesName}",
+    "onlineEvent": "Online Event",
+    "joinMeeting": "Join meeting",
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
   },
   "rsvp": {
     "imGoing": "参加する",
@@ -204,7 +222,26 @@
     "externalLinkNotCopied": "外部リンクはコピーされません（各イベントには通常独自のリンクがあります）",
     "limitAttendees": "参加者を制限",
     "creatingSeries": "シリーズを作成中...",
-    "createRecurringEvent": "定期イベントを作成"
+    "createRecurringEvent": "定期イベントを作成",
+    "pageTitle": "コミュニティと共有",
+    "pageTitleCopy": "もう一つの素晴らしいイベントを作成",
+    "pageSubtitle": "すべてのイベントがダラットをもっとつなげます。",
+    "infoHelperText": "良い説明は答えます：何が起きる？誰のため？雰囲気は？",
+    "organizer": "主催者",
+    "selectOrganizer": "主催者を選択",
+    "noOrganizer": "主催者なし（個人イベント）",
+    "organizerHelp": "このイベントを会場や組織と関連付ける",
+    "venue": "会場",
+    "selectVenue": "会場を選択",
+    "noVenue": "会場が選択されていません",
+    "venueHelp": "イベントの開催場所。会場を選択すると住所が自動入力されます。",
+    "onlineEvent": "オンラインイベントです",
+    "onlineEventHelp": "オンラインイベントはビデオ通話で行われます（Zoom、Google Meetなど）",
+    "onlineLink": "ミーティングリンク",
+    "onlineLinkPlaceholder": "https://zoom.us/j/...",
+    "onlineLinkHelp": "参加者がイベントに参加するためのリンク",
+    "sponsors": "スポンサー",
+    "settings": "設定"
   },
   "eventActions": {
     "eventOptions": "イベントオプション",
@@ -231,6 +268,9 @@
     },
     "requireApproval": "承認が必要",
     "requireApprovalDescription": "モーメントを公開前にレビューする",
+    "retranslate": "翻訳を再生成",
+    "retranslateDescription": "タイトルと説明を12言語に再翻訳",
+    "retranslated": "翻訳が再生成されました！",
     "saveSettings": "設定を保存",
     "saving": "保存中...",
     "saved": "保存しました！"
@@ -239,8 +279,7 @@
     "addToCalendar": "カレンダーに追加",
     "googleCalendar": "Googleカレンダー",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "シリーズ全体を追加",
-    "pastFestivals": "過去のフェスティバル"
+    "addEntireSeries": "シリーズ全体を追加"
   },
   "series": {
     "recurringSeries": "定期シリーズ",
@@ -330,7 +369,6 @@
     "uploadFailed": "画像のアップロードに失敗しました。もう一度お試しください。",
     "removeFailed": "画像の削除に失敗しました",
     "saving": "保存中...",
-    "saveChanges": "変更を保存",
     "continue": "続ける",
     "generateAI": "AIアバター",
     "generating": "作成中...",
@@ -372,7 +410,18 @@
         "softerLook": "より柔らかく",
         "addWarmth": "暖かみを追加"
       }
-    }
+    },
+    "saved": "Saved",
+    "moments": "Moments",
+    "noMomentsYet": "No moments yet",
+    "noMomentsHint": "Moments shared from events will appear here",
+    "claimBanner": {
+      "title": "Is this your profile?",
+      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
+      "button": "Claim This Profile",
+      "communityImported": "Community Imported"
+    },
+    "eventsHosted": "{count} events hosted"
   },
   "settings": {
     "settings": "設定",
@@ -383,7 +432,13 @@
     "language": "言語",
     "languageDescription": "お好みの言語を選択",
     "account": "アカウント",
-    "accountDescription": "アカウントを管理"
+    "accountDescription": "アカウントを管理",
+    "password": {
+      "setOrChangePassword": "Set or change password",
+      "changePassword": "Change password",
+      "savePassword": "Save password",
+      "passwordUpdated": "Password updated!"
+    }
   },
   "notifications": {
     "enable": "通知を有効化",
@@ -413,7 +468,8 @@
     "themeDark": "ダーク",
     "themeSystem": "システム",
     "language": "言語",
-    "signOut": "ログアウト"
+    "signOut": "ログアウト",
+    "exitGodMode": "Exit God Mode"
   },
   "admin": {
     "dashboard": "管理者ダッシュボード",
@@ -463,7 +519,21 @@
     "roleModerator": "モデレーター",
     "roleOrganizer": "主催者",
     "roleContributor": "コントリビューター",
-    "noData": "データなし"
+    "noData": "データなし",
+    "navBlog": "Blog",
+    "blog": "Blog Posts",
+    "blogDescription": "Manage blog posts and changelogs",
+    "newPost": "New Post",
+    "noPosts": "No blog posts yet",
+    "createFirstPost": "Create your first post",
+    "statusDraft": "Draft",
+    "statusExperimental": "Experimental",
+    "statusPublished": "Published",
+    "statusDeprecated": "Deprecated",
+    "statusArchived": "Archived",
+    "sourceManual": "Manual",
+    "sourceGithub": "GitHub",
+    "sourceDailySummary": "Daily Summary"
   },
   "verification": {
     "requestSubmitted": "リクエストが送信されました！",
@@ -528,7 +598,14 @@
     "website": "ウェブサイト",
     "upcomingEvents": "今後のイベント",
     "pastEvents": "過去のイベント",
-    "noEventsYet": "まだイベントがありません"
+    "noEventsYet": "まだイベントがありません",
+    "claimBanner": {
+      "title": "Is this your organization?",
+      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
+      "button": "Claim This Profile",
+      "unclaimed": "Unclaimed"
+    },
+    "eventsHosted": "{count} events"
   },
   "festival": {
     "title": "フェスティバル",
@@ -548,7 +625,8 @@
     "communitySideEvents": "コミュニティイベント",
     "noUpdatesYet": "まだ更新情報はありません。お楽しみに！",
     "moreDetailsSoon": "詳細は近日公開予定。",
-    "activeUpcoming": "現在開催中と今後"
+    "activeUpcoming": "現在開催中と今後",
+    "pastFestivals": "Past Festivals"
   },
   "analytics": {
     "created": "作成済み",
@@ -627,8 +705,6 @@
     "shareVia": "共有",
     "byEmail": "メールで",
     "findMember": "メンバーを探す",
-    "orSendEmail": "またはメールで招待を送る",
-    "emailAddresses": "メールアドレス",
     "emailPlaceholder": "メールアドレスを入力",
     "smartPlaceholder": "メールまたは@ユーザー名",
     "emailHint": "複数のメールを貼り付け（カンマ、スペース、改行で区切り）",
@@ -659,7 +735,121 @@
     "viewEventPage": "イベントページを見る",
     "poweredBy": "提供",
     "rsvpFailed": "回答の保存に失敗しました。もう一度お試しください。",
-    "eventEnded": "このイベントは終了しました"
+    "eventEnded": "このイベントは終了しました",
+    "celebrationTitle": "招待を送信しました！",
+    "celebrationPhrases": [
+      "ダラットをもう少しつながりのある場所にしてくれました",
+      "あなたのようなコミュニティビルダーが本当の違いを生み出します",
+      "人々を結びつけてくれてありがとう",
+      "あなたの招待から始まる波及効果が今始まります",
+      "あなたは素晴らしいものを作る手助けをしています",
+      "すべての素晴らしい集まりは一つの招待から始まります",
+      "あなたのおかげで友情が生まれています",
+      "情報を広めてくれてありがとう",
+      "最高のイベントは友人から聞くものです",
+      "あなたはつなげる人 — 世界にはもっとそういう人が必要です",
+      "あなたのおかげで誰かが素晴らしい時間を過ごせます",
+      "新しい思い出の種を蒔いたところです",
+      "コミュニティは自然にはできません — 参加してくれてありがとう",
+      "あなたの招待が現実の魔法を作ります",
+      "人が多いほど、語る物語も増えます",
+      "永遠の春の街をもっと暖かくしています",
+      "すべての素晴らしいイベントの裏には、それを共有した人がいます",
+      "積極的に連絡してくれてありがとう",
+      "あなたの招待が誰かの一週間を明るくするかもしれません",
+      "一つの招待ですべてが変わることがあります",
+      "誰かの物語の次の章を書いています",
+      "コミュニティはこうやって成長します — 一度に一つの招待で",
+      "あなたのネットワークは今や私たちのネットワークです。ようこそ。",
+      "大切な友人を預けてくれてありがとう",
+      "ダラットファミリーを広げてくれました",
+      "本当に：あなたのような人がこれを可能にしています",
+      "最高の招待は個人的な招待です。ありがとう。",
+      "招待するだけでなく、仲間に入れています",
+      "誰かのカレンダーがもっと面白くなりました",
+      "つながりを寛大に共有してくれてありがとう",
+      "見知らぬ人を友人に変える手助けをしています",
+      "松の木たちもあなたの決定を承認しています",
+      "もっと多くの人、もっと多くの思い出、もっと多くの魔法",
+      "あなたは誰かと素晴らしい時間を結ぶ架け橋です",
+      "あなたのような人のおかげでコミュニティは繁栄します",
+      "あなたの招待は所属への招待です",
+      "好きなものを共有してくれてありがとう",
+      "誰かに外出する理由を与えました",
+      "最高の経験は共有される経験です",
+      "一度に一つの招待で橋を架けています",
+      "誰かのFOMOがJOMOに変わりました",
+      "良いものを共有する友人でいてくれてありがとう",
+      "テーブルに他の人の席を作っています",
+      "これがコミュニティの姿です",
+      "招待に対するあなたの寛大さに感謝します",
+      "イベントを成長させるだけでなく、つながりを成長させています",
+      "これが共有する価値があると信じてくれてありがとう",
+      "あなたのおかげで誰かが仲間に入れました",
+      "あなたのおかげでこれが思い出に残ります",
+      "良いエネルギーはあなたのような人を通じて広がります",
+      "あなたの招待は他の誰かの機会です",
+      "もっと多くの人のためにスペースを作ってくれてありがとう",
+      "ダラットの物語を書く手助けをしています",
+      "人生で最高のものは共有されるものです",
+      "世界を少し小さくしました",
+      "排除する人ではなく、包含する人でいてくれてありがとう",
+      "あなたの友人が私たちの友人に会います",
+      "これが魔法が起こる方法です",
+      "火を点ける火花です",
+      "他の人のことを考えてくれてありがとう",
+      "誰かの受信箱がもっと幸せになりました",
+      "まだ起こっていない瞬間を作っています",
+      "声が多いほど、会話は豊かになります",
+      "多様性を加えてくれてありがとう",
+      "あなたはコミュニティが生きている証拠です",
+      "あなたの招待は思っている以上に重要です",
+      "誰かの社交カレンダーがあなたに感謝しています",
+      "一生続くかもしれないつながりを作っています",
+      "解決策の一部でいてくれてありがとう",
+      "最高のネットワーキングはこのようなイベントで起こります",
+      "誰かがあなたのおかげで思い出されたと感じました",
+      "あなたの寛大さは伝染します",
+      "これが行動するコミュニティです",
+      "最初に連絡してくれてありがとう",
+      "人々が自分の仲間を見つける手助けをしています",
+      "誰かの次の最高の思い出がこの招待から始まります",
+      "谷が少し賑やかになりました",
+      "橋渡し役でいてくれてありがとう",
+      "あなたは誰もが必要とする友人です",
+      "あなたの招待は可能性に包まれた贈り物です",
+      "これが他の人のために立ち上がる姿です",
+      "良いものを独り占めしないでくれてありがとう",
+      "ダラットが最高の自分になる手助けをしています",
+      "誰かが「はい」と言う理由を得ました",
+      "あなたの招待が彼らの週のハイライトになるかもしれません",
+      "喜びを寛大に共有してくれてありがとう",
+      "つながりのためのスペースを作っています",
+      "霧が晴れて、あなたの友人が来ています",
+      "自分よりも大きく考えてくれてありがとう",
+      "あなたはコミュニティが存在する理由です",
+      "誰かの夜の予定が決まりました",
+      "招待するあなたの優しさは忘れられません",
+      "これが所属の始まりです",
+      "共有する友人でいてくれてありがとう",
+      "新しい物語のためのスペースを作っています",
+      "誰かが思い出されたと感じました",
+      "多ければ多いほど楽しい — あなたがもっと楽しくしました",
+      "この旅の一部でいてくれてありがとう",
+      "見たいイベントを作る手助けをしています",
+      "誰かの次の冒険が始まったところです",
+      "あなたの招待はつながりへの信頼の票です",
+      "自分よりも大きなものを作ってくれてありがとう",
+      "ダラットを家のように感じさせています",
+      "誰かが新しいお気に入りの場所を知りました",
+      "最高のコミュニティは招待する人によって作られます",
+      "つながりの力でいてくれてありがとう",
+      "あなたのおかげで部屋がいっぱいになります",
+      "これからもつなげる人でいてください"
+    ],
+    "usernamePlaceholder": "Search by name or username",
+    "usernameHint": "Type at least 2 characters to search",
+    "noInvitees": "Please add at least one person to invite"
   },
   "moments": {
     "moments": "モーメント",
@@ -752,8 +942,24 @@
       "statusError": "失敗",
       "retry": "再試行",
       "remove": "削除",
-      "proUploadLink": "100枚以上ですか？プロアップロードを使用"
-    }
+      "proUploadLink": "100枚以上ですか？プロアップロードを使用",
+      "statusConverting": "Converting..."
+    },
+    "discoveryMode": "Discovery",
+    "differentEvent": "From a different event",
+    "prevEvent": "Prev event",
+    "nextEvent": "Next event",
+    "share": "Share",
+    "postMoments": "Post {count} moments",
+    "addMore": "Add more",
+    "viewMoreMoments": "View {count} more moments",
+    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
+    "searchHint": "AI-powered visual search",
+    "searchNoResults": "No moments found for \"{query}\"",
+    "searchResults": "{count} results for \"{query}\"",
+    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
+    "searching": "Searching...",
+    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
   },
   "tribes": {
     "title": "トライブ",
@@ -914,7 +1120,24 @@
     "generate": "生成",
     "refineImage": "この画像を調整",
     "refinementPlaceholder": "例：紫色のトーンを追加、より抽象的に...",
-    "applyRefinement": "調整を適用"
+    "applyRefinement": "調整を適用",
+    "remove": "削除",
+    "removing": "削除中...",
+    "removeImagePhrases": [
+      { "title": "さよなら？👋", "description": "この傑作は永遠に消えます！ポフッ！✨" },
+      { "title": "バイバイ美人？💔", "description": "消えた。カプート。おしまい。取り消し不可！🙈" },
+      { "title": "虚空へ？🕳️", "description": "この画像は荷物をまとめて旅立つ準備完了 🧳" },
+      { "title": "ゴースト化する？👻", "description": "一度去ったら、霧も連れ戻せない 🌫️" },
+      { "title": "飛ばしちゃう？🚀", "description": "このピクセルパーティーが終わります！🎉" },
+      { "title": "手放す？❄️", "description": "寒さはこの画像を悩ませたことがない..." },
+      { "title": "さらば友よ？🥺", "description": "この画像は最後まであなたを信じてた..." },
+      { "title": "断捨離の時間？✨", "description": "ときめく？どうやら違うみたい！🧹" },
+      { "title": "この画像に安らぎを？💀", "description": "デジタル世界で安らかに眠れ 🪦" },
+      { "title": "送り出す？📦", "description": "次の目的地：空のゴミ箱 ☁️" }
+    ],
+    "titlePositionTop": "Title at top",
+    "titlePositionMiddle": "Title in middle",
+    "titlePositionBottom": "Title at bottom"
   },
   "archive": {
     "events": "イベント",
@@ -1213,6 +1436,7 @@
     "postComment": "投稿",
     "reply": "返信",
     "replyTo": "{name}さんに返信中",
+    "replyPlaceholder": "{name}さんに返信...",
     "edit": "編集",
     "delete": "削除",
     "deleted": "[削除済み]",
@@ -1223,5 +1447,36 @@
     "hideReplies": "返信を非表示",
     "mute": "通知をオフ",
     "unmute": "通知をオン"
+  },
+  "feedback": {
+    "howWasIt": "How was the event?",
+    "amazing": "Amazing",
+    "good": "Good",
+    "okay": "Okay",
+    "notGreat": "Not great",
+    "commentPlaceholder": "Any thoughts to share? (optional)",
+    "submit": "Submit feedback",
+    "didNotAttend": "I didn't go",
+    "thankYou": "Thanks for your feedback!",
+    "markedNoShow": "Got it, thanks for letting us know.",
+    "eventEnded": "This event has ended",
+    "positiveRating": "{percentage}% positive ({count} reviews)"
+  },
+  "celebration": {
+    "title": "You just made Da Lat better!",
+    "subtitle": "The more the merrier. Spread the word.",
+    "quickShare": "Quick Share",
+    "personalInvitesTitle": "Want to send personal invites?",
+    "emailInvites": "Email Invites",
+    "emailDescription": "Paste emails to send invitations with RSVP tracking",
+    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
+    "addEmails": "Add",
+    "sendInvites": "Send {count} invite(s)",
+    "sending": "Sending...",
+    "sentSuccess": "{count} invite(s) sent!",
+    "skipForNow": "Done",
+    "viewEvent": "See your event live",
+    "copyLink": "Copy link",
+    "copied": "Copied!"
   }
 }

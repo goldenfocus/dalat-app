@@ -25,7 +25,12 @@
     "unknown": "알 수 없음",
     "unknownUser": "알 수 없는 사용자",
     "previous": "이전",
-    "next": "다음"
+    "next": "다음",
+    "localeMismatch": {
+      "message": "This page is in a different language. Switch to {language}?",
+      "switch": "View in {language}",
+      "dismiss": "Keep current language"
+    }
   },
   "nav": {
     "events": "이벤트",
@@ -62,7 +67,8 @@
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
     },
-    "browseArchive": "아카이브 보기"
+    "browseArchive": "아카이브 보기",
+    "seeAllUpcoming": "See all upcoming events"
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.app에 오신 것을 환영합니다",
@@ -114,7 +120,15 @@
     "checkSpamHint": "받은편지함을 확인해주세요 (또는 스팸함도요)",
     "resendEmail": "못 받으셨나요? 다시 보내기",
     "resending": "보내는 중...",
-    "emailResent": "보냈어요! 다시 확인해보세요"
+    "emailResent": "보냈어요! 다시 확인해보세요",
+    "cancel": "Cancel",
+    "verifyTitle": "Confirm your email",
+    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
+    "verifyButton": "Complete Sign In",
+    "verifyConfirming": "Confirming...",
+    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
+    "verifyInvalidTitle": "Invalid Link",
+    "verifyInvalidDescription": "This verification link is invalid or has expired."
   },
   "errors": {
     "somethingWentWrong": "죄송합니다, 문제가 발생했습니다.",
@@ -147,7 +161,11 @@
     "lifecycle": {
       "live": "진행 중",
       "ended": "종료됨"
-    }
+    },
+    "partOfSeries": "Part of {seriesName}",
+    "onlineEvent": "Online Event",
+    "joinMeeting": "Join meeting",
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
   },
   "rsvp": {
     "imGoing": "참석합니다",
@@ -204,7 +222,26 @@
     "externalLinkNotCopied": "외부 링크가 복사되지 않음 (각 이벤트는 보통 고유한 링크가 있습니다)",
     "limitAttendees": "참석자 제한",
     "creatingSeries": "시리즈 생성 중...",
-    "createRecurringEvent": "반복 이벤트 만들기"
+    "createRecurringEvent": "반복 이벤트 만들기",
+    "pageTitle": "커뮤니티와 공유하기",
+    "pageTitleCopy": "또 다른 멋진 이벤트 만들기",
+    "pageSubtitle": "모든 이벤트가 달랏을 더 연결합니다.",
+    "infoHelperText": "좋은 설명은 다음을 답합니다: 무엇이 일어나나요? 누구를 위한 건가요? 분위기는 어떤가요?",
+    "organizer": "주최자",
+    "selectOrganizer": "주최자 선택",
+    "noOrganizer": "주최자 없음 (개인 이벤트)",
+    "organizerHelp": "이 이벤트를 장소 또는 조직과 연결",
+    "venue": "장소",
+    "selectVenue": "장소 선택",
+    "noVenue": "선택된 장소 없음",
+    "venueHelp": "이벤트가 열리는 곳입니다. 장소를 선택하면 주소가 자동으로 채워집니다.",
+    "onlineEvent": "온라인 이벤트입니다",
+    "onlineEventHelp": "온라인 이벤트는 화상 통화로 진행됩니다 (Zoom, Google Meet 등)",
+    "onlineLink": "미팅 링크",
+    "onlineLinkPlaceholder": "https://zoom.us/j/...",
+    "onlineLinkHelp": "참석자들이 이벤트에 참여할 링크",
+    "sponsors": "후원사",
+    "settings": "설정"
   },
   "eventActions": {
     "eventOptions": "이벤트 옵션",
@@ -231,6 +268,9 @@
     },
     "requireApproval": "승인 필요",
     "requireApprovalDescription": "모먼트가 공개되기 전에 검토합니다",
+    "retranslate": "번역 재생성",
+    "retranslateDescription": "제목과 설명을 12개 언어로 다시 번역",
+    "retranslated": "번역이 재생성되었습니다!",
     "saveSettings": "설정 저장",
     "saving": "저장 중...",
     "saved": "저장됨!"
@@ -239,8 +279,7 @@
     "addToCalendar": "캘린더에 추가",
     "googleCalendar": "Google 캘린더",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "전체 시리즈 추가",
-    "pastFestivals": "지난 축제"
+    "addEntireSeries": "전체 시리즈 추가"
   },
   "series": {
     "recurringSeries": "반복 시리즈",
@@ -330,7 +369,6 @@
     "uploadFailed": "이미지 업로드에 실패했습니다. 다시 시도해 주세요.",
     "removeFailed": "이미지 제거에 실패했습니다",
     "saving": "저장 중...",
-    "saveChanges": "변경사항 저장",
     "continue": "계속",
     "generateAI": "AI 아바타",
     "generating": "생성 중...",
@@ -372,7 +410,18 @@
         "softerLook": "더 부드럽게",
         "addWarmth": "따뜻함 추가"
       }
-    }
+    },
+    "saved": "Saved",
+    "moments": "Moments",
+    "noMomentsYet": "No moments yet",
+    "noMomentsHint": "Moments shared from events will appear here",
+    "claimBanner": {
+      "title": "Is this your profile?",
+      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
+      "button": "Claim This Profile",
+      "communityImported": "Community Imported"
+    },
+    "eventsHosted": "{count} events hosted"
   },
   "settings": {
     "settings": "설정",
@@ -383,7 +432,13 @@
     "language": "언어",
     "languageDescription": "선호하는 언어를 선택하세요",
     "account": "계정",
-    "accountDescription": "계정을 관리하세요"
+    "accountDescription": "계정을 관리하세요",
+    "password": {
+      "setOrChangePassword": "Set or change password",
+      "changePassword": "Change password",
+      "savePassword": "Save password",
+      "passwordUpdated": "Password updated!"
+    }
   },
   "notifications": {
     "enable": "알림 활성화",
@@ -413,7 +468,8 @@
     "themeDark": "다크",
     "themeSystem": "시스템",
     "language": "언어",
-    "signOut": "로그아웃"
+    "signOut": "로그아웃",
+    "exitGodMode": "Exit God Mode"
   },
   "admin": {
     "dashboard": "관리자 대시보드",
@@ -463,7 +519,21 @@
     "roleModerator": "모더레이터",
     "roleOrganizer": "주최자",
     "roleContributor": "기여자",
-    "noData": "데이터 없음"
+    "noData": "데이터 없음",
+    "navBlog": "Blog",
+    "blog": "Blog Posts",
+    "blogDescription": "Manage blog posts and changelogs",
+    "newPost": "New Post",
+    "noPosts": "No blog posts yet",
+    "createFirstPost": "Create your first post",
+    "statusDraft": "Draft",
+    "statusExperimental": "Experimental",
+    "statusPublished": "Published",
+    "statusDeprecated": "Deprecated",
+    "statusArchived": "Archived",
+    "sourceManual": "Manual",
+    "sourceGithub": "GitHub",
+    "sourceDailySummary": "Daily Summary"
   },
   "verification": {
     "requestSubmitted": "요청이 제출되었습니다!",
@@ -528,7 +598,14 @@
     "website": "웹사이트",
     "upcomingEvents": "다가오는 이벤트",
     "pastEvents": "지난 이벤트",
-    "noEventsYet": "아직 이벤트가 없습니다"
+    "noEventsYet": "아직 이벤트가 없습니다",
+    "claimBanner": {
+      "title": "Is this your organization?",
+      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
+      "button": "Claim This Profile",
+      "unclaimed": "Unclaimed"
+    },
+    "eventsHosted": "{count} events"
   },
   "festival": {
     "title": "축제",
@@ -548,7 +625,8 @@
     "communitySideEvents": "커뮤니티 이벤트",
     "noUpdatesYet": "아직 업데이트가 없습니다. 기대해주세요!",
     "moreDetailsSoon": "자세한 내용은 곧 공개됩니다.",
-    "activeUpcoming": "활성 및 예정"
+    "activeUpcoming": "활성 및 예정",
+    "pastFestivals": "Past Festivals"
   },
   "analytics": {
     "created": "생성됨",
@@ -627,8 +705,6 @@
     "shareVia": "공유하기",
     "byEmail": "이메일로",
     "findMember": "멤버 찾기",
-    "orSendEmail": "또는 이메일 초대 보내기",
-    "emailAddresses": "이메일 주소",
     "emailPlaceholder": "이메일 주소 입력",
     "smartPlaceholder": "이메일 또는 @사용자명",
     "emailHint": "여러 이메일을 붙여넣기 (쉼표, 공백 또는 줄바꿈으로 구분)",
@@ -659,7 +735,121 @@
     "viewEventPage": "이벤트 페이지 보기",
     "poweredBy": "제공",
     "rsvpFailed": "응답 저장에 실패했습니다. 다시 시도해 주세요.",
-    "eventEnded": "이 이벤트는 종료되었습니다"
+    "eventEnded": "이 이벤트는 종료되었습니다",
+    "celebrationTitle": "초대장 발송 완료!",
+    "celebrationPhrases": [
+      "달랏을 조금 더 연결된 곳으로 만들어 주셨어요",
+      "당신 같은 커뮤니티 빌더가 큰 변화를 만듭니다",
+      "사람들을 연결해 주셔서 감사합니다",
+      "당신의 초대로 시작된 파급효과가 이제 시작됩니다",
+      "정말 아름다운 무언가를 만드는 데 기여하고 계세요",
+      "모든 멋진 모임은 하나의 초대에서 시작됩니다",
+      "당신 덕분에 우정이 생겨납니다",
+      "소문을 퍼뜨려 주셔서 감사합니다",
+      "최고의 이벤트는 친구를 통해 알게 된 이벤트입니다",
+      "당신은 연결자입니다 — 세상에는 그런 사람이 더 필요해요",
+      "누군가가 당신 덕분에 즐거운 시간을 보내게 될 거예요",
+      "새로운 추억의 씨앗을 방금 심으셨어요",
+      "커뮤니티는 저절로 만들어지지 않아요 — 함께해 주셔서 감사합니다",
+      "당신의 초대가 현실의 마법을 만들어요",
+      "사람이 많을수록 이야기거리도 많아져요",
+      "영원한 봄의 도시를 더 따뜻하게 만들고 계세요",
+      "모든 멋진 이벤트 뒤에는 그것을 공유한 사람이 있어요",
+      "먼저 손을 내밀어 주셔서 감사합니다",
+      "당신의 초대가 누군가의 한 주를 밝게 할 수 있어요",
+      "하나의 초대가 모든 것을 바꿀 수 있어요",
+      "누군가의 이야기에 새로운 장을 쓰고 계세요",
+      "커뮤니티는 이렇게 성장합니다 — 한 번의 초대씩",
+      "당신의 네트워크가 이제 우리의 네트워크입니다. 환영해요.",
+      "소중한 친구들을 맡겨 주셔서 감사합니다",
+      "달랏 가족을 넓혀 주셨어요",
+      "솔직히: 당신 같은 사람들이 이것을 가능하게 해요",
+      "개인적인 초대가 최고의 초대입니다. 감사해요.",
+      "초대하는 것이 아니라 포함시키는 거예요",
+      "누군가의 달력이 훨씬 더 흥미로워졌어요",
+      "인맥을 나눠 주셔서 감사합니다",
+      "낯선 사람을 친구로 만드는 데 도움을 주고 계세요",
+      "소나무들도 당신의 결정을 승인해요",
+      "더 많은 사람, 더 많은 추억, 더 많은 마법",
+      "누군가와 좋은 시간 사이를 연결하는 다리가 되셨어요",
+      "당신 같은 사람들 덕분에 커뮤니티가 번성해요",
+      "당신의 초대는 소속감을 주는 초대입니다",
+      "좋아하는 것을 나눠 주셔서 감사합니다",
+      "누군가에게 외출할 이유를 주셨어요",
+      "최고의 경험은 함께하는 경험이에요",
+      "한 번의 초대씩 다리를 놓고 계세요",
+      "누군가의 FOMO가 JOMO로 바뀌었어요",
+      "좋은 것을 나누는 친구가 되어 주셔서 감사합니다",
+      "테이블에 다른 사람들을 위한 자리를 만들고 계세요",
+      "이것이 커뮤니티의 모습이에요",
+      "초대에 대한 당신의 관대함에 감사드립니다",
+      "이벤트만 키우는 게 아니라 연결을 키우는 거예요",
+      "이것이 공유할 가치가 있다고 믿어 주셔서 감사합니다",
+      "당신 덕분에 누군가가 포함되었어요",
+      "당신 덕분에 이것이 기억에 남을 거예요",
+      "좋은 에너지는 당신 같은 사람을 통해 퍼져요",
+      "당신의 초대는 다른 누군가의 기회예요",
+      "더 많은 사람을 위한 공간을 만들어 주셔서 감사합니다",
+      "달랏의 이야기를 쓰는 데 도움을 주고 계세요",
+      "인생에서 가장 좋은 것들은 나눌 때 더 좋아요",
+      "세상을 조금 더 작게 만들어 주셨어요",
+      "배제하는 사람이 아닌 포용하는 사람이 되어 주셔서 감사합니다",
+      "당신의 친구들이 우리 친구들을 만나게 될 거예요",
+      "이렇게 마법이 일어나는 거예요",
+      "불을 지피는 불꽃이 되셨어요",
+      "다른 사람을 생각해 주셔서 감사합니다",
+      "누군가의 메일함이 훨씬 더 행복해졌어요",
+      "일어나기도 전에 순간들을 만들고 계세요",
+      "목소리가 많을수록 대화가 풍성해져요",
+      "다양성을 더해 주셔서 감사합니다",
+      "커뮤니티가 살아 있다는 증거가 되셨어요",
+      "당신의 초대는 생각보다 더 중요해요",
+      "누군가의 사회적 달력이 당신께 감사하고 있어요",
+      "평생 갈 수 있는 연결을 만들고 계세요",
+      "해결책의 일부가 되어 주셔서 감사합니다",
+      "최고의 네트워킹은 이런 이벤트에서 일어나요",
+      "누군가가 당신 덕분에 기억됨을 느꼈어요",
+      "당신의 관대함은 전염성이 있어요",
+      "이것이 행동하는 커뮤니티예요",
+      "먼저 연락해 주셔서 감사합니다",
+      "사람들이 자신의 사람들을 찾도록 도와주고 계세요",
+      "누군가의 다음 최고의 추억이 이 초대에서 시작돼요",
+      "계곡이 조금 더 활기차졌어요",
+      "다리를 놓는 사람이 되어 주셔서 감사합니다",
+      "당신은 모두가 필요로 하는 친구예요",
+      "당신의 초대는 가능성으로 포장된 선물이에요",
+      "이것이 다른 사람을 위해 나서는 모습이에요",
+      "좋은 것을 혼자만 가지고 있지 않아 주셔서 감사합니다",
+      "달랏이 최고가 되도록 도와주고 계세요",
+      "누군가가 예라고 말할 이유를 얻었어요",
+      "당신의 초대가 그들 주의 하이라이트가 될 수 있어요",
+      "기쁨을 나눠 주셔서 감사합니다",
+      "연결을 위한 공간을 만들고 계세요",
+      "안개가 걷히고 친구들이 오고 있어요",
+      "자신보다 더 크게 생각해 주셔서 감사합니다",
+      "커뮤니티가 존재하는 이유가 되셨어요",
+      "누군가의 저녁 계획이 방금 잡혔어요",
+      "초대하는 당신의 친절함은 잊히지 않을 거예요",
+      "이것이 소속감이 시작되는 방식이에요",
+      "나누는 친구가 되어 주셔서 감사합니다",
+      "새로운 이야기를 위한 공간을 만들고 계세요",
+      "누군가가 기억됨을 느꼈어요",
+      "다다익선 — 그리고 당신이 더 즐겁게 만들었어요",
+      "이 여정의 일부가 되어 주셔서 감사합니다",
+      "보고 싶은 이벤트를 만드는 데 도움을 주고 계세요",
+      "누군가의 다음 모험이 막 시작되었어요",
+      "당신의 초대는 연결에 대한 신뢰의 표예요",
+      "자신보다 더 큰 무언가를 만들어 주셔서 감사합니다",
+      "달랏을 집처럼 느끼게 해주고 계세요",
+      "누군가가 새로운 최애 장소를 알게 되었어요",
+      "최고의 커뮤니티는 초대하는 사람들이 만들어요",
+      "연결의 힘이 되어 주셔서 감사합니다",
+      "방이 가득 찰 이유가 되셨어요",
+      "계속해서 연결자가 되어 주세요"
+    ],
+    "usernamePlaceholder": "Search by name or username",
+    "usernameHint": "Type at least 2 characters to search",
+    "noInvitees": "Please add at least one person to invite"
   },
   "moments": {
     "moments": "모먼트",
@@ -752,8 +942,24 @@
       "statusError": "실패",
       "retry": "재시도",
       "remove": "제거",
-      "proUploadLink": "100장 이상? 프로 업로드 사용"
-    }
+      "proUploadLink": "100장 이상? 프로 업로드 사용",
+      "statusConverting": "Converting..."
+    },
+    "discoveryMode": "Discovery",
+    "differentEvent": "From a different event",
+    "prevEvent": "Prev event",
+    "nextEvent": "Next event",
+    "share": "Share",
+    "postMoments": "Post {count} moments",
+    "addMore": "Add more",
+    "viewMoreMoments": "View {count} more moments",
+    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
+    "searchHint": "AI-powered visual search",
+    "searchNoResults": "No moments found for \"{query}\"",
+    "searchResults": "{count} results for \"{query}\"",
+    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
+    "searching": "Searching...",
+    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
   },
   "tribes": {
     "title": "트라이브",
@@ -914,7 +1120,24 @@
     "generate": "생성",
     "refineImage": "이 이미지 수정하기",
     "refinementPlaceholder": "예: 보라색 톤 추가, 더 추상적으로 만들기...",
-    "applyRefinement": "수정 적용"
+    "applyRefinement": "수정 적용",
+    "remove": "삭제",
+    "removing": "삭제 중...",
+    "removeImagePhrases": [
+      { "title": "잘 가? 👋", "description": "이 걸작이 영원히 사라집니다! 펑! ✨" },
+      { "title": "안녕 예쁜이? 💔", "description": "사라졌어요. 끝. 피니토. 되돌릴 수 없어요! 🙈" },
+      { "title": "블랙홀로? 🕳️", "description": "이 이미지는 짐을 싸고 떠날 준비가 됐어요 🧳" },
+      { "title": "유령처럼 사라지게? 👻", "description": "한번 가면 안개도 되돌릴 수 없어요 🌫️" },
+      { "title": "날려버릴까? 🚀", "description": "이 픽셀 파티가 끝나려 해요! 🎉" },
+      { "title": "렛잇고? ❄️", "description": "추위는 이 이미지를 괴롭히지 않았어요..." },
+      { "title": "안녕 친구? 🥺", "description": "이 이미지는 끝까지 당신을 믿었어요..." },
+      { "title": "정리할 시간? ✨", "description": "설레나요? 아닌 것 같네요! 🧹" },
+      { "title": "이 사진 안녕? 💀", "description": "디지털 세상에서 편히 쉬세요 🪦" },
+      { "title": "보내드릴까요? 📦", "description": "다음 목적지: 하늘 위 휴지통 ☁️" }
+    ],
+    "titlePositionTop": "Title at top",
+    "titlePositionMiddle": "Title in middle",
+    "titlePositionBottom": "Title at bottom"
   },
   "archive": {
     "events": "이벤트",
@@ -1213,6 +1436,7 @@
     "postComment": "게시",
     "reply": "답글",
     "replyTo": "{name}님에게 답글 작성 중",
+    "replyPlaceholder": "{name}님에게 답글...",
     "edit": "수정",
     "delete": "삭제",
     "deleted": "[삭제됨]",
@@ -1223,5 +1447,36 @@
     "hideReplies": "답글 숨기기",
     "mute": "알림 끄기",
     "unmute": "알림 켜기"
+  },
+  "feedback": {
+    "howWasIt": "How was the event?",
+    "amazing": "Amazing",
+    "good": "Good",
+    "okay": "Okay",
+    "notGreat": "Not great",
+    "commentPlaceholder": "Any thoughts to share? (optional)",
+    "submit": "Submit feedback",
+    "didNotAttend": "I didn't go",
+    "thankYou": "Thanks for your feedback!",
+    "markedNoShow": "Got it, thanks for letting us know.",
+    "eventEnded": "This event has ended",
+    "positiveRating": "{percentage}% positive ({count} reviews)"
+  },
+  "celebration": {
+    "title": "You just made Da Lat better!",
+    "subtitle": "The more the merrier. Spread the word.",
+    "quickShare": "Quick Share",
+    "personalInvitesTitle": "Want to send personal invites?",
+    "emailInvites": "Email Invites",
+    "emailDescription": "Paste emails to send invitations with RSVP tracking",
+    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
+    "addEmails": "Add",
+    "sendInvites": "Send {count} invite(s)",
+    "sending": "Sending...",
+    "sentSuccess": "{count} invite(s) sent!",
+    "skipForNow": "Done",
+    "viewEvent": "See your event live",
+    "copyLink": "Copy link",
+    "copied": "Copied!"
   }
 }

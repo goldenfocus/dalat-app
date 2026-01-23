@@ -17,6 +17,14 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import {
   validateMediaFile,
@@ -180,6 +188,11 @@ export function EventMediaUpload({
   const [showRefinement, setShowRefinement] = useState(false);
   const [refinementPrompt, setRefinementPrompt] = useState("");
 
+  // Remove confirmation dialog state
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [removePhrase, setRemovePhrase] = useState<{ title: string; description: string } | null>(null);
+
   const uploadMedia = async (file: File) => {
     setError(null);
     setConvertStatus(null);
@@ -327,7 +340,7 @@ export function EventMediaUpload({
   const handleRemove = async () => {
     if (!currentMediaUrl) return;
 
-    setIsUploading(true);
+    setIsRemoving(true);
     setError(null);
 
     try {
@@ -342,11 +355,12 @@ export function EventMediaUpload({
       setPreviewUrl(null);
       setPreviewIsVideo(false);
       await handleMediaUpdate(null);
+      setShowRemoveConfirm(false);
     } catch (err) {
       console.error("Remove error:", err);
       setError("Failed to remove. Please try again.");
     } finally {
-      setIsUploading(false);
+      setIsRemoving(false);
     }
   };
 
@@ -616,7 +630,11 @@ export function EventMediaUpload({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleRemove();
+              // Pick a random fun phrase
+              const phrases = t.raw("removeImagePhrases") as Array<{ title: string; description: string }>;
+              const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+              setRemovePhrase(randomPhrase);
+              setShowRemoveConfirm(true);
             }}
             className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
           >
@@ -878,6 +896,70 @@ export function EventMediaUpload({
       />
 
       {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {/* Remove confirmation dialog */}
+      <Dialog open={showRemoveConfirm} onOpenChange={setShowRemoveConfirm}>
+        <DialogContent
+          className="max-w-sm"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !isRemoving) {
+              e.preventDefault();
+              handleRemove();
+            }
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg">
+              {removePhrase?.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Image thumbnail */}
+          {previewUrl && (
+            <div className="relative aspect-[2/1] rounded-lg overflow-hidden bg-muted">
+              {previewIsVideo ? (
+                <video
+                  src={previewUrl}
+                  className="w-full h-full object-cover"
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                />
+              ) : (
+                <img
+                  src={previewUrl}
+                  alt="Image to remove"
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+          )}
+
+          <DialogDescription className="text-center">
+            {removePhrase?.description}
+          </DialogDescription>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowRemoveConfirm(false)}
+              disabled={isRemoving}
+              className="px-3 py-2"
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRemove}
+              disabled={isRemoving}
+              className="px-3 py-2"
+            >
+              {isRemoving ? t("removing") : t("remove")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

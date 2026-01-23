@@ -25,7 +25,12 @@
     "unknown": "未知",
     "unknownUser": "未知用户",
     "previous": "上一页",
-    "next": "下一页"
+    "next": "下一页",
+    "localeMismatch": {
+      "message": "This page is in a different language. Switch to {language}?",
+      "switch": "View in {language}",
+      "dismiss": "Keep current language"
+    }
   },
   "nav": {
     "events": "活动",
@@ -62,7 +67,8 @@
       "viewAll": "View all results for \"{query}\"",
       "searchFor": "Search for \"{query}\""
     },
-    "browseArchive": "浏览档案"
+    "browseArchive": "浏览档案",
+    "seeAllUpcoming": "See all upcoming events"
   },
   "auth": {
     "welcomeTitle": "欢迎来到 ĐàLạt.app",
@@ -114,7 +120,15 @@
     "checkSpamHint": "请查看收件箱（或垃圾邮件，没关系的）",
     "resendEmail": "没收到？重新发送",
     "resending": "发送中...",
-    "emailResent": "已发送！请再次查看"
+    "emailResent": "已发送！请再次查看",
+    "cancel": "Cancel",
+    "verifyTitle": "Confirm your email",
+    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
+    "verifyButton": "Complete Sign In",
+    "verifyConfirming": "Confirming...",
+    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
+    "verifyInvalidTitle": "Invalid Link",
+    "verifyInvalidDescription": "This verification link is invalid or has expired."
   },
   "errors": {
     "somethingWentWrong": "抱歉，出了点问题。",
@@ -147,7 +161,11 @@
     "lifecycle": {
       "live": "进行中",
       "ended": "已结束"
-    }
+    },
+    "partOfSeries": "Part of {seriesName}",
+    "onlineEvent": "Online Event",
+    "joinMeeting": "Join meeting",
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
   },
   "rsvp": {
     "imGoing": "我要参加",
@@ -204,7 +222,26 @@
     "externalLinkNotCopied": "外部链接未复制（每个活动通常有自己的链接）",
     "limitAttendees": "限制参与人数",
     "creatingSeries": "正在创建系列...",
-    "createRecurringEvent": "创建重复活动"
+    "createRecurringEvent": "创建重复活动",
+    "pageTitle": "与社区分享",
+    "pageTitleCopy": "创建另一个精彩活动",
+    "pageSubtitle": "每个活动都让大叻更加紧密相连。",
+    "infoHelperText": "好的描述回答：发生了什么？面向谁？氛围如何？",
+    "organizer": "主办方",
+    "selectOrganizer": "选择主办方",
+    "noOrganizer": "无主办方（个人活动）",
+    "organizerHelp": "将此活动与场地或组织关联",
+    "venue": "场地",
+    "selectVenue": "选择场地",
+    "noVenue": "未选择场地",
+    "venueHelp": "活动举办地点。选择场地后地址将自动填充。",
+    "onlineEvent": "这是线上活动",
+    "onlineEventHelp": "线上活动通过视频通话进行（Zoom、Google Meet等）",
+    "onlineLink": "会议链接",
+    "onlineLinkPlaceholder": "https://zoom.us/j/...",
+    "onlineLinkHelp": "参与者加入活动的链接",
+    "sponsors": "赞助商",
+    "settings": "设置"
   },
   "eventActions": {
     "eventOptions": "活动选项",
@@ -231,6 +268,9 @@
     },
     "requireApproval": "需要审核",
     "requireApprovalDescription": "动态公开前需要审核",
+    "retranslate": "重新生成翻译",
+    "retranslateDescription": "将标题和描述重新翻译成12种语言",
+    "retranslated": "翻译已重新生成！",
     "saveSettings": "保存设置",
     "saving": "保存中...",
     "saved": "已保存！"
@@ -239,8 +279,7 @@
     "addToCalendar": "添加到日历",
     "googleCalendar": "Google 日历",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "添加整个系列",
-    "pastFestivals": "往期节日"
+    "addEntireSeries": "添加整个系列"
   },
   "series": {
     "recurringSeries": "系列活动",
@@ -330,7 +369,6 @@
     "uploadFailed": "图片上传失败。请重试。",
     "removeFailed": "移除图片失败",
     "saving": "保存中...",
-    "saveChanges": "保存更改",
     "continue": "继续",
     "generateAI": "AI头像",
     "generating": "生成中...",
@@ -372,7 +410,18 @@
         "softerLook": "更柔和",
         "addWarmth": "增加暖色调"
       }
-    }
+    },
+    "saved": "Saved",
+    "moments": "Moments",
+    "noMomentsYet": "No moments yet",
+    "noMomentsHint": "Moments shared from events will appear here",
+    "claimBanner": {
+      "title": "Is this your profile?",
+      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
+      "button": "Claim This Profile",
+      "communityImported": "Community Imported"
+    },
+    "eventsHosted": "{count} events hosted"
   },
   "settings": {
     "settings": "设置",
@@ -383,7 +432,13 @@
     "language": "语言",
     "languageDescription": "选择您的首选语言",
     "account": "账户",
-    "accountDescription": "管理您的账户"
+    "accountDescription": "管理您的账户",
+    "password": {
+      "setOrChangePassword": "Set or change password",
+      "changePassword": "Change password",
+      "savePassword": "Save password",
+      "passwordUpdated": "Password updated!"
+    }
   },
   "notifications": {
     "enable": "启用通知",
@@ -413,7 +468,8 @@
     "themeDark": "深色",
     "themeSystem": "系统",
     "language": "语言",
-    "signOut": "退出"
+    "signOut": "退出",
+    "exitGodMode": "Exit God Mode"
   },
   "admin": {
     "dashboard": "管理面板",
@@ -463,7 +519,21 @@
     "roleModerator": "版主",
     "roleOrganizer": "主办方",
     "roleContributor": "贡献者",
-    "noData": "无数据"
+    "noData": "无数据",
+    "navBlog": "Blog",
+    "blog": "Blog Posts",
+    "blogDescription": "Manage blog posts and changelogs",
+    "newPost": "New Post",
+    "noPosts": "No blog posts yet",
+    "createFirstPost": "Create your first post",
+    "statusDraft": "Draft",
+    "statusExperimental": "Experimental",
+    "statusPublished": "Published",
+    "statusDeprecated": "Deprecated",
+    "statusArchived": "Archived",
+    "sourceManual": "Manual",
+    "sourceGithub": "GitHub",
+    "sourceDailySummary": "Daily Summary"
   },
   "verification": {
     "requestSubmitted": "请求已提交！",
@@ -528,7 +598,14 @@
     "website": "网站",
     "upcomingEvents": "即将举行的活动",
     "pastEvents": "过去的活动",
-    "noEventsYet": "暂无活动"
+    "noEventsYet": "暂无活动",
+    "claimBanner": {
+      "title": "Is this your organization?",
+      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
+      "button": "Claim This Profile",
+      "unclaimed": "Unclaimed"
+    },
+    "eventsHosted": "{count} events"
   },
   "festival": {
     "title": "节日活动",
@@ -548,7 +625,8 @@
     "communitySideEvents": "社区活动",
     "noUpdatesYet": "暂无更新。敬请期待！",
     "moreDetailsSoon": "更多详情即将公布。",
-    "activeUpcoming": "进行中和即将举行"
+    "activeUpcoming": "进行中和即将举行",
+    "pastFestivals": "Past Festivals"
   },
   "analytics": {
     "created": "已创建",
@@ -627,8 +705,6 @@
     "shareVia": "分享至",
     "byEmail": "通过邮件",
     "findMember": "查找成员",
-    "orSendEmail": "或发送邮件邀请",
-    "emailAddresses": "邮箱地址",
     "emailPlaceholder": "输入邮箱地址",
     "smartPlaceholder": "邮箱或 @用户名",
     "emailHint": "粘贴多个邮箱（用逗号、空格或换行分隔）",
@@ -659,7 +735,121 @@
     "viewEventPage": "查看活动页面",
     "poweredBy": "技术支持",
     "rsvpFailed": "保存回复失败。请重试。",
-    "eventEnded": "此活动已结束"
+    "eventEnded": "此活动已结束",
+    "celebrationTitle": "邀请已发送！",
+    "celebrationPhrases": [
+      "你刚刚让大叻变得更加紧密相连",
+      "像你这样的社区建设者创造了真正的改变",
+      "感谢你把人们聚在一起",
+      "你的邀请产生的连锁效应现在开始了",
+      "你正在帮助建造美好的事物",
+      "每一场精彩的聚会都始于一个邀请",
+      "你是友谊产生的原因",
+      "感谢你传播消息",
+      "最好的活动是从朋友那里听说的",
+      "你是连接者——世界需要更多像你这样的人",
+      "因为你，某个人即将度过美好时光",
+      "你刚刚播下了新回忆的种子",
+      "社区不会自己建设——感谢你的参与",
+      "你的邀请创造了现实中的魔法",
+      "人越多，故事就越多",
+      "你正在让永春之城变得更加温暖",
+      "每个精彩活动的背后都有一个分享它的人",
+      "感谢你成为主动联系的人",
+      "你的邀请可能会点亮某人的一周",
+      "一个邀请可以改变一切",
+      "你正在为某人的故事书写新的篇章",
+      "社区就是这样成长的——一次邀请一次",
+      "你的人脉现在就是我们的人脉。欢迎。",
+      "感谢你信任我们照顾你的朋友",
+      "你刚刚扩大了大叻大家庭",
+      "说真的：像你这样的人让这一切成为可能",
+      "最好的邀请是私人邀请。谢谢。",
+      "你不只是在邀请——你是在包容",
+      "某人的日历变得有趣多了",
+      "感谢你慷慨地分享你的人脉",
+      "你正在帮助陌生人变成朋友",
+      "松树们认可你的决定",
+      "更多人，更多回忆，更多魔法",
+      "你是连接某人和美好时光的桥梁",
+      "社区因你这样的人而繁荣",
+      "你的邀请是归属感的邀请",
+      "感谢你分享你所爱的事物",
+      "你刚刚给了某人外出的理由",
+      "最好的体验是共享的体验",
+      "你正在一次邀请一次地搭建桥梁",
+      "某人的FOMO刚刚变成了JOMO",
+      "感谢你成为分享美好事物的朋友",
+      "你正在为他人在桌边留出位置",
+      "这就是社区的样子",
+      "你的邀请慷慨令人感激",
+      "你不只是在发展活动——你是在发展连接",
+      "感谢你相信这值得分享",
+      "因为你，某个人刚刚被纳入进来",
+      "你是这件事难忘的原因",
+      "好的能量通过像你这样的人传播",
+      "你的邀请是别人的机会",
+      "感谢你为更多人创造空间",
+      "你正在帮助书写大叻的故事",
+      "生活中最美好的事物都是分享的",
+      "你刚刚让世界变小了一点",
+      "感谢你成为包容者而非排斥者",
+      "你的朋友即将遇到我们的朋友",
+      "魔法就是这样发生的",
+      "你是点燃火焰的火花",
+      "感谢你想到他人",
+      "某人的收件箱变得开心多了",
+      "你正在创造尚未发生的时刻",
+      "声音越多，对话越丰富",
+      "感谢你增添多样性",
+      "你是社区生机勃勃的证明",
+      "你的邀请比你想象的更重要",
+      "某人的社交日历感谢你",
+      "你正在创造可能持续一生的连接",
+      "感谢你成为解决方案的一部分",
+      "最好的社交发生在这样的活动中",
+      "你刚刚让某人感到被记得",
+      "你的慷慨是有感染力的",
+      "这就是社区在行动",
+      "感谢你成为先主动联系的人",
+      "你正在帮助人们找到他们的归属",
+      "某人下一个最美好的回忆从这个邀请开始",
+      "山谷变得更热闹了一点",
+      "感谢你成为搭桥者",
+      "你是每个人都需要的朋友",
+      "你的邀请是包裹着可能性的礼物",
+      "这就是为他人付出的样子",
+      "感谢你不独享美好事物",
+      "你正在帮助大叻成为最好的自己",
+      "某人刚刚有了说是的理由",
+      "你的邀请可能是他们这周的亮点",
+      "感谢你慷慨地分享快乐",
+      "你正在为连接创造空间",
+      "雾正在散去，你的朋友正在到来",
+      "感谢你想得比自己更远大",
+      "你是社区存在的原因",
+      "某人的晚上刚刚有了安排",
+      "你邀请人的善意不会被遗忘",
+      "归属感就是这样开始的",
+      "感谢你成为乐于分享的朋友",
+      "你正在为新故事创造空间",
+      "某人刚刚感到被记得",
+      "人越多越开心——你让它更开心了",
+      "感谢你成为这段旅程的一部分",
+      "你正在帮助创造你想看到的活动",
+      "某人的下一次冒险刚刚开始",
+      "你的邀请是对连接的信任票",
+      "感谢你建造比自己更大的东西",
+      "你正在让大叻有家的感觉",
+      "某人刚刚发现了他们新的最爱地点",
+      "最好的社区是由邀请者建立的",
+      "感谢你成为连接的力量",
+      "你是房间将会满座的原因",
+      "继续做你这样的连接者吧"
+    ],
+    "usernamePlaceholder": "Search by name or username",
+    "usernameHint": "Type at least 2 characters to search",
+    "noInvitees": "Please add at least one person to invite"
   },
   "moments": {
     "moments": "瞬间",
@@ -752,8 +942,24 @@
       "statusError": "失败",
       "retry": "重试",
       "remove": "移除",
-      "proUploadLink": "有 100+ 张照片？使用专业上传"
-    }
+      "proUploadLink": "有 100+ 张照片？使用专业上传",
+      "statusConverting": "Converting..."
+    },
+    "discoveryMode": "Discovery",
+    "differentEvent": "From a different event",
+    "prevEvent": "Prev event",
+    "nextEvent": "Next event",
+    "share": "Share",
+    "postMoments": "Post {count} moments",
+    "addMore": "Add more",
+    "viewMoreMoments": "View {count} more moments",
+    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
+    "searchHint": "AI-powered visual search",
+    "searchNoResults": "No moments found for \"{query}\"",
+    "searchResults": "{count} results for \"{query}\"",
+    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
+    "searching": "Searching...",
+    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
   },
   "tribes": {
     "title": "部落",
@@ -914,7 +1120,24 @@
     "generate": "生成",
     "refineImage": "优化此图片",
     "refinementPlaceholder": "例如：添加更多紫色调，使其更抽象...",
-    "applyRefinement": "应用优化"
+    "applyRefinement": "应用优化",
+    "remove": "删除",
+    "removing": "删除中...",
+    "removeImagePhrases": [
+      { "title": "说再见？👋", "description": "这个杰作将永远消失！噗！✨" },
+      { "title": "拜拜美图？💔", "description": "消失了。完蛋。没戏。不能反悔！🙈" },
+      { "title": "进入虚空？🕳️", "description": "这张图片已经打包好准备离开了 🧳" },
+      { "title": "让它消失？👻", "description": "一旦离开，连大雾都带不回来 🌫️" },
+      { "title": "发射它？🚀", "description": "这个像素派对要结束了！🎉" },
+      { "title": "放手吧？❄️", "description": "寒冷从未打扰过这张图片..." },
+      { "title": "再见朋友？🥺", "description": "这张图片一直相信你到最后..." },
+      { "title": "断舍离时间？✨", "description": "它带来快乐吗？显然没有！🧹" },
+      { "title": "安息吧小图？💀", "description": "愿它在数字世界安息 🪦" },
+      { "title": "打包送走？📦", "description": "下一站：云端回收站 ☁️" }
+    ],
+    "titlePositionTop": "Title at top",
+    "titlePositionMiddle": "Title in middle",
+    "titlePositionBottom": "Title at bottom"
   },
   "archive": {
     "events": "活动",
@@ -1213,6 +1436,7 @@
     "postComment": "发布",
     "reply": "回复",
     "replyTo": "正在回复 {name}",
+    "replyPlaceholder": "回复 {name}...",
     "edit": "编辑",
     "delete": "删除",
     "deleted": "[已删除]",
@@ -1223,5 +1447,36 @@
     "hideReplies": "隐藏回复",
     "mute": "静音话题",
     "unmute": "取消静音"
+  },
+  "feedback": {
+    "howWasIt": "How was the event?",
+    "amazing": "Amazing",
+    "good": "Good",
+    "okay": "Okay",
+    "notGreat": "Not great",
+    "commentPlaceholder": "Any thoughts to share? (optional)",
+    "submit": "Submit feedback",
+    "didNotAttend": "I didn't go",
+    "thankYou": "Thanks for your feedback!",
+    "markedNoShow": "Got it, thanks for letting us know.",
+    "eventEnded": "This event has ended",
+    "positiveRating": "{percentage}% positive ({count} reviews)"
+  },
+  "celebration": {
+    "title": "You just made Da Lat better!",
+    "subtitle": "The more the merrier. Spread the word.",
+    "quickShare": "Quick Share",
+    "personalInvitesTitle": "Want to send personal invites?",
+    "emailInvites": "Email Invites",
+    "emailDescription": "Paste emails to send invitations with RSVP tracking",
+    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
+    "addEmails": "Add",
+    "sendInvites": "Send {count} invite(s)",
+    "sending": "Sending...",
+    "sentSuccess": "{count} invite(s) sent!",
+    "skipForNow": "Done",
+    "viewEvent": "See your event live",
+    "copyLink": "Copy link",
+    "copied": "Copied!"
   }
 }
