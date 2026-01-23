@@ -34,6 +34,12 @@ export interface BlogPost {
   suggested_cta_url: string | null;
   suggested_cta_text: string | null;
 
+  // Cover Image Metadata (SEO/AEO/GEO)
+  cover_image_alt: string | null;
+  cover_image_description: string | null;
+  cover_image_keywords: string[] | null;
+  cover_image_colors: string[] | null;
+
   // Machine Content (SEO/AI)
   technical_content: string;
   seo_keywords: string[];
@@ -66,6 +72,10 @@ export interface BlogPostWithCategory {
   title: string;
   story_content: string;
   cover_image_url: string | null;
+  cover_image_alt: string | null;
+  cover_image_description: string | null;
+  cover_image_keywords: string[] | null;
+  cover_image_colors: string[] | null;
   version: string | null;
   source: BlogPostSource;
   published_at: string | null;

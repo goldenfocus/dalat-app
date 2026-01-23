@@ -1,4 +1,14 @@
-import { generateImage, refineImage, buildPrompt } from "@/lib/ai/image-generator";
+import {
+  generateImage,
+  refineImage,
+  buildPrompt,
+  generateImageWithMetadata,
+  refineImageWithMetadata,
+  type ImageGenerationResult,
+  type ImageMetadata,
+} from "@/lib/ai/image-generator";
+
+export type { ImageGenerationResult, ImageMetadata };
 
 /**
  * Generate a cover image for a blog post using Gemini
@@ -15,6 +25,23 @@ export async function generateCoverImage(postSlug: string, customPrompt?: string
 }
 
 /**
+ * Generate a cover image with full SEO/AEO/GEO metadata
+ * Returns both the URL and comprehensive metadata
+ */
+export async function generateCoverImageWithMetadata(
+  postSlug: string,
+  customPrompt?: string
+): Promise<ImageGenerationResult> {
+  const prompt = customPrompt || buildPrompt("blog-cover", postSlug);
+
+  return generateImageWithMetadata({
+    context: "blog-cover",
+    prompt,
+    entityId: postSlug,
+  });
+}
+
+/**
  * Refine an existing cover image based on user feedback
  * Sends the current image + refinement instructions to Gemini
  */
@@ -24,6 +51,22 @@ export async function refineCoverImage(
   refinementPrompt: string
 ): Promise<string> {
   return refineImage({
+    context: "blog-cover",
+    existingImageUrl,
+    refinementPrompt,
+    entityId: postSlug,
+  });
+}
+
+/**
+ * Refine an existing cover image and return updated metadata
+ */
+export async function refineCoverImageWithMetadata(
+  postSlug: string,
+  existingImageUrl: string,
+  refinementPrompt: string
+): Promise<ImageGenerationResult> {
+  return refineImageWithMetadata({
     context: "blog-cover",
     existingImageUrl,
     refinementPrompt,

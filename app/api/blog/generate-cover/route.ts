@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { generateCoverImage, refineCoverImage } from "@/lib/blog/cover-generator";
+import {
+  generateCoverImageWithMetadata,
+  refineCoverImageWithMetadata,
+} from "@/lib/blog/cover-generator";
 
 const RATE_LIMIT = 10; // requests per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -34,8 +37,8 @@ export async function POST(request: Request) {
     }
 
     // Database-backed rate limiting
-    const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
-      p_action: 'blog_generate_cover',
+    const { data: rateCheck, error: rateError } = await supabase.rpc("check_rate_limit", {
+      p_action: "blog_generate_cover",
       p_limit: RATE_LIMIT,
       p_window_ms: RATE_WINDOW_MS,
     });
@@ -68,16 +71,19 @@ export async function POST(request: Request) {
       .replace(/^-+|-+$/g, "")
       .slice(0, 50);
 
-    let imageUrl: string;
-
     // Refinement mode: edit existing image
     if (existingImageUrl && refinementPrompt) {
-      imageUrl = await refineCoverImage(slug, existingImageUrl, refinementPrompt);
-    } else {
-      // Use custom prompt if provided, otherwise build default
-      const prompt =
-        customPrompt ||
-        `Create an abstract, artistic cover image for a blog post about: ${title}
+      const result = await refineCoverImageWithMetadata(slug, existingImageUrl, refinementPrompt);
+      return NextResponse.json({
+        imageUrl: result.url,
+        metadata: result.metadata,
+      });
+    }
+
+    // Use custom prompt if provided, otherwise build default
+    const prompt =
+      customPrompt ||
+      `Create an abstract, artistic cover image for a blog post about: ${title}
 
 Context: ${content?.slice(0, 200) || "A blog post about technology and community events"}
 Category: ${category || "general"}
@@ -92,15 +98,14 @@ Style guidelines:
 - Landscape orientation (16:9 aspect ratio)
 - Professional and polished feel`;
 
-      imageUrl = await generateCoverImage(slug, prompt);
-    }
+    const result = await generateCoverImageWithMetadata(slug, prompt);
 
-    return NextResponse.json({ imageUrl });
+    return NextResponse.json({
+      imageUrl: result.url,
+      metadata: result.metadata,
+    });
   } catch (error) {
     console.error("[blog/generate-cover] Error:", error);
-    return NextResponse.json(
-      { error: "Cover generation failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Cover generation failed" }, { status: 500 });
   }
 }

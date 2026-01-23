@@ -13,6 +13,10 @@ interface AdminBlogPostDetail {
   story_content: string;
   technical_content: string;
   cover_image_url: string | null;
+  cover_image_alt: string | null;
+  cover_image_description: string | null;
+  cover_image_keywords: string[] | null;
+  cover_image_colors: string[] | null;
   source: string;
   status: string;
   version: string | null;

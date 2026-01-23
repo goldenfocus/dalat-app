@@ -17,6 +17,10 @@ interface BlogPostData {
   story_content: string;
   technical_content: string;
   cover_image_url: string | null;
+  cover_image_alt: string | null;
+  cover_image_description: string | null;
+  cover_image_keywords: string[] | null;
+  cover_image_colors: string[] | null;
   source: string;
   status: string;
   version: string | null;
@@ -58,6 +62,11 @@ export function BlogPostForm({ post, categories }: BlogPostFormProps) {
   const [status, setStatus] = useState<BlogPostStatus>(post.status as BlogPostStatus);
   const [categoryId, setCategoryId] = useState(post.category_id || "");
   const [coverImageUrl, setCoverImageUrl] = useState(post.cover_image_url || "");
+  const [coverImageAlt, setCoverImageAlt] = useState(post.cover_image_alt || "");
+  const [coverImageDescription, setCoverImageDescription] = useState(post.cover_image_description || "");
+  const [coverImageKeywords, setCoverImageKeywords] = useState(post.cover_image_keywords?.join(", ") || "");
+  const [coverImageColors, setCoverImageColors] = useState(post.cover_image_colors || []);
+  const [showImageMetadata, setShowImageMetadata] = useState(false);
   const [metaDescription, setMetaDescription] = useState(post.meta_description || "");
   const [seoKeywords, setSeoKeywords] = useState(post.seo_keywords?.join(", ") || "");
   const [ctaUrl, setCtaUrl] = useState(post.suggested_cta_url || "");
@@ -89,7 +98,17 @@ Style guidelines:
 
   const [customPrompt, setCustomPrompt] = useState("");
 
-  const generateCover = async (refineExisting?: boolean): Promise<string | null> => {
+  interface CoverGenerationResult {
+    imageUrl: string;
+    metadata?: {
+      alt: string;
+      description: string;
+      keywords: string[];
+      colors: string[];
+    };
+  }
+
+  const generateCover = async (refineExisting?: boolean): Promise<CoverGenerationResult | null> => {
     const payload: Record<string, string> = {
       title,
       content: storyContent.slice(0, 500),
@@ -113,7 +132,18 @@ Style guidelines:
 
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-    return data.imageUrl;
+    return { imageUrl: data.imageUrl, metadata: data.metadata };
+  };
+
+  // Apply metadata from generation result
+  const applyGeneratedMetadata = (result: CoverGenerationResult) => {
+    setCoverImageUrl(result.imageUrl);
+    if (result.metadata) {
+      setCoverImageAlt(result.metadata.alt);
+      setCoverImageDescription(result.metadata.description);
+      setCoverImageKeywords(result.metadata.keywords.join(", "));
+      setCoverImageColors(result.metadata.colors);
+    }
   };
 
   const handleSave = async () => {
@@ -122,16 +152,26 @@ Style guidelines:
 
     try {
       let finalCoverUrl = coverImageUrl;
+      let finalAlt = coverImageAlt;
+      let finalDescription = coverImageDescription;
+      let finalKeywords = coverImageKeywords;
+      let finalColors = coverImageColors;
 
       // Auto-generate cover if publishing without one
       const isPublishing = status === "published" || status === "experimental";
       if (isPublishing && !coverImageUrl && storyContent.trim()) {
         setIsGeneratingCover(true);
         try {
-          const generatedUrl = await generateCover();
-          if (generatedUrl) {
-            finalCoverUrl = generatedUrl;
-            setCoverImageUrl(generatedUrl);
+          const result = await generateCover();
+          if (result) {
+            finalCoverUrl = result.imageUrl;
+            applyGeneratedMetadata(result);
+            if (result.metadata) {
+              finalAlt = result.metadata.alt;
+              finalDescription = result.metadata.description;
+              finalKeywords = result.metadata.keywords.join(", ");
+              finalColors = result.metadata.colors;
+            }
           }
         } finally {
           setIsGeneratingCover(false);
@@ -139,20 +179,23 @@ Style guidelines:
       }
 
       const supabase = createClient();
-      const { error: updateError } = await supabase.rpc("admin_update_blog_post", {
+      const { error: updateError } = await supabase.rpc("update_blog_post", {
         p_post_id: post.id,
         p_title: title,
         p_slug: slug,
         p_story_content: storyContent,
         p_technical_content: technicalContent,
         p_cover_image_url: finalCoverUrl || null,
+        p_cover_image_alt: finalAlt || null,
+        p_cover_image_description: finalDescription || null,
+        p_cover_image_keywords: finalKeywords ? finalKeywords.split(",").map((k) => k.trim()) : null,
+        p_cover_image_colors: finalColors.length > 0 ? finalColors : null,
         p_status: status,
         p_category_id: categoryId || null,
         p_meta_description: metaDescription || null,
         p_seo_keywords: seoKeywords ? seoKeywords.split(",").map((k) => k.trim()) : null,
         p_suggested_cta_url: ctaUrl || null,
         p_suggested_cta_text: ctaText || null,
-        p_areas_changed: areasChanged ? areasChanged.split(",").map((a) => a.trim()) : null,
       });
 
       if (updateError) throw updateError;
@@ -185,8 +228,8 @@ Style guidelines:
     setError(null);
 
     try {
-      const imageUrl = await generateCover();
-      if (imageUrl) setCoverImageUrl(imageUrl);
+      const result = await generateCover();
+      if (result) applyGeneratedMetadata(result);
     } catch (err) {
       console.error("Failed to generate cover:", err);
       setError(err instanceof Error ? err.message : "Failed to generate cover");
@@ -209,9 +252,9 @@ Style guidelines:
     setError(null);
 
     try {
-      const imageUrl = await generateCover(true);
-      if (imageUrl) {
-        setCoverImageUrl(imageUrl);
+      const result = await generateCover(true);
+      if (result) {
+        applyGeneratedMetadata(result);
         setRefinementPrompt(""); // Clear after successful refinement
       }
     } catch (err) {
@@ -385,10 +428,105 @@ Style guidelines:
             {/* Lightbox for full-size view */}
             <ImageLightbox
               src={coverImageUrl}
-              alt="Cover preview"
+              alt={coverImageAlt || "Cover preview"}
               isOpen={lightboxOpen}
               onClose={() => setLightboxOpen(false)}
             />
+
+            {/* Image Metadata (SEO/AEO/GEO) - collapsible */}
+            {coverImageUrl && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowImageMetadata(!showImageMetadata)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors text-sm"
+                >
+                  <span className="flex items-center gap-2 text-emerald-400">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    Image SEO Metadata
+                  </span>
+                  {showImageMetadata ? (
+                    <ChevronUp className="h-4 w-4 text-emerald-400" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-emerald-400" />
+                  )}
+                </button>
+
+                {showImageMetadata && (
+                  <div className="space-y-3 pl-2 border-l-2 border-emerald-500/30">
+                    {/* Alt Text */}
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Alt Text <span className="text-emerald-400">(accessibility)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={coverImageAlt}
+                        onChange={(e) => setCoverImageAlt(e.target.value)}
+                        placeholder="Brief description for screen readers..."
+                        className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm"
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Description <span className="text-emerald-400">(AI search)</span>
+                      </label>
+                      <textarea
+                        value={coverImageDescription}
+                        onChange={(e) => setCoverImageDescription(e.target.value)}
+                        placeholder="Detailed description for AI search engines..."
+                        rows={2}
+                        className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm resize-none"
+                      />
+                    </div>
+
+                    {/* Keywords */}
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Keywords <span className="text-emerald-400">(comma-separated)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={coverImageKeywords}
+                        onChange={(e) => setCoverImageKeywords(e.target.value)}
+                        placeholder="abstract, purple, geometric..."
+                        className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm"
+                      />
+                    </div>
+
+                    {/* Colors */}
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Dominant Colors
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {coverImageColors.map((color, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs"
+                          >
+                            <span
+                              className="w-3 h-3 rounded-full border border-white/20"
+                              style={{ backgroundColor: color }}
+                            />
+                            <span className="font-mono">{color}</span>
+                          </div>
+                        ))}
+                        {coverImageColors.length === 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            Colors will be extracted on generation
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Customize prompt toggle */}
             <button
