@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import Image from "next/image";
-import { cloudflareLoader } from "@/lib/image-cdn";
 import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, MapPin, Plus } from "lucide-react";
 import { AuthButton } from "@/components/auth-button";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -256,79 +255,126 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function MomentPage({ params, searchParams }: PageProps) {
-  const { id } = await params;
-  const { from } = await searchParams;
+  let id: string;
+  let from: string | undefined;
+
+  try {
+    const resolvedParams = await params;
+    const resolvedSearchParams = await searchParams;
+    id = resolvedParams.id;
+    from = resolvedSearchParams.from;
+  } catch (err) {
+    console.error("[Moments] Error resolving params:", err);
+    notFound();
+  }
+
   const supabase = await createClient();
-  const moment = await getMoment(id);
+  let moment: Awaited<ReturnType<typeof getMoment>>;
+
+  try {
+    moment = await getMoment(id);
+  } catch (err) {
+    console.error("[Moments] Error fetching moment:", err);
+    notFound();
+  }
 
   if (!moment) {
     notFound();
   }
 
+  // TypeScript doesn't narrow after notFound(), so we assert here
+  const m = moment as NonNullable<typeof moment>;
+
   // Get current user and check permissions
-  const { data: { user } } = await supabase.auth.getUser();
-  const isOwner = user?.id === moment.user_id;
-  const isEventCreator = user?.id === moment.events.created_by;
+  let user;
+  try {
+    const authResult = await supabase.auth.getUser();
+    user = authResult.data?.user;
+  } catch (err) {
+    console.error("[Moments] Error getting user:", err);
+    user = null;
+  }
+
+  const isOwner = user?.id === m.user_id;
+  const isEventCreator = user?.id === m.events.created_by;
 
   // Check if user is admin or moderator
   let isAdminOrMod = false;
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    isAdminOrMod = profile?.role ? hasRoleLevel(profile.role as UserRole, "moderator") : false;
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      isAdminOrMod = profile?.role ? hasRoleLevel(profile.role as UserRole, "moderator") : false;
+    } catch (err) {
+      console.error("[Moments] Error checking admin role:", err);
+    }
   }
 
   const canModerate = isEventCreator || isAdminOrMod;
 
-  const [t, tCommon, locale] = await Promise.all([
-    getTranslations("moments"),
-    getTranslations("common"),
-    getLocale(),
-  ]);
+  let t, tCommon, locale;
+  try {
+    [t, tCommon, locale] = await Promise.all([
+      getTranslations("moments"),
+      getTranslations("common"),
+      getLocale(),
+    ]);
+  } catch (err) {
+    console.error("[Moments] Error getting translations:", err);
+    throw err;  // Re-throw to see which translation is failing
+  }
 
-  const event = moment.events;
-  const profile = moment.profiles;
-  const isVideo = isVideoUrl(moment.media_url);
-  const timeAgo = formatDistanceToNow(new Date(moment.created_at), {
+  console.log("[Moments] Step 1: event/profile");
+  const event = m.events;
+  const profile = m.profiles;
+  const isVideo = isVideoUrl(m.media_url);
+
+  console.log("[Moments] Step 2: timeAgo");
+  const timeAgo = formatDistanceToNow(new Date(m.created_at), {
     addSuffix: true,
     locale: dateFnsLocales[locale as Locale],
   });
 
+  console.log("[Moments] Step 3: momentTranslations");
   // Get translations for text content
   const momentTranslations = await getMomentTranslations(
-    moment.id,
-    moment.text_content,
-    moment.source_locale,
+    m.id,
+    m.text_content,
+    m.source_locale,
     locale
   );
 
+  console.log("[Moments] Step 4: navigation mode");
   // Determine navigation mode based on where user came from
   const isDiscoveryMode = from === "moments";
   const isProfileMode = from === "profile";
 
+  console.log("[Moments] Step 5: adjacent moments");
   // Get adjacent moments for navigation (global feed or event-scoped)
   const { prevId, nextId, prevEventId, nextEventId, prevMediaUrl, nextMediaUrl } = isDiscoveryMode
-    ? await getFeedAdjacentMoments(moment.created_at, moment.id)
-    : await getEventAdjacentMoments(moment.event_id, moment.created_at, moment.id);
+    ? await getFeedAdjacentMoments(m.created_at, m.id)
+    : await getEventAdjacentMoments(m.event_id, m.created_at, m.id);
 
+  console.log("[Moments] Step 6: navigation vars");
   const hasNavigation = prevId || nextId;
 
   // Check if navigating to a different event (for visual transition indicator)
-  const prevCrossesEvent = prevEventId && prevEventId !== moment.event_id;
-  const nextCrossesEvent = nextEventId && nextEventId !== moment.event_id;
+  const prevCrossesEvent = prevEventId && prevEventId !== m.event_id;
+  const nextCrossesEvent = nextEventId && nextEventId !== m.event_id;
 
   // Build navigation URLs with context preservation
   const navParam = isDiscoveryMode ? "?from=moments" : isProfileMode ? "?from=profile" : "";
   const backUrl = isDiscoveryMode
     ? "/moments"
     : isProfileMode
-      ? `/${profile?.username || moment.user_id}`
+      ? `/${profile?.username || m.user_id}`
       : `/events/${event.slug}/moments`;
 
-  const momentSchema = generateMomentSchema(moment, locale);
+  console.log("[Moments] Step 7: schema generation");
+  const momentSchema = generateMomentSchema(m, locale);
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
@@ -377,12 +423,12 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
 
       <div className="container max-w-2xl mx-auto px-4 py-6">
         {/* Media display with navigation */}
-        {moment.content_type !== "text" && moment.media_url && (
+        {m.content_type !== "text" && m.media_url && (
           <div className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-6 group">
             {isVideo ? (
               <video
-                key={moment.id}
-                src={moment.media_url}
+                key={m.id}
+                src={m.media_url}
                 className="w-full h-full object-contain"
                 controls
                 autoPlay
@@ -391,7 +437,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
               />
             ) : (
               <ExpandableMomentImage
-                src={moment.media_url}
+                src={m.media_url}
                 alt={momentTranslations.textContent || `Moment from ${event.title}`}
               />
             )}
@@ -429,7 +475,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
         )}
 
         {/* Navigation for text-only moments */}
-        {moment.content_type === "text" && hasNavigation && (
+        {m.content_type === "text" && hasNavigation && (
           <div className="flex justify-between mb-6">
             {prevId ? (
               <Link
@@ -462,7 +508,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
         <div className="space-y-4">
           {/* User */}
           <div className="flex items-center gap-3">
-            <Link href={`/${profile?.username || moment.user_id}`}>
+            <Link href={`/${profile?.username || m.user_id}`}>
               <UserAvatar
                 src={profile?.avatar_url}
                 alt={profile?.display_name || profile?.username || ""}
@@ -471,7 +517,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
             </Link>
             <div className="flex-1">
               <Link
-                href={`/${profile?.username || moment.user_id}`}
+                href={`/${profile?.username || m.user_id}`}
                 className="font-medium hover:underline"
               >
                 {profile?.display_name || profile?.username || tCommon("anonymous")}
@@ -480,7 +526,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
             </div>
             {/* Delete button for owner/moderators */}
             <DeleteMomentButton
-              momentId={moment.id}
+              momentId={m.id}
               eventSlug={event.slug}
               isOwner={isOwner}
               canModerate={canModerate}
@@ -510,12 +556,12 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
                 <div className="flex gap-4">
                   {event.image_url && (
                     <Image
-                      loader={cloudflareLoader}
                       src={event.image_url}
                       alt={event.title || "Event image"}
                       width={80}
                       height={80}
                       className="rounded-lg object-cover"
+                      unoptimized
                     />
                   )}
                   <div className="flex-1 min-w-0">
