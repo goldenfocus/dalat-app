@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface AIOrganizerLogoDialogProps {
   organizerId?: string;
@@ -23,7 +24,89 @@ interface AIOrganizerLogoDialogProps {
   context?: "organizer-logo" | "venue-logo";
 }
 
-type DialogMode = "preview" | "generating";
+type DialogMode = "setup" | "generating" | "preview";
+
+// Style presets for logo generation
+type StylePreset = "geometric" | "modern" | "vintage" | "playful" | "custom";
+
+interface PresetConfig {
+  id: StylePreset;
+  label: string;
+  getPrompt: (name: string, context: "organizer-logo" | "venue-logo") => string;
+}
+
+const STYLE_PRESETS: PresetConfig[] = [
+  {
+    id: "geometric",
+    label: "Geometric",
+    getPrompt: (name, context) => {
+      const entityType = context === "venue-logo" ? "venue" : "organization";
+      return `Create a clean, geometric logo for "${name}" (a ${entityType}).
+
+Style: Minimalist geometric shapes, clean lines, modern corporate identity.
+Colors: Professional palette with 2-3 colors max. Consider deep blues, teals, or earth tones.
+Elements: Abstract geometric forms that suggest the business type without being literal.
+Important: Do NOT include any text or lettering. Create only the visual mark/icon.
+Format: Square aspect ratio (1:1), suitable for profile pictures and favicons.`;
+    },
+  },
+  {
+    id: "modern",
+    label: "Modern",
+    getPrompt: (name, context) => {
+      const entityType = context === "venue-logo" ? "venue" : "organization";
+      return `Create a modern, sleek logo for "${name}" (a ${entityType}).
+
+Style: Contemporary design with subtle gradients, smooth curves, professional look.
+Colors: Modern palette - consider gradients from purple to blue, or warm sunset tones.
+Elements: Flowing shapes, elegant curves, sophisticated visual identity.
+Important: Do NOT include any text or lettering. Create only the visual mark/icon.
+Format: Square aspect ratio (1:1), suitable for profile pictures and favicons.`;
+    },
+  },
+  {
+    id: "vintage",
+    label: "Vintage",
+    getPrompt: (name, context) => {
+      const entityType = context === "venue-logo" ? "venue" : "organization";
+      return `Create a vintage-inspired logo for "${name}" (a ${entityType}).
+
+Style: Classic, timeless design with retro charm. Hand-crafted aesthetic.
+Colors: Warm, muted tones - browns, creams, deep reds, forest greens.
+Elements: Classic emblems, heritage-style marks, artisan craftsmanship feel.
+Important: Do NOT include any text or lettering. Create only the visual mark/icon.
+Format: Square aspect ratio (1:1), suitable for profile pictures and favicons.`;
+    },
+  },
+  {
+    id: "playful",
+    label: "Playful",
+    getPrompt: (name, context) => {
+      const entityType = context === "venue-logo" ? "venue" : "organization";
+      return `Create a playful, friendly logo for "${name}" (a ${entityType}).
+
+Style: Fun, approachable design with rounded shapes and friendly feel.
+Colors: Vibrant, cheerful palette - bright colors that feel welcoming and energetic.
+Elements: Rounded forms, organic shapes, approachable and inviting visual style.
+Important: Do NOT include any text or lettering. Create only the visual mark/icon.
+Format: Square aspect ratio (1:1), suitable for profile pictures and favicons.`;
+    },
+  },
+  {
+    id: "custom",
+    label: "Custom",
+    getPrompt: (name, context) => {
+      const entityType = context === "venue-logo" ? "venue" : "organization";
+      return `Create a logo for "${name}" (a ${entityType}).
+
+Style: [Describe your preferred style]
+Colors: [Specify color palette]
+Elements: [List visual elements you want]
+Important: Do NOT include any text or lettering. Create only the visual mark/icon.
+Format: Square aspect ratio (1:1), suitable for profile pictures and favicons.`;
+    },
+  },
+];
 
 const REFINEMENT_PRESETS = [
   { label: "More geometric", prompt: "Make it more geometric and minimal" },
@@ -41,23 +124,54 @@ export function AIOrganizerLogoDialog({
   context = "organizer-logo",
 }: AIOrganizerLogoDialogProps) {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<DialogMode>("generating");
+  const [mode, setMode] = useState<DialogMode>("setup");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refinementPrompt, setRefinementPrompt] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // New: Style preset and prompt state
+  const [selectedPreset, setSelectedPreset] = useState<StylePreset>("geometric");
+  const [prompt, setPrompt] = useState("");
+
+  // Initialize prompt when dialog opens
+  const initializePrompt = useCallback(() => {
+    const preset = STYLE_PRESETS.find((p) => p.id === "geometric") || STYLE_PRESETS[0];
+    setPrompt(preset.getPrompt(organizerName, context));
+  }, [organizerName, context]);
+
   const handleOpenChange = useCallback((newOpen: boolean) => {
     setOpen(newOpen);
-    if (!newOpen) {
-      setMode("generating");
+    if (newOpen) {
+      // Reset to setup mode and initialize prompt
+      setMode("setup");
+      setPreviewUrl(null);
+      setError(null);
+      setRefinementPrompt("");
+      setSelectedPreset("geometric");
+      initializePrompt();
+    } else {
+      setMode("setup");
       setPreviewUrl(null);
       setError(null);
       setRefinementPrompt("");
     }
-  }, []);
+  }, [initializePrompt]);
+
+  const handlePresetChange = (presetId: StylePreset) => {
+    setSelectedPreset(presetId);
+    const preset = STYLE_PRESETS.find((p) => p.id === presetId);
+    if (preset) {
+      setPrompt(preset.getPrompt(organizerName, context));
+    }
+  };
 
   const handleGenerate = async () => {
+    if (!prompt.trim()) {
+      setError("Please enter a prompt");
+      return;
+    }
+
     setError(null);
     setIsGenerating(true);
     setMode("generating");
@@ -69,6 +183,7 @@ export function AIOrganizerLogoDialog({
         body: JSON.stringify({
           context,
           title: organizerName,
+          customPrompt: prompt.trim(),
           entityId: organizerId,
         }),
       });
@@ -156,22 +271,15 @@ export function AIOrganizerLogoDialog({
   };
 
   const handleRedo = () => {
+    // Go back to setup mode to let user adjust prompt
     setPreviewUrl(null);
     setError(null);
     setRefinementPrompt("");
-    handleGenerate();
-  };
-
-  // Auto-generate when dialog opens
-  const handleDialogOpen = (newOpen: boolean) => {
-    handleOpenChange(newOpen);
-    if (newOpen && !isGenerating) {
-      handleGenerate();
-    }
+    setMode("setup");
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleDialogOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
           type="button"
@@ -184,8 +292,86 @@ export function AIOrganizerLogoDialog({
           Generate AI Logo
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        {mode === "generating" ? (
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        {mode === "setup" ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Generate AI Logo
+              </DialogTitle>
+              <DialogDescription>
+                Customize the style for your logo
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              {/* Style Presets */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Style</label>
+                <div className="flex flex-wrap gap-2">
+                  {STYLE_PRESETS.map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handlePresetChange(preset.id)}
+                      className={cn(
+                        "px-3 py-1.5 text-sm rounded-full border transition-colors",
+                        selectedPreset === preset.id
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background hover:bg-muted border-input"
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Prompt Editor */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Prompt</label>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Describe the logo you want..."
+                  rows={6}
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 font-mono resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Edit the prompt to customize the style
+                </p>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+                  {error}
+                </p>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 justify-between">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => handleOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleGenerate}
+                disabled={!prompt.trim()}
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Generate
+              </Button>
+            </div>
+          </>
+        ) : mode === "generating" ? (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">

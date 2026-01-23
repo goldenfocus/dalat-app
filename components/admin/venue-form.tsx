@@ -297,6 +297,19 @@ export function VenueForm({ venue }: VenueFormProps) {
           <CardContent className="p-6 space-y-6">
             <h2 className="font-semibold">Basic Information</h2>
 
+            {/* Name - first so it can inform AI generation */}
+            <div className="space-y-2">
+              <Label htmlFor="name">Venue name *</Label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="Phố Bên Đồi"
+                value={name}
+                onChange={handleNameChange}
+                required
+              />
+            </div>
+
             {/* Logo */}
             <div className="space-y-2">
               <Label>Logo</Label>
@@ -329,19 +342,6 @@ export function VenueForm({ venue }: VenueFormProps) {
                 onMediaChange={(url) => setCoverPhotoUrl(url)}
                 autoSave={false}
                 aiContext="venue-cover"
-              />
-            </div>
-
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Venue name *</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="Phố Bên Đồi"
-                value={name}
-                onChange={handleNameChange}
-                required
               />
             </div>
 
