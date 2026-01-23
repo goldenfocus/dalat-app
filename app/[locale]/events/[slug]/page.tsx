@@ -87,8 +87,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}`;
 
   // Explicit OG image URL for WhatsApp compatibility
-  // WhatsApp requires explicit og:image meta tag (doesn't auto-detect opengraph-image.tsx)
-  const ogImageUrl = `https://dalat.app/${locale}/events/${slug}/opengraph-image`;
+  // Use the /og-image route which has explicit cache headers for fast responses
+  const ogImageUrl = `https://dalat.app/${locale}/events/${slug}/og-image`;
 
   return {
     title: `${title} | ĐàLạt.app`,
