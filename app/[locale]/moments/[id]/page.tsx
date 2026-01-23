@@ -19,6 +19,7 @@ import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/st
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { ExpandableMomentImage } from "@/components/moments/expandable-moment-image";
+import { MomentImagePreloader } from "@/components/moments/moment-image-preloader";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { hasRoleLevel, type Moment, type Event, type Profile, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
@@ -69,6 +70,8 @@ interface AdjacentMoments {
   nextId: string | null;
   prevEventId: string | null;
   nextEventId: string | null;
+  prevMediaUrl: string | null;
+  nextMediaUrl: string | null;
 }
 
 // Get adjacent moments within the same event (used when navigating from event page)
@@ -82,7 +85,7 @@ async function getEventAdjacentMoments(
   // Get the previous moment (older, or wrap to last)
   const { data: prevData } = await supabase
     .from("moments")
-    .select("id")
+    .select("id, media_url")
     .eq("event_id", eventId)
     .eq("status", "published")
     .or(`created_at.lt.${currentCreatedAt},and(created_at.eq.${currentCreatedAt},id.lt.${currentId})`)
@@ -94,7 +97,7 @@ async function getEventAdjacentMoments(
   // Get the next moment (newer, or wrap to first)
   const { data: nextData } = await supabase
     .from("moments")
-    .select("id")
+    .select("id, media_url")
     .eq("event_id", eventId)
     .eq("status", "published")
     .or(`created_at.gt.${currentCreatedAt},and(created_at.eq.${currentCreatedAt},id.gt.${currentId})`)
@@ -105,12 +108,14 @@ async function getEventAdjacentMoments(
 
   let prevId = prevData?.id || null;
   let nextId = nextData?.id || null;
+  let prevMediaUrl = prevData?.media_url || null;
+  let nextMediaUrl = nextData?.media_url || null;
 
   // Wrap around: if no prev, get the last moment; if no next, get the first
   if (!prevId) {
     const { data: lastMoment } = await supabase
       .from("moments")
-      .select("id")
+      .select("id, media_url")
       .eq("event_id", eventId)
       .eq("status", "published")
       .neq("id", currentId)
@@ -119,12 +124,13 @@ async function getEventAdjacentMoments(
       .limit(1)
       .single();
     prevId = lastMoment?.id || null;
+    prevMediaUrl = lastMoment?.media_url || null;
   }
 
   if (!nextId) {
     const { data: firstMoment } = await supabase
       .from("moments")
-      .select("id")
+      .select("id, media_url")
       .eq("event_id", eventId)
       .eq("status", "published")
       .neq("id", currentId)
@@ -133,9 +139,10 @@ async function getEventAdjacentMoments(
       .limit(1)
       .single();
     nextId = firstMoment?.id || null;
+    nextMediaUrl = firstMoment?.media_url || null;
   }
 
-  return { prevId, nextId, prevEventId: eventId, nextEventId: eventId };
+  return { prevId, nextId, prevEventId: eventId, nextEventId: eventId, prevMediaUrl, nextMediaUrl };
 }
 
 // Get adjacent moments in the global feed (used when navigating from discovery page)
@@ -152,7 +159,7 @@ async function getFeedAdjacentMoments(
   });
 
   if (error || !data || data.length === 0) {
-    return { prevId: null, nextId: null, prevEventId: null, nextEventId: null };
+    return { prevId: null, nextId: null, prevEventId: null, nextEventId: null, prevMediaUrl: null, nextMediaUrl: null };
   }
 
   const result = data[0];
@@ -161,6 +168,8 @@ async function getFeedAdjacentMoments(
     nextId: result.next_id,
     prevEventId: result.prev_event_id,
     nextEventId: result.next_event_id,
+    prevMediaUrl: result.prev_media_url || null,
+    nextMediaUrl: result.next_media_url || null,
   };
 }
 
@@ -281,7 +290,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
   const isProfileMode = from === "profile";
 
   // Get adjacent moments for navigation (global feed or event-scoped)
-  const { prevId, nextId, prevEventId, nextEventId } = isDiscoveryMode
+  const { prevId, nextId, prevEventId, nextEventId, prevMediaUrl, nextMediaUrl } = isDiscoveryMode
     ? await getFeedAdjacentMoments(moment.created_at, moment.id)
     : await getEventAdjacentMoments(moment.event_id, moment.created_at, moment.id);
 
@@ -503,6 +512,12 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Preload adjacent images for instant navigation */}
+      <MomentImagePreloader
+        prevMediaUrl={prevMediaUrl}
+        nextMediaUrl={nextMediaUrl}
+      />
     </main>
   );
 }
