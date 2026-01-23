@@ -175,6 +175,44 @@ export function generateProfileMetadata(
 }
 
 /**
+ * Generate metadata for a venue page
+ */
+export function generateVenueMetadata(
+  venue: {
+    slug: string;
+    name: string;
+    description: string | null;
+    logo_url: string | null;
+    cover_photo_url: string | null;
+    venue_type: string | null;
+    address: string | null;
+  },
+  locale: Locale,
+  eventCount?: number
+): Metadata {
+  const venueTypeName = venue.venue_type
+    ? venue.venue_type.charAt(0).toUpperCase() + venue.venue_type.slice(1).replace("_", " ")
+    : "Venue";
+  const description = venue.description
+    ? `${venue.description.slice(0, 150)}${venue.description.length > 150 ? "..." : ""}`
+    : eventCount
+    ? `${venue.name} is a ${venueTypeName.toLowerCase()} in Đà Lạt hosting ${eventCount} upcoming events`
+    : venue.address
+    ? `${venue.name} - ${venueTypeName} located at ${venue.address} in Đà Lạt, Vietnam`
+    : `${venue.name} - ${venueTypeName} in Đà Lạt, Vietnam`;
+
+  return generateLocalizedMetadata({
+    locale,
+    path: `/venues/${venue.slug}`,
+    title: venue.name,
+    description,
+    image: venue.cover_photo_url || venue.logo_url || undefined,
+    type: "profile",
+    keywords: [venue.name, venueTypeName.toLowerCase(), "venue", "Đà Lạt", "events"],
+  });
+}
+
+/**
  * Generate metadata for an organizer page
  */
 export function generateOrganizerMetadata(

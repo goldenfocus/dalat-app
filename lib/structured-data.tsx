@@ -8,7 +8,7 @@
  * Reference: https://schema.org
  */
 
-import type { Event, Profile, Organizer, Festival, EventSeries, Moment } from "@/lib/types";
+import type { Event, Profile, Organizer, Festival, EventSeries, Moment, Venue, VenueType } from "@/lib/types";
 import type { BlogPostFull } from "@/lib/types/blog";
 
 const SITE_URL = "https://dalat.app";
@@ -213,6 +213,123 @@ export function generateOrganizationSchema(
         itemListElement: `${organizerUrl}#events`,
       },
     }),
+  };
+
+  return schema;
+}
+
+/**
+ * Map venue types to Schema.org LocalBusiness subtypes
+ */
+const VENUE_TYPE_SCHEMA_MAP: Record<VenueType, string> = {
+  cafe: "CafeOrCoffeeShop",
+  bar: "BarOrPub",
+  restaurant: "Restaurant",
+  gallery: "ArtGallery",
+  park: "Park",
+  hotel: "Hotel",
+  coworking: "LocalBusiness",
+  community_center: "CivicStructure",
+  outdoor: "TouristAttraction",
+  homestay: "LodgingBusiness",
+  other: "LocalBusiness",
+};
+
+/**
+ * Generate LocalBusiness schema for venue pages
+ * https://schema.org/LocalBusiness
+ */
+export function generateLocalBusinessSchema(
+  venue: Venue,
+  locale: string,
+  eventCount?: number
+) {
+  const venueUrl = `${SITE_URL}/${locale}/venues/${venue.slug}`;
+  const schemaType = venue.venue_type
+    ? VENUE_TYPE_SCHEMA_MAP[venue.venue_type]
+    : "LocalBusiness";
+
+  // Format opening hours for Schema.org
+  const openingHoursSpec = venue.operating_hours
+    ? Object.entries(venue.operating_hours)
+        .filter(([, hours]) => hours !== "closed" && hours)
+        .map(([day, hours]) => {
+          if (hours === "closed" || !hours) return null;
+          const dayMap: Record<string, string> = {
+            monday: "Monday",
+            tuesday: "Tuesday",
+            wednesday: "Wednesday",
+            thursday: "Thursday",
+            friday: "Friday",
+            saturday: "Saturday",
+            sunday: "Sunday",
+          };
+          return {
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek: dayMap[day],
+            opens: (hours as { open: string; close: string }).open,
+            closes: (hours as { open: string; close: string }).close,
+          };
+        })
+        .filter(Boolean)
+    : undefined;
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    name: venue.name,
+    url: venueUrl,
+    ...(venue.description && { description: venue.description }),
+    ...(venue.logo_url && { logo: venue.logo_url }),
+    ...(venue.cover_photo_url && { image: venue.cover_photo_url }),
+
+    // Location with precise coordinates
+    address: {
+      "@type": "PostalAddress",
+      ...(venue.address && { streetAddress: venue.address }),
+      addressLocality: "Đà Lạt",
+      addressRegion: "Lam Dong",
+      addressCountry: "VN",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: venue.latitude,
+      longitude: venue.longitude,
+    },
+
+    // Contact info
+    ...(venue.email && { email: venue.email }),
+    ...(venue.phone && { telephone: venue.phone }),
+
+    // Social links
+    sameAs: [
+      venue.website_url,
+      venue.facebook_url,
+      venue.instagram_url,
+    ].filter(Boolean),
+
+    // Opening hours
+    ...(openingHoursSpec && openingHoursSpec.length > 0 && {
+      openingHoursSpecification: openingHoursSpec,
+    }),
+
+    // Price range
+    ...(venue.price_range && { priceRange: venue.price_range }),
+
+    // Amenities as features
+    ...(venue.has_wifi && { amenityFeature: { "@type": "LocationFeatureSpecification", name: "WiFi", value: true } }),
+
+    // Events at this venue
+    ...(eventCount !== undefined && eventCount > 0 && {
+      event: {
+        "@type": "ItemList",
+        numberOfItems: eventCount,
+        itemListElement: `${venueUrl}#events`,
+      },
+    }),
+
+    // Google Maps
+    ...(venue.google_maps_url && { hasMap: venue.google_maps_url }),
   };
 
   return schema;

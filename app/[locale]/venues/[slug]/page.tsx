@@ -7,13 +7,14 @@ import {
   MapPin,
   BadgeCheck,
   ExternalLink,
-  Phone,
-  Globe,
   Clock,
-  Navigation,
+  Route,
+  Globe,
+  Phone,
+  Mail,
   Wifi,
   Car,
-  Trees,
+  Sun,
   Dog,
   Accessibility,
 } from "lucide-react";
@@ -21,13 +22,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
-import { decodeUnicodeEscapes } from "@/lib/utils";
-import type { Venue, Event, Locale, OperatingHours } from "@/lib/types";
-import { generateLocalizedMetadata } from "@/lib/metadata";
-import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
+import type { Venue, Locale } from "@/lib/types";
+import { generateVenueMetadata } from "@/lib/metadata";
+import { JsonLd, generateLocalBusinessSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
-import { VenueHoursBadge, isVenueOpenNow } from "@/components/venues/venue-hours-badge";
-import { triggerHaptic } from "@/lib/haptics";
+import { VenueHoursBadge } from "@/components/venues/venue-hours-badge";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -35,8 +34,23 @@ interface PageProps {
 
 interface VenueData {
   venue: Venue;
-  upcoming_events: Event[];
-  happening_now: Event[];
+  upcoming_events: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    image_url: string | null;
+    starts_at: string;
+    ends_at: string | null;
+    capacity: number | null;
+  }>;
+  happening_now: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    image_url: string | null;
+    starts_at: string;
+    ends_at: string | null;
+  }>;
   past_events_count: number;
   recent_activity: {
     events_this_month: number;
@@ -58,140 +72,50 @@ async function getVenueData(slug: string): Promise<VenueData | null> {
   return data as VenueData;
 }
 
-// Generate SEO metadata for venue pages
+async function isUserLoggedIn(): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return !!user;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  const data = await getVenueData(slug);
+  const venueData = await getVenueData(slug);
 
-  if (!data?.venue) {
+  if (!venueData) {
     return { title: "Venue not found" };
   }
 
-  const { venue } = data;
-  const typeConfig = getVenueTypeConfig(venue.venue_type);
-
-  return generateLocalizedMetadata({
-    locale: locale as Locale,
-    path: `/venues/${slug}`,
-    title: venue.name,
-    description:
-      venue.description ||
-      `${venue.name} - ${typeConfig.label} in Da Lat. ${
-        data.upcoming_events.length
-          ? `${data.upcoming_events.length} upcoming events.`
-          : ""
-      }`,
-    keywords: [
-      venue.name,
-      typeConfig.label,
-      "Da Lat",
-      "venue",
-      "events",
-      ...(venue.tags || []),
-    ],
-    image: venue.cover_photo_url || venue.logo_url || undefined,
-  });
+  return generateVenueMetadata(
+    venueData.venue,
+    locale as Locale,
+    venueData.upcoming_events.length
+  );
 }
 
-// Generate venue structured data
-function generateVenueSchema(venue: Venue, locale: string) {
-  const typeConfig = getVenueTypeConfig(venue.venue_type);
-
-  return {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: venue.name,
-    description: venue.description,
-    image: venue.cover_photo_url || venue.logo_url,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: venue.address,
-      addressLocality: "Da Lat",
-      addressRegion: "Lam Dong",
-      addressCountry: "VN",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: venue.latitude,
-      longitude: venue.longitude,
-    },
-    url: venue.website_url,
-    telephone: venue.phone,
-    priceRange: venue.price_range,
-    ...(venue.operating_hours && {
-      openingHoursSpecification: formatOpeningHoursForSchema(venue.operating_hours),
-    }),
-  };
-}
-
-function formatOpeningHoursForSchema(hours: OperatingHours) {
-  const dayMap: Record<keyof OperatingHours, string> = {
-    monday: "Monday",
-    tuesday: "Tuesday",
-    wednesday: "Wednesday",
-    thursday: "Thursday",
-    friday: "Friday",
-    saturday: "Saturday",
-    sunday: "Sunday",
-  };
-
-  return Object.entries(hours)
-    .filter(([_, value]) => value && value !== "closed")
-    .map(([day, value]) => {
-      if (typeof value === "object" && "open" in value) {
-        return {
-          "@type": "OpeningHoursSpecification",
-          dayOfWeek: dayMap[day as keyof OperatingHours],
-          opens: value.open,
-          closes: value.close,
-        };
-      }
-      return null;
-    })
-    .filter(Boolean);
-}
-
-const DAY_KEYS: (keyof OperatingHours)[] = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-];
-
-const AMENITY_ICONS = {
-  has_wifi: Wifi,
-  has_parking: Car,
-  has_outdoor_seating: Trees,
-  is_pet_friendly: Dog,
-  is_wheelchair_accessible: Accessibility,
-};
-
-export default async function VenueProfilePage({ params }: PageProps) {
+export default async function VenuePage({ params }: PageProps) {
   const { slug } = await params;
-  const locale = (await getLocale()) as Locale;
-  const [t, tCommon] = await Promise.all([
-    getTranslations("venues"),
-    getTranslations("common"),
-  ]);
+  const locale = await getLocale();
+  const t = await getTranslations("venues");
 
-  const data = await getVenueData(slug);
+  const venueData = await getVenueData(slug);
 
-  if (!data?.venue) {
+  if (!venueData) {
     notFound();
   }
 
-  const { venue, upcoming_events, happening_now, past_events_count, recent_activity } =
-    data;
+  const { venue, upcoming_events, happening_now, past_events_count, recent_activity } = venueData;
+  const isLoggedIn = await isUserLoggedIn();
 
-  const typeConfig = getVenueTypeConfig(venue.venue_type);
-  const TypeIcon = typeConfig.icon;
   const isUnclaimed = !venue.owner_id;
+  const showClaimBanner = isUnclaimed && isLoggedIn && !venue.is_verified;
 
-  // Build structured data
-  const venueSchema = generateVenueSchema(venue, locale);
+  const typeConfig = venue.venue_type ? getVenueTypeConfig(venue.venue_type) : null;
+  const TypeIcon = typeConfig?.icon;
+
+  const localBusinessSchema = generateLocalBusinessSchema(venue, locale, upcoming_events.length);
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
@@ -201,32 +125,28 @@ export default async function VenueProfilePage({ params }: PageProps) {
     locale
   );
 
-  // Get today's day for highlighting in hours
-  const today = new Date()
-    .toLocaleDateString("en-US", { weekday: "long" })
-    .toLowerCase() as keyof OperatingHours;
+  const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+  const dayLabels: Record<string, string> = {
+    monday: "Mon",
+    tuesday: "Tue",
+    wednesday: "Wed",
+    thursday: "Thu",
+    friday: "Fri",
+    saturday: "Sat",
+    sunday: "Sun",
+  };
 
-  // Amenities to display
   const amenities = [
-    { key: "has_wifi", value: venue.has_wifi, label: t("amenities.wifi") },
-    { key: "has_parking", value: venue.has_parking, label: t("amenities.parking") },
-    {
-      key: "has_outdoor_seating",
-      value: venue.has_outdoor_seating,
-      label: t("amenities.outdoorSeating"),
-    },
-    { key: "is_pet_friendly", value: venue.is_pet_friendly, label: t("amenities.petFriendly") },
-    {
-      key: "is_wheelchair_accessible",
-      value: venue.is_wheelchair_accessible,
-      label: t("amenities.wheelchair"),
-    },
-  ].filter((a) => a.value);
+    { key: "wifi", icon: Wifi, has: venue.has_wifi, label: t("amenities.wifi") },
+    { key: "parking", icon: Car, has: venue.has_parking, label: t("amenities.parking") },
+    { key: "outdoor", icon: Sun, has: venue.has_outdoor_seating, label: t("amenities.outdoorSeating") },
+    { key: "pet", icon: Dog, has: venue.is_pet_friendly, label: t("amenities.petFriendly") },
+    { key: "wheelchair", icon: Accessibility, has: venue.is_wheelchair_accessible, label: t("amenities.wheelchair") },
+  ].filter((a) => a.has);
 
   return (
-    <main className="min-h-screen pb-20">
-      {/* JSON-LD Structured Data */}
-      <JsonLd data={[venueSchema, breadcrumbSchema]} />
+    <main className="min-h-screen pb-8">
+      <JsonLd data={[localBusinessSchema, breadcrumbSchema]} />
 
       {/* Header */}
       <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -236,50 +156,44 @@ export default async function VenueProfilePage({ params }: PageProps) {
             className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{tCommon("back")}</span>
+            <span>{t("title")}</span>
           </Link>
         </div>
       </nav>
 
       {/* Cover photo */}
-      {venue.cover_photo_url ? (
-        <div className="relative aspect-[2/1] sm:aspect-[3/1] bg-muted">
+      {venue.cover_photo_url && (
+        <div className="aspect-[2/1] sm:aspect-[3/1] bg-muted overflow-hidden">
           <img
             src={venue.cover_photo_url}
             alt=""
             className="w-full h-full object-cover"
           />
         </div>
-      ) : (
-        <div
-          className={`aspect-[3/1] flex items-center justify-center ${typeConfig.bgColor} ${typeConfig.darkBgColor}`}
-        >
-          <TypeIcon className={`w-16 h-16 ${typeConfig.color} ${typeConfig.darkColor}`} />
-        </div>
       )}
 
       <div className="container max-w-4xl mx-auto px-4">
-        {/* Venue header - overlapping cover */}
-        <div className="flex items-start gap-4 -mt-8 sm:-mt-12 relative z-10">
+        {/* Venue header */}
+        <div className={`flex items-start gap-4 sm:gap-6 py-6 ${venue.cover_photo_url ? "-mt-12 relative" : ""}`}>
           {/* Logo */}
           {venue.logo_url ? (
             <img
               src={venue.logo_url}
               alt={venue.name}
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border-4 border-background shadow-lg"
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border-4 border-background shadow-lg bg-background"
             />
           ) : (
-            <div
-              className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-4 border-background shadow-lg flex items-center justify-center ${typeConfig.bgColor} ${typeConfig.darkBgColor}`}
-            >
-              <TypeIcon
-                className={`w-10 h-10 sm:w-12 sm:h-12 ${typeConfig.color} ${typeConfig.darkColor}`}
-              />
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-primary/10 flex items-center justify-center border-4 border-background shadow-lg">
+              {TypeIcon ? (
+                <TypeIcon className={`w-10 h-10 ${typeConfig?.color}`} />
+              ) : (
+                <MapPin className="w-10 h-10 text-primary" />
+              )}
             </div>
           )}
 
-          <div className="flex-1 pt-10 sm:pt-14">
-            {/* Name and verified badge */}
+          <div className={venue.cover_photo_url ? "flex-1 pt-12 sm:pt-14" : "flex-1"}>
+            {/* Name and badges */}
             <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 flex-wrap">
               {venue.name}
               {venue.is_verified && (
@@ -287,86 +201,115 @@ export default async function VenueProfilePage({ params }: PageProps) {
               )}
             </h1>
 
-            {/* Type and address */}
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span
-                className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded ${typeConfig.bgColor} ${typeConfig.darkBgColor} ${typeConfig.color} ${typeConfig.darkColor}`}
-              >
-                <TypeIcon className="w-3.5 h-3.5" />
-                {typeConfig.label}
-              </span>
+            {/* Type and open status */}
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              {typeConfig && TypeIcon && (
+                <span
+                  className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded ${typeConfig.bgColor} ${typeConfig.darkBgColor} ${typeConfig.color} ${typeConfig.darkColor}`}
+                >
+                  <TypeIcon className="w-3.5 h-3.5" />
+                  {typeConfig.label}
+                </span>
+              )}
+              {venue.operating_hours && (
+                <VenueHoursBadge operatingHours={venue.operating_hours} />
+              )}
               {venue.price_range && (
                 <span className="text-sm text-muted-foreground">
                   {venue.price_range}
                 </span>
               )}
-              <VenueHoursBadge operatingHours={venue.operating_hours} />
             </div>
 
+            {/* Address */}
             {venue.address && (
-              <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
-                <MapPin className="w-4 h-4 flex-shrink-0" />
+              <p className="text-sm text-muted-foreground mt-2 flex items-start gap-1">
+                <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 {venue.address}
               </p>
             )}
           </div>
         </div>
 
+        {/* Claim banner */}
+        {showClaimBanner && (
+          <div className="mb-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+            <p className="font-medium text-amber-800 dark:text-amber-200">
+              {t("claimVenue")}
+            </p>
+            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+              {t("claimDescription")}
+            </p>
+          </div>
+        )}
+
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-2 mt-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <a
             href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all"
           >
-            <Navigation className="w-4 h-4" />
+            <Route className="w-4 h-4" />
             {t("getDirections")}
           </a>
-          {venue.phone && (
-            <a
-              href={`tel:${venue.phone}`}
-              className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg text-sm font-medium hover:bg-muted/80 active:scale-95 transition-all"
-            >
-              <Phone className="w-4 h-4" />
-              {t("callVenue")}
-            </a>
-          )}
+
           {venue.website_url && (
             <a
               href={venue.website_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg text-sm font-medium hover:bg-muted/80 active:scale-95 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
             >
               <Globe className="w-4 h-4" />
-              {t("visitWebsite")}
+              Website
+            </a>
+          )}
+
+          {venue.phone && (
+            <a
+              href={`tel:${venue.phone}`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
+            >
+              <Phone className="w-4 h-4" />
+              {venue.phone}
+            </a>
+          )}
+
+          {venue.email && (
+            <a
+              href={`mailto:${venue.email}`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
+            >
+              <Mail className="w-4 h-4" />
+              Email
             </a>
           )}
         </div>
 
-        {/* Happening Now section */}
+        {/* Happening now */}
         {happening_now.length > 0 && (
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               {t("happeningNow")}
             </h2>
-            <div className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               {happening_now.map((event) => (
                 <Link key={event.id} href={`/events/${event.slug}`}>
                   <Card className="hover:border-red-500/50 border-red-500/30 transition-colors overflow-hidden">
-                    <CardContent className="p-0 flex">
+                    <CardContent className="p-0">
                       {event.image_url && (
                         <img
                           src={event.image_url}
                           alt=""
-                          className="w-24 h-24 object-cover flex-shrink-0"
+                          className="w-full aspect-[2/1] object-cover"
                         />
                       )}
-                      <div className="p-4 flex-1">
-                        <h3 className="font-semibold line-clamp-1">{event.title}</h3>
-                        <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                      <div className="p-4">
+                        <h3 className="font-semibold mb-1">{event.title}</h3>
+                        <p className="text-sm text-red-600 dark:text-red-400">
                           Live now
                         </p>
                       </div>
@@ -378,10 +321,10 @@ export default async function VenueProfilePage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Upcoming Events */}
+        {/* Upcoming events */}
         {upcoming_events.length > 0 && (
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold mb-4">{t("upcomingEvents")}</h2>
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">{t("upcomingEvents")}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {upcoming_events.map((event) => (
                 <Link key={event.id} href={`/events/${event.slug}`}>
@@ -395,11 +338,11 @@ export default async function VenueProfilePage({ params }: PageProps) {
                         />
                       )}
                       <div className="p-4">
-                        <h3 className="font-semibold line-clamp-2">{event.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a", locale)}
-                        </p>
+                        <h3 className="font-semibold mb-2">{event.title}</h3>
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Calendar className="w-4 h-4" />
+                          {formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a", locale as Locale)}
+                        </span>
                       </div>
                     </CardContent>
                   </Card>
@@ -409,143 +352,135 @@ export default async function VenueProfilePage({ params }: PageProps) {
           </section>
         )}
 
-        {/* About section */}
-        {(venue.description || amenities.length > 0) && (
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold mb-4">{t("about")}</h2>
-            {venue.description && (
-              <p className="text-muted-foreground whitespace-pre-wrap">
-                {venue.description}
-              </p>
-            )}
-            {amenities.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-4">
-                {amenities.map(({ key, label }) => {
-                  const Icon = AMENITY_ICONS[key as keyof typeof AMENITY_ICONS];
-                  return (
-                    <span
-                      key={key}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full text-sm"
-                    >
-                      <Icon className="w-4 h-4" />
-                      {label}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
+        {/* No events state */}
+        {upcoming_events.length === 0 && happening_now.length === 0 && (
+          <section className="mb-8 text-center py-8 bg-muted/30 rounded-lg">
+            <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+            <p className="text-muted-foreground">{t("noUpcomingEvents")}</p>
           </section>
         )}
 
-        {/* Operating Hours */}
+        {/* About section */}
+        {venue.description && (
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-3">{t("about")}</h2>
+            <p className="text-muted-foreground whitespace-pre-wrap">{venue.description}</p>
+          </section>
+        )}
+
+        {/* Amenities */}
+        {amenities.length > 0 && (
+          <section className="mb-8">
+            <div className="flex flex-wrap gap-2">
+              {amenities.map((amenity) => (
+                <span
+                  key={amenity.key}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm"
+                >
+                  <amenity.icon className="w-4 h-4" />
+                  {amenity.label}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Operating hours */}
         {venue.operating_hours && (
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
               <Clock className="w-5 h-5" />
               {t("hours")}
             </h2>
-            <div className="space-y-2">
-              {DAY_KEYS.map((day) => {
-                const hours = venue.operating_hours?.[day];
-                const isToday = day === today;
-                return (
-                  <div
-                    key={day}
-                    className={`flex justify-between py-2 px-3 rounded-lg ${
-                      isToday ? "bg-primary/10 font-medium" : ""
-                    }`}
-                  >
-                    <span className="capitalize">{day}</span>
-                    <span className="text-muted-foreground">
-                      {!hours || hours === "closed"
-                        ? t("closedToday")
-                        : `${hours.open} - ${hours.close}`}
-                    </span>
-                  </div>
-                );
-              })}
+            <div className="bg-muted/30 rounded-lg p-4">
+              <div className="grid gap-2">
+                {daysOfWeek.map((day) => {
+                  const hours = venue.operating_hours?.[day];
+                  const today = new Date();
+                  const daLatTime = new Date(today.getTime() + 7 * 60 * 60 * 1000);
+                  const currentDay = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"][daLatTime.getUTCDay()];
+                  const isToday = currentDay === day;
+
+                  return (
+                    <div
+                      key={day}
+                      className={`flex justify-between items-center py-1 px-2 rounded ${
+                        isToday ? "bg-primary/10 font-medium" : ""
+                      }`}
+                    >
+                      <span className={isToday ? "text-primary" : "text-muted-foreground"}>
+                        {dayLabels[day]}
+                        {isToday && " (Today)"}
+                      </span>
+                      <span className={hours === "closed" || !hours ? "text-muted-foreground" : ""}>
+                        {hours === "closed" || !hours
+                          ? "Closed"
+                          : `${hours.open} - ${hours.close}`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </section>
         )}
 
-        {/* Stats */}
+        {/* Activity stats */}
         {(past_events_count > 0 || recent_activity.total_visitors > 0) && (
-          <section className="mt-8">
-            <div className="flex flex-wrap gap-4">
+          <section className="mb-8">
+            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
               {past_events_count > 0 && (
-                <div className="flex-1 min-w-[120px] p-4 bg-muted rounded-lg text-center">
-                  <p className="text-2xl font-bold">{past_events_count}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t("totalEventsHosted", { count: past_events_count })}
-                  </p>
-                </div>
+                <span>
+                  {past_events_count} {t("pastEvents").toLowerCase()}
+                </span>
               )}
               {recent_activity.total_visitors > 0 && (
-                <div className="flex-1 min-w-[120px] p-4 bg-muted rounded-lg text-center">
-                  <p className="text-2xl font-bold">{recent_activity.total_visitors}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t("recentActivity", { count: recent_activity.total_visitors })}
-                  </p>
-                </div>
+                <span>
+                  {t("recentActivity", { count: recent_activity.total_visitors })}
+                </span>
               )}
             </div>
-          </section>
-        )}
-
-        {/* Claim venue banner */}
-        {isUnclaimed && (
-          <section className="mt-8 p-4 border border-dashed rounded-lg">
-            <h3 className="font-semibold">{t("claimVenue")}</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t("claimDescription")}
-            </p>
-          </section>
-        )}
-
-        {/* Empty state */}
-        {upcoming_events.length === 0 && happening_now.length === 0 && (
-          <section className="mt-8 text-center py-12">
-            <Calendar className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground">{t("noUpcomingEvents")}</p>
           </section>
         )}
 
         {/* Social links */}
         {(venue.facebook_url || venue.instagram_url || venue.zalo_url) && (
-          <section className="mt-8 flex gap-4">
-            {venue.facebook_url && (
-              <a
-                href={venue.facebook_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline flex items-center gap-1"
-              >
-                Facebook
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-            {venue.instagram_url && (
-              <a
-                href={venue.instagram_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline flex items-center gap-1"
-              >
-                Instagram
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-            {venue.zalo_url && (
-              <a
-                href={venue.zalo_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline flex items-center gap-1"
-              >
-                Zalo
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
+          <section className="border-t border-border pt-6">
+            <div className="flex gap-4">
+              {venue.facebook_url && (
+                <a
+                  href={venue.facebook_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                >
+                  Facebook
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+              {venue.instagram_url && (
+                <a
+                  href={venue.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                >
+                  Instagram
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+              {venue.zalo_url && (
+                <a
+                  href={venue.zalo_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                >
+                  Zalo
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
           </section>
         )}
       </div>
