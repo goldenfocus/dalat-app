@@ -64,6 +64,9 @@ async function getMoment(id: string): Promise<MomentWithDetails | null> {
 
   if (error || !data) return null;
 
+  // If the event or profile was deleted, treat as not found
+  if (!data.profiles || !data.events) return null;
+
   return data as MomentWithDetails;
 }
 
