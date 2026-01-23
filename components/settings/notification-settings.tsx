@@ -56,6 +56,11 @@ export function NotificationSettings() {
 
   const [mode, setMode] = useState<NotificationMode>("sound_and_vibration");
   const [isPending, startTransition] = useTransition();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch current mode when subscribed
   useEffect(() => {
@@ -90,6 +95,22 @@ export function NotificationSettings() {
       });
     });
   };
+
+  // Show skeleton during hydration to prevent mismatch
+  if (!mounted) {
+    return (
+      <div className="w-full flex items-center justify-between p-4 rounded-lg border border-border bg-muted/30 animate-pulse">
+        <div className="flex items-center gap-3">
+          <div className="w-5 h-5 rounded bg-muted" />
+          <div className="space-y-2">
+            <div className="w-24 h-4 rounded bg-muted" />
+            <div className="w-32 h-3 rounded bg-muted" />
+          </div>
+        </div>
+        <div className="w-11 h-6 rounded-full bg-muted" />
+      </div>
+    );
+  }
 
   // Special message for iOS Safari users - they need to install the PWA first
   if (isIOSSafari) {
