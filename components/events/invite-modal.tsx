@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Send, Loader2, Check, X, UserPlus, Mail, Users } from "lucide-react";
+import { Send, Loader2, Check, X, UserPlus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,7 @@ interface InviteModalProps {
   eventTitle: string;
   eventDescription: string | null;
   startsAt: string;
+  imageUrl?: string | null;
 }
 
 interface InviteResult {
@@ -42,7 +43,7 @@ type Invitee =
   | { type: "email"; email: string; name?: string }
   | { type: "user"; user: UserSearchResult };
 
-export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt }: InviteModalProps) {
+export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt, imageUrl }: InviteModalProps) {
   const t = useTranslations("invite");
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -51,8 +52,15 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
   const [results, setResults] = useState<InviteResult[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Input mode: email entry or username search
-  const [inputMode, setInputMode] = useState<"email" | "username">("email");
+  // Auto-detect input mode: email if contains @domain.tld pattern, username otherwise
+  const isEmailInput = useCallback((value: string) => {
+    // If starts with @ (like @username), it's a username search
+    if (value.startsWith("@")) return false;
+    // If contains email pattern (@something.something), it's email
+    return /[^\s@]+@[^\s@]+\.[^\s@]+/.test(value);
+  }, []);
+
+  const inputMode = isEmailInput(inputValue) ? "email" : "username";
 
   // User search state
   const [userResults, setUserResults] = useState<UserSearchResult[]>([]);
@@ -65,8 +73,8 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
 
   const eventUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/events/${eventSlug}`;
 
-  // Username search is active when in username mode and has input
-  const isUsernameSearch = inputMode === "username" && inputValue.length >= 2;
+  // Username search is active when not typing an email and has 2+ chars
+  const isUsernameSearch = !isEmailInput(inputValue) && inputValue.length >= 2;
 
   // Debounced user search
   useEffect(() => {
@@ -145,9 +153,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
   }, [invitees]);
 
   const handleAddEmails = useCallback(() => {
-    // If in username mode, don't add as email
-    if (inputMode === "username") return;
     if (!inputValue.trim()) return;
+    // Only add if it looks like an email
+    if (!isEmailInput(inputValue)) return;
 
     const newEmails = parseEmails(inputValue);
     const existingEmails = new Set(
@@ -162,7 +170,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
     }
     setInputValue("");
     setError(null);
-  }, [inputValue, invitees, parseEmails, inputMode]);
+  }, [inputValue, invitees, parseEmails, isEmailInput]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     // Handle dropdown navigation
@@ -201,7 +209,24 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
   };
 
   const handleSendInvites = async () => {
-    if (invitees.length === 0) {
+    // Auto-add any email still in the input before sending
+    let finalInvitees = [...invitees];
+    if (isEmailInput(inputValue) && inputValue.trim()) {
+      const newEmails = parseEmails(inputValue);
+      const existingEmails = new Set(
+        finalInvitees
+          .filter((inv): inv is Invitee & { type: "email" } => inv.type === "email")
+          .map(inv => inv.email)
+      );
+      const uniqueNew = newEmails.filter(inv => !existingEmails.has(inv.email));
+      if (uniqueNew.length > 0) {
+        finalInvitees = [...finalInvitees, ...uniqueNew];
+        setInvitees(finalInvitees);
+      }
+      setInputValue("");
+    }
+
+    if (finalInvitees.length === 0) {
       setError(t("noInvitees"));
       return;
     }
@@ -211,10 +236,10 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
     setResults([]);
 
     // Separate email and user invitees
-    const emailInvitees = invitees
+    const emailInvitees = finalInvitees
       .filter((inv): inv is Invitee & { type: "email" } => inv.type === "email")
       .map(inv => ({ email: inv.email, name: inv.name }));
-    const userInvitees = invitees
+    const userInvitees = finalInvitees
       .filter((inv): inv is Invitee & { type: "user" } => inv.type === "user")
       .map(inv => ({ userId: inv.user.id, username: inv.user.username }));
 
@@ -271,7 +296,6 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
       setError(null);
       setUserResults([]);
       setShowDropdown(false);
-      setInputMode("email");
     }
   };
 
@@ -307,43 +331,8 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
               eventTitle={eventTitle}
               eventDescription={eventDescription}
               startsAt={startsAt}
+              imageUrl={imageUrl}
             />
-          </div>
-
-          {/* Mode tabs */}
-          <div className="flex rounded-lg bg-muted p-1 gap-1">
-            <button
-              type="button"
-              onClick={() => {
-                setInputMode("email");
-                setInputValue("");
-                setShowDropdown(false);
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                inputMode === "email"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Mail className="w-4 h-4" />
-              {t("byEmail")}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setInputMode("username");
-                setInputValue("");
-                inputRef.current?.focus();
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                inputMode === "username"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Users className="w-4 h-4" />
-              {t("findMember")}
-            </button>
           </div>
 
           {/* Input section */}
@@ -354,7 +343,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
                   ref={inputRef}
                   id="invite-input"
                   type="text"
-                  placeholder={inputMode === "email" ? t("emailPlaceholder") : t("usernamePlaceholder")}
+                  placeholder={t("smartPlaceholder")}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -365,7 +354,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
 
                     // Delay to allow click on dropdown
                     setTimeout(() => {
-                      if (!showDropdown && inputMode === "email") handleAddEmails();
+                      if (!showDropdown && isEmailInput(inputValue)) handleAddEmails();
                     }, 150);
                   }}
                   disabled={sending}

@@ -578,6 +578,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               eventTitle={event.title}
               eventDescription={event.description}
               startsAt={event.starts_at}
+              imageUrl={event.image_url}
             />
             {canManageEvent && (
               <>
@@ -586,6 +587,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   eventTitle={event.title}
                   eventDescription={event.description}
                   startsAt={event.starts_at}
+                  imageUrl={event.image_url}
                 />
                 <EventActions eventId={event.id} eventSlug={event.slug} />
               </>

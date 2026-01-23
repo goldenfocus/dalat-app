@@ -10,6 +10,7 @@ interface EventShareButtonProps {
   eventTitle: string;
   eventDescription: string | null;
   startsAt: string;
+  imageUrl?: string | null;
 }
 
 export function EventShareButton({
@@ -17,6 +18,7 @@ export function EventShareButton({
   eventTitle,
   eventDescription,
   startsAt,
+  imageUrl,
 }: EventShareButtonProps) {
   const t = useTranslations("invite");
   const locale = useLocale();
@@ -54,9 +56,39 @@ export function EventShareButton({
   // Build share message in user's language
   const shareMessage = `${eventUrl}\n🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`;
 
+  // Fetch image as blob for sharing
+  const fetchImageBlob = async (): Promise<Blob | null> => {
+    if (!imageUrl) return null;
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) return null;
+      return await response.blob();
+    } catch {
+      return null;
+    }
+  };
+
   const handleShare = async () => {
     if (canShare) {
       try {
+        // Try to share with image if available and supported
+        if (imageUrl && navigator.canShare) {
+          const imageBlob = await fetchImageBlob();
+          if (imageBlob) {
+            const file = new File([imageBlob], "event.jpg", { type: imageBlob.type });
+            const shareData = {
+              title: eventTitle,
+              text: `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
+              url: eventUrl,
+              files: [file],
+            };
+            if (navigator.canShare(shareData)) {
+              await navigator.share(shareData);
+              return;
+            }
+          }
+        }
+        // Fallback: share without image
         await navigator.share({
           title: eventTitle,
           text: `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
@@ -69,13 +101,37 @@ export function EventShareButton({
       }
     }
 
-    // Fallback: copy full share message to clipboard
+    // Fallback: copy to clipboard (text + image if supported)
     try {
+      if (imageUrl && navigator.clipboard.write) {
+        const imageBlob = await fetchImageBlob();
+        if (imageBlob) {
+          // Copy both text and image
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              "text/plain": new Blob([shareMessage], { type: "text/plain" }),
+              [imageBlob.type]: imageBlob,
+            }),
+          ]);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+          return;
+        }
+      }
+      // Fallback: copy text only
       await navigator.clipboard.writeText(shareMessage);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
+      // Last resort: try text-only copy
+      try {
+        await navigator.clipboard.writeText(shareMessage);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        console.error("Text copy also failed");
+      }
     }
   };
 
