@@ -4,7 +4,8 @@ import { ArrowLeft, Settings } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
-import type { EventSettings } from "@/lib/types";
+import { hasRoleLevel } from "@/lib/types";
+import type { EventSettings, UserRole } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -34,8 +35,19 @@ export default async function EventSettingsPage({ params }: PageProps) {
     notFound();
   }
 
-  // Check if user is the creator
-  if (event.created_by !== user.id) {
+  // Get user's role for admin check
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const userRole = (profile?.role as UserRole) || null;
+  const isAdmin = userRole ? hasRoleLevel(userRole, "admin") : false;
+  const isCreator = event.created_by === user.id;
+
+  // Check if user is the creator or admin
+  if (!isCreator && !isAdmin) {
     redirect(`/events/${slug}`);
   }
 

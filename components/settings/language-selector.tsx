@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -19,10 +19,12 @@ export function LanguageSelector({ userId }: LanguageSelectorProps) {
   // Use URL locale (from next-intl) instead of profile.locale for consistency
   const currentLocale = useLocale() as Locale;
   const [isPending, startTransition] = useTransition();
+  const [pendingLocale, setPendingLocale] = useState<Locale | null>(null);
 
   const changeLocale = (newLocale: Locale) => {
     if (newLocale === currentLocale) return;
 
+    setPendingLocale(newLocale);
     const supabase = createClient();
     startTransition(async () => {
       // Update profile in database
@@ -44,7 +46,7 @@ export function LanguageSelector({ userId }: LanguageSelectorProps) {
     <div className="grid grid-cols-3 gap-3">
       {SUPPORTED_LOCALES.map((l) => {
         const isSelected = currentLocale === l;
-        const isChanging = isPending && currentLocale === l;
+        const isChanging = isPending && pendingLocale === l;
         return (
           <button
             key={l}
