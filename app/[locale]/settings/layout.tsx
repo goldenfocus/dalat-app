@@ -1,17 +1,21 @@
 import { Link } from "@/lib/i18n/routing";
 import { ArrowLeft, Settings } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AuthButton } from "@/components/auth-button";
 import { SettingsTabs } from "@/components/settings/settings-tabs";
 
 // Force dynamic rendering to ensure correct locale translations
 export const dynamic = "force-dynamic";
 
-export default async function SettingsLayout({
-  children,
-}: {
+interface Props {
   children: React.ReactNode;
-}) {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function SettingsLayout({ children, params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const t = await getTranslations("settings");
 
   return (

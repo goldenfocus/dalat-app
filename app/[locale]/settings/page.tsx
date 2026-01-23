@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getEffectiveUser } from "@/lib/god-mode";
 
 // Force dynamic rendering to ensure correct locale translations
@@ -13,9 +13,15 @@ import { NotificationSettings } from "@/components/settings/notification-setting
 import { PasswordSettings } from "@/components/settings/password-settings";
 import { SignOutButton } from "@/components/settings/sign-out-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Locale } from "@/lib/types";
 
-export default async function SettingsPage() {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function SettingsPage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const t = await getTranslations("settings");
   const { user, profile, godMode } = await getEffectiveUser();
 
