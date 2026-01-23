@@ -5,6 +5,7 @@ import { Link } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { Play } from "lucide-react";
+import { cloudflareLoader } from "@/lib/image-cdn";
 import type { MomentContentType } from "@/lib/types";
 
 // Minimal moment shape needed for display
@@ -52,11 +53,12 @@ export function MomentCard({ moment, from }: MomentCardProps) {
             </>
           ) : (
             <Image
+              loader={cloudflareLoader}
               src={moment.media_url}
               alt={moment.text_content || "Moment photo"}
               fill
               className="object-cover transition-transform group-hover:scale-105"
-              sizes="(max-width: 640px) 33vw, 200px"
+              sizes="(max-width: 640px) 50vw, 200px"
             />
           )
         )}

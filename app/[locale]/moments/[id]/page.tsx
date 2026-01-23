@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import Image from "next/image";
+import { cloudflareLoader } from "@/lib/image-cdn";
 import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, MapPin } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -17,6 +18,7 @@ import { generateMomentMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/structured-data";
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
+import { ExpandableMomentImage } from "@/components/moments/expandable-moment-image";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { hasRoleLevel, type Moment, type Event, type Profile, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
@@ -344,13 +346,9 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
                 playsInline
               />
             ) : (
-              <Image
+              <ExpandableMomentImage
                 src={moment.media_url}
                 alt={momentTranslations.textContent || `Moment from ${event.title}`}
-                fill
-                className="object-contain"
-                sizes="(max-width: 672px) 100vw, 672px"
-                priority
               />
             )}
 
@@ -468,6 +466,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
                 <div className="flex gap-4">
                   {event.image_url && (
                     <Image
+                      loader={cloudflareLoader}
                       src={event.image_url}
                       alt={event.title || "Event image"}
                       width={80}
