@@ -623,6 +623,8 @@
     "inviteGuests": "Jemput Tetamu",
     "inviteDescription": "Hantar jemputan e-mel atau kongsi melalui aplikasi mesej",
     "shareVia": "Kongsi melalui",
+    "byEmail": "Melalui e-mel",
+    "findMember": "Cari ahli",
     "orSendEmail": "atau hantar jemputan e-mel",
     "emailAddresses": "Alamat e-mel",
     "emailPlaceholder": "Masukkan alamat e-mel",

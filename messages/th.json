@@ -623,6 +623,8 @@
     "inviteGuests": "เชิญแขก",
     "inviteDescription": "ส่งคำเชิญทางอีเมลหรือแชร์ผ่านแอปส่งข้อความ",
     "shareVia": "แชร์ผ่าน",
+    "byEmail": "ทางอีเมล",
+    "findMember": "ค้นหาสมาชิก",
     "orSendEmail": "หรือส่งคำเชิญทางอีเมล",
     "emailAddresses": "ที่อยู่อีเมล",
     "emailPlaceholder": "ใส่ที่อยู่อีเมล",

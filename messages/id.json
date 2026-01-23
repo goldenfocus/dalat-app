@@ -623,6 +623,8 @@
     "inviteGuests": "Undang Tamu",
     "inviteDescription": "Kirim undangan email atau bagikan melalui aplikasi pesan",
     "shareVia": "Bagikan via",
+    "byEmail": "Via email",
+    "findMember": "Cari anggota",
     "orSendEmail": "atau kirim undangan email",
     "emailAddresses": "Alamat email",
     "emailPlaceholder": "Masukkan alamat email",

@@ -623,6 +623,8 @@
     "inviteGuests": "Gäste einladen",
     "inviteDescription": "Sende E-Mail-Einladungen oder teile über Messenger",
     "shareVia": "Teilen über",
+    "byEmail": "Per E-Mail",
+    "findMember": "Mitglied suchen",
     "orSendEmail": "oder E-Mail-Einladungen senden",
     "emailAddresses": "E-Mail-Adressen",
     "emailPlaceholder": "E-Mail-Adressen eingeben",
