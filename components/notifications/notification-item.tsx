@@ -43,13 +43,13 @@ function getNotificationIcon(type: NotificationType) {
 export function NotificationItem({ notification, onRead }: NotificationItemProps) {
   const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
-  const handleClick = async () => {
-    // Mark as read first and wait for it to complete before navigating
+  const handleClick = () => {
+    // Fire mark-as-read in background (don't wait - navigate immediately)
     if (!notification.read && onRead) {
-      await onRead(notification.id);
+      onRead(notification.id);
     }
 
-    // Navigate to primary action URL if available
+    // Navigate immediately
     if (notification.primary_action_url) {
       window.location.href = notification.primary_action_url;
     }
