@@ -263,6 +263,7 @@ export default async function ProfilePage({ params }: PageProps) {
             src={profile.avatar_url}
             alt={profile.display_name || profile.username || ""}
             size="xl"
+            expandable
           />
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
