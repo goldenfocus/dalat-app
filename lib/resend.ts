@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { getRandomInspiringFooter } from "./notifications/inspiring-footers";
 
 // Lazy-load the Resend client to avoid build errors when API key isn't set
 let resend: Resend | null = null;
@@ -54,12 +55,15 @@ export async function sendBulkEventInvites(
   const errors: string[] = [];
 
   for (const batch of batches) {
-    const emails = batch.map((contact) => ({
-      from: "Dalat Events <events@dalat.app>",
-      to: contact.email,
-      subject: `You're invited: ${event.title}`,
-      html: generateEventInviteHtml(contact, event, baseUrl),
-    }));
+    const emails = batch.map((contact) => {
+      const inspiringFooter = getRandomInspiringFooter();
+      return {
+        from: "Dalat Events <events@dalat.app>",
+        to: contact.email,
+        subject: `🎉 You're invited: ${event.title}`,
+        html: generateEventInviteHtml(contact, event, baseUrl, inspiringFooter),
+      };
+    });
 
     try {
       const result = await getResendClient().batch.send(emails);
@@ -93,11 +97,12 @@ export async function sendEventInvite(
   baseUrl: string
 ) {
   try {
+    const inspiringFooter = getRandomInspiringFooter();
     const result = await getResendClient().emails.send({
       from: "Dalat Events <events@dalat.app>",
       to: contact.email,
-      subject: `You're invited: ${event.title}`,
-      html: generateEventInviteHtml(contact, event, baseUrl),
+      subject: `🎉 You're invited: ${event.title}`,
+      html: generateEventInviteHtml(contact, event, baseUrl, inspiringFooter),
     });
 
     if (result.error) {
@@ -120,7 +125,8 @@ export async function sendEventInvite(
 function generateEventInviteHtml(
   contact: EventInviteData,
   event: EventDetails,
-  baseUrl: string
+  baseUrl: string,
+  inspiringFooter: string
 ): string {
   const inviteUrl = `${baseUrl}/invite/${contact.token}`;
   const eventDate = new Date(event.date).toLocaleDateString("en-US", {
@@ -168,9 +174,14 @@ function generateEventInviteHtml(
     </p>
   </div>
 
-  <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 20px;">
-    Sent via Dalat Events
-  </p>
+  <div style="text-align: center; margin-top: 20px;">
+    <p style="font-size: 13px; color: #9ca3af; font-style: italic; margin: 0 0 8px 0;">
+      "${inspiringFooter}"
+    </p>
+    <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+      Sent via <a href="https://dalat.app" style="color: #667eea; text-decoration: none;">ĐàLạt.app</a>
+    </p>
+  </div>
 </body>
 </html>
   `.trim();

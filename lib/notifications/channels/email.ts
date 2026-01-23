@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import type { EmailNotificationContent, ChannelResult } from '../types';
+import { getRandomInspiringFooter } from '../inspiring-footers';
 
 // Lazy-load the Resend client
 let resend: Resend | null = null;
@@ -39,8 +40,9 @@ export async function sendEmailNotification(
   }
 
   try {
-    const html = content.html || generateDefaultEmailHtml(content);
-    const text = content.text || generateDefaultEmailText(content);
+    const inspiringFooter = getRandomInspiringFooter();
+    const html = content.html || generateDefaultEmailHtml(content, inspiringFooter);
+    const text = content.text || generateDefaultEmailText(content, inspiringFooter);
 
     const result = await client.emails.send({
       from: 'Dalat Events <events@dalat.app>',
@@ -106,13 +108,16 @@ export async function sendBulkEmails(
   const errors: string[] = [];
 
   for (const batch of batches) {
-    const emailRequests = batch.map((email) => ({
-      from: 'Dalat Events <events@dalat.app>',
-      to: email.to,
-      subject: email.content.subject,
-      html: email.content.html || generateDefaultEmailHtml(email.content),
-      text: email.content.text || generateDefaultEmailText(email.content),
-    }));
+    const emailRequests = batch.map((email) => {
+      const inspiringFooter = getRandomInspiringFooter();
+      return {
+        from: 'Dalat Events <events@dalat.app>',
+        to: email.to,
+        subject: email.content.subject,
+        html: email.content.html || generateDefaultEmailHtml(email.content, inspiringFooter),
+        text: email.content.text || generateDefaultEmailText(email.content, inspiringFooter),
+      };
+    });
 
     try {
       const result = await client.batch.send(emailRequests);
@@ -139,7 +144,7 @@ export async function sendBulkEmails(
 /**
  * Generate default HTML email from notification content.
  */
-function generateDefaultEmailHtml(content: EmailNotificationContent): string {
+function generateDefaultEmailHtml(content: EmailNotificationContent, inspiringFooter: string): string {
   const primaryButton = content.primaryActionUrl && content.primaryActionLabel
     ? `<a href="${content.primaryActionUrl}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin-right: 10px;">${content.primaryActionLabel}</a>`
     : '';
@@ -171,9 +176,14 @@ function generateDefaultEmailHtml(content: EmailNotificationContent): string {
     ` : ''}
   </div>
 
-  <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 20px;">
-    Sent via Dalat Events
-  </p>
+  <div style="text-align: center; margin-top: 20px;">
+    <p style="font-size: 13px; color: #9ca3af; font-style: italic; margin: 0 0 8px 0;">
+      "${inspiringFooter}"
+    </p>
+    <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+      Sent via <a href="https://dalat.app" style="color: #667eea; text-decoration: none;">ĐàLạt.app</a>
+    </p>
+  </div>
 </body>
 </html>
   `.trim();
@@ -183,7 +193,7 @@ function generateDefaultEmailHtml(content: EmailNotificationContent): string {
  * Generate plain text email from notification content.
  * Important for email deliverability - spam filters prefer emails with text alternatives.
  */
-function generateDefaultEmailText(content: EmailNotificationContent): string {
+function generateDefaultEmailText(content: EmailNotificationContent, inspiringFooter: string): string {
   const lines: string[] = [
     content.title,
     '',
@@ -199,7 +209,7 @@ function generateDefaultEmailText(content: EmailNotificationContent): string {
     lines.push(`${content.secondaryActionLabel || 'Alternative'}: ${content.secondaryActionUrl}`);
   }
 
-  lines.push('', '---', 'Sent via Dalat Events (https://dalat.app)');
+  lines.push('', '---', `"${inspiringFooter}"`, '', 'Sent via ĐàLạt.app (https://dalat.app)');
 
   return lines.join('\n');
 }
