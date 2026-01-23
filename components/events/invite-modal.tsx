@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { ShareButtons } from "./share-buttons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { InviteSendingAnimation } from "./invite-sending-animation";
+import { InviteCelebration } from "./invite-celebration";
 
 interface InviteModalProps {
   eventSlug: string;
@@ -51,6 +52,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
   const [sending, setSending] = useState(false);
   const [results, setResults] = useState<InviteResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Auto-detect input mode: email if contains @domain.tld pattern, username otherwise
   const isEmailInput = useCallback((value: string) => {
@@ -279,6 +281,17 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
         return false;
       }));
 
+      // Show celebration if any invites succeeded
+      const sentSuccessfully = data.results.filter((r: InviteResult) => r.success).length;
+      if (sentSuccessfully > 0) {
+        // Small delay to let the animation complete before showing celebration
+        setTimeout(() => {
+          setSending(false);
+          setShowCelebration(true);
+        }, 1500);
+        return; // Don't set sending to false yet
+      }
+
     } catch {
       setError(t("sendFailed"));
     } finally {
@@ -296,7 +309,14 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
       setError(null);
       setUserResults([]);
       setShowDropdown(false);
+      setShowCelebration(false);
     }
+  };
+
+  // Handle celebration complete - close the modal
+  const handleCelebrationComplete = () => {
+    setShowCelebration(false);
+    setOpen(false);
   };
 
   const successCount = results.filter(r => r.success).length;
@@ -492,6 +512,14 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
         </div>
         )}
       </DialogContent>
+
+      {/* Celebration overlay */}
+      {showCelebration && successCount > 0 && (
+        <InviteCelebration
+          successCount={successCount}
+          onComplete={handleCelebrationComplete}
+        />
+      )}
     </Dialog>
   );
 }
