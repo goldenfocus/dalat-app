@@ -1055,5 +1055,16 @@
     "eventCount": "{count}个活动",
     "eventsCount": "{count}个活动",
     "noEventsOnThisDay": "今天没有活动"
+  },
+  "upcomingEvents": {
+    "title": "大叻即将举行的活动",
+    "titlePage": "即将举行的活动 - 第 {page} 页",
+    "description": "浏览越南大叻即将举行的所有活动、工作坊和聚会。",
+    "breadcrumb": "即将举行的活动",
+    "backToHome": "返回",
+    "noEvents": "暂无即将举行的活动",
+    "eventCount": "{count, plural, one {# 个即将举行的活动} other {# 个即将举行的活动}}",
+    "createEvent": "创建活动",
+    "seeAll": "查看所有即将举行的活动"
   }
 }

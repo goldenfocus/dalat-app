@@ -16,6 +16,7 @@ import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { getEffectiveUser } from "@/lib/god-mode";
 import { GodModeIndicator } from "@/components/god-mode-indicator";
 import { QueryProvider } from "@/lib/providers/query-provider";
+import { LocalePreloader } from "@/components/locale-preloader";
 
 const siteUrl = "https://dalat.app";
 
@@ -82,6 +83,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           disableTransitionOnChange
         >
           <ScrollRestorationProvider>
+            <LocalePreloader />
             <div className="min-h-screen flex flex-col">
               <PerformanceMonitor />
               <BadgeClearer />

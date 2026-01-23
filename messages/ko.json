@@ -1055,5 +1055,16 @@
     "eventCount": "{count}개 이벤트",
     "eventsCount": "{count}개 이벤트",
     "noEventsOnThisDay": "이 날에는 이벤트가 없습니다"
+  },
+  "upcomingEvents": {
+    "title": "달랏의 예정된 이벤트",
+    "titlePage": "예정된 이벤트 - 페이지 {page}",
+    "description": "베트남 달랏에서 예정된 모든 이벤트, 워크샵, 모임을 둘러보세요.",
+    "breadcrumb": "예정된 이벤트",
+    "backToHome": "뒤로",
+    "noEvents": "예정된 이벤트가 아직 없습니다",
+    "eventCount": "{count, plural, one {# 개의 예정된 이벤트} other {# 개의 예정된 이벤트}}",
+    "createEvent": "이벤트 만들기",
+    "seeAll": "모든 예정된 이벤트 보기"
   }
 }

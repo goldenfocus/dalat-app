@@ -3,12 +3,15 @@
 import { useState, lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Dynamic import to exclude DevTools from production bundle (~26KB savings)
-const ReactQueryDevtools = lazy(() =>
-  import("@tanstack/react-query-devtools").then((mod) => ({
-    default: mod.ReactQueryDevtools,
-  }))
-);
+// Only import DevTools in development (completely excluded from production build)
+const ReactQueryDevtools =
+  process.env.NODE_ENV === "development"
+    ? lazy(() =>
+        import("@tanstack/react-query-devtools").then((mod) => ({
+          default: mod.ReactQueryDevtools,
+        }))
+      )
+    : null;
 
 /**
  * TanStack Query provider for client-side data caching.
@@ -47,7 +50,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {process.env.NODE_ENV === "development" && (
+      {ReactQueryDevtools && (
         <Suspense fallback={null}>
           <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
         </Suspense>

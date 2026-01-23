@@ -3,29 +3,59 @@
 
 export const DALAT_TIMEZONE = "Asia/Ho_Chi_Minh";
 
-import { formatInTimeZone, toZonedTime, fromZonedTime } from "date-fns-tz";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import type { Locale as DateFnsLocale } from "date-fns";
-import { enUS, vi, ko, zhCN, ru, fr, ja, ms, th, de, es, id } from "date-fns/locale";
 import type { Locale } from "@/lib/types";
 
-// Map our locale codes to date-fns locale objects
-const dateFnsLocales: Record<Locale, DateFnsLocale> = {
-  en: enUS,
-  vi: vi,
-  ko: ko,
-  zh: zhCN,
-  ru: ru,
-  fr: fr,
-  ja: ja,
-  ms: ms,
-  th: th,
-  de: de,
-  es: es,
-  id: id,
+// Only import English locale statically (most common fallback)
+// Other locales are dynamically imported on-demand to reduce bundle size by ~100KB
+import { enUS } from "date-fns/locale";
+
+// Cache for dynamically loaded locales
+const localeCache: Partial<Record<Locale, DateFnsLocale>> = {
+  en: enUS, // Pre-loaded
 };
 
+// Dynamic locale loaders - these are code-split by webpack/turbopack
+const localeLoaders: Record<Locale, () => Promise<DateFnsLocale>> = {
+  en: async () => enUS,
+  vi: async () => (await import("date-fns/locale/vi")).vi,
+  ko: async () => (await import("date-fns/locale/ko")).ko,
+  zh: async () => (await import("date-fns/locale/zh-CN")).zhCN,
+  ru: async () => (await import("date-fns/locale/ru")).ru,
+  fr: async () => (await import("date-fns/locale/fr")).fr,
+  ja: async () => (await import("date-fns/locale/ja")).ja,
+  ms: async () => (await import("date-fns/locale/ms")).ms,
+  th: async () => (await import("date-fns/locale/th")).th,
+  de: async () => (await import("date-fns/locale/de")).de,
+  es: async () => (await import("date-fns/locale/es")).es,
+  id: async () => (await import("date-fns/locale/id")).id,
+};
+
+/**
+ * Get date-fns locale object (async for dynamic loading).
+ * Returns cached locale if available, otherwise loads dynamically.
+ */
+export async function loadDateFnsLocale(locale: Locale): Promise<DateFnsLocale> {
+  if (localeCache[locale]) {
+    return localeCache[locale]!;
+  }
+
+  try {
+    const loadedLocale = await localeLoaders[locale]();
+    localeCache[locale] = loadedLocale;
+    return loadedLocale;
+  } catch {
+    return enUS;
+  }
+}
+
+/**
+ * Get date-fns locale synchronously (uses cache, falls back to English).
+ * For best results, call loadDateFnsLocale first to warm the cache.
+ */
 export function getDateFnsLocale(locale: Locale): DateFnsLocale {
-  return dateFnsLocales[locale] || enUS;
+  return localeCache[locale] || enUS;
 }
 
 /**

@@ -1057,5 +1057,16 @@
     "eventCount": "{count} evento",
     "eventsCount": "{count} eventos",
     "noEventsOnThisDay": "No hay eventos este día"
+  },
+  "upcomingEvents": {
+    "title": "Próximos Eventos en Đà Lạt",
+    "titlePage": "Próximos Eventos - Página {page}",
+    "description": "Explora todos los próximos eventos, talleres y reuniones en Đà Lạt, Vietnam.",
+    "breadcrumb": "Próximos Eventos",
+    "backToHome": "Volver",
+    "noEvents": "Aún no hay próximos eventos",
+    "eventCount": "{count, plural, one {# próximo evento} other {# próximos eventos}}",
+    "createEvent": "Crear un evento",
+    "seeAll": "Ver todos los próximos eventos"
   }
 }

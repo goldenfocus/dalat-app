@@ -1055,5 +1055,16 @@
     "eventCount": "{count} acara",
     "eventsCount": "{count} acara",
     "noEventsOnThisDay": "Tidak ada acara di hari ini"
+  },
+  "upcomingEvents": {
+    "title": "Acara Mendatang di Đà Lạt",
+    "titlePage": "Acara Mendatang - Halaman {page}",
+    "description": "Jelajahi semua acara, lokakarya, dan pertemuan mendatang di Đà Lạt, Vietnam.",
+    "breadcrumb": "Acara Mendatang",
+    "backToHome": "Kembali",
+    "noEvents": "Belum ada acara mendatang",
+    "eventCount": "{count, plural, one {# acara mendatang} other {# acara mendatang}}",
+    "createEvent": "Buat acara",
+    "seeAll": "Lihat semua acara mendatang"
   }
 }
