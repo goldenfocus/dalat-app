@@ -351,6 +351,8 @@
     "avatarDialog": {
       "title": "AI 아바타 만들기",
       "description": "AI 생성 아바타의 스타일을 선택하세요",
+      "generatingTitle": "아바타 생성 중",
+      "generatingDescription": "아바타를 만들고 있어요...",
       "generate": "아바타 생성",
       "customPlaceholder": "원하는 아바타를 설명하세요... (예: 보라색 모자를 쓴 친근한 마법사, 꽃과 함께 있는 우주비행사)",
       "customHint": "팁: 반짝이 버튼으로 설명을 개선하세요",
@@ -628,6 +630,7 @@
     "orSendEmail": "또는 이메일 초대 보내기",
     "emailAddresses": "이메일 주소",
     "emailPlaceholder": "이메일 주소 입력",
+    "smartPlaceholder": "이메일 또는 @사용자명",
     "emailHint": "여러 이메일을 붙여넣기 (쉼표, 공백 또는 줄바꿈으로 구분)",
     "add": "추가",
     "noEmails": "최소 하나의 이메일 주소를 추가해 주세요",

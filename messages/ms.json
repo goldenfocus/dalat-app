@@ -351,6 +351,8 @@
     "avatarDialog": {
       "title": "Cipta Avatar AI",
       "description": "Pilih gaya untuk avatar yang dijana AI",
+      "generatingTitle": "Mencipta Avatar",
+      "generatingDescription": "Sedang mencipta avatar anda...",
       "generate": "Jana Avatar",
       "customPlaceholder": "Huraikan avatar ideal anda... (contoh: ahli sihir mesra dengan topi ungu, angkasawan dengan bunga)",
       "customHint": "Petua: Gunakan butang berkilau untuk meningkatkan penerangan anda",
@@ -628,6 +630,7 @@
     "orSendEmail": "atau hantar jemputan e-mel",
     "emailAddresses": "Alamat e-mel",
     "emailPlaceholder": "Masukkan alamat e-mel",
+    "smartPlaceholder": "E-mel atau @nama pengguna",
     "emailHint": "Tampal berbilang e-mel (dipisahkan dengan koma, ruang atau baris baru)",
     "add": "Tambah",
     "noEmails": "Sila tambah sekurang-kurangnya satu alamat e-mel",

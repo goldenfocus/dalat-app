@@ -351,6 +351,8 @@
     "avatarDialog": {
       "title": "创建AI头像",
       "description": "为AI生成的头像选择一种风格",
+      "generatingTitle": "正在创建头像",
+      "generatingDescription": "正在为你生成头像...",
       "generate": "生成头像",
       "customPlaceholder": "描述你理想的头像... (例如: 戴紫色帽子的友善巫师、手持鲜花的宇航员)",
       "customHint": "提示: 使用闪光按钮来改善你的描述",
@@ -628,6 +630,7 @@
     "orSendEmail": "或发送邮件邀请",
     "emailAddresses": "邮箱地址",
     "emailPlaceholder": "输入邮箱地址",
+    "smartPlaceholder": "邮箱或 @用户名",
     "emailHint": "粘贴多个邮箱（用逗号、空格或换行分隔）",
     "add": "添加",
     "noEmails": "请至少添加一个邮箱地址",

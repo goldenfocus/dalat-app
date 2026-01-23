@@ -362,6 +362,8 @@
     "avatarDialog": {
       "title": "Tạo AI Avatar",
       "description": "Chọn phong cách cho avatar AI của bạn",
+      "generatingTitle": "Đang tạo Avatar",
+      "generatingDescription": "Đang tạo avatar cho bạn...",
       "generate": "Tạo Avatar",
       "customPlaceholder": "Mô tả avatar lý tưởng của bạn... (ví dụ: phù thủy thân thiện với mũ tím, phi hành gia với hoa)",
       "customHint": "Mẹo: Dùng nút lấp lánh để AI cải thiện mô tả của bạn",
@@ -646,6 +648,7 @@
     "orSendEmail": "hoặc gửi email mời",
     "emailAddresses": "Địa chỉ email",
     "emailPlaceholder": "Nhập địa chỉ email",
+    "smartPlaceholder": "Email hoặc @tên người dùng",
     "emailHint": "Dán nhiều email (phân cách bằng dấu phẩy, dấu cách hoặc xuống dòng)",
     "add": "Thêm",
     "noEmails": "Vui lòng thêm ít nhất một địa chỉ email",

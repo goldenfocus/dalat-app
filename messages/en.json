@@ -438,6 +438,8 @@
     "avatarDialog": {
       "title": "Create AI Avatar",
       "description": "Choose a style for your AI-generated avatar",
+      "generatingTitle": "Creating Avatar",
+      "generatingDescription": "Bringing your avatar to life...",
       "generate": "Generate Avatar",
       "customPlaceholder": "Describe your ideal avatar... (e.g., a friendly wizard with a purple hat, an astronaut with flowers)",
       "customHint": "Tip: Use the sparkles button to enhance your description",
@@ -743,6 +745,7 @@
     "findMember": "Find member",
     "emailPlaceholder": "Enter email addresses",
     "usernamePlaceholder": "Search by name or username",
+    "smartPlaceholder": "Email or @username",
     "emailHint": "Paste multiple emails (comma, space, or newline separated)",
     "usernameHint": "Type at least 2 characters to search",
     "add": "Add",

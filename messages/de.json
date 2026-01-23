@@ -351,6 +351,8 @@
     "avatarDialog": {
       "title": "KI-Avatar erstellen",
       "description": "Wähle einen Stil für deinen KI-generierten Avatar",
+      "generatingTitle": "Avatar wird erstellt",
+      "generatingDescription": "Dein Avatar wird erstellt...",
       "generate": "Avatar generieren",
       "customPlaceholder": "Beschreibe deinen idealen Avatar... (z.B. ein freundlicher Zauberer mit lila Hut, ein Astronaut mit Blumen)",
       "customHint": "Tipp: Nutze den Funkel-Button, um deine Beschreibung zu verbessern",
@@ -628,6 +630,7 @@
     "orSendEmail": "oder E-Mail-Einladungen senden",
     "emailAddresses": "E-Mail-Adressen",
     "emailPlaceholder": "E-Mail-Adressen eingeben",
+    "smartPlaceholder": "E-Mail oder @Benutzername",
     "emailHint": "Mehrere E-Mails einfügen (getrennt durch Komma, Leerzeichen oder Zeilenumbruch)",
     "add": "Hinzufügen",
     "noEmails": "Bitte füge mindestens eine E-Mail-Adresse hinzu",

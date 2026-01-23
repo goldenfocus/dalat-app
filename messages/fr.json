@@ -378,6 +378,8 @@
     "avatarDialog": {
       "title": "Créer un avatar IA",
       "description": "Choisissez un style pour votre avatar généré par IA",
+      "generatingTitle": "Création de l'avatar",
+      "generatingDescription": "Nous créons votre avatar...",
       "generate": "Générer l'avatar",
       "customPlaceholder": "Décrivez votre avatar idéal... (ex: un magicien sympathique avec un chapeau violet, un astronaute avec des fleurs)",
       "customHint": "Astuce: Utilisez le bouton étincelles pour améliorer votre description",
@@ -655,6 +657,7 @@
     "orSendEmail": "ou envoyer par email",
     "emailAddresses": "Adresses email",
     "emailPlaceholder": "Entrez les adresses email",
+    "smartPlaceholder": "Email ou @pseudo",
     "emailHint": "Collez plusieurs emails (séparés par virgule, espace ou retour à la ligne)",
     "add": "Ajouter",
     "noEmails": "Veuillez ajouter au moins une adresse email",

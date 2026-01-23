@@ -351,6 +351,8 @@
     "avatarDialog": {
       "title": "AIアバターを作成",
       "description": "AI生成アバターのスタイルを選択してください",
+      "generatingTitle": "アバターを作成中",
+      "generatingDescription": "アバターを作成しています...",
       "generate": "アバターを生成",
       "customPlaceholder": "理想のアバターを説明してください... (例: 紫の帽子をかぶった親しみやすい魔法使い、花を持った宇宙飛行士)",
       "customHint": "ヒント: キラキラボタンで説明を改善できます",
@@ -628,6 +630,7 @@
     "orSendEmail": "またはメールで招待を送る",
     "emailAddresses": "メールアドレス",
     "emailPlaceholder": "メールアドレスを入力",
+    "smartPlaceholder": "メールまたは@ユーザー名",
     "emailHint": "複数のメールを貼り付け（カンマ、スペース、改行で区切り）",
     "add": "追加",
     "noEmails": "少なくとも1つのメールアドレスを追加してください",
