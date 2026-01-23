@@ -847,11 +847,6 @@ export function EventMediaUpload({
       />
 
       {error && <p className="text-sm text-destructive">{error}</p>}
-
-      <p className="text-xs text-muted-foreground">
-        JPEG, PNG, WebP, HEIC, GIF (up to 15MB), or MP4/WebM/MOV video (up to
-        50MB)
-      </p>
     </div>
   );
 }
