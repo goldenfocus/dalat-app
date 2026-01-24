@@ -1,4 +1,11 @@
 {
+  "hero": {
+    "headline": "Encuentra eventos. Descubre lugares.",
+    "subtitle": "Únete a la comunidad en Đà Lạt",
+    "map": "Mapa",
+    "calendar": "Calendario",
+    "venues": "Lugares"
+  },
   "common": {
     "back": "Volver",
     "save": "Guardar",

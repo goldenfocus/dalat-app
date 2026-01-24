@@ -1,4 +1,11 @@
 {
+  "hero": {
+    "headline": "Temukan acara. Jelajahi tempat.",
+    "subtitle": "Bergabunglah dengan komunitas di Đà Lạt",
+    "map": "Peta",
+    "calendar": "Kalender",
+    "venues": "Tempat"
+  },
   "common": {
     "back": "Kembali",
     "save": "Simpan",

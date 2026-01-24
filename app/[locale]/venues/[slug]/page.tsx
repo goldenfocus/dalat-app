@@ -33,6 +33,9 @@ import { PhotoGallery } from "@/components/ui/photo-gallery";
 import { VenueSectionNav } from "@/components/venues/venue-section-nav";
 import { PastEventsSection } from "@/components/venues/past-events-section";
 import { VenueMap } from "@/components/venues/venue-map";
+import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
+import { VenueOfficialPhotosUpload } from "@/components/venues/venue-official-photos-upload";
+import { hasRoleLevel, type UserRole } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -114,6 +117,31 @@ async function isUserLoggedIn(): Promise<boolean> {
   return !!user;
 }
 
+async function canUserManageVenue(venueOwnerId: string | null): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return false;
+
+  // Check if user is venue owner
+  if (venueOwnerId === user.id) return true;
+
+  // Check if user has admin/moderator role
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role) {
+    return hasRoleLevel(profile.role as UserRole, "moderator");
+  }
+
+  return false;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
   const venueData = await getVenueData(slug);
@@ -141,9 +169,10 @@ export default async function VenuePage({ params }: PageProps) {
   }
 
   const { venue, upcoming_events, happening_now, past_events_count, recent_activity } = venueData;
-  const [isLoggedIn, pastEvents] = await Promise.all([
+  const [isLoggedIn, pastEvents, canManageVenue] = await Promise.all([
     isUserLoggedIn(),
     getPastEvents(venue.id),
+    canUserManageVenue(venue.owner_id),
   ]);
 
   // Fetch translations for venue name and description
@@ -548,15 +577,28 @@ export default async function VenuePage({ params }: PageProps) {
         </section>
 
         {/* Gallery Section */}
-        {venue.photos && venue.photos.length > 0 && (
+        {(venue.photos && venue.photos.length > 0) || canManageVenue ? (
           <section id="gallery" className="mb-8 pt-2">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Camera className="w-5 h-5" />
-              {t("photos")}
-            </h2>
-            <PhotoGallery photos={venue.photos} />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Camera className="w-5 h-5" />
+                {t("photos")}
+              </h2>
+              {canManageVenue && (
+                <VenueOfficialPhotosUpload
+                  venueId={venue.id}
+                  currentPhotos={venue.photos || []}
+                />
+              )}
+            </div>
+            {venue.photos && venue.photos.length > 0 && (
+              <PhotoGallery photos={venue.photos} />
+            )}
           </section>
-        )}
+        ) : null}
+
+        {/* Community Photos Section */}
+        <VenueCommunityPhotos venueId={venue.id} locale={locale} />
 
         {/* Hours Section */}
         {venue.operating_hours && (

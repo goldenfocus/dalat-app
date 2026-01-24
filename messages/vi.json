@@ -1,4 +1,11 @@
 {
+  "hero": {
+    "headline": "Tìm sự kiện. Khám phá địa điểm.",
+    "subtitle": "Tham gia cộng đồng tại Đà Lạt",
+    "map": "Bản đồ",
+    "calendar": "Lịch",
+    "venues": "Địa điểm"
+  },
   "common": {
     "back": "Quay lại",
     "save": "Lưu",

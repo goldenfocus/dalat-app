@@ -31,7 +31,8 @@ export const CACHE_TAGS = {
  */
 export const getCachedEventsByLifecycle = unstable_cache(
   async (
-    lifecycle: "upcoming" | "happening" | "past"
+    lifecycle: "upcoming" | "happening" | "past",
+    limit: number = 10  // Reduced from 20 for faster LCP
   ): Promise<EventWithSeriesData[]> => {
     try {
       // Use static client for ISR context (no cookies needed for public data)
@@ -44,7 +45,7 @@ export const getCachedEventsByLifecycle = unstable_cache(
       // Use non-deduplicated RPC (deduplicated one not in prod yet)
       const { data, error } = await supabase.rpc("get_events_by_lifecycle", {
         p_lifecycle: lifecycle,
-        p_limit: 20,
+        p_limit: limit,
       });
 
       if (error) {
@@ -64,7 +65,7 @@ export const getCachedEventsByLifecycle = unstable_cache(
       return [];
     }
   },
-  ["events-by-lifecycle-v4"], // v4: fix ISR by using static client
+  ["events-by-lifecycle-v5"], // v5: configurable limit for faster LCP
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.events],

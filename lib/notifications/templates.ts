@@ -394,9 +394,8 @@ function feedbackRequestTemplate(payload: FeedbackRequestPayload): TemplateResul
 
 function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
-  // Use English for email invites - recipient may not speak inviter's language
-  // The invite page will display in recipient's browser locale anyway
-  const inviteUrl = `${getBaseUrl()}/en/invite/${payload.token}`;
+  // Link directly to event page - simpler and more reliable than token-based invite system
+  const eventUrl = `${getBaseUrl()}/en/events/${payload.eventSlug}`;
 
   // Format date/time for in-app/push (uses inviter's locale)
   const eventDate = new Date(payload.startsAt);
@@ -448,13 +447,13 @@ function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResul
     inApp: {
       title,
       body,
-      primaryActionUrl: inviteUrl,
+      primaryActionUrl: eventUrl,
       primaryActionLabel: inviteTranslations.buttons.going[locale],
     },
     push: {
       title,
       body,
-      primaryActionUrl: inviteUrl,
+      primaryActionUrl: eventUrl,
       tag: `invite-${payload.eventSlug}`,
       requireInteraction: true,
     },
@@ -462,12 +461,12 @@ function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResul
       title: emailTitle,
       body: emailBody,
       subject: emailTitle,
-      primaryActionUrl: `${inviteUrl}?rsvp=going`,
+      primaryActionUrl: eventUrl,
       primaryActionLabel: inviteTranslations.buttons.going.en,
-      secondaryActionUrl: `${inviteUrl}?rsvp=cancelled`,
+      secondaryActionUrl: eventUrl,
       secondaryActionLabel: inviteTranslations.buttons.notGoing.en,
-      html: generateEventInvitationEmailHtml(payload, 'en', inviteUrl, emailFormattedDate, emailFormattedTime, getRandomInspiringFooter()),
-      text: generateEventInvitationEmailText(payload, inviteUrl, emailFormattedDate, emailFormattedTime, getRandomInspiringFooter()),
+      html: generateEventInvitationEmailHtml(payload, 'en', eventUrl, emailFormattedDate, emailFormattedTime, getRandomInspiringFooter()),
+      text: generateEventInvitationEmailText(payload, eventUrl, emailFormattedDate, emailFormattedTime, getRandomInspiringFooter()),
     },
   };
 }
@@ -478,7 +477,7 @@ function eventInvitationTemplate(payload: EventInvitationPayload): TemplateResul
  */
 function generateEventInvitationEmailText(
   payload: EventInvitationPayload,
-  inviteUrl: string,
+  eventUrl: string,
   formattedDate: string,
   formattedTime: string,
   inspiringFooter: string
@@ -510,11 +509,7 @@ function generateEventInvitationEmailText(
     '',
     '---',
     '',
-    `Count me in! ${inviteUrl}?rsvp=going`,
-    '',
-    `Maybe: ${inviteUrl}?rsvp=interested`,
-    '',
-    `View full details: ${inviteUrl}`,
+    `View event & RSVP: ${eventUrl}`,
     '',
     "Can't wait to see you there!",
     '',
@@ -759,14 +754,13 @@ function threadActivityTemplate(payload: ThreadActivityPayload): TemplateResult 
 function generateEventInvitationEmailHtml(
   payload: EventInvitationPayload,
   locale: NotificationLocale,
-  inviteUrl: string,
+  eventUrl: string,
   formattedDate: string,
   formattedTime: string,
   inspiringFooter: string
 ): string {
   const buttonLabels = {
-    going: { en: "Count me in!", fr: 'Je viens !', vi: 'Tôi sẽ đến!' },
-    maybe: { en: 'Maybe', fr: 'Peut-être', vi: 'Có thể' },
+    viewEvent: { en: "View Event & RSVP", fr: 'Voir et Répondre', vi: 'Xem & Đăng ký' },
   };
 
   const labels = {
@@ -860,22 +854,12 @@ function generateEventInvitationEmailHtml(
         </div>
         ` : ''}
 
-        <!-- CTA Buttons -->
+        <!-- CTA Button -->
         <div style="text-align: center; margin: 32px 0;">
-          <a href="${inviteUrl}?rsvp=going" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 40px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 18px; box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.5);">
-            ${buttonLabels.going[locale]} 🎉
+          <a href="${eventUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 40px; border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 18px; box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.5);">
+            ${buttonLabels.viewEvent[locale]} 🎉
           </a>
         </div>
-        <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${inviteUrl}?rsvp=interested" style="display: inline-block; background: #f3f4f6; color: #4b5563; padding: 12px 28px; border-radius: 50px; text-decoration: none; font-weight: 500; font-size: 14px;">
-            ${buttonLabels.maybe[locale]}
-          </a>
-        </div>
-
-        <!-- View Details Link -->
-        <p style="text-align: center; margin: 0;">
-          <a href="${inviteUrl}" style="color: #667eea; text-decoration: none; font-size: 14px;">${labels.seeDetails[locale]} →</a>
-        </p>
       </div>
     </div>
 

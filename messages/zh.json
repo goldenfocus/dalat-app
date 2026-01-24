@@ -1,4 +1,11 @@
 {
+  "hero": {
+    "headline": "发现活动。探索场地。",
+    "subtitle": "加入大叻社区",
+    "map": "地图",
+    "calendar": "日历",
+    "venues": "场地"
+  },
   "common": {
     "back": "返回",
     "save": "保存",

@@ -1,4 +1,11 @@
 {
+  "hero": {
+    "headline": "Cari acara. Temui tempat.",
+    "subtitle": "Sertai komuniti di Đà Lạt",
+    "map": "Peta",
+    "calendar": "Kalendar",
+    "venues": "Tempat"
+  },
   "common": {
     "back": "Kembali",
     "save": "Simpan",

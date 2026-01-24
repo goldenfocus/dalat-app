@@ -1,4 +1,11 @@
 {
+  "hero": {
+    "headline": "이벤트를 찾고. 장소를 발견하세요.",
+    "subtitle": "달랏에서 커뮤니티에 참여하세요",
+    "map": "지도",
+    "calendar": "캘린더",
+    "venues": "장소"
+  },
   "common": {
     "back": "뒤로",
     "save": "저장",
