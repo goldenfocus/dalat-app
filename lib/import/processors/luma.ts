@@ -53,10 +53,20 @@ export async function processLumaEvents(
     try {
       const normalized = normalizeLumaEvent(event);
 
-      if (!normalized.title || !normalized.startsAt) {
+      if (!normalized.title) {
         result.skipped++;
-        result.details.push(`Skipped: Missing title or start date - ${event.url}`);
+        result.details.push(`Skipped: Missing title - ${event.url}`);
         continue;
+      }
+
+      // For platforms without dates (e.g., OpenGraph-only scraping), create as draft
+      const needsManualDate = !normalized.startsAt;
+      if (needsManualDate) {
+        // Set a placeholder date (tomorrow) so the event can be created
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(19, 0, 0, 0); // Default to 7 PM
+        normalized.startsAt = tomorrow.toISOString();
       }
 
       // Check for duplicates
@@ -89,7 +99,7 @@ export async function processLumaEvents(
         google_maps_url: normalized.mapsUrl,
         external_chat_url: event.url,
         image_url: imageUrl,
-        status: "published",
+        status: needsManualDate ? "draft" : "published",
         timezone: "Asia/Ho_Chi_Minh",
         organizer_id: organizerId,
         created_by: createdBy,
