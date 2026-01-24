@@ -116,7 +116,7 @@ export function InviteCelebration({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-opacity duration-300",
+        "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300",
         isVisible ? "opacity-100" : "opacity-0"
       )}
       onClick={() => {
@@ -125,59 +125,50 @@ export function InviteCelebration({
       }}
     >
       {/* Animated background glow */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-purple-500/20 blur-3xl animate-pulse" />
       </div>
 
-      {/* Content card */}
+      {/* Content card - centered with margin for the floating icon */}
       <div
         className={cn(
-          "relative mx-4 max-w-md w-full bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 shadow-2xl border border-emerald-200 dark:border-emerald-500/30 transition-all duration-500",
+          "relative mx-4 mt-8 max-w-sm w-full bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-6 shadow-2xl border border-emerald-200 dark:border-emerald-500/30 transition-all duration-500",
           isVisible ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
         )}
       >
-        {/* Decorative icons floating around */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+        {/* Top icon */}
+        <div className="absolute -top-5 left-1/2 -translate-x-1/2">
           <div className="relative">
             <div className="absolute inset-0 bg-emerald-500/30 blur-xl rounded-full" />
-            <div className="relative bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full p-4 shadow-lg shadow-emerald-500/30">
-              <Users className="w-8 h-8 text-white" />
+            <div className="relative bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full p-3 shadow-lg shadow-emerald-500/30">
+              <Users className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>
 
         {/* Floating sparkles */}
-        <Sparkles className="absolute top-4 right-6 w-5 h-5 text-yellow-400 animate-bounce" style={{ animationDelay: "0.1s" }} />
-        <Heart className="absolute top-8 left-6 w-4 h-4 text-pink-400 animate-bounce" style={{ animationDelay: "0.3s" }} />
-        <Sparkles className="absolute bottom-12 right-8 w-4 h-4 text-cyan-400 animate-bounce" style={{ animationDelay: "0.5s" }} />
-        <Heart className="absolute bottom-16 left-8 w-5 h-5 text-rose-400 animate-bounce" style={{ animationDelay: "0.2s" }} />
+        <Sparkles className="absolute top-3 right-4 w-4 h-4 text-yellow-400 animate-bounce" style={{ animationDelay: "0.1s" }} />
+        <Heart className="absolute top-6 left-4 w-3 h-3 text-pink-400 animate-bounce" style={{ animationDelay: "0.3s" }} />
 
         {/* Main content */}
-        <div className="pt-8 text-center space-y-6">
+        <div className="pt-6 text-center space-y-4">
           {/* Title with count */}
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-clip-text text-transparent">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-clip-text text-transparent">
               {t("celebrationTitle")}
             </h2>
-            <p className="text-lg text-gray-800 dark:text-white/90 font-medium">
+            <p className="text-base text-gray-800 dark:text-white/90 font-medium">
               {t("sentSuccess", { count: successCount })}
             </p>
           </div>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 px-4">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-white/20 to-transparent" />
-            <Sparkles className="w-4 h-4 text-yellow-500" />
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-white/20 to-transparent" />
-          </div>
-
           {/* Motivational phrase */}
-          <p className="text-lg text-gray-600 dark:text-white/80 font-medium px-4 leading-relaxed min-h-[3.5rem]">
+          <p className="text-base text-gray-600 dark:text-white/80 italic px-2 leading-relaxed">
             &ldquo;{phrase}&rdquo;
           </p>
 
           {/* Tap to dismiss hint */}
-          <p className="text-sm text-gray-400 dark:text-white/40 pt-2">
+          <p className="text-xs text-gray-400 dark:text-white/40">
             Tap anywhere to dismiss
           </p>
         </div>

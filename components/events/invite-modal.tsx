@@ -284,13 +284,11 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
       // Show celebration if any invites succeeded
       const sentSuccessfully = data.results.filter((r: InviteResult) => r.success).length;
       if (sentSuccessfully > 0) {
-        // Small delay to let the animation complete before showing celebration
-        setTimeout(() => {
-          setSending(false);
-          setOpen(false); // Close dialog immediately when celebration starts
-          setShowCelebration(true);
-        }, 1500);
-        return; // Don't set sending to false yet
+        // Close dialog immediately and show celebration
+        setSending(false);
+        setOpen(false);
+        setShowCelebration(true);
+        return;
       }
 
     } catch {
