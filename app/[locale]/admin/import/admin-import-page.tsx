@@ -497,10 +497,6 @@ export function AdminImportPage() {
                 </div>
               )}
 
-              <Tip>
-                <strong>Pro tip:</strong> You can paste a Facebook search URL (e.g., facebook.com/search/events/?q=da%20lat) to import multiple events at once!
-              </Tip>
-
               {/* Supported URLs */}
               <div className="grid sm:grid-cols-3 gap-3 pt-2">
                 <div className="flex items-center gap-2 p-2 rounded-lg border">
