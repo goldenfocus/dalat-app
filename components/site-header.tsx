@@ -1,18 +1,19 @@
-import { Suspense } from "react";
-import { Calendar, MapPin, Plus, Film } from "lucide-react";
+import { Calendar, MapPin, Film } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
-import { AuthButton } from "@/components/auth-button";
+import { AuthButtonClient } from "@/components/auth-button-client";
 import { LocalePicker } from "@/components/locale-picker";
-import { getEffectiveUser } from "@/lib/god-mode";
+import { CreateEventLink } from "@/components/auth/create-event-link";
 
 interface SiteHeaderProps {
   /** Optional content to render on the right side before AuthButton */
   actions?: React.ReactNode;
 }
 
-export async function SiteHeader({ actions }: SiteHeaderProps) {
-  const { user } = await getEffectiveUser();
-  const isAuthenticated = !!user;
+/**
+ * Static site header that preserves ISR caching.
+ * Auth-dependent elements (CreateEventLink, AuthButton) are handled client-side.
+ */
+export function SiteHeader({ actions }: SiteHeaderProps) {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-14 max-w-4xl items-center justify-between mx-auto px-4">
@@ -20,7 +21,7 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
           <Link href="/" className="font-bold text-lg">
             ĐàLạt.app
           </Link>
-          <LocalePicker userId={user?.id} />
+          <LocalePicker />
         </div>
         <div className="flex items-center gap-1">
           <Link
@@ -44,20 +45,9 @@ export async function SiteHeader({ actions }: SiteHeaderProps) {
           >
             <Film className="w-5 h-5" />
           </Link>
-          {isAuthenticated && (
-            <Link
-              href="/events/new"
-              prefetch={false}
-              className="flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
-              aria-label="Create event"
-            >
-              <Plus className="w-5 h-5" />
-            </Link>
-          )}
+          <CreateEventLink />
           {actions}
-          <Suspense>
-            <AuthButton />
-          </Suspense>
+          <AuthButtonClient />
         </div>
       </div>
     </nav>

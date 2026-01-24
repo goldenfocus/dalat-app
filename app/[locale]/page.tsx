@@ -11,12 +11,9 @@ export const revalidate = 300;
 
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { AuthButton } from "@/components/auth-button";
-import { LocalePicker } from "@/components/locale-picker";
 import { SiteHeader } from "@/components/site-header";
-import { MobileMenu } from "@/components/navigation/mobile-menu";
+import { HeroSection } from "@/components/home/hero-section";
 import { EventCard } from "@/components/events/event-card";
-import { EventFeedImmersive } from "@/components/events/event-feed-immersive";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { Button } from "@/components/ui/button";
@@ -305,25 +302,13 @@ function DesktopTabs({
   );
 }
 
-export default async function Home({ params, searchParams }: PageProps) {
+export default async function Home({ params }: PageProps) {
   const { locale } = await params;
-  const search = await searchParams;
-  const activeTab = parseLifecycle(search.tab);
 
-  // Permanent redirect: Search queries now live at /search/[query] for SEO
-  if (search.q && search.q.trim()) {
-    const slug = search.q
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
-    if (slug) {
-      permanentRedirect(`/${locale}/search/${slug}`);
-    }
-  }
-
-  const searchQuery = search.q ?? "";
-  const tagFilter = search.tag;
+  // Always render "upcoming" tab server-side for ISR caching
+  // Tab switching is handled client-side via URL navigation
+  // Search redirects are handled in middleware (proxy.ts)
+  const activeTab: EventLifecycle = "upcoming";
 
   const [t, lifecycleCounts] = await Promise.all([
     getTranslations("home"),
@@ -343,9 +328,7 @@ export default async function Home({ params, searchParams }: PageProps) {
             <LocalePicker variant="overlay" />
           </div>
           <div className="flex items-center gap-1">
-            <Suspense>
-              <AuthButton />
-            </Suspense>
+            <AuthButtonClient />
             <MobileMenu variant="overlay" />
           </div>
         </nav>
