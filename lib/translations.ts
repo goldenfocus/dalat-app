@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createStaticClient } from '@/lib/supabase/server';
 import type {
   ContentLocale,
   ContentTranslation,
@@ -240,6 +240,7 @@ export function isValidContentLocale(locale: string): locale is ContentLocale {
 
 /**
  * Batch fetch translations for multiple events (efficient for list pages)
+ * Uses static client for ISR compatibility - translations are public data
  */
 export async function getEventTranslationsBatch(
   eventIds: string[],
@@ -250,7 +251,12 @@ export async function getEventTranslationsBatch(
   }
 
   try {
-    const supabase = await createClient();
+    // Use static client for ISR context (no cookies needed for public translations)
+    const supabase = createStaticClient();
+    if (!supabase) {
+      console.error("Failed to create Supabase client for translations");
+      return new Map();
+    }
 
     const { data: translations } = await supabase
       .from('content_translations')
