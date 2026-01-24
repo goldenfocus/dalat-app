@@ -10,7 +10,7 @@ import {
   downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
-import { triggerTranslation } from "@/lib/translations-client";
+import { triggerTranslationServer } from "@/lib/translations";
 
 export async function processEventbriteEvents(
   supabase: SupabaseClient,
@@ -81,7 +81,7 @@ export async function processEventbriteEvents(
       } else {
         result.processed++;
 
-        // Trigger translation to all 12 languages
+        // Trigger translation to all 12 languages (server-side, no HTTP)
         if (newEvent?.id) {
           const fieldsToTranslate = [];
           if (normalized.title) {
@@ -92,7 +92,7 @@ export async function processEventbriteEvents(
           }
 
           if (fieldsToTranslate.length > 0) {
-            triggerTranslation("event", newEvent.id, fieldsToTranslate);
+            triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
           }
         }
       }

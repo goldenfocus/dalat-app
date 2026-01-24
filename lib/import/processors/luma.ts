@@ -9,7 +9,7 @@ import {
   downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
-import { triggerTranslation } from "@/lib/translations-client";
+import { triggerTranslationServer } from "@/lib/translations";
 
 // Lu.ma event from lexis-solutions/lu-ma-scraper
 export interface LumaEvent {
@@ -120,7 +120,7 @@ export async function processLumaEvents(
       } else {
         result.processed++;
 
-        // Trigger translation to all 12 languages
+        // Trigger translation to all 12 languages (server-side, no HTTP)
         if (newEvent?.id) {
           const fieldsToTranslate = [];
           if (normalized.title) {
@@ -131,7 +131,8 @@ export async function processLumaEvents(
           }
 
           if (fieldsToTranslate.length > 0) {
-            triggerTranslation("event", newEvent.id, fieldsToTranslate);
+            // Don't await - let translation happen in background
+            triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
           }
         }
       }

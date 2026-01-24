@@ -1,4 +1,5 @@
 import { createClient, createStaticClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type {
   ContentLocale,
   ContentTranslation,
@@ -8,6 +9,7 @@ import type {
   Moment,
 } from '@/lib/types';
 import { CONTENT_LOCALES } from '@/lib/types';
+import { batchTranslateFields } from '@/lib/google-translate';
 
 // Fallback chain: requested locale -> English -> original
 const FALLBACK_LOCALE: ContentLocale = 'en';
@@ -208,6 +210,7 @@ export async function getMomentWithTranslations(
 /**
  * Trigger translation for content (fire-and-forget)
  * This is called after content creation to translate in the background
+ * NOTE: This version uses HTTP fetch - works in browser but NOT in server-side API routes
  */
 export async function triggerTranslation(
   contentType: TranslationContentType,
@@ -229,6 +232,97 @@ export async function triggerTranslation(
   }).catch((error) => {
     console.error('Translation trigger failed:', error);
   });
+}
+
+/**
+ * Server-side translation trigger - use this in API routes
+ * Directly calls the translation API without HTTP, so it works in server context
+ */
+export async function triggerTranslationServer(
+  contentType: TranslationContentType,
+  contentId: string,
+  fields: { field_name: TranslationFieldName; text: string }[]
+): Promise<void> {
+  // Filter out empty fields
+  const fieldsToTranslate = fields.filter(f => f.text && f.text.trim().length > 0);
+  if (fieldsToTranslate.length === 0) return;
+
+  try {
+    // Use service role client for server-side operations
+    const supabase = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Call Google Translate API
+    const { detectedLocale, translations } = await batchTranslateFields(fieldsToTranslate);
+
+    // Update source_locale on the content
+    if (contentType === 'event') {
+      await supabase
+        .from('events')
+        .update({ source_locale: detectedLocale })
+        .eq('id', contentId);
+    } else if (contentType === 'moment') {
+      await supabase
+        .from('moments')
+        .update({ source_locale: detectedLocale })
+        .eq('id', contentId);
+    } else if (contentType === 'profile') {
+      await supabase
+        .from('profiles')
+        .update({ bio_source_locale: detectedLocale })
+        .eq('id', contentId);
+    }
+
+    // Prepare translation inserts
+    const translationInserts: {
+      content_type: string;
+      content_id: string;
+      source_locale: string;
+      target_locale: string;
+      field_name: string;
+      translated_text: string;
+      translation_status: string;
+    }[] = [];
+
+    for (const locale of CONTENT_LOCALES) {
+      const localeTranslations = translations[locale];
+      if (!localeTranslations) continue;
+
+      for (const field of fieldsToTranslate) {
+        const translatedText = localeTranslations[field.field_name];
+        if (!translatedText) continue;
+
+        translationInserts.push({
+          content_type: contentType,
+          content_id: contentId,
+          source_locale: detectedLocale,
+          target_locale: locale,
+          field_name: field.field_name,
+          translated_text: translatedText,
+          translation_status: 'auto',
+        });
+      }
+    }
+
+    // Upsert translations
+    if (translationInserts.length > 0) {
+      const { error } = await supabase
+        .from('content_translations')
+        .upsert(translationInserts, {
+          onConflict: 'content_type,content_id,target_locale,field_name',
+        });
+
+      if (error) {
+        console.error('[triggerTranslationServer] Insert error:', error);
+      } else {
+        console.log(`[triggerTranslationServer] Translated ${contentType}:${contentId} to ${CONTENT_LOCALES.length} locales`);
+      }
+    }
+  } catch (error) {
+    console.error('[triggerTranslationServer] Translation failed:', error);
+  }
 }
 
 /**
