@@ -5,8 +5,9 @@ import { Link } from "@/lib/i18n/routing";
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
 
-// ISR: Cache homepage for 60 seconds for fast LCP
-export const revalidate = 60;
+// ISR: Cache homepage for 5 minutes for better PageSpeed scores
+// Longer cache = fewer cache misses = faster TTFB
+export const revalidate = 300;
 
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
