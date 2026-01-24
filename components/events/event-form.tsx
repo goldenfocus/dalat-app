@@ -22,6 +22,7 @@ import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
 import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
+import { TicketTierInput, type TicketTier, type PriceType } from "@/components/events/ticket-tier-input";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { PostCreationCelebration } from "@/components/events/post-creation-celebration";
 import {
@@ -138,6 +139,23 @@ function suggestSlug(title: string): string {
   return sanitizeSlug(title).slice(0, 50);
 }
 
+/**
+ * Normalize a URL by adding https:// if no protocol is present
+ * and lowercasing the domain (URLs are case-insensitive)
+ */
+function normalizeUrl(input: string): string {
+  const trimmed = input.trim().toLowerCase();
+  if (!trimmed) return "";
+
+  // Already has a protocol
+  if (/^https?:\/\//.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Add https://
+  return `https://${trimmed}`;
+}
+
 type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 export function EventForm({
@@ -165,6 +183,7 @@ export function EventForm({
     title: string;
     description: string | null;
     startsAt: string;
+    imageUrl: string | null;
   } | null>(null);
 
   // Determine if we're copying from another event
@@ -230,6 +249,7 @@ export function EventForm({
 
   // Online event state
   const [isOnline, setIsOnline] = useState(event?.is_online ?? false);
+  const [onlineLink, setOnlineLink] = useState(event?.online_link ?? "");
 
   // Slug state
   const [slug, setSlug] = useState(event?.slug ?? "");
@@ -250,6 +270,14 @@ export function EventForm({
   // Capacity limit toggle
   const [hasCapacityLimit, setHasCapacityLimit] = useState(
     !!event?.capacity || !!copyDefaults?.capacity
+  );
+
+  // Pricing state
+  const [priceType, setPriceType] = useState<PriceType | null>(
+    event?.price_type ?? null
+  );
+  const [ticketTiers, setTicketTiers] = useState<TicketTier[]>(
+    event?.ticket_tiers ?? []
   );
 
   // Organizer picker state
@@ -442,7 +470,6 @@ export function EventForm({
     const latitude = latitudeStr ? parseFloat(latitudeStr) : null;
     const longitude = longitudeStr ? parseFloat(longitudeStr) : null;
     const externalChatUrl = formData.get("external_chat_url") as string;
-    const onlineLink = formData.get("online_link") as string;
     const capacityStr = formData.get("capacity") as string;
     const venueIdFromForm = formData.get("venue_id") as string;
 
@@ -617,6 +644,7 @@ export function EventForm({
           }
 
           // Upload image if we have one (file, base64, or URL)
+          let eventImageUrl: string | null = null;
           try {
             const finalImageUrl = await uploadImage(supabase, data.id);
             if (finalImageUrl) {
@@ -624,6 +652,7 @@ export function EventForm({
                 .from("events")
                 .update({ image_url: finalImageUrl })
                 .eq("id", data.id);
+              eventImageUrl = finalImageUrl;
             }
           } catch {
             // Image upload failed but event was created - continue
@@ -645,6 +674,7 @@ export function EventForm({
             title: title.trim(),
             description: description || null,
             startsAt: startsAt,
+            imageUrl: eventImageUrl,
           });
           setShowCelebration(true);
         }
@@ -805,9 +835,11 @@ export function EventForm({
               <Input
                 id="online_link"
                 name="online_link"
-                type="url"
+                type="text"
                 placeholder={t("onlineLinkPlaceholder")}
-                defaultValue={event?.online_link ?? ""}
+                value={onlineLink}
+                onChange={(e) => setOnlineLink(e.target.value)}
+                onBlur={(e) => setOnlineLink(normalizeUrl(e.target.value))}
               />
               <p className="text-xs text-muted-foreground">
                 {t("onlineLinkHelp")}
@@ -815,7 +847,8 @@ export function EventForm({
             </div>
           )}
 
-          {/* Location - unified venue + address picker */}
+          {/* Location - unified venue + address picker (hidden for online events) */}
+          {!isOnline && (
           <LocationPicker
             defaultValue={
               event?.location_name
@@ -841,6 +874,7 @@ export function EventForm({
             }
             defaultVenueId={event?.venue_id}
           />
+          )}
 
           {/* External link */}
           <div className="space-y-2">
@@ -983,6 +1017,7 @@ export function EventForm({
           eventTitle={createdEvent.title}
           eventDescription={createdEvent.description}
           startsAt={createdEvent.startsAt}
+          imageUrl={createdEvent.imageUrl}
         />
       )}
     </form>
