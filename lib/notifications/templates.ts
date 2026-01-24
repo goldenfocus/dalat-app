@@ -796,8 +796,8 @@ function generateEventInvitationEmailHtml(
 
       <!-- Event Image/Flyer -->
       ${payload.eventImageUrl ? `
-      <div style="width: 100%; max-height: 300px; overflow: hidden;">
-        <img src="${payload.eventImageUrl}" alt="${payload.eventTitle}" style="width: 100%; height: auto; display: block; object-fit: cover;" />
+      <div style="width: 100%;">
+        <img src="${payload.eventImageUrl}" alt="${payload.eventTitle}" style="width: 100%; height: auto; display: block;" />
       </div>
       ` : `
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
