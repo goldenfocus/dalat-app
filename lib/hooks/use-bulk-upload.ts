@@ -562,7 +562,7 @@ export function useBulkUpload(eventId: string, userId: string) {
       isPausedRef.current = false;
       processQueueRef.current();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [state.status]);
 
   // Cleanup on unmount

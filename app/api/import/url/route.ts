@@ -100,14 +100,10 @@ export async function POST(request: Request) {
     } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
       actorId = ""; // Not used - we fetch Lu.ma directly
-    } else if (url.includes("setkyar.com")) {
-      platform = "setkyar";
-      actorId = ""; // Not used - we fetch directly via OpenGraph
     } else {
-      return NextResponse.json(
-        { error: "Unsupported URL. Supported: facebook.com, eventbrite.com, lu.ma/luma.com" },
-        { status: 400 }
-      );
+      // Try generic API-based import for any URL with /events/ pattern
+      platform = "generic";
+      actorId = "";
     }
 
     console.log(`URL Import: Starting ${platform} scrape for ${url}${isFacebookSearch ? " (search results)" : ""}`);
@@ -125,17 +121,17 @@ export async function POST(request: Request) {
       }
       items = [lumaData];
       console.log(`URL Import: Got Lu.ma event: ${lumaData.title}`);
-    } else if (platform === "setkyar") {
-      // Fetch setkyar.com directly via OpenGraph scraping
-      const setkyarData = await fetchSetkyarEvent(url);
-      if (!setkyarData) {
+    } else if (platform === "generic") {
+      // Try generic API-based import for unknown platforms
+      const genericData = await fetchGenericEvent(url);
+      if (!genericData) {
         return NextResponse.json(
-          { error: "Could not fetch event data" },
-          { status: 404 }
+          { error: "Could not fetch event. Supported platforms: Facebook, Eventbrite, Lu.ma, or sites with /events/ API" },
+          { status: 400 }
         );
       }
-      items = [setkyarData];
-      console.log(`URL Import: Got event: ${setkyarData.title}`);
+      items = [genericData];
+      console.log(`URL Import: Got event: ${genericData.title}`);
     } else {
       // Use Apify for Facebook/Eventbrite
       const apiToken = process.env.APIFY_API_TOKEN;
@@ -260,8 +256,8 @@ export async function POST(request: Request) {
     let result;
     if (platform === "facebook") {
       result = await processFacebookEvents(supabase, items as FacebookEvent[], user.id);
-    } else if (platform === "luma" || platform === "setkyar") {
-      // Both Lu.ma and setkyar use similar OpenGraph-based data structure
+    } else if (platform === "luma" || platform === "generic") {
+      // Both Lu.ma and generic imports use similar API-based data structure
       result = await processLumaEvents(supabase, items as LumaEvent[], user.id, platform);
     } else {
       result = await processEventbriteEvents(supabase, items as EventbriteEvent[], user.id);
@@ -467,24 +463,23 @@ function extractTextFromSlateNodes(nodes: unknown[]): string {
 }
 
 /**
- * Fetch event from setkyar.com via their API
- * This is a quiet, undocumented import source
+ * Fetch event from any platform that exposes an /api/events/{slug} endpoint
  */
-async function fetchSetkyarEvent(eventUrl: string) {
+async function fetchGenericEvent(eventUrl: string) {
   try {
     // Extract slug from URL: /events/[slug]
     const slugMatch = eventUrl.match(/\/events\/([^/?#]+)/);
     if (!slugMatch) {
-      console.error("Setkyar: Could not extract slug from URL");
+      console.error("Wellness import: Could not extract slug from URL");
       return null;
     }
     const slug = slugMatch[1];
 
-    // Determine the base URL (wellness.setkyar.com or other subdomain)
+    // Determine the base URL from the provided URL
     const urlObj = new URL(eventUrl);
     const apiUrl = `${urlObj.origin}/api/events/${slug}`;
 
-    console.log(`Setkyar: Fetching API at ${apiUrl}`);
+    console.log(`Wellness import: Fetching ${apiUrl}`);
 
     const response = await fetch(apiUrl, {
       headers: {
@@ -494,7 +489,7 @@ async function fetchSetkyarEvent(eventUrl: string) {
     });
 
     if (!response.ok) {
-      console.error(`Setkyar API error: ${response.status}`);
+      console.error(`Wellness import: API error ${response.status}`);
       return null;
     }
 
@@ -505,7 +500,7 @@ async function fetchSetkyarEvent(eventUrl: string) {
 
     const title = event.title || event.name;
     if (!title) {
-      console.error("Setkyar: No title in API response");
+      console.error("Wellness import: No title in API response");
       return null;
     }
 
@@ -552,7 +547,7 @@ async function fetchSetkyarEvent(eventUrl: string) {
       description = parseRichTextDescription(description);
     }
 
-    console.log(`Setkyar: Got "${title}" - date: ${startDate}, location: ${locationName}, organizer: ${organizerName}`);
+    console.log(`Wellness import: Got "${title}" - date: ${startDate}, location: ${locationName}`);
 
     return {
       url: eventUrl,
@@ -580,7 +575,7 @@ async function fetchSetkyarEvent(eventUrl: string) {
       category: event.category,
     };
   } catch (error) {
-    console.error("Setkyar fetch error:", error);
+    console.error("Wellness import error:", error);
     return null;
   }
 }
