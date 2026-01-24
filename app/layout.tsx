@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     description: "Discover and organize events in Đà Lạt",
     images: [
       {
-        url: `${siteUrl}/og-image.png`,
+        url: `${siteUrl}/og-image.png?v=2`,
         width: 1200,
         height: 630,
         alt: "ĐàLạt.app · Events · People · Moments · Love",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ĐàLạt.app · Events · People · Moments",
     description: "Discover and organize events in Đà Lạt",
-    images: [`${siteUrl}/og-image.png`],
+    images: [`${siteUrl}/og-image.png?v=2`],
   },
 };
 

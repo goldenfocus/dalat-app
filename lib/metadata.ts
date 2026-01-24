@@ -13,7 +13,7 @@ import { isVideoUrl } from "@/lib/media-utils";
 
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "ĐàLạt.app";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png?v=2`;
 
 interface LocalizedMetadataOptions {
   /** Current locale */
