@@ -190,6 +190,16 @@ export function AdminImportPage() {
         body: JSON.stringify({ url: url.trim() }),
       });
 
+      // Handle Vercel timeout (returns HTML instead of JSON)
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        setResult({
+          success: false,
+          message: "Request timed out. Facebook scraping can take a while. Please try again.",
+        });
+        return;
+      }
+
       const data = await response.json();
 
       if (response.ok) {
@@ -241,6 +251,18 @@ export function AdminImportPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url: importUrl }),
         });
+
+        // Handle Vercel timeout (returns HTML instead of JSON)
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          results.push({
+            url: importUrl,
+            success: false,
+            message: "Request timed out",
+          });
+          setBulkResults([...results]);
+          continue;
+        }
 
         const data = await response.json();
 

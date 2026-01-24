@@ -147,21 +147,80 @@ export async function POST(request: Request) {
 
       console.log(`URL Import: Calling Apify actor "${actorId}" with input:`, JSON.stringify(apifyInput, null, 2));
 
-      const runResponse = await fetch(apifyUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(apifyInput),
-      });
+      // Use AbortController to enforce our own timeout (50s to leave buffer before Vercel's 60s limit)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 50000);
+
+      let runResponse: Response;
+      try {
+        runResponse = await fetch(apifyUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(apifyInput),
+          signal: controller.signal,
+        });
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === "AbortError") {
+          console.error("URL Import: Apify request timed out after 50s");
+          return NextResponse.json(
+            {
+              error: "Facebook scraping timed out. This can happen with complex event pages.",
+              details: "Try again, or if this persists, the Facebook event page may be inaccessible to scrapers."
+            },
+            { status: 504 }
+          );
+        }
+        throw fetchError;
+      }
+      clearTimeout(timeoutId);
+
+      // Check Content-Type before parsing - Apify sometimes returns HTML on errors
+      const contentType = runResponse.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const responseText = await runResponse.text();
+        console.error(`URL Import: Apify returned non-JSON response`, {
+          actorId,
+          url,
+          contentType,
+          status: runResponse.status,
+          bodyPreview: responseText.substring(0, 500),
+        });
+
+        // Detect common error patterns
+        if (responseText.includes("<!DOCTYPE") || responseText.includes("<html")) {
+          return NextResponse.json(
+            {
+              error: "Facebook scraper returned an error page instead of data.",
+              details: "The scraper may be rate-limited or the event page requires login. Try again later."
+            },
+            { status: 502 }
+          );
+        }
+
+        return NextResponse.json(
+          { error: "Unexpected response from scraper. Please try again." },
+          { status: 502 }
+        );
+      }
 
       if (!runResponse.ok) {
-        const errorText = await runResponse.text();
+        const errorData = await runResponse.json().catch(() => ({}));
         console.error(`URL Import: Apify error - ${runResponse.status}`, {
           actorId,
           url,
-          errorText,
+          errorData,
         });
+
+        // Extract meaningful error message from Apify response
+        const errorMessage = errorData?.error?.message || errorData?.message || "Failed to scrape event";
         return NextResponse.json(
-          { error: "Failed to scrape event. Please try again." },
+          {
+            error: errorMessage,
+            details: runResponse.status === 402
+              ? "Apify credits may be exhausted."
+              : "Please try again or check the URL."
+          },
           { status: 502 }
         );
       }
