@@ -75,9 +75,25 @@ export async function updateSession(request: NextRequest) {
   if (!shouldSkipLocale) {
     // Handle locale routing
     const pathnameLocale = getLocaleFromPath(pathname);
-    const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
-    const browserLocale = detectBrowserLocale(request);
     const defaultLocale = routing.defaultLocale;
+
+    // CRITICAL FOR ISR: Homepage (/) must NOT read cookies or redirect based on user preference
+    // This allows Vercel to cache the homepage response for all users
+    // Users can switch language via the LocaleMismatchBanner after page loads
+    if (pathname === '/') {
+      // Fast path: Always rewrite homepage to /en for ISR caching
+      const rewriteUrl = request.nextUrl.clone();
+      rewriteUrl.pathname = `/${defaultLocale}`;
+      return NextResponse.rewrite(rewriteUrl);
+    }
+
+    // For non-homepage routes, we can personalize (but try to minimize cookie reads)
+    // Only read cookies for pages without locale prefix that need personalization
+    const needsCookieRead = !pathnameLocale;
+    const cookieLocale = needsCookieRead
+      ? request.cookies.get('NEXT_LOCALE')?.value
+      : undefined;
+    const browserLocale = detectBrowserLocale(request);
 
     // Priority: cookie > browser detection > default
     const preferredLocale = (cookieLocale && isLocale(cookieLocale))
@@ -108,7 +124,7 @@ export async function updateSession(request: NextRequest) {
 
       // For non-default locale preference, redirect to add locale prefix
       if (preferredLocale !== defaultLocale) {
-        const targetPath = pathname === '/' ? `/${preferredLocale}` : `/${preferredLocale}${pathname}`;
+        const targetPath = `/${preferredLocale}${pathname}`;
         const url = new URL(targetPath, request.url);
         url.search = request.nextUrl.search;
         return NextResponse.redirect(url);
