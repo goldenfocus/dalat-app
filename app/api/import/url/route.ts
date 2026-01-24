@@ -470,7 +470,7 @@ async function fetchGenericEvent(eventUrl: string) {
     // Extract slug from URL: /events/[slug]
     const slugMatch = eventUrl.match(/\/events\/([^/?#]+)/);
     if (!slugMatch) {
-      console.error("Wellness import: Could not extract slug from URL");
+      console.error("Generic import: Could not extract slug from URL");
       return null;
     }
     const slug = slugMatch[1];
@@ -479,7 +479,7 @@ async function fetchGenericEvent(eventUrl: string) {
     const urlObj = new URL(eventUrl);
     const apiUrl = `${urlObj.origin}/api/events/${slug}`;
 
-    console.log(`Wellness import: Fetching ${apiUrl}`);
+    console.log(`Generic import: Fetching ${apiUrl}`);
 
     const response = await fetch(apiUrl, {
       headers: {
@@ -489,7 +489,7 @@ async function fetchGenericEvent(eventUrl: string) {
     });
 
     if (!response.ok) {
-      console.error(`Wellness import: API error ${response.status}`);
+      console.error(`Generic import: API error ${response.status}`);
       return null;
     }
 
@@ -500,7 +500,7 @@ async function fetchGenericEvent(eventUrl: string) {
 
     const title = event.title || event.name;
     if (!title) {
-      console.error("Wellness import: No title in API response");
+      console.error("Generic import: No title in API response");
       return null;
     }
 
@@ -547,7 +547,7 @@ async function fetchGenericEvent(eventUrl: string) {
       description = parseRichTextDescription(description);
     }
 
-    console.log(`Wellness import: Got "${title}" - date: ${startDate}, location: ${locationName}`);
+    console.log(`Generic import: Got "${title}" - date: ${startDate}, location: ${locationName}`);
 
     return {
       url: eventUrl,
@@ -575,7 +575,7 @@ async function fetchGenericEvent(eventUrl: string) {
       category: event.category,
     };
   } catch (error) {
-    console.error("Wellness import error:", error);
+    console.error("Generic import error:", error);
     return null;
   }
 }
