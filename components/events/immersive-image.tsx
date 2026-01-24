@@ -91,6 +91,7 @@ export function ImmersiveImage({ src, alt, children, priority = false, imageFit,
         fill
         sizes="(max-width: 768px) 100vw, 50vw"
         priority={priority}
+        loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
         placeholder="blur"
         blurDataURL={BLUR_DATA_URL}
