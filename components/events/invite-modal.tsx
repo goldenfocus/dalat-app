@@ -322,6 +322,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
   const hasResults = results.length > 0;
 
   return (
+  <>
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
@@ -512,14 +513,15 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
         </div>
         )}
       </DialogContent>
-
-      {/* Celebration overlay */}
-      {showCelebration && successCount > 0 && (
-        <InviteCelebration
-          successCount={successCount}
-          onComplete={handleCelebrationComplete}
-        />
-      )}
     </Dialog>
+
+    {/* Celebration overlay - MUST be outside Dialog for proper centering */}
+    {showCelebration && successCount > 0 && (
+      <InviteCelebration
+        successCount={successCount}
+        onComplete={handleCelebrationComplete}
+      />
+    )}
+  </>
   );
 }
