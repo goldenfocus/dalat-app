@@ -4,7 +4,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import type { Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
-import { EventMap } from "@/components/map/event-map";
+import { DynamicEventMap } from "@/components/map/dynamic-event-map";
 import { AuthButton } from "@/components/auth-button";
 import { getEffectiveUser } from "@/lib/god-mode";
 import type { Event, VenueMapMarker } from "@/lib/types";
@@ -89,7 +89,7 @@ function MapLoading() {
 
 async function MapContent() {
   const { events, happeningEventIds, venues } = await getMapData();
-  return <EventMap events={events} happeningEventIds={happeningEventIds} venues={venues} />;
+  return <DynamicEventMap events={events} happeningEventIds={happeningEventIds} venues={venues} />;
 }
 
 export default async function MapPage({ params }: PageProps) {

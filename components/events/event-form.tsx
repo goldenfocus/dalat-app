@@ -247,6 +247,14 @@ export function EventForm({
     event?.title_position ?? "bottom"
   );
 
+  // Image fit state (for flyer customization)
+  const [imageFit, setImageFit] = useState<"cover" | "contain">(
+    event?.image_fit ?? "cover"
+  );
+  const [focalPoint, setFocalPoint] = useState<string | null>(
+    event?.focal_point ?? null
+  );
+
   // Online event state
   const [isOnline, setIsOnline] = useState(event?.is_online ?? false);
   const [onlineLink, setOnlineLink] = useState(event?.online_link ?? "");
@@ -521,7 +529,11 @@ export function EventForm({
           is_online: isOnline,
           online_link: isOnline ? (onlineLink || null) : null,
           title_position: titlePosition,
+          image_fit: imageFit,
+          focal_point: focalPoint,
           capacity,
+          price_type: priceType,
+          ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
           organizer_id: organizerId,
           venue_id: venueIdFromForm || null,
         };
@@ -578,7 +590,11 @@ export function EventForm({
               is_online: isOnline,
               online_link: isOnline ? (onlineLink || null) : null,
               title_position: titlePosition,
+              image_fit: imageFit,
+              focal_point: focalPoint,
               capacity,
+              price_type: priceType,
+              ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
               rrule,
               starts_at_time: time + ":00", // Convert "19:00" to "19:00:00"
               first_occurrence: date,
@@ -629,7 +645,11 @@ export function EventForm({
               is_online: isOnline,
               online_link: isOnline ? (onlineLink || null) : null,
               title_position: titlePosition,
+              image_fit: imageFit,
+              focal_point: focalPoint,
               capacity,
+              price_type: priceType,
+              ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
               created_by: userId,
               status: "published",
               organizer_id: organizerId,
@@ -719,6 +739,10 @@ export function EventForm({
               onImageChange={handleImageChange}
               titlePosition={titlePosition}
               onTitlePositionChange={setTitlePosition}
+              imageFit={imageFit}
+              onImageFitChange={setImageFit}
+              focalPoint={focalPoint}
+              onFocalPointChange={setFocalPoint}
             />
           )}
 
@@ -942,6 +966,14 @@ export function EventForm({
               )}
             </div>
           </div>
+
+          {/* Tickets & Pricing */}
+          <TicketTierInput
+            priceType={priceType}
+            tiers={ticketTiers}
+            onPriceTypeChange={setPriceType}
+            onTiersChange={setTicketTiers}
+          />
 
           {/* Sponsors */}
           <Collapsible className="pt-4 border-t">

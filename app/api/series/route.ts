@@ -4,6 +4,13 @@ import { addMonths, format, parseISO } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import { generateSeriesInstances, isValidRRule } from "@/lib/recurrence";
 
+interface TicketTier {
+  name: string;
+  price: number;
+  currency: string;
+  description?: string;
+}
+
 interface CreateSeriesRequest {
   title: string;
   description?: string;
@@ -17,7 +24,11 @@ interface CreateSeriesRequest {
   is_online?: boolean;
   online_link?: string;
   title_position?: "top" | "middle" | "bottom";
+  image_fit?: "cover" | "contain";
+  focal_point?: string | null;
   capacity?: number;
+  price_type?: "free" | "paid" | "donation" | null;
+  ticket_tiers?: TicketTier[] | null;
   tribe_id?: string;
   organizer_id?: string;
   rrule: string;
@@ -111,8 +122,12 @@ export async function POST(request: Request) {
         is_online: body.is_online || false,
         online_link: body.is_online ? (body.online_link || null) : null,
         title_position: body.title_position || "bottom",
+        image_fit: body.image_fit || "cover",
+        focal_point: body.focal_point || null,
         timezone: DALAT_TIMEZONE,
         capacity: body.capacity || null,
+        price_type: body.price_type || null,
+        ticket_tiers: body.ticket_tiers || null,
         tribe_id: body.tribe_id || null,
         organizer_id: body.organizer_id || null,
         created_by: user.id,
@@ -176,8 +191,12 @@ export async function POST(request: Request) {
         is_online: body.is_online || false,
         online_link: body.is_online ? (body.online_link || null) : null,
         title_position: body.title_position || "bottom",
+        image_fit: body.image_fit || "cover",
+        focal_point: body.focal_point || null,
         timezone: DALAT_TIMEZONE,
         capacity: body.capacity || null,
+        price_type: body.price_type || null,
+        ticket_tiers: body.ticket_tiers || null,
         tribe_id: body.tribe_id || null,
         organizer_id: body.organizer_id || null,
         created_by: user.id,

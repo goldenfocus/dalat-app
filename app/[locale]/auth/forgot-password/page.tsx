@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EmailInput } from "@/components/ui/email-input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -85,12 +86,12 @@ export default function ForgotPasswordPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="email">{t("email")}</Label>
-                  <Input
+                  <EmailInput
                     id="email"
-                    type="email"
                     placeholder={t("emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onBlur={(e) => setEmail(e.target.value)}
                     disabled={isLoading}
                     autoComplete="email"
                     className="h-12"

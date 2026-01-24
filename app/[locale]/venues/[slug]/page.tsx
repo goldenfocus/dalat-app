@@ -17,6 +17,7 @@ import {
   Sun,
   Dog,
   Accessibility,
+  Camera,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
@@ -28,6 +29,10 @@ import { JsonLd, generateLocalBusinessSchema, generateBreadcrumbSchema } from "@
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
 import { VenueHoursBadge } from "@/components/venues/venue-hours-badge";
 import { getTranslationsWithFallback } from "@/lib/translations";
+import { PhotoGallery } from "@/components/ui/photo-gallery";
+import { VenueSectionNav } from "@/components/venues/venue-section-nav";
+import { PastEventsSection } from "@/components/venues/past-events-section";
+import { VenueMap } from "@/components/venues/venue-map";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -59,6 +64,15 @@ interface VenueData {
   };
 }
 
+interface PastEvent {
+  id: string;
+  slug: string;
+  title: string;
+  image_url: string | null;
+  starts_at: string;
+  ends_at: string | null;
+}
+
 async function getVenueData(slug: string): Promise<VenueData | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_venue_by_slug", {
@@ -71,6 +85,25 @@ async function getVenueData(slug: string): Promise<VenueData | null> {
   }
 
   return data as VenueData;
+}
+
+async function getPastEvents(venueId: string): Promise<PastEvent[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("events")
+    .select("id, slug, title, image_url, starts_at, ends_at")
+    .eq("venue_id", venueId)
+    .eq("status", "published")
+    .lt("starts_at", new Date().toISOString())
+    .order("starts_at", { ascending: false })
+    .limit(12);
+
+  if (error) {
+    console.error("Error fetching past events:", error);
+    return [];
+  }
+
+  return data || [];
 }
 
 async function isUserLoggedIn(): Promise<boolean> {
@@ -108,7 +141,10 @@ export default async function VenuePage({ params }: PageProps) {
   }
 
   const { venue, upcoming_events, happening_now, past_events_count, recent_activity } = venueData;
-  const isLoggedIn = await isUserLoggedIn();
+  const [isLoggedIn, pastEvents] = await Promise.all([
+    isUserLoggedIn(),
+    getPastEvents(venue.id),
+  ]);
 
   // Fetch translations for venue name and description
   const venueTranslations = await getTranslationsWithFallback(
@@ -163,6 +199,20 @@ export default async function VenuePage({ params }: PageProps) {
     { key: "wheelchair", icon: Accessibility, has: venue.is_wheelchair_accessible, label: t("amenities.wheelchair") },
   ].filter((a) => a.has);
 
+  // Build dynamic sections for navigation
+  const hasEvents = upcoming_events.length > 0 || happening_now.length > 0;
+  const hasPhotos = venue.photos && venue.photos.length > 0;
+  const hasHours = !!venue.operating_hours;
+  const hasContact = venue.phone || venue.email || venue.website_url || venue.facebook_url || venue.instagram_url || venue.zalo_url;
+
+  const sections = [
+    { id: "overview", label: t("overview") },
+    hasEvents && { id: "events", label: t("upcomingEvents") },
+    hasPhotos && { id: "gallery", label: t("gallery") },
+    hasHours && { id: "hours", label: t("hours") },
+    hasContact && { id: "contact", label: t("contact") },
+  ].filter((s): s is { id: string; label: string } => !!s);
+
   return (
     <main className="min-h-screen pb-8">
       <JsonLd data={[localBusinessSchema, breadcrumbSchema]} />
@@ -180,76 +230,153 @@ export default async function VenuePage({ params }: PageProps) {
         </div>
       </nav>
 
-      {/* Cover photo */}
-      {venue.cover_photo_url && (
-        <div className="aspect-[2/1] sm:aspect-[3/1] bg-muted overflow-hidden">
-          <img
-            src={venue.cover_photo_url}
-            alt=""
-            className="w-full h-full object-cover"
-          />
+      {/* Hero Section with Cover Photo */}
+      {venue.cover_photo_url ? (
+        <div className="relative">
+          {/* Cover Image */}
+          <div className="aspect-[16/9] sm:aspect-[2.5/1] bg-muted overflow-hidden">
+            <img
+              src={venue.cover_photo_url}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </div>
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+          {/* Hero Content */}
+          <div className="absolute bottom-0 left-0 right-0">
+            <div className="container max-w-4xl mx-auto px-4 pb-6 sm:pb-8">
+              <div className="flex items-end gap-4 sm:gap-6">
+                {/* Logo */}
+                {venue.logo_url ? (
+                  <img
+                    src={venue.logo_url}
+                    alt={translatedName}
+                    className="w-20 h-20 sm:w-28 sm:h-28 rounded-xl object-cover border-4 border-white/20 shadow-2xl bg-background"
+                  />
+                ) : (
+                  <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border-4 border-white/20 shadow-2xl">
+                    {TypeIcon ? (
+                      <TypeIcon className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+                    ) : (
+                      <MapPin className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+                    )}
+                  </div>
+                )}
+
+                <div className="flex-1 pb-1">
+                  {/* Verified Badge */}
+                  {venue.is_verified && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-primary/20 text-primary-foreground backdrop-blur-sm mb-2">
+                      <BadgeCheck className="w-3.5 h-3.5" />
+                      {t("verified")}
+                    </span>
+                  )}
+
+                  {/* Name */}
+                  <h1 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg">
+                    {translatedName}
+                  </h1>
+
+                  {/* Type, open status, price */}
+                  <div className="flex items-center gap-3 mt-2 flex-wrap">
+                    {typeConfig && TypeIcon && (
+                      <span className="inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded bg-white/20 text-white backdrop-blur-sm">
+                        <TypeIcon className="w-3.5 h-3.5" />
+                        {typeConfig.label}
+                      </span>
+                    )}
+                    {venue.operating_hours && (
+                      <VenueHoursBadge operatingHours={venue.operating_hours} />
+                    )}
+                    {venue.price_range && (
+                      <span className="text-sm text-white/80">
+                        {venue.price_range}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Address */}
+                  {venue.address && (
+                    <p className="text-sm text-white/70 mt-2 flex items-start gap-1">
+                      <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      {venue.address}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* No cover photo - simple header */
+        <div className="container max-w-4xl mx-auto px-4 py-6">
+          <div className="flex items-start gap-4 sm:gap-6">
+            {/* Logo */}
+            {venue.logo_url ? (
+              <img
+                src={venue.logo_url}
+                alt={translatedName}
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border-4 border-background shadow-lg bg-background"
+              />
+            ) : (
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-primary/10 flex items-center justify-center border-4 border-background shadow-lg">
+                {TypeIcon ? (
+                  <TypeIcon className={`w-10 h-10 ${typeConfig?.color}`} />
+                ) : (
+                  <MapPin className="w-10 h-10 text-primary" />
+                )}
+              </div>
+            )}
+
+            <div className="flex-1">
+              {/* Verified Badge */}
+              {venue.is_verified && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary mb-2">
+                  <BadgeCheck className="w-3.5 h-3.5" />
+                  {t("verified")}
+                </span>
+              )}
+
+              {/* Name */}
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                {translatedName}
+              </h1>
+
+              {/* Type and open status */}
+              <div className="flex items-center gap-3 mt-2 flex-wrap">
+                {typeConfig && TypeIcon && (
+                  <span
+                    className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded ${typeConfig.bgColor} ${typeConfig.darkBgColor} ${typeConfig.color} ${typeConfig.darkColor}`}
+                  >
+                    <TypeIcon className="w-3.5 h-3.5" />
+                    {typeConfig.label}
+                  </span>
+                )}
+                {venue.operating_hours && (
+                  <VenueHoursBadge operatingHours={venue.operating_hours} />
+                )}
+                {venue.price_range && (
+                  <span className="text-sm text-muted-foreground">
+                    {venue.price_range}
+                  </span>
+                )}
+              </div>
+
+              {/* Address */}
+              {venue.address && (
+                <p className="text-sm text-muted-foreground mt-2 flex items-start gap-1">
+                  <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  {venue.address}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="container max-w-4xl mx-auto px-4">
-        {/* Venue header */}
-        <div className={`flex items-start gap-4 sm:gap-6 py-6 ${venue.cover_photo_url ? "-mt-12 relative" : ""}`}>
-          {/* Logo */}
-          {venue.logo_url ? (
-            <img
-              src={venue.logo_url}
-              alt={translatedName}
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border-4 border-background shadow-lg bg-background"
-            />
-          ) : (
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-primary/10 flex items-center justify-center border-4 border-background shadow-lg">
-              {TypeIcon ? (
-                <TypeIcon className={`w-10 h-10 ${typeConfig?.color}`} />
-              ) : (
-                <MapPin className="w-10 h-10 text-primary" />
-              )}
-            </div>
-          )}
-
-          <div className={venue.cover_photo_url ? "flex-1 pt-12 sm:pt-14" : "flex-1"}>
-            {/* Name and badges */}
-            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 flex-wrap">
-              {translatedName}
-              {venue.is_verified && (
-                <BadgeCheck className="w-6 h-6 text-primary flex-shrink-0" />
-              )}
-            </h1>
-
-            {/* Type and open status */}
-            <div className="flex items-center gap-3 mt-2 flex-wrap">
-              {typeConfig && TypeIcon && (
-                <span
-                  className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded ${typeConfig.bgColor} ${typeConfig.darkBgColor} ${typeConfig.color} ${typeConfig.darkColor}`}
-                >
-                  <TypeIcon className="w-3.5 h-3.5" />
-                  {typeConfig.label}
-                </span>
-              )}
-              {venue.operating_hours && (
-                <VenueHoursBadge operatingHours={venue.operating_hours} />
-              )}
-              {venue.price_range && (
-                <span className="text-sm text-muted-foreground">
-                  {venue.price_range}
-                </span>
-              )}
-            </div>
-
-            {/* Address */}
-            {venue.address && (
-              <p className="text-sm text-muted-foreground mt-2 flex items-start gap-1">
-                <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                {venue.address}
-              </p>
-            )}
-          </div>
-        </div>
-
+      <div className="container max-w-4xl mx-auto px-4 pt-6">
         {/* Claim banner */}
         {showClaimBanner && (
           <div className="mb-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
@@ -307,7 +434,40 @@ export default async function VenuePage({ params }: PageProps) {
           )}
         </div>
 
-        {/* Happening now */}
+        {/* Section Navigation */}
+        <VenueSectionNav sections={sections} />
+
+        {/* Overview Section */}
+        <section id="overview" className="pt-6">
+          {/* About section */}
+          {translatedDescription && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-3">{t("about")}</h2>
+              <p className="text-muted-foreground whitespace-pre-wrap">{translatedDescription}</p>
+            </div>
+          )}
+
+          {/* Amenities */}
+          {amenities.length > 0 && (
+            <div className="mb-8">
+              <div className="flex flex-wrap gap-2">
+                {amenities.map((amenity) => (
+                  <span
+                    key={amenity.key}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm"
+                  >
+                    <amenity.icon className="w-4 h-4" />
+                    {amenity.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Events Section */}
+        <section id="events" className="pt-2">
+          {/* Happening now */}
         {happening_now.length > 0 && (
           <section className="mb-8">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -373,40 +533,34 @@ export default async function VenuePage({ params }: PageProps) {
 
         {/* No events state */}
         {upcoming_events.length === 0 && happening_now.length === 0 && (
-          <section className="mb-8 text-center py-8 bg-muted/30 rounded-lg">
+          <div className="mb-8 text-center py-8 bg-muted/30 rounded-lg">
             <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
             <p className="text-muted-foreground">{t("noUpcomingEvents")}</p>
+          </div>
+        )}
+
+        {/* Past Events */}
+        <PastEventsSection
+          events={pastEvents}
+          locale={locale as Locale}
+          label={t("pastEvents")}
+        />
+        </section>
+
+        {/* Gallery Section */}
+        {venue.photos && venue.photos.length > 0 && (
+          <section id="gallery" className="mb-8 pt-2">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Camera className="w-5 h-5" />
+              {t("photos")}
+            </h2>
+            <PhotoGallery photos={venue.photos} />
           </section>
         )}
 
-        {/* About section */}
-        {translatedDescription && (
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-3">{t("about")}</h2>
-            <p className="text-muted-foreground whitespace-pre-wrap">{translatedDescription}</p>
-          </section>
-        )}
-
-        {/* Amenities */}
-        {amenities.length > 0 && (
-          <section className="mb-8">
-            <div className="flex flex-wrap gap-2">
-              {amenities.map((amenity) => (
-                <span
-                  key={amenity.key}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm"
-                >
-                  <amenity.icon className="w-4 h-4" />
-                  {amenity.label}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Operating hours */}
+        {/* Hours Section */}
         {venue.operating_hours && (
-          <section className="mb-8">
+          <section id="hours" className="mb-8 pt-2">
             <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
               <Clock className="w-5 h-5" />
               {t("hours")}
@@ -444,6 +598,101 @@ export default async function VenuePage({ params }: PageProps) {
           </section>
         )}
 
+        {/* Contact Section */}
+        {(venue.phone || venue.email || venue.website_url || venue.facebook_url || venue.instagram_url || venue.zalo_url) && (
+          <section id="contact" className="mb-8 pt-2 border-t border-border">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 pt-4">
+              <Mail className="w-5 h-5" />
+              {t("contact")}
+            </h2>
+
+            {/* Contact info grid */}
+            <div className="grid gap-3 sm:grid-cols-2 mb-4">
+              {venue.phone && (
+                <a
+                  href={`tel:${venue.phone}`}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted active:scale-[0.98] transition-all"
+                >
+                  <Phone className="w-5 h-5 text-muted-foreground" />
+                  <span>{venue.phone}</span>
+                </a>
+              )}
+              {venue.email && (
+                <a
+                  href={`mailto:${venue.email}`}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted active:scale-[0.98] transition-all"
+                >
+                  <Mail className="w-5 h-5 text-muted-foreground" />
+                  <span className="truncate">{venue.email}</span>
+                </a>
+              )}
+              {venue.website_url && (
+                <a
+                  href={venue.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted active:scale-[0.98] transition-all"
+                >
+                  <Globe className="w-5 h-5 text-muted-foreground" />
+                  <span className="truncate">Website</span>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground ml-auto" />
+                </a>
+              )}
+            </div>
+
+            {/* Social links */}
+            {(venue.facebook_url || venue.instagram_url || venue.zalo_url) && (
+              <div className="flex gap-2 -ml-3">
+                {venue.facebook_url && (
+                  <a
+                    href={venue.facebook_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline flex items-center gap-1 px-3 py-2 rounded-lg active:scale-95 transition-all"
+                  >
+                    Facebook
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+                {venue.instagram_url && (
+                  <a
+                    href={venue.instagram_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline flex items-center gap-1 px-3 py-2 rounded-lg active:scale-95 transition-all"
+                  >
+                    Instagram
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+                {venue.zalo_url && (
+                  <a
+                    href={venue.zalo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline flex items-center gap-1 px-3 py-2 rounded-lg active:scale-95 transition-all"
+                  >
+                    Zalo
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Map */}
+            <div className="mt-6">
+              <VenueMap
+                latitude={venue.latitude}
+                longitude={venue.longitude}
+                name={translatedName}
+                address={venue.address}
+                directionsLabel={t("getDirections")}
+                viewOnMapLabel={t("viewOnMap")}
+              />
+            </div>
+          </section>
+        )}
+
         {/* Activity stats */}
         {(past_events_count > 0 || recent_activity.total_visitors > 0) && (
           <section className="mb-8">
@@ -457,47 +706,6 @@ export default async function VenuePage({ params }: PageProps) {
                 <span>
                   {t("recentActivity", { count: recent_activity.total_visitors })}
                 </span>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* Social links - with proper touch targets */}
-        {(venue.facebook_url || venue.instagram_url || venue.zalo_url) && (
-          <section className="border-t border-border pt-6">
-            <div className="flex gap-2 -ml-3">
-              {venue.facebook_url && (
-                <a
-                  href={venue.facebook_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline flex items-center gap-1 px-3 py-2 rounded-lg active:scale-95 transition-all"
-                >
-                  Facebook
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-              {venue.instagram_url && (
-                <a
-                  href={venue.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline flex items-center gap-1 px-3 py-2 rounded-lg active:scale-95 transition-all"
-                >
-                  Instagram
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-              {venue.zalo_url && (
-                <a
-                  href={venue.zalo_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline flex items-center gap-1 px-3 py-2 rounded-lg active:scale-95 transition-all"
-                >
-                  Zalo
-                  <ExternalLink className="w-3 h-3" />
-                </a>
               )}
             </div>
           </section>

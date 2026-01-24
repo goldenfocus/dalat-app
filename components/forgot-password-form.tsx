@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { EmailInput } from "@/components/ui/email-input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/lib/i18n/routing";
 import { useState } from "react";
@@ -73,13 +74,13 @@ export function ForgotPasswordForm({
               <div className="flex flex-col gap-6">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input
+                  <EmailInput
                     id="email"
-                    type="email"
                     placeholder="m@example.com"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onBlur={(e) => setEmail(e.target.value)}
                   />
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}

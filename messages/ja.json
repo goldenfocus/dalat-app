@@ -246,7 +246,16 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "参加者がイベントに参加するためのリンク",
     "sponsors": "スポンサー",
-    "settings": "設定"
+    "settings": "設定",
+    "paidEvent": "このイベントはチケット/入場料が必要です",
+    "fixedPrice": "固定価格",
+    "donation": "投げ銭",
+    "donationHelp": "参加者が自分で金額を決められます",
+    "tier": "チケット種別",
+    "tierName": "種別名（例：VIP）",
+    "tierDescription": "説明（任意）",
+    "pricePlaceholder": "100000",
+    "addTier": "種別を追加"
   },
   "eventActions": {
     "eventOptions": "イベントオプション",
@@ -1142,7 +1151,10 @@
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom"
+    "titlePositionBottom": "Title at bottom",
+    "clickToPreview": "クリックでプレビュー",
+    "preview": "プレビュー",
+    "download": "ダウンロード"
   },
   "archive": {
     "events": "イベント",
@@ -1432,7 +1444,14 @@
       "$$": "普通",
       "$$$": "高級",
       "$$$$": "最高級"
-    }
+    },
+    "photos": "写真",
+    "contact": "お問い合わせ",
+    "cuisineTypes": "料理の種類",
+    "viewOnMap": "地図で見る",
+    "openInGoogleMaps": "Googleマップで開く",
+    "overview": "概要",
+    "gallery": "ギャラリー"
   },
   "comments": {
     "title": "コメント",

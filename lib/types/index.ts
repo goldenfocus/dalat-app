@@ -36,6 +36,16 @@ export type TranslationStatus = 'auto' | 'reviewed' | 'edited';
 export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog' | 'venue' | 'comment';
 export type TranslationFieldName = 'title' | 'description' | 'text_content' | 'bio' | 'story_content' | 'technical_content' | 'meta_description';
 
+// Event pricing types
+export type PriceType = 'free' | 'paid' | 'donation';
+
+export interface TicketTier {
+  name: string;
+  price: number;
+  currency: string;
+  description?: string;
+}
+
 export interface ContentTranslation {
   id: string;
   content_type: TranslationContentType;
@@ -366,6 +376,11 @@ export interface Event {
   online_link: string | null;
   // Flyer customization
   title_position: "top" | "middle" | "bottom";
+  image_fit: "cover" | "contain";
+  focal_point: string | null; // e.g., "50% 80%" for object-position
+  // Pricing
+  price_type: PriceType | null;
+  ticket_tiers: TicketTier[] | null;
   status: "draft" | "published" | "cancelled";
   created_by: string;
   created_at: string;
@@ -828,6 +843,11 @@ export interface EventSeries {
   online_link: string | null;
   // Flyer customization
   title_position: "top" | "middle" | "bottom";
+  image_fit: "cover" | "contain";
+  focal_point: string | null; // e.g., "50% 80%" for object-position
+  // Pricing
+  price_type: PriceType | null;
+  ticket_tiers: TicketTier[] | null;
   tribe_id: string | null;
   organizer_id: string | null;
   created_by: string;

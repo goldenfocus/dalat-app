@@ -246,7 +246,16 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "ลิงก์ที่ผู้เข้าร่วมจะใช้เข้ากิจกรรม",
     "sponsors": "ผู้สนับสนุน",
-    "settings": "การตั้งค่า"
+    "settings": "การตั้งค่า",
+    "paidEvent": "กิจกรรมนี้มีค่าบัตร/ค่าเข้า",
+    "fixedPrice": "ราคาคงที่",
+    "donation": "บริจาคตามใจ",
+    "donationHelp": "ผู้เข้าร่วมเลือกจำนวนบริจาคเอง",
+    "tier": "ระดับ",
+    "tierName": "ชื่อระดับ (เช่น: VIP)",
+    "tierDescription": "รายละเอียด (ไม่บังคับ)",
+    "pricePlaceholder": "100000",
+    "addTier": "เพิ่มระดับ"
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",
@@ -1142,7 +1151,10 @@
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom"
+    "titlePositionBottom": "Title at bottom",
+    "clickToPreview": "คลิกเพื่อดูตัวอย่าง",
+    "preview": "ดูตัวอย่าง",
+    "download": "ดาวน์โหลด"
   },
   "archive": {
     "events": "กิจกรรม",
@@ -1432,7 +1444,14 @@
       "$$": "ปานกลาง",
       "$$$": "หรูหรา",
       "$$$$": "พรีเมียม"
-    }
+    },
+    "photos": "รูปภาพ",
+    "contact": "ติดต่อ",
+    "cuisineTypes": "ประเภทอาหาร",
+    "viewOnMap": "ดูบนแผนที่",
+    "openInGoogleMaps": "เปิดใน Google Maps",
+    "overview": "ภาพรวม",
+    "gallery": "แกลเลอรี"
   },
   "comments": {
     "title": "ความคิดเห็น",

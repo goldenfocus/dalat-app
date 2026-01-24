@@ -1,5 +1,3 @@
-"use client";
-
 import { Repeat } from "lucide-react";
 import { getShortRRuleLabel } from "@/lib/recurrence";
 import { cn } from "@/lib/utils";

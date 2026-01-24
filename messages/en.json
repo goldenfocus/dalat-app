@@ -260,7 +260,16 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "The link where attendees will join the event",
     "sponsors": "Sponsors",
-    "settings": "Settings"
+    "settings": "Settings",
+    "paidEvent": "This event has tickets/admission",
+    "fixedPrice": "Fixed price",
+    "donation": "Pay what you can",
+    "donationHelp": "Attendees choose their own contribution amount",
+    "tier": "Tier",
+    "tierName": "Tier name (e.g., VIP)",
+    "tierDescription": "Description (optional)",
+    "pricePlaceholder": "100000",
+    "addTier": "Add tier"
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",
@@ -330,7 +339,10 @@
     "removing": "Removing...",
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom"
+    "titlePositionBottom": "Title at bottom",
+    "clickToPreview": "Click to preview",
+    "preview": "Preview",
+    "download": "Download"
   },
   "eventActions": {
     "eventOptions": "Event options",
@@ -1493,7 +1505,14 @@
       "$$": "Moderate",
       "$$$": "Upscale",
       "$$$$": "Fine dining"
-    }
+    },
+    "photos": "Photos",
+    "contact": "Contact",
+    "cuisineTypes": "Cuisine",
+    "viewOnMap": "View on Map",
+    "openInGoogleMaps": "Open in Google Maps",
+    "overview": "Overview",
+    "gallery": "Gallery"
   },
   "comments": {
     "title": "Comments",

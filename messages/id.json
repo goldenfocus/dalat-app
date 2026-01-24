@@ -246,7 +246,16 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "Tautan untuk peserta bergabung ke acara",
     "sponsors": "Sponsor",
-    "settings": "Pengaturan"
+    "settings": "Pengaturan",
+    "paidEvent": "Acara ini memerlukan tiket/biaya masuk",
+    "fixedPrice": "Harga tetap",
+    "donation": "Bayar seikhlasnya",
+    "donationHelp": "Peserta memilih jumlah kontribusi mereka sendiri",
+    "tier": "Tingkat",
+    "tierName": "Nama tingkat (cth: VIP)",
+    "tierDescription": "Deskripsi (opsional)",
+    "pricePlaceholder": "100000",
+    "addTier": "Tambah tingkat"
   },
   "eventActions": {
     "eventOptions": "Opsi acara",
@@ -1161,7 +1170,10 @@
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom"
+    "titlePositionBottom": "Title at bottom",
+    "clickToPreview": "Klik untuk pratinjau",
+    "preview": "Pratinjau",
+    "download": "Unduh"
   },
   "archive": {
     "events": "Acara",
@@ -1451,7 +1463,14 @@
       "$$": "Sedang",
       "$$$": "Mahal",
       "$$$$": "Premium"
-    }
+    },
+    "photos": "Foto",
+    "contact": "Kontak",
+    "cuisineTypes": "Jenis Masakan",
+    "viewOnMap": "Lihat di Peta",
+    "openInGoogleMaps": "Buka di Google Maps",
+    "overview": "Ikhtisar",
+    "gallery": "Galeri"
   },
   "feedback": {
     "howWasIt": "How was the event?",

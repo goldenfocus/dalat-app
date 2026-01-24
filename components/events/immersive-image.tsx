@@ -13,6 +13,8 @@ interface ImmersiveImageProps {
   alt: string;
   children?: React.ReactNode;
   priority?: boolean;
+  imageFit?: "cover" | "contain";
+  focalPoint?: string | null;
 }
 
 /**
@@ -25,7 +27,7 @@ interface ImmersiveImageProps {
  * LCP optimization: For priority images, defer aspect ratio detection to avoid
  * blocking the initial render with a state update.
  */
-export function ImmersiveImage({ src, alt, children, priority = false }: ImmersiveImageProps) {
+export function ImmersiveImage({ src, alt, children, priority = false, imageFit, focalPoint }: ImmersiveImageProps) {
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
 
@@ -64,8 +66,10 @@ export function ImmersiveImage({ src, alt, children, priority = false }: Immersi
     }
   }, [priority, imageElement]);
 
-  // Extreme landscape (>2:1) gets cropped to fill
-  const useObjectCover = aspectRatio !== null && aspectRatio > 2.0;
+  // If imageFit is explicitly set, use that; otherwise use smart detection
+  const useObjectCover = imageFit
+    ? imageFit === "cover"
+    : aspectRatio !== null && aspectRatio > 2.0;
   // Portrait images are already mobile-optimized, no fill needed
   const needsBackgroundFill = aspectRatio !== null && aspectRatio >= 0.9 && !useObjectCover;
 
@@ -92,6 +96,7 @@ export function ImmersiveImage({ src, alt, children, priority = false }: Immersi
         blurDataURL={BLUR_DATA_URL}
         onLoad={handleLoad}
         className={`z-10 ${useObjectCover ? "object-cover" : "object-contain"}`}
+        style={useObjectCover && focalPoint ? { objectPosition: focalPoint } : undefined}
       />
 
       {/* Overlay children (e.g., expand icon) */}

@@ -78,7 +78,8 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle, priorit
             imageIsVideo ? (
               <video
                 src={event.image_url!}
-                className="object-cover w-full h-full"
+                className={`w-full h-full ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
+                style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                 muted
                 loop
                 playsInline
@@ -92,7 +93,8 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle, priorit
                 alt={displayTitle}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="object-cover transition-transform group-hover:scale-105"
+                className={`transition-transform group-hover:scale-105 ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
+                style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                 priority={priority}
                 fetchPriority={priority ? "high" : "auto"}
                 placeholder="blur"

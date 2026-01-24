@@ -246,7 +246,16 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "参与者加入活动的链接",
     "sponsors": "赞助商",
-    "settings": "设置"
+    "settings": "设置",
+    "paidEvent": "此活动需要购票/门票",
+    "fixedPrice": "固定价格",
+    "donation": "自愿捐款",
+    "donationHelp": "参与者自行选择捐款金额",
+    "tier": "等级",
+    "tierName": "等级名称（如：VIP）",
+    "tierDescription": "描述（可选）",
+    "pricePlaceholder": "100000",
+    "addTier": "添加等级"
   },
   "eventActions": {
     "eventOptions": "活动选项",
@@ -1142,7 +1151,10 @@
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom"
+    "titlePositionBottom": "Title at bottom",
+    "clickToPreview": "点击预览",
+    "preview": "预览",
+    "download": "下载"
   },
   "archive": {
     "events": "活动",
@@ -1432,7 +1444,14 @@
       "$$": "中等",
       "$$$": "高档",
       "$$$$": "豪华"
-    }
+    },
+    "photos": "照片",
+    "contact": "联系方式",
+    "cuisineTypes": "菜系",
+    "viewOnMap": "在地图上查看",
+    "openInGoogleMaps": "在谷歌地图中打开",
+    "overview": "概览",
+    "gallery": "图库"
   },
   "comments": {
     "title": "评论",

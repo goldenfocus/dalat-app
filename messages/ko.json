@@ -246,7 +246,16 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "참석자들이 이벤트에 참여할 링크",
     "sponsors": "후원사",
-    "settings": "설정"
+    "settings": "설정",
+    "paidEvent": "티켓/입장료가 있는 이벤트입니다",
+    "fixedPrice": "정가",
+    "donation": "자유 기부",
+    "donationHelp": "참석자가 기부 금액을 직접 정합니다",
+    "tier": "등급",
+    "tierName": "등급 이름 (예: VIP)",
+    "tierDescription": "설명 (선택사항)",
+    "pricePlaceholder": "100000",
+    "addTier": "등급 추가"
   },
   "eventActions": {
     "eventOptions": "이벤트 옵션",
@@ -1142,7 +1151,10 @@
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom"
+    "titlePositionBottom": "Title at bottom",
+    "clickToPreview": "클릭하여 미리보기",
+    "preview": "미리보기",
+    "download": "다운로드"
   },
   "archive": {
     "events": "이벤트",
@@ -1432,7 +1444,14 @@
       "$$": "보통",
       "$$$": "고급",
       "$$$$": "최고급"
-    }
+    },
+    "photos": "사진",
+    "contact": "연락처",
+    "cuisineTypes": "요리 종류",
+    "viewOnMap": "지도에서 보기",
+    "openInGoogleMaps": "Google 지도에서 열기",
+    "overview": "개요",
+    "gallery": "갤러리"
   },
   "comments": {
     "title": "댓글",

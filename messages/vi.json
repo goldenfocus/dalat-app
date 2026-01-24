@@ -246,7 +246,16 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "Liên kết để người tham dự tham gia sự kiện",
     "sponsors": "Nhà tài trợ",
-    "settings": "Cài đặt"
+    "settings": "Cài đặt",
+    "paidEvent": "Sự kiện có vé/phí vào cửa",
+    "fixedPrice": "Giá cố định",
+    "donation": "Tùy tâm đóng góp",
+    "donationHelp": "Người tham dự tự chọn mức đóng góp",
+    "tier": "Hạng",
+    "tierName": "Tên hạng (VD: VIP)",
+    "tierDescription": "Mô tả (tùy chọn)",
+    "pricePlaceholder": "100000",
+    "addTier": "Thêm hạng vé"
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",
@@ -1142,7 +1151,10 @@
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom"
+    "titlePositionBottom": "Title at bottom",
+    "clickToPreview": "Nhấn để xem trước",
+    "preview": "Xem trước",
+    "download": "Tải xuống"
   },
   "search": {
     "title": "Sự kiện {query} tại Đà Lạt",
@@ -1432,7 +1444,14 @@
       "$$": "Trung bình",
       "$$$": "Cao cấp",
       "$$$$": "Sang trọng"
-    }
+    },
+    "photos": "Hình ảnh",
+    "contact": "Liên hệ",
+    "cuisineTypes": "Ẩm thực",
+    "viewOnMap": "Xem trên bản đồ",
+    "openInGoogleMaps": "Mở trong Google Maps",
+    "overview": "Tổng quan",
+    "gallery": "Thư viện ảnh"
   },
   "comments": {
     "title": "Bình luận",

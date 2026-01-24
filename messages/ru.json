@@ -246,7 +246,16 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "Ссылка для присоединения участников",
     "sponsors": "Спонсоры",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "paidEvent": "Это платное мероприятие",
+    "fixedPrice": "Фиксированная цена",
+    "donation": "Свободный взнос",
+    "donationHelp": "Участники сами выбирают сумму взноса",
+    "tier": "Уровень",
+    "tierName": "Название уровня (напр., VIP)",
+    "tierDescription": "Описание (необязательно)",
+    "pricePlaceholder": "100000",
+    "addTier": "Добавить уровень"
   },
   "eventActions": {
     "eventOptions": "Опции события",
@@ -1142,7 +1151,10 @@
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom"
+    "titlePositionBottom": "Title at bottom",
+    "clickToPreview": "Нажмите для просмотра",
+    "preview": "Просмотр",
+    "download": "Скачать"
   },
   "archive": {
     "events": "События",
@@ -1432,7 +1444,14 @@
       "$$": "Средне",
       "$$$": "Дорого",
       "$$$$": "Премиум"
-    }
+    },
+    "photos": "Фотографии",
+    "contact": "Контакты",
+    "cuisineTypes": "Кухня",
+    "viewOnMap": "Показать на карте",
+    "openInGoogleMaps": "Открыть в Google Maps",
+    "overview": "Обзор",
+    "gallery": "Галерея"
   },
   "comments": {
     "title": "Комментарии",

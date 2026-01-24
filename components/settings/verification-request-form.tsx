@@ -6,6 +6,8 @@ import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EmailInput } from "@/components/ui/email-input";
+import { UrlInput } from "@/components/ui/url-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { VerificationRequest, OrganizerType } from "@/lib/types";
@@ -141,11 +143,11 @@ export function VerificationRequestForm({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="contactEmail">Contact Email</Label>
-              <Input
+              <EmailInput
                 id="contactEmail"
-                type="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
+                onBlur={(e) => setContactEmail(e.target.value)}
                 placeholder="contact@example.com"
               />
             </div>

@@ -64,7 +64,8 @@ export function EventCardImmersive({ event, counts, seriesRrule, priority = fals
             imageIsVideo ? (
               <video
                 src={event.image_url!}
-                className="absolute inset-0 w-full h-full object-contain"
+                className={`absolute inset-0 w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
+                style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                 muted
                 loop
                 playsInline
@@ -72,7 +73,13 @@ export function EventCardImmersive({ event, counts, seriesRrule, priority = fals
                 preload="metadata"
               />
             ) : (
-              <ImmersiveImage src={event.image_url!} alt={displayTitle} priority={priority} />
+              <ImmersiveImage
+                src={event.image_url!}
+                alt={displayTitle}
+                priority={priority}
+                imageFit={event.image_fit}
+                focalPoint={event.focal_point}
+              />
             )
           ) : (
             <EventDefaultImage

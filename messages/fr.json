@@ -260,7 +260,16 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "Le lien où les participants rejoindront l'événement",
     "sponsors": "Sponsors",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "paidEvent": "Cet événement a des billets/entrée payante",
+    "fixedPrice": "Prix fixe",
+    "donation": "Prix libre",
+    "donationHelp": "Les participants choisissent le montant de leur contribution",
+    "tier": "Niveau",
+    "tierName": "Nom du niveau (ex: VIP)",
+    "tierDescription": "Description (optionnel)",
+    "pricePlaceholder": "100000",
+    "addTier": "Ajouter un niveau"
   },
   "eventActions": {
     "eventOptions": "Options de l'événement",
@@ -1156,7 +1165,10 @@
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom"
+    "titlePositionBottom": "Title at bottom",
+    "clickToPreview": "Cliquez pour prévisualiser",
+    "preview": "Aperçu",
+    "download": "Télécharger"
   },
   "archive": {
     "events": "Événements",
@@ -1446,7 +1458,14 @@
       "$$": "Modéré",
       "$$$": "Haut de gamme",
       "$$$$": "Luxe"
-    }
+    },
+    "photos": "Photos",
+    "contact": "Contact",
+    "cuisineTypes": "Cuisine",
+    "viewOnMap": "Voir sur la carte",
+    "openInGoogleMaps": "Ouvrir dans Google Maps",
+    "overview": "Aperçu",
+    "gallery": "Galerie"
   },
   "comments": {
     "title": "Commentaires",

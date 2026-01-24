@@ -16,8 +16,18 @@ import {
   AlignVerticalJustifyStart,
   AlignVerticalJustifyCenter,
   AlignVerticalJustifyEnd,
+  Download,
+  Maximize2,
+  Scan,
+  Frame,
+  Move,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { RotatingPhrase } from "@/components/ui/rotating-phrase";
@@ -95,6 +105,7 @@ Aspect ratio: 2:1 landscape orientation.`,
 ];
 
 type TitlePosition = "top" | "middle" | "bottom";
+type ImageFit = "cover" | "contain";
 
 interface FlyerBuilderProps {
   title: string;
@@ -103,6 +114,10 @@ interface FlyerBuilderProps {
   onImageChange: (url: string | null, file?: File) => void;
   titlePosition?: TitlePosition;
   onTitlePositionChange?: (position: TitlePosition) => void;
+  imageFit?: ImageFit;
+  onImageFitChange?: (fit: ImageFit) => void;
+  focalPoint?: string | null;
+  onFocalPointChange?: (point: string | null) => void;
 }
 
 // Generate default prompt from event data (using artistic preset)
@@ -117,6 +132,10 @@ export function FlyerBuilder({
   onImageChange,
   titlePosition = "bottom",
   onTitlePositionChange,
+  imageFit = "cover",
+  onImageFitChange,
+  focalPoint = null,
+  onFocalPointChange,
 }: FlyerBuilderProps) {
   const t = useTranslations("flyerBuilder");
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -131,7 +150,10 @@ export function FlyerBuilder({
   const [selectedPreset, setSelectedPreset] = useState<StylePreset>("artistic");
   const [showRefinement, setShowRefinement] = useState(false);
   const [refinementPrompt, setRefinementPrompt] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
+  const [isEditingFocalPoint, setIsEditingFocalPoint] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const previewUrlRef = useRef<string | null>(previewUrl);
 
   useEffect(() => {
@@ -375,22 +397,126 @@ export function FlyerBuilder({
 
   const hasImage = !!previewUrl;
 
+  // Download the current image
+  const handleDownload = async () => {
+    if (!previewUrl) return;
+
+    try {
+      // For blob URLs, we can use them directly
+      // For data URLs and external URLs, fetch and create a blob
+      let blobUrl = previewUrl;
+
+      if (!previewUrl.startsWith("blob:")) {
+        const response = await fetch(previewUrl);
+        const blob = await response.blob();
+        blobUrl = URL.createObjectURL(blob);
+      }
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `${title || "event"}-flyer.${previewUrl.includes("png") ? "png" : "jpg"}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Revoke if we created a new blob URL
+      if (blobUrl !== previewUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    } catch (err) {
+      console.error("Download failed:", err);
+    }
+  };
+
+  // Handle focal point selection
+  const handleFocalPointClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isEditingFocalPoint || !imageContainerRef.current || !onFocalPointChange) return;
+
+      const rect = imageContainerRef.current.getBoundingClientRect();
+      const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+      const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+
+      // Clamp values to 0-100 range
+      const clampedX = Math.max(0, Math.min(100, x));
+      const clampedY = Math.max(0, Math.min(100, y));
+
+      onFocalPointChange(`${clampedX}% ${clampedY}%`);
+    },
+    [isEditingFocalPoint, onFocalPointChange]
+  );
+
+  // Parse focal point string to x,y percentages
+  const parseFocalPoint = (fp: string | null): { x: number; y: number } => {
+    if (!fp) return { x: 50, y: 50 };
+    const match = fp.match(/(\d+)%\s+(\d+)%/);
+    if (match) {
+      return { x: parseInt(match[1], 10), y: parseInt(match[2], 10) };
+    }
+    return { x: 50, y: 50 };
+  };
+
+  const focalPointCoords = parseFocalPoint(focalPoint);
+
   return (
     <div className="space-y-3">
       {/* Preview area - click to upload */}
       <div
+        ref={imageContainerRef}
         className={cn(
           "relative aspect-[2/1] rounded-lg overflow-hidden bg-muted/50 border-2 transition-all",
           isDragOver ? "border-primary border-dashed" : "border-muted-foreground/20",
-          !hasImage && "cursor-pointer hover:border-muted-foreground/40"
+          isEditingFocalPoint ? "cursor-crosshair border-blue-500" : "cursor-pointer hover:border-muted-foreground/40",
+          imageFit === "contain" && "bg-black/90"
         )}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onClick={!hasImage ? () => fileInputRef.current?.click() : undefined}
+        onClick={
+          isEditingFocalPoint
+            ? handleFocalPointClick
+            : hasImage
+              ? () => setShowPreview(true)
+              : () => fileInputRef.current?.click()
+        }
       >
         {previewUrl ? (
-          <img src={previewUrl} alt="" className="w-full h-full object-cover" />
+          <>
+            <img
+              src={previewUrl}
+              alt=""
+              className={cn(
+                "w-full h-full",
+                imageFit === "cover" ? "object-cover" : "object-contain"
+              )}
+              style={imageFit === "cover" && focalPoint ? { objectPosition: focalPoint } : undefined}
+            />
+            {/* Focal point indicator - only show when editing focal point in cover mode */}
+            {isEditingFocalPoint && imageFit === "cover" && (
+              <div
+                className="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ left: `${focalPointCoords.x}%`, top: `${focalPointCoords.y}%` }}
+              >
+                <div className="absolute inset-0 rounded-full border-2 border-white shadow-lg" />
+                <div className="absolute inset-2 rounded-full bg-blue-500/80" />
+              </div>
+            )}
+            {/* Preview hint overlay - hide when editing focal point */}
+            {!isEditingFocalPoint && (
+              <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
+                <div className="flex items-center gap-2 text-white bg-black/50 px-3 py-1.5 rounded-full text-sm">
+                  <Maximize2 className="w-4 h-4" />
+                  {t("clickToPreview")}
+                </div>
+              </div>
+            )}
+            {/* Focal point editing hint */}
+            {isEditingFocalPoint && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white bg-blue-600/90 px-3 py-1.5 rounded-full text-sm">
+                {t("clickToSetFocalPoint")}
+              </div>
+            )}
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImageIcon className="w-12 h-12 text-muted-foreground/30" />
@@ -619,8 +745,62 @@ export function FlyerBuilder({
               AI
             </Button>
 
+            {/* Image fit toggle - only show when there's an image */}
+            {hasImage && onImageFitChange && (
+              <div className="flex items-center gap-1 ml-auto border rounded-md p-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onImageFitChange("cover");
+                    if (imageFit !== "cover") setIsEditingFocalPoint(false);
+                  }}
+                  className={cn(
+                    "p-1.5 rounded transition-colors",
+                    imageFit === "cover"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted text-muted-foreground"
+                  )}
+                  title={t("imageFitFill")}
+                >
+                  <Scan className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onImageFitChange("contain");
+                    setIsEditingFocalPoint(false);
+                  }}
+                  className={cn(
+                    "p-1.5 rounded transition-colors",
+                    imageFit === "contain"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted text-muted-foreground"
+                  )}
+                  title={t("imageFitContain")}
+                >
+                  <Frame className="w-4 h-4" />
+                </button>
+                {/* Focal point button - only for cover mode */}
+                {imageFit === "cover" && onFocalPointChange && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingFocalPoint(!isEditingFocalPoint)}
+                    className={cn(
+                      "p-1.5 rounded transition-colors ml-0.5",
+                      isEditingFocalPoint
+                        ? "bg-blue-500 text-white"
+                        : "hover:bg-muted text-muted-foreground"
+                    )}
+                    title={t("setFocalPoint")}
+                  >
+                    <Move className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Title position picker */}
-            {onTitlePositionChange && (
+            {onTitlePositionChange && !hasImage && (
               <div className="flex items-center gap-1 ml-auto border rounded-md p-0.5">
                 <button
                   type="button"
@@ -734,6 +914,35 @@ export function FlyerBuilder({
         onChange={handleFileSelect}
         className="hidden"
       />
+
+      {/* Full-screen image preview dialog */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-4xl w-[95vw] p-0 overflow-hidden bg-black/95 border-none">
+          <DialogTitle className="sr-only">{t("preview")}</DialogTitle>
+          {previewUrl && (
+            <div className="relative">
+              <img
+                src={previewUrl}
+                alt={title || "Event flyer preview"}
+                className="w-full h-auto max-h-[85vh] object-contain"
+              />
+              {/* Download button */}
+              <div className="absolute bottom-4 right-4 flex gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleDownload}
+                  className="bg-white/90 hover:bg-white text-black"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {t("download")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
