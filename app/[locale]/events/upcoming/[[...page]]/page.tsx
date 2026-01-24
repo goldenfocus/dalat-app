@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { locales, type Locale } from "@/lib/i18n/routing";
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { Pagination } from "@/components/ui/pagination";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -255,7 +255,7 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
           {/* Events grid */}
           {events.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              {events.map((event, index) => {
+              {events.map((event) => {
                 const translation = eventTranslations.get(event.id);
                 return (
                   <EventCard

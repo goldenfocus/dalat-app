@@ -65,7 +65,7 @@ export function InviteRsvpButtons({ token, currentResponse, compact, autoRsvp, s
       if (autoRsvp) {
         window.history.replaceState({}, "", window.location.pathname);
       }
-    } catch (err) {
+    } catch {
       setError(t("rsvpFailed"));
     } finally {
       setSubmitting(null);

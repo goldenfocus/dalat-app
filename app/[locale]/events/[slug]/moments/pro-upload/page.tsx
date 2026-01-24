@@ -66,7 +66,7 @@ export default async function ProUploadPageRoute({ params }: PageProps) {
   }
 
   // Use getEffectiveUser to support God Mode impersonation
-  const { user, profile, godMode } = await getEffectiveUser();
+  const { user, profile: _profile, godMode } = await getEffectiveUser();
 
   // Redirect to login if not authenticated
   if (!user) {

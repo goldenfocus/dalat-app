@@ -2,7 +2,6 @@ import { createClient, createStaticClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type {
   ContentLocale,
-  ContentTranslation,
   TranslationContentType,
   TranslationFieldName,
   Event,

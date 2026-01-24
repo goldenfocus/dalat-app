@@ -5,7 +5,6 @@ import { Calendar, MapPin, Check, X, HelpCircle, Download, ArrowRight } from "lu
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { formatInDaLat } from "@/lib/timezone";
 import { InviteRsvpButtons } from "./rsvp-buttons";
 import { decodeUnicodeEscapes } from "@/lib/utils";

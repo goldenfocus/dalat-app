@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, lazy, Suspense, type ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 
 // Dynamically import TanStack Query to enable code splitting
 // The library loads async but the provider is always rendered (via Suspense)

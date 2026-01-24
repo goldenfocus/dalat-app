@@ -34,7 +34,7 @@ interface MonthViewProps {
 }
 
 export function MonthView({
-  events,
+  events: _events,
   eventsByDate,
   currentMonth,
   selectedDate,

@@ -6,7 +6,7 @@ export const maxDuration = 60;
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { locales, type Locale } from "@/lib/i18n/routing";
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -228,7 +228,7 @@ export default async function SearchPage({ params }: PageProps) {
   };
 
   // ISR: Popular searches revalidate less often
-  const isPopularSearch = POPULAR_SEARCHES.includes(decodedQuery.toLowerCase());
+  const _isPopularSearch = POPULAR_SEARCHES.includes(decodedQuery.toLowerCase());
 
   return (
     <>

@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Search, Shield, User, Loader2, CheckCircle, XCircle, Eye, PenLine } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import type { Profile, UserRole } from "@/lib/types";
-import { ROLE_HIERARCHY } from "@/lib/types";
 
 interface UpdateStatus {
   type: "success" | "error";

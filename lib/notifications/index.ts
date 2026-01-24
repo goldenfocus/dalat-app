@@ -223,10 +223,8 @@ import type {
   NewRsvpPayload,
   FeedbackRequestPayload,
   UserInvitationPayload,
-  TribeJoinRequestPayload,
   TribeRequestApprovedPayload,
   TribeRequestRejectedPayload,
-  TribeNewEventPayload,
 } from './types';
 import type { Locale } from '@/lib/types';
 

@@ -16,6 +16,7 @@ export function usePrefetch() {
   // We catch this and return no-op functions for SSG safety
   let queryClient: ReturnType<typeof useQueryClient> | null = null;
   try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     queryClient = useQueryClient();
   } catch {
     // QueryClient not available (SSG or lazy load not complete)

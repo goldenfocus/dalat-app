@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { addMonths, format } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
-import { generateSeriesInstances, isValidRRule } from "@/lib/recurrence";
+import { isValidRRule } from "@/lib/recurrence";
 
 const DALAT_TIMEZONE = "Asia/Ho_Chi_Minh";
 
@@ -39,7 +38,7 @@ export async function GET(request: Request, { params }: Params) {
   // Get upcoming events count
   const upcomingLimit = parseInt(searchParams.get("upcoming_limit") || "5", 10);
 
-  const { data: upcomingEvents, error: eventsError } = await supabase
+  const { data: upcomingEvents } = await supabase
     .from("events")
     .select("id, slug, starts_at, series_instance_date, status")
     .eq("series_id", series.id)

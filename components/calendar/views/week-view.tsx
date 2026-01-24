@@ -23,7 +23,7 @@ interface WeekViewProps {
 }
 
 export function WeekView({
-  events,
+  events: _events,
   eventsByDate,
   startDate,
   selectedDate,

@@ -10,7 +10,6 @@ import {
   addMonths,
   addYears,
   isBefore,
-  isAfter,
   isSameDay,
   getDay,
   setDay,
@@ -177,7 +176,7 @@ function getNextMonthlyWeekdayOccurrence(
   const targetDayNum = WEEKDAY_TO_NUM[day];
 
   // Try next month
-  let nextMonth = addMonths(current, interval);
+  const nextMonth = addMonths(current, interval);
 
   // Find the nth weekday of that month
   const occurrence = getNthWeekdayOfMonth(nextMonth, week, targetDayNum);
@@ -226,7 +225,7 @@ function getNextMonthlyDayOccurrence(
   dayOfMonth: number,
   interval: number
 ): Date {
-  let nextMonth = addMonths(current, interval);
+  const nextMonth = addMonths(current, interval);
 
   // Handle months with fewer days (e.g., Feb 30 -> Feb 28)
   const targetDate = new Date(nextMonth);

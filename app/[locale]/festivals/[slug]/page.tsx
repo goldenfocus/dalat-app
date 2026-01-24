@@ -129,7 +129,7 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
   })}`;
 
   // Get lead organizer
-  const leadOrganizer = festival.festival_organizers?.find(
+  const _leadOrganizer = festival.festival_organizers?.find(
     (fo) => fo.role === "lead"
   );
 

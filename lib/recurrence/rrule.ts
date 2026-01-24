@@ -5,7 +5,7 @@
  * Format: FREQ=WEEKLY;BYDAY=TU;INTERVAL=2
  */
 
-import { format, getDay } from "date-fns";
+import { getDay } from "date-fns";
 import type { RecurrenceFrequency, RecurrenceFormData, RecurrencePreset } from "@/lib/types";
 
 // Day abbreviations in RRULE format
@@ -19,7 +19,7 @@ const WEEKDAY_MAP: Record<number, string> = {
   6: "SA",
 };
 
-const WEEKDAY_REVERSE: Record<string, number> = {
+const _WEEKDAY_REVERSE: Record<string, number> = {
   SU: 0,
   MO: 1,
   TU: 2,

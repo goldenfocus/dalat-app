@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import type {
   Event,
   EventWithSeriesData,

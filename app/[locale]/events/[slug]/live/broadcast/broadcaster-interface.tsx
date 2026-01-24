@@ -29,7 +29,7 @@ interface BroadcasterInterfaceProps {
   locale: string;
 }
 
-export function BroadcasterInterface({ event, existingStream, locale }: BroadcasterInterfaceProps) {
+export function BroadcasterInterface({ event, existingStream, locale: _locale }: BroadcasterInterfaceProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +84,7 @@ export function BroadcasterInterface({ event, existingStream, locale }: Broadcas
         if (videoRef.current) videoRef.current.srcObject = stream;
         setIsCameraOn(true);
         setIsMicOn(true);
-      } catch (err) {
+      } catch {
         setError('Could not access camera. Please check permissions.');
       }
     }
@@ -141,7 +141,7 @@ export function BroadcasterInterface({ event, existingStream, locale }: Broadcas
       streamRef.current?.getTracks().forEach(track => track.stop());
       setStreamData(null);
       setIsCameraOn(false);
-    } catch (err) {
+    } catch {
       setError('Failed to end stream');
     } finally {
       setIsEnding(false);

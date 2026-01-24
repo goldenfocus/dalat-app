@@ -19,7 +19,7 @@ import { EventSearchBar } from "@/components/events/event-search-bar";
 import { EventViewToggle } from "@/components/events/event-view-toggle";
 import { Button } from "@/components/ui/button";
 import { optimizedImageUrl } from "@/lib/image-cdn";
-import type { EventWithSeriesData, ContentLocale } from "@/lib/types";
+import type { ContentLocale } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
 import { getEventTranslationsBatch } from "@/lib/translations";
 import {
@@ -97,11 +97,10 @@ async function EventsFeed({
   const events = await getCachedEventsByLifecycle(lifecycle);
 
   const eventIds = events.map((e) => e.id);
-  const [counts, eventTranslations, t, tEvents] = await Promise.all([
+  const [counts, eventTranslations, t] = await Promise.all([
     getCachedEventCountsBatch(eventIds),
     getEventTranslationsBatch(eventIds, locale as ContentLocale),
     getTranslations("home"),
-    getTranslations("events"),
   ]);
 
   if (events.length === 0) {

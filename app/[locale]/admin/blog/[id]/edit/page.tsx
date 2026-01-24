@@ -75,7 +75,7 @@ interface PageProps {
 export default async function EditBlogPostPage({ params }: PageProps) {
   const { id } = await params;
   const supabase = await createClient();
-  const t = await getTranslations("admin");
+  const _t = await getTranslations("admin");
 
   const {
     data: { user },

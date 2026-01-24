@@ -131,7 +131,7 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
 
 export default async function SeriesPage({ params }: PageProps) {
   const { slug } = await params;
-  const [t, locale] = await Promise.all([
+  const [_t, locale] = await Promise.all([
     getTranslations(),
     getLocale(),
   ]);
@@ -142,7 +142,7 @@ export default async function SeriesPage({ params }: PageProps) {
     notFound();
   }
 
-  const { series, upcomingEvents, subscriberCount, isSubscribed, isOwner } = data;
+  const { series, upcomingEvents, subscriberCount, isSubscribed: _isSubscribed, isOwner } = data;
 
   const recurrenceDescription = describeRRule(series.rrule);
   const calendarUrl = `/api/series/${series.slug}/calendar.ics`;

@@ -37,7 +37,7 @@ function getTimePeriod(hour: number): typeof TIME_PERIODS[number]["key"] {
 }
 
 export function DayView({
-  events,
+  events: _events,
   eventsByDate,
   currentDate,
 }: DayViewProps) {

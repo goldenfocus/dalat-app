@@ -15,7 +15,6 @@ import {
   parseArchiveParams,
   getAdjacentMonths,
   getMonthSlug,
-  getAllMonthSlugs,
   isPastMonth,
 } from "@/lib/events/archive-utils";
 import type { Event, EventCounts } from "@/lib/types";
@@ -186,7 +185,7 @@ export default async function MonthlyArchivePage({ params }: PageProps) {
   };
 
   // Dynamic revalidation based on whether month is past
-  const revalidate = isPastMonth(parsed.year, parsed.month) ? 86400 : 3600; // 24h vs 1h
+  const _revalidate = isPastMonth(parsed.year, parsed.month) ? 86400 : 3600; // 24h vs 1h
 
   return (
     <>
