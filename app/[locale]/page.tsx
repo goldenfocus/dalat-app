@@ -92,8 +92,10 @@ async function EventsFeed({
           : t("noUpcoming");
 
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <p className="mb-4">{emptyMessage}</p>
+      <div className="text-center py-16 text-muted-foreground">
+        <span className="text-4xl mb-4 block">🌿</span>
+        <p className="mb-2">{emptyMessage}</p>
+        <p className="text-sm text-muted-foreground/70 mb-6">{t("emptyHint")}</p>
         {lifecycle === "upcoming" && (
           <Link href="/events/new" prefetch={false}>
             <Button>{t("createFirst")}</Button>
@@ -105,6 +107,7 @@ async function EventsFeed({
 
   // Labels for server-rendered card (avoiding hook in server component)
   const eventLabels = {
+    popular: tEvents("popular"),
     going: tEvents("going"),
     went: tEvents("went"),
     full: tEvents("full"),

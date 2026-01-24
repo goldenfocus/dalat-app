@@ -72,9 +72,15 @@ export const EventCard = memo(function EventCard({ event, counts, seriesRrule, t
       onMouseEnter={handlePrefetch}
       onTouchStart={handlePrefetch}
     >
-      <Card className="overflow-hidden hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] active:opacity-90">
+      <Card className="overflow-hidden rounded-xl hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] active:opacity-90">
         {/* Image area */}
         <div className="w-full aspect-[4/5] relative overflow-hidden group">
+          {/* Popular badge for events with 20+ RSVPs */}
+          {(counts?.going_spots ?? 0) >= 20 && (
+            <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+              {t("popular")}
+            </div>
+          )}
           {hasCustomImage ? (
             imageIsVideo ? (
               <video
