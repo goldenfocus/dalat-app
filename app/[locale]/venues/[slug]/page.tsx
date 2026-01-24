@@ -29,7 +29,6 @@ import { getVenueTypeConfig } from "@/lib/constants/venue-types";
 import { VenueHoursBadge } from "@/components/venues/venue-hours-badge";
 import { getTranslationsWithFallback } from "@/lib/translations";
 import { PhotoGallery } from "@/components/ui/photo-gallery";
-import { VenueSectionNav } from "@/components/venues/venue-section-nav";
 import { PastEventsSection } from "@/components/venues/past-events-section";
 import { VenueMap } from "@/components/venues/venue-map";
 import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
@@ -248,20 +247,6 @@ export default async function VenuePage({ params }: PageProps) {
     { key: "wheelchair", icon: Accessibility, has: venue.is_wheelchair_accessible, label: t("amenities.wheelchair") },
   ].filter((a) => a.has);
 
-  // Build dynamic sections for navigation
-  const hasEvents = upcoming_events.length > 0 || happening_now.length > 0;
-  const hasPhotos = venue.photos && venue.photos.length > 0;
-  const hasHours = !!venue.operating_hours;
-  const hasContact = venue.address || venue.phone || venue.email || venue.website_url || venue.facebook_url || venue.instagram_url || venue.zalo_url;
-
-  const sections = [
-    { id: "overview", label: t("overview") },
-    hasEvents && { id: "events", label: t("upcomingEvents") },
-    hasPhotos && { id: "gallery", label: t("gallery") },
-    hasHours && { id: "hours", label: t("hours") },
-    hasContact && { id: "contact", label: t("contact") },
-  ].filter((s): s is { id: string; label: string } => !!s);
-
   return (
     <main className="min-h-screen pb-8">
       <JsonLd data={[localBusinessSchema, breadcrumbSchema]} />
@@ -472,9 +457,6 @@ export default async function VenuePage({ params }: PageProps) {
             </a>
           )}
         </div>
-
-        {/* Section Navigation */}
-        <VenueSectionNav sections={sections} />
 
         {/* Overview Section */}
         <section id="overview" className="pt-6">
