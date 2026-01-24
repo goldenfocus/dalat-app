@@ -112,17 +112,8 @@ export function InviteCelebration({
 
   return createPortal(
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem',
-      }}
       className={cn(
-        "bg-black/80 backdrop-blur-sm transition-opacity duration-300",
+        "celebration-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300",
         isVisible ? "opacity-100" : "opacity-0"
       )}
       onClick={() => {
@@ -135,11 +126,10 @@ export function InviteCelebration({
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-purple-500/20 blur-3xl animate-pulse" />
       </div>
 
-      {/* Content card - centered by flexbox */}
+      {/* Content card - centered by flexbox from .celebration-center */}
       <div
-        style={{ maxWidth: '24rem', width: '100%' }}
         className={cn(
-          "relative bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-6 pt-8 shadow-2xl border border-emerald-200 dark:border-emerald-500/30 transition-all duration-500",
+          "relative max-w-sm w-full bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-6 pt-8 shadow-2xl border border-emerald-200 dark:border-emerald-500/30 transition-all duration-500",
           isVisible ? "scale-100" : "scale-95 opacity-0"
         )}
       >
