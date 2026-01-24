@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,13 +5,9 @@ import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
-import { cloudflareLoader } from "@/lib/image-cdn";
+import { optimizedImageUrl } from "@/lib/image-cdn";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, EventCounts, Locale } from "@/lib/types";
-
-// Tiny gradient placeholder for perceived instant loading
-const BLUR_DATA_URL =
-  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZTVlNWU1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZjVmNWY1Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNnKSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIi8+PC9zdmc+";
 
 interface EventCardStaticProps {
   event: Event;
@@ -93,18 +88,14 @@ export function EventCardStatic({
                 preload="metadata"
               />
             ) : (
-              <Image
-                loader={cloudflareLoader}
-                src={event.image_url!}
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={optimizedImageUrl(event.image_url!, { width: 400, quality: 70 }) || event.image_url!}
                 alt={displayTitle}
-                fill
-                sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
-                className={`transition-transform group-hover:scale-105 ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
+                className={`absolute inset-0 w-full h-full transition-transform group-hover:scale-105 ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
                 style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
-                priority
                 fetchPriority="high"
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
+                decoding="async"
               />
             )
           ) : (
