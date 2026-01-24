@@ -7,6 +7,14 @@
     "calendar": "Lịch",
     "venues": "Địa điểm"
   },
+  "viewToggle": {
+    "grid": "Dạng lưới",
+    "list": "Dạng danh sách",
+    "immersive": "Dạng toàn màn",
+    "compact": "Thu gọn",
+    "default": "Mặc định",
+    "spacious": "Rộng rãi"
+  },
   "common": {
     "back": "Quay lại",
     "save": "Lưu",

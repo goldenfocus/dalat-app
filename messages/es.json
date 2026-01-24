@@ -7,6 +7,14 @@
     "calendar": "Calendario",
     "venues": "Lugares"
   },
+  "viewToggle": {
+    "grid": "Vista de cuadrícula",
+    "list": "Vista de lista",
+    "immersive": "Vista inmersiva",
+    "compact": "Compacto",
+    "default": "Predeterminado",
+    "spacious": "Espacioso"
+  },
   "common": {
     "back": "Volver",
     "save": "Guardar",

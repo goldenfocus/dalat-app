@@ -7,6 +7,14 @@
     "calendar": "Kalendar",
     "venues": "Tempat"
   },
+  "viewToggle": {
+    "grid": "Paparan grid",
+    "list": "Paparan senarai",
+    "immersive": "Paparan penuh",
+    "compact": "Padat",
+    "default": "Lalai",
+    "spacious": "Luas"
+  },
   "common": {
     "back": "Kembali",
     "save": "Simpan",

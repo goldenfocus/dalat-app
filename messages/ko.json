@@ -7,6 +7,14 @@
     "calendar": "캘린더",
     "venues": "장소"
   },
+  "viewToggle": {
+    "grid": "그리드 보기",
+    "list": "목록 보기",
+    "immersive": "몰입 보기",
+    "compact": "좁게",
+    "default": "기본",
+    "spacious": "넓게"
+  },
   "common": {
     "back": "뒤로",
     "save": "저장",

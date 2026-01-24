@@ -13,10 +13,10 @@ import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
 import { MobileHeader } from "@/components/home/mobile-header";
 import { HeroSection } from "@/components/home/hero-section";
-import { EventCard } from "@/components/events/event-card";
-import { EventCardStatic } from "@/components/events/event-card-static";
+import { EventGrid } from "@/components/events/event-grid";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
+import { EventViewToggle } from "@/components/events/event-view-toggle";
 import { Button } from "@/components/ui/button";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import type { EventWithSeriesData, ContentLocale } from "@/lib/types";
@@ -26,7 +26,9 @@ import {
   getCachedEventsByLifecycle,
   getCachedEventCountsBatch,
   getCachedLifecycleCounts,
+  getCachedHomepageConfig,
 } from "@/lib/cache/server-cache";
+import { HeroImageSection } from "@/components/home/hero-image-section";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
@@ -34,10 +36,30 @@ type PageProps = {
 
 /**
  * Generate metadata with LCP image preload for faster PageSpeed scores.
- * Preloading the first event's image can reduce LCP by ~300-500ms.
+ * Preloads hero image if configured, otherwise preloads first event image.
  */
 export async function generateMetadata(): Promise<Metadata> {
-  // Get first event to preload its image (reuses ISR cache)
+  // Check for hero image first (takes priority as LCP element)
+  const homepageConfig = await getCachedHomepageConfig();
+
+  if (homepageConfig?.hero_image_url) {
+    // Preload hero image at full width for desktop
+    const preloadUrl = optimizedImageUrl(homepageConfig.hero_image_url, {
+      width: 1920,
+      quality: 80,
+      format: "auto",
+    });
+
+    if (preloadUrl) {
+      return {
+        other: {
+          link: `<${preloadUrl}>; rel=preload; as=image; fetchpriority=high`,
+        },
+      };
+    }
+  }
+
+  // Fallback: preload first event image
   const events = await getCachedEventsByLifecycle("upcoming", 1);
   const firstEvent = events[0];
 
@@ -59,8 +81,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     other: {
-      // Preload hint for the LCP image
-      "link": `<${preloadUrl}>; rel=preload; as=image; fetchpriority=high`,
+      link: `<${preloadUrl}>; rel=preload; as=image; fetchpriority=high`,
     },
   };
 }
@@ -105,48 +126,23 @@ async function EventsFeed({
     );
   }
 
-  // Labels for server-rendered card (avoiding hook in server component)
-  const eventLabels = {
-    popular: tEvents("popular"),
-    going: tEvents("going"),
-    went: tEvents("went"),
-    full: tEvents("full"),
-    interested: tEvents("interested"),
-    waitlist: tEvents("waitlist"),
-  };
+  // Build series rrules map for EventGrid
+  const seriesRrules: Record<string, string> = {};
+  events.forEach((event) => {
+    if (event.series_rrule) {
+      seriesRrules[event.id] = event.series_rrule;
+    }
+  });
 
   return (
     <div className="space-y-6">
-      {/* 2-column grid on mobile, 3-column on desktop for better discoverability */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
-        {events.map((event, index) => {
-          const translation = eventTranslations.get(event.id);
-          // Use server-rendered card for first event (LCP optimization)
-          // This eliminates hydration delay for the LCP image
-          if (index === 0) {
-            return (
-              <EventCardStatic
-                key={event.id}
-                event={event}
-                counts={counts[event.id]}
-                seriesRrule={event.series_rrule ?? undefined}
-                translatedTitle={translation?.title || undefined}
-                locale={locale}
-                labels={eventLabels}
-              />
-            );
-          }
-          return (
-            <EventCard
-              key={event.id}
-              event={event}
-              counts={counts[event.id]}
-              seriesRrule={event.series_rrule ?? undefined}
-              translatedTitle={translation?.title || undefined}
-            />
-          );
-        })}
-      </div>
+      {/* Event grid - adapts to user's view preferences */}
+      <EventGrid
+        events={events}
+        counts={counts}
+        eventTranslations={eventTranslations}
+        seriesRrules={seriesRrules}
+      />
 
       {/* Show "See all" link when viewing upcoming events with 20+ events */}
       {lifecycle === "upcoming" && events.length >= 20 && (
@@ -182,9 +178,10 @@ export default async function Home({ params }: PageProps) {
   // Tab switching is handled client-side via URL navigation
   const activeTab: EventLifecycle = "upcoming";
 
-  const [t, lifecycleCounts] = await Promise.all([
+  const [t, lifecycleCounts, homepageConfig] = await Promise.all([
     getTranslations("home"),
     getCachedLifecycleCounts(),
+    getCachedHomepageConfig(),
   ]);
 
   return (
@@ -200,12 +197,17 @@ export default async function Home({ params }: PageProps) {
       </div>
 
       {/* Hero Section - server-rendered for fast LCP */}
-      <HeroSection />
+      {/* Conditionally render image hero or minimal text hero */}
+      {homepageConfig?.hero_image_url ? (
+        <HeroImageSection imageUrl={homepageConfig.hero_image_url} />
+      ) : (
+        <HeroSection />
+      )}
 
       {/* Main content */}
       <div className="flex-1 container max-w-6xl mx-auto px-4 py-4 lg:py-6">
-        {/* Tabs + Search */}
-        <div className="flex items-center justify-between gap-4 mb-4">
+        {/* Tabs + View Toggle + Search */}
+        <div className="flex items-center justify-between gap-2 sm:gap-4 mb-4">
           <Suspense fallback={<div className="h-10 w-64 bg-muted animate-pulse rounded-lg" />}>
             <EventFeedTabs
               activeTab={activeTab}
@@ -219,9 +221,12 @@ export default async function Home({ params }: PageProps) {
               }}
             />
           </Suspense>
-          <Suspense fallback={null}>
-            <EventSearchBar className="hidden lg:flex w-64 flex-shrink-0" />
-          </Suspense>
+          <div className="flex items-center gap-2">
+            <EventViewToggle />
+            <Suspense fallback={null}>
+              <EventSearchBar className="hidden lg:flex w-64 flex-shrink-0" />
+            </Suspense>
+          </div>
         </div>
 
         {/* Event grid */}
@@ -231,7 +236,7 @@ export default async function Home({ params }: PageProps) {
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="h-64 sm:h-80 bg-muted animate-pulse rounded-lg"
+                  className="aspect-[4/5] bg-muted animate-pulse rounded-xl"
                 />
               ))}
             </div>

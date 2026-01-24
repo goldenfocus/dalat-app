@@ -7,6 +7,14 @@
     "calendar": "Kalender",
     "venues": "Tempat"
   },
+  "viewToggle": {
+    "grid": "Tampilan kotak",
+    "list": "Tampilan daftar",
+    "immersive": "Tampilan imersif",
+    "compact": "Ringkas",
+    "default": "Default",
+    "spacious": "Luas"
+  },
   "common": {
     "back": "Kembali",
     "save": "Simpan",

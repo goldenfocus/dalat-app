@@ -7,6 +7,14 @@
     "calendar": "Календарь",
     "venues": "Места"
   },
+  "viewToggle": {
+    "grid": "Сетка",
+    "list": "Список",
+    "immersive": "Погружение",
+    "compact": "Компактный",
+    "default": "По умолчанию",
+    "spacious": "Просторный"
+  },
   "common": {
     "back": "Назад",
     "save": "Сохранить",

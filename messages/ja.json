@@ -7,6 +7,14 @@
     "calendar": "カレンダー",
     "venues": "会場"
   },
+  "viewToggle": {
+    "grid": "グリッド表示",
+    "list": "リスト表示",
+    "immersive": "没入表示",
+    "compact": "コンパクト",
+    "default": "デフォルト",
+    "spacious": "ゆったり"
+  },
   "common": {
     "back": "戻る",
     "save": "保存",

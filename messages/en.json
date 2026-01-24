@@ -7,6 +7,14 @@
     "calendar": "Calendar",
     "venues": "Venues"
   },
+  "viewToggle": {
+    "grid": "Grid view",
+    "list": "List view",
+    "immersive": "Immersive view",
+    "compact": "Compact",
+    "default": "Default",
+    "spacious": "Spacious"
+  },
   "common": {
     "back": "Back",
     "save": "Save",

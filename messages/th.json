@@ -7,6 +7,14 @@
     "calendar": "ปฏิทิน",
     "venues": "สถานที่"
   },
+  "viewToggle": {
+    "grid": "มุมมองกริด",
+    "list": "มุมมองรายการ",
+    "immersive": "มุมมองเต็มจอ",
+    "compact": "กะทัดรัด",
+    "default": "ค่าเริ่มต้น",
+    "spacious": "กว้างขวาง"
+  },
   "common": {
     "back": "กลับ",
     "save": "บันทึก",
