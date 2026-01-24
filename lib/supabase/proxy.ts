@@ -84,7 +84,8 @@ export async function updateSession(request: NextRequest) {
       ? cookieLocale
       : (browserLocale || defaultLocale);
 
-    // If no locale in path, redirect to locale-prefixed version
+    // If no locale in path, handle based on localePrefix: 'as-needed' setting
+    // Only redirect if user prefers non-default locale; default locale uses rewrite (no redirect)
     if (!pathnameLocale) {
       // Check if this is a short username URL: /yan or /@yan
       const rootSegmentMatch = pathname.match(/^\/(@?[a-zA-Z0-9_]+)$/);
@@ -92,18 +93,32 @@ export async function updateSession(request: NextRequest) {
         const segment = rootSegmentMatch[1];
         const cleanSegment = segment.replace(/^@/, '');
 
-        // If it looks like a username, redirect to /{locale}/{username}
+        // If it looks like a username, handle with rewrite (default) or redirect (non-default)
         if (looksLikeUsername(segment)) {
-          const url = new URL(`/${preferredLocale}/${cleanSegment}`, request.url);
-          return NextResponse.redirect(url);
+          if (preferredLocale !== defaultLocale) {
+            const url = new URL(`/${preferredLocale}/${cleanSegment}`, request.url);
+            return NextResponse.redirect(url);
+          }
+          // For default locale, rewrite internally (no redirect penalty)
+          const rewriteUrl = request.nextUrl.clone();
+          rewriteUrl.pathname = `/${defaultLocale}/${cleanSegment}`;
+          return NextResponse.rewrite(rewriteUrl);
         }
       }
 
-      // Standard redirect to add locale prefix (ensure no double slashes)
-      const targetPath = pathname === '/' ? `/${preferredLocale}` : `/${preferredLocale}${pathname}`;
-      const url = new URL(targetPath, request.url);
-      url.search = request.nextUrl.search;
-      return NextResponse.redirect(url);
+      // For non-default locale preference, redirect to add locale prefix
+      if (preferredLocale !== defaultLocale) {
+        const targetPath = pathname === '/' ? `/${preferredLocale}` : `/${preferredLocale}${pathname}`;
+        const url = new URL(targetPath, request.url);
+        url.search = request.nextUrl.search;
+        return NextResponse.redirect(url);
+      }
+
+      // For default locale (English), rewrite internally without redirect
+      // This eliminates the redirect chain penalty for ~80% of users
+      const rewriteUrl = request.nextUrl.clone();
+      rewriteUrl.pathname = pathname === '/' ? `/${defaultLocale}` : `/${defaultLocale}${pathname}`;
+      return NextResponse.rewrite(rewriteUrl);
     }
 
     // Handle /{locale}/@{username} -> /{locale}/{username} redirect (normalize @ prefix)
