@@ -1,5 +1,17 @@
 # dalat.app Development Guidelines
 
+## CLI Tools - Always Use Directly
+
+**NEVER ask the user to run CLI commands.** The following CLIs are authenticated and ready to use:
+
+| Tool | Examples |
+|------|----------|
+| **Supabase** | `npx supabase db push`, `npx supabase migration list` |
+| **Vercel** | `vercel env pull`, `vercel --prod` |
+| **GitHub** | `gh pr create`, `gh issue list`, `gh pr merge` |
+
+Run these commands yourself using bash. Don't say "please run this command" - just run it.
+
 ## ⛔ CRITICAL: NEVER Create middleware.ts
 
 **THIS HAS BROKEN PRODUCTION MULTIPLE TIMES. READ CAREFULLY.**
