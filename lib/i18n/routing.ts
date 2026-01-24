@@ -14,7 +14,7 @@ export type UILocale = (typeof uiLocales)[number];
 export const routing = defineRouting({
   locales,
   defaultLocale: 'en',
-  localePrefix: 'always',
+  localePrefix: 'as-needed',  // Avoids redirect for default locale (performance)
   localeDetection: true,
 });
 

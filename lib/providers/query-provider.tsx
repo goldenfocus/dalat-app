@@ -1,9 +1,40 @@
 "use client";
 
-import { useState, lazy, Suspense } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState, lazy, Suspense, type ReactNode } from "react";
 
-// Only import DevTools in development (completely excluded from production build)
+// Dynamically import TanStack Query to enable code splitting
+// The library loads async but the provider is always rendered (via Suspense)
+const LazyQueryClientProvider = lazy(() =>
+  import("@tanstack/react-query").then((mod) => {
+    // Create a stable QueryClient outside the component to avoid re-creation
+    const queryClient = new mod.QueryClient({
+      defaultOptions: {
+        queries: {
+          staleTime: 60_000,
+          gcTime: 5 * 60_000,
+          refetchOnWindowFocus: false,
+          retry: 1,
+          refetchOnReconnect: true,
+        },
+        mutations: {
+          retry: 0,
+        },
+      },
+    });
+
+    return {
+      default: function StableQueryProvider({ children }: { children: ReactNode }) {
+        return (
+          <mod.QueryClientProvider client={queryClient}>
+            {children}
+          </mod.QueryClientProvider>
+        );
+      },
+    };
+  })
+);
+
+// Only import DevTools in development
 const ReactQueryDevtools =
   process.env.NODE_ENV === "development"
     ? lazy(() =>
@@ -14,47 +45,23 @@ const ReactQueryDevtools =
     : null;
 
 /**
- * TanStack Query provider for client-side data caching.
+ * TanStack Query provider with code splitting.
  *
- * Configured with:
- * - 1 minute stale time (data considered fresh)
- * - 5 minute garbage collection time
- * - Disabled refetch on window focus (reduces unnecessary requests)
- * - Single retry on failure
+ * The @tanstack/react-query library (~70KB) is loaded asynchronously,
+ * but children are rendered immediately via Suspense fallback.
+ * This improves initial page load for pages that don't use React Query.
  */
-export function QueryProvider({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            // Data is fresh for 1 minute before becoming stale
-            staleTime: 60_000,
-            // Keep unused data in cache for 5 minutes
-            gcTime: 5 * 60_000,
-            // Don't refetch when window regains focus (reduces load)
-            refetchOnWindowFocus: false,
-            // Retry failed requests once
-            retry: 1,
-            // Refetch on reconnect for fresh data
-            refetchOnReconnect: true,
-          },
-          mutations: {
-            // Don't retry failed mutations
-            retry: 0,
-          },
-        },
-      })
-  );
-
+export function QueryProvider({ children }: { children: ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-      {ReactQueryDevtools && (
-        <Suspense fallback={null}>
-          <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
-        </Suspense>
-      )}
-    </QueryClientProvider>
+    <Suspense fallback={children}>
+      <LazyQueryClientProvider>
+        {children}
+        {ReactQueryDevtools && (
+          <Suspense fallback={null}>
+            <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+          </Suspense>
+        )}
+      </LazyQueryClientProvider>
+    </Suspense>
   );
 }
