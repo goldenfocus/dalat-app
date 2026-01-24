@@ -31,7 +31,6 @@ async function getVenues(type?: string): Promise<VenueListItem[]> {
 
   const { data, error } = await supabase.rpc("get_venues_for_discovery", {
     p_type: type || null,
-    p_open_now: false,
     p_limit: 50,
     p_offset: 0,
   });
