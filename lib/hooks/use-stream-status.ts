@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { LiveStreamWithBroadcaster, LiveStreamStatus } from '@/lib/types';
-import type { RealtimeChannel } from '@supabase/supabase-js';
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface UseStreamStatusOptions {
   eventId: string;
@@ -72,7 +72,7 @@ export function useStreamStatus({
           table: 'live_streams',
           filter: `event_id=eq.${eventId}`,
         },
-        async (payload) => {
+        async (payload: RealtimePostgresChangesPayload<{ id: string }>) => {
           const { eventType } = payload;
           if (eventType === 'INSERT' || eventType === 'UPDATE') {
             await fetchStreams();
@@ -82,7 +82,7 @@ export function useStreamStatus({
           }
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         setIsConnected(status === 'SUBSCRIBED');
       });
 

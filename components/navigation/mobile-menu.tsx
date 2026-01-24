@@ -19,10 +19,12 @@ export function MobileMenu({ variant = "default" }: MobileMenuProps) {
 
   // Check auth status client-side
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    async function checkAuth() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
       setIsAuthenticated(!!user);
-    });
+    }
+    checkAuth();
   }, []);
 
   // Don't render for authenticated users - they have the avatar dropdown

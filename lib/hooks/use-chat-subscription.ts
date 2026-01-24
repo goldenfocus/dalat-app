@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { StreamChatMessageWithUser } from '@/lib/types';
-import type { RealtimeChannel } from '@supabase/supabase-js';
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface UseChatSubscriptionOptions {
   eventId: string;
@@ -71,7 +71,13 @@ export function useChatSubscription({
           table: 'stream_chat_messages',
           filter: `event_id=eq.${eventId}`,
         },
-        async (payload) => {
+        async (payload: RealtimePostgresChangesPayload<{
+            id: string;
+            user_id: string;
+            content: string;
+            message_type: 'text' | 'system' | 'highlight';
+            created_at: string;
+          }>) => {
           const newMessage = payload.new as {
             id: string;
             user_id: string;
@@ -104,7 +110,7 @@ export function useChatSubscription({
           table: 'stream_chat_messages',
           filter: `event_id=eq.${eventId}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<{ id: string; is_deleted: boolean }>) => {
           const updated = payload.new as { id: string; is_deleted: boolean };
 
           if (updated.is_deleted) {
@@ -115,7 +121,7 @@ export function useChatSubscription({
           }
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
           setIsConnected(true);
           setError(null);

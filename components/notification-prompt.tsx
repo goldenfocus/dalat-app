@@ -30,8 +30,9 @@ export function NotificationPrompt() {
     if (localStorage.getItem(PROMPTED_KEY)) return;
 
     // Check if user is logged in
-    const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    async function checkAndPrompt() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       if (hasPrompted.current) return;
 
@@ -43,7 +44,8 @@ export function NotificationPrompt() {
 
       // This triggers the browser's native permission dialog
       await subscribe();
-    });
+    }
+    checkAndPrompt();
   }, [isSupported, isSubscribed, isLoading, permission, subscribe]);
 
   // This component doesn't render anything - it just auto-triggers

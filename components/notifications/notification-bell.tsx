@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Bell } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { Notification } from '@/lib/notifications/types';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { NotificationItem } from './notification-item';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,7 +62,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Notification>) => {
           console.log('[notification-bell] Realtime INSERT received:', payload.new);
           const newNotification = payload.new as Notification;
           setNotifications((prev) => [newNotification, ...prev].slice(0, 20));
@@ -76,7 +77,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Notification>) => {
           console.log('[notification-bell] Realtime UPDATE received:', payload.new);
           const updated = payload.new as Notification;
           setNotifications((prev) =>
@@ -89,7 +90,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           });
         }
       )
-      .subscribe((status, err) => {
+      .subscribe((status: string, err?: Error) => {
         if (status === 'SUBSCRIBED') {
           // Realtime is working - no polling needed
           console.log('[notification-bell] Realtime connected');

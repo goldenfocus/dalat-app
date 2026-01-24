@@ -17,14 +17,16 @@ export function CreateEventLink() {
     const supabase = createClient();
 
     // Check initial auth state
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
       setIsLoading(false);
-    });
+    }
+    checkAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setIsAuthenticated(!!session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAuth();
     });
 
     return () => subscription.unsubscribe();

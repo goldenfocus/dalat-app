@@ -109,8 +109,9 @@ export function SponsorForm({
       if (fetchError) throw fetchError;
 
       // Filter out sponsors already linked to this event
-      const alreadyLinkedIds = new Set(sponsors.map(s => s.sponsor_id));
-      const available = (data || []).filter(s => !alreadyLinkedIds.has(s.id));
+      const alreadyLinkedIds = new Set(sponsors.map((s) => s.sponsor_id));
+      const sponsorData = (data || []) as Sponsor[];
+      const available = sponsorData.filter((s) => !alreadyLinkedIds.has(s.id));
 
       setExistingSponsors(available);
     } catch (err) {

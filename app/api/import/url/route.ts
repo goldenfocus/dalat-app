@@ -462,6 +462,9 @@ async function fetchSetkyarEvent(eventUrl: string) {
     if (event.startTime && startDate && !startDate.includes('T')) {
       startDate = `${startDate}T${event.startTime}`;
     }
+    if (event.endTime && endDate && !endDate.includes('T')) {
+      endDate = `${endDate}T${event.endTime}`;
+    }
 
     // Get location info
     const location = event.location || event.venue || event.place;
