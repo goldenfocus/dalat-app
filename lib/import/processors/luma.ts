@@ -44,7 +44,8 @@ export interface LumaEvent {
 export async function processLumaEvents(
   supabase: SupabaseClient,
   events: LumaEvent[],
-  createdBy?: string
+  createdBy?: string,
+  platform: string = "luma"
 ): Promise<ProcessResult> {
   const result = createEmptyResult();
 
@@ -92,7 +93,7 @@ export async function processLumaEvents(
         timezone: "Asia/Ho_Chi_Minh",
         organizer_id: organizerId,
         created_by: createdBy,
-        source_platform: "luma",
+        source_platform: platform,
         source_metadata: {
           attendee_count: event.attendeeCount,
           category: event.category,

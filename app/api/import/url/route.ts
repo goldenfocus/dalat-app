@@ -100,6 +100,9 @@ export async function POST(request: Request) {
     } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
       actorId = ""; // Not used - we fetch Lu.ma directly
+    } else if (url.includes("setkyar.com")) {
+      platform = "setkyar";
+      actorId = ""; // Not used - we fetch directly via OpenGraph
     } else {
       return NextResponse.json(
         { error: "Unsupported URL. Supported: facebook.com, eventbrite.com, lu.ma/luma.com" },
@@ -122,6 +125,17 @@ export async function POST(request: Request) {
       }
       items = [lumaData];
       console.log(`URL Import: Got Lu.ma event: ${lumaData.title}`);
+    } else if (platform === "setkyar") {
+      // Fetch setkyar.com directly via OpenGraph scraping
+      const setkyarData = await fetchSetkyarEvent(url);
+      if (!setkyarData) {
+        return NextResponse.json(
+          { error: "Could not fetch event data" },
+          { status: 404 }
+        );
+      }
+      items = [setkyarData];
+      console.log(`URL Import: Got event: ${setkyarData.title}`);
     } else {
       // Use Apify for Facebook/Eventbrite
       const apiToken = process.env.APIFY_API_TOKEN;
@@ -246,8 +260,9 @@ export async function POST(request: Request) {
     let result;
     if (platform === "facebook") {
       result = await processFacebookEvents(supabase, items as FacebookEvent[], user.id);
-    } else if (platform === "luma") {
-      result = await processLumaEvents(supabase, items as LumaEvent[], user.id);
+    } else if (platform === "luma" || platform === "setkyar") {
+      // Both Lu.ma and setkyar use similar OpenGraph-based data structure
+      result = await processLumaEvents(supabase, items as LumaEvent[], user.id, platform);
     } else {
       result = await processEventbriteEvents(supabase, items as EventbriteEvent[], user.id);
     }
@@ -392,6 +407,99 @@ async function fetchLumaEvent(eventUrl: string) {
     };
   } catch (error) {
     console.error("Lu.ma fetch error:", error);
+    return null;
+  }
+}
+
+/**
+ * Fetch event from setkyar.com by scraping OpenGraph meta tags
+ * This is a quiet, undocumented import source
+ */
+async function fetchSetkyarEvent(eventUrl: string) {
+  try {
+    const response = await fetch(eventUrl, {
+      headers: {
+        "Accept": "text/html",
+        "User-Agent": "Mozilla/5.0 (compatible; DalatApp/1.0)",
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Setkyar page fetch error: ${response.status}`);
+      return null;
+    }
+
+    const html = await response.text();
+
+    // Extract OpenGraph meta tags
+    const getMetaContent = (property: string): string | null => {
+      const match = html.match(new RegExp(`<meta[^>]*property=["']${property}["'][^>]*content=["']([^"']+)["']`, 'i'))
+        || html.match(new RegExp(`<meta[^>]*content=["']([^"']+)["'][^>]*property=["']${property}["']`, 'i'));
+      return match?.[1] || null;
+    };
+
+    const getMetaName = (name: string): string | null => {
+      const match = html.match(new RegExp(`<meta[^>]*name=["']${name}["'][^>]*content=["']([^"']+)["']`, 'i'))
+        || html.match(new RegExp(`<meta[^>]*content=["']([^"']+)["'][^>]*name=["']${name}["']`, 'i'));
+      return match?.[1] || null;
+    };
+
+    // Get basic event info from OpenGraph tags
+    const title = getMetaContent("og:title") || getMetaName("title");
+    if (!title) {
+      console.error("Setkyar: Could not extract event title");
+      return null;
+    }
+
+    const description = getMetaContent("og:description") || getMetaName("description");
+    const imageUrl = getMetaContent("og:image");
+
+    // Try to extract date/time from page content (look for common patterns)
+    // This is best-effort since the page uses client-side rendering
+    let startDate = null;
+    let endDate = null;
+
+    // Look for ISO date patterns in the HTML
+    const isoDateMatch = html.match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+    if (isoDateMatch) {
+      startDate = isoDateMatch[1];
+    }
+
+    // Try to find organizer name from page content
+    let organizer = null;
+    const organizerMatch = html.match(/"organizer"[:\s]*["']([^"']+)["']/i)
+      || html.match(/hosted\s+by\s+([^<]+)/i);
+    if (organizerMatch) {
+      organizer = organizerMatch[1].trim();
+    }
+
+    console.log(`Setkyar: Extracted - title: "${title}", image: ${imageUrl ? "yes" : "no"}, date: ${startDate || "unknown"}`);
+
+    return {
+      url: eventUrl,
+      title: title,
+      name: title,
+      description: description,
+      start: startDate,
+      end: endDate,
+      startDate: startDate,
+      endDate: endDate,
+      location: null, // Not available from OpenGraph
+      venue: null,
+      address: null,
+      city: null,
+      latitude: null,
+      longitude: null,
+      organizer: organizer,
+      hostName: organizer,
+      imageUrl: imageUrl,
+      coverImage: imageUrl,
+      attendeeCount: null,
+      isFree: true,
+      price: null,
+    };
+  } catch (error) {
+    console.error("Setkyar fetch error:", error);
     return null;
   }
 }
