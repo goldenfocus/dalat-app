@@ -13,6 +13,7 @@ import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
 import { HeroSection } from "@/components/home/hero-section";
 import { EventCard } from "@/components/events/event-card";
+import { EventCardStatic } from "@/components/events/event-card-static";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { Button } from "@/components/ui/button";
@@ -43,9 +44,10 @@ export async function generateMetadata(): Promise<Metadata> {
     return {};
   }
 
-  // Build preload URL using Cloudflare CDN (400px width for mobile cards)
+  // Build preload URL using Cloudflare CDN
+  // 200px matches actual mobile render size (~45vw on 390px screen = ~175px)
   const preloadUrl = optimizedImageUrl(firstEvent.image_url, {
-    width: 400,
+    width: 200,
     quality: 70,
     format: "auto",
   });
@@ -73,10 +75,11 @@ async function EventsFeed({
   const events = await getCachedEventsByLifecycle(lifecycle);
 
   const eventIds = events.map((e) => e.id);
-  const [counts, eventTranslations, t] = await Promise.all([
+  const [counts, eventTranslations, t, tEvents] = await Promise.all([
     getCachedEventCountsBatch(eventIds),
     getEventTranslationsBatch(eventIds, locale as ContentLocale),
     getTranslations("home"),
+    getTranslations("events"),
   ]);
 
   if (events.length === 0) {
@@ -99,12 +102,36 @@ async function EventsFeed({
     );
   }
 
+  // Labels for server-rendered card (avoiding hook in server component)
+  const eventLabels = {
+    going: tEvents("going"),
+    went: tEvents("went"),
+    full: tEvents("full"),
+    interested: tEvents("interested"),
+    waitlist: tEvents("waitlist"),
+  };
+
   return (
     <div className="space-y-6">
       {/* 2-column grid on mobile for better discoverability */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {events.map((event, index) => {
           const translation = eventTranslations.get(event.id);
+          // Use server-rendered card for first event (LCP optimization)
+          // This eliminates hydration delay for the LCP image
+          if (index === 0) {
+            return (
+              <EventCardStatic
+                key={event.id}
+                event={event}
+                counts={counts[event.id]}
+                seriesRrule={event.series_rrule ?? undefined}
+                translatedTitle={translation?.title || undefined}
+                locale={locale}
+                labels={eventLabels}
+              />
+            );
+          }
           return (
             <EventCard
               key={event.id}
@@ -112,7 +139,6 @@ async function EventsFeed({
               counts={counts[event.id]}
               seriesRrule={event.series_rrule ?? undefined}
               translatedTitle={translation?.title || undefined}
-              priority={index === 0}
             />
           );
         })}

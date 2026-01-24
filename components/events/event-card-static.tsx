@@ -1,17 +1,12 @@
-"use client";
-
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
-import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
-import { usePrefetch } from "@/lib/prefetch";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
@@ -19,13 +14,19 @@ import type { Event, EventCounts, Locale } from "@/lib/types";
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZTVlNWU1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZjVmNWY1Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNnKSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIi8+PC9zdmc+";
 
-interface EventCardProps {
+interface EventCardStaticProps {
   event: Event;
   counts?: EventCounts;
   seriesRrule?: string;
-  seriesSlug?: string;
   translatedTitle?: string;
-  priority?: boolean;
+  locale: Locale;
+  labels: {
+    going: string;
+    went: string;
+    full: string;
+    interested: string;
+    waitlist: string;
+  };
 }
 
 // Check if event is past (same logic as rsvp-button)
@@ -39,16 +40,24 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
   return defaultEnd < now;
 }
 
-export function EventCard({ event, counts, seriesRrule, translatedTitle, priority }: EventCardProps) {
-  const t = useTranslations("events");
-  const locale = useLocale() as Locale;
-  const { prefetchEvent, prefetchEventCounts } = usePrefetch();
-
-  const handlePrefetch = () => {
-    prefetchEvent(event.slug);
-    prefetchEventCounts(event.id);
-  };
-
+/**
+ * Server-rendered EventCard for LCP optimization.
+ *
+ * Unlike the client EventCard, this component:
+ * - Renders without "use client" directive
+ * - Does not require hydration before the image loads
+ * - Receives translations as props (no useTranslations hook)
+ *
+ * Use this for the first card (LCP element) to eliminate hydration delay.
+ */
+export function EventCardStatic({
+  event,
+  counts,
+  seriesRrule,
+  translatedTitle,
+  locale,
+  labels,
+}: EventCardStaticProps) {
   const spotsText = event.capacity
     ? `${counts?.going_spots ?? 0}/${event.capacity}`
     : `${counts?.going_spots ?? 0}`;
@@ -67,9 +76,6 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle, priorit
     <Link
       href={`/events/${event.slug}`}
       className="block touch-manipulation"
-      onClick={() => triggerHaptic("selection")}
-      onMouseEnter={handlePrefetch}
-      onTouchStart={handlePrefetch}
     >
       <Card className="overflow-hidden hover:border-foreground/20 transition-all duration-150 active:scale-[0.98] active:opacity-90">
         {/* Image area */}
@@ -95,8 +101,8 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle, priorit
                 sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
                 className={`transition-transform group-hover:scale-105 ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
                 style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
-                priority={priority}
-                fetchPriority={priority ? "high" : "auto"}
+                priority
+                fetchPriority="high"
                 placeholder="blur"
                 blurDataURL={BLUR_DATA_URL}
               />
@@ -140,18 +146,18 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle, priorit
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               <span>
-                {spotsText} {isPast ? t("went") : t("going")}
+                {spotsText} {isPast ? labels.went : labels.going}
                 {isFull && (
-                  <span className="ml-1 text-orange-500">({t("full")})</span>
+                  <span className="ml-1 text-orange-500">({labels.full})</span>
                 )}
                 {(counts?.interested_count ?? 0) > 0 && (
                   <span className="ml-1 text-muted-foreground">
-                    &middot; {counts?.interested_count} {t("interested")}
+                    &middot; {counts?.interested_count} {labels.interested}
                   </span>
                 )}
                 {(counts?.waitlist_count ?? 0) > 0 && (
                   <span className="ml-1 text-muted-foreground">
-                    &middot; {counts?.waitlist_count} {t("waitlist")}
+                    &middot; {counts?.waitlist_count} {labels.waitlist}
                   </span>
                 )}
               </span>
