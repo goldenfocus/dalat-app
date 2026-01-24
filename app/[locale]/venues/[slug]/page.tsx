@@ -8,7 +8,6 @@ import {
   BadgeCheck,
   ExternalLink,
   Clock,
-  Route,
   Globe,
   Phone,
   Mail,
@@ -441,16 +440,6 @@ export default async function VenuePage({ params }: PageProps) {
 
         {/* Action buttons - min-h-11 ensures 44px touch targets */}
         <div className="flex flex-wrap gap-2 mb-6">
-          <a
-            href={`https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2.5 min-h-11 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all"
-          >
-            <Route className="w-4 h-4" />
-            {t("getDirections")}
-          </a>
-
           {venue.website_url && (
             <a
               href={venue.website_url}
