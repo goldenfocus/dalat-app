@@ -258,11 +258,6 @@ export function EventForm({
   );
   const [organizers, setOrganizers] = useState<Pick<Organizer, 'id' | 'name' | 'slug' | 'logo_url'>[]>([]);
 
-  // Venue picker state
-  const [venueId, setVenueId] = useState<string | null>(
-    event?.venue_id ?? null
-  );
-
   // Fetch organizers on mount
   useEffect(() => {
     async function fetchOrganizers() {
