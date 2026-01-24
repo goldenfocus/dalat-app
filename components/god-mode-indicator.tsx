@@ -2,7 +2,7 @@
 
 import { Eye, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import type { Profile } from "@/lib/types";
 
@@ -10,7 +10,8 @@ interface GodModeIndicatorProps {
   targetProfile: Profile;
 }
 
-export function GodModeIndicator({ targetProfile }: GodModeIndicatorProps) {
+// Internal indicator component (when we already have the profile)
+function GodModeIndicatorInner({ targetProfile }: GodModeIndicatorProps) {
   const router = useRouter();
   const [exiting, setExiting] = useState(false);
 
@@ -48,4 +49,48 @@ export function GodModeIndicator({ targetProfile }: GodModeIndicatorProps) {
       </Button>
     </div>
   );
+}
+
+// Exported version that fetches god mode state client-side
+// This avoids server-side cookie checks in the layout, preserving ISR caching
+export function GodModeIndicator({ targetProfile }: GodModeIndicatorProps) {
+  return <GodModeIndicatorInner targetProfile={targetProfile} />;
+}
+
+interface GodModeState {
+  isActive: boolean;
+  targetProfile: Profile | null;
+}
+
+// Client-side wrapper that checks for god mode without blocking SSR
+export function GodModeIndicatorWrapper() {
+  const [godMode, setGodMode] = useState<GodModeState | null>(null);
+
+  useEffect(() => {
+    // Check for god mode cookie client-side
+    const hasGodModeCookie = document.cookie.includes("god_mode_user_id=");
+    if (!hasGodModeCookie) {
+      setGodMode({ isActive: false, targetProfile: null });
+      return;
+    }
+
+    // Only fetch if cookie exists (superadmin impersonating)
+    fetch("/api/admin/god-mode-state")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.isActive && data?.targetProfile) {
+          setGodMode({ isActive: true, targetProfile: data.targetProfile });
+        } else {
+          setGodMode({ isActive: false, targetProfile: null });
+        }
+      })
+      .catch(() => setGodMode({ isActive: false, targetProfile: null }));
+  }, []);
+
+  // Don't render anything until we know the state, or if not in god mode
+  if (!godMode?.isActive || !godMode.targetProfile) {
+    return null;
+  }
+
+  return <GodModeIndicatorInner targetProfile={godMode.targetProfile} />;
 }

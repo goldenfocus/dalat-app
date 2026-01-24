@@ -13,8 +13,7 @@ import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-con
 import { PerformanceMonitor } from "@/components/performance-monitor";
 import { routing, type Locale } from "@/lib/i18n/routing";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
-import { getEffectiveUser } from "@/lib/god-mode";
-import { GodModeIndicator } from "@/components/god-mode-indicator";
+import { GodModeIndicatorWrapper } from "@/components/god-mode-indicator";
 import { QueryProvider } from "@/lib/providers/query-provider";
 import { LocalePreloader } from "@/components/locale-preloader";
 
@@ -70,9 +69,6 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   const messages = await getMessages();
 
-  // Check auth and God mode state
-  const { user, godMode } = await getEffectiveUser();
-
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <QueryProvider>
@@ -96,9 +92,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               </main>
               <MobileBottomNav />
               <GlobalFooter />
-              {godMode.isActive && godMode.targetProfile && (
-                <GodModeIndicator targetProfile={godMode.targetProfile} />
-              )}
+              <GodModeIndicatorWrapper />
             </div>
           </ScrollRestorationProvider>
         </ThemeProvider>
