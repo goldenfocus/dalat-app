@@ -130,14 +130,40 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  // Determine public routes BEFORE any cookie/session handling
+  // This is critical for ISR caching - avoid cookie operations on cacheable pages
+  const pathWithoutLocale = pathname.replace(localeStripRegex, '');
+  const isPublicRoute =
+    pathWithoutLocale === "/" ||
+    pathWithoutLocale === "" ||
+    pathWithoutLocale.startsWith("/login") ||
+    pathWithoutLocale.startsWith("/auth") ||
+    pathname.startsWith("/auth") || // Root-level auth routes
+    pathname.startsWith("/api") ||
+    pathWithoutLocale.startsWith("/events") ||
+    pathWithoutLocale.startsWith("/festivals") ||
+    pathWithoutLocale.startsWith("/organizers") ||
+    pathWithoutLocale.startsWith("/moments") ||  // Public moments discovery
+    pathWithoutLocale.startsWith("/feed") ||  // Public moments feed
+    pathWithoutLocale.startsWith("/blog") ||  // Public blog articles
+    pathWithoutLocale.startsWith("/map") ||  // Public map view
+    pathWithoutLocale.startsWith("/calendar") ||  // Public calendar view
+    pathWithoutLocale.startsWith("/invite") ||  // Public invite links
+    pathWithoutLocale.startsWith("/@");  // Public profile pages
 
-  // If the env vars are not set, skip proxy check
-  if (!hasEnvVars) {
-    return supabaseResponse;
+  // For public routes, skip auth entirely to preserve ISR caching
+  // Cookie operations break Vercel's cache (sets cache-control: no-cache)
+  if (isPublicRoute) {
+    return NextResponse.next({ request });
   }
+
+  // If the env vars are not set, skip auth check
+  if (!hasEnvVars) {
+    return NextResponse.next({ request });
+  }
+
+  // Only run auth for protected routes
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -165,27 +191,7 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
-  // Public routes that don't require authentication (now with locale prefix)
-  const pathWithoutLocale = pathname.replace(localeStripRegex, '');
-  const isPublicRoute =
-    pathWithoutLocale === "/" ||
-    pathWithoutLocale === "" ||
-    pathWithoutLocale.startsWith("/login") ||
-    pathWithoutLocale.startsWith("/auth") ||
-    pathname.startsWith("/auth") || // Root-level auth routes
-    pathname.startsWith("/api") ||
-    pathWithoutLocale.startsWith("/events") ||
-    pathWithoutLocale.startsWith("/festivals") ||
-    pathWithoutLocale.startsWith("/organizers") ||
-    pathWithoutLocale.startsWith("/moments") ||  // Public moments discovery
-    pathWithoutLocale.startsWith("/feed") ||  // Public moments feed
-    pathWithoutLocale.startsWith("/blog") ||  // Public blog articles
-    pathWithoutLocale.startsWith("/map") ||  // Public map view
-    pathWithoutLocale.startsWith("/calendar") ||  // Public calendar view
-    pathWithoutLocale.startsWith("/invite") ||  // Public invite links
-    pathWithoutLocale.startsWith("/@");  // Public profile pages
-
-  if (!user && !isPublicRoute) {
+  if (!user) {
     const locale = getLocaleFromPath(pathname) || routing.defaultLocale;
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/auth/login`;
