@@ -19,7 +19,7 @@ export function InviteCelebration({
 }: InviteCelebrationProps) {
   const t = useTranslations("invite");
   const [phrase, setPhrase] = useState("");
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [progress, setProgress] = useState(0);
 
   // Get a random celebration phrase
@@ -81,16 +81,9 @@ export function InviteCelebration({
     }, 600);
   }, []);
 
-  // Initialize celebration
+  // Initialize celebration - fire confetti immediately with modal already visible
   useEffect(() => {
     setPhrase(getRandomPhrase());
-
-    // Fade in
-    requestAnimationFrame(() => {
-      setIsVisible(true);
-    });
-
-    // Fire confetti
     fireCelebration();
   }, [getRandomPhrase, fireCelebration]);
 
