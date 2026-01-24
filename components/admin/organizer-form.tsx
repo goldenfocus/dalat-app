@@ -10,24 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { OrganizerLogoUpload } from "@/components/admin/organizer-logo-upload";
 import { AIOrganizerLogoDialog } from "@/components/admin/ai-organizer-logo-dialog";
 import type { Organizer } from "@/lib/types";
+import { sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
 
 interface OrganizerFormProps {
   organizer?: Organizer;
-}
-
-function sanitizeSlug(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/-+/g, "-");
-}
-
-function finalizeSlug(input: string): string {
-  return sanitizeSlug(input).replace(/^-+|-+$/g, "");
-}
-
-function suggestSlug(title: string): string {
-  return sanitizeSlug(title).slice(0, 50);
 }
 
 type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";

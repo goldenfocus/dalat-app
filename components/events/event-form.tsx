@@ -36,6 +36,7 @@ import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
 import type { Event, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
+import { slugify, sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
 
 /**
  * Trigger translation for an event (fire-and-forget)
@@ -107,36 +108,12 @@ interface EventFormProps {
 }
 
 /**
- * Sanitize a string into a valid slug format (while typing)
- */
-function sanitizeSlug(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/-+/g, "-");
-}
-
-/**
- * Final cleanup of slug (on blur/submit) - removes leading/trailing dashes
- */
-function finalizeSlug(input: string): string {
-  return sanitizeSlug(input).replace(/^-+|-+$/g, "");
-}
-
-/**
  * Generate a slug from title with random suffix (for fallback/auto-generation)
  */
 function generateSlug(title: string): string {
-  const base = sanitizeSlug(title).slice(0, 40);
+  const base = slugify(title).slice(0, 40);
   const suffix = Math.random().toString(36).slice(2, 6);
   return `${base}-${suffix}`;
-}
-
-/**
- * Generate a suggested slug from title (without random suffix)
- */
-function suggestSlug(title: string): string {
-  return sanitizeSlug(title).slice(0, 50);
 }
 
 /**

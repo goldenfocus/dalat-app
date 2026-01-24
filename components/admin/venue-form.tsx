@@ -16,24 +16,10 @@ import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
 import { VENUE_TYPES, VENUE_TYPE_CONFIG } from "@/lib/constants/venue-types";
 import { triggerTranslation } from "@/lib/translations-client";
 import type { Venue, VenueType, OperatingHours } from "@/lib/types";
+import { sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
 
 interface VenueFormProps {
   venue?: Venue;
-}
-
-function sanitizeSlug(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/-+/g, "-");
-}
-
-function finalizeSlug(input: string): string {
-  return sanitizeSlug(input).replace(/^-+|-+$/g, "");
-}
-
-function suggestSlug(title: string): string {
-  return sanitizeSlug(title).slice(0, 50);
 }
 
 type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
