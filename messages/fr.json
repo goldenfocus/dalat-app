@@ -1189,7 +1189,12 @@
     "titlePositionBottom": "Title at bottom",
     "clickToPreview": "Cliquez pour prévisualiser",
     "preview": "Aperçu",
-    "download": "Télécharger"
+    "download": "Télécharger",
+    "setFocalPoint": "Ajuster la position",
+    "doneFocalPoint": "Terminé",
+    "clickToSetFocalPoint": "Cliquez pour définir le point focal",
+    "imageFitFill": "Remplir (recadrer)",
+    "imageFitContain": "Ajuster (tout afficher)"
   },
   "archive": {
     "events": "Événements",

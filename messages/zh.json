@@ -1175,7 +1175,12 @@
     "titlePositionBottom": "Title at bottom",
     "clickToPreview": "点击预览",
     "preview": "预览",
-    "download": "下载"
+    "download": "下载",
+    "setFocalPoint": "调整图片位置",
+    "doneFocalPoint": "完成",
+    "clickToSetFocalPoint": "点击设置焦点",
+    "imageFitFill": "填充（裁剪适应）",
+    "imageFitContain": "适应（显示全部）"
   },
   "archive": {
     "events": "活动",

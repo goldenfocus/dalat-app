@@ -198,7 +198,10 @@ export default async function Home({ params }: PageProps) {
       {/* Hero Section - server-rendered for fast LCP */}
       {/* Conditionally render image hero or minimal text hero */}
       {homepageConfig?.hero_image_url ? (
-        <HeroImageSection imageUrl={homepageConfig.hero_image_url} />
+        <HeroImageSection
+          imageUrl={homepageConfig.hero_image_url}
+          focalPoint={homepageConfig.hero_focal_point}
+        />
       ) : (
         <HeroSection />
       )}

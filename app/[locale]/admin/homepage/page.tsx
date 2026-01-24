@@ -9,6 +9,7 @@ import { EventMediaUpload } from "@/components/events/event-media-upload";
 interface HomepageConfig {
   id: string;
   hero_image_url: string | null;
+  hero_focal_point: string | null;
   updated_at: string;
   updated_by: string | null;
 }
@@ -86,6 +87,35 @@ export default function AdminHomepagePage() {
     }
   };
 
+  // Handle focal point change
+  const handleFocalPointChange = async (point: string | null) => {
+    if (!config) return;
+
+    setError(null);
+
+    try {
+      const supabase = createClient();
+      const { data: updatedConfig, error: updateError } = await supabase
+        .from("homepage_config")
+        .update({
+          hero_focal_point: point,
+          updated_by: (await supabase.auth.getUser()).data.user?.id,
+        })
+        .eq("id", config.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setConfig(updatedConfig);
+    } catch (err) {
+      console.error("Failed to save focal point:", err);
+      setError("Failed to save focal point. Please try again.");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -128,6 +158,8 @@ export default function AdminHomepagePage() {
               autoSave={false}
               bucket="site-assets"
               aiContext="venue-cover"
+              focalPoint={config.hero_focal_point}
+              onFocalPointChange={handleFocalPointChange}
             />
           )}
 

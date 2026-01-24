@@ -1175,7 +1175,12 @@
     "titlePositionBottom": "Title at bottom",
     "clickToPreview": "Klicken für Vorschau",
     "preview": "Vorschau",
-    "download": "Herunterladen"
+    "download": "Herunterladen",
+    "setFocalPoint": "Bildposition anpassen",
+    "doneFocalPoint": "Fertig",
+    "clickToSetFocalPoint": "Klicken um Fokuspunkt zu setzen",
+    "imageFitFill": "Füllen (zuschneiden)",
+    "imageFitContain": "Einpassen (alles zeigen)"
   },
   "archive": {
     "events": "Events",

@@ -1194,7 +1194,12 @@
     "titlePositionBottom": "Title at bottom",
     "clickToPreview": "Klik untuk pratinjau",
     "preview": "Pratinjau",
-    "download": "Unduh"
+    "download": "Unduh",
+    "setFocalPoint": "Sesuaikan posisi gambar",
+    "doneFocalPoint": "Selesai",
+    "clickToSetFocalPoint": "Klik untuk mengatur titik fokus",
+    "imageFitFill": "Isi (potong)",
+    "imageFitContain": "Muat (tampilkan semua)"
   },
   "archive": {
     "events": "Acara",

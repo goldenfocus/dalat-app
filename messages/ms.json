@@ -1175,7 +1175,12 @@
     "titlePositionBottom": "Title at bottom",
     "clickToPreview": "Klik untuk pratonton",
     "preview": "Pratonton",
-    "download": "Muat turun"
+    "download": "Muat turun",
+    "setFocalPoint": "Laras kedudukan imej",
+    "doneFocalPoint": "Selesai",
+    "clickToSetFocalPoint": "Klik untuk tetapkan titik fokus",
+    "imageFitFill": "Isi (potong)",
+    "imageFitContain": "Muat (tunjuk semua)"
   },
   "archive": {
     "events": "Acara",

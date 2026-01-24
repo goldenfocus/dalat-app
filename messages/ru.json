@@ -1175,7 +1175,12 @@
     "titlePositionBottom": "Title at bottom",
     "clickToPreview": "Нажмите для просмотра",
     "preview": "Просмотр",
-    "download": "Скачать"
+    "download": "Скачать",
+    "setFocalPoint": "Настроить положение",
+    "doneFocalPoint": "Готово",
+    "clickToSetFocalPoint": "Нажмите, чтобы установить фокус",
+    "imageFitFill": "Заполнить (обрезать)",
+    "imageFitContain": "Вписать (показать всё)"
   },
   "archive": {
     "events": "События",

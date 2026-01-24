@@ -4,6 +4,7 @@ import { HeroImageQuickActions } from "./hero-image-quick-actions";
 
 interface HeroImageSectionProps {
   imageUrl: string;
+  focalPoint?: string | null;
 }
 
 /**
@@ -11,7 +12,7 @@ interface HeroImageSectionProps {
  * Matches the venue page hero treatment with gradient overlay.
  * Falls back to HeroSection when no image is configured.
  */
-export async function HeroImageSection({ imageUrl }: HeroImageSectionProps) {
+export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectionProps) {
   const t = await getTranslations("hero");
 
   // Optimize image for Cloudflare CDN
@@ -30,6 +31,7 @@ export async function HeroImageSection({ imageUrl }: HeroImageSectionProps) {
           src={optimizedUrl || imageUrl}
           alt=""
           className="w-full h-full object-cover"
+          style={focalPoint ? { objectPosition: focalPoint } : undefined}
           // High priority for LCP
           fetchPriority="high"
         />
@@ -54,7 +56,6 @@ export async function HeroImageSection({ imageUrl }: HeroImageSectionProps) {
           {/* Quick access pills - styled for dark background */}
           <HeroImageQuickActions
             labels={{
-              search: t("search"),
               map: t("map"),
               calendar: t("calendar"),
               venues: t("venues"),

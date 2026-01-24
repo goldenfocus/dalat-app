@@ -1175,7 +1175,12 @@
     "titlePositionBottom": "Title at bottom",
     "clickToPreview": "클릭하여 미리보기",
     "preview": "미리보기",
-    "download": "다운로드"
+    "download": "다운로드",
+    "setFocalPoint": "이미지 위치 조정",
+    "doneFocalPoint": "완료",
+    "clickToSetFocalPoint": "클릭하여 초점 설정",
+    "imageFitFill": "채우기 (자르기)",
+    "imageFitContain": "맞추기 (전체 표시)"
   },
   "archive": {
     "events": "이벤트",

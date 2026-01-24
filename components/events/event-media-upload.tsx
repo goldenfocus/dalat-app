@@ -12,6 +12,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Move,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -47,6 +48,10 @@ interface EventMediaUploadProps {
   bucket?: string;
   /** AI context for image generation (default: "event-cover") */
   aiContext?: "event-cover" | "venue-cover";
+  /** Current focal point as "X% Y%" string for image positioning */
+  focalPoint?: string | null;
+  /** Callback when focal point changes */
+  onFocalPointChange?: (point: string | null) => void;
 }
 
 // Style presets for AI image generation
@@ -133,6 +138,8 @@ export function EventMediaUpload({
   autoSave = true,
   bucket = "event-media",
   aiContext = "event-cover",
+  focalPoint = null,
+  onFocalPointChange,
 }: EventMediaUploadProps) {
   const t = useTranslations("flyerBuilder");
 
@@ -198,6 +205,10 @@ export function EventMediaUpload({
   // Disintegration animation state
   const [isDisintegrating, setIsDisintegrating] = useState(false);
   const [disintegrateUrl, setDisintegrateUrl] = useState<string | null>(null);
+
+  // Focal point editing state
+  const [isEditingFocalPoint, setIsEditingFocalPoint] = useState(false);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const uploadMedia = async (file: File) => {
     setError(null);
@@ -603,23 +614,61 @@ export function EventMediaUpload({
 
   const isLoading = isUploading || isLoadingUrl || isGenerating || isConverting;
 
+  // Handle focal point selection
+  const handleFocalPointClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isEditingFocalPoint || !imageContainerRef.current || !onFocalPointChange) return;
+
+      const rect = imageContainerRef.current.getBoundingClientRect();
+      const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+      const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+
+      // Clamp values to 0-100 range
+      const clampedX = Math.max(0, Math.min(100, x));
+      const clampedY = Math.max(0, Math.min(100, y));
+
+      onFocalPointChange(`${clampedX}% ${clampedY}%`);
+    },
+    [isEditingFocalPoint, onFocalPointChange]
+  );
+
+  // Parse focal point string to x,y percentages
+  const parseFocalPoint = (fp: string | null): { x: number; y: number } => {
+    if (!fp) return { x: 50, y: 50 };
+    const match = fp.match(/(\d+)%\s+(\d+)%/);
+    if (match) {
+      return { x: parseInt(match[1], 10), y: parseInt(match[2], 10) };
+    }
+    return { x: 50, y: 50 };
+  };
+
+  const focalPointCoords = parseFocalPoint(focalPoint);
+
   return (
     <div className="space-y-3">
       {/* Media preview area */}
       <div
+        ref={imageContainerRef}
         className={cn(
           "relative aspect-[2/1] rounded-lg overflow-hidden bg-muted border-2 transition-colors group",
           isDragOver
             ? "border-primary border-dashed"
-            : "border-transparent hover:border-muted-foreground/20",
-          // Only show pointer cursor when there's no image (click to upload)
-          !previewUrl && "cursor-pointer"
+            : isEditingFocalPoint
+              ? "border-blue-500"
+              : "border-transparent hover:border-muted-foreground/20",
+          // Cursor: crosshair when editing focal point, pointer when no image
+          isEditingFocalPoint ? "cursor-crosshair" : !previewUrl && "cursor-pointer"
         )}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        // Only trigger file upload on click when there's no image
-        onClick={previewUrl ? undefined : () => fileInputRef.current?.click()}
+        onClick={
+          isEditingFocalPoint
+            ? handleFocalPointClick
+            : previewUrl
+              ? undefined
+              : () => fileInputRef.current?.click()
+        }
       >
         {isDisintegrating ? (
           /* Dark background for particles to fly over */
@@ -635,11 +684,30 @@ export function EventMediaUpload({
               autoPlay
             />
           ) : (
+            <>
             <img
               src={previewUrl}
               alt="Event media"
               className="w-full h-full object-cover"
+              style={focalPoint ? { objectPosition: focalPoint } : undefined}
             />
+            {/* Focal point indicator - only show when editing */}
+            {isEditingFocalPoint && (
+              <div
+                className="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ left: `${focalPointCoords.x}%`, top: `${focalPointCoords.y}%` }}
+              >
+                <div className="absolute inset-0 rounded-full border-2 border-white shadow-lg" />
+                <div className="absolute inset-2 rounded-full bg-blue-500/80" />
+              </div>
+            )}
+            {/* Focal point editing hint */}
+            {isEditingFocalPoint && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white bg-blue-600/90 px-3 py-1.5 rounded-full text-sm">
+                {t("clickToSetFocalPoint")}
+              </div>
+            )}
+          </>
           )
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-primary/5 gap-2">
@@ -661,6 +729,30 @@ export function EventMediaUpload({
           </div>
         )}
 
+        {/* Buttons on image */}
+        {previewUrl && !previewIsVideo && (
+          <div className="absolute top-2 left-2 flex gap-2">
+            {/* Focal point edit toggle */}
+            {onFocalPointChange && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditingFocalPoint(!isEditingFocalPoint);
+                }}
+                className={cn(
+                  "p-2 rounded-full transition-colors",
+                  isEditingFocalPoint
+                    ? "bg-blue-500 text-white"
+                    : "bg-black/50 text-white hover:bg-black/70"
+                )}
+                title={isEditingFocalPoint ? t("doneFocalPoint") : t("setFocalPoint")}
+              >
+                <Move className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
         {/* Remove button on image */}
         {previewUrl && (
           <button

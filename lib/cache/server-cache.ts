@@ -367,6 +367,7 @@ export const getCachedLifecycleCounts = unstable_cache(
 export interface HomepageConfig {
   id: string;
   hero_image_url: string | null;
+  hero_focal_point: string | null;
   updated_at: string;
   updated_by: string | null;
 }
