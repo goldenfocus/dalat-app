@@ -259,7 +259,7 @@ export const getCachedEventCounts = unstable_cache(
 
 /**
  * Cached batch event counts for multiple events.
- * More efficient than individual calls for list views.
+ * Uses database-side aggregation via RPC for efficiency.
  *
  * NOTE: This is a factory function that creates a cache entry per unique set of eventIds.
  * The eventIds are sorted and included in the cache key to ensure correct cache hits.
@@ -280,36 +280,39 @@ export function getCachedEventCountsBatch(eventIds: string[]): Promise<Record<st
           return {};
         }
 
-        const { data: rsvps, error } = await supabase
-          .from("rsvps")
-          .select("event_id, status, plus_ones")
-          .in("event_id", sortedIds);
+        // Use database-side aggregation via RPC (much faster than fetching all RSVPs)
+        const { data, error } = await supabase.rpc("get_event_counts_batch", {
+          p_event_ids: sortedIds,
+        });
 
         if (error) {
           console.error("Error fetching batch event counts:", error);
           return {};
         }
 
+        // Convert array result to Record keyed by event_id
         const counts: Record<string, EventCounts> = {};
-
-        for (const eventId of sortedIds) {
-          const eventRsvps = rsvps?.filter((r) => r.event_id === eventId) || [];
-          const goingRsvps = eventRsvps.filter((r) => r.status === "going");
-          const waitlistRsvps = eventRsvps.filter((r) => r.status === "waitlist");
-          const interestedRsvps = eventRsvps.filter(
-            (r) => r.status === "interested"
-          );
-
-          counts[eventId] = {
-            event_id: eventId,
-            going_count: goingRsvps.length,
-            waitlist_count: waitlistRsvps.length,
-            going_spots: goingRsvps.reduce(
-              (sum, r) => sum + 1 + (r.plus_ones || 0),
-              0
-            ),
-            interested_count: interestedRsvps.length,
+        for (const row of data || []) {
+          counts[row.event_id] = {
+            event_id: row.event_id,
+            going_count: row.going_count,
+            going_spots: row.going_spots,
+            waitlist_count: row.waitlist_count,
+            interested_count: row.interested_count,
           };
+        }
+
+        // Initialize missing events with zero counts (events with no RSVPs)
+        for (const eventId of sortedIds) {
+          if (!counts[eventId]) {
+            counts[eventId] = {
+              event_id: eventId,
+              going_count: 0,
+              going_spots: 0,
+              waitlist_count: 0,
+              interested_count: 0,
+            };
+          }
         }
 
         return counts;
@@ -318,7 +321,7 @@ export function getCachedEventCountsBatch(eventIds: string[]): Promise<Record<st
         return {};
       }
     },
-    ["event-counts-batch", sortedIds.join(",")],
+    ["event-counts-batch-v2", sortedIds.join(",")],
     {
       revalidate: 30, // 30 seconds
       tags: [CACHE_TAGS.events],
