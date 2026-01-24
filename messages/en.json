@@ -2,6 +2,7 @@
   "hero": {
     "headline": "Find events. Discover venues.",
     "subtitle": "Join your community in Đà Lạt",
+    "search": "Search",
     "map": "Map",
     "calendar": "Calendar",
     "venues": "Venues"
@@ -61,6 +62,7 @@
     "noHappening": "No events happening right now.",
     "noPast": "No past events yet.",
     "createFirst": "Create the first event",
+    "emptyHint": "Be the first to share something with the community",
     "footer": "Made with <heart></heart> for Đà Lạt, Vietnam",
     "tabs": {
       "upcoming": "Upcoming",
@@ -153,6 +155,7 @@
     "userNotFound": "User not found"
   },
   "events": {
+    "popular": "Popular",
     "going": "going",
     "went": "went",
     "interested": "interested",

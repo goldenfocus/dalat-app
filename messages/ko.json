@@ -2,6 +2,7 @@
   "hero": {
     "headline": "이벤트를 찾고. 장소를 발견하세요.",
     "subtitle": "달랏에서 커뮤니티에 참여하세요",
+    "search": "검색",
     "map": "지도",
     "calendar": "캘린더",
     "venues": "장소"
@@ -61,6 +62,7 @@
     "noHappening": "현재 진행 중인 이벤트가 없습니다.",
     "noPast": "지난 이벤트가 아직 없습니다.",
     "createFirst": "첫 번째 이벤트 만들기",
+    "emptyHint": "커뮤니티에 첫 번째로 공유해 보세요",
     "footer": "<heart></heart>을 담아 베트남 달랏을 위해 만들었습니다",
     "tabs": {
       "upcoming": "예정",
@@ -153,6 +155,7 @@
     "userNotFound": "사용자를 찾을 수 없습니다"
   },
   "events": {
+    "popular": "인기",
     "going": "참석",
     "went": "참석함",
     "interested": "관심 있음",

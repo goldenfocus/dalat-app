@@ -11,6 +11,7 @@ export const revalidate = 300;
 
 import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
+import { MobileHeader } from "@/components/home/mobile-header";
 import { HeroSection } from "@/components/home/hero-section";
 import { EventCard } from "@/components/events/event-card";
 import { EventCardStatic } from "@/components/events/event-card-static";
@@ -113,8 +114,8 @@ async function EventsFeed({
 
   return (
     <div className="space-y-6">
-      {/* 2-column grid on mobile for better discoverability */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      {/* 2-column grid on mobile, 3-column on desktop for better discoverability */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
         {events.map((event, index) => {
           const translation = eventTranslations.get(event.id);
           // Use server-rendered card for first event (LCP optimization)
@@ -185,6 +186,11 @@ export default async function Home({ params }: PageProps) {
 
   return (
     <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
+      {/* Mobile header - scroll-aware, shows auth state */}
+      <div className="lg:hidden">
+        <MobileHeader />
+      </div>
+
       {/* Desktop header */}
       <div className="hidden lg:block">
         <SiteHeader />
@@ -194,7 +200,7 @@ export default async function Home({ params }: PageProps) {
       <HeroSection />
 
       {/* Main content */}
-      <div className="flex-1 container max-w-4xl mx-auto px-4 py-4">
+      <div className="flex-1 container max-w-6xl mx-auto px-4 py-4 lg:py-6">
         {/* Tabs + Search */}
         <div className="flex items-center justify-between gap-4 mb-4">
           <Suspense fallback={<div className="h-10 w-64 bg-muted animate-pulse rounded-lg" />}>
@@ -218,8 +224,8 @@ export default async function Home({ params }: PageProps) {
         {/* Event grid */}
         <Suspense
           fallback={
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              {[1, 2, 3, 4].map((i) => (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
                   className="h-64 sm:h-80 bg-muted animate-pulse rounded-lg"

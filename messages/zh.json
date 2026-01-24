@@ -2,6 +2,7 @@
   "hero": {
     "headline": "发现活动。探索场地。",
     "subtitle": "加入大叻社区",
+    "search": "搜索",
     "map": "地图",
     "calendar": "日历",
     "venues": "场地"
@@ -61,6 +62,7 @@
     "noHappening": "目前没有正在进行的活动。",
     "noPast": "暂无过去的活动。",
     "createFirst": "创建第一个活动",
+    "emptyHint": "成为第一个与社区分享的人",
     "footer": "为越南大叻<heart></heart>打造",
     "tabs": {
       "upcoming": "即将举行",
@@ -153,6 +155,7 @@
     "userNotFound": "未找到用户"
   },
   "events": {
+    "popular": "热门",
     "going": "参加",
     "went": "已参加",
     "interested": "感兴趣",

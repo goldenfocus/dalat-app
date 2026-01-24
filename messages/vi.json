@@ -2,6 +2,7 @@
   "hero": {
     "headline": "Tìm sự kiện. Khám phá địa điểm.",
     "subtitle": "Tham gia cộng đồng tại Đà Lạt",
+    "search": "Tìm kiếm",
     "map": "Bản đồ",
     "calendar": "Lịch",
     "venues": "Địa điểm"
@@ -61,6 +62,7 @@
     "noHappening": "Không có sự kiện nào đang diễn ra.",
     "noPast": "Chưa có sự kiện nào đã qua.",
     "createFirst": "Tạo sự kiện đầu tiên",
+    "emptyHint": "Hãy là người đầu tiên chia sẻ điều gì đó với cộng đồng",
     "footer": "Được tạo với <heart></heart> dành cho Đà Lạt, Việt Nam",
     "tabs": {
       "upcoming": "Sắp tới",
@@ -153,6 +155,7 @@
     "userNotFound": "Không tìm thấy người dùng"
   },
   "events": {
+    "popular": "Phổ biến",
     "going": "tham gia",
     "went": "đã tham gia",
     "interested": "quan tâm",

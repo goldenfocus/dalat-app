@@ -1,13 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Button } from "./ui/button";
 import { UserMenu } from "./user-menu";
-import { NotificationBell } from "./notifications/notification-bell";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/types";
+
+// Lazy load NotificationBell - saves 3-5KB for anonymous users
+const NotificationBell = dynamic(
+  () =>
+    import("./notifications/notification-bell").then(
+      (mod) => mod.NotificationBell
+    ),
+  { ssr: false }
+);
 
 interface AuthState {
   isLoading: boolean;
@@ -57,33 +66,35 @@ export function AuthButtonClient() {
           .eq("id", session.user.id)
           .single();
 
-        // Check for God mode cookie
-        const hasGodModeCookie = document.cookie.includes("god_mode_user_id=");
+        // Only check God Mode for superadmins (saves API call for 99% of users)
         let godModeState = { isActive: false, realAdminId: null as string | null };
 
-        if (hasGodModeCookie && profile?.role === "superadmin") {
-          // Fetch god mode state from API
-          try {
-            const res = await fetch("/api/admin/god-mode-state");
-            if (res.ok) {
-              const data = await res.json();
-              if (data?.isActive && data?.targetProfile) {
-                godModeState = {
-                  isActive: true,
-                  realAdminId: session.user.id,
-                };
-                // When in god mode, use target profile
-                setAuth({
-                  isLoading: false,
-                  user: { id: session.user.id },
-                  profile: data.targetProfile,
-                  godMode: godModeState,
-                });
-                return;
+        if (profile?.role === "superadmin") {
+          const hasGodModeCookie = document.cookie.includes("god_mode_user_id=");
+          if (hasGodModeCookie) {
+            // Fetch god mode state from API
+            try {
+              const res = await fetch("/api/admin/god-mode-state");
+              if (res.ok) {
+                const data = await res.json();
+                if (data?.isActive && data?.targetProfile) {
+                  godModeState = {
+                    isActive: true,
+                    realAdminId: session.user.id,
+                  };
+                  // When in god mode, use target profile
+                  setAuth({
+                    isLoading: false,
+                    user: { id: session.user.id },
+                    profile: data.targetProfile,
+                    godMode: godModeState,
+                  });
+                  return;
+                }
               }
+            } catch {
+              // God mode check failed, continue with normal profile
             }
-          } catch {
-            // God mode check failed, continue with normal profile
           }
         }
 

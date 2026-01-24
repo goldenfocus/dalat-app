@@ -72,7 +72,7 @@ export function EventCardStatic({
       href={`/events/${event.slug}`}
       className="block touch-manipulation"
     >
-      <Card className="overflow-hidden hover:border-foreground/20 transition-all duration-150 active:scale-[0.98] active:opacity-90">
+      <Card className="overflow-hidden hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] active:opacity-90">
         {/* Image area */}
         <div className="w-full aspect-[4/5] relative overflow-hidden group">
           {hasCustomImage ? (
