@@ -8,9 +8,12 @@
     "venues": "Tempat"
   },
   "viewToggle": {
-    "grid": "Paparan grid",
-    "list": "Paparan senarai",
-    "immersive": "Paparan penuh",
+    "viewSettings": "Tetapan paparan",
+    "viewMode": "Susun atur",
+    "density": "Kepadatan",
+    "grid": "Grid",
+    "list": "Senarai",
+    "immersive": "Penuh",
     "compact": "Padat",
     "default": "Lalai",
     "spacious": "Luas"

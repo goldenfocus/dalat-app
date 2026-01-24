@@ -8,6 +8,9 @@
     "venues": "Места"
   },
   "viewToggle": {
+    "viewSettings": "Настройки вида",
+    "viewMode": "Макет",
+    "density": "Плотность",
     "grid": "Сетка",
     "list": "Список",
     "immersive": "Погружение",

@@ -8,6 +8,9 @@
     "venues": "Lieux"
   },
   "viewToggle": {
+    "viewSettings": "Paramètres d'affichage",
+    "viewMode": "Mise en page",
+    "density": "Densité",
     "grid": "Grille",
     "list": "Liste",
     "immersive": "Immersif",

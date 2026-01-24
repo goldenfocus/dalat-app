@@ -20,7 +20,6 @@ export async function HeroSection() {
         {/* Quick access pills - Client component for interactivity */}
         <HeroQuickActions
           labels={{
-            search: t("search"),
             map: t("map"),
             calendar: t("calendar"),
             venues: t("venues"),

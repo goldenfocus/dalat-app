@@ -1,11 +1,10 @@
 "use client";
 
 import { Link } from "@/lib/i18n/routing";
-import { Search, MapPin, Calendar, Building2 } from "lucide-react";
+import { MapPin, Calendar, Building2 } from "lucide-react";
 import { triggerHaptic } from "@/lib/haptics";
 
 const QUICK_ACTIONS = [
-  { key: "search", href: "/search", icon: Search },
   { key: "map", href: "/map", icon: MapPin },
   { key: "calendar", href: "/calendar", icon: Calendar },
   { key: "venues", href: "/venues", icon: Building2 },
@@ -13,7 +12,6 @@ const QUICK_ACTIONS = [
 
 interface HeroQuickActionsProps {
   labels: {
-    search: string;
     map: string;
     calendar: string;
     venues: string;

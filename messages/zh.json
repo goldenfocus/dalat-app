@@ -8,9 +8,12 @@
     "venues": "场地"
   },
   "viewToggle": {
-    "grid": "网格视图",
-    "list": "列表视图",
-    "immersive": "沉浸视图",
+    "viewSettings": "视图设置",
+    "viewMode": "布局",
+    "density": "密度",
+    "grid": "网格",
+    "list": "列表",
+    "immersive": "沉浸",
     "compact": "紧凑",
     "default": "默认",
     "spacious": "宽松"

@@ -8,9 +8,12 @@
     "venues": "Tempat"
   },
   "viewToggle": {
-    "grid": "Tampilan kotak",
-    "list": "Tampilan daftar",
-    "immersive": "Tampilan imersif",
+    "viewSettings": "Pengaturan tampilan",
+    "viewMode": "Tata letak",
+    "density": "Kepadatan",
+    "grid": "Kotak",
+    "list": "Daftar",
+    "immersive": "Imersif",
     "compact": "Ringkas",
     "default": "Default",
     "spacious": "Luas"

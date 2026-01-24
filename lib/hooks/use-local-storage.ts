@@ -1,46 +1,75 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useSyncExternalStore } from "react";
+
+// In-memory cache to sync state across hook instances
+const listeners = new Map<string, Set<() => void>>();
+const cache = new Map<string, unknown>();
+
+function subscribe(key: string, callback: () => void) {
+  if (!listeners.has(key)) {
+    listeners.set(key, new Set());
+  }
+  listeners.get(key)!.add(callback);
+  return () => {
+    listeners.get(key)?.delete(callback);
+  };
+}
+
+function notifyListeners(key: string) {
+  listeners.get(key)?.forEach((callback) => callback());
+}
+
+function getSnapshot<T>(key: string, defaultValue: T): T {
+  if (cache.has(key)) {
+    return cache.get(key) as T;
+  }
+  if (typeof window === "undefined") {
+    return defaultValue;
+  }
+  try {
+    const stored = localStorage.getItem(key);
+    if (stored !== null) {
+      const parsed = JSON.parse(stored) as T;
+      cache.set(key, parsed);
+      return parsed;
+    }
+  } catch {
+    // Invalid JSON or localStorage not available
+  }
+  return defaultValue;
+}
 
 /**
  * Hook for persisting state in localStorage with SSR safety.
- * Returns the stored value and a setter function.
+ * Uses useSyncExternalStore for instant cross-component sync.
  */
 export function useLocalStorage<T>(
   key: string,
   defaultValue: T
 ): [T, (value: T | ((prev: T) => T)) => void] {
-  // Initialize with default to avoid hydration mismatch
-  const [value, setValue] = useState<T>(defaultValue);
+  const value = useSyncExternalStore(
+    (callback) => subscribe(key, callback),
+    () => getSnapshot(key, defaultValue),
+    () => defaultValue
+  );
 
-  // Load from localStorage after hydration
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored !== null) {
-        setValue(JSON.parse(stored));
-      }
-    } catch {
-      // Invalid JSON or localStorage not available
-    }
-  }, [key]);
-
-  // Persist to localStorage when value changes (after hydration)
   const setStoredValue = useCallback(
     (newValue: T | ((prev: T) => T)) => {
-      setValue((prev) => {
-        const resolved = typeof newValue === "function"
-          ? (newValue as (prev: T) => T)(prev)
+      const currentValue = getSnapshot(key, defaultValue);
+      const resolved =
+        typeof newValue === "function"
+          ? (newValue as (prev: T) => T)(currentValue)
           : newValue;
-        try {
-          localStorage.setItem(key, JSON.stringify(resolved));
-        } catch {
-          // localStorage full or not available
-        }
-        return resolved;
-      });
+      try {
+        localStorage.setItem(key, JSON.stringify(resolved));
+        cache.set(key, resolved);
+        notifyListeners(key);
+      } catch {
+        // localStorage full or not available
+      }
     },
-    [key]
+    [key, defaultValue]
   );
 
   return [value, setStoredValue];

@@ -8,9 +8,12 @@
     "venues": "Venues"
   },
   "viewToggle": {
-    "grid": "Grid view",
-    "list": "List view",
-    "immersive": "Immersive view",
+    "viewSettings": "View settings",
+    "viewMode": "Layout",
+    "density": "Density",
+    "grid": "Grid",
+    "list": "List",
+    "immersive": "Immersive",
     "compact": "Compact",
     "default": "Default",
     "spacious": "Spacious"

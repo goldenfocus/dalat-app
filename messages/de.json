@@ -8,8 +8,11 @@
     "venues": "Orte"
   },
   "viewToggle": {
-    "grid": "Rasteransicht",
-    "list": "Listenansicht",
+    "viewSettings": "Ansicht-Einstellungen",
+    "viewMode": "Layout",
+    "density": "Dichte",
+    "grid": "Raster",
+    "list": "Liste",
     "immersive": "Immersiv",
     "compact": "Kompakt",
     "default": "Standard",

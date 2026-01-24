@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
-import { User } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/user-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -162,17 +162,26 @@ export function MobileHeader() {
       )}
     >
       <div className="flex h-14 items-center justify-between px-4">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 -ml-2 px-2 py-1.5 rounded-lg active:scale-95 transition-transform"
-        >
-          <span className="font-bold text-lg">ĐàLạt.app</span>
-        </Link>
-
-        {/* Right side: Locale + Auth */}
+        {/* Left side: Logo + Locale */}
         <div className="flex items-center gap-1">
+          <Link
+            href="/"
+            className="flex items-center gap-2 -ml-2 px-2 py-1.5 rounded-lg active:scale-95 transition-transform"
+          >
+            <span className="font-bold text-lg">ĐàLạt.app</span>
+          </Link>
           <LocalePicker userId={auth.profile?.id} />
+        </div>
+
+        {/* Right side: Search + Auth */}
+        <div className="flex items-center gap-1">
+          <Link
+            href="/search"
+            className="p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg"
+            aria-label="Search"
+          >
+            <Search className="w-5 h-5" />
+          </Link>
 
           {/* Auth state */}
           {auth.isLoading ? (

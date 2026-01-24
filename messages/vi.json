@@ -8,9 +8,12 @@
     "venues": "Địa điểm"
   },
   "viewToggle": {
-    "grid": "Dạng lưới",
-    "list": "Dạng danh sách",
-    "immersive": "Dạng toàn màn",
+    "viewSettings": "Cài đặt hiển thị",
+    "viewMode": "Bố cục",
+    "density": "Mật độ",
+    "grid": "Lưới",
+    "list": "Danh sách",
+    "immersive": "Toàn màn",
     "compact": "Thu gọn",
     "default": "Mặc định",
     "spacious": "Rộng rãi"

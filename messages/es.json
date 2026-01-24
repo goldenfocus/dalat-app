@@ -8,9 +8,12 @@
     "venues": "Lugares"
   },
   "viewToggle": {
-    "grid": "Vista de cuadrícula",
-    "list": "Vista de lista",
-    "immersive": "Vista inmersiva",
+    "viewSettings": "Configuración de vista",
+    "viewMode": "Diseño",
+    "density": "Densidad",
+    "grid": "Cuadrícula",
+    "list": "Lista",
+    "immersive": "Inmersivo",
     "compact": "Compacto",
     "default": "Predeterminado",
     "spacious": "Espacioso"

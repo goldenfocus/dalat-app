@@ -8,9 +8,12 @@
     "venues": "สถานที่"
   },
   "viewToggle": {
-    "grid": "มุมมองกริด",
-    "list": "มุมมองรายการ",
-    "immersive": "มุมมองเต็มจอ",
+    "viewSettings": "การตั้งค่ามุมมอง",
+    "viewMode": "เค้าโครง",
+    "density": "ความหนาแน่น",
+    "grid": "กริด",
+    "list": "รายการ",
+    "immersive": "เต็มจอ",
     "compact": "กะทัดรัด",
     "default": "ค่าเริ่มต้น",
     "spacious": "กว้างขวาง"

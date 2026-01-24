@@ -1,6 +1,7 @@
 "use client";
 
-import { LayoutGrid, List, Maximize2, Minus, Square, Plus } from "lucide-react";
+import { useState } from "react";
+import { SlidersHorizontal, LayoutGrid, List, Maximize2, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -9,110 +10,106 @@ import {
   type EventDensity,
 } from "@/lib/hooks/use-local-storage";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
-const VIEW_MODES: { mode: EventViewMode; icon: typeof LayoutGrid }[] = [
-  { mode: "grid", icon: LayoutGrid },
-  { mode: "list", icon: List },
-  { mode: "immersive", icon: Maximize2 },
+const VIEW_MODES: { mode: EventViewMode; icon: typeof LayoutGrid; labelKey: string }[] = [
+  { mode: "grid", icon: LayoutGrid, labelKey: "grid" },
+  { mode: "list", icon: List, labelKey: "list" },
+  { mode: "immersive", icon: Maximize2, labelKey: "immersive" },
 ];
 
-const DENSITY_OPTIONS: { density: EventDensity; icon: typeof Square }[] = [
-  { density: "compact", icon: Minus },
-  { density: "default", icon: Square },
-  { density: "spacious", icon: Plus },
+const DENSITY_OPTIONS: { density: EventDensity; labelKey: string }[] = [
+  { density: "compact", labelKey: "compact" },
+  { density: "default", labelKey: "default" },
+  { density: "spacious", labelKey: "spacious" },
 ];
 
 interface EventViewToggleProps {
   className?: string;
-  /** Hide density toggle on mobile */
-  hideDensityOnMobile?: boolean;
 }
 
 /**
- * Discrete view toggle for power users.
- * Small icon buttons to switch between grid/list/immersive views
- * and adjust density (compact/default/spacious).
+ * Compact view settings button with dropdown.
+ * Single filter icon that reveals view mode and density options.
  */
-export function EventViewToggle({
-  className,
-  hideDensityOnMobile = true,
-}: EventViewToggleProps) {
+export function EventViewToggle({ className }: EventViewToggleProps) {
   const t = useTranslations("viewToggle");
   const { mode, density, setMode, setDensity } = useEventViewPreferences();
+  const [open, setOpen] = useState(false);
 
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className={cn("flex items-center gap-1", className)}>
-        {/* View mode toggle */}
-        <div className="flex items-center rounded-md border border-border/50 bg-muted/30">
-          {VIEW_MODES.map(({ mode: m, icon: Icon }) => (
-            <Tooltip key={m}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => setMode(m)}
-                  className={cn(
-                    "p-1.5 transition-colors",
-                    "hover:bg-muted hover:text-foreground",
-                    "active:scale-95",
-                    "first:rounded-l-md last:rounded-r-md",
-                    mode === m
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground"
-                  )}
-                  aria-label={t(m)}
-                  aria-pressed={mode === m}
-                >
-                  <Icon className="w-4 h-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {t(m)}
-              </TooltipContent>
-            </Tooltip>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "p-2 rounded-lg transition-colors",
+            "text-muted-foreground hover:text-foreground hover:bg-muted",
+            "active:scale-95",
+            className
+          )}
+          aria-label={t("viewSettings")}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-48 p-2">
+        {/* View Mode Section */}
+        <div className="mb-2">
+          <p className="text-xs font-medium text-muted-foreground px-2 mb-1">
+            {t("viewMode")}
+          </p>
+          {VIEW_MODES.map(({ mode: m, icon: Icon, labelKey }) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => {
+                setMode(m);
+              }}
+              className={cn(
+                "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm",
+                "transition-colors",
+                mode === m
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              <span className="flex-1 text-left">{t(labelKey)}</span>
+              {mode === m && <Check className="w-3.5 h-3.5" />}
+            </button>
           ))}
         </div>
 
-        {/* Density toggle - hidden on mobile by default */}
-        <div
-          className={cn(
-            "flex items-center rounded-md border border-border/50 bg-muted/30",
-            hideDensityOnMobile && "hidden sm:flex"
-          )}
-        >
-          {DENSITY_OPTIONS.map(({ density: d, icon: Icon }) => (
-            <Tooltip key={d}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => setDensity(d)}
-                  className={cn(
-                    "p-1.5 transition-colors",
-                    "hover:bg-muted hover:text-foreground",
-                    "active:scale-95",
-                    "first:rounded-l-md last:rounded-r-md",
-                    density === d
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground"
-                  )}
-                  aria-label={t(d)}
-                  aria-pressed={density === d}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {t(d)}
-              </TooltipContent>
-            </Tooltip>
+        {/* Density Section */}
+        <div className="border-t border-border pt-2">
+          <p className="text-xs font-medium text-muted-foreground px-2 mb-1">
+            {t("density")}
+          </p>
+          {DENSITY_OPTIONS.map(({ density: d, labelKey }) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => {
+                setDensity(d);
+              }}
+              className={cn(
+                "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm",
+                "transition-colors",
+                density === d
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              )}
+            >
+              <span className="flex-1 text-left">{t(labelKey)}</span>
+              {density === d && <Check className="w-3.5 h-3.5" />}
+            </button>
           ))}
         </div>
-      </div>
-    </TooltipProvider>
+      </PopoverContent>
+    </Popover>
   );
 }

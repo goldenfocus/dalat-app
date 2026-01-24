@@ -8,9 +8,12 @@
     "venues": "会場"
   },
   "viewToggle": {
-    "grid": "グリッド表示",
-    "list": "リスト表示",
-    "immersive": "没入表示",
+    "viewSettings": "表示設定",
+    "viewMode": "レイアウト",
+    "density": "密度",
+    "grid": "グリッド",
+    "list": "リスト",
+    "immersive": "没入",
     "compact": "コンパクト",
     "default": "デフォルト",
     "spacious": "ゆったり"

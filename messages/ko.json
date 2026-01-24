@@ -8,9 +8,12 @@
     "venues": "장소"
   },
   "viewToggle": {
-    "grid": "그리드 보기",
-    "list": "목록 보기",
-    "immersive": "몰입 보기",
+    "viewSettings": "보기 설정",
+    "viewMode": "레이아웃",
+    "density": "밀도",
+    "grid": "그리드",
+    "list": "목록",
+    "immersive": "몰입",
     "compact": "좁게",
     "default": "기본",
     "spacious": "넓게"
