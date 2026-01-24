@@ -1451,7 +1451,13 @@
     "viewOnMap": "在地图上查看",
     "openInGoogleMaps": "在谷歌地图中打开",
     "overview": "概览",
-    "gallery": "图库"
+    "gallery": "图库",
+    "communityPhotos": "社区照片",
+    "communityPhotosCount": "这里活动的{count}张照片",
+    "noCommunityPhotos": "暂无社区照片",
+    "addOfficialPhotos": "添加官方照片",
+    "postedAt": "在{event}",
+    "loadMore": "加载更多"
   },
   "comments": {
     "title": "评论",

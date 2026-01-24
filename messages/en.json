@@ -1,4 +1,11 @@
 {
+  "hero": {
+    "headline": "Find events. Discover venues.",
+    "subtitle": "Join your community in Đà Lạt",
+    "map": "Map",
+    "calendar": "Calendar",
+    "venues": "Venues"
+  },
   "common": {
     "back": "Back",
     "save": "Save",
@@ -1512,7 +1519,13 @@
     "viewOnMap": "View on Map",
     "openInGoogleMaps": "Open in Google Maps",
     "overview": "Overview",
-    "gallery": "Gallery"
+    "gallery": "Gallery",
+    "communityPhotos": "Community Photos",
+    "communityPhotosCount": "{count} photos from events here",
+    "noCommunityPhotos": "No community photos yet",
+    "addOfficialPhotos": "Add Official Photos",
+    "postedAt": "at {event}",
+    "loadMore": "Load more"
   },
   "comments": {
     "title": "Comments",

@@ -1451,7 +1451,13 @@
     "viewOnMap": "지도에서 보기",
     "openInGoogleMaps": "Google 지도에서 열기",
     "overview": "개요",
-    "gallery": "갤러리"
+    "gallery": "갤러리",
+    "communityPhotos": "커뮤니티 사진",
+    "communityPhotosCount": "여기 이벤트에서 {count}개 사진",
+    "noCommunityPhotos": "아직 커뮤니티 사진이 없습니다",
+    "addOfficialPhotos": "공식 사진 추가",
+    "postedAt": "{event}에서",
+    "loadMore": "더 보기"
   },
   "comments": {
     "title": "댓글",

@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
+import { SiteHeader } from "@/components/site-header";
 import { format } from "date-fns";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -231,21 +232,11 @@ export default async function ProfilePage({ params }: PageProps) {
   );
 
   return (
-    <main className="min-h-screen">
+    <>
       {/* JSON-LD Structured Data for SEO/AEO */}
       <JsonLd data={[personSchema, breadcrumbSchema]} />
-      {/* Header */}
-      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 max-w-4xl items-center mx-auto px-4">
-          <Link
-            href="/"
-            className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{tCommon("back")}</span>
-          </Link>
-        </div>
-      </nav>
+
+      <SiteHeader />
 
       <div className="container max-w-4xl mx-auto px-4 py-8">
         {/* Claim profile banner for ghost profiles */}
@@ -365,6 +356,6 @@ export default async function ProfilePage({ params }: PageProps) {
           </div>
         )}
       </div>
-    </main>
+    </>
   );
 }

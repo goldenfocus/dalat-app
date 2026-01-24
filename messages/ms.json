@@ -1451,7 +1451,13 @@
     "viewOnMap": "Lihat di Peta",
     "openInGoogleMaps": "Buka di Google Maps",
     "overview": "Gambaran Keseluruhan",
-    "gallery": "Galeri"
+    "gallery": "Galeri",
+    "communityPhotos": "Foto Komuniti",
+    "communityPhotosCount": "{count} foto dari acara di sini",
+    "noCommunityPhotos": "Belum ada foto komuniti",
+    "addOfficialPhotos": "Tambah Foto Rasmi",
+    "postedAt": "di {event}",
+    "loadMore": "Muat lagi"
   },
   "comments": {
     "title": "Komen",

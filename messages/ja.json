@@ -1451,7 +1451,13 @@
     "viewOnMap": "地図で見る",
     "openInGoogleMaps": "Googleマップで開く",
     "overview": "概要",
-    "gallery": "ギャラリー"
+    "gallery": "ギャラリー",
+    "communityPhotos": "コミュニティ写真",
+    "communityPhotosCount": "ここのイベントから{count}枚の写真",
+    "noCommunityPhotos": "コミュニティ写真はまだありません",
+    "addOfficialPhotos": "公式写真を追加",
+    "postedAt": "{event}にて",
+    "loadMore": "もっと見る"
   },
   "comments": {
     "title": "コメント",

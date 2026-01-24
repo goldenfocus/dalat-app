@@ -1465,7 +1465,13 @@
     "viewOnMap": "Voir sur la carte",
     "openInGoogleMaps": "Ouvrir dans Google Maps",
     "overview": "Aperçu",
-    "gallery": "Galerie"
+    "gallery": "Galerie",
+    "communityPhotos": "Photos de la communauté",
+    "communityPhotosCount": "{count} photos d'événements ici",
+    "noCommunityPhotos": "Pas encore de photos de la communauté",
+    "addOfficialPhotos": "Ajouter des photos officielles",
+    "postedAt": "à {event}",
+    "loadMore": "Charger plus"
   },
   "comments": {
     "title": "Commentaires",

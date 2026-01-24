@@ -1470,7 +1470,13 @@
     "viewOnMap": "Ver en el mapa",
     "openInGoogleMaps": "Abrir en Google Maps",
     "overview": "Resumen",
-    "gallery": "Galería"
+    "gallery": "Galería",
+    "communityPhotos": "Fotos de la comunidad",
+    "communityPhotosCount": "{count} fotos de eventos aquí",
+    "noCommunityPhotos": "Aún no hay fotos de la comunidad",
+    "addOfficialPhotos": "Agregar fotos oficiales",
+    "postedAt": "en {event}",
+    "loadMore": "Cargar más"
   },
   "feedback": {
     "howWasIt": "How was the event?",

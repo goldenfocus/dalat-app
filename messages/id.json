@@ -1470,7 +1470,13 @@
     "viewOnMap": "Lihat di Peta",
     "openInGoogleMaps": "Buka di Google Maps",
     "overview": "Ikhtisar",
-    "gallery": "Galeri"
+    "gallery": "Galeri",
+    "communityPhotos": "Foto Komunitas",
+    "communityPhotosCount": "{count} foto dari acara di sini",
+    "noCommunityPhotos": "Belum ada foto komunitas",
+    "addOfficialPhotos": "Tambah Foto Resmi",
+    "postedAt": "di {event}",
+    "loadMore": "Muat lebih"
   },
   "feedback": {
     "howWasIt": "How was the event?",

@@ -704,6 +704,23 @@ export interface MomentWithEvent {
   event_location_name: string | null;
 }
 
+// Community moment from events at a venue (via get_venue_community_moments RPC)
+export interface VenueCommunityMoment {
+  id: string;
+  event_id: string;
+  user_id: string;
+  content_type: MomentContentType;
+  media_url: string | null;
+  text_content: string | null;
+  created_at: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  event_title: string;
+  event_slug: string;
+  event_image_url: string | null;
+}
+
 export interface MomentLikeStatus {
   moment_id: string;
   liked: boolean;

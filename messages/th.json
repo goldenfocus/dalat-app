@@ -1451,7 +1451,13 @@
     "viewOnMap": "ดูบนแผนที่",
     "openInGoogleMaps": "เปิดใน Google Maps",
     "overview": "ภาพรวม",
-    "gallery": "แกลเลอรี"
+    "gallery": "แกลเลอรี",
+    "communityPhotos": "รูปภาพจากชุมชน",
+    "communityPhotosCount": "{count} รูปจากกิจกรรมที่นี่",
+    "noCommunityPhotos": "ยังไม่มีรูปจากชุมชน",
+    "addOfficialPhotos": "เพิ่มรูปทางการ",
+    "postedAt": "ที่ {event}",
+    "loadMore": "โหลดเพิ่ม"
   },
   "comments": {
     "title": "ความคิดเห็น",

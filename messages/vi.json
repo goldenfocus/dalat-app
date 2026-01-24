@@ -1451,7 +1451,13 @@
     "viewOnMap": "Xem trên bản đồ",
     "openInGoogleMaps": "Mở trong Google Maps",
     "overview": "Tổng quan",
-    "gallery": "Thư viện ảnh"
+    "gallery": "Thư viện ảnh",
+    "communityPhotos": "Ảnh cộng đồng",
+    "communityPhotosCount": "{count} ảnh từ sự kiện tại đây",
+    "noCommunityPhotos": "Chưa có ảnh cộng đồng",
+    "addOfficialPhotos": "Thêm ảnh chính thức",
+    "postedAt": "tại {event}",
+    "loadMore": "Xem thêm"
   },
   "comments": {
     "title": "Bình luận",

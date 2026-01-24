@@ -1451,7 +1451,13 @@
     "viewOnMap": "Показать на карте",
     "openInGoogleMaps": "Открыть в Google Maps",
     "overview": "Обзор",
-    "gallery": "Галерея"
+    "gallery": "Галерея",
+    "communityPhotos": "Фото сообщества",
+    "communityPhotosCount": "{count} фото с мероприятий здесь",
+    "noCommunityPhotos": "Пока нет фото сообщества",
+    "addOfficialPhotos": "Добавить официальные фото",
+    "postedAt": "на {event}",
+    "loadMore": "Загрузить ещё"
   },
   "comments": {
     "title": "Комментарии",
