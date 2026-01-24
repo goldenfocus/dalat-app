@@ -143,8 +143,8 @@ async function EventsFeed({
         seriesRrules={seriesRrules}
       />
 
-      {/* Show "See all" link when viewing upcoming events with 20+ events */}
-      {lifecycle === "upcoming" && events.length >= 20 && (
+      {/* Show "See all" link for upcoming events */}
+      {lifecycle === "upcoming" && events.length > 0 && (
         <div className="text-center py-4">
           <Link
             href="/events/upcoming"
