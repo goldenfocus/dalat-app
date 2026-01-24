@@ -32,6 +32,7 @@ import { HeroImageSection } from "@/components/home/hero-image-section";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ tab?: string }>;
 };
 
 /**
@@ -170,12 +171,15 @@ async function EventsFeed({
   );
 }
 
-export default async function Home({ params }: PageProps) {
+export default async function Home({ params, searchParams }: PageProps) {
   const { locale } = await params;
+  const { tab } = await searchParams;
 
-  // Always render "upcoming" tab server-side for ISR caching
-  // Tab switching is handled client-side via URL navigation
-  const activeTab: EventLifecycle = "upcoming";
+  // Read tab from URL, default to "upcoming"
+  const validTabs: EventLifecycle[] = ["upcoming", "happening", "past"];
+  const activeTab: EventLifecycle = validTabs.includes(tab as EventLifecycle)
+    ? (tab as EventLifecycle)
+    : "upcoming";
 
   const [t, lifecycleCounts, homepageConfig] = await Promise.all([
     getTranslations("home"),
