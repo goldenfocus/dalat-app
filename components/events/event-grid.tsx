@@ -1,6 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
+import { formatInDaLat } from "@/lib/timezone";
 import { EventCard } from "./event-card";
 import { EventListCard } from "./event-list-card";
 import { EventImmersiveCard } from "./event-immersive-card";
@@ -8,7 +11,7 @@ import {
   useEventViewPreferences,
   type EventDensity,
 } from "@/lib/hooks/use-local-storage";
-import type { Event, EventCounts } from "@/lib/types";
+import type { Event, EventCounts, Locale } from "@/lib/types";
 
 interface EventGridProps {
   events: Event[];
@@ -24,12 +27,30 @@ const GRID_CLASSES: Record<EventDensity, string> = {
   spacious: "grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6",
 };
 
-// List spacing based on density
+// List spacing based on density (gap between cards within a date group)
 const LIST_CLASSES: Record<EventDensity, string> = {
   compact: "gap-2",
   default: "gap-3",
   spacious: "gap-4",
 };
+
+/**
+ * Groups events by their start date (in Da Lat timezone).
+ * Returns an array of [dateKey, events[]] tuples.
+ */
+function groupEventsByDate(events: Event[]): [string, Event[]][] {
+  const groups = new Map<string, Event[]>();
+
+  for (const event of events) {
+    // Use ISO date as key for grouping (yyyy-MM-dd in Da Lat timezone)
+    const dateKey = formatInDaLat(event.starts_at, "yyyy-MM-dd", "en");
+    const existing = groups.get(dateKey) || [];
+    existing.push(event);
+    groups.set(dateKey, existing);
+  }
+
+  return Array.from(groups.entries());
+}
 
 // Immersive grid based on density (controls how many per row on larger screens)
 const IMMERSIVE_CLASSES: Record<EventDensity, string> = {
@@ -49,22 +70,41 @@ export function EventGrid({
   seriesRrules = {},
 }: EventGridProps) {
   const { mode, density } = useEventViewPreferences();
+  const locale = useLocale() as Locale;
+
+  // Group events by date for list view
+  const groupedEvents = useMemo(
+    () => (mode === "list" ? groupEventsByDate(events) : []),
+    [events, mode]
+  );
 
   if (mode === "list") {
     return (
-      <div className={cn("flex flex-col", LIST_CLASSES[density])}>
-        {events.map((event) => {
-          const translation = eventTranslations.get(event.id);
-          return (
-            <EventListCard
-              key={event.id}
-              event={event}
-              counts={counts[event.id]}
-              seriesRrule={seriesRrules[event.id]}
-              translatedTitle={translation?.title}
-            />
-          );
-        })}
+      <div className="flex flex-col gap-6">
+        {groupedEvents.map(([dateKey, dateEvents]) => (
+          <div key={dateKey}>
+            {/* Date header */}
+            <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">
+              {formatInDaLat(dateEvents[0].starts_at, "EEEE, MMMM d", locale)}
+            </h3>
+            {/* Events for this date */}
+            <div className={cn("flex flex-col", LIST_CLASSES[density])}>
+              {dateEvents.map((event) => {
+                const translation = eventTranslations.get(event.id);
+                return (
+                  <EventListCard
+                    key={event.id}
+                    event={event}
+                    counts={counts[event.id]}
+                    seriesRrule={seriesRrules[event.id]}
+                    translatedTitle={translation?.title}
+                    hideDate
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

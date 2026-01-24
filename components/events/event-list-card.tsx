@@ -23,6 +23,8 @@ interface EventListCardProps {
   counts?: EventCounts;
   seriesRrule?: string;
   translatedTitle?: string;
+  /** When true, only shows time (date is shown in section header) */
+  hideDate?: boolean;
 }
 
 function isEventPast(startsAt: string, endsAt: string | null): boolean {
@@ -44,6 +46,7 @@ export const EventListCard = memo(function EventListCard({
   counts,
   seriesRrule,
   translatedTitle,
+  hideDate,
 }: EventListCardProps) {
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
@@ -117,8 +120,9 @@ export const EventListCard = memo(function EventListCard({
         <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
           <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">
-            {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} &middot;{" "}
-            {formatInDaLat(event.starts_at, "h:mm a", locale)}
+            {hideDate
+              ? formatInDaLat(event.starts_at, "h:mm a", locale)
+              : `${formatInDaLat(event.starts_at, "EEE, MMM d", locale)} · ${formatInDaLat(event.starts_at, "h:mm a", locale)}`}
           </span>
         </div>
 
