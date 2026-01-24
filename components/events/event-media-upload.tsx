@@ -608,15 +608,18 @@ export function EventMediaUpload({
       {/* Media preview area */}
       <div
         className={cn(
-          "relative aspect-[2/1] rounded-lg overflow-hidden bg-muted border-2 transition-colors cursor-pointer group",
+          "relative aspect-[2/1] rounded-lg overflow-hidden bg-muted border-2 transition-colors group",
           isDragOver
             ? "border-primary border-dashed"
-            : "border-transparent hover:border-muted-foreground/20"
+            : "border-transparent hover:border-muted-foreground/20",
+          // Only show pointer cursor when there's no image (click to upload)
+          !previewUrl && "cursor-pointer"
         )}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onClick={() => fileInputRef.current?.click()}
+        // Only trigger file upload on click when there's no image
+        onClick={previewUrl ? undefined : () => fileInputRef.current?.click()}
       >
         {isDisintegrating ? (
           /* Dark background for particles to fly over */
@@ -647,14 +650,16 @@ export function EventMediaUpload({
           </div>
         )}
 
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          {isLoading ? (
-            <Loader2 className="w-8 h-8 text-white animate-spin" />
-          ) : (
-            <Upload className="w-8 h-8 text-white" />
-          )}
-        </div>
+        {/* Overlay on hover - only show upload prompt when no image */}
+        {!previewUrl && (
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            {isLoading ? (
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            ) : (
+              <Upload className="w-8 h-8 text-white" />
+            )}
+          </div>
+        )}
 
         {/* Remove button on image */}
         {previewUrl && (
