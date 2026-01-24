@@ -328,7 +328,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <UserPlus className="w-4 h-4" />
-          {t("inviteGuests")}
+          <span className="hidden sm:inline">{t("inviteGuests")}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
