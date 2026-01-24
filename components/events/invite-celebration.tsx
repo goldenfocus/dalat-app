@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
@@ -106,10 +107,13 @@ export function InviteCelebration({
     return () => clearInterval(interval);
   }, [autoCloseDelay, onComplete]);
 
-  return (
+  // Use portal to render directly to body, escaping any parent positioning issues
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
       className={cn(
-        "fixed inset-0 z-[100] grid place-items-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300",
+        "fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm transition-opacity duration-300",
         isVisible ? "opacity-100" : "opacity-0"
       )}
       onClick={() => {
@@ -170,6 +174,7 @@ export function InviteCelebration({
           />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
