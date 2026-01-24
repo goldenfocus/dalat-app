@@ -167,6 +167,7 @@ export async function updateSession(request: NextRequest) {
     pathWithoutLocale.startsWith("/blog") ||  // Public blog articles
     pathWithoutLocale.startsWith("/map") ||  // Public map view
     pathWithoutLocale.startsWith("/calendar") ||  // Public calendar view
+    pathWithoutLocale.startsWith("/invite") ||  // Public invite links
     pathWithoutLocale.startsWith("/@");  // Public profile pages
 
   if (!user && !isPublicRoute) {
