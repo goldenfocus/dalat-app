@@ -287,6 +287,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
         // Small delay to let the animation complete before showing celebration
         setTimeout(() => {
           setSending(false);
+          setOpen(false); // Close dialog immediately when celebration starts
           setShowCelebration(true);
         }, 1500);
         return; // Don't set sending to false yet

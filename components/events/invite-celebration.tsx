@@ -132,7 +132,7 @@ export function InviteCelebration({
       {/* Content card */}
       <div
         className={cn(
-          "relative mx-4 max-w-md w-full bg-gradient-to-b from-gray-900/95 to-gray-950/95 rounded-3xl p-8 shadow-2xl border border-white/10 transition-all duration-500",
+          "relative mx-4 max-w-md w-full bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-8 shadow-2xl border border-emerald-200 dark:border-emerald-500/30 transition-all duration-500",
           isVisible ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
         )}
       >
@@ -156,36 +156,36 @@ export function InviteCelebration({
         <div className="pt-8 text-center space-y-6">
           {/* Title with count */}
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-clip-text text-transparent">
               {t("celebrationTitle")}
             </h2>
-            <p className="text-lg text-white/90">
+            <p className="text-lg text-gray-800 dark:text-white/90 font-medium">
               {t("sentSuccess", { count: successCount })}
             </p>
           </div>
 
           {/* Divider */}
           <div className="flex items-center gap-4 px-4">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-white/20 to-transparent" />
+            <Sparkles className="w-4 h-4 text-yellow-500" />
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-white/20 to-transparent" />
           </div>
 
           {/* Motivational phrase */}
-          <p className="text-lg text-white/80 font-medium px-4 leading-relaxed min-h-[3.5rem]">
+          <p className="text-lg text-gray-600 dark:text-white/80 font-medium px-4 leading-relaxed min-h-[3.5rem]">
             &ldquo;{phrase}&rdquo;
           </p>
 
           {/* Tap to dismiss hint */}
-          <p className="text-sm text-white/40 pt-2">
+          <p className="text-sm text-gray-400 dark:text-white/40 pt-2">
             Tap anywhere to dismiss
           </p>
         </div>
 
         {/* Progress bar at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5 rounded-b-3xl overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gray-200 dark:bg-white/5 rounded-b-3xl overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-emerald-400 via-cyan-400 to-purple-400 transition-all duration-50 ease-linear"
+            className="h-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 transition-all duration-50 ease-linear"
             style={{ width: `${100 - progress}%` }}
           />
         </div>
