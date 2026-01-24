@@ -7,9 +7,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
   Legend,
 } from "recharts";
+import { SafeResponsiveContainer } from "./safe-responsive-container";
 import type { EventActivityData } from "@/lib/types";
 
 interface EventActivityChartProps {
@@ -40,7 +40,7 @@ export function EventActivityChart({ data }: EventActivityChartProps) {
       </div>
       <div className="h-[300px]">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
+          <SafeResponsiveContainer>
             <BarChart data={formattedData}>
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -89,7 +89,7 @@ export function EventActivityChart({ data }: EventActivityChartProps) {
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             No data available

@@ -7,9 +7,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
   Legend,
 } from "recharts";
+import { SafeResponsiveContainer } from "./safe-responsive-container";
 import type { RsvpTrendsData } from "@/lib/types";
 
 interface RsvpTrendsChartProps {
@@ -47,7 +47,7 @@ export function RsvpTrendsChart({ data }: RsvpTrendsChartProps) {
       </div>
       <div className="h-[300px]">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
+          <SafeResponsiveContainer>
             <AreaChart data={formattedData}>
               <defs>
                 <linearGradient id="goingGradient" x1="0" y1="0" x2="0" y2="1">
@@ -122,7 +122,7 @@ export function RsvpTrendsChart({ data }: RsvpTrendsChartProps) {
                 fill="url(#interestedGradient)"
               />
             </AreaChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             No data available

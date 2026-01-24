@@ -1,6 +1,7 @@
 "use client";
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { SafeResponsiveContainer } from "./safe-responsive-container";
 import type { RoleDistribution } from "@/lib/types";
 
 interface RoleDistributionChartProps {
@@ -46,7 +47,7 @@ export function RoleDistributionChart({ data }: RoleDistributionChartProps) {
       </div>
       <div className="h-[200px]">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
+          <SafeResponsiveContainer>
             <PieChart>
               <Pie
                 data={formattedData}
@@ -74,7 +75,7 @@ export function RoleDistributionChart({ data }: RoleDistributionChartProps) {
                 ]}
               />
             </PieChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             No data available

@@ -7,8 +7,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
 } from "recharts";
+import { SafeResponsiveContainer } from "./safe-responsive-container";
 import type { TimeSeriesDataPoint } from "@/lib/types";
 
 interface UserGrowthChartProps {
@@ -38,7 +38,7 @@ export function UserGrowthChart({ data }: UserGrowthChartProps) {
       </div>
       <div className="h-[300px]">
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
+          <SafeResponsiveContainer>
             <AreaChart data={formattedData}>
               <defs>
                 <linearGradient id="userGrowthGradient" x1="0" y1="0" x2="0" y2="1">
@@ -83,7 +83,7 @@ export function UserGrowthChart({ data }: UserGrowthChartProps) {
                 fill="url(#userGrowthGradient)"
               />
             </AreaChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         ) : (
           <div className="flex h-full items-center justify-center text-muted-foreground">
             No data available
