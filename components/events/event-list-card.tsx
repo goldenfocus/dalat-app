@@ -85,6 +85,7 @@ export const EventListCard = memo(function EventListCard({
               loop
               playsInline
               preload="metadata"
+              aria-hidden="true"
             />
           ) : (
             <Image
@@ -118,7 +119,7 @@ export const EventListCard = memo(function EventListCard({
         </h3>
 
         <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
-          <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+          <Calendar className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
           <span className="truncate">
             {hideDate
               ? formatInDaLat(event.starts_at, "h:mm a", locale)
@@ -128,13 +129,13 @@ export const EventListCard = memo(function EventListCard({
 
         {event.location_name && (
           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
-            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+            <MapPin className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
             <span className="truncate">{decodeUnicodeEscapes(event.location_name)}</span>
           </div>
         )}
 
         <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
-          <Users className="w-3.5 h-3.5 flex-shrink-0" />
+          <Users className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
           <span>
             {spotsText} {isPast ? t("went") : t("going")}
           </span>

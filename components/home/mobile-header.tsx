@@ -180,13 +180,17 @@ export function MobileHeader() {
             className="p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg"
             aria-label="Search"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-5 h-5" aria-hidden="true" />
           </Link>
 
           {/* Auth state */}
           {auth.isLoading ? (
             // Loading placeholder
-            <div className="w-9 h-9 rounded-full bg-muted animate-pulse" />
+            <div
+              className="w-9 h-9 rounded-full bg-muted animate-pulse"
+              role="status"
+              aria-label="Loading user profile"
+            />
           ) : auth.user && auth.profile ? (
             // Logged in: Notification bell + Avatar
             <div className="flex items-center gap-1">

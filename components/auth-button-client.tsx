@@ -127,7 +127,7 @@ export function AuthButtonClient() {
 
   // Loading state - show nothing to avoid layout shift
   if (auth.isLoading) {
-    return <div className="w-8 h-8" />; // Placeholder
+    return <div className="w-8 h-8" role="status" aria-label="Loading" />; // Placeholder
   }
 
   // Not logged in

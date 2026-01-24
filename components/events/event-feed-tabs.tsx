@@ -57,6 +57,8 @@ export function EventFeedTabs({
 
   return (
     <div
+      role="tablist"
+      aria-label="Event filter"
       className={cn(
         "grid w-full gap-1 rounded-lg p-1",
         visibleTabs.length === 2 ? "grid-cols-2" : "grid-cols-3",
@@ -85,7 +87,7 @@ export function EventFeedTabs({
 
         const tabContent = (
           <>
-            <Icon className={cn("h-4 w-4", tab.id === "happening" && isActive && "animate-pulse")} />
+            <Icon className={cn("h-4 w-4", tab.id === "happening" && isActive && "animate-pulse")} aria-hidden="true" />
             <span>{label}</span>
             {count !== undefined && count > 0 && (
               <span
@@ -105,6 +107,8 @@ export function EventFeedTabs({
         return (
           <button
             key={tab.id}
+            role="tab"
+            aria-selected={isActive}
             onClick={() => handleTabChange(tab.id)}
             className={tabClassName}
           >

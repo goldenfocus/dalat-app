@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Search, Loader2, MapPin, Calendar } from "lucide-react";
@@ -55,6 +55,8 @@ export function InstantSearch({
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const isOverlay = variant === "overlay";
+  const listboxId = useId();
+  const getOptionId = (index: number) => `${listboxId}-option-${index}`;
 
   // Debounced search
   useEffect(() => {
@@ -178,20 +180,28 @@ export function InstantSearch({
           <Loader2
             className={cn(
               "w-4 h-4 animate-spin shrink-0",
-              isOverlay ? "text-white/70" : "text-muted-foreground"
+              isOverlay ? "text-white/80" : "text-muted-foreground"
             )}
+            aria-hidden="true"
           />
         ) : (
           <Search
             className={cn(
               "w-4 h-4 shrink-0",
-              isOverlay ? "text-white/70" : "text-muted-foreground"
+              isOverlay ? "text-white/80" : "text-muted-foreground"
             )}
+            aria-hidden="true"
           />
         )}
         <input
           ref={inputRef}
           type="search"
+          role="combobox"
+          aria-label={placeholder ?? t("search.placeholder")}
+          aria-expanded={isOpen && suggestions.length > 0}
+          aria-controls={listboxId}
+          aria-activedescendant={selectedIndex >= 0 ? getOptionId(selectedIndex) : undefined}
+          aria-autocomplete="list"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -201,7 +211,7 @@ export function InstantSearch({
             "flex-1 bg-transparent outline-none text-sm min-w-0",
             "[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden",
             isOverlay
-              ? "text-white placeholder:text-white/50"
+              ? "text-white placeholder:text-white/60"
               : "text-foreground placeholder:text-muted-foreground"
           )}
         />
@@ -213,12 +223,18 @@ export function InstantSearch({
           ref={dropdownRef}
           className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50"
         >
-          <ul className="py-1">
+          <ul id={listboxId} role="listbox" aria-label="Search suggestions" className="py-1">
             {suggestions.map((suggestion, index) => (
-              <li key={suggestion.id}>
+              <li
+                key={suggestion.id}
+                id={getOptionId(index)}
+                role="option"
+                aria-selected={selectedIndex === index}
+              >
                 <button
                   onClick={() => navigateToEvent(suggestion.slug)}
                   onMouseEnter={() => setSelectedIndex(index)}
+                  tabIndex={-1}
                   className={cn(
                     "w-full px-4 py-3 flex items-start gap-3 text-left transition-colors",
                     selectedIndex === index
@@ -231,10 +247,11 @@ export function InstantSearch({
                     <img
                       src={suggestion.imageUrl}
                       alt=""
+                      aria-hidden="true"
                       className="w-12 h-12 rounded-lg object-cover shrink-0"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-lg bg-muted shrink-0 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg bg-muted shrink-0 flex items-center justify-center" aria-hidden="true">
                       <Calendar className="w-5 h-5 text-muted-foreground" />
                     </div>
                   )}
@@ -255,7 +272,7 @@ export function InstantSearch({
                         <>
                           <span>·</span>
                           <span className="flex items-center gap-1 truncate">
-                            <MapPin className="w-3 h-3 shrink-0" />
+                            <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" />
                             {suggestion.location}
                           </span>
                         </>
@@ -272,7 +289,7 @@ export function InstantSearch({
             onClick={navigateToSearch}
             className="w-full px-4 py-3 text-sm text-primary hover:bg-accent/50 border-t border-border flex items-center justify-center gap-2"
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-4 h-4" aria-hidden="true" />
             {t("search.viewAll", { query })}
           </button>
         </div>

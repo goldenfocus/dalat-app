@@ -53,19 +53,20 @@ export function EventViewToggle({ className }: EventViewToggleProps) {
           )}
           aria-label={t("viewSettings")}
         >
-          <SlidersHorizontal className="w-4 h-4" />
+          <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-48 p-2">
         {/* View Mode Section */}
-        <div className="mb-2">
-          <p className="text-xs font-medium text-muted-foreground px-2 mb-1">
+        <div className="mb-2" role="group" aria-labelledby="view-mode-label">
+          <p id="view-mode-label" className="text-xs font-medium text-muted-foreground px-2 mb-1">
             {t("viewMode")}
           </p>
           {VIEW_MODES.map(({ mode: m, icon: Icon, labelKey }) => (
             <button
               key={m}
               type="button"
+              aria-pressed={mode === m}
               onClick={() => {
                 setMode(m);
               }}
@@ -77,22 +78,23 @@ export function EventViewToggle({ className }: EventViewToggleProps) {
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               )}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4" aria-hidden="true" />
               <span className="flex-1 text-left">{t(labelKey)}</span>
-              {mode === m && <Check className="w-3.5 h-3.5" />}
+              {mode === m && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
             </button>
           ))}
         </div>
 
         {/* Density Section */}
-        <div className="border-t border-border pt-2">
-          <p className="text-xs font-medium text-muted-foreground px-2 mb-1">
+        <div className="border-t border-border pt-2" role="group" aria-labelledby="density-label">
+          <p id="density-label" className="text-xs font-medium text-muted-foreground px-2 mb-1">
             {t("density")}
           </p>
           {DENSITY_OPTIONS.map(({ density: d, labelKey }) => (
             <button
               key={d}
               type="button"
+              aria-pressed={density === d}
               onClick={() => {
                 setDensity(d);
               }}
@@ -105,7 +107,7 @@ export function EventViewToggle({ className }: EventViewToggleProps) {
               )}
             >
               <span className="flex-1 text-left">{t(labelKey)}</span>
-              {density === d && <Check className="w-3.5 h-3.5" />}
+              {density === d && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
             </button>
           ))}
         </div>

@@ -90,6 +90,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
               playsInline
               autoPlay
               preload="metadata"
+              aria-hidden="true"
             />
           ) : (
             <Image
@@ -129,7 +130,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
       )}
 
       {/* Gradient overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" aria-hidden="true" />
 
       {/* Text content - bottom */}
       <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">
@@ -139,7 +140,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
 
         <div className="flex flex-col gap-2 text-sm sm:text-base text-white/90">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
             <span>
               {formatInDaLat(event.starts_at, "EEEE, MMMM d", locale)} &middot;{" "}
               {formatInDaLat(event.starts_at, "h:mm a", locale)}
@@ -148,13 +149,13 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
 
           {event.location_name && (
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+              <MapPin className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
               <span className="line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
             </div>
           )}
 
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Users className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
             <span>
               {spotsText} {isPast ? t("went") : t("going")}
               {isFull && (
@@ -171,7 +172,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
       </div>
 
       {/* Hover/active state overlay */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/20 transition-colors" />
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/20 transition-colors" aria-hidden="true" />
     </Link>
   );
 });

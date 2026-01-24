@@ -30,6 +30,7 @@ export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectio
         <img
           src={optimizedUrl || imageUrl}
           alt=""
+          role="presentation"
           className="w-full h-full object-cover"
           style={focalPoint ? { objectPosition: focalPoint } : undefined}
           // High priority for LCP
@@ -38,7 +39,7 @@ export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectio
       </div>
 
       {/* Gradient overlay - matches venue page treatment */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" aria-hidden="true" />
 
       {/* Content overlay */}
       <div className="absolute bottom-0 left-0 right-0">

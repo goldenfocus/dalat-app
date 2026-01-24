@@ -29,21 +29,21 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
             className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
             aria-label="Map"
           >
-            <MapPin className="w-5 h-5" />
+            <MapPin className="w-5 h-5" aria-hidden="true" />
           </Link>
           <Link
             href="/calendar"
             className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
             aria-label="Calendar"
           >
-            <Calendar className="w-5 h-5" />
+            <Calendar className="w-5 h-5" aria-hidden="true" />
           </Link>
           <Link
             href="/moments"
             className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
             aria-label="Moments"
           >
-            <Film className="w-5 h-5" />
+            <Film className="w-5 h-5" aria-hidden="true" />
           </Link>
           <CreateEventLink />
           {actions}

@@ -92,6 +92,7 @@ export const EventCard = memo(function EventCard({ event, counts, seriesRrule, t
                 playsInline
                 autoPlay
                 preload="metadata"
+                aria-hidden="true"
               />
             ) : (
               <Image
@@ -130,7 +131,7 @@ export const EventCard = memo(function EventCard({ event, counts, seriesRrule, t
 
           <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-4 h-4" aria-hidden="true" />
               <span>
                 {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} &middot;{" "}
                 {formatInDaLat(event.starts_at, "h:mm a", locale)}
@@ -139,13 +140,13 @@ export const EventCard = memo(function EventCard({ event, counts, seriesRrule, t
 
             {event.location_name && (
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="w-4 h-4" aria-hidden="true" />
                 <span className="line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
               </div>
             )}
 
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
+              <Users className="w-4 h-4" aria-hidden="true" />
               <span>
                 {spotsText} {isPast ? t("went") : t("going")}
                 {isFull && (
