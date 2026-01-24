@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -32,7 +33,7 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
   return defaultEnd < now;
 }
 
-export function EventCardImmersive({ event, counts, seriesRrule, priority = false, translatedTitle }: EventCardImmersiveProps) {
+export const EventCardImmersive = memo(function EventCardImmersive({ event, counts, seriesRrule, priority = false, translatedTitle }: EventCardImmersiveProps) {
   const locale = useLocale() as Locale;
   const t = useTranslations("events");
 
@@ -144,4 +145,4 @@ export function EventCardImmersive({ event, counts, seriesRrule, priority = fals
       </article>
     </Link>
   );
-}
+});

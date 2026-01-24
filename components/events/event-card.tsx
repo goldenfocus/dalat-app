@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
@@ -39,7 +40,7 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
   return defaultEnd < now;
 }
 
-export function EventCard({ event, counts, seriesRrule, translatedTitle, priority }: EventCardProps) {
+export const EventCard = memo(function EventCard({ event, counts, seriesRrule, translatedTitle, priority }: EventCardProps) {
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
   const { prefetchEvent, prefetchEventCounts } = usePrefetch();
@@ -161,4 +162,4 @@ export function EventCard({ event, counts, seriesRrule, translatedTitle, priorit
       </Card>
     </Link>
   );
-}
+});

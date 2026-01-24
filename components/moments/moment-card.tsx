@@ -45,6 +45,7 @@ export function MomentCard({ moment, from, commentCount }: MomentCardProps) {
                 muted
                 loop
                 playsInline
+                preload="metadata"
               />
               {/* Play button overlay for videos */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

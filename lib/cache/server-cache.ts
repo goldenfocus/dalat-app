@@ -260,63 +260,71 @@ export const getCachedEventCounts = unstable_cache(
 /**
  * Cached batch event counts for multiple events.
  * More efficient than individual calls for list views.
+ *
+ * NOTE: This is a factory function that creates a cache entry per unique set of eventIds.
+ * The eventIds are sorted and included in the cache key to ensure correct cache hits.
  */
-export const getCachedEventCountsBatch = unstable_cache(
-  async (eventIds: string[]): Promise<Record<string, EventCounts>> => {
-    try {
-      if (eventIds.length === 0) return {};
+export function getCachedEventCountsBatch(eventIds: string[]): Promise<Record<string, EventCounts>> {
+  if (eventIds.length === 0) return Promise.resolve({});
 
-      // Use static client for ISR context (no cookies needed for public data)
-      const supabase = createStaticClient();
-      if (!supabase) {
-        console.error("Failed to create Supabase client (missing env vars)");
+  // Sort eventIds for consistent cache keys regardless of input order
+  const sortedIds = [...eventIds].sort();
+
+  return unstable_cache(
+    async (): Promise<Record<string, EventCounts>> => {
+      try {
+        // Use static client for ISR context (no cookies needed for public data)
+        const supabase = createStaticClient();
+        if (!supabase) {
+          console.error("Failed to create Supabase client (missing env vars)");
+          return {};
+        }
+
+        const { data: rsvps, error } = await supabase
+          .from("rsvps")
+          .select("event_id, status, plus_ones")
+          .in("event_id", sortedIds);
+
+        if (error) {
+          console.error("Error fetching batch event counts:", error);
+          return {};
+        }
+
+        const counts: Record<string, EventCounts> = {};
+
+        for (const eventId of sortedIds) {
+          const eventRsvps = rsvps?.filter((r) => r.event_id === eventId) || [];
+          const goingRsvps = eventRsvps.filter((r) => r.status === "going");
+          const waitlistRsvps = eventRsvps.filter((r) => r.status === "waitlist");
+          const interestedRsvps = eventRsvps.filter(
+            (r) => r.status === "interested"
+          );
+
+          counts[eventId] = {
+            event_id: eventId,
+            going_count: goingRsvps.length,
+            waitlist_count: waitlistRsvps.length,
+            going_spots: goingRsvps.reduce(
+              (sum, r) => sum + 1 + (r.plus_ones || 0),
+              0
+            ),
+            interested_count: interestedRsvps.length,
+          };
+        }
+
+        return counts;
+      } catch (err) {
+        console.error("Exception in getCachedEventCountsBatch:", err);
         return {};
       }
-
-      const { data: rsvps, error } = await supabase
-        .from("rsvps")
-        .select("event_id, status, plus_ones")
-        .in("event_id", eventIds);
-
-      if (error) {
-        console.error("Error fetching batch event counts:", error);
-        return {};
-      }
-
-      const counts: Record<string, EventCounts> = {};
-
-      for (const eventId of eventIds) {
-        const eventRsvps = rsvps?.filter((r) => r.event_id === eventId) || [];
-        const goingRsvps = eventRsvps.filter((r) => r.status === "going");
-        const waitlistRsvps = eventRsvps.filter((r) => r.status === "waitlist");
-        const interestedRsvps = eventRsvps.filter(
-          (r) => r.status === "interested"
-        );
-
-        counts[eventId] = {
-          event_id: eventId,
-          going_count: goingRsvps.length,
-          waitlist_count: waitlistRsvps.length,
-          going_spots: goingRsvps.reduce(
-            (sum, r) => sum + 1 + (r.plus_ones || 0),
-            0
-          ),
-          interested_count: interestedRsvps.length,
-        };
-      }
-
-      return counts;
-    } catch (err) {
-      console.error("Exception in getCachedEventCountsBatch:", err);
-      return {};
+    },
+    ["event-counts-batch", sortedIds.join(",")],
+    {
+      revalidate: 30, // 30 seconds
+      tags: [CACHE_TAGS.events],
     }
-  },
-  ["event-counts-batch"],
-  {
-    revalidate: 30, // 30 seconds
-    tags: [CACHE_TAGS.events],
-  }
-);
+  )();
+}
 
 /**
  * Cached lifecycle counts (for tab display).

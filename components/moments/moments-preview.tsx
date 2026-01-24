@@ -60,6 +60,7 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                         src={moment.media_url}
                         className="w-full h-full object-cover"
                         muted
+                        preload="metadata"
                       />
                     ) : (
                       <Image
