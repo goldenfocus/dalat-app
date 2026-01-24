@@ -412,91 +412,100 @@ async function fetchLumaEvent(eventUrl: string) {
 }
 
 /**
- * Fetch event from setkyar.com by scraping OpenGraph meta tags
+ * Fetch event from setkyar.com via their API
  * This is a quiet, undocumented import source
  */
 async function fetchSetkyarEvent(eventUrl: string) {
   try {
-    const response = await fetch(eventUrl, {
+    // Extract slug from URL: /events/[slug]
+    const slugMatch = eventUrl.match(/\/events\/([^/?#]+)/);
+    if (!slugMatch) {
+      console.error("Setkyar: Could not extract slug from URL");
+      return null;
+    }
+    const slug = slugMatch[1];
+
+    // Determine the base URL (wellness.setkyar.com or other subdomain)
+    const urlObj = new URL(eventUrl);
+    const apiUrl = `${urlObj.origin}/api/events/${slug}`;
+
+    console.log(`Setkyar: Fetching API at ${apiUrl}`);
+
+    const response = await fetch(apiUrl, {
       headers: {
-        "Accept": "text/html",
+        "Accept": "application/json",
         "User-Agent": "Mozilla/5.0 (compatible; DalatApp/1.0)",
       },
     });
 
     if (!response.ok) {
-      console.error(`Setkyar page fetch error: ${response.status}`);
+      console.error(`Setkyar API error: ${response.status}`);
       return null;
     }
 
-    const html = await response.text();
+    const data = await response.json();
 
-    // Extract OpenGraph meta tags
-    const getMetaContent = (property: string): string | null => {
-      const match = html.match(new RegExp(`<meta[^>]*property=["']${property}["'][^>]*content=["']([^"']+)["']`, 'i'))
-        || html.match(new RegExp(`<meta[^>]*content=["']([^"']+)["'][^>]*property=["']${property}["']`, 'i'));
-      return match?.[1] || null;
-    };
+    // Extract event data from API response
+    const event = data.event || data;
 
-    const getMetaName = (name: string): string | null => {
-      const match = html.match(new RegExp(`<meta[^>]*name=["']${name}["'][^>]*content=["']([^"']+)["']`, 'i'))
-        || html.match(new RegExp(`<meta[^>]*content=["']([^"']+)["'][^>]*name=["']${name}["']`, 'i'));
-      return match?.[1] || null;
-    };
-
-    // Get basic event info from OpenGraph tags
-    const title = getMetaContent("og:title") || getMetaName("title");
+    const title = event.title || event.name;
     if (!title) {
-      console.error("Setkyar: Could not extract event title");
+      console.error("Setkyar: No title in API response");
       return null;
     }
 
-    const description = getMetaContent("og:description") || getMetaName("description");
-    const imageUrl = getMetaContent("og:image");
+    // Parse date - API returns ISO format or separate date/time fields
+    let startDate = event.startAt || event.start_at || event.startDate || event.date;
+    let endDate = event.endAt || event.end_at || event.endDate;
 
-    // Try to extract date/time from page content (look for common patterns)
-    // This is best-effort since the page uses client-side rendering
-    let startDate = null;
-    let endDate = null;
-
-    // Look for ISO date patterns in the HTML
-    const isoDateMatch = html.match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
-    if (isoDateMatch) {
-      startDate = isoDateMatch[1];
+    // If time is separate, combine with date
+    if (event.startTime && startDate && !startDate.includes('T')) {
+      startDate = `${startDate}T${event.startTime}`;
     }
 
-    // Try to find organizer name from page content
-    let organizer = null;
-    const organizerMatch = html.match(/"organizer"[:\s]*["']([^"']+)["']/i)
-      || html.match(/hosted\s+by\s+([^<]+)/i);
-    if (organizerMatch) {
-      organizer = organizerMatch[1].trim();
-    }
+    // Get location info
+    const location = event.location || event.venue || event.place;
+    const locationName = typeof location === 'object'
+      ? (location.name || location.title)
+      : location;
+    const address = typeof location === 'object'
+      ? (location.address || location.fullAddress)
+      : null;
+    const mapsUrl = event.mapsUrl || event.googleMapsUrl || event.mapUrl ||
+      (typeof location === 'object' ? location.mapsUrl : null);
 
-    console.log(`Setkyar: Extracted - title: "${title}", image: ${imageUrl ? "yes" : "no"}, date: ${startDate || "unknown"}`);
+    // Get organizer info
+    const organizer = event.organizer || event.host || event.creator;
+    const organizerName = typeof organizer === 'object'
+      ? (organizer.name || organizer.displayName || organizer.username)
+      : organizer;
+
+    console.log(`Setkyar: Got "${title}" - date: ${startDate}, location: ${locationName}, organizer: ${organizerName}`);
 
     return {
       url: eventUrl,
       title: title,
       name: title,
-      description: description,
+      description: event.description || event.body || event.content,
       start: startDate,
       end: endDate,
       startDate: startDate,
       endDate: endDate,
-      location: null, // Not available from OpenGraph
-      venue: null,
-      address: null,
-      city: null,
-      latitude: null,
-      longitude: null,
-      organizer: organizer,
-      hostName: organizer,
-      imageUrl: imageUrl,
-      coverImage: imageUrl,
-      attendeeCount: null,
-      isFree: true,
-      price: null,
+      location: locationName,
+      venue: locationName,
+      address: address,
+      city: event.city,
+      latitude: event.latitude || (typeof location === 'object' ? location.lat : null),
+      longitude: event.longitude || (typeof location === 'object' ? location.lng : null),
+      organizer: organizerName,
+      hostName: organizerName,
+      imageUrl: event.image || event.coverImage || event.cover || event.imageUrl,
+      coverImage: event.image || event.coverImage || event.cover,
+      attendeeCount: event.attendeeCount || event.goingCount,
+      isFree: event.isFree ?? (event.price === 0 || event.price === null),
+      price: event.price,
+      mapsUrl: mapsUrl,
+      category: event.category,
     };
   } catch (error) {
     console.error("Setkyar fetch error:", error);

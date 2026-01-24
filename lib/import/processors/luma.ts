@@ -39,6 +39,7 @@ export interface LumaEvent {
   category?: string;
   isFree?: boolean;
   price?: string;
+  mapsUrl?: string;
 }
 
 export async function processLumaEvents(
@@ -164,7 +165,7 @@ function normalizeLumaEvent(event: LumaEvent) {
     endsAt,
     locationName,
     address: event.address || (event.city ? `${locationName}, ${event.city}` : null),
-    mapsUrl: generateMapsUrl(event.latitude, event.longitude, locationName),
+    mapsUrl: event.mapsUrl || generateMapsUrl(event.latitude, event.longitude, locationName),
     imageUrl: event.imageUrl || event.coverImage || event.coverUrl,
     organizerName: event.organizer || event.hostName,
   };
