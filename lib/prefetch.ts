@@ -8,9 +8,25 @@ import type { Event, EventCounts } from "@/lib/types";
 /**
  * Hook providing prefetch utilities for proactive data loading.
  * Use on hover/touch for instant navigation experiences.
+ * 
+ * Safe to use during SSG - returns no-op functions if QueryClient isn't available.
  */
 export function usePrefetch() {
-  const queryClient = useQueryClient();
+  // useQueryClient throws if no QueryClient is set (e.g., during SSG before lazy load)
+  // We catch this and return no-op functions for SSG safety
+  let queryClient: ReturnType<typeof useQueryClient> | null = null;
+  try {
+    queryClient = useQueryClient();
+  } catch {
+    // QueryClient not available (SSG or lazy load not complete)
+    // Return no-op functions
+    return {
+      prefetchEvent: async () => {},
+      prefetchEventCounts: async () => {},
+      prefetchTranslations: async () => {},
+    };
+  }
+
   const supabase = createClient();
 
   /**
