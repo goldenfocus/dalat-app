@@ -129,11 +129,11 @@ export function InviteCelebration({
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-purple-500/20 blur-3xl animate-pulse" />
       </div>
 
-      {/* Content card - centered with margin for the floating icon */}
+      {/* Content card - truly centered */}
       <div
         className={cn(
-          "relative mx-4 mt-8 max-w-sm w-full bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-6 shadow-2xl border border-emerald-200 dark:border-emerald-500/30 transition-all duration-500",
-          isVisible ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
+          "relative mx-4 max-w-sm w-full bg-gradient-to-b from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-3xl p-6 pt-8 shadow-2xl border border-emerald-200 dark:border-emerald-500/30 transition-all duration-500",
+          isVisible ? "scale-100" : "scale-95 opacity-0"
         )}
       >
         {/* Top icon */}
