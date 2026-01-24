@@ -412,6 +412,61 @@ async function fetchLumaEvent(eventUrl: string) {
 }
 
 /**
+ * Parse Slate.js rich text JSON format into plain text
+ * Handles nested nodes recursively and preserves paragraph breaks
+ */
+function parseRichTextDescription(content: unknown): string {
+  if (!content) return '';
+
+  // If it's already a string, return it
+  if (typeof content === 'string') {
+    return content;
+  }
+
+  // If it's an array (Slate.js format), extract text from nodes
+  if (Array.isArray(content)) {
+    return extractTextFromSlateNodes(content);
+  }
+
+  // If it's a single node object
+  if (typeof content === 'object' && content !== null) {
+    return extractTextFromSlateNodes([content]);
+  }
+
+  return '';
+}
+
+/**
+ * Recursively extract text from Slate.js nodes
+ */
+function extractTextFromSlateNodes(nodes: unknown[]): string {
+  const blocks: string[] = [];
+
+  for (const node of nodes) {
+    if (!node || typeof node !== 'object') continue;
+
+    const nodeObj = node as Record<string, unknown>;
+
+    // If this node has direct text content
+    if ('text' in nodeObj && typeof nodeObj.text === 'string') {
+      blocks.push(nodeObj.text);
+      continue;
+    }
+
+    // If this node has children, recursively extract
+    if ('children' in nodeObj && Array.isArray(nodeObj.children)) {
+      const childText = extractTextFromSlateNodes(nodeObj.children);
+      if (childText) {
+        blocks.push(childText);
+      }
+    }
+  }
+
+  // Join with newlines for block-level elements, spaces for inline
+  return blocks.join('\n').trim();
+}
+
+/**
  * Fetch event from setkyar.com via their API
  * This is a quiet, undocumented import source
  */
@@ -454,16 +509,23 @@ async function fetchSetkyarEvent(eventUrl: string) {
       return null;
     }
 
-    // Parse date - API returns ISO format or separate date/time fields
-    let startDate = event.startAt || event.start_at || event.startDate || event.date;
-    let endDate = event.endAt || event.end_at || event.endDate;
+    // Parse date - API may return various formats
+    // eventDate: "2026-01-25T00:00:00.000Z", eventTime: "17:00"
+    let startDate = event.startAt || event.start_at || event.startDate || event.eventDate || event.date;
+    let endDate = event.endAt || event.end_at || event.endDate || event.eventEndDate;
+    const startTime = event.startTime || event.eventTime;
+    const endTime = event.endTime || event.eventEndTime;
 
-    // If time is separate, combine with date
-    if (event.startTime && startDate && !startDate.includes('T')) {
-      startDate = `${startDate}T${event.startTime}`;
+    // If we have separate time, combine with date
+    if (startTime && startDate) {
+      // Extract just the date part if it's a full ISO string
+      const dateOnly = startDate.split('T')[0];
+      // Combine with time (assume local timezone)
+      startDate = `${dateOnly}T${startTime}:00`;
     }
-    if (event.endTime && endDate && !endDate.includes('T')) {
-      endDate = `${endDate}T${event.endTime}`;
+    if (endTime && endDate) {
+      const dateOnly = endDate.split('T')[0];
+      endDate = `${dateOnly}T${endTime}:00`;
     }
 
     // Get location info
@@ -483,13 +545,20 @@ async function fetchSetkyarEvent(eventUrl: string) {
       ? (organizer.name || organizer.displayName || organizer.username)
       : organizer;
 
+    // Get description - may be plain text or rich text (Slate.js JSON)
+    let description = event.description || event.body || event.content;
+    // If description is an object (e.g., Slate.js JSON), parse it to plain text
+    if (description && typeof description === 'object') {
+      description = parseRichTextDescription(description);
+    }
+
     console.log(`Setkyar: Got "${title}" - date: ${startDate}, location: ${locationName}, organizer: ${organizerName}`);
 
     return {
       url: eventUrl,
       title: title,
       name: title,
-      description: event.description || event.body || event.content,
+      description,
       start: startDate,
       end: endDate,
       startDate: startDate,
