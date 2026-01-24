@@ -316,3 +316,34 @@ export const getCachedEventCountsBatch = unstable_cache(
     tags: [CACHE_TAGS.events],
   }
 );
+
+/**
+ * Cached lifecycle counts (for tab display).
+ * Revalidates every minute.
+ */
+export const getCachedLifecycleCounts = unstable_cache(
+  async (): Promise<{ upcoming: number; happening: number; past: number }> => {
+    const supabase = createStaticClient();
+    if (!supabase) return { upcoming: 0, happening: 0, past: 0 };
+
+    // Get count of happening events (just need to know if > 0)
+    const { data: happeningEvents } = await supabase.rpc(
+      "get_events_by_lifecycle",
+      {
+        p_lifecycle: "happening",
+        p_limit: 1,
+      }
+    );
+
+    return {
+      upcoming: 0, // Not needed for hiding logic
+      happening: happeningEvents?.length ?? 0,
+      past: 0, // Not needed for hiding logic
+    };
+  },
+  ["lifecycle-counts-v1"],
+  {
+    revalidate: 60, // 1 minute
+    tags: [CACHE_TAGS.events],
+  }
+);

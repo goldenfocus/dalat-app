@@ -26,6 +26,7 @@ import { getEventTranslationsBatch } from "@/lib/translations";
 import {
   getCachedEventsByLifecycle,
   getCachedEventCountsBatch,
+  getCachedLifecycleCounts,
 } from "@/lib/cache/server-cache";
 
 type PageProps = {
@@ -184,23 +185,6 @@ async function getEventCounts(eventIds: string[]) {
   return counts;
 }
 
-async function getLifecycleCounts() {
-  const supabase = await createClient();
-
-  // Get count of happening events (just need to know if > 0)
-  const { data: happeningEvents } = await supabase.rpc("get_events_by_lifecycle", {
-    p_lifecycle: "happening",
-    p_limit: 1,
-  });
-
-  return {
-    upcoming: 0, // Not needed for hiding logic
-    happening: happeningEvents?.length ?? 0,
-    past: 0, // Not needed for hiding logic
-  };
-}
-
-
 async function EventsFeed({
   lifecycle,
   searchQuery,
@@ -343,7 +327,7 @@ export default async function Home({ params, searchParams }: PageProps) {
 
   const [t, lifecycleCounts] = await Promise.all([
     getTranslations("home"),
-    getLifecycleCounts(),
+    getCachedLifecycleCounts(),
   ]);
 
   return (
@@ -366,15 +350,7 @@ export default async function Home({ params, searchParams }: PageProps) {
           </div>
         </nav>
 
-        <Suspense
-          fallback={
-            <div className="h-[100dvh] flex items-center justify-center bg-black">
-              <div className="w-12 h-12 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-            </div>
-          }
-        >
-          <EventFeedImmersive lifecycle={activeTab} lifecycleCounts={lifecycleCounts} />
-        </Suspense>
+        <EventFeedImmersive lifecycle={activeTab} lifecycleCounts={lifecycleCounts} />
       </div>
 
       {/* Desktop: Traditional layout with header/footer */}
