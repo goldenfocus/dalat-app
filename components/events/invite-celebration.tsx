@@ -109,7 +109,7 @@ export function InviteCelebration({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300",
+        "fixed inset-0 z-[100] grid place-items-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300",
         isVisible ? "opacity-100" : "opacity-0"
       )}
       onClick={() => {
