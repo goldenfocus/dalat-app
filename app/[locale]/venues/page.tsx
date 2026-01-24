@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { ArrowLeft, Building2 } from "lucide-react";
-import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { VenueCard } from "@/components/venues/venue-card";
@@ -26,12 +26,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-async function getVenues(type?: string): Promise<VenueListItem[]> {
+async function getAllVenues(): Promise<VenueListItem[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("get_venues_for_discovery", {
-    p_type: type || null,
-    p_limit: 50,
+    p_type: null,
+    p_limit: 200,
     p_offset: 0,
   });
 
@@ -41,6 +41,15 @@ async function getVenues(type?: string): Promise<VenueListItem[]> {
   }
 
   return (data || []) as VenueListItem[];
+}
+
+function computeTypeCounts(venues: VenueListItem[]): Record<VenueType, number> {
+  const counts: Record<string, number> = {};
+  venues.forEach((venue) => {
+    const type = venue.venue_type || "other";
+    counts[type] = (counts[type] || 0) + 1;
+  });
+  return counts as Record<VenueType, number>;
 }
 
 function VenuesLoading() {
@@ -53,58 +62,75 @@ function VenuesLoading() {
   );
 }
 
-async function VenuesGrid({ type }: { type?: string }) {
-  const venues = await getVenues(type);
-  const locale = await getLocale();
+interface VenuesContentProps {
+  selectedType: VenueType | null;
+}
+
+async function VenuesContent({ selectedType }: VenuesContentProps) {
+  const allVenues = await getAllVenues();
   const t = await getTranslations("venues");
 
-  if (venues.length === 0) {
-    return (
-      <div className="text-center py-16">
-        <Building2 className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-        <p className="text-lg font-medium text-muted-foreground mb-1">
-          {t("noVenues")}
-        </p>
-        <p className="text-sm text-muted-foreground/70">
-          {t("noVenuesDescription")}
-        </p>
-      </div>
-    );
-  }
+  // Compute type counts from all venues
+  const typeCounts = computeTypeCounts(allVenues);
+
+  // Filter venues by selected type
+  const filteredVenues = selectedType
+    ? allVenues.filter((v) => v.venue_type === selectedType)
+    : allVenues;
 
   // Separate venues with happening now
-  const happeningNow = venues.filter((v) => v.has_happening_now);
-  const otherVenues = venues.filter((v) => !v.has_happening_now);
+  const happeningNow = filteredVenues.filter((v) => v.has_happening_now);
+  const otherVenues = filteredVenues.filter((v) => !v.has_happening_now);
 
   return (
-    <div className="space-y-8">
-      {/* Happening Now Section */}
-      {happeningNow.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            {t("happeningNow")}
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {happeningNow.map((venue) => (
-              <VenueCard key={venue.id} venue={venue} />
-            ))}
-          </div>
-        </section>
-      )}
+    <>
+      {/* Type filter - only shows types with venues */}
+      <div className="mb-6">
+        <VenueTypeFilter selectedType={selectedType} typeCounts={typeCounts} />
+      </div>
 
-      {/* All Venues */}
-      <section>
-        {happeningNow.length > 0 && (
-          <h2 className="text-lg font-semibold mb-4">{t("title")}</h2>
-        )}
-        <div className="grid gap-4 sm:grid-cols-2">
-          {otherVenues.map((venue) => (
-            <VenueCard key={venue.id} venue={venue} />
-          ))}
+      {/* Venues grid */}
+      {filteredVenues.length === 0 ? (
+        <div className="text-center py-16">
+          <Building2 className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+          <p className="text-lg font-medium text-muted-foreground mb-1">
+            {t("noVenues")}
+          </p>
+          <p className="text-sm text-muted-foreground/70">
+            {t("noVenuesDescription")}
+          </p>
         </div>
-      </section>
-    </div>
+      ) : (
+        <div className="space-y-8">
+          {/* Happening Now Section */}
+          {happeningNow.length > 0 && (
+            <section>
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                {t("happeningNow")}
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {happeningNow.map((venue) => (
+                  <VenueCard key={venue.id} venue={venue} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* All Venues */}
+          <section>
+            {happeningNow.length > 0 && (
+              <h2 className="text-lg font-semibold mb-4">{t("title")}</h2>
+            )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              {otherVenues.map((venue) => (
+                <VenueCard key={venue.id} venue={venue} />
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -150,14 +176,9 @@ export default async function VenuesPage({ params, searchParams }: PageProps) {
         {/* Page title */}
         <h1 className="text-2xl font-bold mb-6">{t("title")}</h1>
 
-        {/* Type filter */}
-        <div className="mb-6">
-          <VenueTypeFilter selectedType={selectedType} />
-        </div>
-
-        {/* Venues grid */}
+        {/* Content with filter and grid */}
         <Suspense fallback={<VenuesLoading />}>
-          <VenuesGrid type={selectedType || undefined} />
+          <VenuesContent selectedType={selectedType} />
         </Suspense>
       </div>
     </main>

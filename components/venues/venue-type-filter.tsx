@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { VENUE_TYPE_CONFIG, VENUE_TYPES } from "@/lib/constants/venue-types";
@@ -7,11 +8,21 @@ import type { VenueType } from "@/lib/types";
 
 interface VenueTypeFilterProps {
   selectedType: VenueType | null;
+  typeCounts: Record<VenueType, number>;
 }
 
-export function VenueTypeFilter({ selectedType }: VenueTypeFilterProps) {
+export function VenueTypeFilter({ selectedType, typeCounts }: VenueTypeFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Only show types that have venues
+  const availableTypes = useMemo(() => {
+    return VENUE_TYPES.filter((type) => (typeCounts[type] || 0) > 0);
+  }, [typeCounts]);
+
+  const totalCount = useMemo(() => {
+    return Object.values(typeCounts).reduce((sum, count) => sum + count, 0);
+  }, [typeCounts]);
 
   const handleTypeChange = (type: VenueType | null) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -24,6 +35,11 @@ export function VenueTypeFilter({ selectedType }: VenueTypeFilterProps) {
 
     router.push(`/venues?${params.toString()}`, { scroll: false });
   };
+
+  // Don't render filter if there are no venues at all
+  if (totalCount === 0) {
+    return null;
+  }
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
@@ -39,13 +55,15 @@ export function VenueTypeFilter({ selectedType }: VenueTypeFilterProps) {
         )}
       >
         All
+        <span className="ml-1.5 text-xs opacity-70">{totalCount}</span>
       </button>
 
-      {/* Type buttons */}
-      {VENUE_TYPES.map((type) => {
+      {/* Type buttons - only show types with venues */}
+      {availableTypes.map((type) => {
         const config = VENUE_TYPE_CONFIG[type];
         const Icon = config.icon;
         const isSelected = selectedType === type;
+        const count = typeCounts[type] || 0;
 
         return (
           <button
@@ -61,6 +79,7 @@ export function VenueTypeFilter({ selectedType }: VenueTypeFilterProps) {
           >
             <Icon className="w-3.5 h-3.5" />
             {config.label}
+            <span className="text-xs opacity-70">{count}</span>
           </button>
         );
       })}
