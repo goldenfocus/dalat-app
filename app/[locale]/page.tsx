@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { Link } from "@/lib/i18n/routing";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
@@ -15,7 +16,8 @@ import { EventCard } from "@/components/events/event-card";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { Button } from "@/components/ui/button";
-import type { Event, EventCounts, EventWithSeriesData, ContentLocale } from "@/lib/types";
+import { optimizedImageUrl } from "@/lib/image-cdn";
+import type { EventWithSeriesData, ContentLocale } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/routing";
 import { getEventTranslationsBatch } from "@/lib/translations";
 import {
@@ -27,6 +29,38 @@ import {
 type PageProps = {
   params: Promise<{ locale: Locale }>;
 };
+
+/**
+ * Generate metadata with LCP image preload for faster PageSpeed scores.
+ * Preloading the first event's image can reduce LCP by ~300-500ms.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  // Get first event to preload its image (reuses ISR cache)
+  const events = await getCachedEventsByLifecycle("upcoming", 1);
+  const firstEvent = events[0];
+
+  if (!firstEvent?.image_url) {
+    return {};
+  }
+
+  // Build preload URL using Cloudflare CDN (400px width for mobile cards)
+  const preloadUrl = optimizedImageUrl(firstEvent.image_url, {
+    width: 400,
+    quality: 70,
+    format: "auto",
+  });
+
+  if (!preloadUrl) {
+    return {};
+  }
+
+  return {
+    other: {
+      // Preload hint for the LCP image
+      "link": `<${preloadUrl}>; rel=preload; as=image; fetchpriority=high`,
+    },
+  };
+}
 
 async function EventsFeed({
   lifecycle,
@@ -137,17 +171,19 @@ export default async function Home({ params }: PageProps) {
       <div className="flex-1 container max-w-4xl mx-auto px-4 py-4">
         {/* Tabs + Search */}
         <div className="flex items-center justify-between gap-4 mb-4">
-          <EventFeedTabs
-            activeTab={activeTab}
-            useUrlNavigation
-            counts={lifecycleCounts}
-            hideEmptyTabs
-            labels={{
-              upcoming: t("tabs.upcoming"),
-              happening: t("tabs.happening"),
-              past: t("tabs.past"),
-            }}
-          />
+          <Suspense fallback={<div className="h-10 w-64 bg-muted animate-pulse rounded-lg" />}>
+            <EventFeedTabs
+              activeTab={activeTab}
+              useUrlNavigation
+              counts={lifecycleCounts}
+              hideEmptyTabs
+              labels={{
+                upcoming: t("tabs.upcoming"),
+                happening: t("tabs.happening"),
+                past: t("tabs.past"),
+              }}
+            />
+          </Suspense>
           <Suspense fallback={null}>
             <EventSearchBar className="hidden lg:flex w-64 flex-shrink-0" />
           </Suspense>
