@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
@@ -10,7 +9,6 @@ export const maxDuration = 60;
 export const revalidate = 300;
 
 import { getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { HeroSection } from "@/components/home/hero-section";
 import { EventCard } from "@/components/events/event-card";
@@ -28,191 +26,28 @@ import {
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ tab?: string; q?: string; tag?: string }>;
 };
-
-function parseLifecycle(tab: string | undefined): EventLifecycle {
-  if (tab === "happening" || tab === "past") return tab;
-  return "upcoming";
-}
-
-async function getEventsByLifecycle(
-  lifecycle: EventLifecycle,
-  searchQuery?: string,
-  tagFilter?: string
-): Promise<EventWithSeriesData[]> {
-  const supabase = await createClient();
-
-  // Use search RPC if there's a query (doesn't have deduplication yet)
-  // Search across all lifecycles ('all' hits the ELSE clause in SQL, skipping lifecycle filter)
-  if (searchQuery && searchQuery.trim()) {
-    const { data: events, error } = await supabase
-      .rpc("search_events", {
-        p_query: searchQuery.trim(),
-        p_lifecycle: "all",
-        p_limit: 20,
-      });
-
-    if (error) {
-      console.error("Error searching events:", error);
-      return [];
-    }
-
-    // Search results don't have series data, add nulls
-    let results = (events as Event[]).map((e) => ({
-      ...e,
-      series_slug: null,
-      series_rrule: null,
-      is_recurring: !!e.series_id,
-    }));
-
-    // Apply tag filter client-side for search results
-    if (tagFilter) {
-      results = results.filter((e) => e.ai_tags?.includes(tagFilter));
-    }
-
-    return results;
-  }
-
-  // If tag filter is specified, use tag-specific query
-  if (tagFilter) {
-    const { data: events, error } = await supabase.rpc("get_events_by_tag", {
-      p_tag: tagFilter,
-      p_limit: 20,
-      p_offset: 0,
-    });
-
-    // Fallback to manual filter if RPC doesn't exist yet
-    if (error?.code === "PGRST202") {
-      const now = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
-      const { data: fallbackEvents } = await supabase
-        .from("events")
-        .select("*")
-        .eq("status", "published")
-        .contains("ai_tags", [tagFilter])
-        .gt("starts_at", now)
-        .order("starts_at", { ascending: true })
-        .limit(20);
-
-      if (fallbackEvents) {
-        return (fallbackEvents as Event[]).map((e) => ({
-          ...e,
-          series_slug: null,
-          series_rrule: null,
-          is_recurring: !!e.series_id,
-        }));
-      }
-    }
-
-    if (error) {
-      console.error("Error fetching events by tag:", error);
-      return [];
-    }
-
-    return (events as Event[]).map((e) => ({
-      ...e,
-      series_slug: null,
-      series_rrule: null,
-      is_recurring: !!e.series_id,
-    }));
-  }
-
-  // Try deduplicated RPC first, fallback to standard if not available
-  let { data: events, error } = await supabase
-    .rpc("get_events_by_lifecycle_deduplicated", {
-      p_lifecycle: lifecycle,
-      p_limit: 20,
-    });
-
-  // Fallback to non-deduplicated function if the new one doesn't exist
-  if (error?.code === "PGRST202") {
-    const fallback = await supabase.rpc("get_events_by_lifecycle", {
-      p_lifecycle: lifecycle,
-      p_limit: 20,
-    });
-    events = fallback.data;
-    error = fallback.error;
-
-    // Map to expected format with null series data
-    if (events && !error) {
-      return (events as Event[]).map((e) => ({
-        ...e,
-        series_slug: null,
-        series_rrule: null,
-        is_recurring: !!e.series_id,
-      }));
-    }
-  }
-
-  if (error) {
-    console.error("Error fetching events:", error);
-    return [];
-  }
-
-  return events as EventWithSeriesData[];
-}
-
-async function getEventCounts(eventIds: string[]) {
-  if (eventIds.length === 0) return {};
-
-  const supabase = await createClient();
-
-  const { data: rsvps } = await supabase
-    .from("rsvps")
-    .select("event_id, status, plus_ones")
-    .in("event_id", eventIds);
-
-  const counts: Record<string, EventCounts> = {};
-
-  for (const eventId of eventIds) {
-    const eventRsvps = rsvps?.filter((r) => r.event_id === eventId) || [];
-    const goingRsvps = eventRsvps.filter((r) => r.status === "going");
-    const waitlistRsvps = eventRsvps.filter((r) => r.status === "waitlist");
-    const interestedRsvps = eventRsvps.filter((r) => r.status === "interested");
-
-    counts[eventId] = {
-      event_id: eventId,
-      going_count: goingRsvps.length,
-      waitlist_count: waitlistRsvps.length,
-      going_spots: goingRsvps.reduce((sum, r) => sum + 1 + (r.plus_ones || 0), 0),
-      interested_count: interestedRsvps.length,
-    };
-  }
-
-  return counts;
-}
 
 async function EventsFeed({
   lifecycle,
-  searchQuery,
-  tagFilter,
   locale,
 }: {
   lifecycle: EventLifecycle;
-  searchQuery?: string;
-  tagFilter?: string;
   locale: Locale;
 }) {
-  // Use cached functions for default view (no search/tag filter) for fast LCP
-  // Fall back to uncached for search/filter which need real-time results
-  const hasFilters = !!(searchQuery || tagFilter);
-
-  const events = hasFilters
-    ? await getEventsByLifecycle(lifecycle, searchQuery, tagFilter)
-    : await getCachedEventsByLifecycle(lifecycle);
+  // Use cached functions for fast LCP
+  const events = await getCachedEventsByLifecycle(lifecycle);
 
   const eventIds = events.map((e) => e.id);
   const [counts, eventTranslations, t] = await Promise.all([
-    hasFilters ? getEventCounts(eventIds) : getCachedEventCountsBatch(eventIds),
+    getCachedEventCountsBatch(eventIds),
     getEventTranslationsBatch(eventIds, locale as ContentLocale),
     getTranslations("home"),
   ]);
 
   if (events.length === 0) {
-    // Different message for search vs no results
-    const emptyMessage = searchQuery
-      ? t("search.noResults", { query: searchQuery })
-      : lifecycle === "happening"
+    const emptyMessage =
+      lifecycle === "happening"
         ? t("noHappening")
         : lifecycle === "past"
           ? t("noPast")
@@ -221,14 +56,9 @@ async function EventsFeed({
     return (
       <div className="text-center py-12 text-muted-foreground">
         <p className="mb-4">{emptyMessage}</p>
-        {lifecycle === "upcoming" && !searchQuery && (
+        {lifecycle === "upcoming" && (
           <Link href="/events/new" prefetch={false}>
             <Button>{t("createFirst")}</Button>
-          </Link>
-        )}
-        {searchQuery && (
-          <Link href="/">
-            <Button variant="outline">{t("search.clearSearch")}</Button>
           </Link>
         )}
       </div>
@@ -237,7 +67,8 @@ async function EventsFeed({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2">
+      {/* 2-column grid on mobile for better discoverability */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {events.map((event, index) => {
           const translation = eventTranslations.get(event.id);
           return (
@@ -280,34 +111,11 @@ async function EventsFeed({
   );
 }
 
-function DesktopTabs({
-  activeTab,
-  lifecycleCounts,
-  labels
-}: {
-  activeTab: EventLifecycle;
-  lifecycleCounts: { upcoming: number; happening: number; past: number };
-  labels: { upcoming: string; happening: string; past: string };
-}) {
-  return (
-    <Suspense fallback={<div className="h-10 bg-muted rounded-lg animate-pulse" />}>
-      <EventFeedTabs
-        activeTab={activeTab}
-        useUrlNavigation
-        counts={lifecycleCounts}
-        hideEmptyTabs
-        labels={labels}
-      />
-    </Suspense>
-  );
-}
-
 export default async function Home({ params }: PageProps) {
   const { locale } = await params;
 
   // Always render "upcoming" tab server-side for ISR caching
   // Tab switching is handled client-side via URL navigation
-  // Search redirects are handled in middleware (proxy.ts)
   const activeTab: EventLifecycle = "upcoming";
 
   const [t, lifecycleCounts] = await Promise.all([
@@ -316,74 +124,51 @@ export default async function Home({ params }: PageProps) {
   ]);
 
   return (
-    <>
-      {/* Mobile: Full immersive experience (no bottom padding - nav hidden) */}
-      <div className="lg:hidden h-[100dvh] relative">
-        {/* Floating mini-header */}
-        <nav className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-3 bg-gradient-to-b from-black/70 via-black/40 to-transparent">
-          <div className="flex items-center gap-1">
-            <Link href="/" className="font-bold text-white text-sm drop-shadow-lg">
-              ĐàLạt.app
-            </Link>
-            <LocalePicker variant="overlay" />
-          </div>
-          <div className="flex items-center gap-1">
-            <AuthButtonClient />
-            <MobileMenu variant="overlay" />
-          </div>
-        </nav>
-
-        <EventFeedImmersive lifecycle={activeTab} lifecycleCounts={lifecycleCounts} />
+    <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
+      {/* Desktop header */}
+      <div className="hidden lg:block">
+        <SiteHeader />
       </div>
 
-      {/* Desktop: Traditional layout with header/footer */}
-      <main className="hidden lg:flex min-h-screen flex-col">
-        <SiteHeader />
+      {/* Hero Section - server-rendered for fast LCP */}
+      <HeroSection />
 
-        {/* Main content */}
-        <div className="flex-1 container max-w-4xl mx-auto px-4 py-8">
-          <div className="mb-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
-                <p className="text-muted-foreground">{t("subtitle")}</p>
-              </div>
-              <Suspense fallback={null}>
-                <EventSearchBar className="w-64 flex-shrink-0" />
-              </Suspense>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="mb-6">
-            <DesktopTabs
-              activeTab={activeTab}
-              lifecycleCounts={lifecycleCounts}
-              labels={{
-                upcoming: t("tabs.upcoming"),
-                happening: t("tabs.happening"),
-                past: t("tabs.past"),
-              }}
-            />
-          </div>
-
-          <Suspense
-            fallback={
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-80 bg-muted animate-pulse rounded-lg"
-                  />
-                ))}
-              </div>
-            }
-          >
-            <EventsFeed lifecycle={activeTab} searchQuery={searchQuery} tagFilter={tagFilter} locale={locale} />
+      {/* Main content */}
+      <div className="flex-1 container max-w-4xl mx-auto px-4 py-4">
+        {/* Tabs + Search */}
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <EventFeedTabs
+            activeTab={activeTab}
+            useUrlNavigation
+            counts={lifecycleCounts}
+            hideEmptyTabs
+            labels={{
+              upcoming: t("tabs.upcoming"),
+              happening: t("tabs.happening"),
+              past: t("tabs.past"),
+            }}
+          />
+          <Suspense fallback={null}>
+            <EventSearchBar className="hidden lg:flex w-64 flex-shrink-0" />
           </Suspense>
         </div>
-      </main>
-    </>
+
+        {/* Event grid */}
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-64 sm:h-80 bg-muted animate-pulse rounded-lg"
+                />
+              ))}
+            </div>
+          }
+        >
+          <EventsFeed lifecycle={activeTab} locale={locale} />
+        </Suspense>
+      </div>
+    </main>
   );
 }
-// force deploy Mon Jan 19 16:00:10 EST 2026
