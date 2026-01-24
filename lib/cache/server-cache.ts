@@ -23,6 +23,7 @@ export const CACHE_TAGS = {
   moments: "moments",
   momentsFeed: "moments-feed",
   blog: "blog",
+  homepageConfig: "homepage-config",
 } as const;
 
 /**
@@ -357,5 +358,44 @@ export const getCachedLifecycleCounts = unstable_cache(
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.events],
+  }
+);
+
+/**
+ * Homepage config type.
+ */
+export interface HomepageConfig {
+  id: string;
+  hero_image_url: string | null;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+/**
+ * Cached homepage configuration.
+ * Revalidates every 60 seconds - changes are infrequent.
+ */
+export const getCachedHomepageConfig = unstable_cache(
+  async (): Promise<HomepageConfig | null> => {
+    const supabase = createStaticClient();
+    if (!supabase) return null;
+
+    const { data, error } = await supabase
+      .from("homepage_config")
+      .select("*")
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.error("Error fetching homepage config:", error);
+      return null;
+    }
+
+    return data as HomepageConfig;
+  },
+  ["homepage-config-v1"],
+  {
+    revalidate: 60, // 1 minute
+    tags: [CACHE_TAGS.homepageConfig],
   }
 );

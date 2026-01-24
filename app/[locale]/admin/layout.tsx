@@ -70,6 +70,12 @@ export default async function AdminLayout({
   const navItems = [
     { href: "/admin", label: t("navDashboard"), icon: "LayoutDashboard", show: true },
     {
+      href: "/admin/homepage",
+      label: "Homepage",
+      icon: "Home",
+      show: isAdmin,
+    },
+    {
       href: "/admin/organizers",
       label: t("navOrganizers"),
       icon: "Store",
