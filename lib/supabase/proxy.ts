@@ -128,6 +128,26 @@ export async function updateSession(request: NextRequest) {
       const url = new URL(`/${locale}/${username}`, request.url);
       return NextResponse.redirect(url);
     }
+
+    // Handle homepage search redirect: /?q=search -> /search/search-slug
+    // This is done in middleware to allow the homepage to be statically cached
+    const searchQuery = request.nextUrl.searchParams.get('q');
+    if (searchQuery && searchQuery.trim()) {
+      const pathnameLocale = getLocaleFromPath(pathname);
+      const isHomepage = pathname === '/' || pathname === `/${pathnameLocale}`;
+      if (isHomepage) {
+        const slug = searchQuery
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '');
+        if (slug) {
+          const locale = pathnameLocale || routing.defaultLocale;
+          const url = new URL(`/${locale}/search/${slug}`, request.url);
+          return NextResponse.redirect(url, { status: 308 }); // Permanent redirect
+        }
+      }
+    }
   }
 
   // Determine public routes BEFORE any cookie/session handling
