@@ -143,11 +143,14 @@ function categorizeEvents(events: Event[]) {
 
   for (const event of events) {
     const start = new Date(event.starts_at);
-    const end = event.ends_at ? new Date(event.ends_at) : null;
+    // If no end date, assume event ends at end of start day
+    const end = event.ends_at
+      ? new Date(event.ends_at)
+      : new Date(start.getFullYear(), start.getMonth(), start.getDate(), 23, 59, 59);
 
-    if (end && end < now) {
+    if (end < now) {
       past.push(event);
-    } else if (start <= now && (!end || end >= now)) {
+    } else if (start <= now && end >= now) {
       happening.push(event);
     } else {
       upcoming.push(event);

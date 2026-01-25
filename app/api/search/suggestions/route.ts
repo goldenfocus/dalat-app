@@ -59,12 +59,15 @@ export async function GET(request: NextRequest) {
   const now = new Date();
   const suggestions = (events || []).map((event) => {
     const start = new Date(event.starts_at);
-    const end = event.ends_at ? new Date(event.ends_at) : null;
+    // If no end date, assume event ends at end of start day
+    const end = event.ends_at
+      ? new Date(event.ends_at)
+      : new Date(start.getFullYear(), start.getMonth(), start.getDate(), 23, 59, 59);
 
     let lifecycle: "upcoming" | "happening" | "past";
-    if (end && end < now) {
+    if (end < now) {
       lifecycle = "past";
-    } else if (start <= now && (!end || end >= now)) {
+    } else if (start <= now && end >= now) {
       lifecycle = "happening";
     } else {
       lifecycle = "upcoming";

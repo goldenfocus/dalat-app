@@ -62,7 +62,8 @@
     "signOut": "로그아웃",
     "map": "지도",
     "calendar": "캘린더",
-    "about": "소개"
+    "about": "소개",
+    "venues": "장소"
   },
   "home": {
     "title": "달랏의 이벤트",
