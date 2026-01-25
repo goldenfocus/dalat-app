@@ -324,7 +324,15 @@
     "addToCalendar": "Thêm vào lịch",
     "googleCalendar": "Google Calendar",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "Thêm toàn bộ chuỗi"
+    "addEntireSeries": "Thêm toàn bộ chuỗi",
+    "tripPlanner": {
+      "planningTrip": "Bạn đang lên kế hoạch du lịch?",
+      "arriving": "Ngày đến",
+      "leaving": "Ngày đi",
+      "apply": "Áp dụng",
+      "clear": "Xóa",
+      "eventsInRange": "{count} sự kiện"
+    }
   },
   "series": {
     "recurringSeries": "Chuỗi sự kiện lặp lại",
@@ -1513,6 +1521,7 @@
     },
     "photos": "Hình ảnh",
     "contact": "Liên hệ",
+    "location": "Vị trí",
     "cuisineTypes": "Ẩm thực",
     "viewOnMap": "Xem trên bản đồ",
     "openInGoogleMaps": "Mở trong Google Maps",
@@ -1524,6 +1533,8 @@
     "addOfficialPhotos": "Thêm ảnh chính thức",
     "postedAt": "tại {event}",
     "loadMore": "Xem thêm",
+    "organizer": "Nhà tổ chức",
+    "viewOrganizerProfile": "Xem hồ sơ nhà tổ chức",
     "status": {
       "open": "Mở",
       "closed": "Đóng",

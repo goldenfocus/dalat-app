@@ -324,7 +324,15 @@
     "addToCalendar": "Tambah ke kalender",
     "googleCalendar": "Google Calendar",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "Tambah seluruh seri"
+    "addEntireSeries": "Tambah seluruh seri",
+    "tripPlanner": {
+      "planningTrip": "Merencanakan perjalanan?",
+      "arriving": "Tiba",
+      "leaving": "Berangkat",
+      "apply": "Terapkan",
+      "clear": "Hapus",
+      "eventsInRange": "{count} acara"
+    }
   },
   "series": {
     "recurringSeries": "Seri Berulang",
@@ -1532,6 +1540,7 @@
     },
     "photos": "Foto",
     "contact": "Kontak",
+    "location": "Lokasi",
     "cuisineTypes": "Jenis Masakan",
     "viewOnMap": "Lihat di Peta",
     "openInGoogleMaps": "Buka di Google Maps",
@@ -1543,6 +1552,8 @@
     "addOfficialPhotos": "Tambah Foto Resmi",
     "postedAt": "di {event}",
     "loadMore": "Muat lebih",
+    "organizer": "Penyelenggara",
+    "viewOrganizerProfile": "Lihat profil penyelenggara",
     "status": {
       "open": "Buka",
       "closed": "Tutup",

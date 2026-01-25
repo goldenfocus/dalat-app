@@ -324,7 +324,15 @@
     "addToCalendar": "Добавить в календарь",
     "googleCalendar": "Google Календарь",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "Добавить всю серию"
+    "addEntireSeries": "Добавить всю серию",
+    "tripPlanner": {
+      "planningTrip": "Планируете поездку?",
+      "arriving": "Прибытие",
+      "leaving": "Отъезд",
+      "apply": "Применить",
+      "clear": "Очистить",
+      "eventsInRange": "{count} событий"
+    }
   },
   "series": {
     "recurringSeries": "Повторяющаяся серия",
@@ -1513,6 +1521,7 @@
     },
     "photos": "Фотографии",
     "contact": "Контакты",
+    "location": "Местоположение",
     "cuisineTypes": "Кухня",
     "viewOnMap": "Показать на карте",
     "openInGoogleMaps": "Открыть в Google Maps",
@@ -1524,6 +1533,8 @@
     "addOfficialPhotos": "Добавить официальные фото",
     "postedAt": "на {event}",
     "loadMore": "Загрузить ещё",
+    "organizer": "Организатор",
+    "viewOrganizerProfile": "Просмотреть профиль организатора",
     "status": {
       "open": "Открыто",
       "closed": "Закрыто",

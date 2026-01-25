@@ -324,7 +324,15 @@
     "addToCalendar": "カレンダーに追加",
     "googleCalendar": "Googleカレンダー",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "シリーズ全体を追加"
+    "addEntireSeries": "シリーズ全体を追加",
+    "tripPlanner": {
+      "planningTrip": "旅行の計画中ですか？",
+      "arriving": "到着日",
+      "leaving": "出発日",
+      "apply": "適用",
+      "clear": "クリア",
+      "eventsInRange": "{count}件のイベント"
+    }
   },
   "series": {
     "recurringSeries": "定期シリーズ",
@@ -1513,6 +1521,7 @@
     },
     "photos": "写真",
     "contact": "お問い合わせ",
+    "location": "場所",
     "cuisineTypes": "料理の種類",
     "viewOnMap": "地図で見る",
     "openInGoogleMaps": "Googleマップで開く",
@@ -1524,6 +1533,8 @@
     "addOfficialPhotos": "公式写真を追加",
     "postedAt": "{event}にて",
     "loadMore": "もっと見る",
+    "organizer": "主催者",
+    "viewOrganizerProfile": "主催者のプロフィールを見る",
     "status": {
       "open": "営業中",
       "closed": "閉店",

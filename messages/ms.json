@@ -324,7 +324,15 @@
     "addToCalendar": "Tambah ke kalendar",
     "googleCalendar": "Google Calendar",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "Tambah seluruh siri"
+    "addEntireSeries": "Tambah seluruh siri",
+    "tripPlanner": {
+      "planningTrip": "Merancang perjalanan?",
+      "arriving": "Tiba",
+      "leaving": "Bertolak",
+      "apply": "Guna",
+      "clear": "Padam",
+      "eventsInRange": "{count} acara"
+    }
   },
   "series": {
     "recurringSeries": "Siri Berulang",
@@ -1513,6 +1521,7 @@
     },
     "photos": "Foto",
     "contact": "Hubungi",
+    "location": "Lokasi",
     "cuisineTypes": "Jenis Masakan",
     "viewOnMap": "Lihat di Peta",
     "openInGoogleMaps": "Buka di Google Maps",
@@ -1524,6 +1533,8 @@
     "addOfficialPhotos": "Tambah Foto Rasmi",
     "postedAt": "di {event}",
     "loadMore": "Muat lagi",
+    "organizer": "Penganjur",
+    "viewOrganizerProfile": "Lihat profil penganjur",
     "status": {
       "open": "Buka",
       "closed": "Tutup",

@@ -324,7 +324,15 @@
     "addToCalendar": "캘린더에 추가",
     "googleCalendar": "Google 캘린더",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "전체 시리즈 추가"
+    "addEntireSeries": "전체 시리즈 추가",
+    "tripPlanner": {
+      "planningTrip": "여행 계획 중이신가요?",
+      "arriving": "도착일",
+      "leaving": "출발일",
+      "apply": "적용",
+      "clear": "지우기",
+      "eventsInRange": "{count}개 이벤트"
+    }
   },
   "series": {
     "recurringSeries": "반복 시리즈",
@@ -1513,6 +1521,7 @@
     },
     "photos": "사진",
     "contact": "연락처",
+    "location": "위치",
     "cuisineTypes": "요리 종류",
     "viewOnMap": "지도에서 보기",
     "openInGoogleMaps": "Google 지도에서 열기",
@@ -1524,6 +1533,8 @@
     "addOfficialPhotos": "공식 사진 추가",
     "postedAt": "{event}에서",
     "loadMore": "더 보기",
+    "organizer": "주최자",
+    "viewOrganizerProfile": "주최자 프로필 보기",
     "status": {
       "open": "영업 중",
       "closed": "영업 종료",

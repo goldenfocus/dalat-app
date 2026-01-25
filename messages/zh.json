@@ -324,7 +324,15 @@
     "addToCalendar": "添加到日历",
     "googleCalendar": "Google 日历",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "添加整个系列"
+    "addEntireSeries": "添加整个系列",
+    "tripPlanner": {
+      "planningTrip": "正在计划旅行？",
+      "arriving": "到达日期",
+      "leaving": "离开日期",
+      "apply": "应用",
+      "clear": "清除",
+      "eventsInRange": "{count}个活动"
+    }
   },
   "series": {
     "recurringSeries": "系列活动",
@@ -1513,6 +1521,7 @@
     },
     "photos": "照片",
     "contact": "联系方式",
+    "location": "位置",
     "cuisineTypes": "菜系",
     "viewOnMap": "在地图上查看",
     "openInGoogleMaps": "在谷歌地图中打开",
@@ -1524,6 +1533,8 @@
     "addOfficialPhotos": "添加官方照片",
     "postedAt": "在{event}",
     "loadMore": "加载更多",
+    "organizer": "主办方",
+    "viewOrganizerProfile": "查看主办方资料",
     "status": {
       "open": "营业中",
       "closed": "已关闭",

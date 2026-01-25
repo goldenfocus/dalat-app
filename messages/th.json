@@ -324,7 +324,15 @@
     "addToCalendar": "เพิ่มลงปฏิทิน",
     "googleCalendar": "Google Calendar",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "เพิ่มทั้งชุด"
+    "addEntireSeries": "เพิ่มทั้งชุด",
+    "tripPlanner": {
+      "planningTrip": "กำลังวางแผนเดินทาง?",
+      "arriving": "วันมาถึง",
+      "leaving": "วันออกเดินทาง",
+      "apply": "ใช้งาน",
+      "clear": "ล้าง",
+      "eventsInRange": "{count} กิจกรรม"
+    }
   },
   "series": {
     "recurringSeries": "ซีรีส์ที่เกิดซ้ำ",
@@ -1513,6 +1521,7 @@
     },
     "photos": "รูปภาพ",
     "contact": "ติดต่อ",
+    "location": "ที่ตั้ง",
     "cuisineTypes": "ประเภทอาหาร",
     "viewOnMap": "ดูบนแผนที่",
     "openInGoogleMaps": "เปิดใน Google Maps",
@@ -1524,6 +1533,8 @@
     "addOfficialPhotos": "เพิ่มรูปทางการ",
     "postedAt": "ที่ {event}",
     "loadMore": "โหลดเพิ่ม",
+    "organizer": "ผู้จัด",
+    "viewOrganizerProfile": "ดูโปรไฟล์ผู้จัด",
     "status": {
       "open": "เปิด",
       "closed": "ปิด",

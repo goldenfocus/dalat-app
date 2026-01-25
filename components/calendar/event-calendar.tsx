@@ -2,12 +2,13 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { format, startOfDay, startOfMonth, startOfWeek } from "date-fns";
+import { format, startOfDay, startOfMonth, startOfWeek, parseISO, isWithinInterval, endOfDay } from "date-fns";
 import type { Event } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
 import { TagFilterBar } from "@/components/events/tag-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
 import { CalendarHeader } from "./calendar-header";
+import { TripPlanner } from "./trip-planner";
 import type { CalendarView } from "./view-switcher";
 import { DayView } from "./views/day-view";
 import { WeekView } from "./views/week-view";
@@ -71,18 +72,67 @@ export function EventCalendar({ events }: EventCalendarProps) {
 
   const [selectedTag, setSelectedTag] = useState<EventTag | null>(null);
 
-  // Update URL when view or date changes
+  // Trip planner state - initialized from URL params
+  const [tripStartDate, setTripStartDate] = useState<string | null>(() => {
+    return searchParams.get("from");
+  });
+  const [tripEndDate, setTripEndDate] = useState<string | null>(() => {
+    return searchParams.get("to");
+  });
+
+  // Update URL when view, date, or trip dates change
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("view", view);
     params.set("date", format(currentDate, "yyyy-MM-dd"));
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [view, currentDate, pathname, router, searchParams]);
 
-  // Filter events by selected tag
-  const filteredEvents = selectedTag
-    ? events.filter(event => event.ai_tags?.includes(selectedTag))
-    : events;
+    // Handle trip date params
+    if (tripStartDate) {
+      params.set("from", tripStartDate);
+    } else {
+      params.delete("from");
+    }
+    if (tripEndDate) {
+      params.set("to", tripEndDate);
+    } else {
+      params.delete("to");
+    }
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [view, currentDate, tripStartDate, tripEndDate, pathname, router, searchParams]);
+
+  // Filter events by selected tag and trip dates
+  const filteredEvents = useMemo(() => {
+    let filtered = events;
+
+    // Filter by tag
+    if (selectedTag) {
+      filtered = filtered.filter(event => event.ai_tags?.includes(selectedTag));
+    }
+
+    // Filter by trip date range
+    if (tripStartDate && tripEndDate) {
+      const start = startOfDay(parseISO(tripStartDate));
+      const end = endOfDay(parseISO(tripEndDate));
+      filtered = filtered.filter(event => {
+        const eventDate = parseISO(event.starts_at);
+        return isWithinInterval(eventDate, { start, end });
+      });
+    }
+
+    return filtered;
+  }, [events, selectedTag, tripStartDate, tripEndDate]);
+
+  // Count events in trip range (before tag filter)
+  const tripEventCount = useMemo(() => {
+    if (!tripStartDate || !tripEndDate) return 0;
+    const start = startOfDay(parseISO(tripStartDate));
+    const end = endOfDay(parseISO(tripEndDate));
+    return events.filter(event => {
+      const eventDate = parseISO(event.starts_at);
+      return isWithinInterval(eventDate, { start, end });
+    }).length;
+  }, [events, tripStartDate, tripEndDate]);
 
   // Group events by date (in Da Lat timezone)
   const eventsByDate = useMemo(() => {
@@ -138,6 +188,20 @@ export function EventCalendar({ events }: EventCalendarProps) {
     setSelectedTag(tag);
   }, []);
 
+  const handleTripApply = useCallback((start: string, end: string) => {
+    setTripStartDate(start);
+    setTripEndDate(end);
+    // Navigate to the start of the trip
+    const tripStart = parseISO(start);
+    setCurrentDate(startOfMonth(tripStart));
+    setSelectedDate(tripStart);
+  }, []);
+
+  const handleTripClear = useCallback(() => {
+    setTripStartDate(null);
+    setTripEndDate(null);
+  }, []);
+
   return (
     <div className="h-full flex flex-col">
       {/* Tag filter bar */}
@@ -156,6 +220,17 @@ export function EventCalendar({ events }: EventCalendarProps) {
         onDateChange={handleDateChange}
         onToday={handleToday}
       />
+
+      {/* Trip planner */}
+      <div className="border-b bg-background">
+        <TripPlanner
+          startDate={tripStartDate}
+          endDate={tripEndDate}
+          onApply={handleTripApply}
+          onClear={handleTripClear}
+          eventCount={tripEventCount}
+        />
+      </div>
 
       {/* View content with fade transition */}
       <div className="flex-1 min-h-0 relative">

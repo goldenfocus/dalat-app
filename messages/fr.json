@@ -338,7 +338,15 @@
     "addToCalendar": "Ajouter au calendrier",
     "googleCalendar": "Google Agenda",
     "appleOutlook": "Apple / Outlook (.ics)",
-    "addEntireSeries": "Ajouter toute la série"
+    "addEntireSeries": "Ajouter toute la série",
+    "tripPlanner": {
+      "planningTrip": "Vous planifiez un voyage ?",
+      "arriving": "Arrivée",
+      "leaving": "Départ",
+      "apply": "Appliquer",
+      "clear": "Effacer",
+      "eventsInRange": "{count} événements"
+    }
   },
   "series": {
     "recurringSeries": "Série récurrente",
@@ -1527,6 +1535,7 @@
     },
     "photos": "Photos",
     "contact": "Contact",
+    "location": "Emplacement",
     "cuisineTypes": "Cuisine",
     "viewOnMap": "Voir sur la carte",
     "openInGoogleMaps": "Ouvrir dans Google Maps",
@@ -1538,6 +1547,8 @@
     "addOfficialPhotos": "Ajouter des photos officielles",
     "postedAt": "à {event}",
     "loadMore": "Charger plus",
+    "organizer": "Organisateur",
+    "viewOrganizerProfile": "Voir le profil de l'organisateur",
     "status": {
       "open": "Ouvert",
       "closed": "Fermé",
