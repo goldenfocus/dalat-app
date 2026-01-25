@@ -43,8 +43,8 @@ export const getCachedEventsByLifecycle = unstable_cache(
         return [];
       }
 
-      // Use non-deduplicated RPC (deduplicated one not in prod yet)
-      const { data, error } = await supabase.rpc("get_events_by_lifecycle", {
+      // Use deduplicated RPC - shows ONE entry per recurring series
+      const { data, error } = await supabase.rpc("get_events_by_lifecycle_deduplicated", {
         p_lifecycle: lifecycle,
         p_limit: limit,
       });
@@ -54,19 +54,14 @@ export const getCachedEventsByLifecycle = unstable_cache(
         return [];
       }
 
-      // Map to expected format with null series data
-      return ((data as Event[]) || []).map((e) => ({
-        ...e,
-        series_slug: null,
-        series_rrule: null,
-        is_recurring: !!e.series_id,
-      }));
+      // RPC returns series_slug, series_rrule, is_recurring directly
+      return (data as EventWithSeriesData[]) || [];
     } catch (err) {
       console.error("Exception in getCachedEventsByLifecycle:", err);
       return [];
     }
   },
-  ["events-by-lifecycle-v5"], // v5: configurable limit for faster LCP
+  ["events-by-lifecycle-v6"], // v6: uses deduplicated RPC for recurring events
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.events],
