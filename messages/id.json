@@ -1000,6 +1000,26 @@
       "proUploadLink": "Punya 100+ foto? Gunakan Pro Upload",
       "statusConverting": "Converting..."
     },
+    "gate": {
+      "title": "Kamu menemukan harta karun! ✨",
+      "subtitle": "Buat akun gratis untuk terus menjelajah dan simpan favorit",
+      "cta": "Ikut petualangan",
+      "swipeHint": "geser untuk lanjutkan",
+      "gentleTitle": "Ada dunia lengkap di sini",
+      "gentleSubtitle": "Bergabung dengan {count} orang lain yang menjelajahi momen Đà Lạt",
+      "gentleCta": "Gabung gratis"
+    },
+    "commentInvite": {
+      "placeholder": "Ada pemikiran? Kami ingin mendengarnya...",
+      "joinOthers": "Bergabung dengan {names} + {count} lainnya",
+      "joinFew": "Bergabung dengan {names} dalam percakapan",
+      "beFirst": "Jadilah yang pertama berbagi pemikiran",
+      "cta": "Buat akun gratis untuk bergabung dalam percakapan"
+    },
+    "desktopPill": {
+      "message": "Suka? Simpan favoritmu",
+      "cta": "Gabung gratis"
+    },
     "discoveryMode": "Discovery",
     "differentEvent": "From a different event",
     "prevEvent": "Prev event",

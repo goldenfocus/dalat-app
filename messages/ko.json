@@ -1000,6 +1000,26 @@
       "proUploadLink": "100장 이상? 프로 업로드 사용",
       "statusConverting": "Converting..."
     },
+    "gate": {
+      "title": "보석을 찾았어요! ✨",
+      "subtitle": "무료 계정을 만들어 계속 탐색하고 즐겨찾기를 저장하세요",
+      "cta": "모험에 참여하기",
+      "swipeHint": "스와이프하여 계속",
+      "gentleTitle": "여기 온 세상이 있어요",
+      "gentleSubtitle": "{count}명의 다른 사람들과 함께 달랏 순간을 탐험하세요",
+      "gentleCta": "무료로 가입"
+    },
+    "commentInvite": {
+      "placeholder": "생각이 있으신가요? 들려주세요...",
+      "joinOthers": "{names} + {count}명과 함께하세요",
+      "joinFew": "{names}과(와) 대화에 참여하세요",
+      "beFirst": "첫 번째로 의견을 남겨보세요",
+      "cta": "무료 계정을 만들어 대화에 참여하세요"
+    },
+    "desktopPill": {
+      "message": "마음에 드시나요? 즐겨찾기에 저장하세요",
+      "cta": "무료로 가입"
+    },
     "discoveryMode": "Discovery",
     "differentEvent": "From a different event",
     "prevEvent": "Prev event",

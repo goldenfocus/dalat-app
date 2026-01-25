@@ -1000,6 +1000,26 @@
       "proUploadLink": "100枚以上ですか？プロアップロードを使用",
       "statusConverting": "Converting..."
     },
+    "gate": {
+      "title": "宝物を見つけました！✨",
+      "subtitle": "無料アカウントを作成して、探索を続けてお気に入りを保存しましょう",
+      "cta": "冒険に参加",
+      "swipeHint": "スワイプして続行",
+      "gentleTitle": "ここには広い世界があります",
+      "gentleSubtitle": "{count}人の仲間とダラットの瞬間を探索",
+      "gentleCta": "無料で参加"
+    },
+    "commentInvite": {
+      "placeholder": "何か思うことはありますか？ぜひ聞かせてください...",
+      "joinOthers": "{names} + {count}人と一緒に参加",
+      "joinFew": "{names}との会話に参加",
+      "beFirst": "最初に感想を共有しましょう",
+      "cta": "無料アカウントを作成して会話に参加"
+    },
+    "desktopPill": {
+      "message": "気に入りましたか？お気に入りを保存",
+      "cta": "無料で参加"
+    },
     "discoveryMode": "Discovery",
     "differentEvent": "From a different event",
     "prevEvent": "Prev event",

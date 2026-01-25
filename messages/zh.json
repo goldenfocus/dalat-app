@@ -1000,6 +1000,26 @@
       "proUploadLink": "有 100+ 张照片？使用专业上传",
       "statusConverting": "Converting..."
     },
+    "gate": {
+      "title": "发现宝藏了！✨",
+      "subtitle": "创建免费账户，继续探索并收藏喜爱的内容",
+      "cta": "加入探索",
+      "swipeHint": "滑动继续",
+      "gentleTitle": "这里有一个完整的世界",
+      "gentleSubtitle": "与 {count} 位用户一起探索大叻时刻",
+      "gentleCta": "免费加入"
+    },
+    "commentInvite": {
+      "placeholder": "有什么想法？我们很想听听...",
+      "joinOthers": "加入 {names} + {count} 位用户",
+      "joinFew": "加入 {names} 的对话",
+      "beFirst": "成为第一个分享想法的人",
+      "cta": "创建免费账户加入对话"
+    },
+    "desktopPill": {
+      "message": "喜欢这些吗？收藏你的最爱",
+      "cta": "免费加入"
+    },
     "discoveryMode": "Discovery",
     "differentEvent": "From a different event",
     "prevEvent": "Prev event",

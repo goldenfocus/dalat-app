@@ -5,6 +5,7 @@ import { MessageCircle } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { CommentList } from "./comment-list";
 import { CommentForm } from "./comment-form";
+import { CommentInvitation } from "./comment-invitation";
 import { triggerHaptic } from "@/lib/haptics";
 import type { CommentWithProfile, CommentTargetType, Locale } from "@/lib/types";
 
@@ -17,6 +18,8 @@ interface CommentsSectionProps {
   contentOwnerId: string;
   /** Current user ID */
   currentUserId?: string;
+  /** Path to redirect back to after login (for anonymous users) */
+  redirectPath?: string;
 }
 
 /**
@@ -28,6 +31,7 @@ export function CommentsSection({
   targetId,
   contentOwnerId,
   currentUserId,
+  redirectPath,
 }: CommentsSectionProps) {
   const t = useTranslations("comments");
   const locale = useLocale() as Locale;
@@ -346,6 +350,18 @@ export function CommentsSection({
             aiContext={`a comment on ${targetType === "event" ? "an event" : "a moment"}`}
           />
         </div>
+      )}
+
+      {/* Invitation for anonymous users */}
+      {!currentUserId && redirectPath && (
+        <CommentInvitation
+          recentCommenters={comments.slice(0, 3).map((c) => ({
+            avatar_url: c.avatar_url,
+            display_name: c.display_name,
+          }))}
+          totalComments={totalCount}
+          redirectPath={redirectPath}
+        />
       )}
 
       {/* Comments list */}

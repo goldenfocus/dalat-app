@@ -76,6 +76,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function MomentsDiscoveryPage({ params }: PageProps) {
   const { locale } = await params;
 
+  // Get auth state for gating
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
+
   // Fetch both flat (mobile) and grouped (desktop) data in parallel
   const [moments, groupedData, t] = await Promise.all([
     getMoments(),
@@ -102,6 +107,7 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
         <MomentsDiscoveryMobile
           initialMoments={moments}
           initialHasMore={mobileHasMore}
+          isAuthenticated={isAuthenticated}
         />
       </div>
 
@@ -112,6 +118,7 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
           <MomentsDiscoveryDesktop
             initialGroups={groupedData.groups}
             initialHasMore={groupedData.hasMore}
+            isAuthenticated={isAuthenticated}
           />
         </div>
       </main>

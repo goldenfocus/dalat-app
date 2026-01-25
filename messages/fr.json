@@ -1014,6 +1014,26 @@
       "proUploadLink": "Plus de 100 photos ? Utilisez Upload Pro",
       "statusConverting": "Converting..."
     },
+    "gate": {
+      "title": "Vous avez trouvé des trésors ! ✨",
+      "subtitle": "Créez un compte gratuit pour continuer à explorer et sauvegarder vos favoris",
+      "cta": "Rejoindre l'aventure",
+      "swipeHint": "glissez pour continuer",
+      "gentleTitle": "Il y a tout un monde ici",
+      "gentleSubtitle": "Rejoignez {count} autres personnes qui explorent les moments de Đà Lạt",
+      "gentleCta": "Rejoindre gratuitement"
+    },
+    "commentInvite": {
+      "placeholder": "Des pensées ? On aimerait les entendre...",
+      "joinOthers": "Rejoignez {names} + {count} autres",
+      "joinFew": "Rejoignez {names} dans la conversation",
+      "beFirst": "Soyez le premier à partager vos pensées",
+      "cta": "Créez un compte gratuit pour rejoindre la conversation"
+    },
+    "desktopPill": {
+      "message": "Vous aimez ? Sauvegardez vos favoris",
+      "cta": "Rejoindre gratuitement"
+    },
     "discoveryMode": "Discovery",
     "differentEvent": "From a different event",
     "prevEvent": "Prev event",

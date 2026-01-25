@@ -554,6 +554,7 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
             targetId={moment.id}
             contentOwnerId={moment.user_id}
             currentUserId={user?.id}
+            redirectPath={`/moments/${moment.id}`}
           />
         </div>
       </div>

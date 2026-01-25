@@ -1000,6 +1000,26 @@
       "proUploadLink": "มีรูป 100+ รูป? ใช้ Pro Upload",
       "statusConverting": "Converting..."
     },
+    "gate": {
+      "title": "คุณพบสมบัติแล้ว! ✨",
+      "subtitle": "สร้างบัญชีฟรีเพื่อสำรวจต่อและบันทึกรายการโปรด",
+      "cta": "ร่วมการผจญภัย",
+      "swipeHint": "ปัดเพื่อดำเนินการต่อ",
+      "gentleTitle": "มีโลกทั้งใบอยู่ที่นี่",
+      "gentleSubtitle": "ร่วมกับ {count} คนอื่นๆ ที่กำลังสำรวจช่วงเวลาดาลัด",
+      "gentleCta": "เข้าร่วมฟรี"
+    },
+    "commentInvite": {
+      "placeholder": "มีความคิดอะไรไหม? เราอยากฟัง...",
+      "joinOthers": "ร่วมกับ {names} + {count} คนอื่นๆ",
+      "joinFew": "ร่วมสนทนากับ {names}",
+      "beFirst": "เป็นคนแรกที่แบ่งปันความคิด",
+      "cta": "สร้างบัญชีฟรีเพื่อร่วมสนทนา"
+    },
+    "desktopPill": {
+      "message": "ชอบไหม? บันทึกรายการโปรดของคุณ",
+      "cta": "เข้าร่วมฟรี"
+    },
     "discoveryMode": "Discovery",
     "differentEvent": "From a different event",
     "prevEvent": "Prev event",

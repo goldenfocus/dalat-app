@@ -1123,6 +1123,26 @@
       "retry": "Retry",
       "remove": "Remove",
       "proUploadLink": "Have 100+ photos? Use Pro Upload"
+    },
+    "gate": {
+      "title": "You found some gems! ✨",
+      "subtitle": "Create a free account to keep exploring and save your favorites",
+      "cta": "Join the adventure",
+      "swipeHint": "swipe to continue",
+      "gentleTitle": "There's a whole world in here",
+      "gentleSubtitle": "Join {count} others exploring Đà Lạt moments",
+      "gentleCta": "Join free"
+    },
+    "commentInvite": {
+      "placeholder": "Got thoughts? We'd love to hear them...",
+      "joinOthers": "Join {names} + {count} others",
+      "joinFew": "Join {names} in the conversation",
+      "beFirst": "Be the first to share your thoughts",
+      "cta": "Create a free account to join the conversation"
+    },
+    "desktopPill": {
+      "message": "Enjoying these? Save your favorites",
+      "cta": "Join free"
     }
   },
   "tribes": {

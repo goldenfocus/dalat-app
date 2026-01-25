@@ -9,6 +9,7 @@ import { InfiniteMomentDiscoveryGrouped } from "./infinite-moment-discovery-grou
 import { MomentsSearch } from "./moments-search";
 import { MomentsSearchOverlay } from "./moments-search-overlay";
 import { MomentCard } from "./moment-card";
+import { MomentsJoinPill } from "./moments-join-pill";
 import type { MomentContentType, MomentWithEvent, DiscoveryEventMomentsGroup } from "@/lib/types";
 
 const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> = [
@@ -20,11 +21,13 @@ const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> =
 interface MomentsDiscoveryMobileProps {
   initialMoments: MomentWithEvent[];
   initialHasMore: boolean;
+  isAuthenticated?: boolean;
 }
 
 interface MomentsDiscoveryDesktopProps {
   initialGroups: DiscoveryEventMomentsGroup[];
   initialHasMore: boolean;
+  isAuthenticated?: boolean;
 }
 
 function useMomentFilters() {
@@ -50,6 +53,7 @@ function useMomentFilters() {
 export function MomentsDiscoveryMobile({
   initialMoments,
   initialHasMore,
+  isAuthenticated = false,
 }: MomentsDiscoveryMobileProps) {
   const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -86,6 +90,7 @@ export function MomentsDiscoveryMobile({
         initialMoments={initialMoments}
         hasMore={initialHasMore}
         contentTypes={activeConfig.contentTypes}
+        isAuthenticated={isAuthenticated}
       />
 
       {/* Search overlay */}
@@ -100,6 +105,7 @@ export function MomentsDiscoveryMobile({
 export function MomentsDiscoveryDesktop({
   initialGroups,
   initialHasMore,
+  isAuthenticated = false,
 }: MomentsDiscoveryDesktopProps) {
   const t = useTranslations("moments");
   const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
@@ -182,6 +188,9 @@ export function MomentsDiscoveryDesktop({
           contentTypes={activeConfig.contentTypes}
         />
       )}
+
+      {/* Floating join pill for anonymous users */}
+      {!isAuthenticated && <MomentsJoinPill delay={3000} />}
     </div>
   );
 }

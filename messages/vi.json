@@ -1007,6 +1007,26 @@
       "remove": "Xóa",
       "proUploadLink": "Có 100+ ảnh? Dùng Tải Lên Chuyên Nghiệp"
     },
+    "gate": {
+      "title": "Bạn tìm thấy kho báu rồi! ✨",
+      "subtitle": "Tạo tài khoản miễn phí để tiếp tục khám phá và lưu yêu thích",
+      "cta": "Tham gia ngay",
+      "swipeHint": "vuốt để tiếp tục",
+      "gentleTitle": "Còn cả một thế giới ở đây",
+      "gentleSubtitle": "Cùng {count} người khác khám phá khoảnh khắc Đà Lạt",
+      "gentleCta": "Tham gia miễn phí"
+    },
+    "commentInvite": {
+      "placeholder": "Bạn nghĩ gì? Hãy chia sẻ với mọi người...",
+      "joinOthers": "Tham gia cùng {names} + {count} người khác",
+      "joinFew": "Tham gia cùng {names} trong cuộc trò chuyện",
+      "beFirst": "Hãy là người đầu tiên chia sẻ suy nghĩ",
+      "cta": "Tạo tài khoản miễn phí để tham gia trò chuyện"
+    },
+    "desktopPill": {
+      "message": "Thích những gì bạn thấy? Lưu yêu thích của bạn",
+      "cta": "Tham gia miễn phí"
+    },
     "discoveryMode": "Discovery",
     "differentEvent": "From a different event",
     "prevEvent": "Prev event",

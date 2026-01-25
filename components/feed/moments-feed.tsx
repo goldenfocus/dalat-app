@@ -2,13 +2,21 @@
 
 import { useEffect, useRef, useState, useMemo } from "react";
 import { MomentReelCard } from "./moment-reel-card";
+import { MomentJoinCard } from "./moment-join-card";
 import { useMomentsFeed } from "@/lib/hooks/use-supabase-query";
+import { GATING_CONFIG } from "@/lib/config/gating";
 import type { MomentContentType, MomentWithEvent } from "@/lib/types";
+
+type FeedItem =
+  | { type: "moment"; moment: MomentWithEvent; index: number }
+  | { type: "join"; variant: "default" | "gentle"; index: number };
 
 interface MomentsFeedProps {
   initialMoments: MomentWithEvent[];
   hasMore: boolean;
   contentTypes?: MomentContentType[];
+  /** Whether the user is authenticated (hides gates when true) */
+  isAuthenticated?: boolean;
 }
 
 /**
@@ -20,6 +28,7 @@ interface MomentsFeedProps {
 export function MomentsFeed({
   initialMoments,
   contentTypes = ["photo", "video"],
+  isAuthenticated = false,
 }: MomentsFeedProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,6 +47,41 @@ export function MomentsFeed({
     () => data?.pages.flat() ?? initialMoments,
     [data?.pages, initialMoments]
   );
+
+  // Build feed items with interstitial join cards for anonymous users
+  const feedItems = useMemo<FeedItem[]>(() => {
+    if (isAuthenticated || !GATING_CONFIG.ENABLED) {
+      // Authenticated users see all moments without gates
+      return moments.map((moment, index) => ({
+        type: "moment" as const,
+        moment,
+        index,
+      }));
+    }
+
+    // Anonymous users: insert join cards at configured positions
+    const items: FeedItem[] = [];
+    let feedIndex = 0;
+
+    for (let i = 0; i < moments.length; i++) {
+      // Insert first gate
+      if (i === GATING_CONFIG.MOBILE_FIRST_GATE_POSITION) {
+        items.push({ type: "join", variant: "default", index: feedIndex });
+        feedIndex++;
+      }
+
+      // Insert second (gentle) gate
+      if (i === GATING_CONFIG.MOBILE_SECOND_GATE_POSITION) {
+        items.push({ type: "join", variant: "gentle", index: feedIndex });
+        feedIndex++;
+      }
+
+      items.push({ type: "moment", moment: moments[i], index: feedIndex });
+      feedIndex++;
+    }
+
+    return items;
+  }, [moments, isAuthenticated]);
 
   // Track active card via IntersectionObserver
   useEffect(() => {
@@ -63,7 +107,7 @@ export function MomentsFeed({
     cards.forEach((card) => observer.observe(card));
 
     return () => observer.disconnect();
-  }, [moments.length]);
+  }, [feedItems.length]);
 
   // Observe the load-more trigger element for infinite scroll
   useEffect(() => {
@@ -103,14 +147,22 @@ export function MomentsFeed({
         ref={containerRef}
         className="w-full max-w-lg lg:max-w-xl h-[100dvh] overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide"
       >
-        {moments.map((moment, index) => (
-          <MomentReelCard
-            key={moment.id}
-            moment={moment}
-            isActive={activeIndex === index}
-            index={index}
-          />
-        ))}
+        {feedItems.map((item) =>
+          item.type === "moment" ? (
+            <MomentReelCard
+              key={item.moment.id}
+              moment={item.moment}
+              isActive={activeIndex === item.index}
+              index={item.index}
+            />
+          ) : (
+            <MomentJoinCard
+              key={`join-${item.variant}-${item.index}`}
+              variant={item.variant}
+              index={item.index}
+            />
+          )
+        )}
 
         {/* Infinite scroll trigger */}
         {hasNextPage && (
