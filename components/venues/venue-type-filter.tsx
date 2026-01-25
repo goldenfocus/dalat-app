@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { VENUE_TYPE_CONFIG, VENUE_TYPES } from "@/lib/constants/venue-types";
 import type { VenueType } from "@/lib/types";
@@ -12,6 +13,7 @@ interface VenueTypeFilterProps {
 }
 
 export function VenueTypeFilter({ selectedType, typeCounts }: VenueTypeFilterProps) {
+  const t = useTranslations("venues");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -54,7 +56,7 @@ export function VenueTypeFilter({ selectedType, typeCounts }: VenueTypeFilterPro
             : "bg-muted hover:bg-muted/80 text-muted-foreground"
         )}
       >
-        All
+        {t("allTypes")}
         <span className="ml-1.5 text-xs opacity-70">{totalCount}</span>
       </button>
 
@@ -73,12 +75,12 @@ export function VenueTypeFilter({ selectedType, typeCounts }: VenueTypeFilterPro
             className={cn(
               "flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all active:scale-95",
               isSelected
-                ? cn(config.bgColor, config.darkBgColor, config.color, config.darkColor)
+                ? "bg-primary text-primary-foreground"
                 : "bg-muted hover:bg-muted/80 text-muted-foreground"
             )}
           >
             <Icon className="w-3.5 h-3.5" />
-            {config.label}
+            {t(`types.${type}`)}
             <span className="text-xs opacity-70">{count}</span>
           </button>
         );

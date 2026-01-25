@@ -1,11 +1,11 @@
 "use client";
 
 import { Link } from "@/lib/i18n/routing";
-import { BadgeCheck, Calendar, MapPin } from "lucide-react";
+import { BadgeCheck, Calendar } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
-import { VenueHoursBadge } from "./venue-hours-badge";
 import { triggerHaptic } from "@/lib/haptics";
 import type { VenueListItem } from "@/lib/types";
 
@@ -15,6 +15,7 @@ interface VenueCardProps {
 }
 
 export function VenueCard({ venue, className }: VenueCardProps) {
+  const t = useTranslations("venues");
   const typeConfig = getVenueTypeConfig(venue.venue_type);
   const TypeIcon = typeConfig.icon;
 
@@ -26,7 +27,7 @@ export function VenueCard({ venue, className }: VenueCardProps) {
           className
         )}
       >
-        {/* Cover image or type-colored header */}
+        {/* Cover image with subtle overlay for text readability */}
         {venue.cover_photo_url ? (
           <div className="relative aspect-[2/1]">
             <img
@@ -34,51 +35,50 @@ export function VenueCard({ venue, className }: VenueCardProps) {
               alt=""
               className="w-full h-full object-cover"
             />
-            {/* Happening now indicator */}
-            {venue.has_happening_now && (
-              <div className="absolute top-2 right-2">
-                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-red-500 text-white rounded-full animate-pulse">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full" />
-                  Live
-                </span>
+            {/* Subtle gradient for logo visibility */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+            {/* Logo overlay on cover - bottom left */}
+            {venue.logo_url && (
+              <div className="absolute bottom-3 left-3">
+                <img
+                  src={venue.logo_url}
+                  alt=""
+                  className="w-10 h-10 rounded-lg object-cover ring-2 ring-white/20 shadow-lg"
+                />
+              </div>
+            )}
+
+            {/* Event indicator - subtle dot in corner if has events */}
+            {(venue.has_happening_now || venue.upcoming_event_count > 0) && (
+              <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                {venue.has_happening_now ? (
+                  <span className="w-2 h-2 bg-white rounded-full shadow-lg animate-pulse" />
+                ) : venue.upcoming_event_count > 0 ? (
+                  <span className="flex items-center gap-1 text-xs text-white/90 bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                    <Calendar className="w-3 h-3" />
+                    {venue.upcoming_event_count}
+                  </span>
+                ) : null}
               </div>
             )}
           </div>
         ) : (
-          <div
-            className={cn(
-              "aspect-[3/1] flex items-center justify-center",
-              typeConfig.bgColor,
-              typeConfig.darkBgColor
-            )}
-          >
-            <TypeIcon
-              className={cn("w-10 h-10", typeConfig.color, typeConfig.darkColor)}
-            />
+          /* No cover - clean minimal placeholder */
+          <div className="aspect-[3/1] bg-muted/50 flex items-center justify-center">
+            <TypeIcon className="w-8 h-8 text-muted-foreground/50" />
           </div>
         )}
 
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            {/* Logo */}
-            {venue.logo_url ? (
+            {/* Logo - only show if no cover photo (otherwise it's on the cover) */}
+            {!venue.cover_photo_url && venue.logo_url && (
               <img
                 src={venue.logo_url}
                 alt=""
-                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
               />
-            ) : (
-              <div
-                className={cn(
-                  "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
-                  typeConfig.bgColor,
-                  typeConfig.darkBgColor
-                )}
-              >
-                <TypeIcon
-                  className={cn("w-6 h-6", typeConfig.color, typeConfig.darkColor)}
-                />
-              </div>
             )}
 
             <div className="flex-1 min-w-0">
@@ -90,42 +90,11 @@ export function VenueCard({ venue, className }: VenueCardProps) {
                 )}
               </h3>
 
-              {/* Type badge */}
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded mt-1",
-                  typeConfig.bgColor,
-                  typeConfig.darkBgColor,
-                  typeConfig.color,
-                  typeConfig.darkColor
-                )}
-              >
-                <TypeIcon className="w-3 h-3" />
-                {typeConfig.label}
-              </span>
-
-              {/* Address */}
-              {venue.address && (
-                <p className="text-xs text-muted-foreground mt-1 truncate flex items-center gap-1">
-                  <MapPin className="w-3 h-3 flex-shrink-0" />
-                  {venue.address}
-                </p>
-              )}
+              {/* Type - subtle, muted text only */}
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {t(`types.${venue.venue_type}`)}
+              </p>
             </div>
-          </div>
-
-          {/* Footer: Open status and event count */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t">
-            <VenueHoursBadge operatingHours={venue.operating_hours} />
-
-            {venue.upcoming_event_count > 0 ? (
-              <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                <Calendar className="w-3.5 h-3.5" />
-                {venue.upcoming_event_count} upcoming
-              </span>
-            ) : (
-              <span className="text-xs text-muted-foreground">No events</span>
-            )}
           </div>
         </CardContent>
       </Card>

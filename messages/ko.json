@@ -1483,7 +1483,13 @@
     "noCommunityPhotos": "아직 커뮤니티 사진이 없습니다",
     "addOfficialPhotos": "공식 사진 추가",
     "postedAt": "{event}에서",
-    "loadMore": "더 보기"
+    "loadMore": "더 보기",
+    "status": {
+      "open": "영업 중",
+      "closed": "영업 종료",
+      "until": "까지",
+      "opens": "오픈"
+    }
   },
   "comments": {
     "title": "댓글",

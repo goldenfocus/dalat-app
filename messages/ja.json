@@ -1483,7 +1483,13 @@
     "noCommunityPhotos": "コミュニティ写真はまだありません",
     "addOfficialPhotos": "公式写真を追加",
     "postedAt": "{event}にて",
-    "loadMore": "もっと見る"
+    "loadMore": "もっと見る",
+    "status": {
+      "open": "営業中",
+      "closed": "閉店",
+      "until": "まで",
+      "opens": "開店"
+    }
   },
   "comments": {
     "title": "コメント",

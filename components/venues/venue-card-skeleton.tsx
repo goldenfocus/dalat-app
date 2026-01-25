@@ -11,27 +11,20 @@ interface VenueCardSkeletonProps {
 export function VenueCardSkeleton({ className }: VenueCardSkeletonProps) {
   return (
     <Card className={cn("overflow-hidden", className)}>
-      {/* Cover image skeleton */}
-      <Skeleton className="aspect-[2/1] w-full rounded-none" />
+      {/* Cover image skeleton with logo overlay position */}
+      <div className="relative aspect-[2/1]">
+        <Skeleton className="w-full h-full rounded-none" />
+        {/* Logo skeleton overlay */}
+        <div className="absolute bottom-3 left-3">
+          <Skeleton className="w-10 h-10 rounded-lg" />
+        </div>
+      </div>
 
       <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          {/* Logo skeleton */}
-          <Skeleton className="w-12 h-12 rounded-lg flex-shrink-0" />
-
-          <div className="flex-1 min-w-0 space-y-2">
-            {/* Name */}
-            <Skeleton className="h-5 w-3/4" />
-            {/* Type badge */}
-            <Skeleton className="h-5 w-16 rounded" />
-            {/* Address */}
-            <Skeleton className="h-3 w-full" />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-3 pt-3 border-t">
-          <Skeleton className="h-5 w-16 rounded-full" />
+        <div className="space-y-1.5">
+          {/* Name */}
+          <Skeleton className="h-5 w-3/4" />
+          {/* Type */}
           <Skeleton className="h-4 w-20" />
         </div>
       </CardContent>

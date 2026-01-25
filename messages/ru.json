@@ -1483,7 +1483,13 @@
     "noCommunityPhotos": "Пока нет фото сообщества",
     "addOfficialPhotos": "Добавить официальные фото",
     "postedAt": "на {event}",
-    "loadMore": "Загрузить ещё"
+    "loadMore": "Загрузить ещё",
+    "status": {
+      "open": "Открыто",
+      "closed": "Закрыто",
+      "until": "до",
+      "opens": "откроется"
+    }
   },
   "comments": {
     "title": "Комментарии",

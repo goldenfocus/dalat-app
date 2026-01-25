@@ -232,16 +232,11 @@ export function VenueForm({ venue }: VenueFormProps) {
           return;
         }
 
-        // Trigger translation for updated venue
-        const fields: { field_name: "title" | "description"; text: string }[] = [];
-        if (name.trim()) {
-          fields.push({ field_name: "title", text: name.trim() });
-        }
+        // Trigger translation for description only (venue names are proper names, never translate)
         if (description?.trim()) {
-          fields.push({ field_name: "description", text: description.trim() });
-        }
-        if (fields.length > 0) {
-          triggerTranslation("venue", venue.id, fields);
+          triggerTranslation("venue", venue.id, [
+            { field_name: "description", text: description.trim() },
+          ]);
         }
       } else {
         const { data: insertedVenue, error: insertError } = await supabase
@@ -255,18 +250,11 @@ export function VenueForm({ venue }: VenueFormProps) {
           return;
         }
 
-        // Trigger translation for new venue
-        if (insertedVenue) {
-          const fields: { field_name: "title" | "description"; text: string }[] = [];
-          if (name.trim()) {
-            fields.push({ field_name: "title", text: name.trim() });
-          }
-          if (description?.trim()) {
-            fields.push({ field_name: "description", text: description.trim() });
-          }
-          if (fields.length > 0) {
-            triggerTranslation("venue", insertedVenue.id, fields);
-          }
+        // Trigger translation for description only (venue names are proper names, never translate)
+        if (insertedVenue && description?.trim()) {
+          triggerTranslation("venue", insertedVenue.id, [
+            { field_name: "description", text: description.trim() },
+          ]);
         }
       }
 

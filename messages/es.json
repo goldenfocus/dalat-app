@@ -1502,7 +1502,13 @@
     "noCommunityPhotos": "Aún no hay fotos de la comunidad",
     "addOfficialPhotos": "Agregar fotos oficiales",
     "postedAt": "en {event}",
-    "loadMore": "Cargar más"
+    "loadMore": "Cargar más",
+    "status": {
+      "open": "Abierto",
+      "closed": "Cerrado",
+      "until": "hasta",
+      "opens": "abre"
+    }
   },
   "feedback": {
     "howWasIt": "How was the event?",

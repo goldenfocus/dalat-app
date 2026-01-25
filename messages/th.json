@@ -1483,7 +1483,13 @@
     "noCommunityPhotos": "ยังไม่มีรูปจากชุมชน",
     "addOfficialPhotos": "เพิ่มรูปทางการ",
     "postedAt": "ที่ {event}",
-    "loadMore": "โหลดเพิ่ม"
+    "loadMore": "โหลดเพิ่ม",
+    "status": {
+      "open": "เปิด",
+      "closed": "ปิด",
+      "until": "ถึง",
+      "opens": "เปิด"
+    }
   },
   "comments": {
     "title": "ความคิดเห็น",

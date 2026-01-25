@@ -1502,7 +1502,13 @@
     "noCommunityPhotos": "Belum ada foto komunitas",
     "addOfficialPhotos": "Tambah Foto Resmi",
     "postedAt": "di {event}",
-    "loadMore": "Muat lebih"
+    "loadMore": "Muat lebih",
+    "status": {
+      "open": "Buka",
+      "closed": "Tutup",
+      "until": "sampai",
+      "opens": "buka"
+    }
   },
   "feedback": {
     "howWasIt": "How was the event?",

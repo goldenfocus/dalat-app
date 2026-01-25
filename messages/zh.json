@@ -1483,7 +1483,13 @@
     "noCommunityPhotos": "暂无社区照片",
     "addOfficialPhotos": "添加官方照片",
     "postedAt": "在{event}",
-    "loadMore": "加载更多"
+    "loadMore": "加载更多",
+    "status": {
+      "open": "营业中",
+      "closed": "已关闭",
+      "until": "直到",
+      "opens": "开门"
+    }
   },
   "comments": {
     "title": "评论",

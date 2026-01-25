@@ -1483,7 +1483,13 @@
     "noCommunityPhotos": "Chưa có ảnh cộng đồng",
     "addOfficialPhotos": "Thêm ảnh chính thức",
     "postedAt": "tại {event}",
-    "loadMore": "Xem thêm"
+    "loadMore": "Xem thêm",
+    "status": {
+      "open": "Mở",
+      "closed": "Đóng",
+      "until": "đến",
+      "opens": "mở lúc"
+    }
   },
   "comments": {
     "title": "Bình luận",

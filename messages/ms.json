@@ -1483,7 +1483,13 @@
     "noCommunityPhotos": "Belum ada foto komuniti",
     "addOfficialPhotos": "Tambah Foto Rasmi",
     "postedAt": "di {event}",
-    "loadMore": "Muat lagi"
+    "loadMore": "Muat lagi",
+    "status": {
+      "open": "Buka",
+      "closed": "Tutup",
+      "until": "sehingga",
+      "opens": "buka"
+    }
   },
   "comments": {
     "title": "Komen",

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { OperatingHours } from "@/lib/types";
 
@@ -111,6 +112,7 @@ export function VenueHoursBadge({
   showTime = true,
   className,
 }: VenueHoursBadgeProps) {
+  const t = useTranslations("venues");
   const status = isVenueOpenNow(operatingHours);
 
   if (!operatingHours) {
@@ -131,13 +133,13 @@ export function VenueHoursBadge({
         )}
       />
       <span className={status.isOpen ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
-        {status.isOpen ? "Open" : "Closed"}
+        {status.isOpen ? t("status.open") : t("status.closed")}
       </span>
       {showTime && status.isOpen && status.closesAt && (
-        <span className="text-muted-foreground">· until {status.closesAt}</span>
+        <span className="text-muted-foreground">· {t("status.until")} {status.closesAt}</span>
       )}
       {showTime && !status.isOpen && status.opensAt && (
-        <span className="text-muted-foreground">· opens {status.opensAt}</span>
+        <span className="text-muted-foreground">· {t("status.opens")} {status.opensAt}</span>
       )}
     </span>
   );

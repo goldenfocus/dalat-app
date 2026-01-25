@@ -194,7 +194,7 @@ export default async function VenuePage({ params }: PageProps) {
     canUserManageVenue(venue.owner_id),
   ]);
 
-  // Fetch translations for venue name and description
+  // Fetch translations for venue description only (venue names are proper names, never translate)
   const venueTranslations = await getTranslationsWithFallback(
     "venue",
     venue.id,
@@ -209,7 +209,6 @@ export default async function VenuePage({ params }: PageProps) {
       meta_description: null,
     }
   );
-  const translatedName = venueTranslations.title ?? venue.name;
   const translatedDescription = venueTranslations.description ?? venue.description;
 
   const isUnclaimed = !venue.owner_id;
@@ -223,7 +222,7 @@ export default async function VenuePage({ params }: PageProps) {
     [
       { name: "Home", url: "/" },
       { name: t("title"), url: "/venues" },
-      { name: translatedName, url: `/venues/${venue.slug}` },
+      { name: venue.name, url: `/venues/${venue.slug}` },
     ],
     locale
   );
@@ -286,7 +285,7 @@ export default async function VenuePage({ params }: PageProps) {
                 {venue.logo_url ? (
                   <img
                     src={venue.logo_url}
-                    alt={translatedName}
+                    alt={venue.name}
                     className="w-20 h-20 sm:w-28 sm:h-28 rounded-xl object-cover border-4 border-white/20 shadow-2xl bg-background"
                   />
                 ) : (
@@ -310,15 +309,15 @@ export default async function VenuePage({ params }: PageProps) {
 
                   {/* Name */}
                   <h1 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg">
-                    {translatedName}
+                    {venue.name}
                   </h1>
 
                   {/* Type, open status, price */}
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
-                    {typeConfig && TypeIcon && (
+                    {typeConfig && TypeIcon && venue.venue_type && (
                       <span className="inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded bg-white/20 text-white backdrop-blur-sm">
                         <TypeIcon className="w-3.5 h-3.5" />
-                        {typeConfig.label}
+                        {t(`types.${venue.venue_type}`)}
                       </span>
                     )}
                     {venue.operating_hours && (
@@ -351,7 +350,7 @@ export default async function VenuePage({ params }: PageProps) {
             {venue.logo_url ? (
               <img
                 src={venue.logo_url}
-                alt={translatedName}
+                alt={venue.name}
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border-4 border-background shadow-lg bg-background"
               />
             ) : (
@@ -375,17 +374,17 @@ export default async function VenuePage({ params }: PageProps) {
 
               {/* Name */}
               <h1 className="text-2xl sm:text-3xl font-bold">
-                {translatedName}
+                {venue.name}
               </h1>
 
               {/* Type and open status */}
               <div className="flex items-center gap-3 mt-2 flex-wrap">
-                {typeConfig && TypeIcon && (
+                {typeConfig && TypeIcon && venue.venue_type && (
                   <span
                     className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded ${typeConfig.bgColor} ${typeConfig.darkBgColor} ${typeConfig.color} ${typeConfig.darkColor}`}
                   >
                     <TypeIcon className="w-3.5 h-3.5" />
-                    {typeConfig.label}
+                    {t(`types.${venue.venue_type}`)}
                   </span>
                 )}
                 {venue.operating_hours && (
@@ -744,7 +743,7 @@ export default async function VenuePage({ params }: PageProps) {
               <VenueMap
                 latitude={venue.latitude}
                 longitude={venue.longitude}
-                name={translatedName}
+                name={venue.name}
                 address={venue.address}
                 directionsLabel={t("getDirections")}
                 viewOnMapLabel={t("viewOnMap")}

@@ -106,7 +106,7 @@ async function VenuesContent({ selectedType }: VenuesContentProps) {
           {happeningNow.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                <span className="w-1.5 h-1.5 bg-foreground/60 rounded-full" />
                 {t("happeningNow")}
               </h2>
               <div className="grid gap-4 sm:grid-cols-2">

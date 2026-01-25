@@ -1497,7 +1497,13 @@
     "noCommunityPhotos": "Pas encore de photos de la communauté",
     "addOfficialPhotos": "Ajouter des photos officielles",
     "postedAt": "à {event}",
-    "loadMore": "Charger plus"
+    "loadMore": "Charger plus",
+    "status": {
+      "open": "Ouvert",
+      "closed": "Fermé",
+      "until": "jusqu'à",
+      "opens": "ouvre"
+    }
   },
   "comments": {
     "title": "Commentaires",
