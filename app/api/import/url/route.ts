@@ -89,14 +89,14 @@ export async function POST(request: Request) {
       // Check if this is a Facebook search URL
       if (url.includes("/search/events/") || url.includes("facebook.com/events/search/")) {
         // Use data-slayer scraper - works without login for search
-        actorId = "data-slayer/facebook-search-events";
+        actorId = "data-slayer~facebook-search-events";
         isFacebookSearch = true;
       } else {
-        actorId = "apify/facebook-events-scraper";
+        actorId = "apify~facebook-events-scraper";
       }
     } else if (url.includes("eventbrite.com")) {
       platform = "eventbrite";
-      actorId = "newpo/eventbrite-scraper";
+      actorId = "newpo~eventbrite-scraper";
     } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
       actorId = ""; // Not used - we fetch Lu.ma directly
