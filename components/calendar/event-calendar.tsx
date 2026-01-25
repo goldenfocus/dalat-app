@@ -5,7 +5,6 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { format, startOfDay, startOfMonth, startOfWeek, parseISO, isWithinInterval, endOfDay } from "date-fns";
 import type { Event } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
-import { TagFilterBar } from "@/components/events/tag-filter-bar";
 import { formatInDaLat } from "@/lib/timezone";
 import { CalendarHeader } from "./calendar-header";
 import { TripPlanner } from "./trip-planner";
@@ -204,21 +203,15 @@ export function EventCalendar({ events }: EventCalendarProps) {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Tag filter bar */}
-      <div className="p-3 bg-background border-b">
-        <TagFilterBar
-          selectedTag={selectedTag}
-          onTagChange={handleTagChange}
-        />
-      </div>
-
-      {/* Calendar header with view switcher */}
+      {/* Calendar header with view switcher and filter */}
       <CalendarHeader
         view={view}
         currentDate={view === "month" ? startOfMonth(currentDate) : currentDate}
+        selectedTag={selectedTag}
         onViewChange={handleViewChange}
         onDateChange={handleDateChange}
         onToday={handleToday}
+        onTagChange={handleTagChange}
       />
 
       {/* Trip planner */}
@@ -261,7 +254,8 @@ export function EventCalendar({ events }: EventCalendarProps) {
               currentMonth={currentDate}
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
-              tripModeActive={!!(tripStartDate && tripEndDate)}
+              tripStartDate={tripStartDate}
+              tripEndDate={tripEndDate}
             />
           )}
         </div>

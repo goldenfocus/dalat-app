@@ -4,21 +4,27 @@ import { format, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths } fr
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { triggerHaptic } from "@/lib/haptics";
 import { ViewSwitcher, type CalendarView } from "./view-switcher";
+import { TagFilterBar } from "@/components/events/tag-filter-bar";
+import type { EventTag } from "@/lib/constants/event-tags";
 
 interface CalendarHeaderProps {
   view: CalendarView;
   currentDate: Date;
+  selectedTag: EventTag | null;
   onViewChange: (view: CalendarView) => void;
   onDateChange: (date: Date) => void;
   onToday: () => void;
+  onTagChange: (tag: EventTag | null) => void;
 }
 
 export function CalendarHeader({
   view,
   currentDate,
+  selectedTag,
   onViewChange,
   onDateChange,
   onToday,
+  onTagChange,
 }: CalendarHeaderProps) {
   const handlePrevious = () => {
     triggerHaptic("selection");
@@ -75,8 +81,8 @@ export function CalendarHeader({
   return (
     <div className="border-b bg-background">
       {/* Navigation row */}
-      <div className="p-4 pb-2">
-        <div className="flex items-center justify-between">
+      <div className="p-4 pb-2 lg:pb-4">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrevious}
@@ -96,17 +102,26 @@ export function CalendarHeader({
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-          <button
-            onClick={handleToday}
-            className="px-3 py-1.5 text-sm font-medium bg-muted hover:bg-muted/80 rounded-lg transition-colors active:scale-95"
-          >
-            Today
-          </button>
+
+          {/* Desktop: view switcher inline */}
+          <div className="hidden lg:block">
+            <ViewSwitcher value={view} onChange={onViewChange} />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <TagFilterBar selectedTag={selectedTag} onTagChange={onTagChange} />
+            <button
+              onClick={handleToday}
+              className="px-3 py-1.5 text-sm font-medium bg-muted hover:bg-muted/80 rounded-lg transition-colors active:scale-95"
+            >
+              Today
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* View switcher row */}
-      <div className="px-4 pb-4">
+      {/* Mobile: view switcher row */}
+      <div className="px-4 pb-4 lg:hidden">
         <ViewSwitcher value={view} onChange={onViewChange} />
       </div>
     </div>
