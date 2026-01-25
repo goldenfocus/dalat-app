@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Film } from "lucide-react";
+import { Building2, Calendar, MapPin, Film } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { LocalePicker } from "@/components/locale-picker";
@@ -37,6 +37,13 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
             aria-label="Calendar"
           >
             <Calendar className="w-5 h-5" aria-hidden="true" />
+          </Link>
+          <Link
+            href="/venues"
+            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+            aria-label="Venues"
+          >
+            <Building2 className="w-5 h-5" aria-hidden="true" />
           </Link>
           <Link
             href="/moments"
