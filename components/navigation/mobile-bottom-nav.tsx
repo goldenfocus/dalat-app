@@ -61,10 +61,12 @@ export function MobileBottomNav() {
               onClick={() => triggerHaptic("selection")}
               aria-label={label}
               className={`flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-95 ${
-                isActive ? "text-foreground" : "text-muted-foreground"
+                isActive
+                  ? "bg-foreground/10 text-foreground"
+                  : "text-muted-foreground/60 hover:text-muted-foreground"
               }`}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className={`h-5 w-5 ${isActive ? "stroke-[2.5]" : ""}`} />
             </Link>
           );
         })}

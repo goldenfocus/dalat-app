@@ -26,7 +26,7 @@ export function ViewSwitcher({ value, onChange }: ViewSwitcherProps) {
 
   return (
     <div
-      className="inline-flex w-full bg-muted rounded-lg p-1"
+      className="inline-flex w-full lg:w-auto bg-muted rounded-lg p-1 lg:p-0.5"
       role="tablist"
       aria-label="Calendar view"
     >
@@ -41,7 +41,10 @@ export function ViewSwitcher({ value, onChange }: ViewSwitcherProps) {
             aria-selected={isSelected}
             onClick={() => handleChange(view.value)}
             className={cn(
+              // Mobile: full-width with touch-friendly height
               "flex-1 h-11 flex items-center justify-center",
+              // Desktop: compact inline buttons
+              "lg:flex-none lg:h-8 lg:px-3",
               "text-sm font-medium rounded-md transition-all",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               "active:scale-[0.98]",

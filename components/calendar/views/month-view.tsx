@@ -13,7 +13,10 @@ import {
   isToday,
   isBefore,
   startOfDay,
+  endOfDay,
   format,
+  parseISO,
+  isWithinInterval,
 } from "date-fns";
 import { Calendar as CalendarIcon, CalendarDays, LayoutGrid, List } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -31,7 +34,8 @@ interface MonthViewProps {
   currentMonth: Date;
   selectedDate: Date | null;
   onDateSelect: (date: Date) => void;
-  tripModeActive?: boolean;
+  tripStartDate?: string | null;
+  tripEndDate?: string | null;
 }
 
 export function MonthView({
@@ -40,8 +44,10 @@ export function MonthView({
   currentMonth,
   selectedDate,
   onDateSelect,
-  tripModeActive = false,
+  tripStartDate,
+  tripEndDate,
 }: MonthViewProps) {
+  const tripModeActive = !!(tripStartDate && tripEndDate);
   const t = useTranslations("calendarView");
   // Default to "rolling" (Next 30 Days) for event discovery
   const [mode, setMode] = useState<MonthMode>("rolling");
@@ -98,6 +104,14 @@ export function MonthView({
     setMode(newMode);
   };
 
+  // Check if a date is within the trip range
+  const isInTripRange = useMemo(() => {
+    if (!tripStartDate || !tripEndDate) return () => false;
+    const start = startOfDay(parseISO(tripStartDate));
+    const end = endOfDay(parseISO(tripEndDate));
+    return (date: Date) => isWithinInterval(date, { start, end });
+  }, [tripStartDate, tripEndDate]);
+
   // Get day headers based on mode
   const dayHeaders = useMemo(() => {
     const days = [
@@ -116,42 +130,44 @@ export function MonthView({
     <div className="h-full flex flex-col">
       {/* Mode toggle */}
       <div className="px-4 pt-3 pb-1 flex justify-end">
-        <div className="inline-flex bg-muted rounded-lg p-0.5">
+        <div className="inline-flex bg-muted rounded-md p-0.5">
           <button
             onClick={() => handleModeToggle("rolling")}
             className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-all",
+              "flex items-center gap-1 px-2 py-1 lg:px-2 lg:py-0.5 text-xs font-medium rounded transition-all",
               mode === "rolling"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <CalendarDays className="w-3.5 h-3.5" />
-            {t("modes.thirtyDays")}
+            <CalendarDays className="w-3 h-3" />
+            <span className="hidden sm:inline">{t("modes.thirtyDays")}</span>
+            <span className="sm:hidden">30d</span>
           </button>
           <button
             onClick={() => handleModeToggle("list")}
             className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-all",
+              "flex items-center gap-1 px-2 py-1 lg:px-2 lg:py-0.5 text-xs font-medium rounded transition-all",
               mode === "list"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <List className="w-3.5 h-3.5" />
+            <List className="w-3 h-3" />
             {t("modes.list")}
           </button>
           <button
             onClick={() => handleModeToggle("calendar")}
             className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-all",
+              "flex items-center gap-1 px-2 py-1 lg:px-2 lg:py-0.5 text-xs font-medium rounded transition-all",
               mode === "calendar"
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <LayoutGrid className="w-3.5 h-3.5" />
-            {t("modes.calendar")}
+            <LayoutGrid className="w-3 h-3" />
+            <span className="hidden sm:inline">{t("modes.calendar")}</span>
+            <span className="sm:hidden">Cal</span>
           </button>
         </div>
       </div>
@@ -248,6 +264,7 @@ export function MonthView({
                 const isCurrentMonth = mode === "rolling" || isSameMonth(day, currentMonth);
                 const isTodayDate = isToday(day);
                 const isPast = isBefore(startOfDay(day), today);
+                const inTripRange = isInTripRange(day);
 
                 return (
                   <button
@@ -259,6 +276,8 @@ export function MonthView({
                       !isCurrentMonth && "text-muted-foreground/40",
                       // Past day dimming (40% opacity) - only in calendar mode
                       isPast && isCurrentMonth && !isSelected && mode === "calendar" && "opacity-40",
+                      // Trip range highlight (subtle background)
+                      inTripRange && !isSelected && "bg-foreground/10",
                       isSelected && "bg-foreground text-background hover:bg-foreground opacity-100",
                       isTodayDate && !isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background"
                     )}
