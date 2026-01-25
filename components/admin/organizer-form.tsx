@@ -110,18 +110,16 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
 
     const supabase = createClient();
 
-    // First, unlink any events from this organizer
-    if (linkedEventsCount && linkedEventsCount > 0) {
-      const { error: unlinkError } = await supabase
-        .from("events")
-        .update({ organizer_id: null })
-        .eq("organizer_id", organizer.id);
+    // First, unlink any events from this organizer (always try, even if count was 0)
+    const { error: unlinkError } = await supabase
+      .from("events")
+      .update({ organizer_id: null })
+      .eq("organizer_id", organizer.id);
 
-      if (unlinkError) {
-        setError(`Failed to unlink events: ${unlinkError.message}`);
-        setIsDeleting(false);
-        return;
-      }
+    if (unlinkError) {
+      setError(`Failed to unlink events: ${unlinkError.message}`);
+      setIsDeleting(false);
+      return;
     }
 
     // Delete logo from storage if exists
