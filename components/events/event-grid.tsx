@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { formatInDaLat } from "@/lib/timezone";
@@ -76,6 +76,15 @@ export function EventGrid({
   const { mode, density } = useEventViewPreferences();
   const locale = useLocale() as Locale;
 
+  // Track which card is flipped (only one at a time)
+  const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
+
+  const handleFlip = (eventId: string) => {
+    // If tapping the same card, it's already handled in the card component
+    // If tapping a different card, flip to that one (auto-closes the previous)
+    setFlippedCardId(eventId);
+  };
+
   // When forceCompact is true, always use compact regardless of user preference
   const effectiveDensity = forceCompact ? "compact" : density;
   const effectiveMode = forceCompact ? "grid" : mode;
@@ -149,6 +158,8 @@ export function EventGrid({
               event={event}
               translatedTitle={translation?.title}
               priority={index < 2}
+              isFlipped={flippedCardId === event.id}
+              onFlip={handleFlip}
             />
           );
         })}
