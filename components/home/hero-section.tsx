@@ -6,13 +6,13 @@ export async function HeroSection() {
 
   return (
     <section className="relative">
-      <div className="container max-w-6xl mx-auto px-4 pt-6 pb-4 lg:pt-8 lg:pb-6">
+      <div className="container max-w-6xl mx-auto px-4 pt-4 pb-2 lg:pt-8 lg:pb-6">
         {/* Headlines - Server rendered for fast LCP */}
         <div className="max-w-2xl">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
             {t("headline")}
           </h1>
-          <p className="mt-2 text-base text-muted-foreground lg:text-lg">
+          <p className="mt-2 text-base text-muted-foreground lg:text-lg hidden sm:block">
             {t("subtitle")}
           </p>
         </div>

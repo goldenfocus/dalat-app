@@ -175,17 +175,18 @@ export default async function Home({ params, searchParams }: PageProps) {
   const { locale } = await params;
   const { tab } = await searchParams;
 
-  // Read tab from URL, default to "upcoming"
-  const validTabs: EventLifecycle[] = ["upcoming", "happening", "past"];
-  const activeTab: EventLifecycle = validTabs.includes(tab as EventLifecycle)
-    ? (tab as EventLifecycle)
-    : "upcoming";
-
   const [t, lifecycleCounts, homepageConfig] = await Promise.all([
     getTranslations("home"),
     getCachedLifecycleCounts(),
     getCachedHomepageConfig(),
   ]);
+
+  // Read tab from URL, default to "happening" if events are live, otherwise "upcoming"
+  const validTabs: EventLifecycle[] = ["upcoming", "happening", "past"];
+  const defaultTab: EventLifecycle = lifecycleCounts.happening > 0 ? "happening" : "upcoming";
+  const activeTab: EventLifecycle = validTabs.includes(tab as EventLifecycle)
+    ? (tab as EventLifecycle)
+    : defaultTab;
 
   return (
     <main className="min-h-screen flex flex-col pb-20 lg:pb-0">

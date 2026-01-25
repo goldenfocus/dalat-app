@@ -25,8 +25,8 @@ export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectio
 
   return (
     <section className="relative">
-      {/* Full-bleed image container */}
-      <div className="aspect-[16/9] sm:aspect-[2.5/1] bg-muted overflow-hidden">
+      {/* Full-bleed image container - flatter on mobile for more event visibility */}
+      <div className="aspect-[21/9] sm:aspect-[2.5/1] bg-muted overflow-hidden">
         <img
           src={optimizedUrl || imageUrl}
           alt=""
@@ -43,13 +43,13 @@ export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectio
 
       {/* Content overlay */}
       <div className="absolute bottom-0 left-0 right-0">
-        <div className="container max-w-6xl mx-auto px-4 pb-6 sm:pb-8">
+        <div className="container max-w-6xl mx-auto px-4 pb-4 sm:pb-8">
           {/* Headlines - white text on dark gradient */}
           <div className="max-w-2xl">
-            <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-lg sm:text-3xl lg:text-5xl">
+            <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-lg sm:text-3xl lg:text-5xl">
               {t("headline")}
             </h1>
-            <p className="mt-2 text-base text-white/80 drop-shadow lg:text-lg">
+            <p className="mt-2 text-base text-white/80 drop-shadow lg:text-lg hidden sm:block">
               {t("subtitle")}
             </p>
           </div>

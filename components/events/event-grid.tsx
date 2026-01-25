@@ -5,6 +5,7 @@ import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { formatInDaLat } from "@/lib/timezone";
 import { EventCard } from "./event-card";
+import { EventCardCompact } from "./event-card-compact";
 import { EventListCard } from "./event-list-card";
 import { EventImmersiveCard } from "./event-immersive-card";
 import {
@@ -129,7 +130,25 @@ export function EventGrid({
     );
   }
 
-  // Default: grid view
+  // Default: grid view (uses compact cards for compact density)
+  if (density === "compact") {
+    return (
+      <div className={cn("grid", GRID_CLASSES[density])}>
+        {events.map((event, index) => {
+          const translation = eventTranslations.get(event.id);
+          return (
+            <EventCardCompact
+              key={event.id}
+              event={event}
+              translatedTitle={translation?.title}
+              priority={index < 2}
+            />
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className={cn("grid", GRID_CLASSES[density])}>
       {events.map((event, index) => {
@@ -188,7 +207,10 @@ export function EventGridSkeleton() {
       {Array.from({ length: skeletonCount }).map((_, i) => (
         <div
           key={i}
-          className="h-64 sm:h-80 bg-muted animate-pulse rounded-lg"
+          className={cn(
+            "bg-muted animate-pulse rounded-lg",
+            density === "compact" ? "aspect-[3/2]" : "h-64 sm:h-80"
+          )}
         />
       ))}
     </div>
