@@ -210,6 +210,7 @@ export interface Venue {
 
   // Meta
   owner_id: string | null;
+  organizer_id: string | null;
   is_verified: boolean;
   priority_score: number;
   total_events_hosted: number;

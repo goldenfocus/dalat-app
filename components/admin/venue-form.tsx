@@ -15,7 +15,7 @@ import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
 import { VENUE_TYPES, VENUE_TYPE_CONFIG } from "@/lib/constants/venue-types";
 import { triggerTranslation } from "@/lib/translations-client";
-import type { Venue, VenueType, OperatingHours } from "@/lib/types";
+import type { Venue, VenueType, OperatingHours, Organizer } from "@/lib/types";
 import { sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
 
 interface VenueFormProps {
@@ -67,12 +67,32 @@ export function VenueForm({ venue }: VenueFormProps) {
     venue?.operating_hours ?? DEFAULT_HOURS
   );
 
+  // Linked organizer
+  const [organizerId, setOrganizerId] = useState<string | null>(venue?.organizer_id ?? null);
+  const [organizers, setOrganizers] = useState<Pick<Organizer, "id" | "name" | "slug" | "logo_url">[]>([]);
+  const [loadingOrganizers, setLoadingOrganizers] = useState(true);
+
   const isEditing = !!venue;
 
   // Slug state
   const [slug, setSlug] = useState(venue?.slug ?? "");
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const [slugTouched, setSlugTouched] = useState(false);
+
+  // Fetch organizers for linking
+  useEffect(() => {
+    async function fetchOrganizers() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("organizers")
+        .select("id, name, slug, logo_url")
+        .order("name");
+
+      setOrganizers(data ?? []);
+      setLoadingOrganizers(false);
+    }
+    fetchOrganizers();
+  }, []);
 
   // Check slug availability
   useEffect(() => {
@@ -219,6 +239,7 @@ export function VenueForm({ venue }: VenueFormProps) {
         has_outdoor_seating: hasOutdoorSeating,
         is_pet_friendly: isPetFriendly,
         is_wheelchair_accessible: isWheelchairAccessible,
+        organizer_id: organizerId,
       };
 
       if (isEditing) {
@@ -414,6 +435,28 @@ export function VenueForm({ venue }: VenueFormProps) {
               <Label htmlFor="is_verified" className="font-normal">
                 Verified venue (shows badge, priority in listings)
               </Label>
+            </div>
+
+            {/* Linked Organizer */}
+            <div className="space-y-2">
+              <Label htmlFor="organizer_id">Linked Organizer</Label>
+              <select
+                id="organizer_id"
+                value={organizerId ?? ""}
+                onChange={(e) => setOrganizerId(e.target.value || null)}
+                disabled={loadingOrganizers}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+              >
+                <option value="">No linked organizer</option>
+                {organizers.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Link this venue to an organizer if they&apos;re the same entity (e.g., a café that hosts its own events)
+              </p>
             </div>
           </CardContent>
         </Card>
