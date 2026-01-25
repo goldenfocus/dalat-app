@@ -144,8 +144,8 @@ async function EventsFeed({
         forceCompact
       />
 
-      {/* Show "See all" link */}
-      {events.length >= 12 && (
+      {/* Show "See all" link - only for upcoming and past tabs */}
+      {events.length >= 12 && lifecycle !== "happening" && (
         <div className="text-center py-2">
           <Link
             href={lifecycle === "past" ? "/events/this-month" : "/events/upcoming"}
