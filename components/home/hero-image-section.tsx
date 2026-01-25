@@ -23,7 +23,7 @@ export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectio
   return (
     <section className="relative">
       {/* Full-bleed image container - ultra-flat on mobile for max event visibility */}
-      <div className="aspect-[3/1] sm:aspect-[3/1] bg-muted overflow-hidden">
+      <div className="aspect-[3/1] lg:aspect-auto lg:h-[350px] bg-muted overflow-hidden">
         <img
           src={optimizedUrl || imageUrl}
           alt=""
