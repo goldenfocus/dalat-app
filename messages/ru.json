@@ -149,7 +149,16 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "inAppBrowser": {
+      "title": "Браузер не поддерживается",
+      "description": "Вход через Google не работает в {appName}. Откройте эту страницу в Safari или Chrome.",
+      "openInBrowser": "Открыть в браузере",
+      "linkCopied": "Ссылка скопирована!",
+      "hint": "Нажмите на меню (⋮ или ···) и выберите «Открыть в Safari» или «Открыть в Chrome»",
+      "dismiss": "Закрыть",
+      "thisApp": "этом приложении"
+    }
   },
   "errors": {
     "somethingWentWrong": "Извините, что-то пошло не так.",

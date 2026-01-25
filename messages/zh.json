@@ -149,7 +149,16 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "inAppBrowser": {
+      "title": "浏览器不支持",
+      "description": "Google 登录在 {appName} 中无法使用。请在 Safari 或 Chrome 中打开此页面。",
+      "openInBrowser": "在浏览器中打开",
+      "linkCopied": "链接已复制！",
+      "hint": "点击菜单（⋮ 或 ···），选择「在 Safari 中打开」或「在 Chrome 中打开」",
+      "dismiss": "关闭",
+      "thisApp": "此应用"
+    }
   },
   "errors": {
     "somethingWentWrong": "抱歉，出了点问题。",

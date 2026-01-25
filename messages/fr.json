@@ -149,7 +149,16 @@
     "resendEmail": "Pas reçu ? Renvoyer",
     "resending": "Envoi en cours...",
     "emailResent": "Envoyé ! Vérifiez à nouveau",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "inAppBrowser": {
+      "title": "Navigateur non pris en charge",
+      "description": "La connexion Google ne fonctionne pas dans {appName}. Veuillez ouvrir cette page dans Safari ou Chrome.",
+      "openInBrowser": "Ouvrir dans le navigateur",
+      "linkCopied": "Lien copié !",
+      "hint": "Appuyez sur le menu (⋮ ou ···) et sélectionnez « Ouvrir dans Safari » ou « Ouvrir dans Chrome »",
+      "dismiss": "Fermer",
+      "thisApp": "cette application"
+    }
   },
   "errors": {
     "somethingWentWrong": "Désolé, une erreur s'est produite.",

@@ -149,7 +149,16 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "inAppBrowser": {
+      "title": "Trình duyệt không được hỗ trợ",
+      "description": "Đăng nhập Google không hoạt động trong {appName}. Vui lòng mở trang này trong Safari hoặc Chrome.",
+      "openInBrowser": "Mở trong trình duyệt",
+      "linkCopied": "Đã sao chép liên kết!",
+      "hint": "Nhấn vào menu (⋮ hoặc ···) và chọn \"Mở trong Safari\" hoặc \"Mở trong Chrome\"",
+      "dismiss": "Bỏ qua",
+      "thisApp": "ứng dụng này"
+    }
   },
   "errors": {
     "somethingWentWrong": "Xin lỗi, đã xảy ra lỗi.",

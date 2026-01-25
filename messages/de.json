@@ -149,7 +149,16 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "inAppBrowser": {
+      "title": "Browser nicht unterstützt",
+      "description": "Die Google-Anmeldung funktioniert nicht in {appName}. Bitte öffne diese Seite in Safari oder Chrome.",
+      "openInBrowser": "Im Browser öffnen",
+      "linkCopied": "Link kopiert!",
+      "hint": "Tippe auf das Menü (⋮ oder ···) und wähle \"In Safari öffnen\" oder \"In Chrome öffnen\"",
+      "dismiss": "Schließen",
+      "thisApp": "dieser App"
+    }
   },
   "errors": {
     "somethingWentWrong": "Entschuldigung, etwas ist schiefgelaufen.",

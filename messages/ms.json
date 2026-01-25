@@ -149,7 +149,16 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "inAppBrowser": {
+      "title": "Pelayar tidak disokong",
+      "description": "Log masuk Google tidak berfungsi dalam {appName}. Sila buka halaman ini dalam Safari atau Chrome.",
+      "openInBrowser": "Buka dalam pelayar",
+      "linkCopied": "Pautan disalin!",
+      "hint": "Ketik menu (⋮ atau ···) dan pilih \"Buka dalam Safari\" atau \"Buka dalam Chrome\"",
+      "dismiss": "Tutup",
+      "thisApp": "aplikasi ini"
+    }
   },
   "errors": {
     "somethingWentWrong": "Maaf, sesuatu tidak kena.",

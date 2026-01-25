@@ -149,7 +149,16 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "inAppBrowser": {
+      "title": "Navegador no compatible",
+      "description": "El inicio de sesión con Google no funciona en {appName}. Por favor, abre esta página en Safari o Chrome.",
+      "openInBrowser": "Abrir en navegador",
+      "linkCopied": "¡Enlace copiado!",
+      "hint": "Toca el menú (⋮ o ···) y selecciona \"Abrir en Safari\" o \"Abrir en Chrome\"",
+      "dismiss": "Cerrar",
+      "thisApp": "esta aplicación"
+    }
   },
   "errors": {
     "somethingWentWrong": "Lo sentimos, algo salió mal.",

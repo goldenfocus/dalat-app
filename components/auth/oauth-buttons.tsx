@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { EmailAuthForm } from "./email-auth-form";
+import { InAppBrowserWarning } from "./in-app-browser-warning";
 
 export function GoogleButton() {
   const t = useTranslations("auth");
@@ -87,6 +88,7 @@ export function OAuthButtons() {
     <div>
       {!showSuccess && (
         <>
+          <InAppBrowserWarning className="mb-4" />
           <GoogleButton />
           <Divider text={t("orContinueWith")} />
         </>

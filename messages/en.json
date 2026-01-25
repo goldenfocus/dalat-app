@@ -149,7 +149,16 @@
     "checkSpamHint": "Check your inbox (or spam folder, we won't judge)",
     "resendEmail": "Didn't get it? Resend",
     "resending": "Sending...",
-    "emailResent": "Sent! Check your inbox again"
+    "emailResent": "Sent! Check your inbox again",
+    "inAppBrowser": {
+      "title": "Browser not supported",
+      "description": "Google sign-in doesn't work in {appName}. Please open this page in Safari or Chrome.",
+      "openInBrowser": "Open in browser",
+      "linkCopied": "Link copied!",
+      "hint": "Tap the menu (⋮ or ···) and select \"Open in Safari\" or \"Open in Chrome\"",
+      "dismiss": "Dismiss",
+      "thisApp": "this app"
+    }
   },
   "errors": {
     "somethingWentWrong": "Sorry, something went wrong.",

@@ -149,7 +149,16 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "inAppBrowser": {
+      "title": "지원되지 않는 브라우저",
+      "description": "{appName}에서는 Google 로그인이 작동하지 않습니다. Safari나 Chrome에서 이 페이지를 열어주세요.",
+      "openInBrowser": "브라우저에서 열기",
+      "linkCopied": "링크가 복사되었습니다!",
+      "hint": "메뉴(⋮ 또는 ···)를 탭하고 \"Safari에서 열기\" 또는 \"Chrome에서 열기\"를 선택하세요",
+      "dismiss": "닫기",
+      "thisApp": "이 앱"
+    }
   },
   "errors": {
     "somethingWentWrong": "죄송합니다, 문제가 발생했습니다.",

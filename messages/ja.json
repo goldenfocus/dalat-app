@@ -149,7 +149,16 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "inAppBrowser": {
+      "title": "対応していないブラウザ",
+      "description": "{appName}ではGoogleログインが動作しません。SafariまたはChromeでこのページを開いてください。",
+      "openInBrowser": "ブラウザで開く",
+      "linkCopied": "リンクをコピーしました！",
+      "hint": "メニュー（⋮または···）をタップして「Safariで開く」または「Chromeで開く」を選択してください",
+      "dismiss": "閉じる",
+      "thisApp": "このアプリ"
+    }
   },
   "errors": {
     "somethingWentWrong": "申し訳ありません、問題が発生しました。",

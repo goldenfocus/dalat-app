@@ -149,7 +149,16 @@
     "verifyConfirming": "Confirming...",
     "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
     "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired."
+    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "inAppBrowser": {
+      "title": "เบราว์เซอร์ไม่รองรับ",
+      "description": "การเข้าสู่ระบบด้วย Google ไม่ทำงานใน {appName} กรุณาเปิดหน้านี้ใน Safari หรือ Chrome",
+      "openInBrowser": "เปิดในเบราว์เซอร์",
+      "linkCopied": "คัดลอกลิงก์แล้ว!",
+      "hint": "แตะเมนู (⋮ หรือ ···) แล้วเลือก \"เปิดใน Safari\" หรือ \"เปิดใน Chrome\"",
+      "dismiss": "ปิด",
+      "thisApp": "แอปนี้"
+    }
   },
   "errors": {
     "somethingWentWrong": "ขออภัย เกิดข้อผิดพลาด",
