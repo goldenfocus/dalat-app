@@ -19,6 +19,8 @@ interface EventGridProps {
   counts: Record<string, EventCounts | undefined>;
   eventTranslations: Map<string, { title?: string }>;
   seriesRrules?: Record<string, string>;
+  /** Force compact card display regardless of user preference */
+  forceCompact?: boolean;
 }
 
 // Grid classes based on density
@@ -69,27 +71,32 @@ export function EventGrid({
   counts,
   eventTranslations,
   seriesRrules = {},
+  forceCompact = false,
 }: EventGridProps) {
   const { mode, density } = useEventViewPreferences();
   const locale = useLocale() as Locale;
 
+  // When forceCompact is true, always use compact regardless of user preference
+  const effectiveDensity = forceCompact ? "compact" : density;
+  const effectiveMode = forceCompact ? "grid" : mode;
+
   // Group events by date for list view
   const groupedEvents = useMemo(
-    () => (mode === "list" ? groupEventsByDate(events) : []),
-    [events, mode]
+    () => (effectiveMode === "list" ? groupEventsByDate(events) : []),
+    [events, effectiveMode]
   );
 
-  if (mode === "list") {
+  if (effectiveMode === "list") {
     return (
       <div className="flex flex-col gap-6">
         {groupedEvents.map(([dateKey, dateEvents]) => (
           <div key={dateKey}>
-            {/* Date label - using p instead of h3 to maintain proper heading hierarchy */}
+            {/* Date label */}
             <p className="text-sm font-medium text-foreground/70 mb-3 px-1">
               {formatInDaLat(dateEvents[0].starts_at, "EEEE, MMMM d", locale)}
             </p>
             {/* Events for this date */}
-            <div className={cn("flex flex-col", LIST_CLASSES[density])}>
+            <div className={cn("flex flex-col", LIST_CLASSES[effectiveDensity])}>
               {dateEvents.map((event) => {
                 const translation = eventTranslations.get(event.id);
                 return (
@@ -110,9 +117,9 @@ export function EventGrid({
     );
   }
 
-  if (mode === "immersive") {
+  if (effectiveMode === "immersive") {
     return (
-      <div className={cn("grid", IMMERSIVE_CLASSES[density])}>
+      <div className={cn("grid", IMMERSIVE_CLASSES[effectiveDensity])}>
         {events.map((event, index) => {
           const translation = eventTranslations.get(event.id);
           return (
@@ -131,9 +138,9 @@ export function EventGrid({
   }
 
   // Default: grid view (uses compact cards for compact density)
-  if (density === "compact") {
+  if (effectiveDensity === "compact") {
     return (
-      <div className={cn("grid", GRID_CLASSES[density])}>
+      <div className={cn("grid", GRID_CLASSES[effectiveDensity])}>
         {events.map((event, index) => {
           const translation = eventTranslations.get(event.id);
           return (
@@ -150,7 +157,7 @@ export function EventGrid({
   }
 
   return (
-    <div className={cn("grid", GRID_CLASSES[density])}>
+    <div className={cn("grid", GRID_CLASSES[effectiveDensity])}>
       {events.map((event, index) => {
         const translation = eventTranslations.get(event.id);
         return (

@@ -16,7 +16,6 @@ import { HeroSection } from "@/components/home/hero-section";
 import { EventGrid } from "@/components/events/event-grid";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
-import { EventViewToggle } from "@/components/events/event-view-toggle";
 import { Button } from "@/components/ui/button";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import type { ContentLocale } from "@/lib/types";
@@ -94,8 +93,8 @@ async function EventsFeed({
   lifecycle: EventLifecycle;
   locale: Locale;
 }) {
-  // Use cached functions for fast LCP
-  const events = await getCachedEventsByLifecycle(lifecycle);
+  // Fetch 12 events for compact grid (4 rows × 3 columns on mobile)
+  const events = await getCachedEventsByLifecycle(lifecycle, 12);
 
   const eventIds = events.map((e) => e.id);
   const [counts, eventTranslations, t] = await Promise.all([
@@ -113,13 +112,13 @@ async function EventsFeed({
           : t("noUpcoming");
 
     return (
-      <div className="text-center py-16 text-muted-foreground">
-        <span className="text-4xl mb-4 block">🌿</span>
-        <p className="mb-2">{emptyMessage}</p>
-        <p className="text-sm text-muted-foreground mb-6">{t("emptyHint")}</p>
+      <div className="text-center py-12 text-muted-foreground">
+        <span className="text-3xl mb-3 block">🌿</span>
+        <p className="mb-1 text-sm">{emptyMessage}</p>
+        <p className="text-xs text-muted-foreground/70 mb-4">{t("emptyHint")}</p>
         {lifecycle === "upcoming" && (
           <Link href="/events/new" prefetch={false}>
-            <Button>{t("createFirst")}</Button>
+            <Button size="sm">{t("createFirst")}</Button>
           </Link>
         )}
       </div>
@@ -135,35 +134,24 @@ async function EventsFeed({
   });
 
   return (
-    <div className="space-y-6">
-      {/* Event grid - adapts to user's view preferences */}
+    <div className="space-y-4">
+      {/* Compact event grid - 3 columns on mobile, 12 cards total */}
       <EventGrid
         events={events}
         counts={counts}
         eventTranslations={eventTranslations}
         seriesRrules={seriesRrules}
+        forceCompact
       />
 
-      {/* Show "See all" link for upcoming events */}
-      {lifecycle === "upcoming" && events.length > 0 && (
-        <div className="text-center py-4">
+      {/* Show "See all" link */}
+      {events.length >= 12 && (
+        <div className="text-center py-2">
           <Link
-            href="/events/upcoming"
+            href={lifecycle === "past" ? "/events/this-month" : "/events/upcoming"}
             className="text-sm text-foreground/70 hover:text-foreground transition-colors underline-offset-4 hover:underline"
           >
-            {t("seeAllUpcoming")} →
-          </Link>
-        </div>
-      )}
-
-      {/* Show archive link when viewing past events */}
-      {lifecycle === "past" && (
-        <div className="text-center py-4">
-          <Link
-            href="/events/this-month"
-            className="text-sm text-foreground/70 hover:text-foreground transition-colors underline-offset-4 hover:underline"
-          >
-            {t("browseArchive")} →
+            {lifecycle === "past" ? t("browseArchive") : t("seeAllUpcoming")} →
           </Link>
         </div>
       )}
@@ -212,10 +200,10 @@ export default async function Home({ params, searchParams }: PageProps) {
       )}
 
       {/* Main content */}
-      <div className="flex-1 container max-w-6xl mx-auto px-4 py-4 lg:py-6">
-        {/* Tabs + View Toggle + Search */}
-        <div className="flex items-center justify-between gap-2 sm:gap-4 mb-4">
-          <Suspense fallback={<div className="h-10 w-64 bg-muted animate-pulse rounded-lg" />}>
+      <div className="flex-1 container max-w-6xl mx-auto px-4 py-3 lg:py-6">
+        {/* Tabs + Search */}
+        <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3">
+          <Suspense fallback={<div className="h-10 w-48 bg-muted animate-pulse rounded-lg" />}>
             <EventFeedTabs
               activeTab={activeTab}
               useUrlNavigation
@@ -228,22 +216,19 @@ export default async function Home({ params, searchParams }: PageProps) {
               }}
             />
           </Suspense>
-          <div className="flex items-center gap-2">
-            <EventViewToggle />
-            <Suspense fallback={null}>
-              <EventSearchBar className="hidden lg:flex w-64 flex-shrink-0" />
-            </Suspense>
-          </div>
+          <Suspense fallback={null}>
+            <EventSearchBar className="hidden lg:flex w-64 flex-shrink-0" />
+          </Suspense>
         </div>
 
-        {/* Event grid */}
+        {/* Compact event grid - 12 cards (3 cols × 4 rows on mobile) */}
         <Suspense
           fallback={
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+              {Array.from({ length: 12 }).map((_, i) => (
                 <div
                   key={i}
-                  className="aspect-[4/5] bg-muted animate-pulse rounded-xl"
+                  className="aspect-[3/2] bg-muted animate-pulse rounded-lg"
                 />
               ))}
             </div>
