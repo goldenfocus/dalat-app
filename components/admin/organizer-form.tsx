@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { OrganizerLogoUpload } from "@/components/admin/organizer-logo-upload";
 import { AIOrganizerLogoDialog } from "@/components/admin/ai-organizer-logo-dialog";
+import { Trash2, AlertTriangle } from "lucide-react";
 import type { Organizer } from "@/lib/types";
 import { sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
 
@@ -28,6 +29,11 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
   const [name, setName] = useState(organizer?.name ?? "");
 
   const isEditing = !!organizer;
+
+  // Delete state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [linkedEventsCount, setLinkedEventsCount] = useState<number | null>(null);
 
   // Slug state
   const [slug, setSlug] = useState(organizer?.slug ?? "");
@@ -79,6 +85,67 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSlug(sanitizeSlug(e.target.value));
     setSlugTouched(true);
+  };
+
+  // Check for linked events when delete is initiated
+  const initiateDelete = async () => {
+    if (!organizer) return;
+
+    const supabase = createClient();
+    const { count } = await supabase
+      .from("events")
+      .select("*", { count: "exact", head: true })
+      .eq("organizer_id", organizer.id);
+
+    setLinkedEventsCount(count ?? 0);
+    setShowDeleteConfirm(true);
+  };
+
+  // Handle actual deletion
+  const handleDelete = async () => {
+    if (!organizer) return;
+
+    setIsDeleting(true);
+    setError(null);
+
+    const supabase = createClient();
+
+    // First, unlink any events from this organizer
+    if (linkedEventsCount && linkedEventsCount > 0) {
+      const { error: unlinkError } = await supabase
+        .from("events")
+        .update({ organizer_id: null })
+        .eq("organizer_id", organizer.id);
+
+      if (unlinkError) {
+        setError(`Failed to unlink events: ${unlinkError.message}`);
+        setIsDeleting(false);
+        return;
+      }
+    }
+
+    // Delete logo from storage if exists
+    if (organizer.logo_url) {
+      const oldPath = organizer.logo_url.split("/organizer-logos/")[1];
+      if (oldPath) {
+        await supabase.storage.from("organizer-logos").remove([oldPath]);
+      }
+    }
+
+    // Delete the organizer
+    const { error: deleteError } = await supabase
+      .from("organizers")
+      .delete()
+      .eq("id", organizer.id);
+
+    if (deleteError) {
+      setError(`Failed to delete: ${deleteError.message}`);
+      setIsDeleting(false);
+      return;
+    }
+
+    router.push("/admin/organizers");
+    router.refresh();
   };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -283,7 +350,7 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <div className="flex gap-3">
-            <Button type="submit" disabled={isPending} className="flex-1">
+            <Button type="submit" disabled={isPending || isDeleting} className="flex-1">
               {isPending
                 ? isEditing
                   ? "Saving..."
@@ -296,10 +363,68 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
               type="button"
               variant="outline"
               onClick={() => router.back()}
+              disabled={isDeleting}
             >
               Cancel
             </Button>
           </div>
+
+          {/* Delete section - only show when editing */}
+          {isEditing && (
+            <div className="pt-6 border-t">
+              {!showDeleteConfirm ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  onClick={initiateDelete}
+                  disabled={isPending || isDeleting}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete organizer
+                </Button>
+              ) : (
+                <div className="space-y-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-destructive">Delete this organizer?</p>
+                      {linkedEventsCount && linkedEventsCount > 0 ? (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          This organizer is linked to {linkedEventsCount} event{linkedEventsCount !== 1 ? "s" : ""}.
+                          These events will be unlinked but not deleted.
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          This action cannot be undone.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Deleting..." : "Yes, delete"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={isDeleting}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </form>
