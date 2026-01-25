@@ -1472,6 +1472,7 @@
     "eventsHere": "ここで{count}件のイベント",
     "eventsAtVenue": "{count, plural, =0 {イベントなし} =1 {1件のイベント} other {#件のイベント}}",
     "happeningNow": "開催中",
+    "liveNow": "開催中",
     "about": "概要",
     "hours": "営業時間",
     "hoursToday": "今日",

@@ -1472,6 +1472,7 @@
     "eventsHere": "这里有{count}个活动",
     "eventsAtVenue": "{count, plural, =0 {没有活动} =1 {1个活动} other {#个活动}}",
     "happeningNow": "正在进行",
+    "liveNow": "进行中",
     "about": "关于",
     "hours": "营业时间",
     "hoursToday": "今天",

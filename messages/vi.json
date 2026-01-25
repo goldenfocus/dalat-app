@@ -1472,6 +1472,7 @@
     "eventsHere": "{count} sự kiện tại đây",
     "eventsAtVenue": "{count, plural, =0 {Không có sự kiện} =1 {1 sự kiện} other {# sự kiện}}",
     "happeningNow": "Đang diễn ra",
+    "liveNow": "Đang diễn ra",
     "about": "Giới thiệu",
     "hours": "Giờ mở cửa",
     "hoursToday": "Hôm nay",

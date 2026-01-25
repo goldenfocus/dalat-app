@@ -1491,6 +1491,7 @@
     "eventsHere": "{count} acara di sini",
     "eventsAtVenue": "{count, plural, =0 {Tidak ada acara} =1 {1 acara} other {# acara}}",
     "happeningNow": "Sedang Berlangsung",
+    "liveNow": "Langsung",
     "about": "Tentang",
     "hours": "Jam Operasional",
     "hoursToday": "Hari ini",

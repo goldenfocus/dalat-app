@@ -1503,6 +1503,7 @@
     "eventsHere": "{count} events here",
     "eventsAtVenue": "{count, plural, =0 {No events} =1 {1 event} other {# events}}",
     "happeningNow": "Happening Now",
+    "liveNow": "Live now",
     "about": "About",
     "hours": "Hours",
     "hoursToday": "Today",

@@ -1472,6 +1472,7 @@
     "eventsHere": "여기서 {count}개 이벤트",
     "eventsAtVenue": "{count, plural, =0 {이벤트 없음} =1 {1개 이벤트} other {#개 이벤트}}",
     "happeningNow": "진행 중",
+    "liveNow": "진행 중",
     "about": "소개",
     "hours": "영업시간",
     "hoursToday": "오늘",

@@ -542,13 +542,16 @@ export default async function VenuePage({ params }: PageProps) {
         {happening_now.length > 0 && (
           <section className="mb-8">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
               {t("happeningNow")}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {happening_now.map((event) => (
                 <Link key={event.id} href={`/events/${event.slug}`}>
-                  <Card className="hover:border-red-500/50 border-red-500/30 transition-colors overflow-hidden">
+                  <Card className="hover:border-emerald-500/40 border-emerald-500/20 transition-colors overflow-hidden">
                     <CardContent className="p-0">
                       {event.image_url && (
                         <img
@@ -559,8 +562,8 @@ export default async function VenuePage({ params }: PageProps) {
                       )}
                       <div className="p-4">
                         <h3 className="font-semibold mb-1">{event.title}</h3>
-                        <p className="text-sm text-red-600 dark:text-red-400">
-                          Live now
+                        <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                          {t("liveNow")}
                         </p>
                       </div>
                     </CardContent>

@@ -1491,6 +1491,7 @@
     "eventsHere": "{count} eventos aquí",
     "eventsAtVenue": "{count, plural, =0 {Sin eventos} =1 {1 evento} other {# eventos}}",
     "happeningNow": "Ahora",
+    "liveNow": "En vivo",
     "about": "Acerca de",
     "hours": "Horarios",
     "hoursToday": "Hoy",

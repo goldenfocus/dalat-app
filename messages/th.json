@@ -1472,6 +1472,7 @@
     "eventsHere": "{count} กิจกรรมที่นี่",
     "eventsAtVenue": "{count, plural, =0 {ไม่มีกิจกรรม} =1 {1 กิจกรรม} other {# กิจกรรม}}",
     "happeningNow": "กำลังเกิดขึ้น",
+    "liveNow": "กำลังถ่ายทอด",
     "about": "เกี่ยวกับ",
     "hours": "เวลาทำการ",
     "hoursToday": "วันนี้",

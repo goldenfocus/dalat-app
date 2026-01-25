@@ -1472,6 +1472,7 @@
     "eventsHere": "{count} Veranstaltungen hier",
     "eventsAtVenue": "{count, plural, =0 {Keine Veranstaltungen} =1 {1 Veranstaltung} other {# Veranstaltungen}}",
     "happeningNow": "Jetzt",
+    "liveNow": "Live",
     "about": "Über",
     "hours": "Öffnungszeiten",
     "hoursToday": "Heute",
