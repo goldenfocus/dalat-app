@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SlidersHorizontal, LayoutGrid, Grid3X3, List, Maximize2, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -22,11 +22,12 @@ type ViewOption = {
   density?: EventDensity; // Only set for grid variants
   icon: typeof LayoutGrid;
   labelKey: string;
+  desktopOnly?: boolean; // Hide on mobile where it doesn't make a difference
 };
 
 const VIEW_OPTIONS: ViewOption[] = [
   { id: "grid", mode: "grid", density: "default", icon: Grid3X3, labelKey: "grid" },
-  { id: "grid-plus", mode: "grid", density: "spacious", icon: LayoutGrid, labelKey: "gridPlus" },
+  { id: "grid-plus", mode: "grid", density: "spacious", icon: LayoutGrid, labelKey: "gridPlus", desktopOnly: true },
   { id: "list", mode: "list", icon: List, labelKey: "list" },
   { id: "immersive", mode: "immersive", icon: Maximize2, labelKey: "immersive" },
 ];
@@ -44,10 +45,28 @@ export function EventViewToggle({ className }: EventViewToggleProps) {
   const t = useTranslations("viewToggle");
   const { mode, density, setPreferences } = useEventViewPreferences();
   const [open, setOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Check if we're on desktop (lg breakpoint = 1024px)
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, []);
+
+  // Filter options - hide desktopOnly options on mobile
+  const visibleOptions = VIEW_OPTIONS.filter(
+    (option) => !option.desktopOnly || isDesktop
+  );
 
   // Determine which option is currently active
   const getActiveOptionId = () => {
     if (mode === "grid") {
+      // On mobile, Grid+ isn't shown, so treat spacious as regular grid
+      if (density === "spacious" && !isDesktop) return "grid";
       return density === "spacious" ? "grid-plus" : "grid";
     }
     return mode;
@@ -83,7 +102,7 @@ export function EventViewToggle({ className }: EventViewToggleProps) {
           <p id="view-mode-label" className="text-xs font-medium text-muted-foreground px-2 mb-1">
             {t("viewMode")}
           </p>
-          {VIEW_OPTIONS.map((option) => {
+          {visibleOptions.map((option) => {
             const Icon = option.icon;
             const isActive = activeOptionId === option.id;
 
