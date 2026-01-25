@@ -1,13 +1,33 @@
 "use client";
 
-import { Suspense, lazy, useState, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import type { Components } from "react-markdown";
 
-// Lazy-load react-markdown (~100KB) - only loads on blog pages
-const LazyReactMarkdown = lazy(() => import("react-markdown"));
+// Lazy-load react-markdown with remark-gfm bundled together
+// This avoids state management issues with concurrent React features
+const LazyMarkdownWithGfm = lazy(async () => {
+  const [{ default: ReactMarkdown }, { default: remarkGfm }] = await Promise.all([
+    import("react-markdown"),
+    import("remark-gfm"),
+  ]);
 
-// Lazy-load remarkGfm for GitHub-flavored markdown
-const remarkGfmPromise = import("remark-gfm").then((mod) => mod.default);
+  // Return a wrapper component that has remarkGfm pre-configured
+  return {
+    default: function MarkdownWithGfm({
+      children,
+      components,
+    }: {
+      children: string;
+      components: Components;
+    }) {
+      return (
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+          {children}
+        </ReactMarkdown>
+      );
+    },
+  };
+});
 
 interface MarkdownRendererProps {
   content: string;
@@ -69,29 +89,15 @@ function MarkdownSkeleton() {
   );
 }
 
-// Inner component that uses the lazy-loaded ReactMarkdown
-function MarkdownContent({ content }: { content: string }) {
-  // Use the pre-imported remarkGfm
-  const [remarkGfm, setRemarkGfm] = useState<typeof import("remark-gfm").default | null>(null);
-
-  useEffect(() => {
-    remarkGfmPromise.then(setRemarkGfm);
-  }, []);
-
-  return (
-    <LazyReactMarkdown
-      remarkPlugins={remarkGfm ? [remarkGfm] : []}
-      components={components}
-    >
-      {content}
-    </LazyReactMarkdown>
-  );
-}
-
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
+  // Guard against null/undefined content (can happen with missing translations)
+  const safeContent = content ?? "";
+
   return (
     <Suspense fallback={<MarkdownSkeleton />}>
-      <MarkdownContent content={content} />
+      <LazyMarkdownWithGfm components={components}>
+        {safeContent}
+      </LazyMarkdownWithGfm>
     </Suspense>
   );
 }
