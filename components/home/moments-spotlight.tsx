@@ -23,7 +23,7 @@ export function MomentsSpotlight({ title, viewAllLabel, moments }: MomentsSpotli
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">{title}</h2>
-        <Link href="/moments" className="text-sm text-muted-foreground hover:text-foreground">
+        <Link href="/moments" className="text-sm text-foreground/70 hover:text-foreground underline-offset-4 hover:underline">
           {viewAllLabel} →
         </Link>
       </div>

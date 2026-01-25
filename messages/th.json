@@ -197,7 +197,9 @@
     "partOfSeries": "Part of {seriesName}",
     "onlineEvent": "Online Event",
     "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "readMore": "อ่านเพิ่มเติม",
+    "showLess": "แสดงน้อยลง"
   },
   "rsvp": {
     "imGoing": "ฉันจะไป",
@@ -1384,7 +1386,13 @@
     },
     "cancel": "ยกเลิก",
     "refreshPage": "รีเฟรชหน้า",
-    "mapNotAvailable": "ไม่สามารถแสดงแผนที่ได้ ยังไม่ได้กำหนดค่า API key ของ Google Maps"
+    "mapNotAvailable": "ไม่สามารถแสดงแผนที่ได้ ยังไม่ได้กำหนดค่า API key ของ Google Maps",
+    "legend": "คำอธิบาย",
+    "happeningNow": "กำลังดำเนินการ",
+    "upcoming": "กำลังจะมาถึง",
+    "venue": "สถานที่",
+    "viewEvent": "ดูกิจกรรม",
+    "viewVenue": "ดูสถานที่"
   },
   "calendarView": {
     "days": {

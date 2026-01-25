@@ -110,17 +110,35 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
 
     const supabase = createClient();
 
-    // First, unlink any events from this organizer (always try, even if count was 0)
-    const { error: unlinkError } = await supabase
+    // Unlink events from this organizer
+    const { error: unlinkEventsError } = await supabase
       .from("events")
       .update({ organizer_id: null })
       .eq("organizer_id", organizer.id);
 
-    if (unlinkError) {
-      setError(`Failed to unlink events: ${unlinkError.message}`);
+    if (unlinkEventsError) {
+      setError(`Failed to unlink events: ${unlinkEventsError.message}`);
       setIsDeleting(false);
       return;
     }
+
+    // Verify events were unlinked (RLS might silently block the update)
+    const { count: remainingEvents } = await supabase
+      .from("events")
+      .select("*", { count: "exact", head: true })
+      .eq("organizer_id", organizer.id);
+
+    if (remainingEvents && remainingEvents > 0) {
+      setError(`Cannot delete: ${remainingEvents} events are still linked. You may not have permission to unlink them.`);
+      setIsDeleting(false);
+      return;
+    }
+
+    // Unlink verification requests (no ON DELETE behavior)
+    await supabase
+      .from("verification_requests")
+      .update({ organizer_id: null })
+      .eq("organizer_id", organizer.id);
 
     // Delete logo from storage if exists
     if (organizer.logo_url) {

@@ -197,7 +197,9 @@
     "partOfSeries": "Part of {seriesName}",
     "onlineEvent": "Online Event",
     "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "readMore": "展开阅读",
+    "showLess": "收起"
   },
   "rsvp": {
     "imGoing": "我要参加",
@@ -1384,7 +1386,13 @@
     },
     "cancel": "取消",
     "refreshPage": "刷新页面",
-    "mapNotAvailable": "地图不可用。Google Maps API 密钥未配置。"
+    "mapNotAvailable": "地图不可用。Google Maps API 密钥未配置。",
+    "legend": "图例",
+    "happeningNow": "正在进行",
+    "upcoming": "即将举行",
+    "venue": "场地",
+    "viewEvent": "查看活动",
+    "viewVenue": "查看场地"
   },
   "calendarView": {
     "days": {

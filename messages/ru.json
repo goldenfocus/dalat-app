@@ -197,7 +197,9 @@
     "partOfSeries": "Part of {seriesName}",
     "onlineEvent": "Online Event",
     "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "readMore": "Читать далее",
+    "showLess": "Свернуть"
   },
   "rsvp": {
     "imGoing": "Я пойду",
@@ -1384,7 +1386,13 @@
     },
     "cancel": "Отмена",
     "refreshPage": "Обновить страницу",
-    "mapNotAvailable": "Карта недоступна. API-ключ Google Maps не настроен."
+    "mapNotAvailable": "Карта недоступна. API-ключ Google Maps не настроен.",
+    "legend": "Легенда",
+    "happeningNow": "Сейчас",
+    "upcoming": "Предстоящие",
+    "venue": "Место",
+    "viewEvent": "Смотреть событие",
+    "viewVenue": "Смотреть место"
   },
   "calendarView": {
     "days": {

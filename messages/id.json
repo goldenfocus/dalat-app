@@ -197,7 +197,9 @@
     "partOfSeries": "Part of {seriesName}",
     "onlineEvent": "Online Event",
     "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "readMore": "Baca selengkapnya",
+    "showLess": "Tampilkan lebih sedikit"
   },
   "rsvp": {
     "imGoing": "Saya hadir",
@@ -1403,7 +1405,13 @@
     },
     "cancel": "Batal",
     "refreshPage": "Muat ulang halaman",
-    "mapNotAvailable": "Peta tidak tersedia. Kunci API Google Maps tidak dikonfigurasi."
+    "mapNotAvailable": "Peta tidak tersedia. Kunci API Google Maps tidak dikonfigurasi.",
+    "legend": "Legenda",
+    "happeningNow": "Sedang berlangsung",
+    "upcoming": "Akan datang",
+    "venue": "Tempat",
+    "viewEvent": "Lihat acara",
+    "viewVenue": "Lihat tempat"
   },
   "calendarView": {
     "days": {

@@ -197,7 +197,9 @@
     "partOfSeries": "Part of {seriesName}",
     "onlineEvent": "Online Event",
     "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "readMore": "続きを読む",
+    "showLess": "閉じる"
   },
   "rsvp": {
     "imGoing": "参加する",
@@ -1384,7 +1386,13 @@
     },
     "cancel": "キャンセル",
     "refreshPage": "ページを更新",
-    "mapNotAvailable": "マップを利用できません。Google Maps APIキーが設定されていません。"
+    "mapNotAvailable": "マップを利用できません。Google Maps APIキーが設定されていません。",
+    "legend": "凡例",
+    "happeningNow": "開催中",
+    "upcoming": "予定",
+    "venue": "会場",
+    "viewEvent": "イベントを見る",
+    "viewVenue": "会場を見る"
   },
   "calendarView": {
     "days": {

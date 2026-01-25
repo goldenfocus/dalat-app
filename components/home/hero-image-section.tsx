@@ -49,7 +49,7 @@ export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectio
             <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-lg sm:text-3xl lg:text-5xl">
               {t("headline")}
             </h1>
-            <p className="mt-2 text-base text-white/80 drop-shadow lg:text-lg hidden sm:block">
+            <p className="mt-2 text-base text-white/90 drop-shadow lg:text-lg hidden sm:block">
               {t("subtitle")}
             </p>
           </div>

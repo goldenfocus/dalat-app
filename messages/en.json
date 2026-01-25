@@ -194,6 +194,8 @@
     "onlineEvent": "Online Event",
     "joinMeeting": "Join meeting",
     "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "readMore": "Read more",
+    "showLess": "Show less",
     "lifecycle": {
       "live": "Live",
       "ended": "Ended"
@@ -1426,7 +1428,13 @@
     },
     "cancel": "Cancel",
     "refreshPage": "Refresh page",
-    "mapNotAvailable": "Map not available. Google Maps API key not configured."
+    "mapNotAvailable": "Map not available. Google Maps API key not configured.",
+    "legend": "Legend",
+    "happeningNow": "Happening now",
+    "upcoming": "Upcoming",
+    "venue": "Venue",
+    "viewEvent": "View Event",
+    "viewVenue": "View Venue"
   },
   "calendarView": {
     "days": {

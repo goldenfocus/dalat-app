@@ -14,6 +14,7 @@ import { JsonLd, generateEventSchema, generateBreadcrumbSchema } from "@/lib/str
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { RsvpButton } from "@/components/events/rsvp-button";
+import { FloatingRsvpBar } from "@/components/events/floating-rsvp-bar";
 import { FeedbackBadge } from "@/components/events/event-feedback";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { EventActions } from "@/components/events/event-actions";
@@ -29,6 +30,7 @@ import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat, formatInDaLatAsync } from "@/lib/timezone";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { Linkify } from "@/lib/linkify";
+import { ExpandableText } from "@/components/ui/expandable-text";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { MomentsPreview } from "@/components/moments";
 import { SponsorDisplay } from "@/components/events/sponsor-display";
@@ -606,7 +608,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         }
       />
 
-      <div className="container max-w-4xl mx-auto px-4 py-8">
+      <div className="container max-w-4xl mx-auto px-4 py-8 pb-24 lg:pb-8">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
@@ -644,9 +646,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 />
               )}
               {eventTranslations.description && (
-                <div className="text-muted-foreground whitespace-pre-wrap">
-                  <Linkify text={eventTranslations.description} />
-                </div>
+                <ExpandableText
+                  text={eventTranslations.description}
+                  maxLines={4}
+                />
               )}
 
               {/* Clickable tags for category discovery */}
@@ -886,6 +889,17 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         </div>
       </div>
 
+      {/* Floating RSVP bar for mobile */}
+      <FloatingRsvpBar
+        eventId={event.id}
+        capacity={event.capacity}
+        goingSpots={counts?.going_spots ?? 0}
+        currentRsvp={currentRsvp}
+        isLoggedIn={isLoggedIn}
+        waitlistPosition={waitlistPosition}
+        startsAt={event.starts_at}
+        endsAt={event.ends_at}
+      />
     </main>
   );
 }

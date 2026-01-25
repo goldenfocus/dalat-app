@@ -17,8 +17,8 @@ interface EventFeedTabsProps {
 }
 
 const tabs: { id: EventLifecycle; icon: typeof Calendar; defaultLabel: string }[] = [
-  { id: "upcoming", icon: Calendar, defaultLabel: "Upcoming" },
   { id: "happening", icon: Radio, defaultLabel: "Now" },
+  { id: "upcoming", icon: Calendar, defaultLabel: "Upcoming" },
   { id: "past", icon: History, defaultLabel: "Past" },
 ];
 

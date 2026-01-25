@@ -116,7 +116,7 @@ async function EventsFeed({
       <div className="text-center py-16 text-muted-foreground">
         <span className="text-4xl mb-4 block">🌿</span>
         <p className="mb-2">{emptyMessage}</p>
-        <p className="text-sm text-muted-foreground/70 mb-6">{t("emptyHint")}</p>
+        <p className="text-sm text-muted-foreground mb-6">{t("emptyHint")}</p>
         {lifecycle === "upcoming" && (
           <Link href="/events/new" prefetch={false}>
             <Button>{t("createFirst")}</Button>
@@ -149,7 +149,7 @@ async function EventsFeed({
         <div className="text-center py-4">
           <Link
             href="/events/upcoming"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-foreground/70 hover:text-foreground transition-colors underline-offset-4 hover:underline"
           >
             {t("seeAllUpcoming")} →
           </Link>
@@ -161,7 +161,7 @@ async function EventsFeed({
         <div className="text-center py-4">
           <Link
             href="/events/this-month"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-foreground/70 hover:text-foreground transition-colors underline-offset-4 hover:underline"
           >
             {t("browseArchive")} →
           </Link>

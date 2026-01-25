@@ -197,7 +197,9 @@
     "partOfSeries": "Part of {seriesName}",
     "onlineEvent": "Online Event",
     "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "readMore": "Lire la suite",
+    "showLess": "Voir moins"
   },
   "rsvp": {
     "imGoing": "Je participe",
@@ -1409,7 +1411,13 @@
     },
     "cancel": "Annuler",
     "refreshPage": "Actualiser la page",
-    "mapNotAvailable": "Carte non disponible. Clé API Google Maps non configurée."
+    "mapNotAvailable": "Carte non disponible. Clé API Google Maps non configurée.",
+    "legend": "Légende",
+    "happeningNow": "En cours",
+    "upcoming": "À venir",
+    "venue": "Lieu",
+    "viewEvent": "Voir l'événement",
+    "viewVenue": "Voir le lieu"
   },
   "calendarView": {
     "days": {

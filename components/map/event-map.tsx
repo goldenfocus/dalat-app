@@ -3,20 +3,19 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { useTranslations, useLocale } from "next-intl";
-import { Loader2, Navigation, X, Route, ExternalLink, Eye } from "lucide-react";
+import { Loader2, Navigation } from "lucide-react";
 import { startOfDay, endOfDay, isAfter, parseISO } from "date-fns";
 import Supercluster from "supercluster";
-import { Link } from "@/lib/i18n/routing";
 import type { Event, VenueMapMarker } from "@/lib/types";
 import type { EventTag } from "@/lib/constants/event-tags";
 import { createVenueMarkerElement } from "./venue-marker";
 import { VenuePopupCard } from "./venue-popup-card";
+import { EventPopupCard } from "./event-popup-card";
+import { MapLegend } from "./map-legend";
 import { VENUE_MARKER_COLORS } from "@/lib/constants/venue-types";
 import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
 import { MapFilterBar, type DatePreset } from "./map-filter-bar";
-import { formatInDaLat } from "@/lib/timezone";
 import { triggerHaptic } from "@/lib/haptics";
-import { decodeUnicodeEscapes } from "@/lib/utils";
 
 // Clustering configuration
 const CLUSTER_RADIUS = 60; // Cluster radius in pixels
@@ -738,95 +737,15 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
           <span className="hidden sm:inline font-medium text-sm">{t("nearMe")}</span>
         </button>
 
+        {/* Map legend */}
+        <MapLegend />
+
         {/* Selected event card */}
         {selectedEvent && (
-          <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-background rounded-xl shadow-xl border border-border overflow-hidden">
-            <Link href={`/events/${selectedEvent.slug}`} className="block">
-              {selectedEvent.image_url && (
-                <div className="h-32 bg-muted">
-                  <img
-                    src={selectedEvent.image_url}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              <div className="p-3">
-                <h3 className="font-semibold text-sm line-clamp-2 mb-1">
-                  {selectedEvent.title}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  {formatInDaLat(selectedEvent.starts_at, "EEE, MMM d · h:mm a")}
-                </p>
-                {selectedEvent.location_name && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                    📍 {decodeUnicodeEscapes(selectedEvent.location_name)}
-                  </p>
-                )}
-              </div>
-            </Link>
-
-            {/* Map action buttons */}
-            {selectedEvent.latitude && selectedEvent.longitude && (
-              <div className="flex border-t border-border">
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${selectedEvent.latitude},${selectedEvent.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    triggerHaptic("selection");
-                  }}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors active:scale-95"
-                  title="Get directions"
-                >
-                  <Route className="w-4 h-4" />
-                  <span>{t("directions")}</span>
-                </a>
-                <div className="w-px bg-border" />
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${selectedEvent.latitude},${selectedEvent.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    triggerHaptic("selection");
-                  }}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors active:scale-95"
-                  title="Open in Google Maps"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>{t("openInMaps")}</span>
-                </a>
-                <div className="w-px bg-border" />
-                <a
-                  href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${selectedEvent.latitude},${selectedEvent.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    triggerHaptic("selection");
-                  }}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors active:scale-95"
-                  title="Street View"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span>{t("streetView")}</span>
-                </a>
-              </div>
-            )}
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedEvent(null);
-              }}
-              className="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center"
-              aria-label="Close"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+          <EventPopupCard
+            event={selectedEvent}
+            onClose={() => setSelectedEvent(null)}
+          />
         )}
 
         {/* Selected venue card */}

@@ -197,7 +197,9 @@
     },
     "onlineEvent": "Online Event",
     "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "readMore": "Xem thêm",
+    "showLess": "Thu gọn"
   },
   "rsvp": {
     "imGoing": "Tôi sẽ đi",
@@ -1395,7 +1397,13 @@
     },
     "cancel": "Hủy",
     "refreshPage": "Tải lại trang",
-    "mapNotAvailable": "Không thể hiển thị bản đồ. Chưa cấu hình khóa API Google Maps."
+    "mapNotAvailable": "Không thể hiển thị bản đồ. Chưa cấu hình khóa API Google Maps.",
+    "legend": "Chú giải",
+    "happeningNow": "Đang diễn ra",
+    "upcoming": "Sắp tới",
+    "venue": "Địa điểm",
+    "viewEvent": "Xem sự kiện",
+    "viewVenue": "Xem địa điểm"
   },
   "calendarView": {
     "days": {

@@ -26,7 +26,8 @@ interface RsvpButtonProps {
 }
 
 // Helper to check if event is past (mirrors database logic)
-function isEventPast(startsAt: string, endsAt: string | null): boolean {
+// Exported for use in floating-rsvp-bar and other components
+export function isEventPast(startsAt: string, endsAt: string | null): boolean {
   const now = new Date();
   if (endsAt) {
     return new Date(endsAt) < now;
@@ -37,28 +38,11 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
   return defaultEnd < now;
 }
 
-export function RsvpButton({
-  eventId,
-  eventTitle = "",
-  capacity,
-  goingSpots,
-  currentRsvp,
-  isLoggedIn,
-  waitlistPosition,
-  startsAt,
-  endsAt,
-  existingFeedback,
-}: RsvpButtonProps) {
+// Hook for RSVP actions - shared between RsvpButton and FloatingRsvpBar
+export function useRsvpActions(eventId: string, isLoggedIn: boolean) {
   const router = useRouter();
-  const t = useTranslations("rsvp");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-
-  const isPast = isEventPast(startsAt, endsAt);
-  const isFull = capacity ? goingSpots >= capacity : false;
-  const isGoing = currentRsvp?.status === "going";
-  const isWaitlist = currentRsvp?.status === "waitlist";
-  const isInterested = currentRsvp?.status === "interested";
 
   async function handleRsvp() {
     if (!isLoggedIn) {
@@ -163,6 +147,37 @@ export function RsvpButton({
       router.refresh();
     });
   }
+
+  return {
+    isPending,
+    error,
+    handleRsvp,
+    handleInterested,
+    handleCancel,
+  };
+}
+
+export function RsvpButton({
+  eventId,
+  eventTitle = "",
+  capacity,
+  goingSpots,
+  currentRsvp,
+  isLoggedIn,
+  waitlistPosition,
+  startsAt,
+  endsAt,
+  existingFeedback,
+}: RsvpButtonProps) {
+  const t = useTranslations("rsvp");
+  const { isPending, error, handleRsvp, handleInterested, handleCancel } =
+    useRsvpActions(eventId, isLoggedIn);
+
+  const isPast = isEventPast(startsAt, endsAt);
+  const isFull = capacity ? goingSpots >= capacity : false;
+  const isGoing = currentRsvp?.status === "going";
+  const isWaitlist = currentRsvp?.status === "waitlist";
+  const isInterested = currentRsvp?.status === "interested";
 
   // STATE: Event has ended - show feedback UI
   if (isPast) {

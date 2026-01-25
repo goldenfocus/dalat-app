@@ -84,10 +84,10 @@ export function EventGrid({
       <div className="flex flex-col gap-6">
         {groupedEvents.map(([dateKey, dateEvents]) => (
           <div key={dateKey}>
-            {/* Date header */}
-            <h3 className="text-sm font-medium text-muted-foreground mb-3 px-1">
+            {/* Date label - using p instead of h3 to maintain proper heading hierarchy */}
+            <p className="text-sm font-medium text-foreground/70 mb-3 px-1">
               {formatInDaLat(dateEvents[0].starts_at, "EEEE, MMMM d", locale)}
-            </h3>
+            </p>
             {/* Events for this date */}
             <div className={cn("flex flex-col", LIST_CLASSES[density])}>
               {dateEvents.map((event) => {

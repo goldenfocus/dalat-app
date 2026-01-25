@@ -197,7 +197,9 @@
     "partOfSeries": "Part of {seriesName}",
     "onlineEvent": "Online Event",
     "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link"
+    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "readMore": "더 보기",
+    "showLess": "접기"
   },
   "rsvp": {
     "imGoing": "참석합니다",
@@ -1384,7 +1386,13 @@
     },
     "cancel": "취소",
     "refreshPage": "페이지 새로고침",
-    "mapNotAvailable": "지도를 사용할 수 없습니다. Google Maps API 키가 구성되지 않았습니다."
+    "mapNotAvailable": "지도를 사용할 수 없습니다. Google Maps API 키가 구성되지 않았습니다.",
+    "legend": "범례",
+    "happeningNow": "진행 중",
+    "upcoming": "예정",
+    "venue": "장소",
+    "viewEvent": "이벤트 보기",
+    "viewVenue": "장소 보기"
   },
   "calendarView": {
     "days": {
