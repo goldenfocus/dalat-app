@@ -261,6 +261,7 @@ export function EventCalendar({ events }: EventCalendarProps) {
               currentMonth={currentDate}
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
+              tripModeActive={!!(tripStartDate && tripEndDate)}
             />
           )}
         </div>

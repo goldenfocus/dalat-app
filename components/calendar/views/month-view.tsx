@@ -31,6 +31,7 @@ interface MonthViewProps {
   currentMonth: Date;
   selectedDate: Date | null;
   onDateSelect: (date: Date) => void;
+  tripModeActive?: boolean;
 }
 
 export function MonthView({
@@ -39,6 +40,7 @@ export function MonthView({
   currentMonth,
   selectedDate,
   onDateSelect,
+  tripModeActive = false,
 }: MonthViewProps) {
   const t = useTranslations("calendarView");
   // Default to "rolling" (Next 30 Days) for event discovery
@@ -303,8 +305,8 @@ export function MonthView({
             </div>
           </div>
 
-          {/* Selected date events */}
-          {selectedDate && (
+          {/* Selected date events - hidden when trip mode is active */}
+          {selectedDate && !tripModeActive && (
             <div className="border-t bg-background max-h-[40vh] overflow-auto">
               <div className="p-4">
                 <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
