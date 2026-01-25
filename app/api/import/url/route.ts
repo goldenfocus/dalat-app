@@ -92,7 +92,7 @@ export async function POST(request: Request) {
         actorId = "data-slayer/facebook-search-events";
         isFacebookSearch = true;
       } else {
-        actorId = "pratikdani/facebook-event-scraper";
+        actorId = "apify/facebook-events-scraper";
       }
     } else if (url.includes("eventbrite.com")) {
       platform = "eventbrite";
