@@ -44,13 +44,9 @@ export function EventFeedTabs({
   const handleTabChange = (tab: EventLifecycle) => {
     if (useUrlNavigation) {
       const params = new URLSearchParams(searchParams.toString());
-      if (tab === "upcoming") {
-        params.delete("tab");
-      } else {
-        params.set("tab", tab);
-      }
-      const query = params.toString();
-      router.push(query ? `?${query}` : "/", { scroll: false });
+      // Always include tab param since default can vary based on live events
+      params.set("tab", tab);
+      router.push(`?${params.toString()}`, { scroll: false });
     }
     onTabChange?.(tab);
   };
