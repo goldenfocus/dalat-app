@@ -119,28 +119,40 @@ export function VenueHoursBadge({
     return null;
   }
 
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-medium",
-        className
-      )}
-    >
+  // When open: green dot + "Open" + closing time
+  // When closed: subtle muted text showing next opening time only
+  if (status.isOpen) {
+    return (
       <span
         className={cn(
-          "w-2 h-2 rounded-full",
-          status.isOpen ? "bg-green-500" : "bg-red-500"
+          "inline-flex items-center gap-1.5 text-xs font-medium",
+          className
         )}
-      />
-      <span className={status.isOpen ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
-        {status.isOpen ? t("status.open") : t("status.closed")}
+      >
+        <span className="w-2 h-2 rounded-full bg-green-500" />
+        <span className="text-green-600 dark:text-green-400">
+          {t("status.open")}
+        </span>
+        {showTime && status.closesAt && (
+          <span className="text-muted-foreground">· {t("status.until")} {status.closesAt}</span>
+        )}
       </span>
-      {showTime && status.isOpen && status.closesAt && (
-        <span className="text-muted-foreground">· {t("status.until")} {status.closesAt}</span>
-      )}
-      {showTime && !status.isOpen && status.opensAt && (
-        <span className="text-muted-foreground">· {t("status.opens")} {status.opensAt}</span>
-      )}
-    </span>
-  );
+    );
+  }
+
+  // Closed - just show when it opens, no alarming red
+  if (showTime && status.opensAt) {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1.5 text-xs text-muted-foreground",
+          className
+        )}
+      >
+        {t("status.opens")} {status.opensAt}
+      </span>
+    );
+  }
+
+  return null;
 }
