@@ -16,7 +16,8 @@
     "immersive": "Imersif",
     "compact": "Ringkas",
     "default": "Default",
-    "spacious": "Luas"
+    "spacious": "Luas",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "Kembali",
@@ -1178,16 +1179,46 @@
     "remove": "Hapus",
     "removing": "Menghapus...",
     "removeImagePhrases": [
-      { "title": "Ucapkan selamat tinggal? 👋", "description": "Mahakarya ini akan lenyap selamanya! Poof! ✨" },
-      { "title": "Bye bye cantik? 💔", "description": "Hilang. Kaput. Tamat. Tidak bisa dikembalikan! 🙈" },
-      { "title": "Masuk ke kekosongan? 🕳️", "description": "Gambar ini sudah berkemas dan siap pergi 🧳" },
-      { "title": "Ghost gambar ini? 👻", "description": "Begitu pergi, bahkan kabut tidak bisa membawanya kembali 🌫️" },
-      { "title": "Lempar jauh? 🚀", "description": "Pesta pixel ini akan segera berakhir! 🎉" },
-      { "title": "Lepaskan? ❄️", "description": "Dingin tidak pernah mengganggu gambar ini..." },
-      { "title": "Selamat tinggal teman? 🥺", "description": "Gambar ini percaya padamu sampai akhir..." },
-      { "title": "Waktunya beres-beres? ✨", "description": "Apakah ini membawa kebahagiaan? Sepertinya tidak! 🧹" },
-      { "title": "RIP gambar ini? 💀", "description": "Semoga beristirahat dengan tenang di alam digital 🪦" },
-      { "title": "Kirim pergi? 📦", "description": "Tujuan selanjutnya: tempat sampah di awan ☁️" }
+      {
+        "title": "Ucapkan selamat tinggal? 👋",
+        "description": "Mahakarya ini akan lenyap selamanya! Poof! ✨"
+      },
+      {
+        "title": "Bye bye cantik? 💔",
+        "description": "Hilang. Kaput. Tamat. Tidak bisa dikembalikan! 🙈"
+      },
+      {
+        "title": "Masuk ke kekosongan? 🕳️",
+        "description": "Gambar ini sudah berkemas dan siap pergi 🧳"
+      },
+      {
+        "title": "Ghost gambar ini? 👻",
+        "description": "Begitu pergi, bahkan kabut tidak bisa membawanya kembali 🌫️"
+      },
+      {
+        "title": "Lempar jauh? 🚀",
+        "description": "Pesta pixel ini akan segera berakhir! 🎉"
+      },
+      {
+        "title": "Lepaskan? ❄️",
+        "description": "Dingin tidak pernah mengganggu gambar ini..."
+      },
+      {
+        "title": "Selamat tinggal teman? 🥺",
+        "description": "Gambar ini percaya padamu sampai akhir..."
+      },
+      {
+        "title": "Waktunya beres-beres? ✨",
+        "description": "Apakah ini membawa kebahagiaan? Sepertinya tidak! 🧹"
+      },
+      {
+        "title": "RIP gambar ini? 💀",
+        "description": "Semoga beristirahat dengan tenang di alam digital 🪦"
+      },
+      {
+        "title": "Kirim pergi? 📦",
+        "description": "Tujuan selanjutnya: tempat sampah di awan ☁️"
+      }
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",

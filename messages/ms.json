@@ -16,7 +16,8 @@
     "immersive": "Penuh",
     "compact": "Padat",
     "default": "Lalai",
-    "spacious": "Luas"
+    "spacious": "Luas",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "Kembali",
@@ -1159,16 +1160,46 @@
     "remove": "Padam",
     "removing": "Memadamkan...",
     "removeImagePhrases": [
-      { "title": "Ucap selamat tinggal? 👋", "description": "Karya agung ini akan lenyap selamanya! Poof! ✨" },
-      { "title": "Bye bye cantik? 💔", "description": "Hilang. Kaput. Tamat. Tak boleh undo! 🙈" },
-      { "title": "Masuk lubang hitam? 🕳️", "description": "Gambar ni dah siap packing dan sedia untuk pergi 🧳" },
-      { "title": "Ghostkan gambar ni? 👻", "description": "Sekali dah pergi, kabus pun tak boleh bawa balik 🌫️" },
-      { "title": "Lempar jauh-jauh? 🚀", "description": "Parti pixel ni nak tamat! 🎉" },
-      { "title": "Lepaskan? ❄️", "description": "Sejuk tak pernah ganggu gambar ni..." },
-      { "title": "Bye kawan? 🥺", "description": "Gambar ni percaya kau sampai akhir..." },
-      { "title": "Masa kemas? ✨", "description": "Bagi joy tak? Nampaknya tak! 🧹" },
-      { "title": "RIP gambar? 💀", "description": "Semoga rehat dengan aman di alam digital 🪦" },
-      { "title": "Hantar pergi? 📦", "description": "Destinasi seterusnya: tong sampah di awan ☁️" }
+      {
+        "title": "Ucap selamat tinggal? 👋",
+        "description": "Karya agung ini akan lenyap selamanya! Poof! ✨"
+      },
+      {
+        "title": "Bye bye cantik? 💔",
+        "description": "Hilang. Kaput. Tamat. Tak boleh undo! 🙈"
+      },
+      {
+        "title": "Masuk lubang hitam? 🕳️",
+        "description": "Gambar ni dah siap packing dan sedia untuk pergi 🧳"
+      },
+      {
+        "title": "Ghostkan gambar ni? 👻",
+        "description": "Sekali dah pergi, kabus pun tak boleh bawa balik 🌫️"
+      },
+      {
+        "title": "Lempar jauh-jauh? 🚀",
+        "description": "Parti pixel ni nak tamat! 🎉"
+      },
+      {
+        "title": "Lepaskan? ❄️",
+        "description": "Sejuk tak pernah ganggu gambar ni..."
+      },
+      {
+        "title": "Bye kawan? 🥺",
+        "description": "Gambar ni percaya kau sampai akhir..."
+      },
+      {
+        "title": "Masa kemas? ✨",
+        "description": "Bagi joy tak? Nampaknya tak! 🧹"
+      },
+      {
+        "title": "RIP gambar? 💀",
+        "description": "Semoga rehat dengan aman di alam digital 🪦"
+      },
+      {
+        "title": "Hantar pergi? 📦",
+        "description": "Destinasi seterusnya: tong sampah di awan ☁️"
+      }
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",

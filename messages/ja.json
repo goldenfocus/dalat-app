@@ -16,7 +16,8 @@
     "immersive": "没入",
     "compact": "コンパクト",
     "default": "デフォルト",
-    "spacious": "ゆったり"
+    "spacious": "ゆったり",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "戻る",
@@ -1159,16 +1160,46 @@
     "remove": "削除",
     "removing": "削除中...",
     "removeImagePhrases": [
-      { "title": "さよなら？👋", "description": "この傑作は永遠に消えます！ポフッ！✨" },
-      { "title": "バイバイ美人？💔", "description": "消えた。カプート。おしまい。取り消し不可！🙈" },
-      { "title": "虚空へ？🕳️", "description": "この画像は荷物をまとめて旅立つ準備完了 🧳" },
-      { "title": "ゴースト化する？👻", "description": "一度去ったら、霧も連れ戻せない 🌫️" },
-      { "title": "飛ばしちゃう？🚀", "description": "このピクセルパーティーが終わります！🎉" },
-      { "title": "手放す？❄️", "description": "寒さはこの画像を悩ませたことがない..." },
-      { "title": "さらば友よ？🥺", "description": "この画像は最後まであなたを信じてた..." },
-      { "title": "断捨離の時間？✨", "description": "ときめく？どうやら違うみたい！🧹" },
-      { "title": "この画像に安らぎを？💀", "description": "デジタル世界で安らかに眠れ 🪦" },
-      { "title": "送り出す？📦", "description": "次の目的地：空のゴミ箱 ☁️" }
+      {
+        "title": "さよなら？👋",
+        "description": "この傑作は永遠に消えます！ポフッ！✨"
+      },
+      {
+        "title": "バイバイ美人？💔",
+        "description": "消えた。カプート。おしまい。取り消し不可！🙈"
+      },
+      {
+        "title": "虚空へ？🕳️",
+        "description": "この画像は荷物をまとめて旅立つ準備完了 🧳"
+      },
+      {
+        "title": "ゴースト化する？👻",
+        "description": "一度去ったら、霧も連れ戻せない 🌫️"
+      },
+      {
+        "title": "飛ばしちゃう？🚀",
+        "description": "このピクセルパーティーが終わります！🎉"
+      },
+      {
+        "title": "手放す？❄️",
+        "description": "寒さはこの画像を悩ませたことがない..."
+      },
+      {
+        "title": "さらば友よ？🥺",
+        "description": "この画像は最後まであなたを信じてた..."
+      },
+      {
+        "title": "断捨離の時間？✨",
+        "description": "ときめく？どうやら違うみたい！🧹"
+      },
+      {
+        "title": "この画像に安らぎを？💀",
+        "description": "デジタル世界で安らかに眠れ 🪦"
+      },
+      {
+        "title": "送り出す？📦",
+        "description": "次の目的地：空のゴミ箱 ☁️"
+      }
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",

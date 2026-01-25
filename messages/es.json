@@ -16,7 +16,8 @@
     "immersive": "Inmersivo",
     "compact": "Compacto",
     "default": "Predeterminado",
-    "spacious": "Espacioso"
+    "spacious": "Espacioso",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "Volver",
@@ -1178,16 +1179,46 @@
     "remove": "Eliminar",
     "removing": "Eliminando...",
     "removeImagePhrases": [
-      { "title": "¿Decir adiós? 👋", "description": "¡Esta obra maestra desaparecerá para siempre! ¡Puf! ✨" },
-      { "title": "¿Bye bye belleza? 💔", "description": "Desapareció. Kaput. Finito. ¡Sin vuelta atrás! 🙈" },
-      { "title": "¿Al vacío? 🕳️", "description": "Esta imagen tiene las maletas hechas y lista para irse 🧳" },
-      { "title": "¿Fantasmear esta imagen? 👻", "description": "Una vez que se va, ni la niebla puede traerla de vuelta 🌫️" },
-      { "title": "¿Lanzarla? 🚀", "description": "¡Esta fiesta de píxeles está por terminar! 🎉" },
-      { "title": "¿Dejarla ir? ❄️", "description": "El frío nunca molestó a esta imagen..." },
-      { "title": "¿Adiós amiga? 🥺", "description": "Esta imagen creyó en ti hasta el final..." },
-      { "title": "¿Hora de ordenar? ✨", "description": "¿Te da alegría? ¡Parece que no! 🧹" },
-      { "title": "¿R.I.P. imagen? 💀", "description": "Que descanse en paz en el más allá digital 🪦" },
-      { "title": "¿Enviarla lejos? 📦", "description": "Próxima parada: la papelera en las nubes ☁️" }
+      {
+        "title": "¿Decir adiós? 👋",
+        "description": "¡Esta obra maestra desaparecerá para siempre! ¡Puf! ✨"
+      },
+      {
+        "title": "¿Bye bye belleza? 💔",
+        "description": "Desapareció. Kaput. Finito. ¡Sin vuelta atrás! 🙈"
+      },
+      {
+        "title": "¿Al vacío? 🕳️",
+        "description": "Esta imagen tiene las maletas hechas y lista para irse 🧳"
+      },
+      {
+        "title": "¿Fantasmear esta imagen? 👻",
+        "description": "Una vez que se va, ni la niebla puede traerla de vuelta 🌫️"
+      },
+      {
+        "title": "¿Lanzarla? 🚀",
+        "description": "¡Esta fiesta de píxeles está por terminar! 🎉"
+      },
+      {
+        "title": "¿Dejarla ir? ❄️",
+        "description": "El frío nunca molestó a esta imagen..."
+      },
+      {
+        "title": "¿Adiós amiga? 🥺",
+        "description": "Esta imagen creyó en ti hasta el final..."
+      },
+      {
+        "title": "¿Hora de ordenar? ✨",
+        "description": "¿Te da alegría? ¡Parece que no! 🧹"
+      },
+      {
+        "title": "¿R.I.P. imagen? 💀",
+        "description": "Que descanse en paz en el más allá digital 🪦"
+      },
+      {
+        "title": "¿Enviarla lejos? 📦",
+        "description": "Próxima parada: la papelera en las nubes ☁️"
+      }
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",

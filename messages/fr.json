@@ -16,7 +16,8 @@
     "immersive": "Immersif",
     "compact": "Compact",
     "default": "Par défaut",
-    "spacious": "Spacieux"
+    "spacious": "Spacieux",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "Retour",
@@ -1173,16 +1174,46 @@
     "remove": "Supprimer",
     "removing": "Suppression...",
     "removeImagePhrases": [
-      { "title": "Dire au revoir ? 👋", "description": "Ce chef-d'œuvre disparaîtra à jamais ! Pouf ! ✨" },
-      { "title": "Bye bye beauté ? 💔", "description": "Parti. Kaput. Fini. Pas de retour ! 🙈" },
-      { "title": "Dans le néant ? 🕳️", "description": "Cette image a fait ses valises et est prête à partir 🧳" },
-      { "title": "Fantômiser cette image ? 👻", "description": "Une fois partie, même la brume ne peut la ramener 🌫️" },
-      { "title": "L'envoyer valser ? 🚀", "description": "Cette fête de pixels touche à sa fin ! 🎉" },
-      { "title": "La laisser partir ? ❄️", "description": "Le froid n'a jamais dérangé cette image..." },
-      { "title": "Adieu l'ami ? 🥺", "description": "Cette image a cru en toi jusqu'à la fin..." },
-      { "title": "L'heure du rangement ? ✨", "description": "Ça te rend heureux ? Apparemment non ! 🧹" },
-      { "title": "R.I.P. cette image ? 💀", "description": "Qu'elle repose en paix dans l'au-delà numérique 🪦" },
-      { "title": "L'expédier ? 📦", "description": "Prochaine destination : la corbeille céleste ☁️" }
+      {
+        "title": "Dire au revoir ? 👋",
+        "description": "Ce chef-d'œuvre disparaîtra à jamais ! Pouf ! ✨"
+      },
+      {
+        "title": "Bye bye beauté ? 💔",
+        "description": "Parti. Kaput. Fini. Pas de retour ! 🙈"
+      },
+      {
+        "title": "Dans le néant ? 🕳️",
+        "description": "Cette image a fait ses valises et est prête à partir 🧳"
+      },
+      {
+        "title": "Fantômiser cette image ? 👻",
+        "description": "Une fois partie, même la brume ne peut la ramener 🌫️"
+      },
+      {
+        "title": "L'envoyer valser ? 🚀",
+        "description": "Cette fête de pixels touche à sa fin ! 🎉"
+      },
+      {
+        "title": "La laisser partir ? ❄️",
+        "description": "Le froid n'a jamais dérangé cette image..."
+      },
+      {
+        "title": "Adieu l'ami ? 🥺",
+        "description": "Cette image a cru en toi jusqu'à la fin..."
+      },
+      {
+        "title": "L'heure du rangement ? ✨",
+        "description": "Ça te rend heureux ? Apparemment non ! 🧹"
+      },
+      {
+        "title": "R.I.P. cette image ? 💀",
+        "description": "Qu'elle repose en paix dans l'au-delà numérique 🪦"
+      },
+      {
+        "title": "L'expédier ? 📦",
+        "description": "Prochaine destination : la corbeille céleste ☁️"
+      }
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",

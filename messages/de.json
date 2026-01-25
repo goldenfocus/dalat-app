@@ -16,7 +16,8 @@
     "immersive": "Immersiv",
     "compact": "Kompakt",
     "default": "Standard",
-    "spacious": "Großzügig"
+    "spacious": "Großzügig",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "Zurück",
@@ -1159,16 +1160,46 @@
     "remove": "Entfernen",
     "removing": "Wird entfernt...",
     "removeImagePhrases": [
-      { "title": "Tschüss sagen? 👋", "description": "Dieses Meisterwerk verschwindet für immer! Puff! ✨" },
-      { "title": "Bye bye Schönheit? 💔", "description": "Weg. Kaputt. Finito. Kein Zurück! 🙈" },
-      { "title": "Ins Nichts? 🕳️", "description": "Dieses Bild hat gepackt und ist abfahrbereit 🧳" },
-      { "title": "Geistern lassen? 👻", "description": "Einmal weg, bringt selbst der Nebel es nicht zurück 🌫️" },
-      { "title": "Wegschleudern? 🚀", "description": "Diese Pixel-Party endet gleich! 🎉" },
-      { "title": "Loslassen? ❄️", "description": "Die Kälte hat dieses Bild nie gestört..." },
-      { "title": "Lebwohl Freund? 🥺", "description": "Dieses Bild hat bis zum Ende an dich geglaubt..." },
-      { "title": "Ausmisten? ✨", "description": "Macht es glücklich? Anscheinend nicht! 🧹" },
-      { "title": "R.I.P. Bild? 💀", "description": "Möge es in Frieden im digitalen Jenseits ruhen 🪦" },
-      { "title": "Wegschicken? 📦", "description": "Nächster Halt: Papierkorb in der Cloud ☁️" }
+      {
+        "title": "Tschüss sagen? 👋",
+        "description": "Dieses Meisterwerk verschwindet für immer! Puff! ✨"
+      },
+      {
+        "title": "Bye bye Schönheit? 💔",
+        "description": "Weg. Kaputt. Finito. Kein Zurück! 🙈"
+      },
+      {
+        "title": "Ins Nichts? 🕳️",
+        "description": "Dieses Bild hat gepackt und ist abfahrbereit 🧳"
+      },
+      {
+        "title": "Geistern lassen? 👻",
+        "description": "Einmal weg, bringt selbst der Nebel es nicht zurück 🌫️"
+      },
+      {
+        "title": "Wegschleudern? 🚀",
+        "description": "Diese Pixel-Party endet gleich! 🎉"
+      },
+      {
+        "title": "Loslassen? ❄️",
+        "description": "Die Kälte hat dieses Bild nie gestört..."
+      },
+      {
+        "title": "Lebwohl Freund? 🥺",
+        "description": "Dieses Bild hat bis zum Ende an dich geglaubt..."
+      },
+      {
+        "title": "Ausmisten? ✨",
+        "description": "Macht es glücklich? Anscheinend nicht! 🧹"
+      },
+      {
+        "title": "R.I.P. Bild? 💀",
+        "description": "Möge es in Frieden im digitalen Jenseits ruhen 🪦"
+      },
+      {
+        "title": "Wegschicken? 📦",
+        "description": "Nächster Halt: Papierkorb in der Cloud ☁️"
+      }
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",

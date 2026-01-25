@@ -16,7 +16,8 @@
     "immersive": "Immersive",
     "compact": "Compact",
     "default": "Default",
-    "spacious": "Spacious"
+    "spacious": "Spacious",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "Back",

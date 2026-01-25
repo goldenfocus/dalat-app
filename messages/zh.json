@@ -16,7 +16,8 @@
     "immersive": "沉浸",
     "compact": "紧凑",
     "default": "默认",
-    "spacious": "宽松"
+    "spacious": "宽松",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "返回",
@@ -1159,16 +1160,46 @@
     "remove": "删除",
     "removing": "删除中...",
     "removeImagePhrases": [
-      { "title": "说再见？👋", "description": "这个杰作将永远消失！噗！✨" },
-      { "title": "拜拜美图？💔", "description": "消失了。完蛋。没戏。不能反悔！🙈" },
-      { "title": "进入虚空？🕳️", "description": "这张图片已经打包好准备离开了 🧳" },
-      { "title": "让它消失？👻", "description": "一旦离开，连大雾都带不回来 🌫️" },
-      { "title": "发射它？🚀", "description": "这个像素派对要结束了！🎉" },
-      { "title": "放手吧？❄️", "description": "寒冷从未打扰过这张图片..." },
-      { "title": "再见朋友？🥺", "description": "这张图片一直相信你到最后..." },
-      { "title": "断舍离时间？✨", "description": "它带来快乐吗？显然没有！🧹" },
-      { "title": "安息吧小图？💀", "description": "愿它在数字世界安息 🪦" },
-      { "title": "打包送走？📦", "description": "下一站：云端回收站 ☁️" }
+      {
+        "title": "说再见？👋",
+        "description": "这个杰作将永远消失！噗！✨"
+      },
+      {
+        "title": "拜拜美图？💔",
+        "description": "消失了。完蛋。没戏。不能反悔！🙈"
+      },
+      {
+        "title": "进入虚空？🕳️",
+        "description": "这张图片已经打包好准备离开了 🧳"
+      },
+      {
+        "title": "让它消失？👻",
+        "description": "一旦离开，连大雾都带不回来 🌫️"
+      },
+      {
+        "title": "发射它？🚀",
+        "description": "这个像素派对要结束了！🎉"
+      },
+      {
+        "title": "放手吧？❄️",
+        "description": "寒冷从未打扰过这张图片..."
+      },
+      {
+        "title": "再见朋友？🥺",
+        "description": "这张图片一直相信你到最后..."
+      },
+      {
+        "title": "断舍离时间？✨",
+        "description": "它带来快乐吗？显然没有！🧹"
+      },
+      {
+        "title": "安息吧小图？💀",
+        "description": "愿它在数字世界安息 🪦"
+      },
+      {
+        "title": "打包送走？📦",
+        "description": "下一站：云端回收站 ☁️"
+      }
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",

@@ -16,7 +16,8 @@
     "immersive": "몰입",
     "compact": "좁게",
     "default": "기본",
-    "spacious": "넓게"
+    "spacious": "넓게",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "뒤로",
@@ -1159,16 +1160,46 @@
     "remove": "삭제",
     "removing": "삭제 중...",
     "removeImagePhrases": [
-      { "title": "잘 가? 👋", "description": "이 걸작이 영원히 사라집니다! 펑! ✨" },
-      { "title": "안녕 예쁜이? 💔", "description": "사라졌어요. 끝. 피니토. 되돌릴 수 없어요! 🙈" },
-      { "title": "블랙홀로? 🕳️", "description": "이 이미지는 짐을 싸고 떠날 준비가 됐어요 🧳" },
-      { "title": "유령처럼 사라지게? 👻", "description": "한번 가면 안개도 되돌릴 수 없어요 🌫️" },
-      { "title": "날려버릴까? 🚀", "description": "이 픽셀 파티가 끝나려 해요! 🎉" },
-      { "title": "렛잇고? ❄️", "description": "추위는 이 이미지를 괴롭히지 않았어요..." },
-      { "title": "안녕 친구? 🥺", "description": "이 이미지는 끝까지 당신을 믿었어요..." },
-      { "title": "정리할 시간? ✨", "description": "설레나요? 아닌 것 같네요! 🧹" },
-      { "title": "이 사진 안녕? 💀", "description": "디지털 세상에서 편히 쉬세요 🪦" },
-      { "title": "보내드릴까요? 📦", "description": "다음 목적지: 하늘 위 휴지통 ☁️" }
+      {
+        "title": "잘 가? 👋",
+        "description": "이 걸작이 영원히 사라집니다! 펑! ✨"
+      },
+      {
+        "title": "안녕 예쁜이? 💔",
+        "description": "사라졌어요. 끝. 피니토. 되돌릴 수 없어요! 🙈"
+      },
+      {
+        "title": "블랙홀로? 🕳️",
+        "description": "이 이미지는 짐을 싸고 떠날 준비가 됐어요 🧳"
+      },
+      {
+        "title": "유령처럼 사라지게? 👻",
+        "description": "한번 가면 안개도 되돌릴 수 없어요 🌫️"
+      },
+      {
+        "title": "날려버릴까? 🚀",
+        "description": "이 픽셀 파티가 끝나려 해요! 🎉"
+      },
+      {
+        "title": "렛잇고? ❄️",
+        "description": "추위는 이 이미지를 괴롭히지 않았어요..."
+      },
+      {
+        "title": "안녕 친구? 🥺",
+        "description": "이 이미지는 끝까지 당신을 믿었어요..."
+      },
+      {
+        "title": "정리할 시간? ✨",
+        "description": "설레나요? 아닌 것 같네요! 🧹"
+      },
+      {
+        "title": "이 사진 안녕? 💀",
+        "description": "디지털 세상에서 편히 쉬세요 🪦"
+      },
+      {
+        "title": "보내드릴까요? 📦",
+        "description": "다음 목적지: 하늘 위 휴지통 ☁️"
+      }
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",

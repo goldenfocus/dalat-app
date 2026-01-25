@@ -16,7 +16,8 @@
     "immersive": "Toàn màn",
     "compact": "Thu gọn",
     "default": "Mặc định",
-    "spacious": "Rộng rãi"
+    "spacious": "Rộng rãi",
+    "gridPlus": "Grid+"
   },
   "common": {
     "back": "Quay lại",
@@ -1159,16 +1160,46 @@
     "remove": "Xóa",
     "removing": "Đang xóa...",
     "removeImagePhrases": [
-      { "title": "Tạm biệt nhé? 👋", "description": "Kiệt tác này sẽ biến mất mãi mãi! Poof! ✨" },
-      { "title": "Bye bye đẹp zai? 💔", "description": "Gone. Kaput. Hết. Không thể lấy lại! 🙈" },
-      { "title": "Vào hư không? 🕳️", "description": "Bức ảnh này đã đóng gói xong và sẵn sàng ra đi 🧳" },
-      { "title": "Ghost bức ảnh này? 👻", "description": "Một khi đã đi, ngay cả sương mù Đà Lạt cũng không thể mang nó về 🌫️" },
-      { "title": "Yeet nó đi? 🚀", "description": "Bữa tiệc pixel này sắp kết thúc! 🎉" },
-      { "title": "Thả nó đi? ❄️", "description": "Giá lạnh Đà Lạt chưa bao giờ làm phiền bức ảnh này..." },
-      { "title": "Tạm biệt bạn ơi? 🥺", "description": "Bức ảnh này tin tưởng bạn đến phút cuối..." },
-      { "title": "Marie Kondo time? ✨", "description": "Nó có khiến bạn vui không? Có vẻ là không! 🧹" },
-      { "title": "RIP tấm hình? 💀", "description": "Mong nó yên nghỉ ở thế giới số 🪦" },
-      { "title": "Cho nó về quê? 📦", "description": "Điểm đến: thùng rác vĩnh cửu trên mây ☁️" }
+      {
+        "title": "Tạm biệt nhé? 👋",
+        "description": "Kiệt tác này sẽ biến mất mãi mãi! Poof! ✨"
+      },
+      {
+        "title": "Bye bye đẹp zai? 💔",
+        "description": "Gone. Kaput. Hết. Không thể lấy lại! 🙈"
+      },
+      {
+        "title": "Vào hư không? 🕳️",
+        "description": "Bức ảnh này đã đóng gói xong và sẵn sàng ra đi 🧳"
+      },
+      {
+        "title": "Ghost bức ảnh này? 👻",
+        "description": "Một khi đã đi, ngay cả sương mù Đà Lạt cũng không thể mang nó về 🌫️"
+      },
+      {
+        "title": "Yeet nó đi? 🚀",
+        "description": "Bữa tiệc pixel này sắp kết thúc! 🎉"
+      },
+      {
+        "title": "Thả nó đi? ❄️",
+        "description": "Giá lạnh Đà Lạt chưa bao giờ làm phiền bức ảnh này..."
+      },
+      {
+        "title": "Tạm biệt bạn ơi? 🥺",
+        "description": "Bức ảnh này tin tưởng bạn đến phút cuối..."
+      },
+      {
+        "title": "Marie Kondo time? ✨",
+        "description": "Nó có khiến bạn vui không? Có vẻ là không! 🧹"
+      },
+      {
+        "title": "RIP tấm hình? 💀",
+        "description": "Mong nó yên nghỉ ở thế giới số 🪦"
+      },
+      {
+        "title": "Cho nó về quê? 📦",
+        "description": "Điểm đến: thùng rác vĩnh cửu trên mây ☁️"
+      }
     ],
     "titlePositionTop": "Title at top",
     "titlePositionMiddle": "Title in middle",

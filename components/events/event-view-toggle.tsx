@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SlidersHorizontal, LayoutGrid, List, Maximize2, Check } from "lucide-react";
+import { SlidersHorizontal, LayoutGrid, Grid3X3, List, Maximize2, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -15,16 +15,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const VIEW_MODES: { mode: EventViewMode; icon: typeof LayoutGrid; labelKey: string }[] = [
-  { mode: "grid", icon: LayoutGrid, labelKey: "grid" },
-  { mode: "list", icon: List, labelKey: "list" },
-  { mode: "immersive", icon: Maximize2, labelKey: "immersive" },
-];
+// Combined view options - Grid+ is grid with spacious density
+type ViewOption = {
+  id: string;
+  mode: EventViewMode;
+  density?: EventDensity; // Only set for grid variants
+  icon: typeof LayoutGrid;
+  labelKey: string;
+};
 
-const DENSITY_OPTIONS: { density: EventDensity; labelKey: string }[] = [
-  { density: "compact", labelKey: "compact" },
-  { density: "default", labelKey: "default" },
-  { density: "spacious", labelKey: "spacious" },
+const VIEW_OPTIONS: ViewOption[] = [
+  { id: "grid", mode: "grid", density: "default", icon: Grid3X3, labelKey: "grid" },
+  { id: "grid-plus", mode: "grid", density: "spacious", icon: LayoutGrid, labelKey: "gridPlus" },
+  { id: "list", mode: "list", icon: List, labelKey: "list" },
+  { id: "immersive", mode: "immersive", icon: Maximize2, labelKey: "immersive" },
 ];
 
 interface EventViewToggleProps {
@@ -33,12 +37,30 @@ interface EventViewToggleProps {
 
 /**
  * Compact view settings button with dropdown.
- * Single filter icon that reveals view mode and density options.
+ * Single filter icon that reveals view options.
+ * Grid variants (Grid, Grid+) have density baked in for simplicity.
  */
 export function EventViewToggle({ className }: EventViewToggleProps) {
   const t = useTranslations("viewToggle");
-  const { mode, density, setMode, setDensity } = useEventViewPreferences();
+  const { mode, density, setPreferences } = useEventViewPreferences();
   const [open, setOpen] = useState(false);
+
+  // Determine which option is currently active
+  const getActiveOptionId = () => {
+    if (mode === "grid") {
+      return density === "spacious" ? "grid-plus" : "grid";
+    }
+    return mode;
+  };
+
+  const activeOptionId = getActiveOptionId();
+
+  const handleOptionSelect = (option: ViewOption) => {
+    setPreferences({
+      mode: option.mode,
+      density: option.density ?? "default",
+    });
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -57,59 +79,34 @@ export function EventViewToggle({ className }: EventViewToggleProps) {
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-48 p-2">
-        {/* View Mode Section */}
-        <div className="mb-2" role="group" aria-labelledby="view-mode-label">
+        <div role="group" aria-labelledby="view-mode-label">
           <p id="view-mode-label" className="text-xs font-medium text-muted-foreground px-2 mb-1">
             {t("viewMode")}
           </p>
-          {VIEW_MODES.map(({ mode: m, icon: Icon, labelKey }) => (
-            <button
-              key={m}
-              type="button"
-              aria-pressed={mode === m}
-              onClick={() => {
-                setMode(m);
-              }}
-              className={cn(
-                "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm",
-                "transition-colors",
-                mode === m
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-              )}
-            >
-              <Icon className="w-4 h-4" aria-hidden="true" />
-              <span className="flex-1 text-left">{t(labelKey)}</span>
-              {mode === m && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
-            </button>
-          ))}
-        </div>
+          {VIEW_OPTIONS.map((option) => {
+            const Icon = option.icon;
+            const isActive = activeOptionId === option.id;
 
-        {/* Density Section */}
-        <div className="border-t border-border pt-2" role="group" aria-labelledby="density-label">
-          <p id="density-label" className="text-xs font-medium text-muted-foreground px-2 mb-1">
-            {t("density")}
-          </p>
-          {DENSITY_OPTIONS.map(({ density: d, labelKey }) => (
-            <button
-              key={d}
-              type="button"
-              aria-pressed={density === d}
-              onClick={() => {
-                setDensity(d);
-              }}
-              className={cn(
-                "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm",
-                "transition-colors",
-                density === d
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-              )}
-            >
-              <span className="flex-1 text-left">{t(labelKey)}</span>
-              {density === d && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
-            </button>
-          ))}
+            return (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => handleOptionSelect(option)}
+                className={cn(
+                  "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm",
+                  "transition-colors",
+                  isActive
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                )}
+              >
+                <Icon className="w-4 h-4" aria-hidden="true" />
+                <span className="flex-1 text-left">{t(option.labelKey)}</span>
+                {isActive && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
+              </button>
+            );
+          })}
         </div>
       </PopoverContent>
     </Popover>
