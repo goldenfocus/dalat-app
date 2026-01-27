@@ -24,6 +24,8 @@
     "save": "Speichern",
     "cancel": "Abbrechen",
     "add": "Hinzufügen",
+    "title": "Titel",
+    "description": "Beschreibung",
     "loading": "Lädt...",
     "error": "Fehler",
     "yes": "Ja",
@@ -307,6 +309,7 @@
     "dropFileHere": "Datei hierher ziehen oder klicken zum Durchsuchen",
     "supportedFileTypes": "PDF, Bilder, Videos, Audio, Dokumente (max. 100MB)",
     "pasteYoutubeUrl": "YouTube-URL einfügen...",
+    "material": "Material",
     "materialTypes": {
       "youtube": "YouTube",
       "pdf": "PDF",
@@ -314,6 +317,11 @@
       "video": "Video",
       "image": "Bild",
       "document": "Dokument"
+    },
+    "materialFields": {
+      "artist": "Künstler",
+      "album": "Album",
+      "genre": "Genre"
     },
     "materialErrors": {
       "uploadFailed": "Datei-Upload fehlgeschlagen",

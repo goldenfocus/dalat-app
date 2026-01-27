@@ -24,6 +24,8 @@
     "save": "保存",
     "cancel": "取消",
     "add": "添加",
+    "title": "标题",
+    "description": "描述",
     "loading": "加载中...",
     "error": "错误",
     "yes": "是",
@@ -307,6 +309,7 @@
     "dropFileHere": "将文件拖放到此处或点击浏览",
     "supportedFileTypes": "PDF、图片、视频、音频、文档（最大100MB）",
     "pasteYoutubeUrl": "粘贴YouTube链接...",
+    "material": "资料",
     "materialTypes": {
       "youtube": "YouTube",
       "pdf": "PDF",
@@ -314,6 +317,11 @@
       "video": "视频",
       "image": "图片",
       "document": "文档"
+    },
+    "materialFields": {
+      "artist": "艺术家",
+      "album": "专辑",
+      "genre": "流派"
     },
     "materialErrors": {
       "uploadFailed": "文件上传失败",

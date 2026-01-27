@@ -24,6 +24,8 @@
     "save": "保存",
     "cancel": "キャンセル",
     "add": "追加",
+    "title": "タイトル",
+    "description": "説明",
     "loading": "読み込み中...",
     "error": "エラー",
     "yes": "はい",
@@ -307,6 +309,7 @@
     "dropFileHere": "ファイルをここにドロップするか、クリックして選択",
     "supportedFileTypes": "PDF、画像、動画、音声、ドキュメント（最大100MB）",
     "pasteYoutubeUrl": "YouTube URLを貼り付け...",
+    "material": "資料",
     "materialTypes": {
       "youtube": "YouTube",
       "pdf": "PDF",
@@ -314,6 +317,11 @@
       "video": "動画",
       "image": "画像",
       "document": "ドキュメント"
+    },
+    "materialFields": {
+      "artist": "アーティスト",
+      "album": "アルバム",
+      "genre": "ジャンル"
     },
     "materialErrors": {
       "uploadFailed": "ファイルのアップロードに失敗しました",

@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Upload,
   Link as LinkIcon,
+  Pencil,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -133,6 +134,17 @@ export function EventMaterialsInput({
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Edit mode state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    artist: "",
+    album: "",
+    genre: "",
+    description: "",
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
   // Get display list based on mode
   const displayList = isDraftMode
@@ -460,6 +472,101 @@ export function EventMaterialsInput({
     }
   }, [isDraftMode, draftMaterials, materials, onDraftChange, onChange]);
 
+  // Start editing a material
+  const handleStartEdit = useCallback((id: string) => {
+    if (isDraftMode) {
+      const draft = draftMaterials.find((m) => m.id === id);
+      if (draft) {
+        setEditForm({
+          title: draft.title || "",
+          artist: draft.artist || "",
+          album: draft.album || "",
+          genre: draft.genre || "",
+          description: "",
+        });
+        setEditingId(id);
+      }
+    } else {
+      const material = materials.find((m) => m.id === id);
+      if (material) {
+        setEditForm({
+          title: material.title || "",
+          artist: material.artist || "",
+          album: material.album || "",
+          genre: material.genre || "",
+          description: material.description || "",
+        });
+        setEditingId(id);
+      }
+    }
+  }, [isDraftMode, draftMaterials, materials]);
+
+  // Save edited material
+  const handleSaveEdit = useCallback(async () => {
+    if (!editingId) return;
+
+    setIsSaving(true);
+    setError(null);
+
+    if (isDraftMode) {
+      const updated = draftMaterials.map((m) =>
+        m.id === editingId
+          ? {
+              ...m,
+              title: editForm.title || null,
+              artist: editForm.artist || null,
+              album: editForm.album || null,
+              genre: editForm.genre || null,
+            }
+          : m
+      );
+      onDraftChange?.(updated);
+      setEditingId(null);
+      setIsSaving(false);
+    } else {
+      const supabase = createClient();
+      const { error: updateError } = await supabase
+        .from("event_materials")
+        .update({
+          title: editForm.title || null,
+          artist: editForm.artist || null,
+          album: editForm.album || null,
+          genre: editForm.genre || null,
+          description: editForm.description || null,
+        })
+        .eq("id", editingId);
+
+      if (updateError) {
+        setError(t("materialErrors.saveFailed"));
+        setIsSaving(false);
+        return;
+      }
+
+      const updated = materials.map((m) =>
+        m.id === editingId
+          ? {
+              ...m,
+              title: editForm.title || null,
+              artist: editForm.artist || null,
+              album: editForm.album || null,
+              genre: editForm.genre || null,
+              description: editForm.description || null,
+            }
+          : m
+      );
+      setMaterials(updated);
+      onChange?.(updated);
+      setEditingId(null);
+      setIsSaving(false);
+    }
+  }, [editingId, editForm, isDraftMode, draftMaterials, materials, onDraftChange, onChange]);
+
+  // Cancel editing
+  const handleCancelEdit = useCallback(() => {
+    setEditingId(null);
+    setEditForm({ title: "", artist: "", album: "", genre: "", description: "" });
+  }, []);
+
   // Drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -558,6 +665,17 @@ export function EventMaterialsInput({
                   </a>
                 )}
 
+                {/* Edit button */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleStartEdit(item.id)}
+                  className="text-muted-foreground hover:text-foreground flex-shrink-0"
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
+
                 {/* Remove button */}
                 <Button
                   type="button"
@@ -574,8 +692,118 @@ export function EventMaterialsInput({
         </div>
       )}
 
+      {/* Edit material dialog */}
+      {editingId && (
+        <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium">{tc("edit")} {t("material")}</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancelEdit}
+              className="h-8 w-8 p-0"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="edit-title" className="text-xs text-muted-foreground">
+                {tc("title")}
+              </Label>
+              <Input
+                id="edit-title"
+                value={editForm.title}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))}
+                placeholder={tc("title")}
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-artist" className="text-xs text-muted-foreground">
+                {t("materialFields.artist")}
+              </Label>
+              <Input
+                id="edit-artist"
+                value={editForm.artist}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, artist: e.target.value }))}
+                placeholder={t("materialFields.artist")}
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-album" className="text-xs text-muted-foreground">
+                {t("materialFields.album")}
+              </Label>
+              <Input
+                id="edit-album"
+                value={editForm.album}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, album: e.target.value }))}
+                placeholder={t("materialFields.album")}
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-genre" className="text-xs text-muted-foreground">
+                {t("materialFields.genre")}
+              </Label>
+              <Input
+                id="edit-genre"
+                value={editForm.genre}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, genre: e.target.value }))}
+                placeholder={t("materialFields.genre")}
+                className="mt-1"
+              />
+            </div>
+
+            {!isDraftMode && (
+              <div>
+                <Label htmlFor="edit-description" className="text-xs text-muted-foreground">
+                  {tc("description")}
+                </Label>
+                <Input
+                  id="edit-description"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder={tc("description")}
+                  className="mt-1"
+                />
+              </div>
+            )}
+          </div>
+
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancelEdit}
+              disabled={isSaving}
+            >
+              {tc("cancel")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleSaveEdit}
+              disabled={isSaving}
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+              {tc("save")}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Add material button */}
-      {!isAdding && (
+      {!isAdding && !editingId && (
         <Button
           type="button"
           variant="outline"
@@ -589,7 +817,7 @@ export function EventMaterialsInput({
       )}
 
       {/* Add material dialog */}
-      {isAdding && (
+      {isAdding && !editingId && (
         <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
           {/* Mode toggle */}
           <div className="flex gap-2 p-1 bg-muted rounded-lg">

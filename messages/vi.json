@@ -24,6 +24,8 @@
     "save": "Lưu",
     "cancel": "Hủy",
     "add": "Thêm",
+    "title": "Tiêu đề",
+    "description": "Mô tả",
     "loading": "Đang tải...",
     "error": "Lỗi",
     "yes": "Có",
@@ -307,6 +309,7 @@
     "dropFileHere": "Kéo thả tệp vào đây hoặc nhấp để chọn",
     "supportedFileTypes": "PDF, hình ảnh, video, audio, tài liệu (tối đa 100MB)",
     "pasteYoutubeUrl": "Dán URL YouTube...",
+    "material": "Tài liệu",
     "materialTypes": {
       "youtube": "YouTube",
       "pdf": "PDF",
@@ -314,6 +317,11 @@
       "video": "Video",
       "image": "Hình ảnh",
       "document": "Tài liệu"
+    },
+    "materialFields": {
+      "artist": "Nghệ sĩ",
+      "album": "Album",
+      "genre": "Thể loại"
     },
     "materialErrors": {
       "uploadFailed": "Không thể tải lên tệp",

@@ -24,6 +24,8 @@
     "save": "บันทึก",
     "cancel": "ยกเลิก",
     "add": "เพิ่ม",
+    "title": "ชื่อเรื่อง",
+    "description": "คำอธิบาย",
     "loading": "กำลังโหลด...",
     "error": "ข้อผิดพลาด",
     "yes": "ใช่",
@@ -307,6 +309,7 @@
     "dropFileHere": "วางไฟล์ที่นี่หรือคลิกเพื่อเรียกดู",
     "supportedFileTypes": "PDF, รูปภาพ, วิดีโอ, เสียง, เอกสาร (สูงสุด 100MB)",
     "pasteYoutubeUrl": "วาง URL YouTube...",
+    "material": "เอกสาร",
     "materialTypes": {
       "youtube": "YouTube",
       "pdf": "PDF",
@@ -314,6 +317,11 @@
       "video": "วิดีโอ",
       "image": "รูปภาพ",
       "document": "เอกสาร"
+    },
+    "materialFields": {
+      "artist": "ศิลปิน",
+      "album": "อัลบั้ม",
+      "genre": "แนวเพลง"
     },
     "materialErrors": {
       "uploadFailed": "อัปโหลดไฟล์ไม่สำเร็จ",

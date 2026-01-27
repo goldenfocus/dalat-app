@@ -24,6 +24,8 @@
     "save": "Simpan",
     "cancel": "Batal",
     "add": "Tambah",
+    "title": "Judul",
+    "description": "Deskripsi",
     "loading": "Memuat...",
     "error": "Error",
     "yes": "Ya",
@@ -307,6 +309,7 @@
     "dropFileHere": "Letakkan file di sini atau klik untuk menelusuri",
     "supportedFileTypes": "PDF, gambar, video, audio, dokumen (maks 100MB)",
     "pasteYoutubeUrl": "Tempel URL YouTube...",
+    "material": "Materi",
     "materialTypes": {
       "youtube": "YouTube",
       "pdf": "PDF",
@@ -314,6 +317,11 @@
       "video": "Video",
       "image": "Gambar",
       "document": "Dokumen"
+    },
+    "materialFields": {
+      "artist": "Artis",
+      "album": "Album",
+      "genre": "Genre"
     },
     "materialErrors": {
       "uploadFailed": "Gagal mengunggah file",

@@ -24,6 +24,8 @@
     "save": "Сохранить",
     "cancel": "Отмена",
     "add": "Добавить",
+    "title": "Название",
+    "description": "Описание",
     "loading": "Загрузка...",
     "error": "Ошибка",
     "yes": "Да",
@@ -307,6 +309,7 @@
     "dropFileHere": "Перетащите файл сюда или нажмите для выбора",
     "supportedFileTypes": "PDF, изображения, видео, аудио, документы (макс. 100МБ)",
     "pasteYoutubeUrl": "Вставьте URL YouTube...",
+    "material": "Материал",
     "materialTypes": {
       "youtube": "YouTube",
       "pdf": "PDF",
@@ -314,6 +317,11 @@
       "video": "Видео",
       "image": "Изображение",
       "document": "Документ"
+    },
+    "materialFields": {
+      "artist": "Исполнитель",
+      "album": "Альбом",
+      "genre": "Жанр"
     },
     "materialErrors": {
       "uploadFailed": "Не удалось загрузить файл",

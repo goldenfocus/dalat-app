@@ -24,6 +24,8 @@
     "save": "Simpan",
     "cancel": "Batal",
     "add": "Tambah",
+    "title": "Tajuk",
+    "description": "Penerangan",
     "loading": "Memuatkan...",
     "error": "Ralat",
     "yes": "Ya",
@@ -307,6 +309,7 @@
     "dropFileHere": "Lepaskan fail di sini atau klik untuk semak imbas",
     "supportedFileTypes": "PDF, imej, video, audio, dokumen (maks 100MB)",
     "pasteYoutubeUrl": "Tampal URL YouTube...",
+    "material": "Bahan",
     "materialTypes": {
       "youtube": "YouTube",
       "pdf": "PDF",
@@ -314,6 +317,11 @@
       "video": "Video",
       "image": "Imej",
       "document": "Dokumen"
+    },
+    "materialFields": {
+      "artist": "Artis",
+      "album": "Album",
+      "genre": "Genre"
     },
     "materialErrors": {
       "uploadFailed": "Gagal memuat naik fail",
