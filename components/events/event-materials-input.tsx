@@ -16,12 +16,19 @@ import {
   Upload,
   Link as LinkIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { EventMaterial, DraftMaterial, MaterialType } from "@/lib/types";
+import {
+  extractAudioMetadata,
+  albumArtToBlob,
+  albumArtToDataUrl,
+  isAudioFile,
+} from "@/lib/audio-metadata";
 
 interface EventMaterialsInputProps {
   // For editing existing events
@@ -73,15 +80,7 @@ const TYPE_ICONS: Record<MaterialType, React.ComponentType<{ className?: string 
   document: File,
 };
 
-// Type labels
-const TYPE_LABELS: Record<MaterialType, string> = {
-  youtube: "YouTube",
-  pdf: "PDF",
-  audio: "Audio",
-  video: "Video",
-  image: "Image",
-  document: "Document",
-};
+// Type labels - now using translations via hook in component
 
 /**
  * Extract YouTube video ID from various URL formats
@@ -115,7 +114,12 @@ export function EventMaterialsInput({
   draftMaterials = [],
   onDraftChange,
 }: EventMaterialsInputProps) {
+  const t = useTranslations("eventForm");
+  const tc = useTranslations("common");
   const isDraftMode = !eventId;
+
+  // Type labels using translations
+  const getTypeLabel = (type: MaterialType) => t(`materialTypes.${type}`);
 
   // Live mode state
   const [materials, setMaterials] = useState<EventMaterial[]>(initialMaterials);
@@ -182,7 +186,7 @@ export function EventMaterialsInput({
       return publicUrl;
     } catch (err) {
       console.error("File upload error:", err);
-      setError("Failed to upload file");
+      setError(t("materialErrors.uploadFailed"));
       return null;
     } finally {
       setIsUploading(false);
@@ -197,13 +201,13 @@ export function EventMaterialsInput({
 
     // Validate file type
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      setError("Unsupported file type. Please upload images, videos, audio, PDFs, or documents.");
+      setError(t("materialErrors.unsupportedFileType"));
       return;
     }
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      setError("File size must be under 100MB");
+      setError(t("materialErrors.fileSizeLimit"));
       return;
     }
 
@@ -252,7 +256,7 @@ export function EventMaterialsInput({
           .single();
 
         if (insertError) {
-          setError("Failed to save material");
+          setError(t("materialErrors.saveFailed"));
           return;
         }
 
@@ -268,7 +272,7 @@ export function EventMaterialsInput({
   const handleAddYouTube = useCallback(async () => {
     const videoId = extractYouTubeId(youtubeUrl);
     if (!videoId) {
-      setError("Invalid YouTube URL. Please enter a valid YouTube video link.");
+      setError(t("materialErrors.invalidYoutubeUrl"));
       return;
     }
 
@@ -309,7 +313,7 @@ export function EventMaterialsInput({
         .single();
 
       if (insertError) {
-        setError("Failed to save YouTube video");
+        setError(t("materialErrors.saveYoutubeFailed"));
         return;
       }
 
@@ -334,7 +338,7 @@ export function EventMaterialsInput({
         .eq("id", id);
 
       if (deleteError) {
-        setError("Failed to remove material");
+        setError(t("materialErrors.removeFailedMaterial"));
         return;
       }
 
@@ -364,10 +368,10 @@ export function EventMaterialsInput({
   return (
     <div className="space-y-4">
       <Label className="text-base">
-        Materials {hasMaterials && `(${displayList.length})`}
+        {t("materials")} {hasMaterials && `(${displayList.length})`}
       </Label>
       <p className="text-xs text-muted-foreground -mt-2">
-        Add PDFs, videos, audio, or images related to this event
+        {t("materialsDescription")}
       </p>
 
       {/* Existing materials list */}
@@ -405,7 +409,7 @@ export function EventMaterialsInput({
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate text-sm">{item.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {TYPE_LABELS[item.material_type]}
+                    {getTypeLabel(item.material_type)}
                     {item.file_size && ` • ${formatFileSize(item.file_size)}`}
                   </p>
                 </div>
@@ -449,7 +453,7 @@ export function EventMaterialsInput({
           className="w-full"
         >
           <Plus className="w-4 h-4 mr-1" />
-          Add material
+          {t("addMaterial")}
         </Button>
       )}
 
@@ -469,7 +473,7 @@ export function EventMaterialsInput({
               )}
             >
               <Upload className="w-4 h-4" />
-              Upload file
+              {t("uploadFile")}
             </button>
             <button
               type="button"
@@ -482,7 +486,7 @@ export function EventMaterialsInput({
               )}
             >
               <Youtube className="w-4 h-4" />
-              YouTube
+              {t("materialTypes.youtube")}
             </button>
           </div>
 
@@ -506,10 +510,10 @@ export function EventMaterialsInput({
                 <>
                   <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm font-medium">
-                    Drop a file here or click to browse
+                    {t("dropFileHere")}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    PDF, images, videos, audio, documents (max 100MB)
+                    {t("supportedFileTypes")}
                   </p>
                 </>
               )}
@@ -523,7 +527,7 @@ export function EventMaterialsInput({
                 <div className="relative flex-1">
                   <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Paste YouTube URL..."
+                    placeholder={t("pasteYoutubeUrl")}
                     value={youtubeUrl}
                     onChange={(e) => setYoutubeUrl(e.target.value)}
                     className="pl-9"
@@ -534,7 +538,7 @@ export function EventMaterialsInput({
                   onClick={handleAddYouTube}
                   disabled={!youtubeUrl.trim()}
                 >
-                  Add
+                  {tc("add")}
                 </Button>
               </div>
 
@@ -576,7 +580,7 @@ export function EventMaterialsInput({
                 setError(null);
               }}
             >
-              Cancel
+              {tc("cancel")}
             </Button>
           </div>
         </div>

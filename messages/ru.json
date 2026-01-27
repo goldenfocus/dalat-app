@@ -23,6 +23,7 @@
     "back": "Назад",
     "save": "Сохранить",
     "cancel": "Отмена",
+    "add": "Добавить",
     "loading": "Загрузка...",
     "error": "Ошибка",
     "yes": "Да",
@@ -299,7 +300,30 @@
     "tierName": "Название уровня (напр., VIP)",
     "tierDescription": "Описание (необязательно)",
     "pricePlaceholder": "100000",
-    "addTier": "Добавить уровень"
+    "addTier": "Добавить уровень",
+    "materialsDescription": "Добавьте PDF, видео, аудио или изображения, связанные с этим событием",
+    "addMaterial": "Добавить материал",
+    "uploadFile": "Загрузить файл",
+    "dropFileHere": "Перетащите файл сюда или нажмите для выбора",
+    "supportedFileTypes": "PDF, изображения, видео, аудио, документы (макс. 100МБ)",
+    "pasteYoutubeUrl": "Вставьте URL YouTube...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "Аудио",
+      "video": "Видео",
+      "image": "Изображение",
+      "document": "Документ"
+    },
+    "materialErrors": {
+      "uploadFailed": "Не удалось загрузить файл",
+      "unsupportedFileType": "Неподдерживаемый тип файла. Пожалуйста, загрузите изображения, видео, аудио, PDF или документы.",
+      "fileSizeLimit": "Размер файла должен быть менее 100МБ",
+      "saveFailed": "Не удалось сохранить материал",
+      "invalidYoutubeUrl": "Неверный URL YouTube. Пожалуйста, введите корректную ссылку на видео YouTube.",
+      "removeFailedMaterial": "Не удалось удалить материал",
+      "saveYoutubeFailed": "Не удалось сохранить видео YouTube"
+    }
   },
   "eventActions": {
     "eventOptions": "Опции события",

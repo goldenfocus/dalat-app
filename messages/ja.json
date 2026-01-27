@@ -23,6 +23,7 @@
     "back": "戻る",
     "save": "保存",
     "cancel": "キャンセル",
+    "add": "追加",
     "loading": "読み込み中...",
     "error": "エラー",
     "yes": "はい",
@@ -299,7 +300,30 @@
     "tierName": "種別名（例：VIP）",
     "tierDescription": "説明（任意）",
     "pricePlaceholder": "100000",
-    "addTier": "種別を追加"
+    "addTier": "種別を追加",
+    "materialsDescription": "このイベントに関連するPDF、動画、音声、画像を追加",
+    "addMaterial": "資料を追加",
+    "uploadFile": "ファイルをアップロード",
+    "dropFileHere": "ファイルをここにドロップするか、クリックして選択",
+    "supportedFileTypes": "PDF、画像、動画、音声、ドキュメント（最大100MB）",
+    "pasteYoutubeUrl": "YouTube URLを貼り付け...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "音声",
+      "video": "動画",
+      "image": "画像",
+      "document": "ドキュメント"
+    },
+    "materialErrors": {
+      "uploadFailed": "ファイルのアップロードに失敗しました",
+      "unsupportedFileType": "サポートされていないファイル形式です。画像、動画、音声、PDF、またはドキュメントをアップロードしてください。",
+      "fileSizeLimit": "ファイルサイズは100MB以下にしてください",
+      "saveFailed": "資料の保存に失敗しました",
+      "invalidYoutubeUrl": "無効なYouTube URLです。有効なYouTube動画リンクを入力してください。",
+      "removeFailedMaterial": "資料の削除に失敗しました",
+      "saveYoutubeFailed": "YouTube動画の保存に失敗しました"
+    }
   },
   "eventActions": {
     "eventOptions": "イベントオプション",

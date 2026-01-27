@@ -23,6 +23,7 @@
     "back": "Back",
     "save": "Save",
     "cancel": "Cancel",
+    "add": "Add",
     "loading": "Loading...",
     "error": "Error",
     "yes": "Yes",
@@ -313,7 +314,30 @@
     "tierName": "Tier name (e.g., VIP)",
     "tierDescription": "Description (optional)",
     "pricePlaceholder": "100000",
-    "addTier": "Add tier"
+    "addTier": "Add tier",
+    "materialsDescription": "Add PDFs, videos, audio, or images related to this event",
+    "addMaterial": "Add material",
+    "uploadFile": "Upload file",
+    "dropFileHere": "Drop a file here or click to browse",
+    "supportedFileTypes": "PDF, images, videos, audio, documents (max 100MB)",
+    "pasteYoutubeUrl": "Paste YouTube URL...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "Audio",
+      "video": "Video",
+      "image": "Image",
+      "document": "Document"
+    },
+    "materialErrors": {
+      "uploadFailed": "Failed to upload file",
+      "unsupportedFileType": "Unsupported file type. Please upload images, videos, audio, PDFs, or documents.",
+      "fileSizeLimit": "File size must be under 100MB",
+      "saveFailed": "Failed to save material",
+      "invalidYoutubeUrl": "Invalid YouTube URL. Please enter a valid YouTube video link.",
+      "removeFailedMaterial": "Failed to remove material",
+      "saveYoutubeFailed": "Failed to save YouTube video"
+    }
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",

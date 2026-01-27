@@ -23,6 +23,7 @@
     "back": "กลับ",
     "save": "บันทึก",
     "cancel": "ยกเลิก",
+    "add": "เพิ่ม",
     "loading": "กำลังโหลด...",
     "error": "ข้อผิดพลาด",
     "yes": "ใช่",
@@ -299,7 +300,30 @@
     "tierName": "ชื่อระดับ (เช่น: VIP)",
     "tierDescription": "รายละเอียด (ไม่บังคับ)",
     "pricePlaceholder": "100000",
-    "addTier": "เพิ่มระดับ"
+    "addTier": "เพิ่มระดับ",
+    "materialsDescription": "เพิ่ม PDF, วิดีโอ, เสียง หรือรูปภาพที่เกี่ยวข้องกับกิจกรรมนี้",
+    "addMaterial": "เพิ่มเอกสาร",
+    "uploadFile": "อัปโหลดไฟล์",
+    "dropFileHere": "วางไฟล์ที่นี่หรือคลิกเพื่อเรียกดู",
+    "supportedFileTypes": "PDF, รูปภาพ, วิดีโอ, เสียง, เอกสาร (สูงสุด 100MB)",
+    "pasteYoutubeUrl": "วาง URL YouTube...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "เสียง",
+      "video": "วิดีโอ",
+      "image": "รูปภาพ",
+      "document": "เอกสาร"
+    },
+    "materialErrors": {
+      "uploadFailed": "อัปโหลดไฟล์ไม่สำเร็จ",
+      "unsupportedFileType": "ประเภทไฟล์ไม่รองรับ กรุณาอัปโหลดรูปภาพ, วิดีโอ, เสียง, PDF หรือเอกสาร",
+      "fileSizeLimit": "ขนาดไฟล์ต้องไม่เกิน 100MB",
+      "saveFailed": "บันทึกเอกสารไม่สำเร็จ",
+      "invalidYoutubeUrl": "URL YouTube ไม่ถูกต้อง กรุณาใส่ลิงก์วิดีโอ YouTube ที่ถูกต้อง",
+      "removeFailedMaterial": "ลบเอกสารไม่สำเร็จ",
+      "saveYoutubeFailed": "บันทึกวิดีโอ YouTube ไม่สำเร็จ"
+    }
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",

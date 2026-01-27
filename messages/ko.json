@@ -23,6 +23,7 @@
     "back": "뒤로",
     "save": "저장",
     "cancel": "취소",
+    "add": "추가",
     "loading": "로딩 중...",
     "error": "오류",
     "yes": "예",
@@ -299,7 +300,30 @@
     "tierName": "등급 이름 (예: VIP)",
     "tierDescription": "설명 (선택사항)",
     "pricePlaceholder": "100000",
-    "addTier": "등급 추가"
+    "addTier": "등급 추가",
+    "materialsDescription": "이 이벤트와 관련된 PDF, 비디오, 오디오 또는 이미지를 추가하세요",
+    "addMaterial": "자료 추가",
+    "uploadFile": "파일 업로드",
+    "dropFileHere": "파일을 여기에 끌어다 놓거나 클릭하여 찾아보기",
+    "supportedFileTypes": "PDF, 이미지, 비디오, 오디오, 문서 (최대 100MB)",
+    "pasteYoutubeUrl": "YouTube URL 붙여넣기...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "오디오",
+      "video": "비디오",
+      "image": "이미지",
+      "document": "문서"
+    },
+    "materialErrors": {
+      "uploadFailed": "파일 업로드 실패",
+      "unsupportedFileType": "지원되지 않는 파일 형식입니다. 이미지, 비디오, 오디오, PDF 또는 문서를 업로드해 주세요.",
+      "fileSizeLimit": "파일 크기는 100MB 이하여야 합니다",
+      "saveFailed": "자료 저장 실패",
+      "invalidYoutubeUrl": "유효하지 않은 YouTube URL입니다. 올바른 YouTube 동영상 링크를 입력해 주세요.",
+      "removeFailedMaterial": "자료 삭제 실패",
+      "saveYoutubeFailed": "YouTube 동영상 저장 실패"
+    }
   },
   "eventActions": {
     "eventOptions": "이벤트 옵션",

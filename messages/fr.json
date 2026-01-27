@@ -23,6 +23,7 @@
     "back": "Retour",
     "save": "Enregistrer",
     "cancel": "Annuler",
+    "add": "Ajouter",
     "loading": "Chargement...",
     "error": "Erreur",
     "yes": "Oui",
@@ -313,7 +314,30 @@
     "tierName": "Nom du niveau (ex: VIP)",
     "tierDescription": "Description (optionnel)",
     "pricePlaceholder": "100000",
-    "addTier": "Ajouter un niveau"
+    "addTier": "Ajouter un niveau",
+    "materialsDescription": "Ajouter des PDF, vidéos, audio ou images liés à cet événement",
+    "addMaterial": "Ajouter un document",
+    "uploadFile": "Importer un fichier",
+    "dropFileHere": "Déposez un fichier ici ou cliquez pour parcourir",
+    "supportedFileTypes": "PDF, images, vidéos, audio, documents (max 100 Mo)",
+    "pasteYoutubeUrl": "Collez l'URL YouTube...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "Audio",
+      "video": "Vidéo",
+      "image": "Image",
+      "document": "Document"
+    },
+    "materialErrors": {
+      "uploadFailed": "Échec du téléchargement",
+      "unsupportedFileType": "Type de fichier non pris en charge. Veuillez télécharger des images, vidéos, audio, PDF ou documents.",
+      "fileSizeLimit": "La taille du fichier doit être inférieure à 100 Mo",
+      "saveFailed": "Échec de l'enregistrement du document",
+      "invalidYoutubeUrl": "URL YouTube invalide. Veuillez entrer un lien vidéo YouTube valide.",
+      "removeFailedMaterial": "Échec de la suppression du document",
+      "saveYoutubeFailed": "Échec de l'enregistrement de la vidéo YouTube"
+    }
   },
   "eventActions": {
     "eventOptions": "Options de l'événement",

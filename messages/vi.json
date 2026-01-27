@@ -23,6 +23,7 @@
     "back": "Quay lại",
     "save": "Lưu",
     "cancel": "Hủy",
+    "add": "Thêm",
     "loading": "Đang tải...",
     "error": "Lỗi",
     "yes": "Có",
@@ -299,7 +300,30 @@
     "tierName": "Tên hạng (VD: VIP)",
     "tierDescription": "Mô tả (tùy chọn)",
     "pricePlaceholder": "100000",
-    "addTier": "Thêm hạng vé"
+    "addTier": "Thêm hạng vé",
+    "materialsDescription": "Thêm PDF, video, audio hoặc hình ảnh liên quan đến sự kiện này",
+    "addMaterial": "Thêm tài liệu",
+    "uploadFile": "Tải lên tệp",
+    "dropFileHere": "Kéo thả tệp vào đây hoặc nhấp để chọn",
+    "supportedFileTypes": "PDF, hình ảnh, video, audio, tài liệu (tối đa 100MB)",
+    "pasteYoutubeUrl": "Dán URL YouTube...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "Audio",
+      "video": "Video",
+      "image": "Hình ảnh",
+      "document": "Tài liệu"
+    },
+    "materialErrors": {
+      "uploadFailed": "Không thể tải lên tệp",
+      "unsupportedFileType": "Loại tệp không được hỗ trợ. Vui lòng tải lên hình ảnh, video, audio, PDF hoặc tài liệu.",
+      "fileSizeLimit": "Kích thước tệp phải dưới 100MB",
+      "saveFailed": "Không thể lưu tài liệu",
+      "invalidYoutubeUrl": "URL YouTube không hợp lệ. Vui lòng nhập liên kết video YouTube hợp lệ.",
+      "removeFailedMaterial": "Không thể xóa tài liệu",
+      "saveYoutubeFailed": "Không thể lưu video YouTube"
+    }
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",

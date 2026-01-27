@@ -23,6 +23,7 @@
     "back": "返回",
     "save": "保存",
     "cancel": "取消",
+    "add": "添加",
     "loading": "加载中...",
     "error": "错误",
     "yes": "是",
@@ -299,7 +300,30 @@
     "tierName": "等级名称（如：VIP）",
     "tierDescription": "描述（可选）",
     "pricePlaceholder": "100000",
-    "addTier": "添加等级"
+    "addTier": "添加等级",
+    "materialsDescription": "添加与此活动相关的PDF、视频、音频或图片",
+    "addMaterial": "添加资料",
+    "uploadFile": "上传文件",
+    "dropFileHere": "将文件拖放到此处或点击浏览",
+    "supportedFileTypes": "PDF、图片、视频、音频、文档（最大100MB）",
+    "pasteYoutubeUrl": "粘贴YouTube链接...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "音频",
+      "video": "视频",
+      "image": "图片",
+      "document": "文档"
+    },
+    "materialErrors": {
+      "uploadFailed": "文件上传失败",
+      "unsupportedFileType": "不支持的文件类型。请上传图片、视频、音频、PDF或文档。",
+      "fileSizeLimit": "文件大小必须小于100MB",
+      "saveFailed": "资料保存失败",
+      "invalidYoutubeUrl": "无效的YouTube链接。请输入有效的YouTube视频链接。",
+      "removeFailedMaterial": "资料删除失败",
+      "saveYoutubeFailed": "YouTube视频保存失败"
+    }
   },
   "eventActions": {
     "eventOptions": "活动选项",

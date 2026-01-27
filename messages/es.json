@@ -23,6 +23,7 @@
     "back": "Volver",
     "save": "Guardar",
     "cancel": "Cancelar",
+    "add": "Añadir",
     "loading": "Cargando...",
     "error": "Error",
     "yes": "Sí",
@@ -299,7 +300,30 @@
     "tierName": "Nombre del nivel (ej: VIP)",
     "tierDescription": "Descripción (opcional)",
     "pricePlaceholder": "100000",
-    "addTier": "Añadir nivel"
+    "addTier": "Añadir nivel",
+    "materialsDescription": "Añade PDFs, videos, audio o imágenes relacionados con este evento",
+    "addMaterial": "Añadir material",
+    "uploadFile": "Subir archivo",
+    "dropFileHere": "Arrastra un archivo aquí o haz clic para explorar",
+    "supportedFileTypes": "PDF, imágenes, videos, audio, documentos (máx. 100MB)",
+    "pasteYoutubeUrl": "Pegar URL de YouTube...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "Audio",
+      "video": "Video",
+      "image": "Imagen",
+      "document": "Documento"
+    },
+    "materialErrors": {
+      "uploadFailed": "Error al subir el archivo",
+      "unsupportedFileType": "Tipo de archivo no compatible. Por favor, sube imágenes, videos, audio, PDFs o documentos.",
+      "fileSizeLimit": "El tamaño del archivo debe ser menor a 100MB",
+      "saveFailed": "Error al guardar el material",
+      "invalidYoutubeUrl": "URL de YouTube no válida. Por favor, introduce un enlace de video de YouTube válido.",
+      "removeFailedMaterial": "Error al eliminar el material",
+      "saveYoutubeFailed": "Error al guardar el video de YouTube"
+    }
   },
   "eventActions": {
     "eventOptions": "Opciones del evento",

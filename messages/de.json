@@ -23,6 +23,7 @@
     "back": "Zurück",
     "save": "Speichern",
     "cancel": "Abbrechen",
+    "add": "Hinzufügen",
     "loading": "Lädt...",
     "error": "Fehler",
     "yes": "Ja",
@@ -299,7 +300,30 @@
     "tierName": "Stufenname (z.B. VIP)",
     "tierDescription": "Beschreibung (optional)",
     "pricePlaceholder": "100000",
-    "addTier": "Stufe hinzufügen"
+    "addTier": "Stufe hinzufügen",
+    "materialsDescription": "PDFs, Videos, Audio oder Bilder zu diesem Event hinzufügen",
+    "addMaterial": "Material hinzufügen",
+    "uploadFile": "Datei hochladen",
+    "dropFileHere": "Datei hierher ziehen oder klicken zum Durchsuchen",
+    "supportedFileTypes": "PDF, Bilder, Videos, Audio, Dokumente (max. 100MB)",
+    "pasteYoutubeUrl": "YouTube-URL einfügen...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "Audio",
+      "video": "Video",
+      "image": "Bild",
+      "document": "Dokument"
+    },
+    "materialErrors": {
+      "uploadFailed": "Datei-Upload fehlgeschlagen",
+      "unsupportedFileType": "Nicht unterstützter Dateityp. Bitte laden Sie Bilder, Videos, Audio, PDFs oder Dokumente hoch.",
+      "fileSizeLimit": "Dateigröße muss unter 100MB sein",
+      "saveFailed": "Material konnte nicht gespeichert werden",
+      "invalidYoutubeUrl": "Ungültige YouTube-URL. Bitte geben Sie einen gültigen YouTube-Video-Link ein.",
+      "removeFailedMaterial": "Material konnte nicht entfernt werden",
+      "saveYoutubeFailed": "YouTube-Video konnte nicht gespeichert werden"
+    }
   },
   "eventActions": {
     "eventOptions": "Event-Optionen",

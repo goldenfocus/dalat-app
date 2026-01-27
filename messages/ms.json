@@ -23,6 +23,7 @@
     "back": "Kembali",
     "save": "Simpan",
     "cancel": "Batal",
+    "add": "Tambah",
     "loading": "Memuatkan...",
     "error": "Ralat",
     "yes": "Ya",
@@ -299,7 +300,30 @@
     "tierName": "Nama peringkat (cth: VIP)",
     "tierDescription": "Keterangan (pilihan)",
     "pricePlaceholder": "100000",
-    "addTier": "Tambah peringkat"
+    "addTier": "Tambah peringkat",
+    "materialsDescription": "Tambah PDF, video, audio atau imej berkaitan acara ini",
+    "addMaterial": "Tambah bahan",
+    "uploadFile": "Muat naik fail",
+    "dropFileHere": "Lepaskan fail di sini atau klik untuk semak imbas",
+    "supportedFileTypes": "PDF, imej, video, audio, dokumen (maks 100MB)",
+    "pasteYoutubeUrl": "Tampal URL YouTube...",
+    "materialTypes": {
+      "youtube": "YouTube",
+      "pdf": "PDF",
+      "audio": "Audio",
+      "video": "Video",
+      "image": "Imej",
+      "document": "Dokumen"
+    },
+    "materialErrors": {
+      "uploadFailed": "Gagal memuat naik fail",
+      "unsupportedFileType": "Jenis fail tidak disokong. Sila muat naik imej, video, audio, PDF atau dokumen.",
+      "fileSizeLimit": "Saiz fail mesti kurang dari 100MB",
+      "saveFailed": "Gagal menyimpan bahan",
+      "invalidYoutubeUrl": "URL YouTube tidak sah. Sila masukkan pautan video YouTube yang sah.",
+      "removeFailedMaterial": "Gagal mengalih keluar bahan",
+      "saveYoutubeFailed": "Gagal menyimpan video YouTube"
+    }
   },
   "eventActions": {
     "eventOptions": "Pilihan acara",
