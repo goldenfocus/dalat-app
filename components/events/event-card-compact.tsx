@@ -193,10 +193,7 @@ export const EventCardCompact = memo(function EventCardCompact({
               )}
             </div>
 
-            {/* Tap hint */}
-            <div className="absolute bottom-2 right-2 text-[10px] text-white/50">
-              tap to open
-            </div>
+{/* Hint removed - card is small and tapping again is intuitive */}
           </div>
         </div>
       </div>

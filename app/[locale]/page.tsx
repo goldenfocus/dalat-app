@@ -16,6 +16,7 @@ import { HeroSection } from "@/components/home/hero-section";
 import { EventGrid } from "@/components/events/event-grid";
 import { EventFeedTabs, type EventLifecycle } from "@/components/events/event-feed-tabs";
 import { EventSearchBar } from "@/components/events/event-search-bar";
+import { EventViewToggle } from "@/components/events/event-view-toggle";
 import { Button } from "@/components/ui/button";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import type { ContentLocale } from "@/lib/types";
@@ -135,13 +136,12 @@ async function EventsFeed({
 
   return (
     <div className="space-y-4">
-      {/* Compact event grid - 3 columns on mobile, 12 cards total */}
+      {/* Event grid - adapts to user's view preference */}
       <EventGrid
         events={events}
         counts={counts}
         eventTranslations={eventTranslations}
         seriesRrules={seriesRrules}
-        forceCompact
       />
 
       {/* Show "See all" link */}
@@ -201,7 +201,7 @@ export default async function Home({ params, searchParams }: PageProps) {
 
       {/* Main content */}
       <div className="flex-1 container max-w-6xl mx-auto px-4 py-3 lg:py-6">
-        {/* Tabs + Search */}
+        {/* Tabs + View Toggle + Search */}
         <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3">
           <Suspense fallback={<div className="h-10 w-48 bg-muted animate-pulse rounded-lg" />}>
             <EventFeedTabs
@@ -216,9 +216,12 @@ export default async function Home({ params, searchParams }: PageProps) {
               }}
             />
           </Suspense>
-          <Suspense fallback={null}>
-            <EventSearchBar className="hidden lg:flex w-64 flex-shrink-0" />
-          </Suspense>
+          <div className="flex items-center gap-2">
+            <EventViewToggle />
+            <Suspense fallback={null}>
+              <EventSearchBar className="hidden lg:flex w-64 flex-shrink-0" />
+            </Suspense>
+          </div>
         </div>
 
         {/* Compact event grid - 12 cards (3 cols × 4 rows on mobile) */}
