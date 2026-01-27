@@ -447,6 +447,9 @@ export function EventForm({
     const description = formData.get("description") as string;
     const date = formData.get("date") as string;
     const time = formData.get("time") as string;
+
+    // Debug: Log form values to help diagnose validation issues
+    console.log("[EventForm] Submit values:", { title: title.trim(), date, time });
     const locationName = formData.get("location_name") as string;
     const address = formData.get("address") as string;
     const googleMapsUrl = formData.get("google_maps_url") as string;
