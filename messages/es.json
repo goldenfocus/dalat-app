@@ -200,7 +200,8 @@
     "joinMeeting": "Unirse a la reunión",
     "rsvpToSeeMeetingLink": "Confirma asistencia para ver el enlace de la reunión",
     "readMore": "Leer más",
-    "showLess": "Mostrar menos"
+    "showLess": "Mostrar menos",
+    "materials": "Materiales"
   },
   "rsvp": {
     "imGoing": "Voy a ir",
@@ -243,6 +244,14 @@
     "locationPlacesSection": "Otras ubicaciones",
     "locationNoResults": "No se encontraron ubicaciones",
     "locationLoading": "Cargando...",
+    "venueLinked": "Vinculado al lugar",
+    "venueLinkButton": "Vincular a lugar existente",
+    "venueLinkDialogTitle": "Seleccionar lugar",
+    "venueSearchPlaceholder": "Buscar lugares...",
+    "venueNoResults": "No se encontraron lugares",
+    "venueSearchHint": "Escribe para buscar un lugar",
+    "venueFindingNearby": "Buscando lugares cercanos...",
+    "venueNearbyFound": "¿Es en uno de estos lugares?",
     "venueName": "Nombre del lugar",
     "streetAddress": "Dirección",
     "eventDescription": "Descripción del evento",

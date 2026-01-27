@@ -200,7 +200,8 @@
     "joinMeeting": "Tham gia cuộc họp",
     "rsvpToSeeMeetingLink": "Đăng ký để xem liên kết cuộc họp",
     "readMore": "Xem thêm",
-    "showLess": "Thu gọn"
+    "showLess": "Thu gọn",
+    "materials": "Tài liệu"
   },
   "rsvp": {
     "imGoing": "Tôi sẽ đi",
@@ -243,6 +244,14 @@
     "locationPlacesSection": "Vị trí khác",
     "locationNoResults": "Không tìm thấy địa điểm",
     "locationLoading": "Đang tải...",
+    "venueLinked": "Đã liên kết địa điểm",
+    "venueLinkButton": "Liên kết địa điểm có sẵn",
+    "venueLinkDialogTitle": "Chọn địa điểm",
+    "venueSearchPlaceholder": "Tìm địa điểm...",
+    "venueNoResults": "Không tìm thấy địa điểm",
+    "venueSearchHint": "Nhập để tìm địa điểm",
+    "venueFindingNearby": "Đang tìm địa điểm gần đây...",
+    "venueNearbyFound": "Sự kiện này diễn ra ở đây?",
     "venueName": "Tên địa điểm",
     "streetAddress": "Địa chỉ đường",
     "eventDescription": "Mô tả sự kiện",

@@ -15,6 +15,7 @@ import {
   ChevronUp,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { EventMaterial, MaterialType } from "@/lib/types";
@@ -381,6 +382,7 @@ export function EventMaterialsSummary({
   materials,
   className,
 }: EventMaterialsProps) {
+  const t = useTranslations("events");
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (!materials || materials.length === 0) return null;
@@ -399,7 +401,7 @@ export function EventMaterialsSummary({
         className="flex items-center justify-between w-full p-4 text-left hover:bg-accent/50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <p className="font-medium">Materials</p>
+          <p className="font-medium">{t("materials")}</p>
           <div className="flex -space-x-1">
             {Object.keys(typeCounts).map((type) => {
               const Icon = TYPE_ICONS[type as MaterialType];

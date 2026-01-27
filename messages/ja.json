@@ -200,7 +200,8 @@
     "joinMeeting": "ミーティングに参加",
     "rsvpToSeeMeetingLink": "ミーティングリンクを見るには参加登録してください",
     "readMore": "続きを読む",
-    "showLess": "閉じる"
+    "showLess": "閉じる",
+    "materials": "資料"
   },
   "rsvp": {
     "imGoing": "参加する",
@@ -243,6 +244,14 @@
     "locationPlacesSection": "その他の場所",
     "locationNoResults": "場所が見つかりません",
     "locationLoading": "読み込み中...",
+    "venueLinked": "会場とリンク済み",
+    "venueLinkButton": "既存の会場とリンク",
+    "venueLinkDialogTitle": "会場を選択",
+    "venueSearchPlaceholder": "会場を検索...",
+    "venueNoResults": "会場が見つかりません",
+    "venueSearchHint": "会場を検索するには入力してください",
+    "venueFindingNearby": "近くの会場を検索中...",
+    "venueNearbyFound": "この会場のいずれかですか？",
     "venueName": "会場名",
     "streetAddress": "住所",
     "eventDescription": "イベントの説明",

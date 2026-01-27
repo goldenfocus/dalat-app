@@ -200,7 +200,8 @@
     "joinMeeting": "加入会议",
     "rsvpToSeeMeetingLink": "报名后可查看会议链接",
     "readMore": "展开阅读",
-    "showLess": "收起"
+    "showLess": "收起",
+    "materials": "资料"
   },
   "rsvp": {
     "imGoing": "我要参加",
@@ -243,6 +244,14 @@
     "locationPlacesSection": "其他位置",
     "locationNoResults": "未找到位置",
     "locationLoading": "加载中...",
+    "venueLinked": "已关联场地",
+    "venueLinkButton": "关联现有场地",
+    "venueLinkDialogTitle": "选择场地",
+    "venueSearchPlaceholder": "搜索场地...",
+    "venueNoResults": "未找到场地",
+    "venueSearchHint": "输入以搜索场地",
+    "venueFindingNearby": "正在查找附近场地...",
+    "venueNearbyFound": "活动在这些场地之一吗？",
     "venueName": "场地名称",
     "streetAddress": "街道地址",
     "eventDescription": "活动描述",

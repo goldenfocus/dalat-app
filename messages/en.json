@@ -200,7 +200,8 @@
     "lifecycle": {
       "live": "Live",
       "ended": "Ended"
-    }
+    },
+    "materials": "Materials"
   },
   "rsvp": {
     "imGoing": "I'm going",
@@ -263,6 +264,14 @@
     "locationPlacesSection": "Other Locations",
     "locationNoResults": "No locations found",
     "locationLoading": "Loading...",
+    "venueLinked": "Linked to venue",
+    "venueLinkButton": "Link to existing venue",
+    "venueLinkDialogTitle": "Select a venue",
+    "venueSearchPlaceholder": "Search venues...",
+    "venueNoResults": "No venues found",
+    "venueSearchHint": "Type to search for a venue",
+    "venueFindingNearby": "Finding nearby venues...",
+    "venueNearbyFound": "Is this at one of these venues?",
     "venueName": "Venue name",
     "streetAddress": "Street address",
     "eventDescription": "Event description",

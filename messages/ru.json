@@ -200,7 +200,8 @@
     "joinMeeting": "Присоединиться к встрече",
     "rsvpToSeeMeetingLink": "Зарегистрируйтесь, чтобы увидеть ссылку на встречу",
     "readMore": "Читать далее",
-    "showLess": "Свернуть"
+    "showLess": "Свернуть",
+    "materials": "Материалы"
   },
   "rsvp": {
     "imGoing": "Я пойду",
@@ -243,6 +244,14 @@
     "locationPlacesSection": "Другие места",
     "locationNoResults": "Места не найдены",
     "locationLoading": "Загрузка...",
+    "venueLinked": "Связано с местом",
+    "venueLinkButton": "Связать с местом",
+    "venueLinkDialogTitle": "Выберите место",
+    "venueSearchPlaceholder": "Поиск места...",
+    "venueNoResults": "Места не найдены",
+    "venueSearchHint": "Введите для поиска места",
+    "venueFindingNearby": "Поиск мест поблизости...",
+    "venueNearbyFound": "Это одно из этих мест?",
     "venueName": "Название места",
     "streetAddress": "Адрес",
     "eventDescription": "Описание события",

@@ -200,7 +200,8 @@
     "joinMeeting": "Gabung rapat",
     "rsvpToSeeMeetingLink": "RSVP untuk melihat tautan rapat",
     "readMore": "Baca selengkapnya",
-    "showLess": "Tampilkan lebih sedikit"
+    "showLess": "Tampilkan lebih sedikit",
+    "materials": "Materi"
   },
   "rsvp": {
     "imGoing": "Saya hadir",
@@ -243,6 +244,14 @@
     "locationPlacesSection": "Lokasi Lain",
     "locationNoResults": "Tidak ada lokasi ditemukan",
     "locationLoading": "Memuat...",
+    "venueLinked": "Terhubung ke tempat",
+    "venueLinkButton": "Hubungkan ke tempat yang ada",
+    "venueLinkDialogTitle": "Pilih tempat",
+    "venueSearchPlaceholder": "Cari tempat...",
+    "venueNoResults": "Tidak ada tempat ditemukan",
+    "venueSearchHint": "Ketik untuk mencari tempat",
+    "venueFindingNearby": "Mencari tempat terdekat...",
+    "venueNearbyFound": "Apakah ini di salah satu tempat ini?",
     "venueName": "Nama tempat",
     "streetAddress": "Alamat",
     "eventDescription": "Deskripsi acara",
