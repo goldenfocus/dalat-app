@@ -93,7 +93,9 @@ export function LocaleMismatchBanner() {
   if (!shouldShow) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm animate-in slide-in-from-bottom-4 fade-in duration-300">
+    // On mobile (lg:hidden), position above the floating RSVP bar which sits at bottom-[calc(4rem+env(safe-area-inset-bottom))]
+    // On desktop (lg:), position at bottom-4 since there's no floating bar
+    <div className="fixed bottom-[calc(8rem+env(safe-area-inset-bottom))] lg:bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm animate-in slide-in-from-bottom-4 fade-in duration-300">
       <div className="flex items-center gap-3 p-3 rounded-xl bg-card/95 backdrop-blur-md border border-border shadow-lg">
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-xl flex-shrink-0">
           {LOCALE_FLAGS[browserLocale]}

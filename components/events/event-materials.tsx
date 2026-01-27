@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   FileText,
   Music,
@@ -63,7 +63,8 @@ function YouTubeEmbed({ videoId, title }: { videoId: string; title?: string }) {
 }
 
 /**
- * Audio player component with rich metadata display
+ * Audio player component with rich metadata display and background playback support
+ * Uses Media Session API for lock screen controls and background audio on mobile
  */
 interface AudioPlayerProps {
   url: string;
@@ -85,8 +86,119 @@ function AudioPlayer({
   thumbnailUrl,
   durationSeconds,
 }: AudioPlayerProps) {
-  const displayTitle = title || filename;
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const displayTitle = title || filename || "Audio";
   const hasMetadata = artist || album || thumbnailUrl;
+
+  // Set up Media Session API for background playback and lock screen controls
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Update Media Session metadata when component mounts or props change
+    const updateMediaSession = () => {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: displayTitle,
+        artist: artist || "Unknown Artist",
+        album: album || "Unknown Album",
+        artwork: thumbnailUrl
+          ? [
+              { src: thumbnailUrl, sizes: "96x96", type: "image/jpeg" },
+              { src: thumbnailUrl, sizes: "128x128", type: "image/jpeg" },
+              { src: thumbnailUrl, sizes: "192x192", type: "image/jpeg" },
+              { src: thumbnailUrl, sizes: "256x256", type: "image/jpeg" },
+              { src: thumbnailUrl, sizes: "384x384", type: "image/jpeg" },
+              { src: thumbnailUrl, sizes: "512x512", type: "image/jpeg" },
+            ]
+          : [],
+      });
+    };
+
+    // Set up action handlers for lock screen controls
+    const setupActionHandlers = () => {
+      navigator.mediaSession.setActionHandler("play", () => {
+        audio.play();
+      });
+
+      navigator.mediaSession.setActionHandler("pause", () => {
+        audio.pause();
+      });
+
+      navigator.mediaSession.setActionHandler("seekbackward", (details) => {
+        audio.currentTime = Math.max(audio.currentTime - (details.seekOffset || 10), 0);
+      });
+
+      navigator.mediaSession.setActionHandler("seekforward", (details) => {
+        audio.currentTime = Math.min(
+          audio.currentTime + (details.seekOffset || 10),
+          audio.duration || Infinity
+        );
+      });
+
+      navigator.mediaSession.setActionHandler("seekto", (details) => {
+        if (details.seekTime !== undefined) {
+          audio.currentTime = details.seekTime;
+        }
+      });
+    };
+
+    // Update position state periodically for lock screen progress bar
+    const updatePositionState = () => {
+      if (audio.duration && !Number.isNaN(audio.duration)) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: audio.duration,
+            playbackRate: audio.playbackRate,
+            position: audio.currentTime,
+          });
+        } catch {
+          // Some browsers don't support setPositionState
+        }
+      }
+    };
+
+    // Event listeners
+    const handlePlay = () => {
+      updateMediaSession();
+      setupActionHandlers();
+      navigator.mediaSession.playbackState = "playing";
+    };
+
+    const handlePause = () => {
+      navigator.mediaSession.playbackState = "paused";
+    };
+
+    const handleTimeUpdate = () => {
+      updatePositionState();
+    };
+
+    const handleLoadedMetadata = () => {
+      updatePositionState();
+    };
+
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    return () => {
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+
+      // Clear action handlers on unmount
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.setActionHandler("play", null);
+        navigator.mediaSession.setActionHandler("pause", null);
+        navigator.mediaSession.setActionHandler("seekbackward", null);
+        navigator.mediaSession.setActionHandler("seekforward", null);
+        navigator.mediaSession.setActionHandler("seekto", null);
+      }
+    };
+  }, [displayTitle, artist, album, thumbnailUrl]);
 
   return (
     <div className="border rounded-lg bg-card overflow-hidden">
@@ -132,7 +244,7 @@ function AudioPlayer({
 
       {/* Audio controls */}
       <div className="px-4 pb-4">
-        <audio controls className="w-full h-10">
+        <audio ref={audioRef} controls className="w-full h-10">
           <source src={url} />
           Your browser does not support audio playback.
         </audio>

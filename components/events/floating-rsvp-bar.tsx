@@ -1,12 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useRsvpActions, isEventPast, useCelebration } from "./rsvp-button";
+import { RsvpCelebration } from "./rsvp-celebration";
 import type { Rsvp } from "@/lib/types";
 
 interface FloatingRsvpBarProps {
   eventId: string;
+  eventSlug: string;
+  eventTitle: string;
+  eventDescription: string | null;
+  eventImageUrl: string | null;
   capacity: number | null;
   goingSpots: number;
   currentRsvp: Rsvp | null;
@@ -18,6 +24,10 @@ interface FloatingRsvpBarProps {
 
 export function FloatingRsvpBar({
   eventId,
+  eventSlug,
+  eventTitle,
+  eventDescription,
+  eventImageUrl,
   capacity,
   goingSpots,
   currentRsvp,
@@ -27,11 +37,29 @@ export function FloatingRsvpBar({
   endsAt,
 }: FloatingRsvpBarProps) {
   const t = useTranslations("rsvp");
+  const [showCelebration, setShowCelebration] = useState(false);
   const celebration = useCelebration();
+
+  const handleCelebrationTrigger = () => {
+    setShowCelebration(true);
+    celebration.setCelebrating(true);
+  };
+
+  const handleCelebrationComplete = () => {
+    setShowCelebration(false);
+    celebration.setCelebrating(false);
+  };
+
   const { isPending, handleRsvp, handleCancel } = useRsvpActions(
     eventId,
-    isLoggedIn
+    isLoggedIn,
+    handleCelebrationTrigger
   );
+
+  // Build event URL for sharing
+  const eventUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/events/${eventSlug}`
+    : `/events/${eventSlug}`;
 
   const isPast = isEventPast(startsAt, endsAt);
   const isFull = capacity ? goingSpots >= capacity : false;
@@ -94,29 +122,41 @@ export function FloatingRsvpBar({
   }
 
   return (
-    <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 lg:hidden">
-      <div className="mx-4 mb-2">
-        <div className="bg-background/95 backdrop-blur-sm border rounded-xl shadow-lg px-4 py-3 flex items-center justify-between gap-3">
-          {statusText ? (
-            <>
-              <span
-                className={`text-sm font-medium truncate ${
-                  isGoing
-                    ? "text-green-600"
-                    : isWaitlist
-                      ? "text-orange-600"
-                      : "text-blue-600"
-                }`}
-              >
-                {statusText}
-              </span>
-              {actionButton}
-            </>
-          ) : (
-            actionButton
-          )}
+    <>
+      {showCelebration && (
+        <RsvpCelebration
+          eventUrl={eventUrl}
+          eventTitle={eventTitle}
+          eventDescription={eventDescription}
+          startsAt={startsAt}
+          imageUrl={eventImageUrl}
+          onComplete={handleCelebrationComplete}
+        />
+      )}
+      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 lg:hidden">
+        <div className="mx-4 mb-2">
+          <div className="bg-background/95 backdrop-blur-sm border rounded-xl shadow-lg px-4 py-3 flex items-center justify-between gap-3">
+            {statusText ? (
+              <>
+                <span
+                  className={`text-sm font-medium truncate ${
+                    isGoing
+                      ? "text-green-600"
+                      : isWaitlist
+                        ? "text-orange-600"
+                        : "text-blue-600"
+                  }`}
+                >
+                  {statusText}
+                </span>
+                {actionButton}
+              </>
+            ) : (
+              actionButton
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
