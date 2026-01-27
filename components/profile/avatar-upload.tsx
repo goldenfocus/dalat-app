@@ -14,6 +14,8 @@ interface AvatarUploadProps {
   onAvatarChange: (url: string | null) => void;
   size?: "sm" | "md" | "lg";
   aiAvatarButton?: React.ReactNode;
+  /** Refine button for existing avatar */
+  refineButton?: React.ReactNode;
 }
 
 const sizeClasses = {
@@ -34,6 +36,7 @@ export function AvatarUpload({
   onAvatarChange,
   size = "lg",
   aiAvatarButton,
+  refineButton,
 }: AvatarUploadProps) {
   const t = useTranslations("profile");
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatarUrl);
@@ -246,6 +249,8 @@ export function AvatarUpload({
           </Button>
 
           {aiAvatarButton}
+
+          {previewUrl && refineButton}
 
           {previewUrl && (
             <Button

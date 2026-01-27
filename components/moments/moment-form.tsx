@@ -282,6 +282,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         });
 
         if (postError) {
+          console.error("create_moment RPC error:", postError.message, postError);
           if (postError.message.includes("not_allowed_to_post")) {
             setError(t("errors.notAllowed"));
             return;
@@ -383,8 +384,8 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
                   </button>
                 </div>
 
-                {/* Per-image caption input - directly attached below image */}
-                {upload.status === "uploaded" && (
+                {/* Per-image caption input - only shown when multiple uploads */}
+                {upload.status === "uploaded" && readyCount > 1 && (
                   <input
                     type="text"
                     value={upload.caption || ""}

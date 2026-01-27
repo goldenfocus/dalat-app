@@ -1,16 +1,42 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, createContext, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { EventFeedback } from "./event-feedback";
+import { RsvpCelebration } from "./rsvp-celebration";
 import type { Rsvp } from "@/lib/types";
+
+// Context for coordinating celebration state across components
+interface CelebrationContextValue {
+  isCelebrating: boolean;
+  setCelebrating: (value: boolean) => void;
+}
+
+const CelebrationContext = createContext<CelebrationContextValue>({
+  isCelebrating: false,
+  setCelebrating: () => {},
+});
+
+export const useCelebration = () => useContext(CelebrationContext);
+
+export function CelebrationProvider({ children }: { children: React.ReactNode }) {
+  const [isCelebrating, setCelebrating] = useState(false);
+  return (
+    <CelebrationContext.Provider value={{ isCelebrating, setCelebrating }}>
+      {children}
+    </CelebrationContext.Provider>
+  );
+}
 
 interface RsvpButtonProps {
   eventId: string;
+  eventSlug: string;
   eventTitle?: string;
+  eventDescription?: string | null;
+  eventImageUrl?: string | null;
   capacity: number | null;
   goingSpots: number;
   currentRsvp: Rsvp | null;
@@ -39,7 +65,11 @@ export function isEventPast(startsAt: string, endsAt: string | null): boolean {
 }
 
 // Hook for RSVP actions - shared between RsvpButton and FloatingRsvpBar
-export function useRsvpActions(eventId: string, isLoggedIn: boolean) {
+export function useRsvpActions(
+  eventId: string,
+  isLoggedIn: boolean,
+  onRsvpSuccess?: () => void
+) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +95,9 @@ export function useRsvpActions(eventId: string, isLoggedIn: boolean) {
       }
 
       if (data?.status === "going") {
+        // Trigger celebration!
+        onRsvpSuccess?.();
+
         fetch("/api/notifications/rsvp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -159,7 +192,10 @@ export function useRsvpActions(eventId: string, isLoggedIn: boolean) {
 
 export function RsvpButton({
   eventId,
+  eventSlug,
   eventTitle = "",
+  eventDescription = null,
+  eventImageUrl = null,
   capacity,
   goingSpots,
   currentRsvp,
@@ -170,8 +206,26 @@ export function RsvpButton({
   existingFeedback,
 }: RsvpButtonProps) {
   const t = useTranslations("rsvp");
+  const [showCelebration, setShowCelebration] = useState(false);
+  const celebration = useCelebration();
+
+  const handleCelebrationTrigger = () => {
+    setShowCelebration(true);
+    celebration.setCelebrating(true);
+  };
+
+  const handleCelebrationComplete = () => {
+    setShowCelebration(false);
+    celebration.setCelebrating(false);
+  };
+
   const { isPending, error, handleRsvp, handleInterested, handleCancel } =
-    useRsvpActions(eventId, isLoggedIn);
+    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger);
+
+  // Build event URL for sharing
+  const eventUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/events/${eventSlug}`
+    : `/events/${eventSlug}`;
 
   const isPast = isEventPast(startsAt, endsAt);
   const isFull = capacity ? goingSpots >= capacity : false;
@@ -179,86 +233,140 @@ export function RsvpButton({
   const isWaitlist = currentRsvp?.status === "waitlist";
   const isInterested = currentRsvp?.status === "interested";
 
+  // Render celebration portal (always rendered, controlled by showCelebration state)
+  const celebrationPortal = showCelebration && (
+    <RsvpCelebration
+      eventUrl={eventUrl}
+      eventTitle={eventTitle}
+      eventDescription={eventDescription}
+      startsAt={startsAt}
+      imageUrl={eventImageUrl}
+      onComplete={handleCelebrationComplete}
+    />
+  );
+
   // STATE: Event has ended - show feedback UI
   if (isPast) {
     return (
-      <EventFeedback
-        eventId={eventId}
-        eventTitle={eventTitle}
-        currentRsvpStatus={currentRsvp?.status ?? null}
-        existingFeedback={existingFeedback}
-      />
+      <>
+        {celebrationPortal}
+        <EventFeedback
+          eventId={eventId}
+          eventTitle={eventTitle}
+          currentRsvpStatus={currentRsvp?.status ?? null}
+          existingFeedback={existingFeedback}
+        />
+      </>
     );
   }
 
   // STATE: User is going
   if (isGoing) {
     return (
-      <div className="space-y-2">
-        <div className="flex gap-2">
-          <Button
-            onClick={handleCancel}
-            disabled={isPending}
-            variant="outline"
-            className="flex-1"
-          >
-            {isPending ? "..." : t("cancelRsvp")}
-          </Button>
-          <Button
-            onClick={handleInterested}
-            disabled={isPending}
-            variant="ghost"
-            className="flex-1"
-          >
-            {isPending ? "..." : t("justInterested")}
-          </Button>
+      <>
+        {celebrationPortal}
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCancel}
+              disabled={isPending}
+              variant="outline"
+              className="flex-1"
+            >
+              {isPending ? "..." : t("cancelRsvp")}
+            </Button>
+            <Button
+              onClick={handleInterested}
+              disabled={isPending}
+              variant="ghost"
+              className="flex-1"
+            >
+              {isPending ? "..." : t("justInterested")}
+            </Button>
+          </div>
+          <p className="text-sm text-green-600 text-center">
+            {t("youreGoing")}
+          </p>
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
-        <p className="text-sm text-green-600 text-center">
-          {t("youreGoing")}
-        </p>
-        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
-      </div>
+      </>
     );
   }
 
   // STATE: User is on waitlist
   if (isWaitlist) {
     return (
-      <div className="space-y-2">
-        <div className="flex gap-2">
-          <Button
-            onClick={handleCancel}
-            disabled={isPending}
-            variant="outline"
-            className="flex-1"
-          >
-            {isPending ? "..." : t("leaveWaitlist")}
-          </Button>
-          <Button
-            onClick={handleInterested}
-            disabled={isPending}
-            variant="ghost"
-            className="flex-1"
-          >
-            {isPending ? "..." : t("justInterested")}
-          </Button>
+      <>
+        {celebrationPortal}
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCancel}
+              disabled={isPending}
+              variant="outline"
+              className="flex-1"
+            >
+              {isPending ? "..." : t("leaveWaitlist")}
+            </Button>
+            <Button
+              onClick={handleInterested}
+              disabled={isPending}
+              variant="ghost"
+              className="flex-1"
+            >
+              {isPending ? "..." : t("justInterested")}
+            </Button>
+          </div>
+          <div className="text-center space-y-1">
+            <p className="text-sm text-orange-600 font-medium">
+              {t("waitlistPosition", { position: waitlistPosition ?? 0 })}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("waitlistAutoPromote")}
+            </p>
+          </div>
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
-        <div className="text-center space-y-1">
-          <p className="text-sm text-orange-600 font-medium">
-            {t("waitlistPosition", { position: waitlistPosition ?? 0 })}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {t("waitlistAutoPromote")}
-          </p>
-        </div>
-        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
-      </div>
+      </>
     );
   }
 
   // STATE: User is interested
   if (isInterested) {
     return (
+      <>
+        {celebrationPortal}
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Button
+              onClick={handleRsvp}
+              disabled={isPending}
+              className="flex-1"
+            >
+              {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
+            </Button>
+            <Button
+              onClick={handleCancel}
+              disabled={isPending}
+              variant="outline"
+              className="flex-1"
+            >
+              {isPending ? "..." : t("notInterested")}
+            </Button>
+          </div>
+          <p className="text-sm text-blue-600 text-center">
+            {t("youreInterested")}
+          </p>
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+        </div>
+      </>
+    );
+  }
+
+  // DEFAULT STATE: No RSVP - show side-by-side buttons
+  return (
+    <>
+      {celebrationPortal}
       <div className="space-y-2">
         <div className="flex gap-2">
           <Button
@@ -269,43 +377,16 @@ export function RsvpButton({
             {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
           </Button>
           <Button
-            onClick={handleCancel}
+            onClick={handleInterested}
             disabled={isPending}
             variant="outline"
             className="flex-1"
           >
-            {isPending ? "..." : t("notInterested")}
+            {isPending ? "..." : t("interested")}
           </Button>
         </div>
-        <p className="text-sm text-blue-600 text-center">
-          {t("youreInterested")}
-        </p>
         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
       </div>
-    );
-  }
-
-  // DEFAULT STATE: No RSVP - show side-by-side buttons
-  return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        <Button
-          onClick={handleRsvp}
-          disabled={isPending}
-          className="flex-1"
-        >
-          {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
-        </Button>
-        <Button
-          onClick={handleInterested}
-          disabled={isPending}
-          variant="outline"
-          className="flex-1"
-        >
-          {isPending ? "..." : t("interested")}
-        </Button>
-      </div>
-      {error && <p className="text-sm text-red-500 text-center">{error}</p>}
-    </div>
+    </>
   );
 }

@@ -13,7 +13,7 @@ import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
 import { JsonLd, generateEventSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { RsvpButton } from "@/components/events/rsvp-button";
+import { RsvpButton, CelebrationProvider } from "@/components/events/rsvp-button";
 import { FloatingRsvpBar } from "@/components/events/floating-rsvp-bar";
 import { FeedbackBadge } from "@/components/events/event-feedback";
 import { SeriesBadge } from "@/components/events/series-badge";
@@ -596,6 +596,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   ]);
 
   return (
+    <CelebrationProvider>
     <main className="min-h-screen">
       {/* JSON-LD Structured Data for SEO/AEO */}
       <JsonLd data={[eventSchema, breadcrumbSchema]} />
@@ -830,7 +831,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 {/* RSVP button */}
                 <RsvpButton
                   eventId={event.id}
+                  eventSlug={event.slug}
                   eventTitle={event.title}
+                  eventDescription={event.description}
+                  eventImageUrl={event.image_url}
                   capacity={event.capacity}
                   goingSpots={counts?.going_spots ?? 0}
                   currentRsvp={currentRsvp}
@@ -943,5 +947,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         endsAt={event.ends_at}
       />
     </main>
+    </CelebrationProvider>
   );
 }

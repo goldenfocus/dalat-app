@@ -32,10 +32,14 @@ interface AIAvatarDialogProps {
   currentAvatarUrl?: string | null;
   onAvatarGenerated: (url: string) => void;
   disabled?: boolean;
+  /** Start in refine mode instead of generation mode */
+  initialMode?: "generate" | "refine";
+  /** Custom trigger button (for refine mode) */
+  customTrigger?: React.ReactNode;
 }
 
 type AvatarStyle = "male" | "female" | "neutral" | "custom";
-type DialogMode = "selection" | "generating" | "preview";
+type DialogMode = "selection" | "generating" | "preview" | "refine";
 
 const styleDescriptions: Record<AvatarStyle, string> = {
   male: "masculine-presenting person with strong, defined features",
@@ -90,10 +94,12 @@ export function AIAvatarDialog({
   currentAvatarUrl,
   onAvatarGenerated,
   disabled,
+  initialMode = "generate",
+  customTrigger,
 }: AIAvatarDialogProps) {
   const t = useTranslations("profile");
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<DialogMode>("selection");
+  const [mode, setMode] = useState<DialogMode>(initialMode === "refine" ? "refine" : "selection");
   const [selectedStyle, setSelectedStyle] = useState<AvatarStyle>("neutral");
   const [customPrompt, setCustomPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -107,14 +113,14 @@ export function AIAvatarDialog({
   const handleOpenChange = useCallback((newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
-      // Reset to selection mode but keep style preference
-      setMode("selection");
+      // Reset to initial mode but keep style preference
+      setMode(initialMode === "refine" ? "refine" : "selection");
       setPreviewUrl(null);
       setError(null);
       setRefinementPrompt("");
       setIsZoomed(false);
     }
-  }, []);
+  }, [initialMode]);
 
   // Build style-aware prompt
   const buildAvatarPrompt = () => {
@@ -293,16 +299,27 @@ Important:
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={disabled}
-            className="flex items-center gap-2"
-          >
-            <Sparkles className="w-4 h-4" />
-            {t("generateAI")}
-          </Button>
+          {customTrigger || (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={disabled}
+              className="flex items-center gap-2"
+            >
+              {initialMode === "refine" ? (
+                <>
+                  <Wand2 className="w-4 h-4" />
+                  {t("refineImage")}
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  {t("generateAI")}
+                </>
+              )}
+            </Button>
+          )}
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           {mode === "selection" ? (
@@ -404,6 +421,128 @@ Important:
                     </>
                   )}
                 </Button>
+              </div>
+            </>
+          ) : mode === "refine" ? (
+            <>
+              {/* REFINE MODE - for existing images */}
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Wand2 className="w-5 h-5 text-violet-500" />
+                  {t("avatarDialog.refineTitle")}
+                </DialogTitle>
+                <DialogDescription>{t("avatarDialog.refineDescription")}</DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                {/* Current Avatar Preview */}
+                {currentAvatarUrl && (
+                  <div className="flex flex-col items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsZoomed(true)}
+                      className="relative group cursor-zoom-in"
+                      disabled={isGenerating}
+                    >
+                      <div className="relative w-48 h-48 rounded-full overflow-hidden ring-4 ring-violet-500/20">
+                        <Image
+                          src={previewUrl || currentAvatarUrl}
+                          alt="Current avatar"
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                        {isGenerating && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <Loader2 className="w-8 h-8 animate-spin text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </button>
+                  </div>
+                )}
+
+                {/* Quick Refinement Presets */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {t("avatarDialog.quickRefine")}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {REFINEMENT_PRESETS.map((preset) => (
+                      <button
+                        key={preset.labelKey}
+                        type="button"
+                        onClick={() => handleRefine(preset.prompt)}
+                        disabled={isGenerating}
+                        className="px-3 py-1.5 text-xs rounded-full border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                      >
+                        {t(`avatarDialog.refinements.${preset.labelKey}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom Refinement */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={refinementPrompt}
+                      onChange={(e) => setRefinementPrompt(e.target.value)}
+                      placeholder={t("avatarDialog.customRefinePlaceholder")}
+                      className="flex-1 px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm"
+                      disabled={isGenerating}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && refinementPrompt.trim()) {
+                          handleRefine();
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => handleRefine()}
+                      disabled={isGenerating || !refinementPrompt.trim()}
+                      variant="outline"
+                      size="sm"
+                      className="border-violet-500/30 text-violet-400 hover:bg-violet-500/20"
+                    >
+                      <Wand2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Error */}
+                {error && (
+                  <p className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+                    {error}
+                  </p>
+                )}
+              </div>
+
+              {/* Refine Mode Actions */}
+              <div className="flex gap-2 justify-between">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleOpenChange(false)}
+                  disabled={isGenerating}
+                >
+                  {t("cancel")}
+                </Button>
+                {previewUrl && (
+                  <Button
+                    type="button"
+                    onClick={handleAccept}
+                    disabled={isGenerating}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  >
+                    <Check className="w-4 h-4" />
+                    {t("avatarDialog.useThis")}
+                  </Button>
+                )}
               </div>
             </>
           ) : mode === "generating" ? (
@@ -554,7 +693,7 @@ Important:
       </Dialog>
 
       {/* Zoom Overlay */}
-      {isZoomed && previewUrl && (
+      {isZoomed && (previewUrl || currentAvatarUrl) && (
         <div
           className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
           onClick={() => setIsZoomed(false)}
@@ -568,8 +707,8 @@ Important:
           </button>
           <div className="relative max-w-[90vw] max-h-[90vh] aspect-square">
             <Image
-              src={previewUrl}
-              alt="Generated avatar full size"
+              src={previewUrl || currentAvatarUrl || ""}
+              alt="Avatar full size"
               fill
               className="object-contain rounded-lg"
               unoptimized

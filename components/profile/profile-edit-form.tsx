@@ -257,6 +257,15 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                   onAvatarGenerated={(url) => handleAvatarChange(url)}
                 />
               }
+              refineButton={
+                <AIAvatarDialog
+                  profileId={profile.id}
+                  displayName={displayName}
+                  currentAvatarUrl={avatarUrl}
+                  onAvatarGenerated={(url) => handleAvatarChange(url)}
+                  initialMode="refine"
+                />
+              }
             />
           </div>
 

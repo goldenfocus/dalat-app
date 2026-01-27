@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { useRsvpActions, isEventPast } from "./rsvp-button";
+import { useRsvpActions, isEventPast, useCelebration } from "./rsvp-button";
 import type { Rsvp } from "@/lib/types";
 
 interface FloatingRsvpBarProps {
@@ -27,6 +27,7 @@ export function FloatingRsvpBar({
   endsAt,
 }: FloatingRsvpBarProps) {
   const t = useTranslations("rsvp");
+  const celebration = useCelebration();
   const { isPending, handleRsvp, handleCancel } = useRsvpActions(
     eventId,
     isLoggedIn
@@ -40,6 +41,11 @@ export function FloatingRsvpBar({
 
   // Don't show for past events
   if (isPast) {
+    return null;
+  }
+
+  // Hide during celebration
+  if (celebration.isCelebrating) {
     return null;
   }
 
