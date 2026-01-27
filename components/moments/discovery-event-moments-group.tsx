@@ -31,14 +31,24 @@ function DiscoveryMomentCard({ moment, commentCount }: { moment: DiscoveryGroupe
         {moment.content_type !== "text" && moment.media_url && (
           isVideo ? (
             <>
-              <video
-                src={moment.media_url}
-                className="w-full h-full object-cover"
-                muted
-                loop
-                playsInline
-                preload="metadata"
-              />
+              {moment.thumbnail_url ? (
+                <Image
+                  src={moment.thumbnail_url}
+                  alt={moment.text_content || "Video thumbnail"}
+                  fill
+                  className="object-cover transition-transform group-hover:scale-105"
+                  sizes="(max-width: 640px) 33vw, 200px"
+                />
+              ) : (
+                <video
+                  src={moment.media_url}
+                  className="w-full h-full object-cover"
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                />
+              )}
               {/* Play button overlay for videos */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-10 h-10 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">

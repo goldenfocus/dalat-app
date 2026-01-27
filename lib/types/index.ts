@@ -656,6 +656,7 @@ export interface Moment {
   user_id: string;
   content_type: MomentContentType;
   media_url: string | null;
+  thumbnail_url: string | null;
   text_content: string | null;
   status: MomentStatus;
   moderation_note: string | null;
@@ -673,6 +674,7 @@ export interface MomentWithProfile {
   user_id: string;
   content_type: MomentContentType;
   media_url: string | null;
+  thumbnail_url: string | null;
   text_content: string | null;
   created_at: string;
   username: string | null;
@@ -733,6 +735,7 @@ export interface GroupedMoment {
   id: string;
   content_type: MomentContentType;
   media_url: string | null;
+  thumbnail_url: string | null;
   text_content: string | null;
   created_at: string;
 }
@@ -756,6 +759,7 @@ export interface DiscoveryGroupedMoment {
   avatar_url: string | null;
   content_type: MomentContentType;
   media_url: string | null;
+  thumbnail_url: string | null;
   text_content: string | null;
   created_at: string;
 }

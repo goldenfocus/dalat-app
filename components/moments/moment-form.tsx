@@ -12,6 +12,7 @@ import {
   validateMediaFile,
   ALL_ALLOWED_TYPES,
   needsConversion,
+  generateVideoThumbnail,
 } from "@/lib/media-utils";
 import { convertIfNeeded } from "@/lib/media-conversion";
 import { triggerHaptic } from "@/lib/haptics";
@@ -31,6 +32,7 @@ interface UploadItem {
   isVideo: boolean;
   status: "converting" | "uploading" | "uploaded" | "error";
   mediaUrl?: string;
+  thumbnailUrl?: string; // For video thumbnails
   error?: string;
   caption?: string; // Individual caption for this upload
 }
@@ -125,9 +127,36 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         .from("moments")
         .getPublicUrl(fileName);
 
+      // For videos, generate and upload a thumbnail
+      let thumbnailUrl: string | undefined;
+      if (fileToUpload.type.startsWith("video/")) {
+        try {
+          const thumbnailBlob = await generateVideoThumbnail(fileToUpload);
+          const thumbnailFileName = fileName.replace(/\.[^.]+$/, "-thumb.jpg");
+
+          const { error: thumbError } = await supabase.storage
+            .from("moments")
+            .upload(thumbnailFileName, thumbnailBlob, {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: "image/jpeg",
+            });
+
+          if (!thumbError) {
+            const { data: { publicUrl: thumbUrl } } = supabase.storage
+              .from("moments")
+              .getPublicUrl(thumbnailFileName);
+            thumbnailUrl = thumbUrl;
+          }
+        } catch (thumbErr) {
+          // Thumbnail generation failed - not critical, continue without it
+          console.warn("Failed to generate video thumbnail:", thumbErr);
+        }
+      }
+
       setUploads(prev => prev.map(item =>
         item.id === itemId
-          ? { ...item, status: "uploaded" as const, mediaUrl: publicUrl }
+          ? { ...item, status: "uploaded" as const, mediaUrl: publicUrl, thumbnailUrl }
           : item
       ));
       triggerHaptic("light");
@@ -249,6 +278,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           p_text_content: textContent,
           p_user_id: userId, // Support God Mode: attribute to effective user
           p_source_locale: locale, // Tag with user's current language for accurate translation attribution
+          p_thumbnail_url: upload.thumbnailUrl || null, // Video thumbnail if available
         });
 
         if (postError) {

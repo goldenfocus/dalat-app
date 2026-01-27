@@ -115,6 +115,84 @@ export function generateSmartFilename(
   return prefix ? `${prefix}/${filename}` : filename;
 }
 
+/**
+ * Generate a thumbnail from a video file using canvas.
+ * Captures the frame at the specified time (default: 0.5 seconds).
+ *
+ * @param videoFile - The video File object
+ * @param seekTime - Time in seconds to capture the frame (default: 0.5)
+ * @returns Promise<Blob> - JPEG thumbnail blob
+ */
+export function generateVideoThumbnail(
+  videoFile: File,
+  seekTime: number = 0.5
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      reject(new Error("Canvas context not available"));
+      return;
+    }
+
+    // Create object URL for the video
+    const videoUrl = URL.createObjectURL(videoFile);
+
+    video.addEventListener("loadedmetadata", () => {
+      // Seek to the specified time (or middle of video if too short)
+      video.currentTime = Math.min(seekTime, video.duration / 2);
+    });
+
+    video.addEventListener("seeked", () => {
+      // Set canvas dimensions (max 400px for thumbnails)
+      const maxSize = 400;
+      let width = video.videoWidth;
+      let height = video.videoHeight;
+
+      if (width > maxSize || height > maxSize) {
+        const ratio = Math.min(maxSize / width, maxSize / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Draw the video frame
+      ctx.drawImage(video, 0, 0, width, height);
+
+      // Clean up
+      URL.revokeObjectURL(videoUrl);
+
+      // Convert to blob
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Failed to create thumbnail blob"));
+          }
+        },
+        "image/jpeg",
+        0.8 // 80% quality
+      );
+    });
+
+    video.addEventListener("error", () => {
+      URL.revokeObjectURL(videoUrl);
+      reject(new Error("Failed to load video for thumbnail generation"));
+    });
+
+    // Set video properties
+    video.preload = "metadata";
+    video.muted = true;
+    video.playsInline = true;
+    video.src = videoUrl;
+  });
+}
+
 // Validate file and return error message if invalid
 export function validateMediaFile(file: File): string | null {
   const isImage = ALLOWED_MEDIA_TYPES.image.includes(

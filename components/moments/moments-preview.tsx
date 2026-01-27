@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
-import { Camera, ChevronRight } from "lucide-react";
+import { Camera, ChevronRight, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { isVideoUrl } from "@/lib/media-utils";
@@ -56,12 +56,30 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                 >
                   {moment.content_type !== "text" && moment.media_url ? (
                     isVideoUrl(moment.media_url) ? (
-                      <video
-                        src={moment.media_url}
-                        className="w-full h-full object-cover"
-                        muted
-                        preload="metadata"
-                      />
+                      moment.thumbnail_url ? (
+                        // Video with thumbnail - show thumbnail with play icon
+                        <>
+                          <Image
+                            src={moment.thumbnail_url}
+                            alt={moment.text_content || "Video thumbnail"}
+                            fill
+                            className="object-cover"
+                            sizes="64px"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
+                              <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        // Video without thumbnail - show placeholder
+                        <div className="w-full h-full bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                            <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                          </div>
+                        </div>
+                      )
                     ) : (
                       <Image
                         src={moment.media_url}
