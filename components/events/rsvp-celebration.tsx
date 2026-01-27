@@ -58,6 +58,52 @@ export function RsvpCelebration({
     return phrases[Math.floor(Math.random() * phrases.length)];
   }, [getPhrases]);
 
+  // Fire confetti when card pops up
+  const fireCardConfetti = useCallback(() => {
+    const colors = [
+      "#ff6b6b", "#ffd93d", "#6bcb77", "#4d96ff",
+      "#ff9f43", "#a855f7", "#ec4899", "#14b8a6"
+    ];
+
+    // Burst from left side
+    confetti({
+      particleCount: 50,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.65 },
+      colors,
+      startVelocity: 45,
+      gravity: 1,
+      ticks: 120,
+    });
+
+    // Burst from right side
+    confetti({
+      particleCount: 50,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.65 },
+      colors,
+      startVelocity: 45,
+      gravity: 1,
+      ticks: 120,
+    });
+
+    // Rain from top center
+    setTimeout(() => {
+      confetti({
+        particleCount: 100,
+        spread: 120,
+        origin: { x: 0.5, y: 0 },
+        colors,
+        startVelocity: 30,
+        gravity: 0.8,
+        ticks: 150,
+        shapes: ["circle", "square"],
+      });
+    }, 150);
+  }, []);
+
   // Fire fireworks effect
   const fireFireworks = useCallback(() => {
     const colors = [
@@ -140,7 +186,15 @@ export function RsvpCelebration({
   // Initialize celebration
   useEffect(() => {
     setCurrentPhrase(getRandomPhrase());
-    fireFireworks();
+
+    // Fire card confetti immediately when modal appears
+    fireCardConfetti();
+
+    // Fire fireworks slightly after for layered effect
+    setTimeout(() => {
+      fireFireworks();
+    }, 200);
+
     playSound();
 
     // Cycle through phrases
@@ -163,7 +217,7 @@ export function RsvpCelebration({
         audioRef.current.pause();
       }
     };
-  }, [getRandomPhrase, fireFireworks, playSound]);
+  }, [getRandomPhrase, fireCardConfetti, fireFireworks, playSound]);
 
   // Handle close
   const handleClose = useCallback(() => {
