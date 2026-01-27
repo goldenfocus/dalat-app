@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SlidersHorizontal, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ export function VenueTypeFilter({ selectedType, typeCounts }: VenueTypeFilterPro
   const t = useTranslations("venues");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   // Only show types that have venues
   const availableTypes = useMemo(() => {
@@ -42,7 +43,8 @@ export function VenueTypeFilter({ selectedType, typeCounts }: VenueTypeFilterPro
       params.set("type", type);
     }
 
-    router.push(`/venues?${params.toString()}`, { scroll: false });
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
   };
 
   // Don't render filter if there are no venues or only one type
