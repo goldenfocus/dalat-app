@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
 import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat, Video } from "lucide-react";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
@@ -505,7 +505,7 @@ async function getEventTranslations(
 }
 
 export default async function EventPage({ params, searchParams }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const result = await getEvent(slug);
 
   if (result.type === "not_found") {
@@ -528,10 +528,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   }
 
   const event = result.event;
-  const [t, tCommon, locale] = await Promise.all([
+  const [t, tCommon] = await Promise.all([
     getTranslations("events"),
     getTranslations("common"),
-    getLocale(),
   ]);
 
   const currentUserId = await getCurrentUserId();
