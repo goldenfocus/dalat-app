@@ -89,7 +89,9 @@ export const EventCardCompact = memo(function EventCardCompact({
       >
         {/* Front face - Image + Title */}
         <div
-          className="absolute inset-0 rounded-lg overflow-hidden [backface-visibility:hidden] group"
+          className={`absolute inset-0 rounded-lg overflow-hidden [backface-visibility:hidden] group ${
+            isFlipped ? "invisible" : ""
+          }`}
           aria-hidden={isFlipped}
         >
           {/* Full-bleed image */}
@@ -146,7 +148,9 @@ export const EventCardCompact = memo(function EventCardCompact({
 
         {/* Back face - Details */}
         <div
-          className="absolute inset-0 rounded-lg overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-zinc-900"
+          className={`absolute inset-0 rounded-lg overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-zinc-900 ${
+            !isFlipped ? "invisible" : ""
+          }`}
           aria-hidden={!isFlipped}
         >
           {/* Blurred image background */}
