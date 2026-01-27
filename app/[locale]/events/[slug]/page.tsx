@@ -37,6 +37,7 @@ import { SponsorDisplay } from "@/components/events/sponsor-display";
 import { ClickableTagList } from "@/components/events/clickable-tag-list";
 import { SiteHeader } from "@/components/site-header";
 import { EventMaterialsSummary } from "@/components/events/event-materials";
+import { EventMaterialsStructuredData } from "@/components/events/event-materials-structured-data";
 import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial } from "@/lib/types";
 
 interface PageProps {
@@ -583,6 +584,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     <main className="min-h-screen">
       {/* JSON-LD Structured Data for SEO/AEO */}
       <JsonLd data={[eventSchema, breadcrumbSchema]} />
+
+      {/* Structured data for event materials (audio, video, etc.) */}
+      <EventMaterialsStructuredData
+        materials={materials}
+        eventName={event.title}
+        eventUrl={`https://dalat.app/${locale}/events/${event.slug}`}
+      />
 
       <Suspense fallback={null}>
         <ConfirmAttendanceHandler eventId={event.id} />

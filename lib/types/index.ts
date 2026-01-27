@@ -1103,6 +1103,14 @@ export interface EventMaterial {
   title: string | null;
   description: string | null;
   sort_order: number;
+  // Audio metadata (from ID3 tags)
+  artist: string | null;
+  album: string | null;
+  duration_seconds: number | null;
+  thumbnail_url: string | null;
+  track_number: string | null;
+  release_year: number | null;
+  genre: string | null;
   // Metadata
   created_by: string;
   created_at: string;
@@ -1120,7 +1128,16 @@ export interface DraftMaterial {
   youtube_url: string | null;
   youtube_video_id: string | null;
   title: string | null;
+  // Audio metadata (from ID3 tags)
+  artist: string | null;
+  album: string | null;
+  duration_seconds: number | null;
+  thumbnail_url: string | null;
+  track_number: string | null;
+  release_year: number | null;
+  genre: string | null;
   pending_file?: File; // Store file for upload after event creation
+  pending_thumbnail?: Blob; // Store album art for upload after event creation
 }
 
 // ============================================

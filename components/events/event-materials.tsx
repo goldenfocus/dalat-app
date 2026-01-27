@@ -19,6 +19,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { EventMaterial, MaterialType } from "@/lib/types";
+import { formatDuration } from "@/lib/audio-metadata";
 
 interface EventMaterialsProps {
   materials: EventMaterial[];
@@ -62,17 +63,76 @@ function YouTubeEmbed({ videoId, title }: { videoId: string; title?: string }) {
 }
 
 /**
- * Audio player component
+ * Audio player component with rich metadata display
  */
-function AudioPlayer({ url, filename }: { url: string; filename?: string }) {
+interface AudioPlayerProps {
+  url: string;
+  filename?: string;
+  title?: string;
+  artist?: string;
+  album?: string;
+  thumbnailUrl?: string;
+  durationSeconds?: number;
+  genre?: string;
+}
+
+function AudioPlayer({
+  url,
+  filename,
+  title,
+  artist,
+  album,
+  thumbnailUrl,
+  durationSeconds,
+}: AudioPlayerProps) {
+  const displayTitle = title || filename;
+  const hasMetadata = artist || album || thumbnailUrl;
+
   return (
-    <div className="flex items-center gap-3 p-4 border rounded-lg bg-card">
-      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-        <Music className="w-6 h-6 text-primary" />
+    <div className="border rounded-lg bg-card overflow-hidden">
+      <div className="flex items-start gap-4 p-4">
+        {/* Album art thumbnail or icon */}
+        <div className={cn(
+          "flex-shrink-0 rounded-lg overflow-hidden bg-primary/10 flex items-center justify-center",
+          hasMetadata ? "w-20 h-20" : "w-12 h-12 rounded-full"
+        )}>
+          {thumbnailUrl ? (
+            <img
+              src={thumbnailUrl}
+              alt={album || displayTitle || "Album art"}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Music className={cn("text-primary", hasMetadata ? "w-8 h-8" : "w-6 h-6")} />
+          )}
+        </div>
+
+        {/* Track info */}
+        <div className="flex-1 min-w-0">
+          {/* Title (or filename fallback) */}
+          {displayTitle && (
+            <p className="font-medium truncate text-base">{displayTitle}</p>
+          )}
+
+          {/* Artist */}
+          {artist && (
+            <p className="text-sm text-muted-foreground truncate">{artist}</p>
+          )}
+
+          {/* Album and duration row */}
+          {(album || durationSeconds) && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+              {album && <span className="truncate">{album}</span>}
+              {album && durationSeconds && <span>•</span>}
+              {durationSeconds && <span>{formatDuration(durationSeconds)}</span>}
+            </p>
+          )}
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        {filename && <p className="text-sm font-medium truncate">{filename}</p>}
-        <audio controls className="w-full h-8 mt-1">
+
+      {/* Audio controls */}
+      <div className="px-4 pb-4">
+        <audio controls className="w-full h-10">
           <source src={url} />
           Your browser does not support audio playback.
         </audio>
@@ -303,7 +363,16 @@ function MaterialItem({ material }: { material: EventMaterial }) {
 
     case "audio":
       return material.file_url ? (
-        <AudioPlayer url={material.file_url} filename={displayTitle || undefined} />
+        <AudioPlayer
+          url={material.file_url}
+          filename={material.original_filename || undefined}
+          title={material.title || undefined}
+          artist={material.artist || undefined}
+          album={material.album || undefined}
+          thumbnailUrl={material.thumbnail_url || undefined}
+          durationSeconds={material.duration_seconds || undefined}
+          genre={material.genre || undefined}
+        />
       ) : null;
 
     case "video":

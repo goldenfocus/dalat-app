@@ -28,6 +28,7 @@ import {
   albumArtToBlob,
   albumArtToDataUrl,
   isAudioFile,
+  formatDuration,
 } from "@/lib/audio-metadata";
 
 interface EventMaterialsInputProps {
@@ -144,6 +145,11 @@ export function EventMaterialsInput({
         youtube_video_id: d.youtube_video_id,
         file_size: d.file_size,
         original_filename: d.original_filename,
+        // Audio metadata for display
+        thumbnail_url: d.thumbnail_url,
+        artist: d.artist,
+        album: d.album,
+        duration_seconds: d.duration_seconds,
       }))
     : materials.map((m) => ({
         id: m.id,
@@ -154,6 +160,11 @@ export function EventMaterialsInput({
         youtube_video_id: m.youtube_video_id,
         file_size: m.file_size,
         original_filename: m.original_filename,
+        // Audio metadata for display
+        thumbnail_url: m.thumbnail_url,
+        artist: m.artist,
+        album: m.album,
+        duration_seconds: m.duration_seconds,
       }));
 
   const hasMaterials = displayList.length > 0;
@@ -212,7 +223,52 @@ export function EventMaterialsInput({
     }
 
     setError(null);
+    setIsUploading(true);
+
     const materialType = FILE_TYPE_MAP[file.type] || "document";
+
+    // Extract audio metadata if it's an audio file
+    let audioMetadata: {
+      title: string | null;
+      artist: string | null;
+      album: string | null;
+      durationSeconds: number | null;
+      trackNumber: string | null;
+      releaseYear: number | null;
+      genre: string | null;
+      thumbnailUrl: string | null;
+      thumbnailBlob: Blob | null;
+    } = {
+      title: null,
+      artist: null,
+      album: null,
+      durationSeconds: null,
+      trackNumber: null,
+      releaseYear: null,
+      genre: null,
+      thumbnailUrl: null,
+      thumbnailBlob: null,
+    };
+
+    if (isAudioFile(file)) {
+      try {
+        const metadata = await extractAudioMetadata(file);
+        audioMetadata = {
+          title: metadata.title,
+          artist: metadata.artist,
+          album: metadata.album,
+          durationSeconds: metadata.durationSeconds,
+          trackNumber: metadata.trackNumber,
+          releaseYear: metadata.releaseYear,
+          genre: metadata.genre,
+          thumbnailUrl: albumArtToDataUrl(metadata.albumArt),
+          thumbnailBlob: albumArtToBlob(metadata.albumArt),
+        };
+      } catch (err) {
+        console.error("Failed to extract audio metadata:", err);
+        // Continue without metadata - don't block upload
+      }
+    }
 
     if (isDraftMode) {
       // Draft mode: create preview URL, store file for later upload
@@ -226,19 +282,54 @@ export function EventMaterialsInput({
         mime_type: file.type,
         youtube_url: null,
         youtube_video_id: null,
-        title: null,
+        title: audioMetadata.title,
+        artist: audioMetadata.artist,
+        album: audioMetadata.album,
+        duration_seconds: audioMetadata.durationSeconds,
+        thumbnail_url: audioMetadata.thumbnailUrl,
+        track_number: audioMetadata.trackNumber,
+        release_year: audioMetadata.releaseYear,
+        genre: audioMetadata.genre,
         pending_file: file,
+        pending_thumbnail: audioMetadata.thumbnailBlob || undefined,
       };
 
       const updated = [...draftMaterials, draft];
       onDraftChange?.(updated);
       setIsAdding(false);
+      setIsUploading(false);
     } else {
       // Live mode: upload immediately
       const url = await uploadFile(file);
       if (url) {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
+
+        // Upload album art thumbnail if available
+        let thumbnailUrl: string | null = null;
+        if (audioMetadata.thumbnailBlob && eventId) {
+          try {
+            const ext = audioMetadata.thumbnailBlob.type.split("/")[1] || "jpg";
+            const thumbFileName = `${eventId}/thumb-${Date.now()}.${ext}`;
+
+            const { error: thumbUploadError } = await supabase.storage
+              .from("event-materials")
+              .upload(thumbFileName, audioMetadata.thumbnailBlob, {
+                cacheControl: "3600",
+                upsert: true,
+              });
+
+            if (!thumbUploadError) {
+              const { data: { publicUrl } } = supabase.storage
+                .from("event-materials")
+                .getPublicUrl(thumbFileName);
+              thumbnailUrl = publicUrl;
+            }
+          } catch (err) {
+            console.error("Failed to upload album art:", err);
+            // Continue without thumbnail
+          }
+        }
 
         const { data, error: insertError } = await supabase
           .from("event_materials")
@@ -251,12 +342,22 @@ export function EventMaterialsInput({
             mime_type: file.type,
             sort_order: materials.length,
             created_by: user?.id,
+            // Audio metadata fields
+            title: audioMetadata.title,
+            artist: audioMetadata.artist,
+            album: audioMetadata.album,
+            duration_seconds: audioMetadata.durationSeconds,
+            thumbnail_url: thumbnailUrl,
+            track_number: audioMetadata.trackNumber,
+            release_year: audioMetadata.releaseYear,
+            genre: audioMetadata.genre,
           })
           .select()
           .single();
 
         if (insertError) {
           setError(t("materialErrors.saveFailed"));
+          setIsUploading(false);
           return;
         }
 
@@ -264,6 +365,9 @@ export function EventMaterialsInput({
         setMaterials(updated);
         onChange?.(updated);
         setIsAdding(false);
+        setIsUploading(false);
+      } else {
+        setIsUploading(false);
       }
     }
   }, [isDraftMode, draftMaterials, materials, eventId, onDraftChange, onChange, uploadFile]);
@@ -289,6 +393,14 @@ export function EventMaterialsInput({
         youtube_url: youtubeUrl,
         youtube_video_id: videoId,
         title: null,
+        // Audio metadata fields (null for YouTube)
+        artist: null,
+        album: null,
+        duration_seconds: null,
+        thumbnail_url: null,
+        track_number: null,
+        release_year: null,
+        genre: null,
       };
 
       const updated = [...draftMaterials, draft];
@@ -386,19 +498,25 @@ export function EventMaterialsInput({
               >
                 <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab flex-shrink-0" />
 
-                {/* Type icon */}
-                <div className="w-10 h-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                {/* Type icon / Thumbnail */}
+                <div className="w-10 h-10 rounded bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {item.material_type === "youtube" && item.youtube_video_id ? (
                     <img
                       src={`https://img.youtube.com/vi/${item.youtube_video_id}/default.jpg`}
                       alt="YouTube thumbnail"
-                      className="w-full h-full object-cover rounded"
+                      className="w-full h-full object-cover"
                     />
                   ) : item.material_type === "image" && item.file_url ? (
                     <img
                       src={item.file_url}
                       alt={item.title}
-                      className="w-full h-full object-cover rounded"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : item.material_type === "audio" && item.thumbnail_url ? (
+                    <img
+                      src={item.thumbnail_url}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <Icon className="w-5 h-5 text-muted-foreground" />
@@ -407,10 +525,23 @@ export function EventMaterialsInput({
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate text-sm">{item.title}</p>
+                  <p className="font-medium truncate text-sm">
+                    {item.material_type === "audio" && item.artist
+                      ? `${item.artist} - ${item.title}`
+                      : item.title}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    {getTypeLabel(item.material_type)}
-                    {item.file_size && ` • ${formatFileSize(item.file_size)}`}
+                    {item.material_type === "audio" && item.album ? (
+                      <>
+                        {item.album}
+                        {item.duration_seconds && ` • ${formatDuration(item.duration_seconds)}`}
+                      </>
+                    ) : (
+                      <>
+                        {getTypeLabel(item.material_type)}
+                        {item.file_size && ` • ${formatFileSize(item.file_size)}`}
+                      </>
+                    )}
                   </p>
                 </div>
 
@@ -605,6 +736,7 @@ export async function createMaterialsForEvent(
   for (let i = 0; i < draftMaterials.length; i++) {
     const draft = draftMaterials[i];
     let fileUrl: string | null = draft.file_url;
+    let thumbnailUrl: string | null = null;
 
     // Upload file if we have a pending file
     if (draft.pending_file) {
@@ -633,7 +765,32 @@ export async function createMaterialsForEvent(
       fileUrl = null;
     }
 
-    // Insert material record
+    // Upload album art thumbnail if we have one
+    if (draft.pending_thumbnail) {
+      try {
+        const thumbExt = draft.pending_thumbnail.type.split("/")[1] || "jpg";
+        const thumbFileName = `${eventId}/thumb-${Date.now()}-${i}.${thumbExt}`;
+
+        const { error: thumbUploadError } = await supabase.storage
+          .from("event-materials")
+          .upload(thumbFileName, draft.pending_thumbnail, {
+            cacheControl: "3600",
+            upsert: true,
+          });
+
+        if (!thumbUploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from("event-materials")
+            .getPublicUrl(thumbFileName);
+          thumbnailUrl = publicUrl;
+        }
+      } catch (err) {
+        console.error("Failed to upload album art thumbnail:", err);
+        // Continue without thumbnail
+      }
+    }
+
+    // Insert material record with audio metadata
     await supabase.from("event_materials").insert({
       event_id: eventId,
       material_type: draft.material_type,
@@ -644,6 +801,14 @@ export async function createMaterialsForEvent(
       youtube_url: draft.youtube_url,
       youtube_video_id: draft.youtube_video_id,
       title: draft.title,
+      // Audio metadata fields
+      artist: draft.artist,
+      album: draft.album,
+      duration_seconds: draft.duration_seconds,
+      thumbnail_url: thumbnailUrl,
+      track_number: draft.track_number,
+      release_year: draft.release_year,
+      genre: draft.genre,
       sort_order: i,
       created_by: user.id,
     });
