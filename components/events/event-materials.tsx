@@ -159,8 +159,12 @@ function AudioPlayer({
       }
     };
 
+    // Track if user intentionally paused
+    let userPaused = false;
+
     // Event listeners
     const handlePlay = () => {
+      userPaused = false;
       updateMediaSession();
       setupActionHandlers();
       navigator.mediaSession.playbackState = "playing";
@@ -168,6 +172,10 @@ function AudioPlayer({
 
     const handlePause = () => {
       navigator.mediaSession.playbackState = "paused";
+      // If page is visible, user intentionally paused
+      if (document.visibilityState === "visible") {
+        userPaused = true;
+      }
     };
 
     const handleTimeUpdate = () => {
@@ -178,16 +186,32 @@ function AudioPlayer({
       updatePositionState();
     };
 
+    // Handle visibility change (screen lock/unlock)
+    // iOS pauses audio when screen locks - we try to resume it
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && !audio.paused && !audio.ended) {
+        // Page became hidden while playing - iOS may pause it
+        // Try to keep playing by re-triggering play
+        audio.play().catch(() => {});
+      } else if (document.visibilityState === "visible" && !userPaused && audio.paused && !audio.ended) {
+        // Page became visible and audio was paused by system (not user)
+        // Resume playback
+        audio.play().catch(() => {});
+      }
+    };
+
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
 
       // Clear action handlers on unmount
       if ("mediaSession" in navigator) {
@@ -244,7 +268,14 @@ function AudioPlayer({
 
       {/* Audio controls */}
       <div className="px-4 pb-4">
-        <audio ref={audioRef} controls className="w-full h-10">
+        <audio
+          ref={audioRef}
+          controls
+          playsInline
+          preload="auto"
+          className="w-full h-10"
+        >
+          <source src={url} type="audio/mpeg" />
           <source src={url} />
           Your browser does not support audio playback.
         </audio>
