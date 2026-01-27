@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LocationPicker } from "@/components/events/location-picker";
+import { LocationPicker, type SelectedLocation } from "@/components/events/location-picker";
+import { VenueLinker } from "@/components/events/venue-linker";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
@@ -277,6 +278,47 @@ export function EventForm({
   );
   const [organizers, setOrganizers] = useState<Pick<Organizer, 'id' | 'name' | 'slug' | 'logo_url'>[]>([]);
 
+  // Location/venue state (shared between LocationPicker and VenueLinker)
+  const [venueId, setVenueId] = useState<string | null>(event?.venue_id ?? null);
+  const [venueName, setVenueName] = useState<string | null>(event?.venues?.name ?? null);
+  const [locationLat, setLocationLat] = useState<number | null>(event?.latitude ?? null);
+  const [locationLng, setLocationLng] = useState<number | null>(event?.longitude ?? null);
+
+  // Handle location selection from LocationPicker
+  const handleLocationSelect = useCallback((location: SelectedLocation | null) => {
+    if (location) {
+      setLocationLat(location.latitude);
+      setLocationLng(location.longitude);
+      if (location.type === "venue" && location.venueId) {
+        setVenueId(location.venueId);
+        setVenueName(location.name);
+      } else {
+        // Google Place selected - clear venue link
+        setVenueId(null);
+        setVenueName(null);
+      }
+    } else {
+      setLocationLat(null);
+      setLocationLng(null);
+      setVenueId(null);
+      setVenueName(null);
+    }
+  }, []);
+
+  // Handle venue linking from VenueLinker
+  const handleVenueLink = useCallback((venue: { id: string; name: string; latitude: number; longitude: number } | null) => {
+    if (venue) {
+      setVenueId(venue.id);
+      setVenueName(venue.name);
+      // Optionally update coordinates to match venue
+      setLocationLat(venue.latitude);
+      setLocationLng(venue.longitude);
+    } else {
+      setVenueId(null);
+      setVenueName(null);
+    }
+  }, []);
+
   // Fetch organizers on mount
   useEffect(() => {
     async function fetchOrganizers() {
@@ -465,7 +507,8 @@ export function EventForm({
     const longitude = longitudeStr ? parseFloat(longitudeStr) : null;
     const externalChatUrl = formData.get("external_chat_url") as string;
     const capacityStr = formData.get("capacity") as string;
-    const venueIdFromForm = formData.get("venue_id") as string;
+    // Use state-managed venueId (set by LocationPicker or VenueLinker)
+    const venueIdToSave = venueId;
 
     if (!title.trim() || !date || !time) {
       setError(tErrors("titleDateTimeRequired"));
@@ -521,7 +564,7 @@ export function EventForm({
           price_type: priceType,
           ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
           organizer_id: organizerId,
-          venue_id: venueIdFromForm || null,
+          venue_id: venueIdToSave || null,
         };
 
         // Include slug if editable and changed
@@ -589,7 +632,7 @@ export function EventForm({
                 : null,
               rrule_count: recurrence.endType === "count" ? recurrence.endCount : null,
               organizer_id: organizerId,
-              venue_id: venueIdFromForm || null,
+              venue_id: venueIdToSave || null,
             }),
           });
 
@@ -644,7 +687,7 @@ export function EventForm({
               created_by: userId,
               status: "published",
               organizer_id: organizerId,
-              venue_id: venueIdFromForm || null,
+              venue_id: venueIdToSave || null,
             })
             .select()
             .single();
@@ -869,31 +912,50 @@ export function EventForm({
 
           {/* Location - unified venue + address picker (hidden for online events) */}
           {!isOnline && (
-          <LocationPicker
-            defaultValue={
-              event?.location_name
-                ? {
-                    type: event.venue_id ? "venue" : "place",
-                    venueId: event.venue_id ?? undefined,
-                    name: event.location_name,
-                    address: event.address || "",
-                    googleMapsUrl: event.google_maps_url || "",
-                    latitude: event.latitude ?? null,
-                    longitude: event.longitude ?? null,
-                  }
-                : copyDefaults?.locationName
+          <>
+            <LocationPicker
+              defaultValue={
+                event?.location_name
                   ? {
-                      type: "place",
-                      name: copyDefaults.locationName,
-                      address: copyDefaults.address,
-                      googleMapsUrl: copyDefaults.googleMapsUrl,
-                      latitude: null,
-                      longitude: null,
+                      type: event.venue_id ? "venue" : "place",
+                      venueId: event.venue_id ?? undefined,
+                      name: event.location_name,
+                      address: event.address || "",
+                      googleMapsUrl: event.google_maps_url || "",
+                      latitude: event.latitude ?? null,
+                      longitude: event.longitude ?? null,
                     }
-                  : null
-            }
-            defaultVenueId={event?.venue_id}
-          />
+                  : copyDefaults?.locationName
+                    ? {
+                        type: "place",
+                        name: copyDefaults.locationName,
+                        address: copyDefaults.address,
+                        googleMapsUrl: copyDefaults.googleMapsUrl,
+                        latitude: null,
+                        longitude: null,
+                      }
+                    : null
+              }
+              defaultVenueId={event?.venue_id}
+              onLocationSelect={handleLocationSelect}
+              onVenueIdChange={(id) => {
+                if (!id) {
+                  setVenueId(null);
+                  setVenueName(null);
+                }
+              }}
+            />
+
+            {/* Venue Linker - shows auto-suggestions and manual link option */}
+            <VenueLinker
+              venueId={venueId}
+              venueName={venueName}
+              latitude={locationLat}
+              longitude={locationLng}
+              onVenueChange={handleVenueLink}
+              disabled={isPending}
+            />
+          </>
           )}
 
           {/* External link */}
