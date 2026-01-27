@@ -29,7 +29,7 @@ export function PastEventsSection({ events, locale, label }: PastEventsSectionPr
   if (events.length === 0) return null;
 
   return (
-    <div className="mb-8">
+    <div id="past-events" className="mb-8 scroll-mt-20">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted active:scale-[0.99] transition-all"

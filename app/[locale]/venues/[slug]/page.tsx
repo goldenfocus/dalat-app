@@ -708,9 +708,12 @@ export default async function VenuePage({ params }: PageProps) {
           <section className="mb-8">
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
               {past_events_count > 0 && (
-                <span>
+                <a
+                  href="#past-events"
+                  className="hover:text-foreground hover:underline transition-colors"
+                >
                   {past_events_count} {t("pastEvents").toLowerCase()}
-                </span>
+                </a>
               )}
               {recent_activity.total_visitors > 0 && (
                 <span>
