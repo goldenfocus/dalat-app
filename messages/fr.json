@@ -1584,7 +1584,10 @@
       "closed": "Fermé",
       "until": "jusqu'à",
       "opens": "ouvre"
-    }
+    },
+    "pastEventsAtVenue": "Événements passés à {venue}",
+    "noPastEvents": "Aucun événement passé",
+    "backToVenue": "Retour au lieu"
   },
   "comments": {
     "title": "Commentaires",

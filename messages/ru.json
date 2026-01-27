@@ -1570,7 +1570,10 @@
       "closed": "Закрыто",
       "until": "до",
       "opens": "откроется"
-    }
+    },
+    "pastEventsAtVenue": "Прошедшие события в {venue}",
+    "noPastEvents": "Пока нет прошедших событий",
+    "backToVenue": "Вернуться к месту"
   },
   "comments": {
     "title": "Комментарии",

@@ -1570,7 +1570,10 @@
       "closed": "閉店",
       "until": "まで",
       "opens": "開店"
-    }
+    },
+    "pastEventsAtVenue": "{venue}の過去のイベント",
+    "noPastEvents": "過去のイベントはまだありません",
+    "backToVenue": "場所に戻る"
   },
   "comments": {
     "title": "コメント",

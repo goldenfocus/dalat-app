@@ -1570,7 +1570,10 @@
       "closed": "已关闭",
       "until": "直到",
       "opens": "开门"
-    }
+    },
+    "pastEventsAtVenue": "{venue}的往期活动",
+    "noPastEvents": "暂无往期活动",
+    "backToVenue": "返回场地"
   },
   "comments": {
     "title": "评论",

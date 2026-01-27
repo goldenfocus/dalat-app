@@ -1570,7 +1570,10 @@
       "closed": "Geschlossen",
       "until": "bis",
       "opens": "öffnet"
-    }
+    },
+    "pastEventsAtVenue": "Vergangene Veranstaltungen bei {venue}",
+    "noPastEvents": "Noch keine vergangenen Veranstaltungen",
+    "backToVenue": "Zurück zum Veranstaltungsort"
   },
   "comments": {
     "title": "Kommentare",

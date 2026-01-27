@@ -1570,7 +1570,10 @@
       "closed": "Đóng",
       "until": "đến",
       "opens": "mở lúc"
-    }
+    },
+    "pastEventsAtVenue": "Sự kiện đã qua tại {venue}",
+    "noPastEvents": "Chưa có sự kiện nào",
+    "backToVenue": "Quay lại địa điểm"
   },
   "comments": {
     "title": "Bình luận",

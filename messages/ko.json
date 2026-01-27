@@ -1570,7 +1570,10 @@
       "closed": "영업 종료",
       "until": "까지",
       "opens": "오픈"
-    }
+    },
+    "pastEventsAtVenue": "{venue}의 지난 이벤트",
+    "noPastEvents": "아직 지난 이벤트가 없습니다",
+    "backToVenue": "장소로 돌아가기"
   },
   "comments": {
     "title": "댓글",

@@ -1589,7 +1589,10 @@
       "closed": "Cerrado",
       "until": "hasta",
       "opens": "abre"
-    }
+    },
+    "pastEventsAtVenue": "Eventos pasados en {venue}",
+    "noPastEvents": "Aún no hay eventos pasados",
+    "backToVenue": "Volver al lugar"
   },
   "feedback": {
     "howWasIt": "¿Qué tal estuvo el evento?",

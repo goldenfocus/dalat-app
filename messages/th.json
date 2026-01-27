@@ -1570,7 +1570,10 @@
       "closed": "ปิด",
       "until": "ถึง",
       "opens": "เปิด"
-    }
+    },
+    "pastEventsAtVenue": "กิจกรรมที่ผ่านมาที่ {venue}",
+    "noPastEvents": "ยังไม่มีกิจกรรมที่ผ่านมา",
+    "backToVenue": "กลับไปยังสถานที่"
   },
   "comments": {
     "title": "ความคิดเห็น",

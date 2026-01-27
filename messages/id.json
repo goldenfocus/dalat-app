@@ -1589,7 +1589,10 @@
       "closed": "Tutup",
       "until": "sampai",
       "opens": "buka"
-    }
+    },
+    "pastEventsAtVenue": "Acara sebelumnya di {venue}",
+    "noPastEvents": "Belum ada acara sebelumnya",
+    "backToVenue": "Kembali ke tempat"
   },
   "feedback": {
     "howWasIt": "Bagaimana acaranya?",

@@ -1601,7 +1601,10 @@
       "closed": "Closed",
       "until": "until",
       "opens": "opens"
-    }
+    },
+    "pastEventsAtVenue": "Past Events at {venue}",
+    "noPastEvents": "No past events yet",
+    "backToVenue": "Back to venue"
   },
   "comments": {
     "title": "Comments",
