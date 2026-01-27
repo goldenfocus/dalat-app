@@ -131,7 +131,7 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
 
 export default async function SeriesPage({ params }: PageProps) {
   const { slug } = await params;
-  const [_t, locale] = await Promise.all([
+  const [t, locale] = await Promise.all([
     getTranslations(),
     getLocale(),
   ]);
@@ -156,7 +156,7 @@ export default async function SeriesPage({ params }: PageProps) {
           className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
+          <span>{t("common.back")}</span>
         </Link>
 
         {/* Series Header Card */}
@@ -181,7 +181,7 @@ export default async function SeriesPage({ params }: PageProps) {
               {/* Badge */}
               <Badge variant="secondary" className="gap-1">
                 <Repeat className="w-3 h-3" />
-                Recurring Series
+                {t("series.recurringSeries")}
               </Badge>
 
               {/* Title */}
@@ -214,9 +214,7 @@ export default async function SeriesPage({ params }: PageProps) {
               {/* Subscribers */}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Users className="w-4 h-4" />
-                <span>
-                  {subscriberCount} {subscriberCount === 1 ? "subscriber" : "subscribers"}
-                </span>
+                <span>{t("series.subscribers", { count: subscriberCount })}</span>
               </div>
 
               {/* Description */}
@@ -235,7 +233,7 @@ export default async function SeriesPage({ params }: PageProps) {
                   className="inline-flex items-center gap-2 text-primary hover:underline"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  External link
+                  {t("events.moreInfo")}
                 </a>
               )}
             </div>
@@ -247,25 +245,25 @@ export default async function SeriesPage({ params }: PageProps) {
           <Button asChild variant="outline" className="flex-1">
             <a href={calendarUrl} download>
               <CalendarPlus className="w-4 h-4 mr-2" />
-              Add to Calendar
+              {t("calendar.addToCalendar")}
             </a>
           </Button>
 
           {isOwner && (
             <Button asChild variant="outline">
-              <Link href={`/series/${series.slug}/edit`}>Edit Series</Link>
+              <Link href={`/series/${series.slug}/edit`}>{t("series.editSeries")}</Link>
             </Button>
           )}
         </div>
 
         {/* Upcoming Dates */}
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold">Upcoming Dates</h2>
+          <h2 className="text-lg font-semibold">{t("series.upcomingDates")}</h2>
 
           {upcomingEvents.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center text-muted-foreground">
-                <p>No upcoming dates scheduled</p>
+                <p>{t("series.noUpcomingDates")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -302,7 +300,7 @@ export default async function SeriesPage({ params }: PageProps) {
 
           {upcomingEvents.length >= 10 && (
             <p className="text-sm text-muted-foreground text-center">
-              More dates coming soon...
+              {t("series.moreDates")}
             </p>
           )}
         </section>
@@ -310,7 +308,7 @@ export default async function SeriesPage({ params }: PageProps) {
         {/* Organizer Info */}
         {series.organizers && (
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">Organized by</h2>
+            <h2 className="text-lg font-semibold">{t("series.organizedBy")}</h2>
             <Link href={`/organizers/${series.organizers.slug}`}>
               <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
                 <CardContent className="p-4 flex items-center gap-3">
@@ -327,7 +325,7 @@ export default async function SeriesPage({ params }: PageProps) {
                   )}
                   <div>
                     <p className="font-medium">{series.organizers.name}</p>
-                    <p className="text-sm text-muted-foreground">View profile</p>
+                    <p className="text-sm text-muted-foreground">{t("series.viewProfile")}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -338,7 +336,7 @@ export default async function SeriesPage({ params }: PageProps) {
         {/* Creator Info (if no organizer) */}
         {!series.organizers && series.profiles && (
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold">Created by</h2>
+            <h2 className="text-lg font-semibold">{t("series.createdBy")}</h2>
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
                 {series.profiles.avatar_url ? (
