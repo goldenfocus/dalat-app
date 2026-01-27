@@ -214,9 +214,9 @@ export default async function ProfilePage({ params }: PageProps) {
   // Show claim banner to logged-in users who don't own this ghost profile
   const showClaimBanner = isGhost && isLoggedIn && !isOwner;
 
-  const upcomingEvents = events.filter(
-    (e) => new Date(e.starts_at) > new Date()
-  );
+  const upcomingEvents = events
+    .filter((e) => new Date(e.starts_at) > new Date())
+    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
   const pastEvents = events.filter((e) => new Date(e.starts_at) <= new Date());
 
   // Generate structured data for SEO and AEO
