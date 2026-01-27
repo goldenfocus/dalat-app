@@ -256,7 +256,10 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
           {events.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {events.map((event) => {
-                const translation = eventTranslations.get(event.id);
+                // Skip translation if viewing in the event's original language
+                const translation = event.source_locale === locale
+                  ? undefined
+                  : eventTranslations.get(event.id);
                 return (
                   <EventCard
                     key={event.id}

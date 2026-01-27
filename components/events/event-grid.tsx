@@ -107,7 +107,10 @@ export function EventGrid({
             {/* Events for this date */}
             <div className={cn("flex flex-col", LIST_CLASSES[effectiveDensity])}>
               {dateEvents.map((event) => {
-                const translation = eventTranslations.get(event.id);
+                // Skip translation if viewing in the event's original language
+                const translation = event.source_locale === locale
+                  ? undefined
+                  : eventTranslations.get(event.id);
                 return (
                   <EventListCard
                     key={event.id}
@@ -130,7 +133,10 @@ export function EventGrid({
     return (
       <div className={cn("grid", IMMERSIVE_CLASSES[effectiveDensity])}>
         {events.map((event, index) => {
-          const translation = eventTranslations.get(event.id);
+          // Skip translation if viewing in the event's original language
+          const translation = event.source_locale === locale
+            ? undefined
+            : eventTranslations.get(event.id);
           return (
             <EventImmersiveCard
               key={event.id}
@@ -151,7 +157,10 @@ export function EventGrid({
     return (
       <div className={cn("grid", GRID_CLASSES[effectiveDensity])}>
         {events.map((event, index) => {
-          const translation = eventTranslations.get(event.id);
+          // Skip translation if viewing in the event's original language
+          const translation = event.source_locale === locale
+            ? undefined
+            : eventTranslations.get(event.id);
           return (
             <EventCardCompact
               key={event.id}
@@ -170,7 +179,10 @@ export function EventGrid({
   return (
     <div className={cn("grid", GRID_CLASSES[effectiveDensity])}>
       {events.map((event, index) => {
-        const translation = eventTranslations.get(event.id);
+        // Skip translation if viewing in the event's original language
+        const translation = event.source_locale === locale
+          ? undefined
+          : eventTranslations.get(event.id);
         return (
           <EventCard
             key={event.id}

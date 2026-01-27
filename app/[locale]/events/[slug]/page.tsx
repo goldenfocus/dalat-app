@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: event } = await supabase
     .from("events")
-    .select("id, title, description, image_url, location_name, starts_at")
+    .select("id, title, description, image_url, location_name, starts_at, source_locale")
     .eq("slug", slug)
     .single();
 
@@ -64,7 +64,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // Get translated content for the current locale
-  const translations = isValidContentLocale(locale)
+  // Skip translation lookup if viewing in the original language
+  const sourceLocale = event.source_locale;
+  const shouldSkipTranslation = sourceLocale && isValidContentLocale(sourceLocale) && locale === sourceLocale;
+
+  const translations = !shouldSkipTranslation && isValidContentLocale(locale)
     ? await getTranslationsWithFallback(
         "event",
         event.id,
@@ -457,6 +461,22 @@ async function getEventTranslations(
     };
   }
 
+  const validSourceLocale = sourceLocale && isValidContentLocale(sourceLocale)
+    ? sourceLocale as ContentLocale
+    : null;
+
+  // If viewing in the same language as the original content, return original (no translation needed)
+  if (validSourceLocale && locale === validSourceLocale) {
+    return {
+      title: originalTitle,
+      description: originalDescription,
+      originalTitle,
+      originalDescription,
+      isTranslated: false,
+      sourceLocale: validSourceLocale,
+    };
+  }
+
   const translations = await getTranslationsWithFallback(
     'event',
     eventId,
@@ -474,9 +494,6 @@ async function getEventTranslations(
 
   const translatedTitle = translations.title || originalTitle;
   const translatedDescription = translations.description ?? originalDescription;
-  const validSourceLocale = sourceLocale && isValidContentLocale(sourceLocale)
-    ? sourceLocale as ContentLocale
-    : null;
 
   return {
     title: translatedTitle,
