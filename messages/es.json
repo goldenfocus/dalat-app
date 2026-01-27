@@ -47,9 +47,9 @@
     "previous": "Anterior",
     "next": "Siguiente",
     "localeMismatch": {
-      "message": "This page is in a different language. Switch to {language}?",
-      "switch": "View in {language}",
-      "dismiss": "Keep current language"
+      "message": "Esta página está en otro idioma. ¿Cambiar a {language}?",
+      "switch": "Ver en {language}",
+      "dismiss": "Mantener idioma actual"
     }
   },
   "nav": {
@@ -86,11 +86,11 @@
       "placeholder": "Buscar eventos...",
       "noResults": "No se encontraron eventos para \"{query}\"",
       "clearSearch": "Borrar búsqueda",
-      "viewAll": "View all results for \"{query}\"",
-      "searchFor": "Search for \"{query}\""
+      "viewAll": "Ver todos los resultados de \"{query}\"",
+      "searchFor": "Buscar \"{query}\""
     },
     "browseArchive": "Explorar archivo",
-    "seeAllUpcoming": "See all upcoming events"
+    "seeAllUpcoming": "Ver todos los próximos eventos"
   },
   "auth": {
     "welcomeTitle": "Bienvenido a ĐàLạt.app",
@@ -143,14 +143,14 @@
     "resendEmail": "¿No lo recibiste? Reenviar",
     "resending": "Enviando...",
     "emailResent": "¡Enviado! Revisa de nuevo",
-    "cancel": "Cancel",
-    "verifyTitle": "Confirm your email",
-    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
-    "verifyButton": "Complete Sign In",
-    "verifyConfirming": "Confirming...",
-    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
-    "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "cancel": "Cancelar",
+    "verifyTitle": "Confirma tu correo",
+    "verifyDescription": "Haz clic en el botón de abajo para completar el inicio de sesión en ĐàLạt.app",
+    "verifyButton": "Completar inicio de sesión",
+    "verifyConfirming": "Confirmando...",
+    "verifyHint": "Este paso adicional evita que los escáneres de seguridad de correo invaliden tu enlace.",
+    "verifyInvalidTitle": "Enlace inválido",
+    "verifyInvalidDescription": "Este enlace de verificación es inválido o ha expirado.",
     "inAppBrowser": {
       "title": "Navegador no compatible",
       "description": "El inicio de sesión con Google no funciona en {appName}. Por favor, abre esta página en Safari o Chrome.",
@@ -184,7 +184,7 @@
     "waitlist": "lista de espera",
     "onWaitlist": "en lista de espera",
     "full": "Completo",
-    "signInToSeeAttendees": "Sign in to see attendees",
+    "signInToSeeAttendees": "Inicia sesión para ver asistentes",
     "viewOnMap": "Ver en mapa",
     "moreInfo": "Más información",
     "organizedBy": "Organizado por",
@@ -195,10 +195,10 @@
       "live": "En vivo",
       "ended": "Terminado"
     },
-    "partOfSeries": "Part of {seriesName}",
-    "onlineEvent": "Online Event",
-    "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "partOfSeries": "Parte de {seriesName}",
+    "onlineEvent": "Evento en línea",
+    "joinMeeting": "Unirse a la reunión",
+    "rsvpToSeeMeetingLink": "Confirma asistencia para ver el enlace de la reunión",
     "readMore": "Leer más",
     "showLess": "Mostrar menos"
   },
@@ -467,17 +467,17 @@
         "addWarmth": "Agregar calidez"
       }
     },
-    "saved": "Saved",
-    "moments": "Moments",
-    "noMomentsYet": "No moments yet",
-    "noMomentsHint": "Moments shared from events will appear here",
+    "saved": "Guardados",
+    "moments": "Momentos",
+    "noMomentsYet": "Aún no hay momentos",
+    "noMomentsHint": "Los momentos compartidos de eventos aparecerán aquí",
     "claimBanner": {
-      "title": "Is this your profile?",
-      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
-      "button": "Claim This Profile",
-      "communityImported": "Community Imported"
+      "title": "¿Es este tu perfil?",
+      "description": "Este perfil fue creado automáticamente desde Facebook Events y tiene {count} evento(s). Si eres {name}, puedes reclamar este perfil para gestionar tus eventos.",
+      "button": "Reclamar este perfil",
+      "communityImported": "Importado de la comunidad"
     },
-    "eventsHosted": "{count} events hosted"
+    "eventsHosted": "{count} eventos organizados"
   },
   "settings": {
     "settings": "Configuración",
@@ -490,10 +490,10 @@
     "account": "Cuenta",
     "accountDescription": "Administra tu cuenta",
     "password": {
-      "setOrChangePassword": "Set or change password",
-      "changePassword": "Change password",
-      "savePassword": "Save password",
-      "passwordUpdated": "Password updated!"
+      "setOrChangePassword": "Establecer o cambiar contraseña",
+      "changePassword": "Cambiar contraseña",
+      "savePassword": "Guardar contraseña",
+      "passwordUpdated": "¡Contraseña actualizada!"
     }
   },
   "notifications": {
@@ -525,7 +525,7 @@
     "themeSystem": "Sistema",
     "language": "Idioma",
     "signOut": "Cerrar sesión",
-    "exitGodMode": "Exit God Mode"
+    "exitGodMode": "Salir del modo Dios"
   },
   "admin": {
     "dashboard": "Panel de Admin",
@@ -577,19 +577,19 @@
     "roleContributor": "Contribuidor",
     "noData": "Sin datos",
     "navBlog": "Blog",
-    "blog": "Blog Posts",
-    "blogDescription": "Manage blog posts and changelogs",
-    "newPost": "New Post",
-    "noPosts": "No blog posts yet",
-    "createFirstPost": "Create your first post",
-    "statusDraft": "Draft",
+    "blog": "Artículos del Blog",
+    "blogDescription": "Gestionar artículos del blog y registros de cambios",
+    "newPost": "Nuevo artículo",
+    "noPosts": "Aún no hay artículos",
+    "createFirstPost": "Crea tu primer artículo",
+    "statusDraft": "Borrador",
     "statusExperimental": "Experimental",
-    "statusPublished": "Published",
-    "statusDeprecated": "Deprecated",
-    "statusArchived": "Archived",
+    "statusPublished": "Publicado",
+    "statusDeprecated": "Obsoleto",
+    "statusArchived": "Archivado",
     "sourceManual": "Manual",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Daily Summary"
+    "sourceDailySummary": "Resumen diario"
   },
   "verification": {
     "requestSubmitted": "¡Solicitud Enviada!",
@@ -656,12 +656,12 @@
     "pastEvents": "Eventos pasados",
     "noEventsYet": "Aún no hay eventos",
     "claimBanner": {
-      "title": "Is this your organization?",
-      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
-      "button": "Claim This Profile",
-      "unclaimed": "Unclaimed"
+      "title": "¿Es esta tu organización?",
+      "description": "Este perfil de organizador tiene {count} evento(s) pero aún no ha sido reclamado. Si representas a {name}, puedes reclamar este perfil para gestionarlo.",
+      "button": "Reclamar este perfil",
+      "unclaimed": "Sin reclamar"
     },
-    "eventsHosted": "{count} events"
+    "eventsHosted": "{count} eventos"
   },
   "festival": {
     "title": "Festivales",
@@ -682,7 +682,7 @@
     "noUpdatesYet": "¡Aún no hay actualizaciones. ¡Mantente atento!",
     "moreDetailsSoon": "Más detalles próximamente.",
     "activeUpcoming": "Activos y próximos",
-    "pastFestivals": "Past Festivals"
+    "pastFestivals": "Festivales pasados"
   },
   "analytics": {
     "created": "Creados",
@@ -903,9 +903,9 @@
       "Tú eres la razón por la que el lugar estará lleno",
       "Sigue siendo el conector que eres"
     ],
-    "usernamePlaceholder": "Search by name or username",
-    "usernameHint": "Type at least 2 characters to search",
-    "noInvitees": "Please add at least one person to invite"
+    "usernamePlaceholder": "Buscar por nombre o usuario",
+    "usernameHint": "Escribe al menos 2 caracteres para buscar",
+    "noInvitees": "Por favor agrega al menos una persona para invitar"
   },
   "moments": {
     "moments": "Momentos",
@@ -999,7 +999,7 @@
       "retry": "Reintentar",
       "remove": "Eliminar",
       "proUploadLink": "¿Más de 100 fotos? Usa Pro Upload",
-      "statusConverting": "Converting..."
+      "statusConverting": "Convirtiendo..."
     },
     "gate": {
       "title": "¡Encontraste tesoros! ✨",
@@ -1021,21 +1021,21 @@
       "message": "¿Te gusta? Guarda tus favoritos",
       "cta": "Únete gratis"
     },
-    "discoveryMode": "Discovery",
-    "differentEvent": "From a different event",
-    "prevEvent": "Prev event",
-    "nextEvent": "Next event",
-    "share": "Share",
-    "postMoments": "Post {count} moments",
-    "addMore": "Add more",
-    "viewMoreMoments": "View {count} more moments",
-    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
-    "searchHint": "AI-powered visual search",
-    "searchNoResults": "No moments found for \"{query}\"",
-    "searchResults": "{count} results for \"{query}\"",
-    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
-    "searching": "Searching...",
-    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
+    "discoveryMode": "Descubrimiento",
+    "differentEvent": "De un evento diferente",
+    "prevEvent": "Evento anterior",
+    "nextEvent": "Evento siguiente",
+    "share": "Compartir",
+    "postMoments": "Publicar {count} momentos",
+    "addMore": "Agregar más",
+    "viewMoreMoments": "Ver {count} momentos más",
+    "searchPlaceholder": "Buscar momentos... (ej., perros, atardecer)",
+    "searchHint": "Búsqueda visual con IA",
+    "searchNoResults": "No se encontraron momentos para \"{query}\"",
+    "searchResults": "{count} resultados para \"{query}\"",
+    "searchPrompt": "Busca cualquier cosa—\"atardecer\", \"café\", \"amigos bailando\"",
+    "searching": "Buscando...",
+    "searchNoResultsHint": "Prueba con otras palabras o vuelve más tarde cuando se compartan más momentos"
   },
   "tribes": {
     "title": "Tribes",
@@ -1260,9 +1260,9 @@
         "description": "Próxima parada: la papelera en las nubes ☁️"
       }
     ],
-    "titlePositionTop": "Title at top",
-    "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom",
+    "titlePositionTop": "Título arriba",
+    "titlePositionMiddle": "Título en el centro",
+    "titlePositionBottom": "Título abajo",
     "clickToPreview": "Clic para vista previa",
     "preview": "Vista previa",
     "download": "Descargar",
@@ -1305,28 +1305,28 @@
       "november": "Noviembre",
       "december": "Diciembre"
     },
-    "search": "Search events...",
-    "sortBy": "Sort by",
-    "sortRecent": "Recent",
-    "sortPopular": "Popular",
-    "sortRich": "Most photos",
-    "filterMyEvents": "Events I went to",
-    "clearFilters": "Clear filters",
-    "noResults": "No events match your search"
+    "search": "Buscar eventos...",
+    "sortBy": "Ordenar por",
+    "sortRecent": "Recientes",
+    "sortPopular": "Populares",
+    "sortRich": "Más fotos",
+    "filterMyEvents": "Eventos a los que fui",
+    "clearFilters": "Limpiar filtros",
+    "noResults": "Ningún evento coincide con tu búsqueda"
   },
   "search": {
-    "title": "{query} events in Đà Lạt",
-    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
-    "breadcrumb": "Search: {query}",
+    "title": "Eventos de {query} en Đà Lạt",
+    "description": "Encuentra eventos, talleres y reuniones de {query} en Đà Lạt, Vietnam. Descubre actividades próximas y pasadas de {query}.",
+    "breadcrumb": "Búsqueda: {query}",
     "resultsFor": "\"{query}\"",
-    "resultCount": "{count, plural, one {# event found} other {# events found}}",
-    "noResults": "No events found",
-    "noResultsHint": "Try a different search term or browse all events",
-    "browseAll": "Browse all events",
-    "back": "Back",
-    "happeningNow": "Happening Now",
-    "upcoming": "Upcoming",
-    "past": "Past Events"
+    "resultCount": "{count, plural, one {# evento encontrado} other {# eventos encontrados}}",
+    "noResults": "No se encontraron eventos",
+    "noResultsHint": "Prueba con otro término de búsqueda o explora todos los eventos",
+    "browseAll": "Ver todos los eventos",
+    "back": "Volver",
+    "happeningNow": "Ahora mismo",
+    "upcoming": "Próximos",
+    "past": "Eventos pasados"
   },
   "about": {
     "title": "Dalat.app",
@@ -1592,34 +1592,34 @@
     }
   },
   "feedback": {
-    "howWasIt": "How was the event?",
-    "amazing": "Amazing",
-    "good": "Good",
-    "okay": "Okay",
-    "notGreat": "Not great",
-    "commentPlaceholder": "Any thoughts to share? (optional)",
-    "submit": "Submit feedback",
-    "didNotAttend": "I didn't go",
-    "thankYou": "Thanks for your feedback!",
-    "markedNoShow": "Got it, thanks for letting us know.",
-    "eventEnded": "This event has ended",
-    "positiveRating": "{percentage}% positive ({count} reviews)"
+    "howWasIt": "¿Qué tal estuvo el evento?",
+    "amazing": "Increíble",
+    "good": "Bien",
+    "okay": "Normal",
+    "notGreat": "No tan bueno",
+    "commentPlaceholder": "¿Algún comentario? (opcional)",
+    "submit": "Enviar opinión",
+    "didNotAttend": "No asistí",
+    "thankYou": "¡Gracias por tu opinión!",
+    "markedNoShow": "Entendido, gracias por informarnos.",
+    "eventEnded": "Este evento ha terminado",
+    "positiveRating": "{percentage}% positivo ({count} reseñas)"
   },
   "celebration": {
-    "title": "You just made Da Lat better!",
-    "subtitle": "The more the merrier. Spread the word.",
-    "quickShare": "Quick Share",
-    "personalInvitesTitle": "Want to send personal invites?",
-    "emailInvites": "Email Invites",
-    "emailDescription": "Paste emails to send invitations with RSVP tracking",
-    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
-    "addEmails": "Add",
-    "sendInvites": "Send {count} invite(s)",
-    "sending": "Sending...",
-    "sentSuccess": "{count} invite(s) sent!",
-    "skipForNow": "Done",
-    "viewEvent": "See your event live",
-    "copyLink": "Copy link",
-    "copied": "Copied!"
+    "title": "¡Acabas de hacer Đà Lạt mejor!",
+    "subtitle": "Cuantos más, mejor. Corre la voz.",
+    "quickShare": "Compartir rápido",
+    "personalInvitesTitle": "¿Quieres enviar invitaciones personales?",
+    "emailInvites": "Invitaciones por email",
+    "emailDescription": "Pega emails para enviar invitaciones con seguimiento de confirmación",
+    "emailPlaceholder": "Pega emails (separados por coma, espacio o salto de línea)",
+    "addEmails": "Agregar",
+    "sendInvites": "Enviar {count} invitación(es)",
+    "sending": "Enviando...",
+    "sentSuccess": "¡{count} invitación(es) enviada(s)!",
+    "skipForNow": "Listo",
+    "viewEvent": "Ver tu evento en vivo",
+    "copyLink": "Copiar enlace",
+    "copied": "¡Copiado!"
   }
 }

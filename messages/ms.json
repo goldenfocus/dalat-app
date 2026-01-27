@@ -47,9 +47,9 @@
     "previous": "Sebelum",
     "next": "Seterusnya",
     "localeMismatch": {
-      "message": "This page is in a different language. Switch to {language}?",
-      "switch": "View in {language}",
-      "dismiss": "Keep current language"
+      "message": "Halaman ini dalam bahasa lain. Tukar ke {language}?",
+      "switch": "Lihat dalam {language}",
+      "dismiss": "Kekal bahasa semasa"
     }
   },
   "nav": {
@@ -86,11 +86,11 @@
       "placeholder": "Cari acara...",
       "noResults": "Tiada acara dijumpai untuk \"{query}\"",
       "clearSearch": "Padam carian",
-      "viewAll": "View all results for \"{query}\"",
-      "searchFor": "Search for \"{query}\""
+      "viewAll": "Lihat semua keputusan untuk \"{query}\"",
+      "searchFor": "Cari \"{query}\""
     },
     "browseArchive": "Layari arkib",
-    "seeAllUpcoming": "See all upcoming events"
+    "seeAllUpcoming": "Lihat semua acara akan datang"
   },
   "auth": {
     "welcomeTitle": "Selamat datang ke ĐàLạt.app",
@@ -143,14 +143,14 @@
     "resendEmail": "Tak terima? Hantar semula",
     "resending": "Menghantar...",
     "emailResent": "Dihantar! Semak sekali lagi",
-    "cancel": "Cancel",
-    "verifyTitle": "Confirm your email",
-    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
-    "verifyButton": "Complete Sign In",
-    "verifyConfirming": "Confirming...",
-    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
-    "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "cancel": "Batal",
+    "verifyTitle": "Sahkan e-mel anda",
+    "verifyDescription": "Klik butang di bawah untuk melengkapkan log masuk ke ĐàLạt.app",
+    "verifyButton": "Lengkapkan Log Masuk",
+    "verifyConfirming": "Mengesahkan...",
+    "verifyHint": "Langkah tambahan ini menghalang pengimbas keselamatan e-mel daripada membatalkan pautan anda.",
+    "verifyInvalidTitle": "Pautan Tidak Sah",
+    "verifyInvalidDescription": "Pautan pengesahan ini tidak sah atau telah tamat tempoh.",
     "inAppBrowser": {
       "title": "Pelayar tidak disokong",
       "description": "Log masuk Google tidak berfungsi dalam {appName}. Sila buka halaman ini dalam Safari atau Chrome.",
@@ -184,7 +184,7 @@
     "waitlist": "senarai tunggu",
     "onWaitlist": "dalam senarai tunggu",
     "full": "Penuh",
-    "signInToSeeAttendees": "Sign in to see attendees",
+    "signInToSeeAttendees": "Log masuk untuk melihat peserta",
     "viewOnMap": "Lihat di peta",
     "moreInfo": "Maklumat lanjut",
     "organizedBy": "Dianjurkan oleh",
@@ -195,10 +195,10 @@
       "live": "Langsung",
       "ended": "Tamat"
     },
-    "partOfSeries": "Part of {seriesName}",
-    "onlineEvent": "Online Event",
-    "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "partOfSeries": "Sebahagian daripada {seriesName}",
+    "onlineEvent": "Acara Dalam Talian",
+    "joinMeeting": "Sertai mesyuarat",
+    "rsvpToSeeMeetingLink": "RSVP untuk melihat pautan mesyuarat",
     "readMore": "Baca lagi",
     "showLess": "Tunjuk kurang"
   },
@@ -467,17 +467,17 @@
         "addWarmth": "Tambah kehangatan"
       }
     },
-    "saved": "Saved",
-    "moments": "Moments",
-    "noMomentsYet": "No moments yet",
-    "noMomentsHint": "Moments shared from events will appear here",
+    "saved": "Disimpan",
+    "moments": "Momen",
+    "noMomentsYet": "Belum ada momen",
+    "noMomentsHint": "Momen yang dikongsi dari acara akan muncul di sini",
     "claimBanner": {
-      "title": "Is this your profile?",
-      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
-      "button": "Claim This Profile",
-      "communityImported": "Community Imported"
+      "title": "Ini profil anda?",
+      "description": "Profil ini dicipta secara automatik daripada Facebook Events dan memiliki {count} acara. Jika anda {name}, anda boleh menuntut profil ini untuk mengurus acara anda.",
+      "button": "Tuntut Profil Ini",
+      "communityImported": "Diimport Komuniti"
     },
-    "eventsHosted": "{count} events hosted"
+    "eventsHosted": "{count} acara dianjurkan"
   },
   "settings": {
     "settings": "Tetapan",
@@ -490,10 +490,10 @@
     "account": "Akaun",
     "accountDescription": "Urus akaun anda",
     "password": {
-      "setOrChangePassword": "Set or change password",
-      "changePassword": "Change password",
-      "savePassword": "Save password",
-      "passwordUpdated": "Password updated!"
+      "setOrChangePassword": "Tetapkan atau tukar kata laluan",
+      "changePassword": "Tukar kata laluan",
+      "savePassword": "Simpan kata laluan",
+      "passwordUpdated": "Kata laluan dikemaskini!"
     }
   },
   "notifications": {
@@ -525,7 +525,7 @@
     "themeSystem": "Sistem",
     "language": "Bahasa",
     "signOut": "Log keluar",
-    "exitGodMode": "Exit God Mode"
+    "exitGodMode": "Keluar Mod Tuhan"
   },
   "admin": {
     "dashboard": "Papan Pemuka Admin",
@@ -577,19 +577,19 @@
     "roleContributor": "Penyumbang",
     "noData": "Tiada data",
     "navBlog": "Blog",
-    "blog": "Blog Posts",
-    "blogDescription": "Manage blog posts and changelogs",
-    "newPost": "New Post",
-    "noPosts": "No blog posts yet",
-    "createFirstPost": "Create your first post",
-    "statusDraft": "Draft",
-    "statusExperimental": "Experimental",
-    "statusPublished": "Published",
-    "statusDeprecated": "Deprecated",
-    "statusArchived": "Archived",
+    "blog": "Artikel Blog",
+    "blogDescription": "Urus artikel blog dan log perubahan",
+    "newPost": "Artikel Baru",
+    "noPosts": "Belum ada artikel blog",
+    "createFirstPost": "Cipta artikel pertama anda",
+    "statusDraft": "Draf",
+    "statusExperimental": "Eksperimen",
+    "statusPublished": "Diterbitkan",
+    "statusDeprecated": "Usang",
+    "statusArchived": "Diarkibkan",
     "sourceManual": "Manual",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Daily Summary"
+    "sourceDailySummary": "Ringkasan Harian"
   },
   "verification": {
     "requestSubmitted": "Permintaan Dihantar!",
@@ -656,12 +656,12 @@
     "pastEvents": "Acara Lepas",
     "noEventsYet": "Belum ada acara",
     "claimBanner": {
-      "title": "Is this your organization?",
-      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
-      "button": "Claim This Profile",
-      "unclaimed": "Unclaimed"
+      "title": "Ini organisasi anda?",
+      "description": "Profil penganjur ini mempunyai {count} acara tetapi belum dituntut. Jika anda mewakili {name}, anda boleh menuntut profil ini untuk mengurusnya.",
+      "button": "Tuntut Profil Ini",
+      "unclaimed": "Belum Dituntut"
     },
-    "eventsHosted": "{count} events"
+    "eventsHosted": "{count} acara"
   },
   "festival": {
     "title": "Festival",
@@ -682,7 +682,7 @@
     "noUpdatesYet": "Belum ada kemas kini. Nantikan!",
     "moreDetailsSoon": "Maklumat lanjut akan datang.",
     "activeUpcoming": "Aktif & Akan Datang",
-    "pastFestivals": "Past Festivals"
+    "pastFestivals": "Festival Lepas"
   },
   "analytics": {
     "created": "Dicipta",
@@ -903,9 +903,9 @@
       "Anda adalah sebab bilik akan penuh",
       "Teruskan menjadi penghubung seperti anda"
     ],
-    "usernamePlaceholder": "Search by name or username",
-    "usernameHint": "Type at least 2 characters to search",
-    "noInvitees": "Please add at least one person to invite"
+    "usernamePlaceholder": "Cari mengikut nama atau nama pengguna",
+    "usernameHint": "Taip sekurang-kurangnya 2 aksara untuk mencari",
+    "noInvitees": "Sila tambah sekurang-kurangnya seorang untuk dijemput"
   },
   "moments": {
     "moments": "Momen",
@@ -999,7 +999,7 @@
       "retry": "Cuba Semula",
       "remove": "Alih keluar",
       "proUploadLink": "Ada 100+ foto? Gunakan Muat Naik Pro",
-      "statusConverting": "Converting..."
+      "statusConverting": "Menukar..."
     },
     "gate": {
       "title": "Anda jumpa harta karun! ✨",
@@ -1021,21 +1021,21 @@
       "message": "Suka? Simpan kegemaran anda",
       "cta": "Sertai percuma"
     },
-    "discoveryMode": "Discovery",
-    "differentEvent": "From a different event",
-    "prevEvent": "Prev event",
-    "nextEvent": "Next event",
-    "share": "Share",
-    "postMoments": "Post {count} moments",
-    "addMore": "Add more",
-    "viewMoreMoments": "View {count} more moments",
-    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
-    "searchHint": "AI-powered visual search",
-    "searchNoResults": "No moments found for \"{query}\"",
-    "searchResults": "{count} results for \"{query}\"",
-    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
-    "searching": "Searching...",
-    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
+    "discoveryMode": "Penemuan",
+    "differentEvent": "Dari acara lain",
+    "prevEvent": "Acara sebelum",
+    "nextEvent": "Acara seterusnya",
+    "share": "Kongsi",
+    "postMoments": "Post {count} momen",
+    "addMore": "Tambah lagi",
+    "viewMoreMoments": "Lihat {count} momen lagi",
+    "searchPlaceholder": "Cari momen... (cth., anjing, matahari terbenam)",
+    "searchHint": "Carian visual berkuasa AI",
+    "searchNoResults": "Tiada momen dijumpai untuk \"{query}\"",
+    "searchResults": "{count} keputusan untuk \"{query}\"",
+    "searchPrompt": "Cari apa sahaja—\"matahari terbenam\", \"kopi\", \"rakan menari\"",
+    "searching": "Mencari...",
+    "searchNoResultsHint": "Cuba kata kunci lain atau semak kemudian apabila lebih banyak momen dikongsi"
   },
   "tribes": {
     "title": "Suku",
@@ -1241,9 +1241,9 @@
         "description": "Destinasi seterusnya: tong sampah di awan ☁️"
       }
     ],
-    "titlePositionTop": "Title at top",
-    "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom",
+    "titlePositionTop": "Tajuk di atas",
+    "titlePositionMiddle": "Tajuk di tengah",
+    "titlePositionBottom": "Tajuk di bawah",
     "clickToPreview": "Klik untuk pratonton",
     "preview": "Pratonton",
     "download": "Muat turun",
@@ -1286,28 +1286,28 @@
       "november": "November",
       "december": "Disember"
     },
-    "search": "Search events...",
-    "sortBy": "Sort by",
-    "sortRecent": "Recent",
+    "search": "Cari acara...",
+    "sortBy": "Susun mengikut",
+    "sortRecent": "Terbaru",
     "sortPopular": "Popular",
-    "sortRich": "Most photos",
-    "filterMyEvents": "Events I went to",
-    "clearFilters": "Clear filters",
-    "noResults": "No events match your search"
+    "sortRich": "Paling banyak foto",
+    "filterMyEvents": "Acara yang saya hadiri",
+    "clearFilters": "Kosongkan penapis",
+    "noResults": "Tiada acara sepadan dengan carian anda"
   },
   "search": {
-    "title": "{query} events in Đà Lạt",
-    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
-    "breadcrumb": "Search: {query}",
+    "title": "Acara {query} di Đà Lạt",
+    "description": "Cari acara {query}, bengkel, dan perhimpunan di Đà Lạt, Vietnam. Temui aktiviti {query} akan datang dan lepas.",
+    "breadcrumb": "Carian: {query}",
     "resultsFor": "\"{query}\"",
-    "resultCount": "{count, plural, one {# event found} other {# events found}}",
-    "noResults": "No events found",
-    "noResultsHint": "Try a different search term or browse all events",
-    "browseAll": "Browse all events",
-    "back": "Back",
-    "happeningNow": "Happening Now",
-    "upcoming": "Upcoming",
-    "past": "Past Events"
+    "resultCount": "{count, plural, one {# acara dijumpai} other {# acara dijumpai}}",
+    "noResults": "Tiada acara dijumpai",
+    "noResultsHint": "Cuba istilah carian lain atau layari semua acara",
+    "browseAll": "Layari semua acara",
+    "back": "Kembali",
+    "happeningNow": "Sedang Berlangsung",
+    "upcoming": "Akan Datang",
+    "past": "Acara Lepas"
   },
   "about": {
     "title": "Dalat.app",
@@ -1592,34 +1592,34 @@
     "unmute": "Hidupkan pemberitahuan"
   },
   "feedback": {
-    "howWasIt": "How was the event?",
-    "amazing": "Amazing",
-    "good": "Good",
+    "howWasIt": "Bagaimana acara ini?",
+    "amazing": "Hebat",
+    "good": "Baik",
     "okay": "Okay",
-    "notGreat": "Not great",
-    "commentPlaceholder": "Any thoughts to share? (optional)",
-    "submit": "Submit feedback",
-    "didNotAttend": "I didn't go",
-    "thankYou": "Thanks for your feedback!",
-    "markedNoShow": "Got it, thanks for letting us know.",
-    "eventEnded": "This event has ended",
-    "positiveRating": "{percentage}% positive ({count} reviews)"
+    "notGreat": "Kurang baik",
+    "commentPlaceholder": "Ada pendapat untuk dikongsi? (pilihan)",
+    "submit": "Hantar maklum balas",
+    "didNotAttend": "Saya tidak pergi",
+    "thankYou": "Terima kasih atas maklum balas anda!",
+    "markedNoShow": "Faham, terima kasih kerana memberitahu kami.",
+    "eventEnded": "Acara ini telah berakhir",
+    "positiveRating": "{percentage}% positif ({count} ulasan)"
   },
   "celebration": {
-    "title": "You just made Da Lat better!",
-    "subtitle": "The more the merrier. Spread the word.",
-    "quickShare": "Quick Share",
-    "personalInvitesTitle": "Want to send personal invites?",
-    "emailInvites": "Email Invites",
-    "emailDescription": "Paste emails to send invitations with RSVP tracking",
-    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
-    "addEmails": "Add",
-    "sendInvites": "Send {count} invite(s)",
-    "sending": "Sending...",
-    "sentSuccess": "{count} invite(s) sent!",
-    "skipForNow": "Done",
-    "viewEvent": "See your event live",
-    "copyLink": "Copy link",
-    "copied": "Copied!"
+    "title": "Anda baru menjadikan Da Lat lebih baik!",
+    "subtitle": "Lebih ramai lebih meriah. Sebarkan berita.",
+    "quickShare": "Kongsi Pantas",
+    "personalInvitesTitle": "Mahu hantar jemputan peribadi?",
+    "emailInvites": "Jemputan E-mel",
+    "emailDescription": "Tampal e-mel untuk menghantar jemputan dengan penjejakan RSVP",
+    "emailPlaceholder": "Tampal e-mel (dipisahkan dengan koma, ruang, atau baris baru)",
+    "addEmails": "Tambah",
+    "sendInvites": "Hantar {count} jemputan",
+    "sending": "Menghantar...",
+    "sentSuccess": "{count} jemputan dihantar!",
+    "skipForNow": "Selesai",
+    "viewEvent": "Lihat acara anda secara langsung",
+    "copyLink": "Salin pautan",
+    "copied": "Disalin!"
   }
 }

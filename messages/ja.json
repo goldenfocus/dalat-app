@@ -47,9 +47,9 @@
     "previous": "前へ",
     "next": "次へ",
     "localeMismatch": {
-      "message": "This page is in a different language. Switch to {language}?",
-      "switch": "View in {language}",
-      "dismiss": "Keep current language"
+      "message": "このページは別の言語で表示されています。{language}に切り替えますか？",
+      "switch": "{language}で表示",
+      "dismiss": "現在の言語を維持"
     }
   },
   "nav": {
@@ -86,11 +86,11 @@
       "placeholder": "イベントを検索...",
       "noResults": "「{query}」に一致するイベントが見つかりません",
       "clearSearch": "検索をクリア",
-      "viewAll": "View all results for \"{query}\"",
-      "searchFor": "Search for \"{query}\""
+      "viewAll": "「{query}」の検索結果をすべて見る",
+      "searchFor": "「{query}」を検索"
     },
     "browseArchive": "アーカイブを見る",
-    "seeAllUpcoming": "See all upcoming events"
+    "seeAllUpcoming": "今後のイベントをすべて見る"
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.appへようこそ",
@@ -143,14 +143,14 @@
     "resendEmail": "届きませんか？再送信",
     "resending": "送信中...",
     "emailResent": "送信完了！もう一度確認してください",
-    "cancel": "Cancel",
-    "verifyTitle": "Confirm your email",
-    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
-    "verifyButton": "Complete Sign In",
-    "verifyConfirming": "Confirming...",
-    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
-    "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "cancel": "キャンセル",
+    "verifyTitle": "メールを確認",
+    "verifyDescription": "下のボタンをクリックしてĐàLạt.appへのログインを完了してください",
+    "verifyButton": "ログインを完了",
+    "verifyConfirming": "確認中...",
+    "verifyHint": "この追加ステップは、メールセキュリティスキャナーによるリンクの無効化を防ぎます。",
+    "verifyInvalidTitle": "無効なリンク",
+    "verifyInvalidDescription": "この確認リンクは無効または期限切れです。",
     "inAppBrowser": {
       "title": "対応していないブラウザ",
       "description": "{appName}ではGoogleログインが動作しません。SafariまたはChromeでこのページを開いてください。",
@@ -184,7 +184,7 @@
     "waitlist": "キャンセル待ち",
     "onWaitlist": "キャンセル待ち中",
     "full": "満員",
-    "signInToSeeAttendees": "Sign in to see attendees",
+    "signInToSeeAttendees": "参加者を見るにはログインしてください",
     "viewOnMap": "地図で見る",
     "moreInfo": "詳細",
     "organizedBy": "主催者",
@@ -195,10 +195,10 @@
       "live": "開催中",
       "ended": "終了"
     },
-    "partOfSeries": "Part of {seriesName}",
-    "onlineEvent": "Online Event",
-    "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "partOfSeries": "{seriesName}の一部",
+    "onlineEvent": "オンラインイベント",
+    "joinMeeting": "ミーティングに参加",
+    "rsvpToSeeMeetingLink": "ミーティングリンクを見るには参加登録してください",
     "readMore": "続きを読む",
     "showLess": "閉じる"
   },
@@ -467,17 +467,17 @@
         "addWarmth": "暖かみを追加"
       }
     },
-    "saved": "Saved",
-    "moments": "Moments",
-    "noMomentsYet": "No moments yet",
-    "noMomentsHint": "Moments shared from events will appear here",
+    "saved": "保存済み",
+    "moments": "モーメント",
+    "noMomentsYet": "モーメントはまだありません",
+    "noMomentsHint": "イベントで共有されたモーメントがここに表示されます",
     "claimBanner": {
-      "title": "Is this your profile?",
-      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
-      "button": "Claim This Profile",
-      "communityImported": "Community Imported"
+      "title": "これはあなたのプロフィールですか？",
+      "description": "このプロフィールはFacebookイベントから自動作成され、{count}件のイベントを所有しています。{name}さんであれば、このプロフィールを取得してイベントを管理できます。",
+      "button": "このプロフィールを取得",
+      "communityImported": "コミュニティからインポート"
     },
-    "eventsHosted": "{count} events hosted"
+    "eventsHosted": "{count}件のイベントを主催"
   },
   "settings": {
     "settings": "設定",
@@ -490,10 +490,10 @@
     "account": "アカウント",
     "accountDescription": "アカウントを管理",
     "password": {
-      "setOrChangePassword": "Set or change password",
-      "changePassword": "Change password",
-      "savePassword": "Save password",
-      "passwordUpdated": "Password updated!"
+      "setOrChangePassword": "パスワードを設定または変更",
+      "changePassword": "パスワードを変更",
+      "savePassword": "パスワードを保存",
+      "passwordUpdated": "パスワードが更新されました！"
     }
   },
   "notifications": {
@@ -525,7 +525,7 @@
     "themeSystem": "システム",
     "language": "言語",
     "signOut": "ログアウト",
-    "exitGodMode": "Exit God Mode"
+    "exitGodMode": "ゴッドモードを終了"
   },
   "admin": {
     "dashboard": "管理者ダッシュボード",
@@ -576,20 +576,20 @@
     "roleOrganizer": "主催者",
     "roleContributor": "コントリビューター",
     "noData": "データなし",
-    "navBlog": "Blog",
-    "blog": "Blog Posts",
-    "blogDescription": "Manage blog posts and changelogs",
-    "newPost": "New Post",
-    "noPosts": "No blog posts yet",
-    "createFirstPost": "Create your first post",
-    "statusDraft": "Draft",
-    "statusExperimental": "Experimental",
-    "statusPublished": "Published",
-    "statusDeprecated": "Deprecated",
-    "statusArchived": "Archived",
-    "sourceManual": "Manual",
+    "navBlog": "ブログ",
+    "blog": "ブログ投稿",
+    "blogDescription": "ブログ投稿と更新履歴を管理",
+    "newPost": "新規投稿",
+    "noPosts": "ブログ投稿はまだありません",
+    "createFirstPost": "最初の投稿を作成",
+    "statusDraft": "下書き",
+    "statusExperimental": "実験的",
+    "statusPublished": "公開済み",
+    "statusDeprecated": "非推奨",
+    "statusArchived": "アーカイブ済み",
+    "sourceManual": "手動",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Daily Summary"
+    "sourceDailySummary": "日次サマリー"
   },
   "verification": {
     "requestSubmitted": "リクエストが送信されました！",
@@ -656,12 +656,12 @@
     "pastEvents": "過去のイベント",
     "noEventsYet": "まだイベントがありません",
     "claimBanner": {
-      "title": "Is this your organization?",
-      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
-      "button": "Claim This Profile",
-      "unclaimed": "Unclaimed"
+      "title": "これはあなたの組織ですか？",
+      "description": "この主催者プロフィールには{count}件のイベントがありますが、まだ取得されていません。{name}の代表者であれば、このプロフィールを取得して管理できます。",
+      "button": "このプロフィールを取得",
+      "unclaimed": "未取得"
     },
-    "eventsHosted": "{count} events"
+    "eventsHosted": "{count}件のイベント"
   },
   "festival": {
     "title": "フェスティバル",
@@ -682,7 +682,7 @@
     "noUpdatesYet": "まだ更新情報はありません。お楽しみに！",
     "moreDetailsSoon": "詳細は近日公開予定。",
     "activeUpcoming": "現在開催中と今後",
-    "pastFestivals": "Past Festivals"
+    "pastFestivals": "過去のフェスティバル"
   },
   "analytics": {
     "created": "作成済み",
@@ -903,9 +903,9 @@
       "あなたのおかげで部屋がいっぱいになります",
       "これからもつなげる人でいてください"
     ],
-    "usernamePlaceholder": "Search by name or username",
-    "usernameHint": "Type at least 2 characters to search",
-    "noInvitees": "Please add at least one person to invite"
+    "usernamePlaceholder": "名前またはユーザー名で検索",
+    "usernameHint": "検索するには2文字以上入力してください",
+    "noInvitees": "招待する人を少なくとも1人追加してください"
   },
   "moments": {
     "moments": "モーメント",
@@ -999,7 +999,7 @@
       "retry": "再試行",
       "remove": "削除",
       "proUploadLink": "100枚以上ですか？プロアップロードを使用",
-      "statusConverting": "Converting..."
+      "statusConverting": "変換中..."
     },
     "gate": {
       "title": "宝物を見つけました！✨",
@@ -1021,21 +1021,21 @@
       "message": "気に入りましたか？お気に入りを保存",
       "cta": "無料で参加"
     },
-    "discoveryMode": "Discovery",
-    "differentEvent": "From a different event",
-    "prevEvent": "Prev event",
-    "nextEvent": "Next event",
-    "share": "Share",
-    "postMoments": "Post {count} moments",
-    "addMore": "Add more",
-    "viewMoreMoments": "View {count} more moments",
-    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
-    "searchHint": "AI-powered visual search",
-    "searchNoResults": "No moments found for \"{query}\"",
-    "searchResults": "{count} results for \"{query}\"",
-    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
-    "searching": "Searching...",
-    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
+    "discoveryMode": "探索モード",
+    "differentEvent": "別のイベントから",
+    "prevEvent": "前のイベント",
+    "nextEvent": "次のイベント",
+    "share": "共有",
+    "postMoments": "{count}件のモーメントを投稿",
+    "addMore": "追加する",
+    "viewMoreMoments": "あと{count}件のモーメントを見る",
+    "searchPlaceholder": "モーメントを検索...（例：犬、夕日）",
+    "searchHint": "AI搭載ビジュアル検索",
+    "searchNoResults": "「{query}」に一致するモーメントが見つかりません",
+    "searchResults": "「{query}」の検索結果 {count}件",
+    "searchPrompt": "何でも検索—「夕日」「コーヒー」「踊る友達」",
+    "searching": "検索中...",
+    "searchNoResultsHint": "別のキーワードを試すか、モーメントが増えたら再度お試しください"
   },
   "tribes": {
     "title": "トライブ",
@@ -1241,9 +1241,9 @@
         "description": "次の目的地：空のゴミ箱 ☁️"
       }
     ],
-    "titlePositionTop": "Title at top",
-    "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom",
+    "titlePositionTop": "タイトルを上部に",
+    "titlePositionMiddle": "タイトルを中央に",
+    "titlePositionBottom": "タイトルを下部に",
     "clickToPreview": "クリックでプレビュー",
     "preview": "プレビュー",
     "download": "ダウンロード",
@@ -1286,28 +1286,28 @@
       "november": "11月",
       "december": "12月"
     },
-    "search": "Search events...",
-    "sortBy": "Sort by",
-    "sortRecent": "Recent",
-    "sortPopular": "Popular",
-    "sortRich": "Most photos",
-    "filterMyEvents": "Events I went to",
-    "clearFilters": "Clear filters",
-    "noResults": "No events match your search"
+    "search": "イベントを検索...",
+    "sortBy": "並び替え",
+    "sortRecent": "新しい順",
+    "sortPopular": "人気順",
+    "sortRich": "写真が多い順",
+    "filterMyEvents": "参加したイベント",
+    "clearFilters": "フィルターをクリア",
+    "noResults": "検索に一致するイベントがありません"
   },
   "search": {
-    "title": "{query} events in Đà Lạt",
-    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
-    "breadcrumb": "Search: {query}",
-    "resultsFor": "\"{query}\"",
-    "resultCount": "{count, plural, one {# event found} other {# events found}}",
-    "noResults": "No events found",
-    "noResultsHint": "Try a different search term or browse all events",
-    "browseAll": "Browse all events",
-    "back": "Back",
-    "happeningNow": "Happening Now",
-    "upcoming": "Upcoming",
-    "past": "Past Events"
+    "title": "ダラットの{query}イベント",
+    "description": "ベトナム・ダラットで{query}のイベント、ワークショップ、集まりを見つけよう。今後と過去の{query}アクティビティを発見。",
+    "breadcrumb": "検索: {query}",
+    "resultsFor": "「{query}」",
+    "resultCount": "{count, plural, one {#件のイベントが見つかりました} other {#件のイベントが見つかりました}}",
+    "noResults": "イベントが見つかりません",
+    "noResultsHint": "別の検索ワードを試すか、すべてのイベントを閲覧してください",
+    "browseAll": "すべてのイベントを閲覧",
+    "back": "戻る",
+    "happeningNow": "開催中",
+    "upcoming": "今後",
+    "past": "過去のイベント"
   },
   "about": {
     "title": "Dalat.app",
@@ -1592,34 +1592,34 @@
     "unmute": "通知をオン"
   },
   "feedback": {
-    "howWasIt": "How was the event?",
-    "amazing": "Amazing",
-    "good": "Good",
-    "okay": "Okay",
-    "notGreat": "Not great",
-    "commentPlaceholder": "Any thoughts to share? (optional)",
-    "submit": "Submit feedback",
-    "didNotAttend": "I didn't go",
-    "thankYou": "Thanks for your feedback!",
-    "markedNoShow": "Got it, thanks for letting us know.",
-    "eventEnded": "This event has ended",
-    "positiveRating": "{percentage}% positive ({count} reviews)"
+    "howWasIt": "イベントはいかがでしたか？",
+    "amazing": "最高",
+    "good": "良い",
+    "okay": "普通",
+    "notGreat": "いまいち",
+    "commentPlaceholder": "感想があればお聞かせください（任意）",
+    "submit": "フィードバックを送信",
+    "didNotAttend": "参加しませんでした",
+    "thankYou": "フィードバックありがとうございます！",
+    "markedNoShow": "了解しました。お知らせいただきありがとうございます。",
+    "eventEnded": "このイベントは終了しました",
+    "positiveRating": "{percentage}%が好評（{count}件のレビュー）"
   },
   "celebration": {
-    "title": "You just made Da Lat better!",
-    "subtitle": "The more the merrier. Spread the word.",
-    "quickShare": "Quick Share",
-    "personalInvitesTitle": "Want to send personal invites?",
-    "emailInvites": "Email Invites",
-    "emailDescription": "Paste emails to send invitations with RSVP tracking",
-    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
-    "addEmails": "Add",
-    "sendInvites": "Send {count} invite(s)",
-    "sending": "Sending...",
-    "sentSuccess": "{count} invite(s) sent!",
-    "skipForNow": "Done",
-    "viewEvent": "See your event live",
-    "copyLink": "Copy link",
-    "copied": "Copied!"
+    "title": "ダラットをより良くしました！",
+    "subtitle": "人が多いほど楽しい。広めましょう。",
+    "quickShare": "クイック共有",
+    "personalInvitesTitle": "個人的な招待を送りたいですか？",
+    "emailInvites": "メール招待",
+    "emailDescription": "メールを貼り付けて、RSVP追跡付きの招待状を送信",
+    "emailPlaceholder": "メールを貼り付け（カンマ、スペース、または改行で区切り）",
+    "addEmails": "追加",
+    "sendInvites": "{count}件の招待を送信",
+    "sending": "送信中...",
+    "sentSuccess": "{count}件の招待を送信しました！",
+    "skipForNow": "完了",
+    "viewEvent": "イベントを確認",
+    "copyLink": "リンクをコピー",
+    "copied": "コピーしました！"
   }
 }

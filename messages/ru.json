@@ -47,9 +47,9 @@
     "previous": "Назад",
     "next": "Далее",
     "localeMismatch": {
-      "message": "This page is in a different language. Switch to {language}?",
-      "switch": "View in {language}",
-      "dismiss": "Keep current language"
+      "message": "Эта страница на другом языке. Переключиться на {language}?",
+      "switch": "Смотреть на {language}",
+      "dismiss": "Оставить текущий язык"
     }
   },
   "nav": {
@@ -86,11 +86,11 @@
       "placeholder": "Поиск событий...",
       "noResults": "Событий по запросу \"{query}\" не найдено",
       "clearSearch": "Очистить поиск",
-      "viewAll": "View all results for \"{query}\"",
-      "searchFor": "Search for \"{query}\""
+      "viewAll": "Показать все результаты по запросу \"{query}\"",
+      "searchFor": "Искать \"{query}\""
     },
     "browseArchive": "Архив",
-    "seeAllUpcoming": "See all upcoming events"
+    "seeAllUpcoming": "Смотреть все предстоящие события"
   },
   "auth": {
     "welcomeTitle": "Добро пожаловать в ĐàLạt.app",
@@ -143,14 +143,14 @@
     "resendEmail": "Не получили? Отправить ещё раз",
     "resending": "Отправляем...",
     "emailResent": "Отправлено! Проверьте ещё раз",
-    "cancel": "Cancel",
-    "verifyTitle": "Confirm your email",
-    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
-    "verifyButton": "Complete Sign In",
-    "verifyConfirming": "Confirming...",
-    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
-    "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "cancel": "Отмена",
+    "verifyTitle": "Подтвердите email",
+    "verifyDescription": "Нажмите кнопку ниже, чтобы завершить вход в ĐàLạt.app",
+    "verifyButton": "Завершить вход",
+    "verifyConfirming": "Подтверждение...",
+    "verifyHint": "Этот дополнительный шаг защищает от автоматической проверки ссылок почтовыми сервисами.",
+    "verifyInvalidTitle": "Недействительная ссылка",
+    "verifyInvalidDescription": "Эта ссылка для подтверждения недействительна или истекла.",
     "inAppBrowser": {
       "title": "Браузер не поддерживается",
       "description": "Вход через Google не работает в {appName}. Откройте эту страницу в Safari или Chrome.",
@@ -184,7 +184,7 @@
     "waitlist": "в очереди",
     "onWaitlist": "в очереди",
     "full": "Мест нет",
-    "signInToSeeAttendees": "Sign in to see attendees",
+    "signInToSeeAttendees": "Войдите, чтобы увидеть участников",
     "viewOnMap": "Показать на карте",
     "moreInfo": "Подробнее",
     "organizedBy": "Организатор",
@@ -195,10 +195,10 @@
       "live": "Сейчас",
       "ended": "Завершено"
     },
-    "partOfSeries": "Part of {seriesName}",
-    "onlineEvent": "Online Event",
-    "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "partOfSeries": "Часть серии {seriesName}",
+    "onlineEvent": "Онлайн-событие",
+    "joinMeeting": "Присоединиться к встрече",
+    "rsvpToSeeMeetingLink": "Зарегистрируйтесь, чтобы увидеть ссылку на встречу",
     "readMore": "Читать далее",
     "showLess": "Свернуть"
   },
@@ -467,17 +467,17 @@
         "addWarmth": "Добавить тепла"
       }
     },
-    "saved": "Saved",
-    "moments": "Moments",
-    "noMomentsYet": "No moments yet",
-    "noMomentsHint": "Moments shared from events will appear here",
+    "saved": "Сохранённое",
+    "moments": "Моменты",
+    "noMomentsYet": "Пока нет моментов",
+    "noMomentsHint": "Моменты с событий будут отображаться здесь",
     "claimBanner": {
-      "title": "Is this your profile?",
-      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
-      "button": "Claim This Profile",
-      "communityImported": "Community Imported"
+      "title": "Это ваш профиль?",
+      "description": "Этот профиль был автоматически создан из Facebook Events и связан с {count} событиями. Если вы {name}, вы можете заявить права на этот профиль для управления своими событиями.",
+      "button": "Заявить права на профиль",
+      "communityImported": "Импортировано сообществом"
     },
-    "eventsHosted": "{count} events hosted"
+    "eventsHosted": "Проведено событий: {count}"
   },
   "settings": {
     "settings": "Настройки",
@@ -490,10 +490,10 @@
     "account": "Аккаунт",
     "accountDescription": "Управление аккаунтом",
     "password": {
-      "setOrChangePassword": "Set or change password",
-      "changePassword": "Change password",
-      "savePassword": "Save password",
-      "passwordUpdated": "Password updated!"
+      "setOrChangePassword": "Установить или изменить пароль",
+      "changePassword": "Изменить пароль",
+      "savePassword": "Сохранить пароль",
+      "passwordUpdated": "Пароль обновлён!"
     }
   },
   "notifications": {
@@ -525,7 +525,7 @@
     "themeSystem": "Системная",
     "language": "Язык",
     "signOut": "Выйти",
-    "exitGodMode": "Exit God Mode"
+    "exitGodMode": "Выйти из режима бога"
   },
   "admin": {
     "dashboard": "Панель администратора",
@@ -576,20 +576,20 @@
     "roleOrganizer": "Организатор",
     "roleContributor": "Участник",
     "noData": "Нет данных",
-    "navBlog": "Blog",
-    "blog": "Blog Posts",
-    "blogDescription": "Manage blog posts and changelogs",
-    "newPost": "New Post",
-    "noPosts": "No blog posts yet",
-    "createFirstPost": "Create your first post",
-    "statusDraft": "Draft",
-    "statusExperimental": "Experimental",
-    "statusPublished": "Published",
-    "statusDeprecated": "Deprecated",
-    "statusArchived": "Archived",
-    "sourceManual": "Manual",
+    "navBlog": "Блог",
+    "blog": "Статьи блога",
+    "blogDescription": "Управление статьями и журналом изменений",
+    "newPost": "Новая статья",
+    "noPosts": "Пока нет статей",
+    "createFirstPost": "Создайте первую статью",
+    "statusDraft": "Черновик",
+    "statusExperimental": "Экспериментальный",
+    "statusPublished": "Опубликовано",
+    "statusDeprecated": "Устаревший",
+    "statusArchived": "В архиве",
+    "sourceManual": "Вручную",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Daily Summary"
+    "sourceDailySummary": "Ежедневная сводка"
   },
   "verification": {
     "requestSubmitted": "Заявка отправлена!",
@@ -656,12 +656,12 @@
     "pastEvents": "Прошедшие события",
     "noEventsYet": "Пока нет событий",
     "claimBanner": {
-      "title": "Is this your organization?",
-      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
-      "button": "Claim This Profile",
-      "unclaimed": "Unclaimed"
+      "title": "Это ваша организация?",
+      "description": "Этот профиль организатора связан с {count} событиями, но ещё не заявлен. Если вы представляете {name}, вы можете заявить права на этот профиль для управления им.",
+      "button": "Заявить права на профиль",
+      "unclaimed": "Не заявлен"
     },
-    "eventsHosted": "{count} events"
+    "eventsHosted": "Событий: {count}"
   },
   "festival": {
     "title": "Фестивали",
@@ -682,7 +682,7 @@
     "noUpdatesYet": "Пока нет обновлений. Следите за новостями!",
     "moreDetailsSoon": "Подробности скоро.",
     "activeUpcoming": "Активные и предстоящие",
-    "pastFestivals": "Past Festivals"
+    "pastFestivals": "Прошедшие фестивали"
   },
   "analytics": {
     "created": "Создано",
@@ -903,9 +903,9 @@
       "Благодаря вам зал будет полон",
       "Продолжайте быть связующим звеном"
     ],
-    "usernamePlaceholder": "Search by name or username",
-    "usernameHint": "Type at least 2 characters to search",
-    "noInvitees": "Please add at least one person to invite"
+    "usernamePlaceholder": "Поиск по имени или логину",
+    "usernameHint": "Введите минимум 2 символа для поиска",
+    "noInvitees": "Добавьте хотя бы одного человека для приглашения"
   },
   "moments": {
     "moments": "Моменты",
@@ -999,7 +999,7 @@
       "retry": "Повторить",
       "remove": "Удалить",
       "proUploadLink": "100+ фото? Используйте Pro загрузку",
-      "statusConverting": "Converting..."
+      "statusConverting": "Конвертация..."
     },
     "gate": {
       "title": "Вы нашли сокровища! ✨",
@@ -1021,21 +1021,21 @@
       "message": "Нравится? Сохраняйте избранное",
       "cta": "Присоединиться бесплатно"
     },
-    "discoveryMode": "Discovery",
-    "differentEvent": "From a different event",
-    "prevEvent": "Prev event",
-    "nextEvent": "Next event",
-    "share": "Share",
-    "postMoments": "Post {count} moments",
-    "addMore": "Add more",
-    "viewMoreMoments": "View {count} more moments",
-    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
-    "searchHint": "AI-powered visual search",
-    "searchNoResults": "No moments found for \"{query}\"",
-    "searchResults": "{count} results for \"{query}\"",
-    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
-    "searching": "Searching...",
-    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
+    "discoveryMode": "Исследование",
+    "differentEvent": "С другого события",
+    "prevEvent": "Пред. событие",
+    "nextEvent": "След. событие",
+    "share": "Поделиться",
+    "postMoments": "Опубликовать {count} моментов",
+    "addMore": "Добавить ещё",
+    "viewMoreMoments": "Показать ещё {count} моментов",
+    "searchPlaceholder": "Поиск моментов... (напр., собаки, закат)",
+    "searchHint": "Визуальный поиск на базе ИИ",
+    "searchNoResults": "Моментов по запросу \"{query}\" не найдено",
+    "searchResults": "{count} результатов по запросу \"{query}\"",
+    "searchPrompt": "Ищите что угодно — \"закат\", \"кофе\", \"танцующие друзья\"",
+    "searching": "Поиск...",
+    "searchNoResultsHint": "Попробуйте другие ключевые слова или загляните позже, когда появится больше моментов"
   },
   "tribes": {
     "title": "Трайбы",
@@ -1241,9 +1241,9 @@
         "description": "Следующая остановка: корзина в небесах ☁️"
       }
     ],
-    "titlePositionTop": "Title at top",
-    "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom",
+    "titlePositionTop": "Заголовок сверху",
+    "titlePositionMiddle": "Заголовок по центру",
+    "titlePositionBottom": "Заголовок снизу",
     "clickToPreview": "Нажмите для просмотра",
     "preview": "Просмотр",
     "download": "Скачать",
@@ -1286,28 +1286,28 @@
       "november": "Ноябрь",
       "december": "Декабрь"
     },
-    "search": "Search events...",
-    "sortBy": "Sort by",
-    "sortRecent": "Recent",
-    "sortPopular": "Popular",
-    "sortRich": "Most photos",
-    "filterMyEvents": "Events I went to",
-    "clearFilters": "Clear filters",
-    "noResults": "No events match your search"
+    "search": "Поиск событий...",
+    "sortBy": "Сортировка",
+    "sortRecent": "Недавние",
+    "sortPopular": "Популярные",
+    "sortRich": "Больше фото",
+    "filterMyEvents": "События, на которых я был",
+    "clearFilters": "Сбросить фильтры",
+    "noResults": "Событий по вашему запросу не найдено"
   },
   "search": {
-    "title": "{query} events in Đà Lạt",
-    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
-    "breadcrumb": "Search: {query}",
+    "title": "События \"{query}\" в Далате",
+    "description": "Найдите события, мастер-классы и встречи по запросу \"{query}\" в Далате, Вьетнам. Откройте для себя предстоящие и прошедшие мероприятия.",
+    "breadcrumb": "Поиск: {query}",
     "resultsFor": "\"{query}\"",
-    "resultCount": "{count, plural, one {# event found} other {# events found}}",
-    "noResults": "No events found",
-    "noResultsHint": "Try a different search term or browse all events",
-    "browseAll": "Browse all events",
-    "back": "Back",
-    "happeningNow": "Happening Now",
-    "upcoming": "Upcoming",
-    "past": "Past Events"
+    "resultCount": "{count, plural, one {# событие найдено} few {# события найдено} many {# событий найдено} other {# событий найдено}}",
+    "noResults": "Событий не найдено",
+    "noResultsHint": "Попробуйте другой поисковый запрос или просмотрите все события",
+    "browseAll": "Смотреть все события",
+    "back": "Назад",
+    "happeningNow": "Сейчас",
+    "upcoming": "Предстоящие",
+    "past": "Прошедшие"
   },
   "about": {
     "title": "Dalat.app",
@@ -1592,34 +1592,34 @@
     "unmute": "Включить уведомления"
   },
   "feedback": {
-    "howWasIt": "How was the event?",
-    "amazing": "Amazing",
-    "good": "Good",
-    "okay": "Okay",
-    "notGreat": "Not great",
-    "commentPlaceholder": "Any thoughts to share? (optional)",
-    "submit": "Submit feedback",
-    "didNotAttend": "I didn't go",
-    "thankYou": "Thanks for your feedback!",
-    "markedNoShow": "Got it, thanks for letting us know.",
-    "eventEnded": "This event has ended",
-    "positiveRating": "{percentage}% positive ({count} reviews)"
+    "howWasIt": "Как вам событие?",
+    "amazing": "Потрясающе",
+    "good": "Хорошо",
+    "okay": "Нормально",
+    "notGreat": "Не очень",
+    "commentPlaceholder": "Хотите чем-то поделиться? (необязательно)",
+    "submit": "Отправить отзыв",
+    "didNotAttend": "Я не ходил",
+    "thankYou": "Спасибо за отзыв!",
+    "markedNoShow": "Понятно, спасибо что сообщили.",
+    "eventEnded": "Это событие завершилось",
+    "positiveRating": "{percentage}% положительных ({count} отзывов)"
   },
   "celebration": {
-    "title": "You just made Da Lat better!",
-    "subtitle": "The more the merrier. Spread the word.",
-    "quickShare": "Quick Share",
-    "personalInvitesTitle": "Want to send personal invites?",
-    "emailInvites": "Email Invites",
-    "emailDescription": "Paste emails to send invitations with RSVP tracking",
-    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
-    "addEmails": "Add",
-    "sendInvites": "Send {count} invite(s)",
-    "sending": "Sending...",
-    "sentSuccess": "{count} invite(s) sent!",
-    "skipForNow": "Done",
-    "viewEvent": "See your event live",
-    "copyLink": "Copy link",
-    "copied": "Copied!"
+    "title": "Вы только что сделали Далат лучше!",
+    "subtitle": "Чем больше, тем веселее. Расскажите друзьям.",
+    "quickShare": "Быстрый шеринг",
+    "personalInvitesTitle": "Хотите отправить личные приглашения?",
+    "emailInvites": "Приглашения по email",
+    "emailDescription": "Вставьте email-адреса для отправки приглашений с отслеживанием ответов",
+    "emailPlaceholder": "Вставьте email (через запятую, пробел или перенос строки)",
+    "addEmails": "Добавить",
+    "sendInvites": "Отправить {count} приглашений",
+    "sending": "Отправка...",
+    "sentSuccess": "Отправлено приглашений: {count}!",
+    "skipForNow": "Готово",
+    "viewEvent": "Посмотреть событие",
+    "copyLink": "Копировать ссылку",
+    "copied": "Скопировано!"
   }
 }

@@ -47,9 +47,9 @@
     "previous": "이전",
     "next": "다음",
     "localeMismatch": {
-      "message": "This page is in a different language. Switch to {language}?",
-      "switch": "View in {language}",
-      "dismiss": "Keep current language"
+      "message": "이 페이지는 다른 언어입니다. {language}(으)로 전환하시겠습니까?",
+      "switch": "{language}(으)로 보기",
+      "dismiss": "현재 언어 유지"
     }
   },
   "nav": {
@@ -86,11 +86,11 @@
       "placeholder": "이벤트 검색...",
       "noResults": "\"{query}\"에 대한 이벤트를 찾을 수 없습니다",
       "clearSearch": "검색 지우기",
-      "viewAll": "View all results for \"{query}\"",
-      "searchFor": "Search for \"{query}\""
+      "viewAll": "\"{query}\"에 대한 모든 결과 보기",
+      "searchFor": "\"{query}\" 검색"
     },
     "browseArchive": "아카이브 보기",
-    "seeAllUpcoming": "See all upcoming events"
+    "seeAllUpcoming": "예정된 모든 이벤트 보기"
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.app에 오신 것을 환영합니다",
@@ -143,14 +143,14 @@
     "resendEmail": "못 받으셨나요? 다시 보내기",
     "resending": "보내는 중...",
     "emailResent": "보냈어요! 다시 확인해보세요",
-    "cancel": "Cancel",
-    "verifyTitle": "Confirm your email",
-    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
-    "verifyButton": "Complete Sign In",
-    "verifyConfirming": "Confirming...",
-    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
-    "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "cancel": "취소",
+    "verifyTitle": "이메일 확인",
+    "verifyDescription": "아래 버튼을 클릭하여 ĐàLạt.app 로그인을 완료하세요",
+    "verifyButton": "로그인 완료",
+    "verifyConfirming": "확인 중...",
+    "verifyHint": "이 추가 단계는 이메일 보안 스캐너가 링크를 무효화하는 것을 방지합니다.",
+    "verifyInvalidTitle": "잘못된 링크",
+    "verifyInvalidDescription": "이 인증 링크가 잘못되었거나 만료되었습니다.",
     "inAppBrowser": {
       "title": "지원되지 않는 브라우저",
       "description": "{appName}에서는 Google 로그인이 작동하지 않습니다. Safari나 Chrome에서 이 페이지를 열어주세요.",
@@ -184,7 +184,7 @@
     "waitlist": "대기자 명단",
     "onWaitlist": "대기 중",
     "full": "마감",
-    "signInToSeeAttendees": "Sign in to see attendees",
+    "signInToSeeAttendees": "참석자를 보려면 로그인하세요",
     "viewOnMap": "지도에서 보기",
     "moreInfo": "상세 정보",
     "organizedBy": "주최자",
@@ -195,10 +195,10 @@
       "live": "진행 중",
       "ended": "종료됨"
     },
-    "partOfSeries": "Part of {seriesName}",
-    "onlineEvent": "Online Event",
-    "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "partOfSeries": "{seriesName}의 일부",
+    "onlineEvent": "온라인 이벤트",
+    "joinMeeting": "미팅 참가",
+    "rsvpToSeeMeetingLink": "미팅 링크를 보려면 참석 신청하세요",
     "readMore": "더 보기",
     "showLess": "접기"
   },
@@ -467,17 +467,17 @@
         "addWarmth": "따뜻함 추가"
       }
     },
-    "saved": "Saved",
-    "moments": "Moments",
-    "noMomentsYet": "No moments yet",
-    "noMomentsHint": "Moments shared from events will appear here",
+    "saved": "저장됨",
+    "moments": "모먼트",
+    "noMomentsYet": "아직 모먼트가 없습니다",
+    "noMomentsHint": "이벤트에서 공유된 모먼트가 여기에 표시됩니다",
     "claimBanner": {
-      "title": "Is this your profile?",
-      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
-      "button": "Claim This Profile",
-      "communityImported": "Community Imported"
+      "title": "이것이 당신의 프로필인가요?",
+      "description": "이 프로필은 Facebook Events에서 자동 생성되었으며 {count}개의 이벤트를 소유하고 있습니다. {name}이시라면 이 프로필을 소유권 주장하여 이벤트를 관리할 수 있습니다.",
+      "button": "이 프로필 소유권 주장",
+      "communityImported": "커뮤니티 가져옴"
     },
-    "eventsHosted": "{count} events hosted"
+    "eventsHosted": "{count}개 이벤트 주최"
   },
   "settings": {
     "settings": "설정",
@@ -490,10 +490,10 @@
     "account": "계정",
     "accountDescription": "계정을 관리하세요",
     "password": {
-      "setOrChangePassword": "Set or change password",
-      "changePassword": "Change password",
-      "savePassword": "Save password",
-      "passwordUpdated": "Password updated!"
+      "setOrChangePassword": "비밀번호 설정 또는 변경",
+      "changePassword": "비밀번호 변경",
+      "savePassword": "비밀번호 저장",
+      "passwordUpdated": "비밀번호가 업데이트되었습니다!"
     }
   },
   "notifications": {
@@ -525,7 +525,7 @@
     "themeSystem": "시스템",
     "language": "언어",
     "signOut": "로그아웃",
-    "exitGodMode": "Exit God Mode"
+    "exitGodMode": "관리자 모드 종료"
   },
   "admin": {
     "dashboard": "관리자 대시보드",
@@ -576,20 +576,20 @@
     "roleOrganizer": "주최자",
     "roleContributor": "기여자",
     "noData": "데이터 없음",
-    "navBlog": "Blog",
-    "blog": "Blog Posts",
-    "blogDescription": "Manage blog posts and changelogs",
-    "newPost": "New Post",
-    "noPosts": "No blog posts yet",
-    "createFirstPost": "Create your first post",
-    "statusDraft": "Draft",
-    "statusExperimental": "Experimental",
-    "statusPublished": "Published",
-    "statusDeprecated": "Deprecated",
-    "statusArchived": "Archived",
-    "sourceManual": "Manual",
+    "navBlog": "블로그",
+    "blog": "블로그 게시물",
+    "blogDescription": "블로그 게시물 및 변경 로그 관리",
+    "newPost": "새 게시물",
+    "noPosts": "아직 블로그 게시물이 없습니다",
+    "createFirstPost": "첫 번째 게시물 작성",
+    "statusDraft": "초안",
+    "statusExperimental": "실험적",
+    "statusPublished": "게시됨",
+    "statusDeprecated": "더 이상 사용되지 않음",
+    "statusArchived": "보관됨",
+    "sourceManual": "수동",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Daily Summary"
+    "sourceDailySummary": "일일 요약"
   },
   "verification": {
     "requestSubmitted": "요청이 제출되었습니다!",
@@ -656,12 +656,12 @@
     "pastEvents": "지난 이벤트",
     "noEventsYet": "아직 이벤트가 없습니다",
     "claimBanner": {
-      "title": "Is this your organization?",
-      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
-      "button": "Claim This Profile",
-      "unclaimed": "Unclaimed"
+      "title": "이것이 당신의 조직인가요?",
+      "description": "이 주최자 프로필에는 {count}개의 이벤트가 있지만 아직 소유권 주장이 되지 않았습니다. {name}을(를) 대표하시는 경우 이 프로필을 관리하기 위해 소유권을 주장할 수 있습니다.",
+      "button": "이 프로필 소유권 주장",
+      "unclaimed": "미소유"
     },
-    "eventsHosted": "{count} events"
+    "eventsHosted": "{count}개 이벤트"
   },
   "festival": {
     "title": "축제",
@@ -682,7 +682,7 @@
     "noUpdatesYet": "아직 업데이트가 없습니다. 기대해주세요!",
     "moreDetailsSoon": "자세한 내용은 곧 공개됩니다.",
     "activeUpcoming": "활성 및 예정",
-    "pastFestivals": "Past Festivals"
+    "pastFestivals": "지난 축제"
   },
   "analytics": {
     "created": "생성됨",
@@ -903,9 +903,9 @@
       "방이 가득 찰 이유가 되셨어요",
       "계속해서 연결자가 되어 주세요"
     ],
-    "usernamePlaceholder": "Search by name or username",
-    "usernameHint": "Type at least 2 characters to search",
-    "noInvitees": "Please add at least one person to invite"
+    "usernamePlaceholder": "이름 또는 사용자명으로 검색",
+    "usernameHint": "검색하려면 2자 이상 입력하세요",
+    "noInvitees": "초대할 사람을 최소 한 명 추가해 주세요"
   },
   "moments": {
     "moments": "모먼트",
@@ -999,7 +999,7 @@
       "retry": "재시도",
       "remove": "제거",
       "proUploadLink": "100장 이상? 프로 업로드 사용",
-      "statusConverting": "Converting..."
+      "statusConverting": "변환 중..."
     },
     "gate": {
       "title": "보석을 찾았어요! ✨",
@@ -1021,21 +1021,21 @@
       "message": "마음에 드시나요? 즐겨찾기에 저장하세요",
       "cta": "무료로 가입"
     },
-    "discoveryMode": "Discovery",
-    "differentEvent": "From a different event",
-    "prevEvent": "Prev event",
-    "nextEvent": "Next event",
-    "share": "Share",
-    "postMoments": "Post {count} moments",
-    "addMore": "Add more",
-    "viewMoreMoments": "View {count} more moments",
-    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
-    "searchHint": "AI-powered visual search",
-    "searchNoResults": "No moments found for \"{query}\"",
-    "searchResults": "{count} results for \"{query}\"",
-    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
-    "searching": "Searching...",
-    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
+    "discoveryMode": "탐색",
+    "differentEvent": "다른 이벤트에서",
+    "prevEvent": "이전 이벤트",
+    "nextEvent": "다음 이벤트",
+    "share": "공유",
+    "postMoments": "{count}개 모먼트 게시",
+    "addMore": "더 추가",
+    "viewMoreMoments": "{count}개 더 보기",
+    "searchPlaceholder": "모먼트 검색... (예: 강아지, 일몰)",
+    "searchHint": "AI 기반 비주얼 검색",
+    "searchNoResults": "\"{query}\"에 대한 모먼트를 찾을 수 없습니다",
+    "searchResults": "\"{query}\"에 대한 {count}개 결과",
+    "searchPrompt": "무엇이든 검색하세요—\"일몰\", \"커피\", \"춤추는 친구들\"",
+    "searching": "검색 중...",
+    "searchNoResultsHint": "다른 키워드를 시도하거나 더 많은 모먼트가 공유될 때 다시 확인하세요"
   },
   "tribes": {
     "title": "트라이브",
@@ -1241,9 +1241,9 @@
         "description": "다음 목적지: 하늘 위 휴지통 ☁️"
       }
     ],
-    "titlePositionTop": "Title at top",
-    "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom",
+    "titlePositionTop": "제목 상단",
+    "titlePositionMiddle": "제목 중앙",
+    "titlePositionBottom": "제목 하단",
     "clickToPreview": "클릭하여 미리보기",
     "preview": "미리보기",
     "download": "다운로드",
@@ -1286,28 +1286,28 @@
       "november": "11월",
       "december": "12월"
     },
-    "search": "Search events...",
-    "sortBy": "Sort by",
-    "sortRecent": "Recent",
-    "sortPopular": "Popular",
-    "sortRich": "Most photos",
-    "filterMyEvents": "Events I went to",
-    "clearFilters": "Clear filters",
-    "noResults": "No events match your search"
+    "search": "이벤트 검색...",
+    "sortBy": "정렬 기준",
+    "sortRecent": "최신",
+    "sortPopular": "인기",
+    "sortRich": "사진 많은 순",
+    "filterMyEvents": "참석한 이벤트",
+    "clearFilters": "필터 지우기",
+    "noResults": "검색과 일치하는 이벤트가 없습니다"
   },
   "search": {
-    "title": "{query} events in Đà Lạt",
-    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
-    "breadcrumb": "Search: {query}",
+    "title": "달랏의 {query} 이벤트",
+    "description": "베트남 달랏에서 {query} 이벤트, 워크숍, 모임을 찾아보세요. 예정된 이벤트와 지난 {query} 활동을 발견하세요.",
+    "breadcrumb": "검색: {query}",
     "resultsFor": "\"{query}\"",
-    "resultCount": "{count, plural, one {# event found} other {# events found}}",
-    "noResults": "No events found",
-    "noResultsHint": "Try a different search term or browse all events",
-    "browseAll": "Browse all events",
-    "back": "Back",
-    "happeningNow": "Happening Now",
-    "upcoming": "Upcoming",
-    "past": "Past Events"
+    "resultCount": "{count, plural, one {# 이벤트 발견} other {# 이벤트 발견}}",
+    "noResults": "이벤트를 찾을 수 없습니다",
+    "noResultsHint": "다른 검색어를 시도하거나 모든 이벤트를 둘러보세요",
+    "browseAll": "모든 이벤트 보기",
+    "back": "뒤로",
+    "happeningNow": "진행 중",
+    "upcoming": "예정",
+    "past": "지난 이벤트"
   },
   "about": {
     "title": "Dalat.app",
@@ -1592,34 +1592,34 @@
     "unmute": "알림 켜기"
   },
   "feedback": {
-    "howWasIt": "How was the event?",
-    "amazing": "Amazing",
-    "good": "Good",
-    "okay": "Okay",
-    "notGreat": "Not great",
-    "commentPlaceholder": "Any thoughts to share? (optional)",
-    "submit": "Submit feedback",
-    "didNotAttend": "I didn't go",
-    "thankYou": "Thanks for your feedback!",
-    "markedNoShow": "Got it, thanks for letting us know.",
-    "eventEnded": "This event has ended",
-    "positiveRating": "{percentage}% positive ({count} reviews)"
+    "howWasIt": "이벤트는 어떠셨나요?",
+    "amazing": "최고",
+    "good": "좋음",
+    "okay": "보통",
+    "notGreat": "별로",
+    "commentPlaceholder": "공유하고 싶은 생각이 있으신가요? (선택사항)",
+    "submit": "피드백 제출",
+    "didNotAttend": "참석하지 않았어요",
+    "thankYou": "피드백 감사합니다!",
+    "markedNoShow": "알겠습니다, 알려주셔서 감사합니다.",
+    "eventEnded": "이 이벤트가 종료되었습니다",
+    "positiveRating": "{percentage}% 긍정적 ({count}개 리뷰)"
   },
   "celebration": {
-    "title": "You just made Da Lat better!",
-    "subtitle": "The more the merrier. Spread the word.",
-    "quickShare": "Quick Share",
-    "personalInvitesTitle": "Want to send personal invites?",
-    "emailInvites": "Email Invites",
-    "emailDescription": "Paste emails to send invitations with RSVP tracking",
-    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
-    "addEmails": "Add",
-    "sendInvites": "Send {count} invite(s)",
-    "sending": "Sending...",
-    "sentSuccess": "{count} invite(s) sent!",
-    "skipForNow": "Done",
-    "viewEvent": "See your event live",
-    "copyLink": "Copy link",
-    "copied": "Copied!"
+    "title": "달랏을 더 좋게 만들었어요!",
+    "subtitle": "많을수록 즐거워요. 널리 알려주세요.",
+    "quickShare": "빠른 공유",
+    "personalInvitesTitle": "개인 초대를 보내시겠어요?",
+    "emailInvites": "이메일 초대",
+    "emailDescription": "이메일을 붙여넣어 RSVP 추적이 포함된 초대장을 보내세요",
+    "emailPlaceholder": "이메일 붙여넣기 (쉼표, 공백 또는 줄바꿈으로 구분)",
+    "addEmails": "추가",
+    "sendInvites": "{count}개 초대 보내기",
+    "sending": "전송 중...",
+    "sentSuccess": "{count}개 초대가 전송되었습니다!",
+    "skipForNow": "완료",
+    "viewEvent": "이벤트 보기",
+    "copyLink": "링크 복사",
+    "copied": "복사됨!"
   }
 }

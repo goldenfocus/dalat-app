@@ -143,14 +143,14 @@
     "resendEmail": "Không nhận được? Gửi lại",
     "resending": "Đang gửi...",
     "emailResent": "Đã gửi! Kiểm tra lại hộp thư",
-    "cancel": "Cancel",
-    "verifyTitle": "Confirm your email",
-    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
-    "verifyButton": "Complete Sign In",
-    "verifyConfirming": "Confirming...",
-    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
-    "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "cancel": "Hủy",
+    "verifyTitle": "Xác nhận email của bạn",
+    "verifyDescription": "Nhấn nút bên dưới để hoàn tất đăng nhập vào ĐàLạt.app",
+    "verifyButton": "Hoàn tất đăng nhập",
+    "verifyConfirming": "Đang xác nhận...",
+    "verifyHint": "Bước này giúp ngăn các chương trình quét email vô hiệu hóa liên kết của bạn.",
+    "verifyInvalidTitle": "Liên kết không hợp lệ",
+    "verifyInvalidDescription": "Liên kết xác minh này không hợp lệ hoặc đã hết hạn.",
     "inAppBrowser": {
       "title": "Trình duyệt không được hỗ trợ",
       "description": "Đăng nhập Google không hoạt động trong {appName}. Vui lòng mở trang này trong Safari hoặc Chrome.",
@@ -196,9 +196,9 @@
       "live": "Trực tiếp",
       "ended": "Đã kết thúc"
     },
-    "onlineEvent": "Online Event",
-    "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "onlineEvent": "Sự kiện trực tuyến",
+    "joinMeeting": "Tham gia cuộc họp",
+    "rsvpToSeeMeetingLink": "Đăng ký để xem liên kết cuộc họp",
     "readMore": "Xem thêm",
     "showLess": "Thu gọn"
   },
@@ -468,16 +468,16 @@
         "addWarmth": "Thêm sắc ấm"
       }
     },
-    "moments": "Moments",
-    "noMomentsYet": "No moments yet",
-    "noMomentsHint": "Moments shared from events will appear here",
+    "moments": "Khoảnh khắc",
+    "noMomentsYet": "Chưa có khoảnh khắc nào",
+    "noMomentsHint": "Khoảnh khắc được chia sẻ từ các sự kiện sẽ hiển thị ở đây",
     "claimBanner": {
-      "title": "Is this your profile?",
-      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
-      "button": "Claim This Profile",
-      "communityImported": "Community Imported"
+      "title": "Đây có phải hồ sơ của bạn?",
+      "description": "Hồ sơ này được tạo tự động từ Facebook Events và sở hữu {count} sự kiện. Nếu bạn là {name}, bạn có thể nhận quyền quản lý hồ sơ này.",
+      "button": "Nhận hồ sơ này",
+      "communityImported": "Nhập từ cộng đồng"
     },
-    "eventsHosted": "{count} events hosted"
+    "eventsHosted": "Đã tổ chức {count} sự kiện"
   },
   "settings": {
     "settings": "Cài đặt",
@@ -577,19 +577,19 @@
     "roleContributor": "Đóng góp viên",
     "noData": "Không có dữ liệu",
     "navBlog": "Blog",
-    "blog": "Blog Posts",
-    "blogDescription": "Manage blog posts and changelogs",
-    "newPost": "New Post",
-    "noPosts": "No blog posts yet",
-    "createFirstPost": "Create your first post",
-    "statusDraft": "Draft",
-    "statusExperimental": "Experimental",
-    "statusPublished": "Published",
-    "statusDeprecated": "Deprecated",
-    "statusArchived": "Archived",
-    "sourceManual": "Manual",
+    "blog": "Bài viết Blog",
+    "blogDescription": "Quản lý bài viết blog và nhật ký thay đổi",
+    "newPost": "Bài viết mới",
+    "noPosts": "Chưa có bài viết blog nào",
+    "createFirstPost": "Tạo bài viết đầu tiên",
+    "statusDraft": "Bản nháp",
+    "statusExperimental": "Thử nghiệm",
+    "statusPublished": "Đã đăng",
+    "statusDeprecated": "Ngừng sử dụng",
+    "statusArchived": "Đã lưu trữ",
+    "sourceManual": "Thủ công",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Daily Summary"
+    "sourceDailySummary": "Tóm tắt hàng ngày"
   },
   "verification": {
     "requestSubmitted": "Đã gửi yêu cầu!",
@@ -656,12 +656,12 @@
     "pastEvents": "Sự kiện đã qua",
     "noEventsYet": "Chưa có sự kiện nào",
     "claimBanner": {
-      "title": "Is this your organization?",
-      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
-      "button": "Claim This Profile",
-      "unclaimed": "Unclaimed"
+      "title": "Đây có phải tổ chức của bạn?",
+      "description": "Hồ sơ tổ chức này có {count} sự kiện nhưng chưa được nhận quyền quản lý. Nếu bạn đại diện cho {name}, bạn có thể nhận hồ sơ này.",
+      "button": "Nhận hồ sơ này",
+      "unclaimed": "Chưa nhận"
     },
-    "eventsHosted": "{count} events"
+    "eventsHosted": "{count} sự kiện"
   },
   "festival": {
     "title": "Lễ hội",
@@ -682,7 +682,7 @@
     "noUpdatesYet": "Chưa có cập nhật. Hãy theo dõi!",
     "moreDetailsSoon": "Thêm chi tiết sẽ sớm có.",
     "activeUpcoming": "Đang diễn ra & Sắp tới",
-    "pastFestivals": "Past Festivals"
+    "pastFestivals": "Lễ hội đã qua"
   },
   "analytics": {
     "created": "Đã tạo",
@@ -903,9 +903,9 @@
       "Bạn là lý do căn phòng sẽ đông đúc",
       "Hãy tiếp tục là người kết nối như bạn đang làm"
     ],
-    "usernamePlaceholder": "Search by name or username",
-    "usernameHint": "Type at least 2 characters to search",
-    "noInvitees": "Please add at least one person to invite"
+    "usernamePlaceholder": "Tìm theo tên hoặc tên người dùng",
+    "usernameHint": "Nhập ít nhất 2 ký tự để tìm kiếm",
+    "noInvitees": "Vui lòng thêm ít nhất một người để mời"
   },
   "moments": {
     "moments": "Khoảnh khắc",
@@ -1028,14 +1028,14 @@
       "message": "Thích những gì bạn thấy? Lưu yêu thích của bạn",
       "cta": "Tham gia miễn phí"
     },
-    "discoveryMode": "Discovery",
-    "differentEvent": "From a different event",
-    "prevEvent": "Prev event",
-    "nextEvent": "Next event",
-    "addMore": "Add more",
-    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
-    "searching": "Searching...",
-    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
+    "discoveryMode": "Khám phá",
+    "differentEvent": "Từ sự kiện khác",
+    "prevEvent": "Sự kiện trước",
+    "nextEvent": "Sự kiện tiếp",
+    "addMore": "Thêm nữa",
+    "searchPrompt": "Tìm bất cứ điều gì—\"hoàng hôn\", \"cà phê\", \"bạn bè nhảy múa\"",
+    "searching": "Đang tìm kiếm...",
+    "searchNoResultsHint": "Thử từ khóa khác hoặc quay lại sau khi có thêm khoảnh khắc được chia sẻ"
   },
   "tribes": {
     "title": "Bộ tộc",
@@ -1241,9 +1241,9 @@
         "description": "Điểm đến: thùng rác vĩnh cửu trên mây ☁️"
       }
     ],
-    "titlePositionTop": "Title at top",
-    "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom",
+    "titlePositionTop": "Tiêu đề ở trên",
+    "titlePositionMiddle": "Tiêu đề ở giữa",
+    "titlePositionBottom": "Tiêu đề ở dưới",
     "clickToPreview": "Nhấn để xem trước",
     "preview": "Xem trước",
     "download": "Tải xuống",
@@ -1592,34 +1592,34 @@
     "unmute": "Bật thông báo"
   },
   "feedback": {
-    "howWasIt": "How was the event?",
-    "amazing": "Amazing",
-    "good": "Good",
-    "okay": "Okay",
-    "notGreat": "Not great",
-    "commentPlaceholder": "Any thoughts to share? (optional)",
-    "submit": "Submit feedback",
-    "didNotAttend": "I didn't go",
-    "thankYou": "Thanks for your feedback!",
-    "markedNoShow": "Got it, thanks for letting us know.",
-    "eventEnded": "This event has ended",
-    "positiveRating": "{percentage}% positive ({count} reviews)"
+    "howWasIt": "Sự kiện thế nào?",
+    "amazing": "Tuyệt vời",
+    "good": "Tốt",
+    "okay": "Bình thường",
+    "notGreat": "Không tốt lắm",
+    "commentPlaceholder": "Bạn có điều gì muốn chia sẻ không? (tùy chọn)",
+    "submit": "Gửi đánh giá",
+    "didNotAttend": "Tôi không đi",
+    "thankYou": "Cảm ơn đánh giá của bạn!",
+    "markedNoShow": "Đã ghi nhận, cảm ơn bạn đã cho chúng tôi biết.",
+    "eventEnded": "Sự kiện này đã kết thúc",
+    "positiveRating": "{percentage}% tích cực ({count} đánh giá)"
   },
   "celebration": {
-    "title": "You just made Da Lat better!",
-    "subtitle": "The more the merrier. Spread the word.",
-    "quickShare": "Quick Share",
-    "personalInvitesTitle": "Want to send personal invites?",
-    "emailInvites": "Email Invites",
-    "emailDescription": "Paste emails to send invitations with RSVP tracking",
-    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
-    "addEmails": "Add",
-    "sendInvites": "Send {count} invite(s)",
-    "sending": "Sending...",
-    "sentSuccess": "{count} invite(s) sent!",
-    "skipForNow": "Done",
-    "viewEvent": "See your event live",
-    "copyLink": "Copy link",
-    "copied": "Copied!"
+    "title": "Bạn vừa làm Đà Lạt tốt đẹp hơn!",
+    "subtitle": "Càng đông càng vui. Hãy lan tỏa.",
+    "quickShare": "Chia sẻ nhanh",
+    "personalInvitesTitle": "Muốn gửi lời mời cá nhân?",
+    "emailInvites": "Mời qua Email",
+    "emailDescription": "Dán email để gửi lời mời với theo dõi RSVP",
+    "emailPlaceholder": "Dán email (phân cách bằng dấu phẩy, khoảng trắng hoặc xuống dòng)",
+    "addEmails": "Thêm",
+    "sendInvites": "Gửi {count} lời mời",
+    "sending": "Đang gửi...",
+    "sentSuccess": "Đã gửi {count} lời mời!",
+    "skipForNow": "Xong",
+    "viewEvent": "Xem sự kiện của bạn",
+    "copyLink": "Sao chép link",
+    "copied": "Đã sao chép!"
   }
 }

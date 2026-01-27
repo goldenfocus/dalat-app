@@ -47,9 +47,9 @@
     "previous": "ก่อนหน้า",
     "next": "ถัดไป",
     "localeMismatch": {
-      "message": "This page is in a different language. Switch to {language}?",
-      "switch": "View in {language}",
-      "dismiss": "Keep current language"
+      "message": "หน้านี้อยู่ในภาษาอื่น เปลี่ยนเป็น{language}ไหม?",
+      "switch": "ดูใน{language}",
+      "dismiss": "ใช้ภาษาปัจจุบัน"
     }
   },
   "nav": {
@@ -86,11 +86,11 @@
       "placeholder": "ค้นหากิจกรรม...",
       "noResults": "ไม่พบกิจกรรมสำหรับ \"{query}\"",
       "clearSearch": "ล้างการค้นหา",
-      "viewAll": "View all results for \"{query}\"",
-      "searchFor": "Search for \"{query}\""
+      "viewAll": "ดูผลลัพธ์ทั้งหมดสำหรับ \"{query}\"",
+      "searchFor": "ค้นหา \"{query}\""
     },
     "browseArchive": "ดูคลังข้อมูล",
-    "seeAllUpcoming": "See all upcoming events"
+    "seeAllUpcoming": "ดูกิจกรรมที่กำลังจะมาทั้งหมด"
   },
   "auth": {
     "welcomeTitle": "ยินดีต้อนรับสู่ ĐàLạt.app",
@@ -143,14 +143,14 @@
     "resendEmail": "ไม่ได้รับ? ส่งอีกครั้ง",
     "resending": "กำลังส่ง...",
     "emailResent": "ส่งแล้ว! ตรวจสอบอีกครั้ง",
-    "cancel": "Cancel",
-    "verifyTitle": "Confirm your email",
-    "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
-    "verifyButton": "Complete Sign In",
-    "verifyConfirming": "Confirming...",
-    "verifyHint": "This extra step prevents email security scanners from invalidating your link.",
-    "verifyInvalidTitle": "Invalid Link",
-    "verifyInvalidDescription": "This verification link is invalid or has expired.",
+    "cancel": "ยกเลิก",
+    "verifyTitle": "ยืนยันอีเมลของคุณ",
+    "verifyDescription": "คลิกปุ่มด้านล่างเพื่อเข้าสู่ระบบ ĐàLạt.app",
+    "verifyButton": "เข้าสู่ระบบ",
+    "verifyConfirming": "กำลังยืนยัน...",
+    "verifyHint": "ขั้นตอนนี้ป้องกันไม่ให้ระบบสแกนอีเมลทำให้ลิงก์ของคุณใช้งานไม่ได้",
+    "verifyInvalidTitle": "ลิงก์ไม่ถูกต้อง",
+    "verifyInvalidDescription": "ลิงก์ยืนยันนี้ไม่ถูกต้องหรือหมดอายุแล้ว",
     "inAppBrowser": {
       "title": "เบราว์เซอร์ไม่รองรับ",
       "description": "การเข้าสู่ระบบด้วย Google ไม่ทำงานใน {appName} กรุณาเปิดหน้านี้ใน Safari หรือ Chrome",
@@ -184,7 +184,7 @@
     "waitlist": "รายชื่อรอ",
     "onWaitlist": "อยู่ในรายชื่อรอ",
     "full": "เต็ม",
-    "signInToSeeAttendees": "Sign in to see attendees",
+    "signInToSeeAttendees": "เข้าสู่ระบบเพื่อดูผู้เข้าร่วม",
     "viewOnMap": "ดูบนแผนที่",
     "moreInfo": "ข้อมูลเพิ่มเติม",
     "organizedBy": "จัดโดย",
@@ -195,10 +195,10 @@
       "live": "กำลังจัด",
       "ended": "สิ้นสุด"
     },
-    "partOfSeries": "Part of {seriesName}",
-    "onlineEvent": "Online Event",
-    "joinMeeting": "Join meeting",
-    "rsvpToSeeMeetingLink": "RSVP to see meeting link",
+    "partOfSeries": "ส่วนหนึ่งของ {seriesName}",
+    "onlineEvent": "กิจกรรมออนไลน์",
+    "joinMeeting": "เข้าร่วมประชุม",
+    "rsvpToSeeMeetingLink": "ตอบรับเพื่อดูลิงก์ประชุม",
     "readMore": "อ่านเพิ่มเติม",
     "showLess": "แสดงน้อยลง"
   },
@@ -467,17 +467,17 @@
         "addWarmth": "เพิ่มความอบอุ่น"
       }
     },
-    "saved": "Saved",
-    "moments": "Moments",
-    "noMomentsYet": "No moments yet",
-    "noMomentsHint": "Moments shared from events will appear here",
+    "saved": "บันทึกแล้ว",
+    "moments": "โมเมนต์",
+    "noMomentsYet": "ยังไม่มีโมเมนต์",
+    "noMomentsHint": "โมเมนต์ที่แชร์จากกิจกรรมจะแสดงที่นี่",
     "claimBanner": {
-      "title": "Is this your profile?",
-      "description": "This profile was auto-created from Facebook Events and owns {count} event(s). If you are {name}, you can claim this profile to manage your events.",
-      "button": "Claim This Profile",
-      "communityImported": "Community Imported"
+      "title": "นี่คือโปรไฟล์ของคุณหรือไม่?",
+      "description": "โปรไฟล์นี้ถูกสร้างอัตโนมัติจาก Facebook Events และมี {count} กิจกรรม หากคุณคือ {name} คุณสามารถอ้างสิทธิ์โปรไฟล์นี้เพื่อจัดการกิจกรรมของคุณได้",
+      "button": "อ้างสิทธิ์โปรไฟล์นี้",
+      "communityImported": "นำเข้าจากชุมชน"
     },
-    "eventsHosted": "{count} events hosted"
+    "eventsHosted": "จัดกิจกรรม {count} ครั้ง"
   },
   "settings": {
     "settings": "การตั้งค่า",
@@ -490,10 +490,10 @@
     "account": "บัญชี",
     "accountDescription": "จัดการบัญชีของคุณ",
     "password": {
-      "setOrChangePassword": "Set or change password",
-      "changePassword": "Change password",
-      "savePassword": "Save password",
-      "passwordUpdated": "Password updated!"
+      "setOrChangePassword": "ตั้งค่าหรือเปลี่ยนรหัสผ่าน",
+      "changePassword": "เปลี่ยนรหัสผ่าน",
+      "savePassword": "บันทึกรหัสผ่าน",
+      "passwordUpdated": "อัปเดตรหัสผ่านแล้ว!"
     }
   },
   "notifications": {
@@ -525,7 +525,7 @@
     "themeSystem": "ระบบ",
     "language": "ภาษา",
     "signOut": "ออกจากระบบ",
-    "exitGodMode": "Exit God Mode"
+    "exitGodMode": "ออกจากโหมดผู้ดูแลสูงสุด"
   },
   "admin": {
     "dashboard": "แดชบอร์ดผู้ดูแล",
@@ -576,20 +576,20 @@
     "roleOrganizer": "ผู้จัด",
     "roleContributor": "ผู้ร่วมสร้าง",
     "noData": "ไม่มีข้อมูล",
-    "navBlog": "Blog",
-    "blog": "Blog Posts",
-    "blogDescription": "Manage blog posts and changelogs",
-    "newPost": "New Post",
-    "noPosts": "No blog posts yet",
-    "createFirstPost": "Create your first post",
-    "statusDraft": "Draft",
-    "statusExperimental": "Experimental",
-    "statusPublished": "Published",
-    "statusDeprecated": "Deprecated",
-    "statusArchived": "Archived",
-    "sourceManual": "Manual",
+    "navBlog": "บล็อก",
+    "blog": "บทความบล็อก",
+    "blogDescription": "จัดการบทความบล็อกและบันทึกการเปลี่ยนแปลง",
+    "newPost": "บทความใหม่",
+    "noPosts": "ยังไม่มีบทความบล็อก",
+    "createFirstPost": "สร้างบทความแรกของคุณ",
+    "statusDraft": "แบบร่าง",
+    "statusExperimental": "ทดลอง",
+    "statusPublished": "เผยแพร่แล้ว",
+    "statusDeprecated": "เลิกใช้แล้ว",
+    "statusArchived": "เก็บถาวร",
+    "sourceManual": "สร้างเอง",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Daily Summary"
+    "sourceDailySummary": "สรุปประจำวัน"
   },
   "verification": {
     "requestSubmitted": "ส่งคำขอแล้ว!",
@@ -656,12 +656,12 @@
     "pastEvents": "กิจกรรมที่ผ่านมา",
     "noEventsYet": "ยังไม่มีกิจกรรม",
     "claimBanner": {
-      "title": "Is this your organization?",
-      "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
-      "button": "Claim This Profile",
-      "unclaimed": "Unclaimed"
+      "title": "นี่คือองค์กรของคุณหรือไม่?",
+      "description": "โปรไฟล์ผู้จัดนี้มี {count} กิจกรรม แต่ยังไม่มีผู้อ้างสิทธิ์ หากคุณเป็นตัวแทนของ {name} คุณสามารถอ้างสิทธิ์โปรไฟล์นี้เพื่อจัดการได้",
+      "button": "อ้างสิทธิ์โปรไฟล์นี้",
+      "unclaimed": "ยังไม่มีผู้อ้างสิทธิ์"
     },
-    "eventsHosted": "{count} events"
+    "eventsHosted": "{count} กิจกรรม"
   },
   "festival": {
     "title": "เทศกาล",
@@ -682,7 +682,7 @@
     "noUpdatesYet": "ยังไม่มีอัปเดต ติดตามต่อไป!",
     "moreDetailsSoon": "รายละเอียดเพิ่มเติมเร็วๆ นี้",
     "activeUpcoming": "กำลังจัดและจะมาถึง",
-    "pastFestivals": "Past Festivals"
+    "pastFestivals": "เทศกาลที่ผ่านมา"
   },
   "analytics": {
     "created": "สร้างแล้ว",
@@ -903,9 +903,9 @@
       "คุณคือเหตุผลที่ห้องจะเต็ม",
       "จงเป็นผู้เชื่อมต่อต่อไปอย่างที่คุณเป็น"
     ],
-    "usernamePlaceholder": "Search by name or username",
-    "usernameHint": "Type at least 2 characters to search",
-    "noInvitees": "Please add at least one person to invite"
+    "usernamePlaceholder": "ค้นหาด้วยชื่อหรือชื่อผู้ใช้",
+    "usernameHint": "พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหา",
+    "noInvitees": "กรุณาเพิ่มอย่างน้อยหนึ่งคนเพื่อเชิญ"
   },
   "moments": {
     "moments": "โมเมนต์",
@@ -999,7 +999,7 @@
       "retry": "ลองใหม่",
       "remove": "ลบออก",
       "proUploadLink": "มีรูป 100+ รูป? ใช้ Pro Upload",
-      "statusConverting": "Converting..."
+      "statusConverting": "กำลังแปลง..."
     },
     "gate": {
       "title": "คุณพบสมบัติแล้ว! ✨",
@@ -1021,21 +1021,21 @@
       "message": "ชอบไหม? บันทึกรายการโปรดของคุณ",
       "cta": "เข้าร่วมฟรี"
     },
-    "discoveryMode": "Discovery",
-    "differentEvent": "From a different event",
-    "prevEvent": "Prev event",
-    "nextEvent": "Next event",
-    "share": "Share",
-    "postMoments": "Post {count} moments",
-    "addMore": "Add more",
-    "viewMoreMoments": "View {count} more moments",
-    "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
-    "searchHint": "AI-powered visual search",
-    "searchNoResults": "No moments found for \"{query}\"",
-    "searchResults": "{count} results for \"{query}\"",
-    "searchPrompt": "Search for anything—\"sunset\", \"coffee\", \"friends dancing\"",
-    "searching": "Searching...",
-    "searchNoResultsHint": "Try different keywords or check back later as more moments are shared"
+    "discoveryMode": "สำรวจ",
+    "differentEvent": "จากกิจกรรมอื่น",
+    "prevEvent": "กิจกรรมก่อนหน้า",
+    "nextEvent": "กิจกรรมถัดไป",
+    "share": "แชร์",
+    "postMoments": "โพสต์ {count} โมเมนต์",
+    "addMore": "เพิ่มอีก",
+    "viewMoreMoments": "ดูอีก {count} โมเมนต์",
+    "searchPlaceholder": "ค้นหาโมเมนต์... (เช่น สุนัข, พระอาทิตย์ตก)",
+    "searchHint": "ค้นหาด้วยภาพโดย AI",
+    "searchNoResults": "ไม่พบโมเมนต์สำหรับ \"{query}\"",
+    "searchResults": "{count} ผลลัพธ์สำหรับ \"{query}\"",
+    "searchPrompt": "ค้นหาอะไรก็ได้—\"พระอาทิตย์ตก\", \"กาแฟ\", \"เพื่อนเต้นรำ\"",
+    "searching": "กำลังค้นหา...",
+    "searchNoResultsHint": "ลองใช้คำค้นหาอื่นหรือกลับมาใหม่เมื่อมีโมเมนต์เพิ่มขึ้น"
   },
   "tribes": {
     "title": "Tribes",
@@ -1241,9 +1241,9 @@
         "description": "ปลายทาง: ถังขยะบนเมฆ ☁️"
       }
     ],
-    "titlePositionTop": "Title at top",
-    "titlePositionMiddle": "Title in middle",
-    "titlePositionBottom": "Title at bottom",
+    "titlePositionTop": "ชื่อด้านบน",
+    "titlePositionMiddle": "ชื่อตรงกลาง",
+    "titlePositionBottom": "ชื่อด้านล่าง",
     "clickToPreview": "คลิกเพื่อดูตัวอย่าง",
     "preview": "ดูตัวอย่าง",
     "download": "ดาวน์โหลด",
@@ -1286,28 +1286,28 @@
       "november": "พฤศจิกายน",
       "december": "ธันวาคม"
     },
-    "search": "Search events...",
-    "sortBy": "Sort by",
-    "sortRecent": "Recent",
-    "sortPopular": "Popular",
-    "sortRich": "Most photos",
-    "filterMyEvents": "Events I went to",
-    "clearFilters": "Clear filters",
-    "noResults": "No events match your search"
+    "search": "ค้นหากิจกรรม...",
+    "sortBy": "เรียงตาม",
+    "sortRecent": "ล่าสุด",
+    "sortPopular": "ยอดนิยม",
+    "sortRich": "มีรูปมากที่สุด",
+    "filterMyEvents": "กิจกรรมที่ฉันไป",
+    "clearFilters": "ล้างตัวกรอง",
+    "noResults": "ไม่พบกิจกรรมที่ตรงกับการค้นหา"
   },
   "search": {
-    "title": "{query} events in Đà Lạt",
-    "description": "Find {query} events, workshops, and gatherings in Đà Lạt, Vietnam. Discover upcoming and past {query} activities.",
-    "breadcrumb": "Search: {query}",
+    "title": "กิจกรรม {query} ในดาลัด",
+    "description": "ค้นหากิจกรรม เวิร์กช็อป และการพบปะเกี่ยวกับ {query} ในดาลัด เวียดนาม สำรวจกิจกรรม {query} ที่กำลังจะมาและที่ผ่านมา",
+    "breadcrumb": "ค้นหา: {query}",
     "resultsFor": "\"{query}\"",
-    "resultCount": "{count, plural, one {# event found} other {# events found}}",
-    "noResults": "No events found",
-    "noResultsHint": "Try a different search term or browse all events",
-    "browseAll": "Browse all events",
-    "back": "Back",
-    "happeningNow": "Happening Now",
-    "upcoming": "Upcoming",
-    "past": "Past Events"
+    "resultCount": "{count, plural, one {พบ # กิจกรรม} other {พบ # กิจกรรม}}",
+    "noResults": "ไม่พบกิจกรรม",
+    "noResultsHint": "ลองใช้คำค้นหาอื่นหรือดูกิจกรรมทั้งหมด",
+    "browseAll": "ดูกิจกรรมทั้งหมด",
+    "back": "กลับ",
+    "happeningNow": "กำลังเกิดขึ้น",
+    "upcoming": "กำลังจะมา",
+    "past": "กิจกรรมที่ผ่านมา"
   },
   "about": {
     "title": "Dalat.app",
@@ -1592,34 +1592,34 @@
     "unmute": "เปิดการแจ้งเตือน"
   },
   "feedback": {
-    "howWasIt": "How was the event?",
-    "amazing": "Amazing",
-    "good": "Good",
-    "okay": "Okay",
-    "notGreat": "Not great",
-    "commentPlaceholder": "Any thoughts to share? (optional)",
-    "submit": "Submit feedback",
-    "didNotAttend": "I didn't go",
-    "thankYou": "Thanks for your feedback!",
-    "markedNoShow": "Got it, thanks for letting us know.",
-    "eventEnded": "This event has ended",
-    "positiveRating": "{percentage}% positive ({count} reviews)"
+    "howWasIt": "กิจกรรมเป็นอย่างไรบ้าง?",
+    "amazing": "ยอดเยี่ยม",
+    "good": "ดี",
+    "okay": "ก็ดี",
+    "notGreat": "ไม่ค่อยดี",
+    "commentPlaceholder": "มีความคิดเห็นอะไรไหม? (ไม่บังคับ)",
+    "submit": "ส่งความคิดเห็น",
+    "didNotAttend": "ฉันไม่ได้ไป",
+    "thankYou": "ขอบคุณสำหรับความคิดเห็น!",
+    "markedNoShow": "รับทราบแล้ว ขอบคุณที่แจ้งให้ทราบ",
+    "eventEnded": "กิจกรรมนี้จบแล้ว",
+    "positiveRating": "{percentage}% บวก ({count} รีวิว)"
   },
   "celebration": {
-    "title": "You just made Da Lat better!",
-    "subtitle": "The more the merrier. Spread the word.",
-    "quickShare": "Quick Share",
-    "personalInvitesTitle": "Want to send personal invites?",
-    "emailInvites": "Email Invites",
-    "emailDescription": "Paste emails to send invitations with RSVP tracking",
-    "emailPlaceholder": "Paste emails (comma, space, or newline separated)",
-    "addEmails": "Add",
-    "sendInvites": "Send {count} invite(s)",
-    "sending": "Sending...",
-    "sentSuccess": "{count} invite(s) sent!",
-    "skipForNow": "Done",
-    "viewEvent": "See your event live",
-    "copyLink": "Copy link",
-    "copied": "Copied!"
+    "title": "คุณเพิ่งทำให้ดาลัดดีขึ้น!",
+    "subtitle": "ยิ่งมากยิ่งสนุก บอกต่อเลย",
+    "quickShare": "แชร์ด่วน",
+    "personalInvitesTitle": "อยากส่งคำเชิญส่วนตัวไหม?",
+    "emailInvites": "เชิญทางอีเมล",
+    "emailDescription": "วางอีเมลเพื่อส่งคำเชิญพร้อมติดตามการตอบรับ",
+    "emailPlaceholder": "วางอีเมล (คั่นด้วยคอมมา เว้นวรรค หรือขึ้นบรรทัดใหม่)",
+    "addEmails": "เพิ่ม",
+    "sendInvites": "ส่ง {count} คำเชิญ",
+    "sending": "กำลังส่ง...",
+    "sentSuccess": "ส่ง {count} คำเชิญแล้ว!",
+    "skipForNow": "เสร็จสิ้น",
+    "viewEvent": "ดูกิจกรรมของคุณ",
+    "copyLink": "คัดลอกลิงก์",
+    "copied": "คัดลอกแล้ว!"
   }
 }
