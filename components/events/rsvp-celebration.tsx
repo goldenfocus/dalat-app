@@ -5,8 +5,11 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
-import { Sparkles, PartyPopper, Users } from "lucide-react";
+import { Sparkles, PartyPopper, Users, Volume2, VolumeX } from "lucide-react";
 import { ShareButtons } from "./share-buttons";
+
+// Storage key for mute preference
+const CELEBRATION_MUTE_KEY = "dalat-celebration-muted";
 
 interface RsvpCelebrationProps {
   eventUrl: string;
@@ -35,8 +38,13 @@ export function RsvpCelebration({
   const [currentPhrase, setCurrentPhrase] = useState("");
   const [isVisible, setIsVisible] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(CELEBRATION_MUTE_KEY) === "true";
+  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const confettiIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const initializedRef = useRef(false);
 
   // Get celebration phrases from translations
   const getPhrases = useCallback(() => {
@@ -75,6 +83,7 @@ export function RsvpCelebration({
       startVelocity: 45,
       gravity: 1,
       ticks: 120,
+      zIndex: 10001,
     });
 
     // Burst from right side
@@ -87,6 +96,7 @@ export function RsvpCelebration({
       startVelocity: 45,
       gravity: 1,
       ticks: 120,
+      zIndex: 10001,
     });
 
     // Rain from top center
@@ -100,6 +110,7 @@ export function RsvpCelebration({
         gravity: 0.8,
         ticks: 150,
         shapes: ["circle", "square"],
+        zIndex: 10001,
       });
     }, 150);
   }, []);
@@ -133,6 +144,7 @@ export function RsvpCelebration({
         ticks: 100,
         shapes: ["circle", "square"],
         scalar: 1.1,
+        zIndex: 10001,
       });
 
       // Secondary sparkle effect
@@ -147,6 +159,7 @@ export function RsvpCelebration({
           ticks: 60,
           shapes: ["circle"],
           scalar: 0.7,
+          zIndex: 10001,
         });
       }, 100);
     };
@@ -168,8 +181,8 @@ export function RsvpCelebration({
   }, []);
 
   // Play celebration sound
-  const playSound = useCallback(() => {
-    if (!enableSound) return;
+  const playSound = useCallback((muted: boolean) => {
+    if (!enableSound || muted) return;
     try {
       // Create audio element for fireworks/celebration sound
       const audio = new Audio("/sounds/celebration.mp3");
@@ -183,19 +196,42 @@ export function RsvpCelebration({
     }
   }, [enableSound]);
 
-  // Initialize celebration
+  // Toggle mute and persist preference
+  const toggleMute = useCallback(() => {
+    setIsMuted((prev) => {
+      const newValue = !prev;
+      localStorage.setItem(CELEBRATION_MUTE_KEY, String(newValue));
+      // If unmuting and audio exists, resume playback
+      if (!newValue && audioRef.current) {
+        audioRef.current.play().catch(() => {});
+      }
+      // If muting, pause audio
+      if (newValue && audioRef.current) {
+        audioRef.current.pause();
+      }
+      return newValue;
+    });
+  }, []);
+
+  // Initialize celebration (runs once on mount)
   useEffect(() => {
+    // Prevent double-execution in React Strict Mode
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     setCurrentPhrase(getRandomPhrase());
 
     // Fire card confetti immediately when modal appears
     fireCardConfetti();
 
     // Fire fireworks slightly after for layered effect
-    setTimeout(() => {
+    const fireworksTimeout = setTimeout(() => {
       fireFireworks();
     }, 200);
 
-    playSound();
+    // Play sound (check mute state at init time)
+    const mutedAtInit = localStorage.getItem(CELEBRATION_MUTE_KEY) === "true";
+    playSound(mutedAtInit);
 
     // Cycle through phrases
     const phraseInterval = setInterval(() => {
@@ -210,6 +246,7 @@ export function RsvpCelebration({
     return () => {
       clearInterval(phraseInterval);
       clearTimeout(inviteTimeout);
+      clearTimeout(fireworksTimeout);
       if (confettiIntervalRef.current) {
         clearInterval(confettiIntervalRef.current);
       }
@@ -285,9 +322,22 @@ export function RsvpCelebration({
           </div>
         </div>
 
+        {/* Mute button */}
+        <button
+          onClick={toggleMute}
+          className="absolute top-3 right-3 p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10"
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          {isMuted ? (
+            <VolumeX className="w-4 h-4" />
+          ) : (
+            <Volume2 className="w-4 h-4" />
+          )}
+        </button>
+
         {/* Floating decorations */}
         <Sparkles
-          className="absolute top-4 right-4 w-5 h-5 text-yellow-400 animate-bounce"
+          className="absolute top-4 right-12 w-5 h-5 text-yellow-400 animate-bounce"
           style={{ animationDelay: "0.1s" }}
         />
         <Sparkles
