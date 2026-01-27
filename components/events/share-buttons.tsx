@@ -97,34 +97,26 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
 
   const handleCopyLink = async () => {
     try {
-      // Try to copy text + image if supported
-      if (imageUrl && navigator.clipboard.write) {
-        const imageBlob = await fetchImageBlob();
-        if (imageBlob) {
-          await navigator.clipboard.write([
-            new ClipboardItem({
-              "text/plain": new Blob([shareMessage], { type: "text/plain" }),
-              [imageBlob.type]: imageBlob,
-            }),
-          ]);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-          return;
-        }
-      }
-      // Fallback: copy text only
+      // Use simple writeText for reliability across browsers and contexts
       await navigator.clipboard.writeText(shareMessage);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy:", err);
-      // Last resort: try text-only
+      console.error("Clipboard writeText failed:", err);
+      // Fallback for older browsers or restricted contexts
       try {
-        await navigator.clipboard.writeText(shareMessage);
+        const textarea = document.createElement("textarea");
+        textarea.value = shareMessage;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch {
-        console.error("Text copy also failed");
+        console.error("Fallback copy also failed");
       }
     }
   };
