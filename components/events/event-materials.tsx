@@ -108,50 +108,115 @@ function VideoPlayer({ url, filename }: { url: string; filename?: string }) {
 }
 
 /**
- * PDF preview with download option
+ * PDF preview with fullscreen viewer for mobile
+ * Opens in a fullscreen modal with proper touch support
  */
 function PDFPreview({ url, filename, fileSize }: { url: string; filename?: string; fileSize?: number }) {
-  const [showEmbed, setShowEmbed] = useState(false);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+
+  // Handle escape key to close viewer
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setIsViewerOpen(false);
+    }
+  };
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-card">
-      <div className="flex items-center gap-3 p-4">
-        <div className="w-12 h-12 rounded bg-red-100 dark:bg-red-900/20 flex items-center justify-center flex-shrink-0">
-          <FileText className="w-6 h-6 text-red-600 dark:text-red-400" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">{filename || "Document.pdf"}</p>
-          <p className="text-xs text-muted-foreground">
-            PDF {fileSize && `• ${formatFileSize(fileSize)}`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowEmbed(!showEmbed)}
-          >
-            {showEmbed ? <ChevronUp className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            {showEmbed ? "Hide" : "Preview"}
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <a href={url} download={filename} target="_blank" rel="noopener noreferrer">
-              <Download className="w-4 h-4" />
-            </a>
-          </Button>
+    <>
+      <div className="border rounded-lg overflow-hidden bg-card">
+        <div className="flex items-center gap-3 p-4">
+          <div className="w-12 h-12 rounded bg-red-100 dark:bg-red-900/20 flex items-center justify-center flex-shrink-0">
+            <FileText className="w-6 h-6 text-red-600 dark:text-red-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium truncate">{filename || "Document.pdf"}</p>
+            <p className="text-xs text-muted-foreground">
+              PDF {fileSize && `• ${formatFileSize(fileSize)}`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsViewerOpen(true)}
+              className="gap-1"
+            >
+              <Play className="w-4 h-4" />
+              <span className="hidden sm:inline">Preview</span>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <a href={url} download={filename} target="_blank" rel="noopener noreferrer">
+                <Download className="w-4 h-4" />
+              </a>
+            </Button>
+          </div>
         </div>
       </div>
 
-      {showEmbed && (
-        <div className="border-t">
-          <iframe
-            src={`${url}#toolbar=0&navpanes=0`}
-            className="w-full h-[500px]"
-            title={filename || "PDF Preview"}
-          />
+      {/* Fullscreen PDF Viewer Modal */}
+      {isViewerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black flex flex-col"
+          onKeyDown={handleKeyDown}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-label={filename || "PDF Viewer"}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 bg-black/80 backdrop-blur-sm border-b border-white/10">
+            <div className="flex-1 min-w-0 mr-4">
+              <p className="text-white text-sm font-medium truncate">
+                {filename || "Document.pdf"}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="text-white hover:bg-white/10"
+              >
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Open</span>
+                </a>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="text-white hover:bg-white/10"
+              >
+                <a href={url} download={filename}>
+                  <Download className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Download</span>
+                </a>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsViewerOpen(false)}
+                className="text-white hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* PDF Content - using Google Docs Viewer for reliable mobile support */}
+          <div className="flex-1 bg-neutral-900">
+            <iframe
+              src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`}
+              className="w-full h-full border-0"
+              title={filename || "PDF Preview"}
+              allow="fullscreen"
+              style={{ minHeight: "calc(100vh - 60px)" }}
+            />
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
