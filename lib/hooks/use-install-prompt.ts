@@ -59,19 +59,34 @@ function isDismissed(): boolean {
 
 export function useInstallPrompt(): UseInstallPromptReturn {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installState, setInstallState] = useState<InstallState>('unsupported');
+  // Initialize as 'installed' if already in standalone mode to prevent banner flash
+  const [installState, setInstallState] = useState<InstallState>(() => {
+    if (typeof window !== 'undefined' && isStandaloneMode()) {
+      return 'installed';
+    }
+    return 'unsupported';
+  });
   const [platform, setPlatform] = useState<Platform>('unknown');
-  const [isStandalone, setIsStandalone] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return isStandaloneMode();
+    }
+    return false;
+  });
   const [showInstructions, setShowInstructions] = useState(false);
 
   useEffect(() => {
     const detectedPlatform = getPlatform();
     setPlatform(detectedPlatform);
 
-    const standalone = isStandaloneMode();
-    setIsStandalone(standalone);
+    // Check standalone mode - if already in PWA, don't show install prompt
+    const checkStandalone = () => {
+      const standalone = isStandaloneMode();
+      setIsStandalone(standalone);
+      return standalone;
+    };
 
-    if (standalone) {
+    if (checkStandalone()) {
       setInstallState('installed');
       return;
     }
@@ -104,9 +119,24 @@ export function useInstallPrompt(): UseInstallPromptReturn {
 
     window.addEventListener('appinstalled', handleAppInstalled);
 
+    // Listen for display-mode changes (detects when user installs PWA)
+    const displayModeMediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleDisplayModeChange = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        setIsStandalone(true);
+        setInstallState('installed');
+      }
+    };
+    displayModeMediaQuery.addEventListener('change', handleDisplayModeChange);
+
     // If no prompt event fires within 3 seconds, still show the banner
     // (allows manual install instructions for all platforms)
     const timeout = setTimeout(() => {
+      // Re-check standalone in case it changed during the timeout
+      if (checkStandalone()) {
+        setInstallState('installed');
+        return;
+      }
       if (!deferredPrompt) {
         // No native prompt available, but we can still show manual instructions
         setInstallState('prompt');
@@ -116,6 +146,7 @@ export function useInstallPrompt(): UseInstallPromptReturn {
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      displayModeMediaQuery.removeEventListener('change', handleDisplayModeChange);
       clearTimeout(timeout);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Run only once on mount
