@@ -9,8 +9,10 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { cn } from "@/lib/utils";
 import { detectBrowserLocale } from "@/lib/locale";
+import { triggerTranslation } from "@/lib/translations-client";
 import { PasswordPromptDialog } from "./password-prompt-dialog";
 import type { Locale } from "@/lib/types";
 
@@ -70,6 +72,7 @@ export function ProfileStep({
   // Form state
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState(defaultDisplayName || "");
+  const [bio, setBio] = useState("");
 
   // Validation state
   const [usernameError, setUsernameError] = useState<string | null>(null);
@@ -155,6 +158,7 @@ export function ProfileStep({
         .update({
           username,
           display_name: displayName.trim() || null,
+          bio: bio.trim() || null,
           avatar_url: avatarUrl,
           locale: detectedLocale,
         })
@@ -169,6 +173,13 @@ export function ProfileStep({
           setError(updateError.message);
         }
         return;
+      }
+
+      // Trigger translation for bio if set
+      if (bio.trim()) {
+        triggerTranslation("profile", userId, [
+          { field_name: "bio", text: bio.trim() },
+        ]);
       }
 
       // For email auth users, they already have a password - redirect directly
@@ -276,6 +287,24 @@ export function ProfileStep({
           />
           <p className="text-xs text-muted-foreground">
             {tProfile("displayNameHelp")}
+          </p>
+        </div>
+
+        {/* Bio */}
+        <div className="space-y-2">
+          <Label htmlFor="bio">{tProfile("bio")}</Label>
+          <AIEnhanceTextarea
+            id="bio"
+            name="bio"
+            value={bio}
+            onChange={setBio}
+            placeholder={tProfile("bioPlaceholder")}
+            context="a user profile bio"
+            rows={3}
+            maxLength={160}
+          />
+          <p className="text-xs text-muted-foreground">
+            {tProfile("bioHelp")}
           </p>
         </div>
 

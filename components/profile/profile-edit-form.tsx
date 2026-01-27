@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { AvatarUpload } from "./avatar-upload";
 import { AIAvatarDialog } from "./ai-avatar-dialog";
 import { cn } from "@/lib/utils";
@@ -187,8 +188,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     setUsername(value);
   };
 
-  const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
+  const handleBioChange = (value: string) => {
     if (value.length <= BIO_MAX_LENGTH) {
       setBio(value);
     }
@@ -334,14 +334,15 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                 {bio.length}/{BIO_MAX_LENGTH}
               </span>
             </div>
-            <textarea
+            <AIEnhanceTextarea
               id="bio"
               name="bio"
               value={bio}
               onChange={handleBioChange}
               placeholder={t("bioPlaceholder")}
+              context="a user profile bio"
               rows={3}
-              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm resize-none"
+              className="resize-none"
             />
             <p className="text-xs text-muted-foreground">{t("bioHelp")}</p>
           </div>
