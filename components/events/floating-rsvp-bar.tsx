@@ -77,6 +77,11 @@ export function FloatingRsvpBar({
     return null;
   }
 
+  // Hide when sidebar RSVP card is visible (no need for duplicate buttons)
+  if (celebration.isRsvpCardVisible) {
+    return null;
+  }
+
   // Determine status text and action
   let statusText: string | null = null;
   let actionButton: React.ReactNode = null;

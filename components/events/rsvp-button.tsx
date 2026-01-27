@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, createContext, useContext } from "react";
+import { useState, useTransition, createContext, useContext, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -9,26 +9,57 @@ import { EventFeedback } from "./event-feedback";
 import { RsvpCelebration } from "./rsvp-celebration";
 import type { Rsvp } from "@/lib/types";
 
-// Context for coordinating celebration state across components
+// Context for coordinating celebration state and RSVP card visibility across components
 interface CelebrationContextValue {
   isCelebrating: boolean;
   setCelebrating: (value: boolean) => void;
+  isRsvpCardVisible: boolean;
+  setRsvpCardVisible: (value: boolean) => void;
 }
 
 const CelebrationContext = createContext<CelebrationContextValue>({
   isCelebrating: false,
   setCelebrating: () => {},
+  isRsvpCardVisible: true,
+  setRsvpCardVisible: () => {},
 });
 
 export const useCelebration = () => useContext(CelebrationContext);
 
 export function CelebrationProvider({ children }: { children: React.ReactNode }) {
   const [isCelebrating, setCelebrating] = useState(false);
+  const [isRsvpCardVisible, setRsvpCardVisible] = useState(true);
   return (
-    <CelebrationContext.Provider value={{ isCelebrating, setCelebrating }}>
+    <CelebrationContext.Provider value={{ isCelebrating, setCelebrating, isRsvpCardVisible, setRsvpCardVisible }}>
       {children}
     </CelebrationContext.Provider>
   );
+}
+
+/**
+ * Wrapper that observes when the RSVP buttons are visible in viewport.
+ * Used to show/hide the floating RSVP bar on mobile.
+ */
+export function RsvpCardObserver({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { setRsvpCardVisible } = useCelebration();
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setRsvpCardVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 } // Consider visible if 10% is in view
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [setRsvpCardVisible]);
+
+  return <div ref={ref}>{children}</div>;
 }
 
 interface RsvpButtonProps {

@@ -13,7 +13,7 @@ import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
 import { JsonLd, generateEventSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { RsvpButton, CelebrationProvider } from "@/components/events/rsvp-button";
+import { RsvpButton, CelebrationProvider, RsvpCardObserver } from "@/components/events/rsvp-button";
 import { FloatingRsvpBar } from "@/components/events/floating-rsvp-bar";
 import { FeedbackBadge } from "@/components/events/event-feedback";
 import { SeriesBadge } from "@/components/events/series-badge";
@@ -828,22 +828,24 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
                 <hr />
 
-                {/* RSVP button */}
-                <RsvpButton
-                  eventId={event.id}
-                  eventSlug={event.slug}
-                  eventTitle={event.title}
-                  eventDescription={event.description}
-                  eventImageUrl={event.image_url}
-                  capacity={event.capacity}
-                  goingSpots={counts?.going_spots ?? 0}
-                  currentRsvp={currentRsvp}
-                  isLoggedIn={isLoggedIn}
-                  waitlistPosition={waitlistPosition}
-                  startsAt={event.starts_at}
-                  endsAt={event.ends_at}
-                  existingFeedback={userFeedback}
-                />
+                {/* RSVP button - wrapped in observer to show/hide floating bar */}
+                <RsvpCardObserver>
+                  <RsvpButton
+                    eventId={event.id}
+                    eventSlug={event.slug}
+                    eventTitle={event.title}
+                    eventDescription={event.description}
+                    eventImageUrl={event.image_url}
+                    capacity={event.capacity}
+                    goingSpots={counts?.going_spots ?? 0}
+                    currentRsvp={currentRsvp}
+                    isLoggedIn={isLoggedIn}
+                    waitlistPosition={waitlistPosition}
+                    startsAt={event.starts_at}
+                    endsAt={event.ends_at}
+                    existingFeedback={userFeedback}
+                  />
+                </RsvpCardObserver>
 
                 {/* Feedback stats for past events */}
                 {feedbackStats && feedbackStats.total > 0 && (
