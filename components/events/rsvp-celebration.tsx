@@ -225,7 +225,7 @@ export function RsvpCelebration({
     fireCardConfetti();
 
     // Fire fireworks slightly after for layered effect
-    const fireworksTimeout = setTimeout(() => {
+    setTimeout(() => {
       fireFireworks();
     }, 200);
 
@@ -233,20 +233,25 @@ export function RsvpCelebration({
     const mutedAtInit = localStorage.getItem(CELEBRATION_MUTE_KEY) === "true";
     playSound(mutedAtInit);
 
-    // Cycle through phrases
+    // Show invite section after a brief delay
+    setTimeout(() => {
+      setShowInvite(true);
+    }, 1500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Separate effect for phrase cycling (needs getRandomPhrase dep)
+  useEffect(() => {
     const phraseInterval = setInterval(() => {
       setCurrentPhrase(getRandomPhrase());
     }, 3000);
 
-    // Show invite section after a brief delay
-    const inviteTimeout = setTimeout(() => {
-      setShowInvite(true);
-    }, 1500);
+    return () => clearInterval(phraseInterval);
+  }, [getRandomPhrase]);
 
+  // Cleanup on unmount only
+  useEffect(() => {
     return () => {
-      clearInterval(phraseInterval);
-      clearTimeout(inviteTimeout);
-      clearTimeout(fireworksTimeout);
       if (confettiIntervalRef.current) {
         clearInterval(confettiIntervalRef.current);
       }
@@ -254,7 +259,7 @@ export function RsvpCelebration({
         audioRef.current.pause();
       }
     };
-  }, [getRandomPhrase, fireCardConfetti, fireFireworks, playSound]);
+  }, []);
 
   // Handle close
   const handleClose = useCallback(() => {
