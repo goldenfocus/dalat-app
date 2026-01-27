@@ -2,10 +2,9 @@
 
 import { memo } from "react";
 import Image from "next/image";
-import { Link } from "@/lib/i18n/routing";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { useRouter } from "@/lib/i18n/routing";
+import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
@@ -27,6 +26,8 @@ interface EventCardProps {
   seriesSlug?: string;
   translatedTitle?: string;
   priority?: boolean;
+  isFlipped?: boolean;
+  onFlip?: (eventId: string) => void;
 }
 
 // Check if event is past (same logic as rsvp-button)
@@ -40,14 +41,43 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
   return defaultEnd < now;
 }
 
-export const EventCard = memo(function EventCard({ event, counts, seriesRrule, translatedTitle, priority }: EventCardProps) {
+export const EventCard = memo(function EventCard({
+  event,
+  counts,
+  seriesRrule,
+  translatedTitle,
+  priority,
+  isFlipped = false,
+  onFlip,
+}: EventCardProps) {
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
+  const router = useRouter();
   const { prefetchEvent, prefetchEventCounts } = usePrefetch();
 
   const handlePrefetch = () => {
     prefetchEvent(event.slug);
     prefetchEventCounts(event.id);
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    triggerHaptic("selection");
+
+    if (isFlipped) {
+      // Already flipped - navigate to event
+      router.push(`/events/${event.slug}`);
+    } else {
+      // Not flipped - flip it
+      onFlip?.(event.id);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleClick(e as unknown as React.MouseEvent);
+    }
   };
 
   const spotsText = event.capacity
@@ -65,108 +95,158 @@ export const EventCard = memo(function EventCard({ event, counts, seriesRrule, t
   const displayTitle = translatedTitle || event.title;
 
   return (
-    <Link
-      href={`/events/${event.slug}`}
-      className="block touch-manipulation"
-      onClick={() => triggerHaptic("selection")}
+    <div
+      role="button"
+      tabIndex={0}
+      className="relative w-full cursor-pointer touch-manipulation [perspective:1000px]"
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
       onMouseEnter={handlePrefetch}
       onTouchStart={handlePrefetch}
+      aria-label={`${displayTitle}. Tap to ${isFlipped ? "open event" : "see details"}`}
     >
-      <Card className="overflow-hidden rounded-xl hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] active:opacity-90">
-        {/* Image area */}
-        <div className="w-full aspect-[4/5] relative overflow-hidden group">
-          {/* Popular badge for events with 20+ RSVPs */}
-          {(counts?.going_spots ?? 0) >= 20 && (
-            <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
-              {t("popular")}
-            </div>
-          )}
-          {hasCustomImage ? (
-            imageIsVideo ? (
-              <video
-                src={event.image_url!}
-                className={`w-full h-full ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
-                style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
-                muted
-                loop
-                playsInline
-                autoPlay
-                preload="metadata"
-                aria-hidden="true"
-              />
+      {/* Flip container */}
+      <div
+        className={`relative w-full transition-transform duration-300 [transform-style:preserve-3d] ${
+          isFlipped ? "[transform:rotateY(180deg)]" : ""
+        }`}
+      >
+        {/* Front face - Image + Title overlay */}
+        <div
+          className={`relative w-full rounded-xl overflow-hidden [backface-visibility:hidden] group ${
+            isFlipped ? "invisible" : ""
+          }`}
+          aria-hidden={isFlipped}
+        >
+          {/* Image area with 4:5 aspect ratio */}
+          <div className="w-full aspect-[4/5] relative overflow-hidden">
+            {/* Popular badge for events with 20+ RSVPs */}
+            {(counts?.going_spots ?? 0) >= 20 && (
+              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+                {t("popular")}
+              </div>
+            )}
+            {hasCustomImage ? (
+              imageIsVideo ? (
+                <video
+                  src={event.image_url!}
+                  className={`w-full h-full ${event.image_fit === "contain" ? "object-contain bg-black" : "object-cover"}`}
+                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                  preload="metadata"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Image
+                  loader={cloudflareLoader}
+                  src={event.image_url!}
+                  alt={displayTitle}
+                  fill
+                  sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
+                  className={`transition-transform group-hover:scale-105 ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
+                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                  priority={priority}
+                  fetchPriority={priority ? "high" : "auto"}
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
+                />
+              )
             ) : (
-              <Image
-                loader={cloudflareLoader}
-                src={event.image_url!}
-                alt={displayTitle}
-                fill
-                sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
-                className={`transition-transform group-hover:scale-105 ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
-                style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
-                priority={priority}
-                fetchPriority={priority ? "high" : "auto"}
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
+              <EventDefaultImage
+                title={displayTitle}
+                className="object-cover w-full h-full"
               />
-            )
-          ) : (
-            <EventDefaultImage
-              title={displayTitle}
-              className="object-cover w-full h-full"
-            />
-          )}
-          {/* Series badge */}
-          {seriesRrule && (
-            <div className="absolute top-2 left-2">
-              <SeriesBadge rrule={seriesRrule} variant="overlay" />
-            </div>
-          )}
-        </div>
-
-        {/* Text area */}
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-lg mb-2 line-clamp-1">
-            {displayTitle}
-          </h3>
-
-          <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" aria-hidden="true" />
-              <span>
-                {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} &middot;{" "}
-                {formatInDaLat(event.starts_at, "h:mm a", locale)}
-              </span>
-            </div>
-
-            {event.location_name && (
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" aria-hidden="true" />
-                <span className="line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
+            )}
+            {/* Series badge */}
+            {seriesRrule && (
+              <div className="absolute top-2 left-2">
+                <SeriesBadge rrule={seriesRrule} variant="overlay" />
               </div>
             )}
 
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" aria-hidden="true" />
-              <span>
-                {spotsText} {isPast ? t("went") : t("going")}
-                {isFull && (
-                  <span className="ml-1 text-orange-500">({t("full")})</span>
-                )}
-                {(counts?.interested_count ?? 0) > 0 && (
-                  <span className="ml-1 text-muted-foreground">
-                    &middot; {counts?.interested_count} {t("interested")}
-                  </span>
-                )}
-                {(counts?.waitlist_count ?? 0) > 0 && (
-                  <span className="ml-1 text-muted-foreground">
-                    &middot; {counts?.waitlist_count} {t("waitlist")}
-                  </span>
-                )}
-              </span>
+            {/* Gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" aria-hidden="true" />
+
+            {/* Title overlay at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+              <h3 className="font-semibold text-lg leading-tight line-clamp-2 drop-shadow-lg">
+                {displayTitle}
+              </h3>
+            </div>
+
+            {/* Hover/active state overlay */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/20 transition-colors" aria-hidden="true" />
+          </div>
+        </div>
+
+        {/* Back face - Details */}
+        <div
+          className={`absolute inset-0 rounded-xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-zinc-900 ${
+            !isFlipped ? "invisible" : ""
+          }`}
+          aria-hidden={!isFlipped}
+        >
+          {/* Blurred image background */}
+          <div className="absolute inset-0 opacity-30">
+            {hasCustomImage && !imageIsVideo && (
+              <Image
+                loader={cloudflareLoader}
+                src={event.image_url!}
+                alt=""
+                fill
+                sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover blur-sm"
+                aria-hidden="true"
+              />
+            )}
+          </div>
+
+          {/* Content - same aspect ratio as front */}
+          <div className="relative w-full aspect-[4/5] flex flex-col justify-center p-5 text-white">
+            <h3 className="font-semibold text-lg leading-tight line-clamp-2 mb-4">
+              {displayTitle}
+            </h3>
+
+            <div className="flex flex-col gap-2.5 text-sm text-white/90">
+              <div className="flex items-center gap-2.5">
+                <Calendar className="w-4 h-4 flex-shrink-0 text-white/70" />
+                <span>{formatInDaLat(event.starts_at, "EEE, MMM d", locale)}</span>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <Clock className="w-4 h-4 flex-shrink-0 text-white/70" />
+                <span>{formatInDaLat(event.starts_at, "h:mm a", locale)}</span>
+              </div>
+
+              {event.location_name && (
+                <div className="flex items-center gap-2.5">
+                  <MapPin className="w-4 h-4 flex-shrink-0 text-white/70" />
+                  <span className="line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2.5">
+                <Users className="w-4 h-4 flex-shrink-0 text-white/70" />
+                <span>
+                  {spotsText} {isPast ? t("went") : t("going")}
+                  {isFull && (
+                    <span className="ml-1 text-orange-400">({t("full")})</span>
+                  )}
+                </span>
+              </div>
+
+              {(counts?.interested_count ?? 0) > 0 && (
+                <div className="text-white/60 text-xs pl-6">
+                  {counts?.interested_count} {t("interested")}
+                </div>
+              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </Link>
+        </div>
+      </div>
+    </div>
   );
 });

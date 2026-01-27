@@ -191,6 +191,8 @@ export function EventGrid({
             seriesRrule={seriesRrules[event.id]}
             translatedTitle={translation?.title}
             priority={index === 0}
+            isFlipped={flippedCardId === event.id}
+            onFlip={handleFlip}
           />
         );
       })}
