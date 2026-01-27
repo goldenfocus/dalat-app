@@ -26,8 +26,8 @@ type ViewOption = {
 };
 
 const VIEW_OPTIONS: ViewOption[] = [
-  { id: "grid", mode: "grid", density: "default", icon: Grid3X3, labelKey: "grid" },
-  { id: "grid-plus", mode: "grid", density: "spacious", icon: LayoutGrid, labelKey: "gridPlus", desktopOnly: true },
+  { id: "grid", mode: "grid", density: "compact", icon: Grid3X3, labelKey: "grid" },
+  { id: "grid-plus", mode: "grid", density: "default", icon: LayoutGrid, labelKey: "gridPlus" },
   { id: "list", mode: "list", icon: List, labelKey: "list" },
   { id: "immersive", mode: "immersive", icon: Maximize2, labelKey: "immersive" },
 ];
@@ -65,9 +65,8 @@ export function EventViewToggle({ className }: EventViewToggleProps) {
   // Determine which option is currently active
   const getActiveOptionId = () => {
     if (mode === "grid") {
-      // On mobile, Grid+ isn't shown, so treat spacious as regular grid
-      if (density === "spacious" && !isDesktop) return "grid";
-      return density === "spacious" ? "grid-plus" : "grid";
+      // Grid = compact (3 cols, flip cards), Grid+ = default (2 cols, larger cards)
+      return density === "compact" ? "grid" : "grid-plus";
     }
     return mode;
   };
