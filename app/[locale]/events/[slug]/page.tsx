@@ -938,6 +938,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
       {/* Floating RSVP bar for mobile */}
       <FloatingRsvpBar
         eventId={event.id}
+        eventSlug={event.slug}
+        eventTitle={event.title}
+        eventDescription={event.description}
+        eventImageUrl={event.image_url}
         capacity={event.capacity}
         goingSpots={counts?.going_spots ?? 0}
         currentRsvp={currentRsvp}
