@@ -114,6 +114,19 @@ export async function getEventWithTranslations(
     return null;
   }
 
+  // Determine source locale
+  const sourceLocale = (event as Event & { source_locale?: string }).source_locale || 'en';
+
+  // If target locale matches source, return original content without translation lookup
+  if (targetLocale === sourceLocale) {
+    return {
+      ...event,
+      translated_title: event.title,
+      translated_description: event.description,
+      is_translated: false,
+    } as TranslatedEvent;
+  }
+
   // Fetch translations for this event
   const translations = await getTranslationsWithFallback(
     'event',
@@ -130,15 +143,11 @@ export async function getEventWithTranslations(
     }
   );
 
-  // Determine if we're showing a translation
-  const sourceLocale = (event as Event & { source_locale?: string }).source_locale || 'en';
-  const isTranslated = targetLocale !== sourceLocale;
-
   return {
     ...event,
     translated_title: translations.title || event.title,
     translated_description: translations.description,
-    is_translated: isTranslated && (translations.title !== event.title || translations.description !== event.description),
+    is_translated: translations.title !== event.title || translations.description !== event.description,
   } as TranslatedEvent;
 }
 
@@ -181,6 +190,18 @@ export async function getMomentWithTranslations(
     } as TranslatedMoment;
   }
 
+  // Determine source locale
+  const sourceLocale = (moment as Moment & { source_locale?: string }).source_locale || 'en';
+
+  // If target locale matches source, return original content without translation lookup
+  if (targetLocale === sourceLocale) {
+    return {
+      ...moment,
+      translated_text_content: moment.text_content,
+      is_translated: false,
+    } as TranslatedMoment;
+  }
+
   const translations = await getTranslationsWithFallback(
     'moment',
     moment.id,
@@ -196,13 +217,10 @@ export async function getMomentWithTranslations(
     }
   );
 
-  const sourceLocale = (moment as Moment & { source_locale?: string }).source_locale || 'en';
-  const isTranslated = targetLocale !== sourceLocale;
-
   return {
     ...moment,
     translated_text_content: translations.text_content,
-    is_translated: isTranslated && translations.text_content !== moment.text_content,
+    is_translated: translations.text_content !== moment.text_content,
   } as TranslatedMoment;
 }
 

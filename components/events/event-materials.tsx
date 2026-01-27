@@ -34,16 +34,6 @@ const TYPE_ICONS: Record<MaterialType, React.ComponentType<{ className?: string 
   document: File,
 };
 
-// Type labels
-const TYPE_LABELS: Record<MaterialType, string> = {
-  youtube: "YouTube Video",
-  pdf: "PDF Document",
-  audio: "Audio",
-  video: "Video",
-  image: "Image",
-  document: "Document",
-};
-
 /**
  * Format file size for display
  */
@@ -401,13 +391,6 @@ export function EventMaterialsSummary({
     return acc;
   }, {} as Record<MaterialType, number>);
 
-  const typeLabels = Object.entries(typeCounts)
-    .map(([type, count]) => {
-      const label = TYPE_LABELS[type as MaterialType];
-      return count > 1 ? `${count} ${label}s` : `${count} ${label}`;
-    })
-    .join(", ");
-
   return (
     <div className={cn("border rounded-lg", className)}>
       <button
@@ -416,22 +399,19 @@ export function EventMaterialsSummary({
         className="flex items-center justify-between w-full p-4 text-left hover:bg-accent/50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="flex -space-x-2">
-            {Object.keys(typeCounts).slice(0, 3).map((type) => {
+          <p className="font-medium">Materials</p>
+          <div className="flex -space-x-1">
+            {Object.keys(typeCounts).map((type) => {
               const Icon = TYPE_ICONS[type as MaterialType];
               return (
                 <div
                   key={type}
-                  className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center"
+                  className="w-6 h-6 rounded-full bg-muted border border-background flex items-center justify-center"
                 >
-                  <Icon className="w-4 h-4 text-muted-foreground" />
+                  <Icon className="w-3 h-3 text-muted-foreground" />
                 </div>
               );
             })}
-          </div>
-          <div>
-            <p className="font-medium">Event Materials</p>
-            <p className="text-xs text-muted-foreground">{typeLabels}</p>
           </div>
         </div>
         <ChevronDown
