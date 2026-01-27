@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
-import { EventCard } from "@/components/events/event-card";
+import { SiteHeader } from "@/components/site-header";
+import { MobileHeader } from "@/components/home/mobile-header";
+import { EventGrid } from "@/components/events/event-grid";
+import { EventViewToggle } from "@/components/events/event-view-toggle";
 import { Pagination } from "@/components/ui/pagination";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
@@ -213,37 +215,37 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
         <link rel="next" href={`https://dalat.app/${locale}/events/upcoming/${page + 1}`} />
       )}
 
-      <main className="min-h-screen flex flex-col">
-        {/* Header */}
-        <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="container flex h-14 max-w-4xl items-center mx-auto px-4">
-            <Link
-              href="/"
-              className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{t("backToHome")}</span>
-            </Link>
-          </div>
-        </nav>
+      <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
+        {/* Mobile header */}
+        <div className="lg:hidden">
+          <MobileHeader />
+        </div>
+
+        {/* Desktop header */}
+        <div className="hidden lg:block">
+          <SiteHeader />
+        </div>
 
         {/* Content */}
-        <div className="flex-1 container max-w-4xl mx-auto px-4 py-8">
-          {/* Page title */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">
-              {page === 1 ? t("title") : t("titlePage", { page })}
-            </h1>
-            <p className="text-muted-foreground">
-              {totalCount === 0
-                ? t("noEvents")
-                : t("eventCount", { count: totalCount })}
-            </p>
+        <div className="flex-1 container max-w-6xl mx-auto px-4 py-4 lg:py-6">
+          {/* Page title + View toggle */}
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-2xl font-bold mb-1">
+                {page === 1 ? t("title") : t("titlePage", { page })}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {totalCount === 0
+                  ? t("noEvents")
+                  : t("eventCount", { count: totalCount })}
+              </p>
+            </div>
+            <EventViewToggle />
           </div>
 
           {/* Top pagination for pages > 1 */}
           {page > 1 && totalPages > 1 && (
-            <div className="mb-6">
+            <div className="mb-4">
               <Pagination
                 currentPage={page}
                 totalPages={totalPages}
@@ -254,22 +256,11 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
 
           {/* Events grid */}
           {events.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {events.map((event) => {
-                // Skip translation if viewing in the event's original language
-                const translation = event.source_locale === locale
-                  ? undefined
-                  : eventTranslations.get(event.id);
-                return (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    counts={counts[event.id]}
-                    translatedTitle={translation?.title || undefined}
-                  />
-                );
-              })}
-            </div>
+            <EventGrid
+              events={events}
+              counts={counts}
+              eventTranslations={eventTranslations}
+            />
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <p className="mb-4">{t("noEvents")}</p>
