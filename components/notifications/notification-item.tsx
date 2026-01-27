@@ -40,13 +40,38 @@ function getNotificationIcon(type: NotificationType) {
   }
 }
 
+/**
+ * Mark notification as read using sendBeacon for reliable delivery during navigation.
+ * sendBeacon is guaranteed to complete even if the page is unloading.
+ */
+function markAsReadBeacon(notificationId: string) {
+  const url = '/api/notifications/mark-read';
+  const data = JSON.stringify({ notificationId });
+
+  // Use sendBeacon for reliable delivery during page navigation
+  if (navigator.sendBeacon) {
+    const blob = new Blob([data], { type: 'application/json' });
+    navigator.sendBeacon(url, blob);
+  } else {
+    // Fallback for browsers without sendBeacon (rare)
+    fetch(url, {
+      method: 'POST',
+      body: data,
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true, // Allows request to outlive the page
+    }).catch(() => {}); // Fire and forget
+  }
+}
+
 export function NotificationItem({ notification, onRead }: NotificationItemProps) {
   const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
   const handleClick = () => {
-    // Fire mark-as-read in background (don't wait - navigate immediately)
-    if (!notification.read && onRead) {
-      onRead(notification.id);
+    // Mark as read using beacon (guaranteed to complete during navigation)
+    if (!notification.read) {
+      markAsReadBeacon(notification.id);
+      // Also call onRead for optimistic UI update
+      onRead?.(notification.id);
     }
 
     // Navigate immediately
@@ -87,9 +112,10 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
         </p>
       </div>
 
+      {/* Unread indicator - larger touch target on mobile */}
       {!notification.read && (
-        <div className="shrink-0 mt-1.5">
-          <div className="w-2 h-2 rounded-full bg-primary" />
+        <div className="shrink-0 mt-1 p-1">
+          <div className="w-2.5 h-2.5 rounded-full bg-primary" />
         </div>
       )}
     </button>
