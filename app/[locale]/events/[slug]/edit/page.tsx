@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 // Increase serverless function timeout
 export const maxDuration = 60;
 import { EventForm } from "@/components/events/event-form";
-import { hasRoleLevel, type Event, type Sponsor, type EventSponsor, type EventSettings, type UserRole } from "@/lib/types";
+import { hasRoleLevel, type Event, type Sponsor, type EventSponsor, type EventSettings, type UserRole, type EventMaterial } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -65,6 +65,13 @@ export default async function EditEventPage({ params }: PageProps) {
     .eq("event_id", event.id)
     .single();
 
+  // Fetch event materials
+  const { data: materials } = await supabase
+    .from("event_materials")
+    .select("*")
+    .eq("event_id", event.id)
+    .order("sort_order");
+
   // Get pending moments count for moderation badge
   const { data: counts } = await supabase.rpc("get_moment_counts", {
     p_event_id: event.id,
@@ -93,6 +100,7 @@ export default async function EditEventPage({ params }: PageProps) {
           userRole={(profile?.role as UserRole) ?? "user"}
           event={event as Event}
           initialSponsors={sponsors}
+          initialMaterials={(materials ?? []) as EventMaterial[]}
           initialSettings={settings as EventSettings | null}
           pendingMomentsCount={pendingCount}
         />

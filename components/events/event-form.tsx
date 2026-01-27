@@ -100,6 +100,7 @@ interface EventFormProps {
   userRole?: UserRole;
   event?: Event;
   initialSponsors?: (EventSponsor & { sponsors: Sponsor })[];
+  initialMaterials?: EventMaterial[];
   // For "Create Similar Event" feature
   copyFromEvent?: Event;
   copyFromSponsors?: (EventSponsor & { sponsors: Sponsor })[];
@@ -141,6 +142,7 @@ export function EventForm({
   userRole = "user",
   event,
   initialSponsors = [],
+  initialMaterials = [],
   copyFromEvent,
   copyFromSponsors = [],
   initialSettings,
@@ -1001,6 +1003,7 @@ export function EventForm({
               {isEditing && event ? (
                 <EventMaterialsInput
                   eventId={event.id}
+                  initialMaterials={initialMaterials}
                   onChange={() => {}}
                 />
               ) : (

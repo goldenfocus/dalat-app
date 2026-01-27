@@ -36,7 +36,8 @@ import { MomentsPreview } from "@/components/moments";
 import { SponsorDisplay } from "@/components/events/sponsor-display";
 import { ClickableTagList } from "@/components/events/clickable-tag-list";
 import { SiteHeader } from "@/components/site-header";
-import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries } from "@/lib/types";
+import { EventMaterialsSummary } from "@/components/events/event-materials";
+import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -376,6 +377,18 @@ async function getEventSponsors(eventId: string): Promise<(EventSponsor & { spon
   return (data ?? []) as (EventSponsor & { sponsors: Sponsor })[];
 }
 
+async function getEventMaterials(eventId: string): Promise<EventMaterial[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("event_materials")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("sort_order");
+
+  return (data ?? []) as EventMaterial[];
+}
+
 async function canUserPostMoment(eventId: string, userId: string | null, creatorId: string): Promise<boolean> {
   if (!userId) return false;
 
@@ -508,7 +521,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
-  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings] = await Promise.all([
+  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
@@ -522,6 +535,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getEventSponsors(event.id),
     getEventTranslations(event.id, event.title, event.description, event.source_locale, locale),
     getEventSettings(event.id),
+    getEventMaterials(event.id),
   ]);
 
   // Destructure combined RSVP result
@@ -663,6 +677,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             {/* Sponsors */}
             {sponsors.length > 0 && (
               <SponsorDisplay sponsors={sponsors} />
+            )}
+
+            {/* Materials (PDFs, videos, etc.) */}
+            {materials.length > 0 && (
+              <EventMaterialsSummary materials={materials} />
             )}
 
             {/* Attendees */}
