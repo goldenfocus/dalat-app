@@ -304,6 +304,9 @@ export async function triggerTranslationServer(
     }[] = [];
 
     for (const locale of CONTENT_LOCALES) {
+      // Skip same-language translations - they're useless and can contain incorrect data
+      if (locale === detectedLocale) continue;
+
       const localeTranslations = translations[locale];
       if (!localeTranslations) continue;
 
