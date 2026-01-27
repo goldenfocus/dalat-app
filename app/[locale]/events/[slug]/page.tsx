@@ -41,14 +41,13 @@ import { EventMaterialsStructuredData } from "@/components/events/event-material
 import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial } from "@/lib/types";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 // Generate dynamic OG metadata for social sharing
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const locale = await getLocale();
+  const { slug, locale } = await params;
   const supabase = await createClient();
 
   const { data: event } = await supabase
