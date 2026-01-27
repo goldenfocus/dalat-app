@@ -1078,6 +1078,48 @@ export interface MutedThread {
 }
 
 // ============================================
+// Event Materials Types
+// ============================================
+
+export type MaterialType = 'youtube' | 'pdf' | 'audio' | 'video' | 'image' | 'document';
+
+export interface EventMaterial {
+  id: string;
+  event_id: string;
+  material_type: MaterialType;
+  // For uploaded files
+  file_url: string | null;
+  original_filename: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  // For YouTube videos
+  youtube_url: string | null;
+  youtube_video_id: string | null;
+  // Display
+  title: string | null;
+  description: string | null;
+  sort_order: number;
+  // Metadata
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Draft material for new events (before we have an eventId)
+export interface DraftMaterial {
+  id: string; // temporary client-side ID
+  material_type: MaterialType;
+  file_url: string | null;
+  original_filename: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  youtube_url: string | null;
+  youtube_video_id: string | null;
+  title: string | null;
+  pending_file?: File; // Store file for upload after event creation
+}
+
+// ============================================
 // Blog Types (re-export from blog.ts)
 // ============================================
 

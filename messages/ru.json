@@ -280,6 +280,7 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "Ссылка для присоединения участников",
     "sponsors": "Спонсоры",
+    "materials": "Материалы",
     "settings": "Настройки",
     "paidEvent": "Это платное мероприятие",
     "fixedPrice": "Фиксированная цена",
@@ -445,6 +446,8 @@
     "avatarDialog": {
       "title": "Создать ИИ-аватар",
       "description": "Выберите стиль для вашего ИИ-аватара",
+      "refineTitle": "Улучшить аватар",
+      "refineDescription": "Используйте ИИ для улучшения или изменения текущего аватара",
       "generatingTitle": "Создание аватара",
       "generatingDescription": "Создаём ваш аватар...",
       "generate": "Создать аватар",

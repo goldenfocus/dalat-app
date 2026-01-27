@@ -21,6 +21,7 @@ import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
 import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
+import { EventMaterialsInput, createMaterialsForEvent } from "@/components/events/event-materials-input";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
 import { TicketTierInput, type TicketTier, type PriceType } from "@/components/events/ticket-tier-input";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
@@ -34,7 +35,7 @@ import { ChevronDown, Settings } from "lucide-react";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
-import type { Event, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole } from "@/lib/types";
+import type { Event, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole, DraftMaterial, EventMaterial } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
 import { slugify, sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
 
@@ -251,6 +252,9 @@ export function EventForm({
   const [draftSponsors, setDraftSponsors] = useState<DraftSponsor[]>(
     copyDefaults?.sponsors ?? []
   );
+
+  // Draft materials state (for new events)
+  const [draftMaterials, setDraftMaterials] = useState<DraftMaterial[]>([]);
 
   // Capacity limit toggle
   const [hasCapacityLimit, setHasCapacityLimit] = useState(
@@ -600,6 +604,11 @@ export function EventForm({
             await createSponsorsForEvent(seriesData.first_event_id, draftSponsors);
           }
 
+          // Create materials for the first event in the series
+          if (draftMaterials.length > 0 && seriesData.first_event_id) {
+            await createMaterialsForEvent(seriesData.first_event_id, draftMaterials);
+          }
+
           // Trigger AI processing for the first event (fire-and-forget)
           if (seriesData.first_event_id) {
             triggerEventTranslation(seriesData.first_event_id, title.trim(), description || null);
@@ -662,6 +671,11 @@ export function EventForm({
           // Create sponsors for the new event
           if (draftSponsors.length > 0) {
             await createSponsorsForEvent(data.id, draftSponsors);
+          }
+
+          // Create materials for the new event
+          if (draftMaterials.length > 0) {
+            await createMaterialsForEvent(data.id, draftMaterials);
           }
 
           // Trigger AI processing in background (fire-and-forget)
@@ -972,6 +986,27 @@ export function EventForm({
                 <SponsorForm
                   draftSponsors={draftSponsors}
                   onDraftChange={setDraftSponsors}
+                />
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Materials */}
+          <Collapsible className="pt-4 border-t">
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+              <span>{t("materials") || "Materials"}</span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              {isEditing && event ? (
+                <EventMaterialsInput
+                  eventId={event.id}
+                  onChange={() => {}}
+                />
+              ) : (
+                <EventMaterialsInput
+                  draftMaterials={draftMaterials}
+                  onDraftChange={setDraftMaterials}
                 />
               )}
             </CollapsibleContent>

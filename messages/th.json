@@ -280,6 +280,7 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "ลิงก์ที่ผู้เข้าร่วมจะใช้เข้ากิจกรรม",
     "sponsors": "ผู้สนับสนุน",
+    "materials": "เอกสาร",
     "settings": "การตั้งค่า",
     "paidEvent": "กิจกรรมนี้มีค่าบัตร/ค่าเข้า",
     "fixedPrice": "ราคาคงที่",
@@ -445,6 +446,8 @@
     "avatarDialog": {
       "title": "สร้าง AI อวาตาร์",
       "description": "เลือกสไตล์สำหรับอวาตาร์ที่สร้างด้วย AI",
+      "refineTitle": "ปรับปรุงอวาตาร์ของคุณ",
+      "refineDescription": "ใช้ AI เพื่อปรับปรุงหรือแก้ไขอวาตาร์ปัจจุบันของคุณ",
       "generatingTitle": "กำลังสร้างอวาตาร์",
       "generatingDescription": "กำลังสร้างอวาตาร์ให้คุณ...",
       "generate": "สร้างอวาตาร์",

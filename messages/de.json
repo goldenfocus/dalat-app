@@ -280,6 +280,7 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "Der Link, über den Teilnehmer dem Event beitreten",
     "sponsors": "Sponsoren",
+    "materials": "Materialien",
     "settings": "Einstellungen",
     "paidEvent": "Dieses Event hat Tickets/Eintritt",
     "fixedPrice": "Festpreis",
@@ -445,6 +446,8 @@
     "avatarDialog": {
       "title": "KI-Avatar erstellen",
       "description": "Wähle einen Stil für deinen KI-generierten Avatar",
+      "refineTitle": "Avatar verfeinern",
+      "refineDescription": "Verwenden Sie KI, um Ihren aktuellen Avatar zu verbessern oder zu ändern",
       "generatingTitle": "Avatar wird erstellt",
       "generatingDescription": "Dein Avatar wird erstellt...",
       "generate": "Avatar generieren",

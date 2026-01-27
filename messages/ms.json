@@ -280,6 +280,7 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "Pautan di mana peserta akan menyertai acara",
     "sponsors": "Penaja",
+    "materials": "Bahan",
     "settings": "Tetapan",
     "paidEvent": "Acara ini memerlukan tiket/bayaran masuk",
     "fixedPrice": "Harga tetap",
@@ -445,6 +446,8 @@
     "avatarDialog": {
       "title": "Cipta Avatar AI",
       "description": "Pilih gaya untuk avatar yang dijana AI",
+      "refineTitle": "Perhalusi Avatar Anda",
+      "refineDescription": "Gunakan AI untuk meningkatkan atau mengubah avatar semasa anda",
       "generatingTitle": "Mencipta Avatar",
       "generatingDescription": "Sedang mencipta avatar anda...",
       "generate": "Jana Avatar",

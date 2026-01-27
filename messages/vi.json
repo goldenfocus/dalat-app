@@ -280,6 +280,7 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "Liên kết để người tham dự tham gia sự kiện",
     "sponsors": "Nhà tài trợ",
+    "materials": "Tài liệu",
     "settings": "Cài đặt",
     "paidEvent": "Sự kiện có vé/phí vào cửa",
     "fixedPrice": "Giá cố định",
@@ -446,6 +447,8 @@
     "avatarDialog": {
       "title": "Tạo AI Avatar",
       "description": "Chọn phong cách cho avatar AI của bạn",
+      "refineTitle": "Tinh chỉnh Avatar",
+      "refineDescription": "Dùng AI để cải thiện hoặc chỉnh sửa avatar hiện tại",
       "generatingTitle": "Đang tạo Avatar",
       "generatingDescription": "Đang tạo avatar cho bạn...",
       "generate": "Tạo Avatar",

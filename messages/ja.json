@@ -280,6 +280,7 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "参加者がイベントに参加するためのリンク",
     "sponsors": "スポンサー",
+    "materials": "資料",
     "settings": "設定",
     "paidEvent": "このイベントはチケット/入場料が必要です",
     "fixedPrice": "固定価格",
@@ -445,6 +446,8 @@
     "avatarDialog": {
       "title": "AIアバターを作成",
       "description": "AI生成アバターのスタイルを選択してください",
+      "refineTitle": "アバターを調整",
+      "refineDescription": "AIを使用して現在のアバターを強化または変更します",
       "generatingTitle": "アバターを作成中",
       "generatingDescription": "アバターを作成しています...",
       "generate": "アバターを生成",

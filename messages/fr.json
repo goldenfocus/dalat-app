@@ -294,6 +294,7 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "Le lien où les participants rejoindront l'événement",
     "sponsors": "Sponsors",
+    "materials": "Documents",
     "settings": "Paramètres",
     "paidEvent": "Cet événement a des billets/entrée payante",
     "fixedPrice": "Prix fixe",
@@ -459,6 +460,8 @@
     "avatarDialog": {
       "title": "Créer un avatar IA",
       "description": "Choisissez un style pour votre avatar généré par IA",
+      "refineTitle": "Affiner votre avatar",
+      "refineDescription": "Utilisez l'IA pour améliorer ou modifier votre avatar actuel",
       "generatingTitle": "Création de l'avatar",
       "generatingDescription": "Nous créons votre avatar...",
       "generate": "Générer l'avatar",

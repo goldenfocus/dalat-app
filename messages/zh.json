@@ -280,6 +280,7 @@
     "onlineLinkPlaceholder": "https://zoom.us/j/...",
     "onlineLinkHelp": "参与者加入活动的链接",
     "sponsors": "赞助商",
+    "materials": "资料",
     "settings": "设置",
     "paidEvent": "此活动需要购票/门票",
     "fixedPrice": "固定价格",
@@ -445,6 +446,8 @@
     "avatarDialog": {
       "title": "创建AI头像",
       "description": "为AI生成的头像选择一种风格",
+      "refineTitle": "优化头像",
+      "refineDescription": "使用AI增强或修改你的当前头像",
       "generatingTitle": "正在创建头像",
       "generatingDescription": "正在为你生成头像...",
       "generate": "生成头像",
