@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ImageIcon, X, Plus, Loader2, GripVertical, ExternalLink, ChevronDown, Search } from "lucide-react";
+import { ImageIcon, X, Plus, Loader2, GripVertical, ExternalLink, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { Sponsor, EventSponsor } from "@/lib/types";
 
@@ -54,7 +53,6 @@ export function SponsorForm({
   const [sponsors, setSponsors] = useState<(EventSponsor & { sponsors: Sponsor })[]>(initialSponsors);
 
   // Shared state
-  const [isExpanded, setIsExpanded] = useState(initialSponsors.length > 0 || draftSponsors.length > 0);
   const [isAdding, setIsAdding] = useState(false);
   const [addMode, setAddMode] = useState<"existing" | "new">("existing");
   const [existingSponsors, setExistingSponsors] = useState<Sponsor[]>([]);
@@ -390,239 +388,222 @@ export function SponsorForm({
 
   return (
     <div className="space-y-4">
-      {/* Collapsible header */}
-      <button
-        type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center justify-between w-full text-left"
-      >
-        <Label className="text-base cursor-pointer">
-          Sponsors {hasSponsors && `(${displayList.length})`}
-        </Label>
-        <ChevronDown className={cn(
-          "w-4 h-4 text-muted-foreground transition-transform",
-          isExpanded && "rotate-180"
-        )} />
-      </button>
+      {/* Add sponsor button */}
+      {!isAdding && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setIsAdding(true)}
+          className="w-full"
+        >
+          <Plus className="w-4 h-4 mr-1" />
+          Add sponsor
+        </Button>
+      )}
 
-      {isExpanded && (
-        <div className="space-y-4 pt-2">
-          {/* Add sponsor button */}
-          {!isAdding && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsAdding(true)}
-              className="w-full"
+      {/* Existing sponsors list */}
+      {hasSponsors && (
+        <div className="space-y-2">
+          {displayList.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-3 p-3 border rounded-lg bg-card"
             >
-              <Plus className="w-4 h-4 mr-1" />
-              Add sponsor
-            </Button>
-          )}
+              <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
 
-          {/* Existing sponsors list */}
-          {hasSponsors && (
-            <div className="space-y-2">
-              {displayList.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 p-3 border rounded-lg bg-card"
-                >
-                  <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
+              {/* Logo */}
+              <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                {item.logo_url ? (
+                  <img
+                    src={item.logo_url}
+                    alt={item.name}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                )}
+              </div>
 
-                  {/* Logo */}
-                  <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {item.logo_url ? (
-                      <img
-                        src={item.logo_url}
-                        alt={item.name}
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                    )}
-                  </div>
-
-                  {/* Name & link */}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{item.name}</p>
-                    {item.website_url && (
-                      <a
-                        href={item.website_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        <span className="truncate">{item.website_url}</span>
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Remove button */}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveSponsor(item.id)}
-                    className="text-muted-foreground hover:text-destructive"
+              {/* Name & link */}
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{item.name}</p>
+                {item.website_url && (
+                  <a
+                    href={item.website_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
+                    <ExternalLink className="w-3 h-3" />
+                    <span className="truncate">{item.website_url}</span>
+                  </a>
+                )}
+              </div>
+
+              {/* Remove button */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRemoveSponsor(item.id)}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add sponsor dialog */}
+      {isAdding && (
+        <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+          {/* Mode toggle - only in live mode */}
+          {!isDraftMode && (
+            <div className="flex gap-2 p-1 bg-muted rounded-lg">
+              <button
+                type="button"
+                onClick={() => setAddMode("existing")}
+                className={cn(
+                  "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
+                  addMode === "existing"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Select existing
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddMode("new")}
+                className={cn(
+                  "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
+                  addMode === "new"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Create new
+              </button>
             </div>
           )}
 
-          {/* Add sponsor dialog */}
-          {isAdding && (
-            <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
-              {/* Mode toggle - only in live mode */}
-              {!isDraftMode && (
-                <div className="flex gap-2 p-1 bg-muted rounded-lg">
-                  <button
-                    type="button"
-                    onClick={() => setAddMode("existing")}
-                    className={cn(
-                      "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
-                      addMode === "existing"
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    Select existing
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAddMode("new")}
-                    className={cn(
-                      "flex-1 px-3 py-2 rounded text-sm font-medium transition-colors",
-                      addMode === "new"
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    Create new
-                  </button>
+          {/* Existing sponsors list */}
+          {addMode === "existing" && !isDraftMode && (
+            <div className="space-y-3">
+              {/* Search bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search sponsors..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Sponsors list */}
+              {isLoadingSponsors ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                 </div>
-              )}
-
-              {/* Existing sponsors list */}
-              {addMode === "existing" && !isDraftMode && (
-                <div className="space-y-3">
-                  {/* Search bar */}
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search sponsors..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-
-                  {/* Sponsors list */}
-                  {isLoadingSponsors ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : (
-                    <div className="max-h-64 overflow-y-auto space-y-2">
-                      {existingSponsors
-                        .filter(sponsor =>
-                          sponsor.name.toLowerCase().includes(searchQuery.toLowerCase())
-                        )
-                        .map((sponsor) => (
-                          <div
-                            key={sponsor.id}
-                            className="relative flex items-center gap-3 p-3 border rounded-lg hover:bg-accent transition-colors group"
-                          >
-                            <button
-                              type="button"
-                              onClick={() => handleAddExistingSponsor(sponsor)}
-                              className="flex items-center gap-3 flex-1 min-w-0 text-left"
-                            >
-                              {/* Logo */}
-                              <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                                {sponsor.logo_url ? (
-                                  <img
-                                    src={sponsor.logo_url}
-                                    alt={sponsor.name}
-                                    className="w-full h-full object-contain"
-                                  />
-                                ) : (
-                                  <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                                )}
-                              </div>
-
-                              {/* Name & link */}
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium truncate">{sponsor.name}</p>
-                                {sponsor.website_url && (
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {sponsor.website_url}
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Add icon */}
-                              <Plus className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                            </button>
-
-                            {/* Admin delete button */}
-                            {isAdmin && (
-                              <button
-                                type="button"
-                                onClick={(e) => handleDeleteSponsor(sponsor, e)}
-                                disabled={deletingId === sponsor.id}
-                                className="flex-shrink-0 p-2 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
-                                title="Delete sponsor from master list"
-                              >
-                                {deletingId === sponsor.id ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <X className="w-4 h-4" />
-                                )}
-                              </button>
+              ) : (
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {existingSponsors
+                    .filter(sponsor =>
+                      sponsor.name.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map((sponsor) => (
+                      <div
+                        key={sponsor.id}
+                        className="relative flex items-center gap-3 p-3 border rounded-lg hover:bg-accent transition-colors group"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => handleAddExistingSponsor(sponsor)}
+                          className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                        >
+                          {/* Logo */}
+                          <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {sponsor.logo_url ? (
+                              <img
+                                src={sponsor.logo_url}
+                                alt={sponsor.name}
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <ImageIcon className="w-5 h-5 text-muted-foreground" />
                             )}
                           </div>
-                        ))}
 
-                      {existingSponsors.filter(sponsor =>
-                        sponsor.name.toLowerCase().includes(searchQuery.toLowerCase())
-                      ).length === 0 && (
-                        <p className="text-center py-8 text-sm text-muted-foreground">
-                          {searchQuery ? "No sponsors found" : "No sponsors available"}
-                        </p>
-                      )}
-                    </div>
+                          {/* Name & link */}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{sponsor.name}</p>
+                            {sponsor.website_url && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {sponsor.website_url}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Add icon */}
+                          <Plus className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                        </button>
+
+                        {/* Admin delete button */}
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteSponsor(sponsor, e)}
+                            disabled={deletingId === sponsor.id}
+                            className="flex-shrink-0 p-2 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+                            title="Delete sponsor from master list"
+                          >
+                            {deletingId === sponsor.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <X className="w-4 h-4" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                  {existingSponsors.filter(sponsor =>
+                    sponsor.name.toLowerCase().includes(searchQuery.toLowerCase())
+                  ).length === 0 && (
+                    <p className="text-center py-8 text-sm text-muted-foreground">
+                      {searchQuery ? "No sponsors found" : "No sponsors available"}
+                    </p>
                   )}
-
-                  {error && <p className="text-sm text-destructive">{error}</p>}
-
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setIsAdding(false);
-                        setSearchQuery("");
-                        setError(null);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
                 </div>
               )}
 
-              {/* Create new sponsor form */}
-              {(addMode === "new" || isDraftMode) && (
-                <>
-                  <div className="flex items-start gap-4">
+              {error && <p className="text-sm text-destructive">{error}</p>}
+
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsAdding(false);
+                    setSearchQuery("");
+                    setError(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Create new sponsor form */}
+          {(addMode === "new" || isDraftMode) && (
+            <>
+              <div className="flex items-start gap-4">
                 {/* Logo upload */}
                 <div
                   className={cn(
@@ -698,17 +679,15 @@ export function SponsorForm({
                   Add sponsor
                 </Button>
               </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {!hasSponsors && !isAdding && (
-            <p className="text-sm text-muted-foreground">
-              Add sponsors to give them visibility on your event page.
-            </p>
+            </>
           )}
         </div>
+      )}
+
+      {!hasSponsors && !isAdding && (
+        <p className="text-sm text-muted-foreground">
+          Add sponsors to give them visibility on your event page.
+        </p>
       )}
     </div>
   );
