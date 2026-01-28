@@ -211,8 +211,8 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
         </Button>
       </div>
 
-      {/* Messenger apps - WhatsApp & Zalo */}
-      {showWhatsApp && (
+      {/* Messenger apps - WhatsApp & Zalo (mobile only via native share) */}
+      {showWhatsApp && canShare && (
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -225,20 +225,17 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
             </svg>
             WhatsApp
           </Button>
-          {/* Zalo uses native share for contact picker - only show on mobile */}
-          {canShare && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleZalo}
-              className="flex-1 gap-2 text-muted-foreground active:scale-95 transition-transform"
-            >
-              <svg viewBox="0 0 48 48" className="w-4 h-4 fill-current">
-                <path d="M24 4C12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20S35.046 4 24 4zm6.164 28.91H15.043v-3.516h6.09l-6.258-8.477v-3.445h11.797v3.516h-5.8l6.292 8.477v3.445zm3.946-7.137c-.27.27-.613.404-1.028.404h-1.16v3.473h-3.145V18.473h4.305c.415 0 .757.135 1.028.404.27.27.405.613.405 1.028v4.84c0 .415-.135.757-.405 1.028z" />
-              </svg>
-              {t("zalo")}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleZalo}
+            className="flex-1 gap-2 text-muted-foreground active:scale-95 transition-transform"
+          >
+            <svg viewBox="0 0 48 48" className="w-4 h-4 fill-current">
+              <path d="M24 4C12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20S35.046 4 24 4zm6.164 28.91H15.043v-3.516h6.09l-6.258-8.477v-3.445h11.797v3.516h-5.8l6.292 8.477v3.445zm3.946-7.137c-.27.27-.613.404-1.028.404h-1.16v3.473h-3.145V18.473h4.305c.415 0 .757.135 1.028.404.27.27.405.613.405 1.028v4.84c0 .415-.135.757-.405 1.028z" />
+            </svg>
+            {t("zalo")}
+          </Button>
         </div>
       )}
     </div>
