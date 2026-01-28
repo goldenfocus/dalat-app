@@ -159,8 +159,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Venue not found" };
   }
 
+  // Fetch translations for metadata
+  const venueTranslations = await getTranslationsWithFallback(
+    "venue",
+    venueData.venue.id,
+    locale as Locale,
+    {
+      title: venueData.venue.name,
+      description: venueData.venue.description,
+      text_content: null,
+      bio: null,
+      story_content: null,
+      technical_content: null,
+      meta_description: null,
+    }
+  );
+
   return generateVenueMetadata(
-    venueData.venue,
+    {
+      ...venueData.venue,
+      description: venueTranslations.description ?? venueData.venue.description,
+    },
     locale as Locale,
     venueData.upcoming_events.length
   );
@@ -186,7 +205,6 @@ export default async function VenuePage({ params }: PageProps) {
   ]);
 
   // Fetch translations for venue description only (venue names are proper names, never translate)
-  console.log('[VenuePage] Fetching translations:', { venueId: venue.id, locale, urlLocale });
   const venueTranslations = await getTranslationsWithFallback(
     "venue",
     venue.id,
@@ -201,7 +219,6 @@ export default async function VenuePage({ params }: PageProps) {
       meta_description: null,
     }
   );
-  console.log('[VenuePage] Translation result:', { gotTranslation: !!venueTranslations.description, desc: venueTranslations.description?.substring(0, 30) });
   const translatedDescription = venueTranslations.description ?? venue.description;
 
   const isUnclaimed = !venue.owner_id;
@@ -210,7 +227,9 @@ export default async function VenuePage({ params }: PageProps) {
   const typeConfig = venue.venue_type ? getVenueTypeConfig(venue.venue_type) : null;
   const TypeIcon = typeConfig?.icon;
 
-  const localBusinessSchema = generateLocalBusinessSchema(venue, locale, upcoming_events.length);
+  // Use translated description for structured data
+  const venueWithTranslation = { ...venue, description: translatedDescription };
+  const localBusinessSchema = generateLocalBusinessSchema(venueWithTranslation, locale, upcoming_events.length);
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
@@ -239,22 +258,8 @@ export default async function VenuePage({ params }: PageProps) {
     { key: "wheelchair", icon: Accessibility, has: venue.is_wheelchair_accessible, label: t("amenities.wheelchair") },
   ].filter((a) => a.has);
 
-  // TEMP DEBUG - remove after fixing
-  const debugInfo = {
-    locale,
-    urlLocale,
-    venueId: venue.id,
-    hasTranslation: !!venueTranslations.description,
-    translatedStart: venueTranslations.description?.substring(0, 20),
-    originalStart: venue.description?.substring(0, 20),
-  };
-
   return (
     <main className="min-h-screen pb-8">
-      {/* TEMP DEBUG */}
-      <div className="bg-yellow-100 text-black p-2 text-xs font-mono">
-        DEBUG: {JSON.stringify(debugInfo)}
-      </div>
       <JsonLd data={[localBusinessSchema, breadcrumbSchema]} />
 
       {/* Header */}
