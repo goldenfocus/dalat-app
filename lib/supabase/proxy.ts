@@ -1,7 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import createIntlMiddleware from "next-intl/middleware";
 import { hasEnvVars } from "../utils";
 import { routing } from "../i18n/routing";
+
+// Create next-intl middleware for locale handling
+const intlMiddleware = createIntlMiddleware(routing);
 
 // Pre-compiled regex patterns (avoid creating new RegExp per request)
 const localePattern = routing.locales.join('|');
@@ -188,10 +192,10 @@ export async function updateSession(request: NextRequest) {
     pathWithoutLocale.startsWith("/invite") ||  // Public invite links
     pathWithoutLocale.startsWith("/@");  // Public profile pages
 
-  // For public routes, skip auth entirely to preserve ISR caching
-  // Cookie operations break Vercel's cache (sets cache-control: no-cache)
+  // For public routes, use next-intl middleware to properly set locale context
+  // This is critical for translations to work - skipping this breaks i18n
   if (isPublicRoute) {
-    return NextResponse.next({ request });
+    return intlMiddleware(request);
   }
 
   // If the env vars are not set, skip auth check
@@ -235,5 +239,14 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
+  // For authenticated routes, still need to run intl middleware for locale context
+  // Merge the supabase response cookies with the intl middleware response
+  const intlResponse = intlMiddleware(request);
+
+  // Copy cookies from supabase response to intl response
+  supabaseResponse.cookies.getAll().forEach(cookie => {
+    intlResponse.cookies.set(cookie.name, cookie.value);
+  });
+
+  return intlResponse;
 }
