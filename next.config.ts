@@ -63,6 +63,24 @@ const nextConfig: NextConfig = {
     generateEtags: true, // Generate ETags for caching
   }),
 
+  // Redirects for legacy or simplified URLs
+  async redirects() {
+    return [
+      {
+        // /create → /events/new (CTA from blog posts)
+        source: "/create",
+        destination: "/events/new",
+        permanent: false, // Use 307 so we can change later if needed
+      },
+      {
+        // Handle locale-prefixed version: /en/create → /en/events/new
+        source: "/:locale(en|vi|ko|zh|ru|fr|ja|ms|th|de|es|id)/create",
+        destination: "/:locale/events/new",
+        permanent: false,
+      },
+    ];
+  },
+
   // HTTP headers for caching static assets
   async headers() {
     return [
