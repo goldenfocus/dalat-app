@@ -59,10 +59,14 @@ function isUrlSafe(urlString: string): boolean {
  * Uses Apify to scrape the event, then processes it through our import pipeline
  */
 export async function POST(request: Request) {
+  console.log("URL Import: Starting POST handler");
   try {
     // Get authenticated user (import requires login)
+    console.log("URL Import: Creating server client...");
     const serverSupabase = await createServerClient();
+    console.log("URL Import: Getting user...");
     const { data: { user } } = await serverSupabase.auth.getUser();
+    console.log("URL Import: User check complete, authenticated:", !!user);
 
     if (!user) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -155,7 +159,9 @@ export async function POST(request: Request) {
 
       const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${apiToken}`;
 
-      console.log(`URL Import: Calling Apify actor "${actorId}" with input:`, JSON.stringify(apifyInput, null, 2));
+      console.log(`URL Import: Calling Apify actor "${actorId}"`);
+      console.log(`URL Import: Input:`, JSON.stringify(apifyInput, null, 2));
+      console.log(`URL Import: API URL (token masked):`, apifyUrl.replace(apiToken, "***"));
 
       // Use AbortController to enforce our own timeout (50s to leave buffer before Vercel's 60s limit)
       const controller = new AbortController();
@@ -304,8 +310,9 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("URL Import error:", error);
+    console.error("URL Import error stack:", error instanceof Error ? error.stack : "No stack");
     return NextResponse.json(
-      { error: "Failed to import event" },
+      { error: "Failed to import event", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
