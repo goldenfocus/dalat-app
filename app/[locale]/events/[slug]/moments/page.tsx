@@ -28,9 +28,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Moments" };
   }
 
+  const title = `Moments - ${event.title} | ĐàLạt.app`;
+  const description = `Photos and videos from ${event.title}`;
+  const ogImageUrl = `/events/${slug}/moments/og-image`;
+
   return {
-    title: `Moments - ${event.title} | ĐàLạt.app`,
-    description: `Photos and videos from ${event.title}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: ogImageUrl, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImageUrl],
+    },
   };
 }
 
