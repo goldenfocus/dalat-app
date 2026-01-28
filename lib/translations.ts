@@ -15,22 +15,33 @@ const FALLBACK_LOCALE: ContentLocale = 'en';
 
 /**
  * Fetch translations for a piece of content
+ * Uses static client since translations are public data
  */
 export async function getTranslations(
   contentType: TranslationContentType,
   contentId: string,
   targetLocale: ContentLocale
 ): Promise<Map<TranslationFieldName, string>> {
-  const supabase = await createClient();
+  const result = new Map<TranslationFieldName, string>();
 
-  const { data: translations } = await supabase
+  // Use static client - translations are public data, no auth needed
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error('[getTranslations] Failed to create Supabase client');
+    return result;
+  }
+
+  const { data: translations, error } = await supabase
     .from('content_translations')
     .select('field_name, translated_text')
     .eq('content_type', contentType)
     .eq('content_id', contentId)
     .eq('target_locale', targetLocale);
 
-  const result = new Map<TranslationFieldName, string>();
+  if (error) {
+    console.error('[getTranslations] Query error:', error.message);
+    return result;
+  }
 
   if (translations) {
     for (const t of translations) {
