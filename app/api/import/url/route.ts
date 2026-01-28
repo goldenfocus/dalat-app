@@ -7,7 +7,8 @@ import { processLumaEvents, type LumaEvent } from "@/lib/import/processors/luma"
 import type { FacebookEvent, EventbriteEvent } from "@/lib/import/types";
 
 // Extend timeout for Vercel Pro (scrapers can be slow)
-export const maxDuration = 60;
+// Facebook scraping can take 1-3 minutes depending on the event
+export const maxDuration = 300;
 
 /**
  * Validate URL to prevent SSRF attacks
@@ -164,9 +165,9 @@ export async function POST(request: Request) {
       console.log(`URL Import: Input:`, JSON.stringify(apifyInput, null, 2));
       console.log(`URL Import: API URL (token masked):`, apifyUrl.replace(apiToken, "***"));
 
-      // Use AbortController to enforce our own timeout (50s to leave buffer before Vercel's 60s limit)
+      // Use AbortController to enforce our own timeout (280s to leave buffer before Vercel's 300s limit)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 50000);
+      const timeoutId = setTimeout(() => controller.abort(), 280000);
 
       let runResponse: Response;
       try {
