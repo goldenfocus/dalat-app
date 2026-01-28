@@ -147,13 +147,14 @@ export async function POST(request: Request) {
       }
 
       // Configure input based on whether it's a search URL or single event
+      // Note: startUrls must be an array of strings, not objects with url property
       const apifyInput = isFacebookSearch
         ? {
-            startUrls: [{ url }],
+            startUrls: [url],
             maxResults: 50, // Limit to 50 events per search
           }
         : {
-            startUrls: [{ url }],
+            startUrls: [url],
             maxRequestsPerCrawl: 1,
           };
 
