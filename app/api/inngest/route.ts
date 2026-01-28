@@ -7,6 +7,8 @@ import {
   onRsvpInterested,
   onCommentCreated,
   dailyBlogSummary,
+  dailyEventDiscovery,
+  manualEventDiscovery,
 } from '@/lib/inngest';
 
 // Create the Inngest API handler
@@ -19,5 +21,7 @@ export const { GET, POST, PUT } = serve({
     onRsvpInterested,
     onCommentCreated,
     dailyBlogSummary,
+    dailyEventDiscovery,
+    manualEventDiscovery,
   ],
 });

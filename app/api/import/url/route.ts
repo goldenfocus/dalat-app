@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { processFacebookEvents } from "@/lib/import/processors/facebook";
-import { processEventbriteEvents } from "@/lib/import/processors/eventbrite";
 import { processLumaEvents, type LumaEvent } from "@/lib/import/processors/luma";
-import type { FacebookEvent, EventbriteEvent } from "@/lib/import/types";
+import { fetchTicketGoEvent, processTicketGoEvents, type TicketGoEvent } from "@/lib/import/processors/ticketgo";
+import type { FacebookEvent } from "@/lib/import/types";
 
 // Extend timeout for Vercel Pro (scrapers can be slow)
 // Facebook scraping can take 1-3 minutes depending on the event
@@ -99,9 +99,9 @@ export async function POST(request: Request) {
       } else {
         actorId = "apify~facebook-events-scraper";
       }
-    } else if (url.includes("eventbrite.com")) {
-      platform = "eventbrite";
-      actorId = "newpo~eventbrite-scraper";
+    } else if (url.includes("ticketgo.vn")) {
+      platform = "ticketgo";
+      actorId = ""; // Not used - we fetch TicketGo directly via HTML scraping
     } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
       actorId = ""; // Not used - we fetch Lu.ma directly
@@ -115,7 +115,18 @@ export async function POST(request: Request) {
 
     let items: unknown[];
 
-    if (platform === "luma") {
+    if (platform === "ticketgo") {
+      // Fetch TicketGo directly via HTML scraping
+      const ticketgoData = await fetchTicketGoEvent(url);
+      if (!ticketgoData) {
+        return NextResponse.json(
+          { error: "Could not fetch TicketGo event. Make sure the URL is a valid event page." },
+          { status: 404 }
+        );
+      }
+      items = [ticketgoData];
+      console.log(`URL Import: Got TicketGo event: ${ticketgoData.title}`);
+    } else if (platform === "luma") {
       // Fetch Lu.ma directly - no Apify needed
       const lumaData = await fetchLumaEvent(url);
       if (!lumaData) {
@@ -131,7 +142,7 @@ export async function POST(request: Request) {
       const genericData = await fetchGenericEvent(url);
       if (!genericData) {
         return NextResponse.json(
-          { error: "Could not fetch event. Supported platforms: Facebook, Eventbrite, Lu.ma, or sites with /events/ API" },
+          { error: "Could not fetch event. Supported platforms: Facebook, TicketGo, Lu.ma, or sites with /events/ API" },
           { status: 400 }
         );
       }
@@ -264,11 +275,11 @@ export async function POST(request: Request) {
     let result;
     if (platform === "facebook") {
       result = await processFacebookEvents(supabase, items as FacebookEvent[], user.id);
-    } else if (platform === "luma" || platform === "generic") {
-      // Both Lu.ma and generic imports use similar API-based data structure
-      result = await processLumaEvents(supabase, items as LumaEvent[], user.id, platform);
+    } else if (platform === "ticketgo") {
+      result = await processTicketGoEvents(supabase, items as TicketGoEvent[], user.id);
     } else {
-      result = await processEventbriteEvents(supabase, items as EventbriteEvent[], user.id);
+      // Lu.ma and generic imports use similar API-based data structure
+      result = await processLumaEvents(supabase, items as LumaEvent[], user.id, platform);
     }
 
     console.log(

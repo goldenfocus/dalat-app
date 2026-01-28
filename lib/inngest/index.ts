@@ -8,3 +8,4 @@ export {
 } from './functions/scheduled-notifications';
 export { onCommentCreated } from './functions/comment-notifications';
 export { dailyBlogSummary } from './functions/daily-blog-summary';
+export { dailyEventDiscovery, manualEventDiscovery } from './functions/event-discovery';
