@@ -167,8 +167,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function VenuePage({ params }: PageProps) {
-  const { slug } = await params;
-  const locale = await getLocale();
+  const { slug, locale: urlLocale } = await params;
+  // Use URL locale as source of truth - getLocale() can fail if middleware context isn't set
+  const locale = urlLocale || await getLocale();
   const t = await getTranslations("venues");
 
   const venueData = await getVenueData(slug);
