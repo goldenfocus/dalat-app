@@ -1606,6 +1606,23 @@
     "communityPhotosCount": "{count} รูปจากกิจกรรมที่นี่",
     "noCommunityPhotos": "ยังไม่มีรูปจากชุมชน",
     "addOfficialPhotos": "เพิ่มรูปทางการ",
+
+    "photoManager": {
+        "editCaption": "แก้ไขคำบรรยาย",
+        "delete": "ลบรูปภาพ",
+        "captionPlaceholder": "คำบรรยาย (ไม่บังคับ)",
+        "uploadDescription": "อัปโหลดรูปภาพทางการสำหรับสถานที่นี้",
+        "clickToSelect": "คลิกเพื่อเลือกรูปภาพ",
+        "fileTypes": "JPEG, PNG, WebP, GIF (สูงสุด 10MB ต่อรูป)",
+        "readyToUpload": "{count} รูปพร้อมอัปโหลด",
+        "cancel": "ยกเลิก",
+        "uploading": "กำลังอัปโหลด...",
+        "upload": "อัปโหลด {count} รูป",
+        "deleteTitle": "ลบรูปภาพนี้?",
+        "deleteDescription": "การกระทำนี้ไม่สามารถยกเลิกได้",
+        "confirmDelete": "ลบ"
+    }
+,
     "postedAt": "ที่ {event}",
     "loadMore": "โหลดเพิ่ม",
     "organizer": "ผู้จัด",

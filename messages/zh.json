@@ -1606,6 +1606,23 @@
     "communityPhotosCount": "这里活动的{count}张照片",
     "noCommunityPhotos": "暂无社区照片",
     "addOfficialPhotos": "添加官方照片",
+
+    "photoManager": {
+        "editCaption": "编辑说明",
+        "delete": "删除照片",
+        "captionPlaceholder": "说明（可选）",
+        "uploadDescription": "上传此场地的官方照片",
+        "clickToSelect": "点击选择照片",
+        "fileTypes": "JPEG、PNG、WebP、GIF（每张最大10MB）",
+        "readyToUpload": "{count}张照片准备上传",
+        "cancel": "取消",
+        "uploading": "上传中...",
+        "upload": "上传{count}张照片",
+        "deleteTitle": "删除这张照片？",
+        "deleteDescription": "此操作无法撤销。",
+        "confirmDelete": "删除"
+    }
+,
     "postedAt": "在{event}",
     "loadMore": "加载更多",
     "organizer": "主办方",

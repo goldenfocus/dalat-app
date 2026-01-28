@@ -1606,6 +1606,23 @@
     "communityPhotosCount": "{count} foto dari acara di sini",
     "noCommunityPhotos": "Belum ada foto komuniti",
     "addOfficialPhotos": "Tambah Foto Rasmi",
+
+    "photoManager": {
+        "editCaption": "Edit kapsyen",
+        "delete": "Padam foto",
+        "captionPlaceholder": "Kapsyen (pilihan)",
+        "uploadDescription": "Muat naik foto rasmi untuk tempat ini",
+        "clickToSelect": "Klik untuk memilih foto",
+        "fileTypes": "JPEG, PNG, WebP, GIF (maks 10MB setiap satu)",
+        "readyToUpload": "{count} foto sedia untuk dimuat naik",
+        "cancel": "Batal",
+        "uploading": "Memuat naik...",
+        "upload": "Muat naik {count} foto",
+        "deleteTitle": "Padam foto ini?",
+        "deleteDescription": "Tindakan ini tidak boleh dibatalkan.",
+        "confirmDelete": "Padam"
+    }
+,
     "postedAt": "di {event}",
     "loadMore": "Muat lagi",
     "organizer": "Penganjur",

@@ -1606,6 +1606,23 @@
     "communityPhotosCount": "여기 이벤트에서 {count}개 사진",
     "noCommunityPhotos": "아직 커뮤니티 사진이 없습니다",
     "addOfficialPhotos": "공식 사진 추가",
+
+    "photoManager": {
+        "editCaption": "캡션 편집",
+        "delete": "사진 삭제",
+        "captionPlaceholder": "캡션 (선택사항)",
+        "uploadDescription": "이 장소의 공식 사진을 업로드하세요",
+        "clickToSelect": "클릭하여 사진 선택",
+        "fileTypes": "JPEG, PNG, WebP, GIF (각 최대 10MB)",
+        "readyToUpload": "{count}개의 사진 업로드 준비 완료",
+        "cancel": "취소",
+        "uploading": "업로드 중...",
+        "upload": "{count}개 사진 업로드",
+        "deleteTitle": "이 사진을 삭제하시겠습니까?",
+        "deleteDescription": "이 작업은 취소할 수 없습니다.",
+        "confirmDelete": "삭제"
+    }
+,
     "postedAt": "{event}에서",
     "loadMore": "더 보기",
     "organizer": "주최자",

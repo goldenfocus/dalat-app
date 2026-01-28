@@ -1625,6 +1625,23 @@
     "communityPhotosCount": "{count} foto dari acara di sini",
     "noCommunityPhotos": "Belum ada foto komunitas",
     "addOfficialPhotos": "Tambah Foto Resmi",
+
+    "photoManager": {
+        "editCaption": "Edit keterangan",
+        "delete": "Hapus foto",
+        "captionPlaceholder": "Keterangan (opsional)",
+        "uploadDescription": "Unggah foto resmi untuk tempat ini",
+        "clickToSelect": "Klik untuk memilih foto",
+        "fileTypes": "JPEG, PNG, WebP, GIF (maks 10MB per file)",
+        "readyToUpload": "{count} foto siap diunggah",
+        "cancel": "Batal",
+        "uploading": "Mengunggah...",
+        "upload": "Unggah {count} foto",
+        "deleteTitle": "Hapus foto ini?",
+        "deleteDescription": "Tindakan ini tidak dapat dibatalkan.",
+        "confirmDelete": "Hapus"
+    }
+,
     "postedAt": "di {event}",
     "loadMore": "Muat lebih",
     "organizer": "Penyelenggara",

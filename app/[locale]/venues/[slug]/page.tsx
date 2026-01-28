@@ -31,7 +31,7 @@ import { PhotoGallery } from "@/components/ui/photo-gallery";
 import { PastEventsSection } from "@/components/venues/past-events-section";
 import { VenueMap } from "@/components/venues/venue-map";
 import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
-import { VenueOfficialPhotosUpload } from "@/components/venues/venue-official-photos-upload";
+import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
 
 interface PageProps {
@@ -624,20 +624,19 @@ export default async function VenuePage({ params }: PageProps) {
         {/* Gallery Section */}
         {(venue.photos && venue.photos.length > 0) || canManageVenue ? (
           <section id="gallery" className="mb-8 pt-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Camera className="w-5 h-5" />
-                {t("photos")}
-              </h2>
-              {canManageVenue && (
-                <VenueOfficialPhotosUpload
-                  venueId={venue.id}
-                  currentPhotos={venue.photos || []}
-                />
-              )}
-            </div>
-            {venue.photos && venue.photos.length > 0 && (
-              <PhotoGallery photos={venue.photos} />
+            <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
+              <Camera className="w-5 h-5" />
+              {t("photos")}
+            </h2>
+            {canManageVenue ? (
+              <VenuePhotoManager
+                venueId={venue.id}
+                photos={venue.photos || []}
+              />
+            ) : (
+              venue.photos && venue.photos.length > 0 && (
+                <PhotoGallery photos={venue.photos} />
+              )
             )}
           </section>
         ) : null}

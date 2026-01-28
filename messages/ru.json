@@ -1606,6 +1606,23 @@
     "communityPhotosCount": "{count} фото с мероприятий здесь",
     "noCommunityPhotos": "Пока нет фото сообщества",
     "addOfficialPhotos": "Добавить официальные фото",
+
+    "photoManager": {
+        "editCaption": "Редактировать подпись",
+        "delete": "Удалить фото",
+        "captionPlaceholder": "Подпись (необязательно)",
+        "uploadDescription": "Загрузите официальные фотографии для этого места",
+        "clickToSelect": "Нажмите, чтобы выбрать фотографии",
+        "fileTypes": "JPEG, PNG, WebP, GIF (макс. 10МБ каждая)",
+        "readyToUpload": "{count} фото готово к загрузке",
+        "cancel": "Отмена",
+        "uploading": "Загрузка...",
+        "upload": "Загрузить {count} фото",
+        "deleteTitle": "Удалить это фото?",
+        "deleteDescription": "Это действие нельзя отменить.",
+        "confirmDelete": "Удалить"
+    }
+,
     "postedAt": "на {event}",
     "loadMore": "Загрузить ещё",
     "organizer": "Организатор",

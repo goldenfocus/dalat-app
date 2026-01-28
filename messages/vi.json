@@ -1606,6 +1606,23 @@
     "communityPhotosCount": "{count} ảnh từ sự kiện tại đây",
     "noCommunityPhotos": "Chưa có ảnh cộng đồng",
     "addOfficialPhotos": "Thêm ảnh chính thức",
+
+    "photoManager": {
+        "editCaption": "Sửa chú thích",
+        "delete": "Xóa ảnh",
+        "captionPlaceholder": "Chú thích (tùy chọn)",
+        "uploadDescription": "Tải lên ảnh chính thức cho địa điểm này",
+        "clickToSelect": "Nhấn để chọn ảnh",
+        "fileTypes": "JPEG, PNG, WebP, GIF (tối đa 10MB mỗi ảnh)",
+        "readyToUpload": "{count} ảnh sẵn sàng tải lên",
+        "cancel": "Hủy",
+        "uploading": "Đang tải lên...",
+        "upload": "Tải lên {count} ảnh",
+        "deleteTitle": "Xóa ảnh này?",
+        "deleteDescription": "Hành động này không thể hoàn tác.",
+        "confirmDelete": "Xóa"
+    }
+,
     "postedAt": "tại {event}",
     "loadMore": "Xem thêm",
     "organizer": "Nhà tổ chức",

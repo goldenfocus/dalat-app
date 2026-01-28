@@ -1620,6 +1620,23 @@
     "communityPhotosCount": "{count} photos d'événements ici",
     "noCommunityPhotos": "Pas encore de photos de la communauté",
     "addOfficialPhotos": "Ajouter des photos officielles",
+
+    "photoManager": {
+        "editCaption": "Modifier la légende",
+        "delete": "Supprimer la photo",
+        "captionPlaceholder": "Légende (facultatif)",
+        "uploadDescription": "Téléchargez des photos officielles pour ce lieu",
+        "clickToSelect": "Cliquez pour sélectionner des photos",
+        "fileTypes": "JPEG, PNG, WebP, GIF (max 10Mo chacune)",
+        "readyToUpload": "{count} photo(s) prête(s) à télécharger",
+        "cancel": "Annuler",
+        "uploading": "Téléchargement...",
+        "upload": "Télécharger {count} photo(s)",
+        "deleteTitle": "Supprimer cette photo ?",
+        "deleteDescription": "Cette action est irréversible.",
+        "confirmDelete": "Supprimer"
+    }
+,
     "postedAt": "à {event}",
     "loadMore": "Charger plus",
     "organizer": "Organisateur",

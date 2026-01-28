@@ -1606,6 +1606,23 @@
     "communityPhotosCount": "ここのイベントから{count}枚の写真",
     "noCommunityPhotos": "コミュニティ写真はまだありません",
     "addOfficialPhotos": "公式写真を追加",
+
+    "photoManager": {
+        "editCaption": "キャプションを編集",
+        "delete": "写真を削除",
+        "captionPlaceholder": "キャプション（任意）",
+        "uploadDescription": "この施設の公式写真をアップロード",
+        "clickToSelect": "クリックして写真を選択",
+        "fileTypes": "JPEG、PNG、WebP、GIF（各最大10MB）",
+        "readyToUpload": "{count}枚の写真をアップロード準備完了",
+        "cancel": "キャンセル",
+        "uploading": "アップロード中...",
+        "upload": "{count}枚の写真をアップロード",
+        "deleteTitle": "この写真を削除しますか？",
+        "deleteDescription": "この操作は取り消せません。",
+        "confirmDelete": "削除"
+    }
+,
     "postedAt": "{event}にて",
     "loadMore": "もっと見る",
     "organizer": "主催者",
