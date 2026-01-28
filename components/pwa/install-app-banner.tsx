@@ -7,9 +7,10 @@ import { InstallInstructionsModal } from "./install-instructions-modal";
 import { Button } from "@/components/ui/button";
 
 /**
- * A banner that prompts users to install the PWA.
- * - Shows native install prompt on Chrome/Edge (Android + Desktop)
+ * A banner that prompts users to install the PWA (mobile only).
+ * - Shows native install prompt on Chrome/Edge Android
  * - Shows "How to Install" modal for iOS Safari (which doesn't support beforeinstallprompt)
+ * - Hidden on desktop - PWA install is less relevant there
  * - Remembers dismissal for 7 days
  * - Doesn't show if app is already installed (standalone mode)
  */
@@ -25,8 +26,8 @@ export function InstallAppBanner() {
     setShowInstructions,
   } = useInstallPrompt();
 
-  // Don't render if installed, dismissed, or unsupported
-  if (installState !== "prompt") {
+  // Don't render if installed, dismissed, unsupported, or on desktop
+  if (installState !== "prompt" || platform === "desktop") {
     return (
       <InstallInstructionsModal
         open={showInstructions}
