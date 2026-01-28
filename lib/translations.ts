@@ -290,6 +290,11 @@ export async function triggerTranslationServer(
         .from('profiles')
         .update({ bio_source_locale: detectedLocale })
         .eq('id', contentId);
+    } else if (contentType === 'venue') {
+      await supabase
+        .from('venues')
+        .update({ source_locale: detectedLocale })
+        .eq('id', contentId);
     }
 
     // Prepare translation inserts

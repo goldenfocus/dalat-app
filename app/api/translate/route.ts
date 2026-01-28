@@ -107,6 +107,11 @@ export async function POST(request: Request) {
         .from("profiles")
         .update({ bio_source_locale: detectedLocale })
         .eq("id", body.content_id);
+    } else if (body.content_type === "venue") {
+      await supabase
+        .from("venues")
+        .update({ source_locale: detectedLocale })
+        .eq("id", body.content_id);
     }
 
     // Prepare translation inserts
