@@ -24,6 +24,8 @@ export async function getTranslations(
 ): Promise<Map<TranslationFieldName, string>> {
   const result = new Map<TranslationFieldName, string>();
 
+  console.log('[getTranslations] Called with:', { contentType, contentId, targetLocale });
+
   // Use static client - translations are public data, no auth needed
   const supabase = createStaticClient();
   if (!supabase) {
@@ -37,6 +39,8 @@ export async function getTranslations(
     .eq('content_type', contentType)
     .eq('content_id', contentId)
     .eq('target_locale', targetLocale);
+
+  console.log('[getTranslations] Query result:', { count: translations?.length, error: error?.message });
 
   if (error) {
     console.error('[getTranslations] Query error:', error.message);

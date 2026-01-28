@@ -186,6 +186,7 @@ export default async function VenuePage({ params }: PageProps) {
   ]);
 
   // Fetch translations for venue description only (venue names are proper names, never translate)
+  console.log('[VenuePage] Fetching translations:', { venueId: venue.id, locale, urlLocale });
   const venueTranslations = await getTranslationsWithFallback(
     "venue",
     venue.id,
@@ -200,6 +201,7 @@ export default async function VenuePage({ params }: PageProps) {
       meta_description: null,
     }
   );
+  console.log('[VenuePage] Translation result:', { gotTranslation: !!venueTranslations.description, desc: venueTranslations.description?.substring(0, 30) });
   const translatedDescription = venueTranslations.description ?? venue.description;
 
   const isUnclaimed = !venue.owner_id;
