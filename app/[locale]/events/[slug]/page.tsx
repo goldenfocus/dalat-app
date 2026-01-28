@@ -836,6 +836,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     eventTitle={event.title}
                     eventDescription={event.description}
                     eventImageUrl={event.image_url}
+                    locationName={event.location_name}
+                    address={event.address}
+                    googleMapsUrl={event.google_maps_url}
                     capacity={event.capacity}
                     goingSpots={counts?.going_spots ?? 0}
                     currentRsvp={currentRsvp}
@@ -944,6 +947,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         eventTitle={event.title}
         eventDescription={event.description}
         eventImageUrl={event.image_url}
+        locationName={event.location_name}
+        address={event.address}
+        googleMapsUrl={event.google_maps_url}
         capacity={event.capacity}
         goingSpots={counts?.going_spots ?? 0}
         currentRsvp={currentRsvp}

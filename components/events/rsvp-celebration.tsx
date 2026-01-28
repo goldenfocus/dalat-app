@@ -19,6 +19,9 @@ interface RsvpCelebrationProps {
   startsAt: string;
   endsAt?: string | null;
   imageUrl?: string | null;
+  locationName?: string | null;
+  address?: string | null;
+  googleMapsUrl?: string | null;
   onComplete: () => void;
   /** Duration of celebration in ms (default 5000) */
   duration?: number;
@@ -33,6 +36,9 @@ export function RsvpCelebration({
   startsAt,
   endsAt,
   imageUrl,
+  locationName,
+  address,
+  googleMapsUrl,
   onComplete,
   duration = 5000,
   enableSound = true,
@@ -399,6 +405,9 @@ export function RsvpCelebration({
             <AddToCalendar
               title={eventTitle}
               description={eventDescription}
+              locationName={locationName}
+              address={address}
+              googleMapsUrl={googleMapsUrl}
               startsAt={startsAt}
               endsAt={endsAt}
               url={eventUrl}

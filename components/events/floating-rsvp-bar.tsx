@@ -13,6 +13,9 @@ interface FloatingRsvpBarProps {
   eventTitle: string;
   eventDescription: string | null;
   eventImageUrl: string | null;
+  locationName?: string | null;
+  address?: string | null;
+  googleMapsUrl?: string | null;
   capacity: number | null;
   goingSpots: number;
   currentRsvp: Rsvp | null;
@@ -28,6 +31,9 @@ export function FloatingRsvpBar({
   eventTitle,
   eventDescription,
   eventImageUrl,
+  locationName,
+  address,
+  googleMapsUrl,
   capacity,
   goingSpots,
   currentRsvp,
@@ -136,6 +142,9 @@ export function FloatingRsvpBar({
           startsAt={startsAt}
           endsAt={endsAt}
           imageUrl={eventImageUrl}
+          locationName={locationName}
+          address={address}
+          googleMapsUrl={googleMapsUrl}
           onComplete={handleCelebrationComplete}
         />
       )}
