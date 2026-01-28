@@ -239,8 +239,22 @@ export default async function VenuePage({ params }: PageProps) {
     { key: "wheelchair", icon: Accessibility, has: venue.is_wheelchair_accessible, label: t("amenities.wheelchair") },
   ].filter((a) => a.has);
 
+  // TEMP DEBUG - remove after fixing
+  const debugInfo = {
+    locale,
+    urlLocale,
+    venueId: venue.id,
+    hasTranslation: !!venueTranslations.description,
+    translatedStart: venueTranslations.description?.substring(0, 20),
+    originalStart: venue.description?.substring(0, 20),
+  };
+
   return (
     <main className="min-h-screen pb-8">
+      {/* TEMP DEBUG */}
+      <div className="bg-yellow-100 text-black p-2 text-xs font-mono">
+        DEBUG: {JSON.stringify(debugInfo)}
+      </div>
       <JsonLd data={[localBusinessSchema, breadcrumbSchema]} />
 
       {/* Header */}
