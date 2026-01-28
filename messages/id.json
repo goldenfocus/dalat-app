@@ -363,7 +363,19 @@
     "retranslated": "Terjemahan telah dibuat ulang!",
     "saveSettings": "Simpan Pengaturan",
     "saving": "Menyimpan...",
-    "saved": "Tersimpan!"
+    "saved": "Tersimpan!",
+    "duration": {
+      "title": "Durasi",
+      "preset2h": "2 jam",
+      "preset4h": "4 jam",
+      "preset6h": "6 jam",
+      "presetAllDay": "Sepanjang hari",
+      "presetMultiDay": "{days} hari",
+      "presetCustom": "Kustom",
+      "multiDay": "Multi-hari",
+      "days": "hari",
+      "description": "Berapa lama acara Anda? Default adalah 4 jam."
+    }
   },
   "calendar": {
     "addToCalendar": "Tambah ke kalender",

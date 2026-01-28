@@ -363,7 +363,19 @@
     "retranslated": "Đã tạo lại bản dịch!",
     "saveSettings": "Lưu cài đặt",
     "saving": "Đang lưu...",
-    "saved": "Đã lưu!"
+    "saved": "Đã lưu!",
+    "duration": {
+      "title": "Thời lượng",
+      "preset2h": "2 giờ",
+      "preset4h": "4 giờ",
+      "preset6h": "6 giờ",
+      "presetAllDay": "Cả ngày",
+      "presetMultiDay": "{days} ngày",
+      "presetCustom": "Tùy chỉnh",
+      "multiDay": "Nhiều ngày",
+      "days": "ngày",
+      "description": "Sự kiện của bạn kéo dài bao lâu? Mặc định là 4 giờ."
+    }
   },
   "calendar": {
     "addToCalendar": "Thêm vào lịch",

@@ -363,7 +363,19 @@
     "retranslated": "翻译已重新生成！",
     "saveSettings": "保存设置",
     "saving": "保存中...",
-    "saved": "已保存！"
+    "saved": "已保存！",
+    "duration": {
+      "title": "时长",
+      "preset2h": "2小时",
+      "preset4h": "4小时",
+      "preset6h": "6小时",
+      "presetAllDay": "全天",
+      "presetMultiDay": "{days}天",
+      "presetCustom": "自定义",
+      "multiDay": "多日",
+      "days": "天",
+      "description": "活动持续多长时间？默认为4小时。"
+    }
   },
   "calendar": {
     "addToCalendar": "添加到日历",

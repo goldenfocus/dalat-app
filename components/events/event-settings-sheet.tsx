@@ -19,6 +19,8 @@ interface EventSettingsSheetProps {
   eventSlug: string;
   eventTitle: string;
   eventDescription: string | null;
+  startsAt: string;
+  endsAt: string | null;
   initialSettings: EventSettings | null;
   pendingCount: number;
 }
@@ -32,6 +34,8 @@ export function EventSettingsSheet({
   eventSlug,
   eventTitle,
   eventDescription,
+  startsAt,
+  endsAt,
   initialSettings,
   pendingCount,
 }: EventSettingsSheetProps) {
@@ -59,6 +63,8 @@ export function EventSettingsSheet({
           eventSlug={eventSlug}
           eventTitle={eventTitle}
           eventDescription={eventDescription}
+          startsAt={startsAt}
+          endsAt={endsAt}
           initialSettings={initialSettings}
           pendingCount={pendingCount}
         />

@@ -363,7 +363,19 @@
     "retranslated": "翻訳が再生成されました！",
     "saveSettings": "設定を保存",
     "saving": "保存中...",
-    "saved": "保存しました！"
+    "saved": "保存しました！",
+    "duration": {
+      "title": "時間",
+      "preset2h": "2時間",
+      "preset4h": "4時間",
+      "preset6h": "6時間",
+      "presetAllDay": "終日",
+      "presetMultiDay": "{days}日間",
+      "presetCustom": "カスタム",
+      "multiDay": "複数日",
+      "days": "日",
+      "description": "イベントの所要時間は？デフォルトは4時間です。"
+    }
   },
   "calendar": {
     "addToCalendar": "カレンダーに追加",

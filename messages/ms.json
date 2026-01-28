@@ -363,7 +363,19 @@
     "retranslated": "Terjemahan dijana semula!",
     "saveSettings": "Simpan Tetapan",
     "saving": "Menyimpan...",
-    "saved": "Disimpan!"
+    "saved": "Disimpan!",
+    "duration": {
+      "title": "Tempoh",
+      "preset2h": "2 jam",
+      "preset4h": "4 jam",
+      "preset6h": "6 jam",
+      "presetAllDay": "Sepanjang hari",
+      "presetMultiDay": "{days} hari",
+      "presetCustom": "Tersuai",
+      "multiDay": "Berbilang hari",
+      "days": "hari",
+      "description": "Berapa lama acara anda? Lalai adalah 4 jam."
+    }
   },
   "calendar": {
     "addToCalendar": "Tambah ke kalendar",

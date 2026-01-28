@@ -363,7 +363,19 @@
     "retranslated": "번역이 재생성되었습니다!",
     "saveSettings": "설정 저장",
     "saving": "저장 중...",
-    "saved": "저장됨!"
+    "saved": "저장됨!",
+    "duration": {
+      "title": "시간",
+      "preset2h": "2시간",
+      "preset4h": "4시간",
+      "preset6h": "6시간",
+      "presetAllDay": "하루 종일",
+      "presetMultiDay": "{days}일",
+      "presetCustom": "사용자 지정",
+      "multiDay": "다일간",
+      "days": "일",
+      "description": "이벤트 시간은 얼마나 되나요? 기본값은 4시간입니다."
+    }
   },
   "calendar": {
     "addToCalendar": "캘린더에 추가",

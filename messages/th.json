@@ -363,7 +363,19 @@
     "retranslated": "สร้างการแปลใหม่แล้ว!",
     "saveSettings": "บันทึกการตั้งค่า",
     "saving": "กำลังบันทึก...",
-    "saved": "บันทึกแล้ว!"
+    "saved": "บันทึกแล้ว!",
+    "duration": {
+      "title": "ระยะเวลา",
+      "preset2h": "2 ชั่วโมง",
+      "preset4h": "4 ชั่วโมง",
+      "preset6h": "6 ชั่วโมง",
+      "presetAllDay": "ทั้งวัน",
+      "presetMultiDay": "{days} วัน",
+      "presetCustom": "กำหนดเอง",
+      "multiDay": "หลายวัน",
+      "days": "วัน",
+      "description": "กิจกรรมของคุณใช้เวลานานเท่าไหร่? ค่าเริ่มต้นคือ 4 ชั่วโมง"
+    }
   },
   "calendar": {
     "addToCalendar": "เพิ่มลงปฏิทิน",

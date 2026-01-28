@@ -636,6 +636,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   eventSlug={event.slug}
                   eventTitle={event.title}
                   eventDescription={event.description}
+                  startsAt={event.starts_at}
+                  endsAt={event.ends_at}
                   initialSettings={eventSettings}
                   pendingCount={momentCounts?.pending_count ?? 0}
                 />

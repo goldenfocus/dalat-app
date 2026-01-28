@@ -455,7 +455,19 @@
     "retranslated": "Translations Regenerated!",
     "saveSettings": "Save Settings",
     "saving": "Saving...",
-    "saved": "Saved!"
+    "saved": "Saved!",
+    "duration": {
+      "title": "Duration",
+      "preset2h": "2 hours",
+      "preset4h": "4 hours",
+      "preset6h": "6 hours",
+      "presetAllDay": "All day",
+      "presetMultiDay": "{days} days",
+      "presetCustom": "Custom",
+      "multiDay": "Multi-day",
+      "days": "days",
+      "description": "How long does your event last? Default is 4 hours."
+    }
   },
   "calendar": {
     "addToCalendar": "Add to calendar",

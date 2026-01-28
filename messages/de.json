@@ -363,7 +363,19 @@
     "retranslated": "Übersetzungen neu generiert!",
     "saveSettings": "Einstellungen speichern",
     "saving": "Wird gespeichert...",
-    "saved": "Gespeichert!"
+    "saved": "Gespeichert!",
+    "duration": {
+      "title": "Dauer",
+      "preset2h": "2 Stunden",
+      "preset4h": "4 Stunden",
+      "preset6h": "6 Stunden",
+      "presetAllDay": "Ganztägig",
+      "presetMultiDay": "{days} Tage",
+      "presetCustom": "Benutzerdefiniert",
+      "multiDay": "Mehrtägig",
+      "days": "Tage",
+      "description": "Wie lange dauert Ihre Veranstaltung? Standard sind 4 Stunden."
+    }
   },
   "calendar": {
     "addToCalendar": "Zum Kalender hinzufügen",

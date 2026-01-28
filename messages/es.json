@@ -363,7 +363,19 @@
     "retranslated": "¡Traducciones regeneradas!",
     "saveSettings": "Guardar Configuración",
     "saving": "Guardando...",
-    "saved": "¡Guardado!"
+    "saved": "¡Guardado!",
+    "duration": {
+      "title": "Duración",
+      "preset2h": "2 horas",
+      "preset4h": "4 horas",
+      "preset6h": "6 horas",
+      "presetAllDay": "Todo el día",
+      "presetMultiDay": "{days} días",
+      "presetCustom": "Personalizado",
+      "multiDay": "Varios días",
+      "days": "días",
+      "description": "¿Cuánto dura tu evento? Por defecto son 4 horas."
+    }
   },
   "calendar": {
     "addToCalendar": "Agregar al calendario",

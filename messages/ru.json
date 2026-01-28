@@ -363,7 +363,19 @@
     "retranslated": "Переводы пересозданы!",
     "saveSettings": "Сохранить настройки",
     "saving": "Сохранение...",
-    "saved": "Сохранено!"
+    "saved": "Сохранено!",
+    "duration": {
+      "title": "Продолжительность",
+      "preset2h": "2 часа",
+      "preset4h": "4 часа",
+      "preset6h": "6 часов",
+      "presetAllDay": "Весь день",
+      "presetMultiDay": "{days} дней",
+      "presetCustom": "Другое",
+      "multiDay": "Несколько дней",
+      "days": "дней",
+      "description": "Как долго длится мероприятие? По умолчанию 4 часа."
+    }
   },
   "calendar": {
     "addToCalendar": "Добавить в календарь",

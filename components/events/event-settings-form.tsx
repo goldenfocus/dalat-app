@@ -2,20 +2,55 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Users, Shield, Loader2, Check, ChevronRight, Languages } from "lucide-react";
+import { Camera, Users, Shield, Loader2, Check, ChevronRight, Languages, Clock, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { triggerHaptic } from "@/lib/haptics";
 import { triggerTranslation } from "@/lib/translations-client";
 import { cn } from "@/lib/utils";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import type { EventSettings, MomentsWhoCanPost } from "@/lib/types";
+
+// Duration preset types
+type DurationPreset = "2h" | "4h" | "6h" | "all_day" | "multi_day" | "custom";
+
+// Calculate duration in hours from starts_at and ends_at
+function calculateDurationHours(startsAt: string, endsAt: string | null): number | null {
+  if (!endsAt) return null; // Default 4 hours
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+  return (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+}
+
+// Determine which preset matches the current duration
+function getDurationPreset(hours: number | null): DurationPreset {
+  if (hours === null) return "4h"; // Default
+  if (hours === 2) return "2h";
+  if (hours === 4) return "4h";
+  if (hours === 6) return "6h";
+  if (hours === 24) return "all_day";
+  if (hours > 24 && hours % 24 === 0) return "multi_day";
+  return "custom";
+}
+
+// Calculate ends_at from starts_at and duration hours
+function calculateEndsAt(startsAt: string, hours: number): string {
+  const start = new Date(startsAt);
+  return new Date(start.getTime() + hours * 60 * 60 * 1000).toISOString();
+}
 
 interface EventSettingsFormProps {
   eventId: string;
   eventSlug: string;
   eventTitle: string;
   eventDescription: string | null;
+  startsAt: string;
+  endsAt: string | null;
   initialSettings: EventSettings | null;
   pendingCount: number;
 }
@@ -25,6 +60,8 @@ export function EventSettingsForm({
   eventSlug,
   eventTitle,
   eventDescription,
+  startsAt,
+  endsAt,
   initialSettings,
   pendingCount,
 }: EventSettingsFormProps) {
@@ -46,6 +83,79 @@ export function EventSettingsForm({
   );
   const [isRetranslating, setIsRetranslating] = useState(false);
   const [retranslated, setRetranslated] = useState(false);
+
+  // Duration state
+  const currentDurationHours = calculateDurationHours(startsAt, endsAt);
+  const [durationPreset, setDurationPreset] = useState<DurationPreset>(
+    getDurationPreset(currentDurationHours)
+  );
+  const [multiDayCount, setMultiDayCount] = useState(
+    currentDurationHours && currentDurationHours > 24
+      ? Math.round(currentDurationHours / 24)
+      : 2
+  );
+  const [isSavingDuration, setIsSavingDuration] = useState(false);
+  const [durationSaved, setDurationSaved] = useState(false);
+
+  // Save duration to events table
+  const saveDuration = useCallback(
+    async (hours: number) => {
+      const supabase = createClient();
+      setIsSavingDuration(true);
+
+      const newEndsAt = calculateEndsAt(startsAt, hours);
+      const { error } = await supabase
+        .from("events")
+        .update({ ends_at: newEndsAt })
+        .eq("id", eventId);
+
+      setIsSavingDuration(false);
+
+      if (error) {
+        console.error("Failed to save duration:", error);
+        return;
+      }
+
+      setDurationSaved(true);
+      setTimeout(() => setDurationSaved(false), 2000);
+      triggerHaptic("success");
+      router.refresh();
+    },
+    [eventId, startsAt, router]
+  );
+
+  // Handle duration preset change
+  const handleDurationChange = useCallback(
+    (preset: DurationPreset, days?: number) => {
+      setDurationPreset(preset);
+      triggerHaptic("selection");
+
+      let hours: number;
+      switch (preset) {
+        case "2h":
+          hours = 2;
+          break;
+        case "4h":
+          hours = 4;
+          break;
+        case "6h":
+          hours = 6;
+          break;
+        case "all_day":
+          hours = 24;
+          break;
+        case "multi_day":
+          hours = (days ?? multiDayCount) * 24;
+          if (days) setMultiDayCount(days);
+          break;
+        default:
+          return; // Custom - don't auto-save
+      }
+
+      saveDuration(hours);
+    },
+    [multiDayCount, saveDuration]
+  );
 
   // Auto-save function - called whenever a setting changes
   const saveSettings = useCallback(
@@ -126,6 +236,101 @@ export function EventSettingsForm({
           )}
         </div>
       )}
+
+      {/* Duration Settings - Collapsible for low cognitive load */}
+      <Collapsible>
+        <CollapsibleTrigger className="w-full flex items-center justify-between p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 transition-all duration-200 [&[data-state=open]>svg:last-child]:rotate-180">
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-muted-foreground" />
+            <div className="text-left">
+              <p className="text-sm font-medium text-foreground">
+                {t("duration.title")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {durationPreset === "2h" && t("duration.preset2h")}
+                {durationPreset === "4h" && t("duration.preset4h")}
+                {durationPreset === "6h" && t("duration.preset6h")}
+                {durationPreset === "all_day" && t("duration.presetAllDay")}
+                {durationPreset === "multi_day" && t("duration.presetMultiDay", { days: multiDayCount })}
+                {durationPreset === "custom" && t("duration.presetCustom")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {(isSavingDuration || durationSaved) && (
+              <span className="text-xs">
+                {isSavingDuration ? (
+                  <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+                ) : (
+                  <Check className="w-3 h-3 text-green-600" />
+                )}
+              </span>
+            )}
+            <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform duration-200" />
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-3 animate-in slide-in-from-top-2 duration-200">
+          <div className="space-y-3 pl-4 border-l-2 border-muted ml-2">
+            {/* Duration presets */}
+            <div className="flex flex-wrap gap-2">
+              {(["2h", "4h", "6h", "all_day"] as const).map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => handleDurationChange(preset)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-medium rounded-full transition-all",
+                    durationPreset === preset
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  )}
+                >
+                  {preset === "2h" && t("duration.preset2h")}
+                  {preset === "4h" && t("duration.preset4h")}
+                  {preset === "6h" && t("duration.preset6h")}
+                  {preset === "all_day" && t("duration.presetAllDay")}
+                </button>
+              ))}
+            </div>
+
+            {/* Multi-day option */}
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => handleDurationChange("multi_day")}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded-full transition-all",
+                  durationPreset === "multi_day"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                {t("duration.multiDay")}
+              </button>
+              {durationPreset === "multi_day" && (
+                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <input
+                    type="number"
+                    min="2"
+                    max="14"
+                    value={multiDayCount}
+                    onChange={(e) => {
+                      const days = Math.max(2, Math.min(14, parseInt(e.target.value) || 2));
+                      handleDurationChange("multi_day", days);
+                    }}
+                    className="w-16 px-2 py-1 text-sm border rounded-md bg-background"
+                  />
+                  <span className="text-xs text-muted-foreground">{t("duration.days")}</span>
+                </div>
+              )}
+            </div>
+
+            <p className="text-xs text-muted-foreground pt-1">
+              {t("duration.description")}
+            </p>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Moments Toggle */}
       <button

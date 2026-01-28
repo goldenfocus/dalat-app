@@ -1093,6 +1093,8 @@ export function EventForm({
                   eventSlug={event.slug}
                   eventTitle={title}
                   eventDescription={event.description}
+                  startsAt={event.starts_at}
+                  endsAt={event.ends_at}
                   initialSettings={initialSettings ?? null}
                   pendingCount={pendingMomentsCount}
                 />
