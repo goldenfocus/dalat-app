@@ -192,6 +192,12 @@ export async function updateSession(request: NextRequest) {
     pathWithoutLocale.startsWith("/invite") ||  // Public invite links
     pathWithoutLocale.startsWith("/@");  // Public profile pages
 
+  // API routes should pass through without any middleware processing
+  // next-intl middleware expects locale prefixes which API routes don't have
+  if (pathname.startsWith("/api")) {
+    return NextResponse.next({ request });
+  }
+
   // For public routes, use next-intl middleware to properly set locale context
   // This is critical for translations to work - skipping this breaks i18n
   if (isPublicRoute) {
