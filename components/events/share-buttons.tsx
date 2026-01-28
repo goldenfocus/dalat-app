@@ -138,9 +138,40 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
     window.open(`https://wa.me/?text=${encodeURIComponent(whatsAppMessage)}`, "_blank");
   };
 
-  const handleZalo = () => {
-    // Zalo share only accepts a URL
-    window.open(`https://zalo.me/share?u=${encodeURIComponent(eventUrl)}`, "_blank");
+  const handleZalo = async () => {
+    // Use native share to get Zalo's contact picker experience
+    // The Web Share API opens Zalo's share dialog where users can select contacts
+    if (canShare) {
+      try {
+        // Try to share with image if available
+        if (imageUrl && navigator.canShare) {
+          const imageBlob = await fetchImageBlob();
+          if (imageBlob) {
+            const file = new File([imageBlob], "event.jpg", { type: imageBlob.type });
+            const shareData = {
+              title: eventTitle,
+              text: `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
+              url: eventUrl,
+              files: [file],
+            };
+            if (navigator.canShare(shareData)) {
+              await navigator.share(shareData);
+              return;
+            }
+          }
+        }
+        // Fallback: share without image
+        await navigator.share({
+          title: eventTitle,
+          text: `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
+          url: eventUrl,
+        });
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          console.error("Share failed:", err);
+        }
+      }
+    }
   };
 
   return (
@@ -180,7 +211,7 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
         </Button>
       </div>
 
-      {/* Messenger apps - WhatsApp & Zalo side by side */}
+      {/* Messenger apps - WhatsApp & Zalo */}
       {showWhatsApp && (
         <div className="flex gap-2">
           <Button
@@ -194,17 +225,20 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
             </svg>
             WhatsApp
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleZalo}
-            className="flex-1 gap-2 text-muted-foreground active:scale-95 transition-transform"
-          >
-            <svg viewBox="0 0 48 48" className="w-4 h-4 fill-current">
-              <path d="M24 4C12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20S35.046 4 24 4zm6.164 28.91H15.043v-3.516h6.09l-6.258-8.477v-3.445h11.797v3.516h-5.8l6.292 8.477v3.445zm3.946-7.137c-.27.27-.613.404-1.028.404h-1.16v3.473h-3.145V18.473h4.305c.415 0 .757.135 1.028.404.27.27.405.613.405 1.028v4.84c0 .415-.135.757-.405 1.028z" />
-            </svg>
-            {t("zalo")}
-          </Button>
+          {/* Zalo uses native share for contact picker - only show on mobile */}
+          {canShare && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleZalo}
+              className="flex-1 gap-2 text-muted-foreground active:scale-95 transition-transform"
+            >
+              <svg viewBox="0 0 48 48" className="w-4 h-4 fill-current">
+                <path d="M24 4C12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20S35.046 4 24 4zm6.164 28.91H15.043v-3.516h6.09l-6.258-8.477v-3.445h11.797v3.516h-5.8l6.292 8.477v3.445zm3.946-7.137c-.27.27-.613.404-1.028.404h-1.16v3.473h-3.145V18.473h4.305c.415 0 .757.135 1.028.404.27.27.405.613.405 1.028v4.84c0 .415-.135.757-.405 1.028z" />
+              </svg>
+              {t("zalo")}
+            </Button>
+          )}
         </div>
       )}
     </div>
