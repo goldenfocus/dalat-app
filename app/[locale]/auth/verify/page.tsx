@@ -2,13 +2,14 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
 
 function VerifyContent() {
   const t = useTranslations("auth");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,8 +20,8 @@ function VerifyContent() {
   const handleConfirm = () => {
     if (!tokenHash) return;
     setIsLoading(true);
-    // Redirect to /auth/confirm which uses verifyOtp() - no PKCE required
-    window.location.href = `/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=${type}`;
+    // Redirect to localized /auth/confirm which uses verifyOtp() - no PKCE required
+    window.location.href = `/${locale}/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=${type}`;
   };
 
   if (!tokenHash) {
