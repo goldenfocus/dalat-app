@@ -7,6 +7,7 @@ import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 import { Sparkles, PartyPopper, Users, Volume2, VolumeX } from "lucide-react";
 import { ShareButtons } from "./share-buttons";
+import { AddToCalendar } from "./add-to-calendar";
 
 // Storage key for mute preference
 const CELEBRATION_MUTE_KEY = "dalat-celebration-muted";
@@ -16,6 +17,7 @@ interface RsvpCelebrationProps {
   eventTitle: string;
   eventDescription: string | null;
   startsAt: string;
+  endsAt?: string | null;
   imageUrl?: string | null;
   onComplete: () => void;
   /** Duration of celebration in ms (default 5000) */
@@ -29,6 +31,7 @@ export function RsvpCelebration({
   eventTitle,
   eventDescription,
   startsAt,
+  endsAt,
   imageUrl,
   onComplete,
   duration = 5000,
@@ -391,6 +394,14 @@ export function RsvpCelebration({
               startsAt={startsAt}
               imageUrl={imageUrl}
               showWhatsApp
+            />
+
+            <AddToCalendar
+              title={eventTitle}
+              description={eventDescription}
+              startsAt={startsAt}
+              endsAt={endsAt}
+              url={eventUrl}
             />
           </div>
         </div>

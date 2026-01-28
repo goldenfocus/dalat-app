@@ -9,7 +9,7 @@ export const maxDuration = 60;
 // Longer cache = fewer cache misses = faster TTFB
 export const revalidate = 300;
 
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
 import { MobileHeader } from "@/components/home/mobile-header";
 import { HeroSection } from "@/components/home/hero-section";
@@ -162,6 +162,9 @@ async function EventsFeed({
 export default async function Home({ params, searchParams }: PageProps) {
   const { locale } = await params;
   const { tab } = await searchParams;
+
+  // Enable static rendering with correct locale for translations
+  setRequestLocale(locale);
 
   const [t, lifecycleCounts, homepageConfig] = await Promise.all([
     getTranslations("home"),

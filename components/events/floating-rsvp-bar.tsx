@@ -134,6 +134,7 @@ export function FloatingRsvpBar({
           eventTitle={eventTitle}
           eventDescription={eventDescription}
           startsAt={startsAt}
+          endsAt={endsAt}
           imageUrl={eventImageUrl}
           onComplete={handleCelebrationComplete}
         />
