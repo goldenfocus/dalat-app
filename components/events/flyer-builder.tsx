@@ -496,7 +496,7 @@ export function FlyerBuilder({
       <div
         ref={imageContainerRef}
         className={cn(
-          "relative aspect-[2/1] rounded-lg overflow-hidden bg-muted/50 border-2 transition-all",
+          "relative aspect-[3/2] max-h-48 rounded-lg overflow-hidden bg-muted/50 border-2 transition-all",
           isDragOver ? "border-primary border-dashed" : "border-muted-foreground/20",
           isEditingFocalPoint ? "cursor-crosshair border-blue-500" : "cursor-pointer hover:border-muted-foreground/40",
           imageFit === "contain" && "bg-black/90"
