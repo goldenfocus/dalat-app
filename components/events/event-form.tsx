@@ -223,11 +223,6 @@ export function EventForm({
   // Pending file for upload (only for new events with file/generated image)
   const [pendingFile, setPendingFile] = useState<File | null>(null);
 
-  // Title position state (for flyer customization)
-  const [titlePosition, setTitlePosition] = useState<"top" | "middle" | "bottom">(
-    event?.title_position ?? "bottom"
-  );
-
   // Image fit state (for flyer customization)
   const [imageFit, setImageFit] = useState<"cover" | "contain">(
     event?.image_fit ?? "cover"
@@ -510,8 +505,14 @@ export function EventForm({
     // Use state-managed venueId (set by LocationPicker or VenueLinker)
     const venueIdToSave = venueId;
 
-    if (!title.trim() || !date || !time) {
-      setError(tErrors("titleDateTimeRequired"));
+    // Validate required fields with specific error messages
+    const missingFields: string[] = [];
+    if (!title.trim()) missingFields.push(tErrors("fieldTitle"));
+    if (!date) missingFields.push(tErrors("fieldDate"));
+    if (!time) missingFields.push(tErrors("fieldTime"));
+
+    if (missingFields.length > 0) {
+      setError(tErrors("fieldsRequired", { fields: missingFields.join(", ") }));
       return;
     }
 
@@ -557,7 +558,7 @@ export function EventForm({
           external_chat_url: externalChatUrl || null,
           is_online: isOnline,
           online_link: isOnline ? (onlineLink || null) : null,
-          title_position: titlePosition,
+          title_position: "bottom",
           image_fit: imageFit,
           focal_point: focalPoint,
           capacity,
@@ -618,7 +619,7 @@ export function EventForm({
               external_chat_url: externalChatUrl || null,
               is_online: isOnline,
               online_link: isOnline ? (onlineLink || null) : null,
-              title_position: titlePosition,
+              title_position: "bottom",
               image_fit: imageFit,
               focal_point: focalPoint,
               capacity,
@@ -678,7 +679,7 @@ export function EventForm({
               external_chat_url: externalChatUrl || null,
               is_online: isOnline,
               online_link: isOnline ? (onlineLink || null) : null,
-              title_position: titlePosition,
+              title_position: "bottom",
               image_fit: imageFit,
               focal_point: focalPoint,
               capacity,
@@ -776,8 +777,6 @@ export function EventForm({
               onTitleChange={handleTitleChange}
               imageUrl={imageUrl}
               onImageChange={handleImageChange}
-              titlePosition={titlePosition}
-              onTitlePositionChange={setTitlePosition}
               imageFit={imageFit}
               onImageFitChange={setImageFit}
               focalPoint={focalPoint}

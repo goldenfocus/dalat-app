@@ -13,9 +13,6 @@ import {
   Wand2,
   ChevronDown,
   ChevronUp,
-  AlignVerticalJustifyStart,
-  AlignVerticalJustifyCenter,
-  AlignVerticalJustifyEnd,
   Download,
   Maximize2,
   Scan,
@@ -104,7 +101,6 @@ Aspect ratio: 2:1 landscape orientation.`,
   },
 ];
 
-type TitlePosition = "top" | "middle" | "bottom";
 type ImageFit = "cover" | "contain";
 
 interface FlyerBuilderProps {
@@ -112,8 +108,6 @@ interface FlyerBuilderProps {
   onTitleChange: (title: string) => void;
   imageUrl: string | null;
   onImageChange: (url: string | null, file?: File) => void;
-  titlePosition?: TitlePosition;
-  onTitlePositionChange?: (position: TitlePosition) => void;
   imageFit?: ImageFit;
   onImageFitChange?: (fit: ImageFit) => void;
   focalPoint?: string | null;
@@ -130,8 +124,6 @@ export function FlyerBuilder({
   onTitleChange,
   imageUrl,
   onImageChange,
-  titlePosition = "bottom",
-  onTitlePositionChange,
   imageFit = "cover",
   onImageFitChange,
   focalPoint = null,
@@ -459,7 +451,22 @@ export function FlyerBuilder({
   const focalPointCoords = parseFocalPoint(focalPoint);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Title input - prominent and required */}
+      <div className="space-y-2">
+        <label htmlFor="event-title" className="text-sm font-medium">
+          {t("eventTitlePlaceholder")} <span className="text-red-500">*</span>
+        </label>
+        <Input
+          id="event-title"
+          value={title}
+          onChange={(e) => onTitleChange(e.target.value)}
+          placeholder={t("eventTitlePlaceholder")}
+          className="text-lg font-semibold h-12"
+          autoComplete="off"
+        />
+      </div>
+
       {/* Preview area - click to upload */}
       <div
         ref={imageContainerRef}
@@ -522,45 +529,6 @@ export function FlyerBuilder({
             <ImageIcon className="w-12 h-12 text-muted-foreground/30" />
           </div>
         )}
-
-        {/* Safe zone indicator - shows where title will NOT cover */}
-        {!hasImage && (
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Shaded zones showing where title will appear */}
-            {titlePosition === "top" && (
-              <div className="absolute top-0 inset-x-0 h-[52px] bg-muted-foreground/10 border-b-2 border-dashed border-muted-foreground/30" />
-            )}
-            {titlePosition === "middle" && (
-              <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 h-[52px] bg-muted-foreground/10 border-y-2 border-dashed border-muted-foreground/30" />
-            )}
-            {titlePosition === "bottom" && (
-              <div className="absolute bottom-0 inset-x-0 h-[52px] bg-muted-foreground/10 border-t-2 border-dashed border-muted-foreground/30" />
-            )}
-          </div>
-        )}
-
-        {/* Title input - position varies based on titlePosition */}
-        <div
-          className={cn(
-            "absolute inset-x-0 p-3",
-            titlePosition === "top" && "top-0",
-            titlePosition === "middle" && "top-1/2 -translate-y-1/2",
-            titlePosition === "bottom" && "bottom-0"
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Input
-            value={title}
-            onChange={(e) => onTitleChange(e.target.value)}
-            placeholder={t("eventTitlePlaceholder")}
-            className={cn(
-              "text-lg font-semibold",
-              hasImage
-                ? "bg-black/60 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60"
-                : "bg-background"
-            )}
-          />
-        </div>
 
         {/* Clear button */}
         {hasImage && (
@@ -799,50 +767,6 @@ export function FlyerBuilder({
               </div>
             )}
 
-            {/* Title position picker */}
-            {onTitlePositionChange && !hasImage && (
-              <div className="flex items-center gap-1 ml-auto border rounded-md p-0.5">
-                <button
-                  type="button"
-                  onClick={() => onTitlePositionChange("top")}
-                  className={cn(
-                    "p-1.5 rounded transition-colors",
-                    titlePosition === "top"
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted text-muted-foreground"
-                  )}
-                  title={t("titlePositionTop")}
-                >
-                  <AlignVerticalJustifyStart className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onTitlePositionChange("middle")}
-                  className={cn(
-                    "p-1.5 rounded transition-colors",
-                    titlePosition === "middle"
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted text-muted-foreground"
-                  )}
-                  title={t("titlePositionMiddle")}
-                >
-                  <AlignVerticalJustifyCenter className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onTitlePositionChange("bottom")}
-                  className={cn(
-                    "p-1.5 rounded transition-colors",
-                    titlePosition === "bottom"
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted text-muted-foreground"
-                  )}
-                  title={t("titlePositionBottom")}
-                >
-                  <AlignVerticalJustifyEnd className="w-4 h-4" />
-                </button>
-              </div>
-            )}
           </div>
         )}
 
