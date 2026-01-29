@@ -8,8 +8,8 @@ import {
   type ImageContext,
 } from "@/lib/ai/image-generator";
 
-// Image generation can take 30-60s
-export const maxDuration = 60;
+// Image generation can take 60-120s (refinement involves: fetch, generate, metadata extraction, upload)
+export const maxDuration = 120;
 
 // Rate limiting config
 const RATE_LIMIT = 10; // requests per window

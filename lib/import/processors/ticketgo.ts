@@ -257,7 +257,8 @@ export async function processTicketGoEvents(
       } else {
         result.processed++;
 
-        // Trigger translation
+        // Trigger translation to all 12 languages
+        // Must await to ensure translation completes before serverless function terminates
         if (newEvent?.id) {
           const fieldsToTranslate = [];
           if (event.title) {
@@ -268,7 +269,7 @@ export async function processTicketGoEvents(
           }
 
           if (fieldsToTranslate.length > 0) {
-            triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
+            await triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
           }
         }
       }

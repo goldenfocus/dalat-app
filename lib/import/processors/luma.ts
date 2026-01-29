@@ -121,6 +121,7 @@ export async function processLumaEvents(
         result.processed++;
 
         // Trigger translation to all 12 languages (server-side, no HTTP)
+        // Must await to ensure translation completes before serverless function terminates
         if (newEvent?.id) {
           const fieldsToTranslate = [];
           if (normalized.title) {
@@ -131,8 +132,7 @@ export async function processLumaEvents(
           }
 
           if (fieldsToTranslate.length > 0) {
-            // Don't await - let translation happen in background
-            triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
+            await triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
           }
         }
       }

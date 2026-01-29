@@ -82,6 +82,7 @@ export async function processEventbriteEvents(
         result.processed++;
 
         // Trigger translation to all 12 languages (server-side, no HTTP)
+        // Must await to ensure translation completes before serverless function terminates
         if (newEvent?.id) {
           const fieldsToTranslate = [];
           if (normalized.title) {
@@ -92,7 +93,7 @@ export async function processEventbriteEvents(
           }
 
           if (fieldsToTranslate.length > 0) {
-            triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
+            await triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
           }
         }
       }
