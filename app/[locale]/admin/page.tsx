@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   LogIn,
 } from "lucide-react";
-import { getFullDashboardData } from "@/lib/admin/analytics";
+import { getFullDashboardData, getDailySummary } from "@/lib/admin/analytics";
 import {
   StatCard,
   UserGrowthChart,
@@ -17,11 +17,15 @@ import {
   EventActivityChart,
   RsvpTrendsChart,
   VerificationQueueCard,
+  DailySummaryCard,
 } from "@/components/admin/analytics";
 
 export default async function AdminDashboard() {
   const t = await getTranslations("admin");
-  const dashboardData = await getFullDashboardData();
+  const [dashboardData, dailySummary] = await Promise.all([
+    getFullDashboardData(),
+    getDailySummary(),
+  ]);
   const { overview } = dashboardData;
 
   return (
@@ -33,6 +37,9 @@ export default async function AdminDashboard() {
           {t("dashboardDescription")}
         </p>
       </div>
+
+      {/* Daily Summary - Quick Glance */}
+      <DailySummaryCard data={dailySummary} />
 
       {/* Summary Stats Grid */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">

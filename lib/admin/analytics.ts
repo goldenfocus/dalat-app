@@ -226,6 +226,94 @@ export async function getSessionStats(): Promise<SessionStats | null> {
 }
 
 // ============================================
+// Daily Summary (quick glance stats)
+// ============================================
+
+export interface DailySummary {
+  newUsers: number;
+  eventsScraped: number;
+  eventsCreated: number;
+  rsvpsToday: number;
+  commentsToday: number;
+  momentsToday: number;
+  activeUsers: number;
+}
+
+export async function getDailySummary(): Promise<DailySummary> {
+  try {
+    const supabase = await createClient();
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayISO = todayStart.toISOString();
+
+    // Fetch all stats in parallel
+    const [
+      usersResult,
+      scrapedEventsResult,
+      createdEventsResult,
+      rsvpsResult,
+      commentsResult,
+      momentsResult,
+    ] = await Promise.all([
+      // New users today
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", todayISO),
+      // Events scraped today (from automated sources)
+      supabase
+        .from("events")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", todayISO)
+        .not("source_platform", "is", null),
+      // Events created by users today
+      supabase
+        .from("events")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", todayISO)
+        .is("source_platform", null),
+      // RSVPs today
+      supabase
+        .from("rsvps")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", todayISO)
+        .eq("status", "going"),
+      // Comments today
+      supabase
+        .from("comments")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", todayISO),
+      // Moments today
+      supabase
+        .from("moments")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", todayISO),
+    ]);
+
+    return {
+      newUsers: usersResult.count ?? 0,
+      eventsScraped: scrapedEventsResult.count ?? 0,
+      eventsCreated: createdEventsResult.count ?? 0,
+      rsvpsToday: rsvpsResult.count ?? 0,
+      commentsToday: commentsResult.count ?? 0,
+      momentsToday: momentsResult.count ?? 0,
+      activeUsers: 0, // Could add session tracking later
+    };
+  } catch (e) {
+    console.error("Exception fetching daily summary:", e);
+    return {
+      newUsers: 0,
+      eventsScraped: 0,
+      eventsCreated: 0,
+      rsvpsToday: 0,
+      commentsToday: 0,
+      momentsToday: 0,
+      activeUsers: 0,
+    };
+  }
+}
+
+// ============================================
 // Combined fetch for dashboard
 // ============================================
 

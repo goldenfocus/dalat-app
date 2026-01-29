@@ -1,5 +1,6 @@
 export { StatCard } from "./stat-card";
 export { VerificationQueueCard } from "./verification-queue-card";
+export { DailySummaryCard } from "./daily-summary-card";
 
 // Dynamically imported chart components (code-split Recharts ~200KB)
 // These will be loaded on-demand when the admin dashboard is visited
