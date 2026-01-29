@@ -388,7 +388,6 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
                 className="w-full h-full object-contain"
                 controls
                 autoPlay
-                muted
                 playsInline
               />
             ) : (
