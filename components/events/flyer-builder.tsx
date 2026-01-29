@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Link as LinkIcon,
@@ -29,6 +29,25 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { RotatingPhrase } from "@/components/ui/rotating-phrase";
 import { validateMediaFile, ALLOWED_MEDIA_TYPES } from "@/lib/media-utils";
+
+// Fun placeholder examples for event titles
+const TITLE_PLACEHOLDERS = [
+  "Sunset Jam by the Lake",
+  "Coffee & Code Meetup",
+  "Full Moon Hike",
+  "Jazz Night at the Rooftop",
+  "Morning Yoga in the Mist",
+  "Art Walk & Wine",
+  "Acoustic Sessions",
+  "Pottery Workshop",
+  "Stargazing Party",
+  "Book Club Brunch",
+  "Street Food Tour",
+  "Photography Walk",
+  "Open Mic Night",
+  "Farmers Market Hangout",
+  "Dance Under the Stars",
+];
 
 // Style presets for AI image generation
 type StylePreset = "artistic" | "futuristic" | "realistic" | "nature" | "custom";
@@ -147,6 +166,12 @@ export function FlyerBuilder({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const previewUrlRef = useRef<string | null>(previewUrl);
+
+  // Pick a random fun placeholder on mount
+  const titlePlaceholder = useMemo(
+    () => TITLE_PLACEHOLDERS[Math.floor(Math.random() * TITLE_PLACEHOLDERS.length)],
+    []
+  );
 
   useEffect(() => {
     previewUrlRef.current = previewUrl;
@@ -461,7 +486,7 @@ export function FlyerBuilder({
           id="event-title"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          placeholder={t("eventTitlePlaceholder")}
+          placeholder={titlePlaceholder}
           className="text-lg font-semibold h-12"
           autoComplete="off"
         />
