@@ -41,10 +41,10 @@ export function CreateEventLink() {
     <Link
       href="/events/new"
       prefetch={false}
-      className="flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+      className="flex p-2 text-muted-foreground/70 hover:text-foreground active:scale-95 transition-all rounded-lg"
       aria-label="Create event"
     >
-      <Plus className="w-5 h-5" />
+      <Plus className="w-5 h-5" strokeWidth={1.5} />
     </Link>
   );
 }

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/user-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { LocalePicker } from "@/components/locale-picker";
+import { CreateEventLink } from "@/components/auth/create-event-link";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
@@ -173,8 +174,8 @@ export function MobileHeader() {
           <LocalePicker userId={auth.profile?.id} />
         </div>
 
-        {/* Right side: Search + Auth */}
-        <div className="flex items-center gap-1">
+        {/* Right side: Search + Create + Auth */}
+        <div className="flex items-center gap-0.5">
           <Link
             href="/search"
             className="p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg"
@@ -182,6 +183,8 @@ export function MobileHeader() {
           >
             <Search className="w-5 h-5" aria-hidden="true" />
           </Link>
+
+          <CreateEventLink />
 
           {/* Auth state */}
           {auth.isLoading ? (
