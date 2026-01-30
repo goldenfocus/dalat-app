@@ -294,3 +294,174 @@ export interface CloudflareWebhookEvent {
     status: string;
   };
 }
+
+// ============================================================================
+// VOD (Video on Demand) Upload Support
+// ============================================================================
+
+/**
+ * Options for creating a direct upload URL
+ */
+export interface DirectUploadOptions {
+  /** Maximum video duration in seconds (default: 3600 = 1 hour) */
+  maxDurationSeconds?: number;
+  /** Allowed origins for CORS (defaults to all) */
+  allowedOrigins?: string[];
+  /** Metadata to attach to the video */
+  meta?: Record<string, string>;
+  /** Thumbnail timestamp as percentage (0-1, default: 0) */
+  thumbnailTimestampPct?: number;
+  /** Require signed URLs for playback (default: false) */
+  requireSignedURLs?: boolean;
+}
+
+/**
+ * Response from creating a direct upload URL
+ */
+export interface DirectUploadResponse {
+  /** The unique identifier for this video */
+  uid: string;
+  /** The one-time TUS upload URL (expires after 30 minutes) */
+  uploadURL: string;
+}
+
+/**
+ * Video details from Cloudflare Stream
+ */
+export interface CloudflareVideoDetails {
+  uid: string;
+  status: {
+    state: 'pendingupload' | 'queued' | 'inprogress' | 'ready' | 'error';
+    pctComplete?: string;
+    errorReasonCode?: string;
+    errorReasonText?: string;
+  };
+  playback?: {
+    hls: string;
+    dash: string;
+  };
+  thumbnail?: string;
+  thumbnailTimestampPct?: number;
+  duration?: number;
+  input?: {
+    width: number;
+    height: number;
+  };
+  created: string;
+  modified: string;
+  meta?: Record<string, string>;
+}
+
+/**
+ * Create a direct upload URL for client-side video upload
+ *
+ * This creates a one-time TUS upload URL that the client can use to upload
+ * directly to Cloudflare Stream. The video will be automatically processed
+ * and encoded after upload completes.
+ *
+ * @see https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/
+ */
+export async function createDirectUpload(
+  options: DirectUploadOptions = {}
+): Promise<DirectUploadResponse> {
+  const body: Record<string, unknown> = {
+    maxDurationSeconds: options.maxDurationSeconds ?? 3600,
+    requireSignedURLs: options.requireSignedURLs ?? false,
+  };
+
+  if (options.allowedOrigins) {
+    body.allowedOrigins = options.allowedOrigins;
+  }
+
+  if (options.meta) {
+    body.meta = options.meta;
+  }
+
+  if (options.thumbnailTimestampPct !== undefined) {
+    body.thumbnailTimestampPct = options.thumbnailTimestampPct;
+  }
+
+  return cloudflareRequest<DirectUploadResponse>('/stream/direct_upload', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+/**
+ * Get video details by UID
+ *
+ * Use this to check encoding status after upload.
+ * Status transitions: pendingupload → queued → inprogress → ready (or error)
+ */
+export async function getVideoDetails(
+  videoUid: string
+): Promise<CloudflareVideoDetails> {
+  return cloudflareRequest<CloudflareVideoDetails>(`/stream/${videoUid}`);
+}
+
+/**
+ * Delete a video from Cloudflare Stream
+ */
+export async function deleteVideo(videoUid: string): Promise<void> {
+  await cloudflareRequest<null>(`/stream/${videoUid}`, {
+    method: 'DELETE',
+  });
+}
+
+/**
+ * Get the HLS playback URL for a video
+ *
+ * This is the adaptive bitrate streaming URL that automatically
+ * adjusts quality based on the viewer's connection speed.
+ */
+export function getVODPlaybackUrl(videoUid: string): string {
+  const { accountId } = getCredentials();
+  return `https://customer-${accountId}.cloudflarestream.com/${videoUid}/manifest/video.m3u8`;
+}
+
+/**
+ * Get the DASH playback URL for a video (alternative to HLS)
+ */
+export function getVODDashUrl(videoUid: string): string {
+  const { accountId } = getCredentials();
+  return `https://customer-${accountId}.cloudflarestream.com/${videoUid}/manifest/video.mpd`;
+}
+
+/**
+ * Get the thumbnail URL for a video
+ *
+ * @param videoUid - The video's unique identifier
+ * @param options - Thumbnail options
+ * @param options.time - Time in seconds for the thumbnail frame
+ * @param options.width - Thumbnail width (height auto-calculated)
+ * @param options.height - Thumbnail height (width auto-calculated)
+ */
+export function getVideoThumbnailUrl(
+  videoUid: string,
+  options?: { time?: number; width?: number; height?: number }
+): string {
+  const { accountId } = getCredentials();
+  const baseUrl = `https://customer-${accountId}.cloudflarestream.com/${videoUid}/thumbnails/thumbnail.jpg`;
+
+  const params = new URLSearchParams();
+  if (options?.time !== undefined) {
+    params.set('time', options.time.toString());
+  }
+  if (options?.width !== undefined) {
+    params.set('width', options.width.toString());
+  }
+  if (options?.height !== undefined) {
+    params.set('height', options.height.toString());
+  }
+
+  const queryString = params.toString();
+  return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+}
+
+/**
+ * Check if a URL is a Cloudflare Stream playback URL
+ */
+export function isCloudflareStreamUrl(url: string | null): boolean {
+  if (!url) return false;
+  return url.includes('cloudflarestream.com');
+}

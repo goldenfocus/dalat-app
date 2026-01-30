@@ -31,7 +31,8 @@ export function MomentReelCard({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
 
-  const isVideo = isVideoUrl(moment.media_url);
+  // Check for video - either by URL extension or by Cloudflare Stream URL
+  const isVideo = isVideoUrl(moment.media_url) || !!moment.cf_playback_url;
 
   // Reset mute when scrolling away from this card
   useEffect(() => {
@@ -56,7 +57,8 @@ export function MomentReelCard({
         {moment.media_url ? (
           isVideo ? (
             <VideoPlayer
-              src={moment.media_url}
+              src={moment.media_url || ""}
+              hlsSrc={moment.cf_playback_url}
               isActive={isActive}
               poster={moment.event_image_url || undefined}
               isMuted={isMuted}

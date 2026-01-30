@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { verifyWebhookSignature, type CloudflareWebhookEvent } from '@/lib/cloudflare-stream';
+import {
+  verifyWebhookSignature,
+  getVODPlaybackUrl,
+  getVideoDetails,
+  type CloudflareWebhookEvent,
+} from '@/lib/cloudflare-stream';
 
 function getServiceClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -62,14 +67,58 @@ export async function POST(request: Request) {
       }
 
       case 'video.ready': {
+        // Handle both live stream recordings and VOD uploads
         if (event.liveInput?.uid) {
+          // Live stream recording is ready
           console.log('Recording ready for live input:', event.liveInput.uid, 'Video UID:', event.video?.uid);
+        } else {
+          // VOD upload is ready - update the moment
+          const videoUid = event.uid;
+          console.log('VOD video ready:', videoUid);
+
+          try {
+            // Get video details for duration
+            const videoDetails = await getVideoDetails(videoUid);
+            const playbackUrl = getVODPlaybackUrl(videoUid);
+
+            // Update moment using the RPC function
+            const { data, error } = await supabase.rpc('update_moment_video_status', {
+              p_cf_video_uid: videoUid,
+              p_video_status: 'ready',
+              p_cf_playback_url: playbackUrl,
+              p_video_duration_seconds: videoDetails.duration ?? null,
+            });
+
+            if (error) {
+              console.error('Failed to update moment video status:', error);
+            } else if (data) {
+              console.log('Updated moment:', data, 'to ready status');
+            } else {
+              // No moment found with this video UID - might be a live recording
+              console.log('No moment found for video UID:', videoUid);
+            }
+          } catch (err) {
+            console.error('Error processing video.ready:', err);
+          }
         }
         break;
       }
 
       case 'video.error': {
+        const videoUid = event.uid;
         console.error('Cloudflare video error:', event);
+
+        // Update moment to error status
+        const { data, error } = await supabase.rpc('update_moment_video_status', {
+          p_cf_video_uid: videoUid,
+          p_video_status: 'error',
+        });
+
+        if (error) {
+          console.error('Failed to update moment video status to error:', error);
+        } else if (data) {
+          console.log('Updated moment:', data, 'to error status');
+        }
         break;
       }
 

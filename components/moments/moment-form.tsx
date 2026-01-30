@@ -22,6 +22,7 @@ import {
 } from "@/lib/video-compression";
 import { triggerHaptic } from "@/lib/haptics";
 import { triggerTranslation } from "@/lib/translations-client";
+import * as tus from "tus-js-client";
 
 // Format duration in seconds to MM:SS or H:MM:SS
 function formatDuration(seconds: number): string {
@@ -47,14 +48,18 @@ interface UploadItem {
   file: File;
   previewUrl: string;
   isVideo: boolean;
-  status: "converting" | "compressing" | "uploading" | "uploaded" | "error";
+  status: "converting" | "compressing" | "uploading" | "uploaded" | "processing" | "error";
   mediaUrl?: string;
   thumbnailUrl?: string; // For video thumbnails (server-side)
   localThumbnailUrl?: string; // For video preview (client-side)
   duration?: number; // Video duration in seconds
   compressionProgress?: CompressionProgress; // For large video compression
+  uploadProgress?: number; // 0-100 for TUS upload progress
   error?: string;
   caption?: string; // Individual caption for this upload
+  // Cloudflare Stream fields (for video adaptive streaming)
+  cfVideoUid?: string;
+  cfPlaybackUrl?: string;
 }
 
 export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentFormProps) {
@@ -102,6 +107,71 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
       console.warn("Failed to generate local video preview:", err);
     }
   }, []);
+
+  // Upload video to Cloudflare Stream using TUS (resumable upload)
+  const uploadVideoToCloudflare = async (
+    file: File,
+    itemId: string,
+    onProgress: (progress: number) => void
+  ): Promise<{ videoUid: string } | null> => {
+    try {
+      // Get upload URL from our API
+      const response = await fetch("/api/moments/upload-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId,
+          filename: file.name,
+          fileSizeBytes: file.size,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to get upload URL");
+      }
+
+      const { uploadUrl, videoUid } = await response.json();
+
+      // Upload using TUS (resumable upload)
+      return new Promise((resolve, reject) => {
+        const upload = new tus.Upload(file, {
+          endpoint: uploadUrl,
+          uploadUrl: uploadUrl, // Direct upload URL from Cloudflare
+          retryDelays: [0, 1000, 3000, 5000], // Retry delays for flaky connections
+          chunkSize: 50 * 1024 * 1024, // 50MB chunks for better resume on slow connections
+          metadata: {
+            filename: file.name,
+            filetype: file.type,
+          },
+          onError: (error) => {
+            console.error("[TUS] Upload error:", error);
+            reject(error);
+          },
+          onProgress: (bytesUploaded, bytesTotal) => {
+            const percentage = Math.round((bytesUploaded / bytesTotal) * 100);
+            onProgress(percentage);
+          },
+          onSuccess: () => {
+            console.log("[TUS] Upload complete for video:", videoUid);
+            resolve({ videoUid });
+          },
+        });
+
+        // Check for previous uploads to resume
+        upload.findPreviousUploads().then((previousUploads) => {
+          if (previousUploads.length > 0) {
+            console.log("[TUS] Resuming previous upload");
+            upload.resumeFromPreviousUpload(previousUploads[0]);
+          }
+          upload.start();
+        });
+      });
+    } catch (error) {
+      console.error("[Cloudflare] Video upload error:", error);
+      return null;
+    }
+  };
 
   const uploadFile = async (file: File, itemId: string) => {
     console.log("[Upload] Starting upload for:", file.name, "type:", file.type, "size:", file.size);
@@ -178,10 +248,48 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
       console.log("[Upload] Proceeding to upload:", fileToUpload.name, fileToUpload.type);
       setUploads(prev => prev.map(item =>
         item.id === itemId && item.status !== "error"
-          ? { ...item, status: "uploading" as const, compressionProgress: undefined }
+          ? { ...item, status: "uploading" as const, compressionProgress: undefined, uploadProgress: 0 }
           : item
       ));
 
+      const isVideoFile = fileToUpload.type.startsWith("video/");
+
+      // Route videos to Cloudflare Stream for adaptive bitrate streaming
+      if (isVideoFile) {
+        const result = await uploadVideoToCloudflare(
+          fileToUpload,
+          itemId,
+          (progress) => {
+            setUploads(prev => prev.map(item =>
+              item.id === itemId
+                ? { ...item, uploadProgress: progress }
+                : item
+            ));
+          }
+        );
+
+        if (result) {
+          // Video uploaded to Cloudflare Stream - it's now "processing" (encoding)
+          // The webhook will update the moment when encoding is complete
+          setUploads(prev => prev.map(item =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  status: "uploaded" as const,
+                  cfVideoUid: result.videoUid,
+                  // Note: playback URL will be set by webhook when encoding completes
+                  uploadProgress: 100,
+                }
+              : item
+          ));
+          triggerHaptic("light");
+        } else {
+          throw new Error("Failed to upload video to Cloudflare Stream");
+        }
+        return;
+      }
+
+      // For images, continue using Supabase Storage
       const supabase = createClient();
 
       // Generate unique filename (use converted file's extension)
@@ -205,36 +313,9 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         .from("moments")
         .getPublicUrl(fileName);
 
-      // For videos, generate and upload a thumbnail
-      let thumbnailUrl: string | undefined;
-      if (fileToUpload.type.startsWith("video/")) {
-        try {
-          const thumbnailBlob = await generateVideoThumbnail(fileToUpload);
-          const thumbnailFileName = fileName.replace(/\.[^.]+$/, "-thumb.jpg");
-
-          const { error: thumbError } = await supabase.storage
-            .from("moments")
-            .upload(thumbnailFileName, thumbnailBlob, {
-              cacheControl: "3600",
-              upsert: false,
-              contentType: "image/jpeg",
-            });
-
-          if (!thumbError) {
-            const { data: { publicUrl: thumbUrl } } = supabase.storage
-              .from("moments")
-              .getPublicUrl(thumbnailFileName);
-            thumbnailUrl = thumbUrl;
-          }
-        } catch (thumbErr) {
-          // Thumbnail generation failed - not critical, continue without it
-          console.warn("Failed to generate video thumbnail:", thumbErr);
-        }
-      }
-
       setUploads(prev => prev.map(item =>
         item.id === itemId
-          ? { ...item, status: "uploaded" as const, mediaUrl: publicUrl, thumbnailUrl }
+          ? { ...item, status: "uploaded" as const, mediaUrl: publicUrl }
           : item
       ));
       triggerHaptic("light");
@@ -337,7 +418,10 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
   };
 
   const handlePost = async () => {
-    const readyUploads = uploads.filter(u => u.status === "uploaded" && u.mediaUrl);
+    // Ready uploads: images with mediaUrl OR videos with cfVideoUid
+    const readyUploads = uploads.filter(u =>
+      u.status === "uploaded" && (u.mediaUrl || u.cfVideoUid)
+    );
 
     if (readyUploads.length === 0) {
       setError(t("errors.uploadFailed"));
@@ -356,14 +440,21 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         // Use individual caption if set, otherwise fall back to shared caption
         const textContent = (upload.caption?.trim() || caption.trim()) || null;
 
+        // For Cloudflare Stream videos, use cfVideoUid; for legacy, use mediaUrl
+        const isCloudflareVideo = upload.isVideo && upload.cfVideoUid;
+
         const { data, error: postError } = await supabase.rpc("create_moment", {
           p_event_id: eventId,
           p_content_type: contentType,
-          p_media_url: upload.mediaUrl,
+          p_media_url: isCloudflareVideo ? null : upload.mediaUrl, // CF videos don't have direct media_url
           p_text_content: textContent,
           p_user_id: userId, // Support God Mode: attribute to effective user
           p_source_locale: locale, // Tag with user's current language for accurate translation attribution
           p_thumbnail_url: upload.thumbnailUrl || null, // Video thumbnail if available
+          // Cloudflare Stream fields (for adaptive streaming)
+          p_cf_video_uid: upload.cfVideoUid || null,
+          p_cf_playback_url: upload.cfPlaybackUrl || null,
+          p_video_status: isCloudflareVideo ? "processing" : "ready", // CF videos start as "processing"
         });
 
         if (postError) {
@@ -429,8 +520,13 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     }
   };
 
-  const isUploading = uploads.some(u => u.status === "uploading" || u.status === "converting" || u.status === "compressing");
-  const readyCount = uploads.filter(u => u.status === "uploaded" && u.mediaUrl).length;
+  const isUploading = uploads.some(u =>
+    u.status === "uploading" || u.status === "converting" || u.status === "compressing"
+  );
+  // Ready to post: uploaded images or CF videos (CF videos have cfVideoUid instead of mediaUrl)
+  const readyCount = uploads.filter(u =>
+    u.status === "uploaded" && (u.mediaUrl || u.cfVideoUid)
+  ).length;
   const canPost = readyCount > 0;
 
   return (
@@ -502,8 +598,28 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
                   )}
 
                   {upload.status === "uploading" && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2 px-8">
                       <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      {upload.uploadProgress !== undefined && upload.uploadProgress > 0 && (
+                        <>
+                          <span className="text-xs text-white/80">
+                            Uploading... {upload.uploadProgress}%
+                          </span>
+                          <div className="w-full max-w-[200px] h-1.5 bg-white/20 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-white/80 transition-all duration-300"
+                              style={{ width: `${upload.uploadProgress}%` }}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {upload.status === "processing" && (
+                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      <span className="text-xs text-white/80">Processing video...</span>
                     </div>
                   )}
 

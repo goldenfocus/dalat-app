@@ -639,6 +639,7 @@ export interface DashboardOverview {
 
 export type MomentContentType = 'photo' | 'video' | 'text';
 export type MomentStatus = 'pending' | 'published' | 'rejected' | 'removed';
+export type MomentVideoStatus = 'uploading' | 'processing' | 'ready' | 'error';
 export type MomentsWhoCanPost = 'anyone' | 'rsvp' | 'confirmed';
 
 export interface EventSettings {
@@ -663,6 +664,11 @@ export interface Moment {
   source_locale: string | null;
   created_at: string;
   updated_at: string;
+  // Cloudflare Stream fields (for adaptive streaming)
+  cf_video_uid: string | null;
+  cf_playback_url: string | null;
+  video_status: MomentVideoStatus | null;
+  video_duration_seconds: number | null;
   // Joined data
   profiles?: Profile;
   events?: Event;
@@ -680,6 +686,11 @@ export interface MomentWithProfile {
   username: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  // Cloudflare Stream fields (for adaptive streaming)
+  cf_video_uid: string | null;
+  cf_playback_url: string | null;
+  video_status: MomentVideoStatus | null;
+  video_duration_seconds: number | null;
 }
 
 export interface MomentCounts {
@@ -705,6 +716,11 @@ export interface MomentWithEvent {
   event_image_url: string | null;
   event_starts_at: string;
   event_location_name: string | null;
+  // Cloudflare Stream fields (for adaptive streaming)
+  cf_video_uid?: string | null;
+  cf_playback_url?: string | null;
+  video_status?: MomentVideoStatus | null;
+  video_duration_seconds?: number | null;
 }
 
 // Community moment from events at a venue (via get_venue_community_moments RPC)
@@ -738,6 +754,11 @@ export interface GroupedMoment {
   thumbnail_url: string | null;
   text_content: string | null;
   created_at: string;
+  // Cloudflare Stream fields (for adaptive streaming)
+  cf_video_uid?: string | null;
+  cf_playback_url?: string | null;
+  video_status?: MomentVideoStatus | null;
+  video_duration_seconds?: number | null;
 }
 
 // Event group with its moments for profile timeline
