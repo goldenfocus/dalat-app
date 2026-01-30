@@ -15,6 +15,11 @@ import {
   generateVideoThumbnail,
 } from "@/lib/media-utils";
 import { convertIfNeeded } from "@/lib/media-conversion";
+import {
+  needsCompression,
+  compressVideo,
+  type CompressionProgress,
+} from "@/lib/video-compression";
 import { triggerHaptic } from "@/lib/haptics";
 import { triggerTranslation } from "@/lib/translations-client";
 
@@ -42,11 +47,12 @@ interface UploadItem {
   file: File;
   previewUrl: string;
   isVideo: boolean;
-  status: "converting" | "uploading" | "uploaded" | "error";
+  status: "converting" | "compressing" | "uploading" | "uploaded" | "error";
   mediaUrl?: string;
   thumbnailUrl?: string; // For video thumbnails (server-side)
   localThumbnailUrl?: string; // For video preview (client-side)
   duration?: number; // Video duration in seconds
+  compressionProgress?: CompressionProgress; // For large video compression
   error?: string;
   caption?: string; // Individual caption for this upload
 }
@@ -145,10 +151,34 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         }
       }
 
+      // Compress large videos (>50MB) before upload
+      if (needsCompression(fileToUpload)) {
+        console.log("[Upload] Video needs compression:", fileToUpload.size);
+        setUploads(prev => prev.map(item =>
+          item.id === itemId
+            ? { ...item, status: "compressing" as const }
+            : item
+        ));
+
+        try {
+          fileToUpload = await compressVideo(fileToUpload, (progress) => {
+            setUploads(prev => prev.map(item =>
+              item.id === itemId
+                ? { ...item, compressionProgress: progress }
+                : item
+            ));
+          });
+          console.log("[Upload] Compression complete:", fileToUpload.size);
+        } catch (err) {
+          console.error("[Upload] Compression error:", err);
+          // Continue with original file if compression fails
+        }
+      }
+
       console.log("[Upload] Proceeding to upload:", fileToUpload.name, fileToUpload.type);
       setUploads(prev => prev.map(item =>
         item.id === itemId && item.status !== "error"
-          ? { ...item, status: "uploading" as const }
+          ? { ...item, status: "uploading" as const, compressionProgress: undefined }
           : item
       ));
 
@@ -399,7 +429,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     }
   };
 
-  const isUploading = uploads.some(u => u.status === "uploading" || u.status === "converting");
+  const isUploading = uploads.some(u => u.status === "uploading" || u.status === "converting" || u.status === "compressing");
   const readyCount = uploads.filter(u => u.status === "uploaded" && u.mediaUrl).length;
   const canPost = readyCount > 0;
 
@@ -451,6 +481,23 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
                     <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1">
                       <RefreshCw className="w-6 h-6 text-white animate-spin" />
                       <span className="text-xs text-white/80">Converting...</span>
+                    </div>
+                  )}
+
+                  {upload.status === "compressing" && (
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 px-8">
+                      <RefreshCw className="w-6 h-6 text-white animate-spin" />
+                      <span className="text-xs text-white/80">
+                        {upload.compressionProgress?.message || "Compressing video..."}
+                      </span>
+                      {upload.compressionProgress && (
+                        <div className="w-full max-w-[200px] h-1.5 bg-white/20 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-white/80 transition-all duration-300"
+                            style={{ width: `${upload.compressionProgress.progress}%` }}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
 

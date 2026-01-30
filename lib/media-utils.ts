@@ -34,7 +34,7 @@ export function getMediaType(url: string | null): MediaType | null {
 export const MEDIA_SIZE_LIMITS = {
   image: 10 * 1024 * 1024, // 10MB
   gif: 15 * 1024 * 1024, // 15MB
-  video: 50 * 1024 * 1024, // 50MB
+  video: 500 * 1024 * 1024, // 500MB (will be compressed client-side if >50MB)
 } as const;
 
 // Allowed MIME types
@@ -230,7 +230,7 @@ export function validateMediaFile(file: File): string | null {
   }
 
   if ((isValidVideo || isMovByExt) && file.size > MEDIA_SIZE_LIMITS.video) {
-    return "Videos must be less than 50MB";
+    return "Videos must be less than 500MB";
   }
 
   return null;
