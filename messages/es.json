@@ -1088,6 +1088,7 @@
     "nextEvent": "Evento siguiente",
     "share": "Compartir",
     "postMoments": "Publicar {count} momentos",
+    "postReady": "Publicar {ready} de {total} listos",
     "addMore": "Agregar más",
     "viewMoreMoments": "Ver {count} momentos más",
     "searchPlaceholder": "Buscar momentos... (ej., perros, atardecer)",

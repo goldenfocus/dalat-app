@@ -1088,6 +1088,7 @@
     "nextEvent": "次のイベント",
     "share": "共有",
     "postMoments": "{count}件のモーメントを投稿",
+    "postReady": "{total}件中{ready}件を投稿",
     "addMore": "追加する",
     "viewMoreMoments": "あと{count}件のモーメントを見る",
     "searchPlaceholder": "モーメントを検索...（例：犬、夕日）",

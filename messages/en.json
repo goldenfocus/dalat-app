@@ -1096,6 +1096,7 @@
     "share": "Share",
     "postMoment": "Post moment",
     "postMoments": "Post {count} moments",
+    "postReady": "Post {ready} of {total} ready",
     "posting": "Posting...",
     "delete": "Delete",
     "deleting": "Deleting...",

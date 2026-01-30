@@ -983,6 +983,7 @@
     "share": "Chia sẻ",
     "postMoment": "Đăng khoảnh khắc",
     "postMoments": "Đăng {count} khoảnh khắc",
+    "postReady": "Đăng {ready}/{total} sẵn sàng",
     "posting": "Đang đăng...",
     "delete": "Xóa",
     "deleting": "Đang xóa...",

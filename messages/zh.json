@@ -1088,6 +1088,7 @@
     "nextEvent": "下一个活动",
     "share": "分享",
     "postMoments": "发布 {count} 个动态",
+    "postReady": "发布 {ready}/{total} 已就绪",
     "addMore": "添加更多",
     "viewMoreMoments": "查看更多 {count} 个动态",
     "searchPlaceholder": "搜索动态... (如：狗狗、日落)",

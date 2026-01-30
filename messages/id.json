@@ -1088,6 +1088,7 @@
     "nextEvent": "Acara selanjutnya",
     "share": "Bagikan",
     "postMoments": "Posting {count} momen",
+    "postReady": "Posting {ready} dari {total} siap",
     "addMore": "Tambah lagi",
     "viewMoreMoments": "Lihat {count} momen lagi",
     "searchPlaceholder": "Cari momen... (cth: anjing, matahari terbenam)",

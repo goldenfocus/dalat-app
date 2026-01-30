@@ -1088,6 +1088,7 @@
     "nextEvent": "Nächstes Event",
     "share": "Teilen",
     "postMoments": "{count} Moments posten",
+    "postReady": "{ready} von {total} bereit posten",
     "addMore": "Mehr hinzufügen",
     "viewMoreMoments": "{count} weitere Moments anzeigen",
     "searchPlaceholder": "Moments suchen... (z.B. Hunde, Sonnenuntergang)",

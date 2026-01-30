@@ -1088,6 +1088,7 @@
     "nextEvent": "กิจกรรมถัดไป",
     "share": "แชร์",
     "postMoments": "โพสต์ {count} โมเมนต์",
+    "postReady": "โพสต์ {ready} จาก {total} พร้อม",
     "addMore": "เพิ่มอีก",
     "viewMoreMoments": "ดูอีก {count} โมเมนต์",
     "searchPlaceholder": "ค้นหาโมเมนต์... (เช่น สุนัข, พระอาทิตย์ตก)",

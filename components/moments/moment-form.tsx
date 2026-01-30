@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import { Camera, X, Loader2, Send, Plus, AlertCircle, RefreshCw } from "lucide-react";
+import { Camera, X, Loader2, Send, Plus, AlertCircle, RefreshCw, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
@@ -17,6 +17,18 @@ import {
 import { convertIfNeeded } from "@/lib/media-conversion";
 import { triggerHaptic } from "@/lib/haptics";
 import { triggerTranslation } from "@/lib/translations-client";
+
+// Format duration in seconds to MM:SS or H:MM:SS
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  if (h > 0) {
+    return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  }
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
 
 interface MomentFormProps {
   eventId: string;
@@ -32,7 +44,9 @@ interface UploadItem {
   isVideo: boolean;
   status: "converting" | "uploading" | "uploaded" | "error";
   mediaUrl?: string;
-  thumbnailUrl?: string; // For video thumbnails
+  thumbnailUrl?: string; // For video thumbnails (server-side)
+  localThumbnailUrl?: string; // For video preview (client-side)
+  duration?: number; // Video duration in seconds
   error?: string;
   caption?: string; // Individual caption for this upload
 }
@@ -48,6 +62,40 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Generate local video thumbnail and capture duration for preview
+  const generateLocalVideoPreview = useCallback(async (file: File, itemId: string) => {
+    try {
+      // Generate thumbnail
+      const thumbnailBlob = await generateVideoThumbnail(file);
+      const localThumbnailUrl = URL.createObjectURL(thumbnailBlob);
+
+      // Capture duration
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      const videoUrl = URL.createObjectURL(file);
+
+      const duration = await new Promise<number>((resolve) => {
+        video.onloadedmetadata = () => {
+          URL.revokeObjectURL(videoUrl);
+          resolve(video.duration);
+        };
+        video.onerror = () => {
+          URL.revokeObjectURL(videoUrl);
+          resolve(0);
+        };
+        video.src = videoUrl;
+      });
+
+      setUploads(prev => prev.map(item =>
+        item.id === itemId
+          ? { ...item, localThumbnailUrl, duration }
+          : item
+      ));
+    } catch (err) {
+      console.warn("Failed to generate local video preview:", err);
+    }
+  }, []);
 
   const uploadFile = async (file: File, itemId: string) => {
     console.log("[Upload] Starting upload for:", file.name, "type:", file.type, "size:", file.size);
@@ -201,9 +249,13 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
     setUploads(prev => [...prev, ...newUploads]);
 
-    // Start uploading each file
+    // Start uploading each file and generate video previews
     for (const item of newUploads) {
       uploadFile(item.file, item.id);
+      // Generate local thumbnail + duration for videos immediately
+      if (item.isVideo) {
+        generateLocalVideoPreview(item.file, item.id);
+      }
     }
   };
 
@@ -240,6 +292,9 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
       const item = prev.find(u => u.id === itemId);
       if (item) {
         URL.revokeObjectURL(item.previewUrl);
+        if (item.localThumbnailUrl) {
+          URL.revokeObjectURL(item.localThumbnailUrl);
+        }
       }
       return prev.filter(u => u.id !== itemId);
     });
@@ -310,7 +365,27 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
       triggerHaptic("medium");
 
-      if (onSuccess) {
+      // Remove posted items from queue, keep uploading/errored ones
+      const postedIds = new Set(readyUploads.map(u => u.id));
+      setUploads(prev => {
+        const remaining = prev.filter(u => !postedIds.has(u.id));
+        // Clean up preview URLs for posted items
+        prev.filter(u => postedIds.has(u.id)).forEach(u => {
+          URL.revokeObjectURL(u.previewUrl);
+          if (u.localThumbnailUrl) {
+            URL.revokeObjectURL(u.localThumbnailUrl);
+          }
+        });
+        return remaining;
+      });
+      setCaption(""); // Clear shared caption after posting
+
+      // If there are still items uploading, stay on page
+      const remainingUploads = uploads.filter(u => !postedIds.has(u.id));
+      if (remainingUploads.length > 0) {
+        // Stay on page so user can post remaining items when ready
+        triggerHaptic("medium");
+      } else if (onSuccess) {
         onSuccess();
       } else {
         router.push(`/events/${eventSlug}/moments`);
@@ -340,12 +415,29 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
                 {/* Image/video preview */}
                 <div className="relative aspect-video bg-muted">
                   {upload.isVideo ? (
-                    <video
-                      src={upload.previewUrl}
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                    />
+                    <>
+                      {upload.localThumbnailUrl ? (
+                        <img
+                          src={upload.localThumbnailUrl}
+                          alt="Video thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <video
+                          src={upload.previewUrl}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                        />
+                      )}
+                      {/* Video duration badge */}
+                      {upload.duration !== undefined && upload.duration > 0 && (
+                        <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-1 rounded bg-black/70 text-white text-xs">
+                          <Play className="w-3 h-3 fill-current" />
+                          <span>{formatDuration(upload.duration)}</span>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <img
                       src={upload.previewUrl}
@@ -468,9 +560,16 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
             <label className="text-sm text-muted-foreground">{t("individualCaptions")}</label>
             {uploads.filter(u => u.status === "uploaded").map((upload, index) => (
               <div key={upload.id} className="flex gap-2 items-start">
-                <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
                   {upload.isVideo ? (
-                    <video src={upload.previewUrl} className="w-full h-full object-cover" muted />
+                    <>
+                      <img
+                        src={upload.localThumbnailUrl || upload.previewUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                      <Play className="absolute bottom-0.5 right-0.5 w-3 h-3 text-white drop-shadow-md fill-current" />
+                    </>
                   ) : (
                     <img src={upload.previewUrl} alt="" className="w-full h-full object-cover" />
                   )}
@@ -494,10 +593,10 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      {/* Post button */}
+      {/* Post button - enabled when any uploads ready, even if others still uploading */}
       <Button
         onClick={handlePost}
-        disabled={!canPost || isUploading || isPosting}
+        disabled={!canPost || isPosting}
         className="w-full"
         size="lg"
       >
@@ -509,7 +608,14 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         ) : (
           <>
             <Send className="w-4 h-4 mr-2" />
-            {readyCount > 1 ? t("postMoments", { count: readyCount }) : t("postMoment")}
+            {isUploading && readyCount > 0 ? (
+              // Some ready, some still uploading - post partial
+              t("postReady", { ready: readyCount, total: uploads.length })
+            ) : readyCount > 1 ? (
+              t("postMoments", { count: readyCount })
+            ) : (
+              t("postMoment")
+            )}
           </>
         )}
       </Button>

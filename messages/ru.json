@@ -1088,6 +1088,7 @@
     "nextEvent": "След. событие",
     "share": "Поделиться",
     "postMoments": "Опубликовать {count} моментов",
+    "postReady": "Опубликовать {ready} из {total} готовых",
     "addMore": "Добавить ещё",
     "viewMoreMoments": "Показать ещё {count} моментов",
     "searchPlaceholder": "Поиск моментов... (напр., собаки, закат)",
