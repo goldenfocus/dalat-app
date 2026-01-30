@@ -15,3 +15,19 @@ export type {
   ExtractedEvent,
 } from "./types";
 export type { ProcessResult } from "./utils";
+
+// Flip.vn scraper
+export {
+  fetchFlipEvent,
+  discoverFlipEvents,
+  processFlipEvents,
+  type FlipEvent,
+} from "./processors/flip";
+
+// TicketGo scraper
+export {
+  fetchTicketGoEvent,
+  discoverTicketGoEvents,
+  processTicketGoEvents,
+  type TicketGoEvent,
+} from "./processors/ticketgo";
