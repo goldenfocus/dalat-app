@@ -32,10 +32,26 @@ export interface FlipEvent {
 }
 
 /**
+ * Options for fetching Flip events
+ */
+export interface FlipFetchOptions {
+  /** Override date for multi-showtime events (ISO 8601 or YYYY-MM-DD) */
+  dateOverride?: string;
+  /** Override time (HH:MM format, Vietnam time) */
+  timeOverride?: string;
+}
+
+/**
  * Fetch and parse a Flip.vn event page
  * Extracts data from Open Graph meta tags and embedded page data
+ *
+ * @param eventUrl - The Flip.vn event URL
+ * @param options - Optional overrides for date/time (useful for multi-showtime events)
  */
-export async function fetchFlipEvent(eventUrl: string): Promise<FlipEvent | null> {
+export async function fetchFlipEvent(
+  eventUrl: string,
+  options?: FlipFetchOptions
+): Promise<FlipEvent | null> {
   try {
     const response = await fetch(eventUrl, {
       headers: {
@@ -76,23 +92,40 @@ export async function fetchFlipEvent(eventUrl: string): Promise<FlipEvent | null
     const rawDescription = getMetaContent('og:description') || getMetaName('description');
 
     // Description format: "T6, 31/10/2025 • 12:00 - 15:30 tại Capital Theatre. Mua vé..."
-    // Parse date/time and venue from description
+    // Or multi-showtime: "Nhiều khung giờ tại Venue Name. Mua vé..."
     const parsed = parseFlipDescription(rawDescription);
 
-    if (!parsed.startDate) {
+    // Check if date override is provided (for multi-showtime events)
+    let startDate: string | null = parsed.startDate;
+    let endDate: string | null = parsed.endDate;
+
+    if (options?.dateOverride) {
+      // Parse the override date
+      const overrideResult = parseDateOverride(options.dateOverride, options.timeOverride);
+      if (overrideResult) {
+        startDate = overrideResult.startDate;
+        endDate = overrideResult.endDate;
+        console.log(`Flip: Using date override: ${startDate}`);
+      }
+    }
+
+    // Extract venue from "tại" pattern even if no date
+    let venue = parsed.venue;
+    if (!venue && rawDescription) {
+      // Try to extract venue from multi-showtime format: "Nhiều khung giờ tại Venue Name"
+      const multiShowVenueMatch = rawDescription.match(/tại\s+([^.]+?)(?:\.\s*Mua|$)/i);
+      venue = multiShowVenueMatch?.[1]?.trim() || null;
+    }
+
+    if (!startDate) {
       // Check if this is a multi-showtime event (no single date)
       if (rawDescription?.includes("Nhiều khung giờ")) {
-        console.error("Flip: Multi-showtime event - dates loaded dynamically, cannot import:", eventUrl);
+        console.error("Flip: Multi-showtime event - provide dateOverride to import:", eventUrl);
       } else {
         console.error("Flip: Could not parse date from description:", rawDescription);
       }
       return null;
     }
-
-    // Guaranteed non-null after the check above
-    const startDate = parsed.startDate;
-    const endDate = parsed.endDate;
-    const venue = parsed.venue;
 
     // Get image URL
     const imageUrl = getMetaContent('og:image');
@@ -120,6 +153,64 @@ export async function fetchFlipEvent(eventUrl: string): Promise<FlipEvent | null
     };
   } catch (error) {
     console.error("Flip fetch error:", error);
+    return null;
+  }
+}
+
+/**
+ * Parse a date override string into ISO format
+ * Supports: YYYY-MM-DD, DD/MM/YYYY, ISO 8601
+ */
+function parseDateOverride(
+  dateStr: string,
+  timeStr?: string
+): { startDate: string; endDate: string | null } | null {
+  try {
+    let year: number, month: number, day: number;
+
+    // Try ISO format first (YYYY-MM-DD or full ISO)
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+      const isoDate = new Date(dateStr);
+      if (!isNaN(isoDate.getTime())) {
+        // If time provided, use it; otherwise use the time from ISO string or default to 19:00
+        if (timeStr) {
+          const [hours, minutes] = timeStr.split(':').map(Number);
+          isoDate.setHours(hours, minutes, 0, 0);
+        } else if (!dateStr.includes('T')) {
+          // No time in ISO string, default to 19:00 Vietnam time
+          isoDate.setHours(19, 0, 0, 0);
+        }
+        // Convert from Vietnam time to UTC
+        const utcDate = new Date(isoDate.getTime() - 7 * 60 * 60 * 1000);
+        return { startDate: utcDate.toISOString(), endDate: null };
+      }
+    }
+
+    // Try DD/MM/YYYY format (common in Vietnam)
+    const vnMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (vnMatch) {
+      day = parseInt(vnMatch[1], 10);
+      month = parseInt(vnMatch[2], 10) - 1;
+      year = parseInt(vnMatch[3], 10);
+    } else {
+      return null;
+    }
+
+    // Default time: 19:00 (7 PM) if not provided
+    let hours = 19;
+    let minutes = 0;
+    if (timeStr) {
+      const timeParts = timeStr.split(':').map(Number);
+      hours = timeParts[0] || 19;
+      minutes = timeParts[1] || 0;
+    }
+
+    // Create date in Vietnam time, then convert to UTC
+    const localDate = new Date(year, month, day, hours, minutes);
+    const utcDate = new Date(localDate.getTime() - 7 * 60 * 60 * 1000);
+
+    return { startDate: utcDate.toISOString(), endDate: null };
+  } catch {
     return null;
   }
 }

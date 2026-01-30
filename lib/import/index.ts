@@ -22,6 +22,7 @@ export {
   discoverFlipEvents,
   processFlipEvents,
   type FlipEvent,
+  type FlipFetchOptions,
 } from "./processors/flip";
 
 // TicketGo scraper

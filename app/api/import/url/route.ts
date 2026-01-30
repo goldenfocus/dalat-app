@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const { url } = await request.json();
+    const { url, date, time } = await request.json();
 
     if (!url) {
       return NextResponse.json({ error: "URL required" }, { status: 400 });
@@ -132,12 +132,23 @@ export async function POST(request: Request) {
       console.log(`URL Import: Got TicketGo event: ${ticketgoData.title}`);
     } else if (platform === "flip") {
       // Fetch Flip.vn directly via HTML scraping (Open Graph meta tags)
-      const flipData = await fetchFlipEvent(url);
+      // For multi-showtime events, date/time can be provided as override
+      const flipData = await fetchFlipEvent(url, {
+        dateOverride: date,
+        timeOverride: time,
+      });
       if (!flipData) {
+        // Check if date was provided - give different error message
+        if (!date) {
+          return NextResponse.json(
+            {
+              error: "Could not import Flip.vn event. This may be a multi-showtime event. Try adding a 'date' parameter (e.g., '2026-03-15' or '15/03/2026') and optionally 'time' (e.g., '19:00').",
+            },
+            { status: 400 }
+          );
+        }
         return NextResponse.json(
-          {
-            error: "Could not import Flip.vn event. Multi-showtime events (showing 'Nhiều khung giờ') are not yet supported because dates are loaded dynamically. Try importing a single-date event instead.",
-          },
+          { error: "Could not fetch Flip.vn event. Make sure the URL is valid and the date format is correct (YYYY-MM-DD or DD/MM/YYYY)." },
           { status: 400 }
         );
       }
