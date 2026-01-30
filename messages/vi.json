@@ -92,8 +92,18 @@
       "viewAll": "Xem tất cả kết quả cho \"{query}\"",
       "searchFor": "Tìm kiếm \"{query}\""
     },
-    "browseArchive": "Xem lưu trữ",
-    "seeAllUpcoming": "Xem tất cả sự kiện sắp tới"
+    "browseArchive": "Xem sự kiện đã qua",
+    "seeAllUpcoming": "Xem tất cả sự kiện sắp tới",
+    "happeningNow": {
+      "title": "Đang Diễn Ra",
+      "live": "TRỰC TIẾP",
+      "startedAgo": "Bắt đầu {minutes} phút trước",
+      "endsAt": "Kết thúc lúc {time}",
+      "tapToJoin": "Nhấn để tham gia"
+    },
+    "comingUp": {
+      "title": "Sắp Tới"
+    }
   },
   "auth": {
     "welcomeTitle": "Chào mừng đến với ĐàLạt.app",

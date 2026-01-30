@@ -92,8 +92,18 @@
       "viewAll": "Ver todos los resultados de \"{query}\"",
       "searchFor": "Buscar \"{query}\""
     },
-    "browseArchive": "Explorar archivo",
-    "seeAllUpcoming": "Ver todos los próximos eventos"
+    "browseArchive": "Eventos pasados",
+    "seeAllUpcoming": "Ver todos los próximos eventos",
+    "happeningNow": {
+      "title": "Ahora mismo",
+      "live": "EN VIVO",
+      "startedAgo": "Empezó hace {minutes} min",
+      "endsAt": "Termina a las {time}",
+      "tapToJoin": "Toca para unirte"
+    },
+    "comingUp": {
+      "title": "Próximamente"
+    }
   },
   "auth": {
     "welcomeTitle": "Bienvenido a ĐàLạt.app",

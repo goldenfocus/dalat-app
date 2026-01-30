@@ -92,8 +92,18 @@
       "viewAll": "Lihat semua keputusan untuk \"{query}\"",
       "searchFor": "Cari \"{query}\""
     },
-    "browseArchive": "Layari arkib",
-    "seeAllUpcoming": "Lihat semua acara akan datang"
+    "browseArchive": "Acara lepas",
+    "seeAllUpcoming": "Lihat semua acara akan datang",
+    "happeningNow": {
+      "title": "Sedang Berlangsung",
+      "live": "LIVE",
+      "startedAgo": "Bermula {minutes} min lalu",
+      "endsAt": "Tamat pada {time}",
+      "tapToJoin": "Ketik untuk sertai"
+    },
+    "comingUp": {
+      "title": "Akan Datang"
+    }
   },
   "auth": {
     "welcomeTitle": "Selamat datang ke ĐàLạt.app",

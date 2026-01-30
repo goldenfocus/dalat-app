@@ -92,8 +92,18 @@
       "viewAll": "「{query}」の検索結果をすべて見る",
       "searchFor": "「{query}」を検索"
     },
-    "browseArchive": "アーカイブを見る",
-    "seeAllUpcoming": "今後のイベントをすべて見る"
+    "browseArchive": "過去のイベント",
+    "seeAllUpcoming": "今後のイベントをすべて見る",
+    "happeningNow": {
+      "title": "開催中",
+      "live": "LIVE",
+      "startedAgo": "{minutes}分前に開始",
+      "endsAt": "{time}に終了",
+      "tapToJoin": "タップして参加"
+    },
+    "comingUp": {
+      "title": "今後のイベント"
+    }
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.appへようこそ",

@@ -92,8 +92,18 @@
       "viewAll": "查看「{query}」的全部结果",
       "searchFor": "搜索「{query}」"
     },
-    "browseArchive": "浏览档案",
-    "seeAllUpcoming": "查看所有即将举行的活动"
+    "browseArchive": "浏览过去的活动",
+    "seeAllUpcoming": "查看所有即将举行的活动",
+    "happeningNow": {
+      "title": "正在进行",
+      "live": "直播中",
+      "startedAgo": "{minutes}分钟前开始",
+      "endsAt": "{time}结束",
+      "tapToJoin": "点击参与"
+    },
+    "comingUp": {
+      "title": "即将到来"
+    }
   },
   "auth": {
     "welcomeTitle": "欢迎来到 ĐàLạt.app",

@@ -92,8 +92,18 @@
       "viewAll": "\"{query}\"에 대한 모든 결과 보기",
       "searchFor": "\"{query}\" 검색"
     },
-    "browseArchive": "아카이브 보기",
-    "seeAllUpcoming": "예정된 모든 이벤트 보기"
+    "browseArchive": "지난 이벤트 보기",
+    "seeAllUpcoming": "예정된 모든 이벤트 보기",
+    "happeningNow": {
+      "title": "지금 진행 중",
+      "live": "실시간",
+      "startedAgo": "{minutes}분 전 시작",
+      "endsAt": "{time}에 종료",
+      "tapToJoin": "탭하여 참여하기"
+    },
+    "comingUp": {
+      "title": "다가오는 이벤트"
+    }
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.app에 오신 것을 환영합니다",
