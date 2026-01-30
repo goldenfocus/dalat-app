@@ -135,8 +135,10 @@ export async function POST(request: Request) {
       const flipData = await fetchFlipEvent(url);
       if (!flipData) {
         return NextResponse.json(
-          { error: "Could not fetch Flip.vn event. Make sure the URL is a valid event page (e.g., flip.vn/events/event-name-12345)." },
-          { status: 404 }
+          {
+            error: "Could not import Flip.vn event. Multi-showtime events (showing 'Nhiều khung giờ') are not yet supported because dates are loaded dynamically. Try importing a single-date event instead.",
+          },
+          { status: 400 }
         );
       }
       items = [flipData];

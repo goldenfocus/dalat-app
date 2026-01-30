@@ -80,7 +80,12 @@ export async function fetchFlipEvent(eventUrl: string): Promise<FlipEvent | null
     const parsed = parseFlipDescription(rawDescription);
 
     if (!parsed.startDate) {
-      console.error("Flip: Could not parse date from description:", rawDescription);
+      // Check if this is a multi-showtime event (no single date)
+      if (rawDescription?.includes("Nhiều khung giờ")) {
+        console.error("Flip: Multi-showtime event - dates loaded dynamically, cannot import:", eventUrl);
+      } else {
+        console.error("Flip: Could not parse date from description:", rawDescription);
+      }
       return null;
     }
 
