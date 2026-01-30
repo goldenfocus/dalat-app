@@ -859,7 +859,6 @@ export function EventForm({
                 name="time"
                 type="time"
                 defaultValue={defaults.time}
-                required
               />
             </div>
           </div>
