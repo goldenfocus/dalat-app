@@ -22,6 +22,7 @@ import { CommentsSection } from "@/components/comments";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { ExpandableMomentImage } from "@/components/moments/expandable-moment-image";
 import { MomentImagePreloader } from "@/components/moments/moment-image-preloader";
+import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { hasRoleLevel, type Moment, type Event, type Profile, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
@@ -382,13 +383,11 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
         {moment.content_type !== "text" && moment.media_url && (
           <div className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-6 group">
             {isVideo ? (
-              <video
+              <MomentVideoPlayer
                 key={moment.id}
                 src={moment.media_url}
-                className="w-full h-full object-contain"
-                controls
-                autoPlay
-                playsInline
+                hlsSrc={moment.cf_playback_url}
+                poster={moment.thumbnail_url}
               />
             ) : (
               <ExpandableMomentImage

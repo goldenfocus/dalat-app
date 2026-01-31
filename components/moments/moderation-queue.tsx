@@ -10,6 +10,7 @@ import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
 import type { MomentWithProfile } from "@/lib/types";
 
 interface ModerationQueueProps {
@@ -102,11 +103,10 @@ export function ModerationQueue({ moments: initialMoments }: ModerationQueueProp
               {moment.content_type !== "text" && moment.media_url && (
                 <div className="aspect-video bg-muted relative">
                   {isVideo ? (
-                    <video
-                      src={moment.media_url}
-                      className="w-full h-full object-contain"
-                      controls
-                      playsInline
+                    <MomentVideoPlayer
+                      src={moment.media_url!}
+                      hlsSrc={moment.cf_playback_url}
+                      poster={moment.thumbnail_url}
                     />
                   ) : (
                     <Image
