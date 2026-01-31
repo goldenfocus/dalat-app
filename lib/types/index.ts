@@ -33,8 +33,8 @@ export const LOCALE_NAMES: Record<ContentLocale, string> = {
 
 // Translation types
 export type TranslationStatus = 'auto' | 'reviewed' | 'edited';
-export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog' | 'venue' | 'comment';
-export type TranslationFieldName = 'title' | 'description' | 'text_content' | 'bio' | 'story_content' | 'technical_content' | 'meta_description';
+export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog' | 'venue' | 'comment' | 'organizer';
+export type TranslationFieldName = 'title' | 'description' | 'text_content' | 'bio' | 'story_content' | 'technical_content' | 'meta_description' | 'image_alt' | 'image_description';
 
 // Event pricing types
 export type PriceType = 'free' | 'paid' | 'donation';
@@ -1100,6 +1100,28 @@ export interface MutedThread {
   user_id: string;
   thread_id: string;
   muted_at: string;
+}
+
+// ============================================
+// Image Version Types (AI-generated image history)
+// ============================================
+
+export type ImageVersionContentType = 'event' | 'blog' | 'profile' | 'venue' | 'organizer';
+export type ImageVersionFieldName = 'cover_image' | 'avatar' | 'logo';
+
+export interface ImageVersion {
+  id: string;
+  content_type: ImageVersionContentType;
+  content_id: string;
+  field_name: ImageVersionFieldName;
+  image_url: string;
+  alt: string | null;
+  description: string | null;
+  keywords: string[] | null;
+  colors: string[] | null;
+  generation_prompt: string | null;
+  created_at: string;
+  created_by: string | null;
 }
 
 // ============================================

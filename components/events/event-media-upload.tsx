@@ -36,6 +36,7 @@ import {
 } from "@/lib/media-utils";
 import { convertIfNeeded } from "@/lib/media-conversion";
 import { DisintegrationEffect } from "@/components/ui/disintegration-effect";
+import { ImageVersionHistory } from "@/components/ui/image-version-history";
 
 interface EventMediaUploadProps {
   eventId: string;
@@ -1021,6 +1022,22 @@ export function EventMediaUpload({
                 </Button>
               </div>
             )}
+
+            {/* Version history - restore previous AI-generated images */}
+            <ImageVersionHistory
+              contentType={aiContext === "venue-cover" ? "venue" : "event"}
+              contentId={eventId}
+              fieldName="cover_image"
+              currentImageUrl={previewUrl}
+              onRestore={(url) => {
+                onMediaChange(url);
+                // Also auto-save if enabled
+                if (autoSave) {
+                  saveToDatabase(url);
+                }
+              }}
+              disabled={isLoading}
+            />
           </>
         )}
       </div>

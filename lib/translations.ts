@@ -48,12 +48,13 @@ export async function getTranslations(
 
 /**
  * Fetch translations with fallback chain
+ * Accepts partial record - only pass the fields you need translated
  */
 export async function getTranslationsWithFallback(
   contentType: TranslationContentType,
   contentId: string,
   targetLocale: ContentLocale,
-  fallbackFields: Record<TranslationFieldName, string | null>
+  fallbackFields: Partial<Record<TranslationFieldName, string | null>>
 ): Promise<Record<string, string | null>> {
   // Try requested locale first
   const translations = await getTranslations(contentType, contentId, targetLocale);

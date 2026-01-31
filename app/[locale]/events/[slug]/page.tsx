@@ -435,6 +435,8 @@ async function canUserPostMoment(eventId: string, userId: string | null, creator
 interface EventTranslations {
   title: string;
   description: string | null;
+  imageAlt: string | null;
+  imageDescription: string | null;
   originalTitle: string;
   originalDescription: string | null;
   isTranslated: boolean;
@@ -445,6 +447,8 @@ async function getEventTranslations(
   eventId: string,
   originalTitle: string,
   originalDescription: string | null,
+  originalImageAlt: string | null,
+  originalImageDescription: string | null,
   sourceLocale: string | null,
   locale: string
 ): Promise<EventTranslations> {
@@ -453,6 +457,8 @@ async function getEventTranslations(
     return {
       title: originalTitle,
       description: originalDescription,
+      imageAlt: originalImageAlt,
+      imageDescription: originalImageDescription,
       originalTitle,
       originalDescription,
       isTranslated: false,
@@ -469,6 +475,8 @@ async function getEventTranslations(
     return {
       title: originalTitle,
       description: originalDescription,
+      imageAlt: originalImageAlt,
+      imageDescription: originalImageDescription,
       originalTitle,
       originalDescription,
       isTranslated: false,
@@ -488,15 +496,21 @@ async function getEventTranslations(
       story_content: null,
       technical_content: null,
       meta_description: null,
+      image_alt: originalImageAlt,
+      image_description: originalImageDescription,
     }
   );
 
   const translatedTitle = translations.title || originalTitle;
   const translatedDescription = translations.description ?? originalDescription;
+  const translatedImageAlt = translations.image_alt ?? originalImageAlt;
+  const translatedImageDescription = translations.image_description ?? originalImageDescription;
 
   return {
     title: translatedTitle,
     description: translatedDescription,
+    imageAlt: translatedImageAlt,
+    imageDescription: translatedImageDescription,
     originalTitle,
     originalDescription,
     isTranslated: translatedTitle !== originalTitle || translatedDescription !== originalDescription,
@@ -549,7 +563,15 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getMomentCounts(event.id),
     canUserPostMoment(event.id, currentUserId, event.created_by),
     getEventSponsors(event.id),
-    getEventTranslations(event.id, event.title, event.description, event.source_locale, locale),
+    getEventTranslations(
+      event.id,
+      event.title,
+      event.description,
+      (event as Event & { image_alt?: string }).image_alt ?? null,
+      (event as Event & { image_description?: string }).image_description ?? null,
+      event.source_locale,
+      locale
+    ),
     getEventSettings(event.id),
     getEventMaterials(event.id),
   ]);
@@ -577,8 +599,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     return defaultEnd < now;
   })();
 
-  // Generate structured data for SEO and AEO
-  const eventSchema = generateEventSchema(event, locale, counts?.going_spots);
+  // Generate structured data for SEO and AEO (with translated image metadata)
+  const eventSchema = generateEventSchema(event, locale, counts?.going_spots, {
+    alt: eventTranslations.imageAlt,
+    description: eventTranslations.imageDescription,
+  });
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
@@ -654,9 +679,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
           <div className="lg:col-span-2 space-y-6">
             {/* Event image/video - clickable to view full */}
             {event.image_url ? (
-              <EventMediaDisplay src={event.image_url} alt={event.title} priority />
+              <EventMediaDisplay
+                src={event.image_url}
+                alt={eventTranslations.imageAlt || eventTranslations.title}
+                priority
+              />
             ) : (
-              <EventDefaultImage title={event.title} priority />
+              <EventDefaultImage title={eventTranslations.title} priority />
             )}
 
             {/* Title and description */}

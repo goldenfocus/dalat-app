@@ -11,7 +11,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
+import { ImageVersionHistory } from "@/components/ui/image-version-history";
 import { cn } from "@/lib/utils";
+import type { ImageVersionContentType, ImageVersionFieldName } from "@/lib/types";
 
 export type ImageContext = "event-cover" | "blog-cover" | "avatar" | "organizer-logo";
 
@@ -77,6 +79,25 @@ Important:
 - NO text or company name
 - Abstract/symbolic representation`,
 };
+
+// Map context to version tracking types
+function getVersionTypes(context: ImageContext): {
+  contentType: ImageVersionContentType;
+  fieldName: ImageVersionFieldName;
+} | null {
+  switch (context) {
+    case "event-cover":
+      return { contentType: "event", fieldName: "cover_image" };
+    case "blog-cover":
+      return { contentType: "blog", fieldName: "cover_image" };
+    case "avatar":
+      return { contentType: "profile", fieldName: "avatar" };
+    case "organizer-logo":
+      return { contentType: "organizer", fieldName: "logo" };
+    default:
+      return null;
+  }
+}
 
 export function AIImageGenerator({
   context,
@@ -342,6 +363,22 @@ export function AIImageGenerator({
           )}
         </>
       )}
+
+      {/* Version history - only show if entityId is provided */}
+      {entityId && currentImageUrl && (() => {
+        const versionTypes = getVersionTypes(context);
+        if (!versionTypes) return null;
+        return (
+          <ImageVersionHistory
+            contentType={versionTypes.contentType}
+            contentId={entityId}
+            fieldName={versionTypes.fieldName}
+            currentImageUrl={currentImageUrl}
+            onRestore={onImageChange}
+            disabled={disabled || isGenerating}
+          />
+        );
+      })()}
     </div>
   );
 }

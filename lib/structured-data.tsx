@@ -53,7 +53,8 @@ export function JsonLd({ data }: { data: object | object[] }) {
 export function generateEventSchema(
   event: Event & { profiles?: Profile; organizers?: Organizer | null },
   locale: string,
-  attendeeCount?: number
+  attendeeCount?: number,
+  imageMetadata?: { alt?: string | null; description?: string | null }
 ) {
   const eventUrl = `${SITE_URL}/${locale}/events/${event.slug}`;
 
@@ -106,9 +107,16 @@ export function generateEventSchema(
           },
         },
 
-    // Image
+    // Image - with structured metadata for AI search engines
     ...(event.image_url && {
-      image: [event.image_url],
+      image: imageMetadata?.alt || imageMetadata?.description
+        ? {
+            "@type": "ImageObject",
+            url: event.image_url,
+            ...(imageMetadata.alt && { name: imageMetadata.alt }),
+            ...(imageMetadata.description && { description: imageMetadata.description }),
+          }
+        : [event.image_url],
     }),
 
     // Organizer - use Organizer if available, otherwise fall back to creator profile

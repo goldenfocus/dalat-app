@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import {
   generateImageWithMetadata,
   refineImageWithMetadata,
   buildPrompt,
   PROMPT_TEMPLATES,
   type ImageContext,
+  type ImageMetadata,
 } from "@/lib/ai/image-generator";
+import { saveImageVersion } from "@/lib/image-versions";
+import { triggerTranslation } from "@/lib/translations-client";
+import type { ImageVersionContentType, ImageVersionFieldName, TranslationContentType } from "@/lib/types";
 
 // Image generation can take 60-120s (refinement involves: fetch, generate, metadata extraction, upload)
 export const maxDuration = 120;
@@ -14,6 +19,101 @@ export const maxDuration = 120;
 // Rate limiting config
 const RATE_LIMIT = 10; // requests per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+/**
+ * Map ImageContext to version tracking types
+ */
+function getVersionTypes(context: ImageContext): {
+  contentType: ImageVersionContentType;
+  fieldName: ImageVersionFieldName;
+} {
+  switch (context) {
+    case "event-cover":
+      return { contentType: "event", fieldName: "cover_image" };
+    case "blog-cover":
+      return { contentType: "blog", fieldName: "cover_image" };
+    case "avatar":
+      return { contentType: "profile", fieldName: "avatar" };
+    case "organizer-logo":
+      return { contentType: "organizer", fieldName: "logo" };
+    case "venue-logo":
+      return { contentType: "venue", fieldName: "logo" };
+    case "venue-cover":
+      return { contentType: "venue", fieldName: "cover_image" };
+    default:
+      return { contentType: "event", fieldName: "cover_image" };
+  }
+}
+
+/**
+ * Get Supabase admin client for updating parent tables
+ */
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Supabase credentials not configured");
+  return createAdminClient(url, key);
+}
+
+/**
+ * Save image metadata to the parent content table and trigger translations.
+ * This makes metadata discoverable by search engines.
+ */
+async function saveMetadataToParent(
+  context: ImageContext,
+  entityId: string,
+  imageUrl: string,
+  metadata: ImageMetadata
+): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const { contentType } = getVersionTypes(context);
+
+  // Map context to table and column names
+  const tableConfig: Record<string, { table: string; urlCol: string; altCol: string | null; descCol: string | null; keywordsCol: string | null; colorsCol: string | null }> = {
+    "event-cover": { table: "events", urlCol: "image_url", altCol: "image_alt", descCol: "image_description", keywordsCol: "image_keywords", colorsCol: "image_colors" },
+    "blog-cover": { table: "blog_posts", urlCol: "cover_image_url", altCol: "cover_image_alt", descCol: "cover_image_description", keywordsCol: "cover_image_keywords", colorsCol: "cover_image_colors" },
+    "venue-cover": { table: "venues", urlCol: "cover_photo_url", altCol: "cover_image_alt", descCol: "cover_image_description", keywordsCol: "cover_image_keywords", colorsCol: "cover_image_colors" },
+    "venue-logo": { table: "venues", urlCol: "logo_url", altCol: "logo_alt", descCol: "logo_description", keywordsCol: null, colorsCol: null },
+    "organizer-logo": { table: "organizers", urlCol: "logo_url", altCol: "logo_alt", descCol: "logo_description", keywordsCol: null, colorsCol: null },
+    "avatar": { table: "profiles", urlCol: "avatar_url", altCol: null, descCol: null, keywordsCol: null, colorsCol: null },
+  };
+
+  const config = tableConfig[context];
+  if (!config) return;
+
+  // Build update object with only non-null columns
+  const updateData: Record<string, unknown> = {
+    [config.urlCol]: imageUrl,
+  };
+  if (config.altCol) updateData[config.altCol] = metadata.alt;
+  if (config.descCol) updateData[config.descCol] = metadata.description;
+  if (config.keywordsCol) updateData[config.keywordsCol] = metadata.keywords;
+  if (config.colorsCol) updateData[config.colorsCol] = metadata.colors;
+
+  const { error } = await supabase
+    .from(config.table)
+    .update(updateData)
+    .eq("id", entityId);
+
+  if (error) {
+    console.error(`[generate-image] Failed to save metadata to ${config.table}:`, error);
+    return;
+  }
+
+  // Trigger translation for image metadata (fire-and-forget)
+  // This translates alt text and description to all 12 languages
+  const translationFields: { field_name: "image_alt" | "image_description"; text: string }[] = [];
+  if (metadata.alt) {
+    translationFields.push({ field_name: "image_alt", text: metadata.alt });
+  }
+  if (metadata.description) {
+    translationFields.push({ field_name: "image_description", text: metadata.description });
+  }
+
+  if (translationFields.length > 0) {
+    triggerTranslation(contentType as TranslationContentType, entityId, translationFields);
+  }
+}
 
 /**
  * Sanitize custom prompt to prevent prompt injection
@@ -104,6 +204,8 @@ export async function POST(request: Request) {
     }
 
     let imageUrl: string;
+    let metadata: ImageMetadata | undefined;
+    let generationPrompt: string;
 
     // Sanitize user-provided prompts to prevent injection
     const sanitizedCustomPrompt = sanitizePrompt(customPrompt);
@@ -121,6 +223,8 @@ export async function POST(request: Request) {
         imageMimeType,
       });
       imageUrl = result.url;
+      metadata = result.metadata;
+      generationPrompt = sanitizedRefinementPrompt;
     } else {
       // New generation mode - prefer template-based prompt over custom
       const prompt = sanitizedCustomPrompt || buildPrompt(context, title, content);
@@ -130,9 +234,38 @@ export async function POST(request: Request) {
         entityId,
       });
       imageUrl = result.url;
+      metadata = result.metadata;
+      generationPrompt = prompt;
     }
 
-    return NextResponse.json({ imageUrl });
+    // Save version to history and metadata to parent table if we have an entityId
+    if (entityId && metadata) {
+      const { contentType, fieldName } = getVersionTypes(context);
+
+      // Save version history
+      await saveImageVersion({
+        contentType,
+        contentId: entityId,
+        fieldName,
+        imageUrl,
+        metadata: {
+          alt: metadata.alt,
+          description: metadata.description,
+          keywords: metadata.keywords,
+          colors: metadata.colors,
+        },
+        generationPrompt,
+        createdBy: user.id,
+      });
+
+      // Save metadata to parent table and trigger translations (fire-and-forget)
+      // This makes the image metadata SEO-discoverable in all 12 languages
+      saveMetadataToParent(context, entityId, imageUrl, metadata).catch((err) => {
+        console.error("[generate-image] Failed to save parent metadata:", err);
+      });
+    }
+
+    return NextResponse.json({ imageUrl, metadata });
   } catch (error) {
     console.error("[api/ai/generate-image] Error:", error);
 
