@@ -306,28 +306,25 @@ export function RsvpButton({
     return (
       <>
         {celebrationPortal}
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Button
-              onClick={handleCancel}
-              disabled={isPending}
-              variant="outline"
-              className="flex-1 min-w-0"
-            >
-              {isPending ? "..." : t("cancelRsvp")}
-            </Button>
-            <Button
-              onClick={handleInterested}
-              disabled={isPending}
-              variant="ghost"
-              className="flex-1 min-w-0"
-            >
-              {isPending ? "..." : t("justInterested")}
-            </Button>
-          </div>
-          <p className="text-sm text-green-600 text-center">
+        <div className="space-y-3">
+          <p className="text-sm text-green-600 font-medium text-center">
             {t("youreGoing")}
           </p>
+          <Button
+            onClick={handleCancel}
+            disabled={isPending}
+            variant="outline"
+            className="w-full"
+          >
+            {isPending ? "..." : t("cancelRsvp")}
+          </Button>
+          <button
+            onClick={handleInterested}
+            disabled={isPending}
+            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+          >
+            {isPending ? "..." : t("justInterested")}
+          </button>
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
       </>
@@ -339,25 +336,7 @@ export function RsvpButton({
     return (
       <>
         {celebrationPortal}
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Button
-              onClick={handleCancel}
-              disabled={isPending}
-              variant="outline"
-              className="flex-1 min-w-0"
-            >
-              {isPending ? "..." : t("leaveWaitlist")}
-            </Button>
-            <Button
-              onClick={handleInterested}
-              disabled={isPending}
-              variant="ghost"
-              className="flex-1 min-w-0"
-            >
-              {isPending ? "..." : t("justInterested")}
-            </Button>
-          </div>
+        <div className="space-y-3">
           <div className="text-center space-y-1">
             <p className="text-sm text-orange-600 font-medium">
               {t("waitlistPosition", { position: waitlistPosition ?? 0 })}
@@ -366,6 +345,21 @@ export function RsvpButton({
               {t("waitlistAutoPromote")}
             </p>
           </div>
+          <Button
+            onClick={handleCancel}
+            disabled={isPending}
+            variant="outline"
+            className="w-full"
+          >
+            {isPending ? "..." : t("leaveWaitlist")}
+          </Button>
+          <button
+            onClick={handleInterested}
+            disabled={isPending}
+            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+          >
+            {isPending ? "..." : t("justInterested")}
+          </button>
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
       </>
@@ -377,55 +371,50 @@ export function RsvpButton({
     return (
       <>
         {celebrationPortal}
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Button
-              onClick={handleRsvp}
-              disabled={isPending}
-              className="flex-1 min-w-0"
-            >
-              {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
-            </Button>
-            <Button
-              onClick={handleCancel}
-              disabled={isPending}
-              variant="outline"
-              className="flex-1 min-w-0"
-            >
-              {isPending ? "..." : t("notInterested")}
-            </Button>
-          </div>
-          <p className="text-sm text-blue-600 text-center">
+        <div className="space-y-3">
+          <p className="text-sm text-blue-600 font-medium text-center">
             {t("youreInterested")}
           </p>
+          <Button
+            onClick={handleRsvp}
+            disabled={isPending}
+            className="w-full"
+          >
+            {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
+          </Button>
+          <button
+            onClick={handleCancel}
+            disabled={isPending}
+            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+          >
+            {isPending ? "..." : t("notInterested")}
+          </button>
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
       </>
     );
   }
 
-  // DEFAULT STATE: No RSVP - show side-by-side buttons
+  // DEFAULT STATE: No RSVP - stacked buttons with clear hierarchy
   return (
     <>
       {celebrationPortal}
-      <div className="space-y-2">
-        <div className="flex gap-2">
-          <Button
-            onClick={handleRsvp}
-            disabled={isPending}
-            className="flex-1 min-w-0"
-          >
-            {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
-          </Button>
-          <Button
-            onClick={handleInterested}
-            disabled={isPending}
-            variant="outline"
-            className="flex-1 min-w-0"
-          >
-            {isPending ? "..." : t("interested")}
-          </Button>
-        </div>
+      <div className="space-y-3">
+        <Button
+          onClick={handleRsvp}
+          disabled={isPending}
+          className="w-full"
+        >
+          {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
+        </Button>
+        <Button
+          onClick={handleInterested}
+          disabled={isPending}
+          variant="outline"
+          className="w-full"
+        >
+          {isPending ? "..." : t("interested")}
+        </Button>
         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
       </div>
     </>
