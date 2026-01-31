@@ -4,6 +4,7 @@ import {
   verifyWebhookSignature,
   getVODPlaybackUrl,
   getVideoDetails,
+  getVideoThumbnailUrl,
   type CloudflareWebhookEvent,
 } from '@/lib/cloudflare-stream';
 
@@ -80,19 +81,25 @@ export async function POST(request: Request) {
             // Get video details for duration
             const videoDetails = await getVideoDetails(videoUid);
             const playbackUrl = getVODPlaybackUrl(videoUid);
+            const thumbnailUrl = getVideoThumbnailUrl(videoUid, { width: 480 });
 
-            // Update moment using the RPC function
-            const { data, error } = await supabase.rpc('update_moment_video_status', {
-              p_cf_video_uid: videoUid,
-              p_video_status: 'ready',
-              p_cf_playback_url: playbackUrl,
-              p_video_duration_seconds: videoDetails.duration ?? null,
-            });
+            // Update moment with all video metadata including thumbnail
+            const { data, error } = await supabase
+              .from('moments')
+              .update({
+                video_status: 'ready',
+                cf_playback_url: playbackUrl,
+                thumbnail_url: thumbnailUrl,
+                video_duration_seconds: videoDetails.duration ?? null,
+              })
+              .eq('cf_video_uid', videoUid)
+              .select('id')
+              .single();
 
             if (error) {
               console.error('Failed to update moment video status:', error);
             } else if (data) {
-              console.log('Updated moment:', data, 'to ready status');
+              console.log('Updated moment:', data.id, 'to ready status with thumbnail');
             } else {
               // No moment found with this video UID - might be a live recording
               console.log('No moment found for video UID:', videoUid);
