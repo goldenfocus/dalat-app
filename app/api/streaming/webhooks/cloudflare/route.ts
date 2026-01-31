@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import {
   verifyWebhookSignature,
-  getVODPlaybackUrl,
   getVideoDetails,
-  getVideoThumbnailUrl,
   type CloudflareWebhookEvent,
 } from '@/lib/cloudflare-stream';
 
@@ -78,10 +76,17 @@ export async function POST(request: Request) {
           console.log('VOD video ready:', videoUid);
 
           try {
-            // Get video details for duration
+            // Get video details - includes correct playback URLs from Cloudflare
             const videoDetails = await getVideoDetails(videoUid);
-            const playbackUrl = getVODPlaybackUrl(videoUid);
-            const thumbnailUrl = getVideoThumbnailUrl(videoUid, { width: 480 });
+
+            // Use URLs directly from Cloudflare API (not constructed)
+            const playbackUrl = videoDetails.playback?.hls;
+            const thumbnailUrl = videoDetails.thumbnail;
+
+            if (!playbackUrl) {
+              console.error('No playback URL in video details:', videoUid);
+              return NextResponse.json({ error: 'No playback URL' }, { status: 500 });
+            }
 
             // Update moment with all video metadata including thumbnail
             const { data, error } = await supabase
@@ -89,7 +94,7 @@ export async function POST(request: Request) {
               .update({
                 video_status: 'ready',
                 cf_playback_url: playbackUrl,
-                thumbnail_url: thumbnailUrl,
+                thumbnail_url: thumbnailUrl ?? null,
                 video_duration_seconds: videoDetails.duration ?? null,
               })
               .eq('cf_video_uid', videoUid)

@@ -4,7 +4,7 @@
  * Run with: npx tsx scripts/migrate-videos-to-cloudflare.ts
  *
  * This script:
- * 1. Backfills thumbnail URLs for videos already on Cloudflare Stream
+ * 1. Fixes playback URLs for videos already on Cloudflare (fetches correct URLs from API)
  * 2. Migrates remaining videos from Supabase Storage to Cloudflare Stream
  */
 
@@ -25,12 +25,34 @@ if (!supabaseUrl || !supabaseKey || !cfAccountId || !cfApiToken) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-function getVideoThumbnailUrl(videoUid: string): string {
-  return `https://customer-${cfAccountId}.cloudflarestream.com/${videoUid}/thumbnails/thumbnail.jpg?width=480`;
+interface VideoDetails {
+  playback?: { hls: string; dash: string };
+  thumbnail?: string;
+  duration?: number;
+  status?: { state: string };
 }
 
-function getVODPlaybackUrl(videoUid: string): string {
-  return `https://customer-${cfAccountId}.cloudflarestream.com/${videoUid}/manifest/video.m3u8`;
+async function getVideoDetails(videoUid: string): Promise<VideoDetails | null> {
+  try {
+    const response = await fetch(
+      `${CLOUDFLARE_API_BASE}/accounts/${cfAccountId}/stream/${videoUid}`,
+      {
+        headers: {
+          Authorization: `Bearer ${cfApiToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    const data = await response.json();
+    if (!data.success) {
+      console.error(`  API error for ${videoUid}:`, data.errors?.[0]?.message);
+      return null;
+    }
+    return data.result;
+  } catch (err) {
+    console.error(`  Failed to fetch details for ${videoUid}:`, err);
+    return null;
+  }
 }
 
 async function cloudflareRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -61,16 +83,15 @@ async function createDirectUpload(): Promise<{ uid: string; uploadURL: string }>
   });
 }
 
-async function backfillThumbnails() {
-  console.log('\n📸 STEP 1: Backfilling thumbnail URLs for existing CF videos...\n');
+async function fixCloudflareUrls() {
+  console.log('\n🔧 STEP 1: Fixing Cloudflare playback URLs (fetching correct URLs from API)...\n');
 
-  // Get videos with cf_video_uid but no thumbnail
+  // Get ALL videos with cf_video_uid
   const { data: moments, error } = await supabase
     .from('moments')
-    .select('id, cf_video_uid')
+    .select('id, cf_video_uid, cf_playback_url')
     .eq('content_type', 'video')
-    .not('cf_video_uid', 'is', null)
-    .is('thumbnail_url', null);
+    .not('cf_video_uid', 'is', null);
 
   if (error) {
     console.error('Error fetching moments:', error);
@@ -78,28 +99,63 @@ async function backfillThumbnails() {
   }
 
   if (!moments || moments.length === 0) {
-    console.log('✅ No videos need thumbnail backfill');
+    console.log('✅ No Cloudflare videos found');
     return;
   }
 
-  console.log(`Found ${moments.length} videos needing thumbnail backfill`);
+  console.log(`Found ${moments.length} Cloudflare videos to verify/fix`);
 
-  let updated = 0;
+  let fixed = 0;
+  let alreadyCorrect = 0;
+  let failed = 0;
+
   for (const moment of moments) {
-    const thumbnailUrl = getVideoThumbnailUrl(moment.cf_video_uid!);
-    const { error: updateError } = await supabase
-      .from('moments')
-      .update({ thumbnail_url: thumbnailUrl })
-      .eq('id', moment.id);
+    try {
+      // Fetch correct URLs from Cloudflare API
+      const details = await getVideoDetails(moment.cf_video_uid!);
 
-    if (updateError) {
-      console.error(`  ❌ Failed ${moment.id}:`, updateError.message);
-    } else {
-      updated++;
-      process.stdout.write(`\r  ✅ Updated ${updated}/${moments.length}`);
+      if (!details || !details.playback?.hls) {
+        console.log(`  ⚠️  ${moment.id}: Video not found or not ready on Cloudflare`);
+        failed++;
+        continue;
+      }
+
+      const correctPlaybackUrl = details.playback.hls;
+      const correctThumbnailUrl = details.thumbnail;
+
+      // Check if already correct
+      if (moment.cf_playback_url === correctPlaybackUrl) {
+        alreadyCorrect++;
+        continue;
+      }
+
+      // Update with correct URLs
+      const { error: updateError } = await supabase
+        .from('moments')
+        .update({
+          cf_playback_url: correctPlaybackUrl,
+          thumbnail_url: correctThumbnailUrl,
+          video_duration_seconds: details.duration ?? null,
+        })
+        .eq('id', moment.id);
+
+      if (updateError) {
+        console.error(`  ❌ Failed ${moment.id}:`, updateError.message);
+        failed++;
+      } else {
+        fixed++;
+        process.stdout.write(`\r  ✅ Fixed ${fixed} URLs...`);
+      }
+
+      // Rate limit
+      await new Promise((r) => setTimeout(r, 100));
+    } catch (err) {
+      console.error(`  ❌ Error for ${moment.id}:`, err);
+      failed++;
     }
   }
-  console.log(`\n✅ Backfilled ${updated} thumbnails`);
+
+  console.log(`\n\n✅ Fixed: ${fixed}, Already correct: ${alreadyCorrect}, Failed: ${failed}`);
 }
 
 async function migrateVideos() {
@@ -112,7 +168,7 @@ async function migrateVideos() {
     .eq('content_type', 'video')
     .not('media_url', 'is', null)
     .is('cf_video_uid', null)
-    .limit(100); // Process in batches
+    .limit(100);
 
   if (error) {
     console.error('Error fetching moments:', error);
@@ -157,17 +213,22 @@ async function migrateVideos() {
         throw new Error(`CF upload failed: ${uploadResponse.status}`);
       }
 
-      // Update moment with CF info (thumbnail will be set by webhook when ready)
-      const playbackUrl = getVODPlaybackUrl(videoUid);
-      const thumbnailUrl = getVideoThumbnailUrl(videoUid);
+      // Wait a moment for Cloudflare to process
+      await new Promise((r) => setTimeout(r, 2000));
 
+      // Fetch correct URLs from Cloudflare
+      const details = await getVideoDetails(videoUid);
+      const playbackUrl = details?.playback?.hls;
+      const thumbnailUrl = details?.thumbnail;
+
+      // Update moment with CF info
       const { error: updateError } = await supabase
         .from('moments')
         .update({
           cf_video_uid: videoUid,
-          cf_playback_url: playbackUrl,
-          thumbnail_url: thumbnailUrl, // Set immediately - CF generates on first request
-          video_status: 'processing',
+          cf_playback_url: playbackUrl || null,
+          thumbnail_url: thumbnailUrl || null,
+          video_status: details?.status?.state === 'ready' ? 'ready' : 'processing',
         })
         .eq('id', moment.id);
 
@@ -182,7 +243,7 @@ async function migrateVideos() {
       failed++;
     }
 
-    // Rate limit - don't hammer the APIs
+    // Rate limit
     await new Promise((r) => setTimeout(r, 500));
   }
 
@@ -203,11 +264,11 @@ async function showStats() {
     .eq('content_type', 'video')
     .not('cf_video_uid', 'is', null);
 
-  const { count: hasThumb } = await supabase
+  const { count: hasPlaybackUrl } = await supabase
     .from('moments')
     .select('id', { count: 'exact', head: true })
     .eq('content_type', 'video')
-    .not('thumbnail_url', 'is', null);
+    .not('cf_playback_url', 'is', null);
 
   const { count: needsMigration } = await supabase
     .from('moments')
@@ -218,7 +279,7 @@ async function showStats() {
 
   console.log(`  Total videos:        ${total ?? 0}`);
   console.log(`  On Cloudflare:       ${onCf ?? 0}`);
-  console.log(`  Has thumbnail:       ${hasThumb ?? 0}`);
+  console.log(`  Has playback URL:    ${hasPlaybackUrl ?? 0}`);
   console.log(`  Needs migration:     ${needsMigration ?? 0}`);
 }
 
@@ -227,7 +288,7 @@ async function main() {
   console.log('========================================');
 
   await showStats();
-  await backfillThumbnails();
+  await fixCloudflareUrls();
   await migrateVideos();
   await showStats();
 
