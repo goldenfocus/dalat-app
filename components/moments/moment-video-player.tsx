@@ -23,21 +23,30 @@ export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProp
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<InstanceType<typeof import("hls.js").default> | null>(null);
   const [useNativeHls, setUseNativeHls] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   const isHlsUrl = hlsSrc?.includes(".m3u8");
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !hlsSrc || !isHlsUrl) return;
+    if (!video) return;
+
+    // No HLS URL - use direct MP4
+    if (!hlsSrc || !isHlsUrl) {
+      video.src = src;
+      setIsReady(true);
+      return;
+    }
 
     // Safari can play HLS natively
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       setUseNativeHls(true);
       video.src = hlsSrc;
+      setIsReady(true);
       return;
     }
 
-    // Use HLS.js for other browsers
+    // Use HLS.js for other browsers (Chrome, Firefox, etc.)
     let mounted = true;
 
     import("hls.js").then(({ default: Hls }) => {
@@ -47,26 +56,47 @@ export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProp
         const hls = new Hls({
           lowLatencyMode: false,
           startLevel: -1, // Auto quality selection
+          backBufferLength: 60,
         });
 
         hlsRef.current = hls;
         hls.loadSource(hlsSrc);
         hls.attachMedia(video);
 
+        // HLS.js needs manifest parsed before video can play
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          setIsReady(true);
+          // Autoplay - muted to comply with browser autoplay policies
+          video.muted = true;
+          video.play().catch(() => {
+            // Autoplay blocked - user will need to click play
+            console.log("[MomentVideoPlayer] Autoplay blocked");
+          });
+        });
+
         hls.on(Hls.Events.ERROR, (_, data) => {
           if (data.fatal) {
             console.error("[MomentVideoPlayer] HLS error, falling back to MP4:", data);
-            hls.destroy();
-            hlsRef.current = null;
-            // Fallback to direct MP4
-            if (videoRef.current) {
-              videoRef.current.src = src;
+            // Try to recover first
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              hls.startLoad();
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hls.recoverMediaError();
+            } else {
+              // Can't recover - fallback to MP4
+              hls.destroy();
+              hlsRef.current = null;
+              if (videoRef.current) {
+                videoRef.current.src = src;
+                setIsReady(true);
+              }
             }
           }
         });
       } else {
         // HLS.js not supported, use direct MP4
         video.src = src;
+        setIsReady(true);
       }
     });
 
@@ -79,20 +109,16 @@ export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProp
     };
   }, [hlsSrc, isHlsUrl, src]);
 
-  // Determine the src for the video element
-  // - If using native HLS (Safari) or HLS.js, don't set src (handled in useEffect)
-  // - If no HLS URL, use the direct MP4 src
-  const videoSrc = !hlsSrc || !isHlsUrl ? src : (useNativeHls ? hlsSrc : undefined);
-
   return (
     <video
       ref={videoRef}
-      src={videoSrc}
       poster={poster || undefined}
       className="w-full h-full object-contain"
       controls
-      autoPlay
+      muted // Required for autoplay
       playsInline
+      // Only set autoPlay for non-HLS (HLS.js handles play after manifest parse)
+      autoPlay={!isHlsUrl || useNativeHls}
     />
   );
 }
