@@ -728,8 +728,14 @@
     "claimBanner": {
       "title": "이것이 당신의 조직인가요?",
       "description": "이 주최자 프로필에는 {count}개의 이벤트가 있지만 아직 소유권 주장이 되지 않았습니다. {name}을(를) 대표하시는 경우 이 프로필을 관리하기 위해 소유권을 주장할 수 있습니다.",
-      "button": "이 프로필 소유권 주장",
-      "unclaimed": "미소유"
+      "button": "소유권 요청",
+      "unclaimed": "미소유",
+      "messagePlaceholder": "이 조직과의 관계를 알려주세요 (선택사항)",
+      "submitRequest": "요청 보내기",
+      "cancel": "취소",
+      "successTitle": "요청이 전송되었습니다!",
+      "successDescription": "요청을 검토하고 이메일로 연락드리겠습니다.",
+      "error": "문제가 발생했습니다. 다시 시도해 주세요."
     },
     "eventsHosted": "{count}개 이벤트"
   },
@@ -1323,7 +1329,9 @@
     "doneFocalPoint": "완료",
     "clickToSetFocalPoint": "클릭하여 초점 설정",
     "imageFitFill": "채우기 (자르기)",
-    "imageFitContain": "맞추기 (전체 표시)"
+    "imageFitContain": "맞추기 (전체 표시)",
+    "imageChanged": "이미지가 변경됨",
+    "undo": "실행 취소"
   },
   "archive": {
     "events": "이벤트",

@@ -728,8 +728,14 @@
     "claimBanner": {
       "title": "Ini organisasi Anda?",
       "description": "Profil penyelenggara ini memiliki {count} acara tetapi belum diklaim. Jika Anda mewakili {name}, Anda dapat mengklaim profil ini untuk mengelolanya.",
-      "button": "Klaim Profil Ini",
-      "unclaimed": "Belum Diklaim"
+      "button": "Minta untuk Klaim",
+      "unclaimed": "Belum Diklaim",
+      "messagePlaceholder": "Ceritakan hubungan Anda dengan organisasi ini (opsional)",
+      "submitRequest": "Kirim Permintaan",
+      "cancel": "Batal",
+      "successTitle": "Permintaan Terkirim!",
+      "successDescription": "Kami akan meninjau permintaan Anda dan menghubungi melalui email.",
+      "error": "Terjadi kesalahan. Silakan coba lagi."
     },
     "eventsHosted": "{count} acara"
   },
@@ -1342,7 +1348,9 @@
     "doneFocalPoint": "Selesai",
     "clickToSetFocalPoint": "Klik untuk mengatur titik fokus",
     "imageFitFill": "Isi (potong)",
-    "imageFitContain": "Muat (tampilkan semua)"
+    "imageFitContain": "Muat (tampilkan semua)",
+    "imageChanged": "Gambar berubah",
+    "undo": "Batalkan"
   },
   "archive": {
     "events": "Acara",

@@ -742,8 +742,14 @@
     "claimBanner": {
       "title": "Est-ce votre organisation ?",
       "description": "Ce profil d'organisateur a {count} événement(s) mais n'est pas encore revendiqué. Si vous représentez {name}, vous pouvez revendiquer ce profil pour le gérer.",
-      "button": "Revendiquer ce profil",
-      "unclaimed": "Non revendiqué"
+      "button": "Demander à revendiquer",
+      "unclaimed": "Non revendiqué",
+      "messagePlaceholder": "Dites-nous comment vous êtes lié à cette organisation (facultatif)",
+      "submitRequest": "Envoyer la demande",
+      "cancel": "Annuler",
+      "successTitle": "Demande envoyée !",
+      "successDescription": "Nous examinerons votre demande et vous répondrons par e-mail.",
+      "error": "Une erreur s'est produite. Veuillez réessayer."
     },
     "eventsHosted": "{count} événements"
   },
@@ -1337,7 +1343,9 @@
     "doneFocalPoint": "Terminé",
     "clickToSetFocalPoint": "Cliquez pour définir le point focal",
     "imageFitFill": "Remplir (recadrer)",
-    "imageFitContain": "Ajuster (tout afficher)"
+    "imageFitContain": "Ajuster (tout afficher)",
+    "imageChanged": "Image modifiée",
+    "undo": "Annuler"
   },
   "archive": {
     "events": "Événements",

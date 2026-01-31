@@ -728,8 +728,14 @@
     "claimBanner": {
       "title": "¿Es esta tu organización?",
       "description": "Este perfil de organizador tiene {count} evento(s) pero aún no ha sido reclamado. Si representas a {name}, puedes reclamar este perfil para gestionarlo.",
-      "button": "Reclamar este perfil",
-      "unclaimed": "Sin reclamar"
+      "button": "Solicitar reclamación",
+      "unclaimed": "Sin reclamar",
+      "messagePlaceholder": "Cuéntanos cómo estás relacionado con esta organización (opcional)",
+      "submitRequest": "Enviar solicitud",
+      "cancel": "Cancelar",
+      "successTitle": "¡Solicitud enviada!",
+      "successDescription": "Revisaremos tu solicitud y te contactaremos por correo electrónico.",
+      "error": "Algo salió mal. Por favor intenta de nuevo."
     },
     "eventsHosted": "{count} eventos"
   },
@@ -1342,7 +1348,9 @@
     "doneFocalPoint": "Listo",
     "clickToSetFocalPoint": "Haz clic para establecer el punto focal",
     "imageFitFill": "Llenar (recortar)",
-    "imageFitContain": "Ajustar (mostrar todo)"
+    "imageFitContain": "Ajustar (mostrar todo)",
+    "imageChanged": "Imagen modificada",
+    "undo": "Deshacer"
   },
   "archive": {
     "events": "Eventos",

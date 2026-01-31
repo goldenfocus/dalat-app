@@ -728,8 +728,14 @@
     "claimBanner": {
       "title": "これはあなたの組織ですか？",
       "description": "この主催者プロフィールには{count}件のイベントがありますが、まだ取得されていません。{name}の代表者であれば、このプロフィールを取得して管理できます。",
-      "button": "このプロフィールを取得",
-      "unclaimed": "未取得"
+      "button": "取得をリクエスト",
+      "unclaimed": "未取得",
+      "messagePlaceholder": "この組織とのつながりを教えてください（任意）",
+      "submitRequest": "リクエストを送信",
+      "cancel": "キャンセル",
+      "successTitle": "リクエストを送信しました！",
+      "successDescription": "リクエストを確認し、メールでご連絡いたします。",
+      "error": "エラーが発生しました。もう一度お試しください。"
     },
     "eventsHosted": "{count}件のイベント"
   },
@@ -1323,7 +1329,9 @@
     "doneFocalPoint": "完了",
     "clickToSetFocalPoint": "クリックして焦点を設定",
     "imageFitFill": "埋める（切り抜き）",
-    "imageFitContain": "収める（全体表示）"
+    "imageFitContain": "収める（全体表示）",
+    "imageChanged": "画像が変更されました",
+    "undo": "元に戻す"
   },
   "archive": {
     "events": "イベント",

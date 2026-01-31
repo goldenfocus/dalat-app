@@ -728,8 +728,14 @@
     "claimBanner": {
       "title": "Đây có phải tổ chức của bạn?",
       "description": "Hồ sơ tổ chức này có {count} sự kiện nhưng chưa được nhận quyền quản lý. Nếu bạn đại diện cho {name}, bạn có thể nhận hồ sơ này.",
-      "button": "Nhận hồ sơ này",
-      "unclaimed": "Chưa nhận"
+      "button": "Yêu cầu nhận quyền",
+      "unclaimed": "Chưa nhận",
+      "messagePlaceholder": "Cho chúng tôi biết bạn liên quan đến tổ chức này như thế nào (không bắt buộc)",
+      "submitRequest": "Gửi yêu cầu",
+      "cancel": "Hủy",
+      "successTitle": "Đã gửi yêu cầu!",
+      "successDescription": "Chúng tôi sẽ xem xét yêu cầu và phản hồi qua email.",
+      "error": "Đã xảy ra lỗi. Vui lòng thử lại."
     },
     "eventsHosted": "{count} sự kiện"
   },
@@ -1323,7 +1329,9 @@
     "doneFocalPoint": "Xong",
     "clickToSetFocalPoint": "Nhấn để đặt điểm lấy nét",
     "imageFitFill": "Lấp đầy (cắt vừa khung)",
-    "imageFitContain": "Vừa khung (hiện toàn bộ)"
+    "imageFitContain": "Vừa khung (hiện toàn bộ)",
+    "imageChanged": "Hình ảnh đã thay đổi",
+    "undo": "Hoàn tác"
   },
   "search": {
     "title": "Sự kiện {query} tại Đà Lạt",

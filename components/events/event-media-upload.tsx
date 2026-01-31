@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
   ImageIcon,
   X,
@@ -13,6 +13,8 @@ import {
   ChevronDown,
   ChevronUp,
   Move,
+  Undo2,
+  History,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -210,6 +212,16 @@ export function EventMediaUpload({
   // Focal point editing state
   const [isEditingFocalPoint, setIsEditingFocalPoint] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Undo state - tracks the previous image URL after AI generation
+  const [undoState, setUndoState] = useState<{
+    previousUrl: string | null;
+    timestamp: number;
+  } | null>(null);
+  const undoTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Version count for the badge
+  const [versionCount, setVersionCount] = useState<number>(0);
 
   const uploadMedia = async (file: File) => {
     setError(null);
@@ -455,6 +467,9 @@ export function EventMediaUpload({
     setError(null);
     setIsGenerating(true);
 
+    // Capture previous URL for undo
+    const previousUrl = previewUrl;
+
     try {
       const response = await fetch("/api/ai/generate-image", {
         method: "POST",
@@ -488,6 +503,11 @@ export function EventMediaUpload({
       setPreviewIsVideo(false);
       await handleMediaUpdate(data.imageUrl);
       setShowPromptEditor(false);
+
+      // Show undo notification (only if there was a previous image)
+      if (previousUrl) {
+        startUndoTimer(previousUrl);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t("generationFailed"));
     } finally {
@@ -556,6 +576,9 @@ export function EventMediaUpload({
     setError(null);
     setIsGenerating(true);
 
+    // Capture previous URL for undo
+    const previousUrl = previewUrl;
+
     try {
       // Try to fetch image as base64 client-side (works for external URLs like Facebook)
       const imageData = await fetchImageAsBase64(previewUrl);
@@ -606,6 +629,9 @@ export function EventMediaUpload({
       await handleMediaUpdate(data.imageUrl);
       setRefinementPrompt("");
       setShowRefinement(false);
+
+      // Show undo notification
+      startUndoTimer(previousUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("generationFailed"));
     } finally {
@@ -644,6 +670,85 @@ export function EventMediaUpload({
   };
 
   const focalPointCoords = parseFocalPoint(focalPoint);
+
+  // Undo handler - restores previous image
+  const handleUndo = useCallback(async () => {
+    if (!undoState) return;
+
+    // Clear the undo timer
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = null;
+    }
+
+    // Restore the previous URL
+    setPreviewUrl(undoState.previousUrl);
+    setPreviewIsVideo(false);
+    onMediaChange(undoState.previousUrl);
+    if (autoSave && undoState.previousUrl !== null) {
+      await saveToDatabase(undoState.previousUrl);
+    }
+
+    // Clear undo state
+    setUndoState(null);
+  }, [undoState, onMediaChange, autoSave]);
+
+  // Start undo timer (auto-dismiss after 8 seconds)
+  const startUndoTimer = useCallback((previousUrl: string | null) => {
+    // Clear any existing timer
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+    }
+
+    setUndoState({ previousUrl, timestamp: Date.now() });
+
+    // Auto-dismiss after 8 seconds
+    undoTimerRef.current = setTimeout(() => {
+      setUndoState(null);
+      undoTimerRef.current = null;
+    }, 8000);
+  }, []);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Fetch version count when image exists
+  useEffect(() => {
+    if (!eventId || !previewUrl) {
+      setVersionCount(0);
+      return;
+    }
+
+    const fetchVersionCount = async () => {
+      try {
+        const contentType = aiContext === "venue-cover" ? "venue" : "event";
+        const params = new URLSearchParams({
+          contentType,
+          contentId: eventId,
+          fieldName: "cover_image",
+        });
+        const res = await fetch(`/api/image-versions?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Filter out current version
+          const historicalCount = (data.versions || []).filter(
+            (v: { image_url: string }) => v.image_url !== previewUrl
+          ).length;
+          setVersionCount(historicalCount);
+        }
+      } catch {
+        // Silently fail - badge is not critical
+      }
+    };
+
+    fetchVersionCount();
+  }, [eventId, previewUrl, aiContext]);
 
   return (
     <div className="space-y-3">
@@ -752,6 +857,16 @@ export function EventMediaUpload({
                 <Move className="w-4 h-4" />
               </button>
             )}
+            {/* Version count badge */}
+            {versionCount > 0 && (
+              <div
+                className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500/90 text-white text-xs font-medium cursor-default"
+                title={`${versionCount} previous version${versionCount > 1 ? "s" : ""}`}
+              >
+                <History className="w-3 h-3" />
+                {versionCount}
+              </div>
+            )}
           </div>
         )}
         {/* Remove button on image */}
@@ -799,6 +914,24 @@ export function EventMediaUpload({
           />
         )}
       </div>
+
+      {/* Undo notification - shows after AI generation/refinement */}
+      {undoState && (
+        <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30 animate-in slide-in-from-top-2 duration-200">
+          <span className="text-sm text-amber-200 flex items-center gap-2">
+            <Sparkles className="w-4 h-4" />
+            {t("imageChanged")}
+          </span>
+          <button
+            type="button"
+            onClick={handleUndo}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-sm font-medium transition-colors"
+          >
+            <Undo2 className="w-4 h-4" />
+            {t("undo")}
+          </button>
+        </div>
+      )}
 
       {/* Actions - conditionally show editors or buttons */}
       <div className="space-y-3">

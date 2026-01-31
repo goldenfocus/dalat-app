@@ -728,8 +728,14 @@
     "claimBanner": {
       "title": "Ist das deine Organisation?",
       "description": "Dieses Veranstalterprofil hat {count} Event(s), wurde aber noch nicht beansprucht. Wenn du {name} vertrittst, kannst du dieses Profil beanspruchen, um es zu verwalten.",
-      "button": "Dieses Profil beanspruchen",
-      "unclaimed": "Nicht beansprucht"
+      "button": "Anfrage senden",
+      "unclaimed": "Nicht beansprucht",
+      "messagePlaceholder": "Erzähle uns, wie du mit dieser Organisation verbunden bist (optional)",
+      "submitRequest": "Anfrage senden",
+      "cancel": "Abbrechen",
+      "successTitle": "Anfrage gesendet!",
+      "successDescription": "Wir werden deine Anfrage prüfen und uns per E-Mail melden.",
+      "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
     },
     "eventsHosted": "{count} Events"
   },
@@ -1323,7 +1329,9 @@
     "doneFocalPoint": "Fertig",
     "clickToSetFocalPoint": "Klicken um Fokuspunkt zu setzen",
     "imageFitFill": "Füllen (zuschneiden)",
-    "imageFitContain": "Einpassen (alles zeigen)"
+    "imageFitContain": "Einpassen (alles zeigen)",
+    "imageChanged": "Bild geändert",
+    "undo": "Rückgängig"
   },
   "archive": {
     "events": "Events",

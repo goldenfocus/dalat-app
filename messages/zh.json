@@ -728,8 +728,14 @@
     "claimBanner": {
       "title": "这是您的组织吗？",
       "description": "此主办方资料有 {count} 个活动，但尚未被认领。如果您代表 {name}，可以认领此资料来管理它。",
-      "button": "认领此资料",
-      "unclaimed": "未认领"
+      "button": "申请认领",
+      "unclaimed": "未认领",
+      "messagePlaceholder": "请告诉我们您与此组织的关系（可选）",
+      "submitRequest": "发送申请",
+      "cancel": "取消",
+      "successTitle": "申请已发送！",
+      "successDescription": "我们将审核您的申请并通过电子邮件回复您。",
+      "error": "出现问题，请重试。"
     },
     "eventsHosted": "{count} 个活动"
   },
@@ -1323,7 +1329,9 @@
     "doneFocalPoint": "完成",
     "clickToSetFocalPoint": "点击设置焦点",
     "imageFitFill": "填充（裁剪适应）",
-    "imageFitContain": "适应（显示全部）"
+    "imageFitContain": "适应（显示全部）",
+    "imageChanged": "图片已更改",
+    "undo": "撤销"
   },
   "archive": {
     "events": "活动",

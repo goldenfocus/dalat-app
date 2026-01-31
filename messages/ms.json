@@ -728,8 +728,14 @@
     "claimBanner": {
       "title": "Ini organisasi anda?",
       "description": "Profil penganjur ini mempunyai {count} acara tetapi belum dituntut. Jika anda mewakili {name}, anda boleh menuntut profil ini untuk mengurusnya.",
-      "button": "Tuntut Profil Ini",
-      "unclaimed": "Belum Dituntut"
+      "button": "Minta untuk Menuntut",
+      "unclaimed": "Belum Dituntut",
+      "messagePlaceholder": "Beritahu kami bagaimana anda berkaitan dengan organisasi ini (pilihan)",
+      "submitRequest": "Hantar Permintaan",
+      "cancel": "Batal",
+      "successTitle": "Permintaan Dihantar!",
+      "successDescription": "Kami akan menyemak permintaan anda dan menghubungi melalui e-mel.",
+      "error": "Sesuatu tidak kena. Sila cuba lagi."
     },
     "eventsHosted": "{count} acara"
   },
@@ -1323,7 +1329,9 @@
     "doneFocalPoint": "Selesai",
     "clickToSetFocalPoint": "Klik untuk tetapkan titik fokus",
     "imageFitFill": "Isi (potong)",
-    "imageFitContain": "Muat (tunjuk semua)"
+    "imageFitContain": "Muat (tunjuk semua)",
+    "imageChanged": "Imej telah berubah",
+    "undo": "Buat asal"
   },
   "archive": {
     "events": "Acara",

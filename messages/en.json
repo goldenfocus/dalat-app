@@ -437,7 +437,9 @@
     "doneFocalPoint": "Done adjusting",
     "clickToSetFocalPoint": "Click to set the focal point",
     "imageFitFill": "Fill (crop to fit)",
-    "imageFitContain": "Fit (show all)"
+    "imageFitContain": "Fit (show all)",
+    "imageChanged": "Image changed",
+    "undo": "Undo"
   },
   "eventActions": {
     "eventOptions": "Event options",
@@ -820,8 +822,14 @@
     "claimBanner": {
       "title": "Is this your organization?",
       "description": "This organizer profile has {count} event(s) but isn't claimed yet. If you represent {name}, you can claim this profile to manage it.",
-      "button": "Claim This Profile",
-      "unclaimed": "Unclaimed"
+      "button": "Request to Claim",
+      "unclaimed": "Unclaimed",
+      "messagePlaceholder": "Tell us how you're connected to this organization (optional)",
+      "submitRequest": "Send Request",
+      "cancel": "Cancel",
+      "successTitle": "Request Sent!",
+      "successDescription": "We'll review your request and get back to you by email.",
+      "error": "Something went wrong. Please try again."
     },
     "eventsHosted": "{count} events"
   },
