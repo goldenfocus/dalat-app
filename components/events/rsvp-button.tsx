@@ -312,7 +312,7 @@ export function RsvpButton({
               onClick={handleCancel}
               disabled={isPending}
               variant="outline"
-              className="flex-1"
+              className="flex-1 min-w-0"
             >
               {isPending ? "..." : t("cancelRsvp")}
             </Button>
@@ -320,7 +320,7 @@ export function RsvpButton({
               onClick={handleInterested}
               disabled={isPending}
               variant="ghost"
-              className="flex-1"
+              className="flex-1 min-w-0"
             >
               {isPending ? "..." : t("justInterested")}
             </Button>
@@ -345,7 +345,7 @@ export function RsvpButton({
               onClick={handleCancel}
               disabled={isPending}
               variant="outline"
-              className="flex-1"
+              className="flex-1 min-w-0"
             >
               {isPending ? "..." : t("leaveWaitlist")}
             </Button>
@@ -353,7 +353,7 @@ export function RsvpButton({
               onClick={handleInterested}
               disabled={isPending}
               variant="ghost"
-              className="flex-1"
+              className="flex-1 min-w-0"
             >
               {isPending ? "..." : t("justInterested")}
             </Button>
@@ -382,7 +382,7 @@ export function RsvpButton({
             <Button
               onClick={handleRsvp}
               disabled={isPending}
-              className="flex-1"
+              className="flex-1 min-w-0"
             >
               {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
             </Button>
@@ -390,7 +390,7 @@ export function RsvpButton({
               onClick={handleCancel}
               disabled={isPending}
               variant="outline"
-              className="flex-1"
+              className="flex-1 min-w-0"
             >
               {isPending ? "..." : t("notInterested")}
             </Button>
@@ -413,7 +413,7 @@ export function RsvpButton({
           <Button
             onClick={handleRsvp}
             disabled={isPending}
-            className="flex-1"
+            className="flex-1 min-w-0"
           >
             {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
           </Button>
@@ -421,7 +421,7 @@ export function RsvpButton({
             onClick={handleInterested}
             disabled={isPending}
             variant="outline"
-            className="flex-1"
+            className="flex-1 min-w-0"
           >
             {isPending ? "..." : t("interested")}
           </Button>
