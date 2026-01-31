@@ -5,7 +5,7 @@ import { Building2, X, Upload, Loader2, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { generateSmartFilename } from "@/lib/media-utils";
+import { uploadFile, deleteFile } from "@/lib/storage/client";
 
 interface OrganizerLogoUploadProps {
   organizerId?: string;
@@ -115,45 +115,19 @@ export function OrganizerLogoUpload({
     setIsUploading(true);
 
     try {
-      const supabase = createClient();
-
-      // Use organizerId or temp ID for new organizers
-      const id = organizerId || `temp-${Date.now()}`;
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = generateSmartFilename(file.name, id, ext);
-
       // Delete old logo if exists
       if (currentLogoUrl) {
-        const oldPath = currentLogoUrl.split(`/${bucket}/`)[1];
-        if (oldPath) {
-          await supabase.storage.from(bucket).remove([oldPath]);
-        }
+        await deleteFile(bucket, currentLogoUrl);
       }
 
-      // Upload
-      const { error: uploadError, data: uploadData } = await supabase.storage
-        .from(bucket)
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error("Storage upload error:", uploadError);
-        throw uploadError;
-      }
-
-      if (!uploadData?.path) {
-        throw new Error("Upload succeeded but no path returned");
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(bucket).getPublicUrl(uploadData.path);
+      // Upload using unified storage abstraction (R2 or Supabase)
+      const result = await uploadFile(bucket, file, {
+        entityId: organizerId || `temp-${Date.now()}`,
+      });
 
       // Update preview to the actual uploaded URL
-      setPreviewUrl(publicUrl);
-      await handleLogoUpdate(publicUrl);
+      setPreviewUrl(result.publicUrl);
+      await handleLogoUpdate(result.publicUrl);
     } catch (err) {
       console.error("Upload error:", err);
       setError("Failed to upload. Please try again.");
@@ -203,13 +177,8 @@ export function OrganizerLogoUpload({
     setError(null);
 
     try {
-      const supabase = createClient();
-
-      // Extract path from URL
-      const oldPath = currentLogoUrl.split(`/${bucket}/`)[1];
-      if (oldPath) {
-        await supabase.storage.from(bucket).remove([oldPath]);
-      }
+      // Delete using unified storage abstraction
+      await deleteFile(bucket, currentLogoUrl);
 
       setPreviewUrl(null);
       await handleLogoUpdate(null);

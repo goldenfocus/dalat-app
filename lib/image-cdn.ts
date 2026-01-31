@@ -1,8 +1,12 @@
 /**
  * Cloudflare Image CDN utilities.
  *
- * Routes Supabase Storage images through Cloudflare's Image Resizing
+ * Routes storage images through Cloudflare's Image Resizing
  * for automatic WebP/AVIF conversion and global edge caching.
+ *
+ * Supports both:
+ * - Supabase Storage URLs (legacy, being migrated)
+ * - Cloudflare R2 URLs via cdn.dalat.app (faster, same-network)
  *
  * Requirements:
  * - Domain must be proxied through Cloudflare (orange cloud)
@@ -27,6 +31,14 @@ export interface ImageOptions {
 }
 
 const SUPABASE_STORAGE_PATTERN = /supabase\.co\/storage/;
+const R2_STORAGE_PATTERN = /cdn\.dalat\.app/;
+
+/**
+ * Check if a URL is from our storage (Supabase or R2)
+ */
+function isStorageUrl(src: string): boolean {
+  return SUPABASE_STORAGE_PATTERN.test(src) || R2_STORAGE_PATTERN.test(src);
+}
 
 /**
  * Creates an optimized image URL through Cloudflare's Image Resizing.
@@ -49,8 +61,8 @@ export function optimizedImageUrl(
 ): string | null {
   if (!src) return null;
 
-  // Only optimize Supabase storage URLs
-  if (!SUPABASE_STORAGE_PATTERN.test(src)) {
+  // Only optimize storage URLs (Supabase or R2)
+  if (!isStorageUrl(src)) {
     return src;
   }
 
@@ -191,8 +203,8 @@ export function cloudflareLoader({
   width: number;
   quality?: number;
 }): string {
-  // Only apply Cloudflare optimization to Supabase URLs
-  if (!SUPABASE_STORAGE_PATTERN.test(src)) {
+  // Only apply Cloudflare optimization to storage URLs (Supabase or R2)
+  if (!isStorageUrl(src)) {
     return src;
   }
 
