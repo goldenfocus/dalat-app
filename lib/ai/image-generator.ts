@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@supabase/supabase-js";
 import { extractPersonaMentions, fetchPersonaImages, hasPersonaMentions } from "./personas";
+import { getStorageProvider } from "@/lib/storage";
 
 // Gemini model for image generation
 const MODEL_NAME = "gemini-3-pro-image-preview";
@@ -270,7 +271,7 @@ Guidelines:
 }
 
 /**
- * Upload image to Supabase storage with semantic filename
+ * Upload image to storage with semantic filename (R2 or Supabase)
  */
 async function uploadImage(
   base64Data: string,
@@ -279,7 +280,6 @@ async function uploadImage(
   entityId?: string,
   semanticFilename?: string
 ): Promise<string> {
-  const { client: supabase } = getSupabase();
   const bucket = STORAGE_BUCKETS[context];
   const folder = STORAGE_FOLDERS[context];
   const ext = mimeType.split("/")[1] || "png";
@@ -293,19 +293,12 @@ async function uploadImage(
 
   const buffer = Buffer.from(base64Data, "base64");
 
-  const { error: uploadError } = await supabase.storage.from(bucket).upload(fileName, buffer, {
+  // Use unified storage abstraction (R2 or Supabase)
+  const provider = await getStorageProvider(bucket);
+  const publicUrl = await provider.upload(bucket, fileName, buffer, {
     contentType: mimeType,
     cacheControl: "31536000",
-    upsert: false,
   });
-
-  if (uploadError) {
-    throw new Error(`Failed to upload: ${uploadError.message}`);
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(bucket).getPublicUrl(fileName);
 
   return publicUrl;
 }

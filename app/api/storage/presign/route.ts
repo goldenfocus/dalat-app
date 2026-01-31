@@ -25,6 +25,7 @@ const BUCKET_CONFIG: Record<string, string[]> = {
   ],
   "venue-media": ["image/jpeg", "image/png", "image/webp", "image/gif"],
   "organizer-logos": ["image/jpeg", "image/png", "image/webp"],
+  "persona-references": ["image/jpeg", "image/png", "image/webp"],
 };
 
 /**

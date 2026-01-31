@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Plus, X, Loader2, Upload, Trash2, Pencil, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { VenuePhoto } from "@/lib/types";
+import { uploadFile, deleteFile } from "@/lib/storage/client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -114,27 +115,14 @@ export function VenuePhotoManager({ venueId, photos: initialPhotos }: VenuePhoto
       const supabase = createClient();
       const uploadedPhotos: VenuePhoto[] = [];
 
+      // Upload using unified storage abstraction (R2 or Supabase)
       for (const pending of pendingPhotos) {
-        const ext = pending.file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const fileName = `${venueId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("venue-media")
-          .upload(fileName, pending.file, {
-            cacheControl: "3600",
-            upsert: false,
-          });
-
-        if (uploadError) {
-          throw new Error(`Failed to upload: ${uploadError.message}`);
-        }
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("venue-media").getPublicUrl(fileName);
+        const result = await uploadFile("venue-media", pending.file, {
+          entityId: venueId,
+        });
 
         uploadedPhotos.push({
-          url: publicUrl,
+          url: result.publicUrl,
           caption: pending.caption || undefined,
           sort_order: photos.length + uploadedPhotos.length,
         });
@@ -197,13 +185,9 @@ export function VenuePhotoManager({ venueId, photos: initialPhotos }: VenuePhoto
         throw new Error(`Failed to delete: ${updateError.message}`);
       }
 
-      // Try to delete from storage (may fail if path format doesn't match)
+      // Delete from storage using unified abstraction
       try {
-        const url = new URL(deletePhotoUrl);
-        const pathMatch = url.pathname.match(/\/venue-media\/(.+)$/);
-        if (pathMatch) {
-          await supabase.storage.from("venue-media").remove([pathMatch[1]]);
-        }
+        await deleteFile("venue-media", deletePhotoUrl);
       } catch {
         // Storage deletion is best-effort
       }

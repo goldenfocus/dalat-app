@@ -56,11 +56,16 @@ export interface StorageProvider {
 }
 
 /**
- * Feature flag: buckets that use R2 instead of Supabase Storage.
- * Start with low-risk buckets and gradually migrate.
+ * All storage buckets now use R2 for maximum performance.
+ * R2 is same-network with Cloudflare Image Resizing = faster everything.
  */
 const R2_ENABLED_BUCKETS: string[] = [
-  'organizer-logos', // Pilot bucket - R2 configured ✓
+  'avatars',
+  'event-media',
+  'moments',
+  'venue-media',
+  'organizer-logos',
+  'persona-references',
 ];
 
 /**

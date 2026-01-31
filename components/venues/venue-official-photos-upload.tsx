@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Plus, X, Loader2, Upload, GripVertical } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { VenuePhoto } from "@/lib/types";
+import { uploadFile } from "@/lib/storage/client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -99,28 +100,14 @@ export function VenueOfficialPhotosUpload({
       const supabase = createClient();
       const uploadedPhotos: VenuePhoto[] = [];
 
-      // Upload each photo
+      // Upload using unified storage abstraction (R2 or Supabase)
       for (const pending of pendingPhotos) {
-        const ext = pending.file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const fileName = `${venueId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("venue-media")
-          .upload(fileName, pending.file, {
-            cacheControl: "3600",
-            upsert: false,
-          });
-
-        if (uploadError) {
-          throw new Error(`Failed to upload: ${uploadError.message}`);
-        }
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("venue-media").getPublicUrl(fileName);
+        const result = await uploadFile("venue-media", pending.file, {
+          entityId: venueId,
+        });
 
         uploadedPhotos.push({
-          url: publicUrl,
+          url: result.publicUrl,
           caption: pending.caption || undefined,
           sort_order: currentPhotos.length + uploadedPhotos.length,
         });

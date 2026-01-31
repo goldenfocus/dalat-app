@@ -2,9 +2,9 @@
 
 import { useState, useRef } from "react";
 import { X, Loader2, ImagePlus } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { uploadFile, deleteFile } from "@/lib/storage/client";
 
 interface PersonaImageUploadProps {
   personaId?: string;
@@ -70,30 +70,16 @@ export function PersonaImageUpload({
     setUploadingCount(validFiles.length);
 
     try {
-      const supabase = createClient();
       const id = personaId || `temp-${Date.now()}`;
       const uploadedUrls: string[] = [];
 
-      // Upload all files in parallel
+      // Upload all files in parallel using unified storage abstraction
       await Promise.all(
         validFiles.map(async (file) => {
-          const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-          const fileName = `${id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from("persona-references")
-            .upload(fileName, file, {
-              cacheControl: "31536000",
-              upsert: false,
-            });
-
-          if (uploadError) throw uploadError;
-
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from("persona-references").getPublicUrl(fileName);
-
-          uploadedUrls.push(publicUrl);
+          const result = await uploadFile("persona-references", file, {
+            entityId: id,
+          });
+          uploadedUrls.push(result.publicUrl);
         })
       );
 
@@ -124,13 +110,9 @@ export function PersonaImageUpload({
     const newImages = currentImages.filter((_, i) => i !== index);
     onImagesChange(newImages);
 
-    // Try to delete from storage
+    // Delete from storage using unified abstraction
     try {
-      const supabase = createClient();
-      const path = urlToRemove.split("/persona-references/")[1];
-      if (path) {
-        await supabase.storage.from("persona-references").remove([path]);
-      }
+      await deleteFile("persona-references", urlToRemove);
     } catch {
       // Ignore deletion errors
     }

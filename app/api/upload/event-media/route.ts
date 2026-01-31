@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { generateSmartFilename } from "@/lib/media-utils";
+import { getStorageProvider } from "@/lib/storage";
 
 // Lazy init - created on first request, not at build time
 function getSupabaseAdmin() {
@@ -96,30 +97,16 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload using admin client (bypasses RLS)
-    const supabaseAdmin = getSupabaseAdmin();
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from("event-media")
-      .upload(fileName, buffer, {
-        contentType: file.type,
-        cacheControl: "3600",
-        upsert: true,
-      });
-
-    if (uploadError) {
-      console.error("Upload error:", uploadError);
-      return NextResponse.json(
-        { error: uploadError.message },
-        { status: 500 }
-      );
-    }
-
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabaseAdmin.storage.from("event-media").getPublicUrl(fileName);
+    // Upload using unified storage abstraction (R2 or Supabase)
+    const provider = await getStorageProvider("event-media");
+    const publicUrl = await provider.upload("event-media", fileName, buffer, {
+      contentType: file.type,
+      cacheControl: "3600",
+      upsert: true,
+    });
 
     // Update event with new image URL
+    const supabaseAdmin = getSupabaseAdmin();
     const { error: updateError } = await supabaseAdmin
       .from("events")
       .update({ image_url: publicUrl })

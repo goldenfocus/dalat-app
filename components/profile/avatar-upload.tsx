@@ -3,10 +3,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Camera, X, Upload, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { generateSmartFilename } from "@/lib/media-utils";
+import { uploadFile, deleteFile } from "@/lib/storage/client";
 
 interface AvatarUploadProps {
   userId: string;
@@ -81,38 +80,18 @@ export function AvatarUpload({
     setIsUploading(true);
 
     try {
-      const supabase = createClient();
-
-      // Generate smart filename from original file name
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = generateSmartFilename(file.name, userId, ext);
-
       // Delete old avatar if exists
       if (currentAvatarUrl) {
-        const oldPath = currentAvatarUrl.split("/avatars/")[1];
-        if (oldPath) {
-          await supabase.storage.from("avatars").remove([oldPath]);
-        }
+        await deleteFile("avatars", currentAvatarUrl);
       }
 
-      // Upload new avatar
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
+      // Upload using unified storage abstraction (R2 or Supabase)
+      const result = await uploadFile("avatars", file, {
+        entityId: userId,
+      });
 
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(fileName);
-
-      onAvatarChange(publicUrl);
+      setPreviewUrl(result.publicUrl);
+      onAvatarChange(result.publicUrl);
     } catch (err) {
       console.error("Upload error:", err);
       setError(t("uploadFailed"));
@@ -162,13 +141,8 @@ export function AvatarUpload({
     setError(null);
 
     try {
-      const supabase = createClient();
-
-      // Extract path from URL
-      const oldPath = currentAvatarUrl.split("/avatars/")[1];
-      if (oldPath) {
-        await supabase.storage.from("avatars").remove([oldPath]);
-      }
+      // Delete using unified storage abstraction
+      await deleteFile("avatars", currentAvatarUrl);
 
       setPreviewUrl(null);
       onAvatarChange(null);

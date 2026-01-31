@@ -20,6 +20,7 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { uploadFile, deleteFile } from "@/lib/storage/client";
 import {
   Dialog,
   DialogContent,
@@ -299,24 +300,11 @@ export function EventMediaUpload({
 
         finalUrl = data.url;
       } else {
-        // Direct Supabase upload for other buckets (venues, etc.)
-        const supabase = createClient();
-        const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
-        const fileName = generateSmartFilename(fileToUpload.name, eventId, ext);
-
-        const { error: uploadError } = await supabase.storage
-          .from(bucket)
-          .upload(fileName, fileToUpload, {
-            cacheControl: "3600",
-            upsert: true,
-          });
-
-        if (uploadError) {
-          throw new Error(uploadError.message);
-        }
-
-        const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName);
-        finalUrl = publicUrl;
+        // Use unified storage abstraction for other buckets (venues, etc.)
+        const result = await uploadFile(bucket, fileToUpload, {
+          entityId: eventId,
+        });
+        finalUrl = result.publicUrl;
       }
 
       // Update preview to permanent URL before revoking blob
@@ -397,13 +385,8 @@ export function EventMediaUpload({
     setError(null);
 
     try {
-      const supabase = createClient();
-
-      // Extract path from URL
-      const oldPath = currentMediaUrl.split(`/${bucket}/`)[1];
-      if (oldPath) {
-        await supabase.storage.from(bucket).remove([oldPath]);
-      }
+      // Delete using unified storage abstraction
+      await deleteFile(bucket, currentMediaUrl);
 
       setPreviewUrl(null);
       setPreviewIsVideo(false);
