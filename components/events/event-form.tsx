@@ -339,7 +339,7 @@ export function EventForm({
     }
 
     // Basic validation
-    if (slug.length < 1 || !/^[a-z0-9-]+$/.test(slug)) {
+    if (slug.length < 1 || !/^[a-z0-9_-]+$/.test(slug)) {
       setSlugStatus("invalid");
       return;
     }

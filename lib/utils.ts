@@ -46,7 +46,15 @@ export function slugify(text: string): string {
  * Sanitize a slug while typing (allows trailing hyphens during input)
  */
 export function sanitizeSlug(input: string): string {
-  return slugify(input);
+  return input
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9\s-_]/g, "") // Keep alphanumeric, spaces, hyphens, underscores
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-/g, ""); // Only trim leading hyphen, allow trailing while typing
 }
 
 /**
