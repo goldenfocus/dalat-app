@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { EventCard } from "@/components/events/event-card";
+import { EventCardFramed } from "@/components/events/event-card-framed";
 import { ArchiveFilters } from "@/components/events/archive-filters";
 import type { Event, EventCounts } from "@/lib/types";
 
@@ -40,7 +40,7 @@ export function ArchiveEventsList({
       {filteredEvents.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {filteredEvents.map((event) => (
-            <EventCard key={event.id} event={event} counts={counts[event.id]} />
+            <EventCardFramed key={event.id} event={event} counts={counts[event.id]} />
           ))}
         </div>
       ) : (
