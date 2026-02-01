@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
         hostname: "**.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.dalat.app",
+      },
     ],
     // Enable modern image formats for better compression
     formats: ["image/avif", "image/webp"],

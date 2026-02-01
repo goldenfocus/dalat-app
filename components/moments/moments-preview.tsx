@@ -7,6 +7,7 @@ import { Camera, ChevronRight, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { isVideoUrl } from "@/lib/media-utils";
+import { cloudflareLoader } from "@/lib/image-cdn";
 import type { MomentWithProfile, MomentCounts } from "@/lib/types";
 
 interface MomentsPreviewProps {
@@ -60,6 +61,7 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                         // Video with thumbnail - show thumbnail with play icon
                         <>
                           <Image
+                            loader={cloudflareLoader}
                             src={moment.thumbnail_url}
                             alt={moment.text_content || "Video thumbnail"}
                             fill
@@ -82,6 +84,7 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                       )
                     ) : (
                       <Image
+                        loader={cloudflareLoader}
                         src={moment.media_url}
                         alt={moment.text_content || "Moment thumbnail"}
                         fill
