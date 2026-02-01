@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,16 +13,16 @@ import { OrganizerLogoUpload } from "@/components/admin/organizer-logo-upload";
 import { AIOrganizerLogoDialog } from "@/components/admin/ai-organizer-logo-dialog";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
 import { PlaceAutocomplete } from "@/components/events/place-autocomplete";
+import { VenueManagersSection } from "@/components/admin/venue-managers-section";
 import { VENUE_TYPES, VENUE_TYPE_CONFIG } from "@/lib/constants/venue-types";
 import { triggerTranslation } from "@/lib/translations-client";
 import type { Venue, VenueType, OperatingHours, Organizer } from "@/lib/types";
 import { sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
+import { useUnifiedSlugCheck, type SlugStatus } from "@/lib/hooks/use-unified-slug-check";
 
 interface VenueFormProps {
   venue?: Venue;
 }
-
-type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 const DAYS: (keyof OperatingHours)[] = [
   "monday",
@@ -76,8 +76,16 @@ export function VenueForm({ venue }: VenueFormProps) {
 
   // Slug state
   const [slug, setSlug] = useState(venue?.slug ?? "");
-  const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const [slugTouched, setSlugTouched] = useState(false);
+
+  // Unified slug check across all entity types (venues, organizers, profiles)
+  const { status: slugStatus, message: slugMessage } = useUnifiedSlugCheck({
+    slug,
+    entityType: "venue",
+    entityId: venue?.id,
+    originalSlug: venue?.slug,
+    touched: slugTouched,
+  });
 
   // Fetch organizers for linking
   useEffect(() => {
@@ -93,39 +101,6 @@ export function VenueForm({ venue }: VenueFormProps) {
     }
     fetchOrganizers();
   }, []);
-
-  // Check slug availability
-  useEffect(() => {
-    if (!slug || !slugTouched) {
-      setSlugStatus("idle");
-      return;
-    }
-
-    if (slug.length < 1 || !/^[a-z0-9-]+$/.test(slug)) {
-      setSlugStatus("invalid");
-      return;
-    }
-
-    if (isEditing && slug === venue?.slug) {
-      setSlugStatus("available");
-      return;
-    }
-
-    setSlugStatus("checking");
-
-    const timer = setTimeout(async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("venues")
-        .select("id")
-        .eq("slug", slug)
-        .maybeSingle();
-
-      setSlugStatus(data ? "taken" : "available");
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [slug, slugTouched, isEditing, venue?.slug]);
 
   // Auto-suggest slug from name
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,8 +171,8 @@ export function VenueForm({ venue }: VenueFormProps) {
       return;
     }
 
-    if (slugStatus === "taken") {
-      setError("This URL is already taken");
+    if (slugStatus === "taken" || slugStatus === "reserved" || slugStatus === "invalid" || slugStatus === "too_short") {
+      setError(slugStatus === "reserved" ? "This URL is reserved" : "This URL is not available");
       return;
     }
 
@@ -345,7 +320,7 @@ export function VenueForm({ venue }: VenueFormProps) {
               <Label htmlFor="slug">URL slug *</Label>
               <div className="flex items-center gap-0">
                 <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input">
-                  /venues/
+                  dalat.app/
                 </span>
                 <Input
                   id="slug"
@@ -356,20 +331,22 @@ export function VenueForm({ venue }: VenueFormProps) {
                   className="rounded-l-none"
                 />
               </div>
-              {slugTouched && (
+              {slugTouched && slugMessage && (
                 <p
                   className={`text-xs ${
                     slugStatus === "available"
                       ? "text-green-600"
-                      : slugStatus === "taken" || slugStatus === "invalid"
+                      : slugStatus === "taken" || slugStatus === "invalid" || slugStatus === "reserved"
                       ? "text-red-500"
                       : "text-muted-foreground"
                   }`}
                 >
                   {slugStatus === "checking" && "Checking..."}
-                  {slugStatus === "available" && "✓ Available"}
+                  {slugStatus === "available" && `✓ ${slugMessage}`}
                   {slugStatus === "taken" && "✗ Already taken"}
-                  {slugStatus === "invalid" && "Only lowercase letters, numbers, and hyphens"}
+                  {slugStatus === "reserved" && "✗ This URL is reserved"}
+                  {slugStatus === "invalid" && "Only lowercase letters, numbers, dots, and hyphens"}
+                  {slugStatus === "too_short" && "URL must be at least 2 characters"}
                 </p>
               )}
             </div>
@@ -651,6 +628,22 @@ export function VenueForm({ venue }: VenueFormProps) {
             </div>
           </div>
         </details>
+
+        {/* Managers - Only show when editing */}
+        {isEditing && venue && (
+          <details className="group border rounded-xl overflow-hidden" open>
+            <summary className="flex items-center justify-between px-5 py-4 bg-muted/50 hover:bg-muted transition-colors cursor-pointer list-none active:scale-[0.99] [&::-webkit-details-marker]:hidden">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-muted-foreground" />
+                <span className="font-semibold">Managers</span>
+              </div>
+              <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="p-6">
+              <VenueManagersSection venueId={venue.id} venueName={name || venue.name} />
+            </div>
+          </details>
+        )}
 
         {/* Submit */}
         <Card>
