@@ -211,9 +211,9 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
         </Button>
       </div>
 
-      {/* Messenger apps - WhatsApp & Zalo (mobile only via native share) */}
-      {showWhatsApp && canShare && (
-        <div className="flex gap-2">
+      {/* Messenger apps - WhatsApp & Zalo (mobile only - hidden on desktop) */}
+      {showWhatsApp && (
+        <div className="flex gap-2 md:hidden">
           <Button
             variant="outline"
             size="sm"

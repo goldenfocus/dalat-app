@@ -21,8 +21,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InviteeInput, type Invitee } from "@/components/shared/invitee-input";
 
 interface PostCreationCelebrationProps {
   isOpen: boolean;
@@ -35,7 +35,8 @@ interface PostCreationCelebrationProps {
 }
 
 interface InviteResult {
-  email: string;
+  email?: string;
+  userId?: string;
   success: boolean;
   error?: string;
 }
@@ -54,9 +55,8 @@ export function PostCreationCelebration({
   const tInvite = useTranslations("invite");
   const [confettiFired, setConfettiFired] = useState(false);
 
-  // Email invite state
-  const [emailInput, setEmailInput] = useState("");
-  const [emails, setEmails] = useState<Array<{ email: string }>>([]);
+  // Invite state
+  const [invitees, setInvitees] = useState<Invitee[]>([]);
   const [sending, setSending] = useState(false);
   const [results, setResults] = useState<InviteResult[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -112,41 +112,9 @@ export function PostCreationCelebration({
     }, 250);
   };
 
-  // Parse emails from input
-  const parseEmails = useCallback((input: string) => {
-    const emailRegex = /[^\s,;]+@[^\s,;]+\.[^\s,;]+/g;
-    const matches = input.match(emailRegex) || [];
-    return matches.map((email) => ({ email: email.toLowerCase().trim() }));
-  }, []);
-
-  const handleAddEmails = useCallback(() => {
-    if (!emailInput.trim()) return;
-
-    const newEmails = parseEmails(emailInput);
-    const existingSet = new Set(emails.map((e) => e.email));
-    const uniqueNew = newEmails.filter((e) => !existingSet.has(e.email));
-
-    if (uniqueNew.length > 0) {
-      setEmails((prev) => [...prev, ...uniqueNew]);
-    }
-    setEmailInput("");
-    setError(null);
-  }, [emailInput, emails, parseEmails]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      handleAddEmails();
-    }
-  };
-
-  const removeEmail = (emailToRemove: string) => {
-    setEmails((prev) => prev.filter((e) => e.email !== emailToRemove));
-  };
-
   const handleSendInvites = async () => {
-    if (emails.length === 0) {
-      setError(tInvite("noEmails"));
+    if (invitees.length === 0) {
+      setError(tInvite("noInvitees"));
       return;
     }
 
@@ -154,11 +122,19 @@ export function PostCreationCelebration({
     setError(null);
     setResults([]);
 
+    // Separate email and user invitees
+    const emailInvitees = invitees
+      .filter((inv): inv is Invitee & { type: "email" } => inv.type === "email")
+      .map(inv => ({ email: inv.email, name: inv.name }));
+    const userInvitees = invitees
+      .filter((inv): inv is Invitee & { type: "user" } => inv.type === "user")
+      .map(inv => ({ userId: inv.user.id, username: inv.user.username }));
+
     try {
       const response = await fetch(`/api/events/${eventSlug}/invitations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emails }),
+        body: JSON.stringify({ emails: emailInvitees, users: userInvitees }),
       });
 
       const data = await response.json();
@@ -176,11 +152,19 @@ export function PostCreationCelebration({
 
       setResults(data.results);
 
-      // Clear successful emails from the list
-      const failedEmails = data.results
-        .filter((r: InviteResult) => !r.success)
-        .map((r: InviteResult) => r.email);
-      setEmails(emails.filter((e) => failedEmails.includes(e.email)));
+      // Clear successful invitees from the list
+      const failedEmails = new Set(
+        data.results.filter((r: InviteResult) => !r.success && r.email).map((r: InviteResult) => r.email)
+      );
+      const failedUserIds = new Set(
+        data.results.filter((r: InviteResult) => !r.success && r.userId).map((r: InviteResult) => r.userId)
+      );
+
+      setInvitees(invitees.filter(inv => {
+        if (inv.type === "email") return failedEmails.has(inv.email);
+        if (inv.type === "user") return failedUserIds.has(inv.user.id);
+        return false;
+      }));
     } catch {
       setError(tInvite("sendFailed"));
     } finally {
@@ -191,8 +175,7 @@ export function PostCreationCelebration({
   const handleClose = () => {
     onClose();
     setConfettiFired(false);
-    setEmailInput("");
-    setEmails([]);
+    setInvitees([]);
     setResults([]);
     setError(null);
     router.push(`/events/${eventSlug}`);
@@ -244,48 +227,11 @@ export function PostCreationCelebration({
                 {t("emailDescription")}
               </p>
 
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder={t("emailPlaceholder")}
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onBlur={handleAddEmails}
-                  disabled={sending}
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleAddEmails}
-                  disabled={!emailInput.trim() || sending}
-                >
-                  {t("addEmails")}
-                </Button>
-              </div>
-
-              {/* Email chips */}
-              {emails.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {emails.map(({ email }) => (
-                    <span
-                      key={email}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
-                    >
-                      {email}
-                      <button
-                        type="button"
-                        onClick={() => removeEmail(email)}
-                        className="hover:text-destructive p-0.5"
-                        disabled={sending}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+              <InviteeInput
+                invitees={invitees}
+                onInviteesChange={setInvitees}
+                disabled={sending}
+              />
 
               {/* Error message */}
               {error && <p className="text-sm text-destructive">{error}</p>}
@@ -301,23 +247,23 @@ export function PostCreationCelebration({
                   )}
                   {results
                     .filter((r) => !r.success)
-                    .map((r) => (
+                    .map((r, idx) => (
                       <p
-                        key={r.email}
+                        key={r.email || r.userId || idx}
                         className="text-sm text-destructive flex items-center gap-2"
                       >
                         <X className="w-4 h-4" />
-                        {r.email}: {r.error}
+                        {r.email || r.userId}: {r.error}
                       </p>
                     ))}
                 </div>
               )}
 
               {/* Send button */}
-              {emails.length > 0 && (
+              {invitees.length > 0 && (
                 <Button
                   onClick={handleSendInvites}
-                  disabled={emails.length === 0 || sending}
+                  disabled={invitees.length === 0 || sending}
                   className="w-full gap-2"
                 >
                   {sending ? (
@@ -328,7 +274,7 @@ export function PostCreationCelebration({
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      {t("sendInvites", { count: emails.length })}
+                      {t("sendInvites", { count: invitees.length })}
                     </>
                   )}
                 </Button>
