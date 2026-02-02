@@ -24,7 +24,7 @@ export async function tagEvent(
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-3-5-haiku-20241022",
+      model: "claude-haiku-4-20250514",
       max_tokens: 100,
       messages: [
         {

@@ -60,9 +60,9 @@ export async function POST(request: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Use Gemini 2.0 Flash with image generation capability
+    // Use Gemini 3 Pro for highest quality image generation
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-3-pro-image-preview",
       generationConfig: {
         responseModalities: ["TEXT", "IMAGE"],
       } as never, // Type workaround - SDK types may not include responseModalities yet
