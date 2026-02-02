@@ -47,13 +47,15 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
 
     return convertedFile;
   } catch (error) {
-    // Client-side conversion failed - just upload HEIC directly
-    // Modern browsers (Safari, Chrome on macOS/iOS, Edge) can display HEIC natively
-    // Cloudflare CDN will serve it, and Cloudflare Images can transform if needed
-    console.warn("[HEIC] Client-side conversion failed, uploading original:", error);
-    console.log("[HEIC] Uploading HEIC directly - modern browsers handle it natively");
+    // Client-side conversion failed - CANNOT fall back to uploading HEIC
+    // Supabase Storage does not support image/heic MIME type and will reject with 400
+    console.error("[HEIC] Client-side conversion failed:", error);
 
-    return file; // Return original HEIC file
+    // Throw a user-friendly error instead of silently returning the unsupported file
+    throw new Error(
+      "Unable to convert HEIC image. Please convert to JPEG/PNG before uploading, " +
+      "or try a different browser (Safari on macOS/iOS has best HEIC support)."
+    );
   }
 }
 
