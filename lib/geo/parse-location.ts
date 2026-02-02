@@ -10,33 +10,60 @@ export interface ParsedCoordinates {
 }
 
 /**
- * Parse raw coordinate input (e.g., "12.345, 67.890" or "12.345 67.890")
- * Returns null if input doesn't match coordinate pattern
+ * Parse raw coordinate input in various formats:
+ * - Decimal: "12.345, 67.890" or "12.345 67.890"
+ * - With degree symbols: "12.345°N, 67.890°E" or "12.345°N 67.890°E"
+ * - DMS: "12°20'42"N 67°53'24"E" (approximate conversion)
+ *
+ * Returns null if input doesn't match any coordinate pattern
  */
 export function parseCoordinates(input: string): ParsedCoordinates | null {
   const trimmed = input.trim();
 
-  // Pattern: two decimal numbers separated by comma, space, or both
-  // Supports negative values for southern/western hemispheres
-  const pattern = /^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/;
-  const match = trimmed.match(pattern);
+  // Pattern 1: Simple decimal (most common)
+  // e.g., "12.345, 67.890" or "12.345 67.890" or "-12.345, -67.890"
+  const simplePattern = /^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/;
+  const simpleMatch = trimmed.match(simplePattern);
+  if (simpleMatch) {
+    const lat = parseFloat(simpleMatch[1]);
+    const lng = parseFloat(simpleMatch[2]);
+    if (isValidCoordinate(lat, lng)) {
+      return { latitude: lat, longitude: lng, source: "coordinates" };
+    }
+  }
 
-  if (!match) return null;
+  // Pattern 2: With degree symbols and cardinal directions
+  // e.g., "12.345°N, 67.890°E" or "12.345°N 67.890°E"
+  const degreePattern = /^(\d+\.?\d*)°([NS])[,\s]+(\d+\.?\d*)°([EW])$/i;
+  const degreeMatch = trimmed.match(degreePattern);
+  if (degreeMatch) {
+    let lat = parseFloat(degreeMatch[1]);
+    let lng = parseFloat(degreeMatch[3]);
+    // Apply sign based on cardinal direction
+    if (degreeMatch[2].toUpperCase() === "S") lat = -lat;
+    if (degreeMatch[4].toUpperCase() === "W") lng = -lng;
+    if (isValidCoordinate(lat, lng)) {
+      return { latitude: lat, longitude: lng, source: "coordinates" };
+    }
+  }
 
-  const lat = parseFloat(match[1]);
-  const lng = parseFloat(match[2]);
+  // Pattern 3: DMS format (degrees, minutes, seconds)
+  // e.g., "11°54'00.9"N 108°26'09.5"E" or "11°54'00.9\"N 108°26'09.5\"E"
+  const dmsPattern = /^(\d+)°(\d+)'([\d.]+)[""']?\s*([NS])[,\s]+(\d+)°(\d+)'([\d.]+)[""']?\s*([EW])$/i;
+  const dmsMatch = trimmed.match(dmsPattern);
+  if (dmsMatch) {
+    let lat = parseInt(dmsMatch[1]) + parseInt(dmsMatch[2]) / 60 + parseFloat(dmsMatch[3]) / 3600;
+    let lng = parseInt(dmsMatch[5]) + parseInt(dmsMatch[6]) / 60 + parseFloat(dmsMatch[7]) / 3600;
+    if (dmsMatch[4].toUpperCase() === "S") lat = -lat;
+    if (dmsMatch[8].toUpperCase() === "W") lng = -lng;
+    if (isValidCoordinate(lat, lng)) {
+      return { latitude: lat, longitude: lng, source: "coordinates" };
+    }
+  }
 
-  // Validate coordinate ranges
-  if (isNaN(lat) || isNaN(lng)) return null;
-  if (lat < -90 || lat > 90) return null;
-  if (lng < -180 || lng > 180) return null;
-
-  return {
-    latitude: lat,
-    longitude: lng,
-    source: "coordinates",
-  };
+  return null;
 }
+
 
 /**
  * Check if input looks like a Google Maps URL
