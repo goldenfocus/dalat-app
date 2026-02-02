@@ -247,10 +247,12 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       const { uploadUrl, videoUid } = await response.json();
 
       // Upload using TUS (resumable upload)
+      // Note: Only set `endpoint`, NOT `uploadUrl` for new uploads.
+      // Setting `uploadUrl` causes TUS to make a HEAD request which Cloudflare
+      // direct upload URLs don't support, causing "Load failed" errors.
       return new Promise((resolve, reject) => {
         const upload = new tus.Upload(file, {
           endpoint: uploadUrl,
-          uploadUrl: uploadUrl, // Direct upload URL from Cloudflare
           retryDelays: [0, 1000, 3000, 5000], // Retry delays for flaky connections
           chunkSize: 50 * 1024 * 1024, // 50MB chunks for better resume on slow connections
           metadata: {
@@ -271,14 +273,9 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           },
         });
 
-        // Check for previous uploads to resume
-        upload.findPreviousUploads().then((previousUploads) => {
-          if (previousUploads.length > 0) {
-            console.log("[TUS] Resuming previous upload");
-            upload.resumeFromPreviousUpload(previousUploads[0]);
-          }
-          upload.start();
-        });
+        // Start the upload directly - Cloudflare direct upload URLs are one-time use,
+        // so resume isn't applicable for this flow
+        upload.start();
       });
     } catch (error) {
       console.error("[Cloudflare] Video upload error:", error);
