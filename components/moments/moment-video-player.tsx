@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 
 interface MomentVideoPlayerProps {
   /** Original video URL (Supabase Storage) - fallback */
@@ -24,8 +25,30 @@ export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProp
   const hlsRef = useRef<InstanceType<typeof import("hls.js").default> | null>(null);
   const [useNativeHls, setUseNativeHls] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
   const isHlsUrl = hlsSrc?.includes(".m3u8");
+
+  // Toggle mute state
+  const handleToggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
+  // Sync muted state when video changes
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleVolumeChange = () => {
+      setIsMuted(video.muted);
+    };
+
+    video.addEventListener("volumechange", handleVolumeChange);
+    return () => video.removeEventListener("volumechange", handleVolumeChange);
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -110,15 +133,28 @@ export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProp
   }, [hlsSrc, isHlsUrl, src]);
 
   return (
-    <video
-      ref={videoRef}
-      poster={poster || undefined}
-      className="w-full h-full object-contain"
-      controls
-      muted // Required for autoplay
-      playsInline
-      // Only set autoPlay for non-HLS (HLS.js handles play after manifest parse)
-      autoPlay={!isHlsUrl || useNativeHls}
-    />
+    <div className="relative w-full h-full">
+      <video
+        ref={videoRef}
+        poster={poster || undefined}
+        className="w-full h-full object-contain"
+        controls
+        muted // Required for autoplay
+        playsInline
+        // Only set autoPlay for non-HLS (HLS.js handles play after manifest parse)
+        autoPlay={!isHlsUrl || useNativeHls}
+      />
+      {/* Prominent unmute button when muted */}
+      {isMuted && (
+        <button
+          type="button"
+          onClick={handleToggleMute}
+          className="absolute top-4 right-4 p-3 rounded-full bg-black/70 text-white hover:bg-black/90 active:scale-95 transition-all z-10"
+          aria-label="Unmute"
+        >
+          <VolumeX className="w-5 h-5" />
+        </button>
+      )}
+    </div>
   );
 }
