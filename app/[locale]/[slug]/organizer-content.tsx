@@ -5,33 +5,62 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import type { Organizer, Event, Locale } from "@/lib/types";
+import type { Organizer, Event, Locale, Profile } from "@/lib/types";
 import { ClaimOrganizerBanner, UnclaimedOrganizerBadge } from "@/components/organizers/claim-organizer-banner";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface OrganizerContentProps {
   organizerId: string;
   locale: string;
 }
 
-async function getOrganizer(organizerId: string): Promise<Organizer | null> {
+type OrganizerWithOwner = Organizer & {
+  owner: Pick<Profile, "id" | "avatar_url" | "display_name" | "username"> | null;
+};
+
+async function getOrganizer(organizerId: string): Promise<OrganizerWithOwner | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("organizers")
-    .select("*")
+    .select("*, owner:profiles!owner_id(id, avatar_url, display_name, username)")
     .eq("id", organizerId)
     .single();
-  return data;
+  return data as OrganizerWithOwner | null;
 }
 
-async function getOrganizerEvents(organizerId: string): Promise<Event[]> {
+async function getOrganizerEvents(organizerId: string, ownerId: string | null): Promise<Event[]> {
   const supabase = await createClient();
-  const { data } = await supabase
+
+  // Query 1: Events where this organizer is assigned
+  const { data: organizedEvents } = await supabase
     .from("events")
     .select("*")
     .eq("organizer_id", organizerId)
     .eq("status", "published")
     .order("starts_at", { ascending: true });
-  return data ?? [];
+
+  // Query 2: Events created by the owner (if owner exists)
+  let createdEvents: Event[] = [];
+  if (ownerId) {
+    const { data } = await supabase
+      .from("events")
+      .select("*")
+      .eq("created_by", ownerId)
+      .eq("status", "published")
+      .order("starts_at", { ascending: true });
+    createdEvents = (data ?? []) as Event[];
+  }
+
+  // Combine and deduplicate by event ID
+  const allEvents = [...(organizedEvents ?? []), ...createdEvents];
+  const uniqueEvents = Array.from(
+    new Map(allEvents.map((e) => [e.id, e])).values()
+  ) as Event[];
+
+  // Sort by starts_at ascending
+  return uniqueEvents.sort(
+    (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
+  );
 }
 
 async function isUserLoggedIn(): Promise<boolean> {
@@ -55,7 +84,7 @@ export async function OrganizerContent({ organizerId, locale }: OrganizerContent
   }
 
   const [events, isLoggedIn] = await Promise.all([
-    getOrganizerEvents(organizer.id),
+    getOrganizerEvents(organizer.id, organizer.owner?.id ?? null),
     isUserLoggedIn(),
   ]);
 
@@ -98,6 +127,13 @@ export async function OrganizerContent({ organizerId, locale }: OrganizerContent
               src={organizer.logo_url}
               alt={organizer.name}
               className="w-24 h-24 rounded-xl object-cover"
+            />
+          ) : organizer.owner?.avatar_url ? (
+            <UserAvatar
+              src={organizer.owner.avatar_url}
+              alt={organizer.owner.display_name || organizer.owner.username || organizer.name}
+              size="xl"
+              expandable
             />
           ) : (
             <div className="w-24 h-24 rounded-xl bg-primary/10 flex items-center justify-center">
