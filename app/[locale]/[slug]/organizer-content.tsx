@@ -123,8 +123,8 @@ export async function OrganizerContent({ organizerId, locale }: OrganizerContent
 
         {/* Organizer header */}
         <div className="flex items-start gap-6 mb-8">
-          {/* Avatar with verified badge overlay */}
-          <div className="relative flex-shrink-0">
+          {/* Avatar with verified badge overlay - overflow-visible and padding for glow effect */}
+          <div className="relative flex-shrink-0 overflow-visible pb-4">
             {organizer.logo_url ? (
               <img
                 src={organizer.logo_url}
