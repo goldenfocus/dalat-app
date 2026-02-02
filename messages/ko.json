@@ -264,6 +264,7 @@
     "locationLoading": "로딩 중...",
     "locationCoordinatesDetected": "좌표 감지됨",
     "locationResolvingUrl": "링크에서 위치 추출 중...",
+    "locationLookingUp": "위치 조회 중...",
     "locationUrlError": "URL에서 위치를 추출할 수 없습니다. 좌표를 직접 붙여넣어 보세요.",
     "venueLinked": "장소와 연결됨",
     "venueLinkButton": "기존 장소와 연결",

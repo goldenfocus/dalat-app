@@ -264,6 +264,7 @@
     "locationLoading": "Laden...",
     "locationCoordinatesDetected": "Koordinaten erkannt",
     "locationResolvingUrl": "Standort aus Link extrahieren...",
+    "locationLookingUp": "Standort wird gesucht...",
     "locationUrlError": "Standort konnte nicht aus URL extrahiert werden. Versuchen Sie, Koordinaten direkt einzufügen.",
     "venueLinked": "Mit Ort verknüpft",
     "venueLinkButton": "Mit bestehendem Ort verknüpfen",

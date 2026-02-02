@@ -264,6 +264,7 @@
     "locationLoading": "Đang tải...",
     "locationCoordinatesDetected": "Đã nhận diện tọa độ",
     "locationResolvingUrl": "Đang trích xuất vị trí từ link...",
+    "locationLookingUp": "Đang tra cứu địa điểm...",
     "locationUrlError": "Không thể trích xuất vị trí từ URL. Thử dán tọa độ trực tiếp.",
     "venueLinked": "Đã liên kết địa điểm",
     "venueLinkButton": "Liên kết địa điểm có sẵn",

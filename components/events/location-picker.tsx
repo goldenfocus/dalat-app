@@ -77,6 +77,7 @@ export function LocationPicker({
   // Smart detection state for coordinates/URLs
   const [detectedCoords, setDetectedCoords] = useState<ParsedCoordinates | null>(null);
   const [isResolvingUrl, setIsResolvingUrl] = useState(false);
+  const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
   const [urlResolveError, setUrlResolveError] = useState<string | null>(null);
 
   const sessionToken =
@@ -242,28 +243,69 @@ export function LocationPicker({
     }
   }, []);
 
+  // Reverse geocode to get place name from coordinates
+  const reverseGeocode = useCallback(async (lat: number, lng: number) => {
+    try {
+      const response = await fetch("/api/reverse-geocode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ latitude: lat, longitude: lng }),
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      return data.name ? { name: data.name, address: data.address } : null;
+    } catch (error) {
+      console.error("Reverse geocode error:", error);
+      return null;
+    }
+  }, []);
+
   // Apply detected coordinates as the selected location
   const applyDetectedCoordinates = useCallback(
-    (coords: ParsedCoordinates, rawInput: string) => {
-      const formattedName = formatCoordinates(coords.latitude, coords.longitude);
-      const location: SelectedLocation = {
+    async (coords: ParsedCoordinates, _rawInput: string) => {
+      const formattedCoords = formatCoordinates(coords.latitude, coords.longitude);
+
+      // Set location immediately with coordinates (quick feedback)
+      const initialLocation: SelectedLocation = {
         type: "place",
-        name: formattedName,
-        // Use formatted coords as address too (not the raw URL which is ugly)
-        address: formattedName,
+        name: formattedCoords,
+        address: formattedCoords,
         latitude: coords.latitude,
         longitude: coords.longitude,
         googleMapsUrl: generateGoogleMapsUrl(coords.latitude, coords.longitude),
       };
 
-      setSelectedLocation(location);
+      setSelectedLocation(initialLocation);
       setSelectedVenueId(null);
       setDetectedCoords(coords);
       setIsOpen(false);
-      onLocationSelect?.(location);
+      onLocationSelect?.(initialLocation);
       onVenueIdChange?.(null);
+
+      // Then reverse geocode to get the actual place name (async)
+      setIsReverseGeocoding(true);
+      const placeInfo = await reverseGeocode(coords.latitude, coords.longitude);
+      setIsReverseGeocoding(false);
+
+      if (placeInfo?.name) {
+        // Update with the real place name
+        const enrichedLocation: SelectedLocation = {
+          type: "place",
+          name: placeInfo.name,
+          address: placeInfo.address || formattedCoords,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          googleMapsUrl: generateGoogleMapsUrl(coords.latitude, coords.longitude),
+        };
+
+        setSelectedLocation(enrichedLocation);
+        setQuery(placeInfo.name); // Update the input to show the place name
+        onLocationSelect?.(enrichedLocation);
+      }
     },
-    [onLocationSelect, onVenueIdChange]
+    [onLocationSelect, onVenueIdChange, reverseGeocode]
   );
 
   // Detect and handle coordinate/URL input
@@ -520,12 +562,17 @@ export function LocationPicker({
           {selectedLocation.type === "venue" && (
             <Check className="w-3 h-3 text-green-500" />
           )}
-          {detectedCoords && (
+          {detectedCoords && !isReverseGeocoding && (
             <Navigation className="w-3 h-3 text-blue-500" />
+          )}
+          {isReverseGeocoding && (
+            <Loader2 className="w-3 h-3 animate-spin text-blue-500" />
           )}
           {detectedCoords ? (
             <span>
-              {t("locationCoordinatesDetected") || "Coordinates detected"}: {selectedLocation.name}
+              {isReverseGeocoding
+                ? (t("locationLookingUp") || "Looking up location...")
+                : selectedLocation.name}
             </span>
           ) : (
             selectedLocation.address

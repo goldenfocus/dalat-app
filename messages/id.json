@@ -264,6 +264,7 @@
     "locationLoading": "Memuat...",
     "locationCoordinatesDetected": "Koordinat terdeteksi",
     "locationResolvingUrl": "Mengekstrak lokasi dari tautan...",
+    "locationLookingUp": "Mencari lokasi...",
     "locationUrlError": "Tidak dapat mengekstrak lokasi dari URL. Coba tempel koordinat secara langsung.",
     "venueLinked": "Terhubung ke tempat",
     "venueLinkButton": "Hubungkan ke tempat yang ada",

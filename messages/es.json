@@ -264,6 +264,7 @@
     "locationLoading": "Cargando...",
     "locationCoordinatesDetected": "Coordenadas detectadas",
     "locationResolvingUrl": "Extrayendo ubicación del enlace...",
+    "locationLookingUp": "Buscando ubicación...",
     "locationUrlError": "No se pudo extraer la ubicación de la URL. Intenta pegar las coordenadas directamente.",
     "venueLinked": "Vinculado al lugar",
     "venueLinkButton": "Vincular a lugar existente",

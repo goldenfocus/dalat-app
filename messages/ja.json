@@ -264,6 +264,7 @@
     "locationLoading": "読み込み中...",
     "locationCoordinatesDetected": "座標を検出しました",
     "locationResolvingUrl": "リンクから位置を抽出中...",
+    "locationLookingUp": "場所を検索中...",
     "locationUrlError": "URLから位置を抽出できませんでした。座標を直接貼り付けてください。",
     "venueLinked": "会場とリンク済み",
     "venueLinkButton": "既存の会場とリンク",

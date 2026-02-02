@@ -264,6 +264,7 @@
     "locationLoading": "กำลังโหลด...",
     "locationCoordinatesDetected": "ตรวจพบพิกัด",
     "locationResolvingUrl": "กำลังดึงตำแหน่งจากลิงก์...",
+    "locationLookingUp": "กำลังค้นหาตำแหน่ง...",
     "locationUrlError": "ไม่สามารถดึงตำแหน่งจาก URL ลองวางพิกัดโดยตรง",
     "venueLinked": "เชื่อมต่อกับสถานที่",
     "venueLinkButton": "เชื่อมต่อกับสถานที่ที่มีอยู่",

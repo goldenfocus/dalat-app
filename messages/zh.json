@@ -264,6 +264,7 @@
     "locationLoading": "加载中...",
     "locationCoordinatesDetected": "已识别坐标",
     "locationResolvingUrl": "正在从链接提取位置...",
+    "locationLookingUp": "正在查询位置...",
     "locationUrlError": "无法从URL提取位置。请尝试直接粘贴坐标。",
     "venueLinked": "已关联场地",
     "venueLinkButton": "关联现有场地",

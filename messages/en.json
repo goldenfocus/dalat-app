@@ -285,6 +285,7 @@
     "locationCoordinatesDetected": "Coordinates detected",
     "locationResolvingUrl": "Extracting location from link...",
     "locationUrlError": "Could not extract location from URL. Try pasting coordinates directly.",
+    "locationLookingUp": "Looking up location...",
     "venueLinked": "Linked to venue",
     "venueLinkButton": "Link to existing venue",
     "venueLinkDialogTitle": "Select a venue",

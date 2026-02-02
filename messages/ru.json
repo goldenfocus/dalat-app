@@ -264,6 +264,7 @@
     "locationLoading": "Загрузка...",
     "locationCoordinatesDetected": "Координаты определены",
     "locationResolvingUrl": "Извлечение местоположения из ссылки...",
+    "locationLookingUp": "Поиск местоположения...",
     "locationUrlError": "Не удалось извлечь местоположение из URL. Попробуйте вставить координаты напрямую.",
     "venueLinked": "Связано с местом",
     "venueLinkButton": "Связать с местом",

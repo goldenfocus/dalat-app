@@ -278,6 +278,7 @@
     "locationLoading": "Chargement...",
     "locationCoordinatesDetected": "Coordonnées détectées",
     "locationResolvingUrl": "Extraction de l'emplacement du lien...",
+    "locationLookingUp": "Recherche du lieu...",
     "locationUrlError": "Impossible d'extraire l'emplacement de l'URL. Essayez de coller les coordonnées directement.",
     "venueLinked": "Lié au lieu",
     "venueLinkButton": "Lier à un lieu existant",
