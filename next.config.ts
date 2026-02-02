@@ -4,10 +4,11 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./lib/i18n/request.ts");
 
 const nextConfig: NextConfig = {
-  // Explicitly expose server-side env vars
+  // Note: Server-side API routes access process.env directly at runtime.
+  // Only add vars here if they need client-side exposure (which requires NEXT_PUBLIC_ prefix).
+  // Do NOT add server-only vars here - they get baked as undefined during build if not set!
   env: {
     OPENAI_API_KEY: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY,
-    REPLICATE_API_TOKEN: process.env.REPLICATE_API_TOKEN,
   },
 
   // Configure Next.js Image optimization for external domains
