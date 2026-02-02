@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       "image/gif",
       "video/mp4",
       "video/webm",
+      "video/quicktime", // .mov files from iOS
     ];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(

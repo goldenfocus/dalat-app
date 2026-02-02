@@ -14,6 +14,7 @@ const BUCKET_CONFIG: Record<string, string[]> = {
     "image/gif",
     "video/mp4",
     "video/webm",
+    "video/quicktime", // .mov files from iOS
   ],
   moments: [
     "image/jpeg",
@@ -22,10 +23,25 @@ const BUCKET_CONFIG: Record<string, string[]> = {
     "image/gif",
     "video/mp4",
     "video/webm",
+    "video/quicktime", // .mov files from iOS
   ],
   "venue-media": ["image/jpeg", "image/png", "image/webp", "image/gif"],
   "organizer-logos": ["image/jpeg", "image/png", "image/webp"],
   "persona-references": ["image/jpeg", "image/png", "image/webp"],
+  "moment-materials": [
+    "application/pdf",
+    "audio/mpeg",
+    "audio/wav",
+    "audio/ogg",
+    "audio/mp4",
+    "audio/x-m4a",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+  ],
 };
 
 /**
