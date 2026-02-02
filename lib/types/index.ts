@@ -394,6 +394,8 @@ export interface Event {
   spam_score: number;
   spam_reason: string | null;
   spam_checked_at: string | null;
+  // Sponsorship/Premium placement
+  sponsor_tier: number | null;
   // Series fields (for recurring event instances)
   series_id: string | null;
   series_instance_date: string | null;
@@ -637,7 +639,7 @@ export interface DashboardOverview {
 // Moments UGC Types
 // ============================================
 
-export type MomentContentType = 'photo' | 'video' | 'text';
+export type MomentContentType = 'photo' | 'video' | 'text' | 'youtube' | 'pdf' | 'audio' | 'image' | 'document';
 export type MomentStatus = 'pending' | 'published' | 'rejected' | 'removed';
 export type MomentVideoStatus = 'uploading' | 'processing' | 'ready' | 'error';
 export type MomentsWhoCanPost = 'anyone' | 'rsvp' | 'confirmed';
@@ -669,6 +671,21 @@ export interface Moment {
   cf_playback_url: string | null;
   video_status: MomentVideoStatus | null;
   video_duration_seconds: number | null;
+  // Material type fields
+  file_url: string | null;
+  original_filename: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  youtube_url: string | null;
+  youtube_video_id: string | null;
+  title: string | null;
+  artist: string | null;
+  album: string | null;
+  audio_duration_seconds: number | null;
+  audio_thumbnail_url: string | null;
+  track_number: string | null;
+  release_year: number | null;
+  genre: string | null;
   // Joined data
   profiles?: Profile;
   events?: Event;
@@ -691,6 +708,21 @@ export interface MomentWithProfile {
   cf_playback_url: string | null;
   video_status: MomentVideoStatus | null;
   video_duration_seconds: number | null;
+  // Material type fields
+  file_url: string | null;
+  original_filename: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  youtube_url: string | null;
+  youtube_video_id: string | null;
+  title: string | null;
+  artist: string | null;
+  album: string | null;
+  audio_duration_seconds: number | null;
+  audio_thumbnail_url: string | null;
+  track_number: string | null;
+  release_year: number | null;
+  genre: string | null;
 }
 
 export interface MomentCounts {
@@ -759,6 +791,15 @@ export interface GroupedMoment {
   cf_playback_url?: string | null;
   video_status?: MomentVideoStatus | null;
   video_duration_seconds?: number | null;
+  // Material type fields (optional for backward compatibility)
+  file_url?: string | null;
+  youtube_url?: string | null;
+  youtube_video_id?: string | null;
+  title?: string | null;
+  artist?: string | null;
+  album?: string | null;
+  audio_duration_seconds?: number | null;
+  audio_thumbnail_url?: string | null;
 }
 
 // Event group with its moments for profile timeline

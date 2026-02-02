@@ -12,12 +12,11 @@ import { AIOrganizerLogoDialog } from "@/components/admin/ai-organizer-logo-dial
 import { Trash2, AlertTriangle } from "lucide-react";
 import type { Organizer } from "@/lib/types";
 import { sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
+import { useUnifiedSlugCheck, type SlugStatus } from "@/lib/hooks/use-unified-slug-check";
 
 interface OrganizerFormProps {
   organizer?: Organizer;
 }
-
-type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 export function OrganizerForm({ organizer }: OrganizerFormProps) {
   const router = useRouter();
@@ -37,41 +36,16 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
 
   // Slug state
   const [slug, setSlug] = useState(organizer?.slug ?? "");
-  const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const [slugTouched, setSlugTouched] = useState(false);
 
-  // Check slug availability
-  useEffect(() => {
-    if (!slug || !slugTouched) {
-      setSlugStatus("idle");
-      return;
-    }
-
-    if (slug.length < 1 || !/^[a-z0-9-]+$/.test(slug)) {
-      setSlugStatus("invalid");
-      return;
-    }
-
-    if (isEditing && slug === organizer?.slug) {
-      setSlugStatus("available");
-      return;
-    }
-
-    setSlugStatus("checking");
-
-    const timer = setTimeout(async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("organizers")
-        .select("id")
-        .eq("slug", slug)
-        .maybeSingle();
-
-      setSlugStatus(data ? "taken" : "available");
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [slug, slugTouched, isEditing, organizer?.slug]);
+  // Unified slug check across all entity types (venues, organizers, profiles)
+  const { status: slugStatus, message: slugMessage } = useUnifiedSlugCheck({
+    slug,
+    entityType: "organizer",
+    entityId: organizer?.id,
+    originalSlug: organizer?.slug,
+    touched: slugTouched,
+  });
 
   // Auto-suggest slug from name
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -187,8 +161,8 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
       return;
     }
 
-    if (slugStatus === "taken") {
-      setError("This URL is already taken");
+    if (slugStatus === "taken" || slugStatus === "reserved" || slugStatus === "invalid" || slugStatus === "too_short") {
+      setError(slugStatus === "reserved" ? "This URL is reserved" : "This URL is not available");
       return;
     }
 
@@ -270,7 +244,7 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
             <Label htmlFor="slug">URL slug *</Label>
             <div className="flex items-center gap-0">
               <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input">
-                /organizers/
+                dalat.app/
               </span>
               <Input
                 id="slug"
@@ -281,20 +255,22 @@ export function OrganizerForm({ organizer }: OrganizerFormProps) {
                 className="rounded-l-none"
               />
             </div>
-            {slugTouched && (
+            {slugTouched && slugMessage && (
               <p
                 className={`text-xs ${
                   slugStatus === "available"
                     ? "text-green-600"
-                    : slugStatus === "taken" || slugStatus === "invalid"
+                    : slugStatus === "taken" || slugStatus === "invalid" || slugStatus === "reserved"
                     ? "text-red-500"
                     : "text-muted-foreground"
                 }`}
               >
                 {slugStatus === "checking" && "Checking..."}
-                {slugStatus === "available" && "✓ Available"}
+                {slugStatus === "available" && `✓ ${slugMessage}`}
                 {slugStatus === "taken" && "✗ Already taken"}
-                {slugStatus === "invalid" && "Only lowercase letters, numbers, and hyphens"}
+                {slugStatus === "reserved" && "✗ This URL is reserved"}
+                {slugStatus === "invalid" && "Only lowercase letters, numbers, dots, and hyphens"}
+                {slugStatus === "too_short" && "URL must be at least 2 characters"}
               </p>
             )}
           </div>

@@ -26,6 +26,13 @@ import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { hasRoleLevel, type Moment, type Event, type Profile, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
+import {
+  YouTubeEmbed,
+  AudioPlayer,
+  PDFPreview,
+  ImagePreview,
+  DocumentLink,
+} from "@/components/shared/material-renderers";
 
 // Map our locales to date-fns locales for relative time formatting
 const dateFnsLocales: Record<Locale, typeof enUS> = {
@@ -379,8 +386,66 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
       </nav>
 
       <div className="container max-w-2xl mx-auto px-4 py-6">
-        {/* Media display with navigation */}
-        {moment.content_type !== "text" && moment.media_url && (
+        {/* YouTube video */}
+        {moment.content_type === "youtube" && moment.youtube_video_id && (
+          <div className="mb-6">
+            <YouTubeEmbed
+              videoId={moment.youtube_video_id}
+              title={moment.title || momentTranslations.textContent || undefined}
+            />
+          </div>
+        )}
+
+        {/* Audio player */}
+        {moment.content_type === "audio" && moment.file_url && (
+          <div className="mb-6">
+            <AudioPlayer
+              url={moment.file_url}
+              filename={moment.original_filename || undefined}
+              title={moment.title || undefined}
+              artist={moment.artist || undefined}
+              album={moment.album || undefined}
+              thumbnailUrl={moment.audio_thumbnail_url || undefined}
+              durationSeconds={moment.audio_duration_seconds || undefined}
+              genre={moment.genre || undefined}
+            />
+          </div>
+        )}
+
+        {/* PDF document */}
+        {moment.content_type === "pdf" && moment.file_url && (
+          <div className="mb-6">
+            <PDFPreview
+              url={moment.file_url}
+              filename={moment.original_filename || moment.title || undefined}
+              fileSize={moment.file_size || undefined}
+            />
+          </div>
+        )}
+
+        {/* Other documents */}
+        {moment.content_type === "document" && moment.file_url && (
+          <div className="mb-6">
+            <DocumentLink
+              url={moment.file_url}
+              filename={moment.original_filename || moment.title || undefined}
+              fileSize={moment.file_size || undefined}
+            />
+          </div>
+        )}
+
+        {/* Image (material type) */}
+        {moment.content_type === "image" && moment.file_url && (
+          <div className="mb-6">
+            <ImagePreview
+              url={moment.file_url}
+              title={moment.title || undefined}
+            />
+          </div>
+        )}
+
+        {/* Photo/Video display with navigation (original behavior) */}
+        {(moment.content_type === "photo" || moment.content_type === "video") && moment.media_url && (
           <div className="relative aspect-square rounded-lg overflow-hidden bg-muted mb-6 group">
             {isVideo ? (
               <MomentVideoPlayer
@@ -428,8 +493,8 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
           </div>
         )}
 
-        {/* Navigation for text-only moments */}
-        {moment.content_type === "text" && hasNavigation && (
+        {/* Navigation for non-photo/video moments (text, youtube, audio, pdf, document, image) */}
+        {!["photo", "video"].includes(moment.content_type) && hasNavigation && (
           <div className="flex justify-between mb-6">
             {prevId ? (
               <Link

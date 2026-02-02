@@ -3,7 +3,7 @@
 import { memo } from "react";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Sparkles } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
@@ -11,7 +11,7 @@ import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
-import { decodeUnicodeEscapes } from "@/lib/utils";
+import { cn, decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 // Tiny gradient placeholder for perceived instant loading
@@ -47,6 +47,7 @@ export const EventCardFramed = memo(function EventCardFramed({
   const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
   const imageIsVideo = isVideoUrl(event.image_url);
   const displayTitle = translatedTitle || event.title;
+  const isSponsored = (event.sponsor_tier ?? 0) > 0;
 
   return (
     <Link
@@ -54,11 +55,21 @@ export const EventCardFramed = memo(function EventCardFramed({
       className="block touch-manipulation"
       prefetch={false}
     >
-      <Card className="overflow-hidden rounded-xl border-border/50 hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] active:opacity-90">
+      <Card className={cn(
+        "overflow-hidden rounded-xl transition-all duration-200 active:scale-[0.98] active:opacity-90",
+        isSponsored
+          ? "border-2 border-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:border-amber-400"
+          : "border-border/50 hover:border-foreground/20 hover:shadow-lg"
+      )}>
         {/* Image container - edge to edge, no frame */}
         <div className="relative aspect-[4/5] overflow-hidden group">
-            {/* Popular badge */}
-            {(counts?.going_spots ?? 0) >= 20 && (
+            {/* Sponsored badge - takes priority over Popular */}
+            {isSponsored ? (
+              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-medium rounded-full flex items-center gap-1 shadow-lg">
+                <Sparkles className="w-3 h-3" />
+                {t("sponsored")}
+              </div>
+            ) : (counts?.going_spots ?? 0) >= 20 && (
               <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
                 {t("popular")}
               </div>

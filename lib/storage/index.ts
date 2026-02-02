@@ -66,6 +66,7 @@ const R2_ENABLED_BUCKETS: string[] = [
   'venue-media',
   'organizer-logos',
   'persona-references',
+  'moment-materials',
 ];
 
 /**

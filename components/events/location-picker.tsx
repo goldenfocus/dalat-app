@@ -245,10 +245,12 @@ export function LocationPicker({
   // Apply detected coordinates as the selected location
   const applyDetectedCoordinates = useCallback(
     (coords: ParsedCoordinates, rawInput: string) => {
+      const formattedName = formatCoordinates(coords.latitude, coords.longitude);
       const location: SelectedLocation = {
         type: "place",
-        name: formatCoordinates(coords.latitude, coords.longitude),
-        address: rawInput, // Keep original input as address for reference
+        name: formattedName,
+        // Use formatted coords as address too (not the raw URL which is ugly)
+        address: formattedName,
         latitude: coords.latitude,
         longitude: coords.longitude,
         googleMapsUrl: generateGoogleMapsUrl(coords.latitude, coords.longitude),
@@ -273,14 +275,6 @@ export function LocationPicker({
 
       // Check for direct coordinates first
       const parsed = parseLocationInput(value);
-
-      // Debug logging - remove after testing
-      console.log("[LocationPicker] Smart detection:", {
-        valueLength: value.length,
-        isGoogleUrl: isGoogleMapsUrl(value),
-        parsed
-      });
-
       if (parsed) {
         applyDetectedCoordinates(parsed, value);
         return true;

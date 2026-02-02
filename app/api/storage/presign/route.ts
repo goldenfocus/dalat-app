@@ -21,6 +21,8 @@ const BUCKET_CONFIG: Record<string, string[]> = {
     "image/png",
     "image/webp",
     "image/gif",
+    "image/heic", // HEIC from iOS (usually converted, but allow direct)
+    "image/heif", // HEIF variant
     "video/mp4",
     "video/webm",
     "video/quicktime", // .mov files from iOS

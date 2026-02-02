@@ -3,7 +3,7 @@
 import { memo } from "react";
 import Image from "next/image";
 import { useRouter } from "@/lib/i18n/routing";
-import { Calendar, MapPin, Users, Clock } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Sparkles } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
@@ -12,7 +12,7 @@ import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { usePrefetch } from "@/lib/prefetch";
-import { decodeUnicodeEscapes } from "@/lib/utils";
+import { cn, decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 // Tiny gradient placeholder for perceived instant loading
@@ -93,6 +93,7 @@ export const EventCard = memo(function EventCard({
   const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
   const imageIsVideo = isVideoUrl(event.image_url);
   const displayTitle = translatedTitle || event.title;
+  const isSponsored = (event.sponsor_tier ?? 0) > 0;
 
   return (
     <div
@@ -113,15 +114,22 @@ export const EventCard = memo(function EventCard({
       >
         {/* Front face - Image + Title overlay */}
         <div
-          className={`relative w-full rounded-xl overflow-hidden [backface-visibility:hidden] group ${
-            isFlipped ? "invisible" : ""
-          }`}
+          className={cn(
+            "relative w-full rounded-xl overflow-hidden [backface-visibility:hidden] group",
+            isFlipped ? "invisible" : "",
+            isSponsored && "ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+          )}
           aria-hidden={isFlipped}
         >
           {/* Image area with 4:5 aspect ratio */}
           <div className="w-full aspect-[4/5] relative overflow-hidden">
-            {/* Popular badge for events with 20+ RSVPs */}
-            {(counts?.going_spots ?? 0) >= 20 && (
+            {/* Sponsored badge - takes priority over Popular */}
+            {isSponsored ? (
+              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-medium rounded-full flex items-center gap-1 shadow-lg">
+                <Sparkles className="w-3 h-3" />
+                {t("sponsored")}
+              </div>
+            ) : (counts?.going_spots ?? 0) >= 20 && (
               <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
                 {t("popular")}
               </div>

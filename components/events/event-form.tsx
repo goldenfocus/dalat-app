@@ -273,6 +273,12 @@ export function EventForm({
   );
   const [organizers, setOrganizers] = useState<Pick<Organizer, 'id' | 'name' | 'slug' | 'logo_url'>[]>([]);
 
+  // Sponsor tier state (admin only)
+  const canSetSponsorTier = hasRoleLevel(userRole, "admin");
+  const [sponsorTier, setSponsorTier] = useState<number | null>(
+    event?.sponsor_tier ?? null
+  );
+
   // Location/venue state (shared between LocationPicker and VenueLinker)
   const [venueId, setVenueId] = useState<string | null>(event?.venue_id ?? null);
   const [venueName, setVenueName] = useState<string | null>(event?.venues?.name ?? null);
@@ -566,6 +572,7 @@ export function EventForm({
           ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
           organizer_id: organizerId,
           venue_id: venueIdToSave || null,
+          ...(canSetSponsorTier && { sponsor_tier: sponsorTier }),
         };
 
         // Include slug if editable and changed
@@ -995,6 +1002,30 @@ export function EventForm({
               </Select>
               <p className="text-xs text-muted-foreground">
                 {t("organizerHelp")}
+              </p>
+            </div>
+          )}
+
+          {/* Sponsor Tier (admin only) */}
+          {canSetSponsorTier && (
+            <div className="space-y-2">
+              <Label htmlFor="sponsorTier">{t("sponsorTier") || "Featured/Sponsored"}</Label>
+              <Select
+                value={sponsorTier?.toString() ?? "none"}
+                onValueChange={(value) => setSponsorTier(value === "none" ? null : parseInt(value, 10))}
+              >
+                <SelectTrigger id="sponsorTier">
+                  <SelectValue placeholder={t("selectSponsorTier") || "Select tier..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("notSponsored") || "Not featured"}</SelectItem>
+                  <SelectItem value="1">{t("sponsorTier1") || "Basic (Tier 1)"}</SelectItem>
+                  <SelectItem value="2">{t("sponsorTier2") || "Premium (Tier 2)"}</SelectItem>
+                  <SelectItem value="3">{t("sponsorTier3") || "Gold (Tier 3)"}</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {t("sponsorTierHelp") || "Featured events appear first in feeds with a gold badge."}
               </p>
             </div>
           )}

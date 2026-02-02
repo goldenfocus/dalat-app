@@ -41,7 +41,8 @@ const URL_MAPPINGS: Record<
   "event-media": [{ table: "events", column: "image_url" }],
   moments: [{ table: "moments", column: "media_url" }],
   "venue-media": [
-    { table: "venues", column: "cover_image_url" },
+    { table: "venues", column: "cover_photo_url" },
+    { table: "venues", column: "logo_url" },
     // photos[] array needs special handling
   ],
   "organizer-logos": [{ table: "organizers", column: "logo_url" }],

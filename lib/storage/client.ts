@@ -8,6 +8,38 @@
 import { createClient } from "@/lib/supabase/client";
 import { generateSmartFilename } from "@/lib/media-utils";
 
+/**
+ * Infer MIME type from file extension (fallback for iOS Safari issues)
+ */
+function inferContentType(file: File): string {
+  // Return existing type if valid
+  if (file.type && file.type !== "application/octet-stream") {
+    return file.type;
+  }
+
+  // Infer from extension
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  const mimeMap: Record<string, string> = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    gif: "image/gif",
+    heic: "image/heic",
+    heif: "image/heif",
+    mp4: "video/mp4",
+    webm: "video/webm",
+    mov: "video/quicktime",
+    pdf: "application/pdf",
+    mp3: "audio/mpeg",
+    m4a: "audio/x-m4a",
+    wav: "audio/wav",
+    ogg: "audio/ogg",
+  };
+
+  return mimeMap[ext || ""] || file.type || "application/octet-stream";
+}
+
 export interface UploadResult {
   publicUrl: string;
   path: string;
@@ -41,6 +73,9 @@ export async function uploadFile(
   const path =
     options.filename || generateSmartFilename(file.name, entityId, ext);
 
+  // Infer content type (handles iOS Safari MIME type issues)
+  const contentType = inferContentType(file);
+
   // Try presigned URL first (works for both R2 and Supabase)
   try {
     const presignResponse = await fetch("/api/storage/presign", {
@@ -49,7 +84,7 @@ export async function uploadFile(
       body: JSON.stringify({
         bucket,
         path,
-        contentType: file.type,
+        contentType,
       }),
     });
 
@@ -60,7 +95,7 @@ export async function uploadFile(
       const uploadResponse = await fetch(url, {
         method: "PUT",
         headers: {
-          "Content-Type": file.type,
+          "Content-Type": contentType,
         },
         body: file,
       });

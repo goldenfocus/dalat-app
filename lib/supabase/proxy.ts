@@ -67,6 +67,33 @@ export async function updateSession(request: NextRequest) {
     ? rawPathname.slice(0, -1)
     : rawPathname;
 
+  // =========================================================================
+  // UNIFIED SLUG NAMESPACE: Legacy URL Redirects
+  // =========================================================================
+  // Redirect old /venues/[slug] and /organizers/[slug] URLs to unified /[slug]
+  // These are permanent (301) redirects for SEO preservation.
+
+  // Check for legacy venue URLs: /venues/[slug] or /{locale}/venues/[slug]
+  // But NOT /venues/[slug]/events (venue event list) - that stays
+  const legacyVenueMatch = pathname.match(/^(?:\/([a-z]{2}))?\/venues\/([a-zA-Z0-9_-]+)$/);
+  if (legacyVenueMatch) {
+    const [, locale, venueSlug] = legacyVenueMatch;
+    const targetLocale = locale || routing.defaultLocale;
+    const url = new URL(`/${targetLocale}/${venueSlug}`, request.url);
+    return NextResponse.redirect(url, { status: 301 });
+  }
+
+  // Check for legacy organizer URLs: /organizers/[slug] or /{locale}/organizers/[slug]
+  const legacyOrganizerMatch = pathname.match(/^(?:\/([a-z]{2}))?\/organizers\/([a-zA-Z0-9_-]+)$/);
+  if (legacyOrganizerMatch) {
+    const [, locale, organizerSlug] = legacyOrganizerMatch;
+    const targetLocale = locale || routing.defaultLocale;
+    const url = new URL(`/${targetLocale}/${organizerSlug}`, request.url);
+    return NextResponse.redirect(url, { status: 301 });
+  }
+
+  // =========================================================================
+
   // Skip locale handling for API routes and static files
   const shouldSkipLocale =
     pathname.startsWith('/api/') ||
@@ -189,6 +216,7 @@ export async function updateSession(request: NextRequest) {
     pathWithoutLocale.startsWith("/blog") ||  // Public blog articles
     pathWithoutLocale.startsWith("/map") ||  // Public map view
     pathWithoutLocale.startsWith("/calendar") ||  // Public calendar view
+    pathWithoutLocale.startsWith("/test") ||  // Test pages (dev only)
     pathWithoutLocale.startsWith("/invite") ||  // Public invite links
     pathWithoutLocale.startsWith("/@");  // Public profile pages
 

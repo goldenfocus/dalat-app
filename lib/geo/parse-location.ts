@@ -126,6 +126,29 @@ export function parseGoogleMapsUrl(input: string): ParsedCoordinates | null {
     }
   }
 
+  // Pattern 5: !3d{lat}!4d{lng} in data parameter (common in share URLs)
+  // e.g., data=...!3d11.9002492!4d108.4359672...
+  const dataPattern = /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/;
+  const dataMatch = trimmed.match(dataPattern);
+  if (dataMatch) {
+    const lat = parseFloat(dataMatch[1]);
+    const lng = parseFloat(dataMatch[2]);
+    if (isValidCoordinate(lat, lng)) {
+      return { latitude: lat, longitude: lng, source: "google-maps-url" };
+    }
+  }
+
+  // Pattern 6: !8m2!3d{lat}!4d{lng} variant
+  const dataPattern2 = /!8m2!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/;
+  const dataMatch2 = trimmed.match(dataPattern2);
+  if (dataMatch2) {
+    const lat = parseFloat(dataMatch2[1]);
+    const lng = parseFloat(dataMatch2[2]);
+    if (isValidCoordinate(lat, lng)) {
+      return { latitude: lat, longitude: lng, source: "google-maps-url" };
+    }
+  }
+
   return null;
 }
 
