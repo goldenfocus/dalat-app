@@ -101,18 +101,26 @@ export async function POST(request: Request) {
       ? `for someone named ${sanitizedName}`
       : "for a friendly person";
 
-    // Build style context
-    let styleContext: string;
+    let prompt: string;
+
+    // For custom prompts, give the user FULL creative control
     if (avatarStyle === "custom" && sanitizedCustomPrompt) {
-      styleContext = `The avatar should depict: ${sanitizedCustomPrompt}`;
+      prompt = `Create a portrait avatar ${nameContext}.
+
+${sanitizedCustomPrompt}
+
+Technical requirements:
+- Square 1:1 aspect ratio
+- Centered composition suitable for circular avatar crop
+- Do NOT include any text or lettering
+- High quality, detailed image`;
     } else {
+      // For preset styles, use the Đà Lạt-inspired artistic style
       const styleDesc = styleDescriptions[avatarStyle] || styleDescriptions.neutral;
-      styleContext = `The avatar should depict a ${styleDesc}`;
-    }
 
-    const prompt = `Create a beautiful, artistic avatar portrait ${nameContext}.
+      prompt = `Create a beautiful, artistic avatar portrait ${nameContext}.
 
-${styleContext}
+The avatar should depict a ${styleDesc}
 
 Style: Dreamy, ethereal digital art inspired by Đà Lạt, Vietnam's misty highlands.
 Colors: Soft pastels with hints of misty purple, pine forest green, warm sunset orange, and flower pink.
@@ -124,6 +132,7 @@ Important:
 - Do NOT include any text or lettering
 - Square 1:1 aspect ratio
 - Suitable for use as a profile picture`;
+    }
 
     console.log("[generate-avatar] Calling Gemini for avatar generation");
 

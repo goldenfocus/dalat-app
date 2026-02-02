@@ -145,19 +145,27 @@ function downloadICS(props: AddToCalendarProps) {
   URL.revokeObjectURL(url);
 }
 
-export function AddToCalendar(props: AddToCalendarProps) {
+interface AddToCalendarComponentProps extends AddToCalendarProps {
+  /** Use higher z-index for modal contexts (e.g., inside celebration modal) */
+  inModal?: boolean;
+}
+
+export function AddToCalendar({ inModal, ...props }: AddToCalendarComponentProps) {
   const t = useTranslations("calendar");
   const googleUrl = generateGoogleCalendarUrl(props);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="w-full">
           <CalendarPlus className="w-4 h-4 mr-2" />
           {t("addToCalendar")}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="center" className="w-56">
+      <DropdownMenuContent
+        align="center"
+        className={inModal ? "w-56 z-[10002]" : "w-56"}
+      >
         <DropdownMenuItem asChild>
           <a href={googleUrl} target="_blank" rel="noopener noreferrer">
             {t("googleCalendar")}

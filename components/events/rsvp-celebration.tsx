@@ -197,11 +197,14 @@ export function RsvpCelebration({
       const audio = new Audio("/sounds/celebration.mp3");
       audio.volume = 0.3;
       audioRef.current = audio;
-      audio.play().catch(() => {
-        // Audio playback failed - that's okay, continue silently
-      });
-    } catch {
-      // Audio not available
+      // Use a small timeout to ensure the audio context is ready after user interaction
+      setTimeout(() => {
+        audio.play().catch((err) => {
+          console.warn("Celebration audio playback failed:", err);
+        });
+      }, 50);
+    } catch (err) {
+      console.warn("Could not create celebration audio:", err);
     }
   }, [enableSound]);
 
@@ -246,8 +249,7 @@ export function RsvpCelebration({
     setTimeout(() => {
       setShowInvite(true);
     }, 1500);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [getRandomPhrase, fireCardConfetti, fireFireworks, playSound]);
 
   // Separate effect for phrase cycling (needs getRandomPhrase dep)
   useEffect(() => {
@@ -411,6 +413,7 @@ export function RsvpCelebration({
               startsAt={startsAt}
               endsAt={endsAt}
               url={eventUrl}
+              inModal
             />
           </div>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, Sparkles, Loader2, Camera, User, UserCircle } from "lucide-react";
+import { Upload, Sparkles, Loader2, Camera, User, UserCircle, Wand2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { generateSmartFilename } from "@/lib/media-utils";
 import { DefaultAvatars } from "./default-avatars";
+import { AIAvatarDialog } from "@/components/profile/ai-avatar-dialog";
 
 type AvatarStyle = "male" | "female" | "neutral" | "custom";
 
@@ -43,6 +44,8 @@ export function AvatarStep({
   const [generationStage, setGenerationStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Track if current avatar is AI-generated (to show refine option)
+  const [isAIGenerated, setIsAIGenerated] = useState(false);
 
   // AI Avatar dialog state
   const [showAIDialog, setShowAIDialog] = useState(false);
@@ -121,6 +124,7 @@ export function AvatarStep({
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
     setSelectedDefault(null);
+    setIsAIGenerated(false);
     setIsUploading(true);
 
     try {
@@ -153,11 +157,13 @@ export function AvatarStep({
       const publicUrl = await uploadToStorage(blob, ext);
       setPreviewUrl(publicUrl);
       setSelectedDefault(null);
+      setIsAIGenerated(false);
     } catch (err) {
       console.error("OAuth avatar error:", err);
       // Fall back to using the OAuth URL directly
       setPreviewUrl(oauthAvatarUrl);
       setSelectedDefault(null);
+      setIsAIGenerated(false);
     } finally {
       setIsUploading(false);
     }
@@ -200,6 +206,7 @@ export function AvatarStep({
       const publicUrl = await uploadToStorage(blob, ext);
       setPreviewUrl(publicUrl);
       setSelectedDefault(null);
+      setIsAIGenerated(true);
       setShowAIDialog(false);
       // Reset dialog state for next time
       setSelectedStyle("neutral");
@@ -215,6 +222,13 @@ export function AvatarStep({
   const handleSelectDefault = (src: string) => {
     setSelectedDefault(src);
     setPreviewUrl(src);
+    setIsAIGenerated(false);
+  };
+
+  // Handler for when AIAvatarDialog refines the avatar
+  const handleAvatarRefined = (url: string) => {
+    setPreviewUrl(url);
+    setIsAIGenerated(true);
   };
 
   const handleContinue = () => {
@@ -226,11 +240,11 @@ export function AvatarStep({
   return (
     <div className="space-y-8">
       {/* Large preview */}
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center gap-3">
         <div
           className={cn(
             "w-32 h-32 rounded-full overflow-hidden bg-muted border-4 border-background shadow-lg",
-            "flex items-center justify-center"
+            "flex items-center justify-center relative"
           )}
         >
           {previewUrl ? (
@@ -248,6 +262,26 @@ export function AvatarStep({
             </div>
           )}
         </div>
+
+        {/* Refine button - shows after AI generation */}
+        {isAIGenerated && previewUrl && !isLoading && (
+          <AIAvatarDialog
+            profileId={userId}
+            displayName={displayName}
+            currentAvatarUrl={previewUrl}
+            onAvatarGenerated={handleAvatarRefined}
+            initialMode="refine"
+            customTrigger={
+              <button
+                type="button"
+                className="flex items-center gap-1.5 text-sm text-violet-400 hover:text-violet-300 transition-colors"
+              >
+                <Wand2 className="w-4 h-4" />
+                {tProfile("avatarDialog.refineTitle")}
+              </button>
+            }
+          />
+        )}
       </div>
 
       {/* Action cards */}
