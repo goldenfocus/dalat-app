@@ -243,7 +243,7 @@ AS $$
   JOIN events e ON e.id = m.event_id
   JOIN profiles p ON p.id = m.user_id
   LEFT JOIN moment_metadata mm ON mm.moment_id = m.id
-  LEFT JOIN event_rsvps r ON r.event_id = m.event_id AND r.user_id = p_user_id
+  LEFT JOIN rsvps r ON r.event_id = m.event_id AND r.user_id = p_user_id
   WHERE m.status = 'published'
     AND m.content_type IN ('photo', 'video', 'image')
     AND (m.media_url IS NOT NULL OR m.thumbnail_url IS NOT NULL)
@@ -298,7 +298,7 @@ AS $$
       ELSE false
     END as can_post_moments
   FROM events e
-  LEFT JOIN event_rsvps r ON r.event_id = e.id AND r.user_id = p_user_id
+  LEFT JOIN rsvps r ON r.event_id = e.id AND r.user_id = p_user_id
   LEFT JOIN event_settings es ON es.event_id = e.id
   WHERE e.status = 'published'
     AND (

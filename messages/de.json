@@ -1117,7 +1117,6 @@
     "postYoutube": "YouTube-Video teilen",
     "postText": "Posten",
     "postFile": "Datei teilen",
-    "posting": "Wird gepostet...",
     "inputModes": {
       "media": "Foto/Video",
       "file": "Datei",
@@ -1142,7 +1141,18 @@
     "searchResults": "{count} Ergebnisse für \"{query}\"",
     "searchPrompt": "Suche nach allem – \"Sonnenuntergang\", \"Kaffee\", \"tanzende Freunde\"",
     "searching": "Suche läuft...",
-    "searchNoResultsHint": "Versuche andere Suchbegriffe oder schaue später vorbei, wenn mehr Moments geteilt werden"
+    "searchNoResultsHint": "Versuche andere Suchbegriffe oder schaue später vorbei, wenn mehr Moments geteilt werden",
+    "strip": {
+      "title": "Aktuelle Momente",
+      "seeAll": "Alle anzeigen"
+    },
+    "fab": {
+      "upload": "Moment teilen",
+      "selectEvent": "Event auswählen",
+      "recentEvents": "Aktuelle Events",
+      "noRecentEvents": "Keine aktuellen Events",
+      "rsvpHint": "RSVP zum Hochladen"
+    }
   },
   "tribes": {
     "title": "Tribes",
@@ -1670,23 +1680,21 @@
     "communityPhotosCount": "{count} Fotos von Veranstaltungen hier",
     "noCommunityPhotos": "Noch keine Community-Fotos",
     "addOfficialPhotos": "Offizielle Fotos hinzufügen",
-
     "photoManager": {
-        "editCaption": "Beschriftung bearbeiten",
-        "delete": "Foto löschen",
-        "captionPlaceholder": "Beschriftung (optional)",
-        "uploadDescription": "Offizielle Fotos für diesen Ort hochladen",
-        "clickToSelect": "Klicken, um Fotos auszuwählen",
-        "fileTypes": "JPEG, PNG, WebP, GIF (max. 10MB pro Bild)",
-        "readyToUpload": "{count} Foto(s) bereit zum Hochladen",
-        "cancel": "Abbrechen",
-        "uploading": "Hochladen...",
-        "upload": "{count} Foto(s) hochladen",
-        "deleteTitle": "Dieses Foto löschen?",
-        "deleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden.",
-        "confirmDelete": "Löschen"
-    }
-,
+      "editCaption": "Beschriftung bearbeiten",
+      "delete": "Foto löschen",
+      "captionPlaceholder": "Beschriftung (optional)",
+      "uploadDescription": "Offizielle Fotos für diesen Ort hochladen",
+      "clickToSelect": "Klicken, um Fotos auszuwählen",
+      "fileTypes": "JPEG, PNG, WebP, GIF (max. 10MB pro Bild)",
+      "readyToUpload": "{count} Foto(s) bereit zum Hochladen",
+      "cancel": "Abbrechen",
+      "uploading": "Hochladen...",
+      "upload": "{count} Foto(s) hochladen",
+      "deleteTitle": "Dieses Foto löschen?",
+      "deleteDescription": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "confirmDelete": "Löschen"
+    },
     "postedAt": "bei {event}",
     "loadMore": "Mehr laden",
     "organizer": "Veranstalter",

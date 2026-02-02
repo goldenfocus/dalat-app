@@ -1117,7 +1117,6 @@
     "postYoutube": "แชร์วิดีโอ YouTube",
     "postText": "โพสต์",
     "postFile": "แชร์ไฟล์",
-    "posting": "กำลังโพสต์...",
     "inputModes": {
       "media": "รูป/วิดีโอ",
       "file": "ไฟล์",
@@ -1142,7 +1141,18 @@
     "searchResults": "{count} ผลลัพธ์สำหรับ \"{query}\"",
     "searchPrompt": "ค้นหาอะไรก็ได้—\"พระอาทิตย์ตก\", \"กาแฟ\", \"เพื่อนเต้นรำ\"",
     "searching": "กำลังค้นหา...",
-    "searchNoResultsHint": "ลองใช้คำค้นหาอื่นหรือกลับมาใหม่เมื่อมีโมเมนต์เพิ่มขึ้น"
+    "searchNoResultsHint": "ลองใช้คำค้นหาอื่นหรือกลับมาใหม่เมื่อมีโมเมนต์เพิ่มขึ้น",
+    "strip": {
+      "title": "โมเมนต์ล่าสุด",
+      "seeAll": "ดูทั้งหมด"
+    },
+    "fab": {
+      "upload": "แชร์โมเมนต์",
+      "selectEvent": "เลือกกิจกรรม",
+      "recentEvents": "กิจกรรมล่าสุด",
+      "noRecentEvents": "ไม่มีกิจกรรมล่าสุด",
+      "rsvpHint": "RSVP เพื่ออัปโหลด"
+    }
   },
   "tribes": {
     "title": "Tribes",
@@ -1670,23 +1680,21 @@
     "communityPhotosCount": "{count} รูปจากกิจกรรมที่นี่",
     "noCommunityPhotos": "ยังไม่มีรูปจากชุมชน",
     "addOfficialPhotos": "เพิ่มรูปทางการ",
-
     "photoManager": {
-        "editCaption": "แก้ไขคำบรรยาย",
-        "delete": "ลบรูปภาพ",
-        "captionPlaceholder": "คำบรรยาย (ไม่บังคับ)",
-        "uploadDescription": "อัปโหลดรูปภาพทางการสำหรับสถานที่นี้",
-        "clickToSelect": "คลิกเพื่อเลือกรูปภาพ",
-        "fileTypes": "JPEG, PNG, WebP, GIF (สูงสุด 10MB ต่อรูป)",
-        "readyToUpload": "{count} รูปพร้อมอัปโหลด",
-        "cancel": "ยกเลิก",
-        "uploading": "กำลังอัปโหลด...",
-        "upload": "อัปโหลด {count} รูป",
-        "deleteTitle": "ลบรูปภาพนี้?",
-        "deleteDescription": "การกระทำนี้ไม่สามารถยกเลิกได้",
-        "confirmDelete": "ลบ"
-    }
-,
+      "editCaption": "แก้ไขคำบรรยาย",
+      "delete": "ลบรูปภาพ",
+      "captionPlaceholder": "คำบรรยาย (ไม่บังคับ)",
+      "uploadDescription": "อัปโหลดรูปภาพทางการสำหรับสถานที่นี้",
+      "clickToSelect": "คลิกเพื่อเลือกรูปภาพ",
+      "fileTypes": "JPEG, PNG, WebP, GIF (สูงสุด 10MB ต่อรูป)",
+      "readyToUpload": "{count} รูปพร้อมอัปโหลด",
+      "cancel": "ยกเลิก",
+      "uploading": "กำลังอัปโหลด...",
+      "upload": "อัปโหลด {count} รูป",
+      "deleteTitle": "ลบรูปภาพนี้?",
+      "deleteDescription": "การกระทำนี้ไม่สามารถยกเลิกได้",
+      "confirmDelete": "ลบ"
+    },
     "postedAt": "ที่ {event}",
     "loadMore": "โหลดเพิ่ม",
     "organizer": "ผู้จัด",

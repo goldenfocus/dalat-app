@@ -32,7 +32,7 @@ import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import { MomentsPreview } from "@/components/moments";
+import { MomentsPreview, PastEventMomentsShowcase } from "@/components/moments";
 import { SponsorDisplay } from "@/components/events/sponsor-display";
 import { ClickableTagList } from "@/components/events/clickable-tag-list";
 import { SiteHeader } from "@/components/site-header";
@@ -734,6 +734,16 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               )}
             </div>
 
+            {/* Moments Gallery - Prominent for past events */}
+            {isPast && (
+              <PastEventMomentsShowcase
+                eventSlug={event.slug}
+                moments={momentsPreview}
+                counts={momentCounts}
+                canPost={canPostMoment}
+              />
+            )}
+
             {/* Sponsors */}
             {sponsors.length > 0 && (
               <SponsorDisplay sponsors={sponsors} />
@@ -964,13 +974,15 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               </CardContent>
             </Card>
 
-            {/* Moments preview */}
-            <MomentsPreview
-              eventSlug={event.slug}
-              moments={momentsPreview}
-              counts={momentCounts}
-              canPost={canPostMoment}
-            />
+            {/* Moments preview - Only show in sidebar for upcoming events */}
+            {!isPast && (
+              <MomentsPreview
+                eventSlug={event.slug}
+                moments={momentsPreview}
+                counts={momentCounts}
+                canPost={canPostMoment}
+              />
+            )}
 
             {/* More from organizer */}
             {event.organizers && organizerEvents.length > 1 && (

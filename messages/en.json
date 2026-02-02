@@ -1233,6 +1233,17 @@
       "remove": "Remove",
       "proUploadLink": "Have 100+ photos? Use Pro Upload"
     },
+    "strip": {
+      "title": "Recent Moments",
+      "seeAll": "See all"
+    },
+    "fab": {
+      "upload": "Share a moment",
+      "selectEvent": "Select an event",
+      "recentEvents": "Your recent events",
+      "noRecentEvents": "No recent events",
+      "rsvpHint": "RSVP to events to upload moments"
+    },
     "gate": {
       "title": "You found some gems! ✨",
       "subtitle": "Create a free account to keep exploring and save your favorites",

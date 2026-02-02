@@ -724,6 +724,15 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           ]);
         }
 
+        // Trigger AI processing for YouTube content
+        if (data?.moment_id) {
+          fetch("/api/moments/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ momentId: data.moment_id }),
+          }).catch(() => {});
+        }
+
         triggerHaptic("medium");
         clearYoutubePreview();
         setCaption("");
@@ -785,6 +794,15 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
               { field_name: "text_content", text: textContent },
             ]);
           }
+
+          // Trigger AI processing for material content (PDF, audio, etc.)
+          if (data?.moment_id) {
+            fetch("/api/moments/process", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ momentId: data.moment_id }),
+            }).catch(() => {});
+          }
         }
 
         triggerHaptic("medium");
@@ -838,6 +856,13 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           triggerTranslation("moment", data.moment_id, [
             { field_name: "text_content", text: textContent },
           ]);
+
+          // Trigger AI processing for text content
+          fetch("/api/moments/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ momentId: data.moment_id }),
+          }).catch(() => {});
         }
 
         triggerHaptic("medium");
@@ -908,6 +933,17 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
             body: JSON.stringify({ momentId: data.moment_id }),
           }).catch(() => {
             // Non-critical - ignore embedding failures
+          });
+        }
+
+        // Fire-and-forget: Trigger AI processing for metadata extraction
+        if (data?.moment_id) {
+          fetch("/api/moments/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ momentId: data.moment_id }),
+          }).catch(() => {
+            // Non-critical - ignore processing failures
           });
         }
       }

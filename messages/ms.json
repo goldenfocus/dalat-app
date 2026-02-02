@@ -1002,7 +1002,7 @@
     "beFirst": "Jadilah yang pertama berkongsi momen dari acara ini!",
     "shareYourMoment": "Kongsi momen anda",
     "postMoment": "Post momen",
-    "posting": "Mempost...",
+    "posting": "Menghantar...",
     "delete": "Padam",
     "deleting": "Memadam...",
     "deleteTitle": "Padam momen?",
@@ -1117,7 +1117,6 @@
     "postYoutube": "Kongsi video YouTube",
     "postText": "Hantar",
     "postFile": "Kongsi fail",
-    "posting": "Menghantar...",
     "inputModes": {
       "media": "Foto/Video",
       "file": "Fail",
@@ -1142,7 +1141,18 @@
     "searchResults": "{count} keputusan untuk \"{query}\"",
     "searchPrompt": "Cari apa sahaja—\"matahari terbenam\", \"kopi\", \"rakan menari\"",
     "searching": "Mencari...",
-    "searchNoResultsHint": "Cuba kata kunci lain atau semak kemudian apabila lebih banyak momen dikongsi"
+    "searchNoResultsHint": "Cuba kata kunci lain atau semak kemudian apabila lebih banyak momen dikongsi",
+    "strip": {
+      "title": "Momen Terkini",
+      "seeAll": "Lihat semua"
+    },
+    "fab": {
+      "upload": "Kongsi momen",
+      "selectEvent": "Pilih acara",
+      "recentEvents": "Acara terkini",
+      "noRecentEvents": "Tiada acara terkini",
+      "rsvpHint": "RSVP untuk memuat naik"
+    }
   },
   "tribes": {
     "title": "Suku",
@@ -1670,23 +1680,21 @@
     "communityPhotosCount": "{count} foto dari acara di sini",
     "noCommunityPhotos": "Belum ada foto komuniti",
     "addOfficialPhotos": "Tambah Foto Rasmi",
-
     "photoManager": {
-        "editCaption": "Edit kapsyen",
-        "delete": "Padam foto",
-        "captionPlaceholder": "Kapsyen (pilihan)",
-        "uploadDescription": "Muat naik foto rasmi untuk tempat ini",
-        "clickToSelect": "Klik untuk memilih foto",
-        "fileTypes": "JPEG, PNG, WebP, GIF (maks 10MB setiap satu)",
-        "readyToUpload": "{count} foto sedia untuk dimuat naik",
-        "cancel": "Batal",
-        "uploading": "Memuat naik...",
-        "upload": "Muat naik {count} foto",
-        "deleteTitle": "Padam foto ini?",
-        "deleteDescription": "Tindakan ini tidak boleh dibatalkan.",
-        "confirmDelete": "Padam"
-    }
-,
+      "editCaption": "Edit kapsyen",
+      "delete": "Padam foto",
+      "captionPlaceholder": "Kapsyen (pilihan)",
+      "uploadDescription": "Muat naik foto rasmi untuk tempat ini",
+      "clickToSelect": "Klik untuk memilih foto",
+      "fileTypes": "JPEG, PNG, WebP, GIF (maks 10MB setiap satu)",
+      "readyToUpload": "{count} foto sedia untuk dimuat naik",
+      "cancel": "Batal",
+      "uploading": "Memuat naik...",
+      "upload": "Muat naik {count} foto",
+      "deleteTitle": "Padam foto ini?",
+      "deleteDescription": "Tindakan ini tidak boleh dibatalkan.",
+      "confirmDelete": "Padam"
+    },
     "postedAt": "di {event}",
     "loadMore": "Muat lagi",
     "organizer": "Penganjur",

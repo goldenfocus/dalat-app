@@ -9,3 +9,9 @@ export {
 export { onCommentCreated } from './functions/comment-notifications';
 export { dailyBlogSummary } from './functions/daily-blog-summary';
 export { dailyEventDiscovery, manualEventDiscovery } from './functions/event-discovery';
+export {
+  processMomentMetadata,
+  processVideoWhenReady,
+  processPendingMoments,
+  reprocessMoment,
+} from './functions/moment-processing';

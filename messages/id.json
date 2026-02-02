@@ -1117,7 +1117,6 @@
     "postYoutube": "Bagikan video YouTube",
     "postText": "Posting",
     "postFile": "Bagikan file",
-    "posting": "Memposting...",
     "inputModes": {
       "media": "Foto/Video",
       "file": "File",
@@ -1142,7 +1141,18 @@
     "searchResults": "{count} hasil untuk \"{query}\"",
     "searchPrompt": "Cari apa saja—\"matahari terbenam\", \"kopi\", \"teman menari\"",
     "searching": "Mencari...",
-    "searchNoResultsHint": "Coba kata kunci berbeda atau kembali lagi nanti saat lebih banyak momen dibagikan"
+    "searchNoResultsHint": "Coba kata kunci berbeda atau kembali lagi nanti saat lebih banyak momen dibagikan",
+    "strip": {
+      "title": "Momen Terbaru",
+      "seeAll": "Lihat semua"
+    },
+    "fab": {
+      "upload": "Bagikan momen",
+      "selectEvent": "Pilih acara",
+      "recentEvents": "Acara terbaru",
+      "noRecentEvents": "Tidak ada acara terbaru",
+      "rsvpHint": "RSVP untuk mengunggah"
+    }
   },
   "tribes": {
     "title": "Tribes",
@@ -1689,23 +1699,21 @@
     "communityPhotosCount": "{count} foto dari acara di sini",
     "noCommunityPhotos": "Belum ada foto komunitas",
     "addOfficialPhotos": "Tambah Foto Resmi",
-
     "photoManager": {
-        "editCaption": "Edit keterangan",
-        "delete": "Hapus foto",
-        "captionPlaceholder": "Keterangan (opsional)",
-        "uploadDescription": "Unggah foto resmi untuk tempat ini",
-        "clickToSelect": "Klik untuk memilih foto",
-        "fileTypes": "JPEG, PNG, WebP, GIF (maks 10MB per file)",
-        "readyToUpload": "{count} foto siap diunggah",
-        "cancel": "Batal",
-        "uploading": "Mengunggah...",
-        "upload": "Unggah {count} foto",
-        "deleteTitle": "Hapus foto ini?",
-        "deleteDescription": "Tindakan ini tidak dapat dibatalkan.",
-        "confirmDelete": "Hapus"
-    }
-,
+      "editCaption": "Edit keterangan",
+      "delete": "Hapus foto",
+      "captionPlaceholder": "Keterangan (opsional)",
+      "uploadDescription": "Unggah foto resmi untuk tempat ini",
+      "clickToSelect": "Klik untuk memilih foto",
+      "fileTypes": "JPEG, PNG, WebP, GIF (maks 10MB per file)",
+      "readyToUpload": "{count} foto siap diunggah",
+      "cancel": "Batal",
+      "uploading": "Mengunggah...",
+      "upload": "Unggah {count} foto",
+      "deleteTitle": "Hapus foto ini?",
+      "deleteDescription": "Tindakan ini tidak dapat dibatalkan.",
+      "confirmDelete": "Hapus"
+    },
     "postedAt": "di {event}",
     "loadMore": "Muat lebih",
     "organizer": "Penyelenggara",

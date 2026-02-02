@@ -9,6 +9,10 @@ import {
   dailyBlogSummary,
   dailyEventDiscovery,
   manualEventDiscovery,
+  processMomentMetadata,
+  processVideoWhenReady,
+  processPendingMoments,
+  reprocessMoment,
 } from '@/lib/inngest';
 
 // Create the Inngest API handler
@@ -23,5 +27,10 @@ export const { GET, POST, PUT } = serve({
     dailyBlogSummary,
     dailyEventDiscovery,
     manualEventDiscovery,
+    // Moment AI processing
+    processMomentMetadata,
+    processVideoWhenReady,
+    processPendingMoments,
+    reprocessMoment,
   ],
 });

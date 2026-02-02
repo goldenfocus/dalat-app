@@ -22,6 +22,7 @@ import {
   getCachedHomepageConfig,
 } from "@/lib/cache/server-cache";
 import { HeroImageSection } from "@/components/home/hero-image-section";
+import { MomentsStripServer } from "@/components/home/moments-strip-server";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
@@ -112,6 +113,11 @@ export default async function Home({ params }: PageProps) {
       ) : (
         <HeroSection />
       )}
+
+      {/* Recent Moments Strip - Instagram Stories style */}
+      <Suspense fallback={null}>
+        <MomentsStripServer />
+      </Suspense>
 
       {/* Main content - Scrollable event feed */}
       <div className="flex-1 container max-w-6xl mx-auto px-4 py-4 lg:py-6">

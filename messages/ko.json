@@ -1117,7 +1117,6 @@
     "postYoutube": "YouTube 동영상 공유",
     "postText": "게시",
     "postFile": "파일 공유",
-    "posting": "게시 중...",
     "inputModes": {
       "media": "사진/동영상",
       "file": "파일",
@@ -1142,7 +1141,18 @@
     "searchResults": "\"{query}\"에 대한 {count}개 결과",
     "searchPrompt": "무엇이든 검색하세요—\"일몰\", \"커피\", \"춤추는 친구들\"",
     "searching": "검색 중...",
-    "searchNoResultsHint": "다른 키워드를 시도하거나 더 많은 모먼트가 공유될 때 다시 확인하세요"
+    "searchNoResultsHint": "다른 키워드를 시도하거나 더 많은 모먼트가 공유될 때 다시 확인하세요",
+    "strip": {
+      "title": "최근 모먼트",
+      "seeAll": "전체 보기"
+    },
+    "fab": {
+      "upload": "모먼트 공유",
+      "selectEvent": "이벤트 선택",
+      "recentEvents": "최근 이벤트",
+      "noRecentEvents": "최근 이벤트 없음",
+      "rsvpHint": "RSVP하여 업로드하세요"
+    }
   },
   "tribes": {
     "title": "트라이브",
@@ -1670,23 +1680,21 @@
     "communityPhotosCount": "여기 이벤트에서 {count}개 사진",
     "noCommunityPhotos": "아직 커뮤니티 사진이 없습니다",
     "addOfficialPhotos": "공식 사진 추가",
-
     "photoManager": {
-        "editCaption": "캡션 편집",
-        "delete": "사진 삭제",
-        "captionPlaceholder": "캡션 (선택사항)",
-        "uploadDescription": "이 장소의 공식 사진을 업로드하세요",
-        "clickToSelect": "클릭하여 사진 선택",
-        "fileTypes": "JPEG, PNG, WebP, GIF (각 최대 10MB)",
-        "readyToUpload": "{count}개의 사진 업로드 준비 완료",
-        "cancel": "취소",
-        "uploading": "업로드 중...",
-        "upload": "{count}개 사진 업로드",
-        "deleteTitle": "이 사진을 삭제하시겠습니까?",
-        "deleteDescription": "이 작업은 취소할 수 없습니다.",
-        "confirmDelete": "삭제"
-    }
-,
+      "editCaption": "캡션 편집",
+      "delete": "사진 삭제",
+      "captionPlaceholder": "캡션 (선택사항)",
+      "uploadDescription": "이 장소의 공식 사진을 업로드하세요",
+      "clickToSelect": "클릭하여 사진 선택",
+      "fileTypes": "JPEG, PNG, WebP, GIF (각 최대 10MB)",
+      "readyToUpload": "{count}개의 사진 업로드 준비 완료",
+      "cancel": "취소",
+      "uploading": "업로드 중...",
+      "upload": "{count}개 사진 업로드",
+      "deleteTitle": "이 사진을 삭제하시겠습니까?",
+      "deleteDescription": "이 작업은 취소할 수 없습니다.",
+      "confirmDelete": "삭제"
+    },
     "postedAt": "{event}에서",
     "loadMore": "더 보기",
     "organizer": "주최자",

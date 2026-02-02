@@ -16,6 +16,7 @@ import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { GodModeIndicatorWrapper } from "@/components/god-mode-indicator";
 import { QueryProvider } from "@/lib/providers/query-provider";
 import { LocalePreloader } from "@/components/locale-preloader";
+import { UploadFAB } from "@/components/moments/upload-fab";
 
 const siteUrl = "https://dalat.app";
 
@@ -91,6 +92,7 @@ export default async function LocaleLayout({ children, params }: Props) {
                 {children}
               </main>
               <MobileBottomNav />
+              <UploadFAB />
               <GlobalFooter />
               <GodModeIndicatorWrapper />
             </div>

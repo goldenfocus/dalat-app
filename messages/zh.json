@@ -1117,7 +1117,6 @@
     "postYoutube": "分享YouTube视频",
     "postText": "发布",
     "postFile": "分享文件",
-    "posting": "发布中...",
     "inputModes": {
       "media": "照片/视频",
       "file": "文件",
@@ -1142,7 +1141,18 @@
     "searchResults": "「{query}」的 {count} 个结果",
     "searchPrompt": "搜索任何内容——「日落」、「咖啡」、「跳舞的朋友」",
     "searching": "搜索中...",
-    "searchNoResultsHint": "尝试不同的关键词，或稍后再来查看更多分享的动态"
+    "searchNoResultsHint": "尝试不同的关键词，或稍后再来查看更多分享的动态",
+    "strip": {
+      "title": "最新瞬间",
+      "seeAll": "查看全部"
+    },
+    "fab": {
+      "upload": "分享瞬间",
+      "selectEvent": "选择活动",
+      "recentEvents": "近期活动",
+      "noRecentEvents": "暂无近期活动",
+      "rsvpHint": "RSVP参加活动后上传"
+    }
   },
   "tribes": {
     "title": "部落",
@@ -1670,23 +1680,21 @@
     "communityPhotosCount": "这里活动的{count}张照片",
     "noCommunityPhotos": "暂无社区照片",
     "addOfficialPhotos": "添加官方照片",
-
     "photoManager": {
-        "editCaption": "编辑说明",
-        "delete": "删除照片",
-        "captionPlaceholder": "说明（可选）",
-        "uploadDescription": "上传此场地的官方照片",
-        "clickToSelect": "点击选择照片",
-        "fileTypes": "JPEG、PNG、WebP、GIF（每张最大10MB）",
-        "readyToUpload": "{count}张照片准备上传",
-        "cancel": "取消",
-        "uploading": "上传中...",
-        "upload": "上传{count}张照片",
-        "deleteTitle": "删除这张照片？",
-        "deleteDescription": "此操作无法撤销。",
-        "confirmDelete": "删除"
-    }
-,
+      "editCaption": "编辑说明",
+      "delete": "删除照片",
+      "captionPlaceholder": "说明（可选）",
+      "uploadDescription": "上传此场地的官方照片",
+      "clickToSelect": "点击选择照片",
+      "fileTypes": "JPEG、PNG、WebP、GIF（每张最大10MB）",
+      "readyToUpload": "{count}张照片准备上传",
+      "cancel": "取消",
+      "uploading": "上传中...",
+      "upload": "上传{count}张照片",
+      "deleteTitle": "删除这张照片？",
+      "deleteDescription": "此操作无法撤销。",
+      "confirmDelete": "删除"
+    },
     "postedAt": "在{event}",
     "loadMore": "加载更多",
     "organizer": "主办方",

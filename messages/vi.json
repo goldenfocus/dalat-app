@@ -1141,7 +1141,18 @@
     "addMore": "Thêm nữa",
     "searchPrompt": "Tìm bất cứ điều gì—\"hoàng hôn\", \"cà phê\", \"bạn bè nhảy múa\"",
     "searching": "Đang tìm kiếm...",
-    "searchNoResultsHint": "Thử từ khóa khác hoặc quay lại sau khi có thêm khoảnh khắc được chia sẻ"
+    "searchNoResultsHint": "Thử từ khóa khác hoặc quay lại sau khi có thêm khoảnh khắc được chia sẻ",
+    "strip": {
+      "title": "Khoảnh khắc mới",
+      "seeAll": "Xem tất cả"
+    },
+    "fab": {
+      "upload": "Chia sẻ khoảnh khắc",
+      "selectEvent": "Chọn sự kiện",
+      "recentEvents": "Sự kiện gần đây",
+      "noRecentEvents": "Không có sự kiện gần đây",
+      "rsvpHint": "Đăng ký tham gia để tải lên"
+    }
   },
   "tribes": {
     "title": "Bộ tộc",
@@ -1669,23 +1680,21 @@
     "communityPhotosCount": "{count} ảnh từ sự kiện tại đây",
     "noCommunityPhotos": "Chưa có ảnh cộng đồng",
     "addOfficialPhotos": "Thêm ảnh chính thức",
-
     "photoManager": {
-        "editCaption": "Sửa chú thích",
-        "delete": "Xóa ảnh",
-        "captionPlaceholder": "Chú thích (tùy chọn)",
-        "uploadDescription": "Tải lên ảnh chính thức cho địa điểm này",
-        "clickToSelect": "Nhấn để chọn ảnh",
-        "fileTypes": "JPEG, PNG, WebP, GIF (tối đa 10MB mỗi ảnh)",
-        "readyToUpload": "{count} ảnh sẵn sàng tải lên",
-        "cancel": "Hủy",
-        "uploading": "Đang tải lên...",
-        "upload": "Tải lên {count} ảnh",
-        "deleteTitle": "Xóa ảnh này?",
-        "deleteDescription": "Hành động này không thể hoàn tác.",
-        "confirmDelete": "Xóa"
-    }
-,
+      "editCaption": "Sửa chú thích",
+      "delete": "Xóa ảnh",
+      "captionPlaceholder": "Chú thích (tùy chọn)",
+      "uploadDescription": "Tải lên ảnh chính thức cho địa điểm này",
+      "clickToSelect": "Nhấn để chọn ảnh",
+      "fileTypes": "JPEG, PNG, WebP, GIF (tối đa 10MB mỗi ảnh)",
+      "readyToUpload": "{count} ảnh sẵn sàng tải lên",
+      "cancel": "Hủy",
+      "uploading": "Đang tải lên...",
+      "upload": "Tải lên {count} ảnh",
+      "deleteTitle": "Xóa ảnh này?",
+      "deleteDescription": "Hành động này không thể hoàn tác.",
+      "confirmDelete": "Xóa"
+    },
     "postedAt": "tại {event}",
     "loadMore": "Xem thêm",
     "organizer": "Nhà tổ chức",

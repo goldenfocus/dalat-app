@@ -784,6 +784,86 @@ export interface MomentLikeStatus {
   count: number;
 }
 
+// ============================================
+// Moment AI Metadata Types
+// ============================================
+
+export type MomentProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'skipped';
+
+export interface MomentMetadata {
+  moment_id: string;
+  // Common AI fields
+  ai_description: string | null;
+  ai_title: string | null;
+  ai_tags: string[];
+  scene_description: string | null;
+  mood: string | null;
+  quality_score: number | null;
+  content_language: string | null;
+  // Image-specific
+  detected_objects: string[];
+  detected_text: string[];
+  detected_faces_count: number | null;
+  dominant_colors: string[];
+  location_hints: string[];
+  // Video-specific
+  video_transcript: string | null;
+  video_summary: string | null;
+  key_frame_urls: string[];
+  key_frame_timestamps: number[];
+  // Audio-specific
+  audio_transcript: string | null;
+  audio_summary: string | null;
+  audio_language: string | null;
+  // PDF-specific
+  pdf_summary: string | null;
+  pdf_extracted_text: string | null;
+  pdf_page_count: number | null;
+  pdf_key_topics: string[];
+  // YouTube-specific
+  youtube_transcript: string | null;
+  youtube_chapters: { title: string; start_time: number }[] | null;
+  // Processing status
+  processing_status: MomentProcessingStatus;
+  processing_error: string | null;
+  processed_at: string | null;
+  processing_duration_ms: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// For homepage moments strip
+export interface MomentStripItem {
+  id: string;
+  media_url: string | null;
+  thumbnail_url: string | null;
+  content_type: MomentContentType;
+  event_slug: string;
+  event_title: string;
+  event_image_url: string | null;
+  user_avatar_url: string | null;
+  username: string | null;
+  display_name: string | null;
+  created_at: string;
+  quality_score: number;
+}
+
+// For FAB quick upload
+export interface RecentEventForUpload {
+  id: string;
+  slug: string;
+  title: string;
+  image_url: string | null;
+  starts_at: string;
+  location_name: string | null;
+  can_post_moments: boolean;
+}
+
+// Moment with full metadata for detail pages
+export interface MomentWithMetadata extends Moment {
+  metadata?: MomentMetadata | null;
+}
+
 // Grouped moment for profile timeline (subset of fields)
 export interface GroupedMoment {
   id: string;

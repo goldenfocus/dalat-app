@@ -1131,7 +1131,6 @@
     "postYoutube": "Partager une vidéo YouTube",
     "postText": "Publier",
     "postFile": "Partager un fichier",
-    "posting": "Publication...",
     "inputModes": {
       "media": "Photo/Vidéo",
       "file": "Fichier",
@@ -1156,7 +1155,18 @@
     "searchResults": "{count} résultats pour \"{query}\"",
     "searchPrompt": "Recherchez n'importe quoi — \"coucher de soleil\", \"café\", \"amis qui dansent\"",
     "searching": "Recherche...",
-    "searchNoResultsHint": "Essayez d'autres mots-clés ou revenez plus tard quand plus de moments seront partagés"
+    "searchNoResultsHint": "Essayez d'autres mots-clés ou revenez plus tard quand plus de moments seront partagés",
+    "strip": {
+      "title": "Moments récents",
+      "seeAll": "Voir tout"
+    },
+    "fab": {
+      "upload": "Partager un moment",
+      "selectEvent": "Sélectionner un événement",
+      "recentEvents": "Événements récents",
+      "noRecentEvents": "Aucun événement récent",
+      "rsvpHint": "RSVP pour télécharger"
+    }
   },
   "tribes": {
     "title": "Tribus",
@@ -1684,23 +1694,21 @@
     "communityPhotosCount": "{count} photos d'événements ici",
     "noCommunityPhotos": "Pas encore de photos de la communauté",
     "addOfficialPhotos": "Ajouter des photos officielles",
-
     "photoManager": {
-        "editCaption": "Modifier la légende",
-        "delete": "Supprimer la photo",
-        "captionPlaceholder": "Légende (facultatif)",
-        "uploadDescription": "Téléchargez des photos officielles pour ce lieu",
-        "clickToSelect": "Cliquez pour sélectionner des photos",
-        "fileTypes": "JPEG, PNG, WebP, GIF (max 10Mo chacune)",
-        "readyToUpload": "{count} photo(s) prête(s) à télécharger",
-        "cancel": "Annuler",
-        "uploading": "Téléchargement...",
-        "upload": "Télécharger {count} photo(s)",
-        "deleteTitle": "Supprimer cette photo ?",
-        "deleteDescription": "Cette action est irréversible.",
-        "confirmDelete": "Supprimer"
-    }
-,
+      "editCaption": "Modifier la légende",
+      "delete": "Supprimer la photo",
+      "captionPlaceholder": "Légende (facultatif)",
+      "uploadDescription": "Téléchargez des photos officielles pour ce lieu",
+      "clickToSelect": "Cliquez pour sélectionner des photos",
+      "fileTypes": "JPEG, PNG, WebP, GIF (max 10Mo chacune)",
+      "readyToUpload": "{count} photo(s) prête(s) à télécharger",
+      "cancel": "Annuler",
+      "uploading": "Téléchargement...",
+      "upload": "Télécharger {count} photo(s)",
+      "deleteTitle": "Supprimer cette photo ?",
+      "deleteDescription": "Cette action est irréversible.",
+      "confirmDelete": "Supprimer"
+    },
     "postedAt": "à {event}",
     "loadMore": "Charger plus",
     "organizer": "Organisateur",

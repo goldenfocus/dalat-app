@@ -1117,7 +1117,6 @@
     "postYoutube": "Compartir video de YouTube",
     "postText": "Publicar",
     "postFile": "Compartir archivo",
-    "posting": "Publicando...",
     "inputModes": {
       "media": "Foto/Video",
       "file": "Archivo",
@@ -1142,7 +1141,18 @@
     "searchResults": "{count} resultados para \"{query}\"",
     "searchPrompt": "Busca cualquier cosa—\"atardecer\", \"café\", \"amigos bailando\"",
     "searching": "Buscando...",
-    "searchNoResultsHint": "Prueba con otras palabras o vuelve más tarde cuando se compartan más momentos"
+    "searchNoResultsHint": "Prueba con otras palabras o vuelve más tarde cuando se compartan más momentos",
+    "strip": {
+      "title": "Momentos recientes",
+      "seeAll": "Ver todos"
+    },
+    "fab": {
+      "upload": "Compartir momento",
+      "selectEvent": "Seleccionar evento",
+      "recentEvents": "Eventos recientes",
+      "noRecentEvents": "Sin eventos recientes",
+      "rsvpHint": "RSVP para subir"
+    }
   },
   "tribes": {
     "title": "Tribes",
@@ -1689,23 +1699,21 @@
     "communityPhotosCount": "{count} fotos de eventos aquí",
     "noCommunityPhotos": "Aún no hay fotos de la comunidad",
     "addOfficialPhotos": "Agregar fotos oficiales",
-
     "photoManager": {
-        "editCaption": "Editar descripción",
-        "delete": "Eliminar foto",
-        "captionPlaceholder": "Descripción (opcional)",
-        "uploadDescription": "Sube fotos oficiales para este lugar",
-        "clickToSelect": "Haz clic para seleccionar fotos",
-        "fileTypes": "JPEG, PNG, WebP, GIF (máx. 10MB cada una)",
-        "readyToUpload": "{count} foto(s) lista(s) para subir",
-        "cancel": "Cancelar",
-        "uploading": "Subiendo...",
-        "upload": "Subir {count} foto(s)",
-        "deleteTitle": "¿Eliminar esta foto?",
-        "deleteDescription": "Esta acción no se puede deshacer.",
-        "confirmDelete": "Eliminar"
-    }
-,
+      "editCaption": "Editar descripción",
+      "delete": "Eliminar foto",
+      "captionPlaceholder": "Descripción (opcional)",
+      "uploadDescription": "Sube fotos oficiales para este lugar",
+      "clickToSelect": "Haz clic para seleccionar fotos",
+      "fileTypes": "JPEG, PNG, WebP, GIF (máx. 10MB cada una)",
+      "readyToUpload": "{count} foto(s) lista(s) para subir",
+      "cancel": "Cancelar",
+      "uploading": "Subiendo...",
+      "upload": "Subir {count} foto(s)",
+      "deleteTitle": "¿Eliminar esta foto?",
+      "deleteDescription": "Esta acción no se puede deshacer.",
+      "confirmDelete": "Eliminar"
+    },
     "postedAt": "en {event}",
     "loadMore": "Cargar más",
     "organizer": "Organizador",
