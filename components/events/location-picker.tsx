@@ -273,6 +273,14 @@ export function LocationPicker({
 
       // Check for direct coordinates first
       const parsed = parseLocationInput(value);
+
+      // Debug logging - remove after testing
+      console.log("[LocationPicker] Smart detection:", {
+        valueLength: value.length,
+        isGoogleUrl: isGoogleMapsUrl(value),
+        parsed
+      });
+
       if (parsed) {
         applyDetectedCoordinates(parsed, value);
         return true;
