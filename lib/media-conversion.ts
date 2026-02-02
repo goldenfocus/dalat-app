@@ -1,46 +1,12 @@
 // Client-side media conversion utilities
 
 /**
- * Convert HEIC/HEIF image to JPEG using server-side Sharp
- * More reliable than client-side heic2any for various HEIC codec variants
- */
-async function convertHeicServerSide(file: File): Promise<File> {
-  console.log("[HEIC] Using server-side conversion for:", file.name);
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await fetch("/api/convert-heic", {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "Unknown error" }));
-    throw new Error(error.error || "Server-side conversion failed");
-  }
-
-  const jpegBlob = await response.blob();
-  const newName = response.headers.get("X-Original-Name") ||
-    file.name.replace(/\.(heic|heif)$/i, ".jpg");
-
-  const convertedFile = new File([jpegBlob], newName, {
-    type: "image/jpeg",
-  });
-
-  console.log(
-    "[HEIC] Server conversion complete:",
-    convertedFile.name,
-    "size:",
-    convertedFile.size
-  );
-
-  return convertedFile;
-}
-
-/**
  * Convert HEIC/HEIF image to JPEG
- * Tries client-side heic2any first, falls back to server-side Sharp if that fails
+ * Tries client-side heic2any first. If that fails, returns the original file
+ * (modern browsers + Cloudflare CDN can display HEIC directly).
+ *
+ * Note: Server-side conversion removed due to Vercel body size limits causing 403s.
+ * Modern Safari, Chrome (macOS/iOS), and Edge can display HEIC natively.
  */
 export async function convertHeicToJpeg(file: File): Promise<File> {
   console.log("[HEIC] Starting conversion for:", file.name, "size:", file.size);
@@ -81,11 +47,13 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
 
     return convertedFile;
   } catch (error) {
-    console.error("[HEIC] Client-side conversion failed:", error);
-    console.log("[HEIC] Falling back to server-side conversion...");
+    // Client-side conversion failed - just upload HEIC directly
+    // Modern browsers (Safari, Chrome on macOS/iOS, Edge) can display HEIC natively
+    // Cloudflare CDN will serve it, and Cloudflare Images can transform if needed
+    console.warn("[HEIC] Client-side conversion failed, uploading original:", error);
+    console.log("[HEIC] Uploading HEIC directly - modern browsers handle it natively");
 
-    // Fall back to server-side conversion
-    return convertHeicServerSide(file);
+    return file; // Return original HEIC file
   }
 }
 

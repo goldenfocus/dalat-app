@@ -99,7 +99,9 @@ function formatDuration(seconds: number): string {
 interface MomentFormProps {
   eventId: string;
   eventSlug: string;
-  userId: string;
+  userId: string; // Used for storage path, NOT passed to RPC
+  /** Only set when superadmin is impersonating another user (God Mode) */
+  godModeUserId?: string;
   onSuccess?: () => void;
 }
 
@@ -153,7 +155,7 @@ interface YouTubePreview {
   thumbnailUrl: string;
 }
 
-export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentFormProps) {
+export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSuccess }: MomentFormProps) {
   const t = useTranslations("moments");
   const locale = useLocale();
   const router = useRouter();
@@ -234,6 +236,11 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        // If Cloudflare Stream isn't configured (503), return null to trigger fallback
+        if (response.status === 503 || errorData.error?.includes("not configured")) {
+          console.log("[Cloudflare] Stream not configured, will fall back to R2");
+          return null;
+        }
         throw new Error(errorData.error || "Failed to get upload URL");
       }
 
@@ -365,40 +372,43 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
 
       // Route videos to Cloudflare Stream for adaptive bitrate streaming
       if (isVideoFile) {
-        const result = await uploadVideoToCloudflare(
-          fileToUpload,
-          itemId,
-          (progress) => {
+        try {
+          const result = await uploadVideoToCloudflare(
+            fileToUpload,
+            itemId,
+            (progress) => {
+              setUploads(prev => prev.map(item =>
+                item.id === itemId
+                  ? { ...item, uploadProgress: progress }
+                  : item
+              ));
+            }
+          );
+
+          if (result) {
+            // Video uploaded to Cloudflare Stream - it's now "processing" (encoding)
+            // The webhook will update the moment when encoding is complete
             setUploads(prev => prev.map(item =>
               item.id === itemId
-                ? { ...item, uploadProgress: progress }
+                ? {
+                    ...item,
+                    status: "uploaded" as const,
+                    cfVideoUid: result.videoUid,
+                    // Note: playback URL will be set by webhook when encoding completes
+                    uploadProgress: 100,
+                  }
                 : item
             ));
+            triggerHaptic("light");
+            return;
           }
-        );
-
-        if (!result) {
-          throw new Error("Video upload failed - no result returned");
+        } catch (cfError) {
+          // Cloudflare Stream failed - fall back to R2 storage
+          console.warn("[Upload] Cloudflare Stream unavailable, falling back to R2:", cfError);
         }
-
-        // Video uploaded to Cloudflare Stream - it's now "processing" (encoding)
-        // The webhook will update the moment when encoding is complete
-        setUploads(prev => prev.map(item =>
-          item.id === itemId
-            ? {
-                ...item,
-                status: "uploaded" as const,
-                cfVideoUid: result.videoUid,
-                // Note: playback URL will be set by webhook when encoding completes
-                uploadProgress: 100,
-              }
-            : item
-        ));
-        triggerHaptic("light");
-        return;
       }
 
-      // For images, use R2 storage via abstraction layer
+      // For images AND videos (when Cloudflare Stream unavailable), use R2 storage
       const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
       const fileName = `${eventId}/${userId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
@@ -415,7 +425,17 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
       triggerHaptic("light");
     } catch (err) {
       console.error("Upload error:", err);
-      const errorMessage = err instanceof Error ? err.message : t("errors.uploadFailed");
+      // Extract error message from various error formats
+      let errorMessage: string;
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === "object" && err !== null && "message" in err) {
+        errorMessage = String((err as { message: unknown }).message);
+      } else if (typeof err === "string") {
+        errorMessage = err;
+      } else {
+        errorMessage = t("errors.uploadFailed");
+      }
       setUploads(prev => prev.map(item =>
         item.id === itemId
           ? { ...item, status: "error" as const, error: errorMessage }
@@ -678,7 +698,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           p_content_type: "youtube",
           p_media_url: null,
           p_text_content: textContent,
-          p_user_id: userId,
+          p_user_id: godModeUserId || null, // Only pass when superadmin is impersonating (God Mode)
           p_source_locale: locale,
           p_thumbnail_url: null,
           p_cf_video_uid: null,
@@ -729,7 +749,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
             p_content_type: material.contentType,
             p_media_url: null,
             p_text_content: textContent,
-            p_user_id: userId,
+            p_user_id: godModeUserId || null, // Only pass when superadmin is impersonating (God Mode)
             p_source_locale: locale,
             p_thumbnail_url: null,
             p_cf_video_uid: null,
@@ -797,7 +817,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           p_content_type: "text",
           p_media_url: null,
           p_text_content: textContent,
-          p_user_id: userId,
+          p_user_id: godModeUserId || null, // Only pass when superadmin is impersonating (God Mode)
           p_source_locale: locale,
           p_thumbnail_url: null,
           p_cf_video_uid: null,
@@ -856,7 +876,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           p_content_type: contentType,
           p_media_url: isCloudflareVideo ? null : upload.mediaUrl, // CF videos don't have direct media_url
           p_text_content: textContent,
-          p_user_id: userId, // Support God Mode: attribute to effective user
+          p_user_id: godModeUserId || null, // Only pass when superadmin is impersonating (God Mode)
           p_source_locale: locale, // Tag with user's current language for accurate translation attribution
           p_thumbnail_url: upload.thumbnailUrl || null, // Video thumbnail if available
           // Cloudflare Stream fields (for adaptive streaming)

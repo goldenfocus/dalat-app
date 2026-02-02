@@ -13,7 +13,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico, manifest, sw.js, sitemap (PWA/SEO files)
      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp, .ico
+     * - audio/video - .mp3, .wav, .ogg, .mp4, .webm
      */
-    "/((?!_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|wav|ogg|mp4|webm)$).*)",
   ],
 };

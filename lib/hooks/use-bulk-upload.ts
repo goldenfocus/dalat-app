@@ -313,7 +313,7 @@ function bulkUploadReducer(
   }
 }
 
-export function useBulkUpload(eventId: string, userId: string) {
+export function useBulkUpload(eventId: string, userId: string, godModeUserId?: string) {
   const [state, dispatch] = useReducer(bulkUploadReducer, {
     batchId: crypto.randomUUID(),
     eventId,
@@ -505,7 +505,7 @@ export function useBulkUpload(eventId: string, userId: string) {
       const { data, error } = await supabaseRef.current.rpc("create_moments_batch", {
         p_event_id: state.eventId,
         p_moments: batchData,
-        p_user_id: state.userId, // Support God Mode: attribute to effective user
+        p_user_id: godModeUserId || null, // Only pass when superadmin is impersonating (God Mode)
       });
 
       if (error) throw error;

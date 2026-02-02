@@ -160,7 +160,8 @@ export default async function NewMomentPage({ params }: PageProps) {
         <MomentForm
           eventId={event.id}
           eventSlug={slug}
-          userId={effectiveUserId}
+          userId={user.id}
+          godModeUserId={godMode.isActive ? godMode.targetUserId! : undefined}
         />
 
         {/* Pro Upload Link - Only for photographers */}

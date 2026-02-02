@@ -81,17 +81,13 @@ export default async function ProUploadPageRoute({ params }: PageProps) {
     redirect(`/events/${slug}/moments/new`);
   }
 
-  // Use the effective user ID (impersonated user if God Mode active)
-  const effectiveUserId = godMode.isActive && godMode.targetUserId
-    ? godMode.targetUserId
-    : user.id;
-
   return (
     <ProUploadPage
       eventId={event.id}
       eventSlug={slug}
       eventTitle={event.title}
-      userId={effectiveUserId}
+      userId={user.id}
+      godModeUserId={godMode.isActive ? godMode.targetUserId! : undefined}
     />
   );
 }

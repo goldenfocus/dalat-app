@@ -127,9 +127,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+type OrganizerWithOwner = Organizer & {
+  owner: Pick<Profile, "avatar_url" | "display_name" | "username"> | null;
+};
+
 type EventWithJoins = Event & {
   profiles: Profile;
-  organizers: Organizer | null;
+  organizers: OrganizerWithOwner | null;
   event_series: Pick<EventSeries, "slug" | "title" | "rrule"> | null;
 };
 
@@ -142,9 +146,10 @@ async function getEvent(slug: string): Promise<GetEventResult> {
   const supabase = await createClient();
 
   // First, try to find by current slug
+  // Include organizer's owner profile for avatar fallback when organizer has no logo
   const { data: event, error } = await supabase
     .from("events")
-    .select("*, profiles(*), organizers(*), event_series(slug, title, rrule)")
+    .select("*, profiles(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule)")
     .eq("slug", slug)
     .single();
 
@@ -915,7 +920,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   href={
                     event.organizers?.slug
                       ? `/organizers/${event.organizers.slug}`
-                      : `/${event.profiles?.username || event.created_by}`
+                      : event.organizers?.owner?.username
+                        ? `/${event.organizers.owner.username}`
+                        : `/${event.profiles?.username || event.created_by}`
                   }
                   className="flex items-center gap-3 hover:bg-muted p-2 -m-2 rounded-lg transition-colors"
                 >
@@ -923,6 +930,12 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     event.organizers.logo_url ? (
                       <img
                         src={event.organizers.logo_url}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : event.organizers.owner?.avatar_url ? (
+                      <img
+                        src={event.organizers.owner.avatar_url}
                         alt=""
                         className="w-10 h-10 rounded-full object-cover"
                       />
@@ -942,6 +955,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   )}
                   <span className="font-medium">
                     {event.organizers?.name ||
+                      event.organizers?.owner?.display_name ||
                       event.profiles?.display_name ||
                       event.profiles?.username ||
                       tCommon("anonymous")}

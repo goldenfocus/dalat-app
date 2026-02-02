@@ -28,13 +28,33 @@ async function getProfile(profileId: string): Promise<Profile | null> {
 
 async function getUserEvents(userId: string): Promise<Event[]> {
   const supabase = await createClient();
-  const { data } = await supabase
+
+  // First, get organizer IDs that this user owns
+  const { data: ownedOrganizers } = await supabase
+    .from("organizers")
+    .select("id")
+    .eq("owner_id", userId);
+
+  const organizerIds = (ownedOrganizers ?? []).map((o) => o.id);
+
+  // Query events where user created it OR where user owns the organizer
+  let query = supabase
     .from("events")
     .select("*")
-    .eq("created_by", userId)
-    .eq("status", "published")
+    .eq("status", "published");
+
+  if (organizerIds.length > 0) {
+    // User owns organizers - include events they created OR events by their organizers
+    query = query.or(`created_by.eq.${userId},organizer_id.in.(${organizerIds.join(",")})`);
+  } else {
+    // User doesn't own any organizers - just show events they created
+    query = query.eq("created_by", userId);
+  }
+
+  const { data } = await query
     .order("starts_at", { ascending: false })
     .limit(10);
+
   return (data ?? []) as Event[];
 }
 

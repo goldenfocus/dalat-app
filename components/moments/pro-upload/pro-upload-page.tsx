@@ -14,6 +14,8 @@ interface ProUploadPageProps {
   eventSlug: string;
   eventTitle: string;
   userId: string;
+  /** Only set when superadmin is impersonating another user (God Mode) */
+  godModeUserId?: string;
 }
 
 export function ProUploadPage({
@@ -21,6 +23,7 @@ export function ProUploadPage({
   eventSlug,
   eventTitle,
   userId,
+  godModeUserId,
 }: ProUploadPageProps) {
   const t = useTranslations("moments.proUpload");
 
@@ -34,7 +37,7 @@ export function ProUploadPage({
     retryFile,
     retryAllFailed,
     clearComplete,
-  } = useBulkUpload(eventId, userId);
+  } = useBulkUpload(eventId, userId, godModeUserId);
 
   const hasFiles = state.stats.total > 0;
 
