@@ -43,8 +43,9 @@ export async function POST(request: Request) {
     }
 
     const replicateToken = process.env.REPLICATE_API_TOKEN;
+    console.log("[embed] Token check:", replicateToken ? `exists (${replicateToken.length} chars, starts with ${replicateToken.slice(0,4)})` : "MISSING");
     if (!replicateToken) {
-      console.error("[embed] Replicate API token not configured");
+      console.error("[embed] Replicate API token not configured. Available env keys:", Object.keys(process.env).filter(k => k.includes("REPLICATE") || k.includes("API")).join(", "));
       return NextResponse.json(
         { error: "Embedding service not configured" },
         { status: 503 }
