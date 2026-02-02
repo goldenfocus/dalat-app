@@ -377,6 +377,10 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           }
         );
 
+        if (!result) {
+          throw new Error("Video upload failed - no result returned");
+        }
+
         // Video uploaded to Cloudflare Stream - it's now "processing" (encoding)
         // The webhook will update the moment when encoding is complete
         setUploads(prev => prev.map(item =>
