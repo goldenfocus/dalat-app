@@ -50,12 +50,24 @@ export const ALLOWED_MEDIA_TYPES = {
 } as const;
 
 // All allowed types as a flat array (for file input accept)
+// Include both MIME types AND file extensions for iOS Safari compatibility
 export const ALL_ALLOWED_TYPES = [
   ...ALLOWED_MEDIA_TYPES.image,
   ...ALLOWED_MEDIA_TYPES.gif,
   ...ALLOWED_MEDIA_TYPES.video,
   ...ALLOWED_MEDIA_TYPES.convertible.image,
   ...ALLOWED_MEDIA_TYPES.convertible.video,
+  // File extensions for iOS compatibility
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".gif",
+  ".mp4",
+  ".webm",
+  ".mov",
+  ".heic",
+  ".heif",
 ];
 
 // Check if file needs conversion before upload
