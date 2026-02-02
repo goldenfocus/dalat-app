@@ -3,9 +3,25 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import { Camera, X, Loader2, Send, Plus, AlertCircle, RefreshCw, Play } from "lucide-react";
+import {
+  Camera,
+  X,
+  Loader2,
+  Send,
+  Plus,
+  AlertCircle,
+  RefreshCw,
+  Play,
+  Youtube,
+  FileText,
+  Music,
+  File,
+  Link as LinkIcon,
+  Upload,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { cn } from "@/lib/utils";
 import {
@@ -21,8 +37,52 @@ import {
   type CompressionProgress,
 } from "@/lib/video-compression";
 import { triggerHaptic } from "@/lib/haptics";
+import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { triggerTranslation } from "@/lib/translations-client";
+import {
+  extractYouTubeId,
+  getYouTubeThumbnail,
+  formatFileSize,
+  CONTENT_TYPE_ICONS,
+} from "@/components/shared/material-renderers";
+import {
+  extractAudioMetadata,
+  albumArtToBlob,
+  albumArtToDataUrl,
+  isAudioFile,
+  formatDuration as formatAudioDuration,
+} from "@/lib/audio-metadata";
 import * as tus from "tus-js-client";
+import type { MomentContentType } from "@/lib/types";
+
+// Input mode for the form
+type InputMode = "media" | "youtube" | "file" | "text";
+
+// File type mapping for materials
+const FILE_TYPE_MAP: Record<string, MomentContentType> = {
+  // Audio
+  "audio/mpeg": "audio",
+  "audio/mp4": "audio",
+  "audio/wav": "audio",
+  "audio/ogg": "audio",
+  "audio/x-m4a": "audio",
+  // Images (material type, not photo)
+  "image/jpeg": "image",
+  "image/png": "image",
+  "image/webp": "image",
+  "image/gif": "image",
+  // Documents
+  "application/pdf": "pdf",
+  "application/msword": "document",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "document",
+  "application/vnd.ms-excel": "document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "document",
+  "application/vnd.ms-powerpoint": "document",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": "document",
+};
+
+const MATERIAL_ALLOWED_MIME_TYPES = Object.keys(FILE_TYPE_MAP);
+const MAX_MATERIAL_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 // Format duration in seconds to MM:SS or H:MM:SS
 function formatDuration(seconds: number): string {
@@ -62,17 +122,63 @@ interface UploadItem {
   cfPlaybackUrl?: string;
 }
 
+// Material upload for PDF, audio, documents
+interface MaterialUpload {
+  id: string;
+  file: File;
+  contentType: MomentContentType;
+  status: "uploading" | "uploaded" | "error";
+  fileUrl?: string;
+  originalFilename: string;
+  fileSize: number;
+  mimeType: string;
+  error?: string;
+  caption?: string;
+  // Audio metadata
+  title?: string;
+  artist?: string;
+  album?: string;
+  audioDurationSeconds?: number;
+  audioThumbnailUrl?: string;
+  audioThumbnailBlob?: Blob;
+  trackNumber?: string;
+  releaseYear?: number;
+  genre?: string;
+}
+
+// YouTube link preview
+interface YouTubePreview {
+  url: string;
+  videoId: string;
+  thumbnailUrl: string;
+}
+
 export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentFormProps) {
   const t = useTranslations("moments");
   const locale = useLocale();
   const router = useRouter();
 
+  // Input mode state
+  const [inputMode, setInputMode] = useState<InputMode>("media");
+
+  // Photo/Video uploads (existing)
   const [uploads, setUploads] = useState<UploadItem[]>([]);
+
+  // YouTube link state
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [youtubePreview, setYoutubePreview] = useState<YouTubePreview | null>(null);
+  const [youtubeError, setYoutubeError] = useState<string | null>(null);
+
+  // Material uploads (PDF, audio, documents)
+  const [materialUploads, setMaterialUploads] = useState<MaterialUpload[]>([]);
+
+  // Shared state
   const [caption, setCaption] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const materialFileInputRef = useRef<HTMLInputElement>(null);
 
   // Generate local video thumbnail and capture duration for preview
   const generateLocalVideoPreview = useCallback(async (file: File, itemId: string) => {
@@ -169,7 +275,8 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
       });
     } catch (error) {
       console.error("[Cloudflare] Video upload error:", error);
-      return null;
+      // Re-throw with better message so caller can capture it
+      throw error instanceof Error ? error : new Error("Video upload failed");
     }
   };
 
@@ -252,7 +359,9 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           : item
       ));
 
-      const isVideoFile = fileToUpload.type.startsWith("video/");
+      // Check MIME type AND extension (iOS Safari often sends MOV with wrong MIME)
+      const videoExt = fileToUpload.name.split(".").pop()?.toLowerCase();
+      const isVideoFile = fileToUpload.type.startsWith("video/") || videoExt === "mov";
 
       // Route videos to Cloudflare Stream for adaptive bitrate streaming
       if (isVideoFile) {
@@ -268,50 +377,31 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           }
         );
 
-        if (result) {
-          // Video uploaded to Cloudflare Stream - it's now "processing" (encoding)
-          // The webhook will update the moment when encoding is complete
-          setUploads(prev => prev.map(item =>
-            item.id === itemId
-              ? {
-                  ...item,
-                  status: "uploaded" as const,
-                  cfVideoUid: result.videoUid,
-                  // Note: playback URL will be set by webhook when encoding completes
-                  uploadProgress: 100,
-                }
-              : item
-          ));
-          triggerHaptic("light");
-        } else {
-          throw new Error("Failed to upload video to Cloudflare Stream");
-        }
+        // Video uploaded to Cloudflare Stream - it's now "processing" (encoding)
+        // The webhook will update the moment when encoding is complete
+        setUploads(prev => prev.map(item =>
+          item.id === itemId
+            ? {
+                ...item,
+                status: "uploaded" as const,
+                cfVideoUid: result.videoUid,
+                // Note: playback URL will be set by webhook when encoding completes
+                uploadProgress: 100,
+              }
+            : item
+        ));
+        triggerHaptic("light");
         return;
       }
 
-      // For images, continue using Supabase Storage
-      const supabase = createClient();
-
-      // Generate unique filename (use converted file's extension)
+      // For images, use R2 storage via abstraction layer
       const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
       const fileName = `${eventId}/${userId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-      // Upload media
-      const { error: uploadError } = await supabase.storage
-        .from("moments")
-        .upload(fileName, fileToUpload, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from("moments")
-        .getPublicUrl(fileName);
+      // Upload media to R2 (or Supabase fallback if R2 not configured)
+      const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
+        filename: fileName,
+      });
 
       setUploads(prev => prev.map(item =>
         item.id === itemId
@@ -321,9 +411,10 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
       triggerHaptic("light");
     } catch (err) {
       console.error("Upload error:", err);
+      const errorMessage = err instanceof Error ? err.message : t("errors.uploadFailed");
       setUploads(prev => prev.map(item =>
         item.id === itemId
-          ? { ...item, status: "error" as const, error: t("errors.uploadFailed") }
+          ? { ...item, status: "error" as const, error: errorMessage }
           : item
       ));
     }
@@ -417,22 +508,335 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     ));
   };
 
-  const handlePost = async () => {
-    // Ready uploads: images with mediaUrl OR videos with cfVideoUid
-    const readyUploads = uploads.filter(u =>
-      u.status === "uploaded" && (u.mediaUrl || u.cfVideoUid)
-    );
+  const handleMaterialCaptionChange = (itemId: string, newCaption: string) => {
+    setMaterialUploads(prev => prev.map(item =>
+      item.id === itemId ? { ...item, caption: newCaption } : item
+    ));
+  };
 
-    if (readyUploads.length === 0) {
-      setError(t("errors.uploadFailed"));
+  // YouTube URL validation and preview
+  const handleYoutubeUrlChange = (url: string) => {
+    setYoutubeUrl(url);
+    setYoutubeError(null);
+
+    if (!url.trim()) {
+      setYoutubePreview(null);
       return;
     }
 
+    const videoId = extractYouTubeId(url);
+    if (videoId) {
+      setYoutubePreview({
+        url,
+        videoId,
+        thumbnailUrl: getYouTubeThumbnail(videoId, "high"),
+      });
+    } else {
+      setYoutubePreview(null);
+      if (url.length > 10) {
+        setYoutubeError(t("errors.invalidYoutubeUrl"));
+      }
+    }
+  };
+
+  const clearYoutubePreview = () => {
+    setYoutubeUrl("");
+    setYoutubePreview(null);
+    setYoutubeError(null);
+  };
+
+  // Material file upload (PDF, audio, documents) - uses R2 via storage abstraction
+  const uploadMaterialFile = async (file: File, itemId: string) => {
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "";
+      const fileName = `${eventId}/${userId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+      const { publicUrl } = await uploadToStorage("moment-materials", file, {
+        filename: fileName,
+      });
+
+      // If audio file has album art, upload it too
+      const item = materialUploads.find(m => m.id === itemId);
+      let audioThumbnailUrl: string | undefined;
+      if (item?.audioThumbnailBlob) {
+        try {
+          const thumbExt = item.audioThumbnailBlob.type.split("/")[1] || "jpg";
+          const thumbFileName = `${eventId}/${userId}/thumb-${Date.now()}.${thumbExt}`;
+          const thumbFile = new globalThis.File([item.audioThumbnailBlob], `thumb.${thumbExt}`, {
+            type: item.audioThumbnailBlob.type,
+          });
+
+          const { publicUrl: thumbUrl } = await uploadToStorage("moment-materials", thumbFile, {
+            filename: thumbFileName,
+          });
+          audioThumbnailUrl = thumbUrl;
+        } catch (err) {
+          console.error("Failed to upload album art:", err);
+        }
+      }
+
+      setMaterialUploads(prev => prev.map(m =>
+        m.id === itemId
+          ? { ...m, status: "uploaded" as const, fileUrl: publicUrl, audioThumbnailUrl: audioThumbnailUrl || m.audioThumbnailUrl }
+          : m
+      ));
+      triggerHaptic("light");
+    } catch (err) {
+      console.error("Material upload error:", err);
+      setMaterialUploads(prev => prev.map(m =>
+        m.id === itemId
+          ? { ...m, status: "error" as const, error: t("errors.uploadFailed") }
+          : m
+      ));
+    }
+  };
+
+  const addMaterialFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setError(null);
+
+    for (const file of Array.from(files)) {
+      // Validate file type
+      if (!MATERIAL_ALLOWED_MIME_TYPES.includes(file.type)) {
+        setError(t("errors.unsupportedFileType"));
+        continue;
+      }
+
+      // Validate file size
+      if (file.size > MAX_MATERIAL_FILE_SIZE) {
+        setError(t("errors.fileSizeLimit"));
+        continue;
+      }
+
+      const contentType = FILE_TYPE_MAP[file.type] || "document";
+      const itemId = `material-${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+      // Extract audio metadata if it's an audio file
+      let audioMetadata: Partial<MaterialUpload> = {};
+      if (isAudioFile(file)) {
+        try {
+          const metadata = await extractAudioMetadata(file);
+          audioMetadata = {
+            title: metadata.title || undefined,
+            artist: metadata.artist || undefined,
+            album: metadata.album || undefined,
+            audioDurationSeconds: metadata.durationSeconds || undefined,
+            trackNumber: metadata.trackNumber || undefined,
+            releaseYear: metadata.releaseYear || undefined,
+            genre: metadata.genre || undefined,
+            audioThumbnailUrl: albumArtToDataUrl(metadata.albumArt) || undefined,
+            audioThumbnailBlob: albumArtToBlob(metadata.albumArt) || undefined,
+          };
+        } catch (err) {
+          console.error("Failed to extract audio metadata:", err);
+        }
+      }
+
+      const newMaterial: MaterialUpload = {
+        id: itemId,
+        file,
+        contentType,
+        status: "uploading",
+        originalFilename: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        ...audioMetadata,
+      };
+
+      setMaterialUploads(prev => [...prev, newMaterial]);
+      uploadMaterialFile(file, itemId);
+    }
+  };
+
+  const handleMaterialFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    addMaterialFiles(e.target.files);
+    e.target.value = "";
+  };
+
+  const handleRemoveMaterial = (itemId: string) => {
+    setMaterialUploads(prev => prev.filter(m => m.id !== itemId));
+  };
+
+  const handlePost = async () => {
     setIsPosting(true);
     setError(null);
 
     try {
       const supabase = createClient();
+
+      // Handle based on input mode
+      if (inputMode === "youtube" && youtubePreview) {
+        // Post YouTube moment
+        const textContent = caption.trim() || null;
+
+        const { data, error: postError } = await supabase.rpc("create_moment", {
+          p_event_id: eventId,
+          p_content_type: "youtube",
+          p_media_url: null,
+          p_text_content: textContent,
+          p_user_id: userId,
+          p_source_locale: locale,
+          p_thumbnail_url: null,
+          p_cf_video_uid: null,
+          p_cf_playback_url: null,
+          p_video_status: null,
+          // YouTube fields
+          p_youtube_url: youtubePreview.url,
+          p_youtube_video_id: youtubePreview.videoId,
+        });
+
+        if (postError) {
+          console.error("create_moment RPC error:", postError.message, postError);
+          if (postError.message.includes("not_allowed_to_post")) {
+            setError(t("errors.notAllowed"));
+            return;
+          }
+          throw postError;
+        }
+
+        if (data?.moment_id && textContent) {
+          triggerTranslation("moment", data.moment_id, [
+            { field_name: "text_content", text: textContent },
+          ]);
+        }
+
+        triggerHaptic("medium");
+        clearYoutubePreview();
+        setCaption("");
+
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push(`/events/${eventSlug}/moments`);
+          router.refresh();
+        }
+        return;
+      }
+
+      if (inputMode === "file") {
+        // Post material moments (PDF, audio, documents)
+        const readyMaterials = materialUploads.filter(m => m.status === "uploaded" && m.fileUrl);
+
+        for (const material of readyMaterials) {
+          const textContent = (material.caption?.trim() || caption.trim()) || null;
+
+          const { data, error: postError } = await supabase.rpc("create_moment", {
+            p_event_id: eventId,
+            p_content_type: material.contentType,
+            p_media_url: null,
+            p_text_content: textContent,
+            p_user_id: userId,
+            p_source_locale: locale,
+            p_thumbnail_url: null,
+            p_cf_video_uid: null,
+            p_cf_playback_url: null,
+            p_video_status: null,
+            // Material fields
+            p_file_url: material.fileUrl,
+            p_original_filename: material.originalFilename,
+            p_file_size: material.fileSize,
+            p_mime_type: material.mimeType,
+            // Audio metadata
+            p_title: material.title || null,
+            p_artist: material.artist || null,
+            p_album: material.album || null,
+            p_audio_duration_seconds: material.audioDurationSeconds || null,
+            p_audio_thumbnail_url: material.audioThumbnailUrl || null,
+            p_track_number: material.trackNumber || null,
+            p_release_year: material.releaseYear || null,
+            p_genre: material.genre || null,
+          });
+
+          if (postError) {
+            console.error("create_moment RPC error:", postError.message, postError);
+            if (postError.message.includes("not_allowed_to_post")) {
+              setError(t("errors.notAllowed"));
+              return;
+            }
+            throw postError;
+          }
+
+          if (data?.moment_id && textContent) {
+            triggerTranslation("moment", data.moment_id, [
+              { field_name: "text_content", text: textContent },
+            ]);
+          }
+        }
+
+        triggerHaptic("medium");
+        const postedIds = new Set(readyMaterials.map(m => m.id));
+        setMaterialUploads(prev => prev.filter(m => !postedIds.has(m.id)));
+        setCaption("");
+
+        const remaining = materialUploads.filter(m => !postedIds.has(m.id));
+        if (remaining.length === 0) {
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            router.push(`/events/${eventSlug}/moments`);
+            router.refresh();
+          }
+        }
+        return;
+      }
+
+      if (inputMode === "text") {
+        // Post text-only moment
+        const textContent = caption.trim();
+        if (!textContent) {
+          setError(t("errors.captionRequired"));
+          return;
+        }
+
+        const { data, error: postError } = await supabase.rpc("create_moment", {
+          p_event_id: eventId,
+          p_content_type: "text",
+          p_media_url: null,
+          p_text_content: textContent,
+          p_user_id: userId,
+          p_source_locale: locale,
+          p_thumbnail_url: null,
+          p_cf_video_uid: null,
+          p_cf_playback_url: null,
+          p_video_status: null,
+        });
+
+        if (postError) {
+          console.error("create_moment RPC error:", postError.message, postError);
+          if (postError.message.includes("not_allowed_to_post")) {
+            setError(t("errors.notAllowed"));
+            return;
+          }
+          throw postError;
+        }
+
+        if (data?.moment_id) {
+          triggerTranslation("moment", data.moment_id, [
+            { field_name: "text_content", text: textContent },
+          ]);
+        }
+
+        triggerHaptic("medium");
+        setCaption("");
+
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push(`/events/${eventSlug}/moments`);
+          router.refresh();
+        }
+        return;
+      }
+
+      // Default: Photo/Video uploads (existing behavior)
+      const readyUploads = uploads.filter(u =>
+        u.status === "uploaded" && (u.mediaUrl || u.cfVideoUid)
+      );
+
+      if (readyUploads.length === 0) {
+        setError(t("errors.uploadFailed"));
+        return;
+      }
 
       // Create a moment for each uploaded file with its individual caption
       for (const upload of readyUploads) {
@@ -520,21 +924,255 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
     }
   };
 
+  // Derived state based on input mode
   const isUploading = uploads.some(u =>
     u.status === "uploading" || u.status === "converting" || u.status === "compressing"
-  );
-  // Ready to post: uploaded images or CF videos (CF videos have cfVideoUid instead of mediaUrl)
-  const readyCount = uploads.filter(u =>
+  ) || materialUploads.some(m => m.status === "uploading");
+
+  // Ready to post depends on input mode
+  const readyMediaCount = uploads.filter(u =>
     u.status === "uploaded" && (u.mediaUrl || u.cfVideoUid)
   ).length;
-  const canPost = readyCount > 0;
+  const readyMaterialCount = materialUploads.filter(m =>
+    m.status === "uploaded" && m.fileUrl
+  ).length;
+
+  const canPost = (() => {
+    switch (inputMode) {
+      case "youtube":
+        return !!youtubePreview;
+      case "file":
+        return readyMaterialCount > 0;
+      case "text":
+        return caption.trim().length > 0;
+      case "media":
+      default:
+        return readyMediaCount > 0;
+    }
+  })();
+
+  const readyCount = inputMode === "file" ? readyMaterialCount : readyMediaCount;
 
   return (
     <div className="space-y-4">
-      {/* Media upload area */}
-      <div className="space-y-3">
-        {/* Preview list with per-image captions */}
-        {uploads.length > 0 && (
+      {/* Input mode selector */}
+      <div className="flex gap-1 p-1 bg-muted rounded-lg">
+        <button
+          type="button"
+          onClick={() => setInputMode("media")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-sm font-medium transition-all",
+            inputMode === "media"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Camera className="w-4 h-4" />
+          <span className="hidden sm:inline">{t("inputModes.media")}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setInputMode("youtube")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-sm font-medium transition-all",
+            inputMode === "youtube"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Youtube className="w-4 h-4" />
+          <span className="hidden sm:inline">YouTube</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setInputMode("file")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-sm font-medium transition-all",
+            inputMode === "file"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <File className="w-4 h-4" />
+          <span className="hidden sm:inline">{t("inputModes.file")}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setInputMode("text")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-sm font-medium transition-all",
+            inputMode === "text"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <FileText className="w-4 h-4" />
+          <span className="hidden sm:inline">{t("inputModes.text")}</span>
+        </button>
+      </div>
+
+      {/* YouTube input mode */}
+      {inputMode === "youtube" && (
+        <div className="space-y-3">
+          <div className="relative">
+            <Input
+              type="url"
+              value={youtubeUrl}
+              onChange={(e) => handleYoutubeUrlChange(e.target.value)}
+              placeholder={t("youtube.placeholder")}
+              className="pr-10"
+            />
+            <LinkIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          </div>
+          {youtubeError && (
+            <p className="text-sm text-destructive">{youtubeError}</p>
+          )}
+          {youtubePreview && (
+            <div className="relative rounded-xl border border-border overflow-hidden bg-card">
+              <img
+                src={youtubePreview.thumbnailUrl}
+                alt="YouTube video preview"
+                className="w-full aspect-video object-cover"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center">
+                  <Play className="w-8 h-8 text-white fill-current ml-1" />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={clearYoutubePreview}
+                className="absolute top-2 right-2 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 active:scale-95 transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* File upload mode (PDF, audio, documents) */}
+      {inputMode === "file" && (
+        <div className="space-y-3">
+          {/* Material uploads preview */}
+          {materialUploads.length > 0 && (
+            <div className="space-y-3">
+              {materialUploads.map((material) => {
+                const Icon = CONTENT_TYPE_ICONS[material.contentType] || File;
+                return (
+                  <div key={material.id} className="rounded-xl border border-border overflow-hidden bg-card">
+                    <div className="flex items-center gap-3 p-3">
+                      {/* Icon or album art */}
+                      <div className={cn(
+                        "w-12 h-12 rounded-lg flex-shrink-0 flex items-center justify-center",
+                        material.contentType === "audio" && material.audioThumbnailUrl
+                          ? "overflow-hidden"
+                          : material.contentType === "pdf"
+                          ? "bg-red-100 dark:bg-red-900/20"
+                          : material.contentType === "audio"
+                          ? "bg-purple-100 dark:bg-purple-900/20"
+                          : "bg-muted"
+                      )}>
+                        {material.contentType === "audio" && material.audioThumbnailUrl ? (
+                          <img
+                            src={material.audioThumbnailUrl}
+                            alt="Album art"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Icon className={cn(
+                            "w-6 h-6",
+                            material.contentType === "pdf"
+                              ? "text-red-600 dark:text-red-400"
+                              : material.contentType === "audio"
+                              ? "text-purple-600 dark:text-purple-400"
+                              : "text-muted-foreground"
+                          )} />
+                        )}
+                      </div>
+
+                      {/* File info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {material.title || material.originalFilename}
+                        </p>
+                        {material.artist && (
+                          <p className="text-xs text-muted-foreground truncate">{material.artist}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(material.fileSize)}
+                          {material.audioDurationSeconds && ` • ${formatAudioDuration(material.audioDurationSeconds)}`}
+                        </p>
+                      </div>
+
+                      {/* Status/Remove */}
+                      <div className="flex items-center gap-2">
+                        {material.status === "uploading" && (
+                          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                        )}
+                        {material.status === "error" && (
+                          <AlertCircle className="w-5 h-5 text-destructive" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMaterial(material.id)}
+                          className="p-1.5 rounded-full hover:bg-muted active:scale-95 transition-all"
+                        >
+                          <X className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Caption input for material */}
+                    {material.status === "uploaded" && (
+                      <input
+                        type="text"
+                        value={material.caption || ""}
+                        onChange={(e) => handleMaterialCaptionChange(material.id, e.target.value)}
+                        placeholder={t("addCaption")}
+                        className="w-full px-3 py-2 bg-card text-sm border-t border-border focus:outline-none focus:bg-accent/50 transition-colors"
+                        maxLength={500}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Add file button */}
+          <button
+            type="button"
+            onClick={() => materialFileInputRef.current?.click()}
+            className={cn(
+              "w-full py-8 rounded-xl border-2 border-dashed transition-all",
+              "border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5",
+              "flex flex-col items-center justify-center gap-3"
+            )}
+          >
+            <div className="p-3 rounded-full bg-primary/10">
+              <Upload className="w-6 h-6 text-primary/70" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-muted-foreground">{t("file.tapToUpload")}</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">{t("file.supportedFormats")}</p>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Text-only mode */}
+      {inputMode === "text" && (
+        <div className="p-4 rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/30">
+          <p className="text-sm text-muted-foreground text-center mb-2">{t("text.description")}</p>
+        </div>
+      )}
+
+      {/* Media upload area (photo/video) */}
+      {inputMode === "media" && (
+        <div className="space-y-3">
+          {/* Preview list with per-image captions */}
+          {uploads.length > 0 && (
           <div className="space-y-4">
             {uploads.map((upload) => (
               <div key={upload.id} className="rounded-xl border border-border overflow-hidden bg-card">
@@ -624,8 +1262,11 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
                   )}
 
                   {upload.status === "error" && (
-                    <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-red-500/50 flex flex-col items-center justify-center gap-2 px-4">
                       <AlertCircle className="w-6 h-6 text-white" />
+                      <span className="text-xs text-white text-center font-medium">
+                        {upload.error || t("errors.uploadFailed")}
+                      </span>
                     </div>
                   )}
 
@@ -690,11 +1331,34 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
             </div>
           </div>
         )}
-      </div>
+        </div>
+      )}
 
-      {/* Caption input - shared or per-image */}
-      {readyCount <= 1 ? (
-        // Single image: use shared caption
+      {/* Caption input - varies by mode */}
+      {inputMode === "text" ? (
+        // Text-only mode: larger text area, required
+        <AIEnhanceTextarea
+          value={caption}
+          onChange={setCaption}
+          placeholder={t("text.placeholder")}
+          className="w-full min-h-[120px] p-3 rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow"
+          maxLength={1000}
+          context="a text moment shared at an event - a thought, memory, or comment"
+        />
+      ) : inputMode === "youtube" || inputMode === "file" ? (
+        // YouTube/File mode: optional caption
+        <AIEnhanceTextarea
+          value={caption}
+          onChange={setCaption}
+          placeholder={t("addCaption")}
+          className="w-full min-h-[80px] p-3 rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow"
+          maxLength={500}
+          context={inputMode === "youtube"
+            ? "a caption for a YouTube video shared at an event"
+            : "a caption for a file shared at an event"}
+        />
+      ) : readyCount <= 1 ? (
+        // Media mode, single image: use shared caption
         <AIEnhanceTextarea
           value={caption}
           onChange={setCaption}
@@ -704,7 +1368,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           context="a moment caption for a photo or video shared at an event"
         />
       ) : (
-        // Multiple images: per-image captions with optional shared default
+        // Media mode, multiple images: per-image captions with optional shared default
         <div className="space-y-3">
           {/* Shared caption that applies to images without custom caption */}
           <div className="space-y-1">
@@ -721,7 +1385,7 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
           {/* Individual captions for each uploaded image */}
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground">{t("individualCaptions")}</label>
-            {uploads.filter(u => u.status === "uploaded").map((upload, index) => (
+            {uploads.filter(u => u.status === "uploaded").map((upload) => (
               <div key={upload.id} className="flex gap-2 items-start">
                 <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted relative">
                   {upload.isVideo ? (
@@ -771,7 +1435,15 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         ) : (
           <>
             <Send className="w-4 h-4 mr-2" />
-            {isUploading && readyCount > 0 ? (
+            {inputMode === "youtube" ? (
+              t("postYoutube")
+            ) : inputMode === "text" ? (
+              t("postText")
+            ) : inputMode === "file" ? (
+              readyMaterialCount > 1
+                ? t("postMoments", { count: readyMaterialCount })
+                : t("postFile")
+            ) : isUploading && readyCount > 0 ? (
               // Some ready, some still uploading - post partial
               t("postReady", { ready: readyCount, total: uploads.length })
             ) : readyCount > 1 ? (
@@ -788,6 +1460,16 @@ export function MomentForm({ eventId, eventSlug, userId, onSuccess }: MomentForm
         type="file"
         accept={ALL_ALLOWED_TYPES.join(",")}
         onChange={handleFileSelect}
+        className="hidden"
+        multiple
+      />
+
+      {/* Material file input (PDF, audio, documents) */}
+      <input
+        ref={materialFileInputRef}
+        type="file"
+        accept={MATERIAL_ALLOWED_MIME_TYPES.join(",")}
+        onChange={handleMaterialFileSelect}
         className="hidden"
         multiple
       />
