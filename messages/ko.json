@@ -21,6 +21,8 @@
   },
   "common": {
     "back": "뒤로",
+    "share": "공유",
+    "copied": "복사됨!",
     "save": "저장",
     "cancel": "취소",
     "add": "추가",

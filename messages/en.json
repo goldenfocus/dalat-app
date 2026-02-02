@@ -21,6 +21,8 @@
   },
   "common": {
     "back": "Back",
+    "share": "Share",
+    "copied": "Copied!",
     "save": "Save",
     "cancel": "Cancel",
     "add": "Add",

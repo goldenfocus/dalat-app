@@ -3,6 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { ArrowLeft, Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { SharePageButton } from "@/components/shared/share-page-button";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { InfiniteMomentGrid } from "@/components/moments";
@@ -151,16 +152,7 @@ export default async function EventMomentsPage({ params }: PageProps) {
             <span>{tCommon("back")}</span>
           </Link>
 
-          {canPost && (
-            <Link
-              href={`/events/${slug}/moments/new`}
-              className="-mr-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
-              aria-label={t("shareYourMoment")}
-            >
-              <Plus className="w-4 h-4" />
-              <span className="text-sm">{t("share")}</span>
-            </Link>
-          )}
+          <SharePageButton title={`${t("moments")} - ${event.title}`} />
         </div>
       </nav>
 

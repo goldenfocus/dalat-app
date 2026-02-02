@@ -1,5 +1,5 @@
 import { Link } from "@/lib/i18n/routing";
-import { Calendar, MapPin, BadgeCheck, Globe, ArrowLeft } from "lucide-react";
+import { Calendar, MapPin, Globe, ArrowLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Organizer, Event, Locale, Profile } from "@/lib/types";
 import { ClaimOrganizerBanner, UnclaimedOrganizerBadge } from "@/components/organizers/claim-organizer-banner";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 
 interface OrganizerContentProps {
   organizerId: string;
@@ -122,32 +123,39 @@ export async function OrganizerContent({ organizerId, locale }: OrganizerContent
 
         {/* Organizer header */}
         <div className="flex items-start gap-6 mb-8">
-          {organizer.logo_url ? (
-            <img
-              src={organizer.logo_url}
-              alt={organizer.name}
-              className="w-24 h-24 rounded-xl object-cover"
-            />
-          ) : organizer.owner?.avatar_url ? (
-            <UserAvatar
-              src={organizer.owner.avatar_url}
-              alt={organizer.owner.display_name || organizer.owner.username || organizer.name}
-              size="xl"
-              expandable
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-xl bg-primary/10 flex items-center justify-center">
-              <span className="text-3xl font-bold text-primary">
-                {organizer.name.charAt(0)}
-              </span>
-            </div>
-          )}
+          {/* Avatar with verified badge overlay */}
+          <div className="relative flex-shrink-0">
+            {organizer.logo_url ? (
+              <img
+                src={organizer.logo_url}
+                alt={organizer.name}
+                className="w-24 h-24 rounded-xl object-cover"
+              />
+            ) : organizer.owner?.avatar_url ? (
+              <UserAvatar
+                src={organizer.owner.avatar_url}
+                alt={organizer.owner.display_name || organizer.owner.username || organizer.name}
+                size="xl"
+                expandable
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-xl bg-primary/10 flex items-center justify-center">
+                <span className="text-3xl font-bold text-primary">
+                  {organizer.name.charAt(0)}
+                </span>
+              </div>
+            )}
+            {/* Premium verified badge positioned at bottom center */}
+            {organizer.is_verified && (
+              <VerifiedBadge
+                size="md"
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2"
+              />
+            )}
+          </div>
           <div className="flex-1">
             <h1 className="text-3xl font-bold flex items-center gap-2 flex-wrap">
               {organizer.name}
-              {organizer.is_verified && (
-                <BadgeCheck className="w-6 h-6 text-primary" />
-              )}
               {isUnclaimed && !organizer.is_verified && (
                 <UnclaimedOrganizerBadge />
               )}

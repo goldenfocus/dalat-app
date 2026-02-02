@@ -21,6 +21,8 @@
   },
   "common": {
     "back": "Volver",
+    "share": "Compartir",
+    "copied": "¡Copiado!",
     "save": "Guardar",
     "cancel": "Cancelar",
     "add": "Añadir",
