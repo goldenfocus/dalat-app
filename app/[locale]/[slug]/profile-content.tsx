@@ -30,12 +30,16 @@ async function getUserEvents(userId: string): Promise<Event[]> {
   const supabase = await createClient();
 
   // First, get organizer IDs that this user owns
-  const { data: ownedOrganizers } = await supabase
+  const { data: ownedOrganizers, error: orgError } = await supabase
     .from("organizers")
     .select("id")
     .eq("owner_id", userId);
 
   const organizerIds = (ownedOrganizers ?? []).map((o) => o.id);
+
+  console.log("[getUserEvents] userId:", userId);
+  console.log("[getUserEvents] organizerIds:", organizerIds);
+  console.log("[getUserEvents] orgError:", orgError);
 
   // Query events where user created it OR where user owns the organizer
   let query = supabase
@@ -45,15 +49,20 @@ async function getUserEvents(userId: string): Promise<Event[]> {
 
   if (organizerIds.length > 0) {
     // User owns organizers - include events they created OR events by their organizers
-    query = query.or(`created_by.eq.${userId},organizer_id.in.(${organizerIds.join(",")})`);
+    const orFilter = `created_by.eq.${userId},organizer_id.in.(${organizerIds.join(",")})`;
+    console.log("[getUserEvents] orFilter:", orFilter);
+    query = query.or(orFilter);
   } else {
     // User doesn't own any organizers - just show events they created
     query = query.eq("created_by", userId);
   }
 
-  const { data } = await query
+  const { data, error: eventError } = await query
     .order("starts_at", { ascending: false })
     .limit(10);
+
+  console.log("[getUserEvents] eventError:", eventError);
+  console.log("[getUserEvents] returned events:", data?.length, data?.map(e => e.title));
 
   return (data ?? []) as Event[];
 }
