@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Users } from "lucide-react";
+import { ChevronDown, Users, Trash2, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +74,11 @@ export function VenueForm({ venue }: VenueFormProps) {
 
   const isEditing = !!venue;
 
+  // Delete state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [linkedEventsCount, setLinkedEventsCount] = useState<number | null>(null);
+
   // Slug state
   const [slug, setSlug] = useState(venue?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(false);
@@ -138,6 +143,79 @@ export function VenueForm({ venue }: VenueFormProps) {
         [day]: { ...current, [field]: value },
       };
     });
+  };
+
+  // Check for linked events when delete is initiated
+  const initiateDelete = async () => {
+    if (!venue) return;
+
+    const supabase = createClient();
+    const { count } = await supabase
+      .from("events")
+      .select("*", { count: "exact", head: true })
+      .eq("venue_id", venue.id);
+
+    setLinkedEventsCount(count ?? 0);
+    setShowDeleteConfirm(true);
+  };
+
+  // Handle actual deletion
+  const handleDelete = async () => {
+    if (!venue) return;
+
+    setIsDeleting(true);
+    setError(null);
+
+    const supabase = createClient();
+
+    // Unlink events from this venue (set venue_id to null)
+    const { error: unlinkEventsError } = await supabase
+      .from("events")
+      .update({ venue_id: null })
+      .eq("venue_id", venue.id);
+
+    if (unlinkEventsError) {
+      setError(`Failed to unlink events: ${unlinkEventsError.message}`);
+      setIsDeleting(false);
+      return;
+    }
+
+    // Verify events were unlinked
+    const { count: remainingEvents } = await supabase
+      .from("events")
+      .select("*", { count: "exact", head: true })
+      .eq("venue_id", venue.id);
+
+    if (remainingEvents && remainingEvents > 0) {
+      setError(`Cannot delete: ${remainingEvents} events are still linked. You may not have permission to unlink them.`);
+      setIsDeleting(false);
+      return;
+    }
+
+    // Delete venue managers
+    await supabase
+      .from("venue_managers")
+      .delete()
+      .eq("venue_id", venue.id);
+
+    // Delete venue media from R2/storage (logo, cover photo)
+    // Note: For R2, we'd need to call an API route. For now, just delete the venue record.
+    // The storage files will be orphaned but can be cleaned up later.
+
+    // Delete the venue
+    const { error: deleteError } = await supabase
+      .from("venues")
+      .delete()
+      .eq("id", venue.id);
+
+    if (deleteError) {
+      setError(`Failed to delete: ${deleteError.message}`);
+      setIsDeleting(false);
+      return;
+    }
+
+    router.push("/admin/venues");
+    router.refresh();
   };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -651,7 +729,7 @@ export function VenueForm({ venue }: VenueFormProps) {
             {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
 
             <div className="flex gap-3">
-              <Button type="submit" disabled={isPending} className="flex-1">
+              <Button type="submit" disabled={isPending || isDeleting} className="flex-1">
                 {isPending
                   ? isEditing
                     ? "Saving..."
@@ -660,10 +738,72 @@ export function VenueForm({ venue }: VenueFormProps) {
                   ? "Save changes"
                   : "Create venue"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => router.back()}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                disabled={isDeleting}
+              >
                 Cancel
               </Button>
             </div>
+
+            {/* Delete section - only show when editing */}
+            {isEditing && (
+              <div className="pt-6 mt-6 border-t">
+                {!showDeleteConfirm ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    onClick={initiateDelete}
+                    disabled={isPending || isDeleting}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete venue
+                  </Button>
+                ) : (
+                  <div className="space-y-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-destructive">Delete this venue?</p>
+                        {linkedEventsCount && linkedEventsCount > 0 ? (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            This venue is linked to {linkedEventsCount} event{linkedEventsCount !== 1 ? "s" : ""}.
+                            These events will be unlinked but not deleted.
+                          </p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            This action cannot be undone.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? "Deleting..." : "Yes, delete"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowDeleteConfirm(false)}
+                        disabled={isDeleting}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
