@@ -195,6 +195,7 @@
   },
   "events": {
     "popular": "Populer",
+    "sponsored": "Unggulan",
     "going": "hadir",
     "went": "telah hadir",
     "interested": "tertarik",
@@ -256,11 +257,14 @@
     "timeRequired": "Waktu * (Đà Lạt)",
     "location": "Lokasi",
     "locationRequired": "Lokasi *",
-    "locationPlaceholder": "Cari tempat atau masukkan alamat...",
+    "locationPlaceholder": "Cari tempat, tempel koordinat atau tautan Google Maps...",
     "locationVenuesSection": "Tempat",
     "locationPlacesSection": "Lokasi Lain",
     "locationNoResults": "Tidak ada lokasi ditemukan",
     "locationLoading": "Memuat...",
+    "locationCoordinatesDetected": "Koordinat terdeteksi",
+    "locationResolvingUrl": "Mengekstrak lokasi dari tautan...",
+    "locationUrlError": "Tidak dapat mengekstrak lokasi dari URL. Coba tempel koordinat secara langsung.",
     "venueLinked": "Terhubung ke tempat",
     "venueLinkButton": "Hubungkan ke tempat yang ada",
     "venueLinkDialogTitle": "Pilih tempat",
@@ -1039,7 +1043,11 @@
     "errors": {
       "notAllowed": "Anda tidak memiliki izin untuk memposting momen di sini",
       "uploadFailed": "Gagal mengunggah. Silakan coba lagi.",
-      "postFailed": "Gagal memposting momen. Silakan coba lagi."
+      "postFailed": "Gagal memposting momen. Silakan coba lagi.",
+      "invalidYoutubeUrl": "URL YouTube tidak valid",
+      "unsupportedFileType": "Jenis file ini tidak didukung",
+      "fileSizeLimit": "File terlalu besar (maks 100MB)",
+      "captionRequired": "Silakan tambahkan teks untuk dibagikan"
     },
     "proUpload": {
       "title": "Pro Upload",
@@ -1105,6 +1113,26 @@
     "share": "Bagikan",
     "postMoments": "Posting {count} momen",
     "postReady": "Posting {ready} dari {total} siap",
+    "postYoutube": "Bagikan video YouTube",
+    "postText": "Posting",
+    "postFile": "Bagikan file",
+    "posting": "Memposting...",
+    "inputModes": {
+      "media": "Foto/Video",
+      "file": "File",
+      "text": "Teks"
+    },
+    "youtube": {
+      "placeholder": "Tempel URL YouTube (cth: youtube.com/watch?v=...)"
+    },
+    "file": {
+      "tapToUpload": "Ketuk untuk mengunggah file",
+      "supportedFormats": "PDF, Audio, Gambar, Dokumen"
+    },
+    "text": {
+      "description": "Bagikan pikiran, kenangan, atau komentar tentang acara ini",
+      "placeholder": "Apa yang Anda pikirkan tentang acara ini?"
+    },
     "addMore": "Tambah lagi",
     "viewMoreMoments": "Lihat {count} momen lagi",
     "searchPlaceholder": "Cari momen... (cth: anjing, matahari terbenam)",

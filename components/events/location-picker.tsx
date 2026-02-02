@@ -1,12 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MapPin, Loader2, X, Check } from "lucide-react";
+import { MapPin, Loader2, X, Check, Navigation } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
 import type { VenueType } from "@/lib/types";
+import {
+  parseLocationInput,
+  isGoogleMapsUrl,
+  isShortGoogleMapsUrl,
+  generateGoogleMapsUrl,
+  formatCoordinates,
+  type ParsedCoordinates,
+} from "@/lib/geo/parse-location";
 
 // Venue result from our API
 interface VenueResult {
@@ -65,6 +73,11 @@ export function LocationPicker({
   );
   const [isGoogleReady, setIsGoogleReady] = useState(false);
   const [isLoadingScript, setIsLoadingScript] = useState(false);
+
+  // Smart detection state for coordinates/URLs
+  const [detectedCoords, setDetectedCoords] = useState<ParsedCoordinates | null>(null);
+  const [isResolvingUrl, setIsResolvingUrl] = useState(false);
+  const [urlResolveError, setUrlResolveError] = useState<string | null>(null);
 
   const sessionToken =
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
@@ -196,6 +209,98 @@ export function LocationPicker({
     }
   }, []);
 
+  // Resolve short Google Maps URL via API
+  const resolveShortUrl = useCallback(async (url: string) => {
+    setIsResolvingUrl(true);
+    setUrlResolveError(null);
+
+    try {
+      const response = await fetch("/api/resolve-maps-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        setUrlResolveError(data.error || "Failed to resolve URL");
+        return null;
+      }
+
+      return {
+        latitude: data.latitude,
+        longitude: data.longitude,
+        source: "short-url" as const,
+      };
+    } catch (error) {
+      console.error("Error resolving short URL:", error);
+      setUrlResolveError("Failed to resolve URL");
+      return null;
+    } finally {
+      setIsResolvingUrl(false);
+    }
+  }, []);
+
+  // Apply detected coordinates as the selected location
+  const applyDetectedCoordinates = useCallback(
+    (coords: ParsedCoordinates, rawInput: string) => {
+      const location: SelectedLocation = {
+        type: "place",
+        name: formatCoordinates(coords.latitude, coords.longitude),
+        address: rawInput, // Keep original input as address for reference
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        googleMapsUrl: generateGoogleMapsUrl(coords.latitude, coords.longitude),
+      };
+
+      setSelectedLocation(location);
+      setSelectedVenueId(null);
+      setDetectedCoords(coords);
+      setIsOpen(false);
+      onLocationSelect?.(location);
+      onVenueIdChange?.(null);
+    },
+    [onLocationSelect, onVenueIdChange]
+  );
+
+  // Detect and handle coordinate/URL input
+  const handleSmartDetection = useCallback(
+    async (value: string) => {
+      // Reset detection state
+      setDetectedCoords(null);
+      setUrlResolveError(null);
+
+      // Check for direct coordinates first
+      const parsed = parseLocationInput(value);
+      if (parsed) {
+        applyDetectedCoordinates(parsed, value);
+        return true;
+      }
+
+      // Check for short Google Maps URLs (need API resolution)
+      if (isShortGoogleMapsUrl(value)) {
+        const resolved = await resolveShortUrl(value);
+        if (resolved) {
+          applyDetectedCoordinates(resolved, value);
+          return true;
+        }
+        // If resolution failed, let user continue typing or clear
+        return false;
+      }
+
+      // Check for full Google Maps URLs that parseLocationInput didn't catch
+      if (isGoogleMapsUrl(value) && !parsed) {
+        // URL format not recognized - could be a place URL without coords
+        // Fall through to normal search
+        return false;
+      }
+
+      return false;
+    },
+    [applyDetectedCoordinates, resolveShortUrl]
+  );
+
   // Search Google Places
   const searchPlaces = useCallback(
     async (searchQuery: string) => {
@@ -228,17 +333,21 @@ export function LocationPicker({
     [isGoogleReady]
   );
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
 
-    // Clear selection when typing
-    if (selectedLocation) {
+    // Clear selection when typing (unless we detect coords/URL)
+    if (selectedLocation && !detectedCoords) {
       setSelectedLocation(null);
       setSelectedVenueId(null);
       onLocationSelect?.(null);
       onVenueIdChange?.(null);
     }
+
+    // Reset detection state when typing
+    setDetectedCoords(null);
+    setUrlResolveError(null);
 
     // Debounce the search
     if (debounceTimer.current) {
@@ -246,8 +355,17 @@ export function LocationPicker({
     }
 
     if (value.length >= MIN_CHARS) {
-      debounceTimer.current = setTimeout(() => {
-        // Search both venues and places in parallel
+      debounceTimer.current = setTimeout(async () => {
+        // Try smart detection first (coordinates or URLs)
+        const detected = await handleSmartDetection(value);
+        if (detected) {
+          // Coordinates/URL detected and applied - don't search
+          setVenues([]);
+          setPlaceSuggestions([]);
+          return;
+        }
+
+        // Not coordinates/URL - proceed with normal search
         searchVenues(value);
         searchPlaces(value);
         setIsOpen(true);
@@ -256,6 +374,7 @@ export function LocationPicker({
       // Show popular venues when cleared
       fetchPopularVenues();
       setPlaceSuggestions([]);
+      setDetectedCoords(null);
     } else {
       setVenues([]);
       setPlaceSuggestions([]);
@@ -347,13 +466,15 @@ export function LocationPicker({
     setSelectedVenueId(null);
     setVenues([]);
     setPlaceSuggestions([]);
+    setDetectedCoords(null);
+    setUrlResolveError(null);
     onLocationSelect?.(null);
     onVenueIdChange?.(null);
     inputRef.current?.focus();
   };
 
   const hasResults = venues.length > 0 || placeSuggestions.length > 0;
-  const showLoading = isLoading || isLoadingVenues || isLoadingScript;
+  const showLoading = isLoading || isLoadingVenues || isLoadingScript || isResolvingUrl;
 
   return (
     <div ref={containerRef} className="relative space-y-2">
@@ -370,7 +491,9 @@ export function LocationPicker({
           placeholder={
             isLoadingScript
               ? t("locationLoading") || "Loading..."
-              : t("locationPlaceholder") || "Search venues or enter address..."
+              : isResolvingUrl
+                ? t("locationResolvingUrl") || "Extracting location..."
+                : t("locationPlaceholder") || "Search venues, paste coordinates or Google Maps link..."
           }
           className="pl-9 pr-9"
           autoComplete="off"
@@ -395,7 +518,31 @@ export function LocationPicker({
           {selectedLocation.type === "venue" && (
             <Check className="w-3 h-3 text-green-500" />
           )}
-          {selectedLocation.address}
+          {detectedCoords && (
+            <Navigation className="w-3 h-3 text-blue-500" />
+          )}
+          {detectedCoords ? (
+            <span>
+              {t("locationCoordinatesDetected") || "Coordinates detected"}: {selectedLocation.name}
+            </span>
+          ) : (
+            selectedLocation.address
+          )}
+        </p>
+      )}
+
+      {/* URL resolution error */}
+      {urlResolveError && (
+        <p className="text-sm text-amber-600 flex items-center gap-1">
+          {t("locationUrlError") || "Could not extract location from URL. Try pasting coordinates directly."}
+        </p>
+      )}
+
+      {/* Resolving URL indicator */}
+      {isResolvingUrl && (
+        <p className="text-sm text-muted-foreground flex items-center gap-1">
+          <Loader2 className="w-3 h-3 animate-spin" />
+          {t("locationResolvingUrl") || "Extracting location from link..."}
         </p>
       )}
 

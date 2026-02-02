@@ -195,6 +195,7 @@
   },
   "events": {
     "popular": "热门",
+    "sponsored": "精选",
     "going": "参加",
     "went": "已参加",
     "interested": "感兴趣",
@@ -256,11 +257,14 @@
     "timeRequired": "时间 *（大叻）",
     "location": "地点",
     "locationRequired": "地点 *",
-    "locationPlaceholder": "搜索场地或输入地址...",
+    "locationPlaceholder": "搜索场地、粘贴坐标或Google Maps链接...",
     "locationVenuesSection": "场地",
     "locationPlacesSection": "其他位置",
     "locationNoResults": "未找到位置",
     "locationLoading": "加载中...",
+    "locationCoordinatesDetected": "已识别坐标",
+    "locationResolvingUrl": "正在从链接提取位置...",
+    "locationUrlError": "无法从URL提取位置。请尝试直接粘贴坐标。",
     "venueLinked": "已关联场地",
     "venueLinkButton": "关联现有场地",
     "venueLinkDialogTitle": "选择场地",
@@ -1039,7 +1043,11 @@
     "errors": {
       "notAllowed": "您没有在此发布动态的权限",
       "uploadFailed": "上传失败。请重试。",
-      "postFailed": "发布动态失败。请重试。"
+      "postFailed": "发布动态失败。请重试。",
+      "invalidYoutubeUrl": "无效的YouTube链接",
+      "unsupportedFileType": "不支持此文件类型",
+      "fileSizeLimit": "文件太大（最大100MB）",
+      "captionRequired": "请添加要分享的文字"
     },
     "proUpload": {
       "title": "专业上传",
@@ -1105,6 +1113,26 @@
     "share": "分享",
     "postMoments": "发布 {count} 个动态",
     "postReady": "发布 {ready}/{total} 已就绪",
+    "postYoutube": "分享YouTube视频",
+    "postText": "发布",
+    "postFile": "分享文件",
+    "posting": "发布中...",
+    "inputModes": {
+      "media": "照片/视频",
+      "file": "文件",
+      "text": "文字"
+    },
+    "youtube": {
+      "placeholder": "粘贴YouTube链接 (例如: youtube.com/watch?v=...)"
+    },
+    "file": {
+      "tapToUpload": "点击上传文件",
+      "supportedFormats": "PDF、音频、图片、文档"
+    },
+    "text": {
+      "description": "分享您对此活动的想法、回忆或评论",
+      "placeholder": "您对这个活动有什么想法？"
+    },
     "addMore": "添加更多",
     "viewMoreMoments": "查看更多 {count} 个动态",
     "searchPlaceholder": "搜索动态... (如：狗狗、日落)",

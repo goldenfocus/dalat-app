@@ -195,6 +195,7 @@
   },
   "events": {
     "popular": "Популярное",
+    "sponsored": "Рекомендуем",
     "going": "пойдут",
     "went": "пошли",
     "interested": "интересуются",
@@ -256,11 +257,14 @@
     "timeRequired": "Время * (Далат)",
     "location": "Место",
     "locationRequired": "Место *",
-    "locationPlaceholder": "Поиск площадок или ввод адреса...",
+    "locationPlaceholder": "Поиск площадок, вставка координат или ссылки Google Maps...",
     "locationVenuesSection": "Площадки",
     "locationPlacesSection": "Другие места",
     "locationNoResults": "Места не найдены",
     "locationLoading": "Загрузка...",
+    "locationCoordinatesDetected": "Координаты определены",
+    "locationResolvingUrl": "Извлечение местоположения из ссылки...",
+    "locationUrlError": "Не удалось извлечь местоположение из URL. Попробуйте вставить координаты напрямую.",
     "venueLinked": "Связано с местом",
     "venueLinkButton": "Связать с местом",
     "venueLinkDialogTitle": "Выберите место",
@@ -1039,7 +1043,11 @@
     "errors": {
       "notAllowed": "У вас нет прав публиковать моменты здесь",
       "uploadFailed": "Не удалось загрузить. Попробуйте ещё раз.",
-      "postFailed": "Не удалось опубликовать момент. Попробуйте ещё раз."
+      "postFailed": "Не удалось опубликовать момент. Попробуйте ещё раз.",
+      "invalidYoutubeUrl": "Неверная ссылка YouTube",
+      "unsupportedFileType": "Этот тип файла не поддерживается",
+      "fileSizeLimit": "Файл слишком большой (макс. 100МБ)",
+      "captionRequired": "Пожалуйста, добавьте текст для публикации"
     },
     "proUpload": {
       "title": "Pro загрузка",
@@ -1105,6 +1113,26 @@
     "share": "Поделиться",
     "postMoments": "Опубликовать {count} моментов",
     "postReady": "Опубликовать {ready} из {total} готовых",
+    "postYoutube": "Поделиться видео YouTube",
+    "postText": "Опубликовать",
+    "postFile": "Поделиться файлом",
+    "posting": "Публикация...",
+    "inputModes": {
+      "media": "Фото/Видео",
+      "file": "Файл",
+      "text": "Текст"
+    },
+    "youtube": {
+      "placeholder": "Вставьте ссылку YouTube (например, youtube.com/watch?v=...)"
+    },
+    "file": {
+      "tapToUpload": "Нажмите, чтобы загрузить файл",
+      "supportedFormats": "PDF, Аудио, Изображения, Документы"
+    },
+    "text": {
+      "description": "Поделитесь мыслью, воспоминанием или комментарием об этом событии",
+      "placeholder": "Что вы думаете об этом событии?"
+    },
     "addMore": "Добавить ещё",
     "viewMoreMoments": "Показать ещё {count} моментов",
     "searchPlaceholder": "Поиск моментов... (напр., собаки, закат)",

@@ -195,6 +195,7 @@
   },
   "events": {
     "popular": "Popular",
+    "sponsored": "Destacado",
     "going": "asistirán",
     "went": "asistieron",
     "interested": "interesados",
@@ -256,11 +257,14 @@
     "timeRequired": "Hora * (Đà Lạt)",
     "location": "Ubicación",
     "locationRequired": "Ubicación *",
-    "locationPlaceholder": "Buscar lugares o ingresar dirección...",
+    "locationPlaceholder": "Buscar lugares, pegar coordenadas o enlace de Google Maps...",
     "locationVenuesSection": "Lugares",
     "locationPlacesSection": "Otras ubicaciones",
     "locationNoResults": "No se encontraron ubicaciones",
     "locationLoading": "Cargando...",
+    "locationCoordinatesDetected": "Coordenadas detectadas",
+    "locationResolvingUrl": "Extrayendo ubicación del enlace...",
+    "locationUrlError": "No se pudo extraer la ubicación de la URL. Intenta pegar las coordenadas directamente.",
     "venueLinked": "Vinculado al lugar",
     "venueLinkButton": "Vincular a lugar existente",
     "venueLinkDialogTitle": "Seleccionar lugar",
@@ -1039,7 +1043,11 @@
     "errors": {
       "notAllowed": "No tienes permiso para publicar moments aquí",
       "uploadFailed": "Error al subir. Por favor intenta de nuevo.",
-      "postFailed": "Error al publicar moment. Por favor intenta de nuevo."
+      "postFailed": "Error al publicar moment. Por favor intenta de nuevo.",
+      "invalidYoutubeUrl": "URL de YouTube no válida",
+      "unsupportedFileType": "Este tipo de archivo no es compatible",
+      "fileSizeLimit": "El archivo es demasiado grande (máx 100MB)",
+      "captionRequired": "Por favor añade texto para compartir"
     },
     "proUpload": {
       "title": "Pro Upload",
@@ -1105,6 +1113,26 @@
     "share": "Compartir",
     "postMoments": "Publicar {count} momentos",
     "postReady": "Publicar {ready} de {total} listos",
+    "postYoutube": "Compartir video de YouTube",
+    "postText": "Publicar",
+    "postFile": "Compartir archivo",
+    "posting": "Publicando...",
+    "inputModes": {
+      "media": "Foto/Video",
+      "file": "Archivo",
+      "text": "Texto"
+    },
+    "youtube": {
+      "placeholder": "Pegar URL de YouTube (ej: youtube.com/watch?v=...)"
+    },
+    "file": {
+      "tapToUpload": "Toca para subir un archivo",
+      "supportedFormats": "PDF, Audio, Imágenes, Documentos"
+    },
+    "text": {
+      "description": "Comparte un pensamiento, recuerdo o comentario sobre este evento",
+      "placeholder": "¿Qué piensas sobre este evento?"
+    },
     "addMore": "Agregar más",
     "viewMoreMoments": "Ver {count} momentos más",
     "searchPlaceholder": "Buscar momentos... (ej., perros, atardecer)",

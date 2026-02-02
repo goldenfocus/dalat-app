@@ -195,6 +195,7 @@
   },
   "events": {
     "popular": "Popular",
+    "sponsored": "Pilihan",
     "going": "hadir",
     "went": "telah hadir",
     "interested": "berminat",
@@ -256,11 +257,14 @@
     "timeRequired": "Masa * (Đà Lạt)",
     "location": "Lokasi",
     "locationRequired": "Lokasi *",
-    "locationPlaceholder": "Cari tempat atau masukkan alamat...",
+    "locationPlaceholder": "Cari tempat, tampal koordinat atau pautan Google Maps...",
     "locationVenuesSection": "Tempat",
     "locationPlacesSection": "Lokasi Lain",
     "locationNoResults": "Tiada lokasi dijumpai",
     "locationLoading": "Memuatkan...",
+    "locationCoordinatesDetected": "Koordinat dikesan",
+    "locationResolvingUrl": "Mengekstrak lokasi dari pautan...",
+    "locationUrlError": "Tidak dapat mengekstrak lokasi dari URL. Cuba tampal koordinat secara langsung.",
     "venueLinked": "Dipautkan ke tempat",
     "venueLinkButton": "Paut ke tempat sedia ada",
     "venueLinkDialogTitle": "Pilih tempat",
@@ -1039,7 +1043,11 @@
     "errors": {
       "notAllowed": "Anda tidak mempunyai kebenaran untuk post momen di sini",
       "uploadFailed": "Gagal memuat naik. Sila cuba lagi.",
-      "postFailed": "Gagal post momen. Sila cuba lagi."
+      "postFailed": "Gagal post momen. Sila cuba lagi.",
+      "invalidYoutubeUrl": "URL YouTube tidak sah",
+      "unsupportedFileType": "Jenis fail ini tidak disokong",
+      "fileSizeLimit": "Fail terlalu besar (maks 100MB)",
+      "captionRequired": "Sila tambah teks untuk dikongsi"
     },
     "proUpload": {
       "title": "Muat Naik Pro",
@@ -1105,6 +1113,26 @@
     "share": "Kongsi",
     "postMoments": "Post {count} momen",
     "postReady": "Post {ready} daripada {total} sedia",
+    "postYoutube": "Kongsi video YouTube",
+    "postText": "Hantar",
+    "postFile": "Kongsi fail",
+    "posting": "Menghantar...",
+    "inputModes": {
+      "media": "Foto/Video",
+      "file": "Fail",
+      "text": "Teks"
+    },
+    "youtube": {
+      "placeholder": "Tampal URL YouTube (cth: youtube.com/watch?v=...)"
+    },
+    "file": {
+      "tapToUpload": "Ketik untuk muat naik fail",
+      "supportedFormats": "PDF, Audio, Imej, Dokumen"
+    },
+    "text": {
+      "description": "Kongsi fikiran, kenangan, atau komen tentang acara ini",
+      "placeholder": "Apa yang anda fikirkan tentang acara ini?"
+    },
     "addMore": "Tambah lagi",
     "viewMoreMoments": "Lihat {count} momen lagi",
     "searchPlaceholder": "Cari momen... (cth., anjing, matahari terbenam)",

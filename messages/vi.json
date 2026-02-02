@@ -195,6 +195,7 @@
   },
   "events": {
     "popular": "Phổ biến",
+    "sponsored": "Nổi bật",
     "going": "tham gia",
     "went": "đã tham gia",
     "interested": "quan tâm",
@@ -256,11 +257,14 @@
     "timeRequired": "Giờ * (Đà Lạt)",
     "location": "Địa điểm",
     "locationRequired": "Địa điểm *",
-    "locationPlaceholder": "Tìm địa điểm hoặc nhập địa chỉ...",
+    "locationPlaceholder": "Tìm địa điểm, dán tọa độ hoặc link Google Maps...",
     "locationVenuesSection": "Địa điểm",
     "locationPlacesSection": "Vị trí khác",
     "locationNoResults": "Không tìm thấy địa điểm",
     "locationLoading": "Đang tải...",
+    "locationCoordinatesDetected": "Đã nhận diện tọa độ",
+    "locationResolvingUrl": "Đang trích xuất vị trí từ link...",
+    "locationUrlError": "Không thể trích xuất vị trí từ URL. Thử dán tọa độ trực tiếp.",
     "venueLinked": "Đã liên kết địa điểm",
     "venueLinkButton": "Liên kết địa điểm có sẵn",
     "venueLinkDialogTitle": "Chọn địa điểm",
@@ -1000,7 +1004,26 @@
     "postMoment": "Đăng khoảnh khắc",
     "postMoments": "Đăng {count} khoảnh khắc",
     "postReady": "Đăng {ready}/{total} sẵn sàng",
+    "postYoutube": "Chia sẻ video YouTube",
+    "postText": "Đăng",
+    "postFile": "Chia sẻ tệp",
     "posting": "Đang đăng...",
+    "inputModes": {
+      "media": "Ảnh/Video",
+      "file": "Tệp",
+      "text": "Văn bản"
+    },
+    "youtube": {
+      "placeholder": "Dán đường dẫn YouTube (vd: youtube.com/watch?v=...)"
+    },
+    "file": {
+      "tapToUpload": "Nhấn để tải tệp lên",
+      "supportedFormats": "PDF, Âm thanh, Hình ảnh, Tài liệu"
+    },
+    "text": {
+      "description": "Chia sẻ suy nghĩ, kỷ niệm về sự kiện này",
+      "placeholder": "Bạn đang nghĩ gì về sự kiện này?"
+    },
     "delete": "Xóa",
     "deleting": "Đang xóa...",
     "deleteTitle": "Xóa khoảnh khắc?",
@@ -1047,7 +1070,11 @@
     "errors": {
       "notAllowed": "Bạn không có quyền đăng khoảnh khắc ở đây",
       "uploadFailed": "Tải lên thất bại. Vui lòng thử lại.",
-      "postFailed": "Đăng khoảnh khắc thất bại. Vui lòng thử lại."
+      "postFailed": "Đăng khoảnh khắc thất bại. Vui lòng thử lại.",
+      "invalidYoutubeUrl": "Đường dẫn YouTube không hợp lệ",
+      "unsupportedFileType": "Loại tệp này không được hỗ trợ",
+      "fileSizeLimit": "Tệp quá lớn (tối đa 100MB)",
+      "captionRequired": "Vui lòng thêm nội dung để chia sẻ"
     },
     "proUpload": {
       "title": "Tải Lên Chuyên Nghiệp",

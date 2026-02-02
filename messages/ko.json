@@ -195,6 +195,7 @@
   },
   "events": {
     "popular": "인기",
+    "sponsored": "추천",
     "going": "참석",
     "went": "참석함",
     "interested": "관심 있음",
@@ -256,11 +257,14 @@
     "timeRequired": "시간 * (달랏)",
     "location": "장소",
     "locationRequired": "장소 *",
-    "locationPlaceholder": "장소 검색 또는 주소 입력...",
+    "locationPlaceholder": "장소 검색, 좌표 또는 Google Maps 링크 붙여넣기...",
     "locationVenuesSection": "장소",
     "locationPlacesSection": "기타 위치",
     "locationNoResults": "장소를 찾을 수 없습니다",
     "locationLoading": "로딩 중...",
+    "locationCoordinatesDetected": "좌표 감지됨",
+    "locationResolvingUrl": "링크에서 위치 추출 중...",
+    "locationUrlError": "URL에서 위치를 추출할 수 없습니다. 좌표를 직접 붙여넣어 보세요.",
     "venueLinked": "장소와 연결됨",
     "venueLinkButton": "기존 장소와 연결",
     "venueLinkDialogTitle": "장소 선택",
@@ -1039,7 +1043,11 @@
     "errors": {
       "notAllowed": "여기에 모먼트를 게시할 권한이 없습니다",
       "uploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요.",
-      "postFailed": "모먼트 게시에 실패했습니다. 다시 시도해 주세요."
+      "postFailed": "모먼트 게시에 실패했습니다. 다시 시도해 주세요.",
+      "invalidYoutubeUrl": "잘못된 YouTube URL",
+      "unsupportedFileType": "이 파일 형식은 지원되지 않습니다",
+      "fileSizeLimit": "파일이 너무 큽니다 (최대 100MB)",
+      "captionRequired": "공유할 텍스트를 추가해 주세요"
     },
     "proUpload": {
       "title": "프로 업로드",
@@ -1105,6 +1113,26 @@
     "share": "공유",
     "postMoments": "{count}개 모먼트 게시",
     "postReady": "{total}개 중 {ready}개 준비됨 게시",
+    "postYoutube": "YouTube 동영상 공유",
+    "postText": "게시",
+    "postFile": "파일 공유",
+    "posting": "게시 중...",
+    "inputModes": {
+      "media": "사진/동영상",
+      "file": "파일",
+      "text": "텍스트"
+    },
+    "youtube": {
+      "placeholder": "YouTube URL 붙여넣기 (예: youtube.com/watch?v=...)"
+    },
+    "file": {
+      "tapToUpload": "파일을 업로드하려면 탭하세요",
+      "supportedFormats": "PDF, 오디오, 이미지, 문서"
+    },
+    "text": {
+      "description": "이 이벤트에 대한 생각, 추억 또는 댓글을 공유하세요",
+      "placeholder": "이 이벤트에 대해 무슨 생각을 하고 계세요?"
+    },
     "addMore": "더 추가",
     "viewMoreMoments": "{count}개 더 보기",
     "searchPlaceholder": "모먼트 검색... (예: 강아지, 일몰)",

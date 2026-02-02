@@ -195,6 +195,7 @@
   },
   "events": {
     "popular": "ยอดนิยม",
+    "sponsored": "แนะนำ",
     "going": "เข้าร่วม",
     "went": "เข้าร่วมแล้ว",
     "interested": "สนใจ",
@@ -256,11 +257,14 @@
     "timeRequired": "เวลา * (ดาลัด)",
     "location": "สถานที่",
     "locationRequired": "สถานที่ *",
-    "locationPlaceholder": "ค้นหาสถานที่หรือป้อนที่อยู่...",
+    "locationPlaceholder": "ค้นหาสถานที่ วางพิกัด หรือลิงก์ Google Maps...",
     "locationVenuesSection": "สถานที่",
     "locationPlacesSection": "ตำแหน่งอื่น",
     "locationNoResults": "ไม่พบสถานที่",
     "locationLoading": "กำลังโหลด...",
+    "locationCoordinatesDetected": "ตรวจพบพิกัด",
+    "locationResolvingUrl": "กำลังดึงตำแหน่งจากลิงก์...",
+    "locationUrlError": "ไม่สามารถดึงตำแหน่งจาก URL ลองวางพิกัดโดยตรง",
     "venueLinked": "เชื่อมต่อกับสถานที่",
     "venueLinkButton": "เชื่อมต่อกับสถานที่ที่มีอยู่",
     "venueLinkDialogTitle": "เลือกสถานที่",
@@ -1039,7 +1043,11 @@
     "errors": {
       "notAllowed": "คุณไม่มีสิทธิ์โพสต์ moments ที่นี่",
       "uploadFailed": "อัปโหลดไม่สำเร็จ กรุณาลองอีกครั้ง",
-      "postFailed": "โพสต์ moment ไม่สำเร็จ กรุณาลองอีกครั้ง"
+      "postFailed": "โพสต์ moment ไม่สำเร็จ กรุณาลองอีกครั้ง",
+      "invalidYoutubeUrl": "URL YouTube ไม่ถูกต้อง",
+      "unsupportedFileType": "ไม่รองรับไฟล์ประเภทนี้",
+      "fileSizeLimit": "ไฟล์ใหญ่เกินไป (สูงสุด 100MB)",
+      "captionRequired": "กรุณาเพิ่มข้อความเพื่อแชร์"
     },
     "proUpload": {
       "title": "Pro Upload",
@@ -1105,6 +1113,26 @@
     "share": "แชร์",
     "postMoments": "โพสต์ {count} โมเมนต์",
     "postReady": "โพสต์ {ready} จาก {total} พร้อม",
+    "postYoutube": "แชร์วิดีโอ YouTube",
+    "postText": "โพสต์",
+    "postFile": "แชร์ไฟล์",
+    "posting": "กำลังโพสต์...",
+    "inputModes": {
+      "media": "รูป/วิดีโอ",
+      "file": "ไฟล์",
+      "text": "ข้อความ"
+    },
+    "youtube": {
+      "placeholder": "วาง URL YouTube (เช่น youtube.com/watch?v=...)"
+    },
+    "file": {
+      "tapToUpload": "แตะเพื่ออัปโหลดไฟล์",
+      "supportedFormats": "PDF, เสียง, รูปภาพ, เอกสาร"
+    },
+    "text": {
+      "description": "แบ่งปันความคิด ความทรงจำ หรือความคิดเห็นเกี่ยวกับกิจกรรมนี้",
+      "placeholder": "คุณคิดอะไรเกี่ยวกับกิจกรรมนี้?"
+    },
     "addMore": "เพิ่มอีก",
     "viewMoreMoments": "ดูอีก {count} โมเมนต์",
     "searchPlaceholder": "ค้นหาโมเมนต์... (เช่น สุนัข, พระอาทิตย์ตก)",

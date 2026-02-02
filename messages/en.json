@@ -195,6 +195,7 @@
   },
   "events": {
     "popular": "Popular",
+    "sponsored": "Featured",
     "going": "going",
     "went": "went",
     "interested": "interested",
@@ -276,11 +277,14 @@
     "timeRequired": "Time * (Đà Lạt)",
     "location": "Location",
     "locationRequired": "Location *",
-    "locationPlaceholder": "Search venues or enter address...",
+    "locationPlaceholder": "Search venues, paste coordinates or Google Maps link...",
     "locationVenuesSection": "Venues",
     "locationPlacesSection": "Other Locations",
     "locationNoResults": "No locations found",
     "locationLoading": "Loading...",
+    "locationCoordinatesDetected": "Coordinates detected",
+    "locationResolvingUrl": "Extracting location from link...",
+    "locationUrlError": "Could not extract location from URL. Try pasting coordinates directly.",
     "venueLinked": "Linked to venue",
     "venueLinkButton": "Link to existing venue",
     "venueLinkDialogTitle": "Select a venue",
@@ -1115,7 +1119,26 @@
     "postMoment": "Post moment",
     "postMoments": "Post {count} moments",
     "postReady": "Post {ready} of {total} ready",
+    "postYoutube": "Share YouTube video",
+    "postText": "Post",
+    "postFile": "Share file",
     "posting": "Posting...",
+    "inputModes": {
+      "media": "Photo/Video",
+      "file": "File",
+      "text": "Text"
+    },
+    "youtube": {
+      "placeholder": "Paste YouTube URL (e.g., youtube.com/watch?v=...)"
+    },
+    "file": {
+      "tapToUpload": "Tap to upload a file",
+      "supportedFormats": "PDF, Audio, Images, Documents"
+    },
+    "text": {
+      "description": "Share a thought, memory, or comment about this event",
+      "placeholder": "What's on your mind about this event?"
+    },
     "delete": "Delete",
     "deleting": "Deleting...",
     "deleteTitle": "Delete moment?",
@@ -1166,7 +1189,11 @@
     "errors": {
       "notAllowed": "You don't have permission to post moments here",
       "uploadFailed": "Failed to upload. Please try again.",
-      "postFailed": "Failed to post moment. Please try again."
+      "postFailed": "Failed to post moment. Please try again.",
+      "invalidYoutubeUrl": "Invalid YouTube URL",
+      "unsupportedFileType": "This file type is not supported",
+      "fileSizeLimit": "File is too large (max 100MB)",
+      "captionRequired": "Please add some text to share"
     },
     "proUpload": {
       "title": "Pro Upload",
