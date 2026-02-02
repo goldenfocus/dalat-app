@@ -8,77 +8,30 @@ interface VerifiedBadgeProps {
 }
 
 /**
- * Premium verified badge with golden diamond and prominent glow aura.
- * Position this absolutely on the parent container (usually an avatar).
- *
- * IMPORTANT: The parent container needs overflow-visible for the glow to show!
+ * Simple diamond badge without glow - the glow goes on the avatar instead.
  */
 export function VerifiedBadge({ size = "md", className }: VerifiedBadgeProps) {
-  // Badge sizes
   const badgeSizes = {
-    sm: { badge: "w-6 h-6", icon: "w-3 h-3", glow: "w-14 h-14 -inset-4" },
-    md: { badge: "w-8 h-8", icon: "w-4 h-4", glow: "w-20 h-20 -inset-6" },
-    lg: { badge: "w-10 h-10", icon: "w-5 h-5", glow: "w-24 h-24 -inset-7" },
+    sm: { badge: "w-6 h-6", icon: "w-3 h-3" },
+    md: { badge: "w-8 h-8", icon: "w-4 h-4" },
+    lg: { badge: "w-10 h-10", icon: "w-5 h-5" },
   };
 
-  const { badge, icon, glow } = badgeSizes[size];
+  const { badge, icon } = badgeSizes[size];
 
   return (
     <div
       className={cn(
-        "relative flex items-center justify-center",
+        "relative flex items-center justify-center rounded-full",
         badge,
         className
       )}
-      style={{ overflow: "visible" }}
+      style={{
+        background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)",
+      }}
     >
-      {/* Outer glow aura - extends beyond badge */}
-      <div
-        className={cn(
-          "absolute rounded-full pointer-events-none",
-          glow
-        )}
-        style={{
-          background: "radial-gradient(circle, rgba(251,191,36,0.7) 0%, rgba(251,191,36,0.4) 30%, rgba(251,191,36,0.1) 60%, transparent 70%)",
-        }}
-      />
-
-      {/* Secondary glow layer for intensity */}
-      <div
-        className={cn(
-          "absolute rounded-full pointer-events-none",
-          glow
-        )}
-        style={{
-          background: "radial-gradient(circle, rgba(245,158,11,0.5) 0%, rgba(245,158,11,0.2) 40%, transparent 60%)",
-          filter: "blur(4px)",
-        }}
-      />
-
-      {/* Badge border/ring with golden gradient */}
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background: "linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%)",
-          boxShadow: "0 0 12px 4px rgba(251,191,36,0.6), 0 0 24px 8px rgba(251,191,36,0.3)",
-        }}
-      />
-
-      {/* Inner fill */}
-      <div
-        className="absolute inset-[2px] rounded-full"
-        style={{
-          background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)",
-        }}
-      />
-
       {/* Diamond icon */}
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className={cn("relative z-10", icon)}
-      >
-        {/* Diamond shape */}
+      <svg viewBox="0 0 24 24" fill="none" className={cn("relative z-10", icon)}>
         <path
           d="M12 2L2 9L12 22L22 9L12 2Z"
           fill="white"
@@ -86,7 +39,6 @@ export function VerifiedBadge({ size = "md", className }: VerifiedBadgeProps) {
           strokeWidth="1.5"
           strokeLinejoin="round"
         />
-        {/* Facet details */}
         <path
           d="M2 9H22M12 2L8 9L12 22L16 9L12 2Z"
           fill="none"
@@ -95,6 +47,50 @@ export function VerifiedBadge({ size = "md", className }: VerifiedBadgeProps) {
           strokeLinejoin="round"
         />
       </svg>
+    </div>
+  );
+}
+
+/**
+ * Golden glow ring to wrap around an avatar for verified users.
+ * Use this as a wrapper around the avatar image.
+ */
+export function VerifiedGlowRing({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("relative", className)}>
+      {/* Outer glow aura */}
+      <div
+        className="absolute -inset-3 rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(251,191,36,0.6) 40%, rgba(251,191,36,0.3) 60%, rgba(251,191,36,0.1) 75%, transparent 85%)",
+        }}
+      />
+      {/* Secondary glow for intensity */}
+      <div
+        className="absolute -inset-2 rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(245,158,11,0.4) 50%, transparent 70%)",
+          filter: "blur(8px)",
+        }}
+      />
+      {/* Golden ring border */}
+      <div
+        className="absolute -inset-1 rounded-full pointer-events-none"
+        style={{
+          background: "linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%)",
+          boxShadow: "0 0 20px 6px rgba(251,191,36,0.5)",
+        }}
+      />
+      {/* Content (avatar) with slight inset to show golden ring */}
+      <div className="relative rounded-full overflow-hidden">
+        {children}
+      </div>
     </div>
   );
 }

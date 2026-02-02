@@ -8,7 +8,7 @@ import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Organizer, Event, Locale, Profile } from "@/lib/types";
 import { ClaimOrganizerBanner, UnclaimedOrganizerBadge } from "@/components/organizers/claim-organizer-banner";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { VerifiedBadge } from "@/components/ui/verified-badge";
+import { VerifiedBadge, VerifiedGlowRing } from "@/components/ui/verified-badge";
 
 interface OrganizerContentProps {
   organizerId: string;
@@ -123,33 +123,59 @@ export async function OrganizerContent({ organizerId, locale }: OrganizerContent
 
         {/* Organizer header */}
         <div className="flex items-start gap-6 mb-8">
-          {/* Avatar with verified badge overlay - overflow-visible and padding for glow effect */}
+          {/* Avatar with golden glow ring for verified organizers */}
           <div className="relative flex-shrink-0 overflow-visible pb-4">
-            {organizer.logo_url ? (
-              <img
-                src={organizer.logo_url}
-                alt={organizer.name}
-                className="w-24 h-24 rounded-xl object-cover"
-              />
-            ) : organizer.owner?.avatar_url ? (
-              <UserAvatar
-                src={organizer.owner.avatar_url}
-                alt={organizer.owner.display_name || organizer.owner.username || organizer.name}
-                size="xl"
-                expandable
-              />
+            {organizer.is_verified ? (
+              // Verified: wrap avatar in golden glow ring
+              <VerifiedGlowRing>
+                {organizer.logo_url ? (
+                  <img
+                    src={organizer.logo_url}
+                    alt={organizer.name}
+                    className="w-24 h-24 rounded-full object-cover"
+                  />
+                ) : organizer.owner?.avatar_url ? (
+                  <img
+                    src={organizer.owner.avatar_url}
+                    alt={organizer.owner.display_name || organizer.owner.username || organizer.name}
+                    className="w-24 h-24 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-3xl font-bold text-primary">
+                      {organizer.name.charAt(0)}
+                    </span>
+                  </div>
+                )}
+              </VerifiedGlowRing>
             ) : (
-              <div className="w-24 h-24 rounded-xl bg-primary/10 flex items-center justify-center">
-                <span className="text-3xl font-bold text-primary">
-                  {organizer.name.charAt(0)}
-                </span>
-              </div>
+              // Not verified: regular avatar
+              organizer.logo_url ? (
+                <img
+                  src={organizer.logo_url}
+                  alt={organizer.name}
+                  className="w-24 h-24 rounded-xl object-cover"
+                />
+              ) : organizer.owner?.avatar_url ? (
+                <UserAvatar
+                  src={organizer.owner.avatar_url}
+                  alt={organizer.owner.display_name || organizer.owner.username || organizer.name}
+                  size="xl"
+                  expandable
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <span className="text-3xl font-bold text-primary">
+                    {organizer.name.charAt(0)}
+                  </span>
+                </div>
+              )
             )}
-            {/* Premium verified badge positioned at bottom center */}
+            {/* Diamond badge at bottom center for verified */}
             {organizer.is_verified && (
               <VerifiedBadge
                 size="md"
-                className="absolute -bottom-2 left-1/2 -translate-x-1/2"
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-10"
               />
             )}
           </div>
