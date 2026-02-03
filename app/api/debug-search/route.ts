@@ -94,9 +94,9 @@ export async function GET(request: Request) {
     );
 
     // Check if embeddings have matching moments (no vector ops)
-    const { data: embeddingMoments, error: embeddingMomentsError } = await supabase.rpc(
-      "debug_embedding_moments"
-    );
+    // const { data: embeddingMoments, error: embeddingMomentsError } = await supabase.rpc(
+    //   "debug_embedding_moments"
+    // );
 
     // KEY TEST: Use stored embedding (not text embedding) via RPC
     // This tells us if RPC works at all vs text embedding specific issue
@@ -169,6 +169,35 @@ export async function GET(request: Request) {
     const queryRoundedToStored = queryVec.map(v => Math.round(v * 100000000) / 100000000);
     const queryRoundedString = `[${queryRoundedToStored.join(",")}]`;
 
+    // KEY HYPOTHESIS: Check for scientific notation in the query string
+    // JavaScript's toString() produces "1e-10" for small numbers, which PostgreSQL can't parse
+    const hasScientificNotation = queryEmbeddingString.includes('e') || queryEmbeddingString.includes('E');
+    const roundedHasScientific = queryRoundedString.includes('e') || queryRoundedString.includes('E');
+
+    // FIX: Use toFixed() to force fixed-point notation (keeps as string, no parseFloat!)
+    const queryFixedPoint = queryVec.map(v => v.toFixed(8));  // Array of STRINGS
+    const queryFixedPointString = `[${queryFixedPoint.join(",")}]`;
+    const fixedHasScientific = queryFixedPointString.includes('e') || queryFixedPointString.includes('E');
+
+    // Test with fixed-point notation
+    const { data: fixedPointResult, error: fixedPointError } = await supabase.rpc(
+      "debug_search_test",
+      {
+        query_embedding: queryFixedPointString,
+        match_threshold: 0.0,
+      }
+    );
+
+    // Also test search_moments_by_embedding with fixed-point
+    const { data: fixedPointSearchResult, error: fixedPointSearchError } = await supabase.rpc(
+      "search_moments_by_embedding",
+      {
+        query_embedding: queryFixedPointString,
+        match_threshold: 0.0,
+        match_count: 3,
+      }
+    );
+
     const { data: roundedResult, error: roundedError } = await supabase.rpc(
       "debug_search_test",
       {
@@ -226,13 +255,15 @@ export async function GET(request: Request) {
       roundedStringLen: queryRoundedString.length,
     };
 
-    const { data: normalizedResult, error: normalizedError } = await supabase.rpc(
-      "debug_search_test",
-      {
-        query_embedding: queryEmbeddingNormalized,
-        match_threshold: 0.0,
-      }
-    );
+    // Normalized test - using toFixed then parseFloat (still might have scientific notation)
+    // const { data: normalizedResult, error: normalizedError } = await supabase.rpc(
+    //   "debug_search_test",
+    //   {
+    //     query_embedding: queryEmbeddingNormalized,
+    //     match_threshold: 0.0,
+    //   }
+    // );
+    void queryEmbeddingNormalized; // Mark as intentionally unused
 
     return NextResponse.json({
       query,
@@ -248,20 +279,24 @@ export async function GET(request: Request) {
         norm: normB.toFixed(4),
       },
       manualCosineSimilarity: cosineSim.toFixed(4),
+      // SCIENTIFIC NOTATION TEST - this is likely the bug!
+      scientificNotationTest: {
+        originalHasScientific: hasScientificNotation,
+        roundedHasScientific,
+        fixedPointHasScientific: fixedHasScientific,
+        sampleOriginal: queryVec.slice(0, 3).map(String),
+        sampleFixed: queryFixedPoint.slice(0, 3),
+      },
+      // FIXED POINT RESULTS - should work if scientific notation was the issue
+      fixedPointResult: fixedPointError ? { error: fixedPointError.message } : fixedPointResult?.slice(0, 3),
+      fixedPointSearchResult: fixedPointSearchError ? { error: fixedPointSearchError.message } : fixedPointSearchResult?.slice(0, 3),
+      // Previous tests for comparison
       rpcResult: rpcError ? { error: rpcError.message } : rpcResult?.slice(0, 3),
       debugSearchTest: debugError ? { error: debugError.message } : debugResult,
-      embeddingMoments: embeddingMomentsError ? { error: embeddingMomentsError.message } : embeddingMoments,
       storedEmbRpcTest: storedEmbRpcError ? { error: storedEmbRpcError.message } : storedEmbRpcResult?.slice(0, 3),
-      normalizedTest: normalizedError ? { error: normalizedError.message } : normalizedResult?.slice(0, 3),
-      directQueryResult: directQueryError ? { error: directQueryError.message } : directQueryResult?.slice(0, 1),
-      jsonFormatResult: jsonError ? { error: jsonError.message } : jsonResult?.slice(0, 1),
-      roundedResult: roundedError ? { error: roundedError.message } : roundedResult?.slice(0, 3),
-      directRestResult: Array.isArray(directRestResult) ? directRestResult.slice(0, 3) : directRestResult,
-      storedAsQueryResult: storedAsQueryError ? { error: storedAsQueryError.message } : storedAsQueryResult?.slice(0, 1),
       queryVsStoredEmb: queryVsStoredError ? { error: queryVsStoredError.message } : queryVsStoredEmb?.slice(0, 3),
       formatDebug,
       stringDebug,
-      keyDebugInfo: getKeyDebugInfo(),
     });
   } catch (err) {
     return NextResponse.json({
