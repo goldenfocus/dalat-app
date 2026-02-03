@@ -60,6 +60,29 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        // Dalat extended palette for badges, highlights, category colors
+        dalat: {
+          coffee: {
+            DEFAULT: "hsl(var(--dalat-coffee))",
+            light: "hsl(var(--dalat-coffee-light))",
+          },
+          pine: {
+            DEFAULT: "hsl(var(--dalat-pine))",
+            light: "hsl(var(--dalat-pine-light))",
+          },
+          hydrangea: {
+            DEFAULT: "hsl(var(--dalat-hydrangea))",
+            light: "hsl(var(--dalat-hydrangea-light))",
+          },
+          gold: {
+            DEFAULT: "hsl(var(--dalat-gold))",
+            light: "hsl(var(--dalat-gold-light))",
+          },
+          mist: {
+            DEFAULT: "hsl(var(--dalat-mist))",
+            light: "hsl(var(--dalat-mist-light))",
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -91,6 +114,15 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
         },
+        // Hero section animations for Dalat vibes
+        "hero-breathe": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.02)" },
+        },
+        "hero-fade-up": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         ripple: "ripple 0.6s ease-out forwards",
@@ -99,6 +131,9 @@ export default {
         shimmer: "shimmer 2s infinite linear",
         "pulse-ring": "pulse-ring 1.5s ease-out infinite",
         "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
+        // Hero section animations
+        "hero-breathe": "hero-breathe 20s ease-in-out infinite",
+        "hero-fade-up": "hero-fade-up 0.6s ease-out forwards",
       },
     },
   },

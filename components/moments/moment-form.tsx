@@ -18,6 +18,7 @@ import {
   File,
   Link as LinkIcon,
   Upload,
+  FolderOpen,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -62,7 +63,7 @@ import { useUploadQueue, type QueuedUpload } from "@/lib/hooks/use-upload-queue"
 import { CompactUploadQueue, type CompactUploadItem } from "@/components/moments/compact-upload-queue";
 
 // Threshold for switching to compact/bulk upload UI
-const BULK_UPLOAD_THRESHOLD = 5;
+const BULK_UPLOAD_THRESHOLD = 3;
 
 // Input mode for the form
 type InputMode = "media" | "youtube" | "file" | "text";
@@ -233,6 +234,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const materialFileInputRef = useRef<HTMLInputElement>(null);
 
   // Generate local video thumbnail and capture duration for preview
@@ -601,15 +603,59 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
     e.target.value = "";
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
 
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      addFiles(files);
+    // Support both files and folders via FileSystemEntry API
+    const items = e.dataTransfer.items;
+    if (items && items.length > 0) {
+      const files: File[] = [];
+
+      const processEntry = async (entry: FileSystemEntry): Promise<void> => {
+        if (entry.isFile) {
+          const fileEntry = entry as FileSystemFileEntry;
+          return new Promise((resolve) => {
+            fileEntry.file((file) => {
+              files.push(file);
+              resolve();
+            });
+          });
+        } else if (entry.isDirectory) {
+          const dirEntry = entry as FileSystemDirectoryEntry;
+          const reader = dirEntry.createReader();
+          return new Promise((resolve) => {
+            reader.readEntries(async (entries) => {
+              await Promise.all(entries.map(processEntry));
+              resolve();
+            });
+          });
+        }
+      };
+
+      const promises: Promise<void>[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const entry = items[i].webkitGetAsEntry();
+        if (entry) {
+          promises.push(processEntry(entry));
+        }
+      }
+      await Promise.all(promises);
+
+      if (files.length > 0) {
+        // Convert to FileList-like structure for addFiles
+        const dt = new DataTransfer();
+        files.forEach(f => dt.items.add(f));
+        addFiles(dt.files);
+      }
+    } else {
+      // Fallback for browsers without webkitGetAsEntry
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        addFiles(files);
+      }
     }
-  };
+  }, [addFiles]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -1578,27 +1624,59 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         {uploads.length === 0 && bulkQueue.items.length === 0 && (
           <div
             className={cn(
-              "relative aspect-[4/3] rounded-2xl overflow-hidden transition-all cursor-pointer",
-              "bg-gradient-to-br from-muted to-muted/50",
+              "relative rounded-2xl overflow-hidden transition-all",
               isDragOver
-                ? "border-2 border-primary border-dashed scale-[0.98]"
-                : "border-2 border-dashed border-muted-foreground/20 hover:border-primary/40 hover:from-primary/5 hover:to-primary/10"
+                ? "border-2 border-primary border-dashed scale-[0.98] bg-primary/5"
+                : "border-2 border-dashed border-muted-foreground/20 hover:border-primary/40 bg-gradient-to-br from-muted/50 to-muted/30"
             )}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            onClick={() => fileInputRef.current?.click()}
           >
-            <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-              <div className="p-4 rounded-full bg-primary/10">
-                <Camera className="w-10 h-10 text-primary/70" />
+            <div className="flex flex-col items-center justify-center gap-4 p-8 md:p-12">
+              <div className={cn(
+                "p-4 rounded-full transition-colors",
+                isDragOver ? "bg-primary/20" : "bg-primary/10"
+              )}>
+                <Upload className={cn(
+                  "w-8 h-8 transition-colors",
+                  isDragOver ? "text-primary" : "text-primary/70"
+                )} />
               </div>
-              <span className="text-sm font-medium text-muted-foreground">
-                {t("tapToUpload")}
-              </span>
-              <span className="text-xs text-muted-foreground/60">
+
+              <div className="text-center space-y-1">
+                <p className="text-base font-medium text-foreground/80">
+                  {isDragOver ? t("proUpload.dropHere") : t("proUpload.dragDrop")}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t("proUpload.supportedFormats")}
+                </p>
+              </div>
+
+              {/* Upload buttons */}
+              <div className="flex flex-wrap gap-2 justify-center">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all text-sm font-medium"
+                >
+                  <Upload className="w-4 h-4" />
+                  {t("proUpload.selectFiles")}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => folderInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-input bg-background hover:bg-accent active:scale-95 transition-all text-sm font-medium"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  {t("proUpload.selectFolder")}
+                </button>
+              </div>
+
+              <p className="text-xs text-muted-foreground/60">
                 {t("proUpload.maxSizes")}
-              </span>
+              </p>
             </div>
           </div>
         )}
@@ -1733,6 +1811,14 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         onChange={handleFileSelect}
         className="hidden"
         multiple
+      />
+      <input
+        ref={folderInputRef}
+        type="file"
+        // @ts-expect-error - webkitdirectory is not in TypeScript types but works in browsers
+        webkitdirectory=""
+        onChange={handleFileSelect}
+        className="hidden"
       />
 
       {/* Material file input (PDF, audio, documents) */}

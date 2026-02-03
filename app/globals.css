@@ -9,58 +9,127 @@
     scrollbar-gutter: stable;
   }
 
+  /* ============================================
+   * DALAT COLOR PALETTE - "Golden Hour in the Highlands"
+   * Inspired by Dalat sunsets, pine forests, coffee culture,
+   * hydrangea gardens, and mountain mist.
+   * ============================================ */
+
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    /* === LIGHT MODE: "Dalat Morning" === */
+    /* Soft morning mist, golden hour sunlight filtering through pine trees */
+
+    /* Core semantic colors */
+    --background: 40 30% 98%;           /* warm off-white, not cold white */
+    --foreground: 25 20% 15%;           /* warm dark brown, not black */
+    --card: 40 25% 97%;                 /* slightly warmer card surface */
+    --card-foreground: 25 20% 15%;
+    --popover: 40 25% 99%;
+    --popover-foreground: 25 20% 15%;
+
+    /* Primary: Sunset Coral - warm, inviting, romantic */
+    --primary: 15 75% 55%;              /* sunset coral */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Pine Forest tint - natural, grounding */
+    --secondary: 160 35% 92%;           /* very light pine tint */
+    --secondary-foreground: 160 40% 25%;
+
+    /* Muted: Lavender mist - dreamy undertones */
+    --muted: 260 15% 95%;               /* lavender mist */
+    --muted-foreground: 260 10% 45%;
+
+    /* Accent: Hydrangea blue - fresh, delicate */
+    --accent: 220 50% 94%;              /* very light hydrangea */
+    --accent-foreground: 220 55% 35%;
+
+    /* Destructive: Warm red */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* UI elements */
+    --border: 25 15% 88%;               /* warm gray border */
+    --input: 25 15% 88%;
+    --ring: 15 75% 55%;                 /* primary for focus ring */
+
+    /* Charts - Dalat-themed */
+    --chart-1: 15 75% 55%;              /* sunset coral */
+    --chart-2: 160 40% 40%;             /* pine green */
+    --chart-3: 220 55% 55%;             /* hydrangea blue */
+    --chart-4: 40 85% 55%;              /* sunset gold */
+    --chart-5: 270 30% 55%;             /* misty purple */
+
+    /* === EXTENDED DALAT PALETTE === */
+    /* For badges, highlights, category colors */
+    --dalat-coffee: 30 70% 40%;         /* rich coffee brown */
+    --dalat-coffee-light: 35 60% 85%;   /* light coffee cream */
+    --dalat-pine: 160 40% 30%;          /* deep pine */
+    --dalat-pine-light: 160 30% 90%;    /* light pine wash */
+    --dalat-hydrangea: 220 55% 55%;     /* hydrangea blue */
+    --dalat-hydrangea-light: 220 45% 92%;
+    --dalat-gold: 40 85% 55%;           /* warm gold */
+    --dalat-gold-light: 45 70% 90%;     /* light gold wash */
+    --dalat-mist: 270 30% 70%;          /* misty purple */
+    --dalat-mist-light: 270 25% 95%;    /* barely purple */
+
     --radius: 0.5rem;
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* === DARK MODE: "Dalat Evening Cafe" === */
+    /* Cozy cafe atmosphere, warm lamp lighting, not corporate darkness */
+
+    /* Core semantic colors */
+    --background: 25 20% 8%;            /* warm near-black (like coffee) */
+    --foreground: 30 20% 92%;           /* warm off-white */
+    --card: 25 18% 12%;                 /* elevated surface with warmth */
+    --card-foreground: 30 20% 92%;
+    --popover: 25 18% 10%;
+    --popover-foreground: 30 20% 92%;
+
+    /* Primary: Lighter coral for dark backgrounds */
+    --primary: 15 65% 60%;              /* softer sunset */
+    --primary-foreground: 25 30% 10%;
+
+    /* Secondary: Muted pine for dark mode */
+    --secondary: 160 25% 18%;           /* dark pine */
+    --secondary-foreground: 160 30% 85%;
+
+    /* Muted: Deep purple-brown for muted areas */
+    --muted: 280 15% 15%;               /* purple-tinted dark */
+    --muted-foreground: 280 10% 60%;
+
+    /* Accent: Deep hydrangea blue */
+    --accent: 220 35% 22%;              /* deep blue */
+    --accent-foreground: 220 40% 85%;
+
+    /* Destructive: Softened for dark mode */
+    --destructive: 0 55% 45%;
+    --destructive-foreground: 0 0% 95%;
+
+    /* UI elements */
+    --border: 25 15% 20%;               /* warm dark border */
+    --input: 25 15% 20%;
+    --ring: 15 65% 60%;                 /* primary for focus */
+
+    /* Charts - dark mode optimized */
+    --chart-1: 15 65% 60%;              /* sunset coral */
+    --chart-2: 160 35% 50%;             /* pine green */
+    --chart-3: 220 45% 60%;             /* hydrangea blue */
+    --chart-4: 40 75% 55%;              /* sunset gold */
+    --chart-5: 270 25% 60%;             /* misty purple */
+
+    /* === EXTENDED DALAT PALETTE (dark mode variants) === */
+    --dalat-coffee: 30 60% 50%;         /* warmer coffee */
+    --dalat-coffee-light: 30 40% 20%;   /* dark coffee bg */
+    --dalat-pine: 160 35% 45%;          /* lighter pine */
+    --dalat-pine-light: 160 25% 15%;    /* dark pine bg */
+    --dalat-hydrangea: 220 45% 60%;     /* lighter hydrangea */
+    --dalat-hydrangea-light: 220 30% 18%;
+    --dalat-gold: 40 75% 55%;           /* muted gold */
+    --dalat-gold-light: 40 40% 15%;     /* dark gold bg */
+    --dalat-mist: 270 25% 60%;          /* muted purple */
+    --dalat-mist-light: 270 20% 18%;    /* dark purple bg */
   }
 }
 
@@ -70,6 +139,71 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* ============================================
+ * THEME TRANSITION SYSTEM
+ * Smooth 300ms transitions when switching themes
+ * ============================================ */
+
+html:not(.no-transitions) *,
+html:not(.no-transitions) *::before,
+html:not(.no-transitions) *::after {
+  transition-property: color, background-color, border-color, box-shadow, fill, stroke;
+  transition-duration: 300ms;
+  transition-timing-function: ease-out;
+}
+
+/* Exclude elements that shouldn't transition (prevents image/video flash) */
+html:not(.no-transitions) img,
+html:not(.no-transitions) video,
+html:not(.no-transitions) canvas,
+html:not(.no-transitions) [data-no-theme-transition] {
+  transition: none !important;
+}
+
+/* ============================================
+ * HERO VISUAL EFFECTS
+ * Film grain, light leak for organic Dalat vibes
+ * ============================================ */
+
+/* Subtle film grain texture for organic feel */
+.hero-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Light leak effect - dreamy photography feel in top-right */
+.hero-light-leak::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 60%;
+  background: radial-gradient(
+    ellipse at 100% 0%,
+    hsl(25 95% 53% / 0.15),
+    transparent 70%
+  );
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-breathe {
+    animation: none !important;
+  }
+  .animate-hero-fade-up {
+    animation: none !important;
+    opacity: 1 !important;
   }
 }
 

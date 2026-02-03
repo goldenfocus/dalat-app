@@ -1,7 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { Link } from "@/lib/i18n/routing";
-import { Camera } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { MomentForm } from "@/components/moments";
@@ -123,14 +121,6 @@ export default async function NewMomentPage({ params }: PageProps) {
     redirect(`/events/${slug}/moments`);
   }
 
-  // Check if user is event creator (photographer)
-  const isPhotographer = event.created_by === user.id;
-
-  // Use the effective user ID (impersonated user if God Mode active)
-  const effectiveUserId = godMode.isActive && godMode.targetUserId
-    ? godMode.targetUserId
-    : user.id;
-
   const t = await getTranslations("moments");
 
   return (
@@ -142,26 +132,13 @@ export default async function NewMomentPage({ params }: PageProps) {
           <p className="text-muted-foreground">{event.title}</p>
         </div>
 
-        {/* Form */}
+        {/* Form - unified upload experience for all users */}
         <MomentForm
           eventId={event.id}
           eventSlug={slug}
           userId={user.id}
           godModeUserId={godMode.isActive ? godMode.targetUserId! : undefined}
         />
-
-        {/* Pro Upload Link - Only for photographers */}
-        {isPhotographer && (
-          <div className="mt-6 pt-6 border-t">
-            <Link
-              href={`/events/${slug}/moments/pro-upload`}
-              className="flex items-center justify-center gap-2 p-4 rounded-lg border border-dashed border-muted-foreground/30 hover:border-primary hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all group"
-            >
-              <Camera className="w-5 h-5" />
-              <span className="text-sm font-medium">{t("proUpload.proUploadLink")}</span>
-            </Link>
-          </div>
-        )}
       </div>
     </main>
   );

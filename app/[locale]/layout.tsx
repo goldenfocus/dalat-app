@@ -78,7 +78,6 @@ export default async function LocaleLayout({ children, params }: Props) {
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           <ScrollRestorationProvider>
             <LocalePreloader />
