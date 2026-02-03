@@ -39,8 +39,6 @@ export function MiniPlayer() {
     duration,
     repeatMode,
     shuffle,
-    play,
-    pause,
     togglePlay,
     next,
     previous,
@@ -53,115 +51,83 @@ export function MiniPlayer() {
     close,
   } = useAudioPlayerStore();
 
-  // UI state for time display toggle
+  // UI state
   const [showRemaining, setShowRemaining] = useState(false);
+  const [isAudioReady, setIsAudioReady] = useState(false);
 
   // Track the current track ID to detect changes
-  const prevTrackIdRef = useRef<string | null>(null);
+  const currentTrackIdRef = useRef<string | null>(null);
 
-  // Handle track changes - load new source when track changes
+  // Effect 1: Load new track when track changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
 
-    const trackChanged = prevTrackIdRef.current !== currentTrack.id;
-
-    if (trackChanged) {
-      prevTrackIdRef.current = currentTrack.id;
-      // Load new track - set flag to play when ready
-      if (isPlaying) {
-        shouldPlayWhenReady.current = true;
-      }
+    // Only load if track actually changed
+    if (currentTrackIdRef.current !== currentTrack.id) {
+      currentTrackIdRef.current = currentTrack.id;
+      setIsAudioReady(false);
       audio.src = currentTrack.file_url;
       audio.load();
     }
-  }, [currentTrack?.id, currentTrack?.file_url, isPlaying]);
+  }, [currentTrack]);
 
-  // Sync play/pause state with audio element
+  // Effect 2: Play/pause when isPlaying changes (only if audio is ready)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
 
-    if (isPlaying && audio.paused) {
-      audio.play().catch(() => setIsPlaying(false));
-    } else if (!isPlaying && !audio.paused) {
+    if (isPlaying) {
+      // Try to play
+      const playPromise = audio.play();
+      if (playPromise) {
+        playPromise.catch((err) => {
+          // Autoplay blocked or not ready - will retry on canplay
+          console.log("Play failed, will retry on canplay:", err.message);
+        });
+      }
+    } else {
       audio.pause();
     }
-  }, [isPlaying, currentTrack, setIsPlaying]);
+  }, [isPlaying, currentTrack]);
 
-  // Track if we're auto-advancing (to ignore pause events during transition)
-  const isAutoAdvancing = useRef(false);
-
-  // Track if we should play when audio is ready (for initial load)
-  const shouldPlayWhenReady = useRef(false);
-
-  // Track last seek time from this component to distinguish from external seeks
-  const lastLocalSeekTime = useRef<number | null>(null);
-
-  // Sync external seeks (from playlist-player) to audio element
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    // Skip if this was a local seek we just did
-    if (lastLocalSeekTime.current !== null && Math.abs(lastLocalSeekTime.current - currentTime) < 0.5) {
-      return;
-    }
-
-    // Only sync if there's a significant difference (user seeking externally)
-    const diff = Math.abs(audio.currentTime - currentTime);
-    if (diff > 1) {
-      audio.currentTime = currentTime;
-    }
-  }, [currentTime]);
-
-  // Store callback refs to avoid stale closures in event handlers
-  const setCurrentTimeRef = useRef(setCurrentTime);
-  const setDurationRef = useRef(setDuration);
-  const setIsPlayingRef = useRef(setIsPlaying);
-  const onTrackEndedRef = useRef(onTrackEnded);
-
-  // Keep refs up to date
-  useEffect(() => {
-    setCurrentTimeRef.current = setCurrentTime;
-    setDurationRef.current = setDuration;
-    setIsPlayingRef.current = setIsPlaying;
-    onTrackEndedRef.current = onTrackEnded;
-  }, [setCurrentTime, setDuration, setIsPlaying, onTrackEnded]);
-
-  // Audio event handlers - only set up once on mount
+  // Effect 3: Set up audio event listeners
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const handleTimeUpdate = () => {
-      setCurrentTimeRef.current(audio.currentTime);
+      setCurrentTime(audio.currentTime);
     };
+
     const handleLoadedMetadata = () => {
-      setDurationRef.current(audio.duration);
+      setDuration(audio.duration);
     };
+
     const handleCanPlay = () => {
-      // Auto-play when audio is ready if we're supposed to be playing
-      if (shouldPlayWhenReady.current) {
-        shouldPlayWhenReady.current = false;
-        audio.play().catch(() => setIsPlayingRef.current(false));
+      setIsAudioReady(true);
+      // If we should be playing, start now
+      if (isPlaying && audio.paused) {
+        audio.play().catch(console.error);
       }
     };
+
     const handleEnded = () => {
-      // Mark as auto-advancing so pause event doesn't stop playback
-      isAutoAdvancing.current = true;
-      onTrackEndedRef.current();
-      // Reset flag after a short delay
-      setTimeout(() => {
-        isAutoAdvancing.current = false;
-      }, 100);
+      onTrackEnded();
     };
-    const handlePlay = () => setIsPlayingRef.current(true);
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
     const handlePause = () => {
-      // Don't update state if we're auto-advancing to next track
-      if (!isAutoAdvancing.current) {
-        setIsPlayingRef.current(false);
+      // Only update if we're not transitioning to next track
+      const store = useAudioPlayerStore.getState();
+      if (store.isPlaying && audio.ended) {
+        // Track ended, don't set isPlaying to false
+        return;
       }
+      setIsPlaying(false);
     };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
@@ -179,7 +145,7 @@ export function MiniPlayer() {
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
     };
-  }, []); // Empty deps - only run once on mount
+  }, [setCurrentTime, setDuration, setIsPlaying, onTrackEnded, isPlaying]);
 
   // Media Session API for lock screen controls
   useEffect(() => {
@@ -203,10 +169,11 @@ export function MiniPlayer() {
         : [],
     });
 
-    navigator.mediaSession.setActionHandler("play", play);
-    navigator.mediaSession.setActionHandler("pause", pause);
-    navigator.mediaSession.setActionHandler("previoustrack", previous);
-    navigator.mediaSession.setActionHandler("nexttrack", next);
+    const store = useAudioPlayerStore.getState();
+    navigator.mediaSession.setActionHandler("play", store.play);
+    navigator.mediaSession.setActionHandler("pause", store.pause);
+    navigator.mediaSession.setActionHandler("previoustrack", store.previous);
+    navigator.mediaSession.setActionHandler("nexttrack", store.next);
 
     return () => {
       navigator.mediaSession.setActionHandler("play", null);
@@ -214,9 +181,9 @@ export function MiniPlayer() {
       navigator.mediaSession.setActionHandler("previoustrack", null);
       navigator.mediaSession.setActionHandler("nexttrack", null);
     };
-  }, [currentTrack, playlist, currentIndex, play, pause, previous, next]);
+  }, [currentTrack, playlist, currentIndex]);
 
-  // Handle seek
+  // Handle seek from slider
   const handleSeek = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const time = Number(e.target.value);
@@ -365,7 +332,9 @@ export function MiniPlayer() {
               className="w-10 tabular-nums hover:text-foreground transition-colors"
               aria-label={showRemaining ? "Show total duration" : "Show remaining time"}
             >
-              {showRemaining ? `-${formatDuration(Math.floor(duration - currentTime))}` : formatDuration(Math.floor(duration))}
+              {showRemaining
+                ? `-${formatDuration(Math.floor(duration - currentTime))}`
+                : formatDuration(Math.floor(duration))}
             </button>
 
             {/* Repeat button */}
