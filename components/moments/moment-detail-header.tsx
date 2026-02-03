@@ -12,19 +12,19 @@ interface MomentDetailHeaderProps {
 }
 
 /**
- * Determines the back navigation URL based on context.
- *
- * TODO: This is where you decide navigation behavior!
- * Consider the trade-offs:
- * - Should "from=immersive" return to immersive mode? (better UX continuity)
- * - Or always return to grid? (simpler, but loses context)
- * - Should we remember scroll position? (complex but ideal)
+ * Context-aware back navigation.
+ * Returns user to the view they came from for better UX continuity.
  */
 function getBackUrl(eventSlug: string, from?: string): string {
   const basePath = `/events/${eventSlug}/moments`;
 
-  // Default behavior: always go to moments grid
-  // The view mode switcher on that page will restore their preferred view
+  // Return to immersive mode if that's where user came from
+  if (from === "immersive") {
+    return `${basePath}?view=immersive`;
+  }
+
+  // Lightbox users were already on the grid, so go back to grid
+  // Default: let the page use the user's preferred view mode
   return basePath;
 }
 
@@ -35,6 +35,7 @@ export function MomentDetailHeader({
 }: MomentDetailHeaderProps) {
   const t = useTranslations("moments");
   const backUrl = getBackUrl(eventSlug, from);
+  const isFromImmersive = from === "immersive";
 
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b">
@@ -51,9 +52,13 @@ export function MomentDetailHeader({
             </span>
           </Link>
 
-          {/* View mode hints - shows where user will land */}
+          {/* View mode indicator - shows where user will return to */}
           <div className="flex items-center gap-1 text-muted-foreground">
-            <Grid3X3 className="w-4 h-4" />
+            {isFromImmersive ? (
+              <Smartphone className="w-4 h-4" />
+            ) : (
+              <Grid3X3 className="w-4 h-4" />
+            )}
             <span className="text-xs hidden sm:inline">{t("viewAll")}</span>
           </div>
         </div>

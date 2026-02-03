@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 import { ViewModeSwitcher } from "./view-mode-switcher";
 import { InfiniteMomentGrid } from "./infinite-moment-grid";
@@ -12,6 +12,8 @@ interface MomentsViewContainerProps {
   eventSlug: string;
   initialMoments: MomentWithProfile[];
   initialHasMore: boolean;
+  /** Force a specific view on initial load (e.g., from ?view=immersive) */
+  initialView?: "immersive";
 }
 
 /**
@@ -23,13 +25,24 @@ export function MomentsViewContainer({
   eventSlug,
   initialMoments,
   initialHasMore,
+  initialView,
 }: MomentsViewContainerProps) {
   const { viewMode, setViewMode, isLoaded } = useMomentsViewMode("grid");
   const [showImmersive, setShowImmersive] = useState(false);
   const [immersiveStartIndex, setImmersiveStartIndex] = useState(0);
+  const hasAutoOpenedRef = useRef(false);
 
   // Track moments loaded so far (for immersive view to access all loaded moments)
   const [allMoments, setAllMoments] = useState<MomentWithProfile[]>(initialMoments);
+
+  // Auto-open immersive view if requested via URL (e.g., returning from moment detail page)
+  useEffect(() => {
+    if (initialView === "immersive" && isLoaded && !hasAutoOpenedRef.current && allMoments.length > 0) {
+      hasAutoOpenedRef.current = true;
+      setViewMode("immersive");
+      setShowImmersive(true);
+    }
+  }, [initialView, isLoaded, allMoments.length, setViewMode]);
 
   // Open immersive view starting from a specific moment
   const openImmersive = (index: number = 0) => {

@@ -42,7 +42,9 @@ export function formatFileSize(bytes: number): string {
 }
 
 /**
- * YouTube embed component
+ * YouTube embed component with thumbnail preview and fallback
+ * Shows thumbnail first, loads iframe on play click
+ * Includes "Watch on YouTube" link for videos with embedding disabled
  */
 export interface YouTubeEmbedProps {
   videoId: string;
@@ -51,15 +53,73 @@ export interface YouTubeEmbedProps {
 }
 
 export function YouTubeEmbed({ videoId, title, className }: YouTubeEmbedProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const thumbnailUrl = getYouTubeThumbnail(videoId, "maxres");
+  const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+  // If not playing, show thumbnail with play button
+  if (!isPlaying) {
+    return (
+      <div className={cn("relative aspect-video rounded-lg overflow-hidden bg-muted group", className)}>
+        {/* Thumbnail */}
+        <img
+          src={thumbnailUrl}
+          alt={title || "YouTube video"}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            // Fallback to high quality if maxres doesn't exist
+            e.currentTarget.src = getYouTubeThumbnail(videoId, "high");
+          }}
+        />
+
+        {/* Play button overlay */}
+        <button
+          onClick={() => setIsPlaying(true)}
+          className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors"
+          aria-label="Play video"
+        >
+          <div className="w-16 h-12 rounded-xl bg-red-600 hover:bg-red-700 flex items-center justify-center transition-colors shadow-lg">
+            <Play className="w-7 h-7 text-white fill-white ml-0.5" />
+          </div>
+        </button>
+
+        {/* Watch on YouTube link - always visible */}
+        <a
+          href={youtubeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 text-white text-sm font-medium transition-colors backdrop-blur-sm"
+        >
+          <Youtube className="w-4 h-4" />
+          <span>YouTube</span>
+          <ExternalLink className="w-3 h-3 opacity-70" />
+        </a>
+      </div>
+    );
+  }
+
+  // Playing: show iframe with fallback link
   return (
-    <div className={cn("aspect-video rounded-lg overflow-hidden bg-muted", className)}>
+    <div className={cn("relative aspect-video rounded-lg overflow-hidden bg-muted", className)}>
       <iframe
-        src={`https://www.youtube.com/embed/${videoId}`}
+        src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`}
         title={title || "YouTube video"}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
         className="w-full h-full"
       />
+
+      {/* Fallback link for videos with embedding disabled */}
+      <a
+        href={youtubeUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 text-white text-sm font-medium transition-colors backdrop-blur-sm z-10"
+      >
+        <ExternalLink className="w-3.5 h-3.5" />
+        <span>Watch on YouTube</span>
+      </a>
     </div>
   );
 }

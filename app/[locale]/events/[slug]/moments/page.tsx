@@ -12,6 +12,7 @@ const INITIAL_PAGE_SIZE = 20;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ view?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -122,8 +123,9 @@ async function canUserPost(eventId: string): Promise<boolean> {
   }
 }
 
-export default async function EventMomentsPage({ params }: PageProps) {
+export default async function EventMomentsPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const { view } = await searchParams;
   const event = await getEvent(slug);
 
   if (!event) {
@@ -152,6 +154,7 @@ export default async function EventMomentsPage({ params }: PageProps) {
           eventSlug={event.slug}
           initialMoments={moments}
           initialHasMore={hasMore}
+          initialView={view === "immersive" ? "immersive" : undefined}
         />
 
         {/* CTA for users who can post but haven't yet */}
