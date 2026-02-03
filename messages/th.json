@@ -1198,6 +1198,7 @@
       "placeholder": "คุณคิดอะไรเกี่ยวกับกิจกรรมนี้?"
     },
     "addMore": "เพิ่มอีก",
+    "retry": "ลองอีกครั้ง",
     "viewMoreMoments": "ดูอีก {count} โมเมนต์",
     "videoUploading": "กำลังอัปโหลดวิดีโอ...",
     "videoProcessing": "กำลังประมวลผลวิดีโอ...",

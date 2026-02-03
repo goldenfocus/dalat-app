@@ -83,6 +83,11 @@ export async function GET(request: Request) {
       }
     );
 
+    // Check if embeddings have matching moments (no vector ops)
+    const { data: embeddingMoments, error: embeddingMomentsError } = await supabase.rpc(
+      "debug_embedding_moments"
+    );
+
     return NextResponse.json({
       query,
       storedEmbedding: {
@@ -99,6 +104,7 @@ export async function GET(request: Request) {
       manualCosineSimilarity: cosineSim.toFixed(4),
       rpcResult: rpcError ? { error: rpcError.message } : rpcResult?.slice(0, 3),
       debugSearchTest: debugError ? { error: debugError.message } : debugResult,
+      embeddingMoments: embeddingMomentsError ? { error: embeddingMomentsError.message } : embeddingMoments,
     });
   } catch (err) {
     return NextResponse.json({

@@ -1201,6 +1201,7 @@
       "placeholder": "이 이벤트에 대해 무슨 생각을 하고 계세요?"
     },
     "addMore": "더 추가",
+    "retry": "다시 시도",
     "viewMoreMoments": "{count}개 더 보기",
     "videoUploading": "동영상 업로드 중...",
     "videoProcessing": "동영상 처리 중...",

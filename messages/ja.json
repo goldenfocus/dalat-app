@@ -1198,6 +1198,7 @@
       "placeholder": "このイベントについて何を考えていますか？"
     },
     "addMore": "追加する",
+    "retry": "再試行",
     "viewMoreMoments": "あと{count}件のモーメントを見る",
     "videoUploading": "動画をアップロード中...",
     "videoProcessing": "動画を処理中...",

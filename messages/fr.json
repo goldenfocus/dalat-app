@@ -1212,6 +1212,7 @@
       "placeholder": "Qu'avez-vous en tête concernant cet événement ?"
     },
     "addMore": "Ajouter plus",
+    "retry": "Réessayer",
     "viewMoreMoments": "Voir {count} moments de plus",
     "videoUploading": "Téléchargement de la vidéo...",
     "videoProcessing": "Traitement de la vidéo...",

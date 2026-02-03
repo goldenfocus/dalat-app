@@ -1198,6 +1198,7 @@
       "placeholder": "Что вы думаете об этом событии?"
     },
     "addMore": "Добавить ещё",
+    "retry": "Повторить",
     "viewMoreMoments": "Показать ещё {count} моментов",
     "videoUploading": "Загрузка видео...",
     "videoProcessing": "Обработка видео...",
