@@ -1,9 +1,6 @@
 -- ============================================
--- Fix set_event_cover_moment to use created_by as fallback
+-- Fix: profiles uses 'role' column, not 'is_superadmin'
 -- ============================================
--- Some events have organizer_id as NULL, so we need to check
--- created_by as a fallback for authorization.
--- Also fixes: profiles uses 'role' column, not 'is_superadmin'
 
 CREATE OR REPLACE FUNCTION set_event_cover_moment(
   p_event_id uuid,
@@ -40,7 +37,7 @@ BEGIN
 
   -- Allow if user is organizer, creator, or superadmin
   IF v_user_id != COALESCE(v_organizer_id, v_created_by)
-     AND v_user_id != v_created_by
+     AND (v_created_by IS NULL OR v_user_id != v_created_by)
      AND v_user_role != 'superadmin' THEN
     RAISE EXCEPTION 'Not authorized';
   END IF;

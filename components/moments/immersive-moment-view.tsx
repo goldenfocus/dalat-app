@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { X, ChevronUp, ChevronDown, MessageCircle, Share2, ExternalLink, Grid3X3, Loader2, RotateCcw, Camera, Sparkles } from "lucide-react";
+import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, MessageCircle, Share2, ExternalLink, Grid3X3, Loader2, RotateCcw, Camera, Sparkles } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "./moment-video-player";
 import { CommentsSheet } from "@/components/comments/comments-sheet";
+import { ImmersiveCommentsPanel } from "@/components/comments/immersive-comments-panel";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { triggerHaptic } from "@/lib/haptics";
@@ -238,184 +239,249 @@ export function ImmersiveMomentView({
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-50 bg-black flex flex-col"
+      className="fixed inset-0 z-50 bg-black flex"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
-        <div className="flex items-center gap-3">
-          {/* Progress indicator */}
-          <span className="text-white/70 text-sm font-medium">
-            {currentIndex + 1} / {totalCount ?? moments.length}
-          </span>
+      {/* Main content area - takes full width on mobile, left side on desktop */}
+      <div className="flex-1 relative flex flex-col min-w-0">
+        {/* Top bar */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
+          <div className="flex items-center gap-3">
+            {/* Progress indicator */}
+            <span className="text-white/70 text-sm font-medium">
+              {currentIndex + 1} / {totalCount ?? moments.length}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Switch to grid */}
+            {onSwitchToGrid && (
+              <button
+                onClick={onSwitchToGrid}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="Switch to grid view"
+              >
+                <Grid3X3 className="w-5 h-5 text-white" />
+              </button>
+            )}
+
+            {/* Close */}
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Switch to grid */}
-          {onSwitchToGrid && (
-            <button
-              onClick={onSwitchToGrid}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-              aria-label="Switch to grid view"
-            >
-              <Grid3X3 className="w-5 h-5 text-white" />
-            </button>
+        {/* Content area */}
+        <div className="flex-1 relative flex items-center justify-center overflow-hidden px-4 py-16 lg:py-20">
+          {/* Photo */}
+          {moment.content_type === "photo" && imageUrl && (
+            <img
+              src={imageUrl}
+              alt={moment.text_content || "Photo"}
+              className="max-w-full max-h-full object-contain"
+              style={{ maxHeight: 'calc(100vh - 200px)' }}
+            />
           )}
 
-          {/* Close */}
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            aria-label="Close"
-          >
-            <X className="w-6 h-6 text-white" />
-          </button>
-        </div>
-      </div>
-
-      {/* Main content area */}
-      <div className="flex-1 relative flex items-center justify-center overflow-hidden px-4 py-16">
-        {/* Photo */}
-        {moment.content_type === "photo" && imageUrl && (
-          <img
-            src={imageUrl}
-            alt={moment.text_content || "Photo"}
-            className="max-w-full max-h-full object-contain"
-            style={{ maxHeight: 'calc(100vh - 200px)' }}
-          />
-        )}
-
-        {/* Video */}
-        {moment.content_type === "video" && moment.media_url && (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-full max-w-lg">
-              <MomentVideoPlayer
-                src={moment.media_url}
-                hlsSrc={moment.cf_playback_url || undefined}
-                poster={moment.thumbnail_url || undefined}
-              />
+          {/* Video */}
+          {moment.content_type === "video" && moment.media_url && (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="w-full max-w-lg lg:max-w-2xl">
+                <MomentVideoPlayer
+                  src={moment.media_url}
+                  hlsSrc={moment.cf_playback_url || undefined}
+                  poster={moment.thumbnail_url || undefined}
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Text-only */}
-        {moment.content_type === "text" && moment.text_content && (
-          <div className="max-w-lg p-8">
-            <p className="text-2xl text-white text-center whitespace-pre-wrap leading-relaxed">
-              {moment.text_content}
-            </p>
-          </div>
-        )}
+          {/* Text-only */}
+          {moment.content_type === "text" && moment.text_content && (
+            <div className="max-w-lg p-8">
+              <p className="text-2xl text-white text-center whitespace-pre-wrap leading-relaxed">
+                {moment.text_content}
+              </p>
+            </div>
+          )}
 
-        {/* Navigation arrows (desktop) */}
-        <div className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 flex-col gap-2">
+          {/* Navigation arrows - vertical on mobile/tablet, horizontal on desktop */}
+          {/* Mobile/tablet: vertical arrows on right */}
+          <div className="flex lg:hidden absolute right-4 top-1/2 -translate-y-1/2 flex-col gap-2">
+            <button
+              onClick={goToPrev}
+              disabled={!hasPrev}
+              className={cn(
+                "w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transition-all",
+                hasPrev ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
+              )}
+              aria-label="Previous"
+            >
+              <ChevronUp className="w-6 h-6" />
+            </button>
+            <button
+              onClick={goToNext}
+              disabled={!hasNext && !hasMore}
+              className={cn(
+                "w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transition-all",
+                (hasNext || hasMore) ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
+              )}
+              aria-label="Next"
+            >
+              {isLoadingMore ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <ChevronDown className="w-6 h-6" />
+              )}
+            </button>
+          </div>
+
+          {/* Desktop: horizontal arrows on left/right of content */}
           <button
             onClick={goToPrev}
             disabled={!hasPrev}
             className={cn(
-              "w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transition-all",
-              hasPrev ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
+              "hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm items-center justify-center text-white transition-all",
+              hasPrev ? "hover:bg-white/20 hover:scale-105" : "opacity-30 cursor-not-allowed"
             )}
             aria-label="Previous"
           >
-            <ChevronUp className="w-6 h-6" />
+            <ChevronLeft className="w-7 h-7" />
           </button>
           <button
             onClick={goToNext}
             disabled={!hasNext && !hasMore}
             className={cn(
-              "w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transition-all",
-              (hasNext || hasMore) ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
+              "hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm items-center justify-center text-white transition-all",
+              (hasNext || hasMore) ? "hover:bg-white/20 hover:scale-105" : "opacity-30 cursor-not-allowed"
             )}
             aria-label="Next"
           >
             {isLoadingMore ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
-              <ChevronDown className="w-6 h-6" />
-            )}
-          </button>
-        </div>
-
-        {/* Right side actions */}
-        <div className="absolute right-4 bottom-32 flex flex-col items-center gap-4">
-          {/* Comments - opens sheet overlay */}
-          <button
-            onClick={() => {
-              triggerHaptic("selection");
-              setShowComments(true);
-            }}
-            className="relative w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all"
-            aria-label="View comments"
-          >
-            <MessageCircle className="w-6 h-6" />
-            {(commentCounts.get(moment.id) ?? 0) > 0 && (
-              <span className="text-[10px] font-medium mt-0.5">
-                {commentCounts.get(moment.id)}
-              </span>
+              <ChevronRight className="w-7 h-7" />
             )}
           </button>
 
-          {/* Share */}
-          <button
-            onClick={handleShare}
-            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            aria-label="Share"
-          >
-            <Share2 className="w-6 h-6" />
-          </button>
+          {/* Mobile: Right side action buttons (hidden on desktop where we have panel) */}
+          <div className="lg:hidden absolute right-4 bottom-32 flex flex-col items-center gap-4">
+            {/* Comments - opens sheet overlay */}
+            <button
+              onClick={() => {
+                triggerHaptic("selection");
+                setShowComments(true);
+              }}
+              className="relative w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all"
+              aria-label="View comments"
+            >
+              <MessageCircle className="w-6 h-6" />
+              {(commentCounts.get(moment.id) ?? 0) > 0 && (
+                <span className="text-[10px] font-medium mt-0.5">
+                  {commentCounts.get(moment.id)}
+                </span>
+              )}
+            </button>
 
-          {/* Full page */}
-          <button
-            onClick={openFullPage}
-            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            aria-label="Open full page"
-          >
-            <ExternalLink className="w-5 h-5" />
-          </button>
+            {/* Share */}
+            <button
+              onClick={handleShare}
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              aria-label="Share"
+            >
+              <Share2 className="w-6 h-6" />
+            </button>
+
+            {/* Full page */}
+            <button
+              onClick={openFullPage}
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              aria-label="Open full page"
+            >
+              <ExternalLink className="w-5 h-5" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Bottom info */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 p-4 pb-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-        <div className="max-w-lg">
-          {/* User info */}
-          <div className="flex items-center gap-3 mb-3">
-            <UserAvatar
-              src={moment.avatar_url}
-              alt={moment.display_name || moment.username || ""}
-              size="sm"
-            />
-            <div>
-              <p className="text-white font-medium text-sm">
-                {moment.display_name || moment.username || "Anonymous"}
+        {/* Bottom info */}
+        <div className="absolute bottom-0 left-0 right-0 lg:right-auto z-20 p-4 pb-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+          <div className="max-w-lg">
+            {/* User info */}
+            <div className="flex items-center gap-3 mb-3">
+              <UserAvatar
+                src={moment.avatar_url}
+                alt={moment.display_name || moment.username || ""}
+                size="sm"
+              />
+              <div>
+                <p className="text-white font-medium text-sm">
+                  {moment.display_name || moment.username || "Anonymous"}
+                </p>
+                <p className="text-white/60 text-xs">
+                  {formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
+                </p>
+              </div>
+            </div>
+
+            {/* Caption */}
+            {moment.text_content && moment.content_type !== "text" && (
+              <p className="text-white text-sm leading-relaxed line-clamp-3 lg:line-clamp-none lg:max-h-24 lg:overflow-y-auto">
+                {moment.text_content}
               </p>
-              <p className="text-white/60 text-xs">
-                {formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
-              </p>
+            )}
+
+            {/* Desktop: Action bar with prominent buttons */}
+            <div className="hidden lg:flex items-center gap-3 mt-4 pt-3 border-t border-white/10">
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium hover:bg-white/20 active:scale-95 transition-all"
+              >
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
+              <button
+                onClick={openFullPage}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium hover:bg-white/20 active:scale-95 transition-all"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Full page
+              </button>
             </div>
           </div>
-
-          {/* Caption */}
-          {moment.text_content && moment.content_type !== "text" && (
-            <p className="text-white text-sm leading-relaxed line-clamp-3">
-              {moment.text_content}
-            </p>
-          )}
         </div>
+
+        {/* Swipe hint (mobile) */}
+        {moments.length > 1 && !showEndScreen && (
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 text-white/40 text-xs lg:hidden animate-pulse">
+            Swipe up/down to browse
+          </div>
+        )}
       </div>
 
-      {/* Swipe hint (mobile) */}
-      {moments.length > 1 && !showEndScreen && (
-        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 text-white/40 text-xs sm:hidden animate-pulse">
-          Swipe up/down to browse
-        </div>
-      )}
+      {/* Desktop: Always-visible comments panel on right side */}
+      <div className="hidden lg:flex w-[380px] flex-shrink-0 border-l border-white/10">
+        <ImmersiveCommentsPanel
+          targetType="moment"
+          targetId={moment.id}
+          contentOwnerId={moment.user_id}
+          currentUserId={currentUserId}
+          initialCount={commentCounts.get(moment.id) ?? 0}
+          onCountChange={(count) => {
+            setCommentCounts((prev) => new Map(prev).set(moment.id, count));
+          }}
+          className="w-full"
+        />
+      </div>
 
-      {/* End of Album Screen */}
+      {/* End of Album Screen - overlays everything including comments panel */}
       {showEndScreen && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/95 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/95 animate-in fade-in duration-300">
           {/* Sparkle decorations */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <Sparkles className="absolute top-[15%] left-[10%] w-6 h-6 text-yellow-400/60 animate-pulse" />
@@ -508,21 +574,23 @@ export function ImmersiveMomentView({
         </div>
       )}
 
-      {/* Comments sheet overlay */}
-      <CommentsSheet
-        open={showComments}
-        onOpenChange={setShowComments}
-        targetType="moment"
-        targetId={moment.id}
-        eventSlug={eventSlug}
-        contentTitle={moment.text_content || "Moment"}
-        contentOwnerId={moment.user_id}
-        currentUserId={currentUserId}
-        initialCount={commentCounts.get(moment.id) ?? 0}
-        onCountChange={(count) => {
-          setCommentCounts((prev) => new Map(prev).set(moment.id, count));
-        }}
-      />
+      {/* Mobile only: Comments sheet overlay (desktop uses side panel) */}
+      <div className="lg:hidden">
+        <CommentsSheet
+          open={showComments}
+          onOpenChange={setShowComments}
+          targetType="moment"
+          targetId={moment.id}
+          eventSlug={eventSlug}
+          contentTitle={moment.text_content || "Moment"}
+          contentOwnerId={moment.user_id}
+          currentUserId={currentUserId}
+          initialCount={commentCounts.get(moment.id) ?? 0}
+          onCountChange={(count) => {
+            setCommentCounts((prev) => new Map(prev).set(moment.id, count));
+          }}
+        />
+      </div>
     </div>
   );
 }
