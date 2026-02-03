@@ -366,7 +366,14 @@
       "invalidYoutubeUrl": "유효하지 않은 YouTube URL입니다. 올바른 YouTube 동영상 링크를 입력해 주세요.",
       "removeFailedMaterial": "자료 삭제 실패",
       "saveYoutubeFailed": "YouTube 동영상 저장 실패"
-    }
+    },
+    "sponsorTier": "추천/스폰서",
+    "selectSponsorTier": "등급 선택...",
+    "notSponsored": "추천 아님",
+    "sponsorTier1": "기본 (1등급)",
+    "sponsorTier2": "프리미엄 (2등급)",
+    "sponsorTier3": "골드 (3등급)",
+    "sponsorTierHelp": "추천 이벤트는 골드 배지와 함께 피드 상단에 표시됩니다."
   },
   "eventActions": {
     "eventOptions": "이벤트 옵션",

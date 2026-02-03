@@ -124,6 +124,9 @@ export async function GET(request: Request) {
     let errorCount = 0;
     const errors: { id: string; error: string }[] = [];
 
+    // Track embeddings to detect duplicates (a sign of broken API responses)
+    const seenEmbeddings = new Map<string, string>(); // hash -> moment_id
+
     for (let i = 0; i < momentsToProcess.length; i++) {
       const moment = momentsToProcess[i];
 
@@ -133,6 +136,9 @@ export async function GET(request: Request) {
       }
       try {
         if (!moment.media_url) continue;
+
+        console.log(`[backfill] Processing ${i + 1}/${momentsToProcess.length}: ${moment.id}`);
+        console.log(`[backfill] Image URL: ${moment.media_url.substring(0, 100)}...`);
 
         // Generate CLIP embedding
         const rawOutput = await replicate.run(CLIP_MODEL, {
@@ -146,6 +152,7 @@ export async function GET(request: Request) {
         } else if (Array.isArray(rawOutput) && rawOutput.length === 768 && typeof rawOutput[0] === "number") {
           output = rawOutput as number[];
         } else {
+          console.error(`[backfill] Unexpected format for ${moment.id}:`, JSON.stringify(rawOutput).substring(0, 200));
           errors.push({ id: moment.id, error: "Unexpected response format" });
           errorCount++;
           continue;
@@ -156,6 +163,20 @@ export async function GET(request: Request) {
           errorCount++;
           continue;
         }
+
+        // Check for duplicate embeddings (sign of API failure)
+        const embeddingHash = output.slice(0, 10).join(",");
+        const existingId = seenEmbeddings.get(embeddingHash);
+        if (existingId) {
+          console.error(`[backfill] DUPLICATE EMBEDDING DETECTED! ${moment.id} matches ${existingId}`);
+          console.error(`[backfill] First 5 values: ${output.slice(0, 5).join(", ")}`);
+          errors.push({ id: moment.id, error: `Duplicate embedding (matches ${existingId})` });
+          errorCount++;
+          continue;
+        }
+        seenEmbeddings.set(embeddingHash, moment.id);
+
+        console.log(`[backfill] Embedding generated: [${output.slice(0, 3).join(", ")}...] (768 dims)`);
 
         // Format and store embedding
         const embeddingString = `[${output.join(",")}]`;
@@ -173,7 +194,9 @@ export async function GET(request: Request) {
         }
 
         successCount++;
+        console.log(`[backfill] Success: ${moment.id} (${successCount}/${momentsToProcess.length})`);
       } catch (err) {
+        console.error(`[backfill] Error for ${moment.id}:`, err);
         errors.push({
           id: moment.id,
           error: err instanceof Error ? err.message : "Unknown error",

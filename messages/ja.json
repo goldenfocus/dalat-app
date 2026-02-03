@@ -366,7 +366,14 @@
       "invalidYoutubeUrl": "無効なYouTube URLです。有効なYouTube動画リンクを入力してください。",
       "removeFailedMaterial": "資料の削除に失敗しました",
       "saveYoutubeFailed": "YouTube動画の保存に失敗しました"
-    }
+    },
+    "sponsorTier": "注目/スポンサー",
+    "selectSponsorTier": "ティアを選択...",
+    "notSponsored": "注目なし",
+    "sponsorTier1": "ベーシック (ティア1)",
+    "sponsorTier2": "プレミアム (ティア2)",
+    "sponsorTier3": "ゴールド (ティア3)",
+    "sponsorTierHelp": "注目イベントはゴールドバッジ付きでフィードの最上部に表示されます。"
   },
   "eventActions": {
     "eventOptions": "イベントオプション",

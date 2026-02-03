@@ -366,7 +366,14 @@
       "invalidYoutubeUrl": "URL YouTube không hợp lệ. Vui lòng nhập liên kết video YouTube hợp lệ.",
       "removeFailedMaterial": "Không thể xóa tài liệu",
       "saveYoutubeFailed": "Không thể lưu video YouTube"
-    }
+    },
+    "sponsorTier": "Nổi bật/Tài trợ",
+    "selectSponsorTier": "Chọn cấp độ...",
+    "notSponsored": "Không nổi bật",
+    "sponsorTier1": "Cơ bản (Cấp 1)",
+    "sponsorTier2": "Cao cấp (Cấp 2)",
+    "sponsorTier3": "Vàng (Cấp 3)",
+    "sponsorTierHelp": "Sự kiện nổi bật xuất hiện đầu tiên với huy hiệu vàng."
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",

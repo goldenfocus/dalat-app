@@ -366,7 +366,14 @@
       "invalidYoutubeUrl": "URL YouTube tidak sah. Sila masukkan pautan video YouTube yang sah.",
       "removeFailedMaterial": "Gagal mengalih keluar bahan",
       "saveYoutubeFailed": "Gagal menyimpan video YouTube"
-    }
+    },
+    "sponsorTier": "Ditampilkan/Ditaja",
+    "selectSponsorTier": "Pilih peringkat...",
+    "notSponsored": "Tidak ditampilkan",
+    "sponsorTier1": "Asas (Peringkat 1)",
+    "sponsorTier2": "Premium (Peringkat 2)",
+    "sponsorTier3": "Emas (Peringkat 3)",
+    "sponsorTierHelp": "Acara yang ditampilkan muncul dahulu dengan lencana emas."
   },
   "eventActions": {
     "eventOptions": "Pilihan acara",

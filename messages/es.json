@@ -366,7 +366,14 @@
       "invalidYoutubeUrl": "URL de YouTube no válida. Por favor, introduce un enlace de video de YouTube válido.",
       "removeFailedMaterial": "Error al eliminar el material",
       "saveYoutubeFailed": "Error al guardar el video de YouTube"
-    }
+    },
+    "sponsorTier": "Destacado/Patrocinado",
+    "selectSponsorTier": "Seleccionar nivel...",
+    "notSponsored": "No destacado",
+    "sponsorTier1": "Básico (Nivel 1)",
+    "sponsorTier2": "Premium (Nivel 2)",
+    "sponsorTier3": "Oro (Nivel 3)",
+    "sponsorTierHelp": "Los eventos destacados aparecen primero con insignia dorada."
   },
   "eventActions": {
     "eventOptions": "Opciones del evento",

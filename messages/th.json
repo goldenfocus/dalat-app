@@ -366,7 +366,14 @@
       "invalidYoutubeUrl": "URL YouTube ไม่ถูกต้อง กรุณาใส่ลิงก์วิดีโอ YouTube ที่ถูกต้อง",
       "removeFailedMaterial": "ลบเอกสารไม่สำเร็จ",
       "saveYoutubeFailed": "บันทึกวิดีโอ YouTube ไม่สำเร็จ"
-    }
+    },
+    "sponsorTier": "แนะนำ/สปอนเซอร์",
+    "selectSponsorTier": "เลือกระดับ...",
+    "notSponsored": "ไม่แนะนำ",
+    "sponsorTier1": "พื้นฐาน (ระดับ 1)",
+    "sponsorTier2": "พรีเมียม (ระดับ 2)",
+    "sponsorTier3": "ทอง (ระดับ 3)",
+    "sponsorTierHelp": "กิจกรรมแนะนำจะแสดงก่อนพร้อมตราทอง"
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",

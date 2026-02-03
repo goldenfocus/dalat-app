@@ -380,7 +380,14 @@
       "invalidYoutubeUrl": "URL YouTube invalide. Veuillez entrer un lien vidéo YouTube valide.",
       "removeFailedMaterial": "Échec de la suppression du document",
       "saveYoutubeFailed": "Échec de l'enregistrement de la vidéo YouTube"
-    }
+    },
+    "sponsorTier": "Mis en avant/Sponsorisé",
+    "selectSponsorTier": "Sélectionner le niveau...",
+    "notSponsored": "Non mis en avant",
+    "sponsorTier1": "Basique (Niveau 1)",
+    "sponsorTier2": "Premium (Niveau 2)",
+    "sponsorTier3": "Or (Niveau 3)",
+    "sponsorTierHelp": "Les événements mis en avant apparaissent en premier avec un badge doré."
   },
   "eventActions": {
     "eventOptions": "Options de l'événement",

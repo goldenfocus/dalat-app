@@ -380,7 +380,14 @@
       "invalidYoutubeUrl": "Invalid YouTube URL. Please enter a valid YouTube video link.",
       "removeFailedMaterial": "Failed to remove material",
       "saveYoutubeFailed": "Failed to save YouTube video"
-    }
+    },
+    "sponsorTier": "Featured/Sponsored",
+    "selectSponsorTier": "Select tier...",
+    "notSponsored": "Not featured",
+    "sponsorTier1": "Basic (Tier 1)",
+    "sponsorTier2": "Premium (Tier 2)",
+    "sponsorTier3": "Gold (Tier 3)",
+    "sponsorTierHelp": "Featured events appear first in feeds with a gold badge."
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",

@@ -366,7 +366,14 @@
       "invalidYoutubeUrl": "Ungültige YouTube-URL. Bitte geben Sie einen gültigen YouTube-Video-Link ein.",
       "removeFailedMaterial": "Material konnte nicht entfernt werden",
       "saveYoutubeFailed": "YouTube-Video konnte nicht gespeichert werden"
-    }
+    },
+    "sponsorTier": "Hervorgehoben/Gesponsert",
+    "selectSponsorTier": "Stufe auswählen...",
+    "notSponsored": "Nicht hervorgehoben",
+    "sponsorTier1": "Basis (Stufe 1)",
+    "sponsorTier2": "Premium (Stufe 2)",
+    "sponsorTier3": "Gold (Stufe 3)",
+    "sponsorTierHelp": "Hervorgehobene Events erscheinen zuerst mit goldenem Abzeichen."
   },
   "eventActions": {
     "eventOptions": "Event-Optionen",

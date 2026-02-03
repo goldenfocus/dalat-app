@@ -59,12 +59,12 @@ export function ImageVersionHistory({
     }
   }, [contentType, contentId, fieldName]);
 
-  // Fetch versions when panel opens
+  // Fetch versions on mount to know if we should show the button
   useEffect(() => {
-    if (isOpen && contentId) {
+    if (contentId) {
       fetchVersions();
     }
-  }, [isOpen, contentId, fetchVersions]);
+  }, [contentId, fetchVersions]);
 
   const handleRestore = async (version: ImageVersion) => {
     setIsRestoring(true);
@@ -99,6 +99,10 @@ export function ImageVersionHistory({
 
   // Don't show if no content ID yet (new item being created)
   if (!contentId) return null;
+
+  // Don't show if still loading on first fetch, or if there are no historical versions
+  if (isLoading && versions.length === 0) return null;
+  if (!isLoading && historicalVersions.length === 0) return null;
 
   return (
     <>
@@ -135,10 +139,6 @@ export function ImageVersionHistory({
             </div>
           ) : error ? (
             <div className="text-sm text-destructive py-2">{error}</div>
-          ) : historicalVersions.length === 0 ? (
-            <div className="text-sm text-muted-foreground py-2">
-              No previous versions yet. Generate images to build history.
-            </div>
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {historicalVersions.map((version) => (

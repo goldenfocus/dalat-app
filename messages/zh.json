@@ -366,7 +366,14 @@
       "invalidYoutubeUrl": "无效的YouTube链接。请输入有效的YouTube视频链接。",
       "removeFailedMaterial": "资料删除失败",
       "saveYoutubeFailed": "YouTube视频保存失败"
-    }
+    },
+    "sponsorTier": "精选/赞助",
+    "selectSponsorTier": "选择等级...",
+    "notSponsored": "非精选",
+    "sponsorTier1": "基础 (一级)",
+    "sponsorTier2": "高级 (二级)",
+    "sponsorTier3": "金牌 (三级)",
+    "sponsorTierHelp": "精选活动会带有金色徽章并优先显示在信息流中。"
   },
   "eventActions": {
     "eventOptions": "活动选项",

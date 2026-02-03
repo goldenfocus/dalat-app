@@ -366,7 +366,14 @@
       "invalidYoutubeUrl": "Неверный URL YouTube. Пожалуйста, введите корректную ссылку на видео YouTube.",
       "removeFailedMaterial": "Не удалось удалить материал",
       "saveYoutubeFailed": "Не удалось сохранить видео YouTube"
-    }
+    },
+    "sponsorTier": "Избранное/Спонсорское",
+    "selectSponsorTier": "Выберите уровень...",
+    "notSponsored": "Не избранное",
+    "sponsorTier1": "Базовый (Уровень 1)",
+    "sponsorTier2": "Премиум (Уровень 2)",
+    "sponsorTier3": "Золотой (Уровень 3)",
+    "sponsorTierHelp": "Избранные мероприятия отображаются первыми с золотым значком."
   },
   "eventActions": {
     "eventOptions": "Опции события",
