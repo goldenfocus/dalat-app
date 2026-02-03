@@ -274,6 +274,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
         <MomentDetailHeader
           eventSlug={event.slug}
           eventTitle={event.title}
+          momentId={moment.id}
           from={from}
         />
         <main className="container max-w-4xl mx-auto px-4 py-6">
