@@ -101,24 +101,29 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
               </div>
 
               {/* Info panel below */}
-              <div className="p-2 space-y-0.5">
+              <div className="p-2 space-y-1">
                 <p className="text-[11px] font-medium leading-tight line-clamp-2 min-h-[1.75rem]">
                   {moment.event_title}
                 </p>
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                  {moment.event_photo_count > 0 && (
-                    <span className="flex items-center gap-0.5">
-                      <Camera className="w-2.5 h-2.5" />
-                      {moment.event_photo_count}
-                    </span>
-                  )}
-                  {moment.event_video_count > 0 && (
-                    <span className="flex items-center gap-0.5">
-                      <Video className="w-2.5 h-2.5" />
-                      {moment.event_video_count}
-                    </span>
-                  )}
-                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  {formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
+                </p>
+                {(moment.event_photo_count > 0 || moment.event_video_count > 0) && (
+                  <div className="flex items-center gap-1">
+                    {moment.event_photo_count > 0 && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-muted text-[9px] text-muted-foreground">
+                        <Camera className="w-2.5 h-2.5" />
+                        {moment.event_photo_count}
+                      </span>
+                    )}
+                    {moment.event_video_count > 0 && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-muted text-[9px] text-muted-foreground">
+                        <Video className="w-2.5 h-2.5" />
+                        {moment.event_video_count}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </button>
           ))}
@@ -179,32 +184,29 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
               </div>
 
               {/* Info panel below image */}
-              <div className="p-2.5 space-y-1">
-                <p className="text-sm font-medium leading-tight line-clamp-2 min-h-[2.5rem]">
+              <div className="p-3 space-y-1.5">
+                <p className="text-sm font-semibold leading-tight line-clamp-2 min-h-[2.5rem]">
                   {moment.event_title}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}</span>
-                  {(moment.event_photo_count > 0 || moment.event_video_count > 0) && (
-                    <>
-                      <span className="text-muted-foreground/50">·</span>
-                      <div className="flex items-center gap-1.5">
-                        {moment.event_photo_count > 0 && (
-                          <span className="flex items-center gap-0.5">
-                            <Camera className="w-3 h-3" />
-                            {moment.event_photo_count}
-                          </span>
-                        )}
-                        {moment.event_video_count > 0 && (
-                          <span className="flex items-center gap-0.5">
-                            <Video className="w-3 h-3" />
-                            {moment.event_video_count}
-                          </span>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
+                </p>
+                {(moment.event_photo_count > 0 || moment.event_video_count > 0) && (
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    {moment.event_photo_count > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/80 text-[11px] font-medium text-muted-foreground">
+                        <Camera className="w-3 h-3" />
+                        {moment.event_photo_count}
+                      </span>
+                    )}
+                    {moment.event_video_count > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/80 text-[11px] font-medium text-muted-foreground">
+                        <Video className="w-3 h-3" />
+                        {moment.event_video_count}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </button>
           ))}
