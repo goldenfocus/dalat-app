@@ -1156,7 +1156,9 @@
       "recentEvents": "กิจกรรมล่าสุด",
       "noRecentEvents": "ไม่มีกิจกรรมล่าสุด",
       "rsvpHint": "RSVP เพื่ออัปโหลด"
-    }
+    },
+    "setAsCover": "ตั้งเป็นหน้าปก",
+    "albumCover": "หน้าปกอัลบั้ม"
   },
   "tribes": {
     "title": "Tribes",

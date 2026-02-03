@@ -1156,7 +1156,9 @@
       "recentEvents": "近期活动",
       "noRecentEvents": "暂无近期活动",
       "rsvpHint": "RSVP参加活动后上传"
-    }
+    },
+    "setAsCover": "设为封面",
+    "albumCover": "相册封面"
   },
   "tribes": {
     "title": "部落",

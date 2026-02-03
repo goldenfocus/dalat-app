@@ -1156,7 +1156,9 @@
       "recentEvents": "Acara terbaru",
       "noRecentEvents": "Tidak ada acara terbaru",
       "rsvpHint": "RSVP untuk mengunggah"
-    }
+    },
+    "setAsCover": "Jadikan sampul",
+    "albumCover": "Sampul album"
   },
   "tribes": {
     "title": "Tribes",

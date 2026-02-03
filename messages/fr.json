@@ -1170,7 +1170,9 @@
       "recentEvents": "Événements récents",
       "noRecentEvents": "Aucun événement récent",
       "rsvpHint": "RSVP pour télécharger"
-    }
+    },
+    "setAsCover": "Définir comme couverture",
+    "albumCover": "Couverture"
   },
   "tribes": {
     "title": "Tribus",

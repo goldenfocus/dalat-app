@@ -1156,7 +1156,9 @@
       "recentEvents": "Aktuelle Events",
       "noRecentEvents": "Keine aktuellen Events",
       "rsvpHint": "RSVP zum Hochladen"
-    }
+    },
+    "setAsCover": "Als Cover festlegen",
+    "albumCover": "Album-Cover"
   },
   "tribes": {
     "title": "Tribes",

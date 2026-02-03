@@ -1156,7 +1156,9 @@
       "recentEvents": "최근 이벤트",
       "noRecentEvents": "최근 이벤트 없음",
       "rsvpHint": "RSVP하여 업로드하세요"
-    }
+    },
+    "setAsCover": "커버로 설정",
+    "albumCover": "앨범 커버"
   },
   "tribes": {
     "title": "트라이브",

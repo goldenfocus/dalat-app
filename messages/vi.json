@@ -1156,7 +1156,9 @@
       "recentEvents": "Sự kiện gần đây",
       "noRecentEvents": "Không có sự kiện gần đây",
       "rsvpHint": "Đăng ký tham gia để tải lên"
-    }
+    },
+    "setAsCover": "Đặt làm ảnh bìa",
+    "albumCover": "Ảnh bìa album"
   },
   "tribes": {
     "title": "Bộ tộc",

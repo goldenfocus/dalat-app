@@ -1156,7 +1156,9 @@
       "recentEvents": "最近のイベント",
       "noRecentEvents": "最近のイベントなし",
       "rsvpHint": "RSVPしてアップロード"
-    }
+    },
+    "setAsCover": "カバーに設定",
+    "albumCover": "アルバムカバー"
   },
   "tribes": {
     "title": "トライブ",

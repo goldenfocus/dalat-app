@@ -1156,7 +1156,9 @@
       "recentEvents": "Eventos recientes",
       "noRecentEvents": "Sin eventos recientes",
       "rsvpHint": "RSVP para subir"
-    }
+    },
+    "setAsCover": "Establecer como portada",
+    "albumCover": "Portada"
   },
   "tribes": {
     "title": "Tribes",

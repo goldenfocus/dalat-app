@@ -1156,7 +1156,9 @@
       "recentEvents": "Acara terkini",
       "noRecentEvents": "Tiada acara terkini",
       "rsvpHint": "RSVP untuk memuat naik"
-    }
+    },
+    "setAsCover": "Tetapkan sebagai muka depan",
+    "albumCover": "Muka depan album"
   },
   "tribes": {
     "title": "Suku",

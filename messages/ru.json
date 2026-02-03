@@ -1156,7 +1156,9 @@
       "recentEvents": "Недавние события",
       "noRecentEvents": "Нет недавних событий",
       "rsvpHint": "RSVP на события для загрузки"
-    }
+    },
+    "setAsCover": "Установить обложкой",
+    "albumCover": "Обложка альбома"
   },
   "tribes": {
     "title": "Трайбы",
