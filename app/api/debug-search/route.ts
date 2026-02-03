@@ -112,6 +112,32 @@ export async function GET(request: Request) {
       }
     );
 
+    // Debug: compare embedding string formats
+    const stringDebug = {
+      storedStr: {
+        length: storedEmbeddingStr.length,
+        first50: storedEmbeddingStr.substring(0, 50),
+        last50: storedEmbeddingStr.substring(storedEmbeddingStr.length - 50),
+      },
+      queryStr: {
+        length: queryEmbeddingString.length,
+        first50: queryEmbeddingString.substring(0, 50),
+        last50: queryEmbeddingString.substring(queryEmbeddingString.length - 50),
+      },
+    };
+
+    // Test: Call debug_search_test with EXACT same format as stored (JSON.stringify then parse)
+    const queryVecNormalized = queryVec.map(v => parseFloat(v.toFixed(8)));
+    const queryEmbeddingNormalized = `[${queryVecNormalized.join(",")}]`;
+
+    const { data: normalizedResult, error: normalizedError } = await supabase.rpc(
+      "debug_search_test",
+      {
+        query_embedding: queryEmbeddingNormalized,
+        match_threshold: 0.0,
+      }
+    );
+
     return NextResponse.json({
       query,
       storedEmbedding: {
@@ -130,6 +156,8 @@ export async function GET(request: Request) {
       debugSearchTest: debugError ? { error: debugError.message } : debugResult,
       embeddingMoments: embeddingMomentsError ? { error: embeddingMomentsError.message } : embeddingMoments,
       storedEmbRpcTest: storedEmbRpcError ? { error: storedEmbRpcError.message } : storedEmbRpcResult?.slice(0, 3),
+      normalizedTest: normalizedError ? { error: normalizedError.message } : normalizedResult?.slice(0, 3),
+      stringDebug,
       keyDebugInfo: getKeyDebugInfo(),
     });
   } catch (err) {
