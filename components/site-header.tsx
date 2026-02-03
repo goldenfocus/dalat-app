@@ -24,6 +24,7 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
             ĐàLạt.app
           </Link>
           <LocalePicker />
+          <ThemeToggle />
         </div>
         <div className="flex items-center gap-1">
           <Link
@@ -55,7 +56,6 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
             <Film className="w-5 h-5" aria-hidden="true" />
           </Link>
           <HeaderSearch />
-          <ThemeToggle />
           <CreateEventLink />
           {actions}
           <AuthButtonClient />
