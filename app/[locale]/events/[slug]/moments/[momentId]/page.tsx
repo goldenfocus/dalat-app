@@ -353,10 +353,12 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
 
                 {/* Photo */}
                 {moment.content_type === "photo" && moment.media_url && (
-                  <ExpandableMomentImage
-                    src={moment.media_url}
-                    alt={translatedText || "Photo"}
-                  />
+                  <div className="relative aspect-[4/3]">
+                    <ExpandableMomentImage
+                      src={moment.media_url}
+                      alt={translatedText || "Photo"}
+                    />
+                  </div>
                 )}
 
                 {/* Text-only */}

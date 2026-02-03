@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Loader2, Camera } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { MomentCard } from "./moment-card";
+import { MomentsLightboxProvider, useMomentsLightbox } from "./moments-lightbox-provider";
 import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
 import type { MomentWithProfile } from "@/lib/types";
 
@@ -15,6 +16,8 @@ interface InfiniteMomentGridProps {
   eventSlug: string;
   initialMoments: MomentWithProfile[];
   initialHasMore: boolean;
+  /** Enable lightbox mode (modal instead of page navigation) */
+  enableLightbox?: boolean;
 }
 
 export function InfiniteMomentGrid({
@@ -22,6 +25,7 @@ export function InfiniteMomentGrid({
   eventSlug,
   initialMoments,
   initialHasMore,
+  enableLightbox = false,
 }: InfiniteMomentGridProps) {
   const t = useTranslations("moments");
   const [moments, setMoments] = useState<MomentWithProfile[]>(initialMoments);
@@ -91,19 +95,27 @@ export function InfiniteMomentGrid({
     );
   }
 
-  return (
+  const gridContent = (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {moments.map((moment) => (
-          <MomentCard
-            key={moment.id}
-            moment={moment}
-            eventSlug={eventSlug}
-            from="event"
-            commentCount={commentCounts.get(moment.id)}
-          />
-        ))}
-      </div>
+      {enableLightbox ? (
+        <InnerGridWithLightbox
+          moments={moments}
+          eventSlug={eventSlug}
+          commentCounts={commentCounts}
+        />
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {moments.map((moment) => (
+            <MomentCard
+              key={moment.id}
+              moment={moment}
+              eventSlug={eventSlug}
+              from="event"
+              commentCount={commentCounts.get(moment.id)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Loading indicator / Intersection Observer target */}
       <div ref={loaderRef} className="flex justify-center py-4">
@@ -111,6 +123,45 @@ export function InfiniteMomentGrid({
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         )}
       </div>
+    </div>
+  );
+
+  // Wrap with provider for lightbox mode
+  if (enableLightbox) {
+    return (
+      <MomentsLightboxProvider moments={moments} eventSlug={eventSlug}>
+        {gridContent}
+      </MomentsLightboxProvider>
+    );
+  }
+
+  return gridContent;
+}
+
+/** Inner grid that uses the lightbox context */
+function InnerGridWithLightbox({
+  moments,
+  eventSlug,
+  commentCounts,
+}: {
+  moments: MomentWithProfile[];
+  eventSlug: string;
+  commentCounts: Map<string, number>;
+}) {
+  const { openLightbox } = useMomentsLightbox();
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      {moments.map((moment, index) => (
+        <MomentCard
+          key={moment.id}
+          moment={moment}
+          eventSlug={eventSlug}
+          from="event"
+          commentCount={commentCounts.get(moment.id)}
+          onLightboxOpen={() => openLightbox(index)}
+        />
+      ))}
     </div>
   );
 }

@@ -147,12 +147,13 @@ export default async function EventMomentsPage({ params }: PageProps) {
           <p className="text-muted-foreground">{event.title}</p>
         </div>
 
-        {/* Infinite scroll moments grid */}
+        {/* Infinite scroll moments grid with lightbox */}
         <InfiniteMomentGrid
           eventId={event.id}
           eventSlug={event.slug}
           initialMoments={moments}
           initialHasMore={hasMore}
+          enableLightbox
         />
 
         {/* CTA for users who can post but haven't yet */}

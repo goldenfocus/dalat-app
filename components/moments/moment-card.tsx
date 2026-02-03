@@ -2,15 +2,14 @@
 
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
-import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
-import { Play, MessageCircle, Youtube, FileText, Music, File } from "lucide-react";
+import { Play, MessageCircle, FileText, Music, File } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { getYouTubeThumbnail } from "@/components/shared/material-renderers";
 import type { MomentContentType } from "@/lib/types";
 
 // Minimal moment shape needed for display
-interface MomentForCard {
+export interface MomentForCard {
   id: string;
   content_type: MomentContentType;
   media_url: string | null;
@@ -23,6 +22,10 @@ interface MomentForCard {
   title?: string | null;
   artist?: string | null;
   audio_thumbnail_url?: string | null;
+  // Video fields (for lightbox)
+  cf_video_uid?: string | null;
+  cf_playback_url?: string | null;
+  video_status?: string | null;
 }
 
 interface MomentCardProps {
@@ -33,10 +36,11 @@ interface MomentCardProps {
   from?: "moments" | "event" | "profile" | "discovery";
   /** Comment count to display as badge (only shown if > 0) */
   commentCount?: number;
+  /** Click handler for lightbox mode. When provided, opens lightbox instead of navigating. */
+  onLightboxOpen?: () => void;
 }
 
-export function MomentCard({ moment, eventSlug, from, commentCount }: MomentCardProps) {
-  const isVideo = isVideoUrl(moment.media_url);
+export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOpen }: MomentCardProps) {
   // Use clean URL format when event slug is available
   const basePath = eventSlug
     ? `/events/${eventSlug}/moments/${moment.id}`
@@ -48,13 +52,16 @@ export function MomentCard({ moment, eventSlug, from, commentCount }: MomentCard
     ? getYouTubeThumbnail(moment.youtube_video_id, "high")
     : null;
 
-  return (
-    <Link
-      href={href}
-      className="block touch-manipulation"
-      onClick={() => triggerHaptic("selection")}
-    >
-      <article className="group relative aspect-square overflow-hidden rounded-lg bg-muted active:scale-[0.98] transition-transform">
+  // Content wrapper - either a button (lightbox) or Link (navigation)
+  const handleClick = () => {
+    triggerHaptic("selection");
+    if (onLightboxOpen) {
+      onLightboxOpen();
+    }
+  };
+
+  const cardContent = (
+    <article className="group relative aspect-square overflow-hidden rounded-lg bg-muted active:scale-[0.98] transition-transform">
         {/* YouTube moments */}
         {moment.content_type === "youtube" && youtubeThumb && (
           <>
@@ -202,6 +209,29 @@ export function MomentCard({ moment, eventSlug, from, commentCount }: MomentCard
           </div>
         )}
       </article>
+  );
+
+  // Lightbox mode: use button
+  if (onLightboxOpen) {
+    return (
+      <button
+        type="button"
+        className="block w-full text-left touch-manipulation"
+        onClick={handleClick}
+      >
+        {cardContent}
+      </button>
+    );
+  }
+
+  // Default: use Link for SEO and direct navigation
+  return (
+    <Link
+      href={href}
+      className="block touch-manipulation"
+      onClick={handleClick}
+    >
+      {cardContent}
     </Link>
   );
 }
