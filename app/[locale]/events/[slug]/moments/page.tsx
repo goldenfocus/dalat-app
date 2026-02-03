@@ -156,9 +156,9 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
           <h1 className="text-2xl font-bold">{t("moments")}</h1>
           <Link
             href={`/events/${slug}`}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:underline transition-colors"
           >
-            {event.title}
+            {event.title} &rarr;
           </Link>
         </div>
 
