@@ -74,6 +74,15 @@ export async function GET(request: Request) {
       }
     );
 
+    // New detailed debug function
+    const { data: debugResult, error: debugError } = await supabase.rpc(
+      "debug_search_test",
+      {
+        query_embedding: queryEmbeddingString,
+        match_threshold: 0.0,
+      }
+    );
+
     return NextResponse.json({
       query,
       storedEmbedding: {
@@ -89,6 +98,7 @@ export async function GET(request: Request) {
       },
       manualCosineSimilarity: cosineSim.toFixed(4),
       rpcResult: rpcError ? { error: rpcError.message } : rpcResult?.slice(0, 3),
+      debugSearchTest: debugError ? { error: debugError.message } : debugResult,
     });
   } catch (err) {
     return NextResponse.json({
