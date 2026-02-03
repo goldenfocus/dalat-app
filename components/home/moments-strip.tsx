@@ -55,26 +55,26 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
         </Link>
       </div>
 
-      {/* Mobile: Compact horizontal scroll */}
+      {/* Mobile: Compact horizontal scroll with framed cards */}
       <div className="lg:hidden">
-        <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
+        <div className="flex gap-2.5 overflow-x-auto px-4 pb-2 scrollbar-hide">
           {moments.map((moment) => (
             <button
               key={moment.id}
               onClick={() => handleMomentClick(moment)}
-              className="flex flex-col items-center gap-1.5 flex-shrink-0 group"
+              className="flex-shrink-0 group w-[120px] rounded-lg overflow-hidden bg-card border border-border/50 active:scale-[0.98] transition-transform"
             >
-              {/* Rounded square thumbnail */}
-              <div className="relative w-[72px] h-[72px] rounded-xl overflow-hidden bg-muted shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+              {/* Clean image */}
+              <div className="relative aspect-square overflow-hidden">
                 {moment.thumbnail_url || moment.media_url ? (
                   <img
                     src={cloudflareLoader({
                       src: moment.thumbnail_url || moment.media_url!,
-                      width: 144,
+                      width: 240,
                       quality: 80,
                     })}
                     alt={moment.event_title}
-                    className="w-full h-full object-cover group-active:scale-95 transition-transform"
+                    className="w-full h-full object-cover"
                     loading="lazy"
                   />
                 ) : (
@@ -85,20 +85,20 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
 
                 {/* Play icon for videos */}
                 {moment.content_type === "video" && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <div className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
                       <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Event info */}
-              <div className="flex flex-col items-center w-[72px]">
-                <span className="text-[11px] text-muted-foreground text-center truncate w-full leading-tight">
+              {/* Info panel below */}
+              <div className="p-2 space-y-0.5">
+                <p className="text-[11px] font-medium leading-tight line-clamp-2 min-h-[1.75rem]">
                   {moment.event_title}
-                </span>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
+                </p>
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   {moment.event_photo_count > 0 && (
                     <span className="flex items-center gap-0.5">
                       <Camera className="w-2.5 h-2.5" />
@@ -118,7 +118,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
         </div>
       </div>
 
-      {/* Desktop: Card-based layout */}
+      {/* Desktop: Framed card layout - clean image with info below */}
       <div className="hidden lg:block container max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-6 gap-3">
           {moments.slice(0, 6).map((moment, index) => (
@@ -126,54 +126,60 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
               key={moment.id}
               onClick={() => handleMomentClick(moment)}
               className={cn(
-                "group relative aspect-[4/5] rounded-xl overflow-hidden bg-muted",
-                "ring-1 ring-black/5 dark:ring-white/10",
-                "hover:ring-2 hover:ring-primary/50 transition-all duration-200",
+                "group text-left rounded-xl overflow-hidden bg-card border border-border/50",
+                "hover:border-foreground/20 hover:shadow-lg transition-all duration-200",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                // Fade out last items if more than 6
                 index >= 5 && moments.length > 6 && "opacity-80"
               )}
             >
-              {/* Image */}
-              {moment.thumbnail_url || moment.media_url ? (
-                <img
-                  src={cloudflareLoader({
-                    src: moment.thumbnail_url || moment.media_url!,
-                    width: 400,
-                    quality: 80,
-                  })}
-                  alt={moment.event_title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                  <Images className="w-8 h-8 text-muted-foreground/30" />
-                </div>
-              )}
-
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-
-              {/* Play icon for videos */}
-              {moment.content_type === "video" && (
-                <div className="absolute top-2 right-2">
-                  <div className="w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                    <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+              {/* Clean image - no overlays except play button */}
+              <div className="relative aspect-[4/5] overflow-hidden">
+                {moment.thumbnail_url || moment.media_url ? (
+                  <img
+                    src={cloudflareLoader({
+                      src: moment.thumbnail_url || moment.media_url!,
+                      width: 400,
+                      quality: 80,
+                    })}
+                    alt={moment.event_title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+                    <Images className="w-8 h-8 text-muted-foreground/30" />
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Event info overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-3 space-y-1">
-                <p className="text-white text-sm font-medium leading-tight line-clamp-2 drop-shadow-sm">
+                {/* Play icon for videos - only overlay */}
+                {moment.content_type === "video" && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                      <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                    </div>
+                  </div>
+                )}
+
+                {/* "View more" indicator on last card */}
+                {index === 5 && moments.length > 6 && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      +{moments.length - 6} more
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Info panel below image */}
+              <div className="p-2.5 space-y-1">
+                <p className="text-sm font-medium leading-tight line-clamp-2 min-h-[2.5rem]">
                   {moment.event_title}
                 </p>
-                <div className="flex items-center gap-2 text-white/80 text-xs">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span>{formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}</span>
                   {(moment.event_photo_count > 0 || moment.event_video_count > 0) && (
                     <>
-                      <span className="text-white/40">·</span>
+                      <span className="text-muted-foreground/50">·</span>
                       <div className="flex items-center gap-1.5">
                         {moment.event_photo_count > 0 && (
                           <span className="flex items-center gap-0.5">
@@ -192,15 +198,6 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                   )}
                 </div>
               </div>
-
-              {/* "View more" indicator on last card if there are more */}
-              {index === 5 && moments.length > 6 && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-white text-sm font-medium">
-                    +{moments.length - 6} more
-                  </span>
-                </div>
-              )}
             </button>
           ))}
         </div>
