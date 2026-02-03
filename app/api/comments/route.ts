@@ -91,6 +91,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // For events, check if user is RSVP'd or is the event creator
+    if (targetType === "event") {
+      const canComment = await checkEventCommentPermission(
+        supabase,
+        targetId,
+        user.id
+      );
+      if (!canComment) {
+        return NextResponse.json(
+          { error: "You must RSVP to this event to comment" },
+          { status: 403 }
+        );
+      }
+    }
+
     // Create the comment
     const result = await createComment(targetType, targetId, content, {
       parentId,
@@ -157,4 +172,41 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Check if a user can comment on an event.
+ * User can comment if they:
+ * 1. Are the event creator, OR
+ * 2. Have RSVP'd with status: going, waitlist, or interested
+ */
+async function checkEventCommentPermission(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  eventId: string,
+  userId: string
+): Promise<boolean> {
+  // Check if user is event creator
+  const { data: event } = await supabase
+    .from("events")
+    .select("created_by")
+    .eq("id", eventId)
+    .single();
+
+  if (event?.created_by === userId) {
+    return true;
+  }
+
+  // Check if user has RSVP'd
+  const { data: rsvp } = await supabase
+    .from("rsvps")
+    .select("status")
+    .eq("event_id", eventId)
+    .eq("user_id", userId)
+    .single();
+
+  if (rsvp?.status && ["going", "waitlist", "interested"].includes(rsvp.status)) {
+    return true;
+  }
+
+  return false;
 }

@@ -26,12 +26,14 @@ export function UploadQueue({ files, onRemove, onRetry }: UploadQueueProps) {
       error: 0,
       converting: 1,
       uploading: 2,
-      validating: 3,
-      retrying: 4,
-      saving: 5,
-      uploaded: 6,
-      queued: 7,
-      complete: 8,
+      hashing: 3,
+      validating: 4,
+      retrying: 5,
+      saving: 6,
+      uploaded: 7,
+      queued: 8,
+      complete: 9,
+      skipped: 10,
     };
 
     return Array.from(files.values()).sort((a, b) => {

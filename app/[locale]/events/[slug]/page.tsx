@@ -37,6 +37,7 @@ import { SponsorDisplay } from "@/components/events/sponsor-display";
 import { ClickableTagList } from "@/components/events/clickable-tag-list";
 import { EventMaterialsSummary } from "@/components/events/event-materials";
 import { EventMaterialsStructuredData } from "@/components/events/event-materials-structured-data";
+import { EventCommentsSection } from "@/components/comments";
 import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial } from "@/lib/types";
 
 interface PageProps {
@@ -870,6 +871,16 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
             {/* Attendees */}
             <AttendeeList attendees={attendees} waitlist={waitlist} interested={interested} isPast={isPast} />
+
+            {/* Comments Section */}
+            <EventCommentsSection
+              eventId={event.id}
+              eventSlug={event.slug}
+              contentOwnerId={event.created_by}
+              currentUserId={currentUserId ?? undefined}
+              rsvpStatus={currentRsvp?.status}
+              canManageEvent={canManageEvent}
+            />
           </div>
 
           {/* Sidebar */}

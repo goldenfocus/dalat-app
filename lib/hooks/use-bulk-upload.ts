@@ -13,6 +13,10 @@ import {
   needsImageCompression,
   compressImage,
 } from "@/lib/image-compression";
+import {
+  computeFileHash,
+  checkDuplicateHashes,
+} from "@/lib/file-hash";
 import type {
   BulkUploadState,
   BulkUploadAction,
@@ -32,11 +36,13 @@ function calculateStats(files: Map<string, FileUploadState>): BulkUploadStats {
   const stats: BulkUploadStats = {
     total: files.size,
     queued: 0,
+    hashing: 0,
     converting: 0,
     uploading: 0,
     uploaded: 0,
     saving: 0,
     complete: 0,
+    skipped: 0,
     failed: 0,
   };
 
@@ -44,6 +50,9 @@ function calculateStats(files: Map<string, FileUploadState>): BulkUploadStats {
     switch (file.status) {
       case "queued":
         stats.queued++;
+        break;
+      case "hashing":
+        stats.hashing++;
         break;
       case "converting":
         stats.converting++;
@@ -61,6 +70,9 @@ function calculateStats(files: Map<string, FileUploadState>): BulkUploadStats {
         break;
       case "complete":
         stats.complete++;
+        break;
+      case "skipped":
+        stats.skipped++;
         break;
       case "error":
         stats.failed++;
@@ -108,6 +120,7 @@ function bulkUploadReducer(
           retryCount: 0,
           caption: null,
           batchId: state.batchId,
+          fileHash: null,
         });
       }
       return {
@@ -292,6 +305,21 @@ function bulkUploadReducer(
       };
     }
 
+    case "MARK_FILES_SKIPPED": {
+      const files = new Map(state.files);
+      for (const id of action.ids) {
+        const file = files.get(id);
+        if (file) {
+          files.set(id, { ...file, status: "skipped" });
+        }
+      }
+      return {
+        ...state,
+        files,
+        stats: calculateStats(files),
+      };
+    }
+
     case "RESET": {
       // Cleanup all preview URLs
       for (const file of state.files.values()) {
@@ -307,11 +335,13 @@ function bulkUploadReducer(
         stats: {
           total: 0,
           queued: 0,
+          hashing: 0,
           converting: 0,
           uploading: 0,
           uploaded: 0,
           saving: 0,
           complete: 0,
+          skipped: 0,
           failed: 0,
         },
       };
@@ -333,11 +363,13 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
     stats: {
       total: 0,
       queued: 0,
+      hashing: 0,
       converting: 0,
       uploading: 0,
       uploaded: 0,
       saving: 0,
       complete: 0,
+      skipped: 0,
       failed: 0,
     },
   });
@@ -646,6 +678,8 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       // Cloudflare Stream fields for videos
       cf_video_uid: f.cfVideoUid || undefined,
       video_status: f.type === "video" ? (f.videoStatus || "uploading") : "ready",
+      // File hash for duplicate detection
+      file_hash: f.fileHash || undefined,
     }));
 
     try {
@@ -746,8 +780,72 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       }
     },
     removeFile: (id: string) => dispatch({ type: "REMOVE_FILE", id }),
-    startUpload: () => {
+    startUpload: async () => {
       isPausedRef.current = false;
+
+      // Step 1: Hash all queued files and check for duplicates
+      const queuedFiles = Array.from(state.files.values()).filter(
+        (f) => f.status === "queued"
+      );
+
+      if (queuedFiles.length === 0) {
+        dispatch({ type: "START_UPLOAD" });
+        return;
+      }
+
+      console.log("[BulkUpload] Hashing", queuedFiles.length, "files for duplicate detection");
+
+      // Mark files as hashing
+      for (const file of queuedFiles) {
+        dispatch({
+          type: "UPDATE_FILE",
+          id: file.id,
+          updates: { status: "hashing" },
+        });
+      }
+
+      try {
+        // Compute hashes for all queued files
+        const hashPromises = queuedFiles.map(async (fileState) => {
+          const hash = await computeFileHash(fileState.file);
+          dispatch({
+            type: "UPDATE_FILE",
+            id: fileState.id,
+            updates: { fileHash: hash, status: "queued" },
+          });
+          return { id: fileState.id, hash };
+        });
+
+        const hashResults = await Promise.all(hashPromises);
+        const allHashes = hashResults.map((r) => r.hash);
+
+        // Check which hashes already exist in this album
+        const duplicateHashes = await checkDuplicateHashes(eventId, allHashes);
+        console.log("[BulkUpload] Found", duplicateHashes.size, "duplicates");
+
+        // Mark duplicates as skipped
+        if (duplicateHashes.size > 0) {
+          const duplicateIds = hashResults
+            .filter((r) => duplicateHashes.has(r.hash))
+            .map((r) => r.id);
+
+          if (duplicateIds.length > 0) {
+            dispatch({ type: "MARK_FILES_SKIPPED", ids: duplicateIds });
+          }
+        }
+      } catch (err) {
+        console.error("[BulkUpload] Duplicate detection failed, proceeding anyway:", err);
+        // Reset all hashing files back to queued
+        for (const file of queuedFiles) {
+          dispatch({
+            type: "UPDATE_FILE",
+            id: file.id,
+            updates: { status: "queued" },
+          });
+        }
+      }
+
+      // Step 2: Start the upload
       dispatch({ type: "START_UPLOAD" });
     },
     pauseUpload: () => {

@@ -228,7 +228,14 @@
     "materials": "Materialien",
     "eventFlyer": "Event-Flyer",
     "supportedBy": "Unterstützt von",
-    "visitSponsor": "Website besuchen"
+    "visitSponsor": "Website besuchen",
+    "comments": {
+      "placeholder": "An der Unterhaltung teilnehmen...",
+      "beFirst": "Sei der Erste, der seine Gedanken teilt",
+      "joinOthers": "Schließe dich {names} + {count} anderen an",
+      "joinFew": "Diskutiere mit {names}",
+      "cta": "RSVP um mitzudiskutieren"
+    }
   },
   "rsvp": {
     "imGoing": "Ich bin dabei",
@@ -1121,6 +1128,8 @@
       "statusUploaded": "Wird verarbeitet...",
       "statusSaving": "Wird gespeichert...",
       "statusRetrying": "Wird wiederholt...",
+      "statusHashing": "Wird geprüft...",
+      "statusSkipped": "Duplikat",
       "statusComplete": "Abgeschlossen",
       "statusError": "Fehlgeschlagen",
       "retry": "Wiederholen",
@@ -1129,7 +1138,9 @@
       "statusConverting": "Wird konvertiert...",
       "uploadCompleteWithFailures": "{complete} hochgeladen, {failed} fehlgeschlagen",
       "tapRetryToTryAgain": "Große Videos können auf Mobilgeräten fehlschlagen. Erneut versuchen oder am Computer.",
-      "backgroundWarning": "Diese Seite während des Uploads geöffnet lassen"
+      "backgroundWarning": "Diese Seite während des Uploads geöffnet lassen",
+      "duplicates": "Duplikate",
+      "skippedDuplicates": "{count} Duplikate im Album übersprungen"
     },
     "gate": {
       "title": "Du hast Schätze gefunden! ✨",

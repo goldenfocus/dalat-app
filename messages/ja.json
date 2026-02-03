@@ -228,7 +228,14 @@
     "materials": "資料",
     "eventFlyer": "イベントチラシ",
     "supportedBy": "協賛",
-    "visitSponsor": "ウェブサイトを見る"
+    "visitSponsor": "ウェブサイトを見る",
+    "comments": {
+      "placeholder": "会話に参加する...",
+      "beFirst": "最初に考えを共有しましょう",
+      "joinOthers": "{names} と他 {count} 人に参加",
+      "joinFew": "{names} さんと一緒にディスカッション",
+      "cta": "RSVPして会話に参加"
+    }
   },
   "rsvp": {
     "imGoing": "参加する",
@@ -1121,6 +1128,8 @@
       "statusUploaded": "処理中...",
       "statusSaving": "保存中...",
       "statusRetrying": "再試行中...",
+      "statusHashing": "確認中...",
+      "statusSkipped": "重複",
       "statusComplete": "完了",
       "statusError": "失敗",
       "retry": "再試行",
@@ -1129,7 +1138,9 @@
       "statusConverting": "変換中...",
       "uploadCompleteWithFailures": "{complete}件アップロード済み、{failed}件失敗",
       "tapRetryToTryAgain": "大きな動画はモバイルで失敗することがあります。再試行するか、パソコンからお試しください。",
-      "backgroundWarning": "アップロード中はこのページを開いたままにしてください"
+      "backgroundWarning": "アップロード中はこのページを開いたままにしてください",
+      "duplicates": "重複",
+      "skippedDuplicates": "アルバムに既存の{count}件の重複をスキップ"
     },
     "gate": {
       "title": "宝物を見つけました！✨",

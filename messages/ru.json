@@ -228,7 +228,14 @@
     "materials": "Материалы",
     "eventFlyer": "Афиша мероприятия",
     "supportedBy": "При поддержке",
-    "visitSponsor": "Посетить сайт"
+    "visitSponsor": "Посетить сайт",
+    "comments": {
+      "placeholder": "Присоединяйтесь к обсуждению...",
+      "beFirst": "Будьте первым, кто поделится мыслями",
+      "joinOthers": "Присоединяйтесь к {names} и ещё {count}",
+      "joinFew": "Присоединяйтесь к обсуждению с {names}",
+      "cta": "Зарегистрируйтесь, чтобы присоединиться"
+    }
   },
   "rsvp": {
     "imGoing": "Я пойду",
@@ -1121,6 +1128,8 @@
       "statusUploaded": "Обработка...",
       "statusSaving": "Сохранение...",
       "statusRetrying": "Повтор...",
+      "statusHashing": "Проверка...",
+      "statusSkipped": "Дубликат",
       "statusComplete": "Готово",
       "statusError": "Ошибка",
       "retry": "Повторить",
@@ -1129,7 +1138,9 @@
       "statusConverting": "Конвертация...",
       "uploadCompleteWithFailures": "{complete} загружено, {failed} ошибок",
       "tapRetryToTryAgain": "Большие видео могут не загрузиться на мобильном. Нажмите Повторить или используйте компьютер.",
-      "backgroundWarning": "Держите эту страницу открытой во время загрузки"
+      "backgroundWarning": "Держите эту страницу открытой во время загрузки",
+      "duplicates": "дубликаты",
+      "skippedDuplicates": "Пропущено {count} дубликатов, уже в альбоме"
     },
     "gate": {
       "title": "Вы нашли сокровища! ✨",

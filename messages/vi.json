@@ -228,7 +228,14 @@
     "materials": "Tài liệu",
     "eventFlyer": "Poster sự kiện",
     "supportedBy": "Được hỗ trợ bởi",
-    "visitSponsor": "Truy cập website"
+    "visitSponsor": "Truy cập website",
+    "comments": {
+      "placeholder": "Tham gia cuộc trò chuyện...",
+      "beFirst": "Hãy là người đầu tiên chia sẻ suy nghĩ",
+      "joinOthers": "Tham gia cùng {names} + {count} người khác",
+      "joinFew": "Tham gia thảo luận cùng {names}",
+      "cta": "Đăng ký tham gia để thảo luận"
+    }
   },
   "rsvp": {
     "imGoing": "Tôi sẽ đi",
@@ -1155,6 +1162,8 @@
       "statusUploaded": "Đang xử lý...",
       "statusSaving": "Đang lưu...",
       "statusRetrying": "Đang thử lại...",
+      "statusHashing": "Đang kiểm tra...",
+      "statusSkipped": "Trùng lặp",
       "statusComplete": "Hoàn thành",
       "statusError": "Lỗi",
       "retry": "Thử lại",
@@ -1162,7 +1171,9 @@
       "proUploadLink": "Có 100+ ảnh? Dùng Tải Lên Chuyên Nghiệp",
       "uploadCompleteWithFailures": "{complete} đã tải lên, {failed} thất bại",
       "tapRetryToTryAgain": "Video lớn có thể lỗi trên điện thoại. Nhấn Thử Lại hoặc dùng máy tính.",
-      "backgroundWarning": "Giữ trang này mở khi đang tải lên"
+      "backgroundWarning": "Giữ trang này mở khi đang tải lên",
+      "duplicates": "trùng lặp",
+      "skippedDuplicates": "Đã bỏ qua {count} ảnh trùng trong album"
     },
     "gate": {
       "title": "Bạn tìm thấy kho báu rồi! ✨",

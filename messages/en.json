@@ -228,7 +228,14 @@
     "materials": "Materials",
     "eventFlyer": "Event flyer",
     "supportedBy": "Supported by",
-    "visitSponsor": "Visit website"
+    "visitSponsor": "Visit website",
+    "comments": {
+      "placeholder": "Join the conversation...",
+      "beFirst": "Be the first to share your thoughts",
+      "joinOthers": "Join {names} + {count} others",
+      "joinFew": "Join {names} in the discussion",
+      "cta": "RSVP to join the conversation"
+    }
   },
   "rsvp": {
     "imGoing": "I'm going",
@@ -1276,6 +1283,8 @@
       "statusUploaded": "Processing...",
       "statusSaving": "Saving...",
       "statusRetrying": "Retrying...",
+      "statusHashing": "Checking...",
+      "statusSkipped": "Duplicate",
       "statusComplete": "Complete",
       "statusError": "Failed",
       "retry": "Retry",
@@ -1283,7 +1292,9 @@
       "proUploadLink": "Have 100+ photos? Use Pro Upload",
       "uploadCompleteWithFailures": "{complete} uploaded, {failed} failed",
       "tapRetryToTryAgain": "Large videos may fail on mobile. Tap Retry or try from a computer.",
-      "backgroundWarning": "Keep this page open while uploading"
+      "backgroundWarning": "Keep this page open while uploading",
+      "duplicates": "duplicates",
+      "skippedDuplicates": "Skipped {count} duplicates already in album"
     },
     "strip": {
       "title": "Recent Moments",

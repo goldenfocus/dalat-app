@@ -228,7 +228,14 @@
     "materials": "资料",
     "eventFlyer": "活动海报",
     "supportedBy": "赞助商",
-    "visitSponsor": "访问网站"
+    "visitSponsor": "访问网站",
+    "comments": {
+      "placeholder": "加入讨论...",
+      "beFirst": "成为第一个分享想法的人",
+      "joinOthers": "与 {names} 等 {count} 人一起",
+      "joinFew": "与 {names} 一起讨论",
+      "cta": "报名参加讨论"
+    }
   },
   "rsvp": {
     "imGoing": "我要参加",
@@ -1124,6 +1131,8 @@
       "statusUploaded": "处理中...",
       "statusSaving": "保存中...",
       "statusRetrying": "重试中...",
+      "statusHashing": "检查中...",
+      "statusSkipped": "重复",
       "statusComplete": "完成",
       "statusError": "失败",
       "retry": "重试",
@@ -1132,7 +1141,9 @@
       "statusConverting": "转换中...",
       "uploadCompleteWithFailures": "{complete} 已上传，{failed} 失败",
       "tapRetryToTryAgain": "大视频可能在手机上失败。点击重试或使用电脑。",
-      "backgroundWarning": "上传时请保持此页面打开"
+      "backgroundWarning": "上传时请保持此页面打开",
+      "duplicates": "重复",
+      "skippedDuplicates": "跳过了 {count} 个相册中已有的重复项"
     },
     "gate": {
       "title": "发现宝藏了！✨",

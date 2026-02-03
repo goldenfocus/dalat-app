@@ -10,6 +10,7 @@ import {
   X,
   Image as ImageIcon,
   Video,
+  Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FileUploadState } from "@/lib/bulk-upload/types";
@@ -31,6 +32,7 @@ export function UploadQueueItem({ file, onRemove, onRetry }: UploadQueueItemProp
 
   const statusIcon = {
     queued: <Clock className="w-4 h-4 text-muted-foreground" />,
+    hashing: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
     validating: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
     converting: <Loader2 className="w-4 h-4 text-amber-500 animate-spin" />,
     uploading: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
@@ -38,11 +40,13 @@ export function UploadQueueItem({ file, onRemove, onRetry }: UploadQueueItemProp
     saving: <Loader2 className="w-4 h-4 text-primary animate-spin" />,
     retrying: <Loader2 className="w-4 h-4 text-amber-500 animate-spin" />,
     complete: <CheckCircle className="w-4 h-4 text-green-500" />,
+    skipped: <Copy className="w-4 h-4 text-amber-500" />,
     error: <XCircle className="w-4 h-4 text-destructive" />,
   };
 
   const statusText = {
     queued: t("statusQueued"),
+    hashing: t("statusHashing"),
     validating: t("statusValidating"),
     converting: t("statusConverting"),
     uploading: t("statusUploading"),
@@ -50,13 +54,14 @@ export function UploadQueueItem({ file, onRemove, onRetry }: UploadQueueItemProp
     saving: t("statusSaving"),
     retrying: t("statusRetrying"),
     complete: t("statusComplete"),
+    skipped: t("statusSkipped"),
     error: file.error || t("statusError"),
   };
 
-  const isActive = ["validating", "converting", "uploading", "uploaded", "saving", "retrying"].includes(
+  const isActive = ["hashing", "validating", "converting", "uploading", "uploaded", "saving", "retrying"].includes(
     file.status
   );
-  const canRemove = ["queued", "error", "complete"].includes(file.status);
+  const canRemove = ["queued", "error", "complete", "skipped"].includes(file.status);
   const canRetry = file.status === "error";
 
   return (

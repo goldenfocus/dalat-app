@@ -228,7 +228,14 @@
     "materials": "Bahan",
     "eventFlyer": "Poster acara",
     "supportedBy": "Disokong oleh",
-    "visitSponsor": "Lawati laman web"
+    "visitSponsor": "Lawati laman web",
+    "comments": {
+      "placeholder": "Sertai perbualan...",
+      "beFirst": "Jadilah yang pertama berkongsi pendapat",
+      "joinOthers": "Sertai {names} + {count} yang lain",
+      "joinFew": "Sertai {names} dalam perbincangan",
+      "cta": "RSVP untuk menyertai perbualan"
+    }
   },
   "rsvp": {
     "imGoing": "Saya hadir",
@@ -1121,6 +1128,8 @@
       "statusUploaded": "Memproses...",
       "statusSaving": "Menyimpan...",
       "statusRetrying": "Mencuba semula...",
+      "statusHashing": "Menyemak...",
+      "statusSkipped": "Pendua",
       "statusComplete": "Selesai",
       "statusError": "Gagal",
       "retry": "Cuba Semula",
@@ -1129,7 +1138,9 @@
       "statusConverting": "Menukar...",
       "uploadCompleteWithFailures": "{complete} dimuat naik, {failed} gagal",
       "tapRetryToTryAgain": "Video besar mungkin gagal di telefon. Ketik Cuba Semula atau guna komputer.",
-      "backgroundWarning": "Biarkan halaman ini terbuka semasa memuat naik"
+      "backgroundWarning": "Biarkan halaman ini terbuka semasa memuat naik",
+      "duplicates": "pendua",
+      "skippedDuplicates": "Melangkau {count} pendua yang sudah ada dalam album"
     },
     "gate": {
       "title": "Anda jumpa harta karun! ✨",

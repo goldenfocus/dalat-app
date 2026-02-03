@@ -228,7 +228,14 @@
     "materials": "Materiales",
     "eventFlyer": "Póster del evento",
     "supportedBy": "Patrocinado por",
-    "visitSponsor": "Visitar sitio web"
+    "visitSponsor": "Visitar sitio web",
+    "comments": {
+      "placeholder": "Únete a la conversación...",
+      "beFirst": "Sé el primero en compartir tus ideas",
+      "joinOthers": "Únete a {names} + {count} más",
+      "joinFew": "Únete a {names} en la discusión",
+      "cta": "Confirma asistencia para participar"
+    }
   },
   "rsvp": {
     "imGoing": "Voy a ir",
@@ -1121,6 +1128,8 @@
       "statusUploaded": "Procesando...",
       "statusSaving": "Guardando...",
       "statusRetrying": "Reintentando...",
+      "statusHashing": "Verificando...",
+      "statusSkipped": "Duplicado",
       "statusComplete": "Completado",
       "statusError": "Fallido",
       "retry": "Reintentar",
@@ -1129,7 +1138,9 @@
       "statusConverting": "Convirtiendo...",
       "uploadCompleteWithFailures": "{complete} subidos, {failed} fallidos",
       "tapRetryToTryAgain": "Los videos grandes pueden fallar en móvil. Toca Reintentar o usa una computadora.",
-      "backgroundWarning": "Mantén esta página abierta mientras subes"
+      "backgroundWarning": "Mantén esta página abierta mientras subes",
+      "duplicates": "duplicados",
+      "skippedDuplicates": "Se omitieron {count} duplicados ya en el álbum"
     },
     "gate": {
       "title": "¡Encontraste tesoros! ✨",

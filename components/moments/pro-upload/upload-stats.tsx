@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { AlertCircle, RefreshCw, CheckCircle2 } from "lucide-react";
+import { AlertCircle, RefreshCw, CheckCircle2, Copy } from "lucide-react";
 import type { BulkUploadStats } from "@/lib/bulk-upload/types";
 
 interface UploadStatsProps {
@@ -13,15 +13,17 @@ interface UploadStatsProps {
 export function UploadStats({ stats, status, onRetryAll }: UploadStatsProps) {
   const t = useTranslations("moments.proUpload");
 
+  // Count completed + skipped as "done" for progress
+  const doneCount = stats.complete + stats.skipped;
   const progressPercent =
-    stats.total > 0 ? Math.round((stats.complete / stats.total) * 100) : 0;
+    stats.total > 0 ? Math.round((doneCount / stats.total) * 100) : 0;
 
-  const activeCount = stats.uploading + stats.saving + stats.converting;
+  const activeCount = stats.uploading + stats.saving + stats.converting + stats.hashing;
   const pendingCount = stats.queued + stats.uploaded;
 
   // Determine if we're done (nothing left to process) but have failures
   const isDoneWithFailures = stats.failed > 0 && activeCount === 0 && pendingCount === 0;
-  const isFullyComplete = stats.complete === stats.total && stats.total > 0 && stats.failed === 0;
+  const isFullyComplete = doneCount === stats.total && stats.total > 0 && stats.failed === 0;
 
   return (
     <div className="space-y-3">
@@ -91,7 +93,14 @@ export function UploadStats({ stats, status, onRetryAll }: UploadStatsProps) {
       {isFullyComplete && status === "complete" && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-600 dark:text-green-400">
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-          <p className="text-sm font-medium">{t("allComplete")}</p>
+          <div>
+            <p className="text-sm font-medium">{t("allComplete")}</p>
+            {stats.skipped > 0 && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {t("skippedDuplicates", { count: stats.skipped })}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -114,6 +123,13 @@ export function UploadStats({ stats, status, onRetryAll }: UploadStatsProps) {
         {pendingCount > 0 && !isDoneWithFailures && (
           <span className="text-muted-foreground">
             {pendingCount} {t("queued")}
+          </span>
+        )}
+
+        {stats.skipped > 0 && (
+          <span className="text-amber-500 flex items-center gap-1">
+            <Copy className="w-3 h-3" />
+            {stats.skipped} {t("duplicates")}
           </span>
         )}
 

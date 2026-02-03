@@ -228,7 +228,14 @@
     "materials": "Documents",
     "eventFlyer": "Affiche de l'événement",
     "supportedBy": "Soutenu par",
-    "visitSponsor": "Visiter le site"
+    "visitSponsor": "Visiter le site",
+    "comments": {
+      "placeholder": "Rejoignez la conversation...",
+      "beFirst": "Soyez le premier à partager vos pensées",
+      "joinOthers": "Rejoignez {names} + {count} autres",
+      "joinFew": "Rejoignez {names} dans la discussion",
+      "cta": "Inscrivez-vous pour participer"
+    }
   },
   "rsvp": {
     "imGoing": "Je participe",
@@ -1135,6 +1142,8 @@
       "statusUploaded": "Traitement...",
       "statusSaving": "Enregistrement...",
       "statusRetrying": "Nouvelle tentative...",
+      "statusHashing": "Vérification...",
+      "statusSkipped": "Doublon",
       "statusComplete": "Terminé",
       "statusError": "Échec",
       "retry": "Réessayer",
@@ -1143,7 +1152,9 @@
       "statusConverting": "Conversion...",
       "uploadCompleteWithFailures": "{complete} téléchargés, {failed} échoués",
       "tapRetryToTryAgain": "Les grandes vidéos peuvent échouer sur mobile. Réessayez ou utilisez un ordinateur.",
-      "backgroundWarning": "Gardez cette page ouverte pendant le téléchargement"
+      "backgroundWarning": "Gardez cette page ouverte pendant le téléchargement",
+      "duplicates": "doublons",
+      "skippedDuplicates": "{count} doublons déjà dans l'album ignorés"
     },
     "gate": {
       "title": "Vous avez trouvé des trésors ! ✨",

@@ -4,12 +4,14 @@
 
 export type FileUploadStatus =
   | 'queued'      // In queue, not yet started
+  | 'hashing'     // Computing file hash for duplicate detection
   | 'validating'  // Checking file type/size
   | 'converting'  // Converting HEIC/MOV to web format
   | 'uploading'   // Uploading to Supabase storage
   | 'uploaded'    // In storage, pending database insert
   | 'saving'      // Being saved to database in batch
   | 'complete'    // Fully done
+  | 'skipped'     // Skipped as duplicate
   | 'error'       // Failed with error
   | 'retrying';   // Retry in progress
 
@@ -34,16 +36,19 @@ export interface FileUploadState {
   retryCount: number;           // Number of retry attempts
   caption: string | null;       // Optional caption
   batchId: string;              // Groups files from same session
+  fileHash: string | null;      // SHA-256 hash for duplicate detection
 }
 
 export interface BulkUploadStats {
   total: number;
   queued: number;
+  hashing: number;
   converting: number;
   uploading: number;
   uploaded: number;
   saving: number;
   complete: number;
+  skipped: number;
   failed: number;
 }
 
@@ -72,6 +77,7 @@ export type BulkUploadAction =
   | { type: 'MARK_FILES_SAVING'; ids: string[] }
   | { type: 'MARK_FILES_COMPLETE'; ids: string[]; momentIds: string[] }
   | { type: 'MARK_FILES_ERROR'; ids: string[]; error: string }
+  | { type: 'MARK_FILES_SKIPPED'; ids: string[] }
   | { type: 'RESET' };
 
 // Response from create_moments_batch RPC
@@ -92,4 +98,5 @@ export interface MomentBatchItem {
   cf_video_uid?: string;       // Cloudflare Stream video UID
   cf_playback_url?: string;    // Cloudflare HLS playback URL
   video_status?: string;       // 'uploading' | 'processing' | 'ready'
+  file_hash?: string;          // SHA-256 hash for duplicate detection
 }

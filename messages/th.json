@@ -228,7 +228,14 @@
     "materials": "เอกสาร",
     "eventFlyer": "โปสเตอร์งาน",
     "supportedBy": "สนับสนุนโดย",
-    "visitSponsor": "เยี่ยมชมเว็บไซต์"
+    "visitSponsor": "เยี่ยมชมเว็บไซต์",
+    "comments": {
+      "placeholder": "เข้าร่วมการสนทนา...",
+      "beFirst": "เป็นคนแรกที่แบ่งปันความคิด",
+      "joinOthers": "เข้าร่วมกับ {names} + {count} คน",
+      "joinFew": "เข้าร่วมการสนทนากับ {names}",
+      "cta": "RSVP เพื่อเข้าร่วมการสนทนา"
+    }
   },
   "rsvp": {
     "imGoing": "ฉันจะไป",
@@ -1121,6 +1128,8 @@
       "statusUploaded": "กำลังประมวลผล...",
       "statusSaving": "กำลังบันทึก...",
       "statusRetrying": "กำลังลองใหม่...",
+      "statusHashing": "กำลังตรวจสอบ...",
+      "statusSkipped": "ซ้ำ",
       "statusComplete": "เสร็จสิ้น",
       "statusError": "ล้มเหลว",
       "retry": "ลองใหม่",
@@ -1129,7 +1138,9 @@
       "statusConverting": "กำลังแปลง...",
       "uploadCompleteWithFailures": "อัปโหลดแล้ว {complete} ไฟล์, ล้มเหลว {failed} ไฟล์",
       "tapRetryToTryAgain": "วิดีโอขนาดใหญ่อาจล้มเหลวบนมือถือ แตะลองใหม่หรือใช้คอมพิวเตอร์",
-      "backgroundWarning": "เปิดหน้านี้ไว้ขณะอัปโหลด"
+      "backgroundWarning": "เปิดหน้านี้ไว้ขณะอัปโหลด",
+      "duplicates": "ซ้ำ",
+      "skippedDuplicates": "ข้าม {count} รายการที่ซ้ำในอัลบั้มแล้ว"
     },
     "gate": {
       "title": "คุณพบสมบัติแล้ว! ✨",
