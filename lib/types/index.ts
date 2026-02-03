@@ -929,6 +929,7 @@ export interface DiscoveryEventMomentsGroup {
   event_image_url: string | null;
   event_location_name: string | null;
   total_moment_count: number;
+  has_playlist: boolean;
   moments: DiscoveryGroupedMoment[];
 }
 

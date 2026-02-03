@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { format } from "date-fns";
-import { Calendar, MapPin, ChevronRight, Play, MessageCircle } from "lucide-react";
+import { Calendar, MapPin, ChevronRight, Play, MessageCircle, Music } from "lucide-react";
 import { AlbumShareButton } from "./album-share-button";
 import { isVideoUrl, getCfStreamThumbnailUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
@@ -211,6 +211,21 @@ export function DiscoveryEventMomentsGroup({ group, commentCounts }: DiscoveryEv
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
         </Link>
+
+        {/* Playlist button - only if event has a playlist */}
+        {group.has_playlist && (
+          <Link
+            href={`/events/${group.event_slug}/playlist`}
+            className="p-2 rounded-full hover:bg-background/50 active:scale-95 transition-all touch-manipulation"
+            aria-label="Play event playlist"
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerHaptic("selection");
+            }}
+          >
+            <Music className="w-5 h-5 text-primary" />
+          </Link>
+        )}
 
         {/* Share button */}
         <AlbumShareButton
