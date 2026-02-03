@@ -196,6 +196,27 @@ export async function GET(request: Request) {
 
     const directRestResult = await directRestResponse.json();
 
+    // ULTIMATE TEST: Use the EXACT stored embedding string but call it "text query"
+    // This isolates whether it's the STRING VALUES or the CALL CONTEXT
+    const { data: storedAsQueryResult, error: storedAsQueryError } = await supabase.rpc(
+      "debug_search_test",
+      {
+        query_embedding: storedEmbeddingStr,  // Using stored embedding as the query
+        match_threshold: 0.0,
+      }
+    );
+
+    // Test: Use query embedding against search_moments_by_embedding (should fail given threshold)
+    // But first test with a 0.0 threshold to see if anything is returned
+    const { data: queryVsStoredEmb, error: queryVsStoredError } = await supabase.rpc(
+      "search_moments_by_embedding",
+      {
+        query_embedding: storedEmbeddingStr,  // Use STORED embedding (should work)
+        match_threshold: 0.0,
+        match_count: 3,
+      }
+    );
+
     // Test: What if we use stored embedding format with commas intact
     // The stored string might have trailing zeros stripped differently
     const formatDebug = {
@@ -236,6 +257,8 @@ export async function GET(request: Request) {
       jsonFormatResult: jsonError ? { error: jsonError.message } : jsonResult?.slice(0, 1),
       roundedResult: roundedError ? { error: roundedError.message } : roundedResult?.slice(0, 3),
       directRestResult: Array.isArray(directRestResult) ? directRestResult.slice(0, 3) : directRestResult,
+      storedAsQueryResult: storedAsQueryError ? { error: storedAsQueryError.message } : storedAsQueryResult?.slice(0, 1),
+      queryVsStoredEmb: queryVsStoredError ? { error: queryVsStoredError.message } : queryVsStoredEmb?.slice(0, 3),
       formatDebug,
       stringDebug,
       keyDebugInfo: getKeyDebugInfo(),
