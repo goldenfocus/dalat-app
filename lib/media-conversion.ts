@@ -9,8 +9,9 @@
  * Modern Safari, Chrome (macOS/iOS), and Edge can display HEIC natively.
  */
 export async function convertHeicToJpeg(file: File): Promise<File> {
-  console.log("[HEIC] Starting conversion for:", file.name, "size:", file.size);
+  console.log("[HEIC] Starting conversion for:", file.name, "size:", file.size, "type:", file.type);
 
+  // Try client-side conversion first (faster, no server roundtrip)
   try {
     // Dynamic import to ensure WASM loads properly at runtime
     const heic2any = (await import("heic2any")).default;
@@ -46,16 +47,49 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
     );
 
     return convertedFile;
-  } catch (error) {
-    // Client-side conversion failed - CANNOT fall back to uploading HEIC
-    // Supabase Storage does not support image/heic MIME type and will reject with 400
-    console.error("[HEIC] Client-side conversion failed:", error);
+  } catch (clientError) {
+    console.warn("[HEIC] Client-side conversion failed, trying server-side:", clientError);
 
-    // Throw a user-friendly error instead of silently returning the unsupported file
-    throw new Error(
-      "Unable to convert HEIC image. Please convert to JPEG/PNG before uploading, " +
-      "or try a different browser (Safari on macOS/iOS has best HEIC support)."
-    );
+    // Try server-side conversion as fallback
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/convert-heic", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server conversion failed: ${response.status}`);
+      }
+
+      const jpegBlob = await response.blob();
+      const newName = response.headers.get("X-Original-Name") ||
+        file.name.replace(/\.(heic|heif)$/i, ".jpg");
+
+      const convertedFile = new File([jpegBlob], newName, {
+        type: "image/jpeg",
+      });
+
+      console.log(
+        "[HEIC] Server-side conversion successful:",
+        convertedFile.name,
+        "size:",
+        convertedFile.size
+      );
+
+      return convertedFile;
+    } catch (serverError) {
+      console.error("[HEIC] Server-side conversion also failed:", serverError);
+
+      // Both client and server conversion failed
+      throw new Error(
+        "Unable to convert HEIC image. Please convert to JPEG/PNG before uploading, " +
+        "or try a different browser (Safari on macOS/iOS has best HEIC support)."
+      );
+    }
   }
 }
 

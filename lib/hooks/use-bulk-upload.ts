@@ -17,6 +17,7 @@ import {
   computeFileHash,
   checkDuplicateHashes,
 } from "@/lib/file-hash";
+import { uploadFile } from "@/lib/storage/client";
 import type {
   BulkUploadState,
   BulkUploadAction,
@@ -505,9 +506,9 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
 
       if (isVideo) {
         // ========================================
-        // VIDEO: Upload to Cloudflare Stream (not Supabase)
+        // VIDEO: Try Cloudflare Stream, fall back to R2
         // ========================================
-        console.log("[BulkUpload] Video detected, using Cloudflare Stream...");
+        console.log("[BulkUpload] Video detected, trying Cloudflare Stream...");
 
         // 1. Generate client-side thumbnail for immediate display
         let thumbnailUrl: string | null = null;
@@ -534,92 +535,109 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
           }
         } catch (thumbErr) {
           console.warn("[BulkUpload] Thumbnail generation failed (non-critical):", thumbErr);
-          // Cloudflare will generate one during encoding
         }
 
-        // 2. Get Cloudflare Stream upload URL from our API
-        const uploadUrlResponse = await fetch("/api/moments/upload-video", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            eventId: state.eventId,
-            filename: fileToUpload.name,
-            fileSizeBytes: fileToUpload.size,
-          }),
-        });
-
-        if (!uploadUrlResponse.ok) {
-          const errorData = await uploadUrlResponse.json();
-          throw new Error(errorData.error || "Failed to get upload URL");
-        }
-
-        const { uploadUrl, videoUid } = await uploadUrlResponse.json();
-        console.log("[BulkUpload] Got Cloudflare upload URL, videoUid:", videoUid);
-
-        // 3. Upload video to Cloudflare via TUS protocol
-        const tus = await import("tus-js-client");
-
-        await new Promise<void>((resolve, reject) => {
-          const upload = new tus.Upload(fileToUpload, {
-            endpoint: uploadUrl,
-            retryDelays: [0, 1000, 3000, 5000],
-            chunkSize: 50 * 1024 * 1024, // 50MB chunks for Cloudflare
-            metadata: {
+        // Try Cloudflare Stream first
+        let usedCloudflare = false;
+        try {
+          const uploadUrlResponse = await fetch("/api/moments/upload-video", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              eventId: state.eventId,
               filename: fileToUpload.name,
-              filetype: fileToUpload.type,
-            },
-            onError: (error) => {
-              console.error("[BulkUpload] TUS upload error:", error);
-              reject(new Error(error.message || "Video upload failed"));
-            },
-            onProgress: (bytesUploaded, bytesTotal) => {
-              const progress = Math.round((bytesUploaded / bytesTotal) * 100);
-              dispatch({
-                type: "UPDATE_FILE",
-                id,
-                updates: { progress },
+              fileSizeBytes: fileToUpload.size,
+            }),
+          });
+
+          if (uploadUrlResponse.ok) {
+            const { uploadUrl, videoUid } = await uploadUrlResponse.json();
+            console.log("[BulkUpload] Got Cloudflare upload URL, videoUid:", videoUid);
+
+            // Upload video to Cloudflare via TUS protocol
+            const tus = await import("tus-js-client");
+
+            await new Promise<void>((resolve, reject) => {
+              const upload = new tus.Upload(fileToUpload, {
+                endpoint: uploadUrl,
+                retryDelays: [0, 1000, 3000, 5000],
+                chunkSize: 50 * 1024 * 1024,
+                metadata: {
+                  filename: fileToUpload.name,
+                  filetype: fileToUpload.type,
+                },
+                onError: (error) => {
+                  console.error("[BulkUpload] TUS upload error:", error);
+                  reject(new Error(error.message || "Video upload failed"));
+                },
+                onProgress: (bytesUploaded, bytesTotal) => {
+                  const progress = Math.round((bytesUploaded / bytesTotal) * 100);
+                  dispatch({
+                    type: "UPDATE_FILE",
+                    id,
+                    updates: { progress },
+                  });
+                },
+                onSuccess: () => {
+                  console.log("[BulkUpload] Video uploaded to Cloudflare Stream");
+                  resolve();
+                },
               });
-            },
-            onSuccess: () => {
-              console.log("[BulkUpload] Video uploaded to Cloudflare Stream");
-              resolve();
+              upload.start();
+            });
+
+            // Mark as uploaded with Cloudflare metadata
+            dispatch({
+              type: "UPDATE_FILE",
+              id,
+              updates: {
+                status: "uploaded",
+                mediaUrl: null,
+                thumbnailUrl,
+                cfVideoUid: videoUid,
+                videoStatus: "uploading",
+                progress: 100,
+              },
+            });
+            usedCloudflare = true;
+          } else {
+            const errorData = await uploadUrlResponse.json();
+            console.warn("[BulkUpload] Cloudflare Stream unavailable:", errorData.error);
+          }
+        } catch (cfError) {
+          console.warn("[BulkUpload] Cloudflare Stream failed, falling back to R2:", cfError);
+        }
+
+        // Fallback to R2 storage if Cloudflare failed
+        if (!usedCloudflare) {
+          console.log("[BulkUpload] Using R2 storage fallback for video...");
+          const fileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}.${ext}`;
+
+          const { publicUrl } = await uploadFile("moments", fileToUpload, {
+            filename: fileName,
+          });
+
+          dispatch({
+            type: "UPDATE_FILE",
+            id,
+            updates: {
+              status: "uploaded",
+              mediaUrl: publicUrl,
+              thumbnailUrl,
+              videoStatus: "ready", // R2 videos are ready immediately
+              progress: 100,
             },
           });
-          upload.start();
-        });
-
-        // 4. Mark as uploaded with Cloudflare metadata
-        // Note: video_status stays 'uploading' until Cloudflare webhook fires
-        dispatch({
-          type: "UPDATE_FILE",
-          id,
-          updates: {
-            status: "uploaded",
-            mediaUrl: null, // No Supabase URL for videos
-            thumbnailUrl,
-            cfVideoUid: videoUid,
-            videoStatus: "uploading", // Will become 'ready' via webhook
-            progress: 100,
-          },
-        });
+        }
       } else {
         // ========================================
-        // PHOTO: Upload to Supabase Storage
+        // PHOTO: Upload to R2/Supabase Storage
         // ========================================
         const fileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}.${ext}`;
 
-        const { error: uploadError } = await supabaseRef.current.storage
-          .from("moments")
-          .upload(fileName, fileToUpload, {
-            cacheControl: "3600",
-            upsert: false,
-          });
-
-        if (uploadError) throw uploadError;
-
-        const {
-          data: { publicUrl },
-        } = supabaseRef.current.storage.from("moments").getPublicUrl(fileName);
+        const { publicUrl } = await uploadFile("moments", fileToUpload, {
+          filename: fileName,
+        });
 
         dispatch({
           type: "UPDATE_FILE",

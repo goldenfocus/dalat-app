@@ -739,6 +739,7 @@ export interface MomentCounts {
   pending_count: number;
   photo_count: number;
   video_count: number;
+  audio_count: number;
 }
 
 // Extended moment type with event data for the content-first feed
@@ -852,6 +853,7 @@ export interface MomentStripItem {
   quality_score: number;
   event_photo_count: number;
   event_video_count: number;
+  event_audio_count: number;
 }
 
 // For FAB quick upload

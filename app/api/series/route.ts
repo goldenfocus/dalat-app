@@ -31,6 +31,7 @@ interface CreateSeriesRequest {
   ticket_tiers?: TicketTier[] | null;
   tribe_id?: string;
   organizer_id?: string;
+  venue_id?: string; // Link to venues table (WHERE the event happens)
   rrule: string;
   starts_at_time: string; // "19:00" or "19:00:00"
   duration_minutes?: number;
@@ -145,7 +146,11 @@ export async function POST(request: Request) {
     if (seriesError) {
       console.error("Series creation error:", seriesError);
       return NextResponse.json(
-        { error: "Failed to create series" },
+        {
+          error: "Failed to create series",
+          details: seriesError.message,
+          code: seriesError.code,
+        },
         { status: 500 }
       );
     }
@@ -199,6 +204,7 @@ export async function POST(request: Request) {
         ticket_tiers: body.ticket_tiers || null,
         tribe_id: body.tribe_id || null,
         organizer_id: body.organizer_id || null,
+        venue_id: body.venue_id || null, // Link to venue (WHERE)
         created_by: user.id,
         starts_at: startsAt.toISOString(),
         ends_at: endsAt.toISOString(),
@@ -221,7 +227,12 @@ export async function POST(request: Request) {
         // Series was created but events failed - clean up
         await supabase.from("event_series").delete().eq("id", series.id);
         return NextResponse.json(
-          { error: "Failed to create event instances" },
+          {
+            error: "Failed to create event instances",
+            details: eventsError.message,
+            code: eventsError.code,
+            hint: eventsError.hint,
+          },
           { status: 500 }
         );
       }
@@ -295,7 +306,14 @@ export async function GET(request: Request) {
 
   if (error) {
     console.error("Series fetch error:", error);
-    return NextResponse.json({ error: "Failed to fetch series" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Failed to fetch series",
+        details: error.message,
+        code: error.code,
+      },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ series });

@@ -8,6 +8,7 @@ import { canUseGodMode } from "@/lib/god-mode";
 interface UserAuthData {
   user_id: string;
   last_sign_in_at: string | null;
+  last_action_at: string | null;
   login_count: number;
 }
 

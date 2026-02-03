@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Play, Images, Camera, Video } from "lucide-react";
+import { ChevronRight, Play, Images, Camera, Video, Music } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { formatDistanceToNow } from "date-fns";
@@ -122,7 +122,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                 <p className="text-[10px] text-muted-foreground">
                   {formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
                 </p>
-                {(moment.event_photo_count > 0 || moment.event_video_count > 0) && (
+                {(moment.event_photo_count > 0 || moment.event_video_count > 0 || moment.event_audio_count > 0) && (
                   <div className="flex items-center gap-1">
                     {moment.event_photo_count > 0 && (
                       <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-muted text-[9px] text-muted-foreground">
@@ -134,6 +134,12 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                       <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-muted text-[9px] text-muted-foreground">
                         <Video className="w-2.5 h-2.5" />
                         {moment.event_video_count}
+                      </span>
+                    )}
+                    {moment.event_audio_count > 0 && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-muted text-[9px] text-muted-foreground">
+                        <Music className="w-2.5 h-2.5" />
+                        {moment.event_audio_count}
                       </span>
                     )}
                   </div>
@@ -209,7 +215,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                 <p className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
                 </p>
-                {(moment.event_photo_count > 0 || moment.event_video_count > 0) && (
+                {(moment.event_photo_count > 0 || moment.event_video_count > 0 || moment.event_audio_count > 0) && (
                   <div className="flex items-center gap-1.5 pt-0.5">
                     {moment.event_photo_count > 0 && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/80 text-[11px] font-medium text-muted-foreground">
@@ -221,6 +227,12 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/80 text-[11px] font-medium text-muted-foreground">
                         <Video className="w-3 h-3" />
                         {moment.event_video_count}
+                      </span>
+                    )}
+                    {moment.event_audio_count > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/80 text-[11px] font-medium text-muted-foreground">
+                        <Music className="w-3 h-3" />
+                        {moment.event_audio_count}
                       </span>
                     )}
                   </div>

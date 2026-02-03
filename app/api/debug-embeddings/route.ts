@@ -45,9 +45,42 @@ export async function GET() {
     (s, _, arr) => JSON.stringify(s.first5) === JSON.stringify(arr[0].first5)
   );
 
+  // Test: Try to search using one of the stored embeddings (should match itself with similarity=1)
+  let selfSearchResult = null;
+  if (embeddings && embeddings.length > 0) {
+    const firstEmbedding = embeddings[0].embedding;
+    const embeddingString = typeof firstEmbedding === "string"
+      ? firstEmbedding
+      : `[${firstEmbedding.join(",")}]`;
+
+    // Test 1: Direct RPC call
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "search_moments_by_embedding",
+      {
+        query_embedding: embeddingString,
+        match_threshold: 0.0,
+        match_count: 5,
+      }
+    );
+
+    // Test 2: Raw SQL query to verify function exists
+    const { data: fnCheck, error: fnError } = await supabase
+      .from("moment_embeddings")
+      .select("moment_id")
+      .limit(1);
+
+    selfSearchResult = {
+      testedMomentId: embeddings[0].moment_id,
+      embeddingPreview: embeddingString.substring(0, 100) + "...",
+      rpcResult: rpcError ? { error: rpcError.message, code: rpcError.code, hint: rpcError.hint } : rpcData,
+      tableCheck: fnError ? { error: fnError.message } : { count: fnCheck?.length },
+    };
+  }
+
   return NextResponse.json({
     count: embeddings?.length || 0,
     allSameFirst5: allSame,
     samples,
+    selfSearchTest: selfSearchResult,
   });
 }

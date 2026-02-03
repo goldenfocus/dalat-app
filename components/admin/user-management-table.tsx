@@ -19,6 +19,7 @@ interface UpdateStatus {
 interface UserAuthData {
   user_id: string;
   last_sign_in_at: string | null;
+  last_action_at: string | null;
   login_count: number;
 }
 
@@ -237,7 +238,7 @@ export function UserManagementTable({
                 Logins
               </th>
               <th className="text-left p-3 font-medium text-sm hidden lg:table-cell">
-                Last Login
+                Last Action
               </th>
               <th className="text-left p-3 font-medium text-sm hidden sm:table-cell">
                 Joined
@@ -359,9 +360,9 @@ export function UserManagementTable({
                 </td>
                 <td className="p-3 hidden lg:table-cell">
                   <div className="text-sm text-muted-foreground">
-                    {authDataMap.get(user.id)?.last_sign_in_at
+                    {authDataMap.get(user.id)?.last_action_at
                       ? new Date(
-                          authDataMap.get(user.id)!.last_sign_in_at!
+                          authDataMap.get(user.id)!.last_action_at!
                         ).toLocaleString("en-US", {
                           month: "short",
                           day: "numeric",
