@@ -1051,17 +1051,19 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   </div>
                 )}
 
-                {/* Add to calendar */}
-                <AddToCalendar
-                  title={event.title}
-                  description={event.description}
-                  locationName={event.location_name}
-                  address={event.address}
-                  googleMapsUrl={event.google_maps_url}
-                  startsAt={event.starts_at}
-                  endsAt={event.ends_at}
-                  url={`https://dalat.app/events/${event.slug}`}
-                />
+                {/* Add to calendar - only for upcoming events */}
+                {!isPast && (
+                  <AddToCalendar
+                    title={event.title}
+                    description={event.description}
+                    locationName={event.location_name}
+                    address={event.address}
+                    googleMapsUrl={event.google_maps_url}
+                    startsAt={event.starts_at}
+                    endsAt={event.ends_at}
+                    url={`https://dalat.app/events/${event.slug}`}
+                  />
+                )}
               </CardContent>
             </Card>
 
