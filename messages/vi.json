@@ -1970,6 +1970,13 @@
     "extractingMetadata": "Đang trích xuất thông tin...",
     "uploading": "Đang tải lên",
     "uploadComplete": "Hoàn tất",
-    "noTracksYet": "Chưa có bài nào. Tải lên file âm thanh để tạo playlist."
+    "noTracksYet": "Chưa có bài nào. Tải lên file âm thanh để tạo playlist.",
+    "sortBy": "Sắp xếp:",
+    "sortTitleAsc": "Sắp xếp A-Z theo tiêu đề",
+    "sortArtist": "Sắp xếp theo nghệ sĩ",
+    "sortDuration": "Sắp xếp theo thời lượng",
+    "sortTitle": "Tên",
+    "sortArtistLabel": "Nghệ sĩ",
+    "sortDurationLabel": "Thời gian"
   }
 }

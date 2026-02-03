@@ -9,6 +9,10 @@ import {
   GripVertical,
   Upload,
   Trash2,
+  ArrowDownAZ,
+  ArrowUpAZ,
+  Clock,
+  User,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -154,9 +158,14 @@ export function PlaylistInput({
   const handleFileSelect = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
+    // Sort files alphabetically by filename before processing
+    const sortedFiles = Array.from(files).sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { numeric: true })
+    );
+
     const newUploads: UploadingTrack[] = [];
 
-    for (const file of Array.from(files)) {
+    for (const file of sortedFiles) {
       // Validate file type
       if (!AUDIO_MIME_TYPES.includes(file.type) && !isAudioFile(file)) {
         continue;
@@ -355,8 +364,14 @@ export function PlaylistInput({
     if (draggedIndex === null) return;
 
     // Update sort_order in database
+    await persistTrackOrder(tracks);
+    setDraggedIndex(null);
+  };
+
+  // Persist track order to database
+  const persistTrackOrder = async (orderedTracks: PlaylistTrack[]) => {
     const supabase = createClient();
-    const updates = tracks.map((track, index) => ({
+    const updates = orderedTracks.map((track, index) => ({
       id: track.id,
       sort_order: index,
     }));
@@ -371,8 +386,31 @@ export function PlaylistInput({
     } catch (error) {
       console.error("Failed to update track order:", error);
     }
+  };
 
-    setDraggedIndex(null);
+  // Sort tracks by different criteria
+  type SortOption = "title-asc" | "title-desc" | "artist" | "duration" | "duration-desc";
+
+  const handleSort = async (option: SortOption) => {
+    const sorted = [...tracks].sort((a, b) => {
+      switch (option) {
+        case "title-asc":
+          return (a.title || "").localeCompare(b.title || "", undefined, { numeric: true });
+        case "title-desc":
+          return (b.title || "").localeCompare(a.title || "", undefined, { numeric: true });
+        case "artist":
+          return (a.artist || "zzz").localeCompare(b.artist || "zzz");
+        case "duration":
+          return (a.duration_seconds || 0) - (b.duration_seconds || 0);
+        case "duration-desc":
+          return (b.duration_seconds || 0) - (a.duration_seconds || 0);
+        default:
+          return 0;
+      }
+    });
+
+    setTracks(sorted);
+    await persistTrackOrder(sorted);
   };
 
   // Cancel an upload
@@ -473,6 +511,42 @@ export function PlaylistInput({
               {t("tracks", { count: tracks.length })} &middot;{" "}
               {totalDuration > 0 && `${Math.round(totalDuration / 60)} min`}
             </span>
+            {/* Sort buttons - show when 3+ tracks */}
+            {tracks.length >= 3 && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs mr-1">{t("sortBy")}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => handleSort("title-asc")}
+                  title={t("sortTitleAsc")}
+                >
+                  <ArrowDownAZ className="w-3.5 h-3.5 mr-1" />
+                  {t("sortTitle")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => handleSort("artist")}
+                  title={t("sortArtist")}
+                >
+                  <User className="w-3.5 h-3.5 mr-1" />
+                  {t("sortArtistLabel")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => handleSort("duration")}
+                  title={t("sortDuration")}
+                >
+                  <Clock className="w-3.5 h-3.5 mr-1" />
+                  {t("sortDurationLabel")}
+                </Button>
+              </div>
+            )}
           </div>
           <div className="border rounded-lg divide-y">
             {tracks.map((track, index) => (

@@ -1897,6 +1897,13 @@
     "extractingMetadata": "메타데이터 추출 중...",
     "uploading": "업로드 중",
     "uploadComplete": "완료",
-    "noTracksYet": "아직 곡이 없습니다. 오디오 파일을 업로드하여 재생목록을 만드세요."
+    "noTracksYet": "아직 곡이 없습니다. 오디오 파일을 업로드하여 재생목록을 만드세요.",
+    "sortBy": "Sắp xếp:",
+    "sortTitleAsc": "Sắp xếp A-Z theo tiêu đề",
+    "sortArtist": "Sắp xếp theo nghệ sĩ",
+    "sortDuration": "Sắp xếp theo thời lượng",
+    "sortTitle": "Tên",
+    "sortArtistLabel": "Nghệ sĩ",
+    "sortDurationLabel": "Thời gian"
   }
 }

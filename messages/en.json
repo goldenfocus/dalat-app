@@ -1970,6 +1970,13 @@
     "extractingMetadata": "Extracting metadata...",
     "uploading": "Uploading",
     "uploadComplete": "Complete",
-    "noTracksYet": "No tracks yet. Upload audio files to create a playlist."
+    "noTracksYet": "No tracks yet. Upload audio files to create a playlist.",
+    "sortBy": "Sort:",
+    "sortTitleAsc": "Sort A-Z by title",
+    "sortArtist": "Sort by artist",
+    "sortDuration": "Sort by duration",
+    "sortTitle": "Title",
+    "sortArtistLabel": "Artist",
+    "sortDurationLabel": "Time"
   }
 }

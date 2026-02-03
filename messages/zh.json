@@ -1897,6 +1897,13 @@
     "extractingMetadata": "正在提取元数据...",
     "uploading": "上传中",
     "uploadComplete": "完成",
-    "noTracksYet": "暂无曲目。上传音频文件以创建播放列表。"
+    "noTracksYet": "暂无曲目。上传音频文件以创建播放列表。",
+    "sortBy": "Sắp xếp:",
+    "sortTitleAsc": "Sắp xếp A-Z theo tiêu đề",
+    "sortArtist": "Sắp xếp theo nghệ sĩ",
+    "sortDuration": "Sắp xếp theo thời lượng",
+    "sortTitle": "Tên",
+    "sortArtistLabel": "Nghệ sĩ",
+    "sortDurationLabel": "Thời gian"
   }
 }

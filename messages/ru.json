@@ -1894,6 +1894,13 @@
     "extractingMetadata": "Извлечение метаданных...",
     "uploading": "Загрузка",
     "uploadComplete": "Готово",
-    "noTracksYet": "Пока нет треков. Загрузите аудиофайлы для создания плейлиста."
+    "noTracksYet": "Пока нет треков. Загрузите аудиофайлы для создания плейлиста.",
+    "sortBy": "Sắp xếp:",
+    "sortTitleAsc": "Sắp xếp A-Z theo tiêu đề",
+    "sortArtist": "Sắp xếp theo nghệ sĩ",
+    "sortDuration": "Sắp xếp theo thời lượng",
+    "sortTitle": "Tên",
+    "sortArtistLabel": "Nghệ sĩ",
+    "sortDurationLabel": "Thời gian"
   }
 }
