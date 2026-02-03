@@ -85,10 +85,14 @@ export default async function LocaleLayout({ children, params }: Props) {
           <ScrollRestorationProvider>
             <Toaster
               position="top-center"
-              richColors
               closeButton
               toastOptions={{
                 className: "font-sans",
+                style: {
+                  background: "hsl(var(--background))",
+                  color: "hsl(var(--foreground))",
+                  border: "1px solid hsl(var(--border))",
+                },
               }}
             />
             <LocalePreloader />
