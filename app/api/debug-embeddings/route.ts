@@ -137,6 +137,12 @@ export async function GET() {
           }
         );
 
+        // Raw query: check what distance pgvector computes (no threshold, no JOIN)
+        const { data: rawDistanceData, error: rawDistanceError } = await supabase
+          .rpc("debug_vector_distance", {
+            query_vec: truncatedEmbeddingString,
+          });
+
         // Manual cosine similarity with first stored embedding
         if (embeddings && embeddings.length > 0) {
           const storedVec = typeof embeddings[0].embedding === "string"
@@ -161,6 +167,7 @@ export async function GET() {
             manualCosineSim: cosineSim.toFixed(4),
             rpcResultFullPrecision: textRpcError ? { error: textRpcError.message } : textRpcData,
             rpcResultTruncated: truncatedRpcError ? { error: truncatedRpcError.message } : truncatedRpcData,
+            rawDistances: rawDistanceError ? { error: rawDistanceError.message } : rawDistanceData,
             debugFormats: {
               storedType: typeof embeddings[0].embedding,
               storedPrefix: storedEmbString.substring(0, 80),
