@@ -1308,7 +1308,9 @@
     },
     "strip": {
       "title": "Recent Moments",
-      "seeAll": "See all"
+      "seeAll": "See all",
+      "byEvent": "by event",
+      "recent": "recent"
     },
     "fab": {
       "upload": "Share a moment",

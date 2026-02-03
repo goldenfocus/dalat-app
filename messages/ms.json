@@ -1895,12 +1895,12 @@
     "uploading": "Memuat naik",
     "uploadComplete": "Selesai",
     "noTracksYet": "Belum ada lagu. Muat naik fail audio untuk membuat senarai main.",
-    "sortBy": "Sắp xếp:",
-    "sortTitleAsc": "Sắp xếp A-Z theo tiêu đề",
-    "sortArtist": "Sắp xếp theo nghệ sĩ",
-    "sortDuration": "Sắp xếp theo thời lượng",
-    "sortTitle": "Tên",
-    "sortArtistLabel": "Nghệ sĩ",
-    "sortDurationLabel": "Thời gian"
+    "sortBy": "Susun:",
+    "sortTitleAsc": "Susun A-Z mengikut tajuk",
+    "sortArtist": "Susun mengikut artis",
+    "sortDuration": "Susun mengikut tempoh",
+    "sortTitle": "Tajuk",
+    "sortArtistLabel": "Artis",
+    "sortDurationLabel": "Masa"
   }
 }

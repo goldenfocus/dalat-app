@@ -1895,12 +1895,12 @@
     "uploading": "Mengunggah",
     "uploadComplete": "Selesai",
     "noTracksYet": "Belum ada lagu. Unggah file audio untuk membuat playlist.",
-    "sortBy": "Sắp xếp:",
-    "sortTitleAsc": "Sắp xếp A-Z theo tiêu đề",
-    "sortArtist": "Sắp xếp theo nghệ sĩ",
-    "sortDuration": "Sắp xếp theo thời lượng",
-    "sortTitle": "Tên",
-    "sortArtistLabel": "Nghệ sĩ",
-    "sortDurationLabel": "Thời gian"
+    "sortBy": "Urutkan:",
+    "sortTitleAsc": "Urutkan A-Z berdasarkan judul",
+    "sortArtist": "Urutkan berdasarkan artis",
+    "sortDuration": "Urutkan berdasarkan durasi",
+    "sortTitle": "Judul",
+    "sortArtistLabel": "Artis",
+    "sortDurationLabel": "Durasi"
   }
 }

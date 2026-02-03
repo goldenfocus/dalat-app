@@ -1898,12 +1898,12 @@
     "uploading": "업로드 중",
     "uploadComplete": "완료",
     "noTracksYet": "아직 곡이 없습니다. 오디오 파일을 업로드하여 재생목록을 만드세요.",
-    "sortBy": "Sắp xếp:",
-    "sortTitleAsc": "Sắp xếp A-Z theo tiêu đề",
-    "sortArtist": "Sắp xếp theo nghệ sĩ",
-    "sortDuration": "Sắp xếp theo thời lượng",
-    "sortTitle": "Tên",
-    "sortArtistLabel": "Nghệ sĩ",
-    "sortDurationLabel": "Thời gian"
+    "sortBy": "정렬:",
+    "sortTitleAsc": "제목 A-Z 정렬",
+    "sortArtist": "아티스트별 정렬",
+    "sortDuration": "길이별 정렬",
+    "sortTitle": "제목",
+    "sortArtistLabel": "아티스트",
+    "sortDurationLabel": "길이"
   }
 }

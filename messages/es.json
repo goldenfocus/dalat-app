@@ -1895,12 +1895,12 @@
     "uploading": "Subiendo",
     "uploadComplete": "Completado",
     "noTracksYet": "Aún no hay pistas. Sube archivos de audio para crear una playlist.",
-    "sortBy": "Sắp xếp:",
-    "sortTitleAsc": "Sắp xếp A-Z theo tiêu đề",
-    "sortArtist": "Sắp xếp theo nghệ sĩ",
-    "sortDuration": "Sắp xếp theo thời lượng",
-    "sortTitle": "Tên",
-    "sortArtistLabel": "Nghệ sĩ",
-    "sortDurationLabel": "Thời gian"
+    "sortBy": "Ordenar:",
+    "sortTitleAsc": "Ordenar A-Z por título",
+    "sortArtist": "Ordenar por artista",
+    "sortDuration": "Ordenar por duración",
+    "sortTitle": "Título",
+    "sortArtistLabel": "Artista",
+    "sortDurationLabel": "Duración"
   }
 }
