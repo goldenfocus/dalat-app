@@ -563,11 +563,13 @@ export function DocumentLink({ url, filename, fileSize, className, compact = fal
 
 /**
  * Extract YouTube video ID from various URL formats
+ * Supports: watch, shorts, live, embed, and short youtu.be links
  */
 export function extractYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
     /youtube\.com\/shorts\/([^&\s?]+)/,
+    /youtube\.com\/live\/([^&\s?]+)/,
   ];
 
   for (const pattern of patterns) {
