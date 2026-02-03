@@ -144,6 +144,16 @@ export function AdminImportPage() {
   const [schedule, setSchedule] = useState<ScheduleStatus | null>(null);
   const [scheduleLoading, setScheduleLoading] = useState(false);
 
+  // Wellhoods sync
+  const [wellhoodsSyncing, setWellhoodsSyncing] = useState(false);
+  const [wellhoodsResult, setWellhoodsResult] = useState<{
+    success: boolean;
+    processed: number;
+    skipped: number;
+    errors: number;
+    details?: string[];
+  } | null>(null);
+
   // Load import history on mount
   useEffect(() => {
     loadHistory();
@@ -350,6 +360,48 @@ export function AdminImportPage() {
     }
   }
 
+  async function handleSyncWellhoods() {
+    setWellhoodsSyncing(true);
+    setWellhoodsResult(null);
+
+    try {
+      const response = await fetch("/api/import/wellhoods", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setWellhoodsResult({
+          success: true,
+          processed: data.processed || 0,
+          skipped: data.skipped || 0,
+          errors: data.errors || 0,
+          details: data.details,
+        });
+        loadHistory();
+      } else {
+        setWellhoodsResult({
+          success: false,
+          processed: 0,
+          skipped: 0,
+          errors: 1,
+          details: [data.error || "Sync failed"],
+        });
+      }
+    } catch (err) {
+      setWellhoodsResult({
+        success: false,
+        processed: 0,
+        skipped: 0,
+        errors: 1,
+        details: [`Network error: ${err instanceof Error ? err.message : "Unknown"}`],
+      });
+    } finally {
+      setWellhoodsSyncing(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header with quick start guide */}
@@ -498,7 +550,7 @@ export function AdminImportPage() {
               )}
 
               {/* Supported URLs */}
-              <div className="grid sm:grid-cols-3 gap-3 pt-2">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
                 <div className="flex items-center gap-2 p-2 rounded-lg border">
                   <Facebook className="w-4 h-4 text-blue-600" />
                   <div className="text-xs">
@@ -520,6 +572,13 @@ export function AdminImportPage() {
                   <div className="text-xs">
                     <p className="font-medium">Lu.ma</p>
                     <p className="text-muted-foreground">lu.ma/... or luma.com/...</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-lg border">
+                  <Globe className="w-4 h-4 text-green-600" />
+                  <div className="text-xs">
+                    <p className="font-medium">Wellhoods</p>
+                    <p className="text-muted-foreground">wellhoods.com/events/...</p>
                   </div>
                 </div>
               </div>
@@ -735,11 +794,105 @@ https://eventbrite.com/e/some-event-tickets-123`}
 
         {/* ==================== AUTO-SCRAPING TAB ==================== */}
         <TabsContent value="schedule" className="space-y-6">
+          {/* Wellhoods Sync Card */}
+          <Card className="border-green-200 dark:border-green-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-green-600" />
+                Wellhoods Sync
+              </CardTitle>
+              <CardDescription>
+                Import all wellness events from Wellhoods (wellhoods.com) - syncs daily at 7 AM
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={handleSyncWellhoods}
+                  disabled={wellhoodsSyncing}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {wellhoodsSyncing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Sync Now
+                    </>
+                  )}
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Imports new events, skips duplicates automatically
+                </p>
+              </div>
+
+              {wellhoodsResult && (
+                <div
+                  className={`p-4 rounded-lg ${
+                    wellhoodsResult.success
+                      ? "bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800"
+                      : "bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    {wellhoodsResult.success ? (
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-red-600" />
+                    )}
+                    <span className="font-medium">
+                      {wellhoodsResult.success ? "Sync Complete" : "Sync Failed"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Imported</p>
+                      <p className="text-lg font-bold text-green-600">
+                        {wellhoodsResult.processed}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Skipped</p>
+                      <p className="text-lg font-bold text-gray-500">
+                        {wellhoodsResult.skipped}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Errors</p>
+                      <p className="text-lg font-bold text-red-600">
+                        {wellhoodsResult.errors}
+                      </p>
+                    </div>
+                  </div>
+                  {wellhoodsResult.details && wellhoodsResult.details.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-current/10">
+                      <p className="text-xs text-muted-foreground mb-1">Details:</p>
+                      <div className="max-h-32 overflow-y-auto text-xs space-y-1">
+                        {wellhoodsResult.details.slice(0, 10).map((detail, i) => (
+                          <p key={i} className="truncate">{detail}</p>
+                        ))}
+                        {wellhoodsResult.details.length > 10 && (
+                          <p className="text-muted-foreground">
+                            ...and {wellhoodsResult.details.length - 10} more
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Facebook Auto-Scraping Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                Automated Daily Scraping
+                Facebook Auto-Scraping
               </CardTitle>
               <CardDescription>
                 Set it and forget it — automatically import new events every day

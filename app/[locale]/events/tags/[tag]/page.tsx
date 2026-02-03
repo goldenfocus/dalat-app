@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/lib/i18n/routing";
-import type { Locale } from "@/lib/i18n/routing";
+import { Link, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -214,19 +212,6 @@ export default async function TagPage({ params }: PageProps) {
       <JsonLd data={[breadcrumbSchema, itemListSchema]} />
 
       <main className="min-h-screen flex flex-col">
-        {/* Header */}
-        <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="container flex h-14 max-w-4xl items-center mx-auto px-4">
-            <Link
-              href="/"
-              className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{t("backToHome")}</span>
-            </Link>
-          </div>
-        </nav>
-
         {/* Content */}
         <div className="flex-1 container max-w-4xl mx-auto px-4 py-8">
           {/* Hero section */}

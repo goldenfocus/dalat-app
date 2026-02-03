@@ -105,6 +105,10 @@
     },
     "comingUp": {
       "title": "Segera Hadir"
+    },
+    "yourEvents": {
+      "title": "Acara Anda",
+      "seeAll": "Lihat semua"
     }
   },
   "auth": {

@@ -10,7 +10,6 @@
  */
 
 import { useCallback, useRef, useReducer, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import {
   validateMediaFile,
   needsConversion,
@@ -63,7 +62,6 @@ export interface QueuedUpload {
 interface QueueState {
   items: QueuedUpload[];
   isPaused: boolean;
-  activeCount: number;
 }
 
 type QueueAction =
@@ -71,8 +69,6 @@ type QueueAction =
   | { type: "UPDATE_ITEM"; id: string; updates: Partial<QueuedUpload> }
   | { type: "REMOVE_ITEM"; id: string }
   | { type: "SET_PAUSED"; paused: boolean }
-  | { type: "INCREMENT_ACTIVE" }
-  | { type: "DECREMENT_ACTIVE" }
   | { type: "CLEAR_COMPLETED" }
   | { type: "RETRY_ITEM"; id: string }
   | { type: "RETRY_ALL_FAILED" };
@@ -101,12 +97,6 @@ function queueReducer(state: QueueState, action: QueueAction): QueueState {
 
     case "SET_PAUSED":
       return { ...state, isPaused: action.paused };
-
-    case "INCREMENT_ACTIVE":
-      return { ...state, activeCount: state.activeCount + 1 };
-
-    case "DECREMENT_ACTIVE":
-      return { ...state, activeCount: Math.max(0, state.activeCount - 1) };
 
     case "CLEAR_COMPLETED":
       return {
@@ -155,29 +145,183 @@ export function useUploadQueue({
   const [state, dispatch] = useReducer(queueReducer, {
     items: [],
     isPaused: false,
-    activeCount: 0,
   });
 
-  const processingRef = useRef(false);
+  // Use refs to track active uploads and avoid stale closures
+  const activeUploadsRef = useRef(new Set<string>());
   const mountedRef = useRef(true);
+  const stateRef = useRef(state);
+  stateRef.current = state; // Always keep ref up to date
 
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      // Revoke all preview URLs
-      state.items.forEach((item) => {
-        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
-        if (item.localThumbnailUrl) URL.revokeObjectURL(item.localThumbnailUrl);
-      });
     };
   }, []);
 
-  // Process queue when items change or state changes
+  /**
+   * Process a single upload - this is called for each file
+   */
+  const processUpload = useCallback(async (item: QueuedUpload) => {
+    const { id, file } = item;
+    let fileToUpload = file;
+
+    // Mark as active
+    activeUploadsRef.current.add(id);
+
+    try {
+      // Step 1: Convert if needed (HEIC → JPEG, MOV → MP4)
+      if (needsConversion(file)) {
+        dispatch({ type: "UPDATE_ITEM", id, updates: { status: "converting" } });
+        fileToUpload = await convertIfNeeded(file);
+
+        // Update preview with converted file
+        const newPreviewUrl = URL.createObjectURL(fileToUpload);
+        dispatch({
+          type: "UPDATE_ITEM",
+          id,
+          updates: { previewUrl: newPreviewUrl },
+        });
+      }
+
+      // Step 2: Compress images if needed (>3MB → ~2MB)
+      if (needsImageCompression(fileToUpload)) {
+        dispatch({ type: "UPDATE_ITEM", id, updates: { status: "compressing" } });
+        const result = await compressImage(fileToUpload);
+        if (result.wasCompressed) {
+          fileToUpload = result.file;
+          console.log(`[UploadQueue] Compressed ${file.name}: ${result.originalSize} → ${result.compressedSize}`);
+          const newPreviewUrl = URL.createObjectURL(fileToUpload);
+          dispatch({
+            type: "UPDATE_ITEM",
+            id,
+            updates: { previewUrl: newPreviewUrl },
+          });
+        }
+      }
+
+      // Step 3: Compress videos if needed (>50MB)
+      if (needsVideoCompression(fileToUpload)) {
+        dispatch({ type: "UPDATE_ITEM", id, updates: { status: "compressing" } });
+        fileToUpload = await compressVideo(fileToUpload, (progress) => {
+          if (mountedRef.current) {
+            dispatch({
+              type: "UPDATE_ITEM",
+              id,
+              updates: { compressionProgress: progress },
+            });
+          }
+        });
+      }
+
+      // Step 4: Upload
+      dispatch({
+        type: "UPDATE_ITEM",
+        id,
+        updates: { status: "uploading", progress: 10, compressionProgress: undefined },
+      });
+
+      const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
+      const fileName = `${eventId}/${userId}/${Date.now()}_${id.slice(0, 8)}.${ext}`;
+
+      console.log(`[UploadQueue] Uploading ${file.name} (${fileToUpload.size} bytes) as ${fileName}`);
+
+      const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
+        filename: fileName,
+      });
+
+      console.log(`[UploadQueue] Upload complete: ${file.name} → ${publicUrl}`);
+
+      if (mountedRef.current) {
+        dispatch({
+          type: "UPDATE_ITEM",
+          id,
+          updates: { status: "uploaded", mediaUrl: publicUrl, progress: 100 },
+        });
+
+        triggerHaptic("light");
+
+        if (onUploadComplete) {
+          onUploadComplete({ ...item, status: "uploaded", mediaUrl: publicUrl });
+        }
+      }
+    } catch (err) {
+      console.error(`[UploadQueue] Upload error for ${file.name}:`, err);
+
+      const errorMessage = err instanceof Error ? err.message : "Upload failed";
+
+      // Get current retry count from the ref (avoids stale closure)
+      const currentItem = stateRef.current.items.find((i) => i.id === id);
+      const retryCount = currentItem?.retryCount ?? 0;
+
+      if (retryCount < MAX_RETRIES) {
+        // Schedule retry
+        const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
+        console.log(`[UploadQueue] Will retry ${file.name} in ${delay}ms (attempt ${retryCount + 1})`);
+
+        dispatch({
+          type: "UPDATE_ITEM",
+          id,
+          updates: { retryCount: retryCount + 1, status: "queued", error: undefined },
+        });
+
+        // The retry will happen automatically when processQueue runs next
+      } else {
+        console.error(`[UploadQueue] Max retries exceeded for ${file.name}`);
+        dispatch({
+          type: "UPDATE_ITEM",
+          id,
+          updates: { status: "error", error: errorMessage },
+        });
+      }
+    } finally {
+      // Mark as no longer active
+      activeUploadsRef.current.delete(id);
+
+      // Trigger next queue processing
+      if (mountedRef.current) {
+        // Use setTimeout to avoid synchronous state issues
+        setTimeout(() => processQueue(), 100);
+      }
+    }
+  }, [eventId, userId, onUploadComplete]);
+
+  /**
+   * Process the queue - start uploads for queued items up to concurrency limit
+   */
+  const processQueue = useCallback(() => {
+    if (!mountedRef.current) return;
+
+    const currentState = stateRef.current;
+    if (currentState.isPaused) return;
+
+    const activeCount = activeUploadsRef.current.size;
+    const availableSlots = maxConcurrent - activeCount;
+
+    if (availableSlots <= 0) return;
+
+    // Find queued items that aren't already being processed
+    const queuedItems = currentState.items.filter(
+      (item) => item.status === "queued" && !activeUploadsRef.current.has(item.id)
+    );
+
+    if (queuedItems.length === 0) return;
+
+    // Start uploads for available slots
+    const itemsToStart = queuedItems.slice(0, availableSlots);
+    console.log(`[UploadQueue] Starting ${itemsToStart.length} uploads (${activeCount} active, ${availableSlots} slots)`);
+
+    for (const item of itemsToStart) {
+      processUpload(item);
+    }
+  }, [maxConcurrent, processUpload]);
+
+  // Process queue whenever state changes
   useEffect(() => {
     processQueue();
-  }, [state.items, state.isPaused, state.activeCount]);
+  }, [state.items, state.isPaused, processQueue]);
 
   /**
    * Add files to the upload queue
@@ -219,6 +363,7 @@ export function useUploadQueue({
     }
 
     if (newItems.length > 0) {
+      console.log(`[UploadQueue] Adding ${newItems.length} files to queue`);
       dispatch({ type: "ADD_FILES", files: newItems });
     }
 
@@ -263,157 +408,16 @@ export function useUploadQueue({
   };
 
   /**
-   * Process the queue - start uploads for queued items up to concurrency limit
-   */
-  const processQueue = useCallback(() => {
-    if (processingRef.current || state.isPaused) return;
-
-    const queuedItems = state.items.filter((item) => item.status === "queued");
-    const availableSlots = maxConcurrent - state.activeCount;
-
-    if (queuedItems.length === 0 || availableSlots <= 0) return;
-
-    processingRef.current = true;
-
-    // Start uploads for available slots
-    const itemsToStart = queuedItems.slice(0, availableSlots);
-    for (const item of itemsToStart) {
-      dispatch({ type: "INCREMENT_ACTIVE" });
-      processUpload(item);
-    }
-
-    processingRef.current = false;
-  }, [state.items, state.isPaused, state.activeCount, maxConcurrent]);
-
-  /**
-   * Process a single upload
-   */
-  const processUpload = async (item: QueuedUpload) => {
-    const { id, file } = item;
-    let fileToUpload = file;
-
-    try {
-      // Step 1: Convert if needed (HEIC → JPEG, MOV → MP4)
-      if (needsConversion(file)) {
-        dispatch({ type: "UPDATE_ITEM", id, updates: { status: "converting" } });
-        fileToUpload = await convertIfNeeded(file);
-
-        // Update preview with converted file
-        const newPreviewUrl = URL.createObjectURL(fileToUpload);
-        dispatch({
-          type: "UPDATE_ITEM",
-          id,
-          updates: { previewUrl: newPreviewUrl },
-        });
-      }
-
-      // Step 2: Compress images if needed
-      if (needsImageCompression(fileToUpload)) {
-        dispatch({ type: "UPDATE_ITEM", id, updates: { status: "compressing" } });
-        const result = await compressImage(fileToUpload);
-        if (result.wasCompressed) {
-          fileToUpload = result.file;
-          const newPreviewUrl = URL.createObjectURL(fileToUpload);
-          dispatch({
-            type: "UPDATE_ITEM",
-            id,
-            updates: { previewUrl: newPreviewUrl },
-          });
-        }
-      }
-
-      // Step 3: Compress videos if needed
-      if (needsVideoCompression(fileToUpload)) {
-        dispatch({ type: "UPDATE_ITEM", id, updates: { status: "compressing" } });
-        fileToUpload = await compressVideo(fileToUpload, (progress) => {
-          if (mountedRef.current) {
-            dispatch({
-              type: "UPDATE_ITEM",
-              id,
-              updates: { compressionProgress: progress },
-            });
-          }
-        });
-      }
-
-      // Step 4: Upload
-      dispatch({
-        type: "UPDATE_ITEM",
-        id,
-        updates: { status: "uploading", progress: 0, compressionProgress: undefined },
-      });
-
-      const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${eventId}/${userId}/${Date.now()}_${id.slice(0, 8)}.${ext}`;
-
-      const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
-        filename: fileName,
-      });
-
-      if (mountedRef.current) {
-        dispatch({
-          type: "UPDATE_ITEM",
-          id,
-          updates: { status: "uploaded", mediaUrl: publicUrl, progress: 100 },
-        });
-
-        triggerHaptic("light");
-
-        // Get the updated item for callback
-        const uploadedItem = state.items.find((i) => i.id === id);
-        if (uploadedItem && onUploadComplete) {
-          onUploadComplete({ ...uploadedItem, status: "uploaded", mediaUrl: publicUrl });
-        }
-      }
-    } catch (err) {
-      console.error("[UploadQueue] Upload error:", err);
-
-      const errorMessage =
-        err instanceof Error ? err.message : "Upload failed";
-
-      // Check if we should retry
-      const currentItem = state.items.find((i) => i.id === id);
-      const retryCount = currentItem?.retryCount ?? 0;
-
-      if (retryCount < MAX_RETRIES) {
-        // Schedule retry
-        const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
-        dispatch({
-          type: "UPDATE_ITEM",
-          id,
-          updates: { retryCount: retryCount + 1 },
-        });
-
-        setTimeout(() => {
-          if (mountedRef.current) {
-            dispatch({ type: "RETRY_ITEM", id });
-          }
-        }, delay);
-      } else {
-        dispatch({
-          type: "UPDATE_ITEM",
-          id,
-          updates: { status: "error", error: errorMessage },
-        });
-      }
-    } finally {
-      if (mountedRef.current) {
-        dispatch({ type: "DECREMENT_ACTIVE" });
-      }
-    }
-  };
-
-  /**
    * Remove an item from the queue
    */
   const removeItem = useCallback((id: string) => {
-    const item = state.items.find((i) => i.id === id);
+    const item = stateRef.current.items.find((i) => i.id === id);
     if (item) {
       if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
       if (item.localThumbnailUrl) URL.revokeObjectURL(item.localThumbnailUrl);
     }
     dispatch({ type: "REMOVE_ITEM", id });
-  }, [state.items]);
+  }, []);
 
   /**
    * Retry a failed upload
@@ -448,16 +452,17 @@ export function useUploadQueue({
    */
   const clearCompleted = useCallback(() => {
     // Revoke URLs for completed items
-    state.items
+    stateRef.current.items
       .filter((item) => item.status === "uploaded")
       .forEach((item) => {
         if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
         if (item.localThumbnailUrl) URL.revokeObjectURL(item.localThumbnailUrl);
       });
     dispatch({ type: "CLEAR_COMPLETED" });
-  }, [state.items]);
+  }, []);
 
   // Calculate stats
+  const activeCount = activeUploadsRef.current.size;
   const stats = {
     total: state.items.length,
     queued: state.items.filter((i) => i.status === "queued").length,
@@ -466,11 +471,12 @@ export function useUploadQueue({
     ).length,
     completed: state.items.filter((i) => i.status === "uploaded").length,
     failed: state.items.filter((i) => i.status === "error").length,
+    active: activeCount,
   };
 
   const isComplete = stats.completed === stats.total && stats.total > 0;
   const hasErrors = stats.failed > 0;
-  const isUploading = stats.uploading > 0 || stats.queued > 0;
+  const isUploading = stats.uploading > 0 || stats.queued > 0 || activeCount > 0;
 
   return {
     items: state.items,

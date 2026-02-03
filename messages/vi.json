@@ -105,6 +105,10 @@
     },
     "comingUp": {
       "title": "Sắp Tới"
+    },
+    "yourEvents": {
+      "title": "Sự kiện của bạn",
+      "seeAll": "Xem tất cả"
     }
   },
   "auth": {

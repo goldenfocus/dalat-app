@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
-import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
-import { ArrowLeft, Camera } from "lucide-react";
+import { Link } from "@/lib/i18n/routing";
+import { Camera } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { MomentForm } from "@/components/moments";
@@ -132,23 +132,9 @@ export default async function NewMomentPage({ params }: PageProps) {
     : user.id;
 
   const t = await getTranslations("moments");
-  const tCommon = await getTranslations("common");
 
   return (
     <main className="min-h-screen">
-      {/* Header */}
-      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 max-w-4xl items-center mx-auto px-4">
-          <Link
-            href={`/events/${slug}/moments`}
-            className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{tCommon("back")}</span>
-          </Link>
-        </div>
-      </nav>
-
       <div className="container max-w-lg mx-auto px-4 py-6">
         {/* Title */}
         <div className="mb-6">

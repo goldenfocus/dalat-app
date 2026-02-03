@@ -1,19 +1,8 @@
-import { ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VenueLoading() {
   return (
     <main className="min-h-screen pb-8">
-      {/* Header */}
-      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 max-w-4xl items-center mx-auto px-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Venues</span>
-          </div>
-        </div>
-      </nav>
-
       {/* Cover photo skeleton */}
       <Skeleton className="w-full aspect-[2/1] sm:aspect-[3/1]" />
 

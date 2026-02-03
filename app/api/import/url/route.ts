@@ -596,6 +596,17 @@ async function fetchGenericEvent(eventUrl: string) {
     if (description && typeof description === 'object') {
       description = parseRichTextDescription(description);
     }
+    // Also handle JSON string format (some APIs return Slate.js as serialized JSON string)
+    if (description && typeof description === 'string' && description.startsWith('[{')) {
+      try {
+        const parsed = JSON.parse(description);
+        if (Array.isArray(parsed)) {
+          description = parseRichTextDescription(parsed);
+        }
+      } catch {
+        // Not valid JSON, keep as-is
+      }
+    }
 
     console.log(`Generic import: Got "${title}" - date: ${startDate}, location: ${locationName}`);
 

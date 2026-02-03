@@ -105,6 +105,10 @@
     },
     "comingUp": {
       "title": "即将到来"
+    },
+    "yourEvents": {
+      "title": "我的活动",
+      "seeAll": "查看全部"
     }
   },
   "auth": {

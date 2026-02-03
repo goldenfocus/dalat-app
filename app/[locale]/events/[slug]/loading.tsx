@@ -1,20 +1,9 @@
-import { ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EventLoading() {
   return (
     <main className="min-h-screen">
-      {/* Header */}
-      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 max-w-4xl items-center justify-between mx-auto px-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
-          </div>
-        </div>
-      </nav>
-
       <div className="container max-w-4xl mx-auto px-4 py-8">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main content skeleton */}

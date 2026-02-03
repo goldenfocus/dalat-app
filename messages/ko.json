@@ -105,6 +105,10 @@
     },
     "comingUp": {
       "title": "다가오는 이벤트"
+    },
+    "yourEvents": {
+      "title": "내 이벤트",
+      "seeAll": "모두 보기"
     }
   },
   "auth": {

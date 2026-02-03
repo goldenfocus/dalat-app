@@ -105,6 +105,10 @@
     },
     "comingUp": {
       "title": "Скоро"
+    },
+    "yourEvents": {
+      "title": "Ваши мероприятия",
+      "seeAll": "Смотреть все"
     }
   },
   "auth": {

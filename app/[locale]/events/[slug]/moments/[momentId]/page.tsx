@@ -3,8 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, MapPin, Plus } from "lucide-react";
-import { AuthButton } from "@/components/auth-button";
+import { ChevronLeft, ChevronRight, Calendar, MapPin, Plus } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -217,10 +216,8 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
 
   const canModerate = isEventCreator || isAdminOrMod;
 
-  const [t, tCommon] = await Promise.all([
-    getTranslations("moments"),
-    getTranslations("common"),
-  ]);
+  const t = await getTranslations("moments");
+  const tCommon = await getTranslations("common");
 
   const event = moment.events;
   const profile = moment.profiles;
@@ -248,13 +245,6 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
     locale: dateFnsLocale,
   });
 
-  // Determine back link based on context
-  const backHref = from === "event"
-    ? `/events/${event.slug}/moments`
-    : from === "profile"
-    ? `/profile/${profile.username}/moments`
-    : "/moments";
-
   // Build navigation URLs with clean paths
   const buildMomentUrl = (id: string) => `/events/${event.slug}/moments/${id}`;
 
@@ -279,21 +269,6 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
       />
 
       <div className="min-h-screen bg-background">
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-          <div className="container max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-            <Link
-              href={backHref}
-              className="-ml-2 flex items-center gap-1 text-muted-foreground hover:text-foreground px-2 py-1.5 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="text-sm">{tCommon("back")}</span>
-            </Link>
-
-            <AuthButton />
-          </div>
-        </header>
-
         <main className="container max-w-4xl mx-auto px-4 py-6">
           <div className="grid lg:grid-cols-[1fr,320px] gap-6">
             {/* Main content */}

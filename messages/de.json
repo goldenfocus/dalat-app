@@ -105,6 +105,10 @@
     },
     "comingUp": {
       "title": "Demnächst"
+    },
+    "yourEvents": {
+      "title": "Deine Veranstaltungen",
+      "seeAll": "Alle anzeigen"
     }
   },
   "auth": {

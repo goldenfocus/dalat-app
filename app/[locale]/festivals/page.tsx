@@ -1,6 +1,6 @@
 import { Link } from "@/lib/i18n/routing";
 import Image from "next/image";
-import { ArrowLeft, Calendar, MapPin, BadgeCheck } from "lucide-react";
+import { Calendar, MapPin, BadgeCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Festival, FestivalOrganizer } from "@/lib/types";
@@ -30,9 +30,8 @@ async function getFestivals() {
 }
 
 export default async function FestivalsPage() {
-  const [festivals, tCommon, tFestival] = await Promise.all([
+  const [festivals, tFestival] = await Promise.all([
     getFestivals(),
-    getTranslations("common"),
     getTranslations("festival"),
   ]);
 
@@ -47,21 +46,8 @@ export default async function FestivalsPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 items-center gap-4 mx-auto px-4">
-          <Link
-            href="/"
-            className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{tCommon("back")}</span>
-          </Link>
-          <h1 className="font-semibold">{tFestival("title")}</h1>
-        </div>
-      </header>
-
       <main className="container max-w-4xl mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-8">{tFestival("title")}</h1>
         {/* Active/Upcoming Festivals */}
         {activeFestivals.length > 0 && (
           <section className="mb-12">

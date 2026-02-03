@@ -13,6 +13,7 @@ import { SiteHeader } from "@/components/site-header";
 import { MobileHeader } from "@/components/home/mobile-header";
 import { HeroSection } from "@/components/home/hero-section";
 import { EventFeedScrollable, EventFeedScrollableSkeleton } from "@/components/events/event-feed-scrollable";
+import { YourEventsSection } from "@/components/home/your-events-section";
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import type { Locale } from "@/lib/i18n/routing";
@@ -127,6 +128,11 @@ export default async function Home({ params }: PageProps) {
             <EventSearchBar className="w-72" />
           </Suspense>
         </div>
+
+        {/* Your Events - personalized section for logged-in users */}
+        <Suspense fallback={null}>
+          <YourEventsSection locale={locale} />
+        </Suspense>
 
         {/* Scrollable event feed with "Happening Now" and "Coming Up" sections */}
         <Suspense fallback={<EventFeedScrollableSkeleton />}>

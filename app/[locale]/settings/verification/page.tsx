@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
-import { ArrowLeft, ShieldCheck, CheckCircle2, Clock, XCircle, HelpCircle } from "lucide-react";
+import { ShieldCheck, CheckCircle2, Clock, XCircle, HelpCircle, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { VerificationRequestForm } from "@/components/settings/verification-request-form";
 import type { VerificationRequest } from "@/lib/types";
@@ -52,20 +52,8 @@ export default async function VerificationPage() {
   if (profile?.role === "organizer_verified") {
     return (
       <div className="min-h-screen">
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="container flex h-14 items-center gap-4 mx-auto px-4">
-            <Link
-              href="/settings"
-              className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back</span>
-            </Link>
-            <h1 className="font-semibold">Verification</h1>
-          </div>
-        </header>
-
         <main className="container max-w-2xl mx-auto px-4 py-8">
+          <h1 className="text-xl font-semibold mb-8">Verification</h1>
           <div className="text-center py-12 rounded-lg border bg-green-500/10 border-green-500/20">
             <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-green-500" />
             <h2 className="text-2xl font-bold mb-2 text-green-700 dark:text-green-300">
@@ -96,20 +84,8 @@ export default async function VerificationPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 items-center gap-4 mx-auto px-4">
-          <Link
-            href="/settings"
-            className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
-          </Link>
-          <h1 className="font-semibold">Organizer Verification</h1>
-        </div>
-      </header>
-
       <main className="container max-w-2xl mx-auto px-4 py-8">
+        <h1 className="text-xl font-semibold mb-8">Organizer Verification</h1>
         {/* Existing Request Status */}
         {existingRequest && (
           <div className="mb-8">

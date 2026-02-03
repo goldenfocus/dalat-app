@@ -105,6 +105,10 @@
     },
     "comingUp": {
       "title": "Akan Datang"
+    },
+    "yourEvents": {
+      "title": "Acara Anda",
+      "seeAll": "Lihat semua"
     }
   },
   "auth": {
