@@ -18,6 +18,10 @@ interface InfiniteMomentGridProps {
   initialHasMore: boolean;
   /** Enable lightbox mode (modal instead of page navigation) */
   enableLightbox?: boolean;
+  /** Callback when a moment card is clicked (for immersive mode) */
+  onMomentClick?: (index: number) => void;
+  /** Callback when moments array is updated (for parent to track all loaded moments) */
+  onMomentsUpdate?: (moments: MomentWithProfile[]) => void;
 }
 
 export function InfiniteMomentGrid({
@@ -26,6 +30,8 @@ export function InfiniteMomentGrid({
   initialMoments,
   initialHasMore,
   enableLightbox = false,
+  onMomentClick,
+  onMomentsUpdate,
 }: InfiniteMomentGridProps) {
   const t = useTranslations("moments");
   const [moments, setMoments] = useState<MomentWithProfile[]>(initialMoments);
@@ -62,10 +68,19 @@ export function InfiniteMomentGrid({
       setHasMore(false);
     }
 
-    setMoments((prev) => [...prev, ...newMoments]);
+    setMoments((prev) => {
+      const updated = [...prev, ...newMoments];
+      onMomentsUpdate?.(updated);
+      return updated;
+    });
     setOffset((prev) => prev + newMoments.length);
     setIsLoading(false);
-  }, [eventId, offset, isLoading, hasMore]);
+  }, [eventId, offset, isLoading, hasMore, onMomentsUpdate]);
+
+  // Notify parent of initial moments
+  useEffect(() => {
+    onMomentsUpdate?.(moments);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -105,13 +120,14 @@ export function InfiniteMomentGrid({
         />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {moments.map((moment) => (
+          {moments.map((moment, index) => (
             <MomentCard
               key={moment.id}
               moment={moment}
               eventSlug={eventSlug}
               from="event"
               commentCount={commentCounts.get(moment.id)}
+              onLightboxOpen={onMomentClick ? () => onMomentClick(index) : undefined}
             />
           ))}
         </div>

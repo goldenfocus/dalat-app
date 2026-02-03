@@ -3,10 +3,9 @@ import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { SharePageButton } from "@/components/shared/share-page-button";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { InfiniteMomentGrid } from "@/components/moments";
+import { MomentsViewContainer } from "@/components/moments/moments-view-container";
 import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
 
 const INITIAL_PAGE_SIZE = 20;
@@ -147,13 +146,12 @@ export default async function EventMomentsPage({ params }: PageProps) {
           <p className="text-muted-foreground">{event.title}</p>
         </div>
 
-        {/* Infinite scroll moments grid with lightbox */}
-        <InfiniteMomentGrid
+        {/* Moments view with grid/immersive toggle */}
+        <MomentsViewContainer
           eventId={event.id}
           eventSlug={event.slug}
           initialMoments={moments}
           initialHasMore={hasMore}
-          enableLightbox
         />
 
         {/* CTA for users who can post but haven't yet */}
