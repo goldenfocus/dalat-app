@@ -160,6 +160,32 @@ export async function GET(request: Request) {
       }
     );
 
+    // ULTIMATE TEST: Format query embedding EXACTLY like stored embedding
+    // Parse stored embedding to get array, then reformat using same precision
+    const storedFirst = storedVec[0]; // e.g., -0.22960874 (8 decimal places)
+    const queryFirst = queryVec[0];   // e.g., 0.14570604264736176 (17 decimal places)
+
+    // Round query to 8 decimal places like stored
+    const queryRoundedToStored = queryVec.map(v => Math.round(v * 100000000) / 100000000);
+    const queryRoundedString = `[${queryRoundedToStored.join(",")}]`;
+
+    const { data: roundedResult, error: roundedError } = await supabase.rpc(
+      "debug_search_test",
+      {
+        query_embedding: queryRoundedString,
+        match_threshold: 0.0,
+      }
+    );
+
+    // Test: What if we use stored embedding format with commas intact
+    // The stored string might have trailing zeros stripped differently
+    const formatDebug = {
+      storedSample: storedVec.slice(0, 3).map(String),
+      querySample: queryVec.slice(0, 3).map(String),
+      roundedSample: queryRoundedToStored.slice(0, 3).map(String),
+      roundedStringLen: queryRoundedString.length,
+    };
+
     const { data: normalizedResult, error: normalizedError } = await supabase.rpc(
       "debug_search_test",
       {
@@ -189,6 +215,8 @@ export async function GET(request: Request) {
       normalizedTest: normalizedError ? { error: normalizedError.message } : normalizedResult?.slice(0, 3),
       directQueryResult: directQueryError ? { error: directQueryError.message } : directQueryResult?.slice(0, 1),
       jsonFormatResult: jsonError ? { error: jsonError.message } : jsonResult?.slice(0, 1),
+      roundedResult: roundedError ? { error: roundedError.message } : roundedResult?.slice(0, 3),
+      formatDebug,
       stringDebug,
       keyDebugInfo: getKeyDebugInfo(),
     });
