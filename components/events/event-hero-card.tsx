@@ -78,16 +78,30 @@ export const EventHeroCard = memo(function EventHeroCard({
                   preload="metadata"
                 />
               ) : (
-                <Image
-                  loader={cloudflareLoader}
-                  src={event.image_url!}
-                  alt={displayTitle}
-                  fill
-                  sizes="(max-width: 640px) 100vw, 40vw"
-                  className={`group-hover:scale-105 transition-transform duration-500 ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-muted"}`}
-                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
-                  priority
-                />
+                <>
+                  {/* Blurred background for contain mode */}
+                  {event.image_fit !== "cover" && (
+                    <Image
+                      loader={cloudflareLoader}
+                      src={event.image_url!}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 100vw, 40vw"
+                      className="object-cover blur-xl scale-110 opacity-60"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <Image
+                    loader={cloudflareLoader}
+                    src={event.image_url!}
+                    alt={displayTitle}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 40vw"
+                    className={`group-hover:scale-105 transition-transform duration-500 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
+                    style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                    priority
+                  />
+                </>
               )
             ) : (
               <EventDefaultImage

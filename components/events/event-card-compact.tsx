@@ -110,19 +110,33 @@ export const EventCardCompact = memo(function EventCardCompact({
                   aria-hidden="true"
                 />
               ) : (
-                <Image
-                  loader={cloudflareLoader}
-                  src={event.image_url!}
-                  alt={displayTitle}
-                  fill
-                  sizes="(max-width: 640px) 50vw, 33vw"
-                  className={`transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-muted"}`}
-                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
-                  priority={priority}
-                  fetchPriority={priority ? "high" : "auto"}
-                  placeholder="blur"
-                  blurDataURL={BLUR_DATA_URL}
-                />
+                <>
+                  {/* Blurred background for contain mode */}
+                  {event.image_fit !== "cover" && (
+                    <Image
+                      loader={cloudflareLoader}
+                      src={event.image_url!}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 50vw, 33vw"
+                      className="object-cover blur-xl scale-110 opacity-60"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <Image
+                    loader={cloudflareLoader}
+                    src={event.image_url!}
+                    alt={displayTitle}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 33vw"
+                    className={`transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
+                    style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                    priority={priority}
+                    fetchPriority={priority ? "high" : "auto"}
+                    placeholder="blur"
+                    blurDataURL={BLUR_DATA_URL}
+                  />
+                </>
               )
             ) : (
               <EventDefaultImage

@@ -95,15 +95,27 @@ export function EventCardStatic({
                 preload="metadata"
               />
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={optimizedImageUrl(event.image_url!, { width: 400, quality: 70 }) || event.image_url!}
-                alt={displayTitle}
-                className={`absolute inset-0 w-full h-full transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-muted"}`}
-                style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
-                fetchPriority="high"
-                decoding="async"
-              />
+              <>
+                {/* Blurred background for contain mode */}
+                {event.image_fit !== "cover" && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={optimizedImageUrl(event.image_url!, { width: 400, quality: 70 }) || event.image_url!}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60"
+                    aria-hidden="true"
+                  />
+                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={optimizedImageUrl(event.image_url!, { width: 400, quality: 70 }) || event.image_url!}
+                  alt={displayTitle}
+                  className={`absolute inset-0 w-full h-full transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
+                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </>
             )
           ) : (
             <EventDefaultImage
