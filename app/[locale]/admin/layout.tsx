@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { Suspense } from "react";
 
 // Force fresh role check on every request (security: prevent stale role caching)
 export const dynamic = "force-dynamic";
@@ -8,7 +7,6 @@ export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, UserRole } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
-import { SiteHeader } from "@/components/site-header";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 
 async function getProfile(userId: string): Promise<Profile | null> {
@@ -137,12 +135,7 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Regular site header with profile access */}
-      <Suspense>
-        <SiteHeader />
-      </Suspense>
-
-      {/* Admin content with sidebar */}
+      {/* Admin content with sidebar - SiteHeader is in locale layout */}
       <div className="flex-1 flex">
         <AdminSidebar
           navItems={navItems}

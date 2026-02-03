@@ -1,17 +1,11 @@
-import { SiteHeader } from "@/components/site-header";
-
 /**
  * Homepage loading skeleton for instant visual feedback.
  * Displays while React hydrates, reducing perceived load time.
+ * Note: SiteHeader is rendered globally in locale layout, not here.
  */
 export default function HomeLoading() {
   return (
     <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
-      {/* Desktop header */}
-      <div className="hidden lg:block">
-        <SiteHeader />
-      </div>
-
       {/* Hero skeleton - matches HeroSection height */}
       <div className="h-32 bg-gradient-to-b from-teal-500/5 to-transparent" />
 
