@@ -34,6 +34,16 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
     setBrokenImages(prev => new Set(prev).add(momentId));
   }, []);
 
+  // Get displayable thumbnail URL - videos can only use thumbnail_url, not media_url
+  const getThumbnailUrl = (moment: MomentStripItem): string | null => {
+    if (moment.thumbnail_url) return moment.thumbnail_url;
+    // Only fall back to media_url for photos/images (not videos)
+    if (moment.content_type !== 'video' && moment.media_url) return moment.media_url;
+    // For videos without thumbnails, use the event's cover image as fallback
+    if (moment.content_type === 'video' && moment.event_image_url) return moment.event_image_url;
+    return null;
+  };
+
   if (moments.length === 0) {
     return null;
   }
@@ -72,10 +82,10 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
             >
               {/* Clean image */}
               <div className="relative aspect-square overflow-hidden">
-                {(moment.thumbnail_url || moment.media_url) && !brokenImages.has(moment.id) ? (
+                {getThumbnailUrl(moment) && !brokenImages.has(moment.id) ? (
                   <img
                     src={cloudflareLoader({
-                      src: moment.thumbnail_url || moment.media_url!,
+                      src: getThumbnailUrl(moment)!,
                       width: 240,
                       quality: 80,
                     })}
@@ -86,7 +96,11 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <Images className="w-6 h-6 text-muted-foreground/50" />
+                    {moment.content_type === 'video' ? (
+                      <Video className="w-6 h-6 text-muted-foreground/50" />
+                    ) : (
+                      <Images className="w-6 h-6 text-muted-foreground/50" />
+                    )}
                   </div>
                 )}
 
@@ -146,10 +160,10 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
             >
               {/* Clean image - no overlays except play button */}
               <div className="relative aspect-[4/5] overflow-hidden">
-                {(moment.thumbnail_url || moment.media_url) && !brokenImages.has(moment.id) ? (
+                {getThumbnailUrl(moment) && !brokenImages.has(moment.id) ? (
                   <img
                     src={cloudflareLoader({
-                      src: moment.thumbnail_url || moment.media_url!,
+                      src: getThumbnailUrl(moment)!,
                       width: 400,
                       quality: 80,
                     })}
@@ -160,7 +174,11 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                    <Images className="w-8 h-8 text-muted-foreground/30" />
+                    {moment.content_type === 'video' ? (
+                      <Video className="w-8 h-8 text-muted-foreground/30" />
+                    ) : (
+                      <Images className="w-8 h-8 text-muted-foreground/30" />
+                    )}
                   </div>
                 )}
 

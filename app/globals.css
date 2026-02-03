@@ -10,126 +10,130 @@
   }
 
   /* ============================================
-   * DALAT COLOR PALETTE - "Golden Hour in the Highlands"
-   * Inspired by Dalat sunsets, pine forests, coffee culture,
-   * hydrangea gardens, and mountain mist.
+   * DALAT COLOR PALETTE - "Pine & Mist"
+   * Inspired by Dalat's pine forests, morning mist,
+   * coffee culture, and highland tranquility.
+   *
+   * Philosophy: Distinctive, calm, nature-forward.
+   * Pine green primary makes this instantly recognizable.
    * ============================================ */
 
   :root {
-    /* === LIGHT MODE: "Dalat Morning" === */
-    /* Soft morning mist, golden hour sunlight filtering through pine trees */
+    /* === LIGHT MODE: "Morning in the Pines" === */
+    /* Soft mist, filtered forest light, quiet elegance */
 
     /* Core semantic colors */
-    --background: 40 30% 98%;           /* warm off-white, not cold white */
-    --foreground: 25 20% 15%;           /* warm dark brown, not black */
-    --card: 40 25% 97%;                 /* slightly warmer card surface */
-    --card-foreground: 25 20% 15%;
-    --popover: 40 25% 99%;
-    --popover-foreground: 25 20% 15%;
+    --background: 40 25% 98%;           /* warm off-white, hint of cream */
+    --foreground: 160 15% 15%;          /* pine-tinted dark, not pure black */
+    --card: 40 20% 97%;                 /* subtle warmth on cards */
+    --card-foreground: 160 15% 15%;
+    --popover: 40 20% 99%;
+    --popover-foreground: 160 15% 15%;
 
-    /* Primary: Sunset Coral - warm, inviting, romantic */
-    --primary: 15 75% 55%;              /* sunset coral */
+    /* Primary: Pine Forest - calm, distinctive, grounded */
+    --primary: 158 35% 32%;             /* deep pine green - the signature */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Pine Forest tint - natural, grounding */
-    --secondary: 160 35% 92%;           /* very light pine tint */
-    --secondary-foreground: 160 40% 25%;
+    /* Secondary: Warm stone - earthy, supportive */
+    --secondary: 35 20% 93%;            /* warm light stone */
+    --secondary-foreground: 35 25% 30%;
 
-    /* Muted: Lavender mist - dreamy undertones */
-    --muted: 260 15% 95%;               /* lavender mist */
-    --muted-foreground: 260 10% 45%;
+    /* Muted: Morning mist - soft, receding */
+    --muted: 160 10% 94%;               /* barely green-gray */
+    --muted-foreground: 160 8% 45%;
 
-    /* Accent: Hydrangea blue - fresh, delicate */
-    --accent: 220 50% 94%;              /* very light hydrangea */
-    --accent-foreground: 220 55% 35%;
+    /* Accent: Soft sky blue - fresh highland air */
+    --accent: 200 30% 94%;              /* very light sky */
+    --accent-foreground: 200 40% 30%;
 
-    /* Destructive: Warm red */
-    --destructive: 0 72% 51%;
+    /* Destructive: Muted warm red (not alarming) */
+    --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
 
     /* UI elements */
-    --border: 25 15% 88%;               /* warm gray border */
-    --input: 25 15% 88%;
-    --ring: 15 75% 55%;                 /* primary for focus ring */
+    --border: 35 15% 88%;               /* warm gray border */
+    --input: 35 15% 88%;
+    --ring: 158 35% 32%;                /* pine green focus ring */
 
-    /* Charts - Dalat-themed */
-    --chart-1: 15 75% 55%;              /* sunset coral */
-    --chart-2: 160 40% 40%;             /* pine green */
-    --chart-3: 220 55% 55%;             /* hydrangea blue */
-    --chart-4: 40 85% 55%;              /* sunset gold */
-    --chart-5: 270 30% 55%;             /* misty purple */
+    /* Charts - nature palette */
+    --chart-1: 158 35% 35%;             /* pine green */
+    --chart-2: 35 65% 55%;              /* warm gold */
+    --chart-3: 200 45% 50%;             /* sky blue */
+    --chart-4: 25 55% 45%;              /* coffee brown */
+    --chart-5: 280 25% 55%;             /* misty purple */
 
     /* === EXTENDED DALAT PALETTE === */
-    /* For badges, highlights, category colors */
-    --dalat-coffee: 30 70% 40%;         /* rich coffee brown */
-    --dalat-coffee-light: 35 60% 85%;   /* light coffee cream */
-    --dalat-pine: 160 40% 30%;          /* deep pine */
-    --dalat-pine-light: 160 30% 90%;    /* light pine wash */
-    --dalat-hydrangea: 220 55% 55%;     /* hydrangea blue */
-    --dalat-hydrangea-light: 220 45% 92%;
-    --dalat-gold: 40 85% 55%;           /* warm gold */
-    --dalat-gold-light: 45 70% 90%;     /* light gold wash */
-    --dalat-mist: 270 30% 70%;          /* misty purple */
-    --dalat-mist-light: 270 25% 95%;    /* barely purple */
+    /* For badges, highlights, special UI moments */
+    --dalat-pine: 158 35% 32%;          /* same as primary */
+    --dalat-pine-light: 158 25% 92%;    /* light pine wash */
+    --dalat-gold: 38 75% 50%;           /* warm gold - for highlights */
+    --dalat-gold-light: 40 60% 92%;     /* light gold wash */
+    --dalat-coffee: 25 55% 35%;         /* rich coffee */
+    --dalat-coffee-light: 30 40% 90%;   /* coffee cream */
+    --dalat-hydrangea: 220 45% 55%;     /* hydrangea blue */
+    --dalat-hydrangea-light: 220 35% 93%;
+    --dalat-mist: 260 20% 65%;          /* misty purple */
+    --dalat-mist-light: 260 15% 95%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    /* === DARK MODE: "Dalat Evening Cafe" === */
-    /* Cozy cafe atmosphere, warm lamp lighting, not corporate darkness */
+    /* === DARK MODE: "Evening Cafe" === */
+    /* Warm lamp light, wood tables, steaming coffee */
+    /* Not corporate blue-black, but cozy brown-black */
 
     /* Core semantic colors */
-    --background: 25 20% 8%;            /* warm near-black (like coffee) */
-    --foreground: 30 20% 92%;           /* warm off-white */
-    --card: 25 18% 12%;                 /* elevated surface with warmth */
-    --card-foreground: 30 20% 92%;
-    --popover: 25 18% 10%;
-    --popover-foreground: 30 20% 92%;
+    --background: 30 20% 7%;            /* coffee-black, warm undertone */
+    --foreground: 35 15% 90%;           /* warm cream text */
+    --card: 30 18% 11%;                 /* elevated surface, still warm */
+    --card-foreground: 35 15% 90%;
+    --popover: 30 18% 9%;
+    --popover-foreground: 35 15% 90%;
 
-    /* Primary: Lighter coral for dark backgrounds */
-    --primary: 15 65% 60%;              /* softer sunset */
-    --primary-foreground: 25 30% 10%;
+    /* Primary: Brighter pine for dark backgrounds */
+    --primary: 158 40% 45%;             /* lighter pine, still recognizable */
+    --primary-foreground: 160 30% 8%;   /* dark pine for contrast */
 
-    /* Secondary: Muted pine for dark mode */
-    --secondary: 160 25% 18%;           /* dark pine */
-    --secondary-foreground: 160 30% 85%;
+    /* Secondary: Warm dark stone */
+    --secondary: 30 15% 18%;            /* dark warm stone */
+    --secondary-foreground: 35 20% 85%;
 
-    /* Muted: Deep purple-brown for muted areas */
-    --muted: 280 15% 15%;               /* purple-tinted dark */
-    --muted-foreground: 280 10% 60%;
+    /* Muted: Deep forest shadow */
+    --muted: 160 10% 15%;               /* dark pine-gray */
+    --muted-foreground: 160 8% 55%;
 
-    /* Accent: Deep hydrangea blue */
-    --accent: 220 35% 22%;              /* deep blue */
-    --accent-foreground: 220 40% 85%;
+    /* Accent: Deep sky */
+    --accent: 200 25% 20%;              /* dark sky blue */
+    --accent-foreground: 200 30% 85%;
 
-    /* Destructive: Softened for dark mode */
-    --destructive: 0 55% 45%;
+    /* Destructive: Softened for dark */
+    --destructive: 0 50% 45%;
     --destructive-foreground: 0 0% 95%;
 
     /* UI elements */
-    --border: 25 15% 20%;               /* warm dark border */
-    --input: 25 15% 20%;
-    --ring: 15 65% 60%;                 /* primary for focus */
+    --border: 30 12% 20%;               /* warm dark border */
+    --input: 30 12% 20%;
+    --ring: 158 40% 45%;                /* pine green focus */
 
     /* Charts - dark mode optimized */
-    --chart-1: 15 65% 60%;              /* sunset coral */
-    --chart-2: 160 35% 50%;             /* pine green */
-    --chart-3: 220 45% 60%;             /* hydrangea blue */
-    --chart-4: 40 75% 55%;              /* sunset gold */
-    --chart-5: 270 25% 60%;             /* misty purple */
+    --chart-1: 158 40% 50%;             /* brighter pine */
+    --chart-2: 38 70% 55%;              /* warm gold */
+    --chart-3: 200 40% 55%;             /* sky blue */
+    --chart-4: 25 50% 50%;              /* coffee */
+    --chart-5: 280 25% 55%;             /* mist purple */
 
-    /* === EXTENDED DALAT PALETTE (dark mode variants) === */
-    --dalat-coffee: 30 60% 50%;         /* warmer coffee */
-    --dalat-coffee-light: 30 40% 20%;   /* dark coffee bg */
-    --dalat-pine: 160 35% 45%;          /* lighter pine */
-    --dalat-pine-light: 160 25% 15%;    /* dark pine bg */
-    --dalat-hydrangea: 220 45% 60%;     /* lighter hydrangea */
-    --dalat-hydrangea-light: 220 30% 18%;
-    --dalat-gold: 40 75% 55%;           /* muted gold */
-    --dalat-gold-light: 40 40% 15%;     /* dark gold bg */
-    --dalat-mist: 270 25% 60%;          /* muted purple */
-    --dalat-mist-light: 270 20% 18%;    /* dark purple bg */
+    /* === EXTENDED DALAT PALETTE (dark mode) === */
+    --dalat-pine: 158 40% 45%;
+    --dalat-pine-light: 158 20% 15%;    /* dark pine bg */
+    --dalat-gold: 38 70% 55%;
+    --dalat-gold-light: 38 40% 15%;     /* dark gold bg */
+    --dalat-coffee: 25 50% 50%;
+    --dalat-coffee-light: 25 30% 15%;
+    --dalat-hydrangea: 220 40% 55%;
+    --dalat-hydrangea-light: 220 25% 18%;
+    --dalat-mist: 260 20% 55%;
+    --dalat-mist-light: 260 15% 18%;
   }
 }
 
@@ -179,7 +183,7 @@ html:not(.no-transitions) [data-no-theme-transition] {
   mix-blend-mode: overlay;
 }
 
-/* Light leak effect - dreamy photography feel in top-right */
+/* Light leak effect - soft morning light filtering through pines */
 .hero-light-leak::before {
   content: '';
   position: absolute;
@@ -189,11 +193,11 @@ html:not(.no-transitions) [data-no-theme-transition] {
   height: 60%;
   background: radial-gradient(
     ellipse at 100% 0%,
-    hsl(25 95% 53% / 0.15),
+    hsl(158 35% 50% / 0.08),
     transparent 70%
   );
   pointer-events: none;
-  mix-blend-mode: screen;
+  mix-blend-mode: overlay;
 }
 
 /* Respect reduced motion preference */
