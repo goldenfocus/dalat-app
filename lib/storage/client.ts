@@ -3,10 +3,115 @@
  *
  * Provides a unified interface for uploading files from the browser.
  * Automatically uses presigned URLs when R2 is configured.
+ *
+ * Key features:
+ * - Automatic retry with exponential backoff (critical for iOS Safari)
+ * - Presigned URL uploads for better performance
+ * - Fallback to direct Supabase upload if presign fails
  */
 
 import { createClient } from "@/lib/supabase/client";
 import { generateSmartFilename } from "@/lib/media-utils";
+
+// Retry configuration for upload resilience
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+const MAX_RETRY_DELAY = 10000; // 10 seconds
+
+/**
+ * Sleep for a specified duration
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Calculate exponential backoff delay with jitter
+ */
+function getRetryDelay(attempt: number): number {
+  const baseDelay = Math.min(
+    INITIAL_RETRY_DELAY * Math.pow(2, attempt),
+    MAX_RETRY_DELAY
+  );
+  // Add 0-25% random jitter to prevent thundering herd
+  const jitter = baseDelay * Math.random() * 0.25;
+  return Math.round(baseDelay + jitter);
+}
+
+/**
+ * Check if an error is retryable (network failures, timeouts, etc.)
+ */
+function isRetryableError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    // These indicate network/transient issues that may succeed on retry
+    return (
+      message.includes("load failed") || // iOS Safari network failure
+      message.includes("network") ||
+      message.includes("timeout") ||
+      message.includes("fetch") ||
+      message.includes("aborted") ||
+      message.includes("connection") ||
+      message.includes("econnreset") ||
+      message.includes("socket hang up")
+    );
+  }
+  return false;
+}
+
+/**
+ * Fetch with automatic retry for transient failures
+ */
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries = MAX_RETRIES
+): Promise<Response> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+
+      // Don't retry client errors (4xx) - they won't succeed on retry
+      // Do retry server errors (5xx) - they might be transient
+      if (response.ok || (response.status >= 400 && response.status < 500)) {
+        return response;
+      }
+
+      // Server error - might be worth retrying
+      if (attempt < maxRetries) {
+        const delay = getRetryDelay(attempt);
+        console.log(
+          `[Upload] Server error ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`
+        );
+        await sleep(delay);
+        continue;
+      }
+
+      // Out of retries
+      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      // If it's a retryable error and we have retries left, try again
+      if (isRetryableError(error) && attempt < maxRetries) {
+        const delay = getRetryDelay(attempt);
+        console.log(
+          `[Upload] Retryable error: ${lastError.message}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`
+        );
+        await sleep(delay);
+        continue;
+      }
+
+      // Non-retryable error or out of retries
+      throw lastError;
+    }
+  }
+
+  // Should never reach here, but TypeScript needs it
+  throw lastError || new Error("Upload failed after retries");
+}
 
 /**
  * Infer MIME type from file extension (fallback for iOS Safari issues)
@@ -78,30 +183,39 @@ export async function uploadFile(
 
   // Try presigned URL first (works for both R2 and Supabase)
   try {
-    const presignResponse = await fetch("/api/storage/presign", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        bucket,
-        path,
-        contentType,
-      }),
-    });
+    const presignResponse = await fetchWithRetry(
+      "/api/storage/presign",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bucket,
+          path,
+          contentType,
+        }),
+      },
+      2 // Fewer retries for presign - it's quick and failures are usually auth issues
+    );
 
     if (presignResponse.ok) {
       const { url, publicUrl, provider } = await presignResponse.json();
 
-      // Upload directly to the presigned URL
-      const uploadResponse = await fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": contentType,
+      // Upload directly to the presigned URL with retry
+      // This is the critical path where iOS "Load failed" errors happen
+      const uploadResponse = await fetchWithRetry(
+        url,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": contentType,
+          },
+          body: file,
         },
-        body: file,
-      });
+        MAX_RETRIES // Full retries for the actual upload
+      );
 
       if (!uploadResponse.ok) {
-        throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+        throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
       }
 
       return { publicUrl, path, provider };

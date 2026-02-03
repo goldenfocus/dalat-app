@@ -36,6 +36,10 @@ import {
   compressVideo,
   type CompressionProgress,
 } from "@/lib/video-compression";
+import {
+  needsImageCompression,
+  compressImage,
+} from "@/lib/image-compression";
 import { triggerHaptic } from "@/lib/haptics";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { triggerTranslation } from "@/lib/translations-client";
@@ -355,6 +359,38 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           console.log("[Upload] Compression complete:", fileToUpload.size);
         } catch (err) {
           console.error("[Upload] Compression error:", err);
+          // Continue with original file if compression fails
+        }
+      }
+
+      // Compress large images (>3MB) before upload - critical for iOS reliability
+      if (needsImageCompression(fileToUpload)) {
+        console.log("[Upload] Image needs compression:", fileToUpload.size);
+        setUploads(prev => prev.map(item =>
+          item.id === itemId
+            ? { ...item, status: "compressing" as const }
+            : item
+        ));
+
+        try {
+          const result = await compressImage(fileToUpload);
+          if (result.wasCompressed) {
+            fileToUpload = result.file;
+            console.log(
+              `[Upload] Image compressed: ${result.originalSize} → ${result.compressedSize}`
+            );
+            // Update preview with compressed file
+            const newPreviewUrl = URL.createObjectURL(fileToUpload);
+            setUploads(prev => prev.map(item => {
+              if (item.id === itemId) {
+                URL.revokeObjectURL(item.previewUrl);
+                return { ...item, previewUrl: newPreviewUrl };
+              }
+              return item;
+            }));
+          }
+        } catch (err) {
+          console.error("[Upload] Image compression error:", err);
           // Continue with original file if compression fails
         }
       }

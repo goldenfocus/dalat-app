@@ -1050,12 +1050,15 @@
     },
     "errors": {
       "notAllowed": "여기에 모먼트를 게시할 권한이 없습니다",
-      "uploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요.",
+      "uploadFailed": "업로드 실패. 연결을 확인하고 다시 시도하세요.",
+      "uploadFailedRetry": "{retries}회 시도 후 업로드 실패. 더 작은 파일이나 더 좋은 연결을 사용하세요.",
       "postFailed": "모먼트 게시에 실패했습니다. 다시 시도해 주세요.",
       "invalidYoutubeUrl": "잘못된 YouTube URL",
       "unsupportedFileType": "이 파일 형식은 지원되지 않습니다",
       "fileSizeLimit": "파일이 너무 큽니다 (최대 100MB)",
-      "captionRequired": "공유할 텍스트를 추가해 주세요"
+      "captionRequired": "공유할 텍스트를 추가해 주세요",
+      "networkError": "네트워크 오류. 연결을 확인하고 다시 시도하세요.",
+      "compressionFailed": "이미지를 압축할 수 없습니다. 더 작은 사진을 사용하세요."
     },
     "proUpload": {
       "title": "프로 업로드",
@@ -1063,8 +1066,8 @@
       "back": "뒤로",
       "dragDrop": "파일이나 폴더를 여기에 드래그 앤 드롭",
       "dropHere": "여기에 파일을 놓으세요",
-      "supportedFormats": "JPEG, PNG, WebP, GIF, MP4, WebM",
-      "maxSizes": "최대: 이미지 10MB, GIF 15MB, 동영상 50MB",
+      "supportedFormats": "JPEG, PNG, WebP, HEIC, GIF, MP4, WebM, MOV",
+      "maxSizes": "큰 파일은 빠른 업로드를 위해 자동 압축됩니다",
       "selectFiles": "파일 선택",
       "selectFolder": "폴더 선택",
       "startUpload": "업로드 시작",

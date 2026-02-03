@@ -1077,12 +1077,15 @@
     },
     "errors": {
       "notAllowed": "Bạn không có quyền đăng khoảnh khắc ở đây",
-      "uploadFailed": "Tải lên thất bại. Vui lòng thử lại.",
+      "uploadFailed": "Tải lên thất bại. Kiểm tra kết nối và thử lại.",
+      "uploadFailedRetry": "Tải lên thất bại sau {retries} lần thử. Dùng file nhỏ hơn hoặc kết nối tốt hơn.",
       "postFailed": "Đăng khoảnh khắc thất bại. Vui lòng thử lại.",
       "invalidYoutubeUrl": "Đường dẫn YouTube không hợp lệ",
       "unsupportedFileType": "Loại tệp này không được hỗ trợ",
       "fileSizeLimit": "Tệp quá lớn (tối đa 100MB)",
-      "captionRequired": "Vui lòng thêm nội dung để chia sẻ"
+      "captionRequired": "Vui lòng thêm nội dung để chia sẻ",
+      "networkError": "Lỗi mạng. Kiểm tra kết nối và thử lại.",
+      "compressionFailed": "Không thể nén ảnh. Thử ảnh nhỏ hơn."
     },
     "proUpload": {
       "title": "Tải Lên Chuyên Nghiệp",
@@ -1090,8 +1093,8 @@
       "back": "Quay lại",
       "dragDrop": "Kéo & thả file hoặc thư mục vào đây",
       "dropHere": "Thả file vào đây",
-      "supportedFormats": "JPEG, PNG, WebP, GIF, MP4, WebM",
-      "maxSizes": "Tối đa: 10MB ảnh, 15MB GIF, 50MB video",
+      "supportedFormats": "JPEG, PNG, WebP, HEIC, GIF, MP4, WebM, MOV",
+      "maxSizes": "File lớn sẽ được tự động nén để tải nhanh hơn",
       "selectFiles": "Chọn File",
       "selectFolder": "Chọn Thư Mục",
       "startUpload": "Bắt Đầu Tải",

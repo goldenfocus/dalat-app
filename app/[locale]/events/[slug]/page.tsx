@@ -722,22 +722,12 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   canPost={canPostMoment}
                 />
 
-                {/* Event flyer - secondary for past events, collapsible */}
+                {/* Event flyer - shown after moments for past events */}
                 {event.image_url && (
-                  <details className="group">
-                    <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-2 select-none">
-                      <svg className="w-4 h-4 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                      {t("eventFlyer")}
-                    </summary>
-                    <div className="mt-2">
-                      <EventMediaDisplay
-                        src={event.image_url}
-                        alt={eventTranslations.imageAlt || eventTranslations.title}
-                      />
-                    </div>
-                  </details>
+                  <EventMediaDisplay
+                    src={event.image_url}
+                    alt={eventTranslations.imageAlt || eventTranslations.title}
+                  />
                 )}
 
                 {/* Description */}

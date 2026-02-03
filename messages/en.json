@@ -1198,12 +1198,25 @@
     },
     "errors": {
       "notAllowed": "You don't have permission to post moments here",
-      "uploadFailed": "Failed to upload. Please try again.",
+      "uploadFailed": "Upload failed. Check your connection and try again.",
+      "uploadFailedRetry": "Upload failed after {retries} attempts. Try a smaller file or better connection.",
       "postFailed": "Failed to post moment. Please try again.",
       "invalidYoutubeUrl": "Invalid YouTube URL",
       "unsupportedFileType": "This file type is not supported",
       "fileSizeLimit": "File is too large (max 100MB)",
-      "captionRequired": "Please add some text to share"
+      "captionRequired": "Please add some text to share",
+      "networkError": "Network error. Check your connection and try again.",
+      "compressionFailed": "Could not compress image. Try a smaller photo."
+    },
+    "bulkUpload": {
+      "uploading": "Uploading {current} of {total}...",
+      "allComplete": "All {count} files uploaded!",
+      "paused": "Upload paused",
+      "complete": "complete",
+      "failed": "failed",
+      "pause": "Pause",
+      "resume": "Resume",
+      "compressing": "Compressing..."
     },
     "proUpload": {
       "title": "Pro Upload",
@@ -1211,8 +1224,8 @@
       "back": "Back",
       "dragDrop": "Drag & drop files or folder here",
       "dropHere": "Drop files here",
-      "supportedFormats": "JPEG, PNG, WebP, GIF, MP4, WebM",
-      "maxSizes": "Max: 10MB images, 15MB GIFs, 50MB videos",
+      "supportedFormats": "JPEG, PNG, WebP, HEIC, GIF, MP4, WebM, MOV",
+      "maxSizes": "Large files are auto-compressed for faster uploads",
       "selectFiles": "Select Files",
       "selectFolder": "Select Folder",
       "startUpload": "Start Upload",

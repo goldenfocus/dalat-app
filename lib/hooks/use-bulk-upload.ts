@@ -8,6 +8,10 @@ import {
   needsConversion,
 } from "@/lib/media-utils";
 import { convertIfNeeded } from "@/lib/media-conversion";
+import {
+  needsImageCompression,
+  compressImage,
+} from "@/lib/image-compression";
 import type {
   BulkUploadState,
   BulkUploadAction,
@@ -425,6 +429,32 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         activeUploadsRef.current.delete(id);
         scheduleNextProcess();
         return;
+      }
+    }
+
+    // Compress large images (>3MB) before upload - critical for iOS reliability
+    if (needsImageCompression(fileToUpload)) {
+      console.log("[BulkUpload] Image needs compression:", fileToUpload.size);
+      dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting" } }); // Reuse converting status for compression
+
+      try {
+        const result = await compressImage(fileToUpload);
+        if (result.wasCompressed) {
+          fileToUpload = result.file;
+          console.log(
+            `[BulkUpload] Image compressed: ${result.originalSize} → ${result.compressedSize}`
+          );
+          // Update preview with compressed file
+          const newPreviewUrl = URL.createObjectURL(fileToUpload);
+          dispatch({
+            type: "UPDATE_FILE",
+            id,
+            updates: { previewUrl: newPreviewUrl },
+          });
+        }
+      } catch (err) {
+        console.error("[BulkUpload] Image compression error:", err);
+        // Continue with original file if compression fails
       }
     }
 

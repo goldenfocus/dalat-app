@@ -1050,12 +1050,15 @@
     },
     "errors": {
       "notAllowed": "您没有在此发布动态的权限",
-      "uploadFailed": "上传失败。请重试。",
+      "uploadFailed": "上传失败。检查连接后重试。",
+      "uploadFailedRetry": "尝试{retries}次后上传失败。使用较小的文件或更好的连接。",
       "postFailed": "发布动态失败。请重试。",
       "invalidYoutubeUrl": "无效的YouTube链接",
       "unsupportedFileType": "不支持此文件类型",
       "fileSizeLimit": "文件太大（最大100MB）",
-      "captionRequired": "请添加要分享的文字"
+      "captionRequired": "请添加要分享的文字",
+      "networkError": "网络错误。检查连接后重试。",
+      "compressionFailed": "无法压缩图片。尝试较小的图片。"
     },
     "proUpload": {
       "title": "专业上传",
@@ -1063,8 +1066,8 @@
       "back": "返回",
       "dragDrop": "将文件或文件夹拖放到这里",
       "dropHere": "将文件放到这里",
-      "supportedFormats": "JPEG、PNG、WebP、GIF、MP4、WebM",
-      "maxSizes": "最大：图片 10MB，GIF 15MB，视频 50MB",
+      "supportedFormats": "JPEG、PNG、WebP、HEIC、GIF、MP4、WebM、MOV",
+      "maxSizes": "大文件将自动压缩以加快上传速度",
       "selectFiles": "选择文件",
       "selectFolder": "选择文件夹",
       "startUpload": "开始上传",

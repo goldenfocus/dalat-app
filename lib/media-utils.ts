@@ -31,9 +31,10 @@ export function getMediaType(url: string | null): MediaType | null {
 }
 
 // File size limits in bytes
+// Note: Images are auto-compressed before upload, so we allow larger originals
 export const MEDIA_SIZE_LIMITS = {
-  image: 10 * 1024 * 1024, // 10MB
-  gif: 15 * 1024 * 1024, // 15MB
+  image: 50 * 1024 * 1024, // 50MB (will be compressed to ~2MB before upload)
+  gif: 15 * 1024 * 1024, // 15MB (GIFs can't be compressed without losing animation)
   video: 500 * 1024 * 1024, // 500MB (will be compressed client-side if >50MB)
 } as const;
 
@@ -234,7 +235,7 @@ export function validateMediaFile(file: File): string | null {
   }
 
   if ((isValidImage || isHeicByExt) && file.size > MEDIA_SIZE_LIMITS.image) {
-    return "Images must be less than 10MB";
+    return "Images must be less than 50MB";
   }
 
   if (isGif && file.size > MEDIA_SIZE_LIMITS.gif) {
