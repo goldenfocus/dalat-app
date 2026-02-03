@@ -42,6 +42,21 @@ interface MomentCardProps {
   onLightboxOpen?: () => void;
 }
 
+// Extract YouTube video ID from URL
+function extractVideoId(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /youtube\.com\/shorts\/([^&\s?]+)/,
+    /youtube\.com\/live\/([^&\s?]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+  return null;
+}
+
 export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOpen }: MomentCardProps) {
   const [thumbnailError, setThumbnailError] = useState(false);
 
@@ -51,9 +66,17 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
     : `/moments/${moment.id}`;
   const href = from ? `${basePath}?from=${from}` : basePath;
 
+  // Get YouTube video ID (from stored field or extracted from URL)
+  const youtubeVideoId = moment.youtube_video_id || extractVideoId((moment as { youtube_url?: string }).youtube_url);
+
   // Get thumbnail for YouTube moments
-  const youtubeThumb = moment.content_type === "youtube" && moment.youtube_video_id
-    ? getYouTubeThumbnail(moment.youtube_video_id, "high")
+  const youtubeThumb = moment.content_type === "youtube" && youtubeVideoId
+    ? getYouTubeThumbnail(youtubeVideoId, "high")
+    : null;
+
+  // Direct YouTube URL for opening in new tab
+  const youtubeDirectUrl = youtubeVideoId
+    ? `https://www.youtube.com/watch?v=${youtubeVideoId}`
     : null;
 
   // Derive video thumbnail: use stored thumbnail_url, or derive from CF Stream playback URL
@@ -228,6 +251,21 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
         )}
       </article>
   );
+
+  // YouTube moments: always open YouTube directly in new tab
+  if (moment.content_type === "youtube" && youtubeDirectUrl) {
+    return (
+      <a
+        href={youtubeDirectUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block touch-manipulation"
+        onClick={() => triggerHaptic("selection")}
+      >
+        {cardContent}
+      </a>
+    );
+  }
 
   // Lightbox mode: use button
   if (onLightboxOpen) {
