@@ -23,6 +23,7 @@ import { FlyerBuilder } from "@/components/events/flyer-builder";
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
 import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
 import { EventMaterialsInput, createMaterialsForEvent } from "@/components/events/event-materials-input";
+import { PlaylistInput } from "@/components/events/playlist-input";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
 import { TicketTierInput, type TicketTier, type PriceType } from "@/components/events/ticket-tier-input";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
@@ -96,6 +97,17 @@ async function triggerAIProcessing(eventId: string) {
   });
 }
 
+interface PlaylistTrack {
+  id: string;
+  file_url: string;
+  title: string | null;
+  artist: string | null;
+  album: string | null;
+  thumbnail_url: string | null;
+  duration_seconds: number | null;
+  sort_order: number;
+}
+
 interface EventFormProps {
   userId: string;
   userRole?: UserRole;
@@ -108,6 +120,9 @@ interface EventFormProps {
   // For inline settings (moments config, retranslate, etc.)
   initialSettings?: EventSettings | null;
   pendingMomentsCount?: number;
+  // For playlist management
+  initialPlaylistId?: string | null;
+  initialPlaylistTracks?: PlaylistTrack[];
 }
 
 /**
@@ -148,12 +163,15 @@ export function EventForm({
   copyFromSponsors = [],
   initialSettings,
   pendingMomentsCount = 0,
+  initialPlaylistId,
+  initialPlaylistTracks = [],
 }: EventFormProps) {
   const router = useRouter();
   // Only moderators and above can select organizers
   const canSelectOrganizer = hasRoleLevel(userRole, "moderator");
   const t = useTranslations("eventForm");
   const tErrors = useTranslations("errors");
+  const tPlaylist = useTranslations("playlist");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -1105,6 +1123,23 @@ export function EventForm({
               )}
             </CollapsibleContent>
           </Collapsible>
+
+          {/* Playlist (only when editing) */}
+          {isEditing && event && (
+            <Collapsible className="pt-4 border-t">
+              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                <span>{tPlaylist("title") || "Playlist"}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4">
+                <PlaylistInput
+                  eventId={event.id}
+                  initialPlaylistId={initialPlaylistId}
+                  initialTracks={initialPlaylistTracks}
+                />
+              </CollapsibleContent>
+            </Collapsible>
+          )}
 
           {/* Settings (only when editing) */}
           {isEditing && event && (

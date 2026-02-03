@@ -1,7 +1,7 @@
 {
   "hero": {
-    "headline": "Tìm sự kiện. Khám phá địa điểm.",
-    "subtitle": "Tham gia cộng đồng tại Đà Lạt",
+    "headline": "Đang diễn ra tại Đà Lạt ✨",
+    "subtitle": "Nơi thành phố gặp gỡ",
     "search": "Tìm kiếm",
     "map": "Bản đồ",
     "calendar": "Lịch",
@@ -1923,6 +1923,12 @@
     "pause": "Tạm dừng",
     "previous": "Bài trước",
     "next": "Bài tiếp",
-    "trackOf": "Bài {current} / {total}"
+    "trackOf": "Bài {current} / {total}",
+    "uploadAudio": "Tải lên file âm thanh",
+    "uploadAudioHint": "MP3, M4A, WAV (tối đa 100MB mỗi file)",
+    "extractingMetadata": "Đang trích xuất thông tin...",
+    "uploading": "Đang tải lên",
+    "uploadComplete": "Hoàn tất",
+    "noTracksYet": "Chưa có bài nào. Tải lên file âm thanh để tạo playlist."
   }
 }

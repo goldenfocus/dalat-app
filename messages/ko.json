@@ -1850,6 +1850,12 @@
     "pause": "일시정지",
     "previous": "이전 곡",
     "next": "다음 곡",
-    "trackOf": "{total}곡 중 {current}번째"
+    "trackOf": "{total}곡 중 {current}번째",
+    "uploadAudio": "오디오 파일 업로드",
+    "uploadAudioHint": "MP3, M4A, WAV (최대 100MB)",
+    "extractingMetadata": "메타데이터 추출 중...",
+    "uploading": "업로드 중",
+    "uploadComplete": "완료",
+    "noTracksYet": "아직 곡이 없습니다. 오디오 파일을 업로드하여 재생목록을 만드세요."
   }
 }

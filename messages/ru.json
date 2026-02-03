@@ -1847,6 +1847,12 @@
     "pause": "Пауза",
     "previous": "Предыдущий трек",
     "next": "Следующий трек",
-    "trackOf": "Трек {current} из {total}"
+    "trackOf": "Трек {current} из {total}",
+    "uploadAudio": "Загрузить аудиофайлы",
+    "uploadAudioHint": "MP3, M4A, WAV (макс. 100МБ каждый)",
+    "extractingMetadata": "Извлечение метаданных...",
+    "uploading": "Загрузка",
+    "uploadComplete": "Готово",
+    "noTracksYet": "Пока нет треков. Загрузите аудиофайлы для создания плейлиста."
   }
 }

@@ -1,7 +1,7 @@
 {
   "hero": {
-    "headline": "Trouvez des événements. Découvrez des lieux.",
-    "subtitle": "Rejoignez la communauté à Đà Lạt",
+    "headline": "À Đà Lạt en ce moment ✨",
+    "subtitle": "Où la ville se retrouve",
     "search": "Rechercher",
     "map": "Carte",
     "calendar": "Calendrier",
@@ -1847,6 +1847,12 @@
     "pause": "Pause",
     "previous": "Piste précédente",
     "next": "Piste suivante",
-    "trackOf": "Piste {current} sur {total}"
+    "trackOf": "Piste {current} sur {total}",
+    "uploadAudio": "Télécharger des fichiers audio",
+    "uploadAudioHint": "MP3, M4A, WAV (max 100Mo chacun)",
+    "extractingMetadata": "Extraction des métadonnées...",
+    "uploading": "Téléchargement",
+    "uploadComplete": "Terminé",
+    "noTracksYet": "Pas encore de pistes. Téléchargez des fichiers audio pour créer une playlist."
   }
 }

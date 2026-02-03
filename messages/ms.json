@@ -1847,6 +1847,12 @@
     "pause": "Jeda",
     "previous": "Lagu sebelumnya",
     "next": "Lagu seterusnya",
-    "trackOf": "Lagu {current} daripada {total}"
+    "trackOf": "Lagu {current} daripada {total}",
+    "uploadAudio": "Muat naik fail audio",
+    "uploadAudioHint": "MP3, M4A, WAV (maks 100MB setiap satu)",
+    "extractingMetadata": "Mengekstrak metadata...",
+    "uploading": "Memuat naik",
+    "uploadComplete": "Selesai",
+    "noTracksYet": "Belum ada lagu. Muat naik fail audio untuk membuat senarai main."
   }
 }

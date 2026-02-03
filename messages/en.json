@@ -1,7 +1,7 @@
 {
   "hero": {
-    "headline": "Find events. Discover venues.",
-    "subtitle": "Join your community in Đà Lạt",
+    "headline": "Happening in Đà Lạt ✨",
+    "subtitle": "Where the city comes together",
     "search": "Search",
     "map": "Map",
     "calendar": "Calendar",
@@ -1923,6 +1923,12 @@
     "pause": "Pause",
     "previous": "Previous track",
     "next": "Next track",
-    "trackOf": "Track {current} of {total}"
+    "trackOf": "Track {current} of {total}",
+    "uploadAudio": "Upload audio files",
+    "uploadAudioHint": "MP3, M4A, WAV (max 100MB each)",
+    "extractingMetadata": "Extracting metadata...",
+    "uploading": "Uploading",
+    "uploadComplete": "Complete",
+    "noTracksYet": "No tracks yet. Upload audio files to create a playlist."
   }
 }

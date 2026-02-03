@@ -1847,6 +1847,12 @@
     "pause": "Pause",
     "previous": "Vorheriger Titel",
     "next": "Nächster Titel",
-    "trackOf": "Titel {current} von {total}"
+    "trackOf": "Titel {current} von {total}",
+    "uploadAudio": "Audiodateien hochladen",
+    "uploadAudioHint": "MP3, M4A, WAV (max. 100MB pro Datei)",
+    "extractingMetadata": "Metadaten werden extrahiert...",
+    "uploading": "Wird hochgeladen",
+    "uploadComplete": "Fertig",
+    "noTracksYet": "Noch keine Titel. Laden Sie Audiodateien hoch, um eine Playlist zu erstellen."
   }
 }

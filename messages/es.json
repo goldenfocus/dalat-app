@@ -1847,6 +1847,12 @@
     "pause": "Pausar",
     "previous": "Pista anterior",
     "next": "Pista siguiente",
-    "trackOf": "Pista {current} de {total}"
+    "trackOf": "Pista {current} de {total}",
+    "uploadAudio": "Subir archivos de audio",
+    "uploadAudioHint": "MP3, M4A, WAV (máx. 100MB cada uno)",
+    "extractingMetadata": "Extrayendo metadatos...",
+    "uploading": "Subiendo",
+    "uploadComplete": "Completado",
+    "noTracksYet": "Aún no hay pistas. Sube archivos de audio para crear una playlist."
   }
 }

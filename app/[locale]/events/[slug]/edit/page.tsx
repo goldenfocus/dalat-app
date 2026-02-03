@@ -6,6 +6,20 @@ export const maxDuration = 60;
 import { EventForm } from "@/components/events/event-form";
 import { hasRoleLevel, type Event, type Sponsor, type EventSponsor, type EventSettings, type UserRole, type EventMaterial } from "@/lib/types";
 
+interface PlaylistData {
+  playlistId: string | null;
+  tracks: {
+    id: string;
+    file_url: string;
+    title: string | null;
+    artist: string | null;
+    album: string | null;
+    thumbnail_url: string | null;
+    duration_seconds: number | null;
+    sort_order: number;
+  }[];
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -70,6 +84,27 @@ export default async function EditEventPage({ params }: PageProps) {
     .eq("event_id", event.id)
     .order("sort_order");
 
+  // Fetch playlist and tracks
+  const { data: playlist } = await supabase
+    .from("event_playlists")
+    .select("id")
+    .eq("event_id", event.id)
+    .single();
+
+  let playlistData: PlaylistData = { playlistId: null, tracks: [] };
+  if (playlist) {
+    const { data: tracks } = await supabase
+      .from("playlist_tracks")
+      .select("id, file_url, title, artist, album, thumbnail_url, duration_seconds, sort_order")
+      .eq("playlist_id", playlist.id)
+      .order("sort_order");
+
+    playlistData = {
+      playlistId: playlist.id,
+      tracks: tracks || [],
+    };
+  }
+
   // Get pending moments count for moderation badge
   const { data: counts } = await supabase.rpc("get_moment_counts", {
     p_event_id: event.id,
@@ -88,6 +123,8 @@ export default async function EditEventPage({ params }: PageProps) {
           initialMaterials={(materials ?? []) as EventMaterial[]}
           initialSettings={settings as EventSettings | null}
           pendingMomentsCount={pendingCount}
+          initialPlaylistId={playlistData.playlistId}
+          initialPlaylistTracks={playlistData.tracks}
         />
       </div>
     </main>

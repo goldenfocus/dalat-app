@@ -1847,6 +1847,12 @@
     "pause": "一時停止",
     "previous": "前の曲",
     "next": "次の曲",
-    "trackOf": "{total}曲中{current}曲目"
+    "trackOf": "{total}曲中{current}曲目",
+    "uploadAudio": "音声ファイルをアップロード",
+    "uploadAudioHint": "MP3、M4A、WAV（各最大100MB）",
+    "extractingMetadata": "メタデータを抽出中...",
+    "uploading": "アップロード中",
+    "uploadComplete": "完了",
+    "noTracksYet": "まだ曲がありません。音声ファイルをアップロードしてプレイリストを作成してください。"
   }
 }

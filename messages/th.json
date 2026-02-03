@@ -1847,6 +1847,12 @@
     "pause": "หยุดชั่วคราว",
     "previous": "เพลงก่อนหน้า",
     "next": "เพลงถัดไป",
-    "trackOf": "เพลงที่ {current} จาก {total}"
+    "trackOf": "เพลงที่ {current} จาก {total}",
+    "uploadAudio": "อัปโหลดไฟล์เสียง",
+    "uploadAudioHint": "MP3, M4A, WAV (สูงสุด 100MB ต่อไฟล์)",
+    "extractingMetadata": "กำลังดึงข้อมูล...",
+    "uploading": "กำลังอัปโหลด",
+    "uploadComplete": "เสร็จสิ้น",
+    "noTracksYet": "ยังไม่มีเพลง อัปโหลดไฟล์เสียงเพื่อสร้างเพลย์ลิสต์"
   }
 }

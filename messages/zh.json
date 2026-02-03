@@ -1850,6 +1850,12 @@
     "pause": "暂停",
     "previous": "上一首",
     "next": "下一首",
-    "trackOf": "第{current}首，共{total}首"
+    "trackOf": "第{current}首，共{total}首",
+    "uploadAudio": "上传音频文件",
+    "uploadAudioHint": "MP3、M4A、WAV（每个最大100MB）",
+    "extractingMetadata": "正在提取元数据...",
+    "uploading": "上传中",
+    "uploadComplete": "完成",
+    "noTracksYet": "暂无曲目。上传音频文件以创建播放列表。"
   }
 }

@@ -398,6 +398,37 @@ async function getEventMaterials(eventId: string): Promise<EventMaterial[]> {
   return (data ?? []) as EventMaterial[];
 }
 
+interface PlaylistSummary {
+  trackCount: number;
+  totalDuration: number;
+}
+
+async function getEventPlaylistSummary(eventId: string): Promise<PlaylistSummary | null> {
+  const supabase = await createClient();
+
+  // Check if event has a playlist with tracks
+  const { data: playlist } = await supabase
+    .from("event_playlists")
+    .select("id")
+    .eq("event_id", eventId)
+    .single();
+
+  if (!playlist) return null;
+
+  // Get track count and total duration
+  const { data: tracks } = await supabase
+    .from("playlist_tracks")
+    .select("duration_seconds")
+    .eq("playlist_id", playlist.id);
+
+  if (!tracks || tracks.length === 0) return null;
+
+  return {
+    trackCount: tracks.length,
+    totalDuration: tracks.reduce((acc, t) => acc + (t.duration_seconds || 0), 0),
+  };
+}
+
 async function canUserPostMoment(eventId: string, userId: string | null, creatorId: string): Promise<boolean> {
   if (!userId) return false;
 
@@ -557,7 +588,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
-  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials] = await Promise.all([
+  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
@@ -580,6 +611,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     ),
     getEventSettings(event.id),
     getEventMaterials(event.id),
+    getEventPlaylistSummary(event.id),
   ]);
 
   // Destructure combined RSVP result
@@ -816,31 +848,25 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               <EventMaterialsSummary materials={materials} />
             )}
 
-            {/* Playlist link for audio materials */}
-            {(() => {
-              const audioMaterials = materials.filter(m => m.material_type === "audio");
-              if (audioMaterials.length === 0) return null;
-              const totalDuration = audioMaterials.reduce((acc, m) => acc + (m.duration_seconds || 0), 0);
-              const durationMinutes = Math.round(totalDuration / 60);
-              return (
-                <Link
-                  href={`/events/${event.slug}/playlist`}
-                  className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
-                >
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <Music className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium">{tPlaylist("listenAsPlaylist")}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {tPlaylist("tracks", { count: audioMaterials.length })}
-                      {durationMinutes > 0 && ` · ${durationMinutes} min`}
-                    </p>
-                  </div>
-                  <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </Link>
-              );
-            })()}
+            {/* Playlist link */}
+            {playlistSummary && (
+              <Link
+                href={`/events/${event.slug}/playlist`}
+                className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
+              >
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                  <Music className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium">{tPlaylist("listenAsPlaylist")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {tPlaylist("tracks", { count: playlistSummary.trackCount })}
+                    {playlistSummary.totalDuration > 0 && ` · ${Math.round(playlistSummary.totalDuration / 60)} min`}
+                  </p>
+                </div>
+                <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              </Link>
+            )}
 
             {/* Attendees */}
             <AttendeeList attendees={attendees} waitlist={waitlist} interested={interested} isPast={isPast} />

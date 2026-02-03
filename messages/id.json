@@ -1847,6 +1847,12 @@
     "pause": "Jeda",
     "previous": "Lagu sebelumnya",
     "next": "Lagu berikutnya",
-    "trackOf": "Lagu {current} dari {total}"
+    "trackOf": "Lagu {current} dari {total}",
+    "uploadAudio": "Unggah file audio",
+    "uploadAudioHint": "MP3, M4A, WAV (maks 100MB per file)",
+    "extractingMetadata": "Mengekstrak metadata...",
+    "uploading": "Mengunggah",
+    "uploadComplete": "Selesai",
+    "noTracksYet": "Belum ada lagu. Unggah file audio untuk membuat playlist."
   }
 }
