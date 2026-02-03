@@ -163,13 +163,14 @@ export function ImmersiveMomentView({
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 relative flex items-center justify-center">
+      <div className="flex-1 relative flex items-center justify-center overflow-hidden px-4 py-16">
         {/* Photo */}
         {moment.content_type === "photo" && imageUrl && (
           <img
             src={imageUrl}
             alt={moment.text_content || "Photo"}
             className="max-w-full max-h-full object-contain"
+            style={{ maxHeight: 'calc(100vh - 200px)' }}
           />
         )}
 
