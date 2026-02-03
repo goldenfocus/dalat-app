@@ -1833,5 +1833,20 @@
     "viewEvent": "Lihat acara Anda",
     "copyLink": "Salin tautan",
     "copied": "Disalin!"
+  },
+  "playlist": {
+    "title": "Daftar Putar",
+    "tracks": "{count, plural, one {# lagu} other {# lagu}}",
+    "totalDuration": "{minutes} menit",
+    "nowPlaying": "Sedang diputar",
+    "upNext": "Selanjutnya",
+    "listenAsPlaylist": "Dengarkan sebagai playlist",
+    "sharePlaylist": "Bagikan playlist",
+    "noAudioFiles": "Tidak ada file audio di acara ini",
+    "play": "Putar",
+    "pause": "Jeda",
+    "previous": "Lagu sebelumnya",
+    "next": "Lagu berikutnya",
+    "trackOf": "Lagu {current} dari {total}"
   }
 }

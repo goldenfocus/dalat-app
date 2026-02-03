@@ -1833,5 +1833,20 @@
     "viewEvent": "Ver tu evento en vivo",
     "copyLink": "Copiar enlace",
     "copied": "¡Copiado!"
+  },
+  "playlist": {
+    "title": "Lista de reproducción",
+    "tracks": "{count, plural, one {# pista} other {# pistas}}",
+    "totalDuration": "{minutes} min",
+    "nowPlaying": "Reproduciendo ahora",
+    "upNext": "A continuación",
+    "listenAsPlaylist": "Escuchar como playlist",
+    "sharePlaylist": "Compartir playlist",
+    "noAudioFiles": "No hay archivos de audio en este evento",
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "previous": "Pista anterior",
+    "next": "Pista siguiente",
+    "trackOf": "Pista {current} de {total}"
   }
 }

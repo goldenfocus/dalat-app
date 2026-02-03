@@ -8,6 +8,9 @@
  * 2. Migrates remaining videos from Supabase Storage to Cloudflare Stream
  */
 
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+
 import { createClient } from '@supabase/supabase-js';
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';

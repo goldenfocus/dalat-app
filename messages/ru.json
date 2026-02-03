@@ -1833,5 +1833,20 @@
     "viewEvent": "Посмотреть событие",
     "copyLink": "Копировать ссылку",
     "copied": "Скопировано!"
+  },
+  "playlist": {
+    "title": "Плейлист",
+    "tracks": "{count, plural, one {# трек} few {# трека} other {# треков}}",
+    "totalDuration": "{minutes} мин",
+    "nowPlaying": "Сейчас играет",
+    "upNext": "Далее",
+    "listenAsPlaylist": "Слушать как плейлист",
+    "sharePlaylist": "Поделиться плейлистом",
+    "noAudioFiles": "В этом событии нет аудиофайлов",
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "previous": "Предыдущий трек",
+    "next": "Следующий трек",
+    "trackOf": "Трек {current} из {total}"
   }
 }

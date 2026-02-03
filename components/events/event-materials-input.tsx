@@ -131,6 +131,7 @@ export function EventMaterialsInput({
   const [addMode, setAddMode] = useState<"file" | "youtube">("file");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -216,26 +217,22 @@ export function EventMaterialsInput({
     }
   }, [eventId]);
 
-  // Handle file selection
-  const handleFileSelect = useCallback(async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-
-    const file = files[0];
-
+  // Process a single file and return draft material or uploaded material
+  const processFile = useCallback(async (
+    file: File,
+    sortOrderOffset: number
+  ): Promise<{ draft?: DraftMaterial; material?: EventMaterial } | null> => {
     // Validate file type
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      setError(t("materialErrors.unsupportedFileType"));
-      return;
+      console.warn(`Skipping unsupported file type: ${file.type}`);
+      return null;
     }
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      setError(t("materialErrors.fileSizeLimit"));
-      return;
+      console.warn(`Skipping file too large: ${file.name}`);
+      return null;
     }
-
-    setError(null);
-    setIsUploading(true);
 
     const materialType = FILE_TYPE_MAP[file.type] || "document";
 
@@ -278,15 +275,13 @@ export function EventMaterialsInput({
         };
       } catch (err) {
         console.error("Failed to extract audio metadata:", err);
-        // Continue without metadata - don't block upload
       }
     }
 
     if (isDraftMode) {
-      // Draft mode: create preview URL, store file for later upload
       const previewUrl = URL.createObjectURL(file);
       const draft: DraftMaterial = {
-        id: `draft-${Date.now()}`,
+        id: `draft-${Date.now()}-${sortOrderOffset}`,
         material_type: materialType,
         file_url: previewUrl,
         original_filename: file.name,
@@ -305,84 +300,118 @@ export function EventMaterialsInput({
         pending_file: file,
         pending_thumbnail: audioMetadata.thumbnailBlob || undefined,
       };
-
-      const updated = [...draftMaterials, draft];
-      onDraftChange?.(updated);
-      setIsAdding(false);
-      setIsUploading(false);
+      return { draft };
     } else {
-      // Live mode: upload immediately
       const url = await uploadFile(file);
-      if (url) {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+      if (!url) return null;
 
-        // Upload album art thumbnail if available
-        let thumbnailUrl: string | null = null;
-        if (audioMetadata.thumbnailBlob && eventId) {
-          try {
-            const ext = audioMetadata.thumbnailBlob.type.split("/")[1] || "jpg";
-            const thumbFileName = `${eventId}/thumb-${Date.now()}.${ext}`;
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
-            const { error: thumbUploadError } = await supabase.storage
+      // Upload album art thumbnail if available
+      let thumbnailUrl: string | null = null;
+      if (audioMetadata.thumbnailBlob && eventId) {
+        try {
+          const ext = audioMetadata.thumbnailBlob.type.split("/")[1] || "jpg";
+          const thumbFileName = `${eventId}/thumb-${Date.now()}-${sortOrderOffset}.${ext}`;
+
+          const { error: thumbUploadError } = await supabase.storage
+            .from("event-materials")
+            .upload(thumbFileName, audioMetadata.thumbnailBlob, {
+              cacheControl: "3600",
+              upsert: true,
+            });
+
+          if (!thumbUploadError) {
+            const { data: { publicUrl } } = supabase.storage
               .from("event-materials")
-              .upload(thumbFileName, audioMetadata.thumbnailBlob, {
-                cacheControl: "3600",
-                upsert: true,
-              });
-
-            if (!thumbUploadError) {
-              const { data: { publicUrl } } = supabase.storage
-                .from("event-materials")
-                .getPublicUrl(thumbFileName);
-              thumbnailUrl = publicUrl;
-            }
-          } catch (err) {
-            console.error("Failed to upload album art:", err);
-            // Continue without thumbnail
+              .getPublicUrl(thumbFileName);
+            thumbnailUrl = publicUrl;
           }
+        } catch (err) {
+          console.error("Failed to upload album art:", err);
         }
+      }
 
-        const { data, error: insertError } = await supabase
-          .from("event_materials")
-          .insert({
-            event_id: eventId,
-            material_type: materialType,
-            file_url: url,
-            original_filename: file.name,
-            file_size: file.size,
-            mime_type: file.type,
-            sort_order: materials.length,
-            created_by: user?.id,
-            // Audio metadata fields
-            title: audioMetadata.title,
-            artist: audioMetadata.artist,
-            album: audioMetadata.album,
-            duration_seconds: audioMetadata.durationSeconds,
-            thumbnail_url: thumbnailUrl,
-            track_number: audioMetadata.trackNumber,
-            release_year: audioMetadata.releaseYear,
-            genre: audioMetadata.genre,
-          })
-          .select()
-          .single();
+      const { data, error: insertError } = await supabase
+        .from("event_materials")
+        .insert({
+          event_id: eventId,
+          material_type: materialType,
+          file_url: url,
+          original_filename: file.name,
+          file_size: file.size,
+          mime_type: file.type,
+          sort_order: materials.length + sortOrderOffset,
+          created_by: user?.id,
+          title: audioMetadata.title,
+          artist: audioMetadata.artist,
+          album: audioMetadata.album,
+          duration_seconds: audioMetadata.durationSeconds,
+          thumbnail_url: thumbnailUrl,
+          track_number: audioMetadata.trackNumber,
+          release_year: audioMetadata.releaseYear,
+          genre: audioMetadata.genre,
+        })
+        .select()
+        .single();
 
-        if (insertError) {
-          setError(t("materialErrors.saveFailed"));
-          setIsUploading(false);
-          return;
-        }
+      if (insertError) {
+        console.error("Failed to save material:", insertError);
+        return null;
+      }
 
-        const updated = [...materials, data];
-        setMaterials(updated);
-        onChange?.(updated);
-        setIsAdding(false);
-        setIsUploading(false);
-      } else {
-        setIsUploading(false);
+      return { material: data };
+    }
+  }, [isDraftMode, eventId, materials.length, uploadFile]);
+
+  // Handle file selection (supports multiple files)
+  const handleFileSelect = useCallback(async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setError(null);
+    setIsUploading(true);
+
+    const fileArray = Array.from(files);
+    const total = fileArray.length;
+
+    // Show progress for multi-file upload
+    if (total > 1) {
+      setUploadProgress({ current: 0, total });
+    }
+
+    const newDrafts: DraftMaterial[] = [];
+    const newMaterials: EventMaterial[] = [];
+
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+
+      if (total > 1) {
+        setUploadProgress({ current: i + 1, total });
+      }
+
+      const result = await processFile(file, i);
+      if (result?.draft) {
+        newDrafts.push(result.draft);
+      } else if (result?.material) {
+        newMaterials.push(result.material);
       }
     }
-  }, [isDraftMode, draftMaterials, materials, eventId, onDraftChange, onChange, uploadFile]);
+
+    // Update state with all processed files
+    if (isDraftMode && newDrafts.length > 0) {
+      const updated = [...draftMaterials, ...newDrafts];
+      onDraftChange?.(updated);
+    } else if (newMaterials.length > 0) {
+      const updated = [...materials, ...newMaterials];
+      setMaterials(updated);
+      onChange?.(updated);
+    }
+
+    setIsAdding(false);
+    setIsUploading(false);
+    setUploadProgress(null);
+  }, [isDraftMode, draftMaterials, materials, onDraftChange, onChange, processFile]);
 
   // Handle YouTube URL
   const handleAddYouTube = useCallback(async () => {
@@ -864,7 +893,14 @@ export function EventMaterialsInput({
               onDrop={handleDrop}
             >
               {isUploading ? (
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto" />
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                  {uploadProgress && (
+                    <p className="text-sm text-muted-foreground">
+                      Uploading {uploadProgress.current} of {uploadProgress.total}...
+                    </p>
+                  )}
+                </div>
               ) : (
                 <>
                   <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
@@ -918,6 +954,7 @@ export function EventMaterialsInput({
             ref={fileInputRef}
             type="file"
             accept={ALLOWED_MIME_TYPES.join(",")}
+            multiple
             onChange={(e) => {
               handleFileSelect(e.target.files);
               e.target.value = "";

@@ -1833,5 +1833,20 @@
     "viewEvent": "Dein Event live ansehen",
     "copyLink": "Link kopieren",
     "copied": "Kopiert!"
+  },
+  "playlist": {
+    "title": "Wiedergabeliste",
+    "tracks": "{count, plural, one {# Titel} other {# Titel}}",
+    "totalDuration": "{minutes} Min",
+    "nowPlaying": "Wird abgespielt",
+    "upNext": "Als Nächstes",
+    "listenAsPlaylist": "Als Playlist anhören",
+    "sharePlaylist": "Playlist teilen",
+    "noAudioFiles": "Keine Audiodateien in diesem Event",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "previous": "Vorheriger Titel",
+    "next": "Nächster Titel",
+    "trackOf": "Titel {current} von {total}"
   }
 }

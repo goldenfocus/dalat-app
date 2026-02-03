@@ -1833,5 +1833,20 @@
     "viewEvent": "ดูกิจกรรมของคุณ",
     "copyLink": "คัดลอกลิงก์",
     "copied": "คัดลอกแล้ว!"
+  },
+  "playlist": {
+    "title": "เพลย์ลิสต์",
+    "tracks": "{count, plural, one {# เพลง} other {# เพลง}}",
+    "totalDuration": "{minutes} นาที",
+    "nowPlaying": "กำลังเล่น",
+    "upNext": "เพลงถัดไป",
+    "listenAsPlaylist": "ฟังเป็นเพลย์ลิสต์",
+    "sharePlaylist": "แชร์เพลย์ลิสต์",
+    "noAudioFiles": "ไม่มีไฟล์เสียงในกิจกรรมนี้",
+    "play": "เล่น",
+    "pause": "หยุดชั่วคราว",
+    "previous": "เพลงก่อนหน้า",
+    "next": "เพลงถัดไป",
+    "trackOf": "เพลงที่ {current} จาก {total}"
   }
 }

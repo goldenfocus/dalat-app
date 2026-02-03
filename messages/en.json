@@ -1909,5 +1909,20 @@
     "hideReplies": "Hide replies",
     "mute": "Mute thread",
     "unmute": "Unmute thread"
+  },
+  "playlist": {
+    "title": "Playlist",
+    "tracks": "{count, plural, one {# track} other {# tracks}}",
+    "totalDuration": "{minutes} min",
+    "nowPlaying": "Now playing",
+    "upNext": "Up next",
+    "listenAsPlaylist": "Listen as playlist",
+    "sharePlaylist": "Share playlist",
+    "noAudioFiles": "No audio files in this event",
+    "play": "Play",
+    "pause": "Pause",
+    "previous": "Previous track",
+    "next": "Next track",
+    "trackOf": "Track {current} of {total}"
   }
 }

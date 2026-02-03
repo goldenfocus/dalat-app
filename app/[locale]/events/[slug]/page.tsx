@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
-import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat, Video } from "lucide-react";
+import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat, Video, Music, Play } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
@@ -547,9 +547,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   }
 
   const event = result.event;
-  const [t, tCommon] = await Promise.all([
+  const [t, tCommon, tPlaylist] = await Promise.all([
     getTranslations("events"),
     getTranslations("common"),
+    getTranslations("playlist"),
   ]);
 
   const currentUserId = await getCurrentUserId();
@@ -814,6 +815,32 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             {materials.length > 0 && (
               <EventMaterialsSummary materials={materials} />
             )}
+
+            {/* Playlist link for audio materials */}
+            {(() => {
+              const audioMaterials = materials.filter(m => m.material_type === "audio");
+              if (audioMaterials.length === 0) return null;
+              const totalDuration = audioMaterials.reduce((acc, m) => acc + (m.duration_seconds || 0), 0);
+              const durationMinutes = Math.round(totalDuration / 60);
+              return (
+                <Link
+                  href={`/events/${event.slug}/playlist`}
+                  className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <Music className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium">{tPlaylist("listenAsPlaylist")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {tPlaylist("tracks", { count: audioMaterials.length })}
+                      {durationMinutes > 0 && ` · ${durationMinutes} min`}
+                    </p>
+                  </div>
+                  <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </Link>
+              );
+            })()}
 
             {/* Attendees */}
             <AttendeeList attendees={attendees} waitlist={waitlist} interested={interested} isPast={isPast} />

@@ -1833,5 +1833,20 @@
     "viewEvent": "イベントを確認",
     "copyLink": "リンクをコピー",
     "copied": "コピーしました！"
+  },
+  "playlist": {
+    "title": "プレイリスト",
+    "tracks": "{count, plural, one {#曲} other {#曲}}",
+    "totalDuration": "{minutes}分",
+    "nowPlaying": "再生中",
+    "upNext": "次の曲",
+    "listenAsPlaylist": "プレイリストとして聴く",
+    "sharePlaylist": "プレイリストを共有",
+    "noAudioFiles": "このイベントには音声ファイルがありません",
+    "play": "再生",
+    "pause": "一時停止",
+    "previous": "前の曲",
+    "next": "次の曲",
+    "trackOf": "{total}曲中{current}曲目"
   }
 }

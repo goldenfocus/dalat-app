@@ -1836,5 +1836,20 @@
     "viewEvent": "查看活动",
     "copyLink": "复制链接",
     "copied": "已复制！"
+  },
+  "playlist": {
+    "title": "播放列表",
+    "tracks": "{count, plural, one {#首} other {#首}}",
+    "totalDuration": "{minutes}分钟",
+    "nowPlaying": "正在播放",
+    "upNext": "下一首",
+    "listenAsPlaylist": "作为播放列表收听",
+    "sharePlaylist": "分享播放列表",
+    "noAudioFiles": "此活动没有音频文件",
+    "play": "播放",
+    "pause": "暂停",
+    "previous": "上一首",
+    "next": "下一首",
+    "trackOf": "第{current}首，共{total}首"
   }
 }

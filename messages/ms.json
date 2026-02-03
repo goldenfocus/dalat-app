@@ -1833,5 +1833,20 @@
     "viewEvent": "Lihat acara anda secara langsung",
     "copyLink": "Salin pautan",
     "copied": "Disalin!"
+  },
+  "playlist": {
+    "title": "Senarai Main",
+    "tracks": "{count, plural, one {# lagu} other {# lagu}}",
+    "totalDuration": "{minutes} min",
+    "nowPlaying": "Sedang dimainkan",
+    "upNext": "Seterusnya",
+    "listenAsPlaylist": "Dengar sebagai senarai main",
+    "sharePlaylist": "Kongsi senarai main",
+    "noAudioFiles": "Tiada fail audio dalam acara ini",
+    "play": "Main",
+    "pause": "Jeda",
+    "previous": "Lagu sebelumnya",
+    "next": "Lagu seterusnya",
+    "trackOf": "Lagu {current} daripada {total}"
   }
 }

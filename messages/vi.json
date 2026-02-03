@@ -1909,5 +1909,20 @@
     "viewEvent": "Xem sự kiện của bạn",
     "copyLink": "Sao chép link",
     "copied": "Đã sao chép!"
+  },
+  "playlist": {
+    "title": "Danh sách phát",
+    "tracks": "{count, plural, one {# bài} other {# bài}}",
+    "totalDuration": "{minutes} phút",
+    "nowPlaying": "Đang phát",
+    "upNext": "Tiếp theo",
+    "listenAsPlaylist": "Nghe như playlist",
+    "sharePlaylist": "Chia sẻ playlist",
+    "noAudioFiles": "Không có file âm thanh trong sự kiện này",
+    "play": "Phát",
+    "pause": "Tạm dừng",
+    "previous": "Bài trước",
+    "next": "Bài tiếp",
+    "trackOf": "Bài {current} / {total}"
   }
 }
