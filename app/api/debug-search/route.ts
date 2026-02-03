@@ -177,6 +177,25 @@ export async function GET(request: Request) {
       }
     );
 
+    // BYPASS SUPABASE JS CLIENT - use direct REST API
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+    const directRestResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/debug_search_test`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query_embedding: queryRoundedString,
+        match_threshold: 0.0,
+      }),
+    });
+
+    const directRestResult = await directRestResponse.json();
+
     // Test: What if we use stored embedding format with commas intact
     // The stored string might have trailing zeros stripped differently
     const formatDebug = {
@@ -216,6 +235,7 @@ export async function GET(request: Request) {
       directQueryResult: directQueryError ? { error: directQueryError.message } : directQueryResult?.slice(0, 1),
       jsonFormatResult: jsonError ? { error: jsonError.message } : jsonResult?.slice(0, 1),
       roundedResult: roundedError ? { error: roundedError.message } : roundedResult?.slice(0, 3),
+      directRestResult: Array.isArray(directRestResult) ? directRestResult.slice(0, 3) : directRestResult,
       formatDebug,
       stringDebug,
       keyDebugInfo: getKeyDebugInfo(),
