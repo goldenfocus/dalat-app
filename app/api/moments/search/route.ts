@@ -30,7 +30,8 @@ export async function GET(request: Request) {
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
     // Text-to-image CLIP similarity is typically 0.1-0.25 for good matches
     // (much lower than image-to-image which is 0.6-0.9)
-    const threshold = parseFloat(searchParams.get("threshold") || "0.1");
+    // 0.15 filters out most noise while keeping relevant results
+    const threshold = parseFloat(searchParams.get("threshold") || "0.15");
 
     if (!query?.trim()) {
       return NextResponse.json(
