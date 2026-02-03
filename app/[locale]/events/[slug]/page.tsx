@@ -751,6 +751,26 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   canPost={canPostMoment}
                 />
 
+                {/* Playlist link - right after moments for past events */}
+                {playlistSummary && (
+                  <Link
+                    href={`/events/${event.slug}/playlist`}
+                    className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
+                  >
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                      <Music className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium">{tPlaylist("listenAsPlaylist")}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {tPlaylist("tracks", { count: playlistSummary.trackCount })}
+                        {playlistSummary.totalDuration > 0 && ` · ${Math.round(playlistSummary.totalDuration / 60)} min`}
+                      </p>
+                    </div>
+                    <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </Link>
+                )}
+
                 {/* Event flyer - shown after moments for past events */}
                 {event.image_url && (
                   <EventMediaDisplay
