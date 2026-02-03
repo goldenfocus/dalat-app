@@ -270,16 +270,44 @@ export async function POST(request: Request) {
     console.error("[api/ai/generate-image] Error:", error);
 
     if (error instanceof Error) {
-      if (error.message.includes("quota") || error.message.includes("limit")) {
+      const msg = error.message.toLowerCase();
+
+      // Quota/rate limit errors
+      if (msg.includes("quota") || msg.includes("limit") || msg.includes("429")) {
         return NextResponse.json({ error: "AI generation limit reached. Try again later." }, { status: 429 });
       }
-      if (error.message.includes("not configured")) {
+
+      // Configuration errors
+      if (msg.includes("not configured")) {
         return NextResponse.json({ error: "AI service not configured" }, { status: 503 });
+      }
+
+      // Content safety/policy errors from Google Gemini
+      if (msg.includes("safety") || msg.includes("blocked") || msg.includes("prohibited") ||
+          msg.includes("policy") || msg.includes("harm") || msg.includes("sexual") ||
+          msg.includes("inappropriate") || msg.includes("content filter")) {
+        return NextResponse.json(
+          { error: "Your prompt was flagged by content safety filters. Try rephrasing without suggestive language." },
+          { status: 400 }
+        );
+      }
+
+      // Image fetch errors
+      if (msg.includes("failed to fetch")) {
+        return NextResponse.json({ error: "Could not load the image. Try uploading again." }, { status: 400 });
+      }
+
+      // No image generated (sometimes happens with borderline prompts)
+      if (msg.includes("no image generated") || msg.includes("no response")) {
+        return NextResponse.json(
+          { error: "AI couldn't generate an image. Try rephrasing your prompt." },
+          { status: 400 }
+        );
       }
     }
 
     return NextResponse.json(
-      { error: "Generation failed" },
+      { error: "Generation failed. Check server logs for details." },
       { status: 500 }
     );
   }
