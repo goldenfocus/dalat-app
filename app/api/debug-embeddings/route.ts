@@ -180,6 +180,18 @@ export async function GET() {
             rpcResultTruncated: truncatedRpcError ? { error: truncatedRpcError.message } : truncatedRpcData,
             rawDistances: rawDistanceError ? { error: rawDistanceError.message } : rawDistanceData,
             rawMomentStatuses: momentStatusCheck,
+            // Test: use stored embedding string in RPC to see if format matters
+            storedEmbeddingRpcTest: await (async () => {
+              const { data, error } = await supabase.rpc(
+                "search_moments_by_embedding",
+                {
+                  query_embedding: storedEmbString,
+                  match_threshold: 0.0,
+                  match_count: 5,
+                }
+              );
+              return error ? { error: error.message } : data;
+            })(),
             debugFormats: {
               storedType: typeof embeddings[0].embedding,
               storedPrefix: storedEmbString.substring(0, 80),
