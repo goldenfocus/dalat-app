@@ -181,12 +181,9 @@ export function ImmersiveMomentView({
       {/* Top bar */}
       <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
         <div className="flex items-center gap-3">
-          {/* Progress indicator - show total if known and different from loaded */}
+          {/* Progress indicator */}
           <span className="text-white/70 text-sm font-medium">
             {currentIndex + 1} / {totalCount ?? moments.length}
-            {hasMore && totalCount && totalCount > moments.length && (
-              <span className="text-white/50">+</span>
-            )}
           </span>
         </div>
 

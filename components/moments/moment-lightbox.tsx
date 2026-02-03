@@ -23,6 +23,7 @@ export interface LightboxMoment {
   cf_playback_url?: string | null;
   video_status?: MomentVideoStatus | null;
   // Material fields
+  youtube_url?: string | null;
   youtube_video_id?: string | null;
   file_url?: string | null;
   original_filename?: string | null;
@@ -31,6 +32,21 @@ export interface LightboxMoment {
   audio_thumbnail_url?: string | null;
   // Event info (for mixed-event lightboxes like search results)
   event_slug?: string | null;
+}
+
+// Extract YouTube video ID from URL (fallback if youtube_video_id is null)
+function extractYouTubeVideoId(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /youtube\.com\/shorts\/([^&\s?]+)/,
+    /youtube\.com\/live\/([^&\s?]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+  return null;
 }
 
 interface MomentLightboxProps {
@@ -289,37 +305,43 @@ export function MomentLightbox({
         )}
 
         {/* YouTube - show thumbnail with direct link (embedding often blocked) */}
-        {moment.content_type === "youtube" && moment.youtube_video_id && (
-          <div className="w-full max-w-4xl">
-            <a
-              href={`https://www.youtube.com/watch?v=${moment.youtube_video_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block relative aspect-video rounded-lg overflow-hidden group"
-            >
-              {/* Thumbnail */}
-              <img
-                src={`https://img.youtube.com/vi/${moment.youtube_video_id}/maxresdefault.jpg`}
-                alt={moment.text_content || "YouTube video"}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = `https://img.youtube.com/vi/${moment.youtube_video_id}/hqdefault.jpg`;
-                }}
-              />
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-center gap-4">
-                {/* YouTube play button */}
-                <div className="w-20 h-14 rounded-2xl bg-red-600 group-hover:bg-red-700 flex items-center justify-center transition-colors shadow-lg">
-                  <Play className="w-9 h-9 text-white fill-white ml-1" />
+        {moment.content_type === "youtube" && (() => {
+          // Get video ID from stored field or extract from URL
+          const videoId = moment.youtube_video_id || extractYouTubeVideoId(moment.youtube_url);
+          if (!videoId) return null;
+
+          return (
+            <div className="w-full max-w-4xl">
+              <a
+                href={`https://www.youtube.com/watch?v=${videoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block relative aspect-video rounded-lg overflow-hidden group"
+              >
+                {/* Thumbnail */}
+                <img
+                  src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                  alt={moment.text_content || "YouTube video"}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                  }}
+                />
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-center gap-4">
+                  {/* YouTube play button */}
+                  <div className="w-20 h-14 rounded-2xl bg-red-600 group-hover:bg-red-700 flex items-center justify-center transition-colors shadow-lg">
+                    <Play className="w-9 h-9 text-white fill-white ml-1" />
+                  </div>
+                  {/* Label */}
+                  <span className="text-white font-medium text-lg">
+                    Watch on YouTube
+                  </span>
                 </div>
-                {/* Label */}
-                <span className="text-white font-medium text-lg">
-                  Watch on YouTube
-                </span>
-              </div>
-            </a>
-          </div>
-        )}
+              </a>
+            </div>
+          );
+        })()}
 
         {/* Audio */}
         {moment.content_type === "audio" && moment.file_url && (
