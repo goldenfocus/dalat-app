@@ -8,7 +8,7 @@ import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Organizer, Event, Locale, Profile } from "@/lib/types";
 import { ClaimOrganizerBanner, UnclaimedOrganizerBadge } from "@/components/organizers/claim-organizer-banner";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { VerifiedBadge, VerifiedGlowRing } from "@/components/ui/verified-badge";
+import { VerifiedGlowRing } from "@/components/ui/verified-badge";
 
 interface OrganizerContentProps {
   organizerId: string;
@@ -170,13 +170,6 @@ export async function OrganizerContent({ organizerId, locale }: OrganizerContent
                   </span>
                 </div>
               )
-            )}
-            {/* Diamond badge at bottom center for verified */}
-            {organizer.is_verified && (
-              <VerifiedBadge
-                size="md"
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-10"
-              />
             )}
           </div>
           <div className="flex-1">
