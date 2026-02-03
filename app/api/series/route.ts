@@ -216,10 +216,12 @@ export async function POST(request: Request) {
     let firstEventId: string | null = null;
 
     if (eventInserts.length > 0) {
+      // Note: Can't use .order() on insert results unless the column is in select()
+      // The eventInserts array is already ordered by date from generateSeriesInstances
       const { data: createdEvents, error: eventsError } = await supabase
         .from("events")
         .insert(eventInserts)
-        .select("id")
+        .select("id, starts_at")
         .order("starts_at", { ascending: true });
 
       if (eventsError) {
