@@ -229,6 +229,241 @@
     --dalat-mist: 180 25% 55%;
     --dalat-mist-light: 180 18% 14%;
   }
+
+  /* === HYDRANGEA: Purple Blooms === */
+  /* Inspired by Da Lat's famous hydrangea flowers */
+  .hydrangea {
+    --background: 270 20% 7%;           /* deep purple-black */
+    --foreground: 270 15% 92%;          /* soft lavender-white */
+    --card: 270 18% 11%;                /* elevated purple surface */
+    --card-foreground: 270 15% 92%;
+    --popover: 270 18% 9%;
+    --popover-foreground: 270 15% 92%;
+
+    --primary: 270 45% 55%;             /* vibrant hydrangea purple */
+    --primary-foreground: 270 30% 98%;
+
+    --secondary: 270 15% 18%;
+    --secondary-foreground: 270 20% 85%;
+
+    --muted: 270 12% 15%;
+    --muted-foreground: 270 10% 55%;
+
+    --accent: 300 25% 25%;              /* magenta accent */
+    --accent-foreground: 300 25% 90%;
+
+    --destructive: 0 50% 48%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 270 12% 20%;
+    --input: 270 12% 20%;
+    --ring: 270 45% 55%;
+
+    --chart-1: 270 45% 55%;             /* hydrangea purple */
+    --chart-2: 300 40% 55%;             /* magenta */
+    --chart-3: 240 40% 55%;             /* blue-violet */
+    --chart-4: 320 35% 50%;             /* rose */
+    --chart-5: 200 35% 55%;             /* cool blue */
+
+    --dalat-pine: 270 45% 55%;
+    --dalat-pine-light: 270 25% 12%;
+    --dalat-gold: 300 40% 55%;
+    --dalat-gold-light: 300 30% 12%;
+    --dalat-coffee: 270 30% 45%;
+    --dalat-coffee-light: 270 20% 12%;
+    --dalat-hydrangea: 270 50% 60%;
+    --dalat-hydrangea-light: 270 30% 14%;
+    --dalat-mist: 240 25% 55%;
+    --dalat-mist-light: 240 18% 14%;
+  }
+
+  /* === GOLDEN: Sunset Over the Highlands === */
+  /* Warm amber glow of Da Lat golden hour */
+  .golden {
+    --background: 30 30% 6%;            /* deep amber-black */
+    --foreground: 40 20% 92%;           /* warm cream */
+    --card: 30 25% 10%;                 /* warm elevated surface */
+    --card-foreground: 40 20% 92%;
+    --popover: 30 25% 8%;
+    --popover-foreground: 40 20% 92%;
+
+    --primary: 38 80% 50%;              /* golden amber */
+    --primary-foreground: 30 40% 8%;
+
+    --secondary: 30 20% 16%;
+    --secondary-foreground: 40 25% 85%;
+
+    --muted: 30 15% 14%;
+    --muted-foreground: 35 12% 55%;
+
+    --accent: 20 50% 30%;               /* burnt orange accent */
+    --accent-foreground: 20 30% 90%;
+
+    --destructive: 0 55% 50%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 30 18% 18%;
+    --input: 30 18% 18%;
+    --ring: 38 80% 50%;
+
+    --chart-1: 38 80% 55%;              /* gold */
+    --chart-2: 25 70% 50%;              /* orange */
+    --chart-3: 45 65% 55%;              /* yellow */
+    --chart-4: 15 60% 45%;              /* burnt sienna */
+    --chart-5: 55 50% 50%;              /* olive gold */
+
+    --dalat-pine: 38 80% 50%;
+    --dalat-pine-light: 38 40% 12%;
+    --dalat-gold: 38 85% 55%;
+    --dalat-gold-light: 38 50% 12%;
+    --dalat-coffee: 25 60% 45%;
+    --dalat-coffee-light: 25 35% 12%;
+    --dalat-hydrangea: 45 50% 55%;
+    --dalat-hydrangea-light: 45 30% 14%;
+    --dalat-mist: 30 30% 55%;
+    --dalat-mist-light: 30 20% 14%;
+  }
+
+  /* === COFFEE: Rich Highland Brew === */
+  /* Da Lat's famous coffee culture, rich and warm */
+  .coffee {
+    --background: 25 25% 6%;            /* deep coffee brown */
+    --foreground: 30 15% 90%;           /* cream text */
+    --card: 25 22% 10%;                 /* mocha surface */
+    --card-foreground: 30 15% 90%;
+    --popover: 25 22% 8%;
+    --popover-foreground: 30 15% 90%;
+
+    --primary: 25 60% 45%;              /* rich coffee brown */
+    --primary-foreground: 30 30% 95%;
+
+    --secondary: 25 18% 16%;
+    --secondary-foreground: 30 20% 85%;
+
+    --muted: 25 15% 14%;
+    --muted-foreground: 25 10% 55%;
+
+    --accent: 35 40% 28%;               /* caramel accent */
+    --accent-foreground: 35 25% 90%;
+
+    --destructive: 0 50% 48%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 25 15% 18%;
+    --input: 25 15% 18%;
+    --ring: 25 60% 45%;
+
+    --chart-1: 25 60% 50%;              /* coffee */
+    --chart-2: 35 55% 50%;              /* caramel */
+    --chart-3: 15 50% 45%;              /* espresso */
+    --chart-4: 40 45% 55%;              /* latte */
+    --chart-5: 20 40% 40%;              /* dark roast */
+
+    --dalat-pine: 25 60% 45%;
+    --dalat-pine-light: 25 30% 12%;
+    --dalat-gold: 35 55% 55%;
+    --dalat-gold-light: 35 35% 12%;
+    --dalat-coffee: 25 65% 50%;
+    --dalat-coffee-light: 25 40% 12%;
+    --dalat-hydrangea: 15 45% 50%;
+    --dalat-hydrangea-light: 15 28% 14%;
+    --dalat-mist: 30 25% 50%;
+    --dalat-mist-light: 30 18% 14%;
+  }
+
+  /* === MISTY: Cool Highland Morning === */
+  /* The soft blue-gray of Da Lat's misty mornings */
+  .misty {
+    --background: 210 15% 8%;           /* cool blue-gray */
+    --foreground: 210 10% 92%;          /* soft blue-white */
+    --card: 210 14% 12%;                /* misty surface */
+    --card-foreground: 210 10% 92%;
+    --popover: 210 14% 10%;
+    --popover-foreground: 210 10% 92%;
+
+    --primary: 200 50% 50%;             /* highland sky blue */
+    --primary-foreground: 200 30% 98%;
+
+    --secondary: 210 12% 18%;
+    --secondary-foreground: 210 15% 85%;
+
+    --muted: 210 10% 15%;
+    --muted-foreground: 210 8% 55%;
+
+    --accent: 220 30% 28%;              /* deeper blue accent */
+    --accent-foreground: 220 25% 90%;
+
+    --destructive: 0 50% 48%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 210 10% 20%;
+    --input: 210 10% 20%;
+    --ring: 200 50% 50%;
+
+    --chart-1: 200 50% 55%;             /* sky blue */
+    --chart-2: 220 45% 55%;             /* steel blue */
+    --chart-3: 190 40% 50%;             /* teal */
+    --chart-4: 230 35% 50%;             /* slate blue */
+    --chart-5: 180 30% 50%;             /* cyan */
+
+    --dalat-pine: 200 50% 50%;
+    --dalat-pine-light: 200 30% 12%;
+    --dalat-gold: 220 45% 55%;
+    --dalat-gold-light: 220 30% 12%;
+    --dalat-coffee: 210 35% 45%;
+    --dalat-coffee-light: 210 25% 12%;
+    --dalat-hydrangea: 230 40% 55%;
+    --dalat-hydrangea-light: 230 25% 14%;
+    --dalat-mist: 200 35% 55%;
+    --dalat-mist-light: 200 22% 14%;
+  }
+
+  /* === ROSE: Valley of Love === */
+  /* Soft pink tones from Da Lat's flower gardens */
+  .rose {
+    --background: 350 15% 7%;           /* deep rose-black */
+    --foreground: 350 12% 92%;          /* soft pink-white */
+    --card: 350 14% 11%;                /* rose surface */
+    --card-foreground: 350 12% 92%;
+    --popover: 350 14% 9%;
+    --popover-foreground: 350 12% 92%;
+
+    --primary: 350 55% 55%;             /* rose pink */
+    --primary-foreground: 350 30% 98%;
+
+    --secondary: 350 12% 17%;
+    --secondary-foreground: 350 18% 85%;
+
+    --muted: 350 10% 14%;
+    --muted-foreground: 350 8% 55%;
+
+    --accent: 330 35% 30%;              /* deeper magenta accent */
+    --accent-foreground: 330 25% 90%;
+
+    --destructive: 0 55% 50%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 350 10% 19%;
+    --input: 350 10% 19%;
+    --ring: 350 55% 55%;
+
+    --chart-1: 350 55% 58%;             /* rose */
+    --chart-2: 330 50% 55%;             /* magenta */
+    --chart-3: 10 50% 55%;              /* coral */
+    --chart-4: 320 40% 50%;             /* orchid */
+    --chart-5: 0 45% 55%;               /* red-pink */
+
+    --dalat-pine: 350 55% 55%;
+    --dalat-pine-light: 350 30% 12%;
+    --dalat-gold: 330 50% 55%;
+    --dalat-gold-light: 330 32% 12%;
+    --dalat-coffee: 350 35% 45%;
+    --dalat-coffee-light: 350 22% 12%;
+    --dalat-hydrangea: 320 45% 55%;
+    --dalat-hydrangea-light: 320 28% 14%;
+    --dalat-mist: 340 30% 55%;
+    --dalat-mist-light: 340 20% 14%;
+  }
 }
 
 @layer base {

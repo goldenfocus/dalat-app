@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Moon, Sun, Laptop, Check, TreePine, Sparkles } from "lucide-react";
+import { Moon, Sun, Laptop, Check, TreePine, Sparkles, Flower2, Sunset, Coffee, CloudFog, Heart } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,6 @@ const themes = [
     labelKey: "themeMorningMist",
     descKey: "themeMorningMistDesc",
     icon: Sun,
-    // Preview colors (HSL values from globals.css)
     preview: {
       bg: "hsl(40 25% 98%)",
       card: "hsl(40 20% 97%)",
@@ -54,12 +53,66 @@ const themes = [
     },
   },
   {
+    value: "hydrangea",
+    labelKey: "themeHydrangea",
+    descKey: "themeHydrangeaDesc",
+    icon: Flower2,
+    preview: {
+      bg: "hsl(270 20% 7%)",
+      card: "hsl(270 18% 11%)",
+      accent: "hsl(270 45% 55%)",
+    },
+  },
+  {
+    value: "golden",
+    labelKey: "themeGolden",
+    descKey: "themeGoldenDesc",
+    icon: Sunset,
+    preview: {
+      bg: "hsl(30 30% 6%)",
+      card: "hsl(30 25% 10%)",
+      accent: "hsl(38 80% 50%)",
+    },
+  },
+  {
+    value: "coffee",
+    labelKey: "themeCoffee",
+    descKey: "themeCoffeeDesc",
+    icon: Coffee,
+    preview: {
+      bg: "hsl(25 25% 6%)",
+      card: "hsl(25 22% 10%)",
+      accent: "hsl(25 60% 45%)",
+    },
+  },
+  {
+    value: "misty",
+    labelKey: "themeMisty",
+    descKey: "themeMistyDesc",
+    icon: CloudFog,
+    preview: {
+      bg: "hsl(210 15% 8%)",
+      card: "hsl(210 14% 12%)",
+      accent: "hsl(200 50% 50%)",
+    },
+  },
+  {
+    value: "rose",
+    labelKey: "themeRose",
+    descKey: "themeRoseDesc",
+    icon: Heart,
+    preview: {
+      bg: "hsl(350 15% 7%)",
+      card: "hsl(350 14% 11%)",
+      accent: "hsl(350 55% 55%)",
+    },
+  },
+  {
     value: "system",
     labelKey: "themeSystem",
     descKey: "themeSystemDesc",
     icon: Laptop,
     preview: {
-      // Split preview for system theme
       bgLeft: "hsl(40 25% 98%)",
       bgRight: "hsl(30 20% 7%)",
       accent: "hsl(158 40% 45%)",
@@ -79,7 +132,7 @@ export function ThemeSelector() {
   if (!mounted) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {themes.slice(0, 5).map((themeItem) => (
+        {themes.slice(0, 9).map((themeItem) => (
           <div
             key={themeItem.value}
             className="flex flex-col gap-2 p-3 rounded-xl border border-border bg-muted/30 animate-pulse"

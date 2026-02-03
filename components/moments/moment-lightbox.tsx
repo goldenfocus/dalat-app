@@ -156,8 +156,8 @@ export function MomentLightbox({
   const openFullPage = () => {
     const slug = moment.event_slug || eventSlug;
     const path = slug
-      ? `/events/${slug}/moments/${moment.id}`
-      : `/moments/${moment.id}`;
+      ? `/events/${slug}/moments/${moment.id}?from=lightbox`
+      : `/moments/${moment.id}?from=lightbox`;
     router.push(path);
     onClose();
   };

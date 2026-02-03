@@ -78,7 +78,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           attribute="class"
           defaultTheme="system"
           enableSystem
-          themes={["light", "dark", "midnight", "forest", "system"]}
+          themes={["light", "dark", "midnight", "forest", "hydrangea", "golden", "coffee", "misty", "rose", "system"]}
         >
           <ScrollRestorationProvider>
             <LocalePreloader />

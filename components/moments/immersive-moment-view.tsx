@@ -96,9 +96,9 @@ export function ImmersiveMomentView({
     setTouchStart(null);
   };
 
-  // Open full page
+  // Open full page with context so back navigation works properly
   const openFullPage = () => {
-    router.push(`/events/${eventSlug}/moments/${moment.id}`);
+    router.push(`/events/${eventSlug}/moments/${moment.id}?from=immersive`);
     onClose();
   };
 

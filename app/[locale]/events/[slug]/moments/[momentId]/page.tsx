@@ -17,6 +17,7 @@ import { generateMomentMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/structured-data";
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
 import { SetCoverButton } from "@/components/moments/set-cover-button";
+import { MomentDetailHeader } from "@/components/moments/moment-detail-header";
 import { CommentsSection } from "@/components/comments";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { ExpandableMomentImage } from "@/components/moments/expandable-moment-image";
@@ -270,6 +271,11 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
       />
 
       <div className="min-h-screen bg-background">
+        <MomentDetailHeader
+          eventSlug={event.slug}
+          eventTitle={event.title}
+          from={from}
+        />
         <main className="container max-w-4xl mx-auto px-4 py-6">
           <div className="grid lg:grid-cols-[1fr,320px] gap-6">
             {/* Main content */}
