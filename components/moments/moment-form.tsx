@@ -518,16 +518,36 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
       // For images AND videos (when Cloudflare Stream unavailable), use R2 storage
       const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${eventId}/${userId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).slice(2, 8);
+      const fileName = `${eventId}/${userId}/${timestamp}_${randomSuffix}.${ext}`;
 
       // Upload media to R2 (or Supabase fallback if R2 not configured)
       const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
         filename: fileName,
       });
 
+      // For videos, generate and upload a thumbnail
+      let thumbnailUrl: string | undefined;
+      if (isVideoFile) {
+        try {
+          console.log("[Upload] Generating thumbnail for video...");
+          const thumbnailBlob = await generateVideoThumbnail(fileToUpload);
+          const thumbnailFileName = `${eventId}/${userId}/${timestamp}_${randomSuffix}_thumb.jpg`;
+          const thumbnailResult = await uploadToStorage("moments", new File([thumbnailBlob], "thumbnail.jpg", { type: "image/jpeg" }), {
+            filename: thumbnailFileName,
+          });
+          thumbnailUrl = thumbnailResult.publicUrl;
+          console.log("[Upload] Thumbnail generated and uploaded:", thumbnailUrl);
+        } catch (thumbErr) {
+          console.warn("[Upload] Thumbnail generation failed (non-fatal):", thumbErr);
+          // Continue without thumbnail - not a critical failure
+        }
+      }
+
       setUploads(prev => prev.map(item =>
         item.id === itemId
-          ? { ...item, status: "uploaded" as const, mediaUrl: publicUrl }
+          ? { ...item, status: "uploaded" as const, mediaUrl: publicUrl, thumbnailUrl }
           : item
       ));
       triggerHaptic("light");
@@ -1093,7 +1113,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           p_text_content: textContent,
           p_user_id: godModeUserId || null,
           p_source_locale: locale,
-          p_thumbnail_url: null,
+          p_thumbnail_url: upload.thumbnailUrl || null,
           p_cf_video_uid: upload.cfVideoUid || null,
           p_cf_playback_url: upload.cfPlaybackUrl || null,
           p_video_status: isCloudflareVideo ? "processing" : "ready",

@@ -143,6 +143,17 @@ export async function GET() {
             query_vec: truncatedEmbeddingString,
           });
 
+        // Check if those moments exist and are published
+        let momentStatusCheck = null;
+        if (rawDistanceData && rawDistanceData.length > 0) {
+          const momentIds = rawDistanceData.map((r: { moment_id: string }) => r.moment_id);
+          const { data: statusData, error: statusErr } = await supabase
+            .from("moments")
+            .select("id, status")
+            .in("id", momentIds);
+          momentStatusCheck = statusErr ? { error: statusErr.message } : statusData;
+        }
+
         // Manual cosine similarity with first stored embedding
         if (embeddings && embeddings.length > 0) {
           const storedVec = typeof embeddings[0].embedding === "string"
@@ -168,6 +179,7 @@ export async function GET() {
             rpcResultFullPrecision: textRpcError ? { error: textRpcError.message } : textRpcData,
             rpcResultTruncated: truncatedRpcError ? { error: truncatedRpcError.message } : truncatedRpcData,
             rawDistances: rawDistanceError ? { error: rawDistanceError.message } : rawDistanceData,
+            rawMomentStatuses: momentStatusCheck,
             debugFormats: {
               storedType: typeof embeddings[0].embedding,
               storedPrefix: storedEmbString.substring(0, 80),
