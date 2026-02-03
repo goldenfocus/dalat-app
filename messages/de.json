@@ -221,7 +221,10 @@
     "rsvpToSeeMeetingLink": "Zusagen, um Meeting-Link zu sehen",
     "readMore": "Mehr lesen",
     "showLess": "Weniger anzeigen",
-    "materials": "Materialien"
+    "materials": "Materialien",
+    "eventFlyer": "Event-Flyer",
+    "supportedBy": "Unterstützt von",
+    "visitSponsor": "Website besuchen"
   },
   "rsvp": {
     "imGoing": "Ich bin dabei",

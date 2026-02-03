@@ -221,7 +221,10 @@
     "rsvpToSeeMeetingLink": "미팅 링크를 보려면 참석 신청하세요",
     "readMore": "더 보기",
     "showLess": "접기",
-    "materials": "자료"
+    "materials": "자료",
+    "eventFlyer": "이벤트 포스터",
+    "supportedBy": "후원",
+    "visitSponsor": "웹사이트 방문"
   },
   "rsvp": {
     "imGoing": "참석합니다",

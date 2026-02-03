@@ -221,7 +221,10 @@
     "rsvpToSeeMeetingLink": "RSVP untuk melihat pautan mesyuarat",
     "readMore": "Baca lagi",
     "showLess": "Tunjuk kurang",
-    "materials": "Bahan"
+    "materials": "Bahan",
+    "eventFlyer": "Poster acara",
+    "supportedBy": "Disokong oleh",
+    "visitSponsor": "Lawati laman web"
   },
   "rsvp": {
     "imGoing": "Saya hadir",

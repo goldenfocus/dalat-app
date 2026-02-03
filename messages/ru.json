@@ -221,7 +221,10 @@
     "rsvpToSeeMeetingLink": "Зарегистрируйтесь, чтобы увидеть ссылку на встречу",
     "readMore": "Читать далее",
     "showLess": "Свернуть",
-    "materials": "Материалы"
+    "materials": "Материалы",
+    "eventFlyer": "Афиша мероприятия",
+    "supportedBy": "При поддержке",
+    "visitSponsor": "Посетить сайт"
   },
   "rsvp": {
     "imGoing": "Я пойду",

@@ -221,7 +221,10 @@
     "rsvpToSeeMeetingLink": "ミーティングリンクを見るには参加登録してください",
     "readMore": "続きを読む",
     "showLess": "閉じる",
-    "materials": "資料"
+    "materials": "資料",
+    "eventFlyer": "イベントチラシ",
+    "supportedBy": "協賛",
+    "visitSponsor": "ウェブサイトを見る"
   },
   "rsvp": {
     "imGoing": "参加する",

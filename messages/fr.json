@@ -221,7 +221,10 @@
     "rsvpToSeeMeetingLink": "Inscrivez-vous pour voir le lien de la réunion",
     "readMore": "Lire la suite",
     "showLess": "Voir moins",
-    "materials": "Documents"
+    "materials": "Documents",
+    "eventFlyer": "Affiche de l'événement",
+    "supportedBy": "Soutenu par",
+    "visitSponsor": "Visiter le site"
   },
   "rsvp": {
     "imGoing": "Je participe",

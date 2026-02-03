@@ -221,7 +221,10 @@
     "rsvpToSeeMeetingLink": "Đăng ký để xem liên kết cuộc họp",
     "readMore": "Xem thêm",
     "showLess": "Thu gọn",
-    "materials": "Tài liệu"
+    "materials": "Tài liệu",
+    "eventFlyer": "Poster sự kiện",
+    "supportedBy": "Được hỗ trợ bởi",
+    "visitSponsor": "Truy cập website"
   },
   "rsvp": {
     "imGoing": "Tôi sẽ đi",

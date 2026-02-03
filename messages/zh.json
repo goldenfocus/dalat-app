@@ -221,7 +221,10 @@
     "rsvpToSeeMeetingLink": "报名后可查看会议链接",
     "readMore": "展开阅读",
     "showLess": "收起",
-    "materials": "资料"
+    "materials": "资料",
+    "eventFlyer": "活动海报",
+    "supportedBy": "赞助商",
+    "visitSponsor": "访问网站"
   },
   "rsvp": {
     "imGoing": "我要参加",

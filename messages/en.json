@@ -222,7 +222,9 @@
       "ended": "Ended"
     },
     "materials": "Materials",
-    "eventFlyer": "Event flyer"
+    "eventFlyer": "Event flyer",
+    "supportedBy": "Supported by",
+    "visitSponsor": "Visit website"
   },
   "rsvp": {
     "imGoing": "I'm going",
