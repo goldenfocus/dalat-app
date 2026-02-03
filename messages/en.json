@@ -221,7 +221,8 @@
       "live": "Live",
       "ended": "Ended"
     },
-    "materials": "Materials"
+    "materials": "Materials",
+    "eventFlyer": "Event flyer"
   },
   "rsvp": {
     "imGoing": "I'm going",

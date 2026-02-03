@@ -24,6 +24,9 @@ function createServiceClient() {
 }
 
 export async function POST(request: Request) {
+  // Force dynamic evaluation to access runtime env vars
+  await headers();
+
   try {
     const { momentId, momentIds } = await request.json();
 
