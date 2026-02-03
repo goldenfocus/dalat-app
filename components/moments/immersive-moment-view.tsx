@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { X, ChevronUp, ChevronDown, MessageCircle, Share2, ExternalLink, Grid3X3 } from "lucide-react";
+import { X, ChevronUp, ChevronDown, MessageCircle, Share2, ExternalLink, Grid3X3, Loader2 } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
@@ -16,6 +16,10 @@ interface ImmersiveMomentViewProps {
   eventSlug: string;
   onClose: () => void;
   onSwitchToGrid?: () => void;
+  /** Called when user reaches end and there are more moments to load */
+  onLoadMore?: () => Promise<void>;
+  /** Whether there are more moments available to load */
+  hasMore?: boolean;
 }
 
 export function ImmersiveMomentView({
@@ -24,8 +28,11 @@ export function ImmersiveMomentView({
   eventSlug,
   onClose,
   onSwitchToGrid,
+  onLoadMore,
+  hasMore = false,
 }: ImmersiveMomentViewProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -40,11 +47,18 @@ export function ImmersiveMomentView({
     }
   }, [hasPrev]);
 
-  const goToNext = useCallback(() => {
+  const goToNext = useCallback(async () => {
     if (hasNext) {
       setCurrentIndex((prev) => prev + 1);
+    } else if (hasMore && onLoadMore && !isLoadingMore) {
+      // At the last loaded moment but more exist - fetch them
+      setIsLoadingMore(true);
+      await onLoadMore();
+      setIsLoadingMore(false);
+      // After loading, advance to next (which is now available)
+      setCurrentIndex((prev) => prev + 1);
     }
-  }, [hasNext]);
+  }, [hasNext, hasMore, onLoadMore, isLoadingMore]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -211,14 +225,18 @@ export function ImmersiveMomentView({
           </button>
           <button
             onClick={goToNext}
-            disabled={!hasNext}
+            disabled={!hasNext && !hasMore}
             className={cn(
               "w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transition-all",
-              hasNext ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
+              (hasNext || hasMore) ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
             )}
             aria-label="Next"
           >
-            <ChevronDown className="w-6 h-6" />
+            {isLoadingMore ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <ChevronDown className="w-6 h-6" />
+            )}
           </button>
         </div>
 

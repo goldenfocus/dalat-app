@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Camera } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +10,11 @@ import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
 import type { MomentWithProfile } from "@/lib/types";
 
 const PAGE_SIZE = 20;
+
+export interface InfiniteMomentGridHandle {
+  loadMore: () => Promise<void>;
+  hasMore: boolean;
+}
 
 interface InfiniteMomentGridProps {
   eventId: string;
@@ -24,7 +29,7 @@ interface InfiniteMomentGridProps {
   onMomentsUpdate?: (moments: MomentWithProfile[]) => void;
 }
 
-export function InfiniteMomentGrid({
+export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteMomentGridProps>(function InfiniteMomentGrid({
   eventId,
   eventSlug,
   initialMoments,
@@ -32,7 +37,7 @@ export function InfiniteMomentGrid({
   enableLightbox = false,
   onMomentClick,
   onMomentsUpdate,
-}: InfiniteMomentGridProps) {
+}: InfiniteMomentGridProps, ref) {
   const t = useTranslations("moments");
   const [moments, setMoments] = useState<MomentWithProfile[]>(initialMoments);
   const [hasMore, setHasMore] = useState(initialHasMore);

@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { X, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ExternalLink, Play } from "lucide-react";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
 import {
-  YouTubeEmbed,
   AudioPlayer,
   PDFPreview,
 } from "@/components/shared/material-renderers";
@@ -289,10 +288,36 @@ export function MomentLightbox({
           </div>
         )}
 
-        {/* YouTube */}
+        {/* YouTube - show thumbnail with direct link (embedding often blocked) */}
         {moment.content_type === "youtube" && moment.youtube_video_id && (
           <div className="w-full max-w-4xl">
-            <YouTubeEmbed videoId={moment.youtube_video_id} />
+            <a
+              href={`https://www.youtube.com/watch?v=${moment.youtube_video_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block relative aspect-video rounded-lg overflow-hidden group"
+            >
+              {/* Thumbnail */}
+              <img
+                src={`https://img.youtube.com/vi/${moment.youtube_video_id}/maxresdefault.jpg`}
+                alt={moment.text_content || "YouTube video"}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = `https://img.youtube.com/vi/${moment.youtube_video_id}/hqdefault.jpg`;
+                }}
+              />
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-center gap-4">
+                {/* YouTube play button */}
+                <div className="w-20 h-14 rounded-2xl bg-red-600 group-hover:bg-red-700 flex items-center justify-center transition-colors shadow-lg">
+                  <Play className="w-9 h-9 text-white fill-white ml-1" />
+                </div>
+                {/* Label */}
+                <span className="text-white font-medium text-lg">
+                  Watch on YouTube
+                </span>
+              </div>
+            </a>
           </div>
         )}
 
