@@ -3,6 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { LocalePicker } from "@/components/locale-picker";
 import { CreateEventLink } from "@/components/auth/create-event-link";
+import { HeaderSearch } from "@/components/search/header-search";
 
 interface SiteHeaderProps {
   /** Optional content to render on the right side before AuthButton */
@@ -52,6 +53,7 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
           >
             <Film className="w-5 h-5" aria-hidden="true" />
           </Link>
+          <HeaderSearch />
           <CreateEventLink />
           {actions}
           <AuthButtonClient />

@@ -12,7 +12,6 @@ import { setRequestLocale } from "next-intl/server";
 import { HeroSection } from "@/components/home/hero-section";
 import { EventFeedScrollable, EventFeedScrollableSkeleton } from "@/components/events/event-feed-scrollable";
 import { YourEventsSection } from "@/components/home/your-events-section";
-import { EventSearchBar } from "@/components/events/event-search-bar";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import type { Locale } from "@/lib/i18n/routing";
 import {
@@ -110,13 +109,6 @@ export default async function Home({ params }: PageProps) {
 
       {/* Main content - Scrollable event feed */}
       <div className="flex-1 container max-w-6xl mx-auto px-4 py-4 lg:py-6">
-        {/* Desktop search bar */}
-        <div className="hidden lg:flex justify-end mb-4">
-          <Suspense fallback={null}>
-            <EventSearchBar className="w-72" />
-          </Suspense>
-        </div>
-
         {/* Your Events - personalized section for logged-in users */}
         <Suspense fallback={null}>
           <YourEventsSection locale={locale} />
