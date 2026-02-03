@@ -34,7 +34,14 @@ export async function GET() {
         }
       }
 
-      return NextResponse.json({ tags: counts });
+      return NextResponse.json(
+        { tags: counts },
+        {
+          headers: {
+            'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+          },
+        }
+      );
     }
 
     console.error("Error fetching tag counts:", error);
@@ -49,5 +56,12 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json({ tags: counts });
+  return NextResponse.json(
+    { tags: counts },
+    {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+      },
+    }
+  );
 }

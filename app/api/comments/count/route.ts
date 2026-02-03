@@ -27,7 +27,11 @@ export async function GET(request: NextRequest) {
 
   try {
     const counts = await getCommentCount(targetType, targetId);
-    return NextResponse.json(counts || { total_count: 0, top_level_count: 0 });
+    return NextResponse.json(counts || { total_count: 0, top_level_count: 0 }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
+    });
   } catch (error) {
     console.error("[api/comments/count] Error fetching count:", error);
     return NextResponse.json(
@@ -88,7 +92,11 @@ export async function POST(request: NextRequest) {
         counts[id] = countsMap.get(id) ?? 0;
       }
 
-      return NextResponse.json({ counts });
+      return NextResponse.json({ counts }, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      });
     }
 
     // For events (less common batch case), return total counts

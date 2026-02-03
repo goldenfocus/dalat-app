@@ -5,9 +5,12 @@ import { formatInDaLat } from "@/lib/timezone";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, Organizer, Locale } from "@/lib/types";
 
+// Minimal event fields needed for the organizer events list
+type OrganizerEvent = Pick<Event, "id" | "slug" | "title" | "image_url" | "starts_at" | "location_name" | "status">;
+
 interface MoreFromOrganizerProps {
   organizer: Organizer;
-  events: Event[];
+  events: OrganizerEvent[];
   currentEventId: string;
   locale?: Locale;
 }

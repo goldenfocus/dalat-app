@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { Play, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
+import { cloudflareLoader } from "@/lib/image-cdn";
 import type { MomentWithEvent } from "@/lib/types";
 
 interface ContentCarouselProps {
@@ -57,11 +59,14 @@ export function ContentCarousel({ moments, title }: ContentCarouselProps) {
                     preload="metadata"
                   />
                 ) : (
-                  <img
+                  <Image
+                    loader={cloudflareLoader}
                     src={moment.media_url}
                     alt=""
+                    width={112}
+                    height={160}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105 group-active:scale-100"
-                    loading={index < 4 ? "eager" : "lazy"}
+                    priority={index < 4}
                   />
                 )
               ) : (

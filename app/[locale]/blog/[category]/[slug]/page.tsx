@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Languages } from "lucide-react";
 import { BlogCoverImage } from "@/components/blog/blog-cover-image";
 import { format } from "date-fns";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import { getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
 import { BlogShareButtons } from "@/components/blog/blog-share-buttons";
@@ -15,6 +15,8 @@ import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateBlogArticleSchema } from "@/lib/structured-data";
 import { getBlogTranslations } from "@/lib/translations";
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache/server-cache";
 import type { Locale } from "@/lib/i18n/routing";
 import type { ContentLocale } from "@/lib/types";
 import type { BlogPostFull } from "@/lib/types/blog";
@@ -23,23 +25,35 @@ interface PageProps {
   params: Promise<{ locale: Locale; category: string; slug: string }>;
 }
 
-async function getBlogPost(slug: string): Promise<BlogPostFull | null> {
-  const supabase = await createClient();
+/**
+ * Cached blog post fetcher - uses static client for ISR compatibility.
+ * Revalidates every 5 minutes.
+ */
+const getCachedBlogPost = unstable_cache(
+  async (slug: string): Promise<BlogPostFull | null> => {
+    const supabase = createStaticClient();
+    if (!supabase) return null;
 
-  const { data, error } = await supabase.rpc("get_blog_post_by_slug", {
-    p_slug: slug,
-  });
+    const { data, error } = await supabase.rpc("get_blog_post_by_slug", {
+      p_slug: slug,
+    });
 
-  if (error || !data || data.length === 0) {
-    return null;
+    if (error || !data || data.length === 0) {
+      return null;
+    }
+
+    return data[0] as BlogPostFull;
+  },
+  ["blog-post-by-slug"],
+  {
+    revalidate: 300, // 5 minutes
+    tags: [CACHE_TAGS.blog],
   }
-
-  return data[0] as BlogPostFull;
-}
+);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
-  const post = await getBlogPost(slug);
+  const post = await getCachedBlogPost(slug);
 
   if (!post) {
     return { title: "Post not found" };
@@ -59,7 +73,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { locale, category, slug } = await params;
-  const post = await getBlogPost(slug);
+  const post = await getCachedBlogPost(slug);
 
   if (!post) {
     notFound();

@@ -76,17 +76,28 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ venues: [] });
   }
 
-  return NextResponse.json({
-    venues:
-      venues?.map((v) => ({
-        id: v.id,
-        name: v.name,
-        venueType: v.venue_type,
-        address: v.address,
-        latitude: v.latitude,
-        longitude: v.longitude,
-        googleMapsUrl: v.google_maps_url,
-        isVerified: v.is_verified,
-      })) || [],
-  });
+  // Popular venues change infrequently - cache longer
+  // Query-based searches are more dynamic - shorter cache
+  const cacheMaxAge = popular ? 3600 : 300;
+
+  return NextResponse.json(
+    {
+      venues:
+        venues?.map((v) => ({
+          id: v.id,
+          name: v.name,
+          venueType: v.venue_type,
+          address: v.address,
+          latitude: v.latitude,
+          longitude: v.longitude,
+          googleMapsUrl: v.google_maps_url,
+          isVerified: v.is_verified,
+        })) || [],
+    },
+    {
+      headers: {
+        'Cache-Control': `public, s-maxage=${cacheMaxAge}, stale-while-revalidate=${cacheMaxAge * 2}`,
+      },
+    }
+  );
 }

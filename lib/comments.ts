@@ -5,7 +5,7 @@ import type {
   CommentCounts,
   CommentTargetType,
 } from '@/lib/types';
-import { getTranslationsWithFallback } from '@/lib/translations';
+import { getCachedTranslationsBatch } from '@/lib/cache/server-cache';
 
 // ============================================
 // Types
@@ -121,6 +121,7 @@ export async function getCommentCount(
 
 /**
  * Get comments with translation support
+ * Uses batch translation fetching to avoid N+1 queries
  */
 export async function getCommentsWithTranslations(
   targetType: CommentTargetType,
@@ -138,61 +139,54 @@ export async function getCommentsWithTranslations(
     return [];
   }
 
-  // Fetch translations for all comments
-  const translatedComments = await Promise.all(
-    comments.map(async (comment) => {
-      // Skip translation for deleted comments
-      if (comment.is_deleted) {
-        return {
-          ...comment,
-          translated_content: comment.content,
-          is_translated: false,
-        };
-      }
+  // Collect IDs of comments that need translation (not deleted and different locale)
+  const commentIdsToTranslate = comments
+    .filter((c) => !c.is_deleted && (c.source_locale || 'en') !== targetLocale)
+    .map((c) => c.id);
 
-      const sourceLocale = (comment.source_locale || 'en') as ContentLocale;
+  // Batch fetch all translations in ONE query
+  const translationsMap = commentIdsToTranslate.length > 0
+    ? await getCachedTranslationsBatch('comment', commentIdsToTranslate, targetLocale)
+    : new Map();
 
-      // If already in target locale, no need to translate
-      if (sourceLocale === targetLocale) {
-        return {
-          ...comment,
-          translated_content: comment.content,
-          is_translated: false,
-        };
-      }
-
-      // Try to get translation
-      const translations = await getTranslationsWithFallback(
-        'comment',
-        comment.id,
-        targetLocale,
-        {
-          text_content: comment.content,
-          title: null,
-          description: null,
-          bio: null,
-          story_content: null,
-          technical_content: null,
-          meta_description: null,
-        }
-      );
-
-      const translatedContent = translations.text_content || comment.content;
-      const isTranslated = translatedContent !== comment.content;
-
+  // Map translations back to comments
+  return comments.map((comment) => {
+    // Skip translation for deleted comments
+    if (comment.is_deleted) {
       return {
         ...comment,
-        translated_content: translatedContent,
-        is_translated: isTranslated,
+        translated_content: comment.content,
+        is_translated: false,
       };
-    })
-  );
+    }
 
-  return translatedComments;
+    const sourceLocale = (comment.source_locale || 'en') as ContentLocale;
+
+    // If already in target locale, no need to translate
+    if (sourceLocale === targetLocale) {
+      return {
+        ...comment,
+        translated_content: comment.content,
+        is_translated: false,
+      };
+    }
+
+    // Get translation from batch result
+    const translation = translationsMap.get(comment.id);
+    const translatedContent = translation?.text_content || comment.content;
+    const isTranslated = translatedContent !== comment.content;
+
+    return {
+      ...comment,
+      translated_content: translatedContent,
+      is_translated: isTranslated,
+    };
+  });
 }
 
 /**
  * Get replies with translation support
+ * Uses batch translation fetching to avoid N+1 queries
  */
 export async function getRepliesWithTranslations(
   parentId: string,
@@ -208,53 +202,46 @@ export async function getRepliesWithTranslations(
     return [];
   }
 
-  // Fetch translations for all replies
-  const translatedReplies = await Promise.all(
-    replies.map(async (reply) => {
-      if (reply.is_deleted) {
-        return {
-          ...reply,
-          translated_content: reply.content,
-          is_translated: false,
-        };
-      }
+  // Collect IDs of replies that need translation
+  const replyIdsToTranslate = replies
+    .filter((r) => !r.is_deleted && (r.source_locale || 'en') !== targetLocale)
+    .map((r) => r.id);
 
-      const sourceLocale = (reply.source_locale || 'en') as ContentLocale;
+  // Batch fetch all translations in ONE query
+  const translationsMap = replyIdsToTranslate.length > 0
+    ? await getCachedTranslationsBatch('comment', replyIdsToTranslate, targetLocale)
+    : new Map();
 
-      if (sourceLocale === targetLocale) {
-        return {
-          ...reply,
-          translated_content: reply.content,
-          is_translated: false,
-        };
-      }
-
-      const translations = await getTranslationsWithFallback(
-        'comment',
-        reply.id,
-        targetLocale,
-        {
-          text_content: reply.content,
-          title: null,
-          description: null,
-          bio: null,
-          story_content: null,
-          technical_content: null,
-          meta_description: null,
-        }
-      );
-
-      const translatedContent = translations.text_content || reply.content;
-
+  // Map translations back to replies
+  return replies.map((reply) => {
+    if (reply.is_deleted) {
       return {
         ...reply,
-        translated_content: translatedContent,
-        is_translated: translatedContent !== reply.content,
+        translated_content: reply.content,
+        is_translated: false,
       };
-    })
-  );
+    }
 
-  return translatedReplies;
+    const sourceLocale = (reply.source_locale || 'en') as ContentLocale;
+
+    if (sourceLocale === targetLocale) {
+      return {
+        ...reply,
+        translated_content: reply.content,
+        is_translated: false,
+      };
+    }
+
+    // Get translation from batch result
+    const translation = translationsMap.get(reply.id);
+    const translatedContent = translation?.text_content || reply.content;
+
+    return {
+      ...reply,
+      translated_content: translatedContent,
+      is_translated: translatedContent !== reply.content,
+    };
+  });
 }
 
 // ============================================

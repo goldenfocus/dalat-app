@@ -171,19 +171,20 @@ async function getEvent(slug: string): Promise<GetEventResult> {
   return { type: "not_found" };
 }
 
-async function getOrganizerEvents(organizerId: string): Promise<Event[]> {
+async function getOrganizerEvents(organizerId: string): Promise<Pick<Event, "id" | "slug" | "title" | "image_url" | "starts_at" | "location_name" | "status">[]> {
   const supabase = await createClient();
 
+  // Only fetch fields needed for MoreFromOrganizer component
   const { data } = await supabase
     .from("events")
-    .select("*")
+    .select("id, slug, title, image_url, starts_at, location_name, status")
     .eq("organizer_id", organizerId)
     .eq("status", "published")
     .gte("starts_at", new Date().toISOString())
     .order("starts_at", { ascending: true })
     .limit(10);
 
-  return (data ?? []) as Event[];
+  return (data ?? []) as Pick<Event, "id" | "slug" | "title" | "image_url" | "starts_at" | "location_name" | "status">[];
 }
 
 async function getEventCounts(eventId: string): Promise<EventCounts | null> {
