@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import Replicate from "replicate";
+
+// Force dynamic rendering to ensure env vars are available at runtime
+export const dynamic = "force-dynamic";
 
 // CLIP model on Replicate
 const CLIP_MODEL = "andreasjansson/clip-features:75b33f253f7714a281ad3e9b28f63e3232d583716ef6718f2e46641077ea040a";

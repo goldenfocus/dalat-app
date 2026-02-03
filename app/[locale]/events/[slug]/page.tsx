@@ -683,66 +683,141 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Event image/video - clickable to view full */}
-            {event.image_url ? (
-              <EventMediaDisplay
-                src={event.image_url}
-                alt={eventTranslations.imageAlt || eventTranslations.title}
-                priority
-              />
-            ) : (
-              <EventDefaultImage title={eventTranslations.title} priority />
-            )}
-
-            {/* Title and description */}
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{eventTranslations.title}</h1>
-              {/* Series context - show if this event is part of a recurring series */}
-              {event.event_series && (
-                <Link
-                  href={`/series/${event.event_series.slug}`}
-                  className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
-                >
-                  <Repeat className="w-3.5 h-3.5" />
-                  <span>
-                    {t("partOfSeries", { seriesName: event.event_series.title })}
-                  </span>
-                  {event.event_series.rrule && (
-                    <SeriesBadge rrule={event.event_series.rrule} className="ml-1" />
+            {/* Past events: Moments first as hero content */}
+            {isPast && momentsPreview.length > 0 ? (
+              <>
+                {/* Title first so users know what event this is */}
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">{eventTranslations.title}</h1>
+                  {/* Series context */}
+                  {event.event_series && (
+                    <Link
+                      href={`/series/${event.event_series.slug}`}
+                      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
+                    >
+                      <Repeat className="w-3.5 h-3.5" />
+                      <span>
+                        {t("partOfSeries", { seriesName: event.event_series.title })}
+                      </span>
+                      {event.event_series.rrule && (
+                        <SeriesBadge rrule={event.event_series.rrule} className="ml-1" />
+                      )}
+                    </Link>
                   )}
-                </Link>
-              )}
-              {/* Show translation indicator with original */}
-              {eventTranslations.isTranslated && eventTranslations.sourceLocale && (
-                <TranslatedFrom
-                  sourceLocale={eventTranslations.sourceLocale}
-                  originalText={eventTranslations.title !== eventTranslations.originalTitle ? eventTranslations.originalTitle : undefined}
-                  className="mb-4"
-                />
-              )}
-              {eventTranslations.description && (
-                <ExpandableText
-                  text={eventTranslations.description}
-                  maxLines={4}
-                />
-              )}
-
-              {/* Clickable tags for category discovery */}
-              {event.ai_tags && event.ai_tags.length > 0 && (
-                <div className="mt-4">
-                  <ClickableTagList tags={event.ai_tags} />
+                  {/* Translation indicator */}
+                  {eventTranslations.isTranslated && eventTranslations.sourceLocale && (
+                    <TranslatedFrom
+                      sourceLocale={eventTranslations.sourceLocale}
+                      originalText={eventTranslations.title !== eventTranslations.originalTitle ? eventTranslations.originalTitle : undefined}
+                      className="mb-4"
+                    />
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Moments Gallery - Prominent for past events */}
-            {isPast && (
-              <PastEventMomentsShowcase
-                eventSlug={event.slug}
-                moments={momentsPreview}
-                counts={momentCounts}
-                canPost={canPostMoment}
-              />
+                {/* Moments Gallery - HERO position for past events */}
+                <PastEventMomentsShowcase
+                  eventSlug={event.slug}
+                  moments={momentsPreview}
+                  counts={momentCounts}
+                  canPost={canPostMoment}
+                />
+
+                {/* Event flyer - secondary for past events, collapsible */}
+                {event.image_url && (
+                  <details className="group">
+                    <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-2 select-none">
+                      <svg className="w-4 h-4 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      {t("eventFlyer")}
+                    </summary>
+                    <div className="mt-2">
+                      <EventMediaDisplay
+                        src={event.image_url}
+                        alt={eventTranslations.imageAlt || eventTranslations.title}
+                      />
+                    </div>
+                  </details>
+                )}
+
+                {/* Description */}
+                {eventTranslations.description && (
+                  <ExpandableText
+                    text={eventTranslations.description}
+                    maxLines={4}
+                  />
+                )}
+
+                {/* Tags */}
+                {event.ai_tags && event.ai_tags.length > 0 && (
+                  <ClickableTagList tags={event.ai_tags} />
+                )}
+              </>
+            ) : (
+              <>
+                {/* Upcoming events or past events without moments: Original layout */}
+                {/* Event image/video - clickable to view full */}
+                {event.image_url ? (
+                  <EventMediaDisplay
+                    src={event.image_url}
+                    alt={eventTranslations.imageAlt || eventTranslations.title}
+                    priority
+                  />
+                ) : (
+                  <EventDefaultImage title={eventTranslations.title} priority />
+                )}
+
+                {/* Title and description */}
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">{eventTranslations.title}</h1>
+                  {/* Series context - show if this event is part of a recurring series */}
+                  {event.event_series && (
+                    <Link
+                      href={`/series/${event.event_series.slug}`}
+                      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
+                    >
+                      <Repeat className="w-3.5 h-3.5" />
+                      <span>
+                        {t("partOfSeries", { seriesName: event.event_series.title })}
+                      </span>
+                      {event.event_series.rrule && (
+                        <SeriesBadge rrule={event.event_series.rrule} className="ml-1" />
+                      )}
+                    </Link>
+                  )}
+                  {/* Show translation indicator with original */}
+                  {eventTranslations.isTranslated && eventTranslations.sourceLocale && (
+                    <TranslatedFrom
+                      sourceLocale={eventTranslations.sourceLocale}
+                      originalText={eventTranslations.title !== eventTranslations.originalTitle ? eventTranslations.originalTitle : undefined}
+                      className="mb-4"
+                    />
+                  )}
+                  {eventTranslations.description && (
+                    <ExpandableText
+                      text={eventTranslations.description}
+                      maxLines={4}
+                    />
+                  )}
+
+                  {/* Clickable tags for category discovery */}
+                  {event.ai_tags && event.ai_tags.length > 0 && (
+                    <div className="mt-4">
+                      <ClickableTagList tags={event.ai_tags} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Moments for past events without moments yet (empty state) */}
+                {isPast && (
+                  <PastEventMomentsShowcase
+                    eventSlug={event.slug}
+                    moments={momentsPreview}
+                    counts={momentCounts}
+                    canPost={canPostMoment}
+                  />
+                )}
+              </>
             )}
 
             {/* Sponsors */}

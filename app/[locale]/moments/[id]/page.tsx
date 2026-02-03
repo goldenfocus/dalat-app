@@ -18,6 +18,7 @@ import { formatInDaLat } from "@/lib/timezone";
 import { generateMomentMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/structured-data";
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
+import { SetCoverButton } from "@/components/moments/set-cover-button";
 import { CommentsSection } from "@/components/comments";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { ExpandableMomentImage } from "@/components/moments/expandable-moment-image";
@@ -543,13 +544,20 @@ export default async function MomentPage({ params, searchParams }: PageProps) {
               </Link>
               <p className="text-sm text-muted-foreground">{timeAgo}</p>
             </div>
-            {/* Delete button for owner/moderators */}
-            <DeleteMomentButton
-              momentId={moment.id}
-              eventSlug={event.slug}
-              isOwner={isOwner}
-              canModerate={canModerate}
-            />
+            {/* Action buttons */}
+            <div className="flex items-center gap-2">
+              <SetCoverButton
+                momentId={moment.id}
+                isCover={(event as { cover_moment_id?: string }).cover_moment_id === moment.id}
+                canSetCover={isEventCreator || isAdminOrMod}
+              />
+              <DeleteMomentButton
+                momentId={moment.id}
+                eventSlug={event.slug}
+                isOwner={isOwner}
+                canModerate={canModerate}
+              />
+            </div>
           </div>
 
           {/* Caption / Text */}
