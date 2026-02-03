@@ -69,11 +69,25 @@ export async function GET() {
       .select("moment_id")
       .limit(1);
 
+    // Test 3: Check if moments have published status
+    const { data: momentStatus, error: statusError } = await supabase
+      .from("moments")
+      .select("id, status")
+      .in("id", embeddings.map((e) => e.moment_id));
+
+    // Test 4: Direct vector similarity query (bypassing RPC)
+    const { data: directQuery, error: directError } = await supabase
+      .from("moment_embeddings")
+      .select("moment_id")
+      .limit(5);
+
     selfSearchResult = {
       testedMomentId: embeddings[0].moment_id,
       embeddingPreview: embeddingString.substring(0, 100) + "...",
       rpcResult: rpcError ? { error: rpcError.message, code: rpcError.code, hint: rpcError.hint } : rpcData,
       tableCheck: fnError ? { error: fnError.message } : { count: fnCheck?.length },
+      momentStatuses: statusError ? { error: statusError.message } : momentStatus,
+      directQueryCount: directError ? { error: directError.message } : directQuery?.length,
     };
   }
 

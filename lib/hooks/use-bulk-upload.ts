@@ -17,7 +17,7 @@ import {
   computeFileHash,
   checkDuplicateHashes,
 } from "@/lib/file-hash";
-import { uploadFile } from "@/lib/storage/client";
+import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import type {
   BulkUploadState,
   BulkUploadAction,
@@ -613,7 +613,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
           console.log("[BulkUpload] Using R2 storage fallback for video...");
           const fileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}.${ext}`;
 
-          const { publicUrl } = await uploadFile("moments", fileToUpload, {
+          const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
             filename: fileName,
           });
 
@@ -635,7 +635,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         // ========================================
         const fileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}.${ext}`;
 
-        const { publicUrl } = await uploadFile("moments", fileToUpload, {
+        const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
           filename: fileName,
         });
 
