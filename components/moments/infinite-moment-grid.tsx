@@ -82,6 +82,12 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
     setIsLoading(false);
   }, [eventId, offset, isLoading, hasMore, onMomentsUpdate]);
 
+  // Expose loadMore and hasMore to parent via ref
+  useImperativeHandle(ref, () => ({
+    loadMore,
+    hasMore,
+  }), [loadMore, hasMore]);
+
   // Notify parent of initial moments
   useEffect(() => {
     onMomentsUpdate?.(moments);
@@ -157,7 +163,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   }
 
   return gridContent;
-}
+});
 
 /** Inner grid that uses the lightbox context */
 function InnerGridWithLightbox({
