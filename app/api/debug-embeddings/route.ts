@@ -136,13 +136,25 @@ export async function GET() {
           const normB = Math.sqrt(textEmbedding.reduce((sum: number, a: number) => sum + a * a, 0));
           const cosineSim = dotProduct / (normA * normB);
 
-          textSearchTest = {
+          // Compare string formats
+        const storedEmbString = typeof embeddings[0].embedding === "string"
+          ? embeddings[0].embedding
+          : `[${embeddings[0].embedding.join(",")}]`;
+
+        textSearchTest = {
             query: textQuery,
             embeddingLength: textEmbedding.length,
             first5: textEmbedding.slice(0, 5),
             norm: normB.toFixed(4),
             manualCosineSim: cosineSim.toFixed(4),
             rpcResult: textRpcError ? { error: textRpcError.message } : textRpcData,
+            debugFormats: {
+              storedType: typeof embeddings[0].embedding,
+              storedPrefix: storedEmbString.substring(0, 80),
+              textPrefix: textEmbeddingString.substring(0, 80),
+              storedEndsCorrectly: storedEmbString.endsWith("]"),
+              textEndsCorrectly: textEmbeddingString.endsWith("]"),
+            }
           };
         }
       } else {
