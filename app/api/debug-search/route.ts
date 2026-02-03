@@ -198,6 +198,23 @@ export async function GET(request: Request) {
       }
     );
 
+    // CRITICAL TEST: Check if PostgreSQL can parse the text embedding string
+    // This will tell us definitively if parsing is failing
+    const { data: textEmbParseResult, error: textEmbParseError } = await supabase.rpc(
+      "debug_vector_parse",
+      { embedding_text: queryEmbeddingString }
+    );
+
+    const { data: storedEmbParseResult, error: storedEmbParseError } = await supabase.rpc(
+      "debug_vector_parse",
+      { embedding_text: storedEmbeddingStr }
+    );
+
+    const { data: fixedEmbParseResult, error: fixedEmbParseError } = await supabase.rpc(
+      "debug_vector_parse",
+      { embedding_text: queryFixedPointString }
+    );
+
     const { data: roundedResult, error: roundedError } = await supabase.rpc(
       "debug_search_test",
       {
@@ -279,24 +296,24 @@ export async function GET(request: Request) {
         norm: normB.toFixed(4),
       },
       manualCosineSimilarity: cosineSim.toFixed(4),
-      // SCIENTIFIC NOTATION TEST - this is likely the bug!
-      scientificNotationTest: {
-        originalHasScientific: hasScientificNotation,
-        roundedHasScientific,
-        fixedPointHasScientific: fixedHasScientific,
-        sampleOriginal: queryVec.slice(0, 3).map(String),
-        sampleFixed: queryFixedPoint.slice(0, 3),
+
+      // VECTOR PARSE TEST - this will tell us exactly if parsing is failing
+      vectorParseTest: {
+        textEmbedding: textEmbParseError ? { error: textEmbParseError.message } : textEmbParseResult?.[0],
+        storedEmbedding: storedEmbParseError ? { error: storedEmbParseError.message } : storedEmbParseResult?.[0],
+        fixedPointEmbedding: fixedEmbParseError ? { error: fixedEmbParseError.message } : fixedEmbParseResult?.[0],
       },
-      // FIXED POINT RESULTS - should work if scientific notation was the issue
-      fixedPointResult: fixedPointError ? { error: fixedPointError.message } : fixedPointResult?.slice(0, 3),
-      fixedPointSearchResult: fixedPointSearchError ? { error: fixedPointSearchError.message } : fixedPointSearchResult?.slice(0, 3),
-      // Previous tests for comparison
-      rpcResult: rpcError ? { error: rpcError.message } : rpcResult?.slice(0, 3),
-      debugSearchTest: debugError ? { error: debugError.message } : debugResult,
-      storedEmbRpcTest: storedEmbRpcError ? { error: storedEmbRpcError.message } : storedEmbRpcResult?.slice(0, 3),
-      queryVsStoredEmb: queryVsStoredError ? { error: queryVsStoredError.message } : queryVsStoredEmb?.slice(0, 3),
-      formatDebug,
-      stringDebug,
+
+      // SEARCH RESULTS - compare text vs stored
+      searchResults: {
+        withTextEmb: rpcError ? { error: rpcError.message } : rpcResult?.length || 0,
+        withStoredEmb: queryVsStoredError ? { error: queryVsStoredError.message } : queryVsStoredEmb?.length || 0,
+        withFixedPoint: fixedPointSearchError ? { error: fixedPointSearchError.message } : fixedPointSearchResult?.length || 0,
+      },
+
+      // Detailed results (for debugging)
+      debugSearchTest: debugError ? { error: debugError.message } : debugResult?.slice(0, 2),
+      storedEmbRpcTest: storedEmbRpcError ? { error: storedEmbRpcError.message } : storedEmbRpcResult?.slice(0, 2),
     });
   } catch (err) {
     return NextResponse.json({
