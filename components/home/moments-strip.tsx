@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Play, Images, Camera, Video } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
@@ -27,6 +27,12 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
   const t = useTranslations();
   const router = useRouter();
   const [moments] = useState(initialMoments);
+  // Track which images failed to load so we can show fallback UI
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+
+  const handleImageError = useCallback((momentId: string) => {
+    setBrokenImages(prev => new Set(prev).add(momentId));
+  }, []);
 
   if (moments.length === 0) {
     return null;
@@ -66,7 +72,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
             >
               {/* Clean image */}
               <div className="relative aspect-square overflow-hidden">
-                {moment.thumbnail_url || moment.media_url ? (
+                {(moment.thumbnail_url || moment.media_url) && !brokenImages.has(moment.id) ? (
                   <img
                     src={cloudflareLoader({
                       src: moment.thumbnail_url || moment.media_url!,
@@ -76,6 +82,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                     alt={moment.event_title}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    onError={() => handleImageError(moment.id)}
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -134,7 +141,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
             >
               {/* Clean image - no overlays except play button */}
               <div className="relative aspect-[4/5] overflow-hidden">
-                {moment.thumbnail_url || moment.media_url ? (
+                {(moment.thumbnail_url || moment.media_url) && !brokenImages.has(moment.id) ? (
                   <img
                     src={cloudflareLoader({
                       src: moment.thumbnail_url || moment.media_url!,
@@ -144,6 +151,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                     alt={moment.event_title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
+                    onError={() => handleImageError(moment.id)}
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
