@@ -34,6 +34,32 @@ Run these commands yourself using bash. Don't say "please run this command" - ju
 
 Next.js 16 renamed `middleware.ts` to `proxy.ts`. Having both files **crashes the entire app**.
 
+## ⛔ CRITICAL: Moments Strip RPC - PRESERVE cover_moment_id
+
+**THIS HAS BROKEN COVER IMAGES THREE TIMES. READ CAREFULLY.**
+
+When modifying `get_homepage_moments_strip()` in any migration, you **MUST** preserve the cover_moment_id preference in the ORDER BY clause:
+
+```sql
+ORDER BY
+  m.event_id,
+  -- 1. PREFER MANUALLY SELECTED COVER MOMENT (DO NOT REMOVE THIS!)
+  CASE WHEN e.cover_moment_id = m.id THEN 0 ELSE 1 END,
+  -- 2. Then events user attended
+  CASE WHEN r.user_id IS NOT NULL AND r.status = 'going' THEN 0 ELSE 1 END,
+  -- 3. Then by quality score
+  COALESCE(mm.quality_score, 0.5) DESC,
+  m.created_at DESC
+```
+
+**History of this bug:**
+- June 12: Added event counts, accidentally removed cover logic
+- June 23: Fixed by restoring cover_moment_id preference
+- June 26: Added audio counts, accidentally removed cover logic AGAIN
+- July 3: Fixed AGAIN
+
+**If you need to modify this function:** Copy the ENTIRE existing function first, then add your changes. Do not rewrite the ORDER BY clause from scratch.
+
 | File | Status |
 |------|--------|
 | `proxy.ts` | ✅ Use this for all request interception |
