@@ -56,21 +56,6 @@ export function MiniPlayer() {
   // UI state for time display toggle
   const [showRemaining, setShowRemaining] = useState(false);
 
-  // Sync audio element with store state
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (isPlaying && audio.paused) {
-      audio.play().catch(() => {
-        // Autoplay blocked, update state
-        setIsPlaying(false);
-      });
-    } else if (!isPlaying && !audio.paused) {
-      audio.pause();
-    }
-  }, [isPlaying, setIsPlaying]);
-
   // Track the current track ID to detect changes
   const prevTrackIdRef = useRef<string | null>(null);
 
@@ -83,19 +68,26 @@ export function MiniPlayer() {
     prevTrackIdRef.current = currentTrack.id;
 
     if (trackChanged) {
-      // Load new track
+      // Load new track - set flag to play when ready
+      if (isPlaying) {
+        shouldPlayWhenReady.current = true;
+      }
       audio.src = currentTrack.file_url;
       audio.load();
-    }
-
-    // Play if isPlaying is true (handles both new tracks and play button clicks)
-    if (isPlaying && audio.paused) {
+    } else if (isPlaying && audio.paused) {
+      // Same track, just need to play (e.g., user clicked play button)
       audio.play().catch(() => setIsPlaying(false));
+    } else if (!isPlaying && !audio.paused) {
+      // User clicked pause
+      audio.pause();
     }
   }, [currentTrack?.id, isPlaying, setIsPlaying]);
 
   // Track if we're auto-advancing (to ignore pause events during transition)
   const isAutoAdvancing = useRef(false);
+
+  // Track if we should play when audio is ready (for initial load)
+  const shouldPlayWhenReady = useRef(false);
 
   // Store callback refs to avoid stale closures in event handlers
   const setCurrentTimeRef = useRef(setCurrentTime);
@@ -122,6 +114,13 @@ export function MiniPlayer() {
     const handleLoadedMetadata = () => {
       setDurationRef.current(audio.duration);
     };
+    const handleCanPlay = () => {
+      // Auto-play when audio is ready if we're supposed to be playing
+      if (shouldPlayWhenReady.current) {
+        shouldPlayWhenReady.current = false;
+        audio.play().catch(() => setIsPlayingRef.current(false));
+      }
+    };
     const handleEnded = () => {
       // Mark as auto-advancing so pause event doesn't stop playback
       isAutoAdvancing.current = true;
@@ -141,6 +140,7 @@ export function MiniPlayer() {
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("canplay", handleCanPlay);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
@@ -148,6 +148,7 @@ export function MiniPlayer() {
     return () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("canplay", handleCanPlay);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
