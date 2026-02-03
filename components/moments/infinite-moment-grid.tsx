@@ -8,6 +8,7 @@ import { MomentCard } from "./moment-card";
 import { MomentsLightboxProvider, useMomentsLightbox } from "./moments-lightbox-provider";
 import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
 import type { MomentWithProfile } from "@/lib/types";
+import type { MediaTypeFilter } from "./media-type-filter";
 
 const PAGE_SIZE = 20;
 
@@ -27,6 +28,8 @@ interface InfiniteMomentGridProps {
   onMomentClick?: (index: number) => void;
   /** Callback when moments array is updated (for parent to track all loaded moments) */
   onMomentsUpdate?: (moments: MomentWithProfile[]) => void;
+  /** Filter by media type (all, photo, video) */
+  mediaTypeFilter?: MediaTypeFilter;
 }
 
 export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteMomentGridProps>(function InfiniteMomentGrid({
@@ -37,6 +40,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   enableLightbox = false,
   onMomentClick,
   onMomentsUpdate,
+  mediaTypeFilter = "all",
 }: InfiniteMomentGridProps, ref) {
   const t = useTranslations("moments");
   const [moments, setMoments] = useState<MomentWithProfile[]>(initialMoments);
@@ -45,8 +49,14 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   const [offset, setOffset] = useState(initialMoments.length);
   const loaderRef = useRef<HTMLDivElement>(null);
 
+  // Filter moments by media type
+  const filteredMoments = useMemo(() => {
+    if (mediaTypeFilter === "all") return moments;
+    return moments.filter((m) => m.content_type === mediaTypeFilter);
+  }, [moments, mediaTypeFilter]);
+
   // Fetch comment counts for all visible moments
-  const momentIds = useMemo(() => moments.map(m => m.id), [moments]);
+  const momentIds = useMemo(() => filteredMoments.map(m => m.id), [filteredMoments]);
   const { counts: commentCounts } = useMomentCommentCounts(momentIds);
 
   const loadMore = useCallback(async () => {
@@ -121,17 +131,29 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
     );
   }
 
+  // Show empty state when filter has no results (but album has content)
+  if (filteredMoments.length === 0 && moments.length > 0) {
+    return (
+      <div className="text-center py-12">
+        <Camera className="w-12 h-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+        <p className="text-muted-foreground text-sm">
+          {mediaTypeFilter === "photo" ? t("noPhotos") : t("noVideos")}
+        </p>
+      </div>
+    );
+  }
+
   const gridContent = (
     <div className="space-y-4">
       {enableLightbox ? (
         <InnerGridWithLightbox
-          moments={moments}
+          moments={filteredMoments}
           eventSlug={eventSlug}
           commentCounts={commentCounts}
         />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {moments.map((moment, index) => (
+          {filteredMoments.map((moment, index) => (
             <MomentCard
               key={moment.id}
               moment={moment}
@@ -156,7 +178,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   // Wrap with provider for lightbox mode
   if (enableLightbox) {
     return (
-      <MomentsLightboxProvider moments={moments} eventSlug={eventSlug}>
+      <MomentsLightboxProvider moments={filteredMoments} eventSlug={eventSlug}>
         {gridContent}
       </MomentsLightboxProvider>
     );

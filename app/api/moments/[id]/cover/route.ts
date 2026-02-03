@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+// All supported locales for revalidation
+const LOCALES = ['en', 'vi', 'ko', 'zh', 'ru', 'fr', 'ja', 'ms', 'th', 'de', 'es', 'id'];
+
+/** Revalidate pages across all locales */
+function revalidateAllLocales(paths: string[]) {
+  for (const locale of LOCALES) {
+    for (const path of paths) {
+      revalidatePath(`/${locale}${path}`);
+    }
+  }
+}
+
 /**
  * POST /api/moments/[id]/cover
  * Set this moment as the cover for its event's album.
@@ -56,12 +68,13 @@ export async function POST(
       );
     }
 
-    // Revalidate pages that show moments
-    revalidatePath("/[locale]", "page"); // Homepage
+    // Revalidate pages that show moments across all locales
+    const pathsToRevalidate = [""];  // Homepage
     if (event?.slug) {
-      revalidatePath(`/[locale]/events/${event.slug}`, "page");
-      revalidatePath(`/[locale]/events/${event.slug}/moments`, "page");
+      pathsToRevalidate.push(`/events/${event.slug}`);
+      pathsToRevalidate.push(`/events/${event.slug}/moments`);
     }
+    revalidateAllLocales(pathsToRevalidate);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -120,12 +133,13 @@ export async function DELETE(
       );
     }
 
-    // Revalidate pages that show moments
-    revalidatePath("/[locale]", "page"); // Homepage
+    // Revalidate pages that show moments across all locales
+    const pathsToRevalidate = [""];  // Homepage
     if (event?.slug) {
-      revalidatePath(`/[locale]/events/${event.slug}`, "page");
-      revalidatePath(`/[locale]/events/${event.slug}/moments`, "page");
+      pathsToRevalidate.push(`/events/${event.slug}`);
+      pathsToRevalidate.push(`/events/${event.slug}/moments`);
     }
+    revalidateAllLocales(pathsToRevalidate);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useMomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 import { ViewModeSwitcher } from "./view-mode-switcher";
+import { MediaTypeFilterToggle, type MediaTypeFilter } from "./media-type-filter";
 import { InfiniteMomentGrid, type InfiniteMomentGridHandle } from "./infinite-moment-grid";
 import { ImmersiveMomentView } from "./immersive-moment-view";
 import type { MomentWithProfile } from "@/lib/types";
@@ -39,6 +40,21 @@ export function MomentsViewContainer({
   // Track moments loaded so far (for immersive view to access all loaded moments)
   const [allMoments, setAllMoments] = useState<MomentWithProfile[]>(initialMoments);
   const [hasMoreMoments, setHasMoreMoments] = useState(initialHasMore);
+
+  // Media type filter
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaTypeFilter>("all");
+
+  // Check if album has videos (to decide whether to show the filter)
+  const hasVideos = useMemo(
+    () => allMoments.some((m) => m.content_type === "video"),
+    [allMoments]
+  );
+
+  // Filter moments for immersive view
+  const filteredMoments = useMemo(() => {
+    if (mediaTypeFilter === "all") return allMoments;
+    return allMoments.filter((m) => m.content_type === mediaTypeFilter);
+  }, [allMoments, mediaTypeFilter]);
 
   // Load more moments (called from immersive view when reaching the end)
   const handleLoadMore = useCallback(async () => {
@@ -105,8 +121,13 @@ export function MomentsViewContainer({
 
   return (
     <>
-      {/* View mode switcher */}
-      <div className="flex items-center justify-end mb-4">
+      {/* View mode switcher and media type filter */}
+      <div className="flex items-center justify-end gap-2 mb-4">
+        <MediaTypeFilterToggle
+          value={mediaTypeFilter}
+          onChange={setMediaTypeFilter}
+          hasVideos={hasVideos}
+        />
         <ViewModeSwitcher
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
@@ -130,20 +151,21 @@ export function MomentsViewContainer({
               setHasMoreMoments(gridRef.current.hasMore);
             }
           }}
+          mediaTypeFilter={mediaTypeFilter}
         />
       </div>
 
       {/* Immersive view (modal overlay) */}
-      {showImmersive && allMoments.length > 0 && (
+      {showImmersive && filteredMoments.length > 0 && (
         <ImmersiveMomentView
-          moments={allMoments}
+          moments={filteredMoments}
           initialIndex={immersiveStartIndex}
           eventSlug={eventSlug}
           onClose={closeImmersive}
           onSwitchToGrid={switchToGrid}
           onLoadMore={handleLoadMore}
           hasMore={hasMoreMoments}
-          totalCount={totalCount}
+          totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
         />
       )}
     </>

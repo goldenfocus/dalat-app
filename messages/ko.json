@@ -1032,6 +1032,8 @@
       "videos": "동영상"
     },
     "noMoments": "아직 모먼트가 없습니다",
+    "noPhotos": "이 앨범에 사진이 없습니다",
+    "noVideos": "이 앨범에 동영상이 없습니다",
     "beFirst": "이 이벤트의 첫 번째 모먼트를 공유해 보세요!",
     "addMoment": "모먼트 추가",
     "addYourPhotos": "사진 추가하기",
