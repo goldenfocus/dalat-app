@@ -13,6 +13,16 @@ function createServiceClient() {
   return createSupabaseClient(url, serviceKey);
 }
 
+// Debug: log key info (prefix only, not full key)
+function getKeyDebugInfo() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  return {
+    prefix: key.substring(0, 10),
+    length: key.length,
+    hasWhitespace: /\s/.test(key),
+  };
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q") || "dog";
@@ -120,6 +130,7 @@ export async function GET(request: Request) {
       debugSearchTest: debugError ? { error: debugError.message } : debugResult,
       embeddingMoments: embeddingMomentsError ? { error: embeddingMomentsError.message } : embeddingMoments,
       storedEmbRpcTest: storedEmbRpcError ? { error: storedEmbRpcError.message } : storedEmbRpcResult?.slice(0, 3),
+      keyDebugInfo: getKeyDebugInfo(),
     });
   } catch (err) {
     return NextResponse.json({
