@@ -6,6 +6,7 @@ import {
   validateMediaFile,
   ALLOWED_MEDIA_TYPES,
   needsConversion,
+  generateVideoThumbnail,
 } from "@/lib/media-utils";
 import { convertIfNeeded } from "@/lib/media-conversion";
 import {
@@ -98,6 +99,10 @@ function bulkUploadReducer(
           progress: 0,
           previewUrl: URL.createObjectURL(file),
           mediaUrl: null,
+          thumbnailUrl: null,
+          cfVideoUid: null,
+          cfPlaybackUrl: null,
+          videoStatus: null,
           momentId: null,
           error: null,
           retryCount: 0,
@@ -464,7 +469,41 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
     try {
       // Generate unique filename (use converted file's extension)
       const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${state.eventId}/${state.userId}/${Date.now()}_${id.slice(0, 8)}.${ext}`;
+      const timestamp = Date.now();
+      const fileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}.${ext}`;
+
+      // For videos, generate and upload thumbnail first
+      let thumbnailUrl: string | null = null;
+      const isVideo = fileState.type === "video";
+
+      if (isVideo) {
+        try {
+          console.log("[BulkUpload] Generating video thumbnail...");
+          const thumbnailBlob = await generateVideoThumbnail(fileToUpload);
+          const thumbnailFileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}_thumb.jpg`;
+
+          const { error: thumbError } = await supabaseRef.current.storage
+            .from("moments")
+            .upload(thumbnailFileName, thumbnailBlob, {
+              cacheControl: "3600",
+              contentType: "image/jpeg",
+              upsert: false,
+            });
+
+          if (!thumbError) {
+            const { data: { publicUrl: thumbUrl } } = supabaseRef.current.storage
+              .from("moments")
+              .getPublicUrl(thumbnailFileName);
+            thumbnailUrl = thumbUrl;
+            console.log("[BulkUpload] Thumbnail uploaded:", thumbnailUrl);
+          } else {
+            console.warn("[BulkUpload] Thumbnail upload failed (non-critical):", thumbError);
+          }
+        } catch (thumbErr) {
+          console.warn("[BulkUpload] Thumbnail generation failed (non-critical):", thumbErr);
+          // Continue without thumbnail - Cloudflare will generate one later
+        }
+      }
 
       // Upload to Supabase storage
       const { error: uploadError } = await supabaseRef.current.storage
@@ -484,7 +523,12 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       dispatch({
         type: "UPDATE_FILE",
         id,
-        updates: { status: "uploaded", mediaUrl: publicUrl, progress: 100 },
+        updates: {
+          status: "uploaded",
+          mediaUrl: publicUrl,
+          thumbnailUrl,
+          progress: 100
+        },
       });
     } catch (err) {
       const retryCount = fileState.retryCount;
@@ -529,6 +573,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       media_url: f.mediaUrl!,
       text_content: f.caption,
       batch_id: f.batchId,
+      thumbnail_url: f.thumbnailUrl || undefined,
     }));
 
     try {

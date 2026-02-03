@@ -35,8 +35,29 @@ export function getMediaType(url: string | null): MediaType | null {
 export const MEDIA_SIZE_LIMITS = {
   image: 50 * 1024 * 1024, // 50MB (will be compressed to ~2MB before upload)
   gif: 15 * 1024 * 1024, // 15MB (GIFs can't be compressed without losing animation)
-  video: 500 * 1024 * 1024, // 500MB (will be compressed client-side if >50MB)
+  video: 500 * 1024 * 1024, // 500MB desktop (will be compressed client-side if >50MB)
+  videoMobile: 50 * 1024 * 1024, // 50MB mobile (FFmpeg.wasm unreliable on mobile)
 } as const;
+
+/**
+ * Detect if running on a mobile device.
+ * Uses user agent + touch detection for reliability.
+ */
+export function isMobileDevice(): boolean {
+  if (typeof window === "undefined") return false;
+
+  // Check user agent for mobile indicators
+  const userAgent = navigator.userAgent.toLowerCase();
+  const mobileKeywords = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i;
+
+  // Also check for touch capability as fallback
+  const hasTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+  // Consider it mobile if UA says so, or if it's a touch device with small screen
+  const isSmallScreen = window.innerWidth < 768;
+
+  return mobileKeywords.test(userAgent) || (hasTouch && isSmallScreen);
+}
 
 // Allowed MIME types
 export const ALLOWED_MEDIA_TYPES = {
@@ -206,7 +227,11 @@ export function generateVideoThumbnail(
   });
 }
 
-// Validate file and return error message if invalid
+/**
+ * Validate file and return error message if invalid.
+ * On mobile devices, enforces stricter video size limits because
+ * FFmpeg.wasm compression is unreliable on mobile browsers.
+ */
 export function validateMediaFile(file: File): string | null {
   const isImage = ALLOWED_MEDIA_TYPES.image.includes(
     file.type as (typeof ALLOWED_MEDIA_TYPES.image)[number]
@@ -242,8 +267,18 @@ export function validateMediaFile(file: File): string | null {
     return "GIFs must be less than 15MB";
   }
 
-  if ((isValidVideo || isMovByExt) && file.size > MEDIA_SIZE_LIMITS.video) {
-    return "Videos must be less than 500MB";
+  // Video size limits - stricter on mobile where compression is unreliable
+  if (isValidVideo || isMovByExt) {
+    const isMobile = isMobileDevice();
+    const maxVideoSize = isMobile ? MEDIA_SIZE_LIMITS.videoMobile : MEDIA_SIZE_LIMITS.video;
+
+    if (file.size > maxVideoSize) {
+      if (isMobile) {
+        const sizeMB = Math.round(file.size / (1024 * 1024));
+        return `Video too large (${sizeMB}MB). On mobile, videos must be under 50MB. Try uploading from a computer for larger files.`;
+      }
+      return "Videos must be less than 500MB";
+    }
   }
 
   return null;

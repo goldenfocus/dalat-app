@@ -316,11 +316,38 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
 
                 {/* Video player */}
                 {moment.content_type === "video" && (
-                  <MomentVideoPlayer
-                    src={moment.media_url || ""}
-                    hlsSrc={moment.cf_playback_url || undefined}
-                    poster={moment.thumbnail_url || undefined}
-                  />
+                  moment.video_status === "ready" || !moment.cf_video_uid ? (
+                    <MomentVideoPlayer
+                      src={moment.media_url || ""}
+                      hlsSrc={moment.cf_playback_url || undefined}
+                      poster={moment.thumbnail_url || undefined}
+                    />
+                  ) : (
+                    // Video is still processing - show placeholder with status
+                    <div className="aspect-video flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-muted to-muted/80">
+                      {moment.thumbnail_url ? (
+                        <Image
+                          src={moment.thumbnail_url}
+                          alt="Video processing"
+                          fill
+                          className="object-cover opacity-50"
+                        />
+                      ) : null}
+                      <div className="relative z-10 flex flex-col items-center gap-3 text-center px-4">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {moment.video_status === "uploading" ? t("videoUploading") : t("videoProcessing")}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {t("videoProcessingHint")}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )
                 )}
 
                 {/* Photo */}

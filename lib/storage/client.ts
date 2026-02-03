@@ -7,11 +7,13 @@
  * Key features:
  * - Automatic retry with exponential backoff (critical for iOS Safari)
  * - Presigned URL uploads for better performance
+ * - Resumable uploads via tus protocol for large files
  * - Fallback to direct Supabase upload if presign fails
  */
 
 import { createClient } from "@/lib/supabase/client";
 import { generateSmartFilename } from "@/lib/media-utils";
+import * as tus from "tus-js-client";
 
 // Retry configuration for upload resilience
 const MAX_RETRIES = 3;

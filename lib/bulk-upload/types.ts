@@ -25,6 +25,10 @@ export interface FileUploadState {
   progress: number;             // 0-100 for upload progress
   previewUrl: string | null;    // Object URL for thumbnail
   mediaUrl: string | null;      // Supabase storage URL after upload
+  thumbnailUrl: string | null;  // Video thumbnail URL (Supabase Storage)
+  cfVideoUid: string | null;    // Cloudflare Stream video UID
+  cfPlaybackUrl: string | null; // Cloudflare HLS playback URL
+  videoStatus: string | null;   // Video encoding status
   momentId: string | null;      // Database ID after save
   error: string | null;         // Error message if failed
   retryCount: number;           // Number of retry attempts
@@ -84,4 +88,8 @@ export interface MomentBatchItem {
   media_url: string;
   text_content: string | null;
   batch_id: string;
+  thumbnail_url?: string;      // Client-generated video thumbnail
+  cf_video_uid?: string;       // Cloudflare Stream video UID
+  cf_playback_url?: string;    // Cloudflare HLS playback URL
+  video_status?: string;       // 'uploading' | 'processing' | 'ready'
 }

@@ -32,12 +32,20 @@ export interface ImageOptions {
 
 const SUPABASE_STORAGE_PATTERN = /supabase\.co\/storage/;
 const R2_STORAGE_PATTERN = /cdn\.dalat\.app/;
+const CLOUDFLARE_STREAM_PATTERN = /cloudflarestream\.com/;
 
 /**
  * Check if a URL is from our storage (Supabase or R2)
  */
 function isStorageUrl(src: string): boolean {
   return SUPABASE_STORAGE_PATTERN.test(src) || R2_STORAGE_PATTERN.test(src);
+}
+
+/**
+ * Check if a URL is a Cloudflare Stream thumbnail
+ */
+function isCloudflareStreamUrl(src: string): boolean {
+  return CLOUDFLARE_STREAM_PATTERN.test(src);
 }
 
 /**
@@ -106,6 +114,9 @@ export function optimizedImageUrl(
 export const imagePresets = {
   /** Thumbnail for cards and lists */
   thumbnail: { width: 200, height: 200, fit: "cover" as const, quality: 75 },
+
+  /** Small thumbnail for moment previews (64x64) */
+  momentThumbnail: { width: 128, height: 128, fit: "cover" as const, quality: 70 },
 
   /** Event card image */
   eventCard: { width: 400, fit: "cover" as const },
@@ -203,7 +214,15 @@ export function cloudflareLoader({
   width: number;
   quality?: number;
 }): string {
-  // Only apply Cloudflare optimization to storage URLs (Supabase or R2)
+  // Handle Cloudflare Stream thumbnails (different API)
+  // Stream supports ?width=X&height=Y query params
+  if (isCloudflareStreamUrl(src)) {
+    const url = new URL(src);
+    url.searchParams.set("width", width.toString());
+    return url.toString();
+  }
+
+  // Only apply Cloudflare Image Resizing to storage URLs (Supabase or R2)
   if (!isStorageUrl(src)) {
     return src;
   }
