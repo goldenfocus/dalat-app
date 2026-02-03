@@ -848,6 +848,8 @@ export interface MomentStripItem {
   display_name: string | null;
   created_at: string;
   quality_score: number;
+  event_photo_count: number;
+  event_video_count: number;
 }
 
 // For FAB quick upload

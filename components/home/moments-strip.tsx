@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Play, Images } from "lucide-react";
+import { ChevronRight, Play, Images, Camera, Video } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
+import { formatDistanceToNow } from "date-fns";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { cn } from "@/lib/utils";
 import type { MomentStripItem } from "@/lib/types";
@@ -92,10 +93,26 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                 )}
               </div>
 
-              {/* Event title */}
-              <span className="text-[11px] text-muted-foreground text-center w-[72px] truncate leading-tight">
-                {moment.event_title}
-              </span>
+              {/* Event info */}
+              <div className="flex flex-col items-center w-[72px]">
+                <span className="text-[11px] text-muted-foreground text-center truncate w-full leading-tight">
+                  {moment.event_title}
+                </span>
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
+                  {moment.event_photo_count > 0 && (
+                    <span className="flex items-center gap-0.5">
+                      <Camera className="w-2.5 h-2.5" />
+                      {moment.event_photo_count}
+                    </span>
+                  )}
+                  {moment.event_video_count > 0 && (
+                    <span className="flex items-center gap-0.5">
+                      <Video className="w-2.5 h-2.5" />
+                      {moment.event_video_count}
+                    </span>
+                  )}
+                </div>
+              </div>
             </button>
           ))}
         </div>
@@ -147,11 +164,33 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                 </div>
               )}
 
-              {/* Event title overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-3">
+              {/* Event info overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-3 space-y-1">
                 <p className="text-white text-sm font-medium leading-tight line-clamp-2 drop-shadow-sm">
                   {moment.event_title}
                 </p>
+                <div className="flex items-center gap-2 text-white/80 text-xs">
+                  <span>{formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}</span>
+                  {(moment.event_photo_count > 0 || moment.event_video_count > 0) && (
+                    <>
+                      <span className="text-white/40">·</span>
+                      <div className="flex items-center gap-1.5">
+                        {moment.event_photo_count > 0 && (
+                          <span className="flex items-center gap-0.5">
+                            <Camera className="w-3 h-3" />
+                            {moment.event_photo_count}
+                          </span>
+                        )}
+                        {moment.event_video_count > 0 && (
+                          <span className="flex items-center gap-0.5">
+                            <Video className="w-3 h-3" />
+                            {moment.event_video_count}
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* "View more" indicator on last card if there are more */}
