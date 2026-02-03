@@ -59,20 +59,29 @@ async function getEventSettings(eventId: string): Promise<EventSettings | null> 
   return data as EventSettings | null;
 }
 
-async function getMoments(eventId: string): Promise<{ moments: MomentWithProfile[]; hasMore: boolean }> {
+async function getMoments(eventId: string): Promise<{ moments: MomentWithProfile[]; hasMore: boolean; totalCount: number }> {
   const supabase = await createClient();
 
-  const { data } = await supabase.rpc("get_event_moments", {
-    p_event_id: eventId,
-    p_limit: INITIAL_PAGE_SIZE,
-    p_offset: 0,
-  });
+  // Fetch moments and total count in parallel
+  const [momentsResult, countResult] = await Promise.all([
+    supabase.rpc("get_event_moments", {
+      p_event_id: eventId,
+      p_limit: INITIAL_PAGE_SIZE,
+      p_offset: 0,
+    }),
+    supabase
+      .from("moments")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId)
+      .eq("status", "published"),
+  ]);
 
-  const moments = (data ?? []) as MomentWithProfile[];
+  const moments = (momentsResult.data ?? []) as MomentWithProfile[];
+  const totalCount = countResult.count ?? moments.length;
   // If we got exactly PAGE_SIZE, there might be more
   const hasMore = moments.length === INITIAL_PAGE_SIZE;
 
-  return { moments, hasMore };
+  return { moments, hasMore, totalCount };
 }
 
 async function canUserPost(eventId: string): Promise<boolean> {
@@ -134,7 +143,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
 
   const t = await getTranslations("moments");
 
-  const [{ moments, hasMore }, canPost] = await Promise.all([
+  const [{ moments, hasMore, totalCount }, canPost] = await Promise.all([
     getMoments(event.id),
     canUserPost(event.id),
   ]);
@@ -154,6 +163,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
           eventSlug={event.slug}
           initialMoments={moments}
           initialHasMore={hasMore}
+          totalCount={totalCount}
           initialView={view === "immersive" ? "immersive" : undefined}
         />
 

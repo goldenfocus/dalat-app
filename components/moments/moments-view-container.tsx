@@ -12,6 +12,8 @@ interface MomentsViewContainerProps {
   eventSlug: string;
   initialMoments: MomentWithProfile[];
   initialHasMore: boolean;
+  /** Total number of moments for this event (for showing "X / total" in immersive view) */
+  totalCount: number;
   /** Force a specific view on initial load (e.g., from ?view=immersive) */
   initialView?: "immersive";
 }
@@ -25,6 +27,7 @@ export function MomentsViewContainer({
   eventSlug,
   initialMoments,
   initialHasMore,
+  totalCount,
   initialView,
 }: MomentsViewContainerProps) {
   const { viewMode, setViewMode, isLoaded } = useMomentsViewMode("grid");
@@ -140,6 +143,7 @@ export function MomentsViewContainer({
           onSwitchToGrid={switchToGrid}
           onLoadMore={handleLoadMore}
           hasMore={hasMoreMoments}
+          totalCount={totalCount}
         />
       )}
     </>

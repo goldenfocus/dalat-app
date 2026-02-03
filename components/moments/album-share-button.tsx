@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Share2, Link, Check } from "lucide-react";
+import { Share2, Check } from "lucide-react";
 import { format } from "date-fns";
 import { triggerHaptic } from "@/lib/haptics";
 
@@ -138,30 +138,17 @@ export function AlbumShareButton({
   };
 
   return (
-    <div className="flex items-center gap-1">
-      {/* Native share button */}
-      <button
-        type="button"
-        onClick={handleNativeShare}
-        className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all touch-manipulation"
-        aria-label={t("share")}
-      >
+    <button
+      type="button"
+      onClick={handleNativeShare}
+      className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all touch-manipulation"
+      aria-label={copied ? t("copied") : t("share")}
+    >
+      {copied ? (
+        <Check className="w-4 h-4 text-green-500" />
+      ) : (
         <Share2 className="w-4 h-4" />
-      </button>
-
-      {/* Copy to clipboard button */}
-      <button
-        type="button"
-        onClick={handleCopyToClipboard}
-        className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all touch-manipulation"
-        aria-label={copied ? t("copied") : t("share")}
-      >
-        {copied ? (
-          <Check className="w-4 h-4 text-green-500" />
-        ) : (
-          <Link className="w-4 h-4" />
-        )}
-      </button>
-    </div>
+      )}
+    </button>
   );
 }

@@ -7,6 +7,10 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "./moment-video-player";
+import { CommentsSheet } from "@/components/comments/comments-sheet";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import type { MomentWithProfile } from "@/lib/types";
 
@@ -20,6 +24,8 @@ interface ImmersiveMomentViewProps {
   onLoadMore?: () => Promise<void>;
   /** Whether there are more moments available to load */
   hasMore?: boolean;
+  /** Total number of moments (for progress display when more exist) */
+  totalCount?: number;
 }
 
 export function ImmersiveMomentView({
@@ -30,13 +36,41 @@ export function ImmersiveMomentView({
   onSwitchToGrid,
   onLoadMore,
   hasMore = false,
+  totalCount,
 }: ImmersiveMomentViewProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const moment = moments[currentIndex];
+
+  // Fetch current user on mount
+  useEffect(() => {
+    async function fetchUser() {
+      const supabase = createClient();
+      const { data: { user } }: { data: { user: User | null } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id);
+    }
+    fetchUser();
+  }, []);
+
+  // Fetch comment count for current moment
+  useEffect(() => {
+    if (!moment?.id || commentCounts.has(moment.id)) return;
+
+    fetch(`/api/comments/count?targetType=moment&targetId=${moment.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data.total_count === "number") {
+          setCommentCounts((prev) => new Map(prev).set(moment.id, data.total_count));
+        }
+      })
+      .catch(console.error);
+  }, [moment?.id, commentCounts]);
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < moments.length - 1;
 
@@ -147,9 +181,12 @@ export function ImmersiveMomentView({
       {/* Top bar */}
       <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
         <div className="flex items-center gap-3">
-          {/* Progress indicator */}
+          {/* Progress indicator - show total if known and different from loaded */}
           <span className="text-white/70 text-sm font-medium">
-            {currentIndex + 1} / {moments.length}
+            {currentIndex + 1} / {totalCount ?? moments.length}
+            {hasMore && totalCount && totalCount > moments.length && (
+              <span className="text-white/50">+</span>
+            )}
           </span>
         </div>
 
@@ -242,13 +279,21 @@ export function ImmersiveMomentView({
 
         {/* Right side actions */}
         <div className="absolute right-4 bottom-32 flex flex-col items-center gap-4">
-          {/* Comments */}
+          {/* Comments - opens sheet overlay */}
           <button
-            onClick={openFullPage}
-            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            onClick={() => {
+              triggerHaptic("selection");
+              setShowComments(true);
+            }}
+            className="relative w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all"
             aria-label="View comments"
           >
             <MessageCircle className="w-6 h-6" />
+            {(commentCounts.get(moment.id) ?? 0) > 0 && (
+              <span className="text-[10px] font-medium mt-0.5">
+                {commentCounts.get(moment.id)}
+              </span>
+            )}
           </button>
 
           {/* Share */}
@@ -306,6 +351,22 @@ export function ImmersiveMomentView({
           Swipe up/down to browse
         </div>
       )}
+
+      {/* Comments sheet overlay */}
+      <CommentsSheet
+        open={showComments}
+        onOpenChange={setShowComments}
+        targetType="moment"
+        targetId={moment.id}
+        eventSlug={eventSlug}
+        contentTitle={moment.text_content || "Moment"}
+        contentOwnerId={moment.user_id}
+        currentUserId={currentUserId}
+        initialCount={commentCounts.get(moment.id) ?? 0}
+        onCountChange={(count) => {
+          setCommentCounts((prev) => new Map(prev).set(moment.id, count));
+        }}
+      />
     </div>
   );
 }
