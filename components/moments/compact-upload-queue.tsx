@@ -26,6 +26,8 @@ export interface CompactUploadItem {
   progress?: number;
   error?: string;
   previewUrl?: string;
+  localThumbnailUrl?: string; // Video thumbnail
+  caption?: string;
 }
 
 interface CompactUploadQueueProps {
@@ -33,6 +35,7 @@ interface CompactUploadQueueProps {
   onRemove: (id: string) => void;
   onRetry: (id: string) => void;
   onRetryAll: () => void;
+  onCaptionChange?: (id: string, caption: string) => void;
   onPause?: () => void;
   onResume?: () => void;
   isPaused?: boolean;
@@ -54,6 +57,7 @@ export function CompactUploadQueue({
   onRemove,
   onRetry,
   onRetryAll,
+  onCaptionChange,
   onPause,
   onResume,
   isPaused = false,
@@ -180,13 +184,14 @@ export function CompactUploadQueue({
       </div>
 
       {/* Compact file list */}
-      <div className="max-h-[300px] overflow-y-auto space-y-1 rounded-lg border bg-card/50 p-2">
+      <div className="max-h-[400px] overflow-y-auto space-y-2 rounded-lg border bg-card/50 p-2">
         {items.map((item) => (
           <CompactUploadItem
             key={item.id}
             item={item}
             onRemove={() => onRemove(item.id)}
             onRetry={() => onRetry(item.id)}
+            onCaptionChange={onCaptionChange ? (caption) => onCaptionChange(item.id, caption) : undefined}
           />
         ))}
       </div>
@@ -195,16 +200,18 @@ export function CompactUploadQueue({
 }
 
 /**
- * Single item in the compact queue - minimal height, just essentials
+ * Single item in the compact queue - with thumbnail preview and caption input
  */
 function CompactUploadItem({
   item,
   onRemove,
   onRetry,
+  onCaptionChange,
 }: {
   item: CompactUploadItem;
   onRemove: () => void;
   onRetry: () => void;
+  onCaptionChange?: (caption: string) => void;
 }) {
   const t = useTranslations("moments");
   const isActive = item.status === "uploading" || item.status === "compressing" || item.status === "converting";
@@ -212,68 +219,127 @@ function CompactUploadItem({
   const isError = item.status === "error";
   const isDone = item.status === "uploaded";
 
+  // Get the best available thumbnail
+  const thumbnailUrl = item.localThumbnailUrl || item.previewUrl;
+
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors",
-        isError && "bg-destructive/10",
-        isDone && "bg-green-500/10 opacity-60",
-        isProcessing && "bg-blue-500/10"
+        "rounded-lg border transition-colors overflow-hidden",
+        isError && "border-destructive/30 bg-destructive/5",
+        isDone && "border-green-500/30 bg-green-500/5",
+        isProcessing && "border-blue-500/30 bg-blue-500/5",
+        isActive && "border-primary/30 bg-primary/5",
+        !isActive && !isDone && !isError && !isProcessing && "border-border bg-card"
       )}
     >
-      {/* Icon */}
-      <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
-        {isActive ? (
-          <Loader2 className="w-4 h-4 text-primary animate-spin" />
-        ) : isProcessing ? (
-          <Cloud className="w-4 h-4 text-blue-500 animate-pulse" />
-        ) : isError ? (
-          <XCircle className="w-4 h-4 text-destructive" />
-        ) : isDone ? (
-          <CheckCircle className="w-4 h-4 text-green-500" />
-        ) : item.isVideo ? (
-          <Video className="w-4 h-4 text-muted-foreground" />
-        ) : (
-          <ImageIcon className="w-4 h-4 text-muted-foreground" />
-        )}
-      </div>
+      <div className="flex items-center gap-3 p-2">
+        {/* Thumbnail */}
+        <div className="relative w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
+          {thumbnailUrl ? (
+            item.isVideo ? (
+              <img
+                src={thumbnailUrl}
+                alt={item.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <img
+                src={thumbnailUrl}
+                alt={item.name}
+                className="w-full h-full object-cover"
+              />
+            )
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              {item.isVideo ? (
+                <Video className="w-5 h-5 text-muted-foreground" />
+              ) : (
+                <ImageIcon className="w-5 h-5 text-muted-foreground" />
+              )}
+            </div>
+          )}
+          {/* Video indicator overlay */}
+          {item.isVideo && thumbnailUrl && (
+            <div className="absolute bottom-0.5 right-0.5 p-0.5 rounded bg-black/60">
+              <Play className="w-2.5 h-2.5 text-white fill-current" />
+            </div>
+          )}
+          {/* Status overlay for active uploads */}
+          {isActive && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <Loader2 className="w-5 h-5 text-white animate-spin" />
+            </div>
+          )}
+        </div>
 
-      {/* File name */}
-      <span className="flex-1 truncate" title={item.name}>
-        {item.name}
-      </span>
+        {/* File info + caption */}
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2">
+            {/* Status icon */}
+            <div className="w-4 h-4 flex-shrink-0">
+              {isProcessing ? (
+                <Cloud className="w-4 h-4 text-blue-500 animate-pulse" />
+              ) : isError ? (
+                <XCircle className="w-4 h-4 text-destructive" />
+              ) : isDone ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : null}
+            </div>
+            {/* File name */}
+            <span className="text-sm truncate flex-1" title={item.name}>
+              {item.name}
+            </span>
+            {/* Size */}
+            <span className="text-xs text-muted-foreground flex-shrink-0">
+              {formatSize(item.size)}
+            </span>
+          </div>
 
-      {/* Size */}
-      <span className="text-xs text-muted-foreground flex-shrink-0">
-        {formatSize(item.size)}
-      </span>
+          {/* Progress bar for active uploads */}
+          {isActive && item.progress !== undefined && (
+            <div className="h-1 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${item.progress}%` }}
+              />
+            </div>
+          )}
 
-      {/* Status/Actions */}
-      <div className="flex-shrink-0 w-20 flex justify-end">
-        {isActive && item.progress !== undefined && (
-          <span className="text-xs text-primary">{item.progress}%</span>
-        )}
-        {isProcessing && (
-          <span className="text-xs text-blue-500">{t("bulkUpload.inCloud")}</span>
-        )}
-        {isError && (
-          <button
-            onClick={onRetry}
-            className="p-1 rounded hover:bg-accent"
-            title="Retry"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-        )}
-        {(item.status === "queued" || isError) && (
-          <button
-            onClick={onRemove}
-            className="p-1 rounded hover:bg-accent"
-            title="Remove"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
+          {/* Caption input - only show when uploaded or processing */}
+          {(isDone || isProcessing) && onCaptionChange && (
+            <input
+              type="text"
+              value={item.caption || ""}
+              onChange={(e) => onCaptionChange(e.target.value)}
+              placeholder={t("addCaption")}
+              className="w-full text-xs px-2 py-1 rounded border border-input bg-background focus:outline-none focus:ring-1 focus:ring-primary/30"
+              maxLength={500}
+            />
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {isError && (
+            <button
+              onClick={onRetry}
+              className="p-1.5 rounded-md hover:bg-accent transition-colors"
+              title={t("bulkUpload.retry")}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          )}
+          {(item.status === "queued" || isError) && (
+            <button
+              onClick={onRemove}
+              className="p-1.5 rounded-md hover:bg-accent transition-colors"
+              title={t("bulkUpload.remove")}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -63,7 +63,9 @@ import { useUploadQueue, type QueuedUpload } from "@/lib/hooks/use-upload-queue"
 import { CompactUploadQueue, type CompactUploadItem } from "@/components/moments/compact-upload-queue";
 
 // Threshold for switching to compact/bulk upload UI
-const BULK_UPLOAD_THRESHOLD = 3;
+// Higher threshold = more uploads show with full previews
+// Only truly massive uploads (50+) use compact mode
+const BULK_UPLOAD_THRESHOLD = 50;
 
 // Input mode for the form
 type InputMode = "media" | "youtube" | "file" | "text";
@@ -189,6 +191,13 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
     return uploads.length > BULK_UPLOAD_THRESHOLD || bulkQueue.items.length > 0;
   }, [uploads.length, bulkQueue.items.length]);
 
+  // Track captions for bulk queue items (separate from the queue state)
+  const [bulkCaptions, setBulkCaptions] = useState<Record<string, string>>({});
+
+  const handleBulkCaptionChange = useCallback((id: string, caption: string) => {
+    setBulkCaptions(prev => ({ ...prev, [id]: caption }));
+  }, []);
+
   // Convert queue items to compact format for display
   const compactItems: CompactUploadItem[] = useMemo(() => {
     if (!isBulkMode) return [];
@@ -203,6 +212,8 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         progress: item.progress,
         error: item.error,
         previewUrl: item.previewUrl,
+        localThumbnailUrl: item.localThumbnailUrl,
+        caption: bulkCaptions[item.id] || "",
       }));
     }
     // Otherwise convert regular uploads to compact format
@@ -217,8 +228,10 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       progress: item.uploadProgress,
       error: item.error,
       previewUrl: item.previewUrl,
+      localThumbnailUrl: item.localThumbnailUrl,
+      caption: item.caption || "",
     }));
-  }, [isBulkMode, bulkQueue.items, uploads]);
+  }, [isBulkMode, bulkQueue.items, uploads, bulkCaptions]);
 
   // YouTube link state
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -1035,8 +1048,10 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       const readyUploads = uploads.filter(u =>
         u.status === "uploaded" && (u.mediaUrl || u.cfVideoUid)
       );
+      // Include both "uploaded" (images) and "processing" (Cloudflare Stream videos)
+      // For videos, cfVideoUid is set instead of mediaUrl
       const readyBulkUploads = bulkQueue.items.filter(u =>
-        u.status === "uploaded" && u.mediaUrl
+        (u.status === "uploaded" || u.status === "processing") && (u.mediaUrl || u.cfVideoUid)
       );
 
       if (readyUploads.length === 0 && readyBulkUploads.length === 0) {
@@ -1044,22 +1059,25 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         return;
       }
 
-      // Create moments for bulk queue items (no individual captions in bulk mode)
+      // Create moments for bulk queue items (with individual captions)
       for (const upload of readyBulkUploads) {
         const contentType = upload.isVideo ? "video" : "photo";
-        const textContent = caption.trim() || null;
+        // Use individual caption if set, otherwise fall back to shared caption
+        const textContent = (bulkCaptions[upload.id]?.trim() || caption.trim()) || null;
+        // Cloudflare Stream videos don't have mediaUrl - they use cfVideoUid instead
+        const isCloudflareVideo = upload.isVideo && upload.cfVideoUid;
 
         const { data, error: postError } = await supabase.rpc("create_moment", {
           p_event_id: eventId,
           p_content_type: contentType,
-          p_media_url: upload.mediaUrl,
+          p_media_url: isCloudflareVideo ? null : (upload.mediaUrl || null),
           p_text_content: textContent,
           p_user_id: godModeUserId || null,
           p_source_locale: locale,
           p_thumbnail_url: null,
           p_cf_video_uid: upload.cfVideoUid || null,
           p_cf_playback_url: upload.cfPlaybackUrl || null,
-          p_video_status: upload.cfVideoUid ? "processing" : "ready",
+          p_video_status: isCloudflareVideo ? "processing" : "ready",
         });
 
         if (postError) {
@@ -1159,8 +1177,14 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
       triggerHaptic("medium");
 
-      // Clear bulk queue completed items
+      // Clear bulk queue completed items and their captions
       if (readyBulkUploads.length > 0) {
+        const postedBulkIds = new Set(readyBulkUploads.map(u => u.id));
+        setBulkCaptions(prev => {
+          const next = { ...prev };
+          postedBulkIds.forEach(id => delete next[id]);
+          return next;
+        });
         bulkQueue.clearCompleted();
       }
 
@@ -1467,6 +1491,13 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
                 }
               }}
               onRetryAll={bulkQueue.retryAllFailed}
+              onCaptionChange={(id, caption) => {
+                if (bulkQueue.items.length > 0) {
+                  handleBulkCaptionChange(id, caption);
+                } else {
+                  handleCaptionChange(id, caption);
+                }
+              }}
               onPause={bulkQueue.pause}
               onResume={bulkQueue.resume}
               isPaused={bulkQueue.isPaused}

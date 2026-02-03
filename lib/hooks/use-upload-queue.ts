@@ -20,6 +20,7 @@ import { needsImageCompression, compressImage } from "@/lib/image-compression";
 import type { CompressionProgress } from "@/lib/video-compression";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { triggerHaptic } from "@/lib/haptics";
+import * as tus from "tus-js-client";
 
 // Configuration
 const MAX_CONCURRENT_UPLOADS = 3; // Don't overwhelm mobile connections
@@ -227,50 +228,43 @@ export function useUploadQueue({
 
         const { uploadUrl, videoUid } = await response.json();
 
-        // Upload to Cloudflare Stream using TUS protocol
+        // Upload to Cloudflare Stream using proper TUS client (resumable, chunked)
         dispatch({ type: "UPDATE_ITEM", id, updates: { progress: 10 } });
 
-        // Use fetch for TUS upload (simplified - actual TUS would use tus-js-client)
-        const uploadResponse = await fetch(uploadUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": file.type || "video/mp4",
-            "Upload-Length": String(file.size),
-            "Tus-Resumable": "1.0.0",
-          },
-        });
-
-        if (!uploadResponse.ok && uploadResponse.status !== 201) {
-          throw new Error(`TUS init failed: ${uploadResponse.status}`);
-        }
-
-        // Get the Location header for PATCH
-        const tusLocation = uploadResponse.headers.get("Location") || uploadUrl;
-
-        // Upload file content with progress tracking
-        const xhr = new XMLHttpRequest();
         await new Promise<void>((resolve, reject) => {
-          xhr.upload.addEventListener("progress", (e) => {
-            if (e.lengthComputable && mountedRef.current) {
-              const percent = Math.round((e.loaded / e.total) * 85) + 10; // 10-95%
-              dispatch({ type: "UPDATE_ITEM", id, updates: { progress: percent } });
-            }
-          });
-          xhr.addEventListener("load", () => {
-            if (xhr.status >= 200 && xhr.status < 400) {
+          const upload = new tus.Upload(file, {
+            endpoint: uploadUrl,
+            uploadUrl: uploadUrl,
+            retryDelays: [0, 1000, 3000, 5000, 10000], // More retries for mobile
+            chunkSize: 10 * 1024 * 1024, // 10MB chunks for better mobile reliability
+            metadata: {
+              filename: file.name,
+              filetype: file.type || "video/mp4",
+            },
+            onError: (error) => {
+              console.error("[TUS] Upload error:", error);
+              reject(error);
+            },
+            onProgress: (bytesUploaded, bytesTotal) => {
+              if (mountedRef.current) {
+                const percent = Math.round((bytesUploaded / bytesTotal) * 85) + 10; // 10-95%
+                dispatch({ type: "UPDATE_ITEM", id, updates: { progress: percent } });
+              }
+            },
+            onSuccess: () => {
+              console.log("[TUS] Upload complete for video:", videoUid);
               resolve();
-            } else {
-              reject(new Error(`Upload failed: ${xhr.status}`));
-            }
+            },
           });
-          xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
-          xhr.addEventListener("abort", () => reject(new Error("Upload aborted")));
 
-          xhr.open("PATCH", tusLocation);
-          xhr.setRequestHeader("Content-Type", "application/offset+octet-stream");
-          xhr.setRequestHeader("Upload-Offset", "0");
-          xhr.setRequestHeader("Tus-Resumable", "1.0.0");
-          xhr.send(file);
+          // Check for previous uploads to resume (great for flaky connections)
+          upload.findPreviousUploads().then((previousUploads) => {
+            if (previousUploads.length > 0) {
+              console.log("[TUS] Resuming previous upload for:", file.name);
+              upload.resumeFromPreviousUpload(previousUploads[0]);
+            }
+            upload.start();
+          });
         });
 
         console.log(`[UploadQueue] Video uploaded to Cloudflare Stream: ${file.name} → ${videoUid}`);
