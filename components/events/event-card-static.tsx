@@ -86,7 +86,7 @@ export function EventCardStatic({
             imageIsVideo ? (
               <video
                 src={event.image_url!}
-                className={`w-full h-full ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
+                className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
                 style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                 muted
                 loop
@@ -99,7 +99,7 @@ export function EventCardStatic({
               <img
                 src={optimizedImageUrl(event.image_url!, { width: 400, quality: 70 }) || event.image_url!}
                 alt={displayTitle}
-                className={`absolute inset-0 w-full h-full transition-transform group-hover:scale-105 ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
+                className={`absolute inset-0 w-full h-full transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-muted"}`}
                 style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                 fetchPriority="high"
                 decoding="async"

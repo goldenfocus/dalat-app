@@ -69,8 +69,8 @@ export const EventHeroCard = memo(function EventHeroCard({
               imageIsVideo ? (
                 <video
                   src={event.image_url!}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                  className={`absolute inset-0 w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
+                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                   muted
                   loop
                   playsInline
@@ -84,8 +84,8 @@ export const EventHeroCard = memo(function EventHeroCard({
                   alt={displayTitle}
                   fill
                   sizes="(max-width: 640px) 100vw, 40vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  style={event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                  className={`group-hover:scale-105 transition-transform duration-500 ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-muted"}`}
+                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                   priority
                 />
               )

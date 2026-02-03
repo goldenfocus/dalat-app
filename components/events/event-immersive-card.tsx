@@ -83,7 +83,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
           imageIsVideo ? (
             <video
               src={event.image_url!}
-              className={`w-full h-full ${event.image_fit === "contain" ? "object-contain bg-black" : "object-cover"}`}
+              className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
               style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
               muted
               loop
@@ -99,7 +99,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
               alt={displayTitle}
               fill
               sizes="(max-width: 640px) 100vw, 50vw"
-              className={`transition-transform group-hover:scale-105 ${event.image_fit === "contain" ? "object-contain" : "object-cover"}`}
+              className={`transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-muted"}`}
               style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
               priority={priority}
               fetchPriority={priority ? "high" : "auto"}
