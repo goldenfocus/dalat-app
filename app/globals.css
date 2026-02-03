@@ -135,6 +135,100 @@
     --dalat-mist: 260 20% 55%;
     --dalat-mist-light: 260 15% 18%;
   }
+
+  /* === MIDNIGHT: Pure OLED Black === */
+  /* For OLED screens and those who prefer true black */
+  .midnight {
+    --background: 0 0% 0%;              /* pure black */
+    --foreground: 0 0% 95%;             /* bright white text */
+    --card: 0 0% 5%;                    /* barely lifted surface */
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 158 40% 50%;             /* brighter pine for contrast */
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 55%;
+
+    --accent: 200 30% 25%;
+    --accent-foreground: 200 30% 90%;
+
+    --destructive: 0 55% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 158 40% 50%;
+
+    --chart-1: 158 45% 55%;
+    --chart-2: 38 75% 60%;
+    --chart-3: 200 45% 60%;
+    --chart-4: 25 55% 55%;
+    --chart-5: 280 30% 60%;
+
+    --dalat-pine: 158 45% 50%;
+    --dalat-pine-light: 158 25% 10%;
+    --dalat-gold: 38 75% 60%;
+    --dalat-gold-light: 38 45% 10%;
+    --dalat-coffee: 25 55% 55%;
+    --dalat-coffee-light: 25 35% 10%;
+    --dalat-hydrangea: 220 45% 60%;
+    --dalat-hydrangea-light: 220 30% 12%;
+    --dalat-mist: 260 25% 60%;
+    --dalat-mist-light: 260 20% 12%;
+  }
+
+  /* === FOREST: Deep Pine Greens === */
+  /* Nature-forward, immersed in Da Lat's pine forests */
+  .forest {
+    --background: 160 25% 6%;           /* deep forest floor */
+    --foreground: 140 10% 92%;          /* soft green-white */
+    --card: 160 22% 10%;                /* moss-covered elevation */
+    --card-foreground: 140 10% 92%;
+    --popover: 160 22% 8%;
+    --popover-foreground: 140 10% 92%;
+
+    --primary: 158 45% 48%;             /* vibrant pine */
+    --primary-foreground: 160 30% 6%;
+
+    --secondary: 160 18% 16%;           /* shadowed undergrowth */
+    --secondary-foreground: 140 15% 88%;
+
+    --muted: 160 15% 14%;               /* deep shadow */
+    --muted-foreground: 160 10% 55%;
+
+    --accent: 180 25% 22%;              /* teal forest pool */
+    --accent-foreground: 180 25% 88%;
+
+    --destructive: 0 50% 48%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 160 15% 18%;              /* forest edge */
+    --input: 160 15% 18%;
+    --ring: 158 45% 48%;
+
+    --chart-1: 158 45% 52%;
+    --chart-2: 80 50% 50%;              /* leaf green */
+    --chart-3: 180 40% 50%;             /* teal */
+    --chart-4: 140 35% 45%;             /* sage */
+    --chart-5: 200 35% 50%;             /* misty blue */
+
+    --dalat-pine: 158 45% 48%;
+    --dalat-pine-light: 160 25% 12%;
+    --dalat-gold: 80 50% 55%;
+    --dalat-gold-light: 80 35% 12%;
+    --dalat-coffee: 140 35% 45%;
+    --dalat-coffee-light: 140 25% 12%;
+    --dalat-hydrangea: 200 40% 55%;
+    --dalat-hydrangea-light: 200 25% 14%;
+    --dalat-mist: 180 25% 55%;
+    --dalat-mist-light: 180 18% 14%;
+  }
 }
 
 @layer base {
