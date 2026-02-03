@@ -1096,7 +1096,10 @@
       "retry": "ลองใหม่",
       "remove": "ลบออก",
       "proUploadLink": "มีรูป 100+ รูป? ใช้ Pro Upload",
-      "statusConverting": "กำลังแปลง..."
+      "statusConverting": "กำลังแปลง...",
+      "uploadCompleteWithFailures": "อัปโหลดแล้ว {complete} ไฟล์, ล้มเหลว {failed} ไฟล์",
+      "tapRetryToTryAgain": "วิดีโอขนาดใหญ่อาจล้มเหลวบนมือถือ แตะลองใหม่หรือใช้คอมพิวเตอร์",
+      "backgroundWarning": "เปิดหน้านี้ไว้ขณะอัปโหลด"
     },
     "gate": {
       "title": "คุณพบสมบัติแล้ว! ✨",

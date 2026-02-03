@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, Camera, Smartphone } from "lucide-react";
 import { useBulkUpload } from "@/lib/hooks/use-bulk-upload";
 import { FileDropZone } from "./file-drop-zone";
 import { UploadStats } from "./upload-stats";
@@ -78,10 +78,22 @@ export function ProUploadPage({
           />
         )}
 
+        {/* Background warning - shown when uploading */}
+        {(state.status === "uploading" || state.status === "paused") && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-sm">
+            <Smartphone className="w-4 h-4 flex-shrink-0" />
+            <span>{t("backgroundWarning")}</span>
+          </div>
+        )}
+
         {/* Stats and controls - shown when files selected */}
         {hasFiles && (
           <div className="space-y-4 p-4 rounded-xl border bg-card">
-            <UploadStats stats={state.stats} status={state.status} />
+            <UploadStats
+              stats={state.stats}
+              status={state.status}
+              onRetryAll={retryAllFailed}
+            />
 
             <UploadControls
               status={state.status}

@@ -1096,7 +1096,10 @@
       "retry": "Повторить",
       "remove": "Удалить",
       "proUploadLink": "100+ фото? Используйте Pro загрузку",
-      "statusConverting": "Конвертация..."
+      "statusConverting": "Конвертация...",
+      "uploadCompleteWithFailures": "{complete} загружено, {failed} ошибок",
+      "tapRetryToTryAgain": "Большие видео могут не загрузиться на мобильном. Нажмите Повторить или используйте компьютер.",
+      "backgroundWarning": "Держите эту страницу открытой во время загрузки"
     },
     "gate": {
       "title": "Вы нашли сокровища! ✨",

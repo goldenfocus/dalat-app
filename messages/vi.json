@@ -1136,7 +1136,10 @@
       "statusError": "Lỗi",
       "retry": "Thử lại",
       "remove": "Xóa",
-      "proUploadLink": "Có 100+ ảnh? Dùng Tải Lên Chuyên Nghiệp"
+      "proUploadLink": "Có 100+ ảnh? Dùng Tải Lên Chuyên Nghiệp",
+      "uploadCompleteWithFailures": "{complete} đã tải lên, {failed} thất bại",
+      "tapRetryToTryAgain": "Video lớn có thể lỗi trên điện thoại. Nhấn Thử Lại hoặc dùng máy tính.",
+      "backgroundWarning": "Giữ trang này mở khi đang tải lên"
     },
     "gate": {
       "title": "Bạn tìm thấy kho báu rồi! ✨",

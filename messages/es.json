@@ -1096,7 +1096,10 @@
       "retry": "Reintentar",
       "remove": "Eliminar",
       "proUploadLink": "¿Más de 100 fotos? Usa Pro Upload",
-      "statusConverting": "Convirtiendo..."
+      "statusConverting": "Convirtiendo...",
+      "uploadCompleteWithFailures": "{complete} subidos, {failed} fallidos",
+      "tapRetryToTryAgain": "Los videos grandes pueden fallar en móvil. Toca Reintentar o usa una computadora.",
+      "backgroundWarning": "Mantén esta página abierta mientras subes"
     },
     "gate": {
       "title": "¡Encontraste tesoros! ✨",

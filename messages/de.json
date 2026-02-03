@@ -1096,7 +1096,10 @@
       "retry": "Wiederholen",
       "remove": "Entfernen",
       "proUploadLink": "Über 100 Fotos? Pro-Upload verwenden",
-      "statusConverting": "Wird konvertiert..."
+      "statusConverting": "Wird konvertiert...",
+      "uploadCompleteWithFailures": "{complete} hochgeladen, {failed} fehlgeschlagen",
+      "tapRetryToTryAgain": "Große Videos können auf Mobilgeräten fehlschlagen. Erneut versuchen oder am Computer.",
+      "backgroundWarning": "Diese Seite während des Uploads geöffnet lassen"
     },
     "gate": {
       "title": "Du hast Schätze gefunden! ✨",
