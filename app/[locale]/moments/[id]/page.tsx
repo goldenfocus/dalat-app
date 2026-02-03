@@ -20,9 +20,10 @@ interface PageProps {
 async function getMomentWithEvent(id: string) {
   const supabase = await createClient();
 
+  // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
   const { data, error } = await supabase
     .from("moments")
-    .select("id, events!inner(slug)")
+    .select("id, events!moments_event_id_fkey(slug)")
     .eq("id", id)
     .eq("status", "published")
     .single();
@@ -35,9 +36,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id, locale } = await params;
   const supabase = await createClient();
 
+  // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
   const { data: moment } = await supabase
     .from("moments")
-    .select("*, profiles(*), events(*)")
+    .select("*, profiles(*), events!moments_event_id_fkey(*)")
     .eq("id", id)
     .eq("status", "published")
     .single();

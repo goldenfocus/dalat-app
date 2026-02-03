@@ -146,6 +146,7 @@ export async function GET(request: Request) {
     );
 
     // Fetch moments with their event and user data
+    // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
     const { data: moments, error: momentsError } = await supabase
       .from("moments")
       .select(`
@@ -161,7 +162,7 @@ export async function GET(request: Request) {
           display_name,
           avatar_url
         ),
-        events!inner (
+        events!moments_event_id_fkey (
           slug,
           title,
           image_url,

@@ -13,7 +13,6 @@ import {
   needsImageCompression,
   compressImage,
 } from "@/lib/image-compression";
-import { uploadFile } from "@/lib/storage/client";
 import type {
   BulkUploadState,
   BulkUploadAction,
@@ -573,20 +572,22 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         });
       } else {
         // ========================================
-        // PHOTO: Upload to Supabase Storage (as before)
+        // PHOTO: Upload to Supabase Storage
         // ========================================
         const fileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}.${ext}`;
 
-        const { publicUrl } = await uploadFile("moments", fileToUpload, {
-          filename: fileName,
-          onProgress: (progress) => {
-            dispatch({
-              type: "UPDATE_FILE",
-              id,
-              updates: { progress },
-            });
-          },
-        });
+        const { error: uploadError } = await supabaseRef.current.storage
+          .from("moments")
+          .upload(fileName, fileToUpload, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        const {
+          data: { publicUrl },
+        } = supabaseRef.current.storage.from("moments").getPublicUrl(fileName);
 
         dispatch({
           type: "UPDATE_FILE",

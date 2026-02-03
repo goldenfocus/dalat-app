@@ -36,9 +36,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from('organizers')
       .select('slug, updated_at'),
     supabase.rpc('get_months_with_events'),
+    // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
     supabase
       .from('moments')
-      .select('id, created_at, updated_at, events(slug, updated_at)')
+      .select('id, created_at, updated_at, events!moments_event_id_fkey(slug, updated_at)')
       .eq('status', 'published')
       .gte('created_at', recentMomentCutoff.toISOString()),
     supabase

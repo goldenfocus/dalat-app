@@ -15,9 +15,10 @@ export default async function OGImage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
 
+  // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
   const { data: moment } = await supabase
     .from("moments")
-    .select("id, text_content, media_url, content_type, created_at, profiles(display_name, username, avatar_url), events(title, image_url)")
+    .select("id, text_content, media_url, content_type, created_at, profiles(display_name, username, avatar_url), events!moments_event_id_fkey(title, image_url)")
     .eq("id", id)
     .single();
 

@@ -515,9 +515,10 @@ export async function getContentOwner(
       };
     }
   } else if (targetType === 'moment') {
+    // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
     const { data: moment } = await supabase
       .from('moments')
-      .select('user_id, events!inner(slug, title)')
+      .select('user_id, events!moments_event_id_fkey(slug, title)')
       .eq('id', targetId)
       .single();
 

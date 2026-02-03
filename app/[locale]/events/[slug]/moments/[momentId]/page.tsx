@@ -62,9 +62,10 @@ type MomentWithDetails = Moment & {
 async function getMoment(id: string, expectedSlug?: string): Promise<MomentWithDetails | null> {
   const supabase = await createClient();
 
+  // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
   const { data, error } = await supabase
     .from("moments")
-    .select("*, profiles(*), events(*)")
+    .select("*, profiles(*), events!moments_event_id_fkey(*)")
     .eq("id", id)
     .eq("status", "published")
     .single();
