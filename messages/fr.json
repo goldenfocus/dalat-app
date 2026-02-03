@@ -1110,7 +1110,10 @@
       "retry": "Réessayer",
       "remove": "Supprimer",
       "proUploadLink": "Plus de 100 photos ? Utilisez Upload Pro",
-      "statusConverting": "Conversion..."
+      "statusConverting": "Conversion...",
+      "uploadCompleteWithFailures": "{complete} téléchargés, {failed} échoués",
+      "tapRetryToTryAgain": "Les grandes vidéos peuvent échouer sur mobile. Réessayez ou utilisez un ordinateur.",
+      "backgroundWarning": "Gardez cette page ouverte pendant le téléchargement"
     },
     "gate": {
       "title": "Vous avez trouvé des trésors ! ✨",

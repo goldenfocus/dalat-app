@@ -1096,7 +1096,10 @@
       "retry": "再試行",
       "remove": "削除",
       "proUploadLink": "100枚以上ですか？プロアップロードを使用",
-      "statusConverting": "変換中..."
+      "statusConverting": "変換中...",
+      "uploadCompleteWithFailures": "{complete}件アップロード済み、{failed}件失敗",
+      "tapRetryToTryAgain": "大きな動画はモバイルで失敗することがあります。再試行するか、パソコンからお試しください。",
+      "backgroundWarning": "アップロード中はこのページを開いたままにしてください"
     },
     "gate": {
       "title": "宝物を見つけました！✨",

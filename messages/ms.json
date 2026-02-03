@@ -1096,7 +1096,10 @@
       "retry": "Cuba Semula",
       "remove": "Alih keluar",
       "proUploadLink": "Ada 100+ foto? Gunakan Muat Naik Pro",
-      "statusConverting": "Menukar..."
+      "statusConverting": "Menukar...",
+      "uploadCompleteWithFailures": "{complete} dimuat naik, {failed} gagal",
+      "tapRetryToTryAgain": "Video besar mungkin gagal di telefon. Ketik Cuba Semula atau guna komputer.",
+      "backgroundWarning": "Biarkan halaman ini terbuka semasa memuat naik"
     },
     "gate": {
       "title": "Anda jumpa harta karun! ✨",

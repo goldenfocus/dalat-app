@@ -1099,7 +1099,10 @@
       "retry": "재시도",
       "remove": "제거",
       "proUploadLink": "100장 이상? 프로 업로드 사용",
-      "statusConverting": "변환 중..."
+      "statusConverting": "변환 중...",
+      "uploadCompleteWithFailures": "{complete}개 업로드됨, {failed}개 실패",
+      "tapRetryToTryAgain": "큰 동영상은 모바일에서 실패할 수 있습니다. 다시 시도하거나 컴퓨터에서 시도하세요.",
+      "backgroundWarning": "업로드 중 이 페이지를 열어두세요"
     },
     "gate": {
       "title": "보석을 찾았어요! ✨",

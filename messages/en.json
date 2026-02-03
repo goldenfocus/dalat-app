@@ -1257,7 +1257,10 @@
       "statusError": "Failed",
       "retry": "Retry",
       "remove": "Remove",
-      "proUploadLink": "Have 100+ photos? Use Pro Upload"
+      "proUploadLink": "Have 100+ photos? Use Pro Upload",
+      "uploadCompleteWithFailures": "{complete} uploaded, {failed} failed",
+      "tapRetryToTryAgain": "Large videos may fail on mobile. Tap Retry or try from a computer.",
+      "backgroundWarning": "Keep this page open while uploading"
     },
     "strip": {
       "title": "Recent Moments",

@@ -1,5 +1,21 @@
 # dalat.app Development Guidelines
 
+## ⚠️ Multi-AI Workflow
+
+Multiple AI sessions may be running simultaneously on this codebase.
+
+**Before making changes:**
+1. Run `git status` to check for uncommitted changes from other sessions
+2. If you see changes you didn't make, tell the user before proceeding
+
+**Before committing:**
+1. Always ask the user before committing or pushing
+2. Never force push or rebase without explicit permission
+
+**If conflicts arise:**
+- Stop and inform the user
+- Don't try to resolve conflicts automatically
+
 ## CLI Tools - Always Use Directly
 
 **NEVER ask the user to run CLI commands.** The following CLIs are authenticated and ready to use:

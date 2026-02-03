@@ -1096,7 +1096,10 @@
       "retry": "Coba Ulang",
       "remove": "Hapus",
       "proUploadLink": "Punya 100+ foto? Gunakan Pro Upload",
-      "statusConverting": "Mengonversi..."
+      "statusConverting": "Mengonversi...",
+      "uploadCompleteWithFailures": "{complete} terunggah, {failed} gagal",
+      "tapRetryToTryAgain": "Video besar mungkin gagal di ponsel. Ketuk Coba Lagi atau gunakan komputer.",
+      "backgroundWarning": "Biarkan halaman ini terbuka saat mengunggah"
     },
     "gate": {
       "title": "Kamu menemukan harta karun! ✨",
