@@ -133,18 +133,18 @@ export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProp
   }, [hlsSrc, isHlsUrl, src]);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full max-h-[80vh] flex items-center justify-center bg-black">
       <video
         ref={videoRef}
         poster={poster || undefined}
-        className="w-full h-full object-contain"
+        className="max-w-full max-h-[80vh] object-contain"
         controls
         muted // Required for autoplay
         playsInline
         // Only set autoPlay for non-HLS (HLS.js handles play after manifest parse)
         autoPlay={!isHlsUrl || useNativeHls}
       />
-      {/* Prominent unmute button when muted */}
+      {/* Prominent unmute button */}
       {isMuted && (
         <button
           type="button"
