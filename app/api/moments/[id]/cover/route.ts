@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -28,6 +29,13 @@ export async function POST(
       );
     }
 
+    // Get event slug for revalidation
+    const { data: event } = await supabase
+      .from("events")
+      .select("slug")
+      .eq("id", moment.event_id)
+      .single();
+
     // Call RPC to set cover (handles auth checks)
     const { data, error } = await supabase.rpc("set_event_cover_moment", {
       p_event_id: moment.event_id,
@@ -46,6 +54,13 @@ export async function POST(
         { error: error.message },
         { status: 400 }
       );
+    }
+
+    // Revalidate pages that show moments
+    revalidatePath("/[locale]", "page"); // Homepage
+    if (event?.slug) {
+      revalidatePath(`/[locale]/events/${event.slug}`, "page");
+      revalidatePath(`/[locale]/events/${event.slug}/moments`, "page");
     }
 
     return NextResponse.json({ success: true });
@@ -84,6 +99,13 @@ export async function DELETE(
       );
     }
 
+    // Get event slug for revalidation
+    const { data: event } = await supabase
+      .from("events")
+      .select("slug")
+      .eq("id", moment.event_id)
+      .single();
+
     // Call RPC to clear cover (set to null)
     const { error } = await supabase.rpc("set_event_cover_moment", {
       p_event_id: moment.event_id,
@@ -96,6 +118,13 @@ export async function DELETE(
         { error: error.message },
         { status: 400 }
       );
+    }
+
+    // Revalidate pages that show moments
+    revalidatePath("/[locale]", "page"); // Homepage
+    if (event?.slug) {
+      revalidatePath(`/[locale]/events/${event.slug}`, "page");
+      revalidatePath(`/[locale]/events/${event.slug}/moments`, "page");
     }
 
     return NextResponse.json({ success: true });

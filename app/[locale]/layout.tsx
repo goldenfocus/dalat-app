@@ -19,6 +19,7 @@ import { LocalePreloader } from "@/components/locale-preloader";
 import { UploadFAB } from "@/components/moments/upload-fab";
 import { SiteHeader } from "@/components/site-header";
 import { MiniPlayer } from "@/components/audio/mini-player";
+import { Toaster } from "sonner";
 
 const siteUrl = "https://dalat.app";
 
@@ -82,6 +83,14 @@ export default async function LocaleLayout({ children, params }: Props) {
           themes={["light", "dark", "midnight", "forest", "hydrangea", "golden", "coffee", "misty", "rose", "system"]}
         >
           <ScrollRestorationProvider>
+            <Toaster
+              position="top-center"
+              richColors
+              closeButton
+              toastOptions={{
+                className: "font-sans",
+              }}
+            />
             <LocalePreloader />
             <div className="min-h-screen flex flex-col">
               <PerformanceMonitor />
