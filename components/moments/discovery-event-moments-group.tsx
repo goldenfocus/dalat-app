@@ -54,14 +54,8 @@ function DiscoveryMomentCard({ moment, commentCount, onLightboxOpen }: Discovery
                 unoptimized={thumbnailUrl.includes('cloudflarestream.com')}
               />
             ) : (
-              <video
-                src={moment.media_url}
-                className="w-full h-full object-cover"
-                muted
-                loop
-                playsInline
-                preload="metadata"
-              />
+              // Fallback: gradient background for videos without thumbnails
+              <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50" />
             )}
             {/* Play button overlay for videos */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

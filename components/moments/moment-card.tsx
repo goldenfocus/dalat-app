@@ -183,14 +183,8 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
                 />
               )
             ) : (
-              <video
-                src={moment.media_url}
-                className="w-full h-full object-cover"
-                muted
-                loop
-                playsInline
-                preload="metadata"
-              />
+              // Fallback: gradient background for videos without thumbnails
+              <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50" />
             )}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
