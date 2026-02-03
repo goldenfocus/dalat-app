@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import Replicate from "replicate";
 
 export const dynamic = "force-dynamic";
+
+const CLIP_MODEL = "krthr/clip-embeddings:1c0371070cb827ec3c7f2f28adcdde54b50dcd239aa6faea0bc98b174ef03fb4";
 
 function createServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -91,10 +94,70 @@ export async function GET() {
     };
   }
 
+  // Test 5: Generate text embedding and search
+  let textSearchTest = null;
+  const replicateToken = process.env.REPLICATE_API_TOKEN;
+  if (replicateToken) {
+    try {
+      const replicate = new Replicate({ auth: replicateToken });
+      const textQuery = "people";
+
+      const rawOutput = await replicate.run(CLIP_MODEL, {
+        input: { text: textQuery },
+      });
+
+      // Parse response
+      let textEmbedding: number[] | null = null;
+      if (rawOutput && typeof rawOutput === "object" && !Array.isArray(rawOutput) && (rawOutput as { embedding?: number[] }).embedding) {
+        textEmbedding = (rawOutput as { embedding: number[] }).embedding;
+      }
+
+      if (textEmbedding && textEmbedding.length === 768) {
+        const textEmbeddingString = `[${textEmbedding.join(",")}]`;
+
+        // Try RPC with text embedding
+        const { data: textRpcData, error: textRpcError } = await supabase.rpc(
+          "search_moments_by_embedding",
+          {
+            query_embedding: textEmbeddingString,
+            match_threshold: 0.0,
+            match_count: 5,
+          }
+        );
+
+        // Manual cosine similarity with first stored embedding
+        if (embeddings && embeddings.length > 0) {
+          const storedVec = typeof embeddings[0].embedding === "string"
+            ? JSON.parse(embeddings[0].embedding)
+            : embeddings[0].embedding;
+
+          const dotProduct = storedVec.reduce((sum: number, a: number, i: number) => sum + a * textEmbedding![i], 0);
+          const normA = Math.sqrt(storedVec.reduce((sum: number, a: number) => sum + a * a, 0));
+          const normB = Math.sqrt(textEmbedding.reduce((sum: number, a: number) => sum + a * a, 0));
+          const cosineSim = dotProduct / (normA * normB);
+
+          textSearchTest = {
+            query: textQuery,
+            embeddingLength: textEmbedding.length,
+            first5: textEmbedding.slice(0, 5),
+            norm: normB.toFixed(4),
+            manualCosineSim: cosineSim.toFixed(4),
+            rpcResult: textRpcError ? { error: textRpcError.message } : textRpcData,
+          };
+        }
+      } else {
+        textSearchTest = { error: "Failed to generate text embedding", rawOutput: JSON.stringify(rawOutput).slice(0, 200) };
+      }
+    } catch (err) {
+      textSearchTest = { error: err instanceof Error ? err.message : "Unknown error" };
+    }
+  }
+
   return NextResponse.json({
     count: embeddings?.length || 0,
     allSameFirst5: allSame,
     samples,
     selfSearchTest: selfSearchResult,
+    textSearchTest,
   });
 }
