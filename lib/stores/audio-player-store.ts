@@ -82,7 +82,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   isPlaying: false,
   currentTime: 0,
   duration: 0,
-  repeatMode: "none",
+  repeatMode: "all", // Default to loop playlist (most music players do this)
   shuffle: false,
   shuffledIndices: [],
   isExpanded: false,
