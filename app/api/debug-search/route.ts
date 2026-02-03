@@ -110,6 +110,20 @@ export async function GET(request: Request) {
       { query_embedding: queryEmbStr_jsFormat, match_threshold: 0.0, match_count: 3 }
     );
 
+    // TEST 5: Try passing as array instead of string
+    const { data: test5_result, error: test5_error } = await supabase.rpc(
+      "debug_search_test",
+      { query_embedding: queryVec, match_threshold: 0.0 }  // Pass array directly
+    );
+
+    // TEST 6: Try truncating to 8 decimal places with proper formatting
+    const queryVec_truncated = queryVec.map(v => parseFloat(v.toFixed(8)));
+    const queryEmbStr_truncated = `[${queryVec_truncated.join(",")}]`;
+    const { data: test6_result, error: test6_error } = await supabase.rpc(
+      "debug_search_test",
+      { query_embedding: queryEmbStr_truncated, match_threshold: 0.0 }
+    );
+
     // Compare string formats
     const formatComparison = {
       storedVecLength: storedVec.length,
@@ -152,6 +166,19 @@ export async function GET(request: Request) {
           resultCount: test3_error ? 0 : test3_result?.length || 0,
           error: test3_error?.message || null,
           firstResult: test3_result?.[0] || null,
+        },
+        // Test passing as array instead of string
+        test5_queryEmb_asArray: {
+          resultCount: test5_error ? 0 : test5_result?.length || 0,
+          error: test5_error?.message || null,
+          firstResult: test5_result?.[0] || null,
+        },
+        // Test with truncated precision (8 decimal places)
+        test6_queryEmb_truncated: {
+          resultCount: test6_error ? 0 : test6_result?.length || 0,
+          error: test6_error?.message || null,
+          truncatedStrLength: queryEmbStr_truncated.length,
+          firstResult: test6_result?.[0] || null,
         },
       },
 
