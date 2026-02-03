@@ -701,6 +701,17 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
     });
   };
 
+  const handleRetryUpload = (itemId: string) => {
+    const item = uploads.find(u => u.id === itemId);
+    if (!item || item.status !== "error") return;
+
+    // Reset status and retry
+    setUploads(prev => prev.map(u =>
+      u.id === itemId ? { ...u, status: "uploading" as const, error: undefined } : u
+    ));
+    uploadFile(item.file, itemId);
+  };
+
   const handleCaptionChange = (itemId: string, newCaption: string) => {
     setUploads(prev => prev.map(item =>
       item.id === itemId ? { ...item, caption: newCaption } : item
@@ -1608,6 +1619,14 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
                       <span className="text-xs text-white text-center font-medium">
                         {upload.error || t("errors.uploadFailed")}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRetryUpload(upload.id)}
+                        className="mt-1 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white text-xs font-medium flex items-center gap-1.5 active:scale-95 transition-all"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        {t("retry")}
+                      </button>
                     </div>
                   )}
 

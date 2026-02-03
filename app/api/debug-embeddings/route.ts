@@ -113,13 +113,25 @@ export async function GET() {
       }
 
       if (textEmbedding && textEmbedding.length === 768) {
+        // Test both full precision and truncated precision
         const textEmbeddingString = `[${textEmbedding.join(",")}]`;
+        const truncatedEmbeddingString = `[${textEmbedding.map(v => v.toFixed(8)).join(",")}]`;
 
-        // Try RPC with text embedding
+        // Try RPC with text embedding (full precision)
         const { data: textRpcData, error: textRpcError } = await supabase.rpc(
           "search_moments_by_embedding",
           {
             query_embedding: textEmbeddingString,
+            match_threshold: 0.0,
+            match_count: 5,
+          }
+        );
+
+        // Try RPC with truncated precision (matches stored format)
+        const { data: truncatedRpcData, error: truncatedRpcError } = await supabase.rpc(
+          "search_moments_by_embedding",
+          {
+            query_embedding: truncatedEmbeddingString,
             match_threshold: 0.0,
             match_count: 5,
           }
@@ -147,13 +159,13 @@ export async function GET() {
             first5: textEmbedding.slice(0, 5),
             norm: normB.toFixed(4),
             manualCosineSim: cosineSim.toFixed(4),
-            rpcResult: textRpcError ? { error: textRpcError.message } : textRpcData,
+            rpcResultFullPrecision: textRpcError ? { error: textRpcError.message } : textRpcData,
+            rpcResultTruncated: truncatedRpcError ? { error: truncatedRpcError.message } : truncatedRpcData,
             debugFormats: {
               storedType: typeof embeddings[0].embedding,
               storedPrefix: storedEmbString.substring(0, 80),
-              textPrefix: textEmbeddingString.substring(0, 80),
-              storedEndsCorrectly: storedEmbString.endsWith("]"),
-              textEndsCorrectly: textEmbeddingString.endsWith("]"),
+              textFullPrefix: textEmbeddingString.substring(0, 80),
+              textTruncatedPrefix: truncatedEmbeddingString.substring(0, 80),
             }
           };
         }
