@@ -27,15 +27,21 @@ interface MomentForCard {
 
 interface MomentCardProps {
   moment: MomentForCard;
+  /** Event slug for clean URL generation (e.g., /events/[slug]/moments/[id]) */
+  eventSlug?: string;
   /** Navigation origin context: "moments" for feed, "event" for event-specific, "profile" for profile timeline, "discovery" for search results */
   from?: "moments" | "event" | "profile" | "discovery";
   /** Comment count to display as badge (only shown if > 0) */
   commentCount?: number;
 }
 
-export function MomentCard({ moment, from, commentCount }: MomentCardProps) {
+export function MomentCard({ moment, eventSlug, from, commentCount }: MomentCardProps) {
   const isVideo = isVideoUrl(moment.media_url);
-  const href = from ? `/moments/${moment.id}?from=${from}` : `/moments/${moment.id}`;
+  // Use clean URL format when event slug is available
+  const basePath = eventSlug
+    ? `/events/${eventSlug}/moments/${moment.id}`
+    : `/moments/${moment.id}`;
+  const href = from ? `${basePath}?from=${from}` : basePath;
 
   // Get thumbnail for YouTube moments
   const youtubeThumb = moment.content_type === "youtube" && moment.youtube_video_id

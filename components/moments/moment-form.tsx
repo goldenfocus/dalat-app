@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import {
@@ -58,6 +58,11 @@ import {
 } from "@/lib/audio-metadata";
 import * as tus from "tus-js-client";
 import type { MomentContentType } from "@/lib/types";
+import { useUploadQueue, type QueuedUpload } from "@/lib/hooks/use-upload-queue";
+import { CompactUploadQueue, type CompactUploadItem } from "@/components/moments/compact-upload-queue";
+
+// Threshold for switching to compact/bulk upload UI
+const BULK_UPLOAD_THRESHOLD = 5;
 
 // Input mode for the form
 type InputMode = "media" | "youtube" | "file" | "text";
@@ -167,8 +172,52 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
   // Input mode state
   const [inputMode, setInputMode] = useState<InputMode>("media");
 
-  // Photo/Video uploads (existing)
+  // Photo/Video uploads - two modes:
+  // 1. Normal mode (≤5 files): Full preview cards with individual captions
+  // 2. Bulk mode (>5 files): Compact queue with batch progress
   const [uploads, setUploads] = useState<UploadItem[]>([]);
+
+  // Bulk upload queue hook (used when >5 files)
+  const bulkQueue = useUploadQueue({
+    eventId,
+    userId,
+  });
+
+  // Determine if we're in bulk mode
+  const isBulkMode = useMemo(() => {
+    return uploads.length > BULK_UPLOAD_THRESHOLD || bulkQueue.items.length > 0;
+  }, [uploads.length, bulkQueue.items.length]);
+
+  // Convert queue items to compact format for display
+  const compactItems: CompactUploadItem[] = useMemo(() => {
+    if (!isBulkMode) return [];
+    // If we have bulk queue items, use those
+    if (bulkQueue.items.length > 0) {
+      return bulkQueue.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        size: item.size,
+        isVideo: item.isVideo,
+        status: item.status === "converting" ? "compressing" : item.status,
+        progress: item.progress,
+        error: item.error,
+        previewUrl: item.previewUrl,
+      }));
+    }
+    // Otherwise convert regular uploads to compact format
+    return uploads.map((item) => ({
+      id: item.id,
+      name: item.file.name,
+      size: item.file.size,
+      isVideo: item.isVideo,
+      status: item.status === "converting" ? "compressing" :
+              item.status === "processing" ? "uploading" :
+              item.status,
+      progress: item.uploadProgress,
+      error: item.error,
+      previewUrl: item.previewUrl,
+    }));
+  }, [isBulkMode, bulkQueue.items, uploads]);
 
   // YouTube link state
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -484,6 +533,29 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
     setError(null);
     const fileArray = Array.from(files);
 
+    // Check if we should use bulk mode
+    // - Already have bulk queue items, or
+    // - Total files (existing + new) would exceed threshold
+    const totalFiles = uploads.length + bulkQueue.items.length + fileArray.length;
+    const shouldUseBulkMode = bulkQueue.items.length > 0 || totalFiles > BULK_UPLOAD_THRESHOLD;
+
+    if (shouldUseBulkMode) {
+      // Use the queue-based upload with concurrency control
+      // First, migrate any existing uploads to the bulk queue
+      if (uploads.length > 0 && bulkQueue.items.length === 0) {
+        // Convert existing uploads to queue (they're already uploading, just track them)
+        // For simplicity, we'll just clear and re-add them to the queue
+        const existingFiles = uploads.map(u => u.file);
+        setUploads([]); // Clear old uploads
+        bulkQueue.addFiles(existingFiles);
+      }
+
+      // Add new files to the bulk queue
+      bulkQueue.addFiles(fileArray);
+      return;
+    }
+
+    // Normal mode: individual uploads with full previews
     const newUploads: UploadItem[] = [];
 
     for (const file of fileArray) {
@@ -913,17 +985,72 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         return;
       }
 
-      // Default: Photo/Video uploads (existing behavior)
+      // Default: Photo/Video uploads (existing behavior + bulk queue)
       const readyUploads = uploads.filter(u =>
         u.status === "uploaded" && (u.mediaUrl || u.cfVideoUid)
       );
+      const readyBulkUploads = bulkQueue.items.filter(u =>
+        u.status === "uploaded" && u.mediaUrl
+      );
 
-      if (readyUploads.length === 0) {
+      if (readyUploads.length === 0 && readyBulkUploads.length === 0) {
         setError(t("errors.uploadFailed"));
         return;
       }
 
-      // Create a moment for each uploaded file with its individual caption
+      // Create moments for bulk queue items (no individual captions in bulk mode)
+      for (const upload of readyBulkUploads) {
+        const contentType = upload.isVideo ? "video" : "photo";
+        const textContent = caption.trim() || null;
+
+        const { data, error: postError } = await supabase.rpc("create_moment", {
+          p_event_id: eventId,
+          p_content_type: contentType,
+          p_media_url: upload.mediaUrl,
+          p_text_content: textContent,
+          p_user_id: godModeUserId || null,
+          p_source_locale: locale,
+          p_thumbnail_url: null,
+          p_cf_video_uid: upload.cfVideoUid || null,
+          p_cf_playback_url: upload.cfPlaybackUrl || null,
+          p_video_status: upload.cfVideoUid ? "processing" : "ready",
+        });
+
+        if (postError) {
+          console.error("create_moment RPC error:", postError.message, postError);
+          if (postError.message.includes("not_allowed_to_post")) {
+            setError(t("errors.notAllowed"));
+            return;
+          }
+          throw postError;
+        }
+
+        if (data?.moment_id && textContent) {
+          triggerTranslation("moment", data.moment_id, [
+            { field_name: "text_content", text: textContent },
+          ]);
+        }
+
+        // Fire-and-forget: Generate embedding for photos
+        if (data?.moment_id && contentType === "photo") {
+          fetch("/api/moments/embed", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ momentId: data.moment_id }),
+          }).catch(() => {});
+        }
+
+        // Fire-and-forget: Trigger AI processing
+        if (data?.moment_id) {
+          fetch("/api/moments/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ momentId: data.moment_id }),
+          }).catch(() => {});
+        }
+      }
+
+      // Create moments for normal mode uploads (with individual captions)
       for (const upload of readyUploads) {
         const contentType = upload.isVideo ? "video" : "photo";
         // Use individual caption if set, otherwise fall back to shared caption
@@ -986,7 +1113,12 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
       triggerHaptic("medium");
 
-      // Remove posted items from queue, keep uploading/errored ones
+      // Clear bulk queue completed items
+      if (readyBulkUploads.length > 0) {
+        bulkQueue.clearCompleted();
+      }
+
+      // Remove posted items from normal queue, keep uploading/errored ones
       const postedIds = new Set(readyUploads.map(u => u.id));
       setUploads(prev => {
         const remaining = prev.filter(u => !postedIds.has(u.id));
@@ -1001,9 +1133,10 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       });
       setCaption(""); // Clear shared caption after posting
 
-      // If there are still items uploading, stay on page
+      // If there are still items uploading in either queue, stay on page
       const remainingUploads = uploads.filter(u => !postedIds.has(u.id));
-      if (remainingUploads.length > 0) {
+      const remainingBulk = bulkQueue.items.filter(u => u.status !== "uploaded");
+      if (remainingUploads.length > 0 || remainingBulk.length > 0) {
         // Stay on page so user can post remaining items when ready
         triggerHaptic("medium");
       } else if (onSuccess) {
@@ -1029,6 +1162,9 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
   const readyMediaCount = uploads.filter(u =>
     u.status === "uploaded" && (u.mediaUrl || u.cfVideoUid)
   ).length;
+  const bulkReadyCount = bulkQueue.stats.completed;
+  const totalReadyMedia = readyMediaCount + bulkReadyCount;
+
   const readyMaterialCount = materialUploads.filter(m =>
     m.status === "uploaded" && m.fileUrl
   ).length;
@@ -1043,11 +1179,12 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         return caption.trim().length > 0;
       case "media":
       default:
-        return readyMediaCount > 0;
+        return totalReadyMedia > 0;
     }
   })();
 
-  const readyCount = inputMode === "file" ? readyMaterialCount : readyMediaCount;
+  const readyCount = inputMode === "file" ? readyMaterialCount : totalReadyMedia;
+  const totalMediaCount = uploads.length + bulkQueue.items.length;
 
   return (
     <div className="space-y-4">
@@ -1267,8 +1404,31 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       {/* Media upload area (photo/video) */}
       {inputMode === "media" && (
         <div className="space-y-3">
-          {/* Preview list with per-image captions */}
-          {uploads.length > 0 && (
+          {/* Bulk mode: Compact queue with batch progress */}
+          {isBulkMode && compactItems.length > 0 && (
+            <CompactUploadQueue
+              items={compactItems}
+              onRemove={(id) => {
+                if (bulkQueue.items.length > 0) {
+                  bulkQueue.removeItem(id);
+                } else {
+                  handleRemoveUpload(id);
+                }
+              }}
+              onRetry={(id) => {
+                if (bulkQueue.items.length > 0) {
+                  bulkQueue.retryItem(id);
+                }
+              }}
+              onRetryAll={bulkQueue.retryAllFailed}
+              onPause={bulkQueue.pause}
+              onResume={bulkQueue.resume}
+              isPaused={bulkQueue.isPaused}
+            />
+          )}
+
+          {/* Normal mode: Preview list with per-image captions */}
+          {!isBulkMode && uploads.length > 0 && (
           <div className="space-y-4">
             {uploads.map((upload) => (
               <div key={upload.id} className="rounded-xl border border-border overflow-hidden bg-card">
@@ -1402,8 +1562,20 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           </div>
         )}
 
-        {/* Empty state drop zone */}
-        {uploads.length === 0 && (
+        {/* Add more button for bulk mode */}
+        {isBulkMode && (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full py-3 rounded-xl border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          >
+            <Plus className="w-5 h-5 text-muted-foreground/60" />
+            <span className="text-sm text-muted-foreground">{t("addMore")}</span>
+          </button>
+        )}
+
+        {/* Empty state drop zone - show when no files in either mode */}
+        {uploads.length === 0 && bulkQueue.items.length === 0 && (
           <div
             className={cn(
               "relative aspect-[4/3] rounded-2xl overflow-hidden transition-all cursor-pointer",
@@ -1423,6 +1595,9 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
               </div>
               <span className="text-sm font-medium text-muted-foreground">
                 {t("tapToUpload")}
+              </span>
+              <span className="text-xs text-muted-foreground/60">
+                {t("proUpload.maxSizes")}
               </span>
             </div>
           </div>

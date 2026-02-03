@@ -1087,6 +1087,16 @@
       "networkError": "Lỗi mạng. Kiểm tra kết nối và thử lại.",
       "compressionFailed": "Không thể nén ảnh. Thử ảnh nhỏ hơn."
     },
+    "bulkUpload": {
+      "uploading": "Đang tải {current} / {total}...",
+      "allComplete": "Đã tải lên {count} file!",
+      "paused": "Đã tạm dừng",
+      "complete": "hoàn thành",
+      "failed": "thất bại",
+      "pause": "Tạm dừng",
+      "resume": "Tiếp tục",
+      "compressing": "Đang nén..."
+    },
     "proUpload": {
       "title": "Tải Lên Chuyên Nghiệp",
       "subtitle": "Tải lên hàng loạt ảnh và video",

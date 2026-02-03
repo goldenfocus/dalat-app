@@ -12,12 +12,14 @@ const PAGE_SIZE = 20;
 
 interface InfiniteMomentGridProps {
   eventId: string;
+  eventSlug: string;
   initialMoments: MomentWithProfile[];
   initialHasMore: boolean;
 }
 
 export function InfiniteMomentGrid({
   eventId,
+  eventSlug,
   initialMoments,
   initialHasMore,
 }: InfiniteMomentGridProps) {
@@ -96,6 +98,7 @@ export function InfiniteMomentGrid({
           <MomentCard
             key={moment.id}
             moment={moment}
+            eventSlug={eventSlug}
             from="event"
             commentCount={commentCounts.get(moment.id)}
           />

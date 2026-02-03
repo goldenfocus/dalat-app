@@ -38,6 +38,7 @@ export function ProfileEventMomentsGroup({ group, commentCounts }: ProfileEventM
           <MomentCard
             key={moment.id}
             moment={moment}
+            eventSlug={group.event_slug}
             from="profile"
             commentCount={commentCounts?.get(moment.id)}
           />

@@ -166,6 +166,7 @@ export default async function EventMomentsPage({ params }: PageProps) {
         {/* Infinite scroll moments grid */}
         <InfiniteMomentGrid
           eventId={event.id}
+          eventSlug={event.slug}
           initialMoments={moments}
           initialHasMore={hasMore}
         />

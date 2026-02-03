@@ -13,7 +13,6 @@ import {
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { isVideoUrl } from "@/lib/media-utils";
 import { formatInDaLat } from "@/lib/timezone";
 import { generateMomentMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/structured-data";
@@ -94,8 +93,8 @@ async function getMoment(id: string, expectedSlug?: string): Promise<MomentWithD
 interface AdjacentMoments {
   prevId: string | null;
   nextId: string | null;
-  prevEventId: string | null;
-  nextEventId: string | null;
+  prevMediaUrl: string | null;
+  nextMediaUrl: string | null;
 }
 
 async function getAdjacentMoments(
@@ -105,10 +104,10 @@ async function getAdjacentMoments(
 ): Promise<AdjacentMoments> {
   const supabase = await createClient();
 
-  // Get previous moment (older) in same event
+  // Get previous moment (older) in same event - with media_url for preloading
   const { data: prevInEvent } = await supabase
     .from("moments")
-    .select("id")
+    .select("id, media_url")
     .eq("event_id", eventId)
     .eq("status", "published")
     .lt("created_at", createdAt)
@@ -116,10 +115,10 @@ async function getAdjacentMoments(
     .limit(1)
     .single();
 
-  // Get next moment (newer) in same event
+  // Get next moment (newer) in same event - with media_url for preloading
   const { data: nextInEvent } = await supabase
     .from("moments")
-    .select("id")
+    .select("id, media_url")
     .eq("event_id", eventId)
     .eq("status", "published")
     .gt("created_at", createdAt)
@@ -127,34 +126,41 @@ async function getAdjacentMoments(
     .limit(1)
     .single();
 
-  // Get previous event moment (older, different event)
-  const { data: prevEvent } = await supabase
-    .from("moments")
-    .select("id")
-    .neq("event_id", eventId)
-    .eq("status", "published")
-    .lt("created_at", createdAt)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+  // Wrap around if at boundary - get last/first in event
+  let prevId = prevInEvent?.id ?? null;
+  let nextId = nextInEvent?.id ?? null;
+  let prevMediaUrl = prevInEvent?.media_url ?? null;
+  let nextMediaUrl = nextInEvent?.media_url ?? null;
 
-  // Get next event moment (newer, different event)
-  const { data: nextEvent } = await supabase
-    .from("moments")
-    .select("id")
-    .neq("event_id", eventId)
-    .eq("status", "published")
-    .gt("created_at", createdAt)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
+  if (!prevId) {
+    const { data: lastMoment } = await supabase
+      .from("moments")
+      .select("id, media_url")
+      .eq("event_id", eventId)
+      .eq("status", "published")
+      .neq("id", momentId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+    prevId = lastMoment?.id ?? null;
+    prevMediaUrl = lastMoment?.media_url ?? null;
+  }
 
-  return {
-    prevId: prevInEvent?.id ?? null,
-    nextId: nextInEvent?.id ?? null,
-    prevEventId: prevEvent?.id ?? null,
-    nextEventId: nextEvent?.id ?? null,
-  };
+  if (!nextId) {
+    const { data: firstMoment } = await supabase
+      .from("moments")
+      .select("id, media_url")
+      .eq("event_id", eventId)
+      .eq("status", "published")
+      .neq("id", momentId)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .single();
+    nextId = firstMoment?.id ?? null;
+    nextMediaUrl = firstMoment?.media_url ?? null;
+  }
+
+  return { prevId, nextId, prevMediaUrl, nextMediaUrl };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -165,7 +171,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Moment Not Found" };
   }
 
-  return generateMomentMetadata(moment, moment.events, locale as Locale);
+  return generateMomentMetadata(moment, locale as Locale);
 }
 
 export default async function MomentDetailPage({ params, searchParams }: PageProps) {
@@ -218,27 +224,22 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
 
   const event = moment.events;
   const profile = moment.profiles;
-  const isVideo = isVideoUrl(moment.media_url);
 
-  // Fetch translations if content was originally in a different language
-  const sourceLocale = isValidContentLocale(moment.source_locale)
+  // Fetch translations for text content
+  const translationResult = await getTranslationsWithFallback(
+    "moment",
+    moment.id,
+    locale as ContentLocale,
+    { text_content: moment.text_content }
+  );
+
+  const translatedText = translationResult.text_content
+    ? decodeUnicodeEscapes(translationResult.text_content)
+    : moment.text_content;
+  const isTranslated = translatedText !== moment.text_content && !!translatedText;
+  const sourceLocale = moment.source_locale && isValidContentLocale(moment.source_locale)
     ? (moment.source_locale as ContentLocale)
     : null;
-
-  const momentTranslations = sourceLocale
-    ? await getTranslationsWithFallback(
-        "moment",
-        moment.id,
-        locale as Locale,
-        { textContent: moment.text_content || "" },
-        sourceLocale
-      )
-    : { textContent: moment.text_content || "", isTranslated: false, sourceLocale: null };
-
-  // Decode any unicode escape sequences in translated text
-  if (momentTranslations.textContent) {
-    momentTranslations.textContent = decodeUnicodeEscapes(momentTranslations.textContent);
-  }
 
   // Format relative time
   const dateFnsLocale = dateFnsLocales[locale as Locale] || enUS;
@@ -262,9 +263,9 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
     { name: "Home", url: "https://dalat.app" },
     { name: event.title, url: `https://dalat.app/events/${event.slug}` },
     { name: t("moments"), url: `https://dalat.app/events/${event.slug}/moments` },
-  ]);
+  ], locale);
 
-  const momentSchema = generateMomentSchema(moment, event, profile);
+  const momentSchema = generateMomentSchema(moment, locale);
 
   return (
     <>
@@ -272,16 +273,10 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
       <JsonLd data={momentSchema} />
 
       {/* Preload adjacent images */}
-      {adjacentMoments.prevId && (
-        <Suspense fallback={null}>
-          <MomentImagePreloader momentId={adjacentMoments.prevId} />
-        </Suspense>
-      )}
-      {adjacentMoments.nextId && (
-        <Suspense fallback={null}>
-          <MomentImagePreloader momentId={adjacentMoments.nextId} />
-        </Suspense>
-      )}
+      <MomentImagePreloader
+        prevMediaUrl={adjacentMoments.prevMediaUrl}
+        nextMediaUrl={adjacentMoments.nextMediaUrl}
+      />
 
       <div className="min-h-screen bg-background">
         {/* Header */}
@@ -295,7 +290,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
               <span className="text-sm">{tCommon("back")}</span>
             </Link>
 
-            <AuthButton variant="outline" size="sm" className="h-8" />
+            <AuthButton />
           </div>
         </header>
 
@@ -313,7 +308,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                 {/* Audio player */}
                 {moment.content_type === "audio" && moment.file_url && (
                   <AudioPlayer
-                    src={moment.file_url}
+                    url={moment.file_url}
                     title={moment.title || moment.original_filename || undefined}
                     artist={moment.artist || undefined}
                     thumbnailUrl={moment.audio_thumbnail_url || undefined}
@@ -323,7 +318,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                 {/* PDF preview */}
                 {moment.content_type === "pdf" && moment.file_url && (
                   <PDFPreview
-                    src={moment.file_url}
+                    url={moment.file_url}
                     filename={moment.original_filename || undefined}
                   />
                 )}
@@ -331,17 +326,16 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                 {/* Image material */}
                 {moment.content_type === "image" && moment.file_url && (
                   <ImagePreview
-                    src={moment.file_url}
-                    alt={moment.text_content || moment.title || "Image"}
+                    url={moment.file_url}
+                    title={moment.text_content || moment.title || "Image"}
                   />
                 )}
 
                 {/* Document link */}
                 {moment.content_type === "document" && moment.file_url && (
                   <DocumentLink
-                    src={moment.file_url}
+                    url={moment.file_url}
                     filename={moment.original_filename || undefined}
-                    mimeType={moment.mime_type || undefined}
                   />
                 )}
 
@@ -358,7 +352,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                 {moment.content_type === "photo" && moment.media_url && (
                   <ExpandableMomentImage
                     src={moment.media_url}
-                    alt={momentTranslations.textContent || "Photo"}
+                    alt={translatedText || "Photo"}
                   />
                 )}
 
@@ -366,7 +360,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                 {moment.content_type === "text" && (
                   <div className="aspect-square flex items-center justify-center p-8 bg-gradient-to-br from-primary/20 to-primary/5">
                     <p className="text-xl text-center whitespace-pre-wrap">
-                      {momentTranslations.textContent}
+                      {translatedText}
                     </p>
                   </div>
                 )}
@@ -399,13 +393,12 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
               {/* Author and actions */}
               <div className="flex items-center justify-between">
                 <Link
-                  href={`/profile/${profile.username}`}
+                  href={`/${profile.username || moment.user_id}`}
                   className="flex items-center gap-3 group"
                 >
                   <UserAvatar
-                    username={profile.username}
-                    displayName={profile.display_name}
-                    avatarUrl={profile.avatar_url}
+                    src={profile.avatar_url}
+                    alt={profile.display_name || profile.username || ""}
                     size="md"
                   />
                   <div>
@@ -432,12 +425,12 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
               </div>
 
               {/* Caption */}
-              {momentTranslations.textContent && moment.content_type !== "text" && (
+              {translatedText && moment.content_type !== "text" && (
                 <div className="space-y-2">
-                  <p className="text-lg whitespace-pre-wrap">{momentTranslations.textContent}</p>
-                  {momentTranslations.isTranslated && momentTranslations.sourceLocale && (
+                  <p className="text-lg whitespace-pre-wrap">{translatedText}</p>
+                  {isTranslated && sourceLocale && (
                     <TranslatedFrom
-                      sourceLocale={momentTranslations.sourceLocale}
+                      sourceLocale={sourceLocale}
                       className="text-xs"
                     />
                   )}
@@ -446,7 +439,13 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
 
               {/* Comments */}
               <Suspense fallback={<div className="h-32 animate-pulse bg-muted rounded-lg" />}>
-                <CommentsSection targetType="moment" targetId={moment.id} />
+                <CommentsSection
+                  targetType="moment"
+                  targetId={moment.id}
+                  contentOwnerId={moment.user_id}
+                  currentUserId={user?.id}
+                  redirectPath={`/events/${event.slug}/moments/${moment.id}`}
+                />
               </Suspense>
             </div>
 
@@ -495,37 +494,8 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                 className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg border hover:bg-muted/50 transition-colors text-sm font-medium"
               >
                 <Plus className="w-4 h-4" />
-                {t("viewMoments")}
+                {t("viewAll")}
               </Link>
-
-              {/* Cross-event navigation */}
-              {(adjacentMoments.prevEventId || adjacentMoments.nextEventId) && (
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {t("differentEvent")}
-                    </p>
-                    <div className="flex gap-2">
-                      {adjacentMoments.prevEventId && (
-                        <Link
-                          href={`/moments/${adjacentMoments.prevEventId}`}
-                          className="flex-1 py-2 px-3 rounded-lg border hover:bg-muted/50 transition-colors text-sm text-center"
-                        >
-                          ← {t("prevEvent")}
-                        </Link>
-                      )}
-                      {adjacentMoments.nextEventId && (
-                        <Link
-                          href={`/moments/${adjacentMoments.nextEventId}`}
-                          className="flex-1 py-2 px-3 rounded-lg border hover:bg-muted/50 transition-colors text-sm text-center"
-                        >
-                          {t("nextEvent")} →
-                        </Link>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </div>
         </main>
