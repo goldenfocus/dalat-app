@@ -173,8 +173,8 @@ export function MiniPlayer() {
       {/* Hidden audio element */}
       <audio ref={audioRef} preload="auto" />
 
-      {/* Mini player bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t safe-area-bottom">
+      {/* Mini player bar - positioned above mobile bottom nav */}
+      <div className="fixed left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0">
         {/* Progress bar (thin line at top) */}
         <div className="h-1 bg-muted">
           <div
@@ -280,7 +280,7 @@ export function MiniPlayer() {
       </div>
 
       {/* Spacer to prevent content from being hidden behind the mini player */}
-      <div className="h-28" />
+      <div className="h-24 lg:h-28" />
     </>
   );
 }
