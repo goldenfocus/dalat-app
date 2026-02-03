@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Play,
   Pause,
@@ -17,6 +17,26 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/audio-metadata";
 import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
+
+/** Time display with toggle between elapsed/remaining */
+function TimeDisplay({ currentTime, duration }: { currentTime: number; duration: number }) {
+  const [showRemaining, setShowRemaining] = useState(false);
+  const remaining = duration - currentTime;
+
+  return (
+    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+      <span>{formatDuration(Math.floor(currentTime))}</span>
+      <button
+        type="button"
+        onClick={() => setShowRemaining(!showRemaining)}
+        className="hover:text-foreground transition-colors tabular-nums"
+        aria-label={showRemaining ? "Show total duration" : "Show remaining time"}
+      >
+        {showRemaining ? `-${formatDuration(Math.floor(remaining))}` : formatDuration(Math.floor(duration))}
+      </button>
+    </div>
+  );
+}
 
 export interface PlaylistTrack {
   id: string;
@@ -194,21 +214,15 @@ export function PlaylistPlayer({
             type="range"
             value={isThisPlaylistActive ? currentTime : 0}
             max={isThisPlaylistActive && duration ? duration : currentTrack?.duration_seconds || 100}
-            step={1}
+            step={0.1}
             onChange={(e) => handleSeek(Number(e.target.value))}
-            className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
+            className="audio-seekbar w-full h-2"
             disabled={!isThisPlaylistActive}
           />
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-            <span>
-              {formatDuration(Math.floor(isThisPlaylistActive ? currentTime : 0))}
-            </span>
-            <span>
-              {formatDuration(
-                Math.floor(isThisPlaylistActive && duration ? duration : currentTrack?.duration_seconds || 0)
-              )}
-            </span>
-          </div>
+          <TimeDisplay
+            currentTime={isThisPlaylistActive ? currentTime : 0}
+            duration={isThisPlaylistActive && duration ? duration : currentTrack?.duration_seconds || 0}
+          />
         </div>
 
         {/* Controls */}

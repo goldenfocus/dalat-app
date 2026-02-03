@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Play,
@@ -52,6 +52,9 @@ export function MiniPlayer() {
     toggleShuffle,
     close,
   } = useAudioPlayerStore();
+
+  // UI state for time display toggle
+  const [showRemaining, setShowRemaining] = useState(false);
 
   // Sync audio element with store state
   useEffect(() => {
@@ -318,7 +321,7 @@ export function MiniPlayer() {
               <Shuffle className="w-4 h-4" />
             </button>
 
-            <span className="w-8 text-right tabular-nums">
+            <span className="w-10 text-right tabular-nums">
               {formatDuration(Math.floor(currentTime))}
             </span>
             <input
@@ -329,9 +332,14 @@ export function MiniPlayer() {
               onChange={handleSeek}
               className="audio-seekbar flex-1 h-1"
             />
-            <span className="w-8 tabular-nums">
-              {formatDuration(Math.floor(duration))}
-            </span>
+            <button
+              type="button"
+              onClick={() => setShowRemaining(!showRemaining)}
+              className="w-10 tabular-nums hover:text-foreground transition-colors"
+              aria-label={showRemaining ? "Show total duration" : "Show remaining time"}
+            >
+              {showRemaining ? `-${formatDuration(Math.floor(duration - currentTime))}` : formatDuration(Math.floor(duration))}
+            </button>
 
             {/* Repeat button */}
             <button
