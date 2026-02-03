@@ -2,16 +2,21 @@
 
 /**
  * Convert HEIC/HEIF image to JPEG
- * Tries client-side heic2any first. If that fails, returns the original file
- * (modern browsers + Cloudflare CDN can display HEIC directly).
  *
- * Note: Server-side conversion removed due to Vercel body size limits causing 403s.
- * Modern Safari, Chrome (macOS/iOS), and Edge can display HEIC natively.
+ * Strategy:
+ * 1. Try client-side heic2any conversion (WASM-based)
+ * 2. If that fails, return the original HEIC file
+ *    - HEIC uploads directly to R2 via presigned URL (bypasses Cloudflare WAF)
+ *    - Cloudflare Image Resizing converts HEIC to WebP/AVIF on-the-fly when displaying
+ *
+ * Note: Server-side conversion removed - Cloudflare WAF blocks file uploads to API routes.
+ * This approach is actually better: HEIC stays compressed during upload (smaller transfer),
+ * and gets converted at the CDN edge closest to the viewer.
  */
 export async function convertHeicToJpeg(file: File): Promise<File> {
   console.log("[HEIC] Starting conversion for:", file.name, "size:", file.size, "type:", file.type);
 
-  // Try client-side conversion first (faster, no server roundtrip)
+  // Try client-side conversion first (works for most HEIC files)
   try {
     // Dynamic import to ensure WASM loads properly at runtime
     const heic2any = (await import("heic2any")).default;
@@ -48,48 +53,22 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
 
     return convertedFile;
   } catch (clientError) {
-    console.warn("[HEIC] Client-side conversion failed, trying server-side:", clientError);
+    // Client-side conversion failed - this happens with some newer iPhone HEIC codecs
+    // that heic2any's libheif doesn't support.
+    //
+    // Instead of failing, upload the HEIC directly to R2:
+    // - Presigned URL upload bypasses Cloudflare WAF (no 403!)
+    // - HEIC is smaller than JPEG during upload (better UX on slow connections)
+    // - Cloudflare Image Resizing converts to WebP/AVIF when displaying
+    //   (via /cdn-cgi/image/format=auto/...)
+    console.warn(
+      "[HEIC] Client-side conversion failed. Uploading HEIC directly - " +
+      "Cloudflare Image Resizing will convert on display.",
+      clientError
+    );
 
-    // Try server-side conversion as fallback
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/convert-heic", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server conversion failed: ${response.status}`);
-      }
-
-      const jpegBlob = await response.blob();
-      const newName = response.headers.get("X-Original-Name") ||
-        file.name.replace(/\.(heic|heif)$/i, ".jpg");
-
-      const convertedFile = new File([jpegBlob], newName, {
-        type: "image/jpeg",
-      });
-
-      console.log(
-        "[HEIC] Server-side conversion successful:",
-        convertedFile.name,
-        "size:",
-        convertedFile.size
-      );
-
-      return convertedFile;
-    } catch (serverError) {
-      console.error("[HEIC] Server-side conversion also failed:", serverError);
-
-      // Both client and server conversion failed
-      throw new Error(
-        "Unable to convert HEIC image. Please convert to JPEG/PNG before uploading, " +
-        "or try a different browser (Safari on macOS/iOS has best HEIC support)."
-      );
-    }
+    // Return original HEIC file - it will be uploaded as-is
+    return file;
   }
 }
 

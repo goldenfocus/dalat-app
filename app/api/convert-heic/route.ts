@@ -1,3 +1,16 @@
+/**
+ * @deprecated This endpoint is no longer used.
+ *
+ * HEIC conversion now works as follows:
+ * 1. Client-side heic2any conversion is attempted first
+ * 2. If that fails, HEIC is uploaded directly to R2 (presigned URL bypasses Cloudflare WAF)
+ * 3. Cloudflare Image Resizing converts HEIC to WebP/AVIF on-the-fly when displaying
+ *
+ * This endpoint was blocked by Cloudflare WAF (403 on file uploads).
+ * Additionally, CLOUDCONVERT_API_KEY is not configured in production.
+ *
+ * TODO: Remove this file once confirmed the new approach works in production.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 

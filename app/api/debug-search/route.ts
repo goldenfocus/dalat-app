@@ -88,6 +88,20 @@ export async function GET(request: Request) {
       "debug_embedding_moments"
     );
 
+    // KEY TEST: Use stored embedding (not text embedding) via RPC
+    // This tells us if RPC works at all vs text embedding specific issue
+    const storedEmbeddingStr = typeof stored.embedding === "string"
+      ? stored.embedding
+      : `[${stored.embedding.join(",")}]`;
+
+    const { data: storedEmbRpcResult, error: storedEmbRpcError } = await supabase.rpc(
+      "debug_search_test",
+      {
+        query_embedding: storedEmbeddingStr,
+        match_threshold: 0.0,
+      }
+    );
+
     return NextResponse.json({
       query,
       storedEmbedding: {
@@ -105,6 +119,7 @@ export async function GET(request: Request) {
       rpcResult: rpcError ? { error: rpcError.message } : rpcResult?.slice(0, 3),
       debugSearchTest: debugError ? { error: debugError.message } : debugResult,
       embeddingMoments: embeddingMomentsError ? { error: embeddingMomentsError.message } : embeddingMoments,
+      storedEmbRpcTest: storedEmbRpcError ? { error: storedEmbRpcError.message } : storedEmbRpcResult?.slice(0, 3),
     });
   } catch (err) {
     return NextResponse.json({
