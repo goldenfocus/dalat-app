@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useMomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 import { ViewModeSwitcher } from "./view-mode-switcher";
-import { InfiniteMomentGrid } from "./infinite-moment-grid";
+import { InfiniteMomentGrid, type InfiniteMomentGridHandle } from "./infinite-moment-grid";
 import { ImmersiveMomentView } from "./immersive-moment-view";
 import type { MomentWithProfile } from "@/lib/types";
 
@@ -31,9 +31,20 @@ export function MomentsViewContainer({
   const [showImmersive, setShowImmersive] = useState(false);
   const [immersiveStartIndex, setImmersiveStartIndex] = useState(0);
   const hasAutoOpenedRef = useRef(false);
+  const gridRef = useRef<InfiniteMomentGridHandle>(null);
 
   // Track moments loaded so far (for immersive view to access all loaded moments)
   const [allMoments, setAllMoments] = useState<MomentWithProfile[]>(initialMoments);
+  const [hasMoreMoments, setHasMoreMoments] = useState(initialHasMore);
+
+  // Load more moments (called from immersive view when reaching the end)
+  const handleLoadMore = useCallback(async () => {
+    if (gridRef.current?.hasMore) {
+      await gridRef.current.loadMore();
+      // Update hasMore state after loading
+      setHasMoreMoments(gridRef.current.hasMore);
+    }
+  }, []);
 
   // Auto-open immersive view if requested via URL (e.g., returning from moment detail page)
   useEffect(() => {
@@ -102,13 +113,20 @@ export function MomentsViewContainer({
       {/* Grid view (always rendered to maintain scroll position and loaded data) */}
       <div className={viewMode === "immersive" && showImmersive ? "hidden" : ""}>
         <InfiniteMomentGrid
+          ref={gridRef}
           eventId={eventId}
           eventSlug={eventSlug}
           initialMoments={initialMoments}
           initialHasMore={initialHasMore}
           enableLightbox={viewMode === "grid"}
           onMomentClick={viewMode === "immersive" ? openImmersive : undefined}
-          onMomentsUpdate={setAllMoments}
+          onMomentsUpdate={(moments) => {
+            setAllMoments(moments);
+            // Keep hasMore in sync with grid
+            if (gridRef.current) {
+              setHasMoreMoments(gridRef.current.hasMore);
+            }
+          }}
         />
       </div>
 
@@ -120,6 +138,8 @@ export function MomentsViewContainer({
           eventSlug={eventSlug}
           onClose={closeImmersive}
           onSwitchToGrid={switchToGrid}
+          onLoadMore={handleLoadMore}
+          hasMore={hasMoreMoments}
         />
       )}
     </>

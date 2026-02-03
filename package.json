@@ -63,7 +63,8 @@
     "tus-js-client": "^4.3.1",
     "web-push": "^3.6.7",
     "web-vitals": "^5.1.0",
-    "zod": "^4.2.1"
+    "zod": "^4.2.1",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

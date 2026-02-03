@@ -177,6 +177,7 @@ export default async function PlaylistPage({ params }: PageProps) {
         {/* Playlist Player */}
         <PlaylistPlayer
           tracks={tracks}
+          eventSlug={slug}
           eventTitle={event.title}
           eventImageUrl={event.image_url}
         />

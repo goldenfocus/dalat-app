@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import {
   Play,
   Pause,
@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/audio-metadata";
+import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
 
 export interface PlaylistTrack {
   id: string;
@@ -27,6 +28,7 @@ export interface PlaylistTrack {
 
 export interface PlaylistPlayerProps {
   tracks: PlaylistTrack[];
+  eventSlug: string;
   eventTitle: string;
   eventImageUrl?: string | null;
   className?: string;
@@ -34,18 +36,40 @@ export interface PlaylistPlayerProps {
 
 export function PlaylistPlayer({
   tracks,
+  eventSlug,
   eventTitle,
   eventImageUrl,
   className,
 }: PlaylistPlayerProps) {
   const t = useTranslations("playlist");
-  const audioRef = useRef<HTMLAudioElement>(null);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [userPaused, setUserPaused] = useState(false);
+  // Global store state
+  const {
+    tracks: storeTracks,
+    playlist: storePlaylist,
+    currentIndex: storeCurrentIndex,
+    isPlaying: storeIsPlaying,
+    currentTime,
+    duration,
+    setPlaylist,
+    playTrack: storePlayTrack,
+    play,
+    pause,
+    togglePlay,
+    next,
+    previous,
+    seekTo,
+  } = useAudioPlayerStore();
+
+  // Check if this playlist is currently active in the global player
+  const isThisPlaylistActive = useMemo(
+    () => storePlaylist?.eventSlug === eventSlug && storeTracks.length > 0,
+    [storePlaylist?.eventSlug, eventSlug, storeTracks.length]
+  );
+
+  // Get current state - either from store (if this playlist) or local defaults
+  const currentIndex = isThisPlaylistActive ? storeCurrentIndex : 0;
+  const isPlaying = isThisPlaylistActive ? storeIsPlaying : false;
 
   const currentTrack = tracks[currentIndex];
   const displayTitle = currentTrack?.title || `Track ${currentIndex + 1}`;
@@ -53,207 +77,66 @@ export function PlaylistPlayer({
   const thumbnailUrl = currentTrack?.thumbnail_url || eventImageUrl;
 
   // Calculate total playlist duration
-  const totalDuration = tracks.reduce((acc, track) => acc + (track.duration_seconds || 0), 0);
+  const totalDuration = tracks.reduce(
+    (acc, track) => acc + (track.duration_seconds || 0),
+    0
+  );
 
-  // Play a specific track
-  const playTrack = useCallback((index: number) => {
-    if (index >= 0 && index < tracks.length) {
-      setCurrentIndex(index);
-      setUserPaused(false);
-      // Audio will auto-play when src changes due to useEffect below
-    }
-  }, [tracks.length]);
+  // Start playing this playlist (sets it in global store)
+  const startPlaylist = useCallback(
+    (startIndex = 0) => {
+      // Convert tracks to store format
+      const audioTracks = tracks.map((t) => ({
+        id: t.id,
+        file_url: t.file_url,
+        title: t.title,
+        artist: t.artist,
+        album: t.album,
+        thumbnail_url: t.thumbnail_url,
+        duration_seconds: t.duration_seconds,
+      }));
 
-  // Play previous track
-  const playPrevious = useCallback(() => {
-    if (currentIndex > 0) {
-      playTrack(currentIndex - 1);
-    }
-  }, [currentIndex, playTrack]);
+      setPlaylist(
+        audioTracks,
+        { eventSlug, eventTitle, eventImageUrl: eventImageUrl || null },
+        startIndex
+      );
+    },
+    [tracks, eventSlug, eventTitle, eventImageUrl, setPlaylist]
+  );
 
-  // Play next track
-  const playNext = useCallback(() => {
-    if (currentIndex < tracks.length - 1) {
-      playTrack(currentIndex + 1);
-    }
-  }, [currentIndex, tracks.length, playTrack]);
-
-  // Toggle play/pause
-  const togglePlay = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (isPlaying) {
-      audio.pause();
-      setUserPaused(true);
-    } else {
-      audio.play().catch(() => {});
-      setUserPaused(false);
-    }
-  }, [isPlaying]);
-
-  // Seek to position
-  const seekTo = useCallback((time: number) => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.currentTime = time;
-    }
-  }, []);
-
-  // Set up Media Session API for background playback and lock screen controls
-  useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
-
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    // Update Media Session metadata
-    const updateMediaSession = () => {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: displayTitle,
-        artist: displayArtist,
-        album: eventTitle,
-        artwork: thumbnailUrl
-          ? [
-              { src: thumbnailUrl, sizes: "96x96", type: "image/jpeg" },
-              { src: thumbnailUrl, sizes: "128x128", type: "image/jpeg" },
-              { src: thumbnailUrl, sizes: "192x192", type: "image/jpeg" },
-              { src: thumbnailUrl, sizes: "256x256", type: "image/jpeg" },
-              { src: thumbnailUrl, sizes: "384x384", type: "image/jpeg" },
-              { src: thumbnailUrl, sizes: "512x512", type: "image/jpeg" },
-            ]
-          : [],
-      });
-    };
-
-    // Set up action handlers for lock screen controls
-    const setupActionHandlers = () => {
-      navigator.mediaSession.setActionHandler("play", () => {
-        audio.play();
-        setUserPaused(false);
-      });
-
-      navigator.mediaSession.setActionHandler("pause", () => {
-        audio.pause();
-        setUserPaused(true);
-      });
-
-      navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
-      navigator.mediaSession.setActionHandler("nexttrack", playNext);
-
-      navigator.mediaSession.setActionHandler("seekbackward", (details) => {
-        audio.currentTime = Math.max(audio.currentTime - (details.seekOffset || 10), 0);
-      });
-
-      navigator.mediaSession.setActionHandler("seekforward", (details) => {
-        audio.currentTime = Math.min(
-          audio.currentTime + (details.seekOffset || 10),
-          audio.duration || Infinity
-        );
-      });
-
-      navigator.mediaSession.setActionHandler("seekto", (details) => {
-        if (details.seekTime !== undefined) {
-          audio.currentTime = details.seekTime;
-        }
-      });
-    };
-
-    // Update position state for lock screen progress bar
-    const updatePositionState = () => {
-      if (audio.duration && !Number.isNaN(audio.duration)) {
-        try {
-          navigator.mediaSession.setPositionState({
-            duration: audio.duration,
-            playbackRate: audio.playbackRate,
-            position: audio.currentTime,
-          });
-        } catch {
-          // Some browsers don't support setPositionState
-        }
-      }
-    };
-
-    // Event listeners
-    const handlePlay = () => {
-      setIsPlaying(true);
-      updateMediaSession();
-      setupActionHandlers();
-      navigator.mediaSession.playbackState = "playing";
-    };
-
-    const handlePause = () => {
-      setIsPlaying(false);
-      navigator.mediaSession.playbackState = "paused";
-    };
-
-    const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
-      updatePositionState();
-    };
-
-    const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-      updatePositionState();
-    };
-
-    const handleEnded = () => {
-      // Auto-advance to next track
-      if (currentIndex < tracks.length - 1) {
-        playNext();
+  // Handle track click
+  const handleTrackClick = useCallback(
+    (index: number) => {
+      if (isThisPlaylistActive) {
+        // Already playing this playlist, just change track
+        storePlayTrack(index);
       } else {
-        setIsPlaying(false);
+        // Start this playlist from the clicked track
+        startPlaylist(index);
       }
-    };
+    },
+    [isThisPlaylistActive, storePlayTrack, startPlaylist]
+  );
 
-    // Handle visibility change (screen lock/unlock)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden" && !audio.paused && !audio.ended) {
-        audio.play().catch(() => {});
-      } else if (document.visibilityState === "visible" && !userPaused && audio.paused && !audio.ended) {
-        audio.play().catch(() => {});
-      }
-    };
-
-    audio.addEventListener("play", handlePlay);
-    audio.addEventListener("pause", handlePause);
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.addEventListener("ended", handleEnded);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    // Initialize media session
-    updateMediaSession();
-    setupActionHandlers();
-
-    return () => {
-      audio.removeEventListener("play", handlePlay);
-      audio.removeEventListener("pause", handlePause);
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      audio.removeEventListener("ended", handleEnded);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-
-      // Clear action handlers on unmount
-      if ("mediaSession" in navigator) {
-        navigator.mediaSession.setActionHandler("play", null);
-        navigator.mediaSession.setActionHandler("pause", null);
-        navigator.mediaSession.setActionHandler("previoustrack", null);
-        navigator.mediaSession.setActionHandler("nexttrack", null);
-        navigator.mediaSession.setActionHandler("seekbackward", null);
-        navigator.mediaSession.setActionHandler("seekforward", null);
-        navigator.mediaSession.setActionHandler("seekto", null);
-      }
-    };
-  }, [displayTitle, displayArtist, eventTitle, thumbnailUrl, currentIndex, tracks.length, playPrevious, playNext, userPaused]);
-
-  // Auto-play when track changes (after first user interaction)
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio && !userPaused && currentIndex > 0) {
-      audio.play().catch(() => {});
+  // Handle main play button
+  const handleMainPlayClick = useCallback(() => {
+    if (isThisPlaylistActive) {
+      togglePlay();
+    } else {
+      startPlaylist(0);
     }
-  }, [currentIndex, userPaused]);
+  }, [isThisPlaylistActive, togglePlay, startPlaylist]);
+
+  // Handle seek (only works if this playlist is active)
+  const handleSeek = useCallback(
+    (time: number) => {
+      if (isThisPlaylistActive) {
+        seekTo(time);
+      }
+    },
+    [isThisPlaylistActive, seekTo]
+  );
 
   if (tracks.length === 0) {
     return (
@@ -286,7 +169,9 @@ export function PlaylistPlayer({
 
             {/* Track Info */}
             <div className="flex-1 min-w-0 pt-1">
-              <p className="text-xs text-muted-foreground mb-1">{t("nowPlaying")}</p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {isPlaying ? t("nowPlaying") : t("upNext")}
+              </p>
               <h3 className="font-semibold text-lg truncate">{displayTitle}</h3>
               <p className="text-muted-foreground truncate">{displayArtist}</p>
               <p className="text-xs text-muted-foreground mt-1">
@@ -296,19 +181,26 @@ export function PlaylistPlayer({
           </div>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar (only interactive if this playlist is active) */}
         <div className="px-6 pb-2">
           <input
             type="range"
-            value={currentTime}
-            max={duration || 100}
+            value={isThisPlaylistActive ? currentTime : 0}
+            max={isThisPlaylistActive && duration ? duration : currentTrack?.duration_seconds || 100}
             step={1}
-            onChange={(e) => seekTo(Number(e.target.value))}
+            onChange={(e) => handleSeek(Number(e.target.value))}
             className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
+            disabled={!isThisPlaylistActive}
           />
           <div className="flex justify-between text-xs text-muted-foreground mt-1">
-            <span>{formatDuration(Math.floor(currentTime))}</span>
-            <span>{formatDuration(Math.floor(duration))}</span>
+            <span>
+              {formatDuration(Math.floor(isThisPlaylistActive ? currentTime : 0))}
+            </span>
+            <span>
+              {formatDuration(
+                Math.floor(isThisPlaylistActive && duration ? duration : currentTrack?.duration_seconds || 0)
+              )}
+            </span>
           </div>
         </div>
 
@@ -318,7 +210,7 @@ export function PlaylistPlayer({
             <Button
               variant="ghost"
               size="icon"
-              onClick={playPrevious}
+              onClick={() => isThisPlaylistActive ? previous() : handleTrackClick(Math.max(0, currentIndex - 1))}
               disabled={currentIndex === 0}
               className="w-12 h-12"
               aria-label={t("previous")}
@@ -328,7 +220,7 @@ export function PlaylistPlayer({
 
             <Button
               size="icon"
-              onClick={togglePlay}
+              onClick={handleMainPlayClick}
               className="w-16 h-16 rounded-full"
               aria-label={isPlaying ? t("pause") : t("play")}
             >
@@ -342,7 +234,7 @@ export function PlaylistPlayer({
             <Button
               variant="ghost"
               size="icon"
-              onClick={playNext}
+              onClick={() => isThisPlaylistActive ? next() : handleTrackClick(Math.min(tracks.length - 1, currentIndex + 1))}
               disabled={currentIndex === tracks.length - 1}
               className="w-12 h-12"
               aria-label={t("next")}
@@ -351,14 +243,6 @@ export function PlaylistPlayer({
             </Button>
           </div>
         </div>
-
-        {/* Hidden Audio Element */}
-        <audio
-          ref={audioRef}
-          src={currentTrack?.file_url}
-          playsInline
-          preload="auto"
-        />
       </div>
 
       {/* Track List */}
@@ -367,7 +251,8 @@ export function PlaylistPlayer({
           <div className="flex items-center justify-between">
             <h4 className="font-medium">{t("upNext")}</h4>
             <span className="text-sm text-muted-foreground">
-              {t("tracks", { count: tracks.length })} &middot; {Math.round(totalDuration / 60)} {t("totalDuration", { minutes: "" }).trim()}
+              {t("tracks", { count: tracks.length })} &middot;{" "}
+              {Math.round(totalDuration / 60)} {t("totalDuration", { minutes: "" }).trim()}
             </span>
           </div>
         </div>
@@ -376,22 +261,26 @@ export function PlaylistPlayer({
             <button
               key={track.id}
               type="button"
-              onClick={() => playTrack(index)}
+              onClick={() => handleTrackClick(index)}
               className={cn(
                 "w-full flex items-center gap-3 p-3 text-left transition-colors",
                 "hover:bg-accent active:bg-accent/80",
-                index === currentIndex && "bg-primary/5"
+                isThisPlaylistActive && index === currentIndex && "bg-primary/5"
               )}
             >
               {/* Track Number / Playing Indicator */}
               <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
-                {index === currentIndex && isPlaying ? (
+                {isThisPlaylistActive && index === currentIndex && isPlaying ? (
                   <Volume2 className="w-4 h-4 text-primary animate-pulse" />
                 ) : (
-                  <span className={cn(
-                    "text-sm",
-                    index === currentIndex ? "text-primary font-medium" : "text-muted-foreground"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-sm",
+                      isThisPlaylistActive && index === currentIndex
+                        ? "text-primary font-medium"
+                        : "text-muted-foreground"
+                    )}
+                  >
                     {index + 1}
                   </span>
                 )}
@@ -412,14 +301,18 @@ export function PlaylistPlayer({
 
               {/* Track Info */}
               <div className="flex-1 min-w-0">
-                <p className={cn(
-                  "font-medium text-sm truncate",
-                  index === currentIndex && "text-primary"
-                )}>
+                <p
+                  className={cn(
+                    "font-medium text-sm truncate",
+                    isThisPlaylistActive && index === currentIndex && "text-primary"
+                  )}
+                >
                   {track.title || `Track ${index + 1}`}
                 </p>
                 {track.artist && (
-                  <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {track.artist}
+                  </p>
                 )}
               </div>
 

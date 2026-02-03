@@ -18,6 +18,7 @@ import { QueryProvider } from "@/lib/providers/query-provider";
 import { LocalePreloader } from "@/components/locale-preloader";
 import { UploadFAB } from "@/components/moments/upload-fab";
 import { SiteHeader } from "@/components/site-header";
+import { MiniPlayer } from "@/components/audio/mini-player";
 
 const siteUrl = "https://dalat.app";
 
@@ -93,6 +94,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
                 {children}
               </main>
+              <MiniPlayer />
               <MobileBottomNav />
               <UploadFAB />
               <GlobalFooter />
