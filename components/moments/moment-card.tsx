@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
@@ -41,6 +42,8 @@ interface MomentCardProps {
 }
 
 export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOpen }: MomentCardProps) {
+  const [thumbnailError, setThumbnailError] = useState(false);
+
   // Use clean URL format when event slug is available
   const basePath = eventSlug
     ? `/events/${eventSlug}/moments/${moment.id}`
@@ -51,6 +54,9 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
   const youtubeThumb = moment.content_type === "youtube" && moment.youtube_video_id
     ? getYouTubeThumbnail(moment.youtube_video_id, "high")
     : null;
+
+  // Show thumbnail only if available and not errored
+  const showThumbnail = moment.thumbnail_url && !thumbnailError;
 
   // Content wrapper - either a button (lightbox) or Link (navigation)
   const handleClick = () => {
@@ -149,14 +155,15 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
         {/* Video moments (original behavior) */}
         {moment.content_type === "video" && moment.media_url && (
           <>
-            {moment.thumbnail_url ? (
+            {showThumbnail ? (
               <Image
                 loader={cloudflareLoader}
-                src={moment.thumbnail_url}
+                src={moment.thumbnail_url!}
                 alt={moment.text_content || "Video thumbnail"}
                 fill
                 className="object-cover transition-transform group-hover:scale-105"
                 sizes="(max-width: 640px) 50vw, 200px"
+                onError={() => setThumbnailError(true)}
               />
             ) : (
               <video
