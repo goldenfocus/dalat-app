@@ -64,11 +64,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify event exists and user has permission to post moments
-    // We check the same permissions as create_moment RPC
+    // Verify event exists
     const { data: event, error: eventError } = await supabase
       .from("events")
-      .select("id, moments_enabled, moments_who_can_post, creator_id")
+      .select("id, created_by")
       .eq("id", eventId)
       .single();
 
@@ -76,36 +75,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    if (!event.moments_enabled) {
+    // Get moments settings from event_settings table (defaults if not found)
+    const { data: settings } = await supabase
+      .from("event_settings")
+      .select("moments_enabled, moments_who_can_post")
+      .eq("event_id", eventId)
+      .single();
+
+    // Default to moments enabled and anyone can post if no settings
+    const momentsEnabled = settings?.moments_enabled ?? true;
+    const momentsWhoCanPost = settings?.moments_who_can_post ?? "anyone";
+
+    if (!momentsEnabled) {
       return NextResponse.json(
         { error: "Moments are disabled for this event" },
         { status: 403 }
       );
     }
 
+    const isCreator = event.created_by === user.id;
+
     // Check posting permission based on event settings
-    if (event.moments_who_can_post !== "anyone") {
+    if (momentsWhoCanPost !== "anyone" && !isCreator) {
       // Get user's RSVP status
       const { data: rsvp } = await supabase
-        .from("event_rsvps")
-        .select("role")
+        .from("rsvps")
+        .select("status")
         .eq("event_id", eventId)
         .eq("user_id", user.id)
         .single();
 
-      const isCreator = event.creator_id === user.id;
-      const userRole = rsvp?.role;
+      const rsvpStatus = rsvp?.status;
 
-      if (event.moments_who_can_post === "rsvp") {
-        if (!userRole && !isCreator) {
+      if (momentsWhoCanPost === "rsvp") {
+        if (!rsvpStatus) {
           return NextResponse.json(
             { error: "You must RSVP to post moments" },
             { status: 403 }
           );
         }
-      } else if (event.moments_who_can_post === "confirmed") {
-        const allowedRoles = ["going", "host", "cohost", "speaker"];
-        if (!allowedRoles.includes(userRole || "") && !isCreator) {
+      } else if (momentsWhoCanPost === "confirmed") {
+        if (rsvpStatus !== "going") {
           return NextResponse.json(
             { error: "Only confirmed attendees can post moments" },
             { status: 403 }
