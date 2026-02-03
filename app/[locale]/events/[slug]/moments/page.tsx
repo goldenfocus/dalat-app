@@ -154,7 +154,12 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
         {/* Title */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold">{t("moments")}</h1>
-          <p className="text-muted-foreground">{event.title}</p>
+          <Link
+            href={`/events/${slug}`}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {event.title}
+          </Link>
         </div>
 
         {/* Moments view with grid/immersive toggle */}
