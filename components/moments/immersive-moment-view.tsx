@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { X, ChevronUp, ChevronDown, MessageCircle, Share2, ExternalLink, Grid3X3, Loader2 } from "lucide-react";
+import { X, ChevronUp, ChevronDown, MessageCircle, Share2, ExternalLink, Grid3X3, Loader2, RotateCcw, Camera, Sparkles } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
@@ -13,6 +13,25 @@ import type { User } from "@supabase/supabase-js";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import type { MomentWithProfile } from "@/lib/types";
+
+// Hilariously random end-of-album phrases
+const END_PHRASES = [
+  { main: "That's all folks!", sub: "You've officially seen everything. Achievement unlocked." },
+  { main: "The End... or is it?", sub: "Plot twist: you can add more moments!" },
+  { main: "You speedran this album!", sub: "New world record? Probably not. But still impressive." },
+  { main: "Congratulations, you reached the edge of the internet!", sub: "Just kidding, there's more out there. But not here." },
+  { main: "Album complete!", sub: "Your prize? The memories. And maybe some FOMO." },
+  { main: "You've seen things...", sub: "Things other people might have also seen. You're not special. But you're here!" },
+  { main: "No more moments!", sub: "Unless... you make one? *wink wink*" },
+  { main: "EOF: End of Fun", sub: "Just kidding, the fun never ends. Loop it!" },
+  { main: "You made it!", sub: "Through all the photos. Some were blurry. That's okay." },
+  { main: "Achievement: Album Completionist", sub: "Your reward: the satisfaction of a job well scrolled." },
+  { main: "This is where the credits would roll", sub: "But we're too lazy for that. Here are the stars instead." },
+  { main: "Fin.", sub: "That's French for 'add your own moment already!'" },
+  { main: "You've reached enlightenment!", sub: "Or at least the end of this album. Same thing, basically." },
+  { main: "The algorithm has nothing left for you", sub: "Time to create your own content. No pressure." },
+  { main: "End of transmission", sub: "Beep boop. Add moments to extend transmission." },
+];
 
 interface ImmersiveMomentViewProps {
   moments: MomentWithProfile[];
@@ -43,10 +62,33 @@ export function ImmersiveMomentView({
   const [showComments, setShowComments] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
+  const [showEndScreen, setShowEndScreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const moment = moments[currentIndex];
+
+  // Get random phrase (memoized to stay consistent during session)
+  const endPhrase = useMemo(() => {
+    return END_PHRASES[Math.floor(Math.random() * END_PHRASES.length)];
+  }, []);
+
+  // Extract unique contributors from moments
+  const contributors = useMemo(() => {
+    const seen = new Set<string>();
+    return moments
+      .filter((m) => {
+        if (!m.user_id || seen.has(m.user_id)) return false;
+        seen.add(m.user_id);
+        return true;
+      })
+      .map((m) => ({
+        id: m.user_id,
+        avatar: m.avatar_url,
+        name: m.display_name || m.username || "Anonymous",
+      }))
+      .slice(0, 8); // Max 8 avatars for visual balance
+  }, [moments]);
 
   // Fetch current user on mount
   useEffect(() => {
@@ -76,14 +118,18 @@ export function ImmersiveMomentView({
 
   // Navigate to previous/next
   const goToPrev = useCallback(() => {
-    if (hasPrev) {
+    if (showEndScreen) {
+      // Dismiss end screen, stay on last moment
+      setShowEndScreen(false);
+    } else if (hasPrev) {
       setCurrentIndex((prev) => prev - 1);
     }
-  }, [hasPrev]);
+  }, [hasPrev, showEndScreen]);
 
   const goToNext = useCallback(async () => {
     if (hasNext) {
       setCurrentIndex((prev) => prev + 1);
+      setShowEndScreen(false);
     } else if (hasMore && onLoadMore && !isLoadingMore) {
       // At the last loaded moment but more exist - fetch them
       setIsLoadingMore(true);
@@ -91,8 +137,26 @@ export function ImmersiveMomentView({
       setIsLoadingMore(false);
       // After loading, advance to next (which is now available)
       setCurrentIndex((prev) => prev + 1);
+    } else if (!hasMore && !showEndScreen) {
+      // At the very end - show the end screen!
+      triggerHaptic("success");
+      setShowEndScreen(true);
     }
-  }, [hasNext, hasMore, onLoadMore, isLoadingMore]);
+  }, [hasNext, hasMore, onLoadMore, isLoadingMore, showEndScreen]);
+
+  // Loop back to start
+  const handleLoop = useCallback(() => {
+    triggerHaptic("selection");
+    setCurrentIndex(0);
+    setShowEndScreen(false);
+  }, []);
+
+  // Navigate to add moment
+  const handleAddMoment = useCallback(() => {
+    triggerHaptic("selection");
+    router.push(`/events/${eventSlug}/moments/new`);
+    onClose();
+  }, [router, eventSlug, onClose]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -343,9 +407,104 @@ export function ImmersiveMomentView({
       </div>
 
       {/* Swipe hint (mobile) */}
-      {moments.length > 1 && (
+      {moments.length > 1 && !showEndScreen && (
         <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 text-white/40 text-xs sm:hidden animate-pulse">
           Swipe up/down to browse
+        </div>
+      )}
+
+      {/* End of Album Screen */}
+      {showEndScreen && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/95 animate-in fade-in duration-300">
+          {/* Sparkle decorations */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <Sparkles className="absolute top-[15%] left-[10%] w-6 h-6 text-yellow-400/60 animate-pulse" />
+            <Sparkles className="absolute top-[25%] right-[15%] w-4 h-4 text-pink-400/50 animate-pulse delay-100" />
+            <Sparkles className="absolute bottom-[30%] left-[20%] w-5 h-5 text-blue-400/50 animate-pulse delay-200" />
+            <Sparkles className="absolute top-[40%] right-[8%] w-3 h-3 text-green-400/40 animate-pulse delay-300" />
+            <Sparkles className="absolute bottom-[40%] right-[25%] w-4 h-4 text-purple-400/50 animate-pulse delay-150" />
+          </div>
+
+          <div className="relative max-w-sm mx-4 text-center">
+            {/* Main message */}
+            <h2 className="text-2xl font-bold text-white mb-2 animate-in slide-in-from-bottom-4 duration-500">
+              {endPhrase.main}
+            </h2>
+            <p className="text-white/60 text-sm mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-100">
+              {endPhrase.sub}
+            </p>
+
+            {/* Contributors */}
+            {contributors.length > 0 && (
+              <div className="mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-200">
+                <p className="text-white/40 text-xs uppercase tracking-wider mb-3">
+                  {contributors.length === 1 ? "The star of the show" : `${contributors.length} contributors made this happen`}
+                </p>
+                <div className="flex justify-center -space-x-2">
+                  {contributors.map((c, i) => (
+                    <div
+                      key={c.id}
+                      className="relative transition-transform hover:scale-110 hover:z-10"
+                      style={{ animationDelay: `${i * 50}ms` }}
+                    >
+                      <UserAvatar
+                        src={c.avatar}
+                        alt={c.name}
+                        size="md"
+                        className="ring-2 ring-black"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex flex-col gap-3 animate-in slide-in-from-bottom-4 duration-500 delay-300">
+              <button
+                onClick={handleLoop}
+                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full bg-white text-black font-medium hover:bg-white/90 active:scale-95 transition-all"
+              >
+                <RotateCcw className="w-5 h-5" />
+                Watch again
+              </button>
+
+              <button
+                onClick={handleAddMoment}
+                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full bg-gradient-to-r from-pink-500 to-orange-400 text-white font-medium hover:opacity-90 active:scale-95 transition-all"
+              >
+                <Camera className="w-5 h-5" />
+                Add your moment
+              </button>
+
+              {onSwitchToGrid && (
+                <button
+                  onClick={() => {
+                    triggerHaptic("selection");
+                    onSwitchToGrid();
+                  }}
+                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full bg-white/10 text-white font-medium hover:bg-white/20 active:scale-95 transition-all"
+                >
+                  <Grid3X3 className="w-5 h-5" />
+                  Browse all moments
+                </button>
+              )}
+            </div>
+
+            {/* Stats */}
+            <p className="mt-6 text-white/30 text-xs animate-in slide-in-from-bottom-4 duration-500 delay-500">
+              {moments.length} moment{moments.length !== 1 ? "s" : ""} in this album
+            </p>
+          </div>
+
+          {/* Close button */}
+          <button
+            onClick={() => setShowEndScreen(false)}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            aria-label="Back to last moment"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
         </div>
       )}
 
