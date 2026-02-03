@@ -283,3 +283,21 @@ export function validateMediaFile(file: File): string | null {
 
   return null;
 }
+
+/**
+ * Derive a thumbnail URL from a Cloudflare Stream playback URL.
+ * Cloudflare Stream URLs follow the pattern:
+ *   https://customer-{subdomain}.cloudflarestream.com/{videoUid}/manifest/video.m3u8
+ * Thumbnails are available at:
+ *   https://customer-{subdomain}.cloudflarestream.com/{videoUid}/thumbnails/thumbnail.jpg
+ *
+ * @param cfPlaybackUrl - The Cloudflare Stream HLS playback URL
+ * @returns The thumbnail URL or null if not a valid CF Stream URL
+ */
+export function getCfStreamThumbnailUrl(cfPlaybackUrl: string | null | undefined): string | null {
+  if (!cfPlaybackUrl) return null;
+  if (!cfPlaybackUrl.includes('cloudflarestream.com')) return null;
+
+  // Replace the manifest path with thumbnails path
+  return cfPlaybackUrl.replace('/manifest/video.m3u8', '/thumbnails/thumbnail.jpg');
+}

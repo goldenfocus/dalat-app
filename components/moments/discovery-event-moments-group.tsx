@@ -5,7 +5,8 @@ import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { format } from "date-fns";
 import { Calendar, MapPin, ChevronRight, Play, MessageCircle } from "lucide-react";
-import { isVideoUrl } from "@/lib/media-utils";
+import { AlbumShareButton } from "./album-share-button";
+import { isVideoUrl, getCfStreamThumbnailUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { MomentsLightboxProvider, useMomentsLightbox } from "./moments-lightbox-provider";
@@ -27,6 +28,9 @@ interface DiscoveryMomentCardProps {
 function DiscoveryMomentCard({ moment, commentCount, onLightboxOpen }: DiscoveryMomentCardProps) {
   const isVideo = isVideoUrl(moment.media_url);
 
+  // Derive thumbnail: use stored thumbnail_url, or derive from CF Stream playback URL
+  const thumbnailUrl = moment.thumbnail_url || getCfStreamThumbnailUrl(moment.cf_playback_url);
+
   const handleClick = () => {
     triggerHaptic("selection");
     if (onLightboxOpen) {
@@ -40,13 +44,14 @@ function DiscoveryMomentCard({ moment, commentCount, onLightboxOpen }: Discovery
       {moment.content_type !== "text" && moment.media_url && (
         isVideo ? (
           <>
-            {moment.thumbnail_url ? (
+            {thumbnailUrl ? (
               <Image
-                src={moment.thumbnail_url}
+                src={thumbnailUrl}
                 alt={moment.text_content || "Video thumbnail"}
                 fill
                 className="object-cover transition-transform group-hover:scale-105"
                 sizes="(max-width: 640px) 33vw, 200px"
+                unoptimized={thumbnailUrl.includes('cloudflarestream.com')}
               />
             ) : (
               <video
@@ -132,7 +137,10 @@ function toLightboxMoments(moments: DiscoveryGroupedMoment[]): LightboxMoment[] 
     media_url: m.media_url,
     thumbnail_url: m.thumbnail_url,
     text_content: m.text_content,
-    // Video CF fields not available in grouped moments - falls back to media_url
+    // Video CF fields for HLS playback in lightbox
+    cf_video_uid: m.cf_video_uid,
+    cf_playback_url: m.cf_playback_url,
+    video_status: m.video_status as LightboxMoment['video_status'],
   }));
 }
 
@@ -170,12 +178,13 @@ export function DiscoveryEventMomentsGroup({ group, commentCounts }: DiscoveryEv
 
   return (
     <div className="space-y-3">
-      {/* Event header - tappable link to event */}
-      <Link
-        href={`/events/${group.event_slug}`}
-        className="flex items-center justify-between gap-2 px-3 py-2.5 -mx-3 rounded-lg bg-muted/50 hover:bg-muted active:scale-[0.99] transition-all touch-manipulation"
-      >
-        <div className="flex items-center gap-3 min-w-0 flex-1">
+      {/* Event header with share button */}
+      <div className="flex items-center gap-2 px-3 py-2.5 -mx-3 rounded-lg bg-muted/50">
+        {/* Tappable link to event */}
+        <Link
+          href={`/events/${group.event_slug}`}
+          className="flex items-center gap-3 min-w-0 flex-1 hover:opacity-80 active:scale-[0.99] transition-all touch-manipulation"
+        >
           {/* Event thumbnail */}
           {group.event_image_url && (
             <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
@@ -206,9 +215,19 @@ export function DiscoveryEventMomentsGroup({ group, commentCounts }: DiscoveryEv
               )}
             </div>
           </div>
-        </div>
-        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-      </Link>
+          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+        </Link>
+
+        {/* Share button */}
+        <AlbumShareButton
+          eventSlug={group.event_slug}
+          eventTitle={group.event_title}
+          eventDate={group.event_starts_at}
+          eventImageUrl={group.event_image_url}
+          locationName={group.event_location_name}
+          momentCount={group.total_moment_count}
+        />
+      </div>
 
       {/* Moments grid with lightbox */}
       <MomentsLightboxProvider moments={lightboxMoments} eventSlug={group.event_slug}>

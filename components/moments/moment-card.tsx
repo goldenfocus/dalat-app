@@ -6,6 +6,7 @@ import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 import { Play, MessageCircle, FileText, Music, File } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
+import { getCfStreamThumbnailUrl } from "@/lib/media-utils";
 import { getYouTubeThumbnail } from "@/components/shared/material-renderers";
 import type { MomentContentType } from "@/lib/types";
 
@@ -55,8 +56,11 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
     ? getYouTubeThumbnail(moment.youtube_video_id, "high")
     : null;
 
+  // Derive video thumbnail: use stored thumbnail_url, or derive from CF Stream playback URL
+  const derivedThumbnailUrl = moment.thumbnail_url || getCfStreamThumbnailUrl(moment.cf_playback_url);
+
   // Show thumbnail only if available and not errored
-  const showThumbnail = moment.thumbnail_url && !thumbnailError;
+  const showThumbnail = derivedThumbnailUrl && !thumbnailError;
 
   // Content wrapper - either a button (lightbox) or Link (navigation)
   const handleClick = () => {
@@ -156,15 +160,28 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
         {moment.content_type === "video" && moment.media_url && (
           <>
             {showThumbnail ? (
-              <Image
-                loader={cloudflareLoader}
-                src={moment.thumbnail_url!}
-                alt={moment.text_content || "Video thumbnail"}
-                fill
-                className="object-cover transition-transform group-hover:scale-105"
-                sizes="(max-width: 640px) 50vw, 200px"
-                onError={() => setThumbnailError(true)}
-              />
+              derivedThumbnailUrl.includes('cloudflarestream.com') ? (
+                // CF Stream thumbnails should not use cloudflareLoader
+                <Image
+                  src={derivedThumbnailUrl}
+                  alt={moment.text_content || "Video thumbnail"}
+                  fill
+                  className="object-cover transition-transform group-hover:scale-105"
+                  sizes="(max-width: 640px) 50vw, 200px"
+                  onError={() => setThumbnailError(true)}
+                  unoptimized
+                />
+              ) : (
+                <Image
+                  loader={cloudflareLoader}
+                  src={derivedThumbnailUrl}
+                  alt={moment.text_content || "Video thumbnail"}
+                  fill
+                  className="object-cover transition-transform group-hover:scale-105"
+                  sizes="(max-width: 640px) 50vw, 200px"
+                  onError={() => setThumbnailError(true)}
+                />
+              )
             ) : (
               <video
                 src={moment.media_url}

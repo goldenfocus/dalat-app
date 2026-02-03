@@ -914,6 +914,10 @@ export interface DiscoveryGroupedMoment {
   thumbnail_url: string | null;
   text_content: string | null;
   created_at: string;
+  // Cloudflare Stream fields (for video moments)
+  cf_video_uid?: string | null;
+  cf_playback_url?: string | null;
+  video_status?: string | null;
 }
 
 // Event group for discovery feed (includes location and total count)
