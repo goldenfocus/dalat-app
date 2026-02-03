@@ -113,6 +113,11 @@ export async function GET(request: Request) {
     );
 
     // Debug: compare embedding string formats
+    const hasNaN = queryVec.some(v => isNaN(v));
+    const hasInf = queryVec.some(v => !isFinite(v));
+    const minVal = Math.min(...queryVec);
+    const maxVal = Math.max(...queryVec);
+
     const stringDebug = {
       storedStr: {
         length: storedEmbeddingStr.length,
@@ -124,11 +129,36 @@ export async function GET(request: Request) {
         first50: queryEmbeddingString.substring(0, 50),
         last50: queryEmbeddingString.substring(queryEmbeddingString.length - 50),
       },
+      queryValidation: {
+        hasNaN,
+        hasInf,
+        minVal,
+        maxVal,
+      }
     };
 
     // Test: Call debug_search_test with EXACT same format as stored (JSON.stringify then parse)
     const queryVecNormalized = queryVec.map(v => parseFloat(v.toFixed(8)));
     const queryEmbeddingNormalized = `[${queryVecNormalized.join(",")}]`;
+
+    // Ultimate test: Use the EXACT stored embedding as-is (should return similarity 1)
+    // This tests if the Supabase client parameter passing is working
+    const { data: directQueryResult, error: directQueryError } = await supabase.rpc(
+      "debug_search_test",
+      {
+        query_embedding: storedEmbeddingStr,  // Same string as storedEmbRpcTest
+        match_threshold: 0.0,
+      }
+    );
+
+    // Test with JSON.stringify to see if Supabase needs a different format
+    const { data: jsonResult, error: jsonError } = await supabase.rpc(
+      "debug_search_test",
+      {
+        query_embedding: JSON.stringify(queryVec),  // Try JSON format
+        match_threshold: 0.0,
+      }
+    );
 
     const { data: normalizedResult, error: normalizedError } = await supabase.rpc(
       "debug_search_test",
@@ -157,6 +187,8 @@ export async function GET(request: Request) {
       embeddingMoments: embeddingMomentsError ? { error: embeddingMomentsError.message } : embeddingMoments,
       storedEmbRpcTest: storedEmbRpcError ? { error: storedEmbRpcError.message } : storedEmbRpcResult?.slice(0, 3),
       normalizedTest: normalizedError ? { error: normalizedError.message } : normalizedResult?.slice(0, 3),
+      directQueryResult: directQueryError ? { error: directQueryError.message } : directQueryResult?.slice(0, 1),
+      jsonFormatResult: jsonError ? { error: jsonError.message } : jsonResult?.slice(0, 1),
       stringDebug,
       keyDebugInfo: getKeyDebugInfo(),
     });
