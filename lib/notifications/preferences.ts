@@ -55,6 +55,9 @@ const DEFAULT_CHANNELS: Record<NotificationType, NotificationChannel[]> = {
   reply_to_comment: ['in_app', 'push'],
   // Thread activity is lower priority - in-app only
   thread_activity: ['in_app'],
+
+  // Video processing notifications - in-app + push (user's content is ready)
+  video_ready: ['in_app', 'push'],
 };
 
 /**

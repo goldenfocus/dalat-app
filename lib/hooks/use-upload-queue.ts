@@ -17,11 +17,7 @@ import {
 } from "@/lib/media-utils";
 import { convertIfNeeded } from "@/lib/media-conversion";
 import { needsImageCompression, compressImage } from "@/lib/image-compression";
-import {
-  needsCompression as needsVideoCompression,
-  compressVideo,
-  type CompressionProgress,
-} from "@/lib/video-compression";
+import type { CompressionProgress } from "@/lib/video-compression";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { triggerHaptic } from "@/lib/haptics";
 
@@ -36,6 +32,7 @@ export type UploadStatus =
   | "converting"
   | "uploading"
   | "uploaded"
+  | "processing" // Server-side video processing (Cloudflare Stream)
   | "error";
 
 export interface QueuedUpload {
@@ -165,15 +162,15 @@ export function useUploadQueue({
    * Process a single upload - this is called for each file
    */
   const processUpload = useCallback(async (item: QueuedUpload) => {
-    const { id, file } = item;
+    const { id, file, isVideo } = item;
     let fileToUpload = file;
 
     // Mark as active
     activeUploadsRef.current.add(id);
 
     try {
-      // Step 1: Convert if needed (HEIC → JPEG, MOV → MP4)
-      if (needsConversion(file)) {
+      // Step 1: Convert HEIC images (skip video conversion - let Cloudflare handle it)
+      if (needsConversion(file) && !isVideo) {
         dispatch({ type: "UPDATE_ITEM", id, updates: { status: "converting" } });
         fileToUpload = await convertIfNeeded(file);
 
@@ -187,7 +184,7 @@ export function useUploadQueue({
       }
 
       // Step 2: Compress images if needed (>3MB → ~2MB)
-      if (needsImageCompression(fileToUpload)) {
+      if (!isVideo && needsImageCompression(fileToUpload)) {
         dispatch({ type: "UPDATE_ITEM", id, updates: { status: "compressing" } });
         const result = await compressImage(fileToUpload);
         if (result.wasCompressed) {
@@ -202,49 +199,135 @@ export function useUploadQueue({
         }
       }
 
-      // Step 3: Compress videos if needed (>50MB)
-      if (needsVideoCompression(fileToUpload)) {
-        dispatch({ type: "UPDATE_ITEM", id, updates: { status: "compressing" } });
-        fileToUpload = await compressVideo(fileToUpload, (progress) => {
-          if (mountedRef.current) {
-            dispatch({
-              type: "UPDATE_ITEM",
-              id,
-              updates: { compressionProgress: progress },
-            });
-          }
-        });
-      }
-
-      // Step 4: Upload
-      dispatch({
-        type: "UPDATE_ITEM",
-        id,
-        updates: { status: "uploading", progress: 10, compressionProgress: undefined },
-      });
-
-      const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${eventId}/${userId}/${Date.now()}_${id.slice(0, 8)}.${ext}`;
-
-      console.log(`[UploadQueue] Uploading ${file.name} (${fileToUpload.size} bytes) as ${fileName}`);
-
-      const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
-        filename: fileName,
-      });
-
-      console.log(`[UploadQueue] Upload complete: ${file.name} → ${publicUrl}`);
-
-      if (mountedRef.current) {
+      // Step 3: For VIDEOS - upload to Cloudflare Stream (server-side processing)
+      if (isVideo) {
         dispatch({
           type: "UPDATE_ITEM",
           id,
-          updates: { status: "uploaded", mediaUrl: publicUrl, progress: 100 },
+          updates: { status: "uploading", progress: 5 },
         });
 
-        triggerHaptic("light");
+        console.log(`[UploadQueue] Uploading video ${file.name} (${file.size} bytes) to Cloudflare Stream`);
 
-        if (onUploadComplete) {
-          onUploadComplete({ ...item, status: "uploaded", mediaUrl: publicUrl });
+        // Get direct upload URL from our API
+        const response = await fetch("/api/moments/upload-video", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventId,
+            filename: file.name,
+            fileSizeBytes: file.size,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to get upload URL: ${response.status}`);
+        }
+
+        const { uploadUrl, videoUid } = await response.json();
+
+        // Upload to Cloudflare Stream using TUS protocol
+        dispatch({ type: "UPDATE_ITEM", id, updates: { progress: 10 } });
+
+        // Use fetch for TUS upload (simplified - actual TUS would use tus-js-client)
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": file.type || "video/mp4",
+            "Upload-Length": String(file.size),
+            "Tus-Resumable": "1.0.0",
+          },
+        });
+
+        if (!uploadResponse.ok && uploadResponse.status !== 201) {
+          throw new Error(`TUS init failed: ${uploadResponse.status}`);
+        }
+
+        // Get the Location header for PATCH
+        const tusLocation = uploadResponse.headers.get("Location") || uploadUrl;
+
+        // Upload file content with progress tracking
+        const xhr = new XMLHttpRequest();
+        await new Promise<void>((resolve, reject) => {
+          xhr.upload.addEventListener("progress", (e) => {
+            if (e.lengthComputable && mountedRef.current) {
+              const percent = Math.round((e.loaded / e.total) * 85) + 10; // 10-95%
+              dispatch({ type: "UPDATE_ITEM", id, updates: { progress: percent } });
+            }
+          });
+          xhr.addEventListener("load", () => {
+            if (xhr.status >= 200 && xhr.status < 400) {
+              resolve();
+            } else {
+              reject(new Error(`Upload failed: ${xhr.status}`));
+            }
+          });
+          xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
+          xhr.addEventListener("abort", () => reject(new Error("Upload aborted")));
+
+          xhr.open("PATCH", tusLocation);
+          xhr.setRequestHeader("Content-Type", "application/offset+octet-stream");
+          xhr.setRequestHeader("Upload-Offset", "0");
+          xhr.setRequestHeader("Tus-Resumable", "1.0.0");
+          xhr.send(file);
+        });
+
+        console.log(`[UploadQueue] Video uploaded to Cloudflare Stream: ${file.name} → ${videoUid}`);
+
+        if (mountedRef.current) {
+          // Video is uploaded but still processing in the cloud
+          dispatch({
+            type: "UPDATE_ITEM",
+            id,
+            updates: {
+              status: "processing", // Will be 'uploaded' when webhook fires
+              cfVideoUid: videoUid,
+              progress: 100,
+            },
+          });
+
+          triggerHaptic("light");
+
+          if (onUploadComplete) {
+            onUploadComplete({
+              ...item,
+              status: "processing",
+              cfVideoUid: videoUid,
+            });
+          }
+        }
+      } else {
+        // Step 4: For IMAGES - upload to Supabase Storage
+        dispatch({
+          type: "UPDATE_ITEM",
+          id,
+          updates: { status: "uploading", progress: 10, compressionProgress: undefined },
+        });
+
+        const ext = fileToUpload.name.split(".").pop()?.toLowerCase() || "jpg";
+        const fileName = `${eventId}/${userId}/${Date.now()}_${id.slice(0, 8)}.${ext}`;
+
+        console.log(`[UploadQueue] Uploading ${file.name} (${fileToUpload.size} bytes) as ${fileName}`);
+
+        const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
+          filename: fileName,
+        });
+
+        console.log(`[UploadQueue] Upload complete: ${file.name} → ${publicUrl}`);
+
+        if (mountedRef.current) {
+          dispatch({
+            type: "UPDATE_ITEM",
+            id,
+            updates: { status: "uploaded", mediaUrl: publicUrl, progress: 100 },
+          });
+
+          triggerHaptic("light");
+
+          if (onUploadComplete) {
+            onUploadComplete({ ...item, status: "uploaded", mediaUrl: publicUrl });
+          }
         }
       }
     } catch (err) {
@@ -469,14 +552,17 @@ export function useUploadQueue({
     uploading: state.items.filter(
       (i) => i.status === "uploading" || i.status === "compressing" || i.status === "converting"
     ).length,
-    completed: state.items.filter((i) => i.status === "uploaded").length,
+    processing: state.items.filter((i) => i.status === "processing").length, // Server-side video processing
+    completed: state.items.filter((i) => i.status === "uploaded" || i.status === "processing").length,
     failed: state.items.filter((i) => i.status === "error").length,
     active: activeCount,
   };
 
+  // Consider complete if all items are either uploaded OR processing (videos in the cloud)
   const isComplete = stats.completed === stats.total && stats.total > 0;
   const hasErrors = stats.failed > 0;
   const isUploading = stats.uploading > 0 || stats.queued > 0 || activeCount > 0;
+  const hasProcessingVideos = stats.processing > 0;
 
   return {
     items: state.items,
@@ -485,6 +571,7 @@ export function useUploadQueue({
     isComplete,
     hasErrors,
     isUploading,
+    hasProcessingVideos, // True if videos are being processed in the cloud
     addFiles,
     removeItem,
     retryItem,

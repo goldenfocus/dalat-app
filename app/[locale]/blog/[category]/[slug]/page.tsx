@@ -6,7 +6,6 @@ import { BlogCoverImage } from "@/components/blog/blog-cover-image";
 import { format } from "date-fns";
 import { createStaticClient } from "@/lib/supabase/server";
 import { getTranslations } from "next-intl/server";
-import { SiteHeader } from "@/components/site-header";
 import { BlogShareButtons } from "@/components/blog/blog-share-buttons";
 import { TechnicalAccordion } from "@/components/blog/technical-accordion";
 import { CtaButton } from "@/components/blog/cta-button";
@@ -120,8 +119,6 @@ export default async function BlogPostPage({ params }: PageProps) {
     <>
       <JsonLd data={breadcrumbSchema} />
       <JsonLd data={articleSchema} />
-      <SiteHeader />
-
       <main className="min-h-screen bg-background">
         <article className="mx-auto max-w-3xl px-4 py-8">
           {/* Back link */}

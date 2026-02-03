@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
 import {
   MomentsDiscoveryDesktop,
   MomentsDiscoveryMobile,
@@ -113,7 +112,6 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
 
       {/* Desktop: Event-grouped feed */}
       <main className="hidden lg:flex min-h-screen flex-col">
-        <SiteHeader />
         <div className="flex-1 container max-w-5xl mx-auto px-4 py-8">
           <MomentsDiscoveryDesktop
             initialGroups={groupedData.groups}

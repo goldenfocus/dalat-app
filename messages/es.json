@@ -1061,6 +1061,19 @@
       "fileSizeLimit": "El archivo es demasiado grande (máx 100MB)",
       "captionRequired": "Por favor añade texto para compartir"
     },
+    "bulkUpload": {
+      "uploading": "Subiendo {current} de {total}...",
+      "allComplete": "¡Todos los {count} archivos subidos!",
+      "paused": "Subida pausada",
+      "complete": "completo",
+      "failed": "fallido",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "compressing": "Comprimiendo...",
+      "processingInCloud": "{count, plural, =1 {1 video procesándose en la nube} other {# videos procesándose en la nube}}",
+      "inCloud": "En la nube",
+      "videoReadyNotification": "¡Tu video está listo! Toca para ver."
+    },
     "proUpload": {
       "title": "Pro Upload",
       "subtitle": "Subida masiva de fotos y videos",

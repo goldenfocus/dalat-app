@@ -12,6 +12,7 @@ import {
   Play,
   RotateCcw,
   X,
+  Cloud,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export interface CompactUploadItem {
   name: string;
   size: number;
   isVideo: boolean;
-  status: "queued" | "compressing" | "uploading" | "uploaded" | "error";
+  status: "queued" | "compressing" | "converting" | "uploading" | "uploaded" | "processing" | "error";
   progress?: number;
   error?: string;
   previewUrl?: string;
@@ -63,17 +64,19 @@ export function CompactUploadQueue({
   // Calculate stats
   const stats = useMemo(() => {
     const total = items.length;
-    const completed = items.filter((i) => i.status === "uploaded").length;
+    const uploaded = items.filter((i) => i.status === "uploaded").length;
+    const processing = items.filter((i) => i.status === "processing").length; // Server-side video processing
+    const completed = uploaded + processing; // Both count as "done" from user's perspective
     const failed = items.filter((i) => i.status === "error").length;
     const inProgress = items.filter(
-      (i) => i.status === "uploading" || i.status === "compressing"
+      (i) => i.status === "uploading" || i.status === "compressing" || i.status === "converting"
     ).length;
     const queued = items.filter((i) => i.status === "queued").length;
 
     // Calculate overall progress
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    return { total, completed, failed, inProgress, queued, progress };
+    return { total, completed, failed, inProgress, queued, processing, progress };
   }, [items]);
 
   const isComplete = stats.completed === stats.total && stats.total > 0;
@@ -86,7 +89,15 @@ export function CompactUploadQueue({
         {/* Status text */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {isComplete ? (
+            {isComplete && stats.processing > 0 ? (
+              // All uploaded but some videos still processing in cloud
+              <>
+                <Cloud className="w-5 h-5 text-blue-500" />
+                <span className="font-medium text-blue-600 dark:text-blue-400">
+                  {t("bulkUpload.processingInCloud", { count: stats.processing })}
+                </span>
+              </>
+            ) : isComplete ? (
               <>
                 <CheckCircle className="w-5 h-5 text-green-500" />
                 <span className="font-medium text-green-600 dark:text-green-400">
@@ -195,7 +206,9 @@ function CompactUploadItem({
   onRemove: () => void;
   onRetry: () => void;
 }) {
-  const isActive = item.status === "uploading" || item.status === "compressing";
+  const t = useTranslations("moments");
+  const isActive = item.status === "uploading" || item.status === "compressing" || item.status === "converting";
+  const isProcessing = item.status === "processing"; // Video in cloud
   const isError = item.status === "error";
   const isDone = item.status === "uploaded";
 
@@ -204,13 +217,16 @@ function CompactUploadItem({
       className={cn(
         "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors",
         isError && "bg-destructive/10",
-        isDone && "bg-green-500/10 opacity-60"
+        isDone && "bg-green-500/10 opacity-60",
+        isProcessing && "bg-blue-500/10"
       )}
     >
       {/* Icon */}
       <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
         {isActive ? (
           <Loader2 className="w-4 h-4 text-primary animate-spin" />
+        ) : isProcessing ? (
+          <Cloud className="w-4 h-4 text-blue-500 animate-pulse" />
         ) : isError ? (
           <XCircle className="w-4 h-4 text-destructive" />
         ) : isDone ? (
@@ -233,9 +249,12 @@ function CompactUploadItem({
       </span>
 
       {/* Status/Actions */}
-      <div className="flex-shrink-0 w-16 flex justify-end">
+      <div className="flex-shrink-0 w-20 flex justify-end">
         {isActive && item.progress !== undefined && (
           <span className="text-xs text-primary">{item.progress}%</span>
+        )}
+        {isProcessing && (
+          <span className="text-xs text-blue-500">{t("bulkUpload.inCloud")}</span>
         )}
         {isError && (
           <button

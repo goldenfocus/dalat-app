@@ -9,8 +9,6 @@ export const maxDuration = 60;
 export const revalidate = 300;
 
 import { setRequestLocale } from "next-intl/server";
-import { SiteHeader } from "@/components/site-header";
-import { MobileHeader } from "@/components/home/mobile-header";
 import { HeroSection } from "@/components/home/hero-section";
 import { EventFeedScrollable, EventFeedScrollableSkeleton } from "@/components/events/event-feed-scrollable";
 import { YourEventsSection } from "@/components/home/your-events-section";
@@ -94,16 +92,6 @@ export default async function Home({ params }: PageProps) {
 
   return (
     <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
-      {/* Mobile header - scroll-aware, shows auth state */}
-      <div className="lg:hidden">
-        <MobileHeader />
-      </div>
-
-      {/* Desktop header */}
-      <div className="hidden lg:block">
-        <SiteHeader />
-      </div>
-
       {/* Hero Section - server-rendered for fast LCP */}
       {/* Conditionally render image hero or minimal text hero */}
       {homepageConfig?.hero_image_url ? (

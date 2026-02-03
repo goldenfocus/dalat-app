@@ -1061,6 +1061,19 @@
       "fileSizeLimit": "ไฟล์ใหญ่เกินไป (สูงสุด 100MB)",
       "captionRequired": "กรุณาเพิ่มข้อความเพื่อแชร์"
     },
+    "bulkUpload": {
+      "uploading": "กำลังอัปโหลด {current} จาก {total}...",
+      "allComplete": "อัปโหลดไฟล์ทั้งหมด {count} ไฟล์เรียบร้อย!",
+      "paused": "หยุดอัปโหลดชั่วคราว",
+      "complete": "เสร็จสิ้น",
+      "failed": "ล้มเหลว",
+      "pause": "หยุดชั่วคราว",
+      "resume": "ดำเนินการต่อ",
+      "compressing": "กำลังบีบอัด...",
+      "processingInCloud": "{count, plural, =1 {1 วิดีโอกำลังประมวลผลบนคลาวด์} other {# วิดีโอกำลังประมวลผลบนคลาวด์}}",
+      "inCloud": "บนคลาวด์",
+      "videoReadyNotification": "วิดีโอของคุณพร้อมแล้ว! แตะเพื่อดู"
+    },
     "proUpload": {
       "title": "Pro Upload",
       "subtitle": "อัปโหลดรูปและวิดีโอจำนวนมาก",

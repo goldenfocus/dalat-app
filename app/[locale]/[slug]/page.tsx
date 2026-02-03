@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
 import { ProfileContent } from "./profile-content";
 import { OrganizerContent } from "./organizer-content";
 import { VenueContent } from "./venue-content";
@@ -232,12 +231,7 @@ export default async function UnifiedSlugPage({ params }: PageProps) {
   // Render appropriate content based on entity type
   switch (resolution.entity_type) {
     case "profile":
-      return (
-        <>
-          <SiteHeader />
-          <ProfileContent profileId={resolution.entity_id} locale={locale} />
-        </>
-      );
+      return <ProfileContent profileId={resolution.entity_id} locale={locale} />;
 
     case "organizer":
       return (

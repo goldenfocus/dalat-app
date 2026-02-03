@@ -1061,6 +1061,19 @@
       "fileSizeLimit": "ファイルが大きすぎます（最大100MB）",
       "captionRequired": "共有するテキストを追加してください"
     },
+    "bulkUpload": {
+      "uploading": "{current}/{total}をアップロード中...",
+      "allComplete": "{count}個のファイルがすべてアップロードされました！",
+      "paused": "アップロード一時停止中",
+      "complete": "完了",
+      "failed": "失敗",
+      "pause": "一時停止",
+      "resume": "再開",
+      "compressing": "圧縮中...",
+      "processingInCloud": "{count, plural, =1 {1本の動画をクラウドで処理中} other {#本の動画をクラウドで処理中}}",
+      "inCloud": "クラウド",
+      "videoReadyNotification": "動画の準備ができました！タップして見る。"
+    },
     "proUpload": {
       "title": "プロアップロード",
       "subtitle": "写真と動画を一括アップロード",

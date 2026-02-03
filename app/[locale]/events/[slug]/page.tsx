@@ -35,7 +35,6 @@ import { decodeUnicodeEscapes } from "@/lib/utils";
 import { MomentsPreview, PastEventMomentsShowcase } from "@/components/moments";
 import { SponsorDisplay } from "@/components/events/sponsor-display";
 import { ClickableTagList } from "@/components/events/clickable-tag-list";
-import { SiteHeader } from "@/components/site-header";
 import { EventMaterialsSummary } from "@/components/events/event-materials";
 import { EventMaterialsStructuredData } from "@/components/events/event-materials-structured-data";
 import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial } from "@/lib/types";
@@ -643,43 +642,39 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         <ConfirmAttendanceHandler eventId={event.id} />
       </Suspense>
 
-      <SiteHeader
-        actions={
-          <>
-            <EventShareButton
-              eventSlug={event.slug}
-              eventTitle={event.title}
-              eventDescription={event.description}
-              startsAt={event.starts_at}
-              imageUrl={event.image_url}
-            />
-            {canManageEvent && (
-              <>
-                <InviteModal
-                  eventSlug={event.slug}
-                  eventTitle={event.title}
-                  eventDescription={event.description}
-                  startsAt={event.starts_at}
-                  imageUrl={event.image_url}
-                />
-                <EventSettingsSheet
-                  eventId={event.id}
-                  eventSlug={event.slug}
-                  eventTitle={event.title}
-                  eventDescription={event.description}
-                  startsAt={event.starts_at}
-                  endsAt={event.ends_at}
-                  initialSettings={eventSettings}
-                  pendingCount={momentCounts?.pending_count ?? 0}
-                />
-                <EventActions eventId={event.id} eventSlug={event.slug} />
-              </>
-            )}
-          </>
-        }
-      />
-
       <div className="container max-w-4xl mx-auto px-4 py-8 pb-24 lg:pb-8">
+        {/* Event actions bar */}
+        <div className="flex items-center justify-end gap-1 mb-4 -mt-2">
+          <EventShareButton
+            eventSlug={event.slug}
+            eventTitle={event.title}
+            eventDescription={event.description}
+            startsAt={event.starts_at}
+            imageUrl={event.image_url}
+          />
+          {canManageEvent && (
+            <>
+              <InviteModal
+                eventSlug={event.slug}
+                eventTitle={event.title}
+                eventDescription={event.description}
+                startsAt={event.starts_at}
+                imageUrl={event.image_url}
+              />
+              <EventSettingsSheet
+                eventId={event.id}
+                eventSlug={event.slug}
+                eventTitle={event.title}
+                eventDescription={event.description}
+                startsAt={event.starts_at}
+                endsAt={event.ends_at}
+                initialSettings={eventSettings}
+                pendingCount={momentCounts?.pending_count ?? 0}
+              />
+              <EventActions eventId={event.id} eventSlug={event.slug} />
+            </>
+          )}
+        </div>
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">

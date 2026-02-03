@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslations } from "next-intl/server";
-import { SiteHeader } from "@/components/site-header";
 import { BlogPostGrid } from "@/components/blog/blog-post-grid";
 import { CategoryTabs } from "@/components/blog/category-tabs";
 import { generateLocalizedMetadata } from "@/lib/metadata";
@@ -99,8 +98,6 @@ export default async function BlogPage({ params, searchParams }: PageProps) {
   return (
     <>
       <JsonLd data={breadcrumbSchema} />
-      <SiteHeader />
-
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-4xl px-4 py-8">
           {/* Header */}

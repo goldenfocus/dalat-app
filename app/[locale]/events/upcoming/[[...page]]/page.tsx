@@ -3,8 +3,6 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
-import { MobileHeader } from "@/components/home/mobile-header";
 import { EventGrid } from "@/components/events/event-grid";
 import { EventViewToggle } from "@/components/events/event-view-toggle";
 import { Pagination } from "@/components/ui/pagination";
@@ -216,16 +214,6 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
       )}
 
       <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
-        {/* Mobile header */}
-        <div className="lg:hidden">
-          <MobileHeader />
-        </div>
-
-        {/* Desktop header */}
-        <div className="hidden lg:block">
-          <SiteHeader />
-        </div>
-
         {/* Content */}
         <div className="flex-1 container max-w-6xl mx-auto px-4 py-4 lg:py-6">
           {/* Page title + View toggle */}

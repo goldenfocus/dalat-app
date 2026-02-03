@@ -1223,7 +1223,10 @@
       "failed": "failed",
       "pause": "Pause",
       "resume": "Resume",
-      "compressing": "Compressing..."
+      "compressing": "Compressing...",
+      "processingInCloud": "{count, plural, =1 {1 video processing in cloud} other {# videos processing in cloud}}",
+      "inCloud": "In cloud",
+      "videoReadyNotification": "Your video is ready! Tap to view."
     },
     "proUpload": {
       "title": "Pro Upload",

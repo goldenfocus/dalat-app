@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { Calendar } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
 import { format } from "date-fns";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -235,8 +234,6 @@ export default async function ProfilePage({ params }: PageProps) {
     <>
       {/* JSON-LD Structured Data for SEO/AEO */}
       <JsonLd data={[personSchema, breadcrumbSchema]} />
-
-      <SiteHeader />
 
       <div className="container max-w-4xl mx-auto px-4 py-8">
         {/* Claim profile banner for ghost profiles */}

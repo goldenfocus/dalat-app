@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Github } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
 import { BlogStoryCard } from "@/components/blog/blog-story-card";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -79,8 +78,6 @@ export default async function AboutPage({ params }: PageProps) {
   return (
     <>
       <JsonLd data={breadcrumbSchema} />
-      <SiteHeader />
-
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-2xl px-4 py-12">
           {/* Header */}

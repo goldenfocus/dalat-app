@@ -1,6 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { SiteHeader } from '@/components/site-header';
 import { BroadcasterInterface } from './broadcaster-interface';
 import type { Metadata } from 'next';
 
@@ -50,9 +49,7 @@ export default async function BroadcastPage({ params }: PageProps) {
     .single();
 
   return (
-    <>
-      <SiteHeader />
-      <main className="container max-w-4xl mx-auto px-4 py-6">
+    <main className="container max-w-4xl mx-auto px-4 py-6">
         <BroadcasterInterface
           event={{
             id: event.id,
@@ -69,7 +66,6 @@ export default async function BroadcastPage({ params }: PageProps) {
           } : null}
           locale={locale}
         />
-      </main>
-    </>
+    </main>
   );
 }

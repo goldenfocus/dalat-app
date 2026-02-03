@@ -23,7 +23,9 @@ export type NotificationType =
   | 'comment_on_event'
   | 'comment_on_moment'
   | 'reply_to_comment'
-  | 'thread_activity';
+  | 'thread_activity'
+  // Video processing notifications
+  | 'video_ready';
 
 export type NotificationChannel = 'in_app' | 'push' | 'email';
 
@@ -260,6 +262,19 @@ export interface ThreadActivityPayload extends BaseNotificationPayload {
   activityCount: number;
 }
 
+// ============================================
+// Video Processing Notification Payloads
+// ============================================
+
+export interface VideoReadyPayload extends BaseNotificationPayload {
+  type: 'video_ready';
+  eventSlug: string;
+  eventTitle: string;
+  momentId: string;
+  thumbnailUrl?: string;
+  videoCount?: number; // For batch notifications: "3 videos are ready"
+}
+
 export type NotificationPayload =
   | RsvpConfirmationPayload
   | ConfirmAttendance24hPayload
@@ -279,7 +294,9 @@ export type NotificationPayload =
   | CommentOnEventPayload
   | CommentOnMomentPayload
   | ReplyToCommentPayload
-  | ThreadActivityPayload;
+  | ThreadActivityPayload
+  // Video processing notifications
+  | VideoReadyPayload;
 
 // ============================================
 // Notify Options

@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { SiteHeader } from '@/components/site-header';
 import { ViewerInterface } from './viewer-interface';
 import type { Metadata } from 'next';
 
@@ -41,9 +40,7 @@ export default async function LiveViewerPage({ params }: PageProps) {
   const isEventCreator = user?.id === event.created_by;
 
   return (
-    <>
-      <SiteHeader />
-      <main className="container max-w-6xl mx-auto px-4 py-6">
+    <main className="container max-w-6xl mx-auto px-4 py-6">
         <ViewerInterface
           event={{
             id: event.id,
@@ -65,7 +62,6 @@ export default async function LiveViewerPage({ params }: PageProps) {
           initialMessages={initialMessages || []}
           locale={locale}
         />
-      </main>
-    </>
+    </main>
   );
 }

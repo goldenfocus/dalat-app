@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { Building2 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
 import { VenueCard } from "@/components/venues/venue-card";
 import { VenueCardSkeleton } from "@/components/venues/venue-card-skeleton";
 import { VenueTypeFilter } from "@/components/venues/venue-type-filter";
@@ -158,8 +157,6 @@ export default async function VenuesPage({ params, searchParams }: PageProps) {
 
   return (
     <main className="min-h-screen pb-20">
-      <SiteHeader />
-
       <div className="container max-w-4xl mx-auto px-4 py-6">
         {/* Page title */}
         <h1 className="text-2xl font-bold mb-6">{t("title")}</h1>

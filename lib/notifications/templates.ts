@@ -22,6 +22,7 @@ import type {
   CommentOnMomentPayload,
   ReplyToCommentPayload,
   ThreadActivityPayload,
+  VideoReadyPayload,
   NotificationPayload,
 } from './types';
 
@@ -167,6 +168,17 @@ const translations = {
     fr: (count: number, title: string) => `${count} ${count === 1 ? 'nouveau commentaire' : 'nouveaux commentaires'} sur "${title}"`,
     vi: (count: number, title: string) => `${count} bình luận mới về "${title}"`,
   },
+  // Video processing notifications
+  videoReady: {
+    en: (count?: number) => count && count > 1 ? `${count} videos are ready!` : 'Your video is ready!',
+    fr: (count?: number) => count && count > 1 ? `${count} vidéos sont prêtes !` : 'Votre vidéo est prête !',
+    vi: (count?: number) => count && count > 1 ? `${count} video đã sẵn sàng!` : 'Video của bạn đã sẵn sàng!',
+  },
+  videoReadyBody: {
+    en: (event: string) => `Your moment from "${event}" is now live. Tap to view.`,
+    fr: (event: string) => `Votre moment de "${event}" est maintenant en ligne.`,
+    vi: (event: string) => `Khoảnh khắc của bạn từ "${event}" đã được đăng.`,
+  },
   buttons: {
     viewEvent: { en: 'View Event', fr: 'Voir', vi: 'Xem sự kiện' },
     yes: { en: 'Yes, coming', fr: 'Oui', vi: 'Có, tôi đến' },
@@ -177,6 +189,7 @@ const translations = {
     reviewRequests: { en: 'Review requests', fr: 'Voir les demandes', vi: 'Xem yêu cầu' },
     viewTribe: { en: 'View tribe', fr: 'Voir la tribu', vi: 'Xem tribe' },
     viewComments: { en: 'View comments', fr: 'Voir les commentaires', vi: 'Xem bình luận' },
+    viewMoment: { en: 'View moment', fr: 'Voir le moment', vi: 'Xem khoảnh khắc' },
   },
   email: {
     clickToConfirm: { en: 'Click below to confirm:', fr: 'Cliquez ci-dessous pour confirmer :', vi: 'Nhấn bên dưới để xác nhận:' },
@@ -748,6 +761,33 @@ function threadActivityTemplate(payload: ThreadActivityPayload): TemplateResult 
 }
 
 // ============================================
+// Video Processing Notification Templates
+// ============================================
+
+function videoReadyTemplate(payload: VideoReadyPayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+  const momentUrl = `${getBaseUrl()}/events/${payload.eventSlug}/moments/${payload.momentId}`;
+
+  const title = translations.videoReady[locale](payload.videoCount);
+  const body = translations.videoReadyBody[locale](payload.eventTitle);
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: momentUrl,
+      primaryActionLabel: translations.buttons.viewMoment[locale],
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: momentUrl,
+      tag: `video-ready-${payload.momentId}`,
+    },
+  };
+}
+
+// ============================================
 // Email HTML Generator for Event Invitations
 // ============================================
 
@@ -922,6 +962,9 @@ export function getNotificationTemplate(payload: NotificationPayload): TemplateR
       return replyToCommentTemplate(payload);
     case 'thread_activity':
       return threadActivityTemplate(payload);
+    // Video processing notifications
+    case 'video_ready':
+      return videoReadyTemplate(payload);
     default:
       throw new Error(`Unknown notification type: ${(payload as NotificationPayload).type}`);
   }

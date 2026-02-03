@@ -1064,6 +1064,19 @@
       "networkError": "네트워크 오류. 연결을 확인하고 다시 시도하세요.",
       "compressionFailed": "이미지를 압축할 수 없습니다. 더 작은 사진을 사용하세요."
     },
+    "bulkUpload": {
+      "uploading": "{current}/{total} 업로드 중...",
+      "allComplete": "모든 {count}개 파일이 업로드되었습니다!",
+      "paused": "업로드 일시정지됨",
+      "complete": "완료",
+      "failed": "실패",
+      "pause": "일시정지",
+      "resume": "재개",
+      "compressing": "압축 중...",
+      "processingInCloud": "{count, plural, =1 {1개 비디오 클라우드에서 처리 중} other {#개 비디오 클라우드에서 처리 중}}",
+      "inCloud": "클라우드",
+      "videoReadyNotification": "비디오가 준비되었습니다! 탭하여 보기."
+    },
     "proUpload": {
       "title": "프로 업로드",
       "subtitle": "사진과 동영상 대량 업로드",

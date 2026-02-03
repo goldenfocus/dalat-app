@@ -1061,6 +1061,19 @@
       "fileSizeLimit": "Файл слишком большой (макс. 100МБ)",
       "captionRequired": "Пожалуйста, добавьте текст для публикации"
     },
+    "bulkUpload": {
+      "uploading": "Загрузка {current} из {total}...",
+      "allComplete": "Все {count} файла загружены!",
+      "paused": "Загрузка приостановлена",
+      "complete": "завершено",
+      "failed": "ошибка",
+      "pause": "Пауза",
+      "resume": "Продолжить",
+      "compressing": "Сжатие...",
+      "processingInCloud": "{count, plural, =1 {1 видео обрабатывается в облаке} other {# видео обрабатываются в облаке}}",
+      "inCloud": "В облаке",
+      "videoReadyNotification": "Ваше видео готово! Нажмите, чтобы посмотреть."
+    },
     "proUpload": {
       "title": "Pro загрузка",
       "subtitle": "Массовая загрузка фото и видео",

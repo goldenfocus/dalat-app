@@ -1102,7 +1102,10 @@
       "failed": "thất bại",
       "pause": "Tạm dừng",
       "resume": "Tiếp tục",
-      "compressing": "Đang nén..."
+      "compressing": "Đang nén...",
+      "processingInCloud": "{count, plural, =1 {1 video đang xử lý trên cloud} other {# video đang xử lý trên cloud}}",
+      "inCloud": "Trên cloud",
+      "videoReadyNotification": "Video của bạn đã sẵn sàng! Nhấn để xem."
     },
     "proUpload": {
       "title": "Tải Lên Chuyên Nghiệp",

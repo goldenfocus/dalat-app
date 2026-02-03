@@ -13,7 +13,6 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { generateSmartFilename } from "@/lib/media-utils";
-import * as tus from "tus-js-client";
 
 // Retry configuration for upload resilience
 const MAX_RETRIES = 3;
@@ -306,3 +305,11 @@ export async function getStorageInfo(): Promise<{
   }
   return { r2Configured: false, buckets: [] };
 }
+
+// Note: For large video uploads, use Cloudflare Stream instead of Supabase Storage.
+// The bulk uploader uses TUS protocol to upload videos directly to Cloudflare Stream
+// via the /api/moments/upload-video endpoint. This provides:
+// - Adaptive bitrate streaming (HLS)
+// - Automatic thumbnail generation
+// - No file size limits for videos
+// - Better performance for viewers worldwide

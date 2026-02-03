@@ -1061,6 +1061,19 @@
       "fileSizeLimit": "File terlalu besar (maks 100MB)",
       "captionRequired": "Silakan tambahkan teks untuk dibagikan"
     },
+    "bulkUpload": {
+      "uploading": "Mengunggah {current} dari {total}...",
+      "allComplete": "Semua {count} file berhasil diunggah!",
+      "paused": "Unggahan dijeda",
+      "complete": "selesai",
+      "failed": "gagal",
+      "pause": "Jeda",
+      "resume": "Lanjutkan",
+      "compressing": "Mengompresi...",
+      "processingInCloud": "{count, plural, =1 {1 video diproses di cloud} other {# video diproses di cloud}}",
+      "inCloud": "Di cloud",
+      "videoReadyNotification": "Video Anda sudah siap! Ketuk untuk melihat."
+    },
     "proUpload": {
       "title": "Pro Upload",
       "subtitle": "Unggah foto dan video secara massal",

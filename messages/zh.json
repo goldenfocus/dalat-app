@@ -1064,6 +1064,19 @@
       "networkError": "网络错误。检查连接后重试。",
       "compressionFailed": "无法压缩图片。尝试较小的图片。"
     },
+    "bulkUpload": {
+      "uploading": "正在上传 {current}/{total}...",
+      "allComplete": "所有 {count} 个文件已上传！",
+      "paused": "上传已暂停",
+      "complete": "完成",
+      "failed": "失败",
+      "pause": "暂停",
+      "resume": "继续",
+      "compressing": "压缩中...",
+      "processingInCloud": "{count, plural, =1 {1个视频云端处理中} other {#个视频云端处理中}}",
+      "inCloud": "云端",
+      "videoReadyNotification": "您的视频已准备就绪！点击查看。"
+    },
     "proUpload": {
       "title": "专业上传",
       "subtitle": "批量上传照片和视频",

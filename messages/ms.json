@@ -1061,6 +1061,19 @@
       "fileSizeLimit": "Fail terlalu besar (maks 100MB)",
       "captionRequired": "Sila tambah teks untuk dikongsi"
     },
+    "bulkUpload": {
+      "uploading": "Memuat naik {current} daripada {total}...",
+      "allComplete": "Semua {count} fail telah dimuat naik!",
+      "paused": "Muat naik dijeda",
+      "complete": "selesai",
+      "failed": "gagal",
+      "pause": "Jeda",
+      "resume": "Sambung",
+      "compressing": "Memampatkan...",
+      "processingInCloud": "{count, plural, =1 {1 video diproses di awan} other {# video diproses di awan}}",
+      "inCloud": "Di awan",
+      "videoReadyNotification": "Video anda sudah sedia! Ketik untuk lihat."
+    },
     "proUpload": {
       "title": "Muat Naik Pro",
       "subtitle": "Muat naik foto dan video secara pukal",

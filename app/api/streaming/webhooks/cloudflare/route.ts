@@ -5,6 +5,7 @@ import {
   getVideoDetails,
   type CloudflareWebhookEvent,
 } from '@/lib/cloudflare-stream';
+import { notify } from '@/lib/notifications';
 
 function getServiceClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
             }
 
             // Update moment with all video metadata including thumbnail
-            const { data, error } = await supabase
+            const { data: moment, error } = await supabase
               .from('moments')
               .update({
                 video_status: 'ready',
@@ -98,13 +99,34 @@ export async function POST(request: Request) {
                 video_duration_seconds: videoDetails.duration ?? null,
               })
               .eq('cf_video_uid', videoUid)
-              .select('id')
+              .select('id, user_id, event_id')
               .single();
 
             if (error) {
               console.error('Failed to update moment video status:', error);
-            } else if (data) {
-              console.log('Updated moment:', data.id, 'to ready status with thumbnail');
+            } else if (moment) {
+              console.log('Updated moment:', moment.id, 'to ready status with thumbnail');
+
+              // Send push notification to the user: "Your video is ready!"
+              // Get event details for the notification
+              const { data: eventData } = await supabase
+                .from('events')
+                .select('slug, title')
+                .eq('id', moment.event_id)
+                .single();
+
+              if (eventData && moment.user_id) {
+                console.log(`[video.ready] Sending notification to user ${moment.user_id}`);
+                await notify({
+                  type: 'video_ready',
+                  userId: moment.user_id,
+                  locale: 'en', // Default to English - user's preferred locale would need to be fetched
+                  eventSlug: eventData.slug,
+                  eventTitle: eventData.title,
+                  momentId: moment.id,
+                  thumbnailUrl: thumbnailUrl ?? undefined,
+                });
+              }
             } else {
               // No moment found with this video UID - might be a live recording
               console.log('No moment found for video UID:', videoUid);
