@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q");
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
-    const threshold = parseFloat(searchParams.get("threshold") || "0.25");
+    const threshold = parseFloat(searchParams.get("threshold") || "0.5");
 
     if (!query?.trim()) {
       return NextResponse.json(

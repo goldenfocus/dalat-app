@@ -65,29 +65,55 @@ export function MiniPlayer() {
     if (!audio || !currentTrack) return;
 
     const trackChanged = prevTrackIdRef.current !== currentTrack.id;
-    prevTrackIdRef.current = currentTrack.id;
 
     if (trackChanged) {
+      prevTrackIdRef.current = currentTrack.id;
       // Load new track - set flag to play when ready
       if (isPlaying) {
         shouldPlayWhenReady.current = true;
       }
       audio.src = currentTrack.file_url;
       audio.load();
-    } else if (isPlaying && audio.paused) {
-      // Same track, just need to play (e.g., user clicked play button)
+    }
+  }, [currentTrack?.id, currentTrack?.file_url, isPlaying]);
+
+  // Sync play/pause state with audio element
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentTrack) return;
+
+    if (isPlaying && audio.paused) {
       audio.play().catch(() => setIsPlaying(false));
     } else if (!isPlaying && !audio.paused) {
-      // User clicked pause
       audio.pause();
     }
-  }, [currentTrack?.id, isPlaying, setIsPlaying]);
+  }, [isPlaying, currentTrack, setIsPlaying]);
 
   // Track if we're auto-advancing (to ignore pause events during transition)
   const isAutoAdvancing = useRef(false);
 
   // Track if we should play when audio is ready (for initial load)
   const shouldPlayWhenReady = useRef(false);
+
+  // Track last seek time from this component to distinguish from external seeks
+  const lastLocalSeekTime = useRef<number | null>(null);
+
+  // Sync external seeks (from playlist-player) to audio element
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Skip if this was a local seek we just did
+    if (lastLocalSeekTime.current !== null && Math.abs(lastLocalSeekTime.current - currentTime) < 0.5) {
+      return;
+    }
+
+    // Only sync if there's a significant difference (user seeking externally)
+    const diff = Math.abs(audio.currentTime - currentTime);
+    if (diff > 1) {
+      audio.currentTime = currentTime;
+    }
+  }, [currentTime]);
 
   // Store callback refs to avoid stale closures in event handlers
   const setCurrentTimeRef = useRef(setCurrentTime);
