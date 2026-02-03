@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Play,
@@ -25,7 +25,6 @@ import {
 
 export function MiniPlayer() {
   const router = useRouter();
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   const isVisible = useIsPlayerVisible();
   const currentTrack = useCurrentTrack();
@@ -34,15 +33,18 @@ export function MiniPlayer() {
     tracks,
     playlist,
     currentIndex,
+    audioElement,
     isPlaying,
+    isLoading,
     currentTime,
     duration,
     repeatMode,
     shuffle,
+    setAudioElement,
     togglePlay,
     next,
     previous,
-    onTrackEnded,
+    seek,
     setCurrentTime,
     setDuration,
     setIsPlaying,
@@ -53,99 +55,67 @@ export function MiniPlayer() {
 
   // UI state
   const [showRemaining, setShowRemaining] = useState(false);
-  const [isAudioReady, setIsAudioReady] = useState(false);
 
-  // Track the current track ID to detect changes
-  const currentTrackIdRef = useRef<string | null>(null);
-
-  // Effect 1: Load new track when track changes
+  // Initialize audio element ONCE and store in Zustand
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !currentTrack) return;
+    if (audioElement) return; // Already initialized
 
-    // Only load if track actually changed
-    if (currentTrackIdRef.current !== currentTrack.id) {
-      currentTrackIdRef.current = currentTrack.id;
-      setIsAudioReady(false);
-      audio.src = currentTrack.file_url;
-      audio.load();
-    }
-  }, [currentTrack]);
+    const audio = new Audio();
+    audio.preload = "metadata";
 
-  // Effect 2: Play/pause when isPlaying changes (only if audio is ready)
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !currentTrack) return;
-
-    if (isPlaying) {
-      // Try to play
-      const playPromise = audio.play();
-      if (playPromise) {
-        playPromise.catch((err) => {
-          // Autoplay blocked or not ready - will retry on canplay
-          console.log("Play failed, will retry on canplay:", err.message);
-        });
+    // Set up event listeners ONCE
+    audio.addEventListener("loadedmetadata", () => {
+      const dur = audio.duration;
+      if (dur && !isNaN(dur) && isFinite(dur) && dur > 0) {
+        useAudioPlayerStore.getState().setDuration(dur);
       }
-    } else {
-      audio.pause();
-    }
-  }, [isPlaying, currentTrack]);
+    });
 
-  // Effect 3: Set up audio event listeners
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    audio.addEventListener("durationchange", () => {
+      const dur = audio.duration;
+      if (dur && !isNaN(dur) && isFinite(dur) && dur > 0) {
+        useAudioPlayerStore.getState().setDuration(dur);
+      }
+    });
 
-    const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
-    };
+    audio.addEventListener("timeupdate", () => {
+      useAudioPlayerStore.getState().setCurrentTime(audio.currentTime);
+    });
 
-    const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-    };
+    audio.addEventListener("ended", () => {
+      const state = useAudioPlayerStore.getState();
 
-    const handleCanPlay = () => {
-      setIsAudioReady(true);
-      // If we should be playing, start now
-      if (isPlaying && audio.paused) {
+      if (state.repeatMode === "one") {
+        // Repeat single track
+        audio.currentTime = 0;
         audio.play().catch(console.error);
+      } else {
+        // Go to next track (store's next() handles looping logic)
+        state.next();
       }
-    };
+    });
 
-    const handleEnded = () => {
-      onTrackEnded();
-    };
+    audio.addEventListener("play", () => {
+      useAudioPlayerStore.getState().setIsPlaying(true);
+    });
 
-    const handlePlay = () => {
-      setIsPlaying(true);
-    };
+    audio.addEventListener("pause", () => {
+      useAudioPlayerStore.getState().setIsPlaying(false);
+    });
 
-    const handlePause = () => {
-      // Only update if we're not transitioning to next track
-      const store = useAudioPlayerStore.getState();
-      if (store.isPlaying && audio.ended) {
-        // Track ended, don't set isPlaying to false
-        return;
-      }
-      setIsPlaying(false);
-    };
+    audio.addEventListener("error", (e) => {
+      console.error("Audio error:", e);
+      useAudioPlayerStore.getState().setIsPlaying(false);
+      useAudioPlayerStore.getState().setIsLoading(false);
+    });
 
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.addEventListener("canplay", handleCanPlay);
-    audio.addEventListener("ended", handleEnded);
-    audio.addEventListener("play", handlePlay);
-    audio.addEventListener("pause", handlePause);
+    // Store the audio element
+    setAudioElement(audio);
 
     return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      audio.removeEventListener("canplay", handleCanPlay);
-      audio.removeEventListener("ended", handleEnded);
-      audio.removeEventListener("play", handlePlay);
-      audio.removeEventListener("pause", handlePause);
+      // Don't clean up - audio element persists
     };
-  }, [setCurrentTime, setDuration, setIsPlaying, onTrackEnded, isPlaying]);
+  }, [audioElement, setAudioElement]);
 
   // Media Session API for lock screen controls
   useEffect(() => {
@@ -170,10 +140,10 @@ export function MiniPlayer() {
     });
 
     const store = useAudioPlayerStore.getState();
-    navigator.mediaSession.setActionHandler("play", store.play);
-    navigator.mediaSession.setActionHandler("pause", store.pause);
-    navigator.mediaSession.setActionHandler("previoustrack", store.previous);
-    navigator.mediaSession.setActionHandler("nexttrack", store.next);
+    navigator.mediaSession.setActionHandler("play", () => store.play());
+    navigator.mediaSession.setActionHandler("pause", () => store.pause());
+    navigator.mediaSession.setActionHandler("previoustrack", () => store.previous());
+    navigator.mediaSession.setActionHandler("nexttrack", () => store.next());
 
     return () => {
       navigator.mediaSession.setActionHandler("play", null);
@@ -187,13 +157,9 @@ export function MiniPlayer() {
   const handleSeek = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const time = Number(e.target.value);
-      const audio = audioRef.current;
-      if (audio) {
-        audio.currentTime = time;
-        setCurrentTime(time);
-      }
+      seek(time);
     },
-    [setCurrentTime]
+    [seek]
   );
 
   // Navigate to full playlist page
@@ -212,9 +178,6 @@ export function MiniPlayer() {
 
   return (
     <>
-      {/* Hidden audio element */}
-      <audio ref={audioRef} preload="auto" />
-
       {/* Mini player bar - positioned above mobile bottom nav */}
       <div className="fixed left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0">
         {/* Progress bar (thin line at top) */}
@@ -271,8 +234,11 @@ export function MiniPlayer() {
                 size="icon"
                 className="h-12 w-12 rounded-full"
                 onClick={togglePlay}
+                disabled={isLoading}
               >
-                {isPlaying ? (
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : isPlaying ? (
                   <Pause className="w-5 h-5" />
                 ) : (
                   <Play className="w-5 h-5 ml-0.5" />

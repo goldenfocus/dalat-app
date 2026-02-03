@@ -83,7 +83,7 @@ export function PlaylistPlayer({
     togglePlay,
     next,
     previous,
-    seekTo,
+    seek,
     toggleRepeat,
     toggleShuffle,
   } = useAudioPlayerStore();
@@ -159,10 +159,10 @@ export function PlaylistPlayer({
   const handleSeek = useCallback(
     (time: number) => {
       if (isThisPlaylistActive) {
-        seekTo(time);
+        seek(time);
       }
     },
-    [isThisPlaylistActive, seekTo]
+    [isThisPlaylistActive, seek]
   );
 
   if (tracks.length === 0) {

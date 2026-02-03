@@ -24,49 +24,49 @@ interface AudioPlayerState {
   playlist: PlaylistInfo | null;
   currentIndex: number;
 
+  // Audio element (singleton, stored in state)
+  audioElement: HTMLAudioElement | null;
+
   // Playback state
   isPlaying: boolean;
+  isLoading: boolean;
   currentTime: number;
   duration: number;
 
   // Playback modes
   repeatMode: RepeatMode;
   shuffle: boolean;
-  shuffledIndices: number[]; // For shuffle mode - pre-computed random order
+  shuffledIndices: number[];
 
   // UI state
-  isExpanded: boolean;
   isVisible: boolean;
 
   // Actions
+  setAudioElement: (element: HTMLAudioElement | null) => void;
   setPlaylist: (tracks: AudioTrack[], playlist: PlaylistInfo, startIndex?: number) => void;
   playTrack: (index: number) => void;
-  play: () => void;
+  play: () => Promise<void>;
   pause: () => void;
   togglePlay: () => void;
   next: () => void;
   previous: () => void;
-  onTrackEnded: () => void; // Special handler for track end (auto-advance)
-  seekTo: (time: number) => void;
+  seek: (time: number) => void;
   setCurrentTime: (time: number) => void;
   setDuration: (duration: number) => void;
   setIsPlaying: (isPlaying: boolean) => void;
+  setIsLoading: (loading: boolean) => void;
   toggleRepeat: () => void;
   toggleShuffle: () => void;
-  expand: () => void;
-  collapse: () => void;
   close: () => void;
 }
 
 // Fisher-Yates shuffle to create random order
 function createShuffledIndices(length: number, startIndex: number): number[] {
   const indices = Array.from({ length }, (_, i) => i);
-  // Shuffle all except put startIndex first
   for (let i = indices.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [indices[i], indices[j]] = [indices[j], indices[i]];
   }
-  // Move startIndex to front if shuffle starts mid-playlist
   const startPos = indices.indexOf(startIndex);
   if (startPos > 0) {
     [indices[0], indices[startPos]] = [indices[startPos], indices[0]];
@@ -79,17 +79,25 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   tracks: [],
   playlist: null,
   currentIndex: 0,
+  audioElement: null,
   isPlaying: false,
+  isLoading: false,
   currentTime: 0,
   duration: 0,
-  repeatMode: "all", // Default to loop playlist (most music players do this)
+  repeatMode: "all",
   shuffle: false,
   shuffledIndices: [],
-  isExpanded: false,
   isVisible: false,
+
+  // Store the audio element reference
+  setAudioElement: (element) => {
+    set({ audioElement: element });
+  },
 
   // Set a new playlist and optionally start playing
   setPlaylist: (tracks, playlist, startIndex = 0) => {
+    const { audioElement } = get();
+
     set({
       tracks,
       playlist,
@@ -97,125 +105,186 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       currentTime: 0,
       duration: 0,
       isVisible: true,
-      isPlaying: true, // Auto-play when setting playlist
       shuffledIndices: createShuffledIndices(tracks.length, startIndex),
     });
+
+    // Load the track
+    const track = tracks[startIndex];
+    if (audioElement && track) {
+      audioElement.src = track.file_url;
+      audioElement.load();
+    }
+
+    // Auto-play
+    setTimeout(() => {
+      get().play();
+    }, 100);
   },
 
   // Play a specific track by index
   playTrack: (index) => {
-    const { tracks } = get();
-    if (index >= 0 && index < tracks.length) {
-      set({
-        currentIndex: index,
-        currentTime: 0,
-        isPlaying: true,
-      });
+    const { tracks, audioElement } = get();
+    if (index < 0 || index >= tracks.length) return;
+
+    const track = tracks[index];
+    set({
+      currentIndex: index,
+      currentTime: 0,
+      duration: 0,
+    });
+
+    if (audioElement && track) {
+      audioElement.src = track.file_url;
+      audioElement.load();
+    }
+
+    // Auto-play after setting track
+    setTimeout(() => {
+      get().play();
+    }, 100);
+  },
+
+  // Play
+  play: async () => {
+    const { audioElement, tracks, currentIndex } = get();
+    const track = tracks[currentIndex];
+
+    if (!audioElement || !track) return;
+
+    try {
+      set({ isLoading: true });
+
+      // Ensure correct source is set
+      if (!audioElement.src || !audioElement.src.includes(track.file_url.split('/').pop() || '')) {
+        audioElement.src = track.file_url;
+        audioElement.load();
+      }
+
+      // Wait for audio to be ready if needed
+      if (audioElement.readyState < 3) {
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('Audio load timeout')), 10000);
+
+          const onCanPlay = () => {
+            clearTimeout(timeout);
+            audioElement.removeEventListener('canplaythrough', onCanPlay);
+            audioElement.removeEventListener('error', onError);
+            resolve();
+          };
+
+          const onError = (e: Event) => {
+            clearTimeout(timeout);
+            audioElement.removeEventListener('canplaythrough', onCanPlay);
+            audioElement.removeEventListener('error', onError);
+            reject(e);
+          };
+
+          audioElement.addEventListener('canplaythrough', onCanPlay);
+          audioElement.addEventListener('error', onError);
+        });
+      }
+
+      await audioElement.play();
+      set({ isPlaying: true, isLoading: false });
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      set({ isPlaying: false, isLoading: false });
     }
   },
 
-  // Playback controls
-  play: () => set({ isPlaying: true }),
-  pause: () => set({ isPlaying: false }),
-  togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+  // Pause
+  pause: () => {
+    const { audioElement } = get();
+    if (audioElement) {
+      audioElement.pause();
+    }
+    set({ isPlaying: false });
+  },
 
+  // Toggle play/pause
+  togglePlay: () => {
+    const { isPlaying, play, pause } = get();
+    if (isPlaying) {
+      pause();
+    } else {
+      play();
+    }
+  },
+
+  // Next track
   next: () => {
-    const { currentIndex, tracks, shuffle, shuffledIndices, repeatMode } = get();
+    const { currentIndex, tracks, shuffle, shuffledIndices, repeatMode, playTrack } = get();
+
+    let nextIndex: number;
+
     if (shuffle) {
       const currentShufflePos = shuffledIndices.indexOf(currentIndex);
       if (currentShufflePos < shuffledIndices.length - 1) {
-        set({
-          currentIndex: shuffledIndices[currentShufflePos + 1],
-          currentTime: 0,
-        });
+        nextIndex = shuffledIndices[currentShufflePos + 1];
       } else if (repeatMode === "all") {
-        // Loop back to start of shuffled order
-        set({
-          currentIndex: shuffledIndices[0],
-          currentTime: 0,
-        });
+        nextIndex = shuffledIndices[0];
+      } else {
+        return; // No more tracks
       }
     } else if (currentIndex < tracks.length - 1) {
-      set({
-        currentIndex: currentIndex + 1,
-        currentTime: 0,
-      });
+      nextIndex = currentIndex + 1;
     } else if (repeatMode === "all") {
-      // Loop back to first track
-      set({
-        currentIndex: 0,
-        currentTime: 0,
-      });
+      nextIndex = 0;
+    } else {
+      return; // No more tracks
     }
+
+    playTrack(nextIndex);
   },
 
+  // Previous track
   previous: () => {
-    const { currentIndex, currentTime, shuffle, shuffledIndices } = get();
+    const { currentIndex, currentTime, shuffle, shuffledIndices, playTrack, audioElement } = get();
+
     // If more than 3 seconds in, restart current track
     if (currentTime > 3) {
-      set({ currentTime: 0 });
-    } else if (shuffle) {
-      const currentShufflePos = shuffledIndices.indexOf(currentIndex);
-      if (currentShufflePos > 0) {
-        set({
-          currentIndex: shuffledIndices[currentShufflePos - 1],
-          currentTime: 0,
-        });
+      if (audioElement) {
+        audioElement.currentTime = 0;
       }
-    } else if (currentIndex > 0) {
-      set({
-        currentIndex: currentIndex - 1,
-        currentTime: 0,
-      });
-    }
-  },
-
-  // Called when a track naturally ends - handles repeat/loop logic
-  onTrackEnded: () => {
-    const { currentIndex, tracks, repeatMode, shuffle, shuffledIndices } = get();
-
-    if (repeatMode === "one") {
-      // Repeat single track - restart and keep playing
-      set({ currentTime: 0, isPlaying: true });
+      set({ currentTime: 0 });
       return;
     }
 
-    const isLastTrack = shuffle
-      ? shuffledIndices.indexOf(currentIndex) === shuffledIndices.length - 1
-      : currentIndex === tracks.length - 1;
+    let prevIndex: number;
 
-    if (isLastTrack) {
-      if (repeatMode === "all") {
-        // Loop playlist - go back to first track
-        const nextIndex = shuffle ? shuffledIndices[0] : 0;
-        set({
-          currentIndex: nextIndex,
-          currentTime: 0,
-          isPlaying: true,
-        });
+    if (shuffle) {
+      const currentShufflePos = shuffledIndices.indexOf(currentIndex);
+      if (currentShufflePos > 0) {
+        prevIndex = shuffledIndices[currentShufflePos - 1];
       } else {
-        // No repeat - stop at end
-        set({ isPlaying: false });
+        prevIndex = currentIndex; // Stay on current
       }
+    } else if (currentIndex > 0) {
+      prevIndex = currentIndex - 1;
     } else {
-      // More tracks - advance and keep playing
-      const nextIndex = shuffle
-        ? shuffledIndices[shuffledIndices.indexOf(currentIndex) + 1]
-        : currentIndex + 1;
-      set({
-        currentIndex: nextIndex,
-        currentTime: 0,
-        isPlaying: true,
-      });
+      prevIndex = 0;
+    }
+
+    playTrack(prevIndex);
+  },
+
+  // Seek to time
+  seek: (time) => {
+    const { audioElement, duration } = get();
+    if (!audioElement || !duration || duration <= 0) return;
+
+    if (time >= 0 && time <= duration) {
+      audioElement.currentTime = time;
+      set({ currentTime: time });
     }
   },
 
-  seekTo: (time) => set({ currentTime: time }),
   setCurrentTime: (time) => set({ currentTime: time }),
   setDuration: (duration) => set({ duration }),
   setIsPlaying: (isPlaying) => set({ isPlaying }),
+  setIsLoading: (loading) => set({ isLoading: loading }),
 
-  // Playback mode controls
+  // Toggle repeat mode
   toggleRepeat: () => {
     const { repeatMode } = get();
     const modes: RepeatMode[] = ["none", "all", "one"];
@@ -223,10 +292,10 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     set({ repeatMode: nextMode });
   },
 
+  // Toggle shuffle
   toggleShuffle: () => {
     const { shuffle, tracks, currentIndex } = get();
     if (!shuffle) {
-      // Turning shuffle ON - create new shuffled order starting from current
       set({
         shuffle: true,
         shuffledIndices: createShuffledIndices(tracks.length, currentIndex),
@@ -236,10 +305,13 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     }
   },
 
-  // UI controls
-  expand: () => set({ isExpanded: true }),
-  collapse: () => set({ isExpanded: false }),
-  close: () =>
+  // Close player
+  close: () => {
+    const { audioElement } = get();
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.currentTime = 0;
+    }
     set({
       isVisible: false,
       isPlaying: false,
@@ -249,10 +321,11 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       currentTime: 0,
       duration: 0,
       shuffledIndices: [],
-    }),
+    });
+  },
 }));
 
-// Selector hooks for common patterns
+// Selector hooks
 export const useCurrentTrack = () =>
   useAudioPlayerStore((state) =>
     state.tracks.length > 0 ? state.tracks[state.currentIndex] : null
