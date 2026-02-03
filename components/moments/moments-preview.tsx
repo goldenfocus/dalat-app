@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
-import { Camera, ChevronRight, Play } from "lucide-react";
+import { Camera, ChevronRight, Play, Video } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { isVideoUrl } from "@/lib/media-utils";
@@ -21,6 +21,8 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
   const t = useTranslations("moments");
 
   const totalCount = counts?.published_count ?? moments.length;
+  const photoCount = counts?.photo_count ?? 0;
+  const videoCount = counts?.video_count ?? 0;
 
   // Show nothing if no moments and user can't post
   if (totalCount === 0 && !canPost) {
@@ -39,9 +41,26 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
               <Camera className="w-5 h-5 text-muted-foreground" />
               <h3 className="font-medium">{t("moments")}</h3>
               {totalCount > 0 && (
-                <Badge variant="secondary" className="text-xs">
-                  {totalCount}
-                </Badge>
+                <div className="flex items-center gap-1.5">
+                  {photoCount > 0 && (
+                    <Badge variant="secondary" className="text-xs flex items-center gap-1 px-1.5">
+                      <Camera className="w-3 h-3" />
+                      {photoCount}
+                    </Badge>
+                  )}
+                  {videoCount > 0 && (
+                    <Badge variant="secondary" className="text-xs flex items-center gap-1 px-1.5">
+                      <Video className="w-3 h-3" />
+                      {videoCount}
+                    </Badge>
+                  )}
+                  {/* Fallback if counts not available yet */}
+                  {photoCount === 0 && videoCount === 0 && totalCount > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {totalCount}
+                    </Badge>
+                  )}
+                </div>
               )}
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />

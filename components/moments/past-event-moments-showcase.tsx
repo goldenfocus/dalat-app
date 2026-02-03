@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Camera, ChevronRight, Play, Plus } from "lucide-react";
+import { Camera, ChevronRight, Play, Plus, Video } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { cn } from "@/lib/utils";
 import type { MomentWithProfile, MomentCounts } from "@/lib/types";
@@ -30,6 +30,8 @@ export function PastEventMomentsShowcase({
   const router = useRouter();
 
   const totalCount = counts?.published_count ?? moments.length;
+  const photoCount = counts?.photo_count ?? 0;
+  const videoCount = counts?.video_count ?? 0;
 
   // Show nothing if no moments and user can't post
   if (totalCount === 0 && !canPost) {
@@ -111,9 +113,24 @@ export function PastEventMomentsShowcase({
           <div>
             <h3 className="font-semibold text-sm">{t("moments")}</h3>
             {totalCount > 0 && (
-              <p className="text-xs text-muted-foreground">
-                {totalCount} {totalCount === 1 ? "photo" : "photos"}
-              </p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {photoCount > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Camera className="w-3 h-3" />
+                    {photoCount}
+                  </span>
+                )}
+                {videoCount > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Video className="w-3 h-3" />
+                    {videoCount}
+                  </span>
+                )}
+                {/* Fallback if counts not available yet */}
+                {photoCount === 0 && videoCount === 0 && totalCount > 0 && (
+                  <span>{totalCount} {totalCount === 1 ? "moment" : "moments"}</span>
+                )}
+              </div>
             )}
           </div>
         </div>

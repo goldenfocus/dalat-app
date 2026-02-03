@@ -735,6 +735,8 @@ export interface MomentCounts {
   event_id: string;
   published_count: number;
   pending_count: number;
+  photo_count: number;
+  video_count: number;
 }
 
 // Extended moment type with event data for the content-first feed

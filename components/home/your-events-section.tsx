@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
-import { CalendarCheck, ChevronRight } from "lucide-react";
+import { CalendarCheck, ChevronRight, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatInDaLat } from "@/lib/timezone";
 import { optimizedImageUrl } from "@/lib/image-cdn";
@@ -16,6 +16,9 @@ interface UserEvent extends Event {
 interface YourEventsSectionProps {
   locale: string;
 }
+
+// Show 2 events by default, expandable to show all
+const DEFAULT_VISIBLE = 2;
 
 /**
  * "Your Events" section showing user's upcoming RSVP'd events.
@@ -32,6 +35,7 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
   const [counts, setCounts] = useState<Record<string, EventCounts>>({});
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     async function fetchUserEvents() {
@@ -46,13 +50,12 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
 
       setIsLoggedIn(true);
 
-      // Fetch user's upcoming RSVPs with event data
-      const now = new Date().toISOString();
+      // Fetch user's RSVPs with event data
       const { data: rsvps, error } = await supabase
         .from("rsvps")
         .select(`
           status,
-          events!inner (
+          events (
             id,
             slug,
             title,
@@ -65,29 +68,39 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
           )
         `)
         .eq("user_id", user.id)
-        .in("status", ["going", "interested", "waitlist"])
-        .gte("events.starts_at", now)
-        .eq("events.status", "published")
-        .order("events(starts_at)", { ascending: true })
-        .limit(5);
+        .in("status", ["going", "interested", "waitlist"]);
 
-      if (error || !rsvps) {
-        console.error("Error fetching user events:", error);
+      if (error) {
+        console.error("[YourEvents] Error fetching RSVPs:", error);
         setLoading(false);
         return;
       }
 
-      // Transform data
+      if (!rsvps || rsvps.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      // Transform and filter data client-side for reliability
+      const now = new Date();
       type RsvpWithEvent = {
         status: string;
         events: Event | null;
       };
+
       const userEvents: UserEvent[] = (rsvps as RsvpWithEvent[])
-        .filter((r) => r.events)
+        .filter((r) => {
+          if (!r.events) return false;
+          // Only upcoming events that are published
+          const eventDate = new Date(r.events.starts_at);
+          return eventDate > now && r.events.status === "published";
+        })
         .map((r) => ({
           ...(r.events as Event),
           rsvp_status: r.status as UserEvent["rsvp_status"],
-        }));
+        }))
+        // Sort by start date (soonest first)
+        .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
 
       setEvents(userEvents);
 
@@ -118,6 +131,9 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
     return null;
   }
 
+  const visibleEvents = expanded ? events : events.slice(0, DEFAULT_VISIBLE);
+  const hasMore = events.length > DEFAULT_VISIBLE;
+
   return (
     <section className="mb-6">
       {/* Section header */}
@@ -131,20 +147,18 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
             {events.length}
           </span>
         </div>
-        {events.length >= 3 && (
-          <Link
-            href="/profile"
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {t("yourEvents.seeAll")}
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        )}
+        <Link
+          href="/profile"
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {t("yourEvents.seeAll")}
+          <ChevronRight className="w-4 h-4" />
+        </Link>
       </div>
 
       {/* Events list - compact cards */}
       <div className="space-y-2">
-        {events.map((event) => (
+        {visibleEvents.map((event) => (
           <YourEventCard
             key={event.id}
             event={event}
@@ -155,6 +169,23 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
           />
         ))}
       </div>
+
+      {/* Show more/less button */}
+      {hasMore && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full mt-2 py-2 text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 transition-colors"
+        >
+          {expanded ? (
+            <>Show less</>
+          ) : (
+            <>
+              Show {events.length - DEFAULT_VISIBLE} more
+              <ChevronDown className="w-4 h-4" />
+            </>
+          )}
+        </button>
+      )}
     </section>
   );
 }
