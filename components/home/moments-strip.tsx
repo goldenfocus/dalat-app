@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Play, Images, Camera, Video, Music } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { cn } from "@/lib/utils";
-import type { MomentStripItem } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
+import type { MomentStripItem, MomentStripSort } from "@/lib/types";
+
+const SORT_STORAGE_KEY = 'moments-strip-sort';
 
 interface MomentsStripProps {
   /** Initial moments from server */
@@ -26,9 +29,45 @@ interface MomentsStripProps {
 export function MomentsStrip({ initialMoments = [], title, className }: MomentsStripProps) {
   const t = useTranslations();
   const router = useRouter();
-  const [moments] = useState(initialMoments);
+  const [moments, setMoments] = useState(initialMoments);
+  const [sort, setSort] = useState<MomentStripSort>('event_date');
+  const [isLoading, setIsLoading] = useState(false);
   // Track which images failed to load so we can show fallback UI
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+
+  // Load saved preference on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(SORT_STORAGE_KEY) as MomentStripSort | null;
+    if (saved && (saved === 'event_date' || saved === 'recent')) {
+      if (saved !== 'event_date') {
+        // Only refetch if different from server default
+        setSort(saved);
+        fetchMoments(saved);
+      }
+    }
+  }, []);
+
+  const fetchMoments = async (sortBy: MomentStripSort) => {
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.rpc('get_homepage_moments_strip', {
+        p_user_id: null,
+        p_limit: 12,
+        p_sort: sortBy,
+      });
+      if (data) setMoments(data);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSortChange = (newSort: MomentStripSort) => {
+    if (newSort === sort) return;
+    setSort(newSort);
+    localStorage.setItem(SORT_STORAGE_KEY, newSort);
+    fetchMoments(newSort);
+  };
 
   const handleImageError = useCallback((momentId: string) => {
     setBrokenImages(prev => new Set(prev).add(momentId));
@@ -61,6 +100,31 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             {title || t("moments.strip.title")}
           </h2>
+          {/* Subtle sort toggle */}
+          <span className="text-muted-foreground/50 hidden sm:inline">·</span>
+          <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
+            <button
+              onClick={() => handleSortChange('event_date')}
+              className={cn(
+                "transition-colors hover:text-foreground",
+                sort === 'event_date' ? "text-foreground font-medium" : "text-muted-foreground/70"
+              )}
+              disabled={isLoading}
+            >
+              {t("moments.strip.byEvent")}
+            </button>
+            <span className="text-muted-foreground/30">/</span>
+            <button
+              onClick={() => handleSortChange('recent')}
+              className={cn(
+                "transition-colors hover:text-foreground",
+                sort === 'recent' ? "text-foreground font-medium" : "text-muted-foreground/70"
+              )}
+              disabled={isLoading}
+            >
+              {t("moments.strip.recent")}
+            </button>
+          </div>
         </div>
         <Link
           href="/moments"
@@ -120,7 +184,9 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                   {moment.event_title}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
+                  {sort === 'event_date' && moment.event_starts_at
+                    ? format(new Date(moment.event_starts_at), 'MMM d')
+                    : formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
                 </p>
                 {(moment.event_photo_count > 0 || moment.event_video_count > 0 || moment.event_audio_count > 0) && (
                   <div className="flex items-center gap-1">
@@ -213,7 +279,9 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                   {moment.event_title}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
+                  {sort === 'event_date' && moment.event_starts_at
+                    ? format(new Date(moment.event_starts_at), 'MMM d')
+                    : formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
                 </p>
                 {(moment.event_photo_count > 0 || moment.event_video_count > 0 || moment.event_audio_count > 0) && (
                   <div className="flex items-center gap-1.5 pt-0.5">

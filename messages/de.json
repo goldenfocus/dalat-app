@@ -1212,7 +1212,9 @@
     "searchNoResultsHint": "Versuche andere Suchbegriffe oder schaue später vorbei, wenn mehr Moments geteilt werden",
     "strip": {
       "title": "Aktuelle Momente",
-      "seeAll": "Alle anzeigen"
+      "seeAll": "Alle anzeigen",
+      "byEvent": "nach Event",
+      "recent": "neueste"
     },
     "fab": {
       "upload": "Moment teilen",

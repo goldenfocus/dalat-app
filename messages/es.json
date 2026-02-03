@@ -1212,7 +1212,9 @@
     "searchNoResultsHint": "Prueba con otras palabras o vuelve más tarde cuando se compartan más momentos",
     "strip": {
       "title": "Momentos recientes",
-      "seeAll": "Ver todos"
+      "seeAll": "Ver todos",
+      "byEvent": "por evento",
+      "recent": "recientes"
     },
     "fab": {
       "upload": "Compartir momento",

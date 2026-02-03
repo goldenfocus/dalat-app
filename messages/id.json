@@ -1212,7 +1212,9 @@
     "searchNoResultsHint": "Coba kata kunci berbeda atau kembali lagi nanti saat lebih banyak momen dibagikan",
     "strip": {
       "title": "Momen Terbaru",
-      "seeAll": "Lihat semua"
+      "seeAll": "Lihat semua",
+      "byEvent": "per acara",
+      "recent": "terbaru"
     },
     "fab": {
       "upload": "Bagikan momen",

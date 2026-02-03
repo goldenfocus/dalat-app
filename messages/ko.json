@@ -1215,7 +1215,9 @@
     "searchNoResultsHint": "다른 키워드를 시도하거나 더 많은 모먼트가 공유될 때 다시 확인하세요",
     "strip": {
       "title": "최근 모먼트",
-      "seeAll": "전체 보기"
+      "seeAll": "전체 보기",
+      "byEvent": "이벤트별",
+      "recent": "최신순"
     },
     "fab": {
       "upload": "모먼트 공유",

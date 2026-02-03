@@ -1212,7 +1212,9 @@
     "searchNoResultsHint": "Cuba kata kunci lain atau semak kemudian apabila lebih banyak momen dikongsi",
     "strip": {
       "title": "Momen Terkini",
-      "seeAll": "Lihat semua"
+      "seeAll": "Lihat semua",
+      "byEvent": "mengikut acara",
+      "recent": "terkini"
     },
     "fab": {
       "upload": "Kongsi momen",

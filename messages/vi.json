@@ -1215,7 +1215,9 @@
     "searchNoResultsHint": "Thử từ khóa khác hoặc quay lại sau khi có thêm khoảnh khắc được chia sẻ",
     "strip": {
       "title": "Khoảnh khắc mới",
-      "seeAll": "Xem tất cả"
+      "seeAll": "Xem tất cả",
+      "byEvent": "theo sự kiện",
+      "recent": "mới nhất"
     },
     "fab": {
       "upload": "Chia sẻ khoảnh khắc",

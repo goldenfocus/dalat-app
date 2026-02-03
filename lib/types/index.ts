@@ -846,6 +846,7 @@ export interface MomentStripItem {
   event_slug: string;
   event_title: string;
   event_image_url: string | null;
+  event_starts_at: string;
   user_avatar_url: string | null;
   username: string | null;
   display_name: string | null;
@@ -855,6 +856,8 @@ export interface MomentStripItem {
   event_video_count: number;
   event_audio_count: number;
 }
+
+export type MomentStripSort = 'event_date' | 'recent';
 
 // For FAB quick upload
 export interface RecentEventForUpload {

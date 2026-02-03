@@ -1226,7 +1226,9 @@
     "searchNoResultsHint": "Essayez d'autres mots-clés ou revenez plus tard quand plus de moments seront partagés",
     "strip": {
       "title": "Moments récents",
-      "seeAll": "Voir tout"
+      "seeAll": "Voir tout",
+      "byEvent": "par événement",
+      "recent": "récents"
     },
     "fab": {
       "upload": "Partager un moment",

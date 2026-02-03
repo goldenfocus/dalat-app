@@ -1212,7 +1212,9 @@
     "searchNoResultsHint": "別のキーワードを試すか、モーメントが増えたら再度お試しください",
     "strip": {
       "title": "最新モーメント",
-      "seeAll": "すべて見る"
+      "seeAll": "すべて見る",
+      "byEvent": "イベント別",
+      "recent": "新着"
     },
     "fab": {
       "upload": "モーメントをシェア",

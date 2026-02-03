@@ -1215,7 +1215,9 @@
     "searchNoResultsHint": "尝试不同的关键词，或稍后再来查看更多分享的动态",
     "strip": {
       "title": "最新瞬间",
-      "seeAll": "查看全部"
+      "seeAll": "查看全部",
+      "byEvent": "按活动",
+      "recent": "最新"
     },
     "fab": {
       "upload": "分享瞬间",
