@@ -1936,7 +1936,10 @@
     "viewReplies": "View {count, plural, one {# reply} other {# replies}}",
     "hideReplies": "Hide replies",
     "mute": "Mute thread",
-    "unmute": "Unmute thread"
+    "unmute": "Unmute thread",
+    "seeOriginal": "See original",
+    "seeTranslation": "See translation",
+    "translatedFrom": "Translated"
   },
   "playlist": {
     "title": "Playlist",

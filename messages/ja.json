@@ -1829,7 +1829,10 @@
     "viewReplies": "{count, plural, one {# 件の返信} other {# 件の返信}}を表示",
     "hideReplies": "返信を非表示",
     "mute": "通知をオフ",
-    "unmute": "通知をオン"
+    "unmute": "通知をオン",
+    "seeOriginal": "原文を見る",
+    "seeTranslation": "翻訳を見る",
+    "translatedFrom": "翻訳済み"
   },
   "feedback": {
     "howWasIt": "イベントはいかがでしたか？",

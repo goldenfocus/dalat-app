@@ -15,8 +15,13 @@ import { formatDistanceToNow } from "date-fns";
 import { triggerHaptic } from "@/lib/haptics";
 import type { CommentWithProfile } from "@/lib/types";
 
+interface TranslatedComment extends CommentWithProfile {
+  translated_content?: string;
+  is_translated?: boolean;
+}
+
 interface CommentItemProps {
-  comment: CommentWithProfile;
+  comment: TranslatedComment;
   /** Current user's ID for showing edit/delete options */
   currentUserId?: string;
   /** Whether this comment is by the content owner */
@@ -38,7 +43,7 @@ interface CommentItemProps {
   /** Callback to mute thread */
   onMuteThread?: (threadId: string) => Promise<void>;
   /** Replies to this comment */
-  replies?: CommentWithProfile[];
+  replies?: TranslatedComment[];
   /** Whether replies are loading */
   repliesLoading?: boolean;
   /** Callback to load replies */
@@ -75,7 +80,14 @@ export function CommentItem({
   const [showReplies, setShowReplies] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [replyContent, setReplyContent] = useState("");
+  const [showOriginal, setShowOriginal] = useState(false);
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Translation logic
+  const hasTranslation = comment.is_translated && comment.translated_content;
+  const displayContent = hasTranslation && !showOriginal
+    ? comment.translated_content
+    : comment.content;
 
   const isOwnComment = currentUserId === comment.user_id;
   const canModerate = isContentOwner && !isOwnComment;
@@ -220,13 +232,24 @@ export function CommentItem({
           </div>
 
           {/* Comment content */}
-          <p className="text-sm mt-1 whitespace-pre-wrap break-words">
-            {comment.is_deleted ? (
-              <span className="text-muted-foreground italic">{t("deleted")}</span>
-            ) : (
-              comment.content
+          <div className="mt-1">
+            <p className="text-sm whitespace-pre-wrap break-words">
+              {comment.is_deleted ? (
+                <span className="text-muted-foreground italic">{t("deleted")}</span>
+              ) : (
+                displayContent
+              )}
+            </p>
+            {/* Translation toggle - Facebook style */}
+            {hasTranslation && !comment.is_deleted && (
+              <button
+                onClick={() => setShowOriginal(!showOriginal)}
+                className="text-xs text-muted-foreground hover:text-foreground mt-1 transition-colors"
+              >
+                {showOriginal ? t("seeTranslation") : t("seeOriginal")}
+              </button>
             )}
-          </p>
+          </div>
 
           {/* Reply button + thread toggle */}
           {!comment.is_deleted && !isReply && !isPending && (

@@ -1829,7 +1829,10 @@
     "viewReplies": "Показать {count, plural, one {# ответ} few {# ответа} many {# ответов} other {# ответов}}",
     "hideReplies": "Скрыть ответы",
     "mute": "Отключить уведомления",
-    "unmute": "Включить уведомления"
+    "unmute": "Включить уведомления",
+    "seeOriginal": "Показать оригинал",
+    "seeTranslation": "Показать перевод",
+    "translatedFrom": "Переведено"
   },
   "feedback": {
     "howWasIt": "Как вам событие?",

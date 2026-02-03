@@ -1296,7 +1296,10 @@
     "viewReplies": "Ver {count} respuestas",
     "hideReplies": "Ocultar respuestas",
     "mute": "Silenciar hilo",
-    "unmute": "Dejar de silenciar hilo"
+    "unmute": "Dejar de silenciar hilo",
+    "seeOriginal": "Ver original",
+    "seeTranslation": "Ver traducción",
+    "translatedFrom": "Traducido"
   },
   "contacts": {
     "title": "Contactos",

@@ -292,13 +292,11 @@ export function ImmersiveMomentView({
           {/* Video */}
           {moment.content_type === "video" && moment.media_url && (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="w-full max-w-lg lg:max-w-2xl">
-                <MomentVideoPlayer
-                  src={moment.media_url}
-                  hlsSrc={moment.cf_playback_url || undefined}
-                  poster={moment.thumbnail_url || undefined}
-                />
-              </div>
+              <MomentVideoPlayer
+                src={moment.media_url}
+                hlsSrc={moment.cf_playback_url || undefined}
+                poster={moment.thumbnail_url || undefined}
+              />
             </div>
           )}
 

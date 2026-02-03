@@ -1905,7 +1905,10 @@
     "viewReplies": "Xem {count, plural, one {# trả lời} other {# trả lời}}",
     "hideReplies": "Ẩn trả lời",
     "mute": "Tắt thông báo",
-    "unmute": "Bật thông báo"
+    "unmute": "Bật thông báo",
+    "seeOriginal": "Xem bản gốc",
+    "seeTranslation": "Xem bản dịch",
+    "translatedFrom": "Đã dịch"
   },
   "feedback": {
     "howWasIt": "Sự kiện thế nào?",

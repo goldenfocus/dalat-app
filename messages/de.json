@@ -1829,7 +1829,10 @@
     "viewReplies": "{count, plural, one {# Antwort} other {# Antworten}} anzeigen",
     "hideReplies": "Antworten ausblenden",
     "mute": "Benachrichtigungen aus",
-    "unmute": "Benachrichtigungen an"
+    "unmute": "Benachrichtigungen an",
+    "seeOriginal": "Original anzeigen",
+    "seeTranslation": "Übersetzung anzeigen",
+    "translatedFrom": "Übersetzt"
   },
   "feedback": {
     "howWasIt": "Wie war das Event?",

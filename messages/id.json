@@ -1296,7 +1296,10 @@
     "viewReplies": "Lihat {count} balasan",
     "hideReplies": "Sembunyikan balasan",
     "mute": "Bisukan thread",
-    "unmute": "Bunyikan thread"
+    "unmute": "Bunyikan thread",
+    "seeOriginal": "Lihat asli",
+    "seeTranslation": "Lihat terjemahan",
+    "translatedFrom": "Diterjemahkan"
   },
   "contacts": {
     "title": "Kontak",

@@ -1832,7 +1832,10 @@
     "viewReplies": "查看 {count, plural, one {# 条回复} other {# 条回复}}",
     "hideReplies": "隐藏回复",
     "mute": "静音话题",
-    "unmute": "取消静音"
+    "unmute": "取消静音",
+    "seeOriginal": "查看原文",
+    "seeTranslation": "查看翻译",
+    "translatedFrom": "已翻译"
   },
   "feedback": {
     "howWasIt": "活动感觉如何？",

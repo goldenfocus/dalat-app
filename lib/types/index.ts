@@ -40,7 +40,9 @@ export type TranslationFieldName =
   | 'image_alt' | 'image_description'
   // AI metadata fields for translation
   | 'ai_description' | 'scene_description' | 'video_summary'
-  | 'audio_summary' | 'pdf_summary';
+  | 'audio_summary' | 'pdf_summary'
+  // Comment content
+  | 'content';
 
 // Event pricing types
 export type PriceType = 'free' | 'paid' | 'donation';

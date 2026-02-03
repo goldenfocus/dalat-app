@@ -1843,7 +1843,10 @@
     "viewReplies": "Voir {count, plural, one {# réponse} other {# réponses}}",
     "hideReplies": "Masquer les réponses",
     "mute": "Désactiver les notifications",
-    "unmute": "Activer les notifications"
+    "unmute": "Activer les notifications",
+    "seeOriginal": "Voir l'original",
+    "seeTranslation": "Voir la traduction",
+    "translatedFrom": "Traduit"
   },
   "celebration": {
     "title": "Vous venez de rendre Đà Lạt meilleur !",

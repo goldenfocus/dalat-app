@@ -1829,7 +1829,10 @@
     "viewReplies": "Lihat {count, plural, one {# balasan} other {# balasan}}",
     "hideReplies": "Sembunyikan balasan",
     "mute": "Matikan pemberitahuan",
-    "unmute": "Hidupkan pemberitahuan"
+    "unmute": "Hidupkan pemberitahuan",
+    "seeOriginal": "Lihat asal",
+    "seeTranslation": "Lihat terjemahan",
+    "translatedFrom": "Diterjemahkan"
   },
   "feedback": {
     "howWasIt": "Bagaimana acara ini?",

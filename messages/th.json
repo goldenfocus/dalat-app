@@ -1829,7 +1829,10 @@
     "viewReplies": "ดู {count, plural, one {# ตอบกลับ} other {# ตอบกลับ}}",
     "hideReplies": "ซ่อนการตอบกลับ",
     "mute": "ปิดการแจ้งเตือน",
-    "unmute": "เปิดการแจ้งเตือน"
+    "unmute": "เปิดการแจ้งเตือน",
+    "seeOriginal": "ดูต้นฉบับ",
+    "seeTranslation": "ดูคำแปล",
+    "translatedFrom": "แปลแล้ว"
   },
   "feedback": {
     "howWasIt": "กิจกรรมเป็นอย่างไรบ้าง?",

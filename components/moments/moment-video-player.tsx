@@ -133,11 +133,11 @@ export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProp
   }, [hlsSrc, isHlsUrl, src]);
 
   return (
-    <div className="relative w-full max-h-[80vh] flex items-center justify-center bg-black">
+    <div className="relative w-full h-full flex items-center justify-center bg-black">
       <video
         ref={videoRef}
         poster={poster || undefined}
-        className="max-w-full max-h-[80vh] object-contain"
+        className="w-full h-full max-h-[90vh] object-contain"
         controls
         muted // Required for autoplay
         playsInline

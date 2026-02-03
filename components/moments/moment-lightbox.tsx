@@ -267,7 +267,7 @@ export function MomentLightbox({
 
       {/* Content area */}
       <div
-        className="relative z-10 max-w-[95vw] max-h-[85vh] w-full flex items-center justify-center"
+        className="relative z-10 max-w-[95vw] max-h-[90vh] w-full h-full flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
         style={{
           transform: `translateX(${touchDiff * 0.3}px)`,
@@ -286,7 +286,7 @@ export function MomentLightbox({
 
         {/* Video */}
         {moment.content_type === "video" && (
-          <div className="w-full max-w-4xl">
+          <div className="w-full h-full max-h-[90vh] flex items-center justify-center">
             {(moment.video_status === "ready" || !moment.cf_video_uid) && moment.media_url ? (
               <MomentVideoPlayer
                 src={moment.media_url}

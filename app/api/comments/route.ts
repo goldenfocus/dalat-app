@@ -6,6 +6,7 @@ import {
   createComment,
   getContentOwner,
 } from "@/lib/comments";
+import { triggerTranslation } from "@/lib/translations-client";
 import type { CommentTargetType, Locale } from "@/lib/types";
 
 /**
@@ -134,6 +135,13 @@ export async function POST(request: NextRequest) {
 
     // Get content owner info for notification
     const contentOwner = await getContentOwner(targetType, targetId);
+
+    // Trigger translation to all 12 languages (fire-and-forget)
+    if (result.comment_id) {
+      triggerTranslation("comment", result.comment_id, [
+        { field_name: "content", text: content },
+      ]);
+    }
 
     // Send notification via Inngest (fire-and-forget, don't block the response)
     if (contentOwner && result.comment_id) {

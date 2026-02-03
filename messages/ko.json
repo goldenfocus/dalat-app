@@ -1832,7 +1832,10 @@
     "viewReplies": "{count, plural, one {# 답글} other {# 답글}} 보기",
     "hideReplies": "답글 숨기기",
     "mute": "알림 끄기",
-    "unmute": "알림 켜기"
+    "unmute": "알림 켜기",
+    "seeOriginal": "원문 보기",
+    "seeTranslation": "번역 보기",
+    "translatedFrom": "번역됨"
   },
   "feedback": {
     "howWasIt": "이벤트는 어떠셨나요?",

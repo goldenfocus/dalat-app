@@ -73,9 +73,28 @@ export default function AdminHomepagePage() {
       }
 
       setConfig(updatedConfig);
+
+      // Revalidate cache so changes appear immediately
+      try {
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tag: "homepage-config" }),
+        });
+        // Also revalidate the homepage path for ISR
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: "/" }),
+        });
+      } catch (revalidateError) {
+        console.error("Cache revalidation failed:", revalidateError);
+        // Non-blocking - image was saved successfully
+      }
+
       setSuccessMessage(
         url
-          ? "Hero image updated! Changes will appear on the homepage within 1 minute."
+          ? "Hero image updated! Changes should appear on the homepage now."
           : "Hero image removed. Homepage will show the minimal text hero."
       );
 
@@ -110,6 +129,22 @@ export default function AdminHomepagePage() {
       }
 
       setConfig(updatedConfig);
+
+      // Revalidate cache so changes appear immediately
+      try {
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tag: "homepage-config" }),
+        });
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: "/" }),
+        });
+      } catch (revalidateError) {
+        console.error("Cache revalidation failed:", revalidateError);
+      }
     } catch (err) {
       console.error("Failed to save focal point:", err);
       setError("Failed to save focal point. Please try again.");
@@ -187,7 +222,7 @@ export default function AdminHomepagePage() {
               </p>
             )}
             <p className="text-xs text-muted-foreground/70 mt-2">
-              Note: Changes may take up to 1 minute to appear on the homepage due to caching.
+              Note: Changes should appear immediately after saving. If not, try a hard refresh (Cmd+Shift+R).
             </p>
           </div>
         </CardContent>

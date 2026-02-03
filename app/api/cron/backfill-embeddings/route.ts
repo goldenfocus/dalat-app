@@ -44,37 +44,10 @@ export async function GET(request: Request) {
       );
     }
 
-    // Find moments without embeddings (photos only, published status)
-    const { data: moments, error: fetchError } = await supabase
-      .from("moments")
-      .select("id, media_url")
-      .eq("status", "published")
-      .eq("content_type", "photo")
-      .not("media_url", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(limit);
-
-    if (fetchError) {
-      console.error("[backfill] Failed to fetch moments:", fetchError);
-      return NextResponse.json(
-        { error: "Failed to fetch moments" },
-        { status: 500 }
-      );
-    }
-
-    if (!moments || moments.length === 0) {
-      return NextResponse.json({
-        message: "No moments found to process",
-        processed: 0,
-      });
-    }
-
-    // Check which moments already have embeddings
-    const momentIds = moments.map((m) => m.id);
+    // First, get IDs of moments that already have embeddings
     const { data: existingEmbeddings, error: embeddingError } = await supabase
       .from("moment_embeddings")
-      .select("moment_id")
-      .in("moment_id", momentIds);
+      .select("moment_id");
 
     if (embeddingError) {
       console.error("[backfill] Failed to check existing embeddings:", embeddingError);
@@ -85,12 +58,42 @@ export async function GET(request: Request) {
     }
 
     const existingIds = new Set((existingEmbeddings || []).map((e) => e.moment_id));
-    const momentsToProcess = moments.filter((m) => !existingIds.has(m.id));
+
+    // Find moments without embeddings (photos only, published status)
+    // Query more than needed to account for filtering
+    const { data: allMoments, error: fetchError } = await supabase
+      .from("moments")
+      .select("id, media_url")
+      .eq("status", "published")
+      .eq("content_type", "photo")
+      .not("media_url", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(limit * 10); // Fetch more to find unembedded ones
+
+    if (fetchError) {
+      console.error("[backfill] Failed to fetch moments:", fetchError);
+      return NextResponse.json(
+        { error: "Failed to fetch moments" },
+        { status: 500 }
+      );
+    }
+
+    if (!allMoments || allMoments.length === 0) {
+      return NextResponse.json({
+        message: "No moments found to process",
+        processed: 0,
+      });
+    }
+
+    // Filter to only moments without embeddings, then take the limit
+    const momentsToProcess = allMoments
+      .filter((m) => !existingIds.has(m.id))
+      .slice(0, limit);
 
     if (dryRun) {
       return NextResponse.json({
         message: "Dry run - no embeddings generated",
-        totalMoments: moments.length,
+        totalMoments: allMoments.length,
         alreadyHaveEmbeddings: existingIds.size,
         needEmbeddings: momentsToProcess.length,
       });
@@ -100,7 +103,7 @@ export async function GET(request: Request) {
       return NextResponse.json({
         message: "All moments already have embeddings",
         processed: 0,
-        skipped: moments.length,
+        skipped: allMoments.length,
       });
     }
 
@@ -114,11 +117,20 @@ export async function GET(request: Request) {
 
     const replicate = new Replicate({ auth: replicateToken });
 
+    // Rate limit delay (ms) - Replicate limits to 6/min with <$5 credit
+    const rateLimitDelay = parseInt(searchParams.get("delay") || "10000");
+
     let successCount = 0;
     let errorCount = 0;
     const errors: { id: string; error: string }[] = [];
 
-    for (const moment of momentsToProcess) {
+    for (let i = 0; i < momentsToProcess.length; i++) {
+      const moment = momentsToProcess[i];
+
+      // Add delay between requests to respect rate limits (skip first)
+      if (i > 0 && rateLimitDelay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, rateLimitDelay));
+      }
       try {
         if (!moment.media_url) continue;
 
