@@ -534,7 +534,10 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           console.log("[Upload] Generating thumbnail for video...");
           const thumbnailBlob = await generateVideoThumbnail(fileToUpload);
           const thumbnailFileName = `${eventId}/${userId}/${timestamp}_${randomSuffix}_thumb.jpg`;
-          const thumbnailResult = await uploadToStorage("moments", new File([thumbnailBlob], "thumbnail.jpg", { type: "image/jpeg" }), {
+          // Convert Blob to File using the global File constructor
+          const FileConstructor = globalThis.File;
+          const thumbnailFile = new FileConstructor([thumbnailBlob], "thumbnail.jpg", { type: "image/jpeg" });
+          const thumbnailResult = await uploadToStorage("moments", thumbnailFile, {
             filename: thumbnailFileName,
           });
           thumbnailUrl = thumbnailResult.publicUrl;
@@ -1113,7 +1116,8 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           p_text_content: textContent,
           p_user_id: godModeUserId || null,
           p_source_locale: locale,
-          p_thumbnail_url: upload.thumbnailUrl || null,
+          // Bulk queue uploads go through CF Stream, which handles thumbnails via webhook
+          p_thumbnail_url: null,
           p_cf_video_uid: upload.cfVideoUid || null,
           p_cf_playback_url: upload.cfPlaybackUrl || null,
           p_video_status: isCloudflareVideo ? "processing" : "ready",
