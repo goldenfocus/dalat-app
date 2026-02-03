@@ -10,6 +10,8 @@ import { MomentsSearch } from "./moments-search";
 import { MomentsSearchOverlay } from "./moments-search-overlay";
 import { MomentCard } from "./moment-card";
 import { MomentsJoinPill } from "./moments-join-pill";
+import { MomentsLightboxProvider, useMomentsLightbox } from "./moments-lightbox-provider";
+import type { LightboxMoment } from "./moment-lightbox";
 import type { MomentContentType, MomentWithEvent, DiscoveryEventMomentsGroup } from "@/lib/types";
 
 const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> = [
@@ -48,6 +50,39 @@ function useMomentFilters() {
   }, [activeKey]);
 
   return { options, activeKey, setActiveKey, activeConfig };
+}
+
+/** Convert MomentWithEvent to LightboxMoment format (includes event_slug for "Open full page") */
+function toLightboxMoments(moments: MomentWithEvent[]): LightboxMoment[] {
+  return moments.map(m => ({
+    id: m.id,
+    content_type: m.content_type,
+    media_url: m.media_url,
+    text_content: m.text_content,
+    cf_video_uid: m.cf_video_uid,
+    cf_playback_url: m.cf_playback_url,
+    video_status: m.video_status,
+    event_slug: m.event_slug,
+  }));
+}
+
+/** Search results grid with lightbox support */
+function SearchResultsGridWithLightbox({ moments }: { moments: MomentWithEvent[] }) {
+  const { openLightbox } = useMomentsLightbox();
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+      {moments.map((moment, index) => (
+        <MomentCard
+          key={moment.id}
+          moment={moment}
+          eventSlug={moment.event_slug}
+          from="discovery"
+          onLightboxOpen={() => openLightbox(index)}
+        />
+      ))}
+    </div>
+  );
 }
 
 export function MomentsDiscoveryMobile({
@@ -163,17 +198,11 @@ export function MomentsDiscoveryDesktop({
             )}
           </div>
 
-          {/* Search results grid */}
+          {/* Search results grid with lightbox */}
           {searchResults.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {searchResults.map((moment) => (
-                <MomentCard
-                  key={moment.id}
-                  moment={moment}
-                  from="discovery"
-                />
-              ))}
-            </div>
+            <MomentsLightboxProvider moments={toLightboxMoments(searchResults)}>
+              <SearchResultsGridWithLightbox moments={searchResults} />
+            </MomentsLightboxProvider>
           ) : (
             <div className="text-center py-12">
               <Camera className="w-12 h-12 mx-auto text-muted-foreground mb-4" />

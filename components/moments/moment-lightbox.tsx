@@ -30,6 +30,8 @@ export interface LightboxMoment {
   title?: string | null;
   artist?: string | null;
   audio_thumbnail_url?: string | null;
+  // Event info (for mixed-event lightboxes like search results)
+  event_slug?: string | null;
 }
 
 interface MomentLightboxProps {
@@ -149,9 +151,12 @@ export function MomentLightbox({
   }, []);
 
   // Open full page for SEO/sharing
+  // Use moment's event_slug if available (for mixed-event search results),
+  // otherwise fall back to provider's eventSlug
   const openFullPage = () => {
-    const path = eventSlug
-      ? `/events/${eventSlug}/moments/${moment.id}`
+    const slug = moment.event_slug || eventSlug;
+    const path = slug
+      ? `/events/${slug}/moments/${moment.id}`
       : `/moments/${moment.id}`;
     router.push(path);
     onClose();
