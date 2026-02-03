@@ -10,6 +10,9 @@ import {
   X,
   ChevronUp,
   Music,
+  Repeat,
+  Repeat1,
+  Shuffle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,14 +37,19 @@ export function MiniPlayer() {
     isPlaying,
     currentTime,
     duration,
+    repeatMode,
+    shuffle,
     play,
     pause,
     togglePlay,
     next,
     previous,
+    onTrackEnded,
     setCurrentTime,
     setDuration,
     setIsPlaying,
+    toggleRepeat,
+    toggleShuffle,
     close,
   } = useAudioPlayerStore();
 
@@ -74,6 +82,9 @@ export function MiniPlayer() {
     }
   }, [currentTrack?.id]); // Only when track changes
 
+  // Track if we're auto-advancing (to ignore pause events during transition)
+  const isAutoAdvancing = useRef(false);
+
   // Audio event handlers
   useEffect(() => {
     const audio = audioRef.current;
@@ -82,14 +93,21 @@ export function MiniPlayer() {
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => setDuration(audio.duration);
     const handleEnded = () => {
-      if (currentIndex < tracks.length - 1) {
-        next();
-      } else {
+      // Mark as auto-advancing so pause event doesn't stop playback
+      isAutoAdvancing.current = true;
+      onTrackEnded();
+      // Reset flag after a short delay
+      setTimeout(() => {
+        isAutoAdvancing.current = false;
+      }, 100);
+    };
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => {
+      // Don't update state if we're auto-advancing to next track
+      if (!isAutoAdvancing.current) {
         setIsPlaying(false);
       }
     };
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -104,7 +122,7 @@ export function MiniPlayer() {
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
     };
-  }, [currentIndex, tracks.length, next, setCurrentTime, setDuration, setIsPlaying]);
+  }, [onTrackEnded, setCurrentTime, setDuration, setIsPlaying]);
 
   // Media Session API for lock screen controls
   useEffect(() => {
@@ -242,7 +260,7 @@ export function MiniPlayer() {
                 size="icon"
                 className="h-10 w-10"
                 onClick={next}
-                disabled={currentIndex >= tracks.length - 1}
+                disabled={!shuffle && repeatMode === "none" && currentIndex >= tracks.length - 1}
               >
                 <SkipForward className="w-5 h-5" />
               </Button>
@@ -259,9 +277,21 @@ export function MiniPlayer() {
             </Button>
           </div>
 
-          {/* Seekable progress bar (mobile touch-friendly) */}
+          {/* Seekable progress bar with repeat/shuffle controls */}
           <div className="px-4 pb-2 flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="w-10 text-right tabular-nums">
+            {/* Shuffle button */}
+            <button
+              onClick={toggleShuffle}
+              className={cn(
+                "p-1 rounded transition-colors",
+                shuffle ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+              aria-label="Toggle shuffle"
+            >
+              <Shuffle className="w-4 h-4" />
+            </button>
+
+            <span className="w-8 text-right tabular-nums">
               {formatDuration(Math.floor(currentTime))}
             </span>
             <input
@@ -272,9 +302,25 @@ export function MiniPlayer() {
               onChange={handleSeek}
               className="flex-1 h-1 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
             />
-            <span className="w-10 tabular-nums">
+            <span className="w-8 tabular-nums">
               {formatDuration(Math.floor(duration))}
             </span>
+
+            {/* Repeat button */}
+            <button
+              onClick={toggleRepeat}
+              className={cn(
+                "p-1 rounded transition-colors",
+                repeatMode !== "none" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+              aria-label={`Repeat: ${repeatMode}`}
+            >
+              {repeatMode === "one" ? (
+                <Repeat1 className="w-4 h-4" />
+              ) : (
+                <Repeat className="w-4 h-4" />
+              )}
+            </button>
           </div>
         </div>
       </div>

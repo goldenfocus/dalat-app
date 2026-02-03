@@ -8,6 +8,9 @@ import {
   SkipForward,
   Music,
   Volume2,
+  Repeat,
+  Repeat1,
+  Shuffle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -51,6 +54,8 @@ export function PlaylistPlayer({
     isPlaying: storeIsPlaying,
     currentTime,
     duration,
+    repeatMode,
+    shuffle,
     setPlaylist,
     playTrack: storePlayTrack,
     play,
@@ -59,6 +64,8 @@ export function PlaylistPlayer({
     next,
     previous,
     seekTo,
+    toggleRepeat,
+    toggleShuffle,
   } = useAudioPlayerStore();
 
   // Check if this playlist is currently active in the global player
@@ -206,12 +213,26 @@ export function PlaylistPlayer({
 
         {/* Controls */}
         <div className="px-6 pb-6">
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-2">
+            {/* Shuffle button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleShuffle}
+              className={cn(
+                "w-10 h-10",
+                shuffle ? "text-primary" : "text-muted-foreground"
+              )}
+              aria-label="Toggle shuffle"
+            >
+              <Shuffle className="w-5 h-5" />
+            </Button>
+
             <Button
               variant="ghost"
               size="icon"
               onClick={() => isThisPlaylistActive ? previous() : handleTrackClick(Math.max(0, currentIndex - 1))}
-              disabled={currentIndex === 0}
+              disabled={currentIndex === 0 && !shuffle && repeatMode === "none"}
               className="w-12 h-12"
               aria-label={t("previous")}
             >
@@ -235,11 +256,29 @@ export function PlaylistPlayer({
               variant="ghost"
               size="icon"
               onClick={() => isThisPlaylistActive ? next() : handleTrackClick(Math.min(tracks.length - 1, currentIndex + 1))}
-              disabled={currentIndex === tracks.length - 1}
+              disabled={!shuffle && repeatMode === "none" && currentIndex === tracks.length - 1}
               className="w-12 h-12"
               aria-label={t("next")}
             >
               <SkipForward className="w-6 h-6" />
+            </Button>
+
+            {/* Repeat button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleRepeat}
+              className={cn(
+                "w-10 h-10",
+                repeatMode !== "none" ? "text-primary" : "text-muted-foreground"
+              )}
+              aria-label={`Repeat: ${repeatMode}`}
+            >
+              {repeatMode === "one" ? (
+                <Repeat1 className="w-5 h-5" />
+              ) : (
+                <Repeat className="w-5 h-5" />
+              )}
             </Button>
           </div>
         </div>
