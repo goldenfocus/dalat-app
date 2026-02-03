@@ -622,6 +622,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const isCreator = currentUserId === event.created_by;
   const isAdmin = currentUserRole ? hasRoleLevel(currentUserRole, "admin") : false;
   const canManageEvent = isCreator || isAdmin;
+  const isSponsored = (event.sponsor_tier ?? 0) > 0;
 
   const spotsText = event.capacity
     ? `${counts?.going_spots ?? 0}/${event.capacity}`
@@ -773,10 +774,12 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
                 {/* Event flyer - shown after moments for past events */}
                 {event.image_url && (
-                  <EventMediaDisplay
-                    src={event.image_url}
-                    alt={eventTranslations.imageAlt || eventTranslations.title}
-                  />
+                  <div className={isSponsored ? "rounded-xl ring-2 ring-amber-400/80 shadow-[0_0_24px_rgba(251,191,36,0.25)] overflow-hidden" : undefined}>
+                    <EventMediaDisplay
+                      src={event.image_url}
+                      alt={eventTranslations.imageAlt || eventTranslations.title}
+                    />
+                  </div>
                 )}
 
                 {/* Description */}
@@ -797,11 +800,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 {/* Upcoming events or past events without moments: Original layout */}
                 {/* Event image/video - clickable to view full */}
                 {event.image_url ? (
-                  <EventMediaDisplay
-                    src={event.image_url}
-                    alt={eventTranslations.imageAlt || eventTranslations.title}
-                    priority
-                  />
+                  <div className={isSponsored ? "rounded-xl ring-2 ring-amber-400/80 shadow-[0_0_24px_rgba(251,191,36,0.25)] overflow-hidden" : undefined}>
+                    <EventMediaDisplay
+                      src={event.image_url}
+                      alt={eventTranslations.imageAlt || eventTranslations.title}
+                      priority
+                    />
+                  </div>
                 ) : (
                   <EventDefaultImage title={eventTranslations.title} priority />
                 )}

@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import Replicate from "replicate";
 
-// CLIP model on Replicate - same as embed route
-const CLIP_MODEL = "andreasjansson/clip-features:75b33f253f7714a281ad3e9b28f63e3232d583716ef6718f2e46641077ea040a";
+// CLIP model on Replicate - same as embed route (krthr/clip-embeddings works correctly)
+const CLIP_MODEL = "krthr/clip-embeddings:1c0371070cb827ec3c7f2f28adcdde54b50dcd239aa6faea0bc98b174ef03fb4";
 
 const RATE_LIMIT = 30; // searches per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -79,9 +79,13 @@ export async function GET(request: Request) {
       input: { text: query.trim() },
     });
 
-    // Parse response - model returns [{embedding: [...]}]
+    // Parse response - krthr model returns {embedding: [...]}
     let queryEmbedding: number[];
-    if (Array.isArray(rawOutput) && rawOutput.length > 0 && rawOutput[0]?.embedding) {
+    if (rawOutput && typeof rawOutput === "object" && !Array.isArray(rawOutput) && (rawOutput as { embedding?: number[] }).embedding) {
+      // krthr/clip-embeddings returns {embedding: [...]}
+      queryEmbedding = (rawOutput as { embedding: number[] }).embedding;
+    } else if (Array.isArray(rawOutput) && rawOutput.length > 0 && rawOutput[0]?.embedding) {
+      // andreasjansson model returns [{embedding: [...]}]
       queryEmbedding = rawOutput[0].embedding;
     } else if (Array.isArray(rawOutput) && rawOutput.length === 768 && typeof rawOutput[0] === "number") {
       queryEmbedding = rawOutput;

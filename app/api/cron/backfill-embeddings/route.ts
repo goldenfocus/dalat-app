@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import Replicate from "replicate";
 
-// CLIP model on Replicate
-const CLIP_MODEL = "andreasjansson/clip-features:75b33f253f7714a281ad3e9b28f63e3232d583716ef6718f2e46641077ea040a";
+// CLIP model on Replicate (krthr/clip-embeddings works correctly, andreasjansson is broken)
+const CLIP_MODEL = "krthr/clip-embeddings:1c0371070cb827ec3c7f2f28adcdde54b50dcd239aa6faea0bc98b174ef03fb4";
 
 // Process in batches to avoid timeouts
 const BATCH_SIZE = 50;
@@ -145,9 +145,13 @@ export async function GET(request: Request) {
           input: { image: moment.media_url },
         });
 
-        // Parse response - model returns [{embedding: [...]}]
+        // Parse response - krthr model returns {embedding: [...]}
         let output: number[];
-        if (Array.isArray(rawOutput) && rawOutput.length > 0 && (rawOutput[0] as { embedding?: number[] })?.embedding) {
+        if (rawOutput && typeof rawOutput === "object" && !Array.isArray(rawOutput) && (rawOutput as { embedding?: number[] }).embedding) {
+          // krthr/clip-embeddings returns {embedding: [...]}
+          output = (rawOutput as { embedding: number[] }).embedding;
+        } else if (Array.isArray(rawOutput) && rawOutput.length > 0 && (rawOutput[0] as { embedding?: number[] })?.embedding) {
+          // andreasjansson model returns [{embedding: [...]}]
           output = (rawOutput[0] as { embedding: number[] }).embedding;
         } else if (Array.isArray(rawOutput) && rawOutput.length === 768 && typeof rawOutput[0] === "number") {
           output = rawOutput as number[];

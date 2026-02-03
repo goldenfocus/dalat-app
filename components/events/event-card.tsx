@@ -3,7 +3,7 @@
 import { memo } from "react";
 import Image from "next/image";
 import { useRouter } from "@/lib/i18n/routing";
-import { Calendar, MapPin, Users, Clock, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
@@ -123,13 +123,8 @@ export const EventCard = memo(function EventCard({
         >
           {/* Image area with 4:5 aspect ratio */}
           <div className="w-full aspect-[4/5] relative overflow-hidden">
-            {/* Sponsored badge - takes priority over Popular */}
-            {isSponsored ? (
-              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-medium rounded-full flex items-center gap-1 shadow-lg">
-                <Sparkles className="w-3 h-3" />
-                {t("sponsored")}
-              </div>
-            ) : (counts?.going_spots ?? 0) >= 20 && (
+            {/* Popular badge (only for non-sponsored events with 20+ attendees) */}
+            {!isSponsored && (counts?.going_spots ?? 0) >= 20 && (
               <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
                 {t("popular")}
               </div>

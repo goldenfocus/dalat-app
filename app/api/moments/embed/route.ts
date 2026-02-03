@@ -6,8 +6,8 @@ import Replicate from "replicate";
 // Force dynamic rendering to ensure env vars are available at runtime
 export const dynamic = "force-dynamic";
 
-// CLIP model on Replicate
-const CLIP_MODEL = "andreasjansson/clip-features:75b33f253f7714a281ad3e9b28f63e3232d583716ef6718f2e46641077ea040a";
+// CLIP model on Replicate (krthr/clip-embeddings works correctly, andreasjansson is broken)
+const CLIP_MODEL = "krthr/clip-embeddings:1c0371070cb827ec3c7f2f28adcdde54b50dcd239aa6faea0bc98b174ef03fb4";
 
 /**
  * Create a service role Supabase client for bypassing RLS.
@@ -105,9 +105,13 @@ export async function POST(request: Request) {
           input: { image: moment.media_url },
         });
 
-        // Parse response - model returns [{embedding: [...]}]
+        // Parse response - krthr model returns {embedding: [...]}
         let output: number[];
-        if (Array.isArray(rawOutput) && rawOutput.length > 0 && rawOutput[0]?.embedding) {
+        if (rawOutput && typeof rawOutput === "object" && !Array.isArray(rawOutput) && (rawOutput as { embedding?: number[] }).embedding) {
+          // krthr/clip-embeddings returns {embedding: [...]}
+          output = (rawOutput as { embedding: number[] }).embedding;
+        } else if (Array.isArray(rawOutput) && rawOutput.length > 0 && rawOutput[0]?.embedding) {
+          // andreasjansson model returns [{embedding: [...]}]
           output = rawOutput[0].embedding;
         } else if (Array.isArray(rawOutput) && rawOutput.length === 768 && typeof rawOutput[0] === "number") {
           output = rawOutput;

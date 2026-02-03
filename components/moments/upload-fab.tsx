@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Camera, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,8 +15,19 @@ interface UploadFABProps {
 }
 
 /**
+ * Extracts event slug from pathname if on an event page.
+ * Matches: /[locale]/events/[slug] but NOT /[locale]/events/[slug]/moments/...
+ */
+function getEventSlugFromPath(pathname: string): string | null {
+  // Match /locale/events/slug but not deeper paths like /moments/new
+  const match = pathname.match(/^\/[a-z]{2}\/events\/([^/]+)$/);
+  return match ? match[1] : null;
+}
+
+/**
  * Floating Action Button for quick moment upload.
  * Shows on most pages for authenticated users.
+ * Auto-detects event pages and links directly to that event's moment upload.
  */
 export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +36,11 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+
+  // Auto-detect event slug from URL when on event pages
+  const eventSlug = useMemo(() => {
+    return preselectedEventSlug || getEventSlugFromPath(pathname);
+  }, [preselectedEventSlug, pathname]);
 
   // Check authentication
   useEffect(() => {
@@ -90,10 +106,10 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
     return null;
   }
 
-  // If on event page with pre-selected event, go directly to upload
+  // If on event page, go directly to upload for that event
   const handleFabClick = () => {
-    if (preselectedEventSlug) {
-      router.push(`/events/${preselectedEventSlug}/moments/new`);
+    if (eventSlug) {
+      router.push(`/events/${eventSlug}/moments/new`);
     } else {
       setIsOpen(true);
     }

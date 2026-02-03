@@ -4,7 +4,7 @@ import Replicate from "replicate";
 
 export const dynamic = "force-dynamic";
 
-const CLIP_MODEL = "andreasjansson/clip-features:75b33f253f7714a281ad3e9b28f63e3232d583716ef6718f2e46641077ea040a";
+const CLIP_MODEL = "krthr/clip-embeddings:1c0371070cb827ec3c7f2f28adcdde54b50dcd239aa6faea0bc98b174ef03fb4";
 
 function createServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -46,7 +46,10 @@ export async function GET(request: Request) {
     });
 
     let queryVec: number[];
-    if (Array.isArray(rawOutput) && rawOutput.length > 0 && (rawOutput[0] as any)?.embedding) {
+    if (rawOutput && typeof rawOutput === "object" && !Array.isArray(rawOutput) && (rawOutput as any).embedding) {
+      // krthr/clip-embeddings returns {embedding: [...]}
+      queryVec = (rawOutput as any).embedding;
+    } else if (Array.isArray(rawOutput) && rawOutput.length > 0 && (rawOutput[0] as any)?.embedding) {
       queryVec = (rawOutput[0] as any).embedding;
     } else if (Array.isArray(rawOutput) && rawOutput.length === 768) {
       queryVec = rawOutput as number[];
