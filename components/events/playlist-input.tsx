@@ -78,9 +78,18 @@ export function PlaylistInput({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
 
+  // Use ref to track playlist ID synchronously (state updates are async)
+  const playlistIdRef = useRef<string | null>(initialPlaylistId ?? null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    playlistIdRef.current = playlistId;
+  }, [playlistId]);
+
   // Ensure playlist exists before adding tracks
   const ensurePlaylist = useCallback(async (): Promise<string | null> => {
-    if (playlistId) return playlistId;
+    // Check ref first (synchronous) to avoid race conditions
+    if (playlistIdRef.current) return playlistIdRef.current;
 
     setIsCreatingPlaylist(true);
     const supabase = createClient();
@@ -89,6 +98,21 @@ export function PlaylistInput({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // First, check if playlist already exists for this event
+      const { data: existing } = await supabase
+        .from("event_playlists")
+        .select("id")
+        .eq("event_id", eventId)
+        .single();
+
+      if (existing) {
+        // Playlist already exists, use it
+        playlistIdRef.current = existing.id;
+        setPlaylistId(existing.id);
+        return existing.id;
+      }
+
+      // No playlist exists, create one
       const { data, error } = await supabase
         .from("event_playlists")
         .insert({
@@ -98,8 +122,24 @@ export function PlaylistInput({
         .select("id")
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Handle race condition: if another request created it, fetch it
+        if (error.code === "23505") {
+          const { data: raceExisting } = await supabase
+            .from("event_playlists")
+            .select("id")
+            .eq("event_id", eventId)
+            .single();
+          if (raceExisting) {
+            playlistIdRef.current = raceExisting.id;
+            setPlaylistId(raceExisting.id);
+            return raceExisting.id;
+          }
+        }
+        throw error;
+      }
 
+      playlistIdRef.current = data.id;
       setPlaylistId(data.id);
       return data.id;
     } catch (error) {
@@ -108,7 +148,7 @@ export function PlaylistInput({
     } finally {
       setIsCreatingPlaylist(false);
     }
-  }, [eventId, playlistId]);
+  }, [eventId]);
 
   // Handle file selection
   const handleFileSelect = useCallback(async (files: FileList | null) => {

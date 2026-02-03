@@ -632,3 +632,74 @@ body {
   justify-content: center !important;
   z-index: 9999 !important;
 }
+
+/* ============================================
+ * AUDIO PLAYER RANGE INPUT STYLING
+ * Cross-browser custom slider for mini-player
+ * ============================================ */
+
+/* Base styling for audio seekbar */
+input[type="range"].audio-seekbar {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Track styling - Webkit (Chrome, Safari, Edge) */
+input[type="range"].audio-seekbar::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: hsl(var(--muted));
+}
+
+/* Thumb styling - Webkit */
+input[type="range"].audio-seekbar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  margin-top: -4px; /* Center on track */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+}
+
+input[type="range"].audio-seekbar::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+input[type="range"].audio-seekbar::-webkit-slider-thumb:active {
+  transform: scale(1.1);
+}
+
+/* Track styling - Firefox */
+input[type="range"].audio-seekbar::-moz-range-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: hsl(var(--muted));
+}
+
+/* Thumb styling - Firefox */
+input[type="range"].audio-seekbar::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+}
+
+input[type="range"].audio-seekbar::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Progress fill for Firefox */
+input[type="range"].audio-seekbar::-moz-range-progress {
+  height: 4px;
+  border-radius: 9999px;
+  background: hsl(var(--primary));
+}

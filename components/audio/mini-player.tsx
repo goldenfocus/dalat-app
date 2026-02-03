@@ -68,44 +68,71 @@ export function MiniPlayer() {
     }
   }, [isPlaying, setIsPlaying]);
 
-  // Handle track changes
+  // Track the current track ID to detect changes
+  const prevTrackIdRef = useRef<string | null>(null);
+
+  // Handle track changes - load new source when track changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !currentTrack) return;
 
-    // Load new track
-    audio.src = currentTrack.file_url;
-    audio.load();
+    const trackChanged = prevTrackIdRef.current !== currentTrack.id;
+    prevTrackIdRef.current = currentTrack.id;
 
-    if (isPlaying) {
+    if (trackChanged) {
+      // Load new track
+      audio.src = currentTrack.file_url;
+      audio.load();
+    }
+
+    // Play if isPlaying is true (handles both new tracks and play button clicks)
+    if (isPlaying && audio.paused) {
       audio.play().catch(() => setIsPlaying(false));
     }
-  }, [currentTrack?.id]); // Only when track changes
+  }, [currentTrack?.id, isPlaying, setIsPlaying]);
 
   // Track if we're auto-advancing (to ignore pause events during transition)
   const isAutoAdvancing = useRef(false);
 
-  // Audio event handlers
+  // Store callback refs to avoid stale closures in event handlers
+  const setCurrentTimeRef = useRef(setCurrentTime);
+  const setDurationRef = useRef(setDuration);
+  const setIsPlayingRef = useRef(setIsPlaying);
+  const onTrackEndedRef = useRef(onTrackEnded);
+
+  // Keep refs up to date
+  useEffect(() => {
+    setCurrentTimeRef.current = setCurrentTime;
+    setDurationRef.current = setDuration;
+    setIsPlayingRef.current = setIsPlaying;
+    onTrackEndedRef.current = onTrackEnded;
+  }, [setCurrentTime, setDuration, setIsPlaying, onTrackEnded]);
+
+  // Audio event handlers - only set up once on mount
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-    const handleLoadedMetadata = () => setDuration(audio.duration);
+    const handleTimeUpdate = () => {
+      setCurrentTimeRef.current(audio.currentTime);
+    };
+    const handleLoadedMetadata = () => {
+      setDurationRef.current(audio.duration);
+    };
     const handleEnded = () => {
       // Mark as auto-advancing so pause event doesn't stop playback
       isAutoAdvancing.current = true;
-      onTrackEnded();
+      onTrackEndedRef.current();
       // Reset flag after a short delay
       setTimeout(() => {
         isAutoAdvancing.current = false;
       }, 100);
     };
-    const handlePlay = () => setIsPlaying(true);
+    const handlePlay = () => setIsPlayingRef.current(true);
     const handlePause = () => {
       // Don't update state if we're auto-advancing to next track
       if (!isAutoAdvancing.current) {
-        setIsPlaying(false);
+        setIsPlayingRef.current(false);
       }
     };
 
@@ -122,7 +149,7 @@ export function MiniPlayer() {
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
     };
-  }, [onTrackEnded, setCurrentTime, setDuration, setIsPlaying]);
+  }, []); // Empty deps - only run once on mount
 
   // Media Session API for lock screen controls
   useEffect(() => {
@@ -298,9 +325,9 @@ export function MiniPlayer() {
               type="range"
               value={currentTime}
               max={duration || 100}
-              step={1}
+              step={0.1}
               onChange={handleSeek}
-              className="flex-1 h-1 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
+              className="audio-seekbar flex-1 h-1"
             />
             <span className="w-8 tabular-nums">
               {formatDuration(Math.floor(duration))}
