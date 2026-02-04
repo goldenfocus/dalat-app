@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
-import { CalendarCheck, ChevronRight, ChevronDown } from "lucide-react";
+import { CalendarCheck, ChevronRight, ChevronDown, Music, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatInDaLat } from "@/lib/timezone";
 import { optimizedImageUrl } from "@/lib/image-cdn";
+import { triggerHaptic } from "@/lib/haptics";
+import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 interface UserEvent extends Event {
   rsvp_status: "going" | "interested" | "waitlist";
+  has_playlist?: boolean;
 }
 
 interface YourEventsSectionProps {
@@ -104,19 +107,40 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
 
       setEvents(userEvents);
 
-      // Fetch counts for these events
+      // Fetch counts and playlist info for these events
       if (userEvents.length > 0) {
         const eventIds = userEvents.map((e) => e.id);
-        const { data: countData } = await supabase.rpc("get_event_counts_batch", {
-          p_event_ids: eventIds,
-        });
 
-        if (countData) {
+        // Fetch counts and playlist info in parallel
+        const [countResult, playlistResult] = await Promise.all([
+          supabase.rpc("get_event_counts_batch", { p_event_ids: eventIds }),
+          supabase
+            .from("event_playlists")
+            .select("event_id, playlist_tracks(id)")
+            .in("event_id", eventIds),
+        ]);
+
+        if (countResult.data) {
           const countsMap: Record<string, EventCounts> = {};
-          for (const row of countData) {
+          for (const row of countResult.data) {
             countsMap[row.event_id] = row;
           }
           setCounts(countsMap);
+        }
+
+        // Mark events that have playlists with tracks
+        if (playlistResult.data) {
+          const playlistEventIds = new Set(
+            playlistResult.data
+              .filter((p: any) => p.playlist_tracks && p.playlist_tracks.length > 0)
+              .map((p: any) => p.event_id)
+          );
+          setEvents((prev) =>
+            prev.map((e) => ({
+              ...e,
+              has_playlist: playlistEventIds.has(e.id),
+            }))
+          );
         }
       }
 
@@ -199,9 +223,62 @@ interface YourEventCardProps {
 }
 
 function YourEventCard({ event, counts, locale, tRsvp, tEvents }: YourEventCardProps) {
+  const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
+  const setPlaylist = useAudioPlayerStore((state) => state.setPlaylist);
+
   const imageUrl = event.image_url
     ? optimizedImageUrl(event.image_url, { width: 120, quality: 70 })
     : null;
+
+  // Handle instant playlist play
+  const handlePlayPlaylist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    triggerHaptic("selection");
+
+    if (isLoadingPlaylist) return;
+    setIsLoadingPlaylist(true);
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc("get_event_playlist", {
+        p_event_slug: event.slug,
+      });
+
+      if (error || !data || data.length === 0) {
+        console.error("[YourEvents] Error fetching playlist:", error);
+        return;
+      }
+
+      // Transform to AudioTrack format
+      const tracks: AudioTrack[] = data
+        .filter((row: any) => row.track_id !== null)
+        .map((row: any) => ({
+          id: row.track_id,
+          file_url: row.track_file_url,
+          title: row.track_title,
+          artist: row.track_artist,
+          album: row.track_album,
+          thumbnail_url: row.track_thumbnail_url,
+          duration_seconds: row.track_duration_seconds,
+        }));
+
+      if (tracks.length === 0) return;
+
+      const playlistInfo: PlaylistInfo = {
+        eventSlug: event.slug,
+        eventTitle: event.title,
+        eventImageUrl: event.image_url,
+      };
+
+      // Start playback - this shows mini-player and auto-plays
+      setPlaylist(tracks, playlistInfo, 0);
+    } catch (err) {
+      console.error("[YourEvents] Error playing playlist:", err);
+    } finally {
+      setIsLoadingPlaylist(false);
+    }
+  };
 
   // Format date and time in Da Lat timezone
   const dateStr = formatInDaLat(event.starts_at, "EEE, MMM d", locale);
@@ -271,9 +348,25 @@ function YourEventCard({ event, counts, locale, tRsvp, tEvents }: YourEventCardP
         </div>
       </div>
 
-      {/* Arrow indicator */}
-      <div className="flex items-center text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
-        <ChevronRight className="w-4 h-4" />
+      {/* Play button or arrow indicator */}
+      <div className="flex items-center gap-1">
+        {event.has_playlist && (
+          <button
+            onClick={handlePlayPlaylist}
+            disabled={isLoadingPlaylist}
+            className="p-2 rounded-full text-primary hover:bg-primary/10 active:scale-95 transition-all touch-manipulation"
+            aria-label="Play event playlist"
+          >
+            {isLoadingPlaylist ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Music className="w-5 h-5" />
+            )}
+          </button>
+        )}
+        <div className="flex items-center text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
+          <ChevronRight className="w-4 h-4" />
+        </div>
       </div>
     </Link>
   );
