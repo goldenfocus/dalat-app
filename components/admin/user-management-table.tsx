@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, Shield, User, Loader2, CheckCircle, XCircle, Eye, PenLine } from "lucide-react";
+import { Search, User, Loader2, CheckCircle, XCircle, Eye, PenLine, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import type { Profile, UserRole } from "@/lib/types";
 
@@ -29,6 +29,9 @@ interface UserManagementTableProps {
   canImpersonate?: boolean;
   currentUserId?: string;
 }
+
+type SortColumn = "user" | "logins" | "last_action" | "joined";
+type SortDirection = "asc" | "desc";
 
 const ROLE_OPTIONS: UserRole[] = [
   "superadmin",
@@ -80,6 +83,8 @@ export function UserManagementTable({
   const [updatingBlog, setUpdatingBlog] = useState<string | null>(null);
   const [status, setStatus] = useState<UpdateStatus | null>(null);
   const [impersonating, setImpersonating] = useState<string | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("joined");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const handleImpersonate = async (targetUserId: string) => {
     setImpersonating(targetUserId);
@@ -104,6 +109,18 @@ export function UserManagementTable({
     }
   };
 
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      // Toggle direction if clicking same column
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // New column: set sensible default direction
+      setSortColumn(column);
+      // Most columns default to descending (newest/most first)
+      setSortDirection(column === "user" ? "asc" : "desc");
+    }
+  };
+
   const filteredUsers = users.filter((user) => {
     const searchLower = search.toLowerCase();
     return (
@@ -111,6 +128,42 @@ export function UserManagementTable({
       user.display_name?.toLowerCase().includes(searchLower) ||
       user.id.toLowerCase().includes(searchLower)
     );
+  });
+
+  // Sort users based on current sort state
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortColumn) {
+      case "user": {
+        const nameA = (a.display_name || a.username || "").toLowerCase();
+        const nameB = (b.display_name || b.username || "").toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+        break;
+      }
+      case "logins": {
+        const loginsA = authDataMap.get(a.id)?.login_count ?? 0;
+        const loginsB = authDataMap.get(b.id)?.login_count ?? 0;
+        comparison = loginsA - loginsB;
+        break;
+      }
+      case "last_action": {
+        const dateA = authDataMap.get(a.id)?.last_action_at;
+        const dateB = authDataMap.get(b.id)?.last_action_at;
+        // Null values go to the end
+        if (!dateA && !dateB) comparison = 0;
+        else if (!dateA) comparison = 1;
+        else if (!dateB) comparison = -1;
+        else comparison = new Date(dateA).getTime() - new Date(dateB).getTime();
+        break;
+      }
+      case "joined": {
+        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        break;
+      }
+    }
+
+    return sortDirection === "asc" ? comparison : -comparison;
   });
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
@@ -194,6 +247,40 @@ export function UserManagementTable({
     }, 3000);
   };
 
+  // Sortable header component
+  const SortableHeader = ({
+    column,
+    children,
+    className = "",
+  }: {
+    column: SortColumn;
+    children: React.ReactNode;
+    className?: string;
+  }) => {
+    const isActive = sortColumn === column;
+    return (
+      <th
+        className={`p-3 font-medium text-sm cursor-pointer select-none hover:bg-muted/80 transition-colors ${className}`}
+        onClick={() => handleSort(column)}
+      >
+        <div className="flex items-center gap-1">
+          {children}
+          <span className="ml-1">
+            {isActive ? (
+              sortDirection === "asc" ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )
+            ) : (
+              <ChevronsUpDown className="w-4 h-4 opacity-30" />
+            )}
+          </span>
+        </div>
+      </th>
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* Search */}
@@ -229,24 +316,26 @@ export function UserManagementTable({
         <table className="w-full">
           <thead className="bg-muted/50">
             <tr>
-              <th className="text-left p-3 font-medium text-sm">User</th>
+              <SortableHeader column="user" className="text-left">
+                User
+              </SortableHeader>
               <th className="text-left p-3 font-medium text-sm">Role</th>
               <th className="text-center p-3 font-medium text-sm hidden sm:table-cell">
                 Blog
               </th>
-              <th className="text-left p-3 font-medium text-sm hidden md:table-cell">
+              <SortableHeader column="logins" className="text-left hidden md:table-cell">
                 Logins
-              </th>
-              <th className="text-left p-3 font-medium text-sm hidden lg:table-cell">
+              </SortableHeader>
+              <SortableHeader column="last_action" className="text-left hidden lg:table-cell">
                 Last Action
-              </th>
-              <th className="text-left p-3 font-medium text-sm hidden sm:table-cell">
+              </SortableHeader>
+              <SortableHeader column="joined" className="text-left hidden sm:table-cell">
                 Joined
-              </th>
+              </SortableHeader>
             </tr>
           </thead>
           <tbody className="divide-y">
-            {filteredUsers.map((user) => (
+            {sortedUsers.map((user) => (
               <tr key={user.id} className="hover:bg-muted/30">
                 <td className="p-3">
                   <div className="flex items-center gap-3">
@@ -382,7 +471,7 @@ export function UserManagementTable({
           </tbody>
         </table>
 
-        {filteredUsers.length === 0 && (
+        {sortedUsers.length === 0 && (
           <div className="p-8 text-center text-muted-foreground">
             No users found matching &quot;{search}&quot;
           </div>
