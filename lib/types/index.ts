@@ -1021,6 +1021,8 @@ export interface EventSeries {
   location_name: string | null;
   address: string | null;
   google_maps_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
   external_chat_url: string | null;
   timezone: string;
   capacity: number | null;

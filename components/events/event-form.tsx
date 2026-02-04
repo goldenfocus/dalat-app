@@ -33,7 +33,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, Settings } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ChevronDown, Settings, Repeat } from "lucide-react";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
@@ -172,8 +173,13 @@ export function EventForm({
   const t = useTranslations("eventForm");
   const tErrors = useTranslations("errors");
   const tPlaylist = useTranslations("playlist");
+  const tSeries = useTranslations("series");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  // Check if editing a series event
+  const isSeriesEvent = !!event?.series_id;
+  const [seriesEditScope, setSeriesEditScope] = useState<"this" | "future" | "all">("this");
 
   // Celebration modal state (for new events)
   const [showCelebration, setShowCelebration] = useState(false);
@@ -568,56 +574,104 @@ export function EventForm({
     startTransition(async () => {
       try {
       if (isEditing) {
-        // Update existing event
-        const updateData: Record<string, unknown> = {
-          title,
-          description: description || null,
-          image_url: imageUrl,
-          starts_at: startsAt,
-          location_name: locationName || null,
-          address: address || null,
-          google_maps_url: googleMapsUrl || null,
-          latitude,
-          longitude,
-          external_chat_url: externalChatUrl || null,
-          is_online: isOnline,
-          online_link: isOnline ? (onlineLink || null) : null,
-          title_position: "bottom",
-          image_fit: imageFit,
-          focal_point: focalPoint,
-          capacity,
-          price_type: priceType,
-          ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
-          organizer_id: organizerId,
-          venue_id: venueIdToSave || null,
-          ...(canSetSponsorTier && { sponsor_tier: sponsorTier }),
-        };
+        // Check if we should update via series API (for "future" or "all" scope)
+        if (isSeriesEvent && seriesEditScope !== "this" && event.series_id) {
+          // Use series API to update template + events
+          const seriesResponse = await fetch(`/api/series/${event.series_id}`, {
+            method: "GET",
+          });
 
-        // Include slug if editable and changed
-        const cleanSlug = finalizeSlug(slug);
-        if (slugEditable && cleanSlug && cleanSlug !== event.slug) {
-          updateData.slug = cleanSlug;
-          // Append old slug to previous_slugs for redirects
-          const currentPreviousSlugs = event.previous_slugs ?? [];
-          if (!currentPreviousSlugs.includes(event.slug)) {
-            updateData.previous_slugs = [...currentPreviousSlugs, event.slug];
+          if (!seriesResponse.ok) {
+            setError("Failed to fetch series information");
+            return;
           }
+
+          const seriesData = await seriesResponse.json();
+          const seriesSlug = seriesData.series?.slug;
+
+          if (!seriesSlug) {
+            setError("Series not found");
+            return;
+          }
+
+          const response = await fetch(`/api/series/${seriesSlug}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title,
+              description: description || null,
+              image_url: imageUrl,
+              location_name: locationName || null,
+              address: address || null,
+              google_maps_url: googleMapsUrl || null,
+              external_chat_url: externalChatUrl || null,
+              capacity,
+              update_scope: seriesEditScope, // "future" or "all"
+            }),
+          });
+
+          if (!response.ok) {
+            const data = await response.json();
+            setError(data.error || "Failed to update series");
+            return;
+          }
+
+          router.push(`/events/${event.slug}`);
+          router.refresh();
+        } else {
+          // Update just this event (current behavior)
+          const updateData: Record<string, unknown> = {
+            title,
+            description: description || null,
+            image_url: imageUrl,
+            starts_at: startsAt,
+            location_name: locationName || null,
+            address: address || null,
+            google_maps_url: googleMapsUrl || null,
+            latitude,
+            longitude,
+            external_chat_url: externalChatUrl || null,
+            is_online: isOnline,
+            online_link: isOnline ? (onlineLink || null) : null,
+            title_position: "bottom",
+            image_fit: imageFit,
+            focal_point: focalPoint,
+            capacity,
+            price_type: priceType,
+            ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
+            organizer_id: organizerId,
+            venue_id: venueIdToSave || null,
+            ...(canSetSponsorTier && { sponsor_tier: sponsorTier }),
+            // Mark as exception if editing just this event in a series
+            ...(isSeriesEvent && { is_exception: true }),
+          };
+
+          // Include slug if editable and changed
+          const cleanSlug = finalizeSlug(slug);
+          if (slugEditable && cleanSlug && cleanSlug !== event.slug) {
+            updateData.slug = cleanSlug;
+            // Append old slug to previous_slugs for redirects
+            const currentPreviousSlugs = event.previous_slugs ?? [];
+            if (!currentPreviousSlugs.includes(event.slug)) {
+              updateData.previous_slugs = [...currentPreviousSlugs, event.slug];
+            }
+          }
+
+          const { error: updateError } = await supabase
+            .from("events")
+            .update(updateData)
+            .eq("id", event.id);
+
+          if (updateError) {
+            setError(updateError.message);
+            return;
+          }
+
+          // Navigate to new slug if changed, otherwise original
+          const finalSlug = slugEditable && slug ? slug : event.slug;
+          router.push(`/events/${finalSlug}`);
+          router.refresh();
         }
-
-        const { error: updateError } = await supabase
-          .from("events")
-          .update(updateData)
-          .eq("id", event.id);
-
-        if (updateError) {
-          setError(updateError.message);
-          return;
-        }
-
-        // Navigate to new slug if changed, otherwise original
-        const finalSlug = slugEditable && slug ? slug : event.slug;
-        router.push(`/events/${finalSlug}`);
-        router.refresh();
       } else {
         // Create new event or series
         const cleanSlug = finalizeSlug(slug);
@@ -775,6 +829,54 @@ export function EventForm({
     <form onSubmit={handleSubmit}>
       <Card>
         <CardContent className="p-6 space-y-6">
+          {/* Series Edit Scope (only shown when editing a series event) */}
+          {isEditing && isSeriesEvent && (
+            <div className="p-4 bg-muted/50 rounded-lg border space-y-4">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Repeat className="w-4 h-4" />
+                {tSeries("editingSeriesEvent")}
+              </div>
+              <RadioGroup
+                value={seriesEditScope}
+                onValueChange={(value) => setSeriesEditScope(value as "this" | "future" | "all")}
+              >
+                <div className="flex items-start gap-3">
+                  <RadioGroupItem value="this" id="scope-this" className="mt-1" />
+                  <div>
+                    <Label htmlFor="scope-this" className="cursor-pointer font-medium">
+                      {tSeries("editThisEventOnly")}
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      {tSeries("editThisEventOnlyDescription")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <RadioGroupItem value="future" id="scope-future-events" className="mt-1" />
+                  <div>
+                    <Label htmlFor="scope-future-events" className="cursor-pointer font-medium">
+                      {tSeries("editThisAndFutureEvents")}
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      {tSeries("editThisAndFutureEventsDescription")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <RadioGroupItem value="all" id="scope-all-events" className="mt-1" />
+                  <div>
+                    <Label htmlFor="scope-all-events" className="cursor-pointer font-medium">
+                      {tSeries("editAllEventsInSeries")}
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      {tSeries("editAllEventsInSeriesDescription")}
+                    </p>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+          )}
+
           {/* Event flyer and title */}
           {isEditing ? (
             <>
