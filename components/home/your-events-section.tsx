@@ -262,7 +262,7 @@ function YourEventCard({ event, counts, locale, tRsvp, tEvents }: YourEventCardP
         track_duration_seconds: number | null;
       };
       const tracks: AudioTrack[] = (data as PlaylistTrackRow[])
-        .filter((row) => row.track_id !== null)
+        .filter((row): row is PlaylistTrackRow & { track_id: string } => row.track_id !== null)
         .map((row) => ({
           id: row.track_id,
           file_url: row.track_file_url,

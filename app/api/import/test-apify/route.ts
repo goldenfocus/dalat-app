@@ -49,8 +49,8 @@ export async function GET() {
 
     // Filter for Facebook/event related actors
     const relevantActors = availableActors.filter((actor: Record<string, unknown>) => {
-      const name = (actor.name || "").toLowerCase();
-      const title = (actor.title || "").toLowerCase();
+      const name = (String(actor.name || "")).toLowerCase();
+      const title = (String(actor.title || "")).toLowerCase();
       return (
         name.includes("facebook") ||
         name.includes("event") ||

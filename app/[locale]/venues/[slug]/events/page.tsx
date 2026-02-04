@@ -92,8 +92,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function VenuePastEventsPage({ params }: PageProps) {
-  const { slug } = await params;
-  const locale = await getLocale();
+  const { slug, locale } = await params;
   const t = await getTranslations("venues");
 
   const venue = await getVenueBySlug(slug);
