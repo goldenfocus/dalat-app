@@ -154,6 +154,17 @@ export function AdminImportPage() {
     details?: string[];
   } | null>(null);
 
+  // Dalat Gov sync
+  const [dalatGovSyncing, setDalatGovSyncing] = useState(false);
+  const [dalatGovResult, setDalatGovResult] = useState<{
+    success: boolean;
+    articlesScraped: number;
+    processed: number;
+    skipped: number;
+    errors: number;
+    details?: string[];
+  } | null>(null);
+
   // Load import history on mount
   useEffect(() => {
     loadHistory();
@@ -399,6 +410,51 @@ export function AdminImportPage() {
       });
     } finally {
       setWellhoodsSyncing(false);
+    }
+  }
+
+  async function handleSyncDalatGov() {
+    setDalatGovSyncing(true);
+    setDalatGovResult(null);
+
+    try {
+      const response = await fetch("/api/import/dalat-gov", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setDalatGovResult({
+          success: true,
+          articlesScraped: data.articlesScraped || 0,
+          processed: data.processed || 0,
+          skipped: data.skipped || 0,
+          errors: data.errors || 0,
+          details: data.details,
+        });
+        loadHistory();
+      } else {
+        setDalatGovResult({
+          success: false,
+          articlesScraped: 0,
+          processed: 0,
+          skipped: 0,
+          errors: 1,
+          details: [data.error || "Sync failed"],
+        });
+      }
+    } catch (err) {
+      setDalatGovResult({
+        success: false,
+        articlesScraped: 0,
+        processed: 0,
+        skipped: 0,
+        errors: 1,
+        details: [`Network error: ${err instanceof Error ? err.message : "Unknown"}`],
+      });
+    } finally {
+      setDalatGovSyncing(false);
     }
   }
 
@@ -877,6 +933,105 @@ https://eventbrite.com/e/some-event-tickets-123`}
                         {wellhoodsResult.details.length > 10 && (
                           <p className="text-muted-foreground">
                             ...and {wellhoodsResult.details.length - 10} more
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Dalat Gov Sync Card */}
+          <Card className="border-blue-200 dark:border-blue-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-blue-600" />
+                Đà Lạt Gov.vn Sync
+              </CardTitle>
+              <CardDescription>
+                Scrape events from dalat-info.gov.vn (tourism & culture sections) - AI extracts event details from articles
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={handleSyncDalatGov}
+                  disabled={dalatGovSyncing}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {dalatGovSyncing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Scraping...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Scrape Now
+                    </>
+                  )}
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Uses Claude to extract events from Vietnamese articles
+                </p>
+              </div>
+
+              {dalatGovResult && (
+                <div
+                  className={`p-4 rounded-lg ${
+                    dalatGovResult.success
+                      ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800"
+                      : "bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    {dalatGovResult.success ? (
+                      <CheckCircle className="w-5 h-5 text-blue-600" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-red-600" />
+                    )}
+                    <span className="font-medium">
+                      {dalatGovResult.success ? "Scrape Complete" : "Scrape Failed"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Articles</p>
+                      <p className="text-lg font-bold text-blue-600">
+                        {dalatGovResult.articlesScraped}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Imported</p>
+                      <p className="text-lg font-bold text-green-600">
+                        {dalatGovResult.processed}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Skipped</p>
+                      <p className="text-lg font-bold text-gray-500">
+                        {dalatGovResult.skipped}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Errors</p>
+                      <p className="text-lg font-bold text-red-600">
+                        {dalatGovResult.errors}
+                      </p>
+                    </div>
+                  </div>
+                  {dalatGovResult.details && dalatGovResult.details.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-current/10">
+                      <p className="text-xs text-muted-foreground mb-1">Details:</p>
+                      <div className="max-h-32 overflow-y-auto text-xs space-y-1">
+                        {dalatGovResult.details.slice(0, 15).map((detail, i) => (
+                          <p key={i} className="truncate">{detail}</p>
+                        ))}
+                        {dalatGovResult.details.length > 15 && (
+                          <p className="text-muted-foreground">
+                            ...and {dalatGovResult.details.length - 15} more
                           </p>
                         )}
                       </div>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { batchTranslateFields } from "@/lib/google-translate";
 import {
@@ -6,6 +7,7 @@ import {
   TranslationContentType,
   TranslationFieldName,
 } from "@/lib/types";
+import { CACHE_TAGS } from "@/lib/cache/server-cache";
 
 const RATE_LIMIT = 50; // requests per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -112,6 +114,11 @@ export async function POST(request: Request) {
         .from("venues")
         .update({ source_locale: detectedLocale })
         .eq("id", body.content_id);
+    } else if (body.content_type === "comment") {
+      await supabase
+        .from("comments")
+        .update({ source_locale: detectedLocale })
+        .eq("id", body.content_id);
     }
 
     // Prepare translation inserts
@@ -159,6 +166,9 @@ export async function POST(request: Request) {
       if (insertError) {
         console.error("Translation insert error:", insertError);
         // Don't fail the request - translations might still be useful to return
+      } else {
+        // Invalidate the translations cache so new translations appear immediately
+        revalidateTag(CACHE_TAGS.translations, "max");
       }
     }
 
