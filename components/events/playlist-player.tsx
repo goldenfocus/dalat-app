@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Play,
   Pause,
@@ -56,6 +56,12 @@ export interface PlaylistPlayerProps {
   eventTitle: string;
   eventImageUrl?: string | null;
   className?: string;
+  /** Auto-start playback when component mounts */
+  autoPlay?: boolean;
+  /** Auto-start with specific karaoke level (2=theater, 3=hero) */
+  autoKaraokeLevel?: number;
+  /** Start at specific track index */
+  autoStartTrack?: number;
 }
 
 export function PlaylistPlayer({
@@ -64,8 +70,12 @@ export function PlaylistPlayer({
   eventTitle,
   eventImageUrl,
   className,
+  autoPlay,
+  autoKaraokeLevel,
+  autoStartTrack,
 }: PlaylistPlayerProps) {
   const t = useTranslations("playlist");
+  const hasAutoStarted = useRef(false);
 
   // Global store state
   const {
@@ -87,6 +97,7 @@ export function PlaylistPlayer({
     seek,
     toggleRepeat,
     toggleShuffle,
+    setKaraokeLevel,
   } = useAudioPlayerStore();
 
   // Check if this playlist is currently active in the global player
@@ -133,6 +144,35 @@ export function PlaylistPlayer({
     },
     [tracks, eventSlug, eventTitle, eventImageUrl, setPlaylist]
   );
+
+  // Auto-start playback with karaoke mode from URL params
+  useEffect(() => {
+    if (hasAutoStarted.current) return;
+    if (!autoPlay) return;
+
+    hasAutoStarted.current = true;
+
+    // Small delay to ensure audio element is initialized
+    const timeout = setTimeout(() => {
+      const startIndex = autoStartTrack && autoStartTrack >= 0 && autoStartTrack < tracks.length
+        ? autoStartTrack
+        : 0;
+
+      // Start the playlist
+      startPlaylist(startIndex);
+
+      // Enable karaoke and set level
+      if (autoKaraokeLevel && (autoKaraokeLevel === 2 || autoKaraokeLevel === 3)) {
+        // Use setState to set both karaokeEnabled and level
+        useAudioPlayerStore.setState({
+          karaokeEnabled: true,
+          karaokeLevel: autoKaraokeLevel as 0 | 1 | 2 | 3,
+        });
+      }
+    }, 100);
+
+    return () => clearTimeout(timeout);
+  }, [autoPlay, autoKaraokeLevel, autoStartTrack, startPlaylist, tracks.length]);
 
   // Handle track click
   const handleTrackClick = useCallback(

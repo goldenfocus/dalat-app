@@ -11,6 +11,7 @@ import type { PlaylistTrack } from "@/components/events/playlist-player";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
+  searchParams: Promise<{ karaoke?: string; track?: string }>;
 }
 
 interface PlaylistData {
@@ -129,8 +130,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function PlaylistPage({ params }: PageProps) {
+export default async function PlaylistPage({ params, searchParams }: PageProps) {
   const { slug, locale } = await params;
+  const { karaoke, track } = await searchParams;
   const t = await getTranslations("playlist");
   const tc = await getTranslations("common");
 
@@ -142,6 +144,10 @@ export default async function PlaylistPage({ params }: PageProps) {
 
   const { event, tracks } = data;
   const eventDate = formatInDaLat(event.starts_at, "EEE, MMM d, yyyy");
+
+  // Parse karaoke mode from URL (theater=2, hero=3)
+  const karaokeLevel = karaoke === "hero" ? 3 : karaoke === "theater" ? 2 : undefined;
+  const startTrack = track ? parseInt(track, 10) : undefined;
 
   // Build playlist URL for sharing
   const playlistUrl = `https://dalat.app/${locale}/events/${slug}/playlist`;
@@ -181,6 +187,9 @@ export default async function PlaylistPage({ params }: PageProps) {
           eventSlug={slug}
           eventTitle={event.title}
           eventImageUrl={event.image_url}
+          autoPlay={karaokeLevel !== undefined}
+          autoKaraokeLevel={karaokeLevel}
+          autoStartTrack={startTrack}
         />
 
         {/* Back to event link */}

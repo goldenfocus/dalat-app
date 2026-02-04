@@ -2,7 +2,6 @@
 
 import { memo, useMemo, useEffect, useRef, useState } from "react";
 import {
-  X,
   ChevronDown,
   Minus,
   Plus,
@@ -10,8 +9,8 @@ import {
   Pause,
   SkipBack,
   SkipForward,
-  Music,
 } from "lucide-react";
+import { KaraokeShareButton } from "./KaraokeShareButton";
 import { cn } from "@/lib/utils";
 import { useCurrentLyricWithContext } from "@/lib/hooks/use-current-lyric";
 import {
@@ -164,23 +163,26 @@ export const KaraokeHero = memo(function KaraokeHero() {
           </p>
         </div>
 
-        {/* Timing controls */}
-        <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
-          <button
-            onClick={() => adjustLyricsOffset(-100)}
-            className="p-1 text-white/60 hover:text-white"
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-          <span className="text-xs text-white/60 w-16 text-center">
-            {lyricsOffset >= 0 ? "+" : ""}{lyricsOffset}ms
-          </span>
-          <button
-            onClick={() => adjustLyricsOffset(100)}
-            className="p-1 text-white/60 hover:text-white"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
+        {/* Share + Timing controls */}
+        <div className="flex items-center gap-2">
+          <KaraokeShareButton mode="hero" />
+          <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
+            <button
+              onClick={() => adjustLyricsOffset(-100)}
+              className="p-1 text-white/60 hover:text-white"
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+            <span className="text-xs text-white/60 w-16 text-center">
+              {lyricsOffset >= 0 ? "+" : ""}{lyricsOffset}ms
+            </span>
+            <button
+              onClick={() => adjustLyricsOffset(100)}
+              className="p-1 text-white/60 hover:text-white"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 

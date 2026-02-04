@@ -1,7 +1,8 @@
 "use client";
 
 import { memo, useMemo, useEffect, useRef } from "react";
-import { X, ChevronUp, ChevronDown, Minus, Plus, Settings } from "lucide-react";
+import { ChevronUp, ChevronDown, Minus, Plus } from "lucide-react";
+import { KaraokeShareButton } from "./KaraokeShareButton";
 import { cn } from "@/lib/utils";
 import { useCurrentLyricWithContext } from "@/lib/hooks/use-current-lyric";
 import {
@@ -121,10 +122,13 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
             <ChevronDown className="w-5 h-5" />
           </button>
 
-          {/* Progress indicator */}
-          <span className="text-sm text-white/40">
-            {lineIndex + 1} / {totalLines}
-          </span>
+          {/* Center: Share + Progress */}
+          <div className="flex items-center gap-3">
+            <KaraokeShareButton mode="theater" className="p-2 bg-transparent" />
+            <span className="text-sm text-white/40">
+              {lineIndex + 1} / {totalLines}
+            </span>
+          </div>
 
           {/* Expand to Hero */}
           <button
