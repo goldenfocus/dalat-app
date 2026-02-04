@@ -528,7 +528,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       const fileName = `${eventId}/${userId}/${timestamp}_${randomSuffix}.${ext}`;
 
       // Upload media to R2 (or Supabase fallback if R2 not configured)
-      const { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
+      let { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
         filename: fileName,
       });
 

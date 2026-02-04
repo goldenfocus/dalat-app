@@ -315,7 +315,7 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
       return;
     }
 
-    const timeoutId: NodeJS.Timeout | undefined = undefined;
+    let timeoutId: NodeJS.Timeout | undefined = undefined;
 
     // Check if Google Maps API is fully ready (not just partially loaded)
     const isGoogleMapsReady = () => {
