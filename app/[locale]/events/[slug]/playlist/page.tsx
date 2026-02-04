@@ -79,8 +79,9 @@ async function getEventPlaylist(slug: string): Promise<PlaylistData | null> {
   };
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
+  const { karaoke, track } = await searchParams;
   const data = await getEventPlaylist(slug);
 
   if (!data) {
@@ -91,19 +92,61 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const totalDuration = tracks.reduce((acc, track) => acc + (track.duration_seconds || 0), 0);
   const durationMinutes = Math.round(totalDuration / 60);
 
-  const title = `${event.title} - Playlist`;
-  const description = `Listen to ${tracks.length} audio track${tracks.length !== 1 ? "s" : ""} from ${event.title}${durationMinutes > 0 ? ` (${durationMinutes} min)` : ""}`;
+  // Karaoke-specific metadata for SEO
+  const isKaraokeMode = karaoke === "theater" || karaoke === "hero";
+  const trackIndex = track ? parseInt(track, 10) : 0;
+  const currentTrack = tracks[trackIndex] || tracks[0];
+
+  // Build SEO-optimized title and description
+  let title: string;
+  let description: string;
+
+  if (isKaraokeMode && currentTrack) {
+    // Karaoke-specific SEO with Vietnamese keywords
+    const trackTitle = currentTrack.title || "Bài hát";
+    const artist = currentTrack.artist || event.title;
+
+    title = locale === "vi"
+      ? `🎤 Karaoke ${trackTitle} - ${artist} | Hát Karaoke Đà Lạt Online`
+      : `🎤 Karaoke ${trackTitle} - ${artist} | Sing Along Da Lat`;
+
+    description = locale === "vi"
+      ? `Hát karaoke online ${trackTitle} với lời bài hát hiển thị theo nhạc. Karaoke Đà Lạt, nhạc Việt Nam, hát cùng bạn bè. ${tracks.length} bài hát từ ${event.title}.`
+      : `Sing karaoke ${trackTitle} with synchronized lyrics display. Da Lat karaoke, Vietnamese music, sing along with friends. ${tracks.length} tracks from ${event.title}.`;
+  } else {
+    title = `${event.title} - Playlist`;
+    description = locale === "vi"
+      ? `Nghe ${tracks.length} bài nhạc từ ${event.title}${durationMinutes > 0 ? ` (${durationMinutes} phút)` : ""}. Karaoke online Đà Lạt, nhạc sự kiện.`
+      : `Listen to ${tracks.length} audio track${tracks.length !== 1 ? "s" : ""} from ${event.title}${durationMinutes > 0 ? ` (${durationMinutes} min)` : ""}`;
+  }
 
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/playlist`;
 
   // Use first track's thumbnail, or event image, or generated OG
-  const ogImageUrl = tracks[0]?.thumbnail_url
+  const ogImageUrl = currentTrack?.thumbnail_url
     || event.image_url
     || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;
+
+  // SEO keywords for karaoke + Dalat
+  const keywords = [
+    "karaoke đà lạt",
+    "karaoke online",
+    "hát karaoke",
+    "dalat karaoke",
+    "nhạc việt nam",
+    "vietnamese karaoke",
+    "sing along",
+    "lời bài hát",
+    "lyrics display",
+    event.title,
+    currentTrack?.artist,
+    currentTrack?.title,
+  ].filter(Boolean);
 
   return {
     title: `${title} | ĐàLạt.app`,
     description,
+    keywords: keywords.join(", "),
     openGraph: {
       title,
       description,
@@ -115,8 +158,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           url: ogImageUrl,
           width: 1200,
           height: 630,
+          alt: isKaraokeMode
+            ? `Karaoke ${currentTrack?.title || event.title}`
+            : `${event.title} playlist`,
         },
       ],
+      locale: locale === "vi" ? "vi_VN" : "en_US",
     },
     twitter: {
       card: "summary_large_image",
@@ -126,6 +173,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     alternates: {
       canonical: canonicalUrl,
+      languages: {
+        vi: `https://dalat.app/vi/events/${slug}/playlist${karaoke ? `?karaoke=${karaoke}` : ""}`,
+        en: `https://dalat.app/en/events/${slug}/playlist${karaoke ? `?karaoke=${karaoke}` : ""}`,
+      },
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   };
 }
@@ -151,6 +206,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
 
   // Build playlist URL for sharing
   const playlistUrl = `https://dalat.app/${locale}/events/${slug}/playlist`;
+  const isKaraokeMode = karaoke === "theater" || karaoke === "hero";
 
   return (
     <div className="min-h-screen bg-background">
@@ -172,13 +228,32 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
           />
         </div>
 
-        {/* Event Info */}
+        {/* Event Info with SEO headings */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-1">{event.title}</h1>
-          <p className="text-muted-foreground text-sm">
-            {eventDate}
-            {event.location_name && ` · ${event.location_name}`}
-          </p>
+          {isKaraokeMode ? (
+            <>
+              <h1 className="text-2xl font-bold mb-1">
+                🎤 Karaoke: {event.title}
+              </h1>
+              <p className="text-muted-foreground text-sm mb-2">
+                {eventDate}
+                {event.location_name && ` · ${event.location_name}`}
+              </p>
+              <p className="text-xs text-muted-foreground/70">
+                {locale === "vi"
+                  ? "Hát karaoke online với lời bài hát đồng bộ • Karaoke Đà Lạt"
+                  : "Sing along with synchronized lyrics • Da Lat Karaoke"}
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold mb-1">{event.title}</h1>
+              <p className="text-muted-foreground text-sm">
+                {eventDate}
+                {event.location_name && ` · ${event.location_name}`}
+              </p>
+            </>
+          )}
         </div>
 
         {/* Playlist Player */}
