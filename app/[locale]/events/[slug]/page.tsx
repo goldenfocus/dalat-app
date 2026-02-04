@@ -38,7 +38,8 @@ import { ClickableTagList } from "@/components/events/clickable-tag-list";
 import { EventMaterialsSummary } from "@/components/events/event-materials";
 import { EventMaterialsStructuredData } from "@/components/events/event-materials-structured-data";
 import { EventCommentsSection } from "@/components/comments";
-import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial } from "@/lib/types";
+import { PromoMediaSection } from "@/components/events/promo-media-section";
+import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial, EventPromoMedia, PromoSource } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -430,6 +431,42 @@ async function getEventPlaylistSummary(eventId: string): Promise<PlaylistSummary
   };
 }
 
+interface EventPromoResult {
+  promo: EventPromoMedia[];
+  promoSource: PromoSource | undefined;
+  hasOverride: boolean;
+}
+
+async function getEventPromo(eventId: string): Promise<EventPromoResult> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_event_promo_media", {
+    p_event_id: eventId,
+  });
+
+  if (error || !data) {
+    return { promo: [], promoSource: undefined, hasOverride: false };
+  }
+
+  const promo = data as EventPromoMedia[];
+
+  // Determine source from first item (all items have same source)
+  const promoSource = promo.length > 0 ? promo[0].promo_source : undefined;
+
+  // Check if event has override
+  const { data: event } = await supabase
+    .from("events")
+    .select("has_promo_override")
+    .eq("id", eventId)
+    .single();
+
+  return {
+    promo,
+    promoSource,
+    hasOverride: event?.has_promo_override ?? false,
+  };
+}
+
 async function canUserPostMoment(eventId: string, userId: string | null, creatorId: string): Promise<boolean> {
   if (!userId) return false;
 
@@ -589,7 +626,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
-  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary] = await Promise.all([
+  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
@@ -613,6 +650,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getEventSettings(event.id),
     getEventMaterials(event.id),
     getEventPlaylistSummary(event.id),
+    getEventPromo(event.id),
   ]);
 
   // Destructure combined RSVP result
@@ -888,6 +926,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             {sponsors.length > 0 && (
               <SponsorDisplay sponsors={sponsors} />
             )}
+
+            {/* Promo Media - promotional content for this event */}
+            <PromoMediaSection
+              promo={promoResult.promo}
+              isOwner={canManageEvent}
+              promoSource={promoResult.promoSource}
+            />
 
             {/* Materials (PDFs, videos, etc.) */}
             {materials.length > 0 && (

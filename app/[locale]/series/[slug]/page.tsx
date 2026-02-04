@@ -18,7 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { formatInDaLat } from "@/lib/timezone";
 import { describeRRule, getShortRRuleLabel } from "@/lib/recurrence";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import type { EventSeries, Event, Profile, Organizer, Locale } from "@/lib/types";
+import { PromoMediaSection } from "@/components/events/promo-media-section";
+import type { EventSeries, Event, Profile, Organizer, Locale, EventPromoMedia } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -37,6 +38,7 @@ interface SeriesData {
   subscriberCount: number;
   isSubscribed: boolean;
   isOwner: boolean;
+  promo: EventPromoMedia[];
 }
 
 // Generate dynamic OG metadata
@@ -120,12 +122,18 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
     isSubscribed = subscription?.auto_rsvp ?? false;
   }
 
+  // Get series promo media
+  const { data: promo } = await supabase.rpc("get_series_promo_media", {
+    p_series_id: series.id,
+  });
+
   return {
     series: series as SeriesWithRelations,
     upcomingEvents: (upcomingEvents || []) as EventInstance[],
     subscriberCount: subscriberCount || 0,
     isSubscribed,
     isOwner: user?.id === series.created_by,
+    promo: (promo || []) as EventPromoMedia[],
   };
 }
 
@@ -142,7 +150,7 @@ export default async function SeriesPage({ params }: PageProps) {
     notFound();
   }
 
-  const { series, upcomingEvents, subscriberCount, isSubscribed: _isSubscribed, isOwner } = data;
+  const { series, upcomingEvents, subscriberCount, isSubscribed: _isSubscribed, isOwner, promo } = data;
 
   const recurrenceDescription = describeRRule(series.rrule);
 
@@ -278,6 +286,13 @@ export default async function SeriesPage({ params }: PageProps) {
             </Button>
           )}
         </div>
+
+        {/* Promo Media - promotional content for this series */}
+        <PromoMediaSection
+          promo={promo}
+          isOwner={isOwner}
+          promoSource="series"
+        />
 
         {/* Upcoming Dates */}
         <section className="space-y-4">
