@@ -34,7 +34,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ChevronDown, Settings, Repeat } from "lucide-react";
+import { ChevronDown, Settings, Repeat, Sparkles } from "lucide-react";
+import { PromoManager } from "@/components/events/promo-manager";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
@@ -1225,6 +1226,27 @@ export function EventForm({
               )}
             </CollapsibleContent>
           </Collapsible>
+
+          {/* Promo (only when editing) */}
+          {isEditing && event && (
+            <Collapsible className="pt-4 border-t">
+              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  {t("promo") || "Promo"}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4">
+                <PromoManager
+                  eventId={event.id}
+                  eventSlug={event.slug}
+                  seriesId={event.series_id}
+                  isSeriesEvent={isSeriesEvent}
+                />
+              </CollapsibleContent>
+            </Collapsible>
+          )}
 
           {/* Playlist (only when editing) */}
           {isEditing && event && (
