@@ -528,9 +528,11 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       const fileName = `${eventId}/${userId}/${timestamp}_${randomSuffix}.${ext}`;
 
       // Upload media to R2 (or Supabase fallback if R2 not configured)
-      let { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
+      const uploadResult = await uploadToStorage("moments", fileToUpload, {
         filename: fileName,
       });
+      let publicUrl = uploadResult.publicUrl;
+      const uploadedPath = uploadResult.path;
 
       // If HEIC needs server-side conversion, do it now
       if (needsServerHeicConversion) {
