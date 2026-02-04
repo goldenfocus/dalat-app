@@ -1,4 +1,8 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { Locale } from "@/lib/types";
+import type { KaraokeLevel, ParsedLrc } from "@/lib/types/karaoke";
+import { DEFAULT_LYRICS_OFFSET, DEFAULT_KARAOKE_LEVEL } from "@/lib/types/karaoke";
 
 export interface AudioTrack {
   id: string;
@@ -8,6 +12,8 @@ export interface AudioTrack {
   album: string | null;
   thumbnail_url: string | null;
   duration_seconds: number | null;
+  // Karaoke data (optional)
+  lyrics_lrc?: string | null;
 }
 
 export interface PlaylistInfo {
@@ -41,6 +47,13 @@ interface AudioPlayerState {
   // UI state
   isVisible: boolean;
 
+  // Karaoke state
+  karaokeLevel: KaraokeLevel;
+  karaokeEnabled: boolean;
+  lyricsOffset: number;
+  showTranslation: boolean;
+  translationLocale: Locale;
+
   // Actions
   setAudioElement: (element: HTMLAudioElement | null) => void;
   setPlaylist: (tracks: AudioTrack[], playlist: PlaylistInfo, startIndex?: number) => void;
@@ -58,6 +71,14 @@ interface AudioPlayerState {
   toggleRepeat: () => void;
   toggleShuffle: () => void;
   close: () => void;
+
+  // Karaoke actions
+  setKaraokeLevel: (level: KaraokeLevel) => void;
+  toggleKaraoke: () => void;
+  setLyricsOffset: (offset: number) => void;
+  adjustLyricsOffset: (delta: number) => void;
+  toggleTranslation: () => void;
+  setTranslationLocale: (locale: Locale) => void;
 }
 
 // Fisher-Yates shuffle to create random order
@@ -88,6 +109,13 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   shuffle: false,
   shuffledIndices: [],
   isVisible: false,
+
+  // Karaoke initial state
+  karaokeLevel: DEFAULT_KARAOKE_LEVEL,
+  karaokeEnabled: true,
+  lyricsOffset: DEFAULT_LYRICS_OFFSET,
+  showTranslation: true,
+  translationLocale: "en" as Locale,
 
   // Store the audio element reference
   setAudioElement: (element) => {
@@ -323,6 +351,36 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       shuffledIndices: [],
     });
   },
+
+  // Karaoke actions
+  setKaraokeLevel: (level) => set({ karaokeLevel: level }),
+
+  toggleKaraoke: () => {
+    const { karaokeEnabled, karaokeLevel } = get();
+    if (karaokeEnabled) {
+      // Disable: set level to 0 (closed)
+      set({ karaokeEnabled: false, karaokeLevel: 0 });
+    } else {
+      // Enable: restore to default level
+      set({ karaokeEnabled: true, karaokeLevel: DEFAULT_KARAOKE_LEVEL });
+    }
+  },
+
+  setLyricsOffset: (offset) => set({ lyricsOffset: offset }),
+
+  adjustLyricsOffset: (delta) => {
+    const { lyricsOffset } = get();
+    // Clamp offset between -2000ms and +2000ms
+    const newOffset = Math.max(-2000, Math.min(2000, lyricsOffset + delta));
+    set({ lyricsOffset: newOffset });
+  },
+
+  toggleTranslation: () => {
+    const { showTranslation } = get();
+    set({ showTranslation: !showTranslation });
+  },
+
+  setTranslationLocale: (locale) => set({ translationLocale: locale }),
 }));
 
 // Selector hooks
@@ -336,3 +394,22 @@ export const useIsPlayerVisible = () =>
 
 export const useIsPlaying = () =>
   useAudioPlayerStore((state) => state.isPlaying);
+
+// Karaoke selector hooks
+export const useKaraokeLevel = () =>
+  useAudioPlayerStore((state) => state.karaokeLevel);
+
+export const useKaraokeEnabled = () =>
+  useAudioPlayerStore((state) => state.karaokeEnabled);
+
+export const useLyricsOffset = () =>
+  useAudioPlayerStore((state) => state.lyricsOffset);
+
+export const useShowTranslation = () =>
+  useAudioPlayerStore((state) => state.showTranslation);
+
+export const useCurrentTrackLyrics = () =>
+  useAudioPlayerStore((state) => {
+    const track = state.tracks.length > 0 ? state.tracks[state.currentIndex] : null;
+    return track?.lyrics_lrc ?? null;
+  });

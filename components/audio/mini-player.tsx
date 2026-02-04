@@ -21,13 +21,17 @@ import {
   useAudioPlayerStore,
   useCurrentTrack,
   useIsPlayerVisible,
+  useKaraokeLevel,
 } from "@/lib/stores/audio-player-store";
+import { KaraokeFooterLine, KaraokeToggleButton } from "./karaoke/KaraokeFooterLine";
 
 export function MiniPlayer() {
   const router = useRouter();
 
   const isVisible = useIsPlayerVisible();
   const currentTrack = useCurrentTrack();
+
+  const karaokeLevel = useKaraokeLevel();
 
   const {
     tracks,
@@ -256,6 +260,9 @@ export function MiniPlayer() {
               </Button>
             </div>
 
+            {/* Karaoke toggle button */}
+            <KaraokeToggleButton />
+
             {/* Close button */}
             <Button
               variant="ghost"
@@ -266,6 +273,9 @@ export function MiniPlayer() {
               <X className="w-4 h-4" />
             </Button>
           </div>
+
+          {/* Karaoke lyrics line (Level 1) */}
+          {karaokeLevel >= 1 && <KaraokeFooterLine />}
 
           {/* Seekable progress bar with repeat/shuffle controls */}
           <div className="px-4 pb-2 flex items-center gap-2 text-xs text-muted-foreground">

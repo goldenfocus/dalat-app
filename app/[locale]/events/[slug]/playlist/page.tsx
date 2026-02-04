@@ -56,6 +56,7 @@ async function getEventPlaylist(slug: string): Promise<PlaylistData | null> {
       thumbnail_url: row.track_thumbnail_url,
       duration_seconds: row.track_duration_seconds,
       sort_order: row.track_sort_order,
+      lyrics_lrc: row.track_lyrics_lrc,  // LRC for karaoke display
     }));
 
   return {

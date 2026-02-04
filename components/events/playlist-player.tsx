@@ -47,6 +47,7 @@ export interface PlaylistTrack {
   thumbnail_url: string | null;
   duration_seconds: number | null;
   sort_order: number;
+  lyrics_lrc?: string | null;  // LRC format for karaoke display
 }
 
 export interface PlaylistPlayerProps {
@@ -112,7 +113,7 @@ export function PlaylistPlayer({
   // Start playing this playlist (sets it in global store)
   const startPlaylist = useCallback(
     (startIndex = 0) => {
-      // Convert tracks to store format
+      // Convert tracks to store format, including lyrics_lrc for karaoke
       const audioTracks = tracks.map((t) => ({
         id: t.id,
         file_url: t.file_url,
@@ -121,6 +122,7 @@ export function PlaylistPlayer({
         album: t.album,
         thumbnail_url: t.thumbnail_url,
         duration_seconds: t.duration_seconds,
+        lyrics_lrc: t.lyrics_lrc,  // Pass LRC for karaoke display
       }));
 
       setPlaylist(
