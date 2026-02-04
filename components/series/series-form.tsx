@@ -82,7 +82,7 @@ export function SeriesForm({ series, userId: _userId }: SeriesFormProps) {
 
   // Delete state
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteScope, setDeleteScope] = useState<"future" | "all">("future");
+  const [deleteScope, setDeleteScope] = useState<"future" | "all" | null>(null);
 
   // Fetch organizers on mount
   useEffect(() => {
@@ -427,7 +427,7 @@ export function SeriesForm({ series, userId: _userId }: SeriesFormProps) {
           </p>
 
           <RadioGroup
-            value={deleteScope}
+            value={deleteScope ?? ""}
             onValueChange={(value) => setDeleteScope(value as "future" | "all")}
           >
             <div className="flex items-start gap-3">
@@ -456,7 +456,7 @@ export function SeriesForm({ series, userId: _userId }: SeriesFormProps) {
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="w-full" disabled={isDeleting}>
+              <Button variant="destructive" className="w-full" disabled={isDeleting || !deleteScope}>
                 {isDeleting ? t("cancelling") : t("cancelSeries")}
               </Button>
             </AlertDialogTrigger>
