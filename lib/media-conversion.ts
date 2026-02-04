@@ -1,22 +1,71 @@
 // Client-side media conversion utilities
 
 /**
+ * Convert HEIC/HEIF image to JPEG using canvas (browser's native decoding)
+ * This works on Safari/iOS which natively supports HEIC rendering.
+ * Falls back gracefully if the browser doesn't support HEIC.
+ */
+async function convertHeicViaCanvas(file: File): Promise<File | null> {
+  const url = URL.createObjectURL(file);
+
+  try {
+    // Try to load the HEIC image using browser's native decoder
+    const img = new Image();
+
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error("Browser cannot decode HEIC"));
+      img.src = url;
+    });
+
+    // Successfully loaded - browser supports HEIC natively
+    // Draw to canvas and export as JPEG
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      throw new Error("Canvas context not available");
+    }
+
+    ctx.drawImage(img, 0, 0);
+
+    // Export as JPEG
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob((b) => resolve(b), "image/jpeg", 0.9);
+    });
+
+    if (!blob || blob.size === 0) {
+      throw new Error("Canvas export produced empty result");
+    }
+
+    const newName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
+    return new File([blob], newName, { type: "image/jpeg" });
+  } catch {
+    // Browser doesn't support native HEIC decoding
+    return null;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/**
  * Convert HEIC/HEIF image to JPEG
  *
  * Strategy:
- * 1. Try client-side heic2any conversion (WASM-based)
- * 2. If that fails, return the original HEIC file
- *    - HEIC uploads directly to R2 via presigned URL (bypasses Cloudflare WAF)
- *    - Cloudflare Image Resizing converts HEIC to WebP/AVIF on-the-fly when displaying
+ * 1. Try client-side heic2any conversion (WASM-based, works on most browsers)
+ * 2. If that fails, try canvas conversion (uses browser's native HEIC decoder, works on Safari/iOS)
+ * 3. If both fail, throw an error (storage backends don't accept raw HEIC)
  *
- * Note: Server-side conversion removed - Cloudflare WAF blocks file uploads to API routes.
- * This approach is actually better: HEIC stays compressed during upload (smaller transfer),
- * and gets converted at the CDN edge closest to the viewer.
+ * Note: We never upload raw HEIC files because:
+ * - Supabase Storage rejects HEIC with "mime type not supported"
+ * - R2 might accept it, but fallback to Supabase would still fail
  */
 export async function convertHeicToJpeg(file: File): Promise<File> {
   console.log("[HEIC] Starting conversion for:", file.name, "size:", file.size, "type:", file.type);
 
-  // Try client-side conversion first (works for most HEIC files)
+  // Method 1: Try heic2any (WASM-based, works on most browsers)
   try {
     // Dynamic import to ensure WASM loads properly at runtime
     const heic2any = (await import("heic2any")).default;
@@ -52,24 +101,35 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
     );
 
     return convertedFile;
-  } catch (clientError) {
-    // Client-side conversion failed - this happens with some newer iPhone HEIC codecs
-    // that heic2any's libheif doesn't support.
-    //
-    // Instead of failing, upload the HEIC directly to R2:
-    // - Presigned URL upload bypasses Cloudflare WAF (no 403!)
-    // - HEIC is smaller than JPEG during upload (better UX on slow connections)
-    // - Cloudflare Image Resizing converts to WebP/AVIF when displaying
-    //   (via /cdn-cgi/image/format=auto/...)
-    console.warn(
-      "[HEIC] Client-side conversion failed. Uploading HEIC directly - " +
-      "Cloudflare Image Resizing will convert on display.",
-      clientError
-    );
-
-    // Return original HEIC file - it will be uploaded as-is
-    return file;
+  } catch (heic2anyError) {
+    console.warn("[HEIC] heic2any conversion failed, trying canvas fallback:", heic2anyError);
   }
+
+  // Method 2: Try canvas conversion (uses browser's native HEIC decoder)
+  // This works on Safari/iOS which is where most HEIC files come from
+  try {
+    console.log("[HEIC] Attempting canvas-based conversion (native browser decoder)...");
+    const canvasResult = await convertHeicViaCanvas(file);
+
+    if (canvasResult) {
+      console.log(
+        "[HEIC] Canvas conversion successful:",
+        canvasResult.name,
+        "size:",
+        canvasResult.size
+      );
+      return canvasResult;
+    }
+  } catch (canvasError) {
+    console.warn("[HEIC] Canvas conversion failed:", canvasError);
+  }
+
+  // Both methods failed - throw error instead of uploading raw HEIC
+  // (storage backends don't accept HEIC mime type)
+  console.error("[HEIC] All conversion methods failed for:", file.name);
+  throw new Error(
+    "Unable to convert HEIC image. Please convert to JPEG/PNG before uploading, or try a different browser."
+  );
 }
 
 /**
