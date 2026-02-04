@@ -144,26 +144,33 @@ export function AdminImportPage() {
   const [schedule, setSchedule] = useState<ScheduleStatus | null>(null);
   const [scheduleLoading, setScheduleLoading] = useState(false);
 
-  // Wellhoods sync
-  const [wellhoodsSyncing, setWellhoodsSyncing] = useState(false);
-  const [wellhoodsResult, setWellhoodsResult] = useState<{
+  // Event source sync
+  type EventSource = "dalat-gov" | "wellhoods";
+  const [selectedSource, setSelectedSource] = useState<EventSource>("dalat-gov");
+  const [sourceSyncing, setSourceSyncing] = useState(false);
+  const [sourceResult, setSourceResult] = useState<{
     success: boolean;
+    articlesScraped?: number;
     processed: number;
     skipped: number;
     errors: number;
     details?: string[];
   } | null>(null);
 
-  // Dalat Gov sync
-  const [dalatGovSyncing, setDalatGovSyncing] = useState(false);
-  const [dalatGovResult, setDalatGovResult] = useState<{
-    success: boolean;
-    articlesScraped: number;
-    processed: number;
-    skipped: number;
-    errors: number;
-    details?: string[];
-  } | null>(null);
+  const EVENT_SOURCES: Record<EventSource, { name: string; description: string; endpoint: string; color: string }> = {
+    "dalat-gov": {
+      name: "Đà Lạt Gov.vn",
+      description: "Scrapes dalat-info.gov.vn (tourism & culture) - AI extracts events from Vietnamese articles",
+      endpoint: "/api/import/dalat-gov",
+      color: "blue",
+    },
+    "wellhoods": {
+      name: "Wellhoods (paused)",
+      description: "Wellness events from wellhoods.com - currently no Đà Lạt events available",
+      endpoint: "/api/import/wellhoods",
+      color: "gray",
+    },
+  };
 
   // Load import history on mount
   useEffect(() => {
@@ -371,20 +378,23 @@ export function AdminImportPage() {
     }
   }
 
-  async function handleSyncWellhoods() {
-    setWellhoodsSyncing(true);
-    setWellhoodsResult(null);
+  async function handleSyncSource() {
+    setSourceSyncing(true);
+    setSourceResult(null);
+
+    const source = EVENT_SOURCES[selectedSource];
 
     try {
-      const response = await fetch("/api/import/wellhoods", {
+      const response = await fetch(source.endpoint, {
         method: "POST",
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setWellhoodsResult({
+        setSourceResult({
           success: true,
+          articlesScraped: data.articlesScraped,
           processed: data.processed || 0,
           skipped: data.skipped || 0,
           errors: data.errors || 0,
@@ -392,7 +402,7 @@ export function AdminImportPage() {
         });
         loadHistory();
       } else {
-        setWellhoodsResult({
+        setSourceResult({
           success: false,
           processed: 0,
           skipped: 0,
@@ -401,7 +411,7 @@ export function AdminImportPage() {
         });
       }
     } catch (err) {
-      setWellhoodsResult({
+      setSourceResult({
         success: false,
         processed: 0,
         skipped: 0,
@@ -409,52 +419,7 @@ export function AdminImportPage() {
         details: [`Network error: ${err instanceof Error ? err.message : "Unknown"}`],
       });
     } finally {
-      setWellhoodsSyncing(false);
-    }
-  }
-
-  async function handleSyncDalatGov() {
-    setDalatGovSyncing(true);
-    setDalatGovResult(null);
-
-    try {
-      const response = await fetch("/api/import/dalat-gov", {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setDalatGovResult({
-          success: true,
-          articlesScraped: data.articlesScraped || 0,
-          processed: data.processed || 0,
-          skipped: data.skipped || 0,
-          errors: data.errors || 0,
-          details: data.details,
-        });
-        loadHistory();
-      } else {
-        setDalatGovResult({
-          success: false,
-          articlesScraped: 0,
-          processed: 0,
-          skipped: 0,
-          errors: 1,
-          details: [data.error || "Sync failed"],
-        });
-      }
-    } catch (err) {
-      setDalatGovResult({
-        success: false,
-        articlesScraped: 0,
-        processed: 0,
-        skipped: 0,
-        errors: 1,
-        details: [`Network error: ${err instanceof Error ? err.message : "Unknown"}`],
-      });
-    } finally {
-      setDalatGovSyncing(false);
+      setSourceSyncing(false);
     }
   }
 
@@ -850,25 +815,39 @@ https://eventbrite.com/e/some-event-tickets-123`}
 
         {/* ==================== AUTO-SCRAPING TAB ==================== */}
         <TabsContent value="schedule" className="space-y-6">
-          {/* Wellhoods Sync Card */}
-          <Card className="border-green-200 dark:border-green-800">
+          {/* Event Sources Card */}
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Globe className="w-5 h-5 text-green-600" />
-                Wellhoods Sync
+                <Globe className="w-5 h-5" />
+                Event Sources
               </CardTitle>
               <CardDescription>
-                Import all wellness events from Wellhoods (wellhoods.com) - syncs daily at 7 AM
+                Scrape events from external websites - runs daily at 8 AM Vietnam time
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={handleSyncWellhoods}
-                  disabled={wellhoodsSyncing}
-                  className="bg-green-600 hover:bg-green-700"
+              <div className="flex flex-col sm:flex-row gap-3">
+                <select
+                  value={selectedSource}
+                  onChange={(e) => {
+                    setSelectedSource(e.target.value as EventSource);
+                    setSourceResult(null);
+                  }}
+                  className="flex-1 px-3 py-2 rounded-lg border bg-background text-sm"
                 >
-                  {wellhoodsSyncing ? (
+                  {Object.entries(EVENT_SOURCES).map(([key, source]) => (
+                    <option key={key} value={key}>
+                      {source.name}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  onClick={handleSyncSource}
+                  disabled={sourceSyncing || selectedSource === "wellhoods"}
+                  className="min-w-[120px]"
+                >
+                  {sourceSyncing ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       Syncing...
@@ -880,158 +859,68 @@ https://eventbrite.com/e/some-event-tickets-123`}
                     </>
                   )}
                 </Button>
-                <p className="text-sm text-muted-foreground">
-                  Imports new events, skips duplicates automatically
-                </p>
               </div>
 
-              {wellhoodsResult && (
+              <p className="text-sm text-muted-foreground">
+                {EVENT_SOURCES[selectedSource].description}
+              </p>
+
+              {sourceResult && (
                 <div
                   className={`p-4 rounded-lg ${
-                    wellhoodsResult.success
+                    sourceResult.success
                       ? "bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800"
                       : "bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    {wellhoodsResult.success ? (
+                    {sourceResult.success ? (
                       <CheckCircle className="w-5 h-5 text-green-600" />
                     ) : (
                       <AlertCircle className="w-5 h-5 text-red-600" />
                     )}
                     <span className="font-medium">
-                      {wellhoodsResult.success ? "Sync Complete" : "Sync Failed"}
+                      {sourceResult.success ? "Sync Complete" : "Sync Failed"}
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Imported</p>
-                      <p className="text-lg font-bold text-green-600">
-                        {wellhoodsResult.processed}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Skipped</p>
-                      <p className="text-lg font-bold text-gray-500">
-                        {wellhoodsResult.skipped}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Errors</p>
-                      <p className="text-lg font-bold text-red-600">
-                        {wellhoodsResult.errors}
-                      </p>
-                    </div>
-                  </div>
-                  {wellhoodsResult.details && wellhoodsResult.details.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-current/10">
-                      <p className="text-xs text-muted-foreground mb-1">Details:</p>
-                      <div className="max-h-32 overflow-y-auto text-xs space-y-1">
-                        {wellhoodsResult.details.slice(0, 10).map((detail, i) => (
-                          <p key={i} className="truncate">{detail}</p>
-                        ))}
-                        {wellhoodsResult.details.length > 10 && (
-                          <p className="text-muted-foreground">
-                            ...and {wellhoodsResult.details.length - 10} more
-                          </p>
-                        )}
+                  <div className={`grid gap-4 text-sm ${sourceResult.articlesScraped !== undefined ? "grid-cols-4" : "grid-cols-3"}`}>
+                    {sourceResult.articlesScraped !== undefined && (
+                      <div>
+                        <p className="text-muted-foreground">Articles</p>
+                        <p className="text-lg font-bold text-blue-600">
+                          {sourceResult.articlesScraped}
+                        </p>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Dalat Gov Sync Card */}
-          <Card className="border-blue-200 dark:border-blue-800">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="w-5 h-5 text-blue-600" />
-                Đà Lạt Gov.vn Sync
-              </CardTitle>
-              <CardDescription>
-                Scrape events from dalat-info.gov.vn (tourism & culture sections) - AI extracts event details from articles
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={handleSyncDalatGov}
-                  disabled={dalatGovSyncing}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {dalatGovSyncing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Scraping...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Scrape Now
-                    </>
-                  )}
-                </Button>
-                <p className="text-sm text-muted-foreground">
-                  Uses Claude to extract events from Vietnamese articles
-                </p>
-              </div>
-
-              {dalatGovResult && (
-                <div
-                  className={`p-4 rounded-lg ${
-                    dalatGovResult.success
-                      ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800"
-                      : "bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    {dalatGovResult.success ? (
-                      <CheckCircle className="w-5 h-5 text-blue-600" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-red-600" />
                     )}
-                    <span className="font-medium">
-                      {dalatGovResult.success ? "Scrape Complete" : "Scrape Failed"}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Articles</p>
-                      <p className="text-lg font-bold text-blue-600">
-                        {dalatGovResult.articlesScraped}
-                      </p>
-                    </div>
                     <div>
                       <p className="text-muted-foreground">Imported</p>
                       <p className="text-lg font-bold text-green-600">
-                        {dalatGovResult.processed}
+                        {sourceResult.processed}
                       </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Skipped</p>
                       <p className="text-lg font-bold text-gray-500">
-                        {dalatGovResult.skipped}
+                        {sourceResult.skipped}
                       </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Errors</p>
                       <p className="text-lg font-bold text-red-600">
-                        {dalatGovResult.errors}
+                        {sourceResult.errors}
                       </p>
                     </div>
                   </div>
-                  {dalatGovResult.details && dalatGovResult.details.length > 0 && (
+                  {sourceResult.details && sourceResult.details.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-current/10">
                       <p className="text-xs text-muted-foreground mb-1">Details:</p>
                       <div className="max-h-32 overflow-y-auto text-xs space-y-1">
-                        {dalatGovResult.details.slice(0, 15).map((detail, i) => (
+                        {sourceResult.details.slice(0, 15).map((detail, i) => (
                           <p key={i} className="truncate">{detail}</p>
                         ))}
-                        {dalatGovResult.details.length > 15 && (
+                        {sourceResult.details.length > 15 && (
                           <p className="text-muted-foreground">
-                            ...and {dalatGovResult.details.length - 15} more
+                            ...and {sourceResult.details.length - 15} more
                           </p>
                         )}
                       </div>
