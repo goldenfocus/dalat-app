@@ -50,19 +50,25 @@ async function convertHeicViaCanvas(file: File): Promise<File | null> {
   }
 }
 
+export interface HeicConversionResult {
+  file: File;
+  needsServerConversion: boolean;
+}
+
 /**
  * Convert HEIC/HEIF image to JPEG
  *
  * Strategy:
  * 1. Try client-side heic2any conversion (WASM-based, works on most browsers)
  * 2. If that fails, try canvas conversion (uses browser's native HEIC decoder, works on Safari/iOS)
- * 3. If both fail, throw an error (storage backends don't accept raw HEIC)
+ * 3. If both fail, return original HEIC with flag for server-side conversion
  *
- * Note: We never upload raw HEIC files because:
- * - Supabase Storage rejects HEIC with "mime type not supported"
- * - R2 might accept it, but fallback to Supabase would still fail
+ * Server-side conversion flow:
+ * - Upload HEIC to R2 via presigned URL (bypasses Cloudflare WAF)
+ * - Call /api/convert-heic-r2 with the R2 path
+ * - Server reads from R2, converts with sharp, saves JPEG back
  */
-export async function convertHeicToJpeg(file: File): Promise<File> {
+export async function convertHeicToJpeg(file: File): Promise<HeicConversionResult> {
   console.log("[HEIC] Starting conversion for:", file.name, "size:", file.size, "type:", file.type);
 
   // Method 1: Try heic2any (WASM-based, works on most browsers)
@@ -100,7 +106,7 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
       convertedFile.size
     );
 
-    return convertedFile;
+    return { file: convertedFile, needsServerConversion: false };
   } catch (heic2anyError) {
     console.warn("[HEIC] heic2any conversion failed, trying canvas fallback:", heic2anyError);
   }
@@ -118,18 +124,41 @@ export async function convertHeicToJpeg(file: File): Promise<File> {
         "size:",
         canvasResult.size
       );
-      return canvasResult;
+      return { file: canvasResult, needsServerConversion: false };
     }
   } catch (canvasError) {
     console.warn("[HEIC] Canvas conversion failed:", canvasError);
   }
 
-  // Both methods failed - throw error instead of uploading raw HEIC
-  // (storage backends don't accept HEIC mime type)
-  console.error("[HEIC] All conversion methods failed for:", file.name);
-  throw new Error(
-    "Unable to convert HEIC image. Please convert to JPEG/PNG before uploading, or try a different browser."
-  );
+  // Both client-side methods failed - return original for server-side conversion
+  console.log("[HEIC] Client-side conversion failed, will use server-side conversion for:", file.name);
+  return { file, needsServerConversion: true };
+}
+
+/**
+ * Convert HEIC file that was uploaded to R2 using server-side sharp
+ * Call this after uploading a HEIC file to R2 when needsServerConversion is true
+ */
+export async function convertHeicServerSide(
+  bucket: string,
+  path: string
+): Promise<{ url: string; path: string }> {
+  console.log("[HEIC] Server-side conversion for:", bucket, path);
+
+  const response = await fetch("/api/convert-heic-r2", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ bucket, path }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Server-side HEIC conversion failed");
+  }
+
+  const result = await response.json();
+  console.log("[HEIC] Server conversion complete:", result.url);
+  return { url: result.url, path: result.path };
 }
 
 /**
@@ -231,14 +260,22 @@ async function pollConversionJob(
   throw new Error("Conversion timed out");
 }
 
+export interface ConversionResult {
+  file: File;
+  needsServerConversion: boolean;
+}
+
 /**
  * Convert file if needed, returns original file if no conversion required
  * Note: MOV files now upload directly without conversion (modern browsers handle them)
+ *
+ * @returns ConversionResult with file and needsServerConversion flag
+ *          If needsServerConversion is true, upload to R2 first, then call convertHeicServerSide
  */
 export async function convertIfNeeded(
   file: File,
   onProgress?: (status: string) => void
-): Promise<File> {
+): Promise<ConversionResult> {
   const ext = file.name.split(".").pop()?.toLowerCase();
   const isHeic =
     file.type === "image/heic" ||
@@ -252,10 +289,10 @@ export async function convertIfNeeded(
     onProgress?.("Converting HEIC to JPEG...");
     console.log("[Convert] Starting HEIC conversion...");
     const result = await convertHeicToJpeg(file);
-    console.log("[Convert] HEIC conversion result:", result.name, result.type, result.size);
+    console.log("[Convert] HEIC conversion result:", result.file.name, result.file.type, result.file.size, "needsServerConversion:", result.needsServerConversion);
     return result;
   }
 
   console.log("[Convert] No conversion needed, returning original");
-  return file;
+  return { file, needsServerConversion: false };
 }

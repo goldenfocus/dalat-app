@@ -37,7 +37,7 @@ import {
   needsConversion,
   generateSmartFilename,
 } from "@/lib/media-utils";
-import { convertIfNeeded } from "@/lib/media-conversion";
+import { convertIfNeeded, convertHeicServerSide } from "@/lib/media-conversion";
 import { DisintegrationEffect } from "@/components/ui/disintegration-effect";
 import { ImageVersionHistory } from "@/components/ui/image-version-history";
 
@@ -242,17 +242,22 @@ export function EventMediaUpload({
     );
 
     let fileToUpload = file;
+    let needsServerHeicConversion = false;
 
     // Convert if needed (HEIC → JPEG, MOV → MP4)
     if (needsConversion(file)) {
       setIsConverting(true);
       try {
-        fileToUpload = await convertIfNeeded(file, setConvertStatus);
-        // Update preview with converted file
-        URL.revokeObjectURL(objectUrl);
-        const newObjectUrl = URL.createObjectURL(fileToUpload);
-        setPreviewUrl(newObjectUrl);
-        setPreviewIsVideo(fileToUpload.type.startsWith("video/"));
+        const conversionResult = await convertIfNeeded(file, setConvertStatus);
+        fileToUpload = conversionResult.file;
+        needsServerHeicConversion = conversionResult.needsServerConversion;
+        // Update preview with converted file (only if actually converted)
+        if (!needsServerHeicConversion) {
+          URL.revokeObjectURL(objectUrl);
+          const newObjectUrl = URL.createObjectURL(fileToUpload);
+          setPreviewUrl(newObjectUrl);
+          setPreviewIsVideo(fileToUpload.type.startsWith("video/"));
+        }
       } catch (err) {
         console.error("Conversion error:", err);
         setError(
@@ -305,6 +310,23 @@ export function EventMediaUpload({
           entityId: eventId,
         });
         finalUrl = result.publicUrl;
+
+        // If HEIC needs server-side conversion, do it now
+        if (needsServerHeicConversion && result.path) {
+          setConvertStatus("Converting on server...");
+          setIsConverting(true);
+          try {
+            const conversionResult = await convertHeicServerSide(bucket, result.path);
+            finalUrl = conversionResult.url;
+            console.log("[EventMediaUpload] Server-side HEIC conversion complete:", finalUrl);
+          } catch (convErr) {
+            console.error("[EventMediaUpload] Server-side HEIC conversion failed:", convErr);
+            // Continue with original URL - Cloudflare Image Resizing might handle it
+          } finally {
+            setIsConverting(false);
+            setConvertStatus(null);
+          }
+        }
       }
 
       // Update preview to permanent URL before revoking blob

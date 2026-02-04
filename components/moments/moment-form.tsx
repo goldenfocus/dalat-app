@@ -31,7 +31,7 @@ import {
   needsConversion,
   generateVideoThumbnail,
 } from "@/lib/media-utils";
-import { convertIfNeeded } from "@/lib/media-conversion";
+import { convertIfNeeded, convertHeicServerSide } from "@/lib/media-conversion";
 import {
   needsCompression,
   compressVideo,
@@ -368,6 +368,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
     try {
       let fileToUpload = file;
+      let needsServerHeicConversion = false;
 
       // Convert if needed (HEIC → JPEG, MOV → MP4)
       const conversionNeeded = needsConversion(file);
@@ -383,23 +384,27 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
         try {
           console.log("[Upload] Calling convertIfNeeded...");
-          fileToUpload = await convertIfNeeded(file);
-          console.log("[Upload] Conversion complete:", fileToUpload.name, fileToUpload.type, fileToUpload.size);
+          const conversionResult = await convertIfNeeded(file);
+          fileToUpload = conversionResult.file;
+          needsServerHeicConversion = conversionResult.needsServerConversion;
+          console.log("[Upload] Conversion complete:", fileToUpload.name, fileToUpload.type, fileToUpload.size, "needsServerConversion:", needsServerHeicConversion);
 
-          // Update preview with converted file
-          const newPreviewUrl = URL.createObjectURL(fileToUpload);
-          setUploads(prev => prev.map(item => {
-            if (item.id === itemId) {
-              URL.revokeObjectURL(item.previewUrl);
-              return {
-                ...item,
-                previewUrl: newPreviewUrl,
-                isVideo: fileToUpload.type.startsWith("video/"),
-                status: "uploading" as const,
-              };
-            }
-            return item;
-          }));
+          // Update preview with converted file (only if actually converted)
+          if (!needsServerHeicConversion) {
+            const newPreviewUrl = URL.createObjectURL(fileToUpload);
+            setUploads(prev => prev.map(item => {
+              if (item.id === itemId) {
+                URL.revokeObjectURL(item.previewUrl);
+                return {
+                  ...item,
+                  previewUrl: newPreviewUrl,
+                  isVideo: fileToUpload.type.startsWith("video/"),
+                  status: "uploading" as const,
+                };
+              }
+              return item;
+            }));
+          }
         } catch (err) {
           console.error("[Upload] Conversion error:", err);
           setUploads(prev => prev.map(item =>
@@ -523,9 +528,28 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       const fileName = `${eventId}/${userId}/${timestamp}_${randomSuffix}.${ext}`;
 
       // Upload media to R2 (or Supabase fallback if R2 not configured)
-      const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
+      let { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
         filename: fileName,
       });
+
+      // If HEIC needs server-side conversion, do it now
+      if (needsServerHeicConversion) {
+        console.log("[Upload] HEIC needs server-side conversion, calling API...");
+        setUploads(prev => prev.map(item =>
+          item.id === itemId
+            ? { ...item, status: "converting" as const }
+            : item
+        ));
+
+        try {
+          const conversionResult = await convertHeicServerSide("moments", uploadedPath);
+          publicUrl = conversionResult.url;
+          console.log("[Upload] Server-side HEIC conversion complete:", publicUrl);
+        } catch (convErr) {
+          console.error("[Upload] Server-side HEIC conversion failed:", convErr);
+          // Continue with original URL - Cloudflare Image Resizing might handle it
+        }
+      }
 
       // For videos, generate and upload a thumbnail
       let thumbnailUrl: string | undefined;

@@ -15,7 +15,7 @@ import {
   needsConversion,
   generateVideoThumbnail,
 } from "@/lib/media-utils";
-import { convertIfNeeded } from "@/lib/media-conversion";
+import { convertIfNeeded, convertHeicServerSide } from "@/lib/media-conversion";
 import { needsImageCompression, compressImage } from "@/lib/image-compression";
 import type { CompressionProgress } from "@/lib/video-compression";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
@@ -165,6 +165,7 @@ export function useUploadQueue({
   const processUpload = useCallback(async (item: QueuedUpload) => {
     const { id, file, isVideo } = item;
     let fileToUpload = file;
+    let needsServerHeicConversion = false;
 
     // Mark as active
     activeUploadsRef.current.add(id);
@@ -173,15 +174,19 @@ export function useUploadQueue({
       // Step 1: Convert HEIC images (skip video conversion - let Cloudflare handle it)
       if (needsConversion(file) && !isVideo) {
         dispatch({ type: "UPDATE_ITEM", id, updates: { status: "converting" } });
-        fileToUpload = await convertIfNeeded(file);
+        const conversionResult = await convertIfNeeded(file);
+        fileToUpload = conversionResult.file;
+        needsServerHeicConversion = conversionResult.needsServerConversion;
 
-        // Update preview with converted file
-        const newPreviewUrl = URL.createObjectURL(fileToUpload);
-        dispatch({
-          type: "UPDATE_ITEM",
-          id,
-          updates: { previewUrl: newPreviewUrl },
-        });
+        // Update preview with converted file (only if actually converted)
+        if (!needsServerHeicConversion) {
+          const newPreviewUrl = URL.createObjectURL(fileToUpload);
+          dispatch({
+            type: "UPDATE_ITEM",
+            id,
+            updates: { previewUrl: newPreviewUrl },
+          });
+        }
       }
 
       // Step 2: Compress images if needed (>3MB → ~2MB)
@@ -304,9 +309,24 @@ export function useUploadQueue({
 
         console.log(`[UploadQueue] Uploading ${file.name} (${fileToUpload.size} bytes) as ${fileName}`);
 
-        const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
+        let { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
           filename: fileName,
         });
+
+        // If HEIC needs server-side conversion, do it now
+        if (needsServerHeicConversion) {
+          console.log("[UploadQueue] HEIC needs server-side conversion, calling API...");
+          dispatch({ type: "UPDATE_ITEM", id, updates: { status: "converting", progress: 80 } });
+
+          try {
+            const conversionResult = await convertHeicServerSide("moments", uploadedPath);
+            publicUrl = conversionResult.url;
+            console.log("[UploadQueue] Server-side HEIC conversion complete:", publicUrl);
+          } catch (convErr) {
+            console.error("[UploadQueue] Server-side HEIC conversion failed:", convErr);
+            // Continue with original URL - Cloudflare Image Resizing might handle it
+          }
+        }
 
         console.log(`[UploadQueue] Upload complete: ${file.name} → ${publicUrl}`);
 

@@ -21,8 +21,8 @@ const BUCKET_CONFIG: Record<string, string[]> = {
     "image/png",
     "image/webp",
     "image/gif",
-    // Note: HEIC/HEIF removed - always converted client-side before upload
-    // (storage backends like Supabase don't accept HEIC mime type)
+    "image/heic", // HEIC from iOS - uploaded to R2, converted server-side
+    "image/heif", // HEIF variant
     "video/mp4",
     "video/webm",
     "video/quicktime", // .mov files from iOS

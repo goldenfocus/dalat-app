@@ -8,7 +8,7 @@ import {
   needsConversion,
   generateVideoThumbnail,
 } from "@/lib/media-utils";
-import { convertIfNeeded } from "@/lib/media-conversion";
+import { convertIfNeeded, convertHeicServerSide } from "@/lib/media-conversion";
 import {
   needsImageCompression,
   compressImage,
@@ -431,6 +431,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
     }
 
     let fileToUpload = file;
+    let needsServerHeicConversion = false;
 
     // Convert if needed (HEIC → JPEG, MOV → MP4)
     const conversionNeeded = needsConversion(file);
@@ -441,19 +442,23 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting" } });
       try {
         console.log("[BulkUpload] Calling convertIfNeeded...");
-        fileToUpload = await convertIfNeeded(file);
-        console.log("[BulkUpload] Conversion complete:", fileToUpload.name, fileToUpload.type, fileToUpload.size);
+        const conversionResult = await convertIfNeeded(file);
+        fileToUpload = conversionResult.file;
+        needsServerHeicConversion = conversionResult.needsServerConversion;
+        console.log("[BulkUpload] Conversion complete:", fileToUpload.name, fileToUpload.type, fileToUpload.size, "needsServerConversion:", needsServerHeicConversion);
 
-        // Update preview with converted file
-        const newPreviewUrl = URL.createObjectURL(fileToUpload);
-        dispatch({
-          type: "UPDATE_FILE",
-          id,
-          updates: {
-            previewUrl: newPreviewUrl,
-            type: getFileMediaType(fileToUpload),
-          },
-        });
+        // Update preview with converted file (only if actually converted)
+        if (!needsServerHeicConversion) {
+          const newPreviewUrl = URL.createObjectURL(fileToUpload);
+          dispatch({
+            type: "UPDATE_FILE",
+            id,
+            updates: {
+              previewUrl: newPreviewUrl,
+              type: getFileMediaType(fileToUpload),
+            },
+          });
+        }
       } catch (err) {
         console.error("[BulkUpload] Conversion error:", err);
         dispatch({
@@ -635,9 +640,24 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         // ========================================
         const fileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}.${ext}`;
 
-        const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
+        let { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
           filename: fileName,
         });
+
+        // If HEIC needs server-side conversion, do it now
+        if (needsServerHeicConversion) {
+          console.log("[BulkUpload] HEIC needs server-side conversion, calling API...");
+          dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting", progress: 80 } });
+
+          try {
+            const conversionResult = await convertHeicServerSide("moments", uploadedPath);
+            publicUrl = conversionResult.url;
+            console.log("[BulkUpload] Server-side HEIC conversion complete:", publicUrl);
+          } catch (convErr) {
+            console.error("[BulkUpload] Server-side HEIC conversion failed:", convErr);
+            // Continue with original URL - Cloudflare Image Resizing might handle it
+          }
+        }
 
         dispatch({
           type: "UPDATE_FILE",
