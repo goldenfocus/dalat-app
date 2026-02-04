@@ -23,7 +23,12 @@ import {
   useIsPlayerVisible,
   useKaraokeLevel,
 } from "@/lib/stores/audio-player-store";
-import { KaraokeFooterLine, KaraokeToggleButton } from "./karaoke/KaraokeFooterLine";
+import {
+  KaraokeFooterLine,
+  KaraokeToggleButton,
+  KaraokeTheater,
+  KaraokeHero,
+} from "./karaoke";
 
 export function MiniPlayer() {
   const router = useRouter();
@@ -334,6 +339,10 @@ export function MiniPlayer() {
 
       {/* Spacer to prevent content from being hidden behind the mini player */}
       <div className="h-24 lg:h-28" />
+
+      {/* Karaoke overlays - Level 2 (Theater) and Level 3 (Hero) */}
+      <KaraokeTheater />
+      <KaraokeHero />
     </>
   );
 }
