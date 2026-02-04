@@ -378,6 +378,7 @@
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",
     "editEvent": "Chỉnh sửa sự kiện",
+    "manageSeries": "Quản lý chuỗi",
     "eventSettings": "Cài đặt sự kiện",
     "createSimilar": "Tạo sự kiện tương tự",
     "deleteEvent": "Xóa sự kiện",

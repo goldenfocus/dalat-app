@@ -706,7 +706,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 initialSettings={eventSettings}
                 pendingCount={momentCounts?.pending_count ?? 0}
               />
-              <EventActions eventId={event.id} eventSlug={event.slug} />
+              <EventActions eventId={event.id} eventSlug={event.slug} seriesSlug={event.event_series?.slug} />
             </>
           )}
         </div>

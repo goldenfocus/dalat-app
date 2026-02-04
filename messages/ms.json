@@ -378,6 +378,7 @@
   "eventActions": {
     "eventOptions": "Pilihan acara",
     "editEvent": "Edit acara",
+    "manageSeries": "Urus siri",
     "eventSettings": "Tetapan acara",
     "createSimilar": "Cipta acara serupa",
     "deleteEvent": "Padam acara",

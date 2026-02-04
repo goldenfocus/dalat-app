@@ -378,6 +378,7 @@
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",
     "editEvent": "แก้ไขกิจกรรม",
+    "manageSeries": "จัดการซีรีส์",
     "eventSettings": "การตั้งค่ากิจกรรม",
     "createSimilar": "สร้างกิจกรรมที่คล้ายกัน",
     "deleteEvent": "ลบกิจกรรม",

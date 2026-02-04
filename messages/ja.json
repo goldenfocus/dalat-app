@@ -378,6 +378,7 @@
   "eventActions": {
     "eventOptions": "イベントオプション",
     "editEvent": "イベントを編集",
+    "manageSeries": "シリーズを管理",
     "eventSettings": "イベント設定",
     "createSimilar": "類似イベントを作成",
     "deleteEvent": "イベントを削除",

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, Pencil, Trash2, Copy } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Copy, Repeat } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,10 @@ import {
 interface EventActionsProps {
   eventId: string;
   eventSlug: string;
+  seriesSlug?: string | null;
 }
 
-export function EventActions({ eventId, eventSlug }: EventActionsProps) {
+export function EventActions({ eventId, eventSlug, seriesSlug }: EventActionsProps) {
   const router = useRouter();
   const t = useTranslations("eventActions");
   const tCommon = useTranslations("common");
@@ -28,6 +29,12 @@ export function EventActions({ eventId, eventSlug }: EventActionsProps) {
 
   function handleEdit() {
     router.push(`/events/${eventSlug}/edit`);
+  }
+
+  function handleManageSeries() {
+    if (seriesSlug) {
+      router.push(`/series/${seriesSlug}/edit`);
+    }
   }
 
   function handleCreateSimilar() {
@@ -96,6 +103,12 @@ export function EventActions({ eventId, eventSlug }: EventActionsProps) {
           <Pencil className="w-4 h-4 mr-2" />
           {t("editEvent")}
         </DropdownMenuItem>
+        {seriesSlug && (
+          <DropdownMenuItem onClick={handleManageSeries}>
+            <Repeat className="w-4 h-4 mr-2" />
+            {t("manageSeries")}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleCreateSimilar}>
           <Copy className="w-4 h-4 mr-2" />

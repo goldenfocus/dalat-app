@@ -378,6 +378,7 @@
   "eventActions": {
     "eventOptions": "Опции события",
     "editEvent": "Редактировать событие",
+    "manageSeries": "Управление серией",
     "eventSettings": "Настройки события",
     "createSimilar": "Создать похожее событие",
     "deleteEvent": "Удалить событие",

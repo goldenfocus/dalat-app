@@ -378,6 +378,7 @@
   "eventActions": {
     "eventOptions": "Event-Optionen",
     "editEvent": "Event bearbeiten",
+    "manageSeries": "Serie verwalten",
     "eventSettings": "Event-Einstellungen",
     "createSimilar": "Ähnliches Event erstellen",
     "deleteEvent": "Event löschen",

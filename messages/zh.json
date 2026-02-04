@@ -378,6 +378,7 @@
   "eventActions": {
     "eventOptions": "活动选项",
     "editEvent": "编辑活动",
+    "manageSeries": "管理系列",
     "eventSettings": "活动设置",
     "createSimilar": "创建类似活动",
     "deleteEvent": "删除活动",

@@ -378,6 +378,7 @@
   "eventActions": {
     "eventOptions": "Opsi acara",
     "editEvent": "Edit acara",
+    "manageSeries": "Kelola seri",
     "eventSettings": "Pengaturan acara",
     "createSimilar": "Buat acara serupa",
     "deleteEvent": "Hapus acara",
