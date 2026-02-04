@@ -61,6 +61,7 @@ export function EnhancePopover({
   const [selectedChipId, setSelectedChipId] = React.useState<string | null>(null);
   const [editablePrompt, setEditablePrompt] = React.useState("");
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
+  const [showBelow, setShowBelow] = React.useState(false);
   const [animationPhrase, setAnimationPhrase] = React.useState(ANIMATION_PHRASES[0]);
   const popoverRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -82,17 +83,30 @@ export function EnhancePopover({
     if (isOpen && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const popoverWidth = 320;
+      const popoverHeight = 400; // Approximate max height of popover
       const padding = 8;
 
       let left = rect.right - popoverWidth;
-      const top = rect.top - padding;
 
       if (left < padding) left = padding;
       if (left + popoverWidth > window.innerWidth - padding) {
         left = window.innerWidth - popoverWidth - padding;
       }
 
-      setPosition({ top, left });
+      // Check if there's enough space above the trigger
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      // If not enough space above (need ~400px), show below instead
+      if (spaceAbove < popoverHeight && spaceBelow > spaceAbove) {
+        // Position below the trigger
+        setShowBelow(true);
+        setPosition({ top: rect.bottom + padding, left });
+      } else {
+        // Position above the trigger (default)
+        setShowBelow(false);
+        setPosition({ top: rect.top - padding, left });
+      }
     }
   }, [isOpen, triggerRef]);
 
@@ -128,6 +142,7 @@ export function EnhancePopover({
     if (!isOpen) {
       setSelectedChipId(null);
       setEditablePrompt("");
+      setShowBelow(false);
     }
   }, [isOpen]);
 
@@ -175,14 +190,18 @@ export function EnhancePopover({
         position: "fixed",
         top: position.top,
         left: position.left,
-        transform: "translateY(-100%)",
+        transform: showBelow ? "none" : "translateY(-100%)",
+        maxHeight: showBelow ? `calc(100vh - ${position.top + 16}px)` : `${position.top - 16}px`,
+        overflowY: "auto",
       }}
       className={cn(
         "z-50 w-[320px] rounded-xl p-3",
         "bg-popover backdrop-blur-sm",
         "border border-border",
         "shadow-lg",
-        "animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200"
+        showBelow
+          ? "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
+          : "animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200"
       )}
     >
       {/* Quick Enhance Option */}
