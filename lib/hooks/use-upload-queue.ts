@@ -15,7 +15,7 @@ import {
   needsConversion,
   generateVideoThumbnail,
 } from "@/lib/media-utils";
-import { convertIfNeeded, convertHeicServerSide } from "@/lib/media-conversion";
+import { convertIfNeeded, uploadHeicServerSide } from "@/lib/media-conversion";
 import { needsImageCompression, compressImage } from "@/lib/image-compression";
 import type { CompressionProgress } from "@/lib/video-compression";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
@@ -297,7 +297,7 @@ export function useUploadQueue({
           }
         }
       } else {
-        // Step 4: For IMAGES - upload to Supabase Storage
+        // Step 4: For IMAGES - upload to storage
         dispatch({
           type: "UPDATE_ITEM",
           id,
@@ -309,23 +309,21 @@ export function useUploadQueue({
 
         console.log(`[UploadQueue] Uploading ${file.name} (${fileToUpload.size} bytes) as ${fileName}`);
 
-        let { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
-          filename: fileName,
-        });
+        let publicUrl: string;
 
-        // If HEIC needs server-side conversion, do it now
+        // If HEIC needs server-side conversion, upload directly through server
+        // This bypasses R2 CORS issues for presigned URLs
         if (needsServerHeicConversion) {
-          console.log("[UploadQueue] HEIC needs server-side conversion, calling API...");
-          dispatch({ type: "UPDATE_ITEM", id, updates: { status: "converting", progress: 80 } });
-
-          try {
-            const conversionResult = await convertHeicServerSide("moments", uploadedPath);
-            publicUrl = conversionResult.url;
-            console.log("[UploadQueue] Server-side HEIC conversion complete:", publicUrl);
-          } catch (convErr) {
-            console.error("[UploadQueue] Server-side HEIC conversion failed:", convErr);
-            // Continue with original URL - Cloudflare Image Resizing might handle it
-          }
+          console.log("[UploadQueue] HEIC needs server-side upload+conversion...");
+          const heicResult = await uploadHeicServerSide(fileToUpload, "moments", fileName);
+          publicUrl = heicResult.url;
+          console.log("[UploadQueue] Server-side HEIC upload+conversion complete:", publicUrl);
+        } else {
+          // Normal upload via presigned URL
+          const result = await uploadToStorage("moments", fileToUpload, {
+            filename: fileName,
+          });
+          publicUrl = result.publicUrl;
         }
 
         console.log(`[UploadQueue] Upload complete: ${file.name} → ${publicUrl}`);

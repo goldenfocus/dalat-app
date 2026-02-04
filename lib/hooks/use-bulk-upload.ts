@@ -8,7 +8,7 @@ import {
   needsConversion,
   generateVideoThumbnail,
 } from "@/lib/media-utils";
-import { convertIfNeeded, convertHeicServerSide } from "@/lib/media-conversion";
+import { convertIfNeeded, uploadHeicServerSide } from "@/lib/media-conversion";
 import {
   needsImageCompression,
   compressImage,
@@ -640,23 +640,23 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         // ========================================
         const fileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}.${ext}`;
 
-        let { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
-          filename: fileName,
-        });
+        let publicUrl: string;
 
-        // If HEIC needs server-side conversion, do it now
+        // If HEIC needs server-side conversion, upload directly through server
+        // This bypasses R2 CORS issues for presigned URLs
         if (needsServerHeicConversion) {
-          console.log("[BulkUpload] HEIC needs server-side conversion, calling API...");
-          dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting", progress: 80 } });
+          console.log("[BulkUpload] HEIC needs server-side upload+conversion...");
+          dispatch({ type: "UPDATE_FILE", id, updates: { status: "uploading", progress: 10 } });
 
-          try {
-            const conversionResult = await convertHeicServerSide("moments", uploadedPath);
-            publicUrl = conversionResult.url;
-            console.log("[BulkUpload] Server-side HEIC conversion complete:", publicUrl);
-          } catch (convErr) {
-            console.error("[BulkUpload] Server-side HEIC conversion failed:", convErr);
-            // Continue with original URL - Cloudflare Image Resizing might handle it
-          }
+          const heicResult = await uploadHeicServerSide(fileToUpload, "moments", fileName);
+          publicUrl = heicResult.url;
+          console.log("[BulkUpload] Server-side HEIC upload+conversion complete:", publicUrl);
+        } else {
+          // Normal upload via presigned URL
+          const result = await uploadToStorage("moments", fileToUpload, {
+            filename: fileName,
+          });
+          publicUrl = result.publicUrl;
         }
 
         dispatch({

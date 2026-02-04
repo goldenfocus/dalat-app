@@ -136,8 +136,45 @@ export async function convertHeicToJpeg(file: File): Promise<HeicConversionResul
 }
 
 /**
+ * Upload HEIC file directly to server for conversion and storage
+ * This bypasses R2 CORS issues by routing through our server
+ *
+ * @param file - The HEIC file to upload
+ * @param bucket - Target bucket (e.g., "moments")
+ * @param path - Target path within bucket
+ * @returns URL and path of the converted JPEG
+ */
+export async function uploadHeicServerSide(
+  file: File,
+  bucket: string,
+  path: string
+): Promise<{ url: string; path: string }> {
+  console.log("[HEIC] Server-side upload and conversion for:", file.name, "->", bucket, path);
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("bucket", bucket);
+  formData.append("path", path);
+
+  const response = await fetch("/api/upload-heic", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Server-side HEIC upload failed");
+  }
+
+  const result = await response.json();
+  console.log("[HEIC] Server upload complete:", result.url);
+  return { url: result.url, path: result.path };
+}
+
+/**
  * Convert HEIC file that was uploaded to R2 using server-side sharp
  * Call this after uploading a HEIC file to R2 when needsServerConversion is true
+ * @deprecated Use uploadHeicServerSide instead - it handles upload + conversion in one step
  */
 export async function convertHeicServerSide(
   bucket: string,
