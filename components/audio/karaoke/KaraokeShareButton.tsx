@@ -32,7 +32,14 @@ export function KaraokeShareButton({
   const getShareUrl = useCallback(() => {
     if (!playlist?.eventSlug) return null;
 
-    // Build URL with karaoke mode and track
+    const currentTrack = tracks[currentIndex];
+
+    // Use clean URL for hero mode: /events/{slug}/karaoke/{trackId}
+    if (mode === "hero" && currentTrack?.id) {
+      return `https://dalat.app/vi/events/${playlist.eventSlug}/karaoke/${currentTrack.id}`;
+    }
+
+    // Fallback to query params for theater mode
     const baseUrl = `https://dalat.app/vi/events/${playlist.eventSlug}/playlist`;
     const params = new URLSearchParams();
     params.set("karaoke", mode);
@@ -40,7 +47,7 @@ export function KaraokeShareButton({
       params.set("track", currentIndex.toString());
     }
     return `${baseUrl}?${params.toString()}`;
-  }, [playlist?.eventSlug, mode, currentIndex]);
+  }, [playlist?.eventSlug, mode, currentIndex, tracks]);
 
   const handleShare = async () => {
     const url = getShareUrl();
