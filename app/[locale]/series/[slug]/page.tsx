@@ -8,8 +8,8 @@ import {
   Users,
   Repeat,
   ExternalLink,
-  CalendarPlus,
 } from "lucide-react";
+import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,7 +29,7 @@ type SeriesWithRelations = EventSeries & {
   organizers: Organizer | null;
 };
 
-type EventInstance = Pick<Event, "id" | "slug" | "starts_at" | "series_instance_date" | "status">;
+type EventInstance = Pick<Event, "id" | "slug" | "starts_at" | "ends_at" | "series_instance_date" | "status" | "image_url">;
 
 interface SeriesData {
   series: SeriesWithRelations;
@@ -87,10 +87,10 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
 
   if (error || !series) return null;
 
-  // Get upcoming events
+  // Get upcoming events (include image_url and ends_at for calendar/display)
   const { data: upcomingEvents } = await supabase
     .from("events")
-    .select("id, slug, starts_at, series_instance_date, status")
+    .select("id, slug, starts_at, ends_at, series_instance_date, status, image_url")
     .eq("series_id", series.id)
     .eq("status", "published")
     .gt("starts_at", new Date().toISOString())
@@ -145,7 +145,10 @@ export default async function SeriesPage({ params }: PageProps) {
   const { series, upcomingEvents, subscriberCount, isSubscribed: _isSubscribed, isOwner } = data;
 
   const recurrenceDescription = describeRRule(series.rrule);
-  const calendarUrl = `/api/series/${series.slug}/calendar.ics`;
+
+  // Use series image, or fall back to first event's image
+  const coverImage = series.image_url || upcomingEvents[0]?.image_url;
+  const nextEvent = upcomingEvents[0];
 
   return (
     <main className="min-h-screen bg-background">
@@ -162,11 +165,11 @@ export default async function SeriesPage({ params }: PageProps) {
         {/* Series Header Card */}
         <Card>
           <CardContent className="p-0">
-            {/* Cover Image */}
-            {series.image_url ? (
+            {/* Cover Image - series image or first event's image */}
+            {coverImage ? (
               <div className="aspect-[2/1] relative">
                 <img
-                  src={series.image_url}
+                  src={coverImage}
                   alt={series.title}
                   className="w-full h-full object-cover rounded-t-lg"
                 />
@@ -242,12 +245,32 @@ export default async function SeriesPage({ params }: PageProps) {
 
         {/* Action Buttons */}
         <div className="flex gap-3">
-          <Button asChild variant="outline" className="flex-1">
-            <a href={calendarUrl} download>
-              <CalendarPlus className="w-4 h-4 mr-2" />
-              {t("calendar.addToCalendar")}
-            </a>
-          </Button>
+          <div className="flex-1">
+            {nextEvent ? (
+              <AddToCalendar
+                title={series.title}
+                description={series.description}
+                locationName={series.location_name}
+                address={series.address}
+                googleMapsUrl={series.google_maps_url}
+                startsAt={nextEvent.starts_at}
+                endsAt={nextEvent.ends_at}
+                url={`https://dalat.app/series/${series.slug}`}
+                seriesSlug={series.slug}
+              />
+            ) : (
+              <AddToCalendar
+                title={series.title}
+                description={series.description}
+                locationName={series.location_name}
+                address={series.address}
+                googleMapsUrl={series.google_maps_url}
+                startsAt={new Date().toISOString()}
+                url={`https://dalat.app/series/${series.slug}`}
+                seriesSlug={series.slug}
+              />
+            )}
+          </div>
 
           {isOwner && (
             <Button asChild variant="outline">
