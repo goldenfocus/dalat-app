@@ -43,7 +43,7 @@ interface ExtractedEvent {
 /**
  * Article scraped from gov.vn
  */
-interface GovArticle {
+export interface GovArticle {
   url: string;
   title: string;
   publishDate?: string;
@@ -107,7 +107,7 @@ async function fetchCategoryArticles(
 /**
  * Fetch and parse a single article
  */
-async function fetchArticle(url: string): Promise<GovArticle | null> {
+export async function fetchArticle(url: string): Promise<GovArticle | null> {
   try {
     const response = await fetch(url, {
       headers: {
@@ -206,7 +206,7 @@ async function fetchArticle(url: string): Promise<GovArticle | null> {
 /**
  * Use Claude to extract event information from article content
  */
-async function extractEventsFromArticle(article: GovArticle): Promise<ExtractedEvent[]> {
+export async function extractEventsFromArticle(article: GovArticle): Promise<ExtractedEvent[]> {
   try {
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-20250514",

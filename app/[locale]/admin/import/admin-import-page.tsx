@@ -118,6 +118,22 @@ function Tip({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Event source types - defined outside component to avoid hydration issues
+type EventSource = "dalat-gov" | "wellhoods";
+
+const EVENT_SOURCES: Record<EventSource, { name: string; description: string; endpoint: string }> = {
+  "dalat-gov": {
+    name: "Đà Lạt Gov.vn",
+    description: "Scrapes dalat-info.gov.vn (tourism & culture) - AI extracts events from Vietnamese articles",
+    endpoint: "/api/import/dalat-gov",
+  },
+  "wellhoods": {
+    name: "Wellhoods (paused)",
+    description: "Wellness events from wellhoods.com - currently no Đà Lạt events available",
+    endpoint: "/api/import/wellhoods",
+  },
+};
+
 export function AdminImportPage() {
   // Single URL import
   const [url, setUrl] = useState("");
@@ -145,7 +161,6 @@ export function AdminImportPage() {
   const [scheduleLoading, setScheduleLoading] = useState(false);
 
   // Event source sync
-  type EventSource = "dalat-gov" | "wellhoods";
   const [selectedSource, setSelectedSource] = useState<EventSource>("dalat-gov");
   const [sourceSyncing, setSourceSyncing] = useState(false);
   const [sourceResult, setSourceResult] = useState<{
@@ -156,21 +171,6 @@ export function AdminImportPage() {
     errors: number;
     details?: string[];
   } | null>(null);
-
-  const EVENT_SOURCES: Record<EventSource, { name: string; description: string; endpoint: string; color: string }> = {
-    "dalat-gov": {
-      name: "Đà Lạt Gov.vn",
-      description: "Scrapes dalat-info.gov.vn (tourism & culture) - AI extracts events from Vietnamese articles",
-      endpoint: "/api/import/dalat-gov",
-      color: "blue",
-    },
-    "wellhoods": {
-      name: "Wellhoods (paused)",
-      description: "Wellness events from wellhoods.com - currently no Đà Lạt events available",
-      endpoint: "/api/import/wellhoods",
-      color: "gray",
-    },
-  };
 
   // Load import history on mount
   useEffect(() => {

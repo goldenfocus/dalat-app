@@ -5,6 +5,7 @@ import { processFacebookEvents } from "@/lib/import/processors/facebook";
 import { processLumaEvents, type LumaEvent } from "@/lib/import/processors/luma";
 import { fetchTicketGoEvent, processTicketGoEvents, type TicketGoEvent } from "@/lib/import/processors/ticketgo";
 import { fetchFlipEvent, processFlipEvents, type FlipEvent } from "@/lib/import/processors/flip";
+import { fetchArticle, extractEventsFromArticle, type GovArticle } from "@/lib/import/processors/dalat-gov";
 import type { FacebookEvent } from "@/lib/import/types";
 
 // Extend timeout for Vercel Pro (scrapers can be slow)
@@ -109,6 +110,9 @@ export async function POST(request: Request) {
     } else if (url.includes("lu.ma") || url.includes("luma.com")) {
       platform = "luma";
       actorId = ""; // Not used - we fetch Lu.ma directly
+    } else if (url.includes("dalat-info.gov.vn")) {
+      platform = "dalat-gov";
+      actorId = ""; // Not used - we scrape and use AI extraction
     } else {
       // Try generic API-based import for any URL with /events/ pattern
       platform = "generic";
@@ -165,12 +169,64 @@ export async function POST(request: Request) {
       }
       items = [lumaData];
       console.log(`URL Import: Got Lu.ma event: ${lumaData.title}`);
+    } else if (platform === "dalat-gov") {
+      // Fetch and extract events from dalat-info.gov.vn article using AI
+      const article = await fetchArticle(url);
+      if (!article) {
+        return NextResponse.json(
+          { error: "Could not fetch article from dalat-info.gov.vn. Make sure the URL is a valid article page (/bai-viet/...)" },
+          { status: 404 }
+        );
+      }
+
+      console.log(`URL Import: Got gov.vn article: ${article.title}`);
+
+      // Use AI to extract events from the article
+      const extractedEvents = await extractEventsFromArticle(article);
+      if (extractedEvents.length === 0) {
+        return NextResponse.json(
+          { error: "No events found in this article. The AI could not identify any specific events with dates." },
+          { status: 404 }
+        );
+      }
+
+      console.log(`URL Import: AI extracted ${extractedEvents.length} events from article`);
+
+      // Convert extracted events to a format processable by processGovArticles
+      // We'll process them directly here instead
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      const { processGovArticles } = await import("@/lib/import/processors/dalat-gov");
+      const result = await processGovArticles(supabase, [article], user.id);
+
+      if (result.processed > 0) {
+        return NextResponse.json({
+          success: true,
+          title: `Extracted ${result.processed} event${result.processed > 1 ? "s" : ""} from article`,
+          message: `${result.processed} imported, ${result.skipped} skipped`,
+          count: result.processed,
+          isMultiple: result.processed > 1,
+        });
+      } else if (result.skipped > 0) {
+        return NextResponse.json(
+          { error: `${result.skipped} events already exist or are duplicates` },
+          { status: 409 }
+        );
+      } else {
+        return NextResponse.json(
+          { error: result.details?.[0] || "No events could be imported from this article" },
+          { status: 500 }
+        );
+      }
     } else if (platform === "generic") {
       // Try generic API-based import for unknown platforms
       const genericData = await fetchGenericEvent(url);
       if (!genericData) {
         return NextResponse.json(
-          { error: "Could not fetch event. Supported platforms: Facebook, Flip.vn, TicketGo, Lu.ma, or sites with /events/ API" },
+          { error: "Could not fetch event. Supported platforms: Facebook, Flip.vn, TicketGo, Lu.ma, dalat-info.gov.vn, or sites with /events/ API" },
           { status: 400 }
         );
       }
