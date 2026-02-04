@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { deleteComment, editComment } from "@/lib/comments";
+import { triggerTranslation } from "@/lib/translations-client";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -77,6 +78,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         { status: 400 }
       );
     }
+
+    // Re-trigger translation to update all 12 languages with edited content
+    triggerTranslation("comment", id, [
+      { field_name: "content", text: content },
+    ]);
 
     return NextResponse.json(result);
   } catch (error) {

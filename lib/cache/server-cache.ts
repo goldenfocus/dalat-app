@@ -134,7 +134,7 @@ export const getCachedTranslationsBatch = unstable_cache(
     contentIds: string[],
     targetLocale: ContentLocale
   ): Promise<
-    Map<string, { title?: string; description?: string; text_content?: string }>
+    Map<string, { title?: string; description?: string; text_content?: string; content?: string }>
   > => {
     if (contentIds.length === 0) return new Map();
 
@@ -147,11 +147,11 @@ export const getCachedTranslationsBatch = unstable_cache(
       .eq("content_type", contentType)
       .in("content_id", contentIds)
       .eq("target_locale", targetLocale)
-      .in("field_name", ["title", "description", "text_content"]);
+      .in("field_name", ["title", "description", "text_content", "content"]);
 
     const result = new Map<
       string,
-      { title?: string; description?: string; text_content?: string }
+      { title?: string; description?: string; text_content?: string; content?: string }
     >();
 
     if (translations) {
@@ -163,6 +163,8 @@ export const getCachedTranslationsBatch = unstable_cache(
           existing.description = t.translated_text;
         } else if (t.field_name === "text_content") {
           existing.text_content = t.translated_text;
+        } else if (t.field_name === "content") {
+          existing.content = t.translated_text;
         }
         result.set(t.content_id, existing);
       }
@@ -172,7 +174,7 @@ export const getCachedTranslationsBatch = unstable_cache(
   },
   ["translations-batch"],
   {
-    revalidate: 300, // 5 minutes
+    revalidate: 30, // 30 seconds - short TTL for faster translation updates
     tags: [CACHE_TAGS.translations],
   }
 );

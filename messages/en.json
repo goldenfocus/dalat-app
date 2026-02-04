@@ -1963,6 +1963,25 @@
       "The gathering is blessed by your presence"
     ]
   },
+  "promo": {
+    "title": "Promotional Media",
+    "addPromo": "Add Promo",
+    "editPromo": "Edit",
+    "noPromo": "No promotional media yet",
+    "usingSeriesPromo": "From series",
+    "importFromMoments": "Import from Moments",
+    "uploadNew": "Upload New",
+    "aiSuggest": "AI Suggest",
+    "currentPromo": "Current",
+    "dragToReorder": "Drag to reorder",
+    "overrideForEvent": "Override for this event",
+    "scope": {
+      "title": "Apply changes to:",
+      "thisOnly": "This event only",
+      "future": "This and future events",
+      "all": "All events in series"
+    }
+  },
   "comments": {
     "title": "Comments",
     "add": "Add comment",
@@ -1983,7 +2002,8 @@
     "unmute": "Unmute thread",
     "seeOriginal": "See original",
     "seeTranslation": "See translation",
-    "translatedFrom": "Translated"
+    "translatedFrom": "Translated",
+    "translating": "translating..."
   },
   "playlist": {
     "title": "Playlist",

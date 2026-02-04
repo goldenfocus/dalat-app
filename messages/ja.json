@@ -1856,6 +1856,25 @@
       "ダラットをより活気あるものにしています"
     ]
   },
+  "promo": {
+    "title": "プロモーションメディア",
+    "addPromo": "プロモを追加",
+    "editPromo": "編集",
+    "noPromo": "プロモーションメディアはまだありません",
+    "usingSeriesPromo": "シリーズから",
+    "importFromMoments": "モーメントからインポート",
+    "uploadNew": "新規アップロード",
+    "aiSuggest": "AIおすすめ",
+    "currentPromo": "現在",
+    "dragToReorder": "ドラッグして並べ替え",
+    "overrideForEvent": "このイベント用にカスタマイズ",
+    "scope": {
+      "title": "変更を適用:",
+      "thisOnly": "このイベントのみ",
+      "future": "このイベントと今後のイベント",
+      "all": "シリーズのすべてのイベント"
+    }
+  },
   "comments": {
     "title": "コメント",
     "add": "コメントを追加",
@@ -1876,7 +1895,8 @@
     "unmute": "通知をオン",
     "seeOriginal": "原文を見る",
     "seeTranslation": "翻訳を見る",
-    "translatedFrom": "翻訳済み"
+    "translatedFrom": "翻訳済み",
+    "translating": "翻訳中..."
   },
   "feedback": {
     "howWasIt": "イベントはいかがでしたか？",

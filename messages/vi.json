@@ -1932,6 +1932,25 @@
       "Buổi họp mặt được chúc phúc bởi sự hiện diện của bạn"
     ]
   },
+  "promo": {
+    "title": "Nội dung quảng cáo",
+    "addPromo": "Thêm quảng cáo",
+    "editPromo": "Chỉnh sửa",
+    "noPromo": "Chưa có nội dung quảng cáo",
+    "usingSeriesPromo": "Từ chuỗi",
+    "importFromMoments": "Nhập từ Khoảnh khắc",
+    "uploadNew": "Tải lên mới",
+    "aiSuggest": "AI gợi ý",
+    "currentPromo": "Hiện tại",
+    "dragToReorder": "Kéo để sắp xếp",
+    "overrideForEvent": "Ghi đè cho sự kiện này",
+    "scope": {
+      "title": "Áp dụng thay đổi cho:",
+      "thisOnly": "Chỉ sự kiện này",
+      "future": "Sự kiện này và tương lai",
+      "all": "Tất cả sự kiện trong chuỗi"
+    }
+  },
   "comments": {
     "title": "Bình luận",
     "add": "Thêm bình luận",
@@ -1952,7 +1971,8 @@
     "unmute": "Bật thông báo",
     "seeOriginal": "Xem bản gốc",
     "seeTranslation": "Xem bản dịch",
-    "translatedFrom": "Đã dịch"
+    "translatedFrom": "Đã dịch",
+    "translating": "đang dịch..."
   },
   "feedback": {
     "howWasIt": "Sự kiện thế nào?",

@@ -1323,6 +1323,25 @@
     "recentMoments": "Momentos recientes",
     "viewAll": "Ver todo"
   },
+  "promo": {
+    "title": "Material promocional",
+    "addPromo": "Agregar promo",
+    "editPromo": "Editar",
+    "noPromo": "Sin material promocional aún",
+    "usingSeriesPromo": "De la serie",
+    "importFromMoments": "Importar de Moments",
+    "uploadNew": "Subir nuevo",
+    "aiSuggest": "Sugerencias IA",
+    "currentPromo": "Actual",
+    "dragToReorder": "Arrastra para reordenar",
+    "overrideForEvent": "Personalizar para este evento",
+    "scope": {
+      "title": "Aplicar cambios a:",
+      "thisOnly": "Solo este evento",
+      "future": "Este evento y futuros",
+      "all": "Todos los eventos de la serie"
+    }
+  },
   "comments": {
     "title": "Comentarios",
     "add": "Agregar comentario",
@@ -1343,7 +1362,8 @@
     "unmute": "Dejar de silenciar hilo",
     "seeOriginal": "Ver original",
     "seeTranslation": "Ver traducción",
-    "translatedFrom": "Traducido"
+    "translatedFrom": "Traducido",
+    "translating": "traduciendo..."
   },
   "contacts": {
     "title": "Contactos",

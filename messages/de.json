@@ -1856,6 +1856,25 @@
       "Du machst Da Lat lebendiger"
     ]
   },
+  "promo": {
+    "title": "Werbematerial",
+    "addPromo": "Promo hinzufügen",
+    "editPromo": "Bearbeiten",
+    "noPromo": "Noch keine Werbematerialien",
+    "usingSeriesPromo": "Von Serie",
+    "importFromMoments": "Aus Moments importieren",
+    "uploadNew": "Neu hochladen",
+    "aiSuggest": "KI-Vorschläge",
+    "currentPromo": "Aktuell",
+    "dragToReorder": "Ziehen zum Sortieren",
+    "overrideForEvent": "Für dieses Event anpassen",
+    "scope": {
+      "title": "Änderungen anwenden auf:",
+      "thisOnly": "Nur dieses Event",
+      "future": "Dieses und zukünftige Events",
+      "all": "Alle Events der Serie"
+    }
+  },
   "comments": {
     "title": "Kommentare",
     "add": "Kommentar hinzufügen",
@@ -1876,7 +1895,8 @@
     "unmute": "Benachrichtigungen an",
     "seeOriginal": "Original anzeigen",
     "seeTranslation": "Übersetzung anzeigen",
-    "translatedFrom": "Übersetzt"
+    "translatedFrom": "Übersetzt",
+    "translating": "übersetzen..."
   },
   "feedback": {
     "howWasIt": "Wie war das Event?",

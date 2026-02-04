@@ -386,6 +386,7 @@ export function CommentsSection({
         hasMore={hasMore}
         onLoadMore={() => fetchComments(false)}
         loadingMore={loadingMore}
+        userLocale={locale}
       />
     </div>
   );

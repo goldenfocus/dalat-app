@@ -52,6 +52,8 @@ interface CommentItemProps {
   isReply?: boolean;
   /** Whether this is an optimistic (pending) comment */
   isPending?: boolean;
+  /** User's locale for translation detection */
+  userLocale?: string;
 }
 
 /**
@@ -75,6 +77,7 @@ export function CommentItem({
   onLoadReplies,
   isReply = false,
   isPending = false,
+  userLocale = "en",
 }: CommentItemProps) {
   const t = useTranslations("comments");
   const [showReplies, setShowReplies] = useState(false);
@@ -85,6 +88,9 @@ export function CommentItem({
 
   // Translation logic
   const hasTranslation = comment.is_translated && comment.translated_content;
+  const sourceLocale = (comment as { source_locale?: string }).source_locale || "en";
+  const needsTranslation = sourceLocale !== userLocale && !comment.is_deleted;
+  const isTranslating = needsTranslation && !hasTranslation && !isPending;
   const displayContent = hasTranslation && !showOriginal
     ? comment.translated_content
     : comment.content;
@@ -188,6 +194,12 @@ export function CommentItem({
               {isPending && (
                 <span className="text-xs text-muted-foreground italic">
                   (sending...)
+                </span>
+              )}
+              {isTranslating && (
+                <span className="text-xs text-muted-foreground italic flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  {t("translating")}
                 </span>
               )}
             </div>
@@ -352,6 +364,7 @@ export function CommentItem({
                 onDelete={onDelete}
                 isReply
                 isPending={reply.id.startsWith("temp-")}
+                userLocale={userLocale}
               />
             ))
           )}

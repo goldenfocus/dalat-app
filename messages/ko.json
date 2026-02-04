@@ -1859,6 +1859,25 @@
       "달랏을 더 활기차게 만들고 계세요"
     ]
   },
+  "promo": {
+    "title": "홍보 미디어",
+    "addPromo": "홍보 추가",
+    "editPromo": "편집",
+    "noPromo": "홍보 미디어가 없습니다",
+    "usingSeriesPromo": "시리즈에서",
+    "importFromMoments": "모먼트에서 가져오기",
+    "uploadNew": "새로 업로드",
+    "aiSuggest": "AI 추천",
+    "currentPromo": "현재",
+    "dragToReorder": "드래그하여 정렬",
+    "overrideForEvent": "이 이벤트용으로 재정의",
+    "scope": {
+      "title": "변경사항 적용:",
+      "thisOnly": "이 이벤트만",
+      "future": "이 이벤트와 미래 이벤트",
+      "all": "시리즈의 모든 이벤트"
+    }
+  },
   "comments": {
     "title": "댓글",
     "add": "댓글 추가",
@@ -1879,7 +1898,8 @@
     "unmute": "알림 켜기",
     "seeOriginal": "원문 보기",
     "seeTranslation": "번역 보기",
-    "translatedFrom": "번역됨"
+    "translatedFrom": "번역됨",
+    "translating": "번역 중..."
   },
   "feedback": {
     "howWasIt": "이벤트는 어떠셨나요?",

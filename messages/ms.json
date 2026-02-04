@@ -1856,6 +1856,25 @@
       "Anda menjadikan Da Lat lebih meriah"
     ]
   },
+  "promo": {
+    "title": "Media Promosi",
+    "addPromo": "Tambah Promosi",
+    "editPromo": "Edit",
+    "noPromo": "Tiada media promosi lagi",
+    "usingSeriesPromo": "Dari siri",
+    "importFromMoments": "Import dari Momen",
+    "uploadNew": "Muat naik baru",
+    "aiSuggest": "Cadangan AI",
+    "currentPromo": "Semasa",
+    "dragToReorder": "Seret untuk susun semula",
+    "overrideForEvent": "Ganti untuk acara ini",
+    "scope": {
+      "title": "Terapkan perubahan ke:",
+      "thisOnly": "Acara ini sahaja",
+      "future": "Acara ini dan masa depan",
+      "all": "Semua acara dalam siri"
+    }
+  },
   "comments": {
     "title": "Komen",
     "add": "Tambah komen",
@@ -1876,7 +1895,8 @@
     "unmute": "Hidupkan pemberitahuan",
     "seeOriginal": "Lihat asal",
     "seeTranslation": "Lihat terjemahan",
-    "translatedFrom": "Diterjemahkan"
+    "translatedFrom": "Diterjemahkan",
+    "translating": "menterjemah..."
   },
   "feedback": {
     "howWasIt": "Bagaimana acara ini?",

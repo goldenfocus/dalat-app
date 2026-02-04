@@ -171,9 +171,9 @@ export async function getCommentsWithTranslations(
       };
     }
 
-    // Get translation from batch result
+    // Get translation from batch result (comments use 'content' field, not 'text_content')
     const translation = translationsMap.get(comment.id);
-    const translatedContent = translation?.text_content || comment.content;
+    const translatedContent = translation?.content || comment.content;
     const isTranslated = translatedContent !== comment.content;
 
     return {
@@ -232,9 +232,9 @@ export async function getRepliesWithTranslations(
       };
     }
 
-    // Get translation from batch result
+    // Get translation from batch result (comments use 'content' field, not 'text_content')
     const translation = translationsMap.get(reply.id);
-    const translatedContent = translation?.text_content || reply.content;
+    const translatedContent = translation?.content || reply.content;
 
     return {
       ...reply,

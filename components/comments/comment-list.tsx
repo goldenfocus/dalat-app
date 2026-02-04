@@ -43,6 +43,8 @@ interface CommentListProps {
   onLoadMore?: () => void;
   /** Whether more comments are loading */
   loadingMore?: boolean;
+  /** User's locale for translation detection */
+  userLocale?: string;
 }
 
 /**
@@ -67,6 +69,7 @@ export function CommentList({
   hasMore = false,
   onLoadMore,
   loadingMore = false,
+  userLocale = "en",
 }: CommentListProps) {
   const t = useTranslations("comments");
 
@@ -112,6 +115,7 @@ export function CommentList({
           repliesLoading={loadingReplies?.has(comment.id)}
           onLoadReplies={() => handleLoadReplies(comment.id)}
           isPending={comment.id.startsWith("temp-")}
+          userLocale={userLocale}
         />
       ))}
 

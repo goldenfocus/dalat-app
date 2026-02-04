@@ -1856,6 +1856,25 @@
       "คุณทำให้ดาลัทมีชีวิตชีวามากขึ้น"
     ]
   },
+  "promo": {
+    "title": "สื่อโปรโมชั่น",
+    "addPromo": "เพิ่มโปรโมชั่น",
+    "editPromo": "แก้ไข",
+    "noPromo": "ยังไม่มีสื่อโปรโมชั่น",
+    "usingSeriesPromo": "จากซีรีส์",
+    "importFromMoments": "นำเข้าจาก Moments",
+    "uploadNew": "อัปโหลดใหม่",
+    "aiSuggest": "AI แนะนำ",
+    "currentPromo": "ปัจจุบัน",
+    "dragToReorder": "ลากเพื่อจัดเรียง",
+    "overrideForEvent": "แทนที่สำหรับกิจกรรมนี้",
+    "scope": {
+      "title": "ใช้การเปลี่ยนแปลงกับ:",
+      "thisOnly": "กิจกรรมนี้เท่านั้น",
+      "future": "กิจกรรมนี้และอนาคต",
+      "all": "กิจกรรมทั้งหมดในซีรีส์"
+    }
+  },
   "comments": {
     "title": "ความคิดเห็น",
     "add": "เพิ่มความคิดเห็น",
@@ -1876,7 +1895,8 @@
     "unmute": "เปิดการแจ้งเตือน",
     "seeOriginal": "ดูต้นฉบับ",
     "seeTranslation": "ดูคำแปล",
-    "translatedFrom": "แปลแล้ว"
+    "translatedFrom": "แปลแล้ว",
+    "translating": "กำลังแปล..."
   },
   "feedback": {
     "howWasIt": "กิจกรรมเป็นอย่างไรบ้าง?",

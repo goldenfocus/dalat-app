@@ -1323,6 +1323,25 @@
     "recentMoments": "Momen Terbaru",
     "viewAll": "Lihat semua"
   },
+  "promo": {
+    "title": "Media Promosi",
+    "addPromo": "Tambah Promosi",
+    "editPromo": "Edit",
+    "noPromo": "Belum ada media promosi",
+    "usingSeriesPromo": "Dari seri",
+    "importFromMoments": "Impor dari Momen",
+    "uploadNew": "Unggah baru",
+    "aiSuggest": "Saran AI",
+    "currentPromo": "Saat ini",
+    "dragToReorder": "Seret untuk mengurutkan",
+    "overrideForEvent": "Ganti untuk acara ini",
+    "scope": {
+      "title": "Terapkan perubahan ke:",
+      "thisOnly": "Hanya acara ini",
+      "future": "Acara ini dan mendatang",
+      "all": "Semua acara dalam seri"
+    }
+  },
   "comments": {
     "title": "Komentar",
     "add": "Tambah komentar",
@@ -1343,7 +1362,8 @@
     "unmute": "Bunyikan thread",
     "seeOriginal": "Lihat asli",
     "seeTranslation": "Lihat terjemahan",
-    "translatedFrom": "Diterjemahkan"
+    "translatedFrom": "Diterjemahkan",
+    "translating": "menerjemahkan..."
   },
   "contacts": {
     "title": "Kontak",
