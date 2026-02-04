@@ -11,6 +11,13 @@ import {
   SkipForward,
 } from "lucide-react";
 import { KaraokeShareButton } from "./KaraokeShareButton";
+import {
+  KaraokeCountdown,
+  FloatingNotes,
+  PulseBackground,
+  InstrumentalBreak,
+  KaraokeStyles,
+} from "./KaraokeVisuals";
 import { cn } from "@/lib/utils";
 import { useCurrentLyricWithContext } from "@/lib/hooks/use-current-lyric";
 import {
@@ -86,6 +93,7 @@ export const KaraokeHero = memo(function KaraokeHero() {
     progress,
     hasLyrics,
     totalLines,
+    parsed,
   } = useCurrentLyricWithContext(lyricsLrc, 2, 3, lyricsOffset);
 
   const {
@@ -102,6 +110,17 @@ export const KaraokeHero = memo(function KaraokeHero() {
   } = useAudioPlayerStore();
 
   const currentTrack = tracks[currentIndex];
+
+  // Calculate time until first lyric (for countdown)
+  const firstLyricTime = parsed?.lines[0]?.time ?? 0;
+  const secondsUntilFirst = firstLyricTime - currentTime - (lyricsOffset / 1000);
+
+  // Detect if we're in intro (before first lyric) or instrumental (gap between lyrics)
+  const isInIntro = lineIndex === -1 && currentTime < firstLyricTime;
+  const isInInstrumental = lineIndex >= 0 && surroundingLines.length === 0;
+
+  // Get next lyric preview for instrumental breaks
+  const nextLyricPreview = parsed?.lines[lineIndex + 1]?.text;
 
   // Auto-hide controls after inactivity
   useEffect(() => {
@@ -131,8 +150,17 @@ export const KaraokeHero = memo(function KaraokeHero() {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden animate-in fade-in duration-300">
+      {/* Inject animation styles */}
+      <KaraokeStyles />
+
       {/* Background gradient animation */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-black to-purple-900/20 animate-pulse-slow" />
+
+      {/* Audio-reactive pulse */}
+      <PulseBackground isPlaying={isPlaying} />
+
+      {/* Floating music notes */}
+      <FloatingNotes count={12} />
 
       {/* Subtle noise texture */}
       <div className="absolute inset-0 opacity-5 bg-[url('/noise.png')] bg-repeat" />
@@ -192,25 +220,41 @@ export const KaraokeHero = memo(function KaraokeHero() {
         className="absolute inset-0 flex flex-col items-center justify-center px-8"
         onClick={() => setShowControls(!showControls)}
       >
-        <div className="space-y-6 max-w-4xl mx-auto text-center">
-          {surroundingLines.map(({ line, index, isCurrent }) => (
-            <div
-              key={index}
-              className={cn(
-                "transition-all duration-500",
-                isCurrent
-                  ? "text-4xl sm:text-5xl md:text-6xl font-bold text-white"
-                  : "text-xl sm:text-2xl md:text-3xl text-white/30"
-              )}
-            >
-              <HeroHighlightedLine
-                text={line.text}
-                progress={progress}
-                isCurrent={isCurrent}
-              />
-            </div>
-          ))}
-        </div>
+        {/* Show countdown during intro */}
+        {(isInIntro || (!isPlaying && lineIndex === -1)) && (
+          <KaraokeCountdown
+            secondsUntilFirst={secondsUntilFirst}
+            isPlaying={isPlaying}
+          />
+        )}
+
+        {/* Show instrumental break indicator */}
+        {isInInstrumental && isPlaying && (
+          <InstrumentalBreak nextLyricPreview={nextLyricPreview} />
+        )}
+
+        {/* Show lyrics when we have them */}
+        {!isInIntro && !isInInstrumental && surroundingLines.length > 0 && (
+          <div className="space-y-6 max-w-4xl mx-auto text-center">
+            {surroundingLines.map(({ line, index, isCurrent }) => (
+              <div
+                key={index}
+                className={cn(
+                  "transition-all duration-500",
+                  isCurrent
+                    ? "text-4xl sm:text-5xl md:text-6xl font-bold text-white"
+                    : "text-xl sm:text-2xl md:text-3xl text-white/30"
+                )}
+              >
+                <HeroHighlightedLine
+                  text={line.text}
+                  progress={progress}
+                  isCurrent={isCurrent}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Bottom playback controls */}

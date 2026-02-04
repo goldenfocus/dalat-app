@@ -16,3 +16,10 @@ export { KaraokeFooterLine, KaraokeToggleButton } from "./KaraokeFooterLine";
 export { KaraokeTheater } from "./KaraokeTheater";
 export { KaraokeHero } from "./KaraokeHero";
 export { KaraokeShareButton } from "./KaraokeShareButton";
+export {
+  KaraokeCountdown,
+  FloatingNotes,
+  PulseBackground,
+  InstrumentalBreak,
+  KaraokeStyles,
+} from "./KaraokeVisuals";
