@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { cn as _cn } from "@/lib/utils";
 import type { EventPromoMedia, PromoSource } from "@/lib/types";
 
 interface PromoMediaSectionProps {

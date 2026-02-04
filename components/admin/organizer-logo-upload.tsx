@@ -37,7 +37,7 @@ const iconSizeClasses = {
 
 export function OrganizerLogoUpload({
   organizerId,
-  organizerName,
+  organizerName: _organizerName,
   currentLogoUrl,
   onLogoChange,
   size = "lg",

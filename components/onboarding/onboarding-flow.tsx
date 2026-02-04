@@ -95,7 +95,7 @@ export function OnboardingFlow({
     setCurrentStep("avatar");
   };
 
-  const handleBackToLanguage = () => {
+  const _handleBackToLanguage = () => {
     setSlideDirection("right");
     setCurrentStep("language");
   };

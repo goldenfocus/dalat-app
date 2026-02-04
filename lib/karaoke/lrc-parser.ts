@@ -8,9 +8,7 @@
 import type {
   LrcLine,
   ParsedLrc,
-  TimedSegment,
   WhisperVerboseResponse,
-  WhisperSegment,
   CurrentLyricState,
 } from '@/lib/types/karaoke';
 import { DEFAULT_LYRICS_OFFSET } from '@/lib/types/karaoke';

@@ -130,10 +130,11 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
 
         // Mark events that have playlists with tracks
         if (playlistResult.data) {
+          type PlaylistRow = { event_id: string; playlist_tracks: { id: string }[] | null };
           const playlistEventIds = new Set(
-            playlistResult.data
-              .filter((p: any) => p.playlist_tracks && p.playlist_tracks.length > 0)
-              .map((p: any) => p.event_id)
+            (playlistResult.data as PlaylistRow[])
+              .filter((p) => p.playlist_tracks && p.playlist_tracks.length > 0)
+              .map((p) => p.event_id)
           );
           setEvents((prev) =>
             prev.map((e) => ({
@@ -251,9 +252,18 @@ function YourEventCard({ event, counts, locale, tRsvp, tEvents }: YourEventCardP
       }
 
       // Transform to AudioTrack format
-      const tracks: AudioTrack[] = data
-        .filter((row: any) => row.track_id !== null)
-        .map((row: any) => ({
+      type PlaylistTrackRow = {
+        track_id: string | null;
+        track_file_url: string;
+        track_title: string | null;
+        track_artist: string | null;
+        track_album: string | null;
+        track_thumbnail_url: string | null;
+        track_duration_seconds: number | null;
+      };
+      const tracks: AudioTrack[] = (data as PlaylistTrackRow[])
+        .filter((row) => row.track_id !== null)
+        .map((row) => ({
           id: row.track_id,
           file_url: row.track_file_url,
           title: row.track_title,

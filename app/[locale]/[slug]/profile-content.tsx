@@ -2,7 +2,7 @@ import { Link } from "@/lib/i18n/routing";
 import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { TranslatedFrom } from "@/components/ui/translation-badge";

@@ -176,7 +176,7 @@ export default async function TagPage({ params }: PageProps) {
   const description = TAG_DESCRIPTIONS[validTag];
   const IconComponent = ICON_MAP[config.icon];
 
-  const t = await getTranslations("archive");
+  const _t = await getTranslations("archive");
 
   const events = await getEventsByTag(validTag);
   const eventIds = events.map((e) => e.id);

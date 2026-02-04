@@ -1,6 +1,5 @@
 import { Link } from "@/lib/i18n/routing";
 import {
-  ArrowLeft,
   Calendar,
   MapPin,
   BadgeCheck,
@@ -203,7 +202,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     return null;
   }
 
-  const { venue, organizer, upcoming_events, happening_now, past_events_count, recent_activity } = venueData;
+  const { venue, organizer, upcoming_events, happening_now, past_events_count, recent_activity: _recent_activity } = venueData;
   const [isLoggedIn, pastEvents, canManageVenue] = await Promise.all([
     isUserLoggedIn(),
     getPastEvents(venue.id),

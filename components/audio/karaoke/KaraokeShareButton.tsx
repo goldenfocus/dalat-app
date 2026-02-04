@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Share2, Copy, Check } from "lucide-react";
+import { Share2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
 

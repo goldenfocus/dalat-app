@@ -29,7 +29,6 @@ import { EventMediaDisplay } from "@/components/events/event-media-display";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat, formatInDaLatAsync } from "@/lib/timezone";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
-import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { MomentsPreview, PastEventMomentsShowcase } from "@/components/moments";

@@ -14,7 +14,7 @@ import {
   Play,
   Youtube,
   FileText,
-  Music,
+  Music as _Music,
   File,
   Link as LinkIcon,
   Upload,
@@ -59,7 +59,7 @@ import {
 } from "@/lib/audio-metadata";
 import * as tus from "tus-js-client";
 import type { MomentContentType } from "@/lib/types";
-import { useUploadQueue, type QueuedUpload } from "@/lib/hooks/use-upload-queue";
+import { useUploadQueue, type QueuedUpload as _QueuedUpload } from "@/lib/hooks/use-upload-queue";
 import { CompactUploadQueue, type CompactUploadItem } from "@/components/moments/compact-upload-queue";
 
 // Threshold for switching to compact/bulk upload UI
@@ -528,7 +528,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       const fileName = `${eventId}/${userId}/${timestamp}_${randomSuffix}.${ext}`;
 
       // Upload media to R2 (or Supabase fallback if R2 not configured)
-      let { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
+      const { publicUrl, path: uploadedPath } = await uploadToStorage("moments", fileToUpload, {
         filename: fileName,
       });
 
@@ -1321,7 +1321,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
   })();
 
   const readyCount = inputMode === "file" ? readyMaterialCount : totalReadyMedia;
-  const totalMediaCount = uploads.length + bulkQueue.items.length;
+  const _totalMediaCount = uploads.length + bulkQueue.items.length;
 
   return (
     <div className="space-y-4">

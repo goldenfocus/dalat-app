@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Input as _Input } from "@/components/ui/input";
 import { EmailInput } from "@/components/ui/email-input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/lib/i18n/routing";

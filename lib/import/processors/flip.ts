@@ -241,7 +241,7 @@ function parseFlipDescription(description: string | null): {
 
   let startDate: string | null = null;
   let endDate: string | null = null;
-  let venue: string | null = venueMatch?.[1]?.trim() || null;
+  const venue: string | null = venueMatch?.[1]?.trim() || null;
 
   if (dateMatch) {
     const day = parseInt(dateMatch[1], 10);

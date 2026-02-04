@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Share2, Check, Link } from "lucide-react";
+import { Share2 as _Share2, Check, Link } from "lucide-react";
 
 interface SharePageButtonProps {
   /** Optional custom URL to share (defaults to current page) */

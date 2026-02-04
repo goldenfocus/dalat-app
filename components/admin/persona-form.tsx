@@ -256,8 +256,8 @@ export function PersonaForm({ persona }: PersonaFormProps) {
               defaultValue={persona?.style ?? ""}
             />
             <p className="text-xs text-muted-foreground">
-              How the AI should render this person (e.g., "cartoon style",
-              "professional portrait")
+              How the AI should render this person (e.g., &quot;cartoon style&quot;,
+              &quot;professional portrait&quot;)
             </p>
           </div>
 

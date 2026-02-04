@@ -148,7 +148,7 @@ export function MomentsDiscoveryDesktop({
   // Search state
   const [searchResults, setSearchResults] = useState<MomentWithEvent[] | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+  const [_isSearching, setIsSearching] = useState(false);
 
   const handleSearchResults = useCallback((results: MomentWithEvent[] | null, query: string) => {
     setSearchResults(results);

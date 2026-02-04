@@ -51,7 +51,7 @@ interface AdminSidebarProps {
 
 const SIDEBAR_COLLAPSED_KEY = "admin-sidebar-collapsed";
 
-export function AdminSidebar({ navItems, role, roleLabel }: AdminSidebarProps) {
+export function AdminSidebar({ navItems, role: _role, roleLabel }: AdminSidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);

@@ -47,8 +47,8 @@ async function getEventPlaylist(slug: string): Promise<PlaylistData | null> {
 
   // If no tracks exist, firstRow.track_id will be null (LEFT JOIN)
   const tracks: PlaylistTrack[] = data
-    .filter((row: any) => row.track_id !== null)
-    .map((row: any) => ({
+    .filter((row: Record<string, unknown>) => row.track_id !== null)
+    .map((row: Record<string, unknown>) => ({
       id: row.track_id,
       file_url: row.track_file_url,
       title: row.track_title,

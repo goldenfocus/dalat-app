@@ -14,7 +14,7 @@ interface PasswordSettingsProps {
   targetUserId?: string | null; // For God Mode - admin changing another user's password
 }
 
-export function PasswordSettings({ userEmail, targetUserId }: PasswordSettingsProps) {
+export function PasswordSettings({ userEmail: _userEmail, targetUserId }: PasswordSettingsProps) {
   const t = useTranslations("settings.password");
   const tAuth = useTranslations("auth");
   const [showForm, setShowForm] = useState(false);

@@ -90,7 +90,7 @@ export function TicketTierInput({
   };
 
   // Format price for display
-  const formatPrice = (price: number, currency: string) => {
+  const _formatPrice = (price: number, currency: string) => {
     if (currency === "VND") {
       return `${price.toLocaleString()}đ`;
     }

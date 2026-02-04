@@ -82,7 +82,7 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
 
   const {
     setKaraokeLevel,
-    setLyricsOffset,
+    setLyricsOffset: _setLyricsOffset,
     adjustLyricsOffset,
   } = useAudioPlayerStore();
 

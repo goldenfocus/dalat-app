@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@/lib/i18n/routing";
+import { Link as _Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { MessageCircle, Calendar } from "lucide-react";
 import { CommentsSection } from "./comments-section";
@@ -48,7 +48,7 @@ export function EventCommentsSection({
   totalComments = 0,
 }: EventCommentsSectionProps) {
   const t = useTranslations("comments");
-  const tEvent = useTranslations("events.comments");
+  const _tEvent = useTranslations("events.comments");
 
   const redirectPath = `/events/${eventSlug}`;
 

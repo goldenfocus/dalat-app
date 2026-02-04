@@ -14,7 +14,7 @@ interface ChatMessageProps {
   onDelete?: (messageId: string) => void;
 }
 
-export function ChatMessage({ message, isOwn, canDelete, onDelete }: ChatMessageProps) {
+export function ChatMessage({ message, isOwn: _isOwn, canDelete, onDelete }: ChatMessageProps) {
   const initials = message.user_name?.split(' ')?.map((n) => n[0])?.join('')?.toUpperCase()?.slice(0, 2) || '??';
   const timeAgo = formatDistanceToNow(new Date(message.created_at), { addSuffix: false });
 

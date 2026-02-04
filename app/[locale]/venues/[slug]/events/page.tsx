@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation";
-import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
-import { ArrowLeft, Calendar } from "lucide-react";
-import { getLocale, getTranslations } from "next-intl/server";
+import { Calendar } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
-import type { Event, EventCounts, Locale, Venue } from "@/lib/types";
+import type { Event, EventCounts, Venue } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;

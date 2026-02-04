@@ -4,7 +4,7 @@ import * as React from "react";
 import { X, Globe } from "lucide-react";
 import { Link, usePathname } from "@/lib/i18n/routing";
 import { useLocale } from "next-intl";
-import { CONTENT_LOCALES, LOCALE_FLAGS, LOCALE_NAMES, type ContentLocale } from "@/lib/types";
+import { CONTENT_LOCALES, LOCALE_FLAGS, LOCALE_NAMES as _LOCALE_NAMES, type ContentLocale } from "@/lib/types";
 
 const STORAGE_KEY = "locale-mismatch-dismissed";
 

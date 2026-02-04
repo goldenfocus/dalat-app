@@ -49,7 +49,7 @@ export async function POST(
       .single();
 
     // Call RPC to set cover (handles auth checks)
-    const { data, error } = await supabase.rpc("set_event_cover_moment", {
+    const { error } = await supabase.rpc("set_event_cover_moment", {
       p_event_id: moment.event_id,
       p_moment_id: momentId,
     });

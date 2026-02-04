@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Plus, Crown, Shield, User, Clock, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Button as _Button } from "@/components/ui/button";
 import type { TribeMember, TribeRequest, Tribe } from "@/lib/types";
 
 interface MyTribesDropdownProps {

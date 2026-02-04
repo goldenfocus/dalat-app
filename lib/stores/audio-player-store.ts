@@ -1,7 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { Locale } from "@/lib/types";
-import type { KaraokeLevel, ParsedLrc } from "@/lib/types/karaoke";
+import type { KaraokeLevel } from "@/lib/types/karaoke";
 import { DEFAULT_LYRICS_OFFSET, DEFAULT_KARAOKE_LEVEL } from "@/lib/types/karaoke";
 
 export interface AudioTrack {
@@ -356,7 +355,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   setKaraokeLevel: (level) => set({ karaokeLevel: level }),
 
   toggleKaraoke: () => {
-    const { karaokeEnabled, karaokeLevel } = get();
+    const { karaokeEnabled } = get();
     if (karaokeEnabled) {
       // Disable: set level to 0 (closed)
       set({ karaokeEnabled: false, karaokeLevel: 0 });

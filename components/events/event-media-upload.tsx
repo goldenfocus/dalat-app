@@ -35,7 +35,7 @@ import {
   isVideoUrl,
   ALL_ALLOWED_TYPES,
   needsConversion,
-  generateSmartFilename,
+  generateSmartFilename as _generateSmartFilename,
 } from "@/lib/media-utils";
 import { convertIfNeeded, convertHeicServerSide } from "@/lib/media-conversion";
 import { DisintegrationEffect } from "@/components/ui/disintegration-effect";

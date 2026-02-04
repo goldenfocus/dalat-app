@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmailInput } from "@/components/ui/email-input";
-import { UrlInput } from "@/components/ui/url-input";
+import { UrlInput as _UrlInput } from "@/components/ui/url-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { VerificationRequest, OrganizerType } from "@/lib/types";

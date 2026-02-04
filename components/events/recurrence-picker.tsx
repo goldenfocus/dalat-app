@@ -77,7 +77,7 @@ export function RecurrencePicker({
   const getCurrentPresetId = (): string => {
     if (!value.isRecurring) return "none";
 
-    const currentRRule = buildRRule(value);
+    const _currentRRule = buildRRule(value);
     const matchingPreset = presets.find((p) => {
       const presetData = parseRRule(p.rrule);
       return (

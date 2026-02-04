@@ -18,8 +18,8 @@ interface MonthNavigationProps {
 }
 
 export function MonthNavigation({
-  currentYear,
-  currentMonth,
+  currentYear: _currentYear,
+  currentMonth: _currentMonth,
   prev,
   next,
   monthLabel,

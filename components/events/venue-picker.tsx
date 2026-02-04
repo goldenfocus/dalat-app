@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin } from "lucide-react";
+import { MapPin as _MapPin } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
-import type { Venue, VenueType } from "@/lib/types";
+import type { Venue as _Venue, VenueType } from "@/lib/types";
 
 interface VenuePickerProps {
   value: string | null;

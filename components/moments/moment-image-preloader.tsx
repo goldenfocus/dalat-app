@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
+import { optimizedImageUrl, imagePresets as _imagePresets } from "@/lib/image-cdn";
 
 interface MomentImagePreloaderProps {
   prevMediaUrl: string | null;

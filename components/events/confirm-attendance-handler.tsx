@@ -89,7 +89,7 @@ export function ConfirmAttendanceHandler({ eventId }: Props) {
         {status === 'confirmed' && (
           <>
             <p className="text-2xl">✅</p>
-            <p className="font-medium">You're confirmed!</p>
+            <p className="font-medium">You&apos;re confirmed!</p>
             <p className="text-sm text-muted-foreground">See you there!</p>
           </>
         )}
@@ -97,7 +97,7 @@ export function ConfirmAttendanceHandler({ eventId }: Props) {
         {status === 'cancel-reason' && (
           <>
             <p className="text-2xl">😢</p>
-            <p className="font-medium">Sorry you can't make it!</p>
+            <p className="font-medium">Sorry you can&apos;t make it!</p>
             <p className="text-sm text-muted-foreground mb-4">Mind telling us why?</p>
             <div className="space-y-2">
               {CANCEL_REASONS.map((reason) => (

@@ -2,7 +2,7 @@ import { inngest } from '../client';
 import { createClient } from '@supabase/supabase-js';
 import { analyzeImage, analyzeVideo, analyzeAudio, analyzeDocument } from '@/lib/ai/content-analyzers';
 import { triggerTranslationServer } from '@/lib/translations';
-import type { MomentContentType } from '@/lib/types';
+import type { MomentContentType, TranslationFieldName } from '@/lib/types';
 
 function getSupabase() {
   return createClient(
@@ -218,7 +218,7 @@ export const processMomentMetadata = inngest.createFunction(
       const audioSummary = metadata.p_audio_summary as string | undefined;
       const pdfSummary = metadata.p_pdf_summary as string | undefined;
 
-      const fieldsToTranslate: { field_name: string; text: string }[] = [];
+      const fieldsToTranslate: { field_name: TranslationFieldName; text: string }[] = [];
 
       if (aiDescription) {
         fieldsToTranslate.push({ field_name: 'ai_description', text: aiDescription });
@@ -238,7 +238,7 @@ export const processMomentMetadata = inngest.createFunction(
 
       if (fieldsToTranslate.length > 0) {
         await step.run('trigger-translations', async () => {
-          await triggerTranslationServer('moment', momentId, fieldsToTranslate as any);
+          await triggerTranslationServer('moment', momentId, fieldsToTranslate);
         });
       }
 

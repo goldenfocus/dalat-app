@@ -32,11 +32,11 @@ interface KaraokePageClientProps {
 }
 
 export function KaraokePageClient({
-  track,
+  track: _track,
   event,
   playlist,
   trackIndex,
-  locale,
+  locale: _locale,
 }: KaraokePageClientProps) {
   const hasInitialized = useRef(false);
 

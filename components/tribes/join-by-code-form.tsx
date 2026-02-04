@@ -93,7 +93,7 @@ export function JoinByCodeForm({ tribe, code, isAuthenticated, locale }: JoinByC
 
         {!isAuthenticated && (
           <p className="text-xs text-center text-muted-foreground">
-            You'll need to sign in to join this tribe.
+            You&apos;ll need to sign in to join this tribe.
           </p>
         )}
       </CardContent>

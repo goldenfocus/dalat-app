@@ -30,7 +30,7 @@ export async function GET() {
       });
     }
 
-    const data = await response.json();
+    const _data = await response.json();
 
     // Test 2: List all actors available to this account
     const actorsResponse = await fetch(
@@ -48,7 +48,7 @@ export async function GET() {
     const availableActors = actorsData.data?.items || [];
 
     // Filter for Facebook/event related actors
-    const relevantActors = availableActors.filter((actor: any) => {
+    const relevantActors = availableActors.filter((actor: Record<string, unknown>) => {
       const name = (actor.name || "").toLowerCase();
       const title = (actor.title || "").toLowerCase();
       return (
@@ -65,13 +65,13 @@ export async function GET() {
       tokenValid: true,
       tokenPrefix: apiToken.substring(0, 10) + "...",
       totalActorsAvailable: availableActors.length,
-      relevantActors: relevantActors.map((a: any) => ({
+      relevantActors: relevantActors.map((a: Record<string, unknown>) => ({
         id: a.id,
         name: a.name,
         title: a.title,
         username: a.username,
       })),
-      allActors: availableActors.slice(0, 10).map((a: any) => ({
+      allActors: availableActors.slice(0, 10).map((a: Record<string, unknown>) => ({
         id: a.id,
         name: a.name,
         title: a.title,

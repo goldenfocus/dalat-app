@@ -53,7 +53,7 @@ interface MomentRow {
 }
 
 export function PromoManager({
-  eventId,
+  eventId: _eventId,
   eventSlug,
   seriesId,
   isSeriesEvent,

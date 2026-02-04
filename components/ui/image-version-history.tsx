@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { History, RotateCcw, ChevronDown, ChevronUp, Loader2, X } from "lucide-react";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { cn as _cn } from "@/lib/utils";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import type { ImageVersion, ImageVersionContentType, ImageVersionFieldName } from "@/lib/types";
 

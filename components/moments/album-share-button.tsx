@@ -30,7 +30,7 @@ export function AlbumShareButton({
 }: AlbumShareButtonProps) {
   const t = useTranslations("common");
   const tm = useTranslations("moments");
-  const locale = useLocale();
+  const _locale = useLocale();
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
 

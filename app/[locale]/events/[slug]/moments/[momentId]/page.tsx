@@ -9,7 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import {
   vi, ko, zhCN, ru, fr, ja, ms, th, de, es, id as idLocale, enUS
 } from "date-fns/locale";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";

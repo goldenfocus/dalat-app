@@ -55,8 +55,8 @@ async function getKaraokeTrack(eventSlug: string, trackId: string): Promise<Trac
 
   // Build tracks array
   const tracks = data
-    .filter((row: any) => row.track_id !== null)
-    .map((row: any) => ({
+    .filter((row: Record<string, unknown>) => row.track_id !== null)
+    .map((row: Record<string, unknown>) => ({
       id: row.track_id,
       title: row.track_title,
       artist: row.track_artist,
@@ -68,7 +68,7 @@ async function getKaraokeTrack(eventSlug: string, trackId: string): Promise<Trac
     }));
 
   // Find the requested track
-  const trackIndex = tracks.findIndex((t: any) => t.id === trackId);
+  const trackIndex = tracks.findIndex((t: { id: string }) => t.id === trackId);
   if (trackIndex === -1) {
     return null;
   }

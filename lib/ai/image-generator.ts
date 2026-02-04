@@ -160,7 +160,7 @@ function getModel() {
 /**
  * Get configured Supabase client with service role
  */
-function getSupabase() {
+function _getSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

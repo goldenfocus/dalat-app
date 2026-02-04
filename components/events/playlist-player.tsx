@@ -89,15 +89,15 @@ export function PlaylistPlayer({
     shuffle,
     setPlaylist,
     playTrack: storePlayTrack,
-    play,
-    pause,
+    play: _play,
+    pause: _pause,
     togglePlay,
     next,
     previous,
     seek,
     toggleRepeat,
     toggleShuffle,
-    setKaraokeLevel,
+    setKaraokeLevel: _setKaraokeLevel,
   } = useAudioPlayerStore();
 
   // Check if this playlist is currently active in the global player

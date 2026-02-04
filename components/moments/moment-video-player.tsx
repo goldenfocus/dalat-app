@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2 as _Volume2, VolumeX } from "lucide-react";
 
 interface MomentVideoPlayerProps {
   /** Original video URL (Supabase Storage) - fallback */
@@ -24,7 +24,7 @@ export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProp
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<InstanceType<typeof import("hls.js").default> | null>(null);
   const [useNativeHls, setUseNativeHls] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [_isReady, setIsReady] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
 
   const isHlsUrl = hlsSrc?.includes(".m3u8");

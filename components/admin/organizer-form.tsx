@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { AIOrganizerLogoDialog } from "@/components/admin/ai-organizer-logo-dial
 import { Trash2, AlertTriangle } from "lucide-react";
 import type { Organizer } from "@/lib/types";
 import { sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
-import { useUnifiedSlugCheck, type SlugStatus } from "@/lib/hooks/use-unified-slug-check";
+import { useUnifiedSlugCheck } from "@/lib/hooks/use-unified-slug-check";
 
 interface OrganizerFormProps {
   organizer?: Organizer;

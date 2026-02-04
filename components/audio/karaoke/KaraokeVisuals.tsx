@@ -1,9 +1,8 @@
 "use client";
 
 import { memo, useEffect, useState, useMemo } from "react";
-import { Music, Mic2, Sparkles } from "lucide-react";
+import { Mic2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
 
 /**
  * Floating music note that drifts across the screen
@@ -122,7 +121,7 @@ export const InstrumentalBreak = memo(function InstrumentalBreak({
       <p className="text-lg text-white/40 italic">Instrumental...</p>
       {nextLyricPreview && (
         <p className="text-xl text-white/20 mt-8 max-w-md text-center">
-          Coming up: "{nextLyricPreview.slice(0, 50)}..."
+          Coming up: &quot;{nextLyricPreview.slice(0, 50)}&quot;...
         </p>
       )}
     </div>
