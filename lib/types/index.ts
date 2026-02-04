@@ -875,6 +875,68 @@ export interface MomentWithMetadata extends Moment {
   metadata?: MomentMetadata | null;
 }
 
+// ============================================
+// PROMO MEDIA TYPES
+// ============================================
+
+export type PromoMediaType = 'image' | 'video' | 'youtube' | 'pdf';
+export type PromoUpdateScope = 'this_event' | 'future' | 'all';
+export type PromoSource = 'event' | 'series';
+
+export interface PromoMedia {
+  id: string;
+  series_id: string | null;
+  event_id: string | null;
+  media_type: PromoMediaType;
+  media_url: string | null;
+  thumbnail_url: string | null;
+  original_filename: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  youtube_url: string | null;
+  youtube_video_id: string | null;
+  source_moment_id: string | null;
+  title: string | null;
+  caption: string | null;
+  sort_order: number;
+  is_ai_suggested: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Promo media with inheritance info (returned from get_event_promo_media RPC)
+export interface EventPromoMedia {
+  id: string;
+  media_type: PromoMediaType;
+  media_url: string | null;
+  thumbnail_url: string | null;
+  youtube_url: string | null;
+  youtube_video_id: string | null;
+  source_moment_id: string | null;
+  title: string | null;
+  caption: string | null;
+  sort_order: number;
+  is_ai_suggested: boolean;
+  promo_source: PromoSource;
+  created_at: string;
+}
+
+// AI-suggested moment for promo import
+export interface AISuggestedPromoMoment {
+  moment_id: string;
+  event_id: string;
+  event_slug: string;
+  event_title: string;
+  event_starts_at: string;
+  media_url: string | null;
+  thumbnail_url: string | null;
+  content_type: string;
+  quality_score: number | null;
+  ai_description: string | null;
+  mood: string | null;
+}
+
 // Grouped moment for profile timeline (subset of fields)
 export interface GroupedMoment {
   id: string;
