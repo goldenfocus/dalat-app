@@ -43,8 +43,6 @@ Output ONLY the JSON object, no other text.`;
  * Uses claude-sonnet-4 for vision capabilities.
  */
 export async function analyzeImage(imageUrl: string): Promise<ImageAnalysis> {
-  const startTime = Date.now();
-
   try {
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
