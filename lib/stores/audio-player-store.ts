@@ -14,6 +14,7 @@ export interface AudioTrack {
   duration_seconds: number | null;
   // Karaoke data (optional)
   lyrics_lrc?: string | null;
+  timing_offset?: number | null;  // Saved timing offset in ms (admin-set baseline)
 }
 
 export interface PlaylistInfo {
@@ -125,6 +126,10 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   // Set a new playlist and optionally start playing
   setPlaylist: (tracks, playlist, startIndex = 0) => {
     const { audioElement } = get();
+    const track = tracks[startIndex];
+
+    // Use saved timing_offset from track, or fall back to default
+    const savedOffset = track?.timing_offset ?? DEFAULT_LYRICS_OFFSET;
 
     set({
       tracks,
@@ -134,10 +139,10 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       duration: 0,
       isVisible: true,
       shuffledIndices: createShuffledIndices(tracks.length, startIndex),
+      lyricsOffset: savedOffset,  // Load saved timing offset for this track
     });
 
     // Load the track
-    const track = tracks[startIndex];
     if (audioElement && track) {
       audioElement.src = track.file_url;
       audioElement.load();
@@ -155,10 +160,15 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     if (index < 0 || index >= tracks.length) return;
 
     const track = tracks[index];
+
+    // Use saved timing_offset from track, or fall back to default
+    const savedOffset = track?.timing_offset ?? DEFAULT_LYRICS_OFFSET;
+
     set({
       currentIndex: index,
       currentTime: 0,
       duration: 0,
+      lyricsOffset: savedOffset,  // Load saved timing offset for this track
     });
 
     if (audioElement && track) {
