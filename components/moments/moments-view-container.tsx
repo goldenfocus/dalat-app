@@ -6,6 +6,8 @@ import { ViewModeSwitcher } from "./view-mode-switcher";
 import { MediaTypeFilterToggle, type MediaTypeFilter } from "./media-type-filter";
 import { InfiniteMomentGrid, type InfiniteMomentGridHandle } from "./infinite-moment-grid";
 import { ImmersiveMomentView } from "./immersive-moment-view";
+import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
+import { createClient } from "@/lib/supabase/client";
 import type { MomentWithProfile } from "@/lib/types";
 
 interface MomentsViewContainerProps {
@@ -35,7 +37,12 @@ export function MomentsViewContainer({
   const [showImmersive, setShowImmersive] = useState(false);
   const [immersiveStartIndex, setImmersiveStartIndex] = useState(0);
   const hasAutoOpenedRef = useRef(false);
+  const hasAutoPlayedRef = useRef(false);
   const gridRef = useRef<InfiniteMomentGridHandle>(null);
+
+  // Audio player store for auto-play
+  const setPlaylist = useAudioPlayerStore((state) => state.setPlaylist);
+  const currentPlaylist = useAudioPlayerStore((state) => state.playlist);
 
   // Track moments loaded so far (for immersive view to access all loaded moments)
   const [allMoments, setAllMoments] = useState<MomentWithProfile[]>(initialMoments);
@@ -73,6 +80,54 @@ export function MomentsViewContainer({
       setShowImmersive(true);
     }
   }, [initialView, isLoaded, allMoments.length, setViewMode]);
+
+  // Auto-play event playlist when landing on moments page
+  useEffect(() => {
+    // Only trigger once, and skip if already playing from this event
+    if (hasAutoPlayedRef.current || currentPlaylist?.eventSlug === eventSlug) {
+      return;
+    }
+    hasAutoPlayedRef.current = true;
+
+    // Fetch and play the event's playlist
+    async function fetchAndPlayPlaylist() {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc("get_event_playlist", {
+        p_event_slug: eventSlug,
+      });
+
+      if (error || !data || data.length === 0) {
+        return; // No playlist for this event
+      }
+
+      const firstRow = data[0];
+      const tracks: AudioTrack[] = data
+        .filter((row: any) => row.track_id !== null)
+        .map((row: any) => ({
+          id: row.track_id,
+          file_url: row.track_file_url,
+          title: row.track_title,
+          artist: row.track_artist,
+          album: row.track_album,
+          thumbnail_url: row.track_thumbnail_url,
+          duration_seconds: row.track_duration_seconds,
+          lyrics_lrc: row.track_lyrics_lrc,
+          timing_offset: row.track_timing_offset || 0,
+        }));
+
+      if (tracks.length === 0) return;
+
+      const playlistInfo: PlaylistInfo = {
+        eventSlug,
+        eventTitle: firstRow.event_title,
+        eventImageUrl: firstRow.event_image_url,
+      };
+
+      setPlaylist(tracks, playlistInfo, 0);
+    }
+
+    fetchAndPlayPlaylist();
+  }, [eventSlug, setPlaylist, currentPlaylist?.eventSlug]);
 
   // Open immersive view starting from a specific moment
   const openImmersive = (index: number = 0) => {
