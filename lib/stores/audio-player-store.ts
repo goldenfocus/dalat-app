@@ -47,6 +47,7 @@ interface AudioPlayerState {
 
   // UI state
   isVisible: boolean;
+  autoplayBlocked: boolean; // True when browser blocks autoplay
 
   // Karaoke state
   karaokeLevel: KaraokeLevel;
@@ -80,6 +81,7 @@ interface AudioPlayerState {
   adjustLyricsOffset: (delta: number) => void;
   toggleTranslation: () => void;
   setTranslationLocale: (locale: Locale) => void;
+  clearAutoplayBlocked: () => void;
 }
 
 // Fisher-Yates shuffle to create random order
@@ -110,6 +112,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   shuffle: false,
   shuffledIndices: [],
   isVisible: false,
+  autoplayBlocked: false,
 
   // Karaoke initial state
   karaokeLevel: DEFAULT_KARAOKE_LEVEL,
@@ -223,10 +226,13 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       }
 
       await audioElement.play();
-      set({ isPlaying: true, isLoading: false });
+      set({ isPlaying: true, isLoading: false, autoplayBlocked: false });
     } catch (error) {
       console.error('Error playing audio:', error);
-      set({ isPlaying: false, isLoading: false });
+      // Check if this is an autoplay block (NotAllowedError)
+      const isAutoplayBlocked = error instanceof Error &&
+        (error.name === 'NotAllowedError' || error.message.includes('user didn\'t interact'));
+      set({ isPlaying: false, isLoading: false, autoplayBlocked: isAutoplayBlocked });
     }
   },
 
@@ -391,6 +397,8 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   },
 
   setTranslationLocale: (locale) => set({ translationLocale: locale }),
+
+  clearAutoplayBlocked: () => set({ autoplayBlocked: false }),
 }));
 
 // Selector hooks
@@ -423,3 +431,6 @@ export const useCurrentTrackLyrics = () =>
     const track = state.tracks.length > 0 ? state.tracks[state.currentIndex] : null;
     return track?.lyrics_lrc ?? null;
   });
+
+export const useAutoplayBlocked = () =>
+  useAudioPlayerStore((state) => state.autoplayBlocked);

@@ -22,6 +22,7 @@ import {
   useCurrentTrack,
   useIsPlayerVisible,
   useKaraokeLevel,
+  useAutoplayBlocked,
 } from "@/lib/stores/audio-player-store";
 import {
   KaraokeFooterLine,
@@ -35,6 +36,7 @@ export function MiniPlayer() {
 
   const isVisible = useIsPlayerVisible();
   const currentTrack = useCurrentTrack();
+  const autoplayBlocked = useAutoplayBlocked();
 
   const karaokeLevel = useKaraokeLevel();
 
@@ -243,21 +245,30 @@ export function MiniPlayer() {
                 <SkipBack className="w-5 h-5" />
               </Button>
 
-              <Button
-                variant="default"
-                size="icon"
-                className="h-12 w-12 rounded-full"
-                onClick={togglePlay}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : isPlaying ? (
-                  <Pause className="w-5 h-5" />
-                ) : (
-                  <Play className="w-5 h-5 ml-0.5" />
+              <div className="relative">
+                {/* Pulsing ring when autoplay blocked */}
+                {autoplayBlocked && !isPlaying && (
+                  <div className="absolute inset-0 rounded-full animate-ping bg-primary/40" />
                 )}
-              </Button>
+                <Button
+                  variant="default"
+                  size="icon"
+                  className={cn(
+                    "h-12 w-12 rounded-full relative",
+                    autoplayBlocked && !isPlaying && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  )}
+                  onClick={togglePlay}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : isPlaying ? (
+                    <Pause className="w-5 h-5" />
+                  ) : (
+                    <Play className="w-5 h-5 ml-0.5" />
+                  )}
+                </Button>
+              </div>
 
               <Button
                 variant="ghost"
