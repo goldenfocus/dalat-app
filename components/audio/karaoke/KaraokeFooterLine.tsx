@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback } from "react";
 import { ChevronUp, Mic2, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentLyric } from "@/lib/hooks/use-current-lyric";
@@ -12,42 +12,6 @@ import {
   useLyricsOffset,
 } from "@/lib/stores/audio-player-store";
 
-/**
- * Word-by-word highlighting component.
- * Uses line progress to estimate which word should be highlighted.
- */
-function HighlightedLine({ text, progress }: { text: string; progress: number }) {
-  const words = useMemo(() => text.split(/\s+/).filter(Boolean), [text]);
-
-  // Calculate which word index we're on based on progress
-  // progress 0-1 maps to word indices 0 to words.length-1
-  const activeWordIndex = Math.floor(progress * words.length);
-
-  return (
-    <span className="inline">
-      {words.map((word, index) => {
-        const isCompleted = index < activeWordIndex;
-        const isActive = index === activeWordIndex;
-
-        return (
-          <span key={index}>
-            <span
-              className={cn(
-                "transition-colors duration-150",
-                isCompleted && "text-primary/70",
-                isActive && "text-primary font-semibold",
-                !isCompleted && !isActive && "text-muted-foreground/80"
-              )}
-            >
-              {word}
-            </span>
-            {index < words.length - 1 && " "}
-          </span>
-        );
-      })}
-    </span>
-  );
-}
 
 /**
  * KaraokeFooterLine - Level 1 karaoke display
@@ -61,7 +25,7 @@ export const KaraokeFooterLine = memo(function KaraokeFooterLine() {
   const lyricsLrc = useCurrentTrackLyrics();
   const lyricsOffset = useLyricsOffset();
 
-  const { line, lineIndex, progress, hasLyrics, parsed } = useCurrentLyric(
+  const { line, lineIndex, hasLyrics, parsed } = useCurrentLyric(
     lyricsLrc,
     lyricsOffset
   );
@@ -125,11 +89,11 @@ export const KaraokeFooterLine = memo(function KaraokeFooterLine() {
       aria-label="Expand lyrics"
     >
       <div className="flex items-center justify-center gap-2">
-        {/* Current lyric line with word highlighting */}
+        {/* Current lyric line */}
         <div className="flex-1 min-w-0 overflow-hidden">
           {currentText ? (
-            <p className="text-sm font-medium truncate animate-in fade-in duration-300">
-              <HighlightedLine text={currentText} progress={progress} />
+            <p className="text-sm font-medium text-primary truncate animate-in fade-in duration-300">
+              {currentText}
             </p>
           ) : (
             <p className="text-sm text-muted-foreground italic">

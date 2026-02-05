@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { ChevronUp, ChevronDown, Minus, Plus } from "lucide-react";
 import { KaraokeShareButton } from "./KaraokeShareButton";
 import { cn } from "@/lib/utils";
@@ -12,52 +12,6 @@ import {
   useLyricsOffset,
 } from "@/lib/stores/audio-player-store";
 
-/**
- * Word-by-word highlighting for a lyric line.
- * Progress-based estimation when word timing isn't available.
- */
-function HighlightedLine({
-  text,
-  progress,
-  isCurrent,
-}: {
-  text: string;
-  progress: number;
-  isCurrent: boolean;
-}) {
-  const words = useMemo(() => text.split(/\s+/).filter(Boolean), [text]);
-
-  if (!isCurrent) {
-    return <span>{text}</span>;
-  }
-
-  const activeWordIndex = Math.floor(progress * words.length);
-
-  return (
-    <span className="inline">
-      {words.map((word, index) => {
-        const isCompleted = index < activeWordIndex;
-        const isActive = index === activeWordIndex;
-
-        return (
-          <span key={index}>
-            <span
-              className={cn(
-                "transition-colors duration-150",
-                isCompleted && "text-primary",
-                isActive && "text-primary font-bold scale-105 inline-block",
-                !isCompleted && !isActive && "text-foreground/60"
-              )}
-            >
-              {word}
-            </span>
-            {index < words.length - 1 && " "}
-          </span>
-        );
-      })}
-    </span>
-  );
-}
 
 /**
  * KaraokeTheater - Level 2 karaoke display
@@ -75,7 +29,6 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
   const {
     surroundingLines,
     lineIndex,
-    progress,
     hasLyrics,
     totalLines,
   } = useCurrentLyricWithContext(lyricsLrc, 3, 3, lyricsOffset);
@@ -153,15 +106,11 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
                 className={cn(
                   "text-center transition-all duration-300",
                   isCurrent
-                    ? "text-2xl font-medium text-white scale-100"
+                    ? "text-2xl font-medium text-primary scale-100"
                     : "text-lg text-white/40 scale-95"
                 )}
               >
-                <HighlightedLine
-                  text={line.text}
-                  progress={progress}
-                  isCurrent={isCurrent}
-                />
+                {line.text}
               </div>
             ))}
           </div>

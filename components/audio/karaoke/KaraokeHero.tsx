@@ -1,14 +1,16 @@
 "use client";
 
-import { memo, useMemo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState, useCallback } from "react";
 import {
   ChevronDown,
-  Minus,
-  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Save,
   Play,
   Pause,
   SkipBack,
   SkipForward,
+  Loader2,
 } from "lucide-react";
 import { KaraokeShareButton } from "./KaraokeShareButton";
 import {
@@ -25,54 +27,133 @@ import {
   useKaraokeLevel,
   useCurrentTrackLyrics,
   useLyricsOffset,
+  useCurrentTrack,
 } from "@/lib/stores/audio-player-store";
 import { formatDuration } from "@/lib/audio-metadata";
+import { createClient } from "@/lib/supabase/client";
 
 /**
- * Large word-by-word highlighting for hero mode.
+ * Timing controls with clearer labels and admin save option.
  */
-function HeroHighlightedLine({
-  text,
-  progress,
-  isCurrent,
-}: {
-  text: string;
-  progress: number;
-  isCurrent: boolean;
-}) {
-  const words = useMemo(() => text.split(/\s+/).filter(Boolean), [text]);
+function TimingControls() {
+  const lyricsOffset = useLyricsOffset();
+  const { adjustLyricsOffset } = useAudioPlayerStore();
+  const currentTrack = useCurrentTrack();
 
-  if (!isCurrent) {
-    return <span>{text}</span>;
-  }
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [savedOffset, setSavedOffset] = useState<number | null>(null);
 
-  const activeWordIndex = Math.floor(progress * words.length);
+  // Check admin status on mount
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", user.id)
+          .single();
+
+        setIsAdmin(!!profile?.is_admin);
+      } catch {
+        // Silently fail - not admin
+      }
+    };
+    checkAdmin();
+  }, []);
+
+  // Track the original saved offset when track changes
+  useEffect(() => {
+    if (currentTrack?.timing_offset !== undefined) {
+      setSavedOffset(currentTrack.timing_offset);
+    }
+  }, [currentTrack?.id, currentTrack?.timing_offset]);
+
+  // Check if offset has changed from saved value
+  const hasUnsavedChanges = savedOffset !== null && lyricsOffset !== savedOffset;
+
+  const handleSave = useCallback(async () => {
+    if (!currentTrack?.id || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/karaoke/timing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          trackId: currentTrack.id,
+          timingOffset: lyricsOffset,
+        }),
+      });
+
+      if (response.ok) {
+        setSavedOffset(lyricsOffset);
+      }
+    } catch (error) {
+      console.error("Failed to save timing:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [currentTrack?.id, lyricsOffset, isSaving]);
 
   return (
-    <span className="inline">
-      {words.map((word, index) => {
-        const isCompleted = index < activeWordIndex;
-        const isActive = index === activeWordIndex;
+    <div className="flex items-center gap-2">
+      <div className="flex items-center bg-white/10 rounded-full">
+        {/* Earlier button (negative = lyrics show sooner) */}
+        <button
+          onClick={() => adjustLyricsOffset(-100)}
+          className="flex items-center gap-0.5 pl-3 pr-1 py-1.5 text-white/70 hover:text-white text-xs transition-colors"
+          title="Show lyrics earlier (teleprompter mode)"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">Earlier</span>
+        </button>
 
-        return (
-          <span key={index}>
-            <span
-              className={cn(
-                "transition-all duration-200",
-                isCompleted && "text-primary drop-shadow-glow",
-                isActive && "text-primary font-bold scale-110 inline-block drop-shadow-glow-strong",
-                !isCompleted && !isActive && "text-white/50"
-              )}
-            >
-              {word}
-            </span>
-            {index < words.length - 1 && " "}
-          </span>
-        );
-      })}
-    </span>
+        {/* Current offset display */}
+        <span className="text-xs text-white/50 w-12 text-center tabular-nums">
+          {lyricsOffset >= 0 ? "+" : ""}{Math.round(lyricsOffset / 100) / 10}s
+        </span>
+
+        {/* Later button (positive = lyrics show later) */}
+        <button
+          onClick={() => adjustLyricsOffset(100)}
+          className="flex items-center gap-0.5 pl-1 pr-3 py-1.5 text-white/70 hover:text-white text-xs transition-colors"
+          title="Show lyrics later"
+        >
+          <span className="hidden sm:inline">Later</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Admin save button */}
+      {isAdmin && hasUnsavedChanges && (
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={cn(
+            "flex items-center gap-1 px-2 py-1.5 rounded-full text-xs transition-all",
+            isSaving
+              ? "bg-white/5 text-white/30"
+              : "bg-primary/80 text-white hover:bg-primary"
+          )}
+          title="Save timing for all users"
+        >
+          {isSaving ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Save className="w-3 h-3" />
+          )}
+          <span className="hidden sm:inline">Save</span>
+        </button>
+      )}
+    </div>
   );
 }
+
 
 /**
  * KaraokeHero - Level 3 full-screen immersive karaoke
@@ -90,7 +171,6 @@ export const KaraokeHero = memo(function KaraokeHero() {
   const {
     surroundingLines,
     lineIndex,
-    progress,
     hasLyrics,
     totalLines,
     parsed,
@@ -106,7 +186,6 @@ export const KaraokeHero = memo(function KaraokeHero() {
     next,
     previous,
     setKaraokeLevel,
-    adjustLyricsOffset,
   } = useAudioPlayerStore();
 
   const currentTrack = tracks[currentIndex];
@@ -194,23 +273,7 @@ export const KaraokeHero = memo(function KaraokeHero() {
         {/* Share + Timing controls */}
         <div className="flex items-center gap-2">
           <KaraokeShareButton mode="hero" />
-          <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1">
-            <button
-              onClick={() => adjustLyricsOffset(-100)}
-              className="p-1 text-white/60 hover:text-white"
-            >
-              <Minus className="w-4 h-4" />
-            </button>
-            <span className="text-xs text-white/60 w-16 text-center">
-              {lyricsOffset >= 0 ? "+" : ""}{lyricsOffset}ms
-            </span>
-            <button
-              onClick={() => adjustLyricsOffset(100)}
-              className="p-1 text-white/60 hover:text-white"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
+          <TimingControls />
         </div>
       </div>
 
@@ -242,15 +305,11 @@ export const KaraokeHero = memo(function KaraokeHero() {
                 className={cn(
                   "transition-all duration-500",
                   isCurrent
-                    ? "text-4xl sm:text-5xl md:text-6xl font-bold text-white"
+                    ? "text-4xl sm:text-5xl md:text-6xl font-bold text-primary drop-shadow-glow-strong"
                     : "text-xl sm:text-2xl md:text-3xl text-white/30"
                 )}
               >
-                <HeroHighlightedLine
-                  text={line.text}
-                  progress={progress}
-                  isCurrent={isCurrent}
-                />
+                {line.text}
               </div>
             ))}
           </div>
