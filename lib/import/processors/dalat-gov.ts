@@ -209,7 +209,7 @@ export async function fetchArticle(url: string): Promise<GovArticle | null> {
 export async function extractEventsFromArticle(article: GovArticle): Promise<ExtractedEvent[]> {
   try {
     const response = await anthropic.messages.create({
-      model: "claude-haiku-4-20250514",
+      model: "claude-3-5-haiku-20241022",
       max_tokens: 2000,
       messages: [
         {
