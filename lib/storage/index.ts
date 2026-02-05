@@ -69,17 +69,9 @@ const R2_ENABLED_BUCKETS: string[] = [
   'moment-materials',
 ];
 
-/**
- * Check if R2 is properly configured
- */
-export function isR2Configured(): boolean {
-  return !!(
-    process.env.CLOUDFLARE_R2_ACCESS_KEY_ID &&
-    process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY &&
-    process.env.CLOUDFLARE_R2_ENDPOINT &&
-    process.env.CLOUDFLARE_R2_PUBLIC_URL
-  );
-}
+// Import and re-export isR2Configured from centralized config (with .trim() protection)
+import { isR2Configured } from './r2-config';
+export { isR2Configured };
 
 /**
  * Get the appropriate storage provider for a bucket.

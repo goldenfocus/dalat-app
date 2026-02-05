@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import sharp from "sharp";
+import { getR2Config } from "@/lib/storage/r2-config";
 
 export const maxDuration = 60; // Allow longer execution for large files
 
@@ -21,29 +22,22 @@ const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 /**
- * Get R2 client and config
+ * Create S3 client for R2 using centralized config (with .trim() protection)
  */
-function getR2Config() {
-  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-  const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT;
-  const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
-  const bucketName = (process.env.CLOUDFLARE_R2_BUCKET_NAME || "dalat-app-media").trim();
-
-  if (!accessKeyId || !secretAccessKey || !endpoint || !publicUrl) {
-    return null;
-  }
+function createR2Client() {
+  const config = getR2Config();
+  if (!config) return null;
 
   const client = new S3Client({
     region: "auto",
-    endpoint: endpoint.trim(),
+    endpoint: config.endpoint,
     credentials: {
-      accessKeyId: accessKeyId.trim(),
-      secretAccessKey: secretAccessKey.trim(),
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
     },
   });
 
-  return { client, bucketName, publicUrl: publicUrl.trim() };
+  return { client, bucketName: config.bucketName, publicUrl: config.publicUrl };
 }
 
 /**
@@ -80,8 +74,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Get R2 config
-  const r2 = getR2Config();
+  // Get R2 client (uses centralized config with .trim() protection)
+  const r2 = createR2Client();
   if (!r2) {
     return NextResponse.json({ error: "R2 storage not configured" }, { status: 503 });
   }

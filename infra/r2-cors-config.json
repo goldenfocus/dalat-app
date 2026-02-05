@@ -1,0 +1,26 @@
+{
+  "_comment": "R2 CORS Configuration for dalat-app-media bucket",
+  "_instructions": [
+    "Apply this config via Cloudflare Dashboard:",
+    "1. Go to R2 > dalat-app-media > Settings > CORS policy",
+    "2. Click 'Add CORS policy' or 'Edit'",
+    "3. Paste the 'rules' array below",
+    "",
+    "This enables browser-based uploads via presigned URLs.",
+    "Without CORS, browsers block PUT requests to R2 even with valid presigned URLs."
+  ],
+  "rules": [
+    {
+      "AllowedOrigins": [
+        "https://dalat.app",
+        "https://www.dalat.app",
+        "https://*.vercel.app",
+        "http://localhost:3000"
+      ],
+      "AllowedMethods": ["GET", "PUT", "HEAD"],
+      "AllowedHeaders": ["*"],
+      "ExposeHeaders": ["ETag", "Content-Length", "Content-Type"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}

@@ -8,14 +8,7 @@
  * 1. Create R2 bucket in Cloudflare dashboard
  * 2. Create R2 API token with read/write permissions
  * 3. Connect custom domain (e.g., cdn.dalat.app) for public access
- * 4. Set environment variables (see below)
- *
- * Environment variables:
- * - CLOUDFLARE_R2_ACCESS_KEY_ID
- * - CLOUDFLARE_R2_SECRET_ACCESS_KEY
- * - CLOUDFLARE_R2_ENDPOINT (https://<account-id>.r2.cloudflarestorage.com)
- * - CLOUDFLARE_R2_PUBLIC_URL (https://cdn.dalat.app)
- * - CLOUDFLARE_R2_BUCKET_NAME (optional, defaults to 'dalat-app-media')
+ * 4. Set environment variables (see r2-config.ts)
  */
 
 import {
@@ -29,48 +22,22 @@ import type {
   UploadOptions,
   PresignedUrlOptions,
 } from './index';
+import { getR2ConfigOrThrow } from './r2-config';
 
-const DEFAULT_BUCKET_NAME = 'dalat-app-media';
 const DEFAULT_CACHE_CONTROL = 'public, max-age=31536000, immutable';
-
-/**
- * Get R2 credentials (throws if not configured)
- */
-function getR2Config() {
-  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-  const endpoint = process.env.CLOUDFLARE_R2_ENDPOINT;
-  const publicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
-  const bucketName =
-    process.env.CLOUDFLARE_R2_BUCKET_NAME || DEFAULT_BUCKET_NAME;
-
-  if (!accessKeyId || !secretAccessKey || !endpoint || !publicUrl) {
-    const missing = [];
-    if (!accessKeyId) missing.push('CLOUDFLARE_R2_ACCESS_KEY_ID');
-    if (!secretAccessKey) missing.push('CLOUDFLARE_R2_SECRET_ACCESS_KEY');
-    if (!endpoint) missing.push('CLOUDFLARE_R2_ENDPOINT');
-    if (!publicUrl) missing.push('CLOUDFLARE_R2_PUBLIC_URL');
-
-    throw new Error(
-      `Cloudflare R2 not configured. Missing: ${missing.join(', ')}`
-    );
-  }
-
-  return { accessKeyId, secretAccessKey, endpoint, publicUrl, bucketName };
-}
 
 /**
  * Create S3 client for R2
  */
 function createR2Client(): S3Client {
-  const { accessKeyId, secretAccessKey, endpoint } = getR2Config();
+  const config = getR2ConfigOrThrow();
 
   return new S3Client({
     region: 'auto', // R2 uses 'auto' region
-    endpoint,
+    endpoint: config.endpoint,
     credentials: {
-      accessKeyId,
-      secretAccessKey,
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
     },
   });
 }
@@ -81,7 +48,7 @@ export class R2StorageProvider implements StorageProvider {
   private publicUrl: string;
 
   constructor() {
-    const config = getR2Config();
+    const config = getR2ConfigOrThrow();
     this.client = createR2Client();
     this.bucketName = config.bucketName;
     this.publicUrl = config.publicUrl;

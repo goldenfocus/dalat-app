@@ -37,7 +37,7 @@ import {
   needsConversion,
   generateSmartFilename,
 } from "@/lib/media-utils";
-import { convertIfNeeded, convertHeicServerSide } from "@/lib/media-conversion";
+import { convertIfNeeded, uploadHeicServerSide } from "@/lib/media-conversion";
 import { DisintegrationEffect } from "@/components/ui/disintegration-effect";
 import { ImageVersionHistory } from "@/components/ui/image-version-history";
 
@@ -306,26 +306,28 @@ export function EventMediaUpload({
         finalUrl = data.url;
       } else {
         // Use unified storage abstraction for other buckets (venues, etc.)
-        const result = await uploadFile(bucket, fileToUpload, {
-          entityId: eventId,
-        });
-        finalUrl = result.publicUrl;
-
-        // If HEIC needs server-side conversion, do it now
-        if (needsServerHeicConversion && result.path) {
-          setConvertStatus("Converting on server...");
+        // HEIC files MUST use server-side upload+conversion (presigned URLs won't work)
+        if (needsServerHeicConversion) {
+          setConvertStatus("Uploading & converting HEIC...");
           setIsConverting(true);
           try {
-            const conversionResult = await convertHeicServerSide(bucket, result.path);
-            finalUrl = conversionResult.url;
-            console.log("[EventMediaUpload] Server-side HEIC conversion complete:", finalUrl);
-          } catch (convErr) {
-            console.error("[EventMediaUpload] Server-side HEIC conversion failed:", convErr);
-            // Continue with original URL - Cloudflare Image Resizing might handle it
+            const fileName = generateSmartFilename(file.name, eventId, "jpg");
+            const heicResult = await uploadHeicServerSide(fileToUpload, bucket, fileName);
+            finalUrl = heicResult.url;
+            console.log("[EventMediaUpload] Server-side HEIC upload+conversion complete:", finalUrl);
+          } catch (heicErr) {
+            console.error("[EventMediaUpload] Server-side HEIC upload failed:", heicErr);
+            throw heicErr; // Re-throw to be caught by outer try-catch
           } finally {
             setIsConverting(false);
             setConvertStatus(null);
           }
+        } else {
+          // Regular files use presigned URL upload
+          const result = await uploadFile(bucket, fileToUpload, {
+            entityId: eventId,
+          });
+          finalUrl = result.publicUrl;
         }
       }
 
