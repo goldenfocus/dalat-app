@@ -195,7 +195,7 @@ export function MiniPlayer() {
   return (
     <>
       {/* Mini player bar - positioned above mobile bottom nav */}
-      <div className="fixed left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0">
+      <div className="fixed left-0 right-0 z-[60] bg-background/95 backdrop-blur-lg border-t bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0">
         {/* Progress bar (thin line at top) */}
         <div className="h-1 bg-muted">
           <div

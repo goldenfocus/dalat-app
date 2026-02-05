@@ -77,7 +77,7 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 animate-in slide-in-from-bottom duration-300">
+    <div className="fixed inset-x-0 bottom-0 z-[60] animate-in slide-in-from-bottom duration-300">
       {/* Backdrop */}
       <div
         className="absolute inset-0 -top-[100vh] bg-black/60 backdrop-blur-sm"
