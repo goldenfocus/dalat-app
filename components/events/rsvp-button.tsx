@@ -1,13 +1,21 @@
 "use client";
 
-import { useState, useTransition, createContext, useContext, useEffect, useRef } from "react";
+import { useState, useTransition, createContext, useContext, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { EventFeedback } from "./event-feedback";
 import { RsvpCelebration } from "./rsvp-celebration";
-import type { Rsvp } from "@/lib/types";
+import { QuestionnaireFlow } from "@/components/questionnaire";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { submitQuestionnaireResponses } from "@/lib/questionnaire";
+import type { Rsvp, QuestionnaireData } from "@/lib/types";
 
 // Context for coordinating celebration state and RSVP card visibility across components
 interface CelebrationContextValue {
@@ -83,6 +91,7 @@ interface RsvpButtonProps {
     comment?: string;
     marked_no_show?: boolean;
   } | null;
+  questionnaire?: QuestionnaireData | null;
 }
 
 // Helper to check if event is past (mirrors database logic)
@@ -102,11 +111,18 @@ export function isEventPast(startsAt: string, endsAt: string | null): boolean {
 export function useRsvpActions(
   eventId: string,
   isLoggedIn: boolean,
-  onRsvpSuccess?: () => void
+  onRsvpSuccess?: () => void,
+  questionnaire?: QuestionnaireData | null,
+  onShowQuestionnaire?: () => void
 ) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [lastRsvpId, setLastRsvpId] = useState<string | null>(null);
+
+  // Check if questionnaire should be shown
+  const hasActiveQuestionnaire = questionnaire?.is_enabled &&
+    questionnaire.questions.length > 0;
 
   async function handleRsvp() {
     if (!isLoggedIn) {
@@ -114,32 +130,62 @@ export function useRsvpActions(
       return;
     }
 
+    // If there's a questionnaire, show it instead of directly RSVP'ing
+    if (hasActiveQuestionnaire && onShowQuestionnaire) {
+      onShowQuestionnaire();
+      return;
+    }
+
+    // Otherwise, proceed with direct RSVP
+    await performRsvp();
+  }
+
+  // Perform the actual RSVP (called directly or after questionnaire)
+  async function performRsvp(
+    questionnaireResponses?: Record<string, string | string[]>
+  ): Promise<{ success: boolean; rsvpId?: string }> {
     setError(null);
     const supabase = createClient();
 
-    startTransition(async () => {
-      const { data, error: rpcError } = await supabase.rpc("rsvp_event", {
-        p_event_id: eventId,
-        p_plus_ones: 0,
+    return new Promise((resolve) => {
+      startTransition(async () => {
+        const { data, error: rpcError } = await supabase.rpc("rsvp_event", {
+          p_event_id: eventId,
+          p_plus_ones: 0,
+        });
+
+        if (rpcError) {
+          setError(rpcError.message);
+          resolve({ success: false });
+          return;
+        }
+
+        const rsvpId = data?.rsvp_id;
+        setLastRsvpId(rsvpId || null);
+
+        // If we have questionnaire responses, save them
+        if (rsvpId && questionnaireResponses && Object.keys(questionnaireResponses).length > 0) {
+          const result = await submitQuestionnaireResponses(rsvpId, questionnaireResponses);
+          if (!result.success) {
+            console.error("Failed to save questionnaire responses:", result.error);
+            // Continue anyway - RSVP was successful
+          }
+        }
+
+        if (data?.status === "going") {
+          // Trigger celebration!
+          onRsvpSuccess?.();
+
+          fetch("/api/notifications/rsvp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId }),
+          }).catch(console.error);
+        }
+
+        router.refresh();
+        resolve({ success: true, rsvpId });
       });
-
-      if (rpcError) {
-        setError(rpcError.message);
-        return;
-      }
-
-      if (data?.status === "going") {
-        // Trigger celebration!
-        onRsvpSuccess?.();
-
-        fetch("/api/notifications/rsvp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eventId }),
-        }).catch(console.error);
-      }
-
-      router.refresh();
     });
   }
 
@@ -221,6 +267,9 @@ export function useRsvpActions(
     handleRsvp,
     handleInterested,
     handleCancel,
+    performRsvp,
+    lastRsvpId,
+    hasActiveQuestionnaire,
   };
 }
 
@@ -241,9 +290,11 @@ export function RsvpButton({
   startsAt,
   endsAt,
   existingFeedback,
+  questionnaire,
 }: RsvpButtonProps) {
   const t = useTranslations("rsvp");
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const celebration = useCelebration();
 
   const handleCelebrationTrigger = () => {
@@ -256,8 +307,22 @@ export function RsvpButton({
     celebration.setCelebrating(false);
   };
 
-  const { isPending, error, handleRsvp, handleInterested, handleCancel } =
-    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger);
+  const handleShowQuestionnaire = useCallback(() => {
+    setShowQuestionnaire(true);
+  }, []);
+
+  const { isPending, error, handleRsvp, handleInterested, handleCancel, performRsvp, hasActiveQuestionnaire } =
+    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire);
+
+  // Handle questionnaire submission
+  const handleQuestionnaireSubmit = useCallback(async (responses: Record<string, string | string[]>) => {
+    await performRsvp(responses);
+    setShowQuestionnaire(false);
+  }, [performRsvp]);
+
+  const handleQuestionnaireCancel = useCallback(() => {
+    setShowQuestionnaire(false);
+  }, []);
 
   // Build event URL for sharing
   const eventUrl = typeof window !== "undefined"
@@ -286,11 +351,32 @@ export function RsvpButton({
     />
   );
 
+  // Questionnaire sheet
+  const questionnaireSheet = hasActiveQuestionnaire && questionnaire && (
+    <Sheet open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
+      <SheetContent side="bottom" className="h-[90vh] p-0 rounded-t-2xl">
+        <SheetHeader className="sr-only">
+          <SheetTitle>RSVP Questions</SheetTitle>
+        </SheetHeader>
+        <div className="h-full overflow-y-auto">
+          <QuestionnaireFlow
+            questions={questionnaire.questions}
+            introText={questionnaire.intro_text}
+            eventTitle={eventTitle}
+            onSubmit={handleQuestionnaireSubmit}
+            onCancel={handleQuestionnaireCancel}
+          />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+
   // STATE: Event has ended - show feedback UI
   if (isPast) {
     return (
       <>
         {celebrationPortal}
+        {questionnaireSheet}
         <EventFeedback
           eventId={eventId}
           eventTitle={eventTitle}
@@ -306,6 +392,7 @@ export function RsvpButton({
     return (
       <>
         {celebrationPortal}
+        {questionnaireSheet}
         <div className="space-y-3">
           <p className="text-sm text-green-600 font-medium text-center">
             {t("youreGoing")}
@@ -336,6 +423,7 @@ export function RsvpButton({
     return (
       <>
         {celebrationPortal}
+        {questionnaireSheet}
         <div className="space-y-3">
           <div className="text-center space-y-1">
             <p className="text-sm text-orange-600 font-medium">
@@ -371,6 +459,7 @@ export function RsvpButton({
     return (
       <>
         {celebrationPortal}
+        {questionnaireSheet}
         <div className="space-y-3">
           <p className="text-sm text-blue-600 font-medium text-center">
             {t("youreInterested")}
@@ -399,6 +488,7 @@ export function RsvpButton({
   return (
     <>
       {celebrationPortal}
+      {questionnaireSheet}
       <div className="space-y-3">
         <Button
           onClick={handleRsvp}

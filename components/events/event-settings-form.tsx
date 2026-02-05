@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Users, Shield, Loader2, Check, ChevronRight, Languages, Clock, ChevronDown } from "lucide-react";
+import { Camera, Users, Shield, Loader2, Check, ChevronRight, Languages, Clock, ChevronDown, ClipboardList } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
@@ -490,6 +490,25 @@ export function EventSettingsForm({
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </Link>
       )}
+
+      {/* Questionnaire Builder Link */}
+      <Link
+        href={`/events/${eventSlug}/questionnaire`}
+        className="w-full flex items-center justify-between p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 transition-all duration-200 active:scale-[0.98]"
+      >
+        <div className="flex items-center gap-3">
+          <ClipboardList className="w-5 h-5 text-muted-foreground" />
+          <div className="text-left">
+            <p className="text-sm font-medium text-foreground">
+              {t("questionnaire.title")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t("questionnaire.description")}
+            </p>
+          </div>
+        </div>
+        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+      </Link>
 
       {/* Retranslate Button */}
       <button

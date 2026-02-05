@@ -716,6 +716,110 @@ export function generateFAQSchema(
 }
 
 /**
+ * Generate MusicRecording schema for karaoke song pages
+ * https://schema.org/MusicRecording
+ */
+export function generateMusicRecordingSchema(
+  track: {
+    id: string;
+    title: string | null;
+    artist: string | null;
+    duration_seconds: number | null;
+    thumbnail_url: string | null;
+    lyrics_lrc: string | null;
+  },
+  event: {
+    slug: string;
+    title: string;
+    image_url: string | null;
+  },
+  locale: string
+) {
+  const trackUrl = `${SITE_URL}/${locale}/events/${event.slug}/karaoke/${track.id}`;
+  const lyricsUrl = `${SITE_URL}/${locale}/events/${event.slug}/lyrics/${track.id}`;
+
+  // Extract plain text from LRC for lyrics
+  const lyricsText = track.lyrics_lrc
+    ? track.lyrics_lrc
+        .split("\n")
+        .map((line) => line.replace(/^\[\d{1,2}:\d{2}[.:]\d{2,3}\]/, "").trim())
+        .filter((text) => text && !text.startsWith("["))
+        .join(" ")
+        .slice(0, 5000) // Limit for performance
+    : null;
+
+  // Format duration as ISO 8601 (PT1M30S)
+  const durationISO = track.duration_seconds
+    ? `PT${Math.floor(track.duration_seconds / 60)}M${Math.floor(track.duration_seconds % 60)}S`
+    : "PT0S";
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "MusicRecording",
+    "@id": trackUrl,
+    name: track.title || "Untitled",
+    url: trackUrl,
+    duration: durationISO,
+
+    // Artist
+    byArtist: {
+      "@type": "MusicGroup",
+      name: track.artist || event.title,
+    },
+
+    // Album (event as playlist)
+    inAlbum: {
+      "@type": "MusicAlbum",
+      name: event.title,
+      url: `${SITE_URL}/${locale}/events/${event.slug}/playlist`,
+    },
+
+    // Image
+    ...(track.thumbnail_url || event.image_url) && {
+      image: track.thumbnail_url || event.image_url,
+    },
+
+    // Lyrics (linked to dedicated lyrics page for SEO)
+    ...(lyricsText && {
+      recordingOf: {
+        "@type": "MusicComposition",
+        name: track.title || "Untitled",
+        lyrics: {
+          "@type": "CreativeWork",
+          text: lyricsText,
+          url: lyricsUrl,
+          inLanguage: locale,
+        },
+      },
+    }),
+
+    // Accessibility
+    isAccessibleForFree: true,
+    inLanguage: locale,
+
+    // Provider
+    provider: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+
+    // Content location
+    contentLocation: {
+      "@type": "Place",
+      name: "Đà Lạt, Vietnam",
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: DA_LAT_GEO.latitude,
+        longitude: DA_LAT_GEO.longitude,
+      },
+    },
+  };
+
+  return schema;
+}
+
+/**
  * Generate Article schema for blog posts
  * https://schema.org/Article
  */

@@ -171,12 +171,17 @@ export function MiniPlayer() {
     [seek]
   );
 
-  // Navigate to full playlist page
-  const handleExpand = useCallback(() => {
-    if (playlist) {
+  // Expand to karaoke Theater mode when clicking track info
+  const handleExpandToTheater = useCallback(() => {
+    const { setKaraokeLevel, karaokeEnabled } = useAudioPlayerStore.getState();
+    if (karaokeEnabled && currentTrack?.lyrics_lrc) {
+      // Expand to Theater mode (Level 2)
+      setKaraokeLevel(2);
+    } else if (playlist) {
+      // Fallback: navigate to playlist page if no lyrics
       router.push(`/events/${playlist.eventSlug}/playlist`);
     }
-  }, [router, playlist]);
+  }, [router, playlist, currentTrack?.lyrics_lrc]);
 
   if (!isVisible || !currentTrack) return null;
 
@@ -199,10 +204,11 @@ export function MiniPlayer() {
 
         <div className="container max-w-screen-xl mx-auto">
           <div className="flex items-center gap-3 px-4 py-2">
-            {/* Album art & track info (clickable to expand) */}
+            {/* Album art & track info (clickable to expand to Theater karaoke) */}
             <button
-              onClick={handleExpand}
-              className="flex items-center gap-3 flex-1 min-w-0 text-left"
+              onClick={handleExpandToTheater}
+              className="flex items-center gap-3 flex-1 min-w-0 text-left active:scale-[0.98] transition-transform"
+              aria-label={currentTrack?.lyrics_lrc ? "Expand to karaoke" : "Go to playlist"}
             >
               <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                 {thumbnailUrl ? (
@@ -223,7 +229,6 @@ export function MiniPlayer() {
                   {displayArtist}
                 </p>
               </div>
-              <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             </button>
 
             {/* Controls */}

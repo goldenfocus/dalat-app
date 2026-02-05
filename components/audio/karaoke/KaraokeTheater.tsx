@@ -1,7 +1,7 @@
 "use client";
 
-import { memo, useEffect, useRef } from "react";
-import { ChevronUp, ChevronDown, Minus, Plus } from "lucide-react";
+import { memo, useEffect, useRef, useCallback } from "react";
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, RotateCcw, RotateCw } from "lucide-react";
 import { KaraokeShareButton } from "./KaraokeShareButton";
 import { cn } from "@/lib/utils";
 import { useCurrentLyricWithContext } from "@/lib/hooks/use-current-lyric";
@@ -11,6 +11,7 @@ import {
   useCurrentTrackLyrics,
   useLyricsOffset,
 } from "@/lib/stores/audio-player-store";
+import { formatDuration } from "@/lib/audio-metadata";
 
 
 /**
@@ -35,9 +36,30 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
 
   const {
     setKaraokeLevel,
-    setLyricsOffset,
     adjustLyricsOffset,
+    currentTime,
+    duration,
+    seek,
   } = useAudioPlayerStore();
+
+  const progressBarRef = useRef<HTMLDivElement>(null);
+
+  // Handle progress bar click to seek
+  const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!progressBarRef.current || !duration) return;
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = clickX / rect.width;
+    const newTime = percentage * duration;
+    seek(Math.max(0, Math.min(duration, newTime)));
+  }, [duration, seek]);
+
+  // Skip forward/backward by seconds
+  const skipBy = useCallback((seconds: number) => {
+    if (!duration) return;
+    const newTime = currentTime + seconds;
+    seek(Math.max(0, Math.min(duration, newTime)));
+  }, [currentTime, duration, seek]);
 
   // Auto-scroll to current line when it changes
   useEffect(() => {
@@ -116,25 +138,73 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
           </div>
         </div>
 
-        {/* Timing Controls */}
-        <div className="flex items-center justify-center gap-4 px-4 py-3 border-t border-white/5">
-          <button
-            onClick={() => adjustLyricsOffset(-100)}
-            className="p-2 text-white/40 hover:text-white transition-colors"
-            aria-label="Earlier"
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-          <span className="text-xs text-white/40 w-24 text-center">
-            {lyricsOffset >= 0 ? "+" : ""}{lyricsOffset}ms
-          </span>
-          <button
-            onClick={() => adjustLyricsOffset(100)}
-            className="p-2 text-white/40 hover:text-white transition-colors"
-            aria-label="Later"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
+        {/* Progress bar + Skip controls */}
+        <div className="px-4 py-3 border-t border-white/5 space-y-3">
+          {/* Clickable progress bar */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-white/40 w-10 text-right tabular-nums">
+              {formatDuration(Math.floor(currentTime))}
+            </span>
+            <div
+              ref={progressBarRef}
+              onClick={handleProgressClick}
+              className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden cursor-pointer hover:h-2 transition-all"
+            >
+              <div
+                className="h-full bg-primary transition-all duration-100"
+                style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+              />
+            </div>
+            <span className="text-xs text-white/40 w-10 tabular-nums">
+              {formatDuration(Math.floor(duration || 0))}
+            </span>
+          </div>
+
+          {/* Skip + Timing controls row */}
+          <div className="flex items-center justify-between">
+            {/* -15/+15 skip buttons */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => skipBy(-15)}
+                className="relative p-2 text-white/50 hover:text-white transition-colors"
+                aria-label="Rewind 15 seconds"
+              >
+                <RotateCcw className="w-5 h-5" />
+                <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold mt-0.5">15</span>
+              </button>
+              <button
+                onClick={() => skipBy(15)}
+                className="relative p-2 text-white/50 hover:text-white transition-colors"
+                aria-label="Forward 15 seconds"
+              >
+                <RotateCw className="w-5 h-5" />
+                <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold mt-0.5">15</span>
+              </button>
+            </div>
+
+            {/* Timing offset controls */}
+            <div className="flex items-center bg-white/5 rounded-full">
+              <button
+                onClick={() => adjustLyricsOffset(-100)}
+                className="flex items-center gap-0.5 pl-2 pr-1 py-1 text-white/50 hover:text-white text-xs transition-colors"
+                aria-label="Earlier"
+              >
+                <ChevronLeft className="w-3 h-3" />
+                <span className="text-[10px]">Earlier</span>
+              </button>
+              <span className="text-[10px] text-white/40 w-10 text-center tabular-nums">
+                {lyricsOffset >= 0 ? "+" : ""}{Math.round(lyricsOffset / 100) / 10}s
+              </span>
+              <button
+                onClick={() => adjustLyricsOffset(100)}
+                className="flex items-center gap-0.5 pl-1 pr-2 py-1 text-white/50 hover:text-white text-xs transition-colors"
+                aria-label="Later"
+              >
+                <span className="text-[10px]">Later</span>
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

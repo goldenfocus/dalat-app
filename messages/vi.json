@@ -418,6 +418,10 @@
       "multiDay": "Nhiều ngày",
       "days": "ngày",
       "description": "Sự kiện của bạn kéo dài bao lâu? Mặc định là 4 giờ."
+    },
+    "questionnaire": {
+      "title": "Câu hỏi RSVP",
+      "description": "Hỏi khách khi họ đăng ký tham dự"
     }
   },
   "calendar": {
@@ -2040,5 +2044,89 @@
     "sortTitle": "Tên",
     "sortArtistLabel": "Nghệ sĩ",
     "sortDurationLabel": "Thời gian"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "Vài câu hỏi nhanh",
+      "subtitle": "Giúp {organizer} chuẩn bị sự kiện hoàn hảo",
+      "start": "Bắt đầu!",
+      "time": "Khoảng {seconds} giây"
+    },
+    "progress": "{current} / {total}",
+    "back": "Quay lại",
+    "next": "Tiếp",
+    "submit": "Gửi",
+    "cancel": "Bỏ qua câu hỏi",
+    "errors": {
+      "required": "Trường này là bắt buộc",
+      "submitFailed": "Không thể gửi câu trả lời. Vui lòng thử lại."
+    },
+    "complete": {
+      "title": "Hoàn tất!",
+      "subtitle": "Hẹn gặp bạn tại sự kiện!",
+      "seeYouSoon": "Hẹn gặp lại",
+      "done": "Xong"
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "Câu hỏi RSVP",
+    "backToEvent": "Quay lại sự kiện",
+    "description": "Người tham dự trả lời khi đăng ký",
+    "enableQuestionnaire": "Bật câu hỏi",
+    "enableDescription": "Hỏi khách khi họ đăng ký tham dự",
+    "introText": "Lời chào",
+    "introPlaceholder": "Chào bạn! Chúng tôi có vài câu hỏi nhanh...",
+    "introHint": "Hiển thị trước câu hỏi đầu tiên",
+    "yourQuestions": "Câu hỏi của bạn",
+    "noQuestions": "Chưa có câu hỏi",
+    "addFromTemplates": "Thêm câu hỏi từ các mẫu bên dưới",
+    "addQuestions": "Thêm câu hỏi",
+    "templates": "câu hỏi",
+    "addFromTemplate": "Thêm từ mẫu",
+    "addCustom": "Thêm câu hỏi tùy chỉnh",
+    "editQuestion": "Sửa câu hỏi",
+    "deleteQuestion": "Xóa câu hỏi",
+    "questionText": "Câu hỏi",
+    "questionType": "Loại",
+    "required": "Bắt buộc",
+    "optional": "Tùy chọn",
+    "options": "Tùy chọn",
+    "addOption": "Thêm tùy chọn",
+    "preview": "Xem trước",
+    "save": "Lưu thay đổi",
+    "saving": "Đang lưu...",
+    "saved": "Đã lưu!",
+    "singleChoice": "Chọn một",
+    "multiChoice": "Chọn nhiều",
+    "textInput": "Văn bản",
+    "viewResponses": "Xem câu trả lời",
+    "categories": {
+      "logistics": "Hậu cần",
+      "dietary": "Chế độ ăn",
+      "contribution": "Đóng góp",
+      "personal": "Cá nhân",
+      "custom": "Tùy chỉnh"
+    },
+    "types": {
+      "single_choice": "Chọn một",
+      "multi_choice": "Chọn nhiều",
+      "text": "Văn bản"
+    }
+  },
+  "responseDashboard": {
+    "title": "Câu trả lời",
+    "backToQuestions": "Quay lại câu hỏi",
+    "summary": "Tổng hợp",
+    "individual": "Chi tiết",
+    "exportCSV": "Xuất CSV",
+    "responses": "Câu trả lời",
+    "ofRsvps": "trong {total} đăng ký",
+    "questions": "Câu hỏi",
+    "totalQuestions": "trong bảng hỏi",
+    "responded": "{count} đã trả lời",
+    "notResponded": "{count} chưa trả lời",
+    "noResponses": "Chưa có câu trả lời",
+    "responseRate": "{rate}% tỷ lệ trả lời",
+    "andMore": "và {count} khác..."
   }
 }

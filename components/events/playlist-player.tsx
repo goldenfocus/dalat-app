@@ -48,6 +48,7 @@ export interface PlaylistTrack {
   duration_seconds: number | null;
   sort_order: number;
   lyrics_lrc?: string | null;  // LRC format for karaoke display
+  timing_offset?: number | null;  // Saved timing offset in ms (admin-set baseline)
 }
 
 export interface PlaylistPlayerProps {
@@ -124,7 +125,7 @@ export function PlaylistPlayer({
   // Start playing this playlist (sets it in global store)
   const startPlaylist = useCallback(
     (startIndex = 0) => {
-      // Convert tracks to store format, including lyrics_lrc for karaoke
+      // Convert tracks to store format, including lyrics_lrc and timing_offset for karaoke
       const audioTracks = tracks.map((t) => ({
         id: t.id,
         file_url: t.file_url,
@@ -134,6 +135,7 @@ export function PlaylistPlayer({
         thumbnail_url: t.thumbnail_url,
         duration_seconds: t.duration_seconds,
         lyrics_lrc: t.lyrics_lrc,  // Pass LRC for karaoke display
+        timing_offset: t.timing_offset,  // Saved timing offset (admin-set baseline)
       }));
 
       setPlaylist(

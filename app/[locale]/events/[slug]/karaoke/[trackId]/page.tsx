@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { KaraokePageClient } from "./karaoke-page-client";
+import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
@@ -184,13 +185,19 @@ export default async function KaraokePage({ params }: PageProps) {
 
   const { track, event, playlist, trackIndex } = data;
 
+  // Generate structured data for SEO
+  const musicSchema = generateMusicRecordingSchema(track, event, locale);
+
   return (
-    <KaraokePageClient
-      track={track}
-      event={event}
-      playlist={playlist}
-      trackIndex={trackIndex}
-      locale={locale}
-    />
+    <>
+      <JsonLd data={musicSchema} />
+      <KaraokePageClient
+        track={track}
+        event={event}
+        playlist={playlist}
+        trackIndex={trackIndex}
+        locale={locale}
+      />
+    </>
   );
 }

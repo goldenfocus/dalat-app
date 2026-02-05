@@ -4,7 +4,7 @@
  * This script:
  * 1. Fetches all audio moments, event_materials, and playlist_tracks without lyrics_lrc
  * 2. Calls Whisper API with timestamp_granularities to get timed transcription
- * 3. Converts to LRC format
+ * 3. Converts to LRC format (raw transcription, no translation)
  * 4. Updates the database
  *
  * Usage:
@@ -14,6 +14,7 @@
  *   --dry-run    Preview what would be processed without making changes
  *   --limit=N    Process only N items (for testing)
  *   --type=TYPE  Process only 'moments', 'materials', or 'playlist'
+ *   --force      Re-generate lyrics even if they already exist (overwrites)
  */
 
 // Load environment variables FIRST
@@ -41,6 +42,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // Parse CLI arguments
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
+const forceRegenerate = args.includes("--force");  // Re-generate even if LRC exists
 const limitArg = args.find((a) => a.startsWith("--limit="));
 const limit = limitArg ? parseInt(limitArg.split("=")[1]) : undefined;
 const typeArg = args.find((a) => a.startsWith("--type="));
@@ -194,8 +196,8 @@ async function processAudioMoments() {
   for (const moment of moments || []) {
     const metadata = moment.moment_metadata?.[0] || moment.moment_metadata;
 
-    // Skip if already has LRC
-    if (metadata?.lyrics_lrc) {
+    // Skip if already has LRC (unless --force is set)
+    if (metadata?.lyrics_lrc && !forceRegenerate) {
       console.log(`[SKIP] Moment ${moment.id} - already has LRC`);
       skipped++;
       continue;
@@ -329,12 +331,16 @@ async function processEventMaterials() {
 async function processPlaylistTracks() {
   console.log("\n=== Processing Playlist Tracks ===\n");
 
-  // Fetch playlist tracks that need LRC
+  // Fetch playlist tracks that need LRC (or all if --force)
   let query = supabase
     .from("playlist_tracks")
     .select("id, file_url, title, artist, lyrics_lrc")
-    .is("lyrics_lrc", null)
     .not("file_url", "is", null);
+
+  // Only filter for null lyrics_lrc if NOT forcing regeneration
+  if (!forceRegenerate) {
+    query = query.is("lyrics_lrc", null);
+  }
 
   if (limit) {
     query = query.limit(limit);
@@ -407,6 +413,7 @@ async function main() {
   console.log("╚════════════════════════════════════════════════╝");
   console.log("");
   console.log(`Mode: ${dryRun ? "DRY RUN (no changes)" : "LIVE"}`);
+  if (forceRegenerate) console.log("Force: ENABLED (will overwrite existing lyrics)");
   if (limit) console.log(`Limit: ${limit} items`);
   if (typeFilter) console.log(`Type filter: ${typeFilter}`);
   console.log("");

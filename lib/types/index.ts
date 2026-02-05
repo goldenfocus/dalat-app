@@ -1391,6 +1391,108 @@ export interface DraftMaterial {
 }
 
 // ============================================
+// RSVP Questionnaire Types
+// ============================================
+
+export type QuestionType = 'single_choice' | 'multi_choice' | 'text';
+export type QuestionCategory = 'logistics' | 'dietary' | 'contribution' | 'personal' | 'custom';
+
+// Multilingual text - keyed by locale
+export type MultilingualText = Partial<Record<Locale, string>>;
+
+export interface QuestionOption {
+  value: string;
+  label: MultilingualText;
+}
+
+export interface QuestionTemplate {
+  id: string;
+  slug: string;
+  is_system: boolean;
+  created_by: string | null;
+  question_type: QuestionType;
+  question_text: MultilingualText;
+  description_text: MultilingualText | null;
+  options: QuestionOption[] | null;
+  is_required: boolean;
+  category: QuestionCategory;
+  created_at: string;
+}
+
+export interface EventQuestionnaire {
+  id: string;
+  event_id: string;
+  is_enabled: boolean;
+  intro_text: MultilingualText | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EventQuestion {
+  id: string;
+  questionnaire_id: string;
+  template_id: string | null;
+  custom_question_text: MultilingualText | null;
+  custom_question_type: QuestionType | null;
+  custom_options: QuestionOption[] | null;
+  custom_is_required: boolean | null;
+  custom_description_text: MultilingualText | null;
+  sort_order: number;
+  created_at: string;
+  // Joined data from template
+  templates?: QuestionTemplate;
+}
+
+// Resolved question (template merged with custom overrides)
+export interface ResolvedQuestion {
+  id: string;
+  template_id: string | null;
+  sort_order: number;
+  question_type: QuestionType;
+  question_text: MultilingualText;
+  description_text: MultilingualText | null;
+  options: QuestionOption[] | null;
+  is_required: boolean;
+}
+
+export interface RsvpResponse {
+  id: string;
+  rsvp_id: string;
+  question_id: string;
+  response_value: string | string[]; // string for text/single_choice, array for multi_choice
+  created_at: string;
+  updated_at: string;
+}
+
+// For the questionnaire flow component
+export interface QuestionnaireData {
+  questionnaire_id: string;
+  is_enabled: boolean;
+  intro_text: MultilingualText | null;
+  questions: ResolvedQuestion[];
+}
+
+// Response summary for organizer dashboard
+export interface QuestionResponseSummary {
+  question_id: string;
+  question_text: MultilingualText;
+  question_type: QuestionType;
+  total_responses: number;
+  response_breakdown: Record<string, number>; // value -> count
+}
+
+// Full response for CSV export
+export interface AttendeeResponse {
+  user_id: string;
+  display_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  rsvp_status: string;
+  rsvp_created_at: string;
+  responses: Record<string, string | string[]>; // question_id -> response_value
+}
+
+// ============================================
 // Blog Types (re-export from blog.ts)
 // ============================================
 

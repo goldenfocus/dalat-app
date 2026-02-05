@@ -31,6 +31,29 @@ const LRC_LINE_REGEX = /^\[(\d{1,2}):(\d{2})[.:](\d{2,3})\](.*)$/;
 const LRC_METADATA_REGEX = /^\[([a-z]+):(.+)\]$/i;
 
 /**
+ * Patterns to filter out spam/attribution lines (case-insensitive).
+ * These are common in subtitles from various sources.
+ */
+const SPAM_PATTERNS = [
+  /amara\.org/i,
+  /subtitles?\s*by/i,
+  /transcribed?\s*by/i,
+  /captions?\s*by/i,
+  /subtitling\s*by/i,
+  /www\.\w+\.com/i,
+  /www\.\w+\.org/i,
+  /^\s*\[.*\]\s*$/,  // Empty bracket lines like "[ ]" or "[music]"
+  /^♪+$/,  // Lines that are just music notes
+];
+
+/**
+ * Check if a text line matches any spam/attribution pattern.
+ */
+function isSpamLine(text: string): boolean {
+  return SPAM_PATTERNS.some(pattern => pattern.test(text));
+}
+
+/**
  * Parse an LRC format string into a structured document.
  *
  * LRC format example:
@@ -56,10 +79,12 @@ export function parseLrc(content: string): ParsedLrc {
       const time =
         parseInt(min) * 60 + parseInt(sec) + msValue / 1000;
 
-      if (text.trim()) {
+      const trimmedText = text.trim();
+      // Filter out spam lines (Amara.org credits, etc.)
+      if (trimmedText && !isSpamLine(trimmedText)) {
         lines.push({
           time,
-          text: text.trim(),
+          text: trimmedText,
         });
       }
       continue;
@@ -117,9 +142,16 @@ export function whisperToLrc(response: WhisperVerboseResponse): ParsedLrc {
   const lines: LrcLine[] = [];
 
   for (const segment of response.segments) {
+    const trimmedText = segment.text.trim();
+
+    // Skip spam/attribution lines
+    if (!trimmedText || isSpamLine(trimmedText)) {
+      continue;
+    }
+
     const line: LrcLine = {
       time: segment.start,
-      text: segment.text.trim(),
+      text: trimmedText,
     };
 
     // Add word-level timing if available
@@ -131,9 +163,7 @@ export function whisperToLrc(response: WhisperVerboseResponse): ParsedLrc {
       }));
     }
 
-    if (line.text) {
-      lines.push(line);
-    }
+    lines.push(line);
   }
 
   return {

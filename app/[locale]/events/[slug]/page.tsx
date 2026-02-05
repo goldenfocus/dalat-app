@@ -34,6 +34,7 @@ import { ExpandableText } from "@/components/ui/expandable-text";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { MomentsPreview, PastEventMomentsShowcase } from "@/components/moments";
 import { SponsorDisplay } from "@/components/events/sponsor-display";
+import { getEventQuestionnaireServer } from "@/lib/questionnaire-server";
 import { ClickableTagList } from "@/components/events/clickable-tag-list";
 import { EventMaterialsSummary } from "@/components/events/event-materials";
 import { EventMaterialsStructuredData } from "@/components/events/event-materials-structured-data";
@@ -626,7 +627,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
-  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult] = await Promise.all([
+  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult, questionnaire] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
@@ -651,6 +652,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getEventMaterials(event.id),
     getEventPlaylistSummary(event.id),
     getEventPromo(event.id),
+    getEventQuestionnaireServer(event.id),
   ]);
 
   // Destructure combined RSVP result
@@ -1088,6 +1090,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     startsAt={event.starts_at}
                     endsAt={event.ends_at}
                     existingFeedback={userFeedback}
+                    questionnaire={questionnaire}
                   />
                 </RsvpCardObserver>
 
@@ -1211,6 +1214,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         waitlistPosition={waitlistPosition}
         startsAt={event.starts_at}
         endsAt={event.ends_at}
+        questionnaire={questionnaire}
       />
     </main>
     </CelebrationProvider>

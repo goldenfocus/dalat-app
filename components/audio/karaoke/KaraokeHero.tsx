@@ -11,6 +11,8 @@ import {
   SkipBack,
   SkipForward,
   Loader2,
+  RotateCcw,
+  RotateCw,
 } from "lucide-react";
 import { KaraokeShareButton } from "./KaraokeShareButton";
 import {
@@ -186,7 +188,27 @@ export const KaraokeHero = memo(function KaraokeHero() {
     next,
     previous,
     setKaraokeLevel,
+    seek,
   } = useAudioPlayerStore();
+
+  const progressBarRef = useRef<HTMLDivElement>(null);
+
+  // Handle progress bar click to seek
+  const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!progressBarRef.current || !duration) return;
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = clickX / rect.width;
+    const newTime = percentage * duration;
+    seek(Math.max(0, Math.min(duration, newTime)));
+  }, [duration, seek]);
+
+  // Skip forward/backward by seconds
+  const skipBy = useCallback((seconds: number) => {
+    if (!duration) return;
+    const newTime = currentTime + seconds;
+    seek(Math.max(0, Math.min(duration, newTime)));
+  }, [currentTime, duration, seek]);
 
   const currentTrack = tracks[currentIndex];
 
@@ -323,11 +345,15 @@ export const KaraokeHero = memo(function KaraokeHero() {
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
       >
-        {/* Progress bar */}
+        {/* Progress bar - clickable */}
         <div className="max-w-2xl mx-auto mb-4">
-          <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+          <div
+            ref={progressBarRef}
+            onClick={handleProgressClick}
+            className="h-2 bg-white/20 rounded-full overflow-hidden cursor-pointer hover:h-3 transition-all group"
+          >
             <div
-              className="h-full bg-primary transition-all duration-100"
+              className="h-full bg-primary transition-all duration-100 group-hover:bg-primary/90"
               style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
             />
           </div>
@@ -338,14 +364,24 @@ export const KaraokeHero = memo(function KaraokeHero() {
           </div>
         </div>
 
-        {/* Playback buttons */}
-        <div className="flex items-center justify-center gap-6">
+        {/* Playback buttons with -15/+15 skip */}
+        <div className="flex items-center justify-center gap-4">
           <button
             onClick={previous}
             className="p-3 text-white/60 hover:text-white transition-colors"
-            aria-label="Previous"
+            aria-label="Previous track"
           >
-            <SkipBack className="w-8 h-8" />
+            <SkipBack className="w-7 h-7" />
+          </button>
+
+          {/* -15 seconds */}
+          <button
+            onClick={() => skipBy(-15)}
+            className="relative p-2 text-white/60 hover:text-white transition-colors"
+            aria-label="Rewind 15 seconds"
+          >
+            <RotateCcw className="w-7 h-7" />
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold mt-0.5">15</span>
           </button>
 
           <button
@@ -360,12 +396,22 @@ export const KaraokeHero = memo(function KaraokeHero() {
             )}
           </button>
 
+          {/* +15 seconds */}
+          <button
+            onClick={() => skipBy(15)}
+            className="relative p-2 text-white/60 hover:text-white transition-colors"
+            aria-label="Forward 15 seconds"
+          >
+            <RotateCw className="w-7 h-7" />
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold mt-0.5">15</span>
+          </button>
+
           <button
             onClick={next}
             className="p-3 text-white/60 hover:text-white transition-colors"
-            aria-label="Next"
+            aria-label="Next track"
           >
-            <SkipForward className="w-8 h-8" />
+            <SkipForward className="w-7 h-7" />
           </button>
         </div>
       </div>

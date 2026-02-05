@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useRsvpActions, isEventPast, useCelebration } from "./rsvp-button";
 import { RsvpCelebration } from "./rsvp-celebration";
-import type { Rsvp } from "@/lib/types";
+import { QuestionnaireFlow } from "@/components/questionnaire";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import type { Rsvp, QuestionnaireData } from "@/lib/types";
 
 interface FloatingRsvpBarProps {
   eventId: string;
@@ -23,6 +30,7 @@ interface FloatingRsvpBarProps {
   waitlistPosition: number | null;
   startsAt: string;
   endsAt: string | null;
+  questionnaire?: QuestionnaireData | null;
 }
 
 export function FloatingRsvpBar({
@@ -41,9 +49,11 @@ export function FloatingRsvpBar({
   waitlistPosition,
   startsAt,
   endsAt,
+  questionnaire,
 }: FloatingRsvpBarProps) {
   const t = useTranslations("rsvp");
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const celebration = useCelebration();
 
   const handleCelebrationTrigger = () => {
@@ -56,11 +66,27 @@ export function FloatingRsvpBar({
     celebration.setCelebrating(false);
   };
 
-  const { isPending, handleRsvp, handleCancel } = useRsvpActions(
+  const handleShowQuestionnaire = useCallback(() => {
+    setShowQuestionnaire(true);
+  }, []);
+
+  const { isPending, handleRsvp, handleCancel, performRsvp, hasActiveQuestionnaire } = useRsvpActions(
     eventId,
     isLoggedIn,
-    handleCelebrationTrigger
+    handleCelebrationTrigger,
+    questionnaire,
+    handleShowQuestionnaire
   );
+
+  // Handle questionnaire submission
+  const handleQuestionnaireSubmit = useCallback(async (responses: Record<string, string | string[]>) => {
+    await performRsvp(responses);
+    setShowQuestionnaire(false);
+  }, [performRsvp]);
+
+  const handleQuestionnaireCancel = useCallback(() => {
+    setShowQuestionnaire(false);
+  }, []);
 
   // Build event URL for sharing
   const eventUrl = typeof window !== "undefined"
@@ -132,8 +158,29 @@ export function FloatingRsvpBar({
     );
   }
 
+  // Questionnaire sheet
+  const questionnaireSheet = hasActiveQuestionnaire && questionnaire && (
+    <Sheet open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
+      <SheetContent side="bottom" className="h-[90vh] p-0 rounded-t-2xl">
+        <SheetHeader className="sr-only">
+          <SheetTitle>RSVP Questions</SheetTitle>
+        </SheetHeader>
+        <div className="h-full overflow-y-auto">
+          <QuestionnaireFlow
+            questions={questionnaire.questions}
+            introText={questionnaire.intro_text}
+            eventTitle={eventTitle}
+            onSubmit={handleQuestionnaireSubmit}
+            onCancel={handleQuestionnaireCancel}
+          />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+
   return (
     <>
+      {questionnaireSheet}
       {showCelebration && (
         <RsvpCelebration
           eventUrl={eventUrl}

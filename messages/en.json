@@ -513,6 +513,10 @@
       "multiDay": "Multi-day",
       "days": "days",
       "description": "How long does your event last? Default is 4 hours."
+    },
+    "questionnaire": {
+      "title": "RSVP Questions",
+      "description": "Ask guests questions when they RSVP"
     }
   },
   "calendar": {
@@ -2041,5 +2045,89 @@
     "sortTitle": "Title",
     "sortArtistLabel": "Artist",
     "sortDurationLabel": "Time"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "A few quick questions",
+      "subtitle": "Help {organizer} prepare the perfect event",
+      "start": "Let's Go!",
+      "time": "About {seconds} seconds"
+    },
+    "progress": "{current} of {total}",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "cancel": "Skip questions",
+    "errors": {
+      "required": "This field is required",
+      "submitFailed": "Failed to submit responses. Please try again."
+    },
+    "complete": {
+      "title": "You're all set!",
+      "subtitle": "See you at the event!",
+      "seeYouSoon": "See you soon",
+      "done": "Done"
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "RSVP Questions",
+    "backToEvent": "Back to event",
+    "description": "Attendees answer these when they RSVP",
+    "enableQuestionnaire": "Enable Questions",
+    "enableDescription": "Ask guests questions when they RSVP",
+    "introText": "Welcome Message",
+    "introPlaceholder": "Welcome! We have a few quick questions...",
+    "introHint": "Shown before the first question",
+    "yourQuestions": "Your Questions",
+    "noQuestions": "No questions yet",
+    "addFromTemplates": "Add questions from the templates below",
+    "addQuestions": "Add Questions",
+    "templates": "questions",
+    "addFromTemplate": "Add from templates",
+    "addCustom": "Add custom question",
+    "editQuestion": "Edit question",
+    "deleteQuestion": "Delete question",
+    "questionText": "Question",
+    "questionType": "Type",
+    "required": "Required",
+    "optional": "Optional",
+    "options": "Options",
+    "addOption": "Add option",
+    "preview": "Preview",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "saved": "Saved!",
+    "singleChoice": "Single choice",
+    "multiChoice": "Multiple choice",
+    "textInput": "Text",
+    "viewResponses": "View Responses",
+    "categories": {
+      "logistics": "Logistics",
+      "dietary": "Dietary",
+      "contribution": "Contribution",
+      "personal": "Personal",
+      "custom": "Custom"
+    },
+    "types": {
+      "single_choice": "Single choice",
+      "multi_choice": "Multiple choice",
+      "text": "Text"
+    }
+  },
+  "responseDashboard": {
+    "title": "Responses",
+    "backToQuestions": "Back to questions",
+    "summary": "Summary",
+    "individual": "Individual",
+    "exportCSV": "Export CSV",
+    "responses": "Responses",
+    "ofRsvps": "of {total} RSVPs",
+    "questions": "Questions",
+    "totalQuestions": "in questionnaire",
+    "responded": "{count} responded",
+    "notResponded": "{count} not responded",
+    "noResponses": "No responses yet",
+    "responseRate": "{rate}% response rate",
+    "andMore": "and {count} more..."
   }
 }
