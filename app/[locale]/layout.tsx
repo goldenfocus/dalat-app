@@ -21,6 +21,7 @@ import { SiteHeader } from "@/components/site-header";
 import { MiniPlayer } from "@/components/audio/mini-player";
 import { Heartbeat } from "@/components/heartbeat";
 import { Toaster } from "sonner";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const siteUrl = "https://dalat.app";
 
@@ -107,7 +108,9 @@ export default async function LocaleLayout({ children, params }: Props) {
               <InstallAppBanner />
               <SiteHeader />
               <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
-                {children}
+                <ErrorBoundary>
+                  {children}
+                </ErrorBoundary>
               </main>
               <MiniPlayer />
               <MobileBottomNav />

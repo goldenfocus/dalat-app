@@ -34,6 +34,8 @@ const eslintConfig = [
       ],
       // Allow require() in config files
       "@typescript-eslint/no-require-imports": "off",
+      // Warn on console.log (allow console.error, console.warn for error handling)
+      "no-console": ["warn", { allow: ["warn", "error"] }],
     },
   },
 ];

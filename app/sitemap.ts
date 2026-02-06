@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const recentMomentCutoff = new Date();
   recentMomentCutoff.setDate(recentMomentCutoff.getDate() - 90);
 
-  const [eventsResult, festivalsResult, organizersResult, monthsResult, momentsResult, blogPostsResult] = await Promise.all([
+  const [eventsResult, festivalsResult, organizersResult, monthsResult, momentsResult, blogPostsResult, playlistsResult] = await Promise.all([
     supabase
       .from('events')
       .select('slug, updated_at')
@@ -47,6 +47,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('slug, published_at, updated_at, blog_categories(slug)')
       .eq('status', 'published')
       .order('published_at', { ascending: false }),
+    // Audio content: Playlists and tracks with lyrics for SEO
+    supabase
+      .from('event_playlists')
+      .select(`
+        updated_at,
+        events!inner(slug, status, updated_at),
+        playlist_tracks(id, title, artist, lyrics_lrc, updated_at)
+      `)
+      .eq('events.status', 'published'),
   ]);
 
   const events = eventsResult.data ?? [];
@@ -65,6 +74,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       category_slug: ((category as { slug: string } | null)?.slug) ?? 'changelog',
     };
   });
+
+  // Process playlists for audio sitemap entries
+  const playlistsRaw = playlistsResult.data ?? [];
+  type PlaylistRow = {
+    updated_at: string;
+    events: { slug: string; status: string; updated_at: string } | { slug: string; status: string; updated_at: string }[];
+    playlist_tracks: Array<{ id: string; title: string | null; artist: string | null; lyrics_lrc: string | null; updated_at: string }>;
+  };
+  const playlists = (playlistsRaw as PlaylistRow[]).map((p) => {
+    const event = Array.isArray(p.events) ? p.events[0] : p.events;
+    return {
+      eventSlug: event?.slug as string,
+      eventUpdatedAt: event?.updated_at as string,
+      playlistUpdatedAt: p.updated_at as string,
+      tracks: (p.playlist_tracks || []).map((t) => ({
+        id: t.id as string,
+        title: t.title,
+        artist: t.artist,
+        hasLyrics: !!t.lyrics_lrc,
+        updatedAt: t.updated_at as string,
+      })),
+    };
+  }).filter((p) => p.eventSlug && p.tracks.length > 0);
   // Supabase returns events as array due to join typing, normalize to single object
   const moments = momentsRaw.map((m) => ({
     id: m.id as string,
@@ -239,6 +271,77 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           ),
         },
       });
+    }
+  }
+
+  // ============================================
+  // AUDIO CONTENT (SEO for music/karaoke)
+  // ============================================
+
+  // Add playlist pages
+  for (const playlist of playlists) {
+    for (const locale of allLocales) {
+      sitemapEntries.push({
+        url: `${baseUrl}/${locale}/events/${playlist.eventSlug}/playlist`,
+        lastModified: new Date(playlist.playlistUpdatedAt || playlist.eventUpdatedAt),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+        alternates: {
+          languages: Object.fromEntries(
+            allLocales.map(l => [l, `${baseUrl}/${l}/events/${playlist.eventSlug}/playlist`])
+          ),
+        },
+      });
+    }
+
+    // Add lyrics and karaoke pages for tracks with lyrics
+    for (const track of playlist.tracks) {
+      if (track.hasLyrics) {
+        for (const locale of allLocales) {
+          // Lyrics page (high SEO value - people search for lyrics)
+          sitemapEntries.push({
+            url: `${baseUrl}/${locale}/events/${playlist.eventSlug}/lyrics/${track.id}`,
+            lastModified: new Date(track.updatedAt),
+            changeFrequency: 'monthly',
+            priority: 0.75, // High priority - lyrics pages are SEO gold
+            alternates: {
+              languages: Object.fromEntries(
+                allLocales.map(l => [l, `${baseUrl}/${l}/events/${playlist.eventSlug}/lyrics/${track.id}`])
+              ),
+            },
+          });
+
+          // Karaoke page
+          sitemapEntries.push({
+            url: `${baseUrl}/${locale}/events/${playlist.eventSlug}/karaoke/${track.id}`,
+            lastModified: new Date(track.updatedAt),
+            changeFrequency: 'monthly',
+            priority: 0.7,
+            alternates: {
+              languages: Object.fromEntries(
+                allLocales.map(l => [l, `${baseUrl}/${l}/events/${playlist.eventSlug}/karaoke/${track.id}`])
+              ),
+            },
+          });
+        }
+      }
+
+      // Download page for ALL tracks (not just those with lyrics)
+      for (const track of playlist.tracks) {
+        for (const locale of allLocales) {
+          sitemapEntries.push({
+            url: `${baseUrl}/${locale}/events/${playlist.eventSlug}/download/${track.id}`,
+            lastModified: new Date(track.updatedAt),
+            changeFrequency: 'monthly',
+            priority: 0.65,
+            alternates: {
+              languages: Object.fromEntries(
+                allLocales.map(l => [l, `${baseUrl}/${l}/events/${playlist.eventSlug}/download/${track.id}`])
+              ),
+            },
+          });
+        }
+      }
     }
   }
 

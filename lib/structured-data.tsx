@@ -971,3 +971,113 @@ export function generateMusicPlaylistSchema(
 
   return schema;
 }
+
+/**
+ * Generate FAQ Schema for lyrics pages (AEO optimization)
+ * https://schema.org/FAQPage
+ *
+ * Targets common questions people ask AI assistants about songs
+ */
+export function generateLyricsFAQSchema(
+  track: {
+    title: string | null;
+    artist: string | null;
+    duration_seconds: number | null;
+    lyrics_lrc: string | null;
+  },
+  event: {
+    title: string;
+    slug: string;
+  },
+  lyricsText: string,
+  locale: string
+) {
+  const trackTitle = track.title || "Untitled";
+  const artist = track.artist || event.title;
+  const durationFormatted = track.duration_seconds
+    ? `${Math.floor(track.duration_seconds / 60)}:${String(Math.floor(track.duration_seconds % 60)).padStart(2, "0")}`
+    : null;
+
+  // Extract first verse (first ~200 chars) for lyrics preview
+  const lyricsPreview = lyricsText.slice(0, 300) + (lyricsText.length > 300 ? "..." : "");
+
+  const faqs = locale === "vi"
+    ? [
+        {
+          question: `Ai hát bài "${trackTitle}"?`,
+          answer: `"${trackTitle}" được hát bởi ${artist}. Bài hát có trong playlist của sự kiện "${event.title}" trên ĐàLạt.app.`,
+        },
+        {
+          question: `Lời bài hát "${trackTitle}" là gì?`,
+          answer: `Lời bài hát "${trackTitle}" của ${artist}: ${lyricsPreview}`,
+        },
+        {
+          question: `Tôi có thể hát karaoke "${trackTitle}" ở đâu?`,
+          answer: `Bạn có thể hát karaoke "${trackTitle}" online tại ĐàLạt.app với lời hiển thị theo nhạc. Truy cập trang karaoke để bắt đầu hát ngay!`,
+        },
+        ...(durationFormatted
+          ? [
+              {
+                question: `Bài hát "${trackTitle}" dài bao lâu?`,
+                answer: `"${trackTitle}" của ${artist} có thời lượng ${durationFormatted}.`,
+              },
+            ]
+          : []),
+      ]
+    : [
+        {
+          question: `Who sings "${trackTitle}"?`,
+          answer: `"${trackTitle}" is performed by ${artist}. This song is from the "${event.title}" event playlist on ĐàLạt.app.`,
+        },
+        {
+          question: `What are the lyrics to "${trackTitle}"?`,
+          answer: `Lyrics for "${trackTitle}" by ${artist}: ${lyricsPreview}`,
+        },
+        {
+          question: `Where can I sing "${trackTitle}" karaoke?`,
+          answer: `You can sing "${trackTitle}" karaoke online at ĐàLạt.app with synchronized lyrics display. Visit the karaoke page to start singing!`,
+        },
+        ...(durationFormatted
+          ? [
+              {
+                question: `How long is "${trackTitle}"?`,
+                answer: `"${trackTitle}" by ${artist} has a duration of ${durationFormatted}.`,
+              },
+            ]
+          : []),
+      ];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
+/**
+ * Generate Speakable Schema for voice assistants
+ * https://schema.org/SpeakableSpecification
+ *
+ * Marks content that's suitable for text-to-speech by voice assistants
+ */
+export function generateSpeakableSchema(
+  pageUrl: string,
+  speakableCssSelectors: string[]
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": pageUrl,
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: speakableCssSelectors,
+    },
+  };
+}

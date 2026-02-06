@@ -2,7 +2,12 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
+import {
+  JsonLd,
+  generateMusicRecordingSchema,
+  generateLyricsFAQSchema,
+  generateSpeakableSchema,
+} from "@/lib/structured-data";
 import { Music, Mic2, ExternalLink, Clock, User, Disc } from "lucide-react";
 import { formatDuration } from "@/lib/audio-metadata";
 
@@ -184,12 +189,22 @@ export default async function LyricsPage({ params }: PageProps) {
     ? parseLrcToLines(track.lyrics_lrc)
     : [];
 
-  // Generate structured data for SEO
+  // Full lyrics text for FAQ schema
+  const lyricsText = lyricsLines.join(" ");
+
+  // Generate structured data for SEO/AEO
   const musicSchema = generateMusicRecordingSchema(track, event, locale);
+  const faqSchema = generateLyricsFAQSchema(track, event, lyricsText, locale);
+  const pageUrl = `https://dalat.app/${locale}/events/${slug}/lyrics/${trackId}`;
+  const speakableSchema = generateSpeakableSchema(pageUrl, [
+    "h1",           // Song title
+    "article h2",   // "Lyrics" heading
+    "article p",    // Lyrics lines - speakable by voice assistants
+  ]);
 
   return (
     <>
-      <JsonLd data={musicSchema} />
+      <JsonLd data={[musicSchema, faqSchema, speakableSchema]} />
 
       <main className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
