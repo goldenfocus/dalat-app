@@ -24,12 +24,9 @@ import type {
   FileUploadState,
   BulkUploadStats,
   FileMediaType,
-  CreateMomentsBatchResponse,
-  MomentBatchItem,
 } from "@/lib/bulk-upload/types";
 
 const CONCURRENCY_LIMIT = 5;
-const DB_BATCH_SIZE = 50;
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000, 4000]; // Exponential backoff
 
@@ -397,21 +394,72 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         uploadFile(file);
       }
 
-      // Check if we should batch insert to DB
-      const uploaded = files.filter((f) => f.status === "uploaded");
-      const noMoreQueued = queued.length <= toStart.length;
-      const noActiveUploads = activeCount === 0 || (activeCount - toStart.length === 0);
-
-      if (
-        uploaded.length >= DB_BATCH_SIZE ||
-        (noMoreQueued && noActiveUploads && uploaded.length > 0)
-      ) {
-        await saveBatchToDatabase(uploaded.slice(0, DB_BATCH_SIZE));
-      }
+      // Note: DB saves happen immediately after each upload in saveAsDraft()
+      // No more batch save logic needed - each file is auto-saved as a draft
     } finally {
       processingRef.current = false;
     }
   }, [state.files, state.eventId, state.batchId]);
+
+  // Save a single upload as a draft immediately
+  const saveAsDraft = async (
+    id: string,
+    mediaUrl: string | null,
+    thumbnailUrl: string | null,
+    cfVideoUid: string | null,
+    isVideo: boolean,
+    caption: string | null,
+    fileHash: string | null
+  ) => {
+    dispatch({ type: "UPDATE_FILE", id, updates: { status: "saving" } });
+
+    try {
+      const { data: momentId, error } = await supabaseRef.current.rpc("create_moment_draft", {
+        p_event_id: state.eventId,
+        p_media_url: mediaUrl || "",
+        p_media_type: isVideo ? "video" : "image",
+        p_thumbnail_url: thumbnailUrl,
+        p_text_content: caption,
+        // Note: taken_at and video_duration will be null for now
+        // We can add EXIF extraction later if needed
+      });
+
+      if (error) throw error;
+
+      dispatch({
+        type: "UPDATE_FILE",
+        id,
+        updates: {
+          status: "complete",
+          momentId,
+        },
+      });
+
+      // Fire-and-forget: Generate embeddings for visual search (photos only)
+      if (!isVideo && momentId) {
+        fetch("/api/moments/embed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ momentIds: [momentId] }),
+        }).catch((err) => {
+          console.warn("[BulkUpload] Embedding generation failed (non-critical):", err);
+        });
+      }
+
+      return momentId;
+    } catch (err) {
+      console.error("[BulkUpload] Failed to save draft:", err);
+      dispatch({
+        type: "UPDATE_FILE",
+        id,
+        updates: {
+          status: "error",
+          error: err instanceof Error ? err.message : "Failed to save draft",
+        },
+      });
+      return null;
+    }
+  };
 
   const uploadFile = async (fileState: FileUploadState) => {
     const { id, file } = fileState;
@@ -591,12 +639,11 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
               upload.start();
             });
 
-            // Mark as uploaded with Cloudflare metadata
+            // Update state with Cloudflare metadata
             dispatch({
               type: "UPDATE_FILE",
               id,
               updates: {
-                status: "uploaded",
                 mediaUrl: null,
                 thumbnailUrl,
                 cfVideoUid: videoUid,
@@ -604,6 +651,9 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
                 progress: 100,
               },
             });
+
+            // Immediately save as draft
+            await saveAsDraft(id, null, thumbnailUrl, videoUid, true, fileState.caption, fileState.fileHash);
             usedCloudflare = true;
           } else {
             const errorData = await uploadUrlResponse.json();
@@ -626,13 +676,15 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
             type: "UPDATE_FILE",
             id,
             updates: {
-              status: "uploaded",
               mediaUrl: publicUrl,
               thumbnailUrl,
               videoStatus: "ready", // R2 videos are ready immediately
               progress: 100,
             },
           });
+
+          // Immediately save as draft
+          await saveAsDraft(id, publicUrl, thumbnailUrl, null, true, fileState.caption, fileState.fileHash);
         }
       } else {
         // ========================================
@@ -663,11 +715,13 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
           type: "UPDATE_FILE",
           id,
           updates: {
-            status: "uploaded",
             mediaUrl: publicUrl,
             progress: 100,
           },
         });
+
+        // Immediately save as draft
+        await saveAsDraft(id, publicUrl, null, null, false, fileState.caption, fileState.fileHash);
       }
     } catch (err) {
       const retryCount = fileState.retryCount;
@@ -701,64 +755,6 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       activeUploadsRef.current.delete(id);
       scheduleNextProcess();
     }
-  };
-
-  const saveBatchToDatabase = async (files: FileUploadState[]) => {
-    const ids = files.map((f) => f.id);
-    dispatch({ type: "MARK_FILES_SAVING", ids });
-
-    const batchData: MomentBatchItem[] = files.map((f) => ({
-      content_type: f.type,
-      media_url: f.mediaUrl || "", // Empty for videos (Cloudflare Stream only)
-      text_content: f.caption,
-      batch_id: f.batchId,
-      thumbnail_url: f.thumbnailUrl || undefined,
-      // Cloudflare Stream fields for videos
-      cf_video_uid: f.cfVideoUid || undefined,
-      video_status: f.type === "video" ? (f.videoStatus || "uploading") : "ready",
-      // File hash for duplicate detection
-      file_hash: f.fileHash || undefined,
-    }));
-
-    try {
-      const { data, error } = await supabaseRef.current.rpc("create_moments_batch", {
-        p_event_id: state.eventId,
-        p_moments: batchData,
-        p_user_id: godModeUserId || null, // Only pass when superadmin is impersonating (God Mode)
-      });
-
-      if (error) throw error;
-
-      const response = data as CreateMomentsBatchResponse;
-      dispatch({
-        type: "MARK_FILES_COMPLETE",
-        ids,
-        momentIds: response.moment_ids,
-      });
-
-      // Fire-and-forget: Generate embeddings for visual search
-      // Only for photos (video embedding not yet supported)
-      const photoMomentIds = response.moment_ids.filter((_, idx) =>
-        batchData[idx].content_type === "photo"
-      );
-      if (photoMomentIds.length > 0) {
-        fetch("/api/moments/embed", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ momentIds: photoMomentIds }),
-        }).catch((err) => {
-          console.warn("[BulkUpload] Embedding generation failed (non-critical):", err);
-        });
-      }
-    } catch (err) {
-      dispatch({
-        type: "MARK_FILES_ERROR",
-        ids,
-        error: err instanceof Error ? err.message : "Failed to save to database",
-      });
-    }
-
-    scheduleNextProcess();
   };
 
   const scheduleNextProcess = useCallback(() => {
@@ -909,5 +905,23 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       dispatch({ type: "SET_BATCH_CAPTION", ids, caption }),
     clearComplete: () => dispatch({ type: "CLEAR_COMPLETE" }),
     reset: () => dispatch({ type: "RESET" }),
+    // Publish all drafts for this event (call this on "Publish" button)
+    publishDrafts: async (): Promise<{ count: number; error: string | null }> => {
+      try {
+        const { data, error } = await supabaseRef.current.rpc("publish_user_drafts", {
+          p_event_id: state.eventId,
+        });
+
+        if (error) throw error;
+
+        return { count: data as number, error: null };
+      } catch (err) {
+        console.error("[BulkUpload] Failed to publish drafts:", err);
+        return {
+          count: 0,
+          error: err instanceof Error ? err.message : "Failed to publish",
+        };
+      }
+    },
   };
 }

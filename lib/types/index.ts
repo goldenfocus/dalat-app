@@ -648,7 +648,7 @@ export interface DashboardOverview {
 // ============================================
 
 export type MomentContentType = 'photo' | 'video' | 'text' | 'youtube' | 'pdf' | 'audio' | 'image' | 'document';
-export type MomentStatus = 'pending' | 'published' | 'rejected' | 'removed';
+export type MomentStatus = 'draft' | 'pending' | 'published' | 'rejected' | 'removed';
 export type MomentVideoStatus = 'uploading' | 'processing' | 'ready' | 'error';
 export type MomentsWhoCanPost = 'anyone' | 'rsvp' | 'confirmed';
 

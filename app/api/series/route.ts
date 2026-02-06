@@ -55,9 +55,11 @@ function sanitizeSlug(input: string): string {
     .slice(0, 50);
 }
 
-function generateSeriesSlug(title: string): string {
+function generateSeriesSlug(title: string, attempt = 0): string {
   const base = sanitizeSlug(title);
-  const suffix = Math.random().toString(36).slice(2, 6);
+  // Use longer suffix on retries to reduce collision chance
+  const suffixLength = attempt === 0 ? 4 : 6;
+  const suffix = Math.random().toString(36).slice(2, 2 + suffixLength);
   return `${base}-${suffix}`;
 }
 
@@ -102,12 +104,18 @@ export async function POST(request: Request) {
       ? `${timeparts[0]}:${timeparts[1]}:00`
       : body.starts_at_time;
 
-  const seriesSlug = generateSeriesSlug(body.title);
   const durationMinutes = body.duration_minutes || DEFAULT_DURATION_MINUTES;
+  const MAX_SLUG_RETRIES = 3;
 
-  try {
-    // Create the series
-    const { data: series, error: seriesError } = await supabase
+  let series: any = null;
+  let seriesSlug = "";
+  let seriesError: any = null;
+
+  // Retry loop to handle slug collisions
+  for (let attempt = 0; attempt < MAX_SLUG_RETRIES; attempt++) {
+    seriesSlug = generateSeriesSlug(body.title, attempt);
+
+    const result = await supabase
       .from("event_series")
       .insert({
         slug: seriesSlug,
@@ -143,6 +151,22 @@ export async function POST(request: Request) {
       .select()
       .single();
 
+    if (!result.error) {
+      series = result.data;
+      break;
+    }
+
+    // Check if it's a unique constraint violation (code 23505)
+    if (result.error.code === "23505" && attempt < MAX_SLUG_RETRIES - 1) {
+      console.log(`[series] Slug collision on "${seriesSlug}", retrying...`);
+      continue;
+    }
+
+    seriesError = result.error;
+    break;
+  }
+
+  try {
     if (seriesError) {
       console.error("Series creation error:", seriesError);
       return NextResponse.json(
@@ -151,6 +175,13 @@ export async function POST(request: Request) {
           details: seriesError.message,
           code: seriesError.code,
         },
+        { status: 500 }
+      );
+    }
+
+    if (!series) {
+      return NextResponse.json(
+        { error: "Failed to create series after retries" },
         { status: 500 }
       );
     }

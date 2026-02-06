@@ -20,6 +20,7 @@ import { needsImageCompression, compressImage } from "@/lib/image-compression";
 import type { CompressionProgress } from "@/lib/video-compression";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { triggerHaptic } from "@/lib/haptics";
+import { createClient } from "@/lib/supabase/client";
 import * as tus from "tus-js-client";
 
 // Configuration
@@ -34,6 +35,8 @@ export type UploadStatus =
   | "uploading"
   | "uploaded"
   | "processing" // Server-side video processing (Cloudflare Stream)
+  | "saving" // Saving as draft to database
+  | "complete" // Saved as draft, ready to publish
   | "error";
 
 export interface QueuedUpload {
@@ -55,6 +58,8 @@ export interface QueuedUpload {
   cfPlaybackUrl?: string;
   // Compression progress
   compressionProgress?: CompressionProgress;
+  // Draft moment ID (set after auto-save)
+  momentId?: string;
 }
 
 interface QueueState {
@@ -99,7 +104,7 @@ function queueReducer(state: QueueState, action: QueueAction): QueueState {
     case "CLEAR_COMPLETED":
       return {
         ...state,
-        items: state.items.filter((item) => item.status !== "uploaded"),
+        items: state.items.filter((item) => item.status !== "uploaded" && item.status !== "complete"),
       };
 
     case "RETRY_ITEM":
@@ -150,6 +155,69 @@ export function useUploadQueue({
   const mountedRef = useRef(true);
   const stateRef = useRef(state);
   stateRef.current = state; // Always keep ref up to date
+  const supabaseRef = useRef(createClient());
+
+  // Save upload as draft to database immediately after upload completes
+  const saveAsDraft = useCallback(async (
+    id: string,
+    mediaUrl: string | null,
+    thumbnailUrl: string | null,
+    cfVideoUid: string | null,
+    isVideo: boolean
+  ): Promise<string | null> => {
+    if (!mountedRef.current) return null;
+
+    dispatch({ type: "UPDATE_ITEM", id, updates: { status: "saving" } });
+
+    try {
+      const { data: momentId, error } = await supabaseRef.current.rpc("create_moment_draft", {
+        p_event_id: eventId,
+        p_media_url: mediaUrl || "",
+        p_media_type: isVideo ? "video" : "image",
+        p_thumbnail_url: thumbnailUrl,
+        // Caption will be added when user publishes
+        p_text_content: null,
+      });
+
+      if (error) throw error;
+
+      if (mountedRef.current) {
+        dispatch({
+          type: "UPDATE_ITEM",
+          id,
+          updates: { status: "complete", momentId },
+        });
+      }
+
+      console.log(`[UploadQueue] Saved as draft: ${momentId}`);
+
+      // Fire-and-forget: Generate embeddings for visual search (photos only)
+      if (!isVideo && momentId) {
+        fetch("/api/moments/embed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ momentIds: [momentId] }),
+        }).catch((err) => {
+          console.warn("[UploadQueue] Embedding generation failed (non-critical):", err);
+        });
+      }
+
+      return momentId;
+    } catch (err) {
+      console.error("[UploadQueue] Failed to save draft:", err);
+      if (mountedRef.current) {
+        dispatch({
+          type: "UPDATE_ITEM",
+          id,
+          updates: {
+            status: "error",
+            error: err instanceof Error ? err.message : "Failed to save draft",
+          },
+        });
+      }
+      return null;
+    }
+  }, [eventId]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -275,23 +343,25 @@ export function useUploadQueue({
         console.log(`[UploadQueue] Video uploaded to Cloudflare Stream: ${file.name} → ${videoUid}`);
 
         if (mountedRef.current) {
-          // Video is uploaded but still processing in the cloud
+          // Update with video UID before saving as draft
           dispatch({
             type: "UPDATE_ITEM",
             id,
             updates: {
-              status: "processing", // Will be 'uploaded' when webhook fires
               cfVideoUid: videoUid,
               progress: 100,
             },
           });
+
+          // Immediately save as draft to database
+          await saveAsDraft(id, null, null, videoUid, true);
 
           triggerHaptic("light");
 
           if (onUploadComplete) {
             onUploadComplete({
               ...item,
-              status: "processing",
+              status: "complete",
               cfVideoUid: videoUid,
             });
           }
@@ -329,16 +399,20 @@ export function useUploadQueue({
         console.log(`[UploadQueue] Upload complete: ${file.name} → ${publicUrl}`);
 
         if (mountedRef.current) {
+          // Update with URL before saving as draft
           dispatch({
             type: "UPDATE_ITEM",
             id,
-            updates: { status: "uploaded", mediaUrl: publicUrl, progress: 100 },
+            updates: { mediaUrl: publicUrl, progress: 100 },
           });
+
+          // Immediately save as draft to database
+          await saveAsDraft(id, publicUrl, null, null, false);
 
           triggerHaptic("light");
 
           if (onUploadComplete) {
-            onUploadComplete({ ...item, status: "uploaded", mediaUrl: publicUrl });
+            onUploadComplete({ ...item, status: "complete", mediaUrl: publicUrl });
           }
         }
       }
@@ -546,15 +620,36 @@ export function useUploadQueue({
    * Clear completed uploads
    */
   const clearCompleted = useCallback(() => {
-    // Revoke URLs for completed items
+    // Revoke URLs for completed items (now includes "complete" status for drafts)
     stateRef.current.items
-      .filter((item) => item.status === "uploaded")
+      .filter((item) => item.status === "uploaded" || item.status === "complete")
       .forEach((item) => {
         if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
         if (item.localThumbnailUrl) URL.revokeObjectURL(item.localThumbnailUrl);
       });
     dispatch({ type: "CLEAR_COMPLETED" });
   }, []);
+
+  /**
+   * Publish all drafts for this event
+   */
+  const publishDrafts = useCallback(async (): Promise<{ count: number; error: string | null }> => {
+    try {
+      const { data, error } = await supabaseRef.current.rpc("publish_user_drafts", {
+        p_event_id: eventId,
+      });
+
+      if (error) throw error;
+
+      return { count: data as number, error: null };
+    } catch (err) {
+      console.error("[UploadQueue] Failed to publish drafts:", err);
+      return {
+        count: 0,
+        error: err instanceof Error ? err.message : "Failed to publish",
+      };
+    }
+  }, [eventId]);
 
   // Calculate stats
   const activeCount = activeUploadsRef.current.size;
@@ -564,13 +659,15 @@ export function useUploadQueue({
     uploading: state.items.filter(
       (i) => i.status === "uploading" || i.status === "compressing" || i.status === "converting"
     ).length,
-    processing: state.items.filter((i) => i.status === "processing").length, // Server-side video processing
-    completed: state.items.filter((i) => i.status === "uploaded" || i.status === "processing").length,
+    saving: state.items.filter((i) => i.status === "saving").length, // Saving to database as draft
+    processing: state.items.filter((i) => i.status === "processing").length, // Server-side video processing (legacy)
+    // Completed = saved as draft and ready to publish
+    completed: state.items.filter((i) => i.status === "complete" || i.status === "uploaded" || i.status === "processing").length,
     failed: state.items.filter((i) => i.status === "error").length,
     active: activeCount,
   };
 
-  // Consider complete if all items are either uploaded OR processing (videos in the cloud)
+  // Consider complete if all items are either complete (saved as draft) OR processing
   const isComplete = stats.completed === stats.total && stats.total > 0;
   const hasErrors = stats.failed > 0;
   const isUploading = stats.uploading > 0 || stats.queued > 0 || activeCount > 0;
@@ -591,5 +688,6 @@ export function useUploadQueue({
     pause,
     resume,
     clearCompleted,
+    publishDrafts, // Publish all saved drafts for this event
   };
 }

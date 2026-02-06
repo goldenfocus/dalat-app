@@ -106,6 +106,25 @@ function createShuffledIndices(length: number, startIndex: number): number[] {
   return indices;
 }
 
+// Safe localStorage access for SSR
+function getStoredVolume(): number {
+  if (typeof window === "undefined") return 1;
+  try {
+    return parseFloat(localStorage.getItem("audio-player-volume") ?? "1");
+  } catch {
+    return 1;
+  }
+}
+
+function getStoredMuted(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return localStorage.getItem("audio-player-muted") === "true";
+  } catch {
+    return false;
+  }
+}
+
 export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   // Initial state
   tracks: [],
@@ -123,12 +142,8 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   autoplayBlocked: false,
 
   // Volume initial state (load from localStorage if available)
-  volume: typeof window !== "undefined"
-    ? parseFloat(localStorage.getItem("audio-player-volume") ?? "1")
-    : 1,
-  isMuted: typeof window !== "undefined"
-    ? localStorage.getItem("audio-player-muted") === "true"
-    : false,
+  volume: getStoredVolume(),
+  isMuted: getStoredMuted(),
 
   // Karaoke initial state
   karaokeLevel: DEFAULT_KARAOKE_LEVEL,

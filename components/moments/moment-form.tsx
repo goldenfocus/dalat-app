@@ -198,17 +198,38 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
     setBulkCaptions(prev => ({ ...prev, [id]: caption }));
   }, []);
 
+  // Helper to map statuses to CompactUploadItem status type
+  const mapToCompactStatus = (status: string): "queued" | "compressing" | "converting" | "uploading" | "uploaded" | "processing" | "error" => {
+    switch (status) {
+      case "complete":
+      case "uploaded":
+        return "uploaded";
+      case "saving":
+      case "processing":
+        return "processing";
+      case "converting":
+        return "compressing";
+      case "queued":
+      case "compressing":
+      case "uploading":
+      case "error":
+        return status as "queued" | "compressing" | "uploading" | "error";
+      default:
+        return "queued";
+    }
+  };
+
   // Convert queue items to compact format for display
   const compactItems: CompactUploadItem[] = useMemo(() => {
     if (!isBulkMode) return [];
     // If we have bulk queue items, use those
     if (bulkQueue.items.length > 0) {
-      return bulkQueue.items.map((item) => ({
+      return bulkQueue.items.map((item): CompactUploadItem => ({
         id: item.id,
         name: item.name,
         size: item.size,
         isVideo: item.isVideo,
-        status: item.status === "converting" ? "compressing" : item.status,
+        status: mapToCompactStatus(item.status),
         progress: item.progress,
         error: item.error,
         previewUrl: item.previewUrl,
@@ -217,14 +238,12 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       }));
     }
     // Otherwise convert regular uploads to compact format
-    return uploads.map((item) => ({
+    return uploads.map((item): CompactUploadItem => ({
       id: item.id,
       name: item.file.name,
       size: item.file.size,
       isVideo: item.isVideo,
-      status: item.status === "converting" ? "compressing" :
-              item.status === "processing" ? "uploading" :
-              item.status,
+      status: mapToCompactStatus(item.status),
       progress: item.uploadProgress,
       error: item.error,
       previewUrl: item.previewUrl,
@@ -1114,74 +1133,41 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       const readyUploads = uploads.filter(u =>
         u.status === "uploaded" && (u.mediaUrl || u.cfVideoUid)
       );
-      // Include both "uploaded" (images) and "processing" (Cloudflare Stream videos)
-      // For videos, cfVideoUid is set instead of mediaUrl
-      const readyBulkUploads = bulkQueue.items.filter(u =>
-        (u.status === "uploaded" || u.status === "processing") && (u.mediaUrl || u.cfVideoUid)
+      // Bulk queue items are auto-saved as drafts with "complete" status
+      const completedBulkUploads = bulkQueue.items.filter(u =>
+        u.status === "complete" && u.momentId
       );
 
-      if (readyUploads.length === 0 && readyBulkUploads.length === 0) {
+      if (readyUploads.length === 0 && completedBulkUploads.length === 0) {
         setError(t("errors.uploadFailed"));
         return;
       }
 
-      // Create moments for bulk queue items (with individual captions)
-      for (const upload of readyBulkUploads) {
-        const contentType = upload.isVideo ? "video" : "photo";
-        // Use individual caption if set, otherwise fall back to shared caption
-        const textContent = (bulkCaptions[upload.id]?.trim() || caption.trim()) || null;
-        // Cloudflare Stream videos don't have mediaUrl - they use cfVideoUid instead
-        const isCloudflareVideo = upload.isVideo && upload.cfVideoUid;
+      // Publish all bulk queue drafts with one RPC call
+      if (completedBulkUploads.length > 0) {
+        const { count, error: publishError } = await bulkQueue.publishDrafts();
 
-        const { data, error: postError } = await supabase.rpc("create_moment", {
-          p_event_id: eventId,
-          p_content_type: contentType,
-          p_media_url: isCloudflareVideo ? null : (upload.mediaUrl || null),
-          p_text_content: textContent,
-          p_user_id: godModeUserId || null,
-          p_source_locale: locale,
-          // Bulk queue uploads go through CF Stream, which handles thumbnails via webhook
-          p_thumbnail_url: null,
-          p_cf_video_uid: upload.cfVideoUid || null,
-          p_cf_playback_url: upload.cfPlaybackUrl || null,
-          p_video_status: isCloudflareVideo ? "processing" : "ready",
-        });
+        if (publishError) {
+          console.error("publishDrafts error:", publishError);
+          setError(t("errors.postFailed"));
+          return;
+        }
 
-        if (postError) {
-          console.error("create_moment RPC error:", postError.message, postError);
-          if (postError.message.includes("not_allowed_to_post")) {
-            setError(t("errors.notAllowed"));
-            return;
+        console.log(`[MomentForm] Published ${count} drafts`);
+
+        // Fire-and-forget: Trigger AI processing for published moments
+        for (const upload of completedBulkUploads) {
+          if (upload.momentId) {
+            fetch("/api/moments/process", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ momentId: upload.momentId }),
+            }).catch(() => {});
           }
-          throw postError;
-        }
-
-        if (data?.moment_id && textContent) {
-          triggerTranslation("moment", data.moment_id, [
-            { field_name: "text_content", text: textContent },
-          ]);
-        }
-
-        // Fire-and-forget: Generate embedding for photos
-        if (data?.moment_id && contentType === "photo") {
-          fetch("/api/moments/embed", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ momentId: data.moment_id }),
-          }).catch(() => {});
-        }
-
-        // Fire-and-forget: Trigger AI processing
-        if (data?.moment_id) {
-          fetch("/api/moments/process", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ momentId: data.moment_id }),
-          }).catch(() => {});
         }
       }
 
-      // Create moments for normal mode uploads (with individual captions)
+      // Create moments for normal mode uploads (legacy non-bulk flow)
       for (const upload of readyUploads) {
         const contentType = upload.isVideo ? "video" : "photo";
         // Use individual caption if set, otherwise fall back to shared caption
@@ -1245,8 +1231,8 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       triggerHaptic("medium");
 
       // Clear bulk queue completed items and their captions
-      if (readyBulkUploads.length > 0) {
-        const postedBulkIds = new Set(readyBulkUploads.map(u => u.id));
+      if (completedBulkUploads.length > 0) {
+        const postedBulkIds = new Set(completedBulkUploads.map(u => u.id));
         setBulkCaptions(prev => {
           const next = { ...prev };
           postedBulkIds.forEach(id => delete next[id]);
@@ -1272,7 +1258,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
       // If there are still items uploading in either queue, stay on page
       const remainingUploads = uploads.filter(u => !postedIds.has(u.id));
-      const remainingBulk = bulkQueue.items.filter(u => u.status !== "uploaded");
+      const remainingBulk = bulkQueue.items.filter(u => u.status !== "complete");
       if (remainingUploads.length > 0 || remainingBulk.length > 0) {
         // Stay on page so user can post remaining items when ready
         triggerHaptic("medium");
@@ -1875,7 +1861,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      {/* Post button - enabled when any uploads ready, even if others still uploading */}
+      {/* Publish button - files are auto-saved as drafts, this publishes them */}
       <Button
         onClick={handlePost}
         disabled={!canPost || isPosting}
@@ -1885,7 +1871,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         {isPosting ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            {t("posting")}
+            {isBulkMode ? t("publishing") : t("posting")}
           </>
         ) : (
           <>
@@ -1898,6 +1884,11 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
               readyMaterialCount > 1
                 ? t("postMoments", { count: readyMaterialCount })
                 : t("postFile")
+            ) : isBulkMode && readyCount > 0 ? (
+              // Bulk mode: publish drafts
+              readyCount > 1
+                ? t("publishMoments", { count: readyCount })
+                : t("publishMoment")
             ) : isUploading && readyCount > 0 ? (
               // Some ready, some still uploading - post partial
               t("postReady", { ready: readyCount, total: uploads.length })

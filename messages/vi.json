@@ -1090,6 +1090,9 @@
     "postText": "Đăng",
     "postFile": "Chia sẻ tệp",
     "posting": "Đang đăng...",
+    "publishing": "Đang xuất bản...",
+    "publishMoment": "Xuất bản khoảnh khắc",
+    "publishMoments": "Xuất bản {count} khoảnh khắc",
     "inputModes": {
       "media": "Ảnh/Video",
       "file": "Tệp",

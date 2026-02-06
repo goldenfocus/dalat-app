@@ -9,17 +9,66 @@ export interface AudioAnalysis {
   audio_transcript: string | null;
   audio_summary: string | null;
   audio_language: string;
+  lyrics_lrc: string | null;  // LRC format with timestamps for karaoke
   mood: string;
   quality_score: number;
 }
 
+interface WhisperSegment {
+  id: number;
+  start: number;
+  end: number;
+  text: string;
+  words?: { word: string; start: number; end: number }[];
+}
+
+interface WhisperVerboseResponse {
+  text: string;
+  language: string;
+  duration: number;
+  segments: WhisperSegment[];
+  words?: { word: string; start: number; end: number }[];
+}
+
 /**
- * Transcribe audio using OpenAI Whisper API.
- * Falls back to description-only if Whisper is not available.
+ * Format seconds to LRC timestamp (mm:ss.xx)
+ */
+function formatLrcTimestamp(seconds: number): string {
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  const cs = Math.round((seconds % 1) * 100);
+  return `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}.${cs.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Convert Whisper response to LRC format.
+ */
+function whisperToLrc(response: WhisperVerboseResponse): string {
+  const lines: string[] = [];
+
+  // Add metadata
+  lines.push(`[la:${response.language || "vi"}]`);
+  lines.push("");
+
+  // Convert each segment to LRC line
+  for (const segment of response.segments) {
+    const timestamp = formatLrcTimestamp(segment.start);
+    const text = segment.text.trim();
+    if (text) {
+      lines.push(`[${timestamp}]${text}`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+/**
+ * Transcribe audio using OpenAI Whisper API with timestamp granularities.
+ * Returns both plain text transcript and LRC format for karaoke.
  */
 async function transcribeWithWhisper(
   audioUrl: string
-): Promise<{ text: string; language: string } | null> {
+): Promise<{ text: string; language: string; lrc: string } | null> {
   const openaiApiKey = process.env.OPENAI_API_KEY;
 
   if (!openaiApiKey) {
@@ -37,11 +86,13 @@ async function transcribeWithWhisper(
     const audioBuffer = await audioResponse.arrayBuffer();
     const audioBlob = new Blob([audioBuffer]);
 
-    // Create form data for Whisper API
+    // Create form data for Whisper API with timestamp granularities
     const formData = new FormData();
     formData.append("file", audioBlob, "audio.mp3");
     formData.append("model", "whisper-1");
     formData.append("response_format", "verbose_json");
+    formData.append("timestamp_granularities[]", "segment");
+    formData.append("timestamp_granularities[]", "word");
 
     const whisperResponse = await fetch(
       "https://api.openai.com/v1/audio/transcriptions",
@@ -59,11 +110,12 @@ async function transcribeWithWhisper(
       throw new Error(`Whisper API error: ${error}`);
     }
 
-    const result = await whisperResponse.json();
+    const result: WhisperVerboseResponse = await whisperResponse.json();
 
     return {
       text: result.text || "",
       language: result.language || "en",
+      lrc: whisperToLrc(result),
     };
   } catch (error) {
     console.error("Error transcribing audio with Whisper:", error);
@@ -149,6 +201,7 @@ Output ONLY the JSON object.`;
 
 /**
  * Analyze audio content using Whisper transcription and Claude summarization.
+ * Now includes LRC format lyrics for karaoke feature.
  */
 export async function analyzeAudio(
   audioUrl: string,
@@ -160,7 +213,7 @@ export async function analyzeAudio(
     duration_seconds?: number | null;
   }
 ): Promise<AudioAnalysis> {
-  // Try to transcribe with Whisper
+  // Try to transcribe with Whisper (now returns LRC format too)
   const transcriptResult = await transcribeWithWhisper(audioUrl);
 
   // Generate summary using Claude
@@ -186,6 +239,7 @@ export async function analyzeAudio(
     audio_transcript: transcriptResult?.text || null,
     audio_summary: summary.audio_summary,
     audio_language: transcriptResult?.language || "en",
+    lyrics_lrc: transcriptResult?.lrc || null,  // LRC for karaoke
     mood: summary.mood,
     quality_score: qualityScore,
   };

@@ -1205,6 +1205,9 @@
     "postText": "Post",
     "postFile": "Share file",
     "posting": "Posting...",
+    "publishing": "Publishing...",
+    "publishMoment": "Publish moment",
+    "publishMoments": "Publish {count} moments",
     "inputModes": {
       "media": "Photo/Video",
       "file": "File",
