@@ -5,7 +5,9 @@ import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import {
   useCinemaModeStore,
-  useCinemaProgress,
+  useCinemaProgressValue,
+  useCinemaCurrentIndex,
+  useCinemaTotalCount,
   useCinemaPlaybackState,
   useCinemaShowControls,
 } from "@/lib/stores/cinema-mode-store";
@@ -21,10 +23,17 @@ export function CinemaControls({
   onSwitchToGrid,
   onSwitchToImmersive,
 }: CinemaControlsProps) {
-  const { progress, currentIndex, total } = useCinemaProgress();
+  // Use individual selectors to avoid re-rendering on every timer tick
+  const progress = useCinemaProgressValue();
+  const currentIndex = useCinemaCurrentIndex();
+  const total = useCinemaTotalCount();
   const playbackState = useCinemaPlaybackState();
   const showControls = useCinemaShowControls();
-  const { togglePlayback, goTo, showControlsTemporarily } = useCinemaModeStore();
+
+  // Get actions directly from store (stable references, won't cause re-renders)
+  const togglePlayback = useCinemaModeStore.getState().togglePlayback;
+  const goTo = useCinemaModeStore.getState().goTo;
+  const showControlsTemporarily = useCinemaModeStore.getState().showControlsTemporarily;
 
   const isPaused = playbackState === "paused";
   const isEnded = playbackState === "ended";

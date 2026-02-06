@@ -423,7 +423,7 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
   },
 }));
 
-// Selector hooks
+// Selector hooks - using primitive selectors to avoid object reference issues
 export const useCinemaModeActive = () =>
   useCinemaModeStore((state) => state.isActive);
 
@@ -435,26 +435,36 @@ export const useCurrentCinemaMoment = () =>
     state.moments.length > 0 ? state.moments[state.currentIndex] : null
   );
 
-export const useCinemaProgress = () =>
-  useCinemaModeStore((state) => ({
-    progress: state.timerProgress,
-    currentIndex: state.currentIndex,
-    total: state.totalCount,
-  }));
+// Split into primitive selectors to avoid object reference equality issues
+export const useCinemaProgressValue = () =>
+  useCinemaModeStore((state) => state.timerProgress);
 
-export const useCinemaControls = () =>
-  useCinemaModeStore((state) => ({
-    play: state.play,
-    pause: state.pause,
-    togglePlayback: state.togglePlayback,
-    next: state.next,
-    previous: state.previous,
-    goTo: state.goTo,
-    exit: state.exit,
-  }));
+export const useCinemaCurrentIndex = () =>
+  useCinemaModeStore((state) => state.currentIndex);
+
+export const useCinemaTotalCount = () =>
+  useCinemaModeStore((state) => state.totalCount);
+
+// Combined progress hook for convenience (stable - only updates when values actually change)
+export const useCinemaProgress = () => {
+  const progress = useCinemaProgressValue();
+  const currentIndex = useCinemaCurrentIndex();
+  const total = useCinemaTotalCount();
+  return { progress, currentIndex, total };
+};
+
+// Actions are stable references - won't cause re-renders
+export const useCinemaActions = () =>
+  useCinemaModeStore((state) => state.start);
 
 export const useCinemaShowControls = () =>
   useCinemaModeStore((state) => state.showControls);
 
 export const useCinemaIsTransitioning = () =>
   useCinemaModeStore((state) => state.isTransitioning);
+
+export const useCinemaMoments = () =>
+  useCinemaModeStore((state) => state.moments);
+
+export const useCinemaTimerDuration = () =>
+  useCinemaModeStore((state) => state.timerDuration);

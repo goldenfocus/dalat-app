@@ -16,7 +16,10 @@ import {
   useCurrentCinemaMoment,
   useCinemaPlaybackState,
   useCinemaIsTransitioning,
-  useCinemaProgress,
+  useCinemaCurrentIndex,
+  useCinemaTotalCount,
+  useCinemaMoments,
+  useCinemaTimerDuration,
 } from "@/lib/stores/cinema-mode-store";
 import type { MomentWithProfile } from "@/lib/types";
 
@@ -62,26 +65,28 @@ export function CinemaSlideshow({
     effectSchedulerRef.current = newState;
   }, []);
 
-  // Store state
-  const {
-    start,
-    exit,
-    play,
-    togglePlayback,
-    next,
-    previous,
-    goTo,
-    onVideoEnded,
-    onVideoTimeUpdate,
-    showControlsTemporarily,
-    moments,
-    timerDuration,
-  } = useCinemaModeStore();
+  // Store state - use individual selectors to avoid subscribing to entire state
+  // Actions are stable and accessed directly from the store (won't cause re-renders)
+  const store = useCinemaModeStore;
+  const start = store.getState().start;
+  const exit = store.getState().exit;
+  const play = store.getState().play;
+  const togglePlayback = store.getState().togglePlayback;
+  const next = store.getState().next;
+  const previous = store.getState().previous;
+  const goTo = store.getState().goTo;
+  const onVideoEnded = store.getState().onVideoEnded;
+  const onVideoTimeUpdate = store.getState().onVideoTimeUpdate;
+  const showControlsTemporarily = store.getState().showControlsTemporarily;
 
+  // Use selector hooks for reactive state (only re-render when specific values change)
+  const moments = useCinemaMoments();
+  const timerDuration = useCinemaTimerDuration();
   const currentMoment = useCurrentCinemaMoment();
   const playbackState = useCinemaPlaybackState();
   const isTransitioning = useCinemaIsTransitioning();
-  const { currentIndex, total } = useCinemaProgress();
+  const currentIndex = useCinemaCurrentIndex();
+  const total = useCinemaTotalCount();
 
   const isPaused = playbackState === "paused";
   const isEnded = playbackState === "ended";
