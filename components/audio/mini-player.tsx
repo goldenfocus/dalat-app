@@ -13,6 +13,9 @@ import {
   Repeat,
   Repeat1,
   Shuffle,
+  Volume2,
+  Volume1,
+  VolumeX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,6 +26,8 @@ import {
   useIsPlayerVisible,
   useKaraokeLevel,
   useAutoplayBlocked,
+  useVolume,
+  useIsMuted,
 } from "@/lib/stores/audio-player-store";
 import {
   KaraokeFooterLine,
@@ -37,6 +42,8 @@ export function MiniPlayer() {
   const isVisible = useIsPlayerVisible();
   const currentTrack = useCurrentTrack();
   const autoplayBlocked = useAutoplayBlocked();
+  const volume = useVolume();
+  const isMuted = useIsMuted();
 
   const karaokeLevel = useKaraokeLevel();
 
@@ -61,11 +68,14 @@ export function MiniPlayer() {
     setIsPlaying,
     toggleRepeat,
     toggleShuffle,
+    setVolume,
+    toggleMute,
     close,
   } = useAudioPlayerStore();
 
   // UI state
   const [showRemaining, setShowRemaining] = useState(false);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
   // Initialize audio element ONCE and store in Zustand
   useEffect(() => {
@@ -283,6 +293,52 @@ export function MiniPlayer() {
 
             {/* Karaoke toggle button */}
             <KaraokeToggleButton />
+
+            {/* Volume control */}
+            <div
+              className="relative"
+              onMouseEnter={() => setShowVolumeSlider(true)}
+              onMouseLeave={() => setShowVolumeSlider(false)}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground"
+                onClick={toggleMute}
+                aria-label={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX className="w-4 h-4" />
+                ) : volume < 0.5 ? (
+                  <Volume1 className="w-4 h-4" />
+                ) : (
+                  <Volume2 className="w-4 h-4" />
+                )}
+              </Button>
+
+              {/* Volume slider popup */}
+              {showVolumeSlider && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 bg-popover border rounded-lg shadow-lg">
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={isMuted ? 0 : volume}
+                    onChange={(e) => {
+                      const newVolume = parseFloat(e.target.value);
+                      setVolume(newVolume);
+                      // Unmute if adjusting volume while muted
+                      if (isMuted && newVolume > 0) {
+                        toggleMute();
+                      }
+                    }}
+                    className="w-24 h-1 accent-primary cursor-pointer"
+                    aria-label="Volume"
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Close button */}
             <Button

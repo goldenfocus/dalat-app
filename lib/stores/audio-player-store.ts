@@ -49,6 +49,10 @@ interface AudioPlayerState {
   isVisible: boolean;
   autoplayBlocked: boolean; // True when browser blocks autoplay
 
+  // Volume state
+  volume: number; // 0.0 to 1.0
+  isMuted: boolean;
+
   // Karaoke state
   karaokeLevel: KaraokeLevel;
   karaokeEnabled: boolean;
@@ -73,6 +77,10 @@ interface AudioPlayerState {
   toggleRepeat: () => void;
   toggleShuffle: () => void;
   close: () => void;
+
+  // Volume actions
+  setVolume: (volume: number) => void;
+  toggleMute: () => void;
 
   // Karaoke actions
   setKaraokeLevel: (level: KaraokeLevel) => void;
@@ -114,6 +122,14 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   isVisible: false,
   autoplayBlocked: false,
 
+  // Volume initial state (load from localStorage if available)
+  volume: typeof window !== "undefined"
+    ? parseFloat(localStorage.getItem("audio-player-volume") ?? "1")
+    : 1,
+  isMuted: typeof window !== "undefined"
+    ? localStorage.getItem("audio-player-muted") === "true"
+    : false,
+
   // Karaoke initial state
   karaokeLevel: DEFAULT_KARAOKE_LEVEL,
   karaokeEnabled: true,
@@ -123,6 +139,11 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
 
   // Store the audio element reference
   setAudioElement: (element) => {
+    if (element) {
+      // Apply saved volume settings
+      const { volume, isMuted } = get();
+      element.volume = isMuted ? 0 : volume;
+    }
     set({ audioElement: element });
   },
 
@@ -349,6 +370,39 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     }
   },
 
+  // Volume controls
+  setVolume: (volume) => {
+    const { audioElement, isMuted } = get();
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+
+    if (audioElement) {
+      audioElement.volume = isMuted ? 0 : clampedVolume;
+    }
+
+    // Persist to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("audio-player-volume", clampedVolume.toString());
+    }
+
+    set({ volume: clampedVolume });
+  },
+
+  toggleMute: () => {
+    const { audioElement, isMuted, volume } = get();
+    const newMuted = !isMuted;
+
+    if (audioElement) {
+      audioElement.volume = newMuted ? 0 : volume;
+    }
+
+    // Persist to localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("audio-player-muted", newMuted.toString());
+    }
+
+    set({ isMuted: newMuted });
+  },
+
   // Close player
   close: () => {
     const { audioElement } = get();
@@ -434,3 +488,9 @@ export const useCurrentTrackLyrics = () =>
 
 export const useAutoplayBlocked = () =>
   useAudioPlayerStore((state) => state.autoplayBlocked);
+
+export const useVolume = () =>
+  useAudioPlayerStore((state) => state.volume);
+
+export const useIsMuted = () =>
+  useAudioPlayerStore((state) => state.isMuted);
