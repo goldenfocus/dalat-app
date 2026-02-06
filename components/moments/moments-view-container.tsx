@@ -18,8 +18,8 @@ interface MomentsViewContainerProps {
   initialHasMore: boolean;
   /** Total number of moments for this event (for showing "X / total" in immersive view) */
   totalCount: number;
-  /** Force a specific view on initial load (e.g., from ?view=grid to skip cinema) */
-  initialView?: "grid" | "immersive" | "cinema";
+  /** Force a specific view on initial load (e.g., from ?view=cinema) */
+  initialView?: "immersive" | "cinema";
 }
 
 /**
@@ -74,23 +74,19 @@ export function MomentsViewContainer({
     }
   }, []);
 
-  // Auto-start cinema mode when landing on moments page (the "show" experience)
-  // Can be overridden via URL params (e.g., ?view=immersive or ?view=grid)
+  // Auto-open immersive or cinema view if requested via URL (e.g., ?view=cinema)
   useEffect(() => {
     if (isLoaded && !hasAutoOpenedRef.current && allMoments.length > 0) {
-      hasAutoOpenedRef.current = true;
-
       if (initialView === "immersive") {
+        hasAutoOpenedRef.current = true;
         setViewMode("immersive");
         setShowImmersive(true);
-      } else if (initialView === "grid") {
-        setViewMode("grid");
-        // Stay on grid, don't open any overlay
-      } else {
-        // Default: auto-start Cinema mode for the magical "show" experience
+      } else if (initialView === "cinema") {
+        hasAutoOpenedRef.current = true;
         setViewMode("cinema");
         setShowCinema(true);
       }
+      // Note: Grid is the default, no action needed
     }
   }, [initialView, isLoaded, allMoments.length, setViewMode]);
 
