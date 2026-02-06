@@ -425,8 +425,8 @@ export function PlaylistPlayer({
                 </span>
               )}
 
-              {/* Action links */}
-              <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Action links - always visible for mobile accessibility */}
+              <div className="flex items-center gap-1 flex-shrink-0">
                 {track.lyrics_lrc && (
                   <Link
                     href={`/${locale}/events/${eventSlug}/lyrics/${track.id}`}

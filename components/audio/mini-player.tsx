@@ -17,7 +17,10 @@ import {
   Volume1,
   VolumeX,
   Download,
+  FileText,
 } from "lucide-react";
+import Link from "next/link";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/audio-metadata";
@@ -39,6 +42,7 @@ import {
 
 export function MiniPlayer() {
   const router = useRouter();
+  const locale = useLocale();
 
   const isVisible = useIsPlayerVisible();
   const currentTrack = useCurrentTrack();
@@ -328,6 +332,17 @@ export function MiniPlayer() {
 
             {/* Karaoke toggle button */}
             <KaraokeToggleButton />
+
+            {/* Lyrics button - only show if track has lyrics */}
+            {currentTrack?.lyrics_lrc && playlist && (
+              <Link
+                href={`/${locale}/events/${playlist.eventSlug}/lyrics/${currentTrack.id}`}
+                className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                aria-label="View lyrics"
+              >
+                <FileText className="w-4 h-4" />
+              </Link>
+            )}
 
             {/* Volume control */}
             <div
