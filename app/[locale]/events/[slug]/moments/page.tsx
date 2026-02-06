@@ -173,7 +173,12 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
           initialMoments={moments}
           initialHasMore={hasMore}
           totalCount={totalCount}
-          initialView={view === "immersive" ? "immersive" : undefined}
+          initialView={
+            view === "immersive" ? "immersive" :
+            view === "grid" ? "grid" :
+            view === "cinema" ? "cinema" :
+            undefined // undefined = auto-start cinema mode
+          }
         />
 
         {/* CTA for users who can post but haven't yet */}
