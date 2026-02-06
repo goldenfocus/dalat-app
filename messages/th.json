@@ -1961,6 +1961,8 @@
     "uploading": "กำลังอัปโหลด",
     "uploadComplete": "เสร็จสิ้น",
     "noTracksYet": "ยังไม่มีเพลง อัปโหลดไฟล์เสียงเพื่อสร้างเพลย์ลิสต์",
+    "viewLyrics": "ดูเนื้อเพลง",
+    "download": "ดาวน์โหลด",
     "sortBy": "เรียง:",
     "sortTitleAsc": "เรียง A-Z ตามชื่อ",
     "sortArtist": "เรียงตามศิลปิน",

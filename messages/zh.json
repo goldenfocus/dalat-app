@@ -1964,6 +1964,8 @@
     "uploading": "上传中",
     "uploadComplete": "完成",
     "noTracksYet": "暂无曲目。上传音频文件以创建播放列表。",
+    "viewLyrics": "查看歌词",
+    "download": "下载",
     "sortBy": "排序:",
     "sortTitleAsc": "按标题A-Z排序",
     "sortArtist": "按艺术家排序",

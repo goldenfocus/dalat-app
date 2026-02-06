@@ -2041,6 +2041,8 @@
     "uploading": "Uploading",
     "uploadComplete": "Complete",
     "noTracksYet": "No tracks yet. Upload audio files to create a playlist.",
+    "viewLyrics": "View lyrics",
+    "download": "Download",
     "sortBy": "Sort:",
     "sortTitleAsc": "Sort A-Z by title",
     "sortArtist": "Sort by artist",

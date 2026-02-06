@@ -11,7 +11,11 @@ import {
   Repeat,
   Repeat1,
   Shuffle,
+  FileText,
+  Download,
 } from "lucide-react";
+import Link from "next/link";
+import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -76,6 +80,7 @@ export function PlaylistPlayer({
   autoStartTrack,
 }: PlaylistPlayerProps) {
   const t = useTranslations("playlist");
+  const locale = useLocale();
   const hasAutoStarted = useRef(false);
 
   // Global store state
@@ -360,7 +365,7 @@ export function PlaylistPlayer({
               type="button"
               onClick={() => handleTrackClick(index)}
               className={cn(
-                "w-full flex items-center gap-3 p-3 text-left transition-colors",
+                "group w-full flex items-center gap-3 p-3 text-left transition-colors",
                 "hover:bg-accent active:bg-accent/80",
                 isThisPlaylistActive && index === currentIndex && "bg-primary/5"
               )}
@@ -419,6 +424,28 @@ export function PlaylistPlayer({
                   {formatDuration(track.duration_seconds)}
                 </span>
               )}
+
+              {/* Action links */}
+              <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                {track.lyrics_lrc && (
+                  <Link
+                    href={`/${locale}/events/${eventSlug}/lyrics/${track.id}`}
+                    className="p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors"
+                    title={t("viewLyrics")}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <FileText className="w-4 h-4" />
+                  </Link>
+                )}
+                <Link
+                  href={`/${locale}/events/${eventSlug}/download/${track.id}`}
+                  className="p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors"
+                  title={t("download")}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Download className="w-4 h-4" />
+                </Link>
+              </div>
             </button>
           ))}
         </div>
