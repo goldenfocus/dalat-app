@@ -21,6 +21,7 @@ import {
 } from "@/lib/cache/server-cache";
 import { HeroImageSection } from "@/components/home/hero-image-section";
 import { MomentsStripServer } from "@/components/home/moments-strip-server";
+import { JsonLd, generateWebSiteSchema } from "@/lib/structured-data";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
@@ -89,9 +90,14 @@ export default async function Home({ params }: PageProps) {
     getCachedHomepageConfig(),
   ]);
 
+  // Generate WebSite schema for sitelinks search box in Google
+  const websiteSchema = generateWebSiteSchema(locale);
+
   return (
-    <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
-      {/* Hero Section - server-rendered for fast LCP */}
+    <>
+      <JsonLd data={websiteSchema} />
+      <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
+        {/* Hero Section - server-rendered for fast LCP */}
       {/* Conditionally render image hero or minimal text hero */}
       {homepageConfig?.hero_image_url ? (
         <HeroImageSection
@@ -123,5 +129,6 @@ export default async function Home({ params }: PageProps) {
         </Suspense>
       </div>
     </main>
+    </>
   );
 }

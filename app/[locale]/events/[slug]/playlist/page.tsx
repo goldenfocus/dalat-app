@@ -8,6 +8,7 @@ import { PlaylistPlayer } from "@/components/events/playlist-player";
 import { PlaylistShareButton } from "@/components/events/playlist-share-button";
 import { formatInDaLat } from "@/lib/timezone";
 import type { PlaylistTrack } from "@/components/events/playlist-player";
+import { JsonLd, generateMusicPlaylistSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -58,6 +59,7 @@ async function getEventPlaylist(slug: string): Promise<PlaylistData | null> {
       duration_seconds: row.track_duration_seconds,
       sort_order: row.track_sort_order,
       lyrics_lrc: row.track_lyrics_lrc,  // LRC for karaoke display
+      timing_offset: row.track_timing_offset || 0,  // Saved timing offset
     }));
 
   return {
@@ -208,8 +210,37 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
   const playlistUrl = `https://dalat.app/${locale}/events/${slug}/playlist`;
   const isKaraokeMode = karaoke === "theater" || karaoke === "hero";
 
+  // Generate structured data for SEO
+  const breadcrumbSchema = generateBreadcrumbSchema(
+    [
+      { name: "Home", url: "/" },
+      { name: "Events", url: "/events/upcoming" },
+      { name: event.title, url: `/events/${slug}` },
+      { name: "Playlist", url: `/events/${slug}/playlist` },
+    ],
+    locale
+  );
+
+  const playlistSchema = generateMusicPlaylistSchema(
+    tracks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      artist: t.artist,
+      duration_seconds: t.duration_seconds,
+      thumbnail_url: t.thumbnail_url,
+    })),
+    {
+      slug,
+      title: event.title,
+      image_url: event.image_url,
+    },
+    locale
+  );
+
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <JsonLd data={[breadcrumbSchema, playlistSchema]} />
+      <div className="min-h-screen bg-background">
       <div className="container max-w-2xl mx-auto px-4 py-6">
         {/* Header with back button */}
         <div className="flex items-center justify-between mb-6">
@@ -278,5 +309,6 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
         </div>
       </div>
     </div>
+    </>
   );
 }

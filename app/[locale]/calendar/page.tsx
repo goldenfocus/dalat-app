@@ -7,6 +7,9 @@ import { EventCalendar } from "@/components/calendar/event-calendar";
 import type { Event } from "@/lib/types";
 import type { Metadata } from "next";
 import { generateLocalizedMetadata } from "@/lib/metadata";
+import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
+
+const SITE_URL = "https://dalat.app";
 
 export const maxDuration = 60;
 
@@ -57,9 +60,45 @@ function CalendarLoading() {
   );
 }
 
-async function CalendarContent() {
+async function CalendarContent({ locale }: { locale: Locale }) {
   const events = await getEvents();
-  return <EventCalendar events={events} />;
+
+  // Generate structured data for SEO
+  const breadcrumbSchema = generateBreadcrumbSchema(
+    [
+      { name: "Home", url: "/" },
+      { name: "Event Calendar", url: "/calendar" },
+    ],
+    locale
+  );
+
+  const calendarSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Event Calendar - Da Lat",
+    description:
+      "Upcoming events in Da Lat, Vietnam organized by date",
+    numberOfItems: events.length,
+    itemListElement: events.slice(0, 50).map((event, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${SITE_URL}/${locale}/events/${event.slug}`,
+      name: event.title,
+      item: {
+        "@type": "Event",
+        name: event.title,
+        startDate: event.starts_at,
+        ...(event.ends_at && { endDate: event.ends_at }),
+      },
+    })),
+  };
+
+  return (
+    <>
+      <JsonLd data={[breadcrumbSchema, calendarSchema]} />
+      <EventCalendar events={events} />
+    </>
+  );
 }
 
 export default async function CalendarPage({ params }: PageProps) {
@@ -71,7 +110,7 @@ export default async function CalendarPage({ params }: PageProps) {
       {/* Calendar fills remaining space (accounting for sticky header height) */}
       <div className="flex-1 min-h-0">
         <Suspense fallback={<CalendarLoading />}>
-          <CalendarContent />
+          <CalendarContent locale={locale} />
         </Suspense>
       </div>
     </main>

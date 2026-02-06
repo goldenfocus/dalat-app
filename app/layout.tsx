@@ -19,8 +19,17 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "ĐàLạt.app · Events · People · Moments",
-  description: "Discover and organize events in Đà Lạt",
+  title: "Da Lat Events, Festivals & Things to Do | ĐàLạt.app",
+  description:
+    "Discover events happening in Da Lat this week. Live music, markets, festivals, and community gatherings in Vietnam's highland city. Free event discovery.",
+  keywords: [
+    "Da Lat events",
+    "Dalat things to do",
+    "Vietnam events",
+    "Da Lat festivals",
+    "what to do in Dalat",
+    "Đà Lạt",
+  ],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -35,21 +44,23 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "ĐàLạt.app",
     url: siteUrl,
-    title: "ĐàLạt.app · Events · People · Moments",
-    description: "Discover and organize events in Đà Lạt",
+    title: "Da Lat Events, Festivals & Things to Do",
+    description:
+      "Discover events happening in Da Lat this week. Live music, markets, festivals, and community gatherings in Vietnam's highland city.",
     images: [
       {
         url: `${siteUrl}/og-image.png?v=2`,
         width: 1200,
         height: 630,
-        alt: "ĐàLạt.app · Events · People · Moments · Love",
+        alt: "ĐàLạt.app - Events, Festivals & Things to Do in Da Lat, Vietnam",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ĐàLạt.app · Events · People · Moments",
-    description: "Discover and organize events in Đà Lạt",
+    title: "Da Lat Events, Festivals & Things to Do | ĐàLạt.app",
+    description:
+      "Discover events happening in Da Lat this week. Live music, markets, festivals, and community gatherings in Vietnam's highland city.",
     images: [`${siteUrl}/og-image.png?v=2`],
   },
 };

@@ -1,9 +1,37 @@
+import type { Metadata } from "next";
 import { Link } from "@/lib/i18n/routing";
 import Image from "next/image";
 import { Calendar, MapPin, BadgeCheck } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Festival, FestivalOrganizer } from "@/lib/types";
+import type { Locale } from "@/lib/i18n/routing";
+import { generateLocalizedMetadata } from "@/lib/metadata";
+import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
+
+const SITE_URL = "https://dalat.app";
+
+type PageProps = {
+  params: Promise<{ locale: Locale }>;
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  return generateLocalizedMetadata({
+    locale,
+    path: "/festivals",
+    title: "Festivals in Da Lat",
+    description:
+      "Discover music festivals, cultural celebrations, flower festivals, and seasonal events in Da Lat, Vietnam. Find dates, venues, and schedules for upcoming festivals.",
+    keywords: [
+      "Da Lat festivals",
+      "Vietnam festivals",
+      "Dalat events",
+      "Da Lat flower festival",
+      "highland festivals",
+    ],
+  });
+}
 
 async function getFestivals() {
   const supabase = await createClient();
@@ -29,7 +57,10 @@ async function getFestivals() {
   })[];
 }
 
-export default async function FestivalsPage() {
+export default async function FestivalsPage({ params }: PageProps) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const [festivals, tFestival] = await Promise.all([
     getFestivals(),
     getTranslations("festival"),
@@ -44,8 +75,49 @@ export default async function FestivalsPage() {
     (f) => new Date(f.end_date) < now
   );
 
+  // Generate structured data for SEO
+  const breadcrumbSchema = generateBreadcrumbSchema(
+    [
+      { name: "Home", url: "/" },
+      { name: "Festivals", url: "/festivals" },
+    ],
+    locale
+  );
+
+  const festivalListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Festivals in Da Lat",
+    description:
+      "Music festivals, cultural celebrations, and seasonal events in Da Lat, Vietnam",
+    numberOfItems: festivals.length,
+    itemListElement: festivals.slice(0, 50).map((festival, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${SITE_URL}/${locale}/festivals/${festival.slug}`,
+      name: festival.title,
+      item: {
+        "@type": "Festival",
+        name: festival.title,
+        startDate: festival.start_date,
+        endDate: festival.end_date,
+        location: {
+          "@type": "Place",
+          name: festival.location_city || "Da Lat",
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: festival.location_city || "Da Lat",
+            addressCountry: "VN",
+          },
+        },
+      },
+    })),
+  };
+
   return (
-    <div className="min-h-screen">
+    <>
+      <JsonLd data={[breadcrumbSchema, festivalListSchema]} />
+      <div className="min-h-screen">
       <main className="container max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-8">{tFestival("title")}</h1>
         {/* Active/Upcoming Festivals */}
@@ -86,6 +158,7 @@ export default async function FestivalsPage() {
         )}
       </main>
     </div>
+    </>
   );
 }
 

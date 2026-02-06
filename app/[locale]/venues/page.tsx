@@ -8,6 +8,9 @@ import { VenueTypeFilter } from "@/components/venues/venue-type-filter";
 import type { VenueListItem, VenueType, Locale } from "@/lib/types";
 import type { Metadata } from "next";
 import { generateLocalizedMetadata } from "@/lib/metadata";
+import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
+
+const SITE_URL = "https://dalat.app";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
@@ -63,9 +66,10 @@ function VenuesLoading() {
 
 interface VenuesContentProps {
   selectedType: VenueType | null;
+  locale: Locale;
 }
 
-async function VenuesContent({ selectedType }: VenuesContentProps) {
+async function VenuesContent({ selectedType, locale }: VenuesContentProps) {
   const allVenues = await getAllVenues();
   const t = await getTranslations("venues");
 
@@ -81,8 +85,42 @@ async function VenuesContent({ selectedType }: VenuesContentProps) {
   const happeningNow = filteredVenues.filter((v) => v.has_happening_now);
   const otherVenues = filteredVenues.filter((v) => !v.has_happening_now);
 
+  // Generate structured data for SEO
+  const breadcrumbSchema = generateBreadcrumbSchema(
+    [
+      { name: "Home", url: "/" },
+      { name: "Venues", url: "/venues" },
+    ],
+    locale
+  );
+
+  const venueListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Venues in Da Lat",
+    description:
+      "Cafes, bars, galleries, and event spaces in Da Lat, Vietnam",
+    numberOfItems: filteredVenues.length,
+    itemListElement: filteredVenues.slice(0, 50).map((venue, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${SITE_URL}/${locale}/venues/${venue.slug}`,
+      name: venue.name,
+      item: {
+        "@type": "LocalBusiness",
+        name: venue.name,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Da Lat",
+          addressCountry: "VN",
+        },
+      },
+    })),
+  };
+
   return (
     <>
+      <JsonLd data={[breadcrumbSchema, venueListSchema]} />
       {/* Type filter - only shows types with venues */}
       <div className="mb-6">
         <VenueTypeFilter selectedType={selectedType} typeCounts={typeCounts} />
@@ -163,7 +201,7 @@ export default async function VenuesPage({ params, searchParams }: PageProps) {
 
         {/* Content with filter and grid */}
         <Suspense fallback={<VenuesLoading />}>
-          <VenuesContent selectedType={selectedType} />
+          <VenuesContent selectedType={selectedType} locale={locale} />
         </Suspense>
       </div>
     </main>

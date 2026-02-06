@@ -7,6 +7,9 @@ import { DynamicEventMap } from "@/components/map/dynamic-event-map";
 import type { Event, VenueMapMarker } from "@/lib/types";
 import type { Metadata } from "next";
 import { generateLocalizedMetadata } from "@/lib/metadata";
+import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
+
+const SITE_URL = "https://dalat.app";
 
 export const maxDuration = 60;
 
@@ -84,9 +87,39 @@ function MapLoading() {
   );
 }
 
-async function MapContent() {
+async function MapContent({ locale }: { locale: Locale }) {
   const { events, happeningEventIds, venues } = await getMapData();
-  return <DynamicEventMap events={events} happeningEventIds={happeningEventIds} venues={venues} />;
+
+  // Generate structured data for SEO
+  const breadcrumbSchema = generateBreadcrumbSchema(
+    [
+      { name: "Home", url: "/" },
+      { name: "Event Map", url: "/map" },
+    ],
+    locale
+  );
+
+  const mapSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Events on Map - Da Lat",
+    description:
+      "Interactive map of events and venues in Da Lat, Vietnam",
+    numberOfItems: events.length,
+    itemListElement: events.slice(0, 50).map((event, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${SITE_URL}/${locale}/events/${event.slug}`,
+      name: event.title,
+    })),
+  };
+
+  return (
+    <>
+      <JsonLd data={[breadcrumbSchema, mapSchema]} />
+      <DynamicEventMap events={events} happeningEventIds={happeningEventIds} venues={venues} />
+    </>
+  );
 }
 
 export default async function MapPage({ params }: PageProps) {
@@ -98,7 +131,7 @@ export default async function MapPage({ params }: PageProps) {
       {/* Map fills remaining space (accounting for sticky header height) */}
       <div className="flex-1 min-h-0">
         <Suspense fallback={<MapLoading />}>
-          <MapContent />
+          <MapContent locale={locale} />
         </Suspense>
       </div>
     </main>

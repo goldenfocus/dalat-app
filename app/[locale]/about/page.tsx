@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { BlogStoryCard } from "@/components/blog/blog-story-card";
 import { generateLocalizedMetadata } from "@/lib/metadata";
-import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
+import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { getBlogTranslationsBatch } from "@/lib/translations";
 import type { Locale } from "@/lib/i18n/routing";
 import type { ContentLocale } from "@/lib/types";
@@ -75,9 +75,40 @@ export default async function AboutPage({ params }: PageProps) {
     locale
   );
 
+  // FAQ content for SEO (generates rich snippets in Google)
+  const faqs = [
+    {
+      question: "What is ĐàLạt.app?",
+      answer:
+        "ĐàLạt.app is a free, open-source event discovery platform for Da Lat, Vietnam. Find live music, art exhibitions, community gatherings, festivals, and more happening in Vietnam's highland city.",
+    },
+    {
+      question: "Is ĐàLạt.app free to use?",
+      answer:
+        "Yes! ĐàLạt.app is completely free for both event attendees and organizers. There are no subscriptions, hidden fees, or premium tiers. The platform is open source and community-driven.",
+    },
+    {
+      question: "How do I create an event on ĐàLạt.app?",
+      answer:
+        "Sign up for a free account, then click 'Create Event' from the homepage or navigation menu. Fill in your event details including title, date, location, and description, then publish instantly. Your event will be visible on the map, calendar, and event feed.",
+    },
+    {
+      question: "What types of events can I find on ĐàLạt.app?",
+      answer:
+        "You can find all kinds of events in Da Lat including live music performances, art exhibitions, coffee meetups, community gatherings, festivals, markets, outdoor activities, and cultural celebrations. Events are organized by cafes, bars, galleries, and community organizers.",
+    },
+    {
+      question: "Is ĐàLạt.app available in multiple languages?",
+      answer:
+        "Yes! ĐàLạt.app supports 12 languages including English, Vietnamese, Korean, Chinese, Japanese, French, German, Spanish, Russian, Thai, Malay, and Indonesian. The app automatically detects your preferred language.",
+    },
+  ];
+
+  const faqSchema = generateFAQSchema(faqs);
+
   return (
     <>
-      <JsonLd data={breadcrumbSchema} />
+      <JsonLd data={[breadcrumbSchema, faqSchema]} />
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-2xl px-4 py-12">
           {/* Header */}

@@ -888,3 +888,86 @@ export function generateBlogArticleSchema(
 
   return schema;
 }
+
+/**
+ * Generate MusicPlaylist schema for event playlist pages
+ * https://schema.org/MusicPlaylist
+ */
+export function generateMusicPlaylistSchema(
+  tracks: Array<{
+    id: string;
+    title: string | null;
+    artist: string | null;
+    duration_seconds: number | null;
+    thumbnail_url: string | null;
+  }>,
+  event: {
+    slug: string;
+    title: string;
+    image_url: string | null;
+  },
+  locale: string
+) {
+  const playlistUrl = `${SITE_URL}/${locale}/events/${event.slug}/playlist`;
+
+  // Calculate total duration
+  const totalDurationSeconds = tracks.reduce(
+    (sum, track) => sum + (track.duration_seconds || 0),
+    0
+  );
+  const totalDurationISO = totalDurationSeconds > 0
+    ? `PT${Math.floor(totalDurationSeconds / 60)}M${Math.floor(totalDurationSeconds % 60)}S`
+    : undefined;
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "MusicPlaylist",
+    "@id": playlistUrl,
+    name: `${event.title} - Playlist`,
+    url: playlistUrl,
+    numTracks: tracks.length,
+    ...(totalDurationISO && { duration: totalDurationISO }),
+
+    // Image
+    ...(event.image_url && { image: event.image_url }),
+
+    // Tracks
+    track: tracks.map((track, index) => ({
+      "@type": "MusicRecording",
+      position: index + 1,
+      name: track.title || "Untitled",
+      byArtist: {
+        "@type": "MusicGroup",
+        name: track.artist || event.title,
+      },
+      ...(track.duration_seconds && {
+        duration: `PT${Math.floor(track.duration_seconds / 60)}M${Math.floor(track.duration_seconds % 60)}S`,
+      }),
+      ...(track.thumbnail_url && { image: track.thumbnail_url }),
+      url: `${SITE_URL}/${locale}/events/${event.slug}/karaoke/${track.id}`,
+    })),
+
+    // Provider
+    provider: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+
+    // Location context
+    contentLocation: {
+      "@type": "Place",
+      name: "Đà Lạt, Vietnam",
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: DA_LAT_GEO.latitude,
+        longitude: DA_LAT_GEO.longitude,
+      },
+    },
+
+    isAccessibleForFree: true,
+    inLanguage: locale,
+  };
+
+  return schema;
+}
