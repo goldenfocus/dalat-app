@@ -74,19 +74,19 @@ export function MomentsViewContainer({
     }
   }, []);
 
-  // Auto-open immersive or cinema view if requested via URL (e.g., ?view=cinema)
+  // Auto-open cinema mode by default (or immersive if specified via URL)
   useEffect(() => {
     if (isLoaded && !hasAutoOpenedRef.current && allMoments.length > 0) {
+      hasAutoOpenedRef.current = true;
+
       if (initialView === "immersive") {
-        hasAutoOpenedRef.current = true;
         setViewMode("immersive");
         setShowImmersive(true);
-      } else if (initialView === "cinema") {
-        hasAutoOpenedRef.current = true;
+      } else {
+        // Default to cinema mode for the "slideshow" experience
         setViewMode("cinema");
         setShowCinema(true);
       }
-      // Note: Grid is the default, no action needed
     }
   }, [initialView, isLoaded, allMoments.length, setViewMode]);
 
