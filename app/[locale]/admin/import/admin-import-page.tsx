@@ -570,39 +570,6 @@ export function AdminImportPage() {
                 </div>
               )}
 
-              {/* Supported URLs */}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-                <div className="flex items-center gap-2 p-2 rounded-lg border">
-                  <Facebook className="w-4 h-4 text-blue-600" />
-                  <div className="text-xs">
-                    <p className="font-medium">Facebook Events</p>
-                    <p className="text-muted-foreground">
-                      Single events or search results
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg border">
-                  <Globe className="w-4 h-4 text-orange-600" />
-                  <div className="text-xs">
-                    <p className="font-medium">Eventbrite</p>
-                    <p className="text-muted-foreground">eventbrite.com/e/...</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg border">
-                  <Globe className="w-4 h-4 text-purple-600" />
-                  <div className="text-xs">
-                    <p className="font-medium">Lu.ma</p>
-                    <p className="text-muted-foreground">lu.ma/... or luma.com/...</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg border">
-                  <Globe className="w-4 h-4 text-green-600" />
-                  <div className="text-xs">
-                    <p className="font-medium">Wellhoods</p>
-                    <p className="text-muted-foreground">wellhoods.com/events/...</p>
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
 
