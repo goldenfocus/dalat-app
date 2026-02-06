@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { cloudflareLoader, optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import {
@@ -50,6 +50,14 @@ export function CinemaPhotoSlide({
     img.src = moment.media_url;
   }, [moment.media_url]);
 
+  // Use refs for scheduler state/callback to avoid infinite render loop.
+  // The effect scheduler state is updated after each selection, which would
+  // re-trigger this effect if it were in the dependency array.
+  const schedulerStateRef = useRef(effectSchedulerState);
+  const onEffectSelectedRef = useRef(onEffectSelected);
+  schedulerStateRef.current = effectSchedulerState;
+  onEffectSelectedRef.current = onEffectSelected;
+
   // Select Ken Burns effect when becoming active
   useEffect(() => {
     if (!isActive || !imageLoaded) return;
@@ -60,14 +68,12 @@ export function CinemaPhotoSlide({
       return;
     }
 
-    const state = effectSchedulerState || createEffectScheduler();
+    const state = schedulerStateRef.current || createEffectScheduler();
     const { effect: selectedEffect, newState } = selectNextEffect(state, isVertical);
     setEffect(selectedEffect);
 
-    if (onEffectSelected) {
-      onEffectSelected(newState);
-    }
-  }, [isActive, imageLoaded, isVertical, effectSchedulerState, onEffectSelected]);
+    onEffectSelectedRef.current?.(newState);
+  }, [isActive, imageLoaded, isVertical]);
 
   if (!imageUrl) return null;
 
