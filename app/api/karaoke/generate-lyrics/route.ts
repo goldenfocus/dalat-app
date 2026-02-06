@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { triggerTranslation } from "@/lib/translations-client";
 
 /**
  * POST /api/karaoke/generate-lyrics
@@ -124,7 +125,10 @@ export async function POST(request: NextRequest) {
     // Save to database
     const { error: updateError } = await supabase
       .from("playlist_tracks")
-      .update({ lyrics_lrc: lrc })
+      .update({
+        lyrics_lrc: lrc,
+        source_locale: whisperResult.language || "vi",
+      })
       .eq("id", trackId);
 
     if (updateError) {
@@ -135,11 +139,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Auto-translate lyrics to all 12 languages (fire-and-forget)
+    // Extract plain text from LRC for translation
+    const plainLyrics = lrcLines
+      .slice(2) // Skip metadata lines
+      .map((line) => line.replace(/^\[\d{2}:\d{2}\.\d{2}\]/, "").trim())
+      .filter(Boolean)
+      .join("\n");
+
+    if (plainLyrics) {
+      triggerTranslation("track", trackId, [
+        { field_name: "lyrics", text: plainLyrics },
+      ]);
+      console.log(`[generate-lyrics] Triggered translation for track ${trackId}`);
+    }
+
     return NextResponse.json({
       success: true,
       language: whisperResult.language,
       lineCount: lrcLines.length - 2, // Subtract metadata lines
       transcript: whisperResult.text,
+      translationTriggered: !!plainLyrics,
     });
   } catch (error) {
     console.error("Generate lyrics error:", error);

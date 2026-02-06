@@ -6,6 +6,7 @@ import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
 import { Music, Download, Mic2, Clock, User, Disc, ArrowLeft } from "lucide-react";
 import { formatDuration } from "@/lib/audio-metadata";
 import { DownloadButton } from "./download-button";
+import { getMixedKeywords } from "@/lib/seo/dalat-keywords";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
@@ -101,17 +102,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/download/${trackId}`;
   const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;
 
-  // Download-focused keywords
+  // Download-focused keywords with Dalat SEO boost
   const keywords = [
     `download ${trackTitle}`,
     `${trackTitle} mp3`,
     `${trackTitle} ${artist} download`,
     `tải nhạc ${trackTitle}`,
     `${trackTitle} free download`,
-    "dalat music",
-    "vietnamese music download",
     artist,
     event.title,
+    ...getMixedKeywords(4), // Random Dalat vibes
   ].filter(Boolean);
 
   return {

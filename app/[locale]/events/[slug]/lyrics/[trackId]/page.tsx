@@ -13,6 +13,7 @@ import { formatDuration } from "@/lib/audio-metadata";
 import { getTrackLyricsTranslation } from "@/lib/translations";
 import type { ContentLocale } from "@/lib/types";
 import { LOCALE_FLAGS, LOCALE_NAMES } from "@/lib/types";
+import { getTrackSeoKeywords } from "@/lib/seo/dalat-keywords";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
@@ -134,17 +135,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/lyrics/${trackId}`;
   const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;
 
-  // Rich keywords for lyrics search
+  // Rich keywords for lyrics search with Dalat SEO boost
   const keywords = [
+    ...getTrackSeoKeywords(trackTitle, artist, locale),
     `loi bai hat ${trackTitle}`,
     `lyrics ${trackTitle}`,
     `${trackTitle} ${artist}`,
-    `${trackTitle} lyrics`,
-    "loi nhac",
-    "karaoke",
-    "vietnamese lyrics",
-    "dalat music",
-    artist,
     event.title,
   ].filter(Boolean);
 
