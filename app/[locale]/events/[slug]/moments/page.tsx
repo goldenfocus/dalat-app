@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { MomentsViewContainer } from "@/components/moments/moments-view-container";
+import { MusicPlayButton } from "@/components/audio/music-play-button";
 import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
 
 const INITIAL_PAGE_SIZE = 20;
@@ -153,7 +154,10 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
       <div className="container max-w-4xl mx-auto px-4 py-6">
         {/* Title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">{t("moments")}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">{t("moments")}</h1>
+            <MusicPlayButton />
+          </div>
           <Link
             href={`/events/${slug}`}
             className="text-muted-foreground hover:text-foreground hover:underline transition-colors"

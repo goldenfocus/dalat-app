@@ -77,6 +77,7 @@ interface AudioPlayerState {
   toggleRepeat: () => void;
   toggleShuffle: () => void;
   close: () => void;
+  show: () => void;
 
   // Volume actions
   setVolume: (volume: number) => void;
@@ -418,23 +419,24 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     set({ isMuted: newMuted });
   },
 
-  // Close player
+  // Close player (hides but keeps playlist for reopening)
   close: () => {
     const { audioElement } = get();
     if (audioElement) {
       audioElement.pause();
-      audioElement.currentTime = 0;
     }
     set({
       isVisible: false,
       isPlaying: false,
-      tracks: [],
-      playlist: null,
-      currentIndex: 0,
-      currentTime: 0,
-      duration: 0,
-      shuffledIndices: [],
     });
+  },
+
+  // Show player (reopen hidden player)
+  show: () => {
+    const { tracks } = get();
+    if (tracks.length > 0) {
+      set({ isVisible: true });
+    }
   },
 
   // Karaoke actions
@@ -509,3 +511,6 @@ export const useVolume = () =>
 
 export const useIsMuted = () =>
   useAudioPlayerStore((state) => state.isMuted);
+
+export const useHasHiddenPlaylist = () =>
+  useAudioPlayerStore((state) => state.tracks.length > 0 && !state.isVisible);
