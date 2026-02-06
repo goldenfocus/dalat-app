@@ -703,3 +703,132 @@ input[type="range"].audio-seekbar::-moz-range-progress {
   border-radius: 9999px;
   background: hsl(var(--primary));
 }
+
+/* ============================================
+ * CINEMA MODE ANIMATIONS
+ * Ken Burns effects and transition animations
+ * ============================================ */
+
+/* Ken Burns animation - controlled via CSS custom properties */
+@keyframes kenBurnsAnimation {
+  0% {
+    transform: var(--kb-start, scale(1));
+  }
+  100% {
+    transform: var(--kb-end, scale(1.15));
+  }
+}
+
+.cinema-ken-burns {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  transform: translateZ(0);
+}
+
+.cinema-kb-active {
+  animation: kenBurnsAnimation var(--kb-duration, 6000ms) linear forwards;
+}
+
+/* Crossfade transitions */
+@keyframes cinemaCrossfadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes cinemaCrossfadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.animate-cinema-crossfade-out {
+  animation: cinemaCrossfadeOut 800ms ease-in-out forwards;
+}
+
+.animate-cinema-crossfade-in {
+  animation: cinemaCrossfadeIn 800ms ease-in-out forwards;
+}
+
+/* Fade to black transitions */
+@keyframes cinemaFadeBlackOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes cinemaFadeBlackIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.animate-cinema-fade-black-out {
+  animation: cinemaFadeBlackOut 300ms ease-in forwards;
+}
+
+.animate-cinema-fade-black-in {
+  animation: cinemaFadeBlackIn 300ms ease-out 300ms forwards;
+  opacity: 0;
+}
+
+/* Zoom blur out transition (for video entry) */
+@keyframes cinemaZoomBlurOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+    filter: blur(8px);
+  }
+}
+
+.animate-cinema-zoom-blur-out {
+  animation: cinemaZoomBlurOut 500ms ease-out forwards;
+}
+
+/* Slide push transitions */
+@keyframes cinemaSlideOut {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes cinemaSlideIn {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-cinema-slide-out {
+  animation: cinemaSlideOut 700ms ease-in-out forwards;
+}
+
+.animate-cinema-slide-in {
+  animation: cinemaSlideIn 700ms ease-in-out forwards;
+}
+
+/* Cinema progress bar animation */
+@keyframes cinemaProgressFill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.cinema-progress-fill {
+  transform-origin: left;
+  animation: cinemaProgressFill var(--progress-duration, 5000ms) linear forwards;
+}
+
+/* Respect reduced motion preference for cinema mode */
+@media (prefers-reduced-motion: reduce) {
+  .cinema-kb-active {
+    animation: none !important;
+  }
+  .animate-cinema-crossfade-out,
+  .animate-cinema-crossfade-in,
+  .animate-cinema-fade-black-out,
+  .animate-cinema-fade-black-in,
+  .animate-cinema-zoom-blur-out,
+  .animate-cinema-slide-out,
+  .animate-cinema-slide-in {
+    animation-duration: 0.01ms !important;
+  }
+}

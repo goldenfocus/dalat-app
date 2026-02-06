@@ -3,13 +3,25 @@
 import { useRef, useEffect, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
-interface MomentVideoPlayerProps {
+export interface MomentVideoPlayerProps {
   /** Original video URL (Supabase Storage) - fallback */
   src: string;
   /** Cloudflare Stream HLS URL - preferred for adaptive streaming */
   hlsSrc?: string | null;
   /** Thumbnail/poster image */
   poster?: string | null;
+  /** Whether video should auto-play (overrides default behavior) */
+  autoPlay?: boolean;
+  /** Whether video should be muted */
+  muted?: boolean;
+  /** Whether video should loop */
+  loop?: boolean;
+  /** Additional CSS class for the container */
+  className?: string;
+  /** Callback when video ends */
+  onEnded?: () => void;
+  /** Hide the built-in mute button (for external control) */
+  hideMuteButton?: boolean;
 }
 
 /**
@@ -20,12 +32,22 @@ interface MomentVideoPlayerProps {
  * - Chrome/Firefox: HLS.js for adaptive streaming
  * - Fallback: Direct MP4 from Supabase Storage
  */
-export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProps) {
+export function MomentVideoPlayer({
+  src,
+  hlsSrc,
+  poster,
+  autoPlay: autoPlayProp,
+  muted: mutedProp = true,
+  loop = false,
+  className,
+  onEnded,
+  hideMuteButton = false,
+}: MomentVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<InstanceType<typeof import("hls.js").default> | null>(null);
   const [useNativeHls, setUseNativeHls] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(mutedProp);
 
   const isHlsUrl = hlsSrc?.includes(".m3u8");
 
@@ -132,20 +154,26 @@ export function MomentVideoPlayer({ src, hlsSrc, poster }: MomentVideoPlayerProp
     };
   }, [hlsSrc, isHlsUrl, src]);
 
+  // Determine autoPlay value - use prop if provided, otherwise default behavior
+  const shouldAutoPlay = autoPlayProp !== undefined
+    ? autoPlayProp
+    : (!isHlsUrl || useNativeHls);
+
   return (
-    <div className="relative w-full h-full flex items-center justify-center bg-black">
+    <div className={className || "relative w-full h-full flex items-center justify-center bg-black"}>
       <video
         ref={videoRef}
         poster={poster || undefined}
         className="w-full h-full max-h-[90vh] object-contain"
         controls
-        muted // Required for autoplay
+        muted={mutedProp}
         playsInline
-        // Only set autoPlay for non-HLS (HLS.js handles play after manifest parse)
-        autoPlay={!isHlsUrl || useNativeHls}
+        loop={loop}
+        autoPlay={shouldAutoPlay}
+        onEnded={onEnded}
       />
       {/* Prominent unmute button */}
-      {isMuted && (
+      {!hideMuteButton && isMuted && (
         <button
           type="button"
           onClick={handleToggleMute}

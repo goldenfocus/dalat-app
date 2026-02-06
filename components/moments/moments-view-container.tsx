@@ -6,6 +6,7 @@ import { ViewModeSwitcher } from "./view-mode-switcher";
 import { MediaTypeFilterToggle, type MediaTypeFilter } from "./media-type-filter";
 import { InfiniteMomentGrid, type InfiniteMomentGridHandle } from "./infinite-moment-grid";
 import { ImmersiveMomentView } from "./immersive-moment-view";
+import { CinemaSlideshow } from "./cinema-mode/cinema-slideshow";
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
 import { createClient } from "@/lib/supabase/client";
 import type { MomentWithProfile } from "@/lib/types";
@@ -17,8 +18,8 @@ interface MomentsViewContainerProps {
   initialHasMore: boolean;
   /** Total number of moments for this event (for showing "X / total" in immersive view) */
   totalCount: number;
-  /** Force a specific view on initial load (e.g., from ?view=immersive) */
-  initialView?: "immersive";
+  /** Force a specific view on initial load (e.g., from ?view=immersive or ?view=cinema) */
+  initialView?: "immersive" | "cinema";
 }
 
 /**
@@ -35,6 +36,7 @@ export function MomentsViewContainer({
 }: MomentsViewContainerProps) {
   const { viewMode, setViewMode, isLoaded } = useMomentsViewMode("grid");
   const [showImmersive, setShowImmersive] = useState(false);
+  const [showCinema, setShowCinema] = useState(false);
   const [immersiveStartIndex, setImmersiveStartIndex] = useState(0);
   const hasAutoOpenedRef = useRef(false);
   const hasAutoPlayedRef = useRef(false);
@@ -72,12 +74,18 @@ export function MomentsViewContainer({
     }
   }, []);
 
-  // Auto-open immersive view if requested via URL (e.g., returning from moment detail page)
+  // Auto-open immersive or cinema view if requested via URL (e.g., returning from moment detail page)
   useEffect(() => {
-    if (initialView === "immersive" && isLoaded && !hasAutoOpenedRef.current && allMoments.length > 0) {
-      hasAutoOpenedRef.current = true;
-      setViewMode("immersive");
-      setShowImmersive(true);
+    if (isLoaded && !hasAutoOpenedRef.current && allMoments.length > 0) {
+      if (initialView === "immersive") {
+        hasAutoOpenedRef.current = true;
+        setViewMode("immersive");
+        setShowImmersive(true);
+      } else if (initialView === "cinema") {
+        hasAutoOpenedRef.current = true;
+        setViewMode("cinema");
+        setShowCinema(true);
+      }
     }
   }, [initialView, isLoaded, allMoments.length, setViewMode]);
 
@@ -133,6 +141,13 @@ export function MomentsViewContainer({
   const openImmersive = (index: number = 0) => {
     setImmersiveStartIndex(index);
     setShowImmersive(true);
+    setShowCinema(false);
+  };
+
+  // Open cinema view
+  const openCinema = () => {
+    setShowCinema(true);
+    setShowImmersive(false);
   };
 
   // Close immersive view
@@ -140,18 +155,36 @@ export function MomentsViewContainer({
     setShowImmersive(false);
   };
 
-  // Switch from immersive to grid (and remember preference)
+  // Close cinema view
+  const closeCinema = () => {
+    setShowCinema(false);
+  };
+
+  // Switch from immersive/cinema to grid (and remember preference)
   const switchToGrid = () => {
     setViewMode("grid");
     setShowImmersive(false);
+    setShowCinema(false);
   };
 
-  // If user preference is immersive, show the button to enter immersive mode
-  // rather than auto-opening (to avoid jarring UX on page load)
-  const handleViewModeChange = (mode: "grid" | "immersive") => {
+  // Switch to immersive view from cinema
+  const switchToImmersive = () => {
+    setViewMode("immersive");
+    setShowCinema(false);
+    setShowImmersive(true);
+    setImmersiveStartIndex(0);
+  };
+
+  // Handle view mode change from switcher
+  const handleViewModeChange = (mode: "grid" | "immersive" | "cinema") => {
     setViewMode(mode);
     if (mode === "immersive" && allMoments.length > 0) {
       openImmersive(0);
+    } else if (mode === "cinema" && allMoments.length > 0) {
+      openCinema();
+    } else if (mode === "grid") {
+      setShowImmersive(false);
+      setShowCinema(false);
     }
   };
 
@@ -190,7 +223,7 @@ export function MomentsViewContainer({
       </div>
 
       {/* Grid view (always rendered to maintain scroll position and loaded data) */}
-      <div className={viewMode === "immersive" && showImmersive ? "hidden" : ""}>
+      <div className={(viewMode === "immersive" && showImmersive) || (viewMode === "cinema" && showCinema) ? "hidden" : ""}>
         <InfiniteMomentGrid
           ref={gridRef}
           eventId={eventId}
@@ -221,6 +254,20 @@ export function MomentsViewContainer({
           onLoadMore={handleLoadMore}
           hasMore={hasMoreMoments}
           totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
+        />
+      )}
+
+      {/* Cinema mode (auto-playing slideshow) */}
+      {showCinema && filteredMoments.length > 0 && (
+        <CinemaSlideshow
+          moments={filteredMoments}
+          eventSlug={eventSlug}
+          totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
+          hasMore={hasMoreMoments}
+          onClose={closeCinema}
+          onSwitchToGrid={switchToGrid}
+          onSwitchToImmersive={switchToImmersive}
+          onLoadMore={handleLoadMore}
         />
       )}
     </>

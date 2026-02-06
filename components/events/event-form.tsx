@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { useSlugValidation, useLocationState, useImageUpload, usePricingState } from "@/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +42,7 @@ import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
 import type { Event, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole, DraftMaterial, EventMaterial } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
-import { slugify, sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
+import { finalizeSlug } from "@/lib/utils";
 
 /**
  * Trigger translation for an event (fire-and-forget)
@@ -128,15 +129,6 @@ interface EventFormProps {
 }
 
 /**
- * Generate a slug from title with random suffix (for fallback/auto-generation)
- */
-function generateSlug(title: string): string {
-  const base = slugify(title).slice(0, 40);
-  const suffix = Math.random().toString(36).slice(2, 6);
-  return `${base}-${suffix}`;
-}
-
-/**
  * Normalize a URL by adding https:// if no protocol is present
  * and lowercasing the domain (URLs are case-insensitive)
  */
@@ -152,8 +144,6 @@ function normalizeUrl(input: string): string {
   // Add https://
   return `https://${trimmed}`;
 }
-
-type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 export function EventForm({
   userId,
@@ -235,35 +225,46 @@ export function EventForm({
 
   const copyDefaults = getCopyDefaults();
 
-  const [imageUrl, setImageUrl] = useState<string | null>(
-    event?.image_url ?? copyDefaults?.imageUrl ?? null
-  );
-
   const isEditing = !!event;
   const slugEditable = canEditSlug(isEditing);
 
+  // Image upload state (consolidated hook)
+  const {
+    imageUrl,
+    setImageUrl,
+    imageFit,
+    setImageFit,
+    focalPoint,
+    setFocalPoint,
+    handleImageChange,
+    uploadImage,
+  } = useImageUpload({
+    initialImageUrl: event?.image_url ?? copyDefaults?.imageUrl ?? null,
+    initialImageFit: event?.image_fit ?? "cover",
+    initialFocalPoint: event?.focal_point ?? null,
+  });
+
   // Title state (controlled for FlyerBuilder integration)
   const [title, setTitle] = useState(event?.title ?? copyDefaults?.title ?? "");
-
-  // Pending file for upload (only for new events with file/generated image)
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-
-  // Image fit state (for flyer customization)
-  const [imageFit, setImageFit] = useState<"cover" | "contain">(
-    event?.image_fit ?? "cover"
-  );
-  const [focalPoint, setFocalPoint] = useState<string | null>(
-    event?.focal_point ?? null
-  );
 
   // Online event state
   const [isOnline, setIsOnline] = useState(event?.is_online ?? false);
   const [onlineLink, setOnlineLink] = useState(event?.online_link ?? "");
 
-  // Slug state
-  const [slug, setSlug] = useState(event?.slug ?? "");
-  const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
-  const [slugTouched, setSlugTouched] = useState(false);
+  // Slug validation state (consolidated hook)
+  const {
+    slug,
+    slugStatus,
+    slugTouched,
+    handleSlugChange,
+    handleSlugBlur,
+    updateSlugFromTitle,
+    getFinalSlug,
+  } = useSlugValidation({
+    initialSlug: event?.slug ?? "",
+    editable: slugEditable,
+    isEditing,
+  });
 
   // Recurrence state (only for new events)
   const [recurrence, setRecurrence] = useState<RecurrenceFormData>(getDefaultRecurrenceData());
@@ -279,18 +280,20 @@ export function EventForm({
   // Draft materials state (for new events)
   const [draftMaterials, setDraftMaterials] = useState<DraftMaterial[]>([]);
 
-  // Capacity limit toggle
-  const [hasCapacityLimit, setHasCapacityLimit] = useState(
-    !!event?.capacity || !!copyDefaults?.capacity
-  );
-
-  // Pricing state
-  const [priceType, setPriceType] = useState<PriceType | null>(
-    event?.price_type ?? null
-  );
-  const [ticketTiers, setTicketTiers] = useState<TicketTier[]>(
-    event?.ticket_tiers ?? []
-  );
+  // Pricing state (consolidated hook)
+  const {
+    priceType,
+    setPriceType,
+    ticketTiers,
+    setTicketTiers,
+    hasCapacityLimit,
+    setHasCapacityLimit,
+    initialCapacity,
+  } = usePricingState({
+    initialPriceType: event?.price_type ?? null,
+    initialTicketTiers: event?.ticket_tiers ?? [],
+    initialCapacity: event?.capacity ?? copyDefaults?.capacity ?? null,
+  });
 
   // Organizer picker state
   const [organizerId, setOrganizerId] = useState<string | null>(
@@ -304,46 +307,21 @@ export function EventForm({
     event?.sponsor_tier ?? null
   );
 
-  // Location/venue state (shared between LocationPicker and VenueLinker)
-  const [venueId, setVenueId] = useState<string | null>(event?.venue_id ?? null);
-  const [venueName, setVenueName] = useState<string | null>(event?.venues?.name ?? null);
-  const [locationLat, setLocationLat] = useState<number | null>(event?.latitude ?? null);
-  const [locationLng, setLocationLng] = useState<number | null>(event?.longitude ?? null);
-
-  // Handle location selection from LocationPicker
-  const handleLocationSelect = useCallback((location: SelectedLocation | null) => {
-    if (location) {
-      setLocationLat(location.latitude);
-      setLocationLng(location.longitude);
-      if (location.type === "venue" && location.venueId) {
-        setVenueId(location.venueId);
-        setVenueName(location.name);
-      } else {
-        // Google Place selected - clear venue link
-        setVenueId(null);
-        setVenueName(null);
-      }
-    } else {
-      setLocationLat(null);
-      setLocationLng(null);
-      setVenueId(null);
-      setVenueName(null);
-    }
-  }, []);
-
-  // Handle venue linking from VenueLinker
-  const handleVenueLink = useCallback((venue: { id: string; name: string; latitude: number; longitude: number } | null) => {
-    if (venue) {
-      setVenueId(venue.id);
-      setVenueName(venue.name);
-      // Optionally update coordinates to match venue
-      setLocationLat(venue.latitude);
-      setLocationLng(venue.longitude);
-    } else {
-      setVenueId(null);
-      setVenueName(null);
-    }
-  }, []);
+  // Location/venue state (consolidated hook)
+  const {
+    venueId,
+    venueName,
+    locationLat,
+    locationLng,
+    handleLocationSelect,
+    handleVenueLink,
+    clearVenue,
+  } = useLocationState({
+    initialVenueId: event?.venue_id ?? null,
+    initialVenueName: event?.venues?.name ?? null,
+    initialLatitude: event?.latitude ?? null,
+    initialLongitude: event?.longitude ?? null,
+  });
 
   // Fetch organizers on mount
   useEffect(() => {
@@ -362,75 +340,14 @@ export function EventForm({
     fetchOrganizers();
   }, []);
 
-  // Check slug availability with debounce
-  useEffect(() => {
-    if (!slug || !slugTouched) {
-      setSlugStatus("idle");
-      return;
-    }
-
-    // Basic validation
-    if (slug.length < 1 || !/^[a-z0-9_-]+$/.test(slug)) {
-      setSlugStatus("invalid");
-      return;
-    }
-
-    // Skip check if slug hasn't changed from original
-    if (isEditing && slug === event?.slug) {
-      setSlugStatus("available");
-      return;
-    }
-
-    setSlugStatus("checking");
-
-    const timer = setTimeout(async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("events")
-        .select("id")
-        .eq("slug", slug)
-        .maybeSingle();
-
-      if (data) {
-        setSlugStatus("taken");
-      } else {
-        setSlugStatus("available");
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [slug, slugTouched, isEditing, event?.slug]);
-
   // Handle title change and auto-suggest slug
   const handleTitleChange = useCallback(
     (newTitle: string) => {
       setTitle(newTitle);
-      if (!isEditing && !slugTouched && slugEditable) {
-        const suggested = suggestSlug(newTitle);
-        setSlug(suggested);
-      }
+      updateSlugFromTitle(newTitle);
     },
-    [isEditing, slugTouched, slugEditable]
+    [updateSlugFromTitle]
   );
-
-  // Handle image change from FlyerBuilder
-  const handleImageChange = useCallback(
-    (url: string | null, file?: File) => {
-      setImageUrl(url);
-      setPendingFile(file ?? null);
-    },
-    []
-  );
-
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitized = sanitizeSlug(e.target.value);
-    setSlug(sanitized);
-    setSlugTouched(true);
-  };
-
-  const handleSlugBlur = () => {
-    setSlug(finalizeSlug(slug));
-  };
 
   // Get today's date in local timezone (for min date validation)
   const getTodayDateString = useCallback(() => {
@@ -465,53 +382,6 @@ export function EventForm({
     : copyDefaults
       ? { date: copyDefaults.date, time: copyDefaults.time }
       : { date: "", time: "" };
-
-  // Helper to upload image (file or base64) to Supabase storage
-  async function uploadImage(
-    supabase: ReturnType<typeof createClient>,
-    eventId: string
-  ): Promise<string | null> {
-    // If we have a pending file, upload it
-    if (pendingFile) {
-      const ext = pendingFile.name.split(".").pop()?.toLowerCase() || "jpg";
-      const fileName = `${eventId}/${Date.now()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("event-media")
-        .upload(fileName, pendingFile, { cacheControl: "3600", upsert: true });
-
-      if (uploadError) throw new Error("Failed to upload image");
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("event-media")
-        .getPublicUrl(fileName);
-
-      return publicUrl;
-    }
-
-    // If imageUrl is a base64/data URL (from AI generation), upload it
-    if (imageUrl?.startsWith("data:")) {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const ext = blob.type.split("/")[1] || "png";
-      const fileName = `${eventId}/${Date.now()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("event-media")
-        .upload(fileName, blob, { cacheControl: "3600", upsert: true });
-
-      if (uploadError) throw new Error("Failed to upload generated image");
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("event-media")
-        .getPublicUrl(fileName);
-
-      return publicUrl;
-    }
-
-    // Otherwise return the URL as-is (external URL or null)
-    return imageUrl;
-  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -675,10 +545,7 @@ export function EventForm({
         }
       } else {
         // Create new event or series
-        const cleanSlug = finalizeSlug(slug);
-        const finalSlug = slugEditable && cleanSlug && slugStatus === "available"
-          ? cleanSlug
-          : generateSlug(title);
+        const finalSlug = getFinalSlug(title);
 
         // If recurring, create a series via API
         if (recurrence.isRecurring) {
@@ -781,7 +648,7 @@ export function EventForm({
           // Upload image if we have one (file, base64, or URL)
           let eventImageUrl: string | null = null;
           try {
-            const finalImageUrl = await uploadImage(supabase, data.id);
+            const finalImageUrl = await uploadImage(data.id);
             if (finalImageUrl) {
               await supabase
                 .from("events")
@@ -1066,8 +933,7 @@ export function EventForm({
               onLocationSelect={handleLocationSelect}
               onVenueIdChange={(id) => {
                 if (!id) {
-                  setVenueId(null);
-                  setVenueName(null);
+                  clearVenue();
                 }
               }}
             />
@@ -1168,7 +1034,7 @@ export function EventForm({
                   name="capacity"
                   type="number"
                   min="1"
-                  defaultValue={event?.capacity ?? copyDefaults?.capacity ?? ""}
+                  defaultValue={initialCapacity ?? ""}
                   className="w-24"
                 />
               )}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-export type MomentsViewMode = "grid" | "immersive";
+export type MomentsViewMode = "grid" | "immersive" | "cinema";
 
 const STORAGE_KEY = "dalat-moments-view-mode";
 
@@ -18,7 +18,7 @@ export function useMomentsViewMode(defaultMode: MomentsViewMode = "grid") {
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === "grid" || stored === "immersive") {
+      if (stored === "grid" || stored === "immersive" || stored === "cinema") {
         setViewModeState(stored);
       }
     } catch {

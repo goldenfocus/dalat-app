@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid3X3, Smartphone } from "lucide-react";
+import { Grid3X3, Smartphone, Film } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 
@@ -11,7 +11,7 @@ interface ViewModeSwitcherProps {
 }
 
 /**
- * Toggle button group to switch between grid and immersive view modes.
+ * Toggle button group to switch between grid, immersive, and cinema view modes.
  */
 export function ViewModeSwitcher({
   viewMode,
@@ -56,6 +56,21 @@ export function ViewModeSwitcher({
       >
         <Smartphone className="w-4 h-4" />
         <span className="hidden sm:inline">Immersive</span>
+      </button>
+      <button
+        type="button"
+        role="radio"
+        aria-checked={viewMode === "cinema"}
+        onClick={() => onViewModeChange("cinema")}
+        className={cn(
+          "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+          viewMode === "cinema"
+            ? "bg-background text-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <Film className="w-4 h-4" />
+        <span className="hidden sm:inline">Cinema</span>
       </button>
     </div>
   );
