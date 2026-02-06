@@ -15,8 +15,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/events/new', priority: 0.6, changeFrequency: 'monthly' as const },
     { path: '/events/this-month', priority: 0.8, changeFrequency: 'daily' as const },
     { path: '/events/this-week', priority: 0.8, changeFrequency: 'daily' as const },
+    { path: '/events/upcoming', priority: 0.85, changeFrequency: 'daily' as const },
     { path: '/settings', priority: 0.4, changeFrequency: 'monthly' as const },
     { path: '/auth/login', priority: 0.5, changeFrequency: 'monthly' as const },
+
+    // ============================================
+    // SEO LANDING PAGES - High-value keyword targets
+    // ============================================
+
+    // Time-based pages (high intent, fresh content)
+    { path: '/this-weekend', priority: 0.9, changeFrequency: 'daily' as const },
+    { path: '/tonight', priority: 0.9, changeFrequency: 'hourly' as const },
+
+    // Discovery pages
+    { path: '/map', priority: 0.8, changeFrequency: 'daily' as const },
+    { path: '/calendar', priority: 0.8, changeFrequency: 'daily' as const },
+    { path: '/venues', priority: 0.8, changeFrequency: 'daily' as const },
+    { path: '/festivals', priority: 0.8, changeFrequency: 'weekly' as const },
+    { path: '/about', priority: 0.6, changeFrequency: 'monthly' as const },
+
+    // Venue type landing pages (programmatic SEO - targets "dalat [venue type]" keywords)
+    { path: '/cafes', priority: 0.85, changeFrequency: 'daily' as const },
+    { path: '/bars', priority: 0.85, changeFrequency: 'daily' as const },
+    { path: '/restaurants', priority: 0.85, changeFrequency: 'daily' as const },
+    { path: '/galleries', priority: 0.8, changeFrequency: 'daily' as const },
+    { path: '/parks', priority: 0.75, changeFrequency: 'daily' as const },
+    { path: '/hotels', priority: 0.75, changeFrequency: 'daily' as const },
+    { path: '/coworking', priority: 0.8, changeFrequency: 'daily' as const },
+    { path: '/community-centers', priority: 0.7, changeFrequency: 'daily' as const },
+    { path: '/outdoor', priority: 0.75, changeFrequency: 'daily' as const },
+    { path: '/homestays', priority: 0.75, changeFrequency: 'daily' as const },
   ];
 
   // Fetch dynamic content
