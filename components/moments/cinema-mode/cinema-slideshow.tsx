@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState, useMemo } from "react";
+import { useEffect, useCallback, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { RotateCcw, Camera, Grid3X3, Sparkles } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -8,7 +8,7 @@ import { CinemaPhotoSlide } from "./cinema-photo-slide";
 import { CinemaVideoSlide } from "./cinema-video-slide";
 import { CinemaControls } from "./cinema-controls";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
-import { createEffectScheduler } from "@/lib/cinema/ken-burns-effects";
+import { createEffectScheduler, type EffectSchedulerState } from "@/lib/cinema/ken-burns-effects";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import {
@@ -56,7 +56,11 @@ export function CinemaSlideshow({
   onLoadMore,
 }: CinemaSlideshowProps) {
   const router = useRouter();
-  const [effectScheduler, setEffectScheduler] = useState(createEffectScheduler);
+  const effectSchedulerRef = useRef<EffectSchedulerState>(createEffectScheduler());
+
+  const handleEffectSelected = useCallback((newState: EffectSchedulerState) => {
+    effectSchedulerRef.current = newState;
+  }, []);
 
   // Store state
   const {
@@ -236,8 +240,8 @@ export function CinemaSlideshow({
               duration={timerDuration}
               isActive={!isPaused}
               isTransitioning={isTransitioning}
-              effectSchedulerState={effectScheduler}
-              onEffectSelected={setEffectScheduler}
+              effectSchedulerState={effectSchedulerRef.current}
+              onEffectSelected={handleEffectSelected}
             />
           )}
 
