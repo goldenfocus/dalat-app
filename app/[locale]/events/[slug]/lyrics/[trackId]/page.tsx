@@ -8,11 +8,28 @@ import {
   generateLyricsFAQSchema,
   generateSpeakableSchema,
 } from "@/lib/structured-data";
-import { Music, Mic2, ExternalLink, Clock, User, Disc } from "lucide-react";
+import { Music, Mic2, ExternalLink, Clock, User, Disc, Globe } from "lucide-react";
 import { formatDuration } from "@/lib/audio-metadata";
+import { getTrackLyricsTranslation } from "@/lib/translations";
+import type { ContentLocale } from "@/lib/types";
+import { LOCALE_FLAGS, LOCALE_NAMES } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
+}
+
+// RPC return type for get_event_playlist
+interface PlaylistRpcRow {
+  event_id: string;
+  event_title: string;
+  event_image_url: string | null;
+  track_id: string | null;
+  track_title: string | null;
+  track_artist: string | null;
+  track_file_url: string | null;
+  track_thumbnail_url: string | null;
+  track_duration_seconds: number | null;
+  track_lyrics_lrc: string | null;
 }
 
 interface TrackData {
@@ -48,17 +65,17 @@ async function getLyricsTrack(eventSlug: string, trackId: string): Promise<Track
   const firstRow = data[0];
 
   // Find the requested track
-  const trackRow = data.find((row: any) => row.track_id === trackId);
+  const trackRow = (data as PlaylistRpcRow[]).find((row) => row.track_id === trackId);
   if (!trackRow) {
     return null;
   }
 
   return {
     track: {
-      id: trackRow.track_id,
+      id: trackRow.track_id!,
       title: trackRow.track_title,
       artist: trackRow.track_artist,
-      file_url: trackRow.track_file_url,
+      file_url: trackRow.track_file_url!,
       thumbnail_url: trackRow.track_thumbnail_url,
       duration_seconds: trackRow.track_duration_seconds,
       lyrics_lrc: trackRow.track_lyrics_lrc,
@@ -159,9 +176,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     alternates: {
       canonical: canonicalUrl,
+      // All 12 languages for maximum SEO coverage
       languages: {
-        vi: `https://dalat.app/vi/events/${slug}/lyrics/${trackId}`,
         en: `https://dalat.app/en/events/${slug}/lyrics/${trackId}`,
+        vi: `https://dalat.app/vi/events/${slug}/lyrics/${trackId}`,
+        ko: `https://dalat.app/ko/events/${slug}/lyrics/${trackId}`,
+        zh: `https://dalat.app/zh/events/${slug}/lyrics/${trackId}`,
+        ru: `https://dalat.app/ru/events/${slug}/lyrics/${trackId}`,
+        fr: `https://dalat.app/fr/events/${slug}/lyrics/${trackId}`,
+        ja: `https://dalat.app/ja/events/${slug}/lyrics/${trackId}`,
+        ms: `https://dalat.app/ms/events/${slug}/lyrics/${trackId}`,
+        th: `https://dalat.app/th/events/${slug}/lyrics/${trackId}`,
+        de: `https://dalat.app/de/events/${slug}/lyrics/${trackId}`,
+        es: `https://dalat.app/es/events/${slug}/lyrics/${trackId}`,
+        id: `https://dalat.app/id/events/${slug}/lyrics/${trackId}`,
       },
     },
     robots: {
@@ -184,9 +212,17 @@ export default async function LyricsPage({ params }: PageProps) {
   const trackTitle = track.title || "Untitled";
   const artist = track.artist || "Unknown Artist";
 
-  // Parse lyrics for display
-  const lyricsLines = track.lyrics_lrc
-    ? parseLrcToLines(track.lyrics_lrc)
+  // Get translated lyrics
+  const { lyrics: translatedLyrics, is_translated } = await getTrackLyricsTranslation(
+    trackId,
+    locale as ContentLocale,
+    track.lyrics_lrc,
+    'vi' // Default source locale for Vietnamese content
+  );
+
+  // Parse lyrics for display (use translated if available, otherwise original)
+  const lyricsLines = translatedLyrics
+    ? parseLrcToLines(translatedLyrics)
     : [];
 
   // Full lyrics text for FAQ schema
@@ -252,7 +288,13 @@ export default async function LyricsPage({ params }: PageProps) {
           <article className="prose prose-lg dark:prose-invert max-w-none">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Music className="w-5 h-5" />
-              {locale === "vi" ? "Loi Bai Hat" : "Lyrics"}
+              {locale === "vi" ? "Lời Bài Hát" : "Lyrics"}
+              {is_translated && (
+                <span className="inline-flex items-center gap-1 text-xs font-normal px-2 py-0.5 bg-primary/10 text-primary rounded-full">
+                  <Globe className="w-3 h-3" />
+                  {LOCALE_FLAGS[locale as ContentLocale]} {LOCALE_NAMES[locale as ContentLocale]}
+                </span>
+              )}
             </h2>
 
             {lyricsLines.length > 0 ? (

@@ -15,6 +15,28 @@ interface PageProps {
   searchParams: Promise<{ karaoke?: string; track?: string }>;
 }
 
+// RPC return type for get_event_playlist
+interface PlaylistRpcRow {
+  event_id: string;
+  event_title: string;
+  event_image_url: string | null;
+  event_starts_at: string;
+  event_location_name: string | null;
+  playlist_id: string | null;
+  playlist_title: string | null;
+  playlist_description: string | null;
+  track_id: string | null;
+  track_file_url: string | null;
+  track_title: string | null;
+  track_artist: string | null;
+  track_album: string | null;
+  track_thumbnail_url: string | null;
+  track_duration_seconds: number | null;
+  track_sort_order: number | null;
+  track_lyrics_lrc: string | null;
+  track_timing_offset: number | null;
+}
+
 interface PlaylistData {
   event: {
     id: string;
@@ -47,17 +69,17 @@ async function getEventPlaylist(slug: string): Promise<PlaylistData | null> {
   const firstRow = data[0];
 
   // If no tracks exist, firstRow.track_id will be null (LEFT JOIN)
-  const tracks: PlaylistTrack[] = data
-    .filter((row: any) => row.track_id !== null)
-    .map((row: any) => ({
-      id: row.track_id,
-      file_url: row.track_file_url,
+  const tracks: PlaylistTrack[] = (data as PlaylistRpcRow[])
+    .filter((row) => row.track_id !== null)
+    .map((row) => ({
+      id: row.track_id!,
+      file_url: row.track_file_url!,
       title: row.track_title,
       artist: row.track_artist,
       album: row.track_album,
       thumbnail_url: row.track_thumbnail_url,
       duration_seconds: row.track_duration_seconds,
-      sort_order: row.track_sort_order,
+      sort_order: row.track_sort_order ?? 0,
       lyrics_lrc: row.track_lyrics_lrc,  // LRC for karaoke display
       timing_offset: row.track_timing_offset || 0,  // Saved timing offset
     }));

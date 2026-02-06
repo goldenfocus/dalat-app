@@ -33,7 +33,7 @@ export const LOCALE_NAMES: Record<ContentLocale, string> = {
 
 // Translation types
 export type TranslationStatus = 'auto' | 'reviewed' | 'edited';
-export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog' | 'venue' | 'comment' | 'organizer';
+export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog' | 'venue' | 'comment' | 'organizer' | 'track';
 export type TranslationFieldName =
   | 'title' | 'description' | 'text_content' | 'bio'
   | 'story_content' | 'technical_content' | 'meta_description'
@@ -42,7 +42,9 @@ export type TranslationFieldName =
   | 'ai_description' | 'scene_description' | 'video_summary'
   | 'audio_summary' | 'pdf_summary'
   // Comment content
-  | 'content';
+  | 'content'
+  // Track/lyrics content
+  | 'lyrics';
 
 // Event pricing types
 export type PriceType = 'free' | 'paid' | 'donation';

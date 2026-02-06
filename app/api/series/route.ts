@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { addMonths, format } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import { generateSeriesInstances, isValidRRule } from "@/lib/recurrence";
+import type { EventSeries } from "@/lib/types";
+import type { PostgrestError } from "@supabase/supabase-js";
 
 interface TicketTier {
   name: string;
@@ -107,9 +109,9 @@ export async function POST(request: Request) {
   const durationMinutes = body.duration_minutes || DEFAULT_DURATION_MINUTES;
   const MAX_SLUG_RETRIES = 3;
 
-  let series: any = null;
+  let series: EventSeries | null = null;
   let seriesSlug = "";
-  let seriesError: any = null;
+  let seriesError: PostgrestError | null = null;
 
   // Retry loop to handle slug collisions
   for (let attempt = 0; attempt < MAX_SLUG_RETRIES; attempt++) {

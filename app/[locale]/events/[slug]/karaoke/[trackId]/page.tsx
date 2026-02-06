@@ -8,6 +8,22 @@ interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
 }
 
+// RPC return type for get_event_playlist
+interface PlaylistRpcRow {
+  event_id: string;
+  event_title: string;
+  event_image_url: string | null;
+  playlist_id: string | null;
+  track_id: string | null;
+  track_title: string | null;
+  track_artist: string | null;
+  track_file_url: string | null;
+  track_thumbnail_url: string | null;
+  track_duration_seconds: number | null;
+  track_lyrics_lrc: string | null;
+  track_sort_order: number | null;
+}
+
 interface TrackData {
   track: {
     id: string;
@@ -55,21 +71,21 @@ async function getKaraokeTrack(eventSlug: string, trackId: string): Promise<Trac
   const firstRow = data[0];
 
   // Build tracks array
-  const tracks = data
-    .filter((row: any) => row.track_id !== null)
-    .map((row: any) => ({
-      id: row.track_id,
+  const tracks = (data as PlaylistRpcRow[])
+    .filter((row) => row.track_id !== null)
+    .map((row) => ({
+      id: row.track_id!,
       title: row.track_title,
       artist: row.track_artist,
-      file_url: row.track_file_url,
+      file_url: row.track_file_url!,
       thumbnail_url: row.track_thumbnail_url,
       duration_seconds: row.track_duration_seconds,
       lyrics_lrc: row.track_lyrics_lrc,
-      sort_order: row.track_sort_order,
+      sort_order: row.track_sort_order ?? 0,
     }));
 
   // Find the requested track
-  const trackIndex = tracks.findIndex((t: any) => t.id === trackId);
+  const trackIndex = tracks.findIndex((t) => t.id === trackId);
   if (trackIndex === -1) {
     return null;
   }

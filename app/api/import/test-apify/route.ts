@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
 
+// Apify Actor type from their API
+interface ApifyActor {
+  id: string;
+  name: string;
+  title: string;
+  username: string;
+}
+
 /**
  * Test endpoint to verify Apify API access
  */
@@ -48,7 +56,7 @@ export async function GET() {
     const availableActors = actorsData.data?.items || [];
 
     // Filter for Facebook/event related actors
-    const relevantActors = availableActors.filter((actor: any) => {
+    const relevantActors = (availableActors as ApifyActor[]).filter((actor) => {
       const name = (actor.name || "").toLowerCase();
       const title = (actor.title || "").toLowerCase();
       return (
@@ -65,13 +73,13 @@ export async function GET() {
       tokenValid: true,
       tokenPrefix: apiToken.substring(0, 10) + "...",
       totalActorsAvailable: availableActors.length,
-      relevantActors: relevantActors.map((a: any) => ({
+      relevantActors: relevantActors.map((a) => ({
         id: a.id,
         name: a.name,
         title: a.title,
         username: a.username,
       })),
-      allActors: availableActors.slice(0, 10).map((a: any) => ({
+      allActors: (availableActors as ApifyActor[]).slice(0, 10).map((a) => ({
         id: a.id,
         name: a.name,
         title: a.title,

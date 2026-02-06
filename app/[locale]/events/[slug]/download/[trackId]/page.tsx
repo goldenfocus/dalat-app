@@ -11,6 +11,19 @@ interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
 }
 
+// RPC return type for get_event_playlist
+interface PlaylistRpcRow {
+  event_id: string;
+  event_title: string;
+  event_image_url: string | null;
+  track_id: string | null;
+  track_title: string | null;
+  track_artist: string | null;
+  track_file_url: string | null;
+  track_thumbnail_url: string | null;
+  track_duration_seconds: number | null;
+}
+
 interface TrackData {
   track: {
     id: string;
@@ -39,8 +52,8 @@ async function getDownloadTrack(eventSlug: string, trackId: string): Promise<Tra
     return null;
   }
 
-  const firstRow = data[0];
-  const trackRow = data.find((row: any) => row.track_id === trackId);
+  const firstRow = data[0] as PlaylistRpcRow;
+  const trackRow = (data as PlaylistRpcRow[]).find((row) => row.track_id === trackId);
 
   if (!trackRow) {
     return null;
@@ -48,10 +61,10 @@ async function getDownloadTrack(eventSlug: string, trackId: string): Promise<Tra
 
   return {
     track: {
-      id: trackRow.track_id,
+      id: trackRow.track_id!,
       title: trackRow.track_title,
       artist: trackRow.track_artist,
-      file_url: trackRow.track_file_url,
+      file_url: trackRow.track_file_url!,
       thumbnail_url: trackRow.track_thumbnail_url,
       duration_seconds: trackRow.track_duration_seconds,
     },

@@ -512,3 +512,96 @@ export async function getBlogTranslations(
     is_translated: hasTranslations,
   };
 }
+
+/**
+ * Track lyrics with translations
+ */
+export interface TranslatedLyrics {
+  lyrics: string;
+  source_locale: string;
+  is_translated: boolean;
+}
+
+/**
+ * Fetch translated lyrics for a track
+ * Returns original lyrics if no translation exists
+ */
+export async function getTrackLyricsTranslation(
+  trackId: string,
+  targetLocale: ContentLocale,
+  originalLyrics: string | null,
+  sourceLocale: string = 'vi'
+): Promise<TranslatedLyrics> {
+  // No lyrics to translate
+  if (!originalLyrics) {
+    return {
+      lyrics: '',
+      source_locale: sourceLocale,
+      is_translated: false,
+    };
+  }
+
+  // If target is same as source, return original
+  if (targetLocale === sourceLocale) {
+    return {
+      lyrics: originalLyrics,
+      source_locale: sourceLocale,
+      is_translated: false,
+    };
+  }
+
+  // Use static client - translations are public data
+  const supabase = createStaticClient();
+  if (!supabase) {
+    return {
+      lyrics: originalLyrics,
+      source_locale: sourceLocale,
+      is_translated: false,
+    };
+  }
+
+  // Try to get translation
+  const { data: translation } = await supabase
+    .from('content_translations')
+    .select('translated_text')
+    .eq('content_type', 'track')
+    .eq('content_id', trackId)
+    .eq('field_name', 'lyrics')
+    .eq('target_locale', targetLocale)
+    .single();
+
+  if (translation?.translated_text) {
+    return {
+      lyrics: translation.translated_text,
+      source_locale: sourceLocale,
+      is_translated: true,
+    };
+  }
+
+  // Try English fallback if not already trying English
+  if (targetLocale !== 'en') {
+    const { data: englishTranslation } = await supabase
+      .from('content_translations')
+      .select('translated_text')
+      .eq('content_type', 'track')
+      .eq('content_id', trackId)
+      .eq('field_name', 'lyrics')
+      .eq('target_locale', 'en')
+      .single();
+
+    if (englishTranslation?.translated_text) {
+      return {
+        lyrics: englishTranslation.translated_text,
+        source_locale: sourceLocale,
+        is_translated: true,
+      };
+    }
+  }
+
+  // Fall back to original
+  return {
+    lyrics: originalLyrics,
+    source_locale: sourceLocale,
+    is_translated: false,
+  };
+}

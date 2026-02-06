@@ -9,6 +9,29 @@ const CLIP_MODEL = "krthr/clip-embeddings:1c0371070cb827ec3c7f2f28adcdde54b50dcd
 const RATE_LIMIT = 30; // searches per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
+// Type for moment search query result (Supabase returns relations as single objects with !inner)
+interface MomentSearchRow {
+  id: string;
+  event_id: string;
+  user_id: string;
+  content_type: string;
+  media_url: string | null;
+  text_content: string | null;
+  created_at: string;
+  profiles: {
+    username: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+  events: {
+    slug: string;
+    title: string;
+    image_url: string | null;
+    starts_at: string;
+    location_name: string | null;
+  };
+}
+
 /**
  * Create a service role Supabase client for embedding lookup.
  */
@@ -189,8 +212,7 @@ export async function GET(request: Request) {
     }
 
     // Transform and sort by similarity
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const matchingMoments = (moments || []).map((m: any) => {
+    const matchingMoments = ((moments || []) as unknown as MomentSearchRow[]).map((m) => {
       const profile = m.profiles;
       const event = m.events;
       return {
@@ -201,14 +223,14 @@ export async function GET(request: Request) {
         media_url: m.media_url,
         text_content: m.text_content,
         created_at: m.created_at,
-        username: profile?.username ?? null,
-        display_name: profile?.display_name ?? null,
-        avatar_url: profile?.avatar_url ?? null,
-        event_slug: event?.slug ?? "",
-        event_title: event?.title ?? "",
-        event_image_url: event?.image_url ?? null,
-        event_starts_at: event?.starts_at ?? "",
-        event_location_name: event?.location_name ?? null,
+        username: profile.username,
+        display_name: profile.display_name,
+        avatar_url: profile.avatar_url,
+        event_slug: event.slug,
+        event_title: event.title,
+        event_image_url: event.image_url,
+        event_starts_at: event.starts_at,
+        event_location_name: event.location_name,
         similarity: similarityMap.get(m.id) || 0,
       };
     }).sort((a, b) => (b.similarity as number) - (a.similarity as number));
