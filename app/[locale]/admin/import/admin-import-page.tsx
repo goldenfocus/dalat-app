@@ -128,8 +128,8 @@ const EVENT_SOURCES: Record<EventSource, { name: string; description: string; en
     endpoint: "/api/import/dalat-gov",
   },
   "wellhoods": {
-    name: "Wellhoods (paused)",
-    description: "Wellness events from wellhoods.com - currently no Đà Lạt events available",
+    name: "Wellhoods",
+    description: "Wellness events from wellhoods.com",
     endpoint: "/api/import/wellhoods",
   },
 };
@@ -844,7 +844,7 @@ https://eventbrite.com/e/some-event-tickets-123`}
                 </select>
                 <Button
                   onClick={handleSyncSource}
-                  disabled={sourceSyncing || selectedSource === "wellhoods"}
+                  disabled={sourceSyncing}
                   className="min-w-[120px]"
                 >
                   {sourceSyncing ? (
