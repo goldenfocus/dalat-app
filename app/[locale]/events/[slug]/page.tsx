@@ -934,6 +934,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               promo={promoResult.promo}
               isOwner={canManageEvent}
               promoSource={promoResult.promoSource}
+              eventId={event.id}
+              eventSlug={event.slug}
+              seriesId={event.series_id}
+              isSeriesEvent={!!event.series_id}
             />
 
             {/* Materials (PDFs, videos, etc.) */}
