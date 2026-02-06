@@ -16,6 +16,7 @@ import {
   Volume2,
   Volume1,
   VolumeX,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -76,6 +77,7 @@ export function MiniPlayer() {
   // UI state
   const [showRemaining, setShowRemaining] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Initialize audio element ONCE and store in Zustand
   useEffect(() => {
@@ -194,6 +196,39 @@ export function MiniPlayer() {
       router.push(`/events/${playlist.eventSlug}/playlist`);
     }
   }, [router, playlist, currentTrack?.lyrics_lrc]);
+
+  // Download current track
+  const handleDownload = useCallback(async () => {
+    if (!currentTrack?.file_url || isDownloading) return;
+
+    setIsDownloading(true);
+    try {
+      // Fetch the audio file as blob to ensure download works cross-origin
+      const response = await fetch(currentTrack.file_url);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      // Generate filename from track title or fallback
+      const filename = currentTrack.title
+        ? `${currentTrack.title}.mp3`
+        : `track-${currentIndex + 1}.mp3`;
+
+      // Create temporary link and trigger download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Clean up object URL
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [currentTrack?.file_url, currentTrack?.title, currentIndex, isDownloading]);
 
   if (!isVisible || !currentTrack) return null;
 
@@ -339,6 +374,22 @@ export function MiniPlayer() {
                 </div>
               )}
             </div>
+
+            {/* Download button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground"
+              onClick={handleDownload}
+              disabled={isDownloading || !currentTrack?.file_url}
+              aria-label="Download track"
+            >
+              {isDownloading ? (
+                <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+            </Button>
 
             {/* Close button */}
             <Button
