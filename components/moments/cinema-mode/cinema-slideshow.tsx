@@ -122,16 +122,29 @@ export function CinemaSlideshow({
     };
   }, []); // Only run once on mount
 
-  // Preload next images
+  // Preload next images and videos
   useEffect(() => {
     const preloadIndices = [currentIndex + 1, currentIndex + 2];
 
     preloadIndices.forEach((idx) => {
       if (idx >= moments.length) return;
       const moment = moments[idx];
+
       if (moment?.content_type === "photo" && moment.media_url) {
+        // Preload image
         const img = new window.Image();
         img.src = optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen) || moment.media_url;
+      } else if (moment?.content_type === "video" && moment.media_url) {
+        // Preload video by creating a hidden video element
+        // Using link preload for better browser caching
+        const existingLink = document.querySelector(`link[href="${moment.media_url}"]`);
+        if (!existingLink) {
+          const link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "video";
+          link.href = moment.media_url;
+          document.head.appendChild(link);
+        }
       }
     });
   }, [currentIndex, moments]);

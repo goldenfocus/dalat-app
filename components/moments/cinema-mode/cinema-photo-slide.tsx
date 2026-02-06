@@ -58,9 +58,15 @@ export function CinemaPhotoSlide({
   schedulerStateRef.current = effectSchedulerState;
   onEffectSelectedRef.current = onEffectSelected;
 
-  // Select Ken Burns effect when becoming active
+  // Select Ken Burns effect when image loads (not dependent on isActive)
+  // The effect determines the animation, but the image should always be visible
+  const hasSelectedEffectRef = useRef(false);
+
   useEffect(() => {
-    if (!isActive || !imageLoaded) return;
+    // Only select effect once per image
+    if (!imageLoaded || hasSelectedEffectRef.current) return;
+
+    hasSelectedEffectRef.current = true;
 
     // Check reduced motion preference
     if (prefersReducedMotion()) {
@@ -73,7 +79,14 @@ export function CinemaPhotoSlide({
     setEffect(selectedEffect);
 
     onEffectSelectedRef.current?.(newState);
-  }, [isActive, imageLoaded, isVertical]);
+  }, [imageLoaded, isVertical]);
+
+  // Reset effect selection flag when moment changes
+  useEffect(() => {
+    hasSelectedEffectRef.current = false;
+    setEffect(null);
+    setImageLoaded(false);
+  }, [moment.id]);
 
   if (!imageUrl) return null;
 
