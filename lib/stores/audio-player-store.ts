@@ -165,7 +165,6 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
 
   // Set a new playlist and optionally start playing
   setPlaylist: (tracks, playlist, startIndex = 0) => {
-    const { audioElement } = get();
     const track = tracks[startIndex];
 
     // Use saved timing_offset from track, or fall back to default
@@ -182,16 +181,24 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       lyricsOffset: savedOffset,  // Load saved timing offset for this track
     });
 
-    // Load the track
-    if (audioElement && track) {
-      audioElement.src = track.file_url;
-      audioElement.load();
-    }
-
-    // Auto-play
-    setTimeout(() => {
+    // Load the track and auto-play.
+    // audioElement may not exist yet (MiniPlayer mounts after isVisible becomes true),
+    // so retry until it's available.
+    const tryLoadAndPlay = (retries = 0) => {
+      const { audioElement } = get();
+      if (!audioElement) {
+        if (retries < 10) {
+          setTimeout(() => tryLoadAndPlay(retries + 1), 150);
+        }
+        return;
+      }
+      if (track) {
+        audioElement.src = track.file_url;
+        audioElement.load();
+      }
       get().play();
-    }, 100);
+    };
+    setTimeout(tryLoadAndPlay, 100);
   },
 
   // Play a specific track by index
@@ -222,7 +229,8 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     }, 100);
   },
 
-  // Play
+  // Play — calls audioElement.play() immediately to preserve iOS user gesture context.
+  // Previous version awaited canplaythrough first, which broke the gesture chain.
   play: async () => {
     const { audioElement, tracks, currentIndex } = get();
     const track = tracks[currentIndex];
@@ -232,36 +240,18 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     try {
       set({ isLoading: true });
 
-      // Ensure correct source is set
-      if (!audioElement.src || !audioElement.src.includes(track.file_url.split('/').pop() || '')) {
+      // Ensure correct source is set, or reload if previous load errored
+      const filename = track.file_url.split('/').pop() || '';
+      const needsLoad = !audioElement.src ||
+        !audioElement.src.includes(filename) ||
+        audioElement.error;
+
+      if (needsLoad) {
         audioElement.src = track.file_url;
-        audioElement.load();
       }
 
-      // Wait for audio to be ready if needed
-      if (audioElement.readyState < 3) {
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('Audio load timeout')), 10000);
-
-          const onCanPlay = () => {
-            clearTimeout(timeout);
-            audioElement.removeEventListener('canplaythrough', onCanPlay);
-            audioElement.removeEventListener('error', onError);
-            resolve();
-          };
-
-          const onError = (e: Event) => {
-            clearTimeout(timeout);
-            audioElement.removeEventListener('canplaythrough', onCanPlay);
-            audioElement.removeEventListener('error', onError);
-            reject(e);
-          };
-
-          audioElement.addEventListener('canplaythrough', onCanPlay);
-          audioElement.addEventListener('error', onError);
-        });
-      }
-
+      // Call play() immediately — the browser handles buffering internally.
+      // This preserves user gesture context on iOS (awaiting canplaythrough broke it).
       await audioElement.play();
       set({ isPlaying: true, isLoading: false, autoplayBlocked: false });
     } catch (error) {
