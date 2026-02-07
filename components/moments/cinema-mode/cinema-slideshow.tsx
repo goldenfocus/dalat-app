@@ -123,6 +123,8 @@ export function CinemaSlideshow({
   }, []); // Only run once on mount
 
   // Preload next images and videos
+  const preloadedVideosRef = useRef(new Set<string>());
+
   useEffect(() => {
     const preloadIndices = [currentIndex + 1, currentIndex + 2];
 
@@ -131,19 +133,20 @@ export function CinemaSlideshow({
       const moment = moments[idx];
 
       if (moment?.content_type === "photo" && moment.media_url) {
-        // Preload image
         const img = new window.Image();
         img.src = optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen) || moment.media_url;
-      } else if (moment?.content_type === "video" && moment.media_url) {
-        // Preload video by creating a hidden video element
-        // Using link preload for better browser caching
-        const existingLink = document.querySelector(`link[href="${moment.media_url}"]`);
-        if (!existingLink) {
-          const link = document.createElement("link");
-          link.rel = "preload";
-          link.as = "video";
-          link.href = moment.media_url;
-          document.head.appendChild(link);
+      } else if (moment?.content_type === "video") {
+        // Preload via hidden video element — browsers actually buffer this
+        // unlike <link rel="preload" as="video"> which is widely ignored
+        const src = moment.cf_playback_url || moment.media_url;
+        if (src && !preloadedVideosRef.current.has(src)) {
+          preloadedVideosRef.current.add(src);
+          const video = document.createElement("video");
+          video.preload = "auto";
+          video.muted = true;
+          video.src = src;
+          // Load just enough to buffer the start, then discard the element
+          video.load();
         }
       }
     });

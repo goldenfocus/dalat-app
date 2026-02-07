@@ -22,6 +22,10 @@ export interface MomentVideoPlayerProps {
   onEnded?: () => void;
   /** Hide the built-in mute button (for external control) */
   hideMuteButton?: boolean;
+  /** Hide native browser video controls (for cinema mode) */
+  hideControls?: boolean;
+  /** Ref to access the underlying video element */
+  ref?: React.Ref<HTMLVideoElement>;
 }
 
 /**
@@ -42,8 +46,11 @@ export function MomentVideoPlayer({
   className,
   onEnded,
   hideMuteButton = false,
+  hideControls = false,
+  ref,
 }: MomentVideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const internalRef = useRef<HTMLVideoElement>(null);
+  const videoRef = (ref as React.RefObject<HTMLVideoElement | null>) || internalRef;
   const hlsRef = useRef<InstanceType<typeof import("hls.js").default> | null>(null);
   const [useNativeHls, setUseNativeHls] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -165,7 +172,7 @@ export function MomentVideoPlayer({
         ref={videoRef}
         poster={poster || undefined}
         className="w-full h-full max-h-[90vh] object-contain"
-        controls
+        controls={!hideControls}
         muted={mutedProp}
         playsInline
         loop={loop}

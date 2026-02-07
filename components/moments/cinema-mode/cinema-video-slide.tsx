@@ -25,17 +25,13 @@ export function CinemaVideoSlide({
 }: CinemaVideoSlideProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isBuffering, setIsBuffering] = useState(false);
+  const hasStartedRef = useRef(false);
 
-  // Video source - prefer HLS, fallback to direct URL
-  const videoSrc = moment.cf_playback_url || moment.media_url;
-  const isHLS = moment.cf_playback_url !== null;
-
-  // Handle video lifecycle
+  // Track time updates via the shared ref
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !isActive) return;
 
-    const handleEnded = () => onEnded();
     const handleTimeUpdate = () => {
       onTimeUpdate(video.currentTime, video.duration || 0);
     };
@@ -43,35 +39,41 @@ export function CinemaVideoSlide({
     const handlePlaying = () => setIsBuffering(false);
     const handleCanPlay = () => setIsBuffering(false);
 
-    video.addEventListener("ended", handleEnded);
     video.addEventListener("timeupdate", handleTimeUpdate);
     video.addEventListener("waiting", handleWaiting);
     video.addEventListener("playing", handlePlaying);
     video.addEventListener("canplay", handleCanPlay);
 
     return () => {
-      video.removeEventListener("ended", handleEnded);
       video.removeEventListener("timeupdate", handleTimeUpdate);
       video.removeEventListener("waiting", handleWaiting);
       video.removeEventListener("playing", handlePlaying);
       video.removeEventListener("canplay", handleCanPlay);
     };
-  }, [isActive, onEnded, onTimeUpdate]);
+  }, [isActive, onTimeUpdate]);
 
-  // Control playback based on active state and pause
+  // Control playback: pause/resume without restarting
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     if (isActive && !isPaused) {
-      // Reset and play
-      video.currentTime = 0;
-      video.muted = true; // Muted because album music is playing
-      video.play().catch(console.warn);
-    } else if (isPaused || !isActive) {
+      // Only reset to start on first play, not on resume
+      if (!hasStartedRef.current) {
+        hasStartedRef.current = true;
+        video.currentTime = 0;
+      }
+      video.muted = true;
+      video.play().catch(() => {});
+    } else {
       video.pause();
     }
   }, [isActive, isPaused]);
+
+  // Reset on moment change
+  useEffect(() => {
+    hasStartedRef.current = false;
+  }, [moment.id]);
 
   // Show video processing state
   if (moment.video_status === "processing") {
@@ -85,6 +87,7 @@ export function CinemaVideoSlide({
     );
   }
 
+  const videoSrc = moment.media_url;
   if (!videoSrc) return null;
 
   return (
@@ -94,17 +97,18 @@ export function CinemaVideoSlide({
         isTransitioning && "animate-in fade-in zoom-in-95 duration-500"
       )}
     >
-      {/* Use the existing MomentVideoPlayer for HLS support */}
       <MomentVideoPlayer
-        src={moment.media_url || ""}
+        ref={videoRef}
+        src={videoSrc}
         hlsSrc={moment.cf_playback_url}
         poster={moment.thumbnail_url || undefined}
         autoPlay={isActive && !isPaused}
-        muted={true} // Always muted - album music is the soundtrack
+        muted={true}
         loop={false}
         className="w-full h-full"
         onEnded={onEnded}
-        hideMuteButton // Cinema mode has its own audio controls
+        hideMuteButton
+        hideControls
       />
 
       {/* Buffering indicator */}

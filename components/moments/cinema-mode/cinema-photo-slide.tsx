@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { cloudflareLoader, optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
+import { cloudflareLoader } from "@/lib/image-cdn";
 import {
   KenBurnsEffect,
   selectNextEffect,
@@ -31,44 +31,39 @@ export function CinemaPhotoSlide({
   onEffectSelected,
 }: CinemaPhotoSlideProps) {
   const [isVertical, setIsVertical] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
   const [effect, setEffect] = useState<KenBurnsEffect | null>(null);
 
-  const imageUrl = useMemo(() => {
-    return optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen);
-  }, [moment.media_url]);
+  // Use refs for scheduler state/callback to avoid infinite render loop.
+  const schedulerStateRef = useRef(effectSchedulerState);
+  const onEffectSelectedRef = useRef(onEffectSelected);
+  schedulerStateRef.current = effectSchedulerState;
+  onEffectSelectedRef.current = onEffectSelected;
 
-  // Detect image orientation
+  const hasSelectedEffectRef = useRef(false);
+
+  // Detect orientation via preloader (needed before render for container sizing)
   useEffect(() => {
     if (!moment.media_url) return;
 
     const img = new window.Image();
     img.onload = () => {
       setIsVertical(img.naturalHeight > img.naturalWidth);
-      setImageLoaded(true);
+    };
+    img.onerror = () => {
+      // If preload fails, default to horizontal — the Image component
+      // may still load fine through the cloudflare loader
+      setIsVertical(false);
     };
     img.src = moment.media_url;
   }, [moment.media_url]);
 
-  // Use refs for scheduler state/callback to avoid infinite render loop.
-  // The effect scheduler state is updated after each selection, which would
-  // re-trigger this effect if it were in the dependency array.
-  const schedulerStateRef = useRef(effectSchedulerState);
-  const onEffectSelectedRef = useRef(onEffectSelected);
-  schedulerStateRef.current = effectSchedulerState;
-  onEffectSelectedRef.current = onEffectSelected;
-
-  // Select Ken Burns effect when image loads (not dependent on isActive)
-  // The effect determines the animation, but the image should always be visible
-  const hasSelectedEffectRef = useRef(false);
-
+  // Select Ken Burns effect once the actual Image component has loaded
   useEffect(() => {
-    // Only select effect once per image
-    if (!imageLoaded || hasSelectedEffectRef.current) return;
+    if (!imageReady || hasSelectedEffectRef.current) return;
 
     hasSelectedEffectRef.current = true;
 
-    // Check reduced motion preference
     if (prefersReducedMotion()) {
       setEffect(getStaticEffect());
       return;
@@ -79,16 +74,16 @@ export function CinemaPhotoSlide({
     setEffect(selectedEffect);
 
     onEffectSelectedRef.current?.(newState);
-  }, [imageLoaded, isVertical]);
+  }, [imageReady, isVertical]);
 
-  // Reset effect selection flag when moment changes
+  // Reset when moment changes
   useEffect(() => {
     hasSelectedEffectRef.current = false;
     setEffect(null);
-    setImageLoaded(false);
+    setImageReady(false);
   }, [moment.id]);
 
-  if (!imageUrl) return null;
+  if (!moment.media_url) return null;
 
   return (
     <div
@@ -98,11 +93,11 @@ export function CinemaPhotoSlide({
       )}
     >
       {/* Blurred background for vertical photos */}
-      {isVertical && imageLoaded && (
+      {isVertical && imageReady && (
         <div className="absolute inset-0">
           <Image
             loader={cloudflareLoader}
-            src={moment.media_url!}
+            src={moment.media_url}
             alt=""
             fill
             className="object-cover scale-110 blur-3xl opacity-30"
@@ -112,36 +107,40 @@ export function CinemaPhotoSlide({
         </div>
       )}
 
-      {/* Main photo with Ken Burns animation */}
+      {/* Main photo — always rendered so cloudflare URL loads immediately */}
       <div
         className={cn(
           "relative z-10 flex items-center justify-center",
           isVertical ? "max-w-[70vw] h-full" : "w-full h-full"
         )}
       >
-        {imageLoaded && effect && (
-          <Image
-            loader={cloudflareLoader}
-            src={moment.media_url!}
-            alt={moment.text_content || "Photo"}
-            fill
-            className={cn(
-              "object-contain cinema-ken-burns",
-              isActive && !isTransitioning && "cinema-kb-active"
-            )}
-            style={{
-              "--kb-start": effect.startTransform,
-              "--kb-end": effect.endTransform,
-              "--kb-duration": `${duration}ms`,
-              transformOrigin: effect.transformOrigin,
-            } as React.CSSProperties}
-            priority
-            onLoad={() => setImageLoaded(true)}
-          />
-        )}
+        <Image
+          loader={cloudflareLoader}
+          src={moment.media_url}
+          alt={moment.text_content || "Photo"}
+          fill
+          className={cn(
+            "object-contain transition-opacity duration-300",
+            imageReady ? "opacity-100" : "opacity-0",
+            imageReady && "cinema-ken-burns",
+            effect && isActive && !isTransitioning && "cinema-kb-active"
+          )}
+          style={
+            effect
+              ? ({
+                  "--kb-start": effect.startTransform,
+                  "--kb-end": effect.endTransform,
+                  "--kb-duration": `${duration}ms`,
+                  transformOrigin: effect.transformOrigin,
+                } as React.CSSProperties)
+              : undefined
+          }
+          priority
+          onLoad={() => setImageReady(true)}
+        />
 
         {/* Loading state */}
-        {!imageLoaded && (
+        {!imageReady && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-white/5 animate-pulse" />
           </div>
