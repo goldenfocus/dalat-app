@@ -111,7 +111,7 @@ export function CinemaPhotoSlide({
       <div
         className={cn(
           "relative z-10 flex items-center justify-center",
-          isVertical ? "max-w-[70vw] h-full" : "w-full h-full"
+          isVertical ? "w-[70vw] h-full" : "w-full h-full"
         )}
       >
         <Image
