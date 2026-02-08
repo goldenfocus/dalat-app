@@ -86,3 +86,4 @@ Users can manage notifications in Settings.
 - Web Push API (Native notifications)
 - Tailwind CSS
 - shadcn/ui
+// Force rebuild - Sun Feb  8 10:01:51 AM UTC 2026
