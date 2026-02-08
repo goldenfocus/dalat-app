@@ -133,8 +133,14 @@ export function CinemaSlideshow({
     };
   }, []); // Only run once on mount
 
+  // Warm up HLS.js module cache on cinema mount so it's ready when the first video hits
+  useEffect(() => {
+    import("hls.js").catch(() => {});
+  }, []);
+
   // Preload next images and videos
-  const preloadedVideosRef = useRef(new Set<string>());
+  const preloadedRef = useRef(new Set<string>());
+  const hlsPreloadRef = useRef<Map<string, { destroy: () => void }>>(new Map());
 
   useEffect(() => {
     const preloadIndices = [currentIndex + 1, currentIndex + 2];
@@ -147,18 +153,70 @@ export function CinemaSlideshow({
         const img = new window.Image();
         img.src = optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen) || moment.media_url;
       } else if (moment?.content_type === "video") {
-        const src = moment.cf_playback_url || moment.media_url;
-        if (src && !preloadedVideosRef.current.has(src)) {
-          preloadedVideosRef.current.add(src);
+        const hlsSrc = moment.cf_playback_url;
+        const mp4Src = moment.media_url;
+        const key = hlsSrc || mp4Src;
+        if (!key || preloadedRef.current.has(key)) return;
+        preloadedRef.current.add(key);
+
+        if (hlsSrc?.includes(".m3u8")) {
+          // HLS: use HLS.js to actually buffer segments (browsers besides Safari can't preload m3u8)
+          import("hls.js").then(({ default: Hls }) => {
+            if (!Hls.isSupported()) {
+              // Safari: native HLS preloading via video element
+              const video = document.createElement("video");
+              video.preload = "auto";
+              video.muted = true;
+              video.src = hlsSrc;
+              video.load();
+              return;
+            }
+            const video = document.createElement("video");
+            video.muted = true;
+            const hls = new Hls({ maxBufferLength: 4, maxMaxBufferLength: 8 });
+            hls.loadSource(hlsSrc);
+            hls.attachMedia(video);
+            hlsPreloadRef.current.set(key, hls);
+
+            // Clean up after buffering enough (first fragment loaded)
+            let cleaned = false;
+            const cleanup = () => {
+              if (cleaned) return;
+              cleaned = true;
+              setTimeout(() => {
+                hls.stopLoad();
+                hls.detachMedia();
+                hls.destroy();
+                hlsPreloadRef.current.delete(key);
+              }, 2000);
+            };
+            hls.on(Hls.Events.FRAG_LOADED, cleanup);
+            hls.on(Hls.Events.ERROR, (_, data) => {
+              if (data.fatal) {
+                hls.destroy();
+                hlsPreloadRef.current.delete(key);
+              }
+            });
+          });
+        } else if (mp4Src) {
+          // MP4: browser handles preloading natively
           const video = document.createElement("video");
           video.preload = "auto";
           video.muted = true;
-          video.src = src;
+          video.src = mp4Src;
           video.load();
         }
       }
     });
   }, [currentIndex, moments]);
+
+  // Cleanup HLS preload instances on unmount
+  useEffect(() => {
+    return () => {
+      hlsPreloadRef.current.forEach((hls) => hls.destroy());
+      hlsPreloadRef.current.clear();
+    };
+  }, []);
 
   // Keyboard controls
   useEffect(() => {
