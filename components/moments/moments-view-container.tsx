@@ -11,6 +11,13 @@ import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/s
 import { createClient } from "@/lib/supabase/client";
 import type { MomentWithProfile } from "@/lib/types";
 
+export interface CinemaEventMeta {
+  title: string;
+  date: string;          // ISO string (starts_at)
+  locationName: string | null;
+  imageUrl: string | null;
+}
+
 interface MomentsViewContainerProps {
   eventId: string;
   eventSlug: string;
@@ -20,6 +27,8 @@ interface MomentsViewContainerProps {
   totalCount: number;
   /** Force a specific view on initial load (e.g., from ?view=cinema) */
   initialView?: "immersive" | "cinema";
+  /** Event metadata for cinema end card */
+  eventMeta?: CinemaEventMeta;
 }
 
 /**
@@ -33,6 +42,7 @@ export function MomentsViewContainer({
   initialHasMore,
   totalCount,
   initialView,
+  eventMeta,
 }: MomentsViewContainerProps) {
   const { viewMode, setViewMode, isLoaded } = useMomentsViewMode("grid");
   const [showImmersive, setShowImmersive] = useState(false);
@@ -263,6 +273,7 @@ export function MomentsViewContainer({
         <CinemaSlideshow
           moments={filteredMoments}
           eventSlug={eventSlug}
+          eventMeta={eventMeta}
           totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
           hasMore={hasMoreMoments}
           onClose={closeCinema}

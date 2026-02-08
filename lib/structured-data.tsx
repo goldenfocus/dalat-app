@@ -632,6 +632,100 @@ export function generateMomentsDiscoverySchema(
 }
 
 /**
+ * Generate ImageGallery + VideoGallery schema for event moments / cinema mode
+ * Optimized for AI search engines (AEO) — provides rich context about
+ * the photo/video album, contributors, and event association.
+ * https://schema.org/ImageGallery
+ */
+export function generateCinemaAlbumSchema(
+  event: {
+    slug: string;
+    title: string;
+    starts_at: string;
+    location_name: string | null;
+    image_url: string | null;
+  },
+  moments: Array<{
+    id: string;
+    content_type: string;
+    media_url: string | null;
+    created_at: string;
+    display_name: string | null;
+    username: string | null;
+  }>,
+  totalCount: number,
+  locale: string
+) {
+  const albumUrl = `${SITE_URL}/${locale}/events/${event.slug}/moments?view=cinema`;
+  const eventUrl = `${SITE_URL}/${locale}/events/${event.slug}`;
+
+  const photos = moments.filter((m) => m.content_type === "photo" && m.media_url);
+  const videos = moments.filter((m) => m.content_type === "video" && m.media_url);
+
+  // Unique contributors
+  const seen = new Set<string>();
+  const contributors = moments
+    .filter((m) => {
+      const name = m.display_name || m.username;
+      if (!name || seen.has(name)) return false;
+      seen.add(name);
+      return true;
+    })
+    .map((m) => m.display_name || m.username);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ImageGallery",
+    name: `${event.title} — Moments`,
+    description: `A cinematic slideshow of ${totalCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""}. Captured by ${contributors.length} contributor${contributors.length !== 1 ? "s" : ""} and presented by ĐàLạt.app.`,
+    url: albumUrl,
+    numberOfItems: totalCount,
+    dateCreated: event.starts_at,
+    ...(event.image_url && { thumbnailUrl: event.image_url }),
+    isPartOf: {
+      "@type": "Event",
+      name: event.title,
+      startDate: event.starts_at,
+      url: eventUrl,
+      ...(event.location_name && {
+        location: {
+          "@type": "Place",
+          name: event.location_name,
+          address: event.location_name,
+        },
+      }),
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    ...(photos.length > 0 && {
+      image: photos.slice(0, 10).map((p) => ({
+        "@type": "ImageObject",
+        contentUrl: p.media_url,
+        uploadDate: p.created_at,
+        ...(p.display_name && { author: { "@type": "Person", name: p.display_name } }),
+      })),
+    }),
+    ...(videos.length > 0 && {
+      video: videos.slice(0, 5).map((v) => ({
+        "@type": "VideoObject",
+        contentUrl: v.media_url,
+        uploadDate: v.created_at,
+        name: `Video moment from ${event.title}`,
+        ...(v.display_name && { author: { "@type": "Person", name: v.display_name } }),
+      })),
+    }),
+    potentialAction: {
+      "@type": "ViewAction",
+      name: "Watch Cinema Mode",
+      target: albumUrl,
+    },
+  };
+}
+
+/**
  * Generate BreadcrumbList schema for navigation
  * https://schema.org/BreadcrumbList
  */

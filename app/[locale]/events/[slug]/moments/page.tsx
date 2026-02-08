@@ -7,12 +7,13 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { MomentsViewContainer } from "@/components/moments/moments-view-container";
 import { MusicPlayButton } from "@/components/audio/music-play-button";
+import { JsonLd, generateCinemaAlbumSchema } from "@/lib/structured-data";
 import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
 
 const INITIAL_PAGE_SIZE = 20;
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
   searchParams: Promise<{ view?: string }>;
 }
 
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: event } = await supabase
     .from("events")
-    .select("title")
+    .select("id, title, image_url, location_name, starts_at")
     .eq("slug", slug)
     .single();
 
@@ -30,9 +31,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Moments" };
   }
 
+  const { count } = await supabase
+    .from("moments")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "published")
+    .eq("event_id", event.id);
+
+  const momentCount = count ?? 0;
+  const title = `${event.title} — ${momentCount} Moments | ĐàLạt.app`;
+  const description = `Watch ${momentCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""} in cinema mode. A collaborative photo album powered by ĐàLạt.app.`;
+
   return {
-    title: `Moments - ${event.title} | ĐàLạt.app`,
-    description: `Photos and videos from ${event.title}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      ...(event.image_url && { images: [{ url: event.image_url, width: 1200, height: 630 }] }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(event.image_url && { images: [event.image_url] }),
+    },
   };
 }
 
@@ -134,7 +157,7 @@ async function canUserPost(eventId: string): Promise<boolean> {
 }
 
 export default async function EventMomentsPage({ params, searchParams }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const { view } = await searchParams;
   const event = await getEvent(slug);
 
@@ -151,6 +174,14 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
 
   return (
     <main className="min-h-screen">
+      <JsonLd
+        data={generateCinemaAlbumSchema(
+          event,
+          moments,
+          totalCount,
+          locale
+        )}
+      />
       <div className="container max-w-4xl mx-auto px-4 py-6">
         {/* Title */}
         <div className="mb-6">
@@ -178,6 +209,12 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             view === "cinema" ? "cinema" :
             undefined
           }
+          eventMeta={{
+            title: event.title,
+            date: event.starts_at,
+            locationName: event.location_name,
+            imageUrl: event.image_url,
+          }}
         />
 
         {/* CTA for users who can post but haven't yet */}
