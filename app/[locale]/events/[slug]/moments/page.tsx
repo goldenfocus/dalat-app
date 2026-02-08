@@ -9,6 +9,7 @@ import { MomentsViewContainer } from "@/components/moments/moments-view-containe
 import { MusicPlayButton } from "@/components/audio/music-play-button";
 import { JsonLd, generateCinemaAlbumSchema } from "@/lib/structured-data";
 import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
+import type { AudioTrack, PlaylistInfo } from "@/lib/stores/audio-player-store";
 
 const INITIAL_PAGE_SIZE = 20;
 
@@ -108,6 +109,45 @@ async function getMoments(eventId: string): Promise<{ moments: MomentWithProfile
   return { moments, hasMore, totalCount };
 }
 
+async function getEventPlaylist(
+  eventSlug: string,
+  eventTitle: string,
+  eventImageUrl: string | null
+): Promise<{ tracks: AudioTrack[]; playlistInfo: PlaylistInfo } | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_event_playlist", {
+    p_event_slug: eventSlug,
+  });
+
+  if (error || !data || data.length === 0) return null;
+
+  const tracks: AudioTrack[] = data
+    .filter((row: any) => row.track_id !== null)
+    .map((row: any) => ({
+      id: row.track_id,
+      file_url: row.track_file_url,
+      title: row.track_title,
+      artist: row.track_artist,
+      album: row.track_album,
+      thumbnail_url: row.track_thumbnail_url,
+      duration_seconds: row.track_duration_seconds,
+      lyrics_lrc: row.track_lyrics_lrc,
+      timing_offset: row.track_timing_offset || 0,
+    }));
+
+  if (tracks.length === 0) return null;
+
+  return {
+    tracks,
+    playlistInfo: {
+      eventSlug,
+      eventTitle,
+      eventImageUrl,
+    },
+  };
+}
+
 async function canUserPost(eventId: string): Promise<boolean> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -167,13 +207,20 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
 
   const t = await getTranslations("moments");
 
-  const [{ moments, hasMore, totalCount }, canPost] = await Promise.all([
+  const [{ moments, hasMore, totalCount }, canPost, playlist] = await Promise.all([
     getMoments(event.id),
     canUserPost(event.id),
+    getEventPlaylist(event.slug, event.title, event.image_url),
   ]);
+
+  const firstTrackUrl = playlist?.tracks[0]?.file_url;
 
   return (
     <main className="min-h-screen">
+      {/* Preload first audio track so playback starts instantly */}
+      {firstTrackUrl && (
+        <link rel="preload" href={firstTrackUrl} as="fetch" crossOrigin="anonymous" />
+      )}
       <JsonLd
         data={generateCinemaAlbumSchema(
           event,
@@ -215,6 +262,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             locationName: event.location_name,
             imageUrl: event.image_url,
           }}
+          initialPlaylist={playlist}
         />
 
         {/* CTA for users who can post but haven't yet */}
