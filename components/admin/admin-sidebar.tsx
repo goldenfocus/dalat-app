@@ -73,13 +73,13 @@ export function AdminSidebar({ navItems, role, roleLabel }: AdminSidebarProps) {
   };
 
   // Normalize pathname for matching (remove locale prefix)
-  const normalizedPath = pathname.replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
+  const normalizedPath = pathname?.replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
 
   const isActive = (href: string) => {
     if (href === "/admin") {
       return normalizedPath === "/admin";
     }
-    return normalizedPath.startsWith(href);
+    return normalizedPath?.startsWith(href) || false;
   };
 
   // Prevent hydration mismatch
