@@ -120,6 +120,41 @@ export function CinemaSlideshow({
     };
   }, []); // Only run once on mount
 
+  // Infinite loading: fetch more moments when approaching the end of loaded batch
+  const isLoadingMoreRef = useRef(false);
+
+  useEffect(() => {
+    const storeMoments = useCinemaModeStore.getState().moments;
+    const storeHasMore = useCinemaModeStore.getState().hasMore;
+
+    // Trigger load when within 5 moments of the end
+    if (
+      storeHasMore &&
+      !isLoadingMoreRef.current &&
+      onLoadMore &&
+      currentIndex >= storeMoments.length - 5
+    ) {
+      isLoadingMoreRef.current = true;
+      onLoadMore().finally(() => {
+        isLoadingMoreRef.current = false;
+      });
+    }
+  }, [currentIndex, onLoadMore]);
+
+  // Sync new moments from parent (loaded by grid) into the cinema store
+  const prevMomentsLengthRef = useRef(initialMoments.length);
+
+  useEffect(() => {
+    if (initialMoments.length > prevMomentsLengthRef.current) {
+      const newMoments = initialMoments.slice(prevMomentsLengthRef.current);
+      const appendMoments = useCinemaModeStore.getState().appendMoments;
+      const setHasMore = useCinemaModeStore.getState().setHasMore;
+      appendMoments(newMoments);
+      setHasMore(hasMore);
+      prevMomentsLengthRef.current = initialMoments.length;
+    }
+  }, [initialMoments, hasMore]);
+
   // Warm up HLS.js module cache on cinema mount so it's ready when the first video hits
   useEffect(() => {
     import("hls.js").catch(() => {});
