@@ -10,8 +10,7 @@ import type { VenueListItem, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { locales } from "@/lib/i18n/routing";
-
-const SITE_URL = "https://dalat.app";
+import { SITE_DOMAIN, SITE_URL } from "@/lib/constants";
 const VENUE_TYPE = "gallery" as const;
 
 type PageProps = {
@@ -129,7 +128,7 @@ async function GalleriesContent({ locale }: { locale: Locale }) {
       ? [
           {
             question: "Đà Lạt có bao nhiêu phòng tranh?",
-            answer: `Hiện tại có ${venues.length} phòng tranh và không gian nghệ thuật trên ĐàLạt.app tổ chức các triển lãm và sự kiện nghệ thuật.`,
+            answer: `Hiện tại có ${venues.length} phòng tranh và không gian nghệ thuật trên ${SITE_DOMAIN} tổ chức các triển lãm và sự kiện nghệ thuật.`,
           },
           {
             question: "Phòng tranh nào ở Đà Lạt đang có triển lãm?",
@@ -145,7 +144,7 @@ async function GalleriesContent({ locale }: { locale: Locale }) {
       : [
           {
             question: "How many art galleries are in Da Lat?",
-            answer: `There are currently ${venues.length} art galleries and creative spaces on ĐàLạt.app hosting exhibitions and art events.`,
+            answer: `There are currently ${venues.length} art galleries and creative spaces on ${SITE_DOMAIN} hosting exhibitions and art events.`,
           },
           {
             question: "Which galleries in Da Lat have exhibitions now?",

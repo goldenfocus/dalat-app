@@ -20,6 +20,7 @@ import { describeRRule, getShortRRuleLabel } from "@/lib/recurrence";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
 import type { EventSeries, Event, Profile, Organizer, Locale, EventPromoMedia } from "@/lib/types";
+import { SITE_NAME, SITE_DOMAIN } from "@/lib/constants";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -59,17 +60,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const recurrenceLabel = getShortRRuleLabel(series.rrule);
   const description = series.description
     ? `${series.description.slice(0, 150)}${series.description.length > 150 ? "..." : ""}`
-    : `${recurrenceLabel}${series.location_name ? ` · ${series.location_name}` : ""} · ĐàLạt.app`;
+    : `${recurrenceLabel}${series.location_name ? ` · ${series.location_name}` : ""} · ${SITE_DOMAIN}`;
 
   return {
-    title: `${series.title} | ĐàLạt.app`,
+    title: `${series.title} | ${SITE_NAME}`,
     description,
     openGraph: {
       title: series.title,
       description,
       type: "website",
       url: `/series/${slug}`,
-      siteName: "ĐàLạt.app",
+      siteName: SITE_NAME,
       ...(series.image_url && {
         images: [{ url: series.image_url, width: 1200, height: 630, alt: series.title }],
       }),

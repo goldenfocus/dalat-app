@@ -10,8 +10,7 @@ import type { VenueListItem, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { locales } from "@/lib/i18n/routing";
-
-const SITE_URL = "https://dalat.app";
+import { SITE_DOMAIN, SITE_URL } from "@/lib/constants";
 const VENUE_TYPE = "restaurant" as const;
 
 type PageProps = {
@@ -129,7 +128,7 @@ async function RestaurantsContent({ locale }: { locale: Locale }) {
       ? [
           {
             question: "Đà Lạt có bao nhiêu nhà hàng tổ chức sự kiện?",
-            answer: `Hiện tại có ${venues.length} nhà hàng trên ĐàLạt.app tổ chức các sự kiện như nhạc sống, tiệc ẩm thực và các buổi gặp mặt.`,
+            answer: `Hiện tại có ${venues.length} nhà hàng trên ${SITE_DOMAIN} tổ chức các sự kiện như nhạc sống, tiệc ẩm thực và các buổi gặp mặt.`,
           },
           {
             question: "Nhà hàng nào ở Đà Lạt đang có sự kiện hôm nay?",
@@ -145,7 +144,7 @@ async function RestaurantsContent({ locale }: { locale: Locale }) {
       : [
           {
             question: "How many restaurants in Da Lat host events?",
-            answer: `There are currently ${venues.length} restaurants on ĐàLạt.app hosting events like live music, food festivals, and gatherings.`,
+            answer: `There are currently ${venues.length} restaurants on ${SITE_DOMAIN} hosting events like live music, food festivals, and gatherings.`,
           },
           {
             question: "Which restaurants in Da Lat have events today?",

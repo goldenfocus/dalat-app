@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import type { EmailNotificationContent, ChannelResult } from '../types';
 import { getRandomInspiringFooter } from '../inspiring-footers';
+import { SITE_DOMAIN, SITE_URL } from '@/lib/constants';
 
 // Lazy-load the Resend client
 let resend: Resend | null = null;
@@ -45,7 +46,7 @@ export async function sendEmailNotification(
     const text = content.text || generateDefaultEmailText(content, inspiringFooter);
 
     const result = await client.emails.send({
-      from: 'Dalat Events <events@dalat.app>',
+      from: `Dalat Events <events@${SITE_DOMAIN}>`,
       to,
       subject: content.subject,
       html,
@@ -111,7 +112,7 @@ export async function sendBulkEmails(
     const emailRequests = batch.map((email) => {
       const inspiringFooter = getRandomInspiringFooter();
       return {
-        from: 'Dalat Events <events@dalat.app>',
+        from: `Dalat Events <events@${SITE_DOMAIN}>`,
         to: email.to,
         subject: email.content.subject,
         html: email.content.html || generateDefaultEmailHtml(email.content, inspiringFooter),
@@ -181,7 +182,7 @@ function generateDefaultEmailHtml(content: EmailNotificationContent, inspiringFo
       "${inspiringFooter}"
     </p>
     <p style="font-size: 12px; color: #9ca3af; margin: 0;">
-      Sent via <a href="https://dalat.app" style="color: #667eea; text-decoration: none;">ĐàLạt.app</a>
+      Sent via <a href="${SITE_URL}" style="color: #667eea; text-decoration: none;">${SITE_DOMAIN}</a>
     </p>
   </div>
 </body>
@@ -209,7 +210,7 @@ function generateDefaultEmailText(content: EmailNotificationContent, inspiringFo
     lines.push(`${content.secondaryActionLabel || 'Alternative'}: ${content.secondaryActionUrl}`);
   }
 
-  lines.push('', '---', `"${inspiringFooter}"`, '', 'Sent via ĐàLạt.app (https://dalat.app)');
+  lines.push('', '---', `"${inspiringFooter}"`, '', `Sent via ${SITE_DOMAIN} (${SITE_URL})`);
 
   return lines.join('\n');
 }

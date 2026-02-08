@@ -41,6 +41,7 @@ import { EventMaterialsStructuredData } from "@/components/events/event-material
 import { EventCommentsSection } from "@/components/comments";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
 import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial, EventPromoMedia, PromoSource } from "@/lib/types";
+import { SITE_NAME } from "@/lib/constants";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -92,7 +93,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const eventDate = formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a");
   const description = eventDescription
     ? `${eventDescription.slice(0, 150)}${eventDescription.length > 150 ? "..." : ""}`
-    : `${eventDate}${event.location_name ? ` · ${event.location_name}` : ""} · ĐàLạt.app`;
+    : `${eventDate}${event.location_name ? ` · ${event.location_name}` : ""} · ${SITE_NAME}`;
 
   // Use absolute URL with locale for proper link previews on messaging apps
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}`;
@@ -104,14 +105,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : `https://dalat.app/${locale}/events/${slug}/og-image`;
 
   return {
-    title: `${title} | ĐàLạt.app`,
+    title: `${title} | ${SITE_NAME}`,
     description,
     openGraph: {
       title,
       description,
       type: "website",
       url: canonicalUrl,
-      siteName: "ĐàLạt.app",
+      siteName: SITE_NAME,
       images: [
         {
           url: ogImageUrl,

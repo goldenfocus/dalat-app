@@ -10,10 +10,7 @@
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
-
-const SITE_URL = "https://dalat.app";
-const SITE_NAME = "ĐàLạt.app";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png?v=2`;
+import { SITE_URL, SITE_NAME, SITE_DOMAIN, DEFAULT_OG_IMAGE } from "@/lib/constants";
 
 interface LocalizedMetadataOptions {
   /** Current locale */
@@ -82,7 +79,7 @@ export function generateLocalizedMetadata({
 
     // Keywords
     ...(keywords.length > 0 && {
-      keywords: [...keywords, "Đà Lạt", "Vietnam", "events", "ĐàLạt.app"],
+      keywords: [...keywords, "Đà Lạt", "Vietnam", "events", SITE_NAME],
     }),
 
     // Canonical and alternates
@@ -158,7 +155,7 @@ export function generateProfileMetadata(
     ? `${profile.bio.slice(0, 150)}${profile.bio.length > 150 ? "..." : ""}`
     : eventCount
     ? `${name} has organized ${eventCount} events in Đà Lạt, Vietnam`
-    : `${name}'s profile on ĐàLạt.app - Event discovery in Đà Lạt, Vietnam`;
+    : `${name}'s profile on ${SITE_DOMAIN} - Event discovery in Đà Lạt, Vietnam`;
 
   // Use username if available, otherwise fall back to user ID for URL
   const profileIdentifier = profile.username || profile.id;

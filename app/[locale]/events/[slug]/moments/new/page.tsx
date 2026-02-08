@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MomentForm } from "@/components/moments";
 import { getEffectiveUser } from "@/lib/god-mode";
 import type { Event, EventSettings } from "@/lib/types";
+import { SITE_NAME } from "@/lib/constants";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `Share a Moment - ${event.title} | ĐàLạt.app`,
+    title: `Share a Moment - ${event.title} | ${SITE_NAME}`,
   };
 }
 

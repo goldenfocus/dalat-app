@@ -10,8 +10,7 @@ import type { VenueListItem, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { locales } from "@/lib/i18n/routing";
-
-const SITE_URL = "https://dalat.app";
+import { SITE_DOMAIN, SITE_URL } from "@/lib/constants";
 const VENUE_TYPE = "community_center" as const;
 
 type PageProps = {
@@ -123,21 +122,21 @@ async function CommunityCentersContent({ locale }: { locale: Locale }) {
       ? [
           {
             question: "Đà Lạt có những trung tâm cộng đồng nào?",
-            answer: `Hiện tại có ${venues.length} trung tâm cộng đồng trên ĐàLạt.app tổ chức các sự kiện, workshop và hoạt động nhóm.`,
+            answer: `Hiện tại có ${venues.length} trung tâm cộng đồng trên ${SITE_DOMAIN} tổ chức các sự kiện, workshop và hoạt động nhóm.`,
           },
           {
             question: "Làm sao để tham gia cộng đồng ở Đà Lạt?",
-            answer: "Bạn có thể tham gia các sự kiện tại các trung tâm cộng đồng, workshop, nhóm sở thích và các buổi gặp mặt. Xem danh sách sự kiện trên ĐàLạt.app.",
+            answer: `Bạn có thể tham gia các sự kiện tại các trung tâm cộng đồng, workshop, nhóm sở thích và các buổi gặp mặt. Xem danh sách sự kiện trên ${SITE_DOMAIN}.`,
           },
         ]
       : [
           {
             question: "What community centers are in Da Lat?",
-            answer: `There are currently ${venues.length} community centers on ĐàLạt.app hosting events, workshops, and group activities.`,
+            answer: `There are currently ${venues.length} community centers on ${SITE_DOMAIN} hosting events, workshops, and group activities.`,
           },
           {
             question: "How do I join the community in Da Lat?",
-            answer: "You can join events at community centers, workshops, hobby groups, and meetups. Check the event listings on ĐàLạt.app.",
+            answer: `You can join events at community centers, workshops, hobby groups, and meetups. Check the event listings on ${SITE_DOMAIN}.`,
           },
         ]
   );

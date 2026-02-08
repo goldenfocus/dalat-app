@@ -8,8 +8,7 @@ import type { Event, VenueMapMarker } from "@/lib/types";
 import type { Metadata } from "next";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
-
-const SITE_URL = "https://dalat.app";
+import { SITE_URL } from "@/lib/constants";
 
 export const maxDuration = 60;
 

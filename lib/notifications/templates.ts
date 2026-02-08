@@ -1,5 +1,6 @@
 import type { Locale } from '@/lib/types';
 import { getRandomInspiringFooter } from './inspiring-footers';
+import { SITE_DOMAIN, SITE_URL } from '@/lib/constants';
 import type {
   NotificationContent,
   EmailNotificationContent,
@@ -529,7 +530,7 @@ function generateEventInvitationEmailText(
     `"${inspiringFooter}"`,
     '',
     '---',
-    'Sent via Dalat Events (https://dalat.app)',
+    `Sent via Dalat Events (${SITE_URL})`,
   );
 
   return lines.join('\n');
@@ -910,7 +911,7 @@ function generateEventInvitationEmailHtml(
         "${inspiringFooter}"
       </p>
       <p style="font-size: 12px; color: #9ca3af; margin: 0;">
-        Sent via <a href="https://dalat.app" style="color: #667eea; text-decoration: none;">ĐàLạt.app</a>
+        Sent via <a href="${SITE_URL}" style="color: #667eea; text-decoration: none;">${SITE_DOMAIN}</a>
       </p>
     </div>
   </div>

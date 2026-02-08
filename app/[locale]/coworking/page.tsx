@@ -10,8 +10,7 @@ import type { VenueListItem, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { locales } from "@/lib/i18n/routing";
-
-const SITE_URL = "https://dalat.app";
+import { SITE_DOMAIN, SITE_URL } from "@/lib/constants";
 const VENUE_TYPE = "coworking" as const;
 
 type PageProps = {
@@ -127,7 +126,7 @@ async function CoworkingContent({ locale }: { locale: Locale }) {
       ? [
           {
             question: "Đà Lạt có bao nhiêu không gian coworking?",
-            answer: `Hiện tại có ${venues.length} không gian coworking trên ĐàLạt.app với WiFi nhanh và không gian làm việc thoải mái.`,
+            answer: `Hiện tại có ${venues.length} không gian coworking trên ${SITE_DOMAIN} với WiFi nhanh và không gian làm việc thoải mái.`,
           },
           {
             question: "Đà Lạt có phù hợp cho digital nomads không?",
@@ -143,7 +142,7 @@ async function CoworkingContent({ locale }: { locale: Locale }) {
       : [
           {
             question: "How many coworking spaces are in Da Lat?",
-            answer: `There are currently ${venues.length} coworking spaces on ĐàLạt.app with fast WiFi and comfortable work environments.`,
+            answer: `There are currently ${venues.length} coworking spaces on ${SITE_DOMAIN} with fast WiFi and comfortable work environments.`,
           },
           {
             question: "Is Da Lat good for digital nomads?",

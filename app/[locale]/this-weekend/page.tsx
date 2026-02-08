@@ -12,8 +12,7 @@ import { locales } from "@/lib/i18n/routing";
 import { formatInDaLat, DALAT_TIMEZONE } from "@/lib/timezone";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { nextSaturday, nextSunday, isSaturday, isSunday, isAfter, startOfDay, endOfDay } from "date-fns";
-
-const SITE_URL = "https://dalat.app";
+import { SITE_DOMAIN, SITE_URL } from "@/lib/constants";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
@@ -178,7 +177,7 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           },
           {
             question: "Làm gì ở Đà Lạt vào cuối tuần?",
-            answer: "Đà Lạt có nhiều hoạt động cuối tuần như: nhạc sống tại các quán cà phê và bar, chợ phiên, triển lãm nghệ thuật, hiking và tham quan các điểm thiên nhiên. Xem lịch sự kiện cập nhật hàng ngày trên ĐàLạt.app.",
+            answer: `Đà Lạt có nhiều hoạt động cuối tuần như: nhạc sống tại các quán cà phê và bar, chợ phiên, triển lãm nghệ thuật, hiking và tham quan các điểm thiên nhiên. Xem lịch sự kiện cập nhật hàng ngày trên ${SITE_DOMAIN}.`,
           },
         ]
       : [
@@ -190,7 +189,7 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           },
           {
             question: "What to do in Da Lat on weekends?",
-            answer: "Da Lat offers many weekend activities: live music at cafes and bars, weekend markets, art exhibitions, hiking, and exploring natural attractions. Check the daily updated event calendar on ĐàLạt.app.",
+            answer: `Da Lat offers many weekend activities: live music at cafes and bars, weekend markets, art exhibitions, hiking, and exploring natural attractions. Check the daily updated event calendar on ${SITE_DOMAIN}.`,
           },
         ]
   );

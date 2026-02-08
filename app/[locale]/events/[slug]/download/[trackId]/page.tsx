@@ -7,6 +7,7 @@ import { Music, Download, Mic2, Clock, User, Disc, ArrowLeft } from "lucide-reac
 import { formatDuration } from "@/lib/audio-metadata";
 import { DownloadButton } from "./download-button";
 import { getMixedKeywords } from "@/lib/seo/dalat-keywords";
+import { SITE_NAME } from "@/lib/constants";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
@@ -92,8 +93,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   // SEO-optimized for download queries
   const title = locale === "vi"
-    ? `Tải ${trackTitle} - ${artist} | MP3 Download | ĐàLạt.app`
-    : `Download ${trackTitle} - ${artist} | MP3 | ĐàLạt.app`;
+    ? `Tải ${trackTitle} - ${artist} | MP3 Download | ${SITE_NAME}`
+    : `Download ${trackTitle} - ${artist} | MP3 | ${SITE_NAME}`;
 
   const description = locale === "vi"
     ? `Tải nhạc "${trackTitle}" của ${artist} miễn phí. MP3 chất lượng cao từ sự kiện "${event.title}" tại Đà Lạt.`
@@ -123,7 +124,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: "music.song",
       url: canonicalUrl,
-      siteName: "ĐàLạt.app",
+      siteName: SITE_NAME,
       images: [
         {
           url: ogImageUrl,

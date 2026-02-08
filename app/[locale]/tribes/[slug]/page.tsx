@@ -6,6 +6,8 @@ import { TribeMembersList } from "@/components/tribes/tribe-members-list";
 import { TribeEventsList } from "@/components/tribes/tribe-events-list";
 import { JoinTribeButton } from "@/components/tribes/join-tribe-button";
 
+import { SITE_NAME } from "@/lib/constants";
+
 interface PageProps { params: Promise<{ slug: string; locale: string }>; }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -14,7 +16,7 @@ export async function generateMetadata({ params }: PageProps) {
   const { data: tribe } = await supabase.from("tribes").select("name, description, cover_image_url").eq("slug", slug).single();
   if (!tribe) return { title: "Tribe not found" };
   return {
-    title: `${tribe.name} | ĐàLạt.app`,
+    title: `${tribe.name} | ${SITE_NAME}`,
     description: tribe.description,
     openGraph: { title: tribe.name, description: tribe.description || undefined, images: tribe.cover_image_url ? [tribe.cover_image_url] : undefined },
   };

@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
-
-const siteUrl = "https://dalat.app";
+import { SITE_URL, SITE_NAME, DEFAULT_OG_IMAGE } from "@/lib/constants";
 
 // Viewport configuration for optimal mobile rendering and PageSpeed
 export const viewport: Viewport = {
@@ -18,8 +17,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: "Da Lat Events, Festivals & Things to Do | ĐàLạt.app",
+  metadataBase: new URL(SITE_URL),
+  title: `Da Lat Events, Festivals & Things to Do | ${SITE_NAME}`,
   description:
     "Discover events happening in Da Lat this week. Live music, markets, festivals, and community gatherings in Vietnam's highland city. Free event discovery.",
   keywords: [
@@ -34,7 +33,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "ĐàLạt.app",
+    title: SITE_NAME,
   },
   formatDetection: {
     telephone: false,
@@ -42,26 +41,26 @@ export const metadata: Metadata = {
   // Optimized OG tags for faster HTML rendering
   openGraph: {
     type: "website",
-    siteName: "ĐàLạt.app",
-    url: siteUrl,
+    siteName: SITE_NAME,
+    url: SITE_URL,
     title: "Da Lat Events, Festivals & Things to Do",
     description:
       "Discover events happening in Da Lat this week. Live music, markets, festivals, and community gatherings in Vietnam's highland city.",
     images: [
       {
-        url: `${siteUrl}/og-image.png?v=2`,
+        url: DEFAULT_OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: "ĐàLạt.app - Events, Festivals & Things to Do in Da Lat, Vietnam",
+        alt: `${SITE_NAME} - Events, Festivals & Things to Do in Da Lat, Vietnam`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Da Lat Events, Festivals & Things to Do | ĐàLạt.app",
+    title: `Da Lat Events, Festivals & Things to Do | ${SITE_NAME}`,
     description:
       "Discover events happening in Da Lat this week. Live music, markets, festivals, and community gatherings in Vietnam's highland city.",
-    images: [`${siteUrl}/og-image.png?v=2`],
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

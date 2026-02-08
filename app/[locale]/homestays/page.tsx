@@ -10,8 +10,7 @@ import type { VenueListItem, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { locales } from "@/lib/i18n/routing";
-
-const SITE_URL = "https://dalat.app";
+import { SITE_DOMAIN, SITE_URL } from "@/lib/constants";
 const VENUE_TYPE = "homestay" as const;
 
 type PageProps = {
@@ -124,7 +123,7 @@ async function HomestaysContent({ locale }: { locale: Locale }) {
       ? [
           {
             question: "Đà Lạt có bao nhiêu homestay tổ chức sự kiện?",
-            answer: `Có ${venues.length} homestay trên ĐàLạt.app tổ chức các sự kiện và hoạt động cộng đồng.`,
+            answer: `Có ${venues.length} homestay trên ${SITE_DOMAIN} tổ chức các sự kiện và hoạt động cộng đồng.`,
           },
           {
             question: "Homestay ở Đà Lạt có gì đặc biệt?",
@@ -134,7 +133,7 @@ async function HomestaysContent({ locale }: { locale: Locale }) {
       : [
           {
             question: "How many homestays in Da Lat host events?",
-            answer: `There are ${venues.length} homestays on ĐàLạt.app hosting events and community activities.`,
+            answer: `There are ${venues.length} homestays on ${SITE_DOMAIN} hosting events and community activities.`,
           },
           {
             question: "What makes Da Lat homestays special?",

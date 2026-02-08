@@ -9,6 +9,7 @@ import { getBlogTranslationsBatch } from "@/lib/translations";
 import type { Locale } from "@/lib/i18n/routing";
 import type { ContentLocale } from "@/lib/types";
 import type { BlogPostWithCategory, BlogCategory } from "@/lib/types/blog";
+import { SITE_DOMAIN } from "@/lib/constants";
 
 interface PageProps {
   params: Promise<{ locale: Locale }>;
@@ -55,7 +56,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     locale,
     path: "/blog",
     title: "Blog",
-    description: "Product updates, release notes, and stories from the ĐàLạt.app team.",
+    description: `Product updates, release notes, and stories from the ${SITE_DOMAIN} team.`,
     keywords: ["dalat", "blog", "changelog", "updates", "release notes"],
     type: "website",
   });

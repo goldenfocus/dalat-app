@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { MomentsFeed } from "@/components/feed";
 import type { MomentWithEvent } from "@/lib/types";
+import { SITE_NAME, SITE_URL } from "@/lib/constants";
 
 const INITIAL_PAGE_SIZE = 10;
-
-const SITE_URL = "https://dalat.app";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -17,13 +16,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pageUrl = `${SITE_URL}/${locale}/feed`;
 
   return {
-    title: "Feed | ĐàLạt.app",
+    title: `Feed | ${SITE_NAME}`,
     description: "Discover moments from past events in Đà Lạt",
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: "Feed | ĐàLạt.app",
+      title: `Feed | ${SITE_NAME}`,
       description: "Discover moments from past events in Đà Lạt",
       type: "website",
       url: pageUrl,

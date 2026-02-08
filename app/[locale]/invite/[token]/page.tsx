@@ -9,6 +9,7 @@ import { formatInDaLat } from "@/lib/timezone";
 import { InviteRsvpButtons } from "./rsvp-buttons";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Locale, InvitationRsvpStatus } from "@/lib/types";
+import { SITE_NAME } from "@/lib/constants";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await response.json();
 
   return {
-    title: `You're invited to ${data.event.title} | ĐàLạt.app`,
+    title: `You're invited to ${data.event.title} | ${SITE_NAME}`,
     description: `${data.inviter.name} invited you to ${data.event.title}`,
   };
 }
@@ -271,7 +272,7 @@ export default async function InvitePage({ params, searchParams }: PageProps) {
         <p className="text-center text-sm text-muted-foreground mt-6">
           {t("poweredBy")}{" "}
           <Link href="/" className="text-primary hover:underline">
-            ĐàLạt.app
+            {SITE_NAME}
           </Link>
         </p>
       </div>

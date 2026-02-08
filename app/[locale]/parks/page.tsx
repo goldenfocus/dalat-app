@@ -10,8 +10,7 @@ import type { VenueListItem, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { locales } from "@/lib/i18n/routing";
-
-const SITE_URL = "https://dalat.app";
+import { SITE_DOMAIN, SITE_URL } from "@/lib/constants";
 const VENUE_TYPE = "park" as const;
 
 type PageProps = {
@@ -129,7 +128,7 @@ async function ParksContent({ locale }: { locale: Locale }) {
       ? [
           {
             question: "Đà Lạt có bao nhiêu công viên tổ chức sự kiện?",
-            answer: `Hiện tại có ${venues.length} công viên và không gian xanh trên ĐàLạt.app tổ chức các sự kiện ngoài trời.`,
+            answer: `Hiện tại có ${venues.length} công viên và không gian xanh trên ${SITE_DOMAIN} tổ chức các sự kiện ngoài trời.`,
           },
           {
             question: "Công viên nào ở Đà Lạt đang có sự kiện?",
@@ -145,7 +144,7 @@ async function ParksContent({ locale }: { locale: Locale }) {
       : [
           {
             question: "How many parks in Da Lat host events?",
-            answer: `There are currently ${venues.length} parks and green spaces on ĐàLạt.app hosting outdoor events.`,
+            answer: `There are currently ${venues.length} parks and green spaces on ${SITE_DOMAIN} hosting outdoor events.`,
           },
           {
             question: "Which parks in Da Lat have events now?",

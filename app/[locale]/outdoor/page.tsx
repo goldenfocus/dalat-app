@@ -10,8 +10,7 @@ import type { VenueListItem, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { locales } from "@/lib/i18n/routing";
-
-const SITE_URL = "https://dalat.app";
+import { SITE_DOMAIN, SITE_URL } from "@/lib/constants";
 const VENUE_TYPE = "outdoor" as const;
 
 type PageProps = {
@@ -124,7 +123,7 @@ async function OutdoorContent({ locale }: { locale: Locale }) {
       ? [
           {
             question: "Đà Lạt có những hoạt động ngoài trời nào?",
-            answer: `Có ${venues.length} địa điểm ngoài trời trên ĐàLạt.app tổ chức các hoạt động như hiking, camping, festival và sự kiện thiên nhiên.`,
+            answer: `Có ${venues.length} địa điểm ngoài trời trên ${SITE_DOMAIN} tổ chức các hoạt động như hiking, camping, festival và sự kiện thiên nhiên.`,
           },
           {
             question: "Thời điểm tốt nhất để tham gia hoạt động ngoài trời ở Đà Lạt?",
@@ -134,7 +133,7 @@ async function OutdoorContent({ locale }: { locale: Locale }) {
       : [
           {
             question: "What outdoor activities are in Da Lat?",
-            answer: `There are ${venues.length} outdoor venues on ĐàLạt.app hosting activities like hiking, camping, festivals, and nature events.`,
+            answer: `There are ${venues.length} outdoor venues on ${SITE_DOMAIN} hosting activities like hiking, camping, festivals, and nature events.`,
           },
           {
             question: "When is the best time for outdoor activities in Da Lat?",

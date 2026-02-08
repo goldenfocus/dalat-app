@@ -9,6 +9,7 @@ import { getBlogTranslationsBatch } from "@/lib/translations";
 import type { Locale } from "@/lib/i18n/routing";
 import type { ContentLocale } from "@/lib/types";
 import type { BlogPostWithCategory } from "@/lib/types/blog";
+import { SITE_DOMAIN } from "@/lib/constants";
 
 interface PageProps {
   params: Promise<{ locale: Locale }>;
@@ -80,12 +81,12 @@ export default async function AboutPage({ params }: PageProps) {
     {
       question: "What is ĐàLạt.app?",
       answer:
-        "ĐàLạt.app is a free, open-source event discovery platform for Da Lat, Vietnam. Find live music, art exhibitions, community gatherings, festivals, and more happening in Vietnam's highland city.",
+        `${SITE_DOMAIN} is a free, open-source event discovery platform for Da Lat, Vietnam. Find live music, art exhibitions, community gatherings, festivals, and more happening in Vietnam's highland city.`,
     },
     {
       question: "Is ĐàLạt.app free to use?",
       answer:
-        "Yes! ĐàLạt.app is completely free for both event attendees and organizers. There are no subscriptions, hidden fees, or premium tiers. The platform is open source and community-driven.",
+        `Yes! ${SITE_DOMAIN} is completely free for both event attendees and organizers. There are no subscriptions, hidden fees, or premium tiers. The platform is open source and community-driven.`,
     },
     {
       question: "How do I create an event on ĐàLạt.app?",
@@ -100,7 +101,7 @@ export default async function AboutPage({ params }: PageProps) {
     {
       question: "Is ĐàLạt.app available in multiple languages?",
       answer:
-        "Yes! ĐàLạt.app supports 12 languages including English, Vietnamese, Korean, Chinese, Japanese, French, German, Spanish, Russian, Thai, Malay, and Indonesian. The app automatically detects your preferred language.",
+        `Yes! ${SITE_DOMAIN} supports 12 languages including English, Vietnamese, Korean, Chinese, Japanese, French, German, Spanish, Russian, Thai, Malay, and Indonesian. The app automatically detects your preferred language.`,
     },
   ];
 

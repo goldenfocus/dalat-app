@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { KaraokePageClient } from "./karaoke-page-client";
 import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
+import { SITE_NAME } from "@/lib/constants";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
@@ -159,7 +160,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: "music.song",
       url: canonicalUrl,
-      siteName: "ĐàLạt.app",
+      siteName: SITE_NAME,
       images: [
         {
           url: ogImageUrl,

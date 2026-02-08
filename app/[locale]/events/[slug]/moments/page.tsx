@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MomentsViewContainer } from "@/components/moments/moments-view-container";
 import { MusicPlayButton } from "@/components/audio/music-play-button";
 import { JsonLd, generateCinemaAlbumSchema } from "@/lib/structured-data";
+import { SITE_NAME, SITE_DOMAIN } from "@/lib/constants";
 import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
 import type { AudioTrack, PlaylistInfo } from "@/lib/stores/audio-player-store";
 
@@ -39,8 +40,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     .eq("event_id", event.id);
 
   const momentCount = count ?? 0;
-  const title = `${event.title} — ${momentCount} Moments | ĐàLạt.app`;
-  const description = `Watch ${momentCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""} in cinema mode. A collaborative photo album powered by ĐàLạt.app.`;
+  const title = `${event.title} — ${momentCount} Moments | ${SITE_NAME}`;
+  const description = `Watch ${momentCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""} in cinema mode. A collaborative photo album powered by ${SITE_DOMAIN}.`;
 
   return {
     title,

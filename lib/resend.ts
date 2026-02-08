@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { getRandomInspiringFooter } from "./notifications/inspiring-footers";
+import { SITE_DOMAIN, SITE_URL } from "@/lib/constants";
 
 // Lazy-load the Resend client to avoid build errors when API key isn't set
 let resend: Resend | null = null;
@@ -179,7 +180,7 @@ function generateEventInviteHtml(
       "${inspiringFooter}"
     </p>
     <p style="font-size: 12px; color: #9ca3af; margin: 0;">
-      Sent via <a href="https://dalat.app" style="color: #667eea; text-decoration: none;">ĐàLạt.app</a>
+      Sent via <a href="${SITE_URL}" style="color: #667eea; text-decoration: none;">${SITE_DOMAIN}</a>
     </p>
   </div>
 </body>

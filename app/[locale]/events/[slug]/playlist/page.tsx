@@ -9,6 +9,7 @@ import { PlaylistShareButton } from "@/components/events/playlist-share-button";
 import { formatInDaLat } from "@/lib/timezone";
 import type { PlaylistTrack } from "@/components/events/playlist-player";
 import { JsonLd, generateMusicPlaylistSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
+import { SITE_NAME } from "@/lib/constants";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -168,7 +169,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   ].filter(Boolean);
 
   return {
-    title: `${title} | ĐàLạt.app`,
+    title: `${title} | ${SITE_NAME}`,
     description,
     keywords: keywords.join(", "),
     openGraph: {
@@ -176,7 +177,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       description,
       type: "music.playlist",
       url: canonicalUrl,
-      siteName: "ĐàLạt.app",
+      siteName: SITE_NAME,
       images: [
         {
           url: ogImageUrl,

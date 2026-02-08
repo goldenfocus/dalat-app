@@ -10,9 +10,7 @@
 
 import type { Event, Profile, Organizer, Festival, EventSeries, Moment, Venue, VenueType } from "@/lib/types";
 import type { BlogPostFull } from "@/lib/types/blog";
-
-const SITE_URL = "https://dalat.app";
-const SITE_NAME = "ĐàLạt.app";
+import { SITE_URL, SITE_NAME, SITE_DOMAIN } from "@/lib/constants";
 
 // Đà Lạt, Vietnam coordinates
 const DA_LAT_GEO = {
@@ -677,7 +675,7 @@ export function generateCinemaAlbumSchema(
     "@context": "https://schema.org",
     "@type": "ImageGallery",
     name: `${event.title} — Moments`,
-    description: `A cinematic slideshow of ${totalCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""}. Captured by ${contributors.length} contributor${contributors.length !== 1 ? "s" : ""} and presented by ĐàLạt.app.`,
+    description: `A cinematic slideshow of ${totalCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""}. Captured by ${contributors.length} contributor${contributors.length !== 1 ? "s" : ""} and presented by ${SITE_DOMAIN}.`,
     url: albumUrl,
     numberOfItems: totalCount,
     dateCreated: event.starts_at,
@@ -1099,7 +1097,7 @@ export function generateLyricsFAQSchema(
     ? [
         {
           question: `Ai hát bài "${trackTitle}"?`,
-          answer: `"${trackTitle}" được hát bởi ${artist}. Bài hát có trong playlist của sự kiện "${event.title}" trên ĐàLạt.app.`,
+          answer: `"${trackTitle}" được hát bởi ${artist}. Bài hát có trong playlist của sự kiện "${event.title}" trên ${SITE_DOMAIN}.`,
         },
         {
           question: `Lời bài hát "${trackTitle}" là gì?`,
@@ -1107,7 +1105,7 @@ export function generateLyricsFAQSchema(
         },
         {
           question: `Tôi có thể hát karaoke "${trackTitle}" ở đâu?`,
-          answer: `Bạn có thể hát karaoke "${trackTitle}" online tại ĐàLạt.app với lời hiển thị theo nhạc. Truy cập trang karaoke để bắt đầu hát ngay!`,
+          answer: `Bạn có thể hát karaoke "${trackTitle}" online tại ${SITE_DOMAIN} với lời hiển thị theo nhạc. Truy cập trang karaoke để bắt đầu hát ngay!`,
         },
         ...(durationFormatted
           ? [
@@ -1121,7 +1119,7 @@ export function generateLyricsFAQSchema(
     : [
         {
           question: `Who sings "${trackTitle}"?`,
-          answer: `"${trackTitle}" is performed by ${artist}. This song is from the "${event.title}" event playlist on ĐàLạt.app.`,
+          answer: `"${trackTitle}" is performed by ${artist}. This song is from the "${event.title}" event playlist on ${SITE_DOMAIN}.`,
         },
         {
           question: `What are the lyrics to "${trackTitle}"?`,
@@ -1129,7 +1127,7 @@ export function generateLyricsFAQSchema(
         },
         {
           question: `Where can I sing "${trackTitle}" karaoke?`,
-          answer: `You can sing "${trackTitle}" karaoke online at ĐàLạt.app with synchronized lyrics display. Visit the karaoke page to start singing!`,
+          answer: `You can sing "${trackTitle}" karaoke online at ${SITE_DOMAIN} with synchronized lyrics display. Visit the karaoke page to start singing!`,
         },
         ...(durationFormatted
           ? [
