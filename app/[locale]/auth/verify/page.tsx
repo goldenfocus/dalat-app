@@ -14,8 +14,8 @@ function VerifyContent() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Get token_hash and type from params (bypasses PKCE for PWA compatibility)
-  const tokenHash = searchParams.get("token_hash");
-  const type = searchParams.get("type") || "magiclink";
+  const tokenHash = searchParams?.get("token_hash");
+  const type = searchParams?.get("type") || "magiclink";
 
   const handleConfirm = () => {
     if (!tokenHash) return;
