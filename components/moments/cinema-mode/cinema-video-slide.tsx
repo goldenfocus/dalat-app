@@ -27,7 +27,9 @@ export function CinemaVideoSlide({
   const [isBuffering, setIsBuffering] = useState(false);
   const hasStartedRef = useRef(false);
 
-  // Track time updates via the shared ref
+  // Track time updates and control playback in a single effect.
+  // Including moment.id in deps ensures we re-run when transitioning between videos
+  // (isActive/isPaused often stay the same between video moments).
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !isActive) return;
@@ -37,27 +39,23 @@ export function CinemaVideoSlide({
     };
     const handleWaiting = () => setIsBuffering(true);
     const handlePlaying = () => setIsBuffering(false);
-    const handleCanPlay = () => setIsBuffering(false);
+
+    // When the video source is ready (HLS.js loads async), retry play
+    const handleCanPlay = () => {
+      setIsBuffering(false);
+      if (!isPaused) {
+        video.muted = true;
+        video.play().catch(() => {});
+      }
+    };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
     video.addEventListener("waiting", handleWaiting);
     video.addEventListener("playing", handlePlaying);
     video.addEventListener("canplay", handleCanPlay);
 
-    return () => {
-      video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("waiting", handleWaiting);
-      video.removeEventListener("playing", handlePlaying);
-      video.removeEventListener("canplay", handleCanPlay);
-    };
-  }, [isActive, onTimeUpdate]);
-
-  // Control playback: pause/resume without restarting
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (isActive && !isPaused) {
+    // Control playback: pause/resume without restarting
+    if (!isPaused) {
       // Only reset to start on first play, not on resume
       if (!hasStartedRef.current) {
         hasStartedRef.current = true;
@@ -68,7 +66,14 @@ export function CinemaVideoSlide({
     } else {
       video.pause();
     }
-  }, [isActive, isPaused]);
+
+    return () => {
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("waiting", handleWaiting);
+      video.removeEventListener("playing", handlePlaying);
+      video.removeEventListener("canplay", handleCanPlay);
+    };
+  }, [isActive, isPaused, moment.id, onTimeUpdate]);
 
   // Reset on moment change
   useEffect(() => {

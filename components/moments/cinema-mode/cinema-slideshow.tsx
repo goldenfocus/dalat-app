@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { RotateCcw, Camera, Grid3X3, Sparkles } from "lucide-react";
+import { RotateCcw, Camera, Grid3X3, Sparkles, Play, Pause } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { CinemaPhotoSlide } from "./cinema-photo-slide";
 import { CinemaVideoSlide } from "./cinema-video-slide";
@@ -91,6 +91,16 @@ export function CinemaSlideshow({
   const isPaused = playbackState === "paused";
   const isEnded = playbackState === "ended";
 
+  // Brief icon flash when toggling play/pause (Instagram Stories style)
+  const [flashIcon, setFlashIcon] = useState<"play" | "pause" | null>(null);
+  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showFlash = useCallback((icon: "play" | "pause") => {
+    if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
+    setFlashIcon(icon);
+    flashTimeoutRef.current = setTimeout(() => setFlashIcon(null), 600);
+  }, []);
+
   // Random end phrase
   const endPhrase = useMemo(() => {
     return END_PHRASES[Math.floor(Math.random() * END_PHRASES.length)];
@@ -119,6 +129,7 @@ export function CinemaSlideshow({
 
     return () => {
       exit();
+      if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
     };
   }, []); // Only run once on mount
 
@@ -136,8 +147,6 @@ export function CinemaSlideshow({
         const img = new window.Image();
         img.src = optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen) || moment.media_url;
       } else if (moment?.content_type === "video") {
-        // Preload via hidden video element — browsers actually buffer this
-        // unlike <link rel="preload" as="video"> which is widely ignored
         const src = moment.cf_playback_url || moment.media_url;
         if (src && !preloadedVideosRef.current.has(src)) {
           preloadedVideosRef.current.add(src);
@@ -145,7 +154,6 @@ export function CinemaSlideshow({
           video.preload = "auto";
           video.muted = true;
           video.src = src;
-          // Load just enough to buffer the start, then discard the element
           video.load();
         }
       }
@@ -162,7 +170,7 @@ export function CinemaSlideshow({
           break;
         case " ":
           e.preventDefault();
-          togglePlayback();
+          handleToggleTap();
           break;
         case "ArrowLeft":
           e.preventDefault();
@@ -177,31 +185,33 @@ export function CinemaSlideshow({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [togglePlayback, next, previous]);
+  }, []);
 
-  // Touch/swipe handling
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  // Touch/swipe handling — distinguish taps from swipes
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const didSwipeRef = useRef(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart({
+    touchStartRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
-    });
+      time: Date.now(),
+    };
+    didSwipeRef.current = false;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart) return;
+    if (!touchStartRef.current) return;
 
-    const deltaX = e.changedTouches[0].clientX - touchStart.x;
-    const deltaY = e.changedTouches[0].clientY - touchStart.y;
+    const deltaX = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const deltaY = e.changedTouches[0].clientY - touchStartRef.current.y;
 
     // Horizontal swipe (left/right navigation)
     if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      didSwipeRef.current = true;
       if (deltaX > 0) {
-        // Swipe right = previous
         previous();
       } else {
-        // Swipe left = next
         next();
       }
       triggerHaptic("selection");
@@ -209,16 +219,33 @@ export function CinemaSlideshow({
 
     // Vertical swipe down = exit
     if (deltaY > 100 && Math.abs(deltaY) > Math.abs(deltaX)) {
+      didSwipeRef.current = true;
       triggerHaptic("selection");
       handleExit();
     }
 
-    setTouchStart(null);
+    touchStartRef.current = null;
   };
 
-  const handleTap = useCallback(() => {
+  // Tap = toggle play/pause (only if it wasn't a swipe)
+  const handleToggleTap = useCallback(() => {
+    const state = useCinemaModeStore.getState();
+    if (state.playbackState === "playing") {
+      showFlash("pause");
+    } else {
+      showFlash("play");
+    }
+    triggerHaptic("selection");
+    togglePlayback();
     showControlsTemporarily();
-  }, [showControlsTemporarily]);
+  }, [togglePlayback, showControlsTemporarily, showFlash]);
+
+  const handleClick = useCallback(() => {
+    // On touch devices, onClick fires after touchEnd.
+    // Only toggle if it wasn't a swipe.
+    if (didSwipeRef.current) return;
+    handleToggleTap();
+  }, [handleToggleTap]);
 
   const handleExit = useCallback(() => {
     exit();
@@ -248,7 +275,7 @@ export function CinemaSlideshow({
   return (
     <div
       className="fixed inset-0 z-50 bg-black"
-      onClick={handleTap}
+      onClick={handleClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -277,6 +304,19 @@ export function CinemaSlideshow({
             />
           )}
         </>
+      )}
+
+      {/* Brief play/pause flash icon (Instagram Stories style) */}
+      {flashIcon && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+          <div className="p-5 rounded-full bg-black/40 backdrop-blur-sm text-white animate-in fade-in zoom-in-50 duration-200">
+            {flashIcon === "pause" ? (
+              <Pause className="w-10 h-10" />
+            ) : (
+              <Play className="w-10 h-10 ml-1" />
+            )}
+          </div>
+        </div>
       )}
 
       {/* End screen */}
@@ -318,14 +358,14 @@ export function CinemaSlideshow({
             {/* Action buttons */}
             <div className="flex flex-col gap-3">
               <button
-                onClick={handleLoop}
+                onClick={(e) => { e.stopPropagation(); handleLoop(); }}
                 className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"
               >
                 <RotateCcw className="w-4 h-4" />
                 Watch again
               </button>
               <button
-                onClick={handleAddMoment}
+                onClick={(e) => { e.stopPropagation(); handleAddMoment(); }}
                 className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 transition-colors"
               >
                 <Camera className="w-4 h-4" />
@@ -333,7 +373,8 @@ export function CinemaSlideshow({
               </button>
               {onSwitchToGrid && (
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     exit();
                     onSwitchToGrid();
                   }}
@@ -351,7 +392,7 @@ export function CinemaSlideshow({
         </div>
       )}
 
-      {/* Controls overlay */}
+      {/* Controls overlay (top bar + timeline only, no center button) */}
       {!isEnded && (
         <CinemaControls
           onExit={handleExit}
