@@ -20,6 +20,7 @@ import {
   useCinemaMoments,
   useCinemaTimerDuration,
 } from "@/lib/stores/cinema-mode-store";
+import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
 import type { MomentWithProfile } from "@/lib/types";
 import type { CinemaEventMeta } from "../moments-view-container";
 import { CinemaEndCard } from "./cinema-end-card";
@@ -272,6 +273,7 @@ export function CinemaSlideshow({
   };
 
   // Tap = toggle play/pause (only if it wasn't a swipe)
+  // Also unlocks audio player on the first user gesture if autoplay was blocked
   const handleToggleTap = useCallback(() => {
     const state = useCinemaModeStore.getState();
     if (state.playbackState === "playing") {
@@ -282,6 +284,12 @@ export function CinemaSlideshow({
     triggerHaptic("selection");
     togglePlayback();
     showControlsTemporarily();
+
+    // Unlock music if browser blocked autoplay (first tap provides user gesture)
+    const audio = useAudioPlayerStore.getState();
+    if (audio.autoplayBlocked && !audio.isPlaying) {
+      audio.play();
+    }
   }, [togglePlayback, showControlsTemporarily, showFlash]);
 
   const handleClick = useCallback(() => {

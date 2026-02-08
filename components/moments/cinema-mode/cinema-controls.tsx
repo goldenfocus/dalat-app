@@ -108,10 +108,9 @@ export function CinemaControls({
         </div>
       </div>
 
-      {/* Bottom timeline */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 pb-safe pointer-events-auto">
-        {/* Segmented progress bar */}
-        <div className="flex gap-0.5 h-1 rounded-full overflow-hidden">
+      {/* Bottom timeline — tall touch target, thin visual bar */}
+      <div className="absolute bottom-0 left-0 right-0 px-4 pb-safe pointer-events-auto">
+        <div className="flex gap-0.5 items-end">
           {segments.map((segment) => (
             <button
               key={segment.index}
@@ -119,22 +118,27 @@ export function CinemaControls({
                 e.stopPropagation();
                 handleSegmentClick(segment.index);
               }}
-              className={cn(
-                "relative flex-1 h-full rounded-full overflow-hidden transition-colors",
-                segment.isUpcoming && "bg-white/20",
-                segment.isCompleted && "bg-primary",
-                segment.isCurrent && "bg-white/20"
-              )}
+              className="relative flex-1 py-4 group"
               aria-label={`Go to moment ${segment.index + 1}`}
             >
-              {segment.isCurrent && (
-                <div
-                  className="absolute inset-0 bg-primary origin-left transition-transform"
-                  style={{
-                    transform: `scaleX(${progress / 100})`,
-                  }}
-                />
-              )}
+              {/* Visual bar (thin) */}
+              <div
+                className={cn(
+                  "relative h-1 rounded-full overflow-hidden transition-colors",
+                  segment.isUpcoming && "bg-white/20",
+                  segment.isCompleted && "bg-primary",
+                  segment.isCurrent && "bg-white/20"
+                )}
+              >
+                {segment.isCurrent && (
+                  <div
+                    className="absolute inset-0 bg-primary origin-left transition-transform"
+                    style={{
+                      transform: `scaleX(${progress / 100})`,
+                    }}
+                  />
+                )}
+              </div>
             </button>
           ))}
         </div>
