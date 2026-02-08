@@ -87,3 +87,4 @@ Users can manage notifications in Settings.
 - Tailwind CSS
 - shadcn/ui
 // Force rebuild - Sun Feb  8 10:01:51 AM UTC 2026
+// Dependencies installed - Sun Feb  8 10:08:34 AM UTC 2026
