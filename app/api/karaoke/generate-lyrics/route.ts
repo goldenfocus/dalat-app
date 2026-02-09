@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { triggerTranslation } from "@/lib/translations-client";
 
+export const maxDuration = 120;
+
 /**
  * POST /api/karaoke/generate-lyrics
  *
