@@ -67,6 +67,7 @@ const R2_ENABLED_BUCKETS: string[] = [
   'organizer-logos',
   'persona-references',
   'moment-materials',
+  'promo-media',
 ];
 
 // Import and re-export isR2Configured from centralized config (with .trim() protection)

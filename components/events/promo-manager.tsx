@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,10 @@ import {
   Repeat,
   Play,
   FileText,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { uploadFile } from "@/lib/storage/client";
 import type { EventPromoMedia, PromoUpdateScope } from "@/lib/types";
 
 interface PromoManagerProps {
@@ -69,6 +71,8 @@ export function PromoManager({
   const [isLoadingMoments, setIsLoadingMoments] = useState(false);
   const [updateScope, setUpdateScope] = useState<PromoUpdateScope>("this_event");
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchPromo = useCallback(async () => {
     setIsLoading(true);
@@ -183,6 +187,35 @@ export function PromoManager({
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setIsUploading(true);
+    try {
+      const mediaItems: Array<{ media_type: string; media_url: string }> = [];
+      for (const file of Array.from(files)) {
+        const result = await uploadFile("promo-media", file);
+        const mediaType = file.type.startsWith("video/")
+          ? "video"
+          : file.type === "application/pdf"
+            ? "pdf"
+            : "image";
+        mediaItems.push({ media_type: mediaType, media_url: result.publicUrl });
+      }
+      await fetch(`/api/events/${eventSlug}/promo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope: "this_event", media_items: mediaItems }),
+      });
+      fetchPromo();
+    } catch (error) {
+      console.error("Failed to upload promo:", error);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const momentsByEvent = seriesMoments.reduce((acc, moment) => {
     const key = moment.event_slug;
     if (!acc[key]) acc[key] = { title: moment.event_title, date: moment.event_date, moments: [] };
@@ -222,7 +255,29 @@ export function PromoManager({
         </div>
       )}
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*,application/pdf"
+        multiple
+        onChange={handleFileUpload}
+        className="hidden"
+      />
       <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+        >
+          {isUploading ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Upload className="w-4 h-4 mr-2" />
+          )}
+          {isUploading ? t("uploading") : t("uploadNew")}
+        </Button>
         {isSeriesEvent && seriesId && (
           <Button type="button" variant="outline" size="sm" onClick={handleOpenPicker}>
             <Images className="w-4 h-4 mr-2" />{t("importFromMoments")}

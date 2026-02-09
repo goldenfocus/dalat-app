@@ -44,6 +44,16 @@ const BUCKET_CONFIG: Record<string, string[]> = {
     "image/webp",
     "image/gif",
   ],
+  "promo-media": [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "video/mp4",
+    "video/webm",
+    "video/quicktime",
+    "application/pdf",
+  ],
 };
 
 /**

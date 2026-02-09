@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight, Images, Loader2, Check, Repeat } from "lucide-react";
+import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight, Images, Loader2, Check, Repeat, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { uploadFile } from "@/lib/storage/client";
 import type { EventPromoMedia, PromoSource, PromoUpdateScope } from "@/lib/types";
 
 interface PromoMediaSectionProps {
@@ -59,6 +60,8 @@ export function PromoMediaSection({
   const [isLoadingMoments, setIsLoadingMoments] = useState(false);
   const [updateScope, setUpdateScope] = useState<PromoUpdateScope>("this_event");
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Can we manage promo inline? (need eventSlug at minimum)
   const canManageInline = isOwner && !!eventSlug;
@@ -184,6 +187,35 @@ export function PromoMediaSection({
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length || !eventSlug) return;
+    setIsUploading(true);
+    try {
+      const mediaItems: Array<{ media_type: string; media_url: string }> = [];
+      for (const file of Array.from(files)) {
+        const result = await uploadFile("promo-media", file);
+        const mediaType = file.type.startsWith("video/")
+          ? "video"
+          : file.type === "application/pdf"
+            ? "pdf"
+            : "image";
+        mediaItems.push({ media_type: mediaType, media_url: result.publicUrl });
+      }
+      await fetch(`/api/events/${eventSlug}/promo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope: "this_event", media_items: mediaItems }),
+      });
+      fetchPromo();
+    } catch (error) {
+      console.error("Failed to upload promo:", error);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const momentsByEvent = seriesMoments.reduce((acc, moment) => {
     const key = moment.event_slug;
     if (!acc[key]) acc[key] = { title: moment.event_title, date: moment.event_date, moments: [] };
@@ -197,28 +229,46 @@ export function PromoMediaSection({
 
     return (
       <>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*,application/pdf"
+          multiple
+          onChange={handleFileUpload}
+          className="hidden"
+        />
         <div className="rounded-lg border border-dashed border-muted-foreground/30 p-6 text-center">
           <Sparkles className="w-8 h-8 mx-auto text-muted-foreground/50 mb-2" />
           <p className="text-sm text-muted-foreground mb-3">{t("noPromo")}</p>
-          {/* Show import button for series events, external onEditClick, or link to edit page */}
-          {canImportFromSeries ? (
-            <Button variant="outline" size="sm" onClick={handleOpenPicker}>
-              <Images className="w-4 h-4 mr-2" />
-              {t("importFromMoments")}
-            </Button>
-          ) : onEditClick ? (
-            <Button variant="outline" size="sm" onClick={onEditClick}>
-              <Sparkles className="w-4 h-4 mr-2" />
-              {t("addPromo")}
-            </Button>
-          ) : eventSlug ? (
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/events/${eventSlug}/edit`}>
-                <Pencil className="w-4 h-4 mr-2" />
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {canManageInline && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4 mr-2" />
+                )}
+                {isUploading ? t("uploading") : t("uploadNew")}
+              </Button>
+            )}
+            {canImportFromSeries && (
+              <Button variant="outline" size="sm" onClick={handleOpenPicker}>
+                <Images className="w-4 h-4 mr-2" />
+                {t("importFromMoments")}
+              </Button>
+            )}
+            {!canManageInline && onEditClick && (
+              <Button variant="outline" size="sm" onClick={onEditClick}>
+                <Sparkles className="w-4 h-4 mr-2" />
                 {t("addPromo")}
-              </Link>
-            </Button>
-          ) : null}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Moment picker dialog */}
@@ -249,6 +299,14 @@ export function PromoMediaSection({
 
   return (
     <section className="space-y-3">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*,application/pdf"
+        multiple
+        onChange={handleFileUpload}
+        className="hidden"
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -260,27 +318,48 @@ export function PromoMediaSection({
             </span>
           )}
         </div>
-        {isOwner && (canImportFromSeries ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleOpenPicker}
-            className="h-8 px-2 text-muted-foreground"
-          >
-            <Images className="w-3.5 h-3.5 mr-1" />
-            {t("editPromo")}
-          </Button>
-        ) : onEditClick ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onEditClick}
-            className="h-8 px-2 text-muted-foreground"
-          >
-            <Pencil className="w-3.5 h-3.5 mr-1" />
-            {t("editPromo")}
-          </Button>
-        ) : null)}
+        {isOwner && (
+          <div className="flex items-center gap-1">
+            {canManageInline && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="h-8 px-2 text-muted-foreground"
+              >
+                {isUploading ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                ) : (
+                  <Upload className="w-3.5 h-3.5 mr-1" />
+                )}
+                {isUploading ? t("uploading") : t("uploadNew")}
+              </Button>
+            )}
+            {canImportFromSeries && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleOpenPicker}
+                className="h-8 px-2 text-muted-foreground"
+              >
+                <Images className="w-3.5 h-3.5 mr-1" />
+                {t("importFromMoments")}
+              </Button>
+            )}
+            {!canManageInline && onEditClick && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onEditClick}
+                className="h-8 px-2 text-muted-foreground"
+              >
+                <Pencil className="w-3.5 h-3.5 mr-1" />
+                {t("editPromo")}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Gallery Grid */}
