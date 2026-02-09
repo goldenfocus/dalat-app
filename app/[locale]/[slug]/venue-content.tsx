@@ -118,14 +118,17 @@ async function getVenueDataById(venueId: string): Promise<VenueData | null> {
     .limit(6);
 
   // Get happening now events
-  const now = new Date().toISOString();
+  // Events with ends_at in the future, OR events with no ends_at that started within the last 4 hours
+  const now = new Date();
+  const nowISO = now.toISOString();
+  const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString();
   const { data: happeningNow } = await supabase
     .from("events")
     .select("id, slug, title, image_url, starts_at, ends_at")
     .eq("venue_id", venueId)
     .eq("status", "published")
-    .lte("starts_at", now)
-    .or(`ends_at.is.null,ends_at.gte.${now}`)
+    .lte("starts_at", nowISO)
+    .or(`ends_at.gte.${nowISO},and(ends_at.is.null,starts_at.gte.${fourHoursAgo})`)
     .order("starts_at", { ascending: true })
     .limit(3);
 
@@ -135,7 +138,7 @@ async function getVenueDataById(venueId: string): Promise<VenueData | null> {
     .select("id", { count: "exact", head: true })
     .eq("venue_id", venueId)
     .eq("status", "published")
-    .lt("starts_at", now);
+    .lt("starts_at", nowISO);
 
   return {
     venue: venue as Venue,
