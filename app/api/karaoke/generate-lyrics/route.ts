@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { triggerTranslation } from "@/lib/translations-client";
+import { reviewLyricsWithAI } from "@/lib/karaoke/review-lyrics";
 
 export const maxDuration = 120;
 
@@ -122,7 +123,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const lrc = lrcLines.join("\n");
+    const rawLrc = lrcLines.join("\n");
+
+    // Review lyrics with AI to remove Whisper hallucinations
+    const review = await reviewLyricsWithAI(
+      rawLrc,
+      track.title || "",
+      track.artist || ""
+    );
+
+    console.log(
+      `[generate-lyrics] Review: ${review.verdict} (removed=${review.removedCount}, fixed=${review.fixedCount})`
+    );
+
+    // If mostly hallucinated, don't save garbage lyrics
+    const lrc = review.verdict === "mostly_hallucinated" ? null : review.cleanedLrc;
 
     // Save to database
     const { error: updateError } = await supabase
@@ -142,12 +157,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Auto-translate lyrics to all 12 languages (fire-and-forget)
-    // Extract plain text from LRC for translation
-    const plainLyrics = lrcLines
-      .slice(2) // Skip metadata lines
-      .map((line) => line.replace(/^\[\d{2}:\d{2}\.\d{2}\]/, "").trim())
-      .filter(Boolean)
-      .join("\n");
+    // Extract plain text from cleaned LRC for translation
+    const plainLyrics = lrc
+      ? lrc
+          .split("\n")
+          .map((line) => line.replace(/^\[\d{2}:\d{2}\.\d{2,3}\]/, "").trim())
+          .filter((l) => l && !l.match(/^\[[a-z]+:.+\]$/i))
+          .join("\n")
+      : "";
 
     if (plainLyrics) {
       triggerTranslation("track", trackId, [
@@ -159,9 +176,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       language: whisperResult.language,
-      lineCount: lrcLines.length - 2, // Subtract metadata lines
+      lineCount: lrc ? lrc.split("\n").length : 0,
       transcript: whisperResult.text,
       translationTriggered: !!plainLyrics,
+      review: {
+        verdict: review.verdict,
+        removedCount: review.removedCount,
+        fixedCount: review.fixedCount,
+      },
     });
   } catch (error) {
     console.error("Generate lyrics error:", error);

@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { reviewLyricsWithAI } from "@/lib/karaoke/review-lyrics";
 
 const anthropic = new Anthropic();
 
@@ -216,6 +217,20 @@ export async function analyzeAudio(
   // Try to transcribe with Whisper (now returns LRC format too)
   const transcriptResult = await transcribeWithWhisper(audioUrl);
 
+  // Review lyrics with AI to remove Whisper hallucinations
+  let reviewedLrc = transcriptResult?.lrc || null;
+  if (reviewedLrc) {
+    const review = await reviewLyricsWithAI(
+      reviewedLrc,
+      existingMetadata?.title || "",
+      existingMetadata?.artist || ""
+    );
+    reviewedLrc = review.verdict === "mostly_hallucinated" ? null : review.cleanedLrc;
+    console.log(
+      `[audio-analyzer] Lyrics review: ${review.verdict} (removed=${review.removedCount}, fixed=${review.fixedCount})`
+    );
+  }
+
   // Generate summary using Claude
   const summary = await summarizeAudio(transcriptResult?.text || null, {
     title: existingMetadata?.title,
@@ -239,7 +254,7 @@ export async function analyzeAudio(
     audio_transcript: transcriptResult?.text || null,
     audio_summary: summary.audio_summary,
     audio_language: transcriptResult?.language || "en",
-    lyrics_lrc: transcriptResult?.lrc || null,  // LRC for karaoke
+    lyrics_lrc: reviewedLrc,  // LRC for karaoke (AI-reviewed)
     mood: summary.mood,
     quality_score: qualityScore,
   };

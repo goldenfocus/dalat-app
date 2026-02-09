@@ -58,6 +58,9 @@ const DEFAULT_CHANNELS: Record<NotificationType, NotificationChannel[]> = {
 
   // Video processing notifications - in-app + push (user's content is ready)
   video_ready: ['in_app', 'push'],
+
+  // Social notifications - in-app + push
+  new_follower: ['in_app', 'push'],
 };
 
 /**
