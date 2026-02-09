@@ -106,18 +106,33 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
+  // Support lookup by UUID (id) or slug
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
   // Get series and check ownership
   const { data: series, error: fetchError } = await supabase
     .from("event_series")
     .select("id, created_by, rrule, first_occurrence, starts_at_time, duration_minutes")
-    .eq("slug", slug)
+    .eq(isUUID ? "id" : "slug", slug)
     .single();
 
   if (fetchError || !series) {
     return NextResponse.json({ error: "Series not found" }, { status: 404 });
   }
 
-  if (series.created_by !== user.id) {
+  // Check if user is creator or admin
+  const isCreator = series.created_by === user.id;
+  let isAdmin = false;
+  if (!isCreator) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
+  }
+
+  if (!isCreator && !isAdmin) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 
@@ -253,18 +268,33 @@ export async function DELETE(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
+  // Support lookup by UUID (id) or slug
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
   // Get series and check ownership
   const { data: series, error: fetchError } = await supabase
     .from("event_series")
     .select("id, created_by")
-    .eq("slug", slug)
+    .eq(isUUID ? "id" : "slug", slug)
     .single();
 
   if (fetchError || !series) {
     return NextResponse.json({ error: "Series not found" }, { status: 404 });
   }
 
-  if (series.created_by !== user.id) {
+  // Check if user is creator or admin
+  const isCreator = series.created_by === user.id;
+  let isAdmin = false;
+  if (!isCreator) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
+  }
+
+  if (!isCreator && !isAdmin) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 

@@ -28,9 +28,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Series not found" }, { status: 404 });
   }
 
-  // Check ownership
-  if (series.created_by !== user.id) {
-    return NextResponse.json({ error: "Not series owner" }, { status: 403 });
+  // Check if user is creator or admin
+  const isCreator = series.created_by === user.id;
+  let isAdmin = false;
+  if (!isCreator) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
+  }
+
+  if (!isCreator && !isAdmin) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 
   // Get limit from query params
