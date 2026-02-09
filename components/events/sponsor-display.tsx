@@ -88,9 +88,9 @@ export function SponsorDisplay({ sponsors }: SponsorDisplayProps) {
           if (!sponsor) return null;
 
           const content = (
-            <div className="group relative flex flex-col items-center gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/30 hover:border-amber-300/50 dark:hover:border-amber-600/40 transition-all duration-300">
+            <div className="group flex flex-col items-center gap-2 p-3">
               {/* Logo */}
-              <div className="w-16 h-16 rounded-xl overflow-hidden transition-transform duration-300 group-hover:scale-105 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-xl overflow-hidden transition-transform duration-300 group-hover:scale-105 shadow-md">
                 {sponsor.logo_url ? (
                   <img
                     src={sponsor.logo_url}
@@ -98,17 +98,15 @@ export function SponsorDisplay({ sponsors }: SponsorDisplayProps) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                  <div className="w-full h-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                  </div>
                 )}
               </div>
               {/* Name */}
               <span className="text-xs font-medium text-center text-muted-foreground group-hover:text-foreground transition-colors line-clamp-2">
                 {sponsor.name}
               </span>
-              {/* External link indicator */}
-              {sponsor.website_url && (
-                <ExternalLink className="w-3 h-3 text-muted-foreground/50 absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              )}
             </div>
           );
 
