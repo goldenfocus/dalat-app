@@ -775,6 +775,8 @@ export interface VenueCommunityMoment {
   user_id: string;
   content_type: MomentContentType;
   media_url: string | null;
+  thumbnail_url: string | null;
+  cf_playback_url: string | null;
   text_content: string | null;
   created_at: string;
   username: string | null;

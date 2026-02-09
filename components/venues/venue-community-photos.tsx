@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { X, ChevronLeft, ChevronRight, Play, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { VenueCommunityMoment } from "@/lib/types";
+import { getCfStreamThumbnailUrl } from "@/lib/media-utils";
 import { Link } from "@/lib/i18n/routing";
 
 interface VenueCommunityPhotosProps {
@@ -177,12 +178,22 @@ export function VenueCommunityPhotos({
               onClick={() => setLightboxIndex(index)}
               className="relative aspect-square rounded-lg overflow-hidden bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.98] transition-transform group"
             >
-              <img
-                src={moment.media_url!}
-                alt=""
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
+              {(() => {
+                const thumbUrl =
+                  moment.content_type === "video"
+                    ? moment.thumbnail_url || getCfStreamThumbnailUrl(moment.cf_playback_url) || moment.media_url
+                    : moment.media_url;
+                return thumbUrl ? (
+                  <img
+                    src={thumbUrl}
+                    alt=""
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted" />
+                );
+              })()}
 
               {/* Video indicator */}
               {moment.content_type === "video" && (
@@ -274,7 +285,7 @@ export function VenueCommunityPhotos({
           >
             {currentMoment.content_type === "video" ? (
               <video
-                src={currentMoment.media_url!}
+                src={currentMoment.cf_playback_url || currentMoment.media_url!}
                 controls
                 autoPlay
                 className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
