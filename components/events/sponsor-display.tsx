@@ -28,12 +28,12 @@ export function SponsorDisplay({ sponsors }: SponsorDisplayProps) {
     const content = (
       <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200/50 dark:border-amber-800/30">
         {/* Logo */}
-        <div className="w-16 h-16 rounded-xl bg-white dark:bg-zinc-900 border border-amber-200/50 dark:border-amber-800/30 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
+        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
           {sponsor.logo_url ? (
             <img
               src={sponsor.logo_url}
               alt={sponsor.name}
-              className="w-full h-full object-contain p-2"
+              className="w-full h-full object-cover"
             />
           ) : (
             <ImageIcon className="w-6 h-6 text-muted-foreground" />
@@ -90,12 +90,12 @@ export function SponsorDisplay({ sponsors }: SponsorDisplayProps) {
           const content = (
             <div className="group relative flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100/50 dark:from-zinc-900 dark:to-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 hover:border-amber-300/50 dark:hover:border-amber-700/50 transition-all duration-300">
               {/* Logo */}
-              <div className="w-14 h-14 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-700/80 flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105 shadow-sm">
+              <div className="w-14 h-14 rounded-xl overflow-hidden transition-transform duration-300 group-hover:scale-105 flex items-center justify-center">
                 {sponsor.logo_url ? (
                   <img
                     src={sponsor.logo_url}
                     alt={sponsor.name}
-                    className="w-full h-full object-contain p-1.5"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <ImageIcon className="w-5 h-5 text-muted-foreground" />
