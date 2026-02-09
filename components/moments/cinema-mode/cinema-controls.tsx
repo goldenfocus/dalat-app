@@ -1,6 +1,5 @@
 "use client";
 
-import { X, Grid3X3, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import {
@@ -14,14 +13,10 @@ import {
 
 interface CinemaControlsProps {
   onExit: () => void;
-  onSwitchToGrid?: () => void;
-  onSwitchToImmersive?: () => void;
 }
 
 export function CinemaControls({
   onExit,
-  onSwitchToGrid,
-  onSwitchToImmersive,
 }: CinemaControlsProps) {
   const progress = useCinemaProgressValue();
   const currentIndex = useCinemaCurrentIndex();
@@ -36,24 +31,6 @@ export function CinemaControls({
   const handleSegmentClick = (index: number) => {
     triggerHaptic("selection");
     goTo(index);
-  };
-
-  const handleExit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    triggerHaptic("selection");
-    onExit();
-  };
-
-  const handleSwitchToGrid = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    triggerHaptic("selection");
-    onSwitchToGrid?.();
-  };
-
-  const handleSwitchToImmersive = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    triggerHaptic("selection");
-    onSwitchToImmersive?.();
   };
 
   // Generate timeline segments
@@ -71,40 +48,10 @@ export function CinemaControls({
         (showControls || isPaused) ? "opacity-100" : "opacity-0"
       )}
     >
-      {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between pointer-events-auto">
-        {/* Counter */}
-        <div className="text-white/80 text-sm font-medium px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-sm">
+      {/* Top bar — counter only (view mode switcher is a separate persistent component) */}
+      <div className="absolute top-0 left-0 right-0 p-4 pointer-events-auto">
+        <div className="text-white/80 text-sm font-medium px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-sm w-fit">
           {currentIndex + 1} / {total}
-        </div>
-
-        {/* Top right controls */}
-        <div className="flex items-center gap-2">
-          {onSwitchToImmersive && (
-            <button
-              onClick={handleSwitchToImmersive}
-              className="p-2 rounded-full bg-black/30 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/50 transition-all"
-              aria-label="Switch to immersive view"
-            >
-              <Layers className="w-5 h-5" />
-            </button>
-          )}
-          {onSwitchToGrid && (
-            <button
-              onClick={handleSwitchToGrid}
-              className="p-2 rounded-full bg-black/30 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/50 transition-all"
-              aria-label="Switch to grid view"
-            >
-              <Grid3X3 className="w-5 h-5" />
-            </button>
-          )}
-          <button
-            onClick={handleExit}
-            className="p-2 rounded-full bg-black/30 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/50 transition-all"
-            aria-label="Exit cinema mode"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
       </div>
 

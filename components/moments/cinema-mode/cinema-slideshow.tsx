@@ -33,8 +33,6 @@ interface CinemaSlideshowProps {
   totalCount?: number;
   hasMore?: boolean;
   onClose: () => void;
-  onSwitchToGrid?: () => void;
-  onSwitchToImmersive?: () => void;
   onLoadMore?: () => Promise<void>;
 }
 
@@ -46,8 +44,6 @@ export function CinemaSlideshow({
   totalCount,
   hasMore = false,
   onClose,
-  onSwitchToGrid,
-  onSwitchToImmersive,
   onLoadMore,
 }: CinemaSlideshowProps) {
   const router = useRouter();
@@ -415,16 +411,13 @@ export function CinemaSlideshow({
           contributors={contributors}
           onReplay={handleLoop}
           onAddMoment={handleAddMoment}
-          onBrowseAll={onSwitchToGrid ? () => { exit(); onSwitchToGrid(); } : undefined}
         />
       )}
 
-      {/* Controls overlay (top bar + timeline only, no center button) */}
+      {/* Controls overlay (counter + timeline — view mode switcher is persistent/separate) */}
       {!isEnded && (
         <CinemaControls
           onExit={handleExit}
-          onSwitchToGrid={onSwitchToGrid}
-          onSwitchToImmersive={onSwitchToImmersive}
         />
       )}
     </div>

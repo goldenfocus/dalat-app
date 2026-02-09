@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useMomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 import { ViewModeSwitcher } from "./view-mode-switcher";
+import { FloatingViewModeSwitcher } from "./floating-view-mode-switcher";
 import { MediaTypeFilterToggle, type MediaTypeFilter } from "./media-type-filter";
 import { InfiniteMomentGrid, type InfiniteMomentGridHandle } from "./infinite-moment-grid";
 import { ImmersiveMomentView } from "./immersive-moment-view";
@@ -273,8 +274,6 @@ export function MomentsViewContainer({
           initialIndex={immersiveStartIndex}
           eventSlug={eventSlug}
           onClose={closeImmersive}
-          onSwitchToGrid={switchToGrid}
-          onSwitchToCinema={switchToCinema}
           onLoadMore={handleLoadMore}
           hasMore={hasMoreMoments}
           totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
@@ -290,9 +289,16 @@ export function MomentsViewContainer({
           totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
           hasMore={hasMoreMoments}
           onClose={closeCinema}
-          onSwitchToGrid={switchToGrid}
-          onSwitchToImmersive={switchToImmersive}
           onLoadMore={handleLoadMore}
+        />
+      )}
+
+      {/* Persistent floating view mode switcher — always visible in fullscreen modes */}
+      {(showCinema || showImmersive) && (
+        <FloatingViewModeSwitcher
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          onClose={switchToGrid}
         />
       )}
     </>
