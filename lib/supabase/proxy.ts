@@ -12,6 +12,10 @@ const localePattern = routing.locales.join('|');
 const localeAtUsernameRegex = new RegExp(`^\\/(${localePattern})\\/@([a-zA-Z0-9_]+)$`);
 const localeStripRegex = new RegExp(`^\\/(${localePattern})`);
 
+// Social media crawlers that Next.js doesn't recognize as bots.
+// These need metadata in the initial <head> for link previews to work.
+const socialCrawlerPattern = /Zalo|Line\/|Telegram|Viber|KakaoTalk|Slackbot|Discordbot|PinterestBot|LinkedInBot|Whatsapp|Snapchat|Twitterbot|vkShare/i;
+
 // Check if a string is a valid locale
 function isLocale(segment: string): boolean {
   return routing.locales.includes(segment as typeof routing.locales[number]);
@@ -67,6 +71,22 @@ export async function updateSession(request: NextRequest) {
     ? rawPathname.slice(0, -1)
     : rawPathname;
 
+  // Detect social media crawlers that Next.js doesn't natively recognize as bots.
+  // When detected, we override the User-Agent via response headers so Next.js waits
+  // for metadata/Suspense to resolve before streaming <head>. This ensures OG tags
+  // appear inside <head> for proper link preview rendering on Zalo, Line, Telegram, etc.
+  const isSocialCrawler = socialCrawlerPattern.test(request.headers.get('user-agent') || '');
+
+  // Helper: tell Next.js renderer to treat this request as a bot.
+  // Uses x-middleware-override-headers to replace User-Agent for the rendering pipeline.
+  function spoofBotUA(response: NextResponse): NextResponse {
+    if (isSocialCrawler) {
+      response.headers.set('x-middleware-override-headers', 'user-agent');
+      response.headers.set('x-middleware-request-user-agent', 'facebookexternalhit/1.1');
+    }
+    return response;
+  }
+
   // =========================================================================
   // UNIFIED SLUG NAMESPACE: Legacy URL Redirects
   // =========================================================================
@@ -115,7 +135,7 @@ export async function updateSession(request: NextRequest) {
       // Fast path: Always rewrite homepage to /en for ISR caching
       const rewriteUrl = request.nextUrl.clone();
       rewriteUrl.pathname = `/${defaultLocale}`;
-      return NextResponse.rewrite(rewriteUrl);
+      return spoofBotUA(NextResponse.rewrite(rewriteUrl));
     }
 
     // For non-homepage routes, we can personalize (but try to minimize cookie reads)
@@ -149,7 +169,7 @@ export async function updateSession(request: NextRequest) {
           // For default locale, rewrite internally (no redirect penalty)
           const rewriteUrl = request.nextUrl.clone();
           rewriteUrl.pathname = `/${defaultLocale}/${cleanSegment}`;
-          return NextResponse.rewrite(rewriteUrl);
+          return spoofBotUA(NextResponse.rewrite(rewriteUrl));
         }
       }
 
@@ -165,7 +185,7 @@ export async function updateSession(request: NextRequest) {
       // This eliminates the redirect chain penalty for ~80% of users
       const rewriteUrl = request.nextUrl.clone();
       rewriteUrl.pathname = pathname === '/' ? `/${defaultLocale}` : `/${defaultLocale}${pathname}`;
-      return NextResponse.rewrite(rewriteUrl);
+      return spoofBotUA(NextResponse.rewrite(rewriteUrl));
     }
 
     // Handle /{locale}/@{username} -> /{locale}/{username} redirect (normalize @ prefix)
@@ -229,7 +249,7 @@ export async function updateSession(request: NextRequest) {
   // For public routes, use next-intl middleware to properly set locale context
   // This is critical for translations to work - skipping this breaks i18n
   if (isPublicRoute) {
-    return intlMiddleware(request);
+    return spoofBotUA(intlMiddleware(request));
   }
 
   // If the env vars are not set, skip auth check
@@ -282,5 +302,5 @@ export async function updateSession(request: NextRequest) {
     intlResponse.cookies.set(cookie.name, cookie.value);
   });
 
-  return intlResponse;
+  return spoofBotUA(intlResponse);
 }
