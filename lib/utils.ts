@@ -24,10 +24,10 @@ export function decodeUnicodeEscapes(str: string | null | undefined): string {
 
 /**
  * Convert text to a URL-friendly slug with proper romanization.
- * Handles Vietnamese diacritics (phở → pho) and other Latin-based languages.
+ * Handles Vietnamese diacritics (phố → pho) and other Latin-based languages.
  *
  * @example
- * slugify("Phở Bên Đồi") // => "pho-ben-doi"
+ * slugify("Phố Bên Đồi") // => "pho-ben-doi"
  * slugify("Café Münich") // => "cafe-munich"
  */
 export function slugify(text: string): string {

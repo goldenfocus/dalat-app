@@ -4,7 +4,7 @@
 
 Transform the venue detail page (`/venues/[slug]`) from a simple listing into a compelling "mini-website" that venue owners would want as their primary web presence.
 
-**Success Criteria**: Pho Ben Doi owner sees the page and wants to use it as their website.
+**Success Criteria**: Phố Bên Đồi owner sees the page and wants to use it as their website.
 
 ---
 
