@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useCallback } from "react";
+import { Share2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import {
@@ -9,13 +11,18 @@ import {
   useCinemaTotalCount,
   useCinemaPlaybackState,
   useCinemaShowControls,
+  useCurrentCinemaMoment,
 } from "@/lib/stores/cinema-mode-store";
 
 interface CinemaControlsProps {
+  eventSlug: string;
+  eventTitle?: string;
   onExit: () => void;
 }
 
 export function CinemaControls({
+  eventSlug,
+  eventTitle,
   onExit,
 }: CinemaControlsProps) {
   const progress = useCinemaProgressValue();
@@ -23,6 +30,8 @@ export function CinemaControls({
   const total = useCinemaTotalCount();
   const playbackState = useCinemaPlaybackState();
   const showControls = useCinemaShowControls();
+  const currentMoment = useCurrentCinemaMoment();
+  const [shared, setShared] = useState(false);
 
   const goTo = useCinemaModeStore.getState().goTo;
 
@@ -32,6 +41,38 @@ export function CinemaControls({
     triggerHaptic("selection");
     goTo(index);
   };
+
+  const handleShare = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    triggerHaptic("selection");
+
+    // Share the current moment directly
+    const momentId = currentMoment?.id;
+    const shareUrl = momentId
+      ? `${window.location.origin}/events/${eventSlug}/moments/${momentId}`
+      : `${window.location.origin}/events/${eventSlug}/moments?view=cinema`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: eventTitle ?? "Moment",
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name === "AbortError") return;
+      }
+    }
+
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    } catch {
+      // Silent fail
+    }
+  }, [eventSlug, eventTitle, currentMoment]);
 
   // Generate timeline segments
   const segments = Array.from({ length: total }, (_, i) => ({
@@ -48,11 +89,24 @@ export function CinemaControls({
         (showControls || isPaused) ? "opacity-100" : "opacity-0"
       )}
     >
-      {/* Top bar — counter only (view mode switcher is a separate persistent component) */}
-      <div className="absolute top-0 left-0 right-0 p-4 pointer-events-auto">
+      {/* Top bar — counter + share (view mode switcher is a separate persistent component) */}
+      <div className="absolute top-0 left-0 right-0 p-4 pointer-events-auto flex items-center justify-between">
         <div className="text-white/80 text-sm font-medium px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-sm w-fit">
           {currentIndex + 1} / {total}
         </div>
+
+        {/* Share button */}
+        <button
+          onClick={handleShare}
+          className="p-2.5 rounded-full bg-black/30 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/50 active:scale-95 transition-all mr-[180px]"
+          aria-label="Share cinema"
+        >
+          {shared ? (
+            <Check className="w-5 h-5 text-green-400" />
+          ) : (
+            <Share2 className="w-5 h-5" />
+          )}
+        </button>
       </div>
 
       {/* Bottom timeline — tall touch target, thin visual bar */}

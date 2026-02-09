@@ -34,6 +34,7 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    hour12: true,
   });
 
   // Truncate description to ~100 chars at word boundary

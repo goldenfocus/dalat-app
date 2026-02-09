@@ -417,6 +417,8 @@ export function CinemaSlideshow({
       {/* Controls overlay (counter + timeline — view mode switcher is persistent/separate) */}
       {!isEnded && (
         <CinemaControls
+          eventSlug={eventSlug}
+          eventTitle={eventMeta?.title}
           onExit={handleExit}
         />
       )}
