@@ -28,7 +28,7 @@ export function GlobalFooter() {
   const pathname = usePathname();
 
   // Remove locale prefix for language links
-  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
+  const pathWithoutLocale = (pathname ?? "/").replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
 
   return (
     <footer className="hidden lg:block border-t py-6 mt-auto">

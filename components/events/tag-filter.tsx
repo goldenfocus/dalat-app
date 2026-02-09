@@ -45,7 +45,7 @@ export function TagFilter({
     : POPULAR_TAGS;
 
   const handleTagClick = (tag: EventTag | null) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString());
 
     if (tag === null || tag === selectedTag) {
       params.delete("tag");
@@ -131,7 +131,7 @@ export function TagFilterPill({ selectedTag }: { selectedTag?: string }) {
   }
 
   const clearTag = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString());
     params.delete("tag");
     const queryString = params.toString();
     router.push(queryString ? `${pathname}?${queryString}` : pathname);

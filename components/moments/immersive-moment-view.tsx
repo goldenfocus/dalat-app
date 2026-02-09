@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, MessageCircle, Share2, ExternalLink, Grid3X3, Loader2, RotateCcw, Camera, Sparkles } from "lucide-react";
+import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, MessageCircle, Share2, ExternalLink, Grid3X3, Film, Loader2, RotateCcw, Camera, Sparkles } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
@@ -40,6 +40,7 @@ interface ImmersiveMomentViewProps {
   eventSlug: string;
   onClose: () => void;
   onSwitchToGrid?: () => void;
+  onSwitchToCinema?: () => void;
   /** Called when user reaches end and there are more moments to load */
   onLoadMore?: () => Promise<void>;
   /** Whether there are more moments available to load */
@@ -54,6 +55,7 @@ export function ImmersiveMomentView({
   eventSlug,
   onClose,
   onSwitchToGrid,
+  onSwitchToCinema,
   onLoadMore,
   hasMore = false,
   totalCount,
@@ -255,10 +257,27 @@ export function ImmersiveMomentView({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Switch to cinema */}
+            {onSwitchToCinema && (
+              <button
+                onClick={() => {
+                  triggerHaptic("selection");
+                  onSwitchToCinema();
+                }}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="Switch to cinema mode"
+              >
+                <Film className="w-5 h-5 text-white" />
+              </button>
+            )}
+
             {/* Switch to grid */}
             {onSwitchToGrid && (
               <button
-                onClick={onSwitchToGrid}
+                onClick={() => {
+                  triggerHaptic("selection");
+                  onSwitchToGrid();
+                }}
                 className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
                 aria-label="Switch to grid view"
               >

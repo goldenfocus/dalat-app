@@ -366,14 +366,14 @@ export function CinemaSlideshow({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Current moment slide */}
-      {currentMoment && !isEnded && (
+      {/* Current moment slide — always visible so last frame stays on screen */}
+      {currentMoment && (
         <>
           {currentMoment.content_type === "photo" && (
             <CinemaPhotoSlide
               moment={currentMoment}
               duration={timerDuration}
-              isActive={!isPaused}
+              isActive={!isPaused && !isEnded}
               isTransitioning={isTransitioning}
               effectSchedulerState={effectSchedulerRef.current}
               onEffectSelected={handleEffectSelected}
@@ -383,7 +383,7 @@ export function CinemaSlideshow({
           {currentMoment.content_type === "video" && (
             <CinemaVideoSlide
               moment={currentMoment}
-              isActive={true}
+              isActive={!isEnded}
               isTransitioning={isTransitioning}
               isPaused={isPaused}
               onEnded={onVideoEnded}

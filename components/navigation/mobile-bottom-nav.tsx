@@ -40,7 +40,7 @@ function normalizePath(pathname: string) {
 export function MobileBottomNav() {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
-  const normalizedPath = normalizePath(pathname);
+  const normalizedPath = normalizePath(pathname ?? "/");
 
   // Hide nav on moments (fullscreen experience)
   if (normalizedPath === "/moments") {

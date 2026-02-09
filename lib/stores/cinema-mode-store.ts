@@ -243,8 +243,23 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
       // Pause while waiting for more moments to load
       set({ playbackState: "paused" });
     } else {
-      // Reached the end
-      set({ playbackState: "ended" });
+      // Reached the end — loop back to the beginning
+      set({
+        currentIndex: 0,
+        isTransitioning: true,
+        timerProgress: 0,
+        isVideoPlaying: false,
+        videoDuration: null,
+        videoCurrentTime: 0,
+      });
+
+      setTimeout(() => {
+        set({ isTransitioning: false });
+        const { playbackState } = get();
+        if (playbackState === "playing") {
+          get().scheduleAdvance();
+        }
+      }, 800);
     }
   },
 

@@ -32,7 +32,7 @@ export function EventCalendar({ events }: EventCalendarProps) {
 
   // Initialize state from URL params or defaults
   const [view, setView] = useState<CalendarView>(() => {
-    const urlView = searchParams.get("view");
+    const urlView = searchParams?.get("view");
     if (urlView === "day" || urlView === "week" || urlView === "month") {
       return urlView;
     }
@@ -40,8 +40,8 @@ export function EventCalendar({ events }: EventCalendarProps) {
   });
 
   const [currentDate, setCurrentDate] = useState<Date>(() => {
-    const urlDate = searchParams.get("date");
-    const urlView = searchParams.get("view");
+    const urlDate = searchParams?.get("date");
+    const urlView = searchParams?.get("view");
 
     let date: Date;
     if (urlDate) {
@@ -73,15 +73,15 @@ export function EventCalendar({ events }: EventCalendarProps) {
 
   // Trip planner state - initialized from URL params
   const [tripStartDate, setTripStartDate] = useState<string | null>(() => {
-    return searchParams.get("from");
+    return searchParams?.get("from") ?? null;
   });
   const [tripEndDate, setTripEndDate] = useState<string | null>(() => {
-    return searchParams.get("to");
+    return searchParams?.get("to") ?? null;
   });
 
   // Update URL when view, date, or trip dates change
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString());
     params.set("view", view);
     params.set("date", format(currentDate, "yyyy-MM-dd"));
 
@@ -97,7 +97,8 @@ export function EventCalendar({ events }: EventCalendarProps) {
       params.delete("to");
     }
 
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    const base = pathname ?? "/";
+    router.replace(`${base}?${params.toString()}`, { scroll: false });
   }, [view, currentDate, tripStartDate, tripEndDate, pathname, router, searchParams]);
 
   // Filter events by selected tag and trip dates

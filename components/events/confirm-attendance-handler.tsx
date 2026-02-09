@@ -23,8 +23,8 @@ export function ConfirmAttendanceHandler({ eventId }: Props) {
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
 
   useEffect(() => {
-    const confirm = searchParams.get('confirm');
-    const cancel = searchParams.get('cancel');
+    const confirm = searchParams?.get('confirm');
+    const cancel = searchParams?.get('cancel');
 
     if (confirm === 'yes') {
       handleConfirmation(true);

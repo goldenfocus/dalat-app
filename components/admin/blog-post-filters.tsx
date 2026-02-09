@@ -30,7 +30,7 @@ export function BlogPostFilters({ currentStatus, currentSource }: BlogPostFilter
   const searchParams = useSearchParams();
 
   const updateFilter = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString());
     if (value) {
       params.set(key, value);
     } else {

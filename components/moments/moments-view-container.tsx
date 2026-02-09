@@ -191,6 +191,13 @@ export function MomentsViewContainer({
     setImmersiveStartIndex(0);
   };
 
+  // Switch to cinema view from immersive
+  const switchToCinema = () => {
+    setViewMode("cinema");
+    setShowImmersive(false);
+    setShowCinema(true);
+  };
+
   // Handle view mode change from switcher
   const handleViewModeChange = (mode: "grid" | "immersive" | "cinema") => {
     setViewMode(mode);
@@ -267,6 +274,7 @@ export function MomentsViewContainer({
           eventSlug={eventSlug}
           onClose={closeImmersive}
           onSwitchToGrid={switchToGrid}
+          onSwitchToCinema={switchToCinema}
           onLoadMore={handleLoadMore}
           hasMore={hasMoreMoments}
           totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}

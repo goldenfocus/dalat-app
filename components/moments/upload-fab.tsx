@@ -39,7 +39,7 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
 
   // Auto-detect event slug from URL when on event pages
   const eventSlug = useMemo(() => {
-    return preselectedEventSlug || getEventSlugFromPath(pathname);
+    return preselectedEventSlug || getEventSlugFromPath(pathname ?? "");
   }, [preselectedEventSlug, pathname]);
 
   // Check authentication
@@ -100,7 +100,7 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
     '/admin/',
   ];
 
-  const shouldHide = hiddenPaths.some(path => pathname.includes(path));
+  const shouldHide = hiddenPaths.some(path => (pathname ?? "").includes(path));
 
   if (shouldHide || isAuthenticated === false || isAuthenticated === null) {
     return null;

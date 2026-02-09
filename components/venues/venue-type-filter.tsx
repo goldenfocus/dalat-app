@@ -35,7 +35,7 @@ export function VenueTypeFilter({ selectedType, typeCounts }: VenueTypeFilterPro
   }, [typeCounts]);
 
   const handleTypeChange = (type: VenueType | null) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString());
 
     if (type === null) {
       params.delete("type");
@@ -44,7 +44,8 @@ export function VenueTypeFilter({ selectedType, typeCounts }: VenueTypeFilterPro
     }
 
     const queryString = params.toString();
-    router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+    const base = pathname ?? "/";
+    router.push(queryString ? `${base}?${queryString}` : base, { scroll: false });
   };
 
   // Don't render filter if there are no venues or only one type

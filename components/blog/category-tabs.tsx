@@ -13,7 +13,7 @@ interface CategoryTabsProps {
 
 export function CategoryTabs({ categories, activeCategory, allLabel = "All" }: CategoryTabsProps) {
   const pathname = usePathname();
-  const baseUrl = pathname.split("/blog")[0] + "/blog";
+  const baseUrl = (pathname ?? "").split("/blog")[0] + "/blog";
 
   return (
     <div className="flex gap-2 mb-8 overflow-x-auto pb-2 -mx-4 px-4">
