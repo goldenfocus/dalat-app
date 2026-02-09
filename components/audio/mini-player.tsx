@@ -354,7 +354,14 @@ export function MiniPlayer() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground"
-                onClick={toggleMute}
+                onClick={() => {
+                  // On mobile (no hover), toggle slider visibility; on desktop, mute
+                  if ('ontouchstart' in window) {
+                    setShowVolumeSlider(!showVolumeSlider);
+                  } else {
+                    toggleMute();
+                  }
+                }}
                 aria-label={isMuted ? "Unmute" : "Mute"}
               >
                 {isMuted || volume === 0 ? (
@@ -366,26 +373,35 @@ export function MiniPlayer() {
                 )}
               </Button>
 
-              {/* Volume slider popup */}
+              {/* Volume slider popup - pb-4 creates hover bridge to button */}
               {showVolumeSlider && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 bg-popover border rounded-lg shadow-lg">
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={isMuted ? 0 : volume}
-                    onChange={(e) => {
-                      const newVolume = parseFloat(e.target.value);
-                      setVolume(newVolume);
-                      // Unmute if adjusting volume while muted
-                      if (isMuted && newVolume > 0) {
-                        toggleMute();
-                      }
-                    }}
-                    className="w-24 h-1 accent-primary cursor-pointer"
-                    aria-label="Volume"
-                  />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 pb-4">
+                  <div className="p-3 bg-popover border rounded-lg shadow-lg flex flex-col items-center gap-2">
+                    <input
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={isMuted ? 0 : volume}
+                      onChange={(e) => {
+                        const newVolume = parseFloat(e.target.value);
+                        setVolume(newVolume);
+                        // Unmute if adjusting volume while muted
+                        if (isMuted && newVolume > 0) {
+                          toggleMute();
+                        }
+                      }}
+                      className="w-24 h-1 accent-primary cursor-pointer"
+                      aria-label="Volume"
+                    />
+                    {/* Mute button inside popup for mobile */}
+                    <button
+                      onClick={toggleMute}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      {isMuted ? "Unmute" : "Mute"}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
