@@ -68,7 +68,8 @@
     "map": "แผนที่",
     "calendar": "ปฏิทิน",
     "about": "เกี่ยวกับ",
-    "venues": "สถานที่"
+    "venues": "สถานที่",
+    "activity": "กิจกรรม"
   },
   "home": {
     "title": "กิจกรรมในดาลัด",
@@ -109,7 +110,9 @@
     "yourEvents": {
       "title": "กิจกรรมของคุณ",
       "seeAll": "ดูทั้งหมด"
-    }
+    },
+    "forYou": "สำหรับคุณ",
+    "forYouSubtitle": "จากกิจกรรมที่คุณเข้าร่วม"
   },
   "auth": {
     "welcomeTitle": "ยินดีต้อนรับสู่ ĐàLạt.app",
@@ -235,7 +238,10 @@
       "joinOthers": "เข้าร่วมกับ {names} + {count} คน",
       "joinFew": "เข้าร่วมการสนทนากับ {names}",
       "cta": "RSVP เพื่อเข้าร่วมการสนทนา"
-    }
+    },
+    "friendsGoing": "เพื่อน {count} คนจะไป",
+    "othersYouFollow": "+ {count} คนที่คุณติดตาม",
+    "andMore": "และอื่นๆ"
   },
   "rsvp": {
     "imGoing": "ฉันจะไป",
@@ -608,7 +614,13 @@
       "button": "อ้างสิทธิ์โปรไฟล์นี้",
       "communityImported": "นำเข้าจากชุมชน"
     },
-    "eventsHosted": "จัดกิจกรรม {count} ครั้ง"
+    "eventsHosted": "จัดกิจกรรม {count} ครั้ง",
+    "follow": "ติดตาม",
+    "following": "กำลังติดตาม",
+    "unfollow": "เลิกติดตาม",
+    "followers": "ผู้ติดตาม",
+    "followersCount": "ผู้ติดตาม",
+    "followingCount": "กำลังติดตาม"
   },
   "settings": {
     "settings": "การตั้งค่า",
@@ -1971,5 +1983,13 @@
     "sortTitle": "ชื่อ",
     "sortArtistLabel": "ศิลปิน",
     "sortDurationLabel": "เวลา"
+  },
+  "activity": {
+    "title": "กิจกรรม",
+    "noActivity": "ติดตามผู้คนเพื่อดูกิจกรรมของพวกเขาที่นี่",
+    "isGoingTo": "จะไป",
+    "postedMoment": "โพสต์โมเมนต์จาก",
+    "startedFollowing": "เริ่มติดตาม",
+    "fromEvent": "จาก"
   }
 }

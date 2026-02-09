@@ -23,6 +23,7 @@ import type {
   ReplyToCommentPayload,
   ThreadActivityPayload,
   VideoReadyPayload,
+  NewFollowerPayload,
   NotificationPayload,
 } from './types';
 
@@ -179,7 +180,14 @@ const translations = {
     fr: (event: string) => `Votre moment de "${event}" est maintenant en ligne.`,
     vi: (event: string) => `Khoảnh khắc của bạn từ "${event}" đã được đăng.`,
   },
+  // Social graph notifications
+  newFollower: {
+    en: (name: string) => `${name} started following you`,
+    fr: (name: string) => `${name} a commencé à vous suivre`,
+    vi: (name: string) => `${name} đã bắt đầu theo dõi bạn`,
+  },
   buttons: {
+    viewProfile: { en: 'View profile', fr: 'Voir le profil', vi: 'Xem hồ sơ' },
     viewEvent: { en: 'View Event', fr: 'Voir', vi: 'Xem sự kiện' },
     yes: { en: 'Yes, coming', fr: 'Oui', vi: 'Có, tôi đến' },
     no: { en: "Can't make it", fr: 'Non', vi: 'Không thể đến' },
@@ -788,6 +796,33 @@ function videoReadyTemplate(payload: VideoReadyPayload): TemplateResult {
 }
 
 // ============================================
+// Social Graph Notification Templates
+// ============================================
+
+function newFollowerTemplate(payload: NewFollowerPayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+  const profileSlug = payload.followerUsername || payload.followerName;
+  const profileUrl = `${getBaseUrl()}/${profileSlug}`;
+
+  const title = translations.newFollower[locale](payload.followerName);
+
+  return {
+    inApp: {
+      title,
+      body: '',
+      primaryActionUrl: profileUrl,
+      primaryActionLabel: translations.buttons.viewProfile[locale],
+    },
+    push: {
+      title,
+      body: '',
+      primaryActionUrl: profileUrl,
+      tag: `new-follower-${payload.userId}`,
+    },
+  };
+}
+
+// ============================================
 // Email HTML Generator for Event Invitations
 // ============================================
 
@@ -965,6 +1000,9 @@ export function getNotificationTemplate(payload: NotificationPayload): TemplateR
     // Video processing notifications
     case 'video_ready':
       return videoReadyTemplate(payload);
+    // Social graph notifications
+    case 'new_follower':
+      return newFollowerTemplate(payload);
     default:
       throw new Error(`Unknown notification type: ${(payload as NotificationPayload).type}`);
   }

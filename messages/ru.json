@@ -68,7 +68,8 @@
     "map": "Карта",
     "calendar": "Календарь",
     "about": "О нас",
-    "venues": "Площадки"
+    "venues": "Площадки",
+    "activity": "Активность"
   },
   "home": {
     "title": "События в Далате",
@@ -109,7 +110,9 @@
     "yourEvents": {
       "title": "Ваши мероприятия",
       "seeAll": "Смотреть все"
-    }
+    },
+    "forYou": "Для вас",
+    "forYouSubtitle": "На основе посещённых мероприятий"
   },
   "auth": {
     "welcomeTitle": "Добро пожаловать в ĐàLạt.app",
@@ -235,7 +238,10 @@
       "joinOthers": "Присоединяйтесь к {names} и ещё {count}",
       "joinFew": "Присоединяйтесь к обсуждению с {names}",
       "cta": "Зарегистрируйтесь, чтобы присоединиться"
-    }
+    },
+    "friendsGoing": "{count} друзей пойдут",
+    "othersYouFollow": "+ {count} ваших подписок",
+    "andMore": "и ещё"
   },
   "rsvp": {
     "imGoing": "Я пойду",
@@ -608,7 +614,13 @@
       "button": "Заявить права на профиль",
       "communityImported": "Импортировано сообществом"
     },
-    "eventsHosted": "Проведено событий: {count}"
+    "eventsHosted": "Проведено событий: {count}",
+    "follow": "Подписаться",
+    "following": "Подписка",
+    "unfollow": "Отписаться",
+    "followers": "подписчиков",
+    "followersCount": "Подписчики",
+    "followingCount": "подписки"
   },
   "settings": {
     "settings": "Настройки",
@@ -1971,5 +1983,13 @@
     "sortTitle": "Название",
     "sortArtistLabel": "Исполнитель",
     "sortDurationLabel": "Время"
+  },
+  "activity": {
+    "title": "Активность",
+    "noActivity": "Подпишитесь на людей, чтобы видеть их активность",
+    "isGoingTo": "пойдёт на",
+    "postedMoment": "опубликовал момент из",
+    "startedFollowing": "подписался на",
+    "fromEvent": "из"
   }
 }

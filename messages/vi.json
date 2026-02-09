@@ -68,7 +68,8 @@
     "map": "Bản đồ",
     "calendar": "Lịch",
     "about": "Giới thiệu",
-    "venues": "Địa điểm"
+    "venues": "Địa điểm",
+    "activity": "Hoạt động"
   },
   "home": {
     "title": "Sự kiện tại Đà Lạt",
@@ -109,7 +110,9 @@
     "yourEvents": {
       "title": "Sự kiện của bạn",
       "seeAll": "Xem tất cả"
-    }
+    },
+    "forYou": "Dành cho bạn",
+    "forYouSubtitle": "Dựa trên sự kiện bạn đã tham gia"
   },
   "auth": {
     "welcomeTitle": "Chào mừng đến với ĐàLạt.app",
@@ -235,7 +238,10 @@
       "joinOthers": "Tham gia cùng {names} + {count} người khác",
       "joinFew": "Tham gia thảo luận cùng {names}",
       "cta": "Đăng ký tham gia để thảo luận"
-    }
+    },
+    "friendsGoing": "{count} bạn bè sẽ đến",
+    "othersYouFollow": "+ {count} người bạn theo dõi",
+    "andMore": "và thêm"
   },
   "rsvp": {
     "imGoing": "Tôi sẽ đi",
@@ -612,7 +618,13 @@
       "button": "Nhận hồ sơ này",
       "communityImported": "Nhập từ cộng đồng"
     },
-    "eventsHosted": "Đã tổ chức {count} sự kiện"
+    "eventsHosted": "Đã tổ chức {count} sự kiện",
+    "follow": "Theo dõi",
+    "following": "Đang theo dõi",
+    "unfollow": "Bỏ theo dõi",
+    "followers": "người theo dõi",
+    "followersCount": "Người theo dõi",
+    "followingCount": "đang theo dõi"
   },
   "settings": {
     "settings": "Cài đặt",
@@ -2135,5 +2147,13 @@
     "noResponses": "Chưa có câu trả lời",
     "responseRate": "{rate}% tỷ lệ trả lời",
     "andMore": "và {count} khác..."
+  },
+  "activity": {
+    "title": "Hoạt động",
+    "noActivity": "Theo dõi mọi người để xem hoạt động ở đây",
+    "isGoingTo": "sẽ tham gia",
+    "postedMoment": "đã đăng khoảnh khắc từ",
+    "startedFollowing": "đã bắt đầu theo dõi",
+    "fromEvent": "từ"
   }
 }

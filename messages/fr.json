@@ -68,7 +68,8 @@
     "map": "Carte",
     "calendar": "Calendrier",
     "about": "À propos",
-    "venues": "Lieux"
+    "venues": "Lieux",
+    "activity": "Activité"
   },
   "home": {
     "title": "Événements à Đà Lạt",
@@ -109,7 +110,9 @@
     "yourEvents": {
       "title": "Vos événements",
       "seeAll": "Voir tout"
-    }
+    },
+    "forYou": "Pour vous",
+    "forYouSubtitle": "Basé sur les événements auxquels vous avez participé"
   },
   "auth": {
     "welcomeTitle": "Bienvenue sur ĐàLạt.app",
@@ -235,7 +238,10 @@
       "joinOthers": "Rejoignez {names} + {count} autres",
       "joinFew": "Rejoignez {names} dans la discussion",
       "cta": "Inscrivez-vous pour participer"
-    }
+    },
+    "friendsGoing": "{count} amis y vont",
+    "othersYouFollow": "+ {count} que vous suivez",
+    "andMore": "et plus"
   },
   "rsvp": {
     "imGoing": "Je participe",
@@ -622,7 +628,13 @@
       "button": "Revendiquer ce profil",
       "communityImported": "Importé par la communauté"
     },
-    "eventsHosted": "{count} événements organisés"
+    "eventsHosted": "{count} événements organisés",
+    "follow": "Suivre",
+    "following": "Suivi(e)",
+    "unfollow": "Ne plus suivre",
+    "followers": "abonnés",
+    "followersCount": "Abonnés",
+    "followingCount": "abonnements"
   },
   "settings": {
     "settings": "Paramètres",
@@ -1971,5 +1983,13 @@
     "sortTitle": "Titre",
     "sortArtistLabel": "Artiste",
     "sortDurationLabel": "Durée"
+  },
+  "activity": {
+    "title": "Activité",
+    "noActivity": "Suivez des personnes pour voir leur activité ici",
+    "isGoingTo": "participera à",
+    "postedMoment": "a posté un moment de",
+    "startedFollowing": "a commencé à suivre",
+    "fromEvent": "de"
   }
 }

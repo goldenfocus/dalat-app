@@ -68,7 +68,8 @@
     "map": "지도",
     "calendar": "캘린더",
     "about": "소개",
-    "venues": "장소"
+    "venues": "장소",
+    "activity": "활동"
   },
   "home": {
     "title": "달랏의 이벤트",
@@ -109,7 +110,9 @@
     "yourEvents": {
       "title": "내 이벤트",
       "seeAll": "모두 보기"
-    }
+    },
+    "forYou": "추천",
+    "forYouSubtitle": "참석한 이벤트 기반 추천"
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.app에 오신 것을 환영합니다",
@@ -235,7 +238,10 @@
       "joinOthers": "{names} 외 {count}명과 함께하세요",
       "joinFew": "{names}님과 토론에 참여하세요",
       "cta": "RSVP로 대화에 참여"
-    }
+    },
+    "friendsGoing": "친구 {count}명 참석",
+    "othersYouFollow": "+ 팔로우하는 {count}명",
+    "andMore": "외"
   },
   "rsvp": {
     "imGoing": "참석합니다",
@@ -608,7 +614,13 @@
       "button": "이 프로필 소유권 주장",
       "communityImported": "커뮤니티 가져옴"
     },
-    "eventsHosted": "{count}개 이벤트 주최"
+    "eventsHosted": "{count}개 이벤트 주최",
+    "follow": "팔로우",
+    "following": "팔로잉",
+    "unfollow": "언팔로우",
+    "followers": "팔로워",
+    "followersCount": "팔로워",
+    "followingCount": "팔로잉"
   },
   "settings": {
     "settings": "설정",
@@ -1974,5 +1986,13 @@
     "sortTitle": "제목",
     "sortArtistLabel": "아티스트",
     "sortDurationLabel": "길이"
+  },
+  "activity": {
+    "title": "활동",
+    "noActivity": "팔로우하면 활동이 여기에 표시됩니다",
+    "isGoingTo": "참석 예정",
+    "postedMoment": "순간 게시",
+    "startedFollowing": "팔로우 시작",
+    "fromEvent": "에서"
   }
 }

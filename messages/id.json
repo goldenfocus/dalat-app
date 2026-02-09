@@ -68,7 +68,8 @@
     "map": "Peta",
     "calendar": "Kalender",
     "about": "Tentang",
-    "venues": "Tempat"
+    "venues": "Tempat",
+    "activity": "Aktivitas"
   },
   "home": {
     "title": "Acara di Đà Lạt",
@@ -109,7 +110,9 @@
     "yourEvents": {
       "title": "Acara Anda",
       "seeAll": "Lihat semua"
-    }
+    },
+    "forYou": "Untuk Kamu",
+    "forYouSubtitle": "Berdasarkan acara yang kamu hadiri"
   },
   "auth": {
     "welcomeTitle": "Selamat datang di ĐàLạt.app",
@@ -235,7 +238,10 @@
       "joinOthers": "Bergabung dengan {names} + {count} lainnya",
       "joinFew": "Bergabung dalam diskusi dengan {names}",
       "cta": "RSVP untuk ikut berdiskusi"
-    }
+    },
+    "friendsGoing": "{count} teman akan hadir",
+    "othersYouFollow": "+ {count} yang kamu ikuti",
+    "andMore": "dan lainnya"
   },
   "rsvp": {
     "imGoing": "Saya hadir",
@@ -608,7 +614,13 @@
       "button": "Klaim Profil Ini",
       "communityImported": "Diimpor dari Komunitas"
     },
-    "eventsHosted": "{count} acara diselenggarakan"
+    "eventsHosted": "{count} acara diselenggarakan",
+    "follow": "Ikuti",
+    "following": "Mengikuti",
+    "unfollow": "Berhenti mengikuti",
+    "followers": "pengikut",
+    "followersCount": "Pengikut",
+    "followingCount": "mengikuti"
   },
   "settings": {
     "settings": "Pengaturan",
@@ -1971,5 +1983,13 @@
     "sortTitle": "Judul",
     "sortArtistLabel": "Artis",
     "sortDurationLabel": "Durasi"
+  },
+  "activity": {
+    "title": "Aktivitas",
+    "noActivity": "Ikuti orang untuk melihat aktivitas mereka di sini",
+    "isGoingTo": "akan hadir di",
+    "postedMoment": "mengunggah momen dari",
+    "startedFollowing": "mulai mengikuti",
+    "fromEvent": "dari"
   }
 }

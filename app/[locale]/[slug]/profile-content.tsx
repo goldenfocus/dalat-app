@@ -7,9 +7,10 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
-import type { Profile, Event, ContentLocale, EventMomentsGroup } from "@/lib/types";
+import type { Profile, Event, ContentLocale, EventMomentsGroup, FollowStatus } from "@/lib/types";
 import { ClaimProfileBanner, GhostProfileBadge } from "@/components/profile/claim-profile-banner";
 import { UserMomentsTimeline } from "@/components/moments/user-moments-timeline";
+import { FollowButton } from "@/components/profile/follow-button";
 
 interface ProfileContentProps {
   profileId: string;
@@ -85,6 +86,18 @@ async function isUserLoggedIn(): Promise<boolean> {
     data: { user },
   } = await supabase.auth.getUser();
   return !!user;
+}
+
+async function getFollowStatus(profileId: string): Promise<{ status: FollowStatus | null; currentUserId: string | null }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.id === profileId) return { status: null, currentUserId: user?.id ?? null };
+
+  const { data, error } = await supabase.rpc("get_follow_status", {
+    p_user_id: profileId,
+  });
+  if (error) return { status: null, currentUserId: user.id };
+  return { status: data as unknown as FollowStatus, currentUserId: user.id };
 }
 
 const INITIAL_EVENTS = 5;
@@ -188,12 +201,13 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
     getTranslations("common"),
   ]);
 
-  const [events, isOwner, isLoggedIn, bioTranslations, momentsData] = await Promise.all([
+  const [events, isOwner, isLoggedIn, bioTranslations, momentsData, followData] = await Promise.all([
     getUserEvents(profile.id),
     isCurrentUser(profile.id),
     isUserLoggedIn(),
     getBioTranslations(profile.id, profile.bio, profile.bio_source_locale, locale),
     getUserMoments(profile.id),
+    getFollowStatus(profile.id),
   ]);
 
   const isGhost = isGhostProfile(profile);
@@ -244,13 +258,34 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
               )}
             </div>
           )}
-          {isOwner && (
+          {/* Follower/Following Counts */}
+          <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
+            <span>
+              <span className="font-semibold text-foreground">{profile.follower_count ?? 0}</span>{" "}
+              {t("followers")}
+            </span>
+            <span>
+              <span className="font-semibold text-foreground">{profile.following_count ?? 0}</span>{" "}
+              {t("followingCount")}
+            </span>
+          </div>
+          {isOwner ? (
             <Link
               href="/settings/profile"
               className="text-sm text-primary hover:underline mt-2 inline-block"
             >
               {t("editProfile")}
             </Link>
+          ) : (
+            isLoggedIn && followData.status && (
+              <div className="mt-3">
+                <FollowButton
+                  targetUserId={profile.id}
+                  initialIsFollowing={followData.status.is_following}
+                  initialFollowerCount={profile.follower_count ?? 0}
+                />
+              </div>
+            )
           )}
         </div>
       </div>

@@ -13,7 +13,8 @@ import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { usePrefetch } from "@/lib/prefetch";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
-import type { Event, EventCounts, Locale } from "@/lib/types";
+import type { Event, EventCounts, FriendsAttending, Locale } from "@/lib/types";
+import { FriendsAttendingDisplay } from "@/components/events/friends-attending";
 
 // Tiny gradient placeholder for perceived instant loading
 const BLUR_DATA_URL =
@@ -28,6 +29,7 @@ interface EventCardProps {
   priority?: boolean;
   isFlipped?: boolean;
   onFlip?: (eventId: string) => void;
+  friendsAttending?: FriendsAttending;
 }
 
 // Check if event is past (same logic as rsvp-button)
@@ -49,6 +51,7 @@ export const EventCard = memo(function EventCard({
   priority,
   isFlipped = false,
   onFlip,
+  friendsAttending,
 }: EventCardProps) {
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
@@ -270,6 +273,13 @@ export const EventCard = memo(function EventCard({
               {(counts?.interested_count ?? 0) > 0 && (
                 <div className="text-white/60 text-xs pl-6">
                   {counts?.interested_count} {t("interested")}
+                </div>
+              )}
+
+              {/* Friends attending */}
+              {friendsAttending && friendsAttending.total_count > 0 && (
+                <div className="mt-1 pl-6">
+                  <FriendsAttendingDisplay data={friendsAttending} variant="compact" />
                 </div>
               )}
             </div>

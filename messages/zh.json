@@ -68,7 +68,8 @@
     "map": "地图",
     "calendar": "日历",
     "about": "关于",
-    "venues": "场馆"
+    "venues": "场馆",
+    "activity": "动态"
   },
   "home": {
     "title": "大叻活动",
@@ -109,7 +110,9 @@
     "yourEvents": {
       "title": "我的活动",
       "seeAll": "查看全部"
-    }
+    },
+    "forYou": "推荐",
+    "forYouSubtitle": "基于你参加过的活动"
   },
   "auth": {
     "welcomeTitle": "欢迎来到 ĐàLạt.app",
@@ -235,7 +238,10 @@
       "joinOthers": "与 {names} 等 {count} 人一起",
       "joinFew": "与 {names} 一起讨论",
       "cta": "报名参加讨论"
-    }
+    },
+    "friendsGoing": "{count}位好友参加",
+    "othersYouFollow": "+ 你关注的{count}人",
+    "andMore": "等"
   },
   "rsvp": {
     "imGoing": "我要参加",
@@ -608,7 +614,13 @@
       "button": "认领此资料",
       "communityImported": "社区导入"
     },
-    "eventsHosted": "已举办 {count} 个活动"
+    "eventsHosted": "已举办 {count} 个活动",
+    "follow": "关注",
+    "following": "已关注",
+    "unfollow": "取消关注",
+    "followers": "粉丝",
+    "followersCount": "粉丝",
+    "followingCount": "关注"
   },
   "settings": {
     "settings": "设置",
@@ -1974,5 +1986,13 @@
     "sortTitle": "标题",
     "sortArtistLabel": "艺术家",
     "sortDurationLabel": "时长"
+  },
+  "activity": {
+    "title": "动态",
+    "noActivity": "关注他人以查看他们的动态",
+    "isGoingTo": "将参加",
+    "postedMoment": "发布了来自",
+    "startedFollowing": "开始关注了",
+    "fromEvent": "来自"
   }
 }

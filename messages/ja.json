@@ -68,7 +68,8 @@
     "map": "マップ",
     "calendar": "カレンダー",
     "about": "について",
-    "venues": "会場"
+    "venues": "会場",
+    "activity": "アクティビティ"
   },
   "home": {
     "title": "ダラットのイベント",
@@ -109,7 +110,9 @@
     "yourEvents": {
       "title": "あなたのイベント",
       "seeAll": "すべて見る"
-    }
+    },
+    "forYou": "おすすめ",
+    "forYouSubtitle": "参加したイベントに基づく"
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.appへようこそ",
@@ -235,7 +238,10 @@
       "joinOthers": "{names} と他 {count} 人に参加",
       "joinFew": "{names} さんと一緒にディスカッション",
       "cta": "RSVPして会話に参加"
-    }
+    },
+    "friendsGoing": "フォロー中の{count}人が参加",
+    "othersYouFollow": "+ フォロー中の{count}人",
+    "andMore": "他"
   },
   "rsvp": {
     "imGoing": "参加する",
@@ -608,7 +614,13 @@
       "button": "このプロフィールを取得",
       "communityImported": "コミュニティからインポート"
     },
-    "eventsHosted": "{count}件のイベントを主催"
+    "eventsHosted": "{count}件のイベントを主催",
+    "follow": "フォロー",
+    "following": "フォロー中",
+    "unfollow": "フォロー解除",
+    "followers": "フォロワー",
+    "followersCount": "フォロワー",
+    "followingCount": "フォロー中"
   },
   "settings": {
     "settings": "設定",
@@ -1971,5 +1983,13 @@
     "sortTitle": "タイトル",
     "sortArtistLabel": "アーティスト",
     "sortDurationLabel": "時間"
+  },
+  "activity": {
+    "title": "アクティビティ",
+    "noActivity": "フォローすると、ここにアクティビティが表示されます",
+    "isGoingTo": "が参加予定",
+    "postedMoment": "がモーメントを投稿",
+    "startedFollowing": "がフォロー開始",
+    "fromEvent": "から"
   }
 }

@@ -13,14 +13,17 @@ interface AttendeeListProps {
   waitlist: RsvpWithProfile[];
   interested?: RsvpWithProfile[];
   isPast?: boolean;
+  followedUserIds?: Set<string>;
 }
 
 function AttendeeChip({
   rsvp,
   variant = "default",
+  isFollowed = false,
 }: {
   rsvp: RsvpWithProfile;
   variant?: "default" | "waitlist" | "interested";
+  isFollowed?: boolean;
 }) {
   const isSecondary = variant === "waitlist" || variant === "interested";
 
@@ -30,7 +33,9 @@ function AttendeeChip({
       className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors ${
         isSecondary
           ? "bg-transparent border border-dashed border-muted-foreground/40 text-muted-foreground hover:border-muted-foreground/60"
-          : "bg-muted hover:bg-muted/80"
+          : isFollowed
+            ? "bg-primary/10 ring-1 ring-primary/30 hover:bg-primary/15"
+            : "bg-muted hover:bg-muted/80"
       }`}
     >
       <UserAvatar
@@ -49,10 +54,19 @@ function AttendeeChip({
   );
 }
 
-export function AttendeeList({ attendees, waitlist, interested = [], isPast = false }: AttendeeListProps) {
+export function AttendeeList({ attendees, waitlist, interested = [], isPast = false, followedUserIds }: AttendeeListProps) {
   const t = useTranslations("attendees");
 
   if (attendees.length === 0 && waitlist.length === 0 && interested.length === 0) return null;
+
+  // Sort followed users to the top
+  const sortedAttendees = followedUserIds && followedUserIds.size > 0
+    ? [...attendees].sort((a, b) => {
+        const aFollowed = followedUserIds.has(a.user_id) ? 0 : 1;
+        const bFollowed = followedUserIds.has(b.user_id) ? 0 : 1;
+        return aFollowed - bFollowed;
+      })
+    : attendees;
 
   return (
     <Card className="overflow-hidden">
@@ -61,8 +75,8 @@ export function AttendeeList({ attendees, waitlist, interested = [], isPast = fa
           {isPast ? t("whoWent", { count: attendees.length }) : t("whosGoing", { count: attendees.length })}
         </h3>
         <div className="flex flex-wrap gap-2">
-          {attendees.map((rsvp) => (
-            <AttendeeChip key={rsvp.id} rsvp={rsvp} />
+          {sortedAttendees.map((rsvp) => (
+            <AttendeeChip key={rsvp.id} rsvp={rsvp} isFollowed={followedUserIds?.has(rsvp.user_id)} />
           ))}
         </div>
 

@@ -21,6 +21,7 @@ import {
 } from "@/lib/cache/server-cache";
 import { HeroImageSection } from "@/components/home/hero-image-section";
 import { MomentsStripServer } from "@/components/home/moments-strip-server";
+import { ForYouSection } from "@/components/home/for-you-section";
 import { JsonLd, generateWebSiteSchema } from "@/lib/structured-data";
 
 type PageProps = {
@@ -118,6 +119,11 @@ export default async function Home({ params }: PageProps) {
         {/* Your Events - personalized section for logged-in users */}
         <Suspense fallback={null}>
           <YourEventsSection locale={locale} />
+        </Suspense>
+
+        {/* For You - personalized recommendations */}
+        <Suspense fallback={null}>
+          <ForYouSection />
         </Suspense>
 
         {/* Scrollable event feed with "Happening Now" and "Coming Up" sections */}

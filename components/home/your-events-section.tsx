@@ -9,7 +9,8 @@ import { formatInDaLat } from "@/lib/timezone";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import { triggerHaptic } from "@/lib/haptics";
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
-import type { Event, EventCounts, Locale } from "@/lib/types";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import type { Event, EventCounts, FriendsAttending, Locale } from "@/lib/types";
 
 interface UserEvent extends Event {
   rsvp_status: "going" | "interested" | "waitlist";
@@ -36,6 +37,7 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
 
   const [events, setEvents] = useState<UserEvent[]>([]);
   const [counts, setCounts] = useState<Record<string, EventCounts>>({});
+  const [friendsData, setFriendsData] = useState<Record<string, FriendsAttending>>({});
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -111,13 +113,17 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
       if (userEvents.length > 0) {
         const eventIds = userEvents.map((e) => e.id);
 
-        // Fetch counts and playlist info in parallel
-        const [countResult, playlistResult] = await Promise.all([
+        // Fetch counts, playlist info, and friends attending in parallel
+        const [countResult, playlistResult, friendsResult] = await Promise.all([
           supabase.rpc("get_event_counts_batch", { p_event_ids: eventIds }),
           supabase
             .from("event_playlists")
             .select("event_id, playlist_tracks(id)")
             .in("event_id", eventIds),
+          supabase.rpc("get_friends_attending_batch", {
+            p_user_id: user.id,
+            p_event_ids: eventIds,
+          }),
         ]);
 
         if (countResult.data) {
@@ -141,6 +147,15 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
               has_playlist: playlistEventIds.has(e.id),
             }))
           );
+        }
+
+        // Process friends attending data
+        if (friendsResult.data) {
+          const friendsMap: Record<string, FriendsAttending> = {};
+          for (const item of friendsResult.data as FriendsAttending[]) {
+            friendsMap[item.event_id] = item;
+          }
+          setFriendsData(friendsMap);
         }
       }
 
@@ -187,6 +202,7 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
             key={event.id}
             event={event}
             counts={counts[event.id]}
+            friendsAttending={friendsData[event.id]}
             locale={locale}
             tRsvp={tRsvp}
             tEvents={tEvents}
@@ -217,12 +233,13 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
 interface YourEventCardProps {
   event: UserEvent;
   counts?: EventCounts;
+  friendsAttending?: FriendsAttending;
   locale: Locale;
   tRsvp: ReturnType<typeof useTranslations>;
   tEvents: ReturnType<typeof useTranslations>;
 }
 
-function YourEventCard({ event, counts, locale, tRsvp, tEvents }: YourEventCardProps) {
+function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents }: YourEventCardProps) {
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
   const setPlaylist = useAudioPlayerStore((state) => state.setPlaylist);
 
@@ -344,6 +361,21 @@ function YourEventCard({ event, counts, locale, tRsvp, tEvents }: YourEventCardP
             <span className="text-xs text-muted-foreground">
               {goingCount} {tEvents("going")}
             </span>
+          )}
+          {/* Friends attending mini-stack */}
+          {friendsAttending && friendsAttending.total_count > 0 && (
+            <div className="flex items-center gap-1 ml-auto">
+              <div className="flex -space-x-1.5">
+                {friendsAttending.friend_profiles.slice(0, 2).map((p) => (
+                  <div key={p.id} className="ring-1 ring-background rounded-full">
+                    <UserAvatar src={p.avatar_url} size="xs" />
+                  </div>
+                ))}
+              </div>
+              {friendsAttending.total_count > 2 && (
+                <span className="text-xs text-muted-foreground">+{friendsAttending.total_count - 2}</span>
+              )}
+            </div>
           )}
         </div>
       </div>

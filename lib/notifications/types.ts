@@ -25,7 +25,9 @@ export type NotificationType =
   | 'reply_to_comment'
   | 'thread_activity'
   // Video processing notifications
-  | 'video_ready';
+  | 'video_ready'
+  // Social graph notifications
+  | 'new_follower';
 
 export type NotificationChannel = 'in_app' | 'push' | 'email';
 
@@ -275,6 +277,17 @@ export interface VideoReadyPayload extends BaseNotificationPayload {
   videoCount?: number; // For batch notifications: "3 videos are ready"
 }
 
+// ============================================
+// Social Graph Notification Payloads
+// ============================================
+
+export interface NewFollowerPayload extends BaseNotificationPayload {
+  type: 'new_follower';
+  followerName: string;
+  followerUsername: string | null;
+  followerAvatarUrl: string | null;
+}
+
 export type NotificationPayload =
   | RsvpConfirmationPayload
   | ConfirmAttendance24hPayload
@@ -296,7 +309,9 @@ export type NotificationPayload =
   | ReplyToCommentPayload
   | ThreadActivityPayload
   // Video processing notifications
-  | VideoReadyPayload;
+  | VideoReadyPayload
+  // Social graph notifications
+  | NewFollowerPayload;
 
 // ============================================
 // Notify Options

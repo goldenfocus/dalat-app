@@ -68,7 +68,8 @@
     "map": "Map",
     "calendar": "Calendar",
     "about": "About",
-    "venues": "Venues"
+    "venues": "Venues",
+    "activity": "Activity"
   },
   "home": {
     "title": "Events in Đà Lạt",
@@ -109,7 +110,9 @@
     "yourEvents": {
       "title": "Your Events",
       "seeAll": "See all"
-    }
+    },
+    "forYou": "For You",
+    "forYouSubtitle": "Based on events you've attended"
   },
   "auth": {
     "welcomeTitle": "Welcome to ĐàLạt.app",
@@ -235,7 +238,10 @@
       "joinOthers": "Join {names} + {count} others",
       "joinFew": "Join {names} in the discussion",
       "cta": "RSVP to join the conversation"
-    }
+    },
+    "friendsGoing": "{count} friends going",
+    "othersYouFollow": "+ {count} others you follow",
+    "andMore": "and more"
   },
   "rsvp": {
     "imGoing": "I'm going",
@@ -669,6 +675,12 @@
       "communityImported": "Community Imported"
     },
     "eventsHosted": "{count} events hosted",
+    "follow": "Follow",
+    "following": "Following",
+    "unfollow": "Unfollow",
+    "followers": "followers",
+    "followersCount": "Followers",
+    "followingCount": "following",
     "cancel": "Cancel",
     "avatarStyle": {
       "male": "Masculine",
@@ -2135,5 +2147,13 @@
     "noResponses": "No responses yet",
     "responseRate": "{rate}% response rate",
     "andMore": "and {count} more..."
+  },
+  "activity": {
+    "title": "Activity",
+    "noActivity": "Follow people to see their activity here",
+    "isGoingTo": "is going to",
+    "postedMoment": "posted a moment from",
+    "startedFollowing": "started following",
+    "fromEvent": "from"
   }
 }
