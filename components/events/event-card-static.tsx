@@ -76,11 +76,21 @@ export function EventCardStatic({
       <Card className="overflow-hidden rounded-xl hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] active:opacity-90">
         {/* Image area */}
         <div className="w-full aspect-[4/5] relative overflow-hidden group">
-          {/* Popular badge for events with 20+ RSVPs */}
-          {(counts?.going_spots ?? 0) >= 20 && (
-            <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
-              {labels.popular}
+          {/* Capacity badge - shows spots when event has a cap */}
+          {event.capacity ? (
+            <div className={`absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1 ${
+              isFull ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
+            }`}>
+              <Users className="w-3 h-3" />
+              {counts?.going_spots ?? 0}/{event.capacity}
             </div>
+          ) : (
+            /* Popular badge for events with 20+ RSVPs, no cap */
+            (counts?.going_spots ?? 0) >= 20 && (
+              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+                {labels.popular}
+              </div>
+            )
           )}
           {hasCustomImage ? (
             imageIsVideo ? (

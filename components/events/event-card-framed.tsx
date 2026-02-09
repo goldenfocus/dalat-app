@@ -3,7 +3,7 @@
 import { memo } from "react";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Users } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
@@ -63,11 +63,22 @@ export const EventCardFramed = memo(function EventCardFramed({
       )}>
         {/* Image container - edge to edge, no frame */}
         <div className="relative aspect-[4/5] overflow-hidden group">
-            {/* Popular badge (only for non-sponsored events with 20+ attendees) */}
-            {!isSponsored && (counts?.going_spots ?? 0) >= 20 && (
-              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
-                {t("popular")}
+            {/* Capacity badge - shows spots when event has a cap */}
+            {event.capacity ? (
+              <div className={cn(
+                "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
+                (counts?.going_spots ?? 0) >= event.capacity ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
+              )}>
+                <Users className="w-3 h-3" />
+                {counts?.going_spots ?? 0}/{event.capacity}
               </div>
+            ) : (
+              /* Popular badge (only for non-sponsored events with 20+ attendees, no cap) */
+              !isSponsored && (counts?.going_spots ?? 0) >= 20 && (
+                <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+                  {t("popular")}
+                </div>
+              )
             )}
 
             {/* Series badge */}

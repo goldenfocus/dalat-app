@@ -123,11 +123,22 @@ export const EventCard = memo(function EventCard({
         >
           {/* Image area with 4:5 aspect ratio */}
           <div className="w-full aspect-[4/5] relative overflow-hidden">
-            {/* Popular badge (only for non-sponsored events with 20+ attendees) */}
-            {!isSponsored && (counts?.going_spots ?? 0) >= 20 && (
-              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
-                {t("popular")}
+            {/* Capacity badge - shows spots when event has a cap */}
+            {event.capacity ? (
+              <div className={cn(
+                "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
+                isFull ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
+              )}>
+                <Users className="w-3 h-3" />
+                {counts?.going_spots ?? 0}/{event.capacity}
               </div>
+            ) : (
+              /* Popular badge (only for non-sponsored events with 20+ attendees, no cap) */
+              !isSponsored && (counts?.going_spots ?? 0) >= 20 && (
+                <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+                  {t("popular")}
+                </div>
+              )
             )}
             {hasCustomImage ? (
               imageIsVideo ? (
