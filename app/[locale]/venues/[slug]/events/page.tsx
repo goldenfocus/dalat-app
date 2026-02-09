@@ -3,7 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import type { Event, EventCounts, Locale, Venue } from "@/lib/types";
@@ -77,7 +77,15 @@ async function getEventCounts(eventIds: string[]): Promise<Record<string, EventC
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  const venue = await getVenueBySlug(slug);
+  // Use static client for metadata (no cookies) so OG tags appear in initial <head>
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Not Found" };
+
+  const { data: venue } = await supabase
+    .from("venues")
+    .select("name")
+    .eq("slug", slug)
+    .single();
 
   if (!venue) {
     return { title: "Not Found" };

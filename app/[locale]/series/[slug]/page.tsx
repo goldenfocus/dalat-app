@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { getTranslations, getLocale } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,8 @@ interface SeriesData {
 // Generate dynamic OG metadata
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Series" };
 
   const { data: series } = await supabase
     .from("event_series")

@@ -1,5 +1,5 @@
 import { notFound, redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createStaticClient } from '@/lib/supabase/server';
 import { BroadcasterInterface } from './broadcaster-interface';
 import type { Metadata } from 'next';
 
@@ -11,7 +11,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) return { title: 'Go Live' };
   const { data: event } = await supabase.from('events').select('title').eq('slug', slug).single();
   return { title: event ? `Go Live - ${event.title}` : 'Go Live' };
 }

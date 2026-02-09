@@ -1,6 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { generateMomentMetadata } from "@/lib/metadata";
 import type { Locale } from "@/lib/types";
 
@@ -34,7 +34,8 @@ async function getMomentWithEvent(id: string) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id, locale } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Moment" };
 
   // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
   const { data: moment } = await supabase

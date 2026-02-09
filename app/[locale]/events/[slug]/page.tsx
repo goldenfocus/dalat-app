@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const maxDuration = 60;
 import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat, Video, Music, Play } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
 import { JsonLd, generateEventSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -50,7 +50,10 @@ interface PageProps {
 // Generate dynamic OG metadata for social sharing
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  const supabase = await createClient();
+  // Use static client (no cookies) so metadata resolves before <head> flush.
+  // This ensures OG tags are visible to all social media crawlers (Zalo, Line, etc.)
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Event" };
 
   const { data: event } = await supabase
     .from("events")

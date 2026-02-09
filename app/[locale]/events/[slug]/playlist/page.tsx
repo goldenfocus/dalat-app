@@ -3,7 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { PlaylistPlayer } from "@/components/events/playlist-player";
 import { PlaylistShareButton } from "@/components/events/playlist-share-button";
 import { formatInDaLat } from "@/lib/timezone";
@@ -53,8 +53,8 @@ interface PlaylistData {
   tracks: PlaylistTrack[];
 }
 
-async function getEventPlaylist(slug: string): Promise<PlaylistData | null> {
-  const supabase = await createClient();
+async function getEventPlaylist(slug: string, staticClient?: ReturnType<typeof createStaticClient>): Promise<PlaylistData | null> {
+  const supabase = staticClient ?? await createClient();
 
   // Use the database function that joins playlist + tracks
   const { data, error } = await supabase.rpc("get_event_playlist", {
@@ -106,7 +106,9 @@ async function getEventPlaylist(slug: string): Promise<PlaylistData | null> {
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
   const { karaoke, track } = await searchParams;
-  const data = await getEventPlaylist(slug);
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Playlist" };
+  const data = await getEventPlaylist(slug, supabase);
 
   if (!data) {
     return { title: "Playlist not found" };

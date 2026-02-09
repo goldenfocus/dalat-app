@@ -10,7 +10,7 @@ import {
   vi, ko, zhCN, ru, fr, ja, ms, th, de, es, id as idLocale, enUS
 } from "date-fns/locale";
 import { getTranslations, getLocale } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
 import { generateMomentMetadata } from "@/lib/metadata";
@@ -166,13 +166,22 @@ async function getAdjacentMoments(
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { momentId, locale } = await params;
-  const moment = await getMoment(momentId);
+  // Use static client for metadata (no cookies) so OG tags appear in initial <head>
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Moment Not Found" };
 
-  if (!moment) {
+  const { data: moment } = await supabase
+    .from("moments")
+    .select("*, profiles(*), events!moments_event_id_fkey(*)")
+    .eq("id", momentId)
+    .eq("status", "published")
+    .single();
+
+  if (!moment?.profiles || !moment?.events) {
     return { title: "Moment Not Found" };
   }
 
-  return generateMomentMetadata(moment, locale as Locale);
+  return generateMomentMetadata(moment as MomentWithDetails, locale as Locale);
 }
 
 export default async function MomentDetailPage({ params, searchParams }: PageProps) {

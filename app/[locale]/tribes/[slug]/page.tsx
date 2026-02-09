@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { getTranslations } from "next-intl/server";
 import { TribeHeader } from "@/components/tribes/tribe-header";
 import { TribeMembersList } from "@/components/tribes/tribe-members-list";
@@ -10,7 +10,8 @@ interface PageProps { params: Promise<{ slug: string; locale: string }>; }
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Tribe" };
   const { data: tribe } = await supabase.from("tribes").select("name, description, cover_image_url").eq("slug", slug).single();
   if (!tribe) return { title: "Tribe not found" };
   return {

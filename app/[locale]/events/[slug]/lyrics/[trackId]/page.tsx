@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import {
   JsonLd,
   generateMusicRecordingSchema,
@@ -51,8 +51,8 @@ interface TrackData {
   };
 }
 
-async function getLyricsTrack(eventSlug: string, trackId: string): Promise<TrackData | null> {
-  const supabase = await createClient();
+async function getLyricsTrack(eventSlug: string, trackId: string, staticClient?: ReturnType<typeof createStaticClient>): Promise<TrackData | null> {
+  const supabase = staticClient ?? await createClient();
 
   // Get event playlist with track
   const { data, error } = await supabase.rpc("get_event_playlist", {
@@ -108,7 +108,9 @@ function parseLrcToLines(lrc: string): string[] {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale, trackId } = await params;
-  const data = await getLyricsTrack(slug, trackId);
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Lyrics" };
+  const data = await getLyricsTrack(slug, trackId, supabase);
 
   if (!data) {
     return { title: "Lyrics not found" };

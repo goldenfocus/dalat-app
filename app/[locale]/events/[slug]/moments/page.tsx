@@ -3,7 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { MomentsViewContainer } from "@/components/moments/moments-view-container";
 import { MusicPlayButton } from "@/components/audio/music-play-button";
@@ -20,7 +20,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Moments" };
 
   const { data: event } = await supabase
     .from("events")

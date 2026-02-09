@@ -16,7 +16,7 @@ import {
   Camera,
 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
 import type { Venue, Locale } from "@/lib/types";
@@ -152,20 +152,35 @@ async function canUserManageVenue(venueOwnerId: string | null): Promise<boolean>
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  const venueData = await getVenueData(slug);
+  // Use static client for metadata (no cookies) so OG tags appear in initial <head>
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Venue not found" };
 
-  if (!venueData) {
+  const { data: venue } = await supabase
+    .from("venues")
+    .select("id, slug, name, description, logo_url, cover_photo_url, venue_type, address")
+    .eq("slug", slug)
+    .single();
+
+  if (!venue) {
     return { title: "Venue not found" };
   }
+
+  const { count } = await supabase
+    .from("events")
+    .select("*", { count: "exact", head: true })
+    .eq("venue_id", venue.id)
+    .eq("status", "published")
+    .gte("starts_at", new Date().toISOString());
 
   // Fetch translations for metadata
   const venueTranslations = await getTranslationsWithFallback(
     "venue",
-    venueData.venue.id,
+    venue.id,
     locale as Locale,
     {
-      title: venueData.venue.name,
-      description: venueData.venue.description,
+      title: venue.name,
+      description: venue.description,
       text_content: null,
       bio: null,
       story_content: null,
@@ -176,11 +191,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return generateVenueMetadata(
     {
-      ...venueData.venue,
-      description: venueTranslations.description ?? venueData.venue.description,
+      ...venue,
+      description: venueTranslations.description ?? venue.description,
     },
     locale as Locale,
-    venueData.upcoming_events.length
+    count ?? 0
   );
 }
 

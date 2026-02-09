@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { MomentForm } from "@/components/moments";
 import { getEffectiveUser } from "@/lib/god-mode";
 import type { Event, EventSettings } from "@/lib/types";
@@ -12,7 +12,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Share a Moment" };
 
   const { data: event } = await supabase
     .from("events")

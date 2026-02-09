@@ -3,7 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { Calendar, MapPin, BadgeCheck, Globe } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
 import { decodeUnicodeEscapes } from "@/lib/utils";
@@ -48,14 +48,27 @@ async function isUserLoggedIn(): Promise<boolean> {
 // Generate SEO metadata for organizer pages
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  const organizer = await getOrganizer(slug);
+  // Use static client for metadata (no cookies) so OG tags appear in initial <head>
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Organizer" };
+
+  const { data: organizer } = await supabase
+    .from("organizers")
+    .select("*")
+    .eq("slug", slug)
+    .single();
 
   if (!organizer) {
     return { title: "Organizer not found" };
   }
 
-  const events = await getOrganizerEvents(organizer.id);
-  return generateOrganizerMetadata(organizer, locale as Locale, events.length);
+  const { count } = await supabase
+    .from("events")
+    .select("*", { count: "exact", head: true })
+    .eq("organizer_id", organizer.id)
+    .eq("status", "published");
+
+  return generateOrganizerMetadata(organizer, locale as Locale, count ?? 0);
 }
 
 export default async function OrganizerPage({ params }: PageProps) {

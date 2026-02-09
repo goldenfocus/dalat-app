@@ -12,7 +12,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import type { Festival, FestivalOrganizer, FestivalEvent, FestivalUpdate, Locale } from "@/lib/types";
 import { FestivalTabs } from "@/components/festivals/festival-tabs";
 import { generateFestivalMetadata } from "@/lib/metadata";
@@ -89,14 +89,27 @@ async function getFestivalUpdates(festivalId: string) {
 // Generate SEO metadata for festival pages
 export async function generateMetadata({ params }: FestivalPageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  const festival = await getFestival(slug);
+  // Use static client for metadata (no cookies) so OG tags appear in initial <head>
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Festival" };
+
+  const { data: festival } = await supabase
+    .from("festivals")
+    .select("*")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .single();
 
   if (!festival) {
     return { title: "Festival not found" };
   }
 
-  const events = await getFestivalEvents(festival.id);
-  return generateFestivalMetadata(festival, locale as Locale, events.length);
+  const { count } = await supabase
+    .from("festival_events")
+    .select("*", { count: "exact", head: true })
+    .eq("festival_id", festival.id);
+
+  return generateFestivalMetadata(festival as Festival, locale as Locale, count ?? 0);
 }
 
 export default async function FestivalPage({ params }: FestivalPageProps) {

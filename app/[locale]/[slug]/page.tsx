@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { ProfileContent } from "./profile-content";
 import { OrganizerContent } from "./organizer-content";
 import { VenueContent } from "./venue-content";
@@ -115,17 +115,34 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug: rawSlug, locale } = await params;
   const slug = decodeURIComponent(rawSlug).replace(/^@/, "").toLowerCase();
 
+  // Use static client for metadata (no cookies) so OG tags appear in initial <head>
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Not found" };
+
   // Try unified resolution first, fall back to direct lookup
-  let resolution = await resolveSlug(slug);
+  const { data: rpcResult } = await supabase.rpc("resolve_unified_slug", { p_slug: slug });
+  let resolution = (rpcResult as SlugResolution) || { found: false };
   if (!resolution.found) {
-    resolution = await fallbackResolveSlug(slug);
+    // Fallback: try profile, then organizer, then venue
+    const { data: profile } = await supabase.from("profiles").select("id").eq("username", slug).single();
+    if (profile) {
+      resolution = { found: true, entity_type: "profile", entity_id: profile.id };
+    } else {
+      const { data: org } = await supabase.from("organizers").select("id").eq("slug", slug).single();
+      if (org) {
+        resolution = { found: true, entity_type: "organizer", entity_id: org.id };
+      } else {
+        const { data: venue } = await supabase.from("venues").select("id").eq("slug", slug).single();
+        if (venue) {
+          resolution = { found: true, entity_type: "venue", entity_id: venue.id };
+        }
+      }
+    }
   }
 
   if (!resolution.found || !resolution.entity_type || !resolution.entity_id) {
     return { title: "Not found" };
   }
-
-  const supabase = await createClient();
 
   switch (resolution.entity_type) {
     case "profile": {

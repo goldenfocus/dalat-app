@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { KaraokePageClient } from "./karaoke-page-client";
 import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
 
@@ -56,8 +56,8 @@ interface TrackData {
   trackIndex: number;
 }
 
-async function getKaraokeTrack(eventSlug: string, trackId: string): Promise<TrackData | null> {
-  const supabase = await createClient();
+async function getKaraokeTrack(eventSlug: string, trackId: string, staticClient?: ReturnType<typeof createStaticClient>): Promise<TrackData | null> {
+  const supabase = staticClient ?? await createClient();
 
   // Get event playlist with all tracks
   const { data, error } = await supabase.rpc("get_event_playlist", {
@@ -110,7 +110,9 @@ async function getKaraokeTrack(eventSlug: string, trackId: string): Promise<Trac
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale, trackId } = await params;
-  const data = await getKaraokeTrack(slug, trackId);
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Karaoke" };
+  const data = await getKaraokeTrack(slug, trackId, supabase);
 
   if (!data) {
     return { title: "Karaoke not found" };

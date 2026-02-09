@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
 import { Music, Download, Mic2, Clock, User, Disc, ArrowLeft } from "lucide-react";
 import { formatDuration } from "@/lib/audio-metadata";
@@ -42,8 +42,8 @@ interface TrackData {
   };
 }
 
-async function getDownloadTrack(eventSlug: string, trackId: string): Promise<TrackData | null> {
-  const supabase = await createClient();
+async function getDownloadTrack(eventSlug: string, trackId: string, staticClient?: ReturnType<typeof createStaticClient>): Promise<TrackData | null> {
+  const supabase = staticClient ?? await createClient();
 
   const { data, error } = await supabase.rpc("get_event_playlist", {
     p_event_slug: eventSlug,
@@ -80,7 +80,9 @@ async function getDownloadTrack(eventSlug: string, trackId: string): Promise<Tra
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug, locale, trackId } = await params;
-  const data = await getDownloadTrack(slug, trackId);
+  const supabase = createStaticClient();
+  if (!supabase) return { title: "Track" };
+  const data = await getDownloadTrack(slug, trackId, supabase);
 
   if (!data) {
     return { title: "Track not found" };

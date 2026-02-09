@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createStaticClient } from '@/lib/supabase/server';
 import { ViewerInterface } from './viewer-interface';
 import type { Metadata } from 'next';
 
@@ -11,7 +11,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) return { title: 'Watch Live' };
   const { data: event } = await supabase.from('events').select('title').eq('slug', slug).single();
   return { title: event ? `Watch Live - ${event.title}` : 'Watch Live' };
 }
