@@ -118,6 +118,8 @@ export interface Profile {
   role: UserRole;
   is_ghost?: boolean;
   can_blog?: boolean;
+  follower_count?: number;
+  following_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -1494,6 +1496,89 @@ export interface AttendeeResponse {
   rsvp_status: string;
   rsvp_created_at: string;
   responses: Record<string, string | string[]>; // question_id -> response_value
+}
+
+// ============================================
+// Social Graph Types
+// ============================================
+
+export interface UserFollow {
+  id: string;
+  follower_id: string;
+  following_id: string;
+  created_at: string;
+}
+
+export interface FollowStatus {
+  is_following: boolean;
+  is_followed_by: boolean;
+  is_mutual: boolean;
+}
+
+export interface FollowToggleResult {
+  ok: boolean;
+  following_id: string;
+  is_following: boolean;
+  follower_count: number;
+}
+
+export interface FollowerProfile {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  is_mutual: boolean;
+  you_follow: boolean;
+  followed_at: string;
+}
+
+export interface FollowerListResult {
+  followers: FollowerProfile[];
+  total: number;
+}
+
+export interface FollowingListResult {
+  following: FollowerProfile[];
+  total: number;
+}
+
+export interface FriendsAttending {
+  event_id: string;
+  friend_profiles: Array<{
+    id: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  }>;
+  total_count: number;
+}
+
+// ============================================
+// Activity Feed Types
+// ============================================
+
+export type ActivityType = 'rsvp' | 'moment' | 'follow';
+
+export interface ActivityItem {
+  activity_type: ActivityType;
+  actor_id: string;
+  actor_name: string | null;
+  actor_username: string | null;
+  actor_avatar: string | null;
+  // RSVP context
+  event_id?: string;
+  event_title?: string;
+  event_slug?: string;
+  event_image?: string | null;
+  // Moment context
+  moment_id?: string;
+  moment_media_url?: string | null;
+  // Follow context
+  target_id?: string;
+  target_name?: string | null;
+  target_username?: string | null;
+  target_avatar?: string | null;
+  // Timestamp
+  created_at: string;
 }
 
 // ============================================

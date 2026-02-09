@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { fromZonedTime } from "date-fns-tz";
 import { isValidRRule } from "@/lib/recurrence";
+import { CACHE_TAGS } from "@/lib/cache/server-cache";
 
 const DALAT_TIMEZONE = "Asia/Ho_Chi_Minh";
 
@@ -248,6 +250,10 @@ export async function PATCH(request: Request, { params }: Params) {
     }
   }
 
+  // Revalidate homepage and event caches so changes appear immediately
+  revalidateTag(CACHE_TAGS.events, "max");
+  revalidatePath("/");
+
   return NextResponse.json({ success: true });
 }
 
@@ -320,6 +326,10 @@ export async function DELETE(request: Request, { params }: Params) {
     .from("event_series")
     .update({ status: "cancelled" })
     .eq("id", series.id);
+
+  // Revalidate homepage and event caches
+  revalidateTag(CACHE_TAGS.events, "max");
+  revalidatePath("/");
 
   return NextResponse.json({ success: true });
 }
