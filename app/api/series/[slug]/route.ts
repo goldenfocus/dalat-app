@@ -17,6 +17,9 @@ export async function GET(request: Request, { params }: Params) {
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
 
+  // Support lookup by UUID (id) or slug
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
   // Get series
   const { data: series, error: seriesError } = await supabase
     .from("event_series")
@@ -28,7 +31,7 @@ export async function GET(request: Request, { params }: Params) {
       tribes:tribe_id (id, name, slug)
     `
     )
-    .eq("slug", slug)
+    .eq(isUUID ? "id" : "slug", slug)
     .single();
 
   if (seriesError || !series) {

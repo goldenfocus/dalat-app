@@ -146,10 +146,16 @@ Respond as JSON:
     throw new Error("No text response from Claude");
   }
 
-  // Parse Claude's response
+  // Parse Claude's response — strip markdown fences if present
   let review: { lines: { num: number; action: string; fixed?: string; reason?: string }[] };
   try {
-    review = JSON.parse(textContent.text);
+    let jsonStr = textContent.text.trim();
+    // Strip ```json ... ``` fences
+    const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenceMatch) {
+      jsonStr = fenceMatch[1].trim();
+    }
+    review = JSON.parse(jsonStr);
   } catch {
     console.error("  Failed to parse Claude response:", textContent.text.slice(0, 200));
     return { cleanedLrc: lyrics, removedLines: [], fixedLines: [], verdict: "clean" };

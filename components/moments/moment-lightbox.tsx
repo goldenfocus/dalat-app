@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { X, ChevronLeft, ChevronRight, ExternalLink, Play } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ExternalLink, Play, Share2, Check } from "lucide-react";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
 import {
@@ -71,6 +71,7 @@ export function MomentLightbox({
   const [isLandscape, setIsLandscape] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchDiff, setTouchDiff] = useState(0);
+  const [shared, setShared] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -177,6 +178,34 @@ export function MomentLightbox({
     onClose();
   };
 
+  const handleShare = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const slug = moment.event_slug || eventSlug;
+    const shareUrl = slug
+      ? `${window.location.origin}/events/${slug}/moments/${moment.id}`
+      : `${window.location.origin}/moments/${moment.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: moment.text_content || "Moment",
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        if ((err as Error).name === "AbortError") return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    } catch {
+      // Silent fail
+    }
+  }, [moment, eventSlug]);
+
   if (!isOpen || !moment) return null;
 
   // Get optimized image URL for photos
@@ -211,6 +240,19 @@ export function MomentLightbox({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Share button */}
+          <button
+            onClick={handleShare}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all"
+            aria-label="Share moment"
+          >
+            {shared ? (
+              <Check className="w-5 h-5 text-green-400" />
+            ) : (
+              <Share2 className="w-5 h-5 text-white" />
+            )}
+          </button>
+
           {/* Full page link */}
           <button
             onClick={(e) => {
