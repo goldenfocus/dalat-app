@@ -191,16 +191,8 @@ export function useUploadQueue({
 
       console.log(`[UploadQueue] Saved as draft: ${momentId}`);
 
-      // Fire-and-forget: Generate embeddings for visual search (photos only)
-      if (!isVideo && momentId) {
-        fetch("/api/moments/embed", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ momentIds: [momentId] }),
-        }).catch((err) => {
-          console.warn("[UploadQueue] Embedding generation failed (non-critical):", err);
-        });
-      }
+      // Note: Embedding is triggered after publish (batched in moment-form.tsx),
+      // not during upload — drafts are filtered out by the embed endpoint.
 
       return momentId;
     } catch (err) {

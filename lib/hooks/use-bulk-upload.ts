@@ -435,16 +435,8 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         },
       });
 
-      // Fire-and-forget: Generate embeddings for visual search (photos only)
-      if (!isVideo && momentId) {
-        fetch("/api/moments/embed", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ momentIds: [momentId] }),
-        }).catch((err) => {
-          console.warn("[BulkUpload] Embedding generation failed (non-critical):", err);
-        });
-      }
+      // Note: Embedding is triggered after publish (batched in moment-form.tsx),
+      // not during upload — drafts are filtered out by the embed endpoint.
 
       return momentId;
     } catch (err) {

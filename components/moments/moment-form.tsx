@@ -1155,13 +1155,26 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
         console.log(`[MomentForm] Published ${count} drafts`);
 
-        // Fire-and-forget: Trigger AI processing for published moments
-        for (const upload of completedBulkUploads) {
-          if (upload.momentId) {
-            fetch("/api/moments/process", {
+        // Fire-and-forget: Trigger AI processing for published moments (batched)
+        const bulkMomentIds = completedBulkUploads
+          .map((u) => u.momentId)
+          .filter(Boolean) as string[];
+        if (bulkMomentIds.length > 0) {
+          fetch("/api/moments/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ momentIds: bulkMomentIds }),
+          }).catch(() => {});
+
+          // Also batch embed for photos
+          const photoMomentIds = completedBulkUploads
+            .filter((u) => u.type !== "video" && u.momentId)
+            .map((u) => u.momentId) as string[];
+          if (photoMomentIds.length > 0) {
+            fetch("/api/moments/embed", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ momentId: upload.momentId }),
+              body: JSON.stringify({ momentIds: photoMomentIds }),
             }).catch(() => {});
           }
         }
