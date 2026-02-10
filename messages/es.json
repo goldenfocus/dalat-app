@@ -2005,5 +2005,104 @@
     "postedMoment": "publicó un momento de",
     "startedFollowing": "empezó a seguir a",
     "fromEvent": "de"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "Algunas preguntas rápidas",
+      "subtitle": "Ayuda a {organizer} a preparar el evento perfecto",
+      "start": "¡Empecemos!",
+      "time": "Aproximadamente {seconds} segundos"
+    },
+    "progress": "{current} de {total}",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "submit": "Enviar",
+    "cancel": "Saltar preguntas",
+    "required": "Obligatorio",
+    "optional": "Opcional",
+    "textPlaceholder": "Escribe tu respuesta aquí...",
+    "selectPlaceholder": "Selecciona una opción",
+    "multiSelectHint": "Selecciona todas las que apliquen",
+    "scaleLabels": {
+      "low": "Bajo",
+      "high": "Alto"
+    },
+    "success": {
+      "title": "¡Gracias!",
+      "subtitle": "Tus respuestas han sido registradas",
+      "continue": "Continuar al evento"
+    },
+    "errors": {
+      "required": "Por favor responde esta pregunta",
+      "submitFailed": "Error al enviar. Por favor intenta de nuevo."
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "Preguntas RSVP",
+    "backToEvent": "Volver al evento",
+    "enableQuestionnaire": "Habilitar preguntas",
+    "enableDescription": "Haz preguntas a los invitados cuando confirmen asistencia",
+    "introText": "Mensaje de bienvenida",
+    "introTextPlaceholder": "Por favor toma un momento para responder algunas preguntas...",
+    "introTextDescription": "Se muestra a los invitados antes de las preguntas",
+    "questionsTitle": "Preguntas",
+    "noQuestions": "Aún no hay preguntas",
+    "noQuestionsDescription": "Agrega preguntas de las plantillas o crea preguntas personalizadas",
+    "addFromTemplates": "Agregar de plantillas",
+    "addCustomQuestion": "Agregar pregunta personalizada",
+    "viewResponses": "Ver respuestas",
+    "saving": "Guardando...",
+    "saved": "Guardado",
+    "required": "Obligatorio",
+    "moveUp": "Mover arriba",
+    "moveDown": "Mover abajo",
+    "remove": "Eliminar",
+    "templateModal": {
+      "title": "Agregar pregunta de plantilla",
+      "description": "Selecciona preguntas predefinidas para agregar a tu cuestionario",
+      "category": {
+        "dietary": "Dietético",
+        "accessibility": "Accesibilidad",
+        "logistics": "Logística",
+        "preferences": "Preferencias",
+        "feedback": "Comentarios",
+        "custom": "Personalizado"
+      },
+      "alreadyAdded": "Ya agregado",
+      "add": "Agregar",
+      "close": "Cerrar"
+    },
+    "customModal": {
+      "title": "Agregar pregunta personalizada",
+      "questionText": "Texto de la pregunta",
+      "questionTextPlaceholder": "Escribe tu pregunta...",
+      "questionType": "Tipo de pregunta",
+      "types": {
+        "text": "Respuesta de texto",
+        "textarea": "Texto largo",
+        "select": "Selección única",
+        "multiselect": "Selección múltiple",
+        "scale": "Escala de valoración"
+      },
+      "options": "Opciones",
+      "optionsDescription": "Una opción por línea",
+      "optionsPlaceholder": "Opción 1\nOpción 2\nOpción 3",
+      "scaleRange": "Rango de escala",
+      "cancel": "Cancelar",
+      "add": "Agregar pregunta"
+    }
+  },
+  "responseDashboard": {
+    "title": "Respuestas",
+    "backToQuestions": "Volver a preguntas",
+    "exportCsv": "Exportar CSV",
+    "noResponses": "Aún no hay respuestas",
+    "noResponsesDescription": "Las respuestas aparecerán aquí después de que los invitados completen el cuestionario",
+    "responsesCount": "{count} invitados han respondido",
+    "guest": "Invitado",
+    "submittedAt": "Enviado el",
+    "responses": "Respuestas",
+    "anonymous": "Invitado anónimo",
+    "noAnswer": "Sin respuesta"
   }
 }

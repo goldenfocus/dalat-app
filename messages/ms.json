@@ -2005,5 +2005,104 @@
     "postedMoment": "memuat naik momen dari",
     "startedFollowing": "mula mengikuti",
     "fromEvent": "dari"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "Beberapa soalan ringkas",
+      "subtitle": "Bantu {organizer} menyediakan acara yang sempurna",
+      "start": "Jom mulakan!",
+      "time": "Kira-kira {seconds} saat"
+    },
+    "progress": "{current} daripada {total}",
+    "back": "Kembali",
+    "next": "Seterusnya",
+    "submit": "Hantar",
+    "cancel": "Langkau soalan",
+    "required": "Wajib",
+    "optional": "Pilihan",
+    "textPlaceholder": "Taip jawapan anda di sini...",
+    "selectPlaceholder": "Pilih satu pilihan",
+    "multiSelectHint": "Pilih semua yang berkenaan",
+    "scaleLabels": {
+      "low": "Rendah",
+      "high": "Tinggi"
+    },
+    "success": {
+      "title": "Terima kasih!",
+      "subtitle": "Respons anda telah direkodkan",
+      "continue": "Teruskan ke acara"
+    },
+    "errors": {
+      "required": "Sila jawab soalan ini",
+      "submitFailed": "Gagal menghantar. Sila cuba lagi."
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "Soalan RSVP",
+    "backToEvent": "Kembali ke acara",
+    "enableQuestionnaire": "Aktifkan soalan",
+    "enableDescription": "Tanya soalan kepada tetamu semasa mereka RSVP",
+    "introText": "Mesej alu-aluan",
+    "introTextPlaceholder": "Sila luangkan masa untuk menjawab beberapa soalan...",
+    "introTextDescription": "Ditunjukkan kepada tetamu sebelum soalan bermula",
+    "questionsTitle": "Soalan",
+    "noQuestions": "Belum ada soalan ditambah",
+    "noQuestionsDescription": "Tambah soalan daripada templat atau cipta soalan tersuai",
+    "addFromTemplates": "Tambah daripada templat",
+    "addCustomQuestion": "Tambah soalan tersuai",
+    "viewResponses": "Lihat respons",
+    "saving": "Menyimpan...",
+    "saved": "Disimpan",
+    "required": "Wajib",
+    "moveUp": "Alih ke atas",
+    "moveDown": "Alih ke bawah",
+    "remove": "Buang",
+    "templateModal": {
+      "title": "Tambah soalan templat",
+      "description": "Pilih soalan pra-tetap untuk ditambah ke soal selidik anda",
+      "category": {
+        "dietary": "Pemakanan",
+        "accessibility": "Kebolehcapaian",
+        "logistics": "Logistik",
+        "preferences": "Keutamaan",
+        "feedback": "Maklum balas",
+        "custom": "Tersuai"
+      },
+      "alreadyAdded": "Sudah ditambah",
+      "add": "Tambah",
+      "close": "Tutup"
+    },
+    "customModal": {
+      "title": "Tambah soalan tersuai",
+      "questionText": "Teks soalan",
+      "questionTextPlaceholder": "Taip soalan anda...",
+      "questionType": "Jenis soalan",
+      "types": {
+        "text": "Jawapan teks",
+        "textarea": "Teks panjang",
+        "select": "Pilihan tunggal",
+        "multiselect": "Pilihan berganda",
+        "scale": "Skala penilaian"
+      },
+      "options": "Pilihan",
+      "optionsDescription": "Satu pilihan setiap baris",
+      "optionsPlaceholder": "Pilihan 1\nPilihan 2\nPilihan 3",
+      "scaleRange": "Julat skala",
+      "cancel": "Batal",
+      "add": "Tambah soalan"
+    }
+  },
+  "responseDashboard": {
+    "title": "Respons",
+    "backToQuestions": "Kembali ke soalan",
+    "exportCsv": "Eksport CSV",
+    "noResponses": "Belum ada respons",
+    "noResponsesDescription": "Respons akan muncul di sini selepas tetamu melengkapkan soal selidik",
+    "responsesCount": "{count} tetamu telah menjawab",
+    "guest": "Tetamu",
+    "submittedAt": "Dihantar pada",
+    "responses": "Respons",
+    "anonymous": "Tetamu tanpa nama",
+    "noAnswer": "Tiada jawapan"
   }
 }

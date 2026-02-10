@@ -2005,5 +2005,104 @@
     "postedMoment": "โพสต์โมเมนต์จาก",
     "startedFollowing": "เริ่มติดตาม",
     "fromEvent": "จาก"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "คำถามสั้นๆ",
+      "subtitle": "ช่วย {organizer} เตรียมงานที่สมบูรณ์แบบ",
+      "start": "เริ่มกันเลย!",
+      "time": "ประมาณ {seconds} วินาที"
+    },
+    "progress": "{current} จาก {total}",
+    "back": "กลับ",
+    "next": "ถัดไป",
+    "submit": "ส่ง",
+    "cancel": "ข้ามคำถาม",
+    "required": "จำเป็น",
+    "optional": "ไม่บังคับ",
+    "textPlaceholder": "พิมพ์คำตอบของคุณที่นี่...",
+    "selectPlaceholder": "เลือกตัวเลือก",
+    "multiSelectHint": "เลือกทั้งหมดที่ตรง",
+    "scaleLabels": {
+      "low": "ต่ำ",
+      "high": "สูง"
+    },
+    "success": {
+      "title": "ขอบคุณ!",
+      "subtitle": "บันทึกคำตอบของคุณแล้ว",
+      "continue": "ไปที่งาน"
+    },
+    "errors": {
+      "required": "กรุณาตอบคำถามนี้",
+      "submitFailed": "ส่งไม่สำเร็จ กรุณาลองอีกครั้ง"
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "คำถาม RSVP",
+    "backToEvent": "กลับไปงาน",
+    "enableQuestionnaire": "เปิดใช้งานคำถาม",
+    "enableDescription": "ถามคำถามแขกเมื่อพวกเขา RSVP",
+    "introText": "ข้อความต้อนรับ",
+    "introTextPlaceholder": "กรุณาสละเวลาตอบคำถามสั้นๆ...",
+    "introTextDescription": "แสดงให้แขกเห็นก่อนเริ่มคำถาม",
+    "questionsTitle": "คำถาม",
+    "noQuestions": "ยังไม่มีคำถาม",
+    "noQuestionsDescription": "เพิ่มคำถามจากเทมเพลตหรือสร้างคำถามเอง",
+    "addFromTemplates": "เพิ่มจากเทมเพลต",
+    "addCustomQuestion": "เพิ่มคำถามเอง",
+    "viewResponses": "ดูคำตอบ",
+    "saving": "กำลังบันทึก...",
+    "saved": "บันทึกแล้ว",
+    "required": "จำเป็น",
+    "moveUp": "ย้ายขึ้น",
+    "moveDown": "ย้ายลง",
+    "remove": "ลบ",
+    "templateModal": {
+      "title": "เพิ่มคำถามจากเทมเพลต",
+      "description": "เลือกคำถามสำเร็จรูปเพื่อเพิ่มในแบบสอบถาม",
+      "category": {
+        "dietary": "อาหาร",
+        "accessibility": "การเข้าถึง",
+        "logistics": "โลจิสติกส์",
+        "preferences": "ความชอบ",
+        "feedback": "ความคิดเห็น",
+        "custom": "กำหนดเอง"
+      },
+      "alreadyAdded": "เพิ่มแล้ว",
+      "add": "เพิ่ม",
+      "close": "ปิด"
+    },
+    "customModal": {
+      "title": "เพิ่มคำถามเอง",
+      "questionText": "ข้อความคำถาม",
+      "questionTextPlaceholder": "พิมพ์คำถามของคุณ...",
+      "questionType": "ประเภทคำถาม",
+      "types": {
+        "text": "คำตอบข้อความ",
+        "textarea": "ข้อความยาว",
+        "select": "เลือกหนึ่ง",
+        "multiselect": "เลือกหลายตัว",
+        "scale": "มาตราส่วนการให้คะแนน"
+      },
+      "options": "ตัวเลือก",
+      "optionsDescription": "หนึ่งตัวเลือกต่อบรรทัด",
+      "optionsPlaceholder": "ตัวเลือก 1\nตัวเลือก 2\nตัวเลือก 3",
+      "scaleRange": "ช่วงมาตราส่วน",
+      "cancel": "ยกเลิก",
+      "add": "เพิ่มคำถาม"
+    }
+  },
+  "responseDashboard": {
+    "title": "คำตอบ",
+    "backToQuestions": "กลับไปคำถาม",
+    "exportCsv": "ส่งออก CSV",
+    "noResponses": "ยังไม่มีคำตอบ",
+    "noResponsesDescription": "คำตอบจะปรากฏที่นี่หลังจากแขกกรอกแบบสอบถาม",
+    "responsesCount": "{count} แขกได้ตอบแล้ว",
+    "guest": "แขก",
+    "submittedAt": "ส่งเมื่อ",
+    "responses": "คำตอบ",
+    "anonymous": "แขกไม่ระบุตัวตน",
+    "noAnswer": "ไม่มีคำตอบ"
   }
 }

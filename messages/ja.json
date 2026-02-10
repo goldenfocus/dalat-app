@@ -2005,5 +2005,104 @@
     "postedMoment": "がモーメントを投稿",
     "startedFollowing": "がフォロー開始",
     "fromEvent": "から"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "いくつかの簡単な質問",
+      "subtitle": "{organizer}が完璧なイベントを準備するのを手伝ってください",
+      "start": "始めましょう！",
+      "time": "約{seconds}秒"
+    },
+    "progress": "{current} / {total}",
+    "back": "戻る",
+    "next": "次へ",
+    "submit": "送信",
+    "cancel": "質問をスキップ",
+    "required": "必須",
+    "optional": "任意",
+    "textPlaceholder": "回答を入力してください...",
+    "selectPlaceholder": "オプションを選択",
+    "multiSelectHint": "該当するものをすべて選択",
+    "scaleLabels": {
+      "low": "低い",
+      "high": "高い"
+    },
+    "success": {
+      "title": "ありがとうございます！",
+      "subtitle": "回答が記録されました",
+      "continue": "イベントに進む"
+    },
+    "errors": {
+      "required": "この質問にお答えください",
+      "submitFailed": "送信できませんでした。もう一度お試しください"
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "RSVPの質問",
+    "backToEvent": "イベントに戻る",
+    "enableQuestionnaire": "質問を有効にする",
+    "enableDescription": "ゲストがRSVPする際に質問する",
+    "introText": "ウェルカムメッセージ",
+    "introTextPlaceholder": "いくつかの質問にお答えください...",
+    "introTextDescription": "質問の前にゲストに表示されます",
+    "questionsTitle": "質問",
+    "noQuestions": "まだ質問がありません",
+    "noQuestionsDescription": "テンプレートから追加するか、カスタム質問を作成してください",
+    "addFromTemplates": "テンプレートから追加",
+    "addCustomQuestion": "カスタム質問を追加",
+    "viewResponses": "回答を表示",
+    "saving": "保存中...",
+    "saved": "保存しました",
+    "required": "必須",
+    "moveUp": "上に移動",
+    "moveDown": "下に移動",
+    "remove": "削除",
+    "templateModal": {
+      "title": "テンプレート質問を追加",
+      "description": "アンケートに追加する事前定義の質問を選択",
+      "category": {
+        "dietary": "食事",
+        "accessibility": "アクセシビリティ",
+        "logistics": "ロジスティクス",
+        "preferences": "好み",
+        "feedback": "フィードバック",
+        "custom": "カスタム"
+      },
+      "alreadyAdded": "追加済み",
+      "add": "追加",
+      "close": "閉じる"
+    },
+    "customModal": {
+      "title": "カスタム質問を追加",
+      "questionText": "質問文",
+      "questionTextPlaceholder": "質問を入力...",
+      "questionType": "質問タイプ",
+      "types": {
+        "text": "テキスト回答",
+        "textarea": "長文テキスト",
+        "select": "単一選択",
+        "multiselect": "複数選択",
+        "scale": "評価スケール"
+      },
+      "options": "オプション",
+      "optionsDescription": "1行に1つのオプション",
+      "optionsPlaceholder": "オプション1\nオプション2\nオプション3",
+      "scaleRange": "スケール範囲",
+      "cancel": "キャンセル",
+      "add": "質問を追加"
+    }
+  },
+  "responseDashboard": {
+    "title": "回答",
+    "backToQuestions": "質問に戻る",
+    "exportCsv": "CSVエクスポート",
+    "noResponses": "まだ回答がありません",
+    "noResponsesDescription": "ゲストがアンケートに回答するとここに表示されます",
+    "responsesCount": "{count}人のゲストが回答",
+    "guest": "ゲスト",
+    "submittedAt": "提出日時",
+    "responses": "回答",
+    "anonymous": "匿名ゲスト",
+    "noAnswer": "回答なし"
   }
 }

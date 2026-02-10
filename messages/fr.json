@@ -2005,5 +2005,89 @@
     "postedMoment": "a posté un moment de",
     "startedFollowing": "a commencé à suivre",
     "fromEvent": "de"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "Quelques questions rapides",
+      "subtitle": "Aidez {organizer} à préparer l'événement parfait",
+      "start": "C'est parti !",
+      "time": "Environ {seconds} secondes"
+    },
+    "progress": "{current} sur {total}",
+    "back": "Retour",
+    "next": "Suivant",
+    "submit": "Envoyer",
+    "cancel": "Passer les questions",
+    "errors": {
+      "required": "Ce champ est obligatoire",
+      "submitFailed": "Échec de l'envoi. Veuillez réessayer."
+    },
+    "complete": {
+      "title": "C'est tout bon !",
+      "subtitle": "À bientôt à l'événement !",
+      "seeYouSoon": "À bientôt",
+      "done": "Terminé"
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "Questions RSVP",
+    "backToEvent": "Retour à l'événement",
+    "description": "Les participants répondent à ces questions lors de leur inscription",
+    "enableQuestionnaire": "Activer les questions",
+    "enableDescription": "Poser des questions aux invités lors de leur inscription",
+    "introText": "Message de bienvenue",
+    "introPlaceholder": "Bienvenue ! Nous avons quelques questions rapides...",
+    "introHint": "Affiché avant la première question",
+    "yourQuestions": "Vos questions",
+    "noQuestions": "Pas encore de questions",
+    "addFromTemplates": "Ajoutez des questions depuis les modèles ci-dessous",
+    "addQuestions": "Ajouter des questions",
+    "templates": "questions",
+    "addFromTemplate": "Ajouter depuis les modèles",
+    "addCustom": "Ajouter une question personnalisée",
+    "editQuestion": "Modifier la question",
+    "deleteQuestion": "Supprimer la question",
+    "questionText": "Question",
+    "questionType": "Type",
+    "required": "Obligatoire",
+    "optional": "Facultatif",
+    "options": "Options",
+    "addOption": "Ajouter une option",
+    "preview": "Aperçu",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "saved": "Enregistré !",
+    "singleChoice": "Choix unique",
+    "multiChoice": "Choix multiples",
+    "textInput": "Texte",
+    "viewResponses": "Voir les réponses",
+    "categories": {
+      "logistics": "Logistique",
+      "dietary": "Alimentaire",
+      "contribution": "Contribution",
+      "personal": "Personnel",
+      "custom": "Personnalisé"
+    },
+    "types": {
+      "single_choice": "Choix unique",
+      "multi_choice": "Choix multiples",
+      "text": "Texte"
+    }
+  },
+  "responseDashboard": {
+    "title": "Réponses",
+    "backToQuestions": "Retour aux questions",
+    "summary": "Résumé",
+    "individual": "Individuel",
+    "exportCSV": "Exporter CSV",
+    "responses": "Réponses",
+    "ofRsvps": "sur {total} inscriptions",
+    "questions": "Questions",
+    "totalQuestions": "dans le questionnaire",
+    "responded": "{count} ont répondu",
+    "notResponded": "{count} n'ont pas répondu",
+    "noResponses": "Pas encore de réponses",
+    "responseRate": "{rate}% taux de réponse",
+    "andMore": "et {count} autres..."
   }
 }

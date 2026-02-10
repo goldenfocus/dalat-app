@@ -2005,5 +2005,104 @@
     "postedMoment": "опубликовал момент из",
     "startedFollowing": "подписался на",
     "fromEvent": "из"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "Несколько быстрых вопросов",
+      "subtitle": "Помогите {organizer} подготовить идеальное мероприятие",
+      "start": "Поехали!",
+      "time": "Примерно {seconds} секунд"
+    },
+    "progress": "{current} из {total}",
+    "back": "Назад",
+    "next": "Далее",
+    "submit": "Отправить",
+    "cancel": "Пропустить вопросы",
+    "required": "Обязательно",
+    "optional": "Необязательно",
+    "textPlaceholder": "Введите ваш ответ...",
+    "selectPlaceholder": "Выберите вариант",
+    "multiSelectHint": "Выберите все подходящие варианты",
+    "scaleLabels": {
+      "low": "Низко",
+      "high": "Высоко"
+    },
+    "success": {
+      "title": "Спасибо!",
+      "subtitle": "Ваши ответы записаны",
+      "continue": "Перейти к мероприятию"
+    },
+    "errors": {
+      "required": "Пожалуйста, ответьте на этот вопрос",
+      "submitFailed": "Не удалось отправить. Попробуйте снова."
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "Вопросы RSVP",
+    "backToEvent": "Назад к мероприятию",
+    "enableQuestionnaire": "Включить вопросы",
+    "enableDescription": "Задавайте вопросы гостям при регистрации",
+    "introText": "Приветственное сообщение",
+    "introTextPlaceholder": "Пожалуйста, уделите минутку, чтобы ответить на несколько вопросов...",
+    "introTextDescription": "Показывается гостям перед началом вопросов",
+    "questionsTitle": "Вопросы",
+    "noQuestions": "Вопросы ещё не добавлены",
+    "noQuestionsDescription": "Добавьте вопросы из шаблонов или создайте свои",
+    "addFromTemplates": "Добавить из шаблонов",
+    "addCustomQuestion": "Добавить свой вопрос",
+    "viewResponses": "Просмотр ответов",
+    "saving": "Сохранение...",
+    "saved": "Сохранено",
+    "required": "Обязательно",
+    "moveUp": "Переместить вверх",
+    "moveDown": "Переместить вниз",
+    "remove": "Удалить",
+    "templateModal": {
+      "title": "Добавить шаблонный вопрос",
+      "description": "Выберите готовые вопросы для добавления в анкету",
+      "category": {
+        "dietary": "Питание",
+        "accessibility": "Доступность",
+        "logistics": "Логистика",
+        "preferences": "Предпочтения",
+        "feedback": "Отзыв",
+        "custom": "Свой"
+      },
+      "alreadyAdded": "Уже добавлено",
+      "add": "Добавить",
+      "close": "Закрыть"
+    },
+    "customModal": {
+      "title": "Добавить свой вопрос",
+      "questionText": "Текст вопроса",
+      "questionTextPlaceholder": "Введите ваш вопрос...",
+      "questionType": "Тип вопроса",
+      "types": {
+        "text": "Текстовый ответ",
+        "textarea": "Длинный текст",
+        "select": "Выбор одного",
+        "multiselect": "Множественный выбор",
+        "scale": "Шкала оценки"
+      },
+      "options": "Варианты",
+      "optionsDescription": "По одному варианту на строку",
+      "optionsPlaceholder": "Вариант 1\nВариант 2\nВариант 3",
+      "scaleRange": "Диапазон шкалы",
+      "cancel": "Отмена",
+      "add": "Добавить вопрос"
+    }
+  },
+  "responseDashboard": {
+    "title": "Ответы",
+    "backToQuestions": "Назад к вопросам",
+    "exportCsv": "Экспорт CSV",
+    "noResponses": "Пока нет ответов",
+    "noResponsesDescription": "Ответы появятся здесь после заполнения анкеты гостями",
+    "responsesCount": "{count} гостей ответили",
+    "guest": "Гость",
+    "submittedAt": "Отправлено",
+    "responses": "Ответы",
+    "anonymous": "Анонимный гость",
+    "noAnswer": "Нет ответа"
   }
 }

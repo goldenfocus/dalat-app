@@ -2005,5 +2005,104 @@
     "postedMoment": "hat einen Moment gepostet von",
     "startedFollowing": "folgt jetzt",
     "fromEvent": "von"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "Ein paar kurze Fragen",
+      "subtitle": "Hilf {organizer} dabei, das perfekte Event vorzubereiten",
+      "start": "Los geht's!",
+      "time": "Etwa {seconds} Sekunden"
+    },
+    "progress": "{current} von {total}",
+    "back": "Zurück",
+    "next": "Weiter",
+    "submit": "Absenden",
+    "cancel": "Fragen überspringen",
+    "required": "Erforderlich",
+    "optional": "Optional",
+    "textPlaceholder": "Gib deine Antwort hier ein...",
+    "selectPlaceholder": "Wähle eine Option",
+    "multiSelectHint": "Wähle alle zutreffenden aus",
+    "scaleLabels": {
+      "low": "Niedrig",
+      "high": "Hoch"
+    },
+    "success": {
+      "title": "Danke!",
+      "subtitle": "Deine Antworten wurden gespeichert",
+      "continue": "Weiter zum Event"
+    },
+    "errors": {
+      "required": "Bitte beantworte diese Frage",
+      "submitFailed": "Absenden fehlgeschlagen. Bitte erneut versuchen."
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "RSVP-Fragen",
+    "backToEvent": "Zurück zum Event",
+    "enableQuestionnaire": "Fragen aktivieren",
+    "enableDescription": "Stelle Gästen Fragen bei der Anmeldung",
+    "introText": "Willkommensnachricht",
+    "introTextPlaceholder": "Bitte nimm dir einen Moment Zeit, um ein paar Fragen zu beantworten...",
+    "introTextDescription": "Wird Gästen vor den Fragen angezeigt",
+    "questionsTitle": "Fragen",
+    "noQuestions": "Noch keine Fragen hinzugefügt",
+    "noQuestionsDescription": "Füge Fragen aus Vorlagen hinzu oder erstelle eigene",
+    "addFromTemplates": "Aus Vorlagen hinzufügen",
+    "addCustomQuestion": "Eigene Frage hinzufügen",
+    "viewResponses": "Antworten ansehen",
+    "saving": "Wird gespeichert...",
+    "saved": "Gespeichert",
+    "required": "Erforderlich",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "remove": "Entfernen",
+    "templateModal": {
+      "title": "Vorlagenfrage hinzufügen",
+      "description": "Wähle vordefinierte Fragen für deinen Fragebogen",
+      "category": {
+        "dietary": "Ernährung",
+        "accessibility": "Barrierefreiheit",
+        "logistics": "Logistik",
+        "preferences": "Präferenzen",
+        "feedback": "Feedback",
+        "custom": "Eigene"
+      },
+      "alreadyAdded": "Bereits hinzugefügt",
+      "add": "Hinzufügen",
+      "close": "Schließen"
+    },
+    "customModal": {
+      "title": "Eigene Frage hinzufügen",
+      "questionText": "Fragetext",
+      "questionTextPlaceholder": "Gib deine Frage ein...",
+      "questionType": "Fragetyp",
+      "types": {
+        "text": "Textantwort",
+        "textarea": "Langer Text",
+        "select": "Einfachauswahl",
+        "multiselect": "Mehrfachauswahl",
+        "scale": "Bewertungsskala"
+      },
+      "options": "Optionen",
+      "optionsDescription": "Eine Option pro Zeile",
+      "optionsPlaceholder": "Option 1\nOption 2\nOption 3",
+      "scaleRange": "Skalenbereich",
+      "cancel": "Abbrechen",
+      "add": "Frage hinzufügen"
+    }
+  },
+  "responseDashboard": {
+    "title": "Antworten",
+    "backToQuestions": "Zurück zu den Fragen",
+    "exportCsv": "CSV exportieren",
+    "noResponses": "Noch keine Antworten",
+    "noResponsesDescription": "Antworten erscheinen hier, nachdem Gäste den Fragebogen ausgefüllt haben",
+    "responsesCount": "{count} Gäste haben geantwortet",
+    "guest": "Gast",
+    "submittedAt": "Eingereicht am",
+    "responses": "Antworten",
+    "anonymous": "Anonymer Gast",
+    "noAnswer": "Keine Antwort"
   }
 }

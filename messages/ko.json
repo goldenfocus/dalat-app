@@ -2008,5 +2008,89 @@
     "postedMoment": "순간 게시",
     "startedFollowing": "팔로우 시작",
     "fromEvent": "에서"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "몇 가지 빠른 질문",
+      "subtitle": "{organizer}이(가) 완벽한 이벤트를 준비할 수 있도록 도와주세요",
+      "start": "시작하기!",
+      "time": "약 {seconds}초"
+    },
+    "progress": "{total}개 중 {current}개",
+    "back": "뒤로",
+    "next": "다음",
+    "submit": "제출",
+    "cancel": "질문 건너뛰기",
+    "errors": {
+      "required": "필수 항목입니다",
+      "submitFailed": "제출에 실패했습니다. 다시 시도해주세요."
+    },
+    "complete": {
+      "title": "모두 완료!",
+      "subtitle": "이벤트에서 만나요!",
+      "seeYouSoon": "곧 만나요",
+      "done": "완료"
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "RSVP 질문",
+    "backToEvent": "이벤트로 돌아가기",
+    "description": "참석자가 RSVP 시 답변하는 질문",
+    "enableQuestionnaire": "질문 활성화",
+    "enableDescription": "RSVP 시 손님에게 질문하기",
+    "introText": "환영 메시지",
+    "introPlaceholder": "환영합니다! 몇 가지 빠른 질문이 있습니다...",
+    "introHint": "첫 번째 질문 전에 표시됨",
+    "yourQuestions": "내 질문",
+    "noQuestions": "아직 질문이 없습니다",
+    "addFromTemplates": "아래 템플릿에서 질문 추가",
+    "addQuestions": "질문 추가",
+    "templates": "질문",
+    "addFromTemplate": "템플릿에서 추가",
+    "addCustom": "사용자 정의 질문 추가",
+    "editQuestion": "질문 수정",
+    "deleteQuestion": "질문 삭제",
+    "questionText": "질문",
+    "questionType": "유형",
+    "required": "필수",
+    "optional": "선택",
+    "options": "옵션",
+    "addOption": "옵션 추가",
+    "preview": "미리보기",
+    "save": "저장",
+    "saving": "저장 중...",
+    "saved": "저장됨!",
+    "singleChoice": "단일 선택",
+    "multiChoice": "다중 선택",
+    "textInput": "텍스트",
+    "viewResponses": "응답 보기",
+    "categories": {
+      "logistics": "물류",
+      "dietary": "식이",
+      "contribution": "기여",
+      "personal": "개인",
+      "custom": "사용자 정의"
+    },
+    "types": {
+      "single_choice": "단일 선택",
+      "multi_choice": "다중 선택",
+      "text": "텍스트"
+    }
+  },
+  "responseDashboard": {
+    "title": "응답",
+    "backToQuestions": "질문으로 돌아가기",
+    "summary": "요약",
+    "individual": "개별",
+    "exportCSV": "CSV 내보내기",
+    "responses": "응답",
+    "ofRsvps": "{total}명의 RSVP 중",
+    "questions": "질문",
+    "totalQuestions": "설문지에서",
+    "responded": "{count}명이 응답함",
+    "notResponded": "{count}명이 응답 안 함",
+    "noResponses": "아직 응답이 없습니다",
+    "responseRate": "{rate}% 응답률",
+    "andMore": "외 {count}개..."
   }
 }

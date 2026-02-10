@@ -2008,5 +2008,104 @@
     "postedMoment": "发布了来自",
     "startedFollowing": "开始关注了",
     "fromEvent": "来自"
+  },
+  "questionnaire": {
+    "welcome": {
+      "title": "几个简单的问题",
+      "subtitle": "帮助 {organizer} 筹备完美的活动",
+      "start": "开始吧！",
+      "time": "大约 {seconds} 秒"
+    },
+    "progress": "{current} / {total}",
+    "back": "返回",
+    "next": "下一个",
+    "submit": "提交",
+    "cancel": "跳过问题",
+    "required": "必填",
+    "optional": "选填",
+    "textPlaceholder": "在此输入您的回答...",
+    "selectPlaceholder": "选择一个选项",
+    "multiSelectHint": "选择所有适用的选项",
+    "scaleLabels": {
+      "low": "差",
+      "high": "好"
+    },
+    "success": {
+      "title": "感谢您！",
+      "subtitle": "您的回复已记录",
+      "continue": "继续活动"
+    },
+    "errors": {
+      "required": "请填写此问题",
+      "submitFailed": "提交失败，请重试"
+    }
+  },
+  "questionnaireBuilder": {
+    "title": "RSVP问题",
+    "backToEvent": "返回活动",
+    "enableQuestionnaire": "启用问题",
+    "enableDescription": "在访客确认出席时向他们提问",
+    "introText": "欢迎消息",
+    "introTextPlaceholder": "请花点时间回答几个问题...",
+    "introTextDescription": "在问题开始前向访客显示",
+    "questionsTitle": "问题",
+    "noQuestions": "尚未添加问题",
+    "noQuestionsDescription": "从模板添加问题或创建自定义问题",
+    "addFromTemplates": "从模板添加",
+    "addCustomQuestion": "添加自定义问题",
+    "viewResponses": "查看回复",
+    "saving": "保存中...",
+    "saved": "已保存",
+    "required": "必填",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "remove": "移除",
+    "templateModal": {
+      "title": "添加模板问题",
+      "description": "选择预设问题以添加到您的问卷",
+      "category": {
+        "dietary": "饮食",
+        "accessibility": "无障碍",
+        "logistics": "后勤",
+        "preferences": "偏好",
+        "feedback": "反馈",
+        "custom": "自定义"
+      },
+      "alreadyAdded": "已添加",
+      "add": "添加",
+      "close": "关闭"
+    },
+    "customModal": {
+      "title": "添加自定义问题",
+      "questionText": "问题文本",
+      "questionTextPlaceholder": "输入您的问题...",
+      "questionType": "问题类型",
+      "types": {
+        "text": "文本回答",
+        "textarea": "长文本",
+        "select": "单选",
+        "multiselect": "多选",
+        "scale": "评分量表"
+      },
+      "options": "选项",
+      "optionsDescription": "每行一个选项",
+      "optionsPlaceholder": "选项 1\n选项 2\n选项 3",
+      "scaleRange": "评分范围",
+      "cancel": "取消",
+      "add": "添加问题"
+    }
+  },
+  "responseDashboard": {
+    "title": "回复",
+    "backToQuestions": "返回问题",
+    "exportCsv": "导出 CSV",
+    "noResponses": "暂无回复",
+    "noResponsesDescription": "回复将在访客完成问卷后显示在此处",
+    "responsesCount": "{count} 位访客已回复",
+    "guest": "访客",
+    "submittedAt": "提交时间",
+    "responses": "回复",
+    "anonymous": "匿名访客",
+    "noAnswer": "未回答"
   }
 }
