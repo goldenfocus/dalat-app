@@ -181,7 +181,8 @@
       "hint": "Nhấn vào menu (⋮ hoặc ···) và chọn \"Mở trong Safari\" hoặc \"Mở trong Chrome\"",
       "dismiss": "Bỏ qua",
       "thisApp": "ứng dụng này"
-    }
+    },
+    "continueWithApple": "Tiếp tục với Apple"
   },
   "errors": {
     "somethingWentWrong": "Xin lỗi, đã xảy ra lỗi.",
@@ -2165,5 +2166,34 @@
     "postedMoment": "đã đăng khoảnh khắc từ",
     "startedFollowing": "đã bắt đầu theo dõi",
     "fromEvent": "từ"
+  },
+  "pickleball": {
+    "title": "Pickleball tại Đà Lạt",
+    "subtitle": "Tìm và tổ chức các trận pickleball",
+    "schemaName": "Cộng đồng Pickleball Đà Lạt",
+    "schemaDescription": "Nền tảng cộng đồng để tổ chức các trận pickleball tại Đà Lạt, Việt Nam",
+    "upcomingGames": "Trận sắp tới",
+    "createGame": "Tổ chức trận đấu",
+    "aboutTitle": "Về Pickleball tại Đà Lạt",
+    "aboutContent": "Khí hậu mát mẻ của Đà Lạt rất phù hợp cho các môn thể thao ngoài trời. Tham gia cộng đồng pickleball đang phát triển của chúng tôi!",
+    "paddleSports": "Pickleball",
+    "noGames": "Chưa có trận nào",
+    "beFirst": "Hãy là người đầu tiên tổ chức trận đấu!"
+  },
+  "plusOnes": {
+    "bringFriend": "Mời bạn bè",
+    "addGuest": "Thêm khách",
+    "removeGuest": "Xóa khách",
+    "guestName": "Tên khách",
+    "guestNamePlaceholder": "Tên của họ",
+    "guestEmail": "Email (tùy chọn)",
+    "guestEmailHelp": "Để họ nhận thông tin sự kiện",
+    "guestEmailPlaceholder": "ban@example.com",
+    "maxReached": "Đã đạt số khách tối đa",
+    "eventFull": "Sự kiện đã đầy",
+    "guestOf": "Khách của {name}",
+    "done": "Xong",
+    "addAnother": "Thêm khách khác",
+    "guests": "{count, plural, =0 {Không có khách} other {# khách}}"
   }
 }

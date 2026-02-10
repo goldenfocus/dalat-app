@@ -181,7 +181,8 @@
       "hint": "Tippe auf das Menü (⋮ oder ···) und wähle \"In Safari öffnen\" oder \"In Chrome öffnen\"",
       "dismiss": "Schließen",
       "thisApp": "dieser App"
-    }
+    },
+    "continueWithApple": "Mit Apple fortfahren"
   },
   "errors": {
     "somethingWentWrong": "Entschuldigung, etwas ist schiefgelaufen.",
@@ -2104,5 +2105,34 @@
     "responses": "Antworten",
     "anonymous": "Anonymer Gast",
     "noAnswer": "Keine Antwort"
+  },
+  "pickleball": {
+    "title": "Pickleball in Da Lat",
+    "subtitle": "Finden und organisieren Sie Pickleball-Spiele",
+    "schemaName": "Pickleball-Gemeinschaft Da Lat",
+    "schemaDescription": "Community-Plattform zur Organisation von Pickleball-Spielen in Da Lat, Vietnam",
+    "upcomingGames": "Kommende Spiele",
+    "createGame": "Spiel organisieren",
+    "aboutTitle": "Über Pickleball in Da Lat",
+    "aboutContent": "Das kühle Klima von Da Lat ist perfekt für Outdoor-Sport. Treten Sie unserer wachsenden Pickleball-Gemeinschaft bei!",
+    "paddleSports": "Pickleball",
+    "noGames": "Keine kommenden Spiele",
+    "beFirst": "Seien Sie der Erste, der ein Spiel organisiert!"
+  },
+  "plusOnes": {
+    "bringFriend": "Freund mitbringen",
+    "addGuest": "Gast hinzufügen",
+    "removeGuest": "Gast entfernen",
+    "guestName": "Name des Gastes",
+    "guestNamePlaceholder": "Ihr Name",
+    "guestEmail": "E-Mail (optional)",
+    "guestEmailHelp": "Damit sie Veranstaltungsdetails erhalten",
+    "guestEmailPlaceholder": "freund@example.com",
+    "maxReached": "Maximale Gästeanzahl erreicht",
+    "eventFull": "Veranstaltung ist voll",
+    "guestOf": "Gast von {name}",
+    "done": "Fertig",
+    "addAnother": "Weiteren Gast hinzufügen",
+    "guests": "{count, plural, =0 {Keine Gäste} =1 {1 Gast} other {# Gäste}}"
   }
 }

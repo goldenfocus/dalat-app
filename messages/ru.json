@@ -181,7 +181,8 @@
       "hint": "Нажмите на меню (⋮ или ···) и выберите «Открыть в Safari» или «Открыть в Chrome»",
       "dismiss": "Закрыть",
       "thisApp": "этом приложении"
-    }
+    },
+    "continueWithApple": "Продолжить с Apple"
   },
   "errors": {
     "somethingWentWrong": "Извините, что-то пошло не так.",
@@ -2104,5 +2105,34 @@
     "responses": "Ответы",
     "anonymous": "Анонимный гость",
     "noAnswer": "Нет ответа"
+  },
+  "pickleball": {
+    "title": "Пиклбол в Далате",
+    "subtitle": "Найдите и организуйте игры в пиклбол",
+    "schemaName": "Сообщество пиклбола Далат",
+    "schemaDescription": "Платформа сообщества для организации игр в пиклбол в Далате, Вьетнам",
+    "upcomingGames": "Предстоящие игры",
+    "createGame": "Организовать игру",
+    "aboutTitle": "О пиклболе в Далате",
+    "aboutContent": "Прохладный климат Далата идеален для спорта на открытом воздухе. Присоединяйтесь к нашему растущему сообществу любителей пиклбола!",
+    "paddleSports": "Пиклбол",
+    "noGames": "Нет предстоящих игр",
+    "beFirst": "Станьте первым организатором игры!"
+  },
+  "plusOnes": {
+    "bringFriend": "Привести друга",
+    "addGuest": "Добавить гостя",
+    "removeGuest": "Удалить гостя",
+    "guestName": "Имя гостя",
+    "guestNamePlaceholder": "Их имя",
+    "guestEmail": "Email (необязательно)",
+    "guestEmailHelp": "Чтобы они получили детали мероприятия",
+    "guestEmailPlaceholder": "friend@example.com",
+    "maxReached": "Достигнут максимум гостей",
+    "eventFull": "Мероприятие заполнено",
+    "guestOf": "Гость {name}",
+    "done": "Готово",
+    "addAnother": "Добавить ещё гостя",
+    "guests": "{count, plural, =0 {Нет гостей} =1 {1 гость} few {# гостя} other {# гостей}}"
   }
 }

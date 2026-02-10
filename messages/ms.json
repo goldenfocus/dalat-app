@@ -181,7 +181,8 @@
       "hint": "Ketik menu (⋮ atau ···) dan pilih \"Buka dalam Safari\" atau \"Buka dalam Chrome\"",
       "dismiss": "Tutup",
       "thisApp": "aplikasi ini"
-    }
+    },
+    "continueWithApple": "Teruskan dengan Apple"
   },
   "errors": {
     "somethingWentWrong": "Maaf, sesuatu tidak kena.",
@@ -2104,5 +2105,34 @@
     "responses": "Respons",
     "anonymous": "Tetamu tanpa nama",
     "noAnswer": "Tiada jawapan"
+  },
+  "pickleball": {
+    "title": "Pickleball di Da Lat",
+    "subtitle": "Cari dan anjurkan permainan pickleball",
+    "schemaName": "Komuniti Pickleball Da Lat",
+    "schemaDescription": "Platform komuniti untuk menganjurkan permainan pickleball di Da Lat, Vietnam",
+    "upcomingGames": "Permainan Akan Datang",
+    "createGame": "Anjurkan Permainan",
+    "aboutTitle": "Tentang Pickleball di Da Lat",
+    "aboutContent": "Iklim sejuk Da Lat sesuai untuk sukan luar. Sertai komuniti pickleball kami yang semakin berkembang!",
+    "paddleSports": "Pickleball",
+    "noGames": "Tiada permainan akan datang",
+    "beFirst": "Jadilah yang pertama menganjurkan permainan!"
+  },
+  "plusOnes": {
+    "bringFriend": "Bawa rakan",
+    "addGuest": "Tambah tetamu",
+    "removeGuest": "Buang tetamu",
+    "guestName": "Nama tetamu",
+    "guestNamePlaceholder": "Nama mereka",
+    "guestEmail": "E-mel (pilihan)",
+    "guestEmailHelp": "Supaya mereka dapat butiran acara",
+    "guestEmailPlaceholder": "rakan@example.com",
+    "maxReached": "Had tetamu dicapai",
+    "eventFull": "Acara penuh",
+    "guestOf": "Tetamu {name}",
+    "done": "Selesai",
+    "addAnother": "Tambah tetamu lain",
+    "guests": "{count, plural, =0 {Tiada tetamu} =1 {1 tetamu} other {# tetamu}}"
   }
 }

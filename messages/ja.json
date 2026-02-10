@@ -181,7 +181,8 @@
       "hint": "メニュー（⋮または···）をタップして「Safariで開く」または「Chromeで開く」を選択してください",
       "dismiss": "閉じる",
       "thisApp": "このアプリ"
-    }
+    },
+    "continueWithApple": "Appleで続ける"
   },
   "errors": {
     "somethingWentWrong": "申し訳ありません、問題が発生しました。",
@@ -2104,5 +2105,34 @@
     "responses": "回答",
     "anonymous": "匿名ゲスト",
     "noAnswer": "回答なし"
+  },
+  "pickleball": {
+    "title": "ダラットのピックルボール",
+    "subtitle": "ピックルボールゲームを見つけて開催",
+    "schemaName": "ダラットピックルボールコミュニティ",
+    "schemaDescription": "ベトナム・ダラットでピックルボールゲームを開催するコミュニティプラットフォーム",
+    "upcomingGames": "今後のゲーム",
+    "createGame": "ゲームを開催",
+    "aboutTitle": "ダラットのピックルボールについて",
+    "aboutContent": "ダラットの涼しい気候はアウトドアスポーツに最適です。成長中のピックルボールコミュニティに参加しましょう！",
+    "paddleSports": "ピックルボール",
+    "noGames": "予定されているゲームはありません",
+    "beFirst": "最初のゲームを開催しましょう！"
+  },
+  "plusOnes": {
+    "bringFriend": "友達を連れてくる",
+    "addGuest": "ゲストを追加",
+    "removeGuest": "ゲストを削除",
+    "guestName": "ゲスト名",
+    "guestNamePlaceholder": "名前",
+    "guestEmail": "メール（任意）",
+    "guestEmailHelp": "イベント詳細を受け取れます",
+    "guestEmailPlaceholder": "friend@example.com",
+    "maxReached": "ゲスト上限に達しました",
+    "eventFull": "イベントは満員です",
+    "guestOf": "{name}のゲスト",
+    "done": "完了",
+    "addAnother": "別のゲストを追加",
+    "guests": "{count, plural, =0 {ゲストなし} other {#名のゲスト}}"
   }
 }

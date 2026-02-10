@@ -181,7 +181,8 @@
       "hint": "แตะเมนู (⋮ หรือ ···) แล้วเลือก \"เปิดใน Safari\" หรือ \"เปิดใน Chrome\"",
       "dismiss": "ปิด",
       "thisApp": "แอปนี้"
-    }
+    },
+    "continueWithApple": "ดำเนินการต่อด้วย Apple"
   },
   "errors": {
     "somethingWentWrong": "ขออภัย เกิดข้อผิดพลาด",
@@ -2104,5 +2105,34 @@
     "responses": "คำตอบ",
     "anonymous": "แขกไม่ระบุตัวตน",
     "noAnswer": "ไม่มีคำตอบ"
+  },
+  "pickleball": {
+    "title": "พิกเคิลบอลในดาลัด",
+    "subtitle": "ค้นหาและจัดเกมพิกเคิลบอล",
+    "schemaName": "ชุมชนพิกเคิลบอลดาลัด",
+    "schemaDescription": "แพลตฟอร์มชุมชนสำหรับจัดเกมพิกเคิลบอลในดาลัด เวียดนาม",
+    "upcomingGames": "เกมที่จะมาถึง",
+    "createGame": "จัดเกม",
+    "aboutTitle": "เกี่ยวกับพิกเคิลบอลในดาลัด",
+    "aboutContent": "ภูมิอากาศเย็นสบายของดาลัดเหมาะสำหรับกีฬากลางแจ้ง เข้าร่วมชุมชนพิกเคิลบอลที่กำลังเติบโตของเรา!",
+    "paddleSports": "พิกเคิลบอล",
+    "noGames": "ไม่มีเกมที่จะมาถึง",
+    "beFirst": "เป็นคนแรกที่จัดเกม!"
+  },
+  "plusOnes": {
+    "bringFriend": "พาเพื่อนมา",
+    "addGuest": "เพิ่มแขก",
+    "removeGuest": "ลบแขก",
+    "guestName": "ชื่อแขก",
+    "guestNamePlaceholder": "ชื่อของพวกเขา",
+    "guestEmail": "อีเมล (ไม่บังคับ)",
+    "guestEmailHelp": "เพื่อรับรายละเอียดกิจกรรม",
+    "guestEmailPlaceholder": "friend@example.com",
+    "maxReached": "ถึงจำนวนแขกสูงสุดแล้ว",
+    "eventFull": "กิจกรรมเต็มแล้ว",
+    "guestOf": "แขกของ {name}",
+    "done": "เสร็จสิ้น",
+    "addAnother": "เพิ่มแขกอีกคน",
+    "guests": "{count, plural, =0 {ไม่มีแขก} other {# แขก}}"
   }
 }

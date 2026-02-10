@@ -6,7 +6,7 @@ import {
   Camera, ChefHat, Wrench, GraduationCap, Compass, Mountain,
   Trophy, Users, Handshake, PartyPopper, Sparkles, UtensilsCrossed,
   Coffee, Store, Wine, Tent, Mic2, Frame, Theater, Film,
-  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake,
+  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake, CircleDot,
   SlidersHorizontal, Check, X,
   type LucideIcon
 } from "lucide-react";
@@ -25,7 +25,7 @@ const ICON_MAP: Record<TagIconName, LucideIcon> = {
   Camera, ChefHat, Wrench, GraduationCap, Compass, Mountain,
   Trophy, Users, Handshake, PartyPopper, Sparkles, UtensilsCrossed,
   Coffee, Store, Wine, Tent, Mic2, Frame, Theater, Film,
-  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake,
+  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake, CircleDot,
 };
 
 // Most common/useful tags to show in the dropdown

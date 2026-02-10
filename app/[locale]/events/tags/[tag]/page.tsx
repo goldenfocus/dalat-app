@@ -17,7 +17,7 @@ import {
   Camera, ChefHat, Wrench, GraduationCap, Compass, Mountain,
   Trophy, Users, Handshake, PartyPopper, Sparkles, UtensilsCrossed,
   Coffee, Store, Wine, Tent, Mic2, Frame, Theater, Film,
-  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake,
+  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake, CircleDot,
   type LucideIcon,
 } from "lucide-react";
 import type { Event, EventCounts } from "@/lib/types";
@@ -32,7 +32,7 @@ const ICON_MAP: Record<TagIconName, LucideIcon> = {
   Camera, ChefHat, Wrench, GraduationCap, Compass, Mountain,
   Trophy, Users, Handshake, PartyPopper, Sparkles, UtensilsCrossed,
   Coffee, Store, Wine, Tent, Mic2, Frame, Theater, Film,
-  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake,
+  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake, CircleDot,
 };
 
 // Tag descriptions for hero sections
@@ -51,6 +51,7 @@ const TAG_DESCRIPTIONS: Record<EventTag, string> = {
   tour: "Guided explorations of Da Lat's hidden gems and famous spots",
   hiking: "Trek through pine forests, waterfalls, and mountain trails",
   sports: "Competitive and recreational sports activities for all skill levels",
+  pickleball: "Find and organize pickleball games in Da Lat's perfect climate",
   // Social
   meetup: "Connect with like-minded people at casual social gatherings",
   networking: "Build professional connections and grow your network",
