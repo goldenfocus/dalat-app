@@ -427,6 +427,10 @@
       "multiDay": "Multi-hari",
       "days": "hari",
       "description": "Berapa lama acara Anda? Default adalah 4 jam."
+    },
+    "questionnaire": {
+      "title": "Pertanyaan RSVP",
+      "description": "Ajukan pertanyaan kepada tamu saat RSVP"
     }
   },
   "calendar": {

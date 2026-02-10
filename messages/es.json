@@ -427,6 +427,10 @@
       "multiDay": "Varios días",
       "days": "días",
       "description": "¿Cuánto dura tu evento? Por defecto son 4 horas."
+    },
+    "questionnaire": {
+      "title": "Preguntas RSVP",
+      "description": "Pregunta a los invitados al confirmar asistencia"
     }
   },
   "calendar": {

@@ -427,6 +427,10 @@
       "multiDay": "Mehrtägig",
       "days": "Tage",
       "description": "Wie lange dauert Ihre Veranstaltung? Standard sind 4 Stunden."
+    },
+    "questionnaire": {
+      "title": "RSVP-Fragen",
+      "description": "Stellen Sie Gästen Fragen bei der Anmeldung"
     }
   },
   "calendar": {

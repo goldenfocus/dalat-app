@@ -427,6 +427,10 @@
       "multiDay": "다일간",
       "days": "일",
       "description": "이벤트 시간은 얼마나 되나요? 기본값은 4시간입니다."
+    },
+    "questionnaire": {
+      "title": "RSVP 질문",
+      "description": "RSVP 시 손님에게 질문하기"
     }
   },
   "calendar": {

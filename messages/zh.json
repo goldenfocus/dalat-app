@@ -427,6 +427,10 @@
       "multiDay": "多日",
       "days": "天",
       "description": "活动持续多长时间？默认为4小时。"
+    },
+    "questionnaire": {
+      "title": "报名问题",
+      "description": "在宾客报名时询问问题"
     }
   },
   "calendar": {

@@ -427,6 +427,10 @@
       "multiDay": "複数日",
       "days": "日",
       "description": "イベントの所要時間は？デフォルトは4時間です。"
+    },
+    "questionnaire": {
+      "title": "RSVP質問",
+      "description": "RSVPの際にゲストに質問する"
     }
   },
   "calendar": {

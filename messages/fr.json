@@ -441,6 +441,10 @@
       "multiDay": "Plusieurs jours",
       "days": "jours",
       "description": "Combien de temps dure votre événement ? Par défaut 4 heures."
+    },
+    "questionnaire": {
+      "title": "Questions RSVP",
+      "description": "Poser des questions aux invités lors de leur inscription"
     }
   },
   "calendar": {

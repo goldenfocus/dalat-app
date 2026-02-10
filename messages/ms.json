@@ -427,6 +427,10 @@
       "multiDay": "Berbilang hari",
       "days": "hari",
       "description": "Berapa lama acara anda? Lalai adalah 4 jam."
+    },
+    "questionnaire": {
+      "title": "Soalan RSVP",
+      "description": "Tanya soalan kepada tetamu semasa RSVP"
     }
   },
   "calendar": {
