@@ -134,12 +134,12 @@ export const getCachedTranslationsBatch = unstable_cache(
     contentIds: string[],
     targetLocale: ContentLocale
   ): Promise<
-    Map<string, { title?: string; description?: string; text_content?: string; content?: string }>
+    Record<string, { title?: string; description?: string; text_content?: string; content?: string }>
   > => {
-    if (contentIds.length === 0) return new Map();
+    if (contentIds.length === 0) return {};
 
     const supabase = createStaticClient();
-    if (!supabase) return new Map();
+    if (!supabase) return {};
 
     const { data: translations } = await supabase
       .from("content_translations")
@@ -149,14 +149,13 @@ export const getCachedTranslationsBatch = unstable_cache(
       .eq("target_locale", targetLocale)
       .in("field_name", ["title", "description", "text_content", "content"]);
 
-    const result = new Map<
-      string,
-      { title?: string; description?: string; text_content?: string; content?: string }
-    >();
+    // Use plain Record instead of Map — Map doesn't survive JSON serialization
+    // in unstable_cache (Map becomes {} on cache hit, breaking .get() calls)
+    const result: Record<string, { title?: string; description?: string; text_content?: string; content?: string }> = {};
 
     if (translations) {
       for (const t of translations) {
-        const existing = result.get(t.content_id) || {};
+        const existing = result[t.content_id] || {};
         if (t.field_name === "title") {
           existing.title = t.translated_text;
         } else if (t.field_name === "description") {
@@ -166,7 +165,7 @@ export const getCachedTranslationsBatch = unstable_cache(
         } else if (t.field_name === "content") {
           existing.content = t.translated_text;
         }
-        result.set(t.content_id, existing);
+        result[t.content_id] = existing;
       }
     }
 

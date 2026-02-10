@@ -147,7 +147,7 @@ export async function getCommentsWithTranslations(
   // Batch fetch all translations in ONE query
   const translationsMap = commentIdsToTranslate.length > 0
     ? await getCachedTranslationsBatch('comment', commentIdsToTranslate, targetLocale)
-    : new Map();
+    : {};
 
   // Map translations back to comments
   return comments.map((comment) => {
@@ -172,7 +172,7 @@ export async function getCommentsWithTranslations(
     }
 
     // Get translation from batch result (comments use 'content' field, not 'text_content')
-    const translation = translationsMap.get(comment.id);
+    const translation = translationsMap[comment.id];
     const translatedContent = translation?.content || comment.content;
     const isTranslated = translatedContent !== comment.content;
 
@@ -210,7 +210,7 @@ export async function getRepliesWithTranslations(
   // Batch fetch all translations in ONE query
   const translationsMap = replyIdsToTranslate.length > 0
     ? await getCachedTranslationsBatch('comment', replyIdsToTranslate, targetLocale)
-    : new Map();
+    : {};
 
   // Map translations back to replies
   return replies.map((reply) => {
@@ -233,7 +233,7 @@ export async function getRepliesWithTranslations(
     }
 
     // Get translation from batch result (comments use 'content' field, not 'text_content')
-    const translation = translationsMap.get(reply.id);
+    const translation = translationsMap[reply.id];
     const translatedContent = translation?.content || reply.content;
 
     return {
