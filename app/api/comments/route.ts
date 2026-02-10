@@ -6,7 +6,7 @@ import {
   createComment,
   getContentOwner,
 } from "@/lib/comments";
-import { triggerTranslation } from "@/lib/translations-client";
+import { triggerTranslationServer } from "@/lib/translations";
 import type { CommentTargetType, Locale } from "@/lib/types";
 
 /**
@@ -137,10 +137,13 @@ export async function POST(request: NextRequest) {
     const contentOwner = await getContentOwner(targetType, targetId);
 
     // Trigger translation to all 12 languages (fire-and-forget)
+    // Uses server-side function to avoid auth issues with internal fetch
     if (result.comment_id) {
-      triggerTranslation("comment", result.comment_id, [
+      triggerTranslationServer("comment", result.comment_id, [
         { field_name: "content", text: content },
-      ]);
+      ]).catch((err) => {
+        console.error("[api/comments] Translation failed:", err);
+      });
     }
 
     // Send notification via Inngest (fire-and-forget, don't block the response)

@@ -10,7 +10,7 @@ import {
   type ImageMetadata,
 } from "@/lib/ai/image-generator";
 import { saveImageVersion } from "@/lib/image-versions";
-import { triggerTranslation } from "@/lib/translations-client";
+import { triggerTranslationServer } from "@/lib/translations";
 import type { ImageVersionContentType, ImageVersionFieldName, TranslationContentType } from "@/lib/types";
 
 // Image generation can take 60-120s (refinement involves: fetch, generate, metadata extraction, upload)
@@ -111,7 +111,9 @@ async function saveMetadataToParent(
   }
 
   if (translationFields.length > 0) {
-    triggerTranslation(contentType as TranslationContentType, entityId, translationFields);
+    triggerTranslationServer(contentType as TranslationContentType, entityId, translationFields).catch((err) => {
+      console.error("[generate-image] Translation failed:", err);
+    });
   }
 }
 

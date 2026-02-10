@@ -301,6 +301,11 @@ export async function triggerTranslationServer(
         .from('venues')
         .update({ source_locale: detectedLocale })
         .eq('id', contentId);
+    } else if (contentType === 'comment') {
+      await supabase
+        .from('comments')
+        .update({ source_locale: detectedLocale })
+        .eq('id', contentId);
     }
 
     // Prepare translation inserts

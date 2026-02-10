@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { triggerTranslation } from "@/lib/translations-client";
+import { triggerTranslationServer } from "@/lib/translations";
 import { reviewLyricsWithAI } from "@/lib/karaoke/review-lyrics";
 
 export const maxDuration = 120;
@@ -167,9 +167,11 @@ export async function POST(request: NextRequest) {
       : "";
 
     if (plainLyrics) {
-      triggerTranslation("track", trackId, [
+      triggerTranslationServer("track", trackId, [
         { field_name: "lyrics", text: plainLyrics },
-      ]);
+      ]).catch((err) => {
+        console.error("[generate-lyrics] Translation failed:", err);
+      });
       console.log(`[generate-lyrics] Triggered translation for track ${trackId}`);
     }
 

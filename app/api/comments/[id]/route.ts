@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { deleteComment, editComment } from "@/lib/comments";
-import { triggerTranslation } from "@/lib/translations-client";
+import { triggerTranslationServer } from "@/lib/translations";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -80,9 +80,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     // Re-trigger translation to update all 12 languages with edited content
-    triggerTranslation("comment", id, [
+    // Uses server-side function to avoid auth issues with internal fetch
+    triggerTranslationServer("comment", id, [
       { field_name: "content", text: content },
-    ]);
+    ]).catch((err) => {
+      console.error("[api/comments/edit] Translation failed:", err);
+    });
 
     return NextResponse.json(result);
   } catch (error) {
