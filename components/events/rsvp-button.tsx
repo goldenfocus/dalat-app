@@ -208,17 +208,16 @@ export function useRsvpActions(
         return;
       }
 
-      // Handle waitlist promotion if user switched from going
-      if (data?.promoted_user) {
-        fetch("/api/notifications/cancel", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            eventId,
-            promotedUserId: data.promoted_user,
-          }),
-        }).catch(console.error);
-      }
+      // Always cancel old scheduled reminders for this RSVP state.
+      // If someone was promoted from waitlist, this request also notifies them.
+      fetch("/api/notifications/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId,
+          promotedUserId: data?.promoted_user ?? null,
+        }),
+      }).catch(console.error);
 
       // Schedule reminders for interested users
       fetch("/api/notifications/interested", {
@@ -245,17 +244,16 @@ export function useRsvpActions(
         return;
       }
 
-      // Notify promoted user if someone got bumped up from waitlist
-      if (data?.promoted_user) {
-        fetch("/api/notifications/cancel", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            eventId,
-            promotedUserId: data.promoted_user,
-          }),
-        }).catch(console.error);
-      }
+      // Always cancel scheduled reminders for this user.
+      // If someone was promoted, this request also sends the promotion notification.
+      fetch("/api/notifications/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId,
+          promotedUserId: data?.promoted_user ?? null,
+        }),
+      }).catch(console.error);
 
       router.refresh();
     });

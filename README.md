@@ -49,9 +49,9 @@ SUPABASE_SERVICE_ROLE_KEY=         # Server-only: admin ops (storage uploads, by
 GOOGLE_AI_API_KEY=                 # Gemini API for cover image generation
 ANTHROPIC_API_KEY=                 # Claude API for text enhancement
 
-# Novu (notifications)
-NEXT_PUBLIC_NOVU_APPLICATION_IDENTIFIER=
-NOVU_SECRET_KEY=
+# Inngest (scheduled jobs)
+INNGEST_EVENT_KEY=
+INNGEST_SIGNING_KEY=
 
 # Web Push (VAPID keys)
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=
@@ -67,7 +67,8 @@ NEXT_PUBLIC_APP_URL=https://dalat.app
 
 Push notifications are enabled by default for logged-in users. The system uses:
 - **Web Push API** for native OS notifications (lock screen, notification center)
-- **Novu** for in-app inbox notifications
+- **Supabase notifications table + Realtime** for in-app notifications
+- **Inngest + scheduled_notifications** for reminder scheduling
 
 Users can manage notifications in Settings.
 
@@ -80,9 +81,9 @@ Users can manage notifications in Settings.
 
 ## Tech Stack
 
-- Next.js 14+ (App Router)
+- Next.js 16+ (App Router)
 - Supabase (Auth, Database)
-- Novu (Notification inbox)
+- Inngest (background jobs/scheduling)
 - Web Push API (Native notifications)
 - Tailwind CSS
 - shadcn/ui

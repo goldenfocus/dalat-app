@@ -1,13 +1,5 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import nextConfig from "eslint-config-next";
+import tseslintPlugin from "@typescript-eslint/eslint-plugin";
 
 const eslintConfig = [
   {
@@ -20,8 +12,12 @@ const eslintConfig = [
       "scripts/**",
     ],
   },
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextConfig,
   {
+    files: ["**/*.{ts,tsx,mts,cts}"],
+    plugins: {
+      "@typescript-eslint": tseslintPlugin,
+    },
     rules: {
       // Allow underscore-prefixed unused variables (common convention)
       "@typescript-eslint/no-unused-vars": [
@@ -34,6 +30,11 @@ const eslintConfig = [
       ],
       // Allow require() in config files
       "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
+    files: ["**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"],
+    rules: {
       // Warn on console.log (allow console.error, console.warn for error handling)
       "no-console": ["warn", { allow: ["warn", "error"] }],
     },

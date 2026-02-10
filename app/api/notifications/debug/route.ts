@@ -28,11 +28,13 @@ export async function GET() {
 
   // Check environment configuration
   const config = {
+    hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasSupabaseServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
     hasVapidPublicKey: !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
     hasVapidPrivateKey: !!process.env.VAPID_PRIVATE_KEY,
-    hasNovuSecretKey: !!process.env.NOVU_SECRET_KEY,
-    hasNovuAppId: !!process.env.NEXT_PUBLIC_NOVU_APPLICATION_IDENTIFIER,
-    hasSupabaseServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    hasResendApiKey: !!process.env.RESEND_API_KEY,
+    hasInngestEventKey: !!process.env.INNGEST_EVENT_KEY,
+    hasInngestSigningKey: !!process.env.INNGEST_SIGNING_KEY,
     appUrl: process.env.NEXT_PUBLIC_APP_URL,
   };
 
@@ -66,12 +68,12 @@ function getDiagnosis(subCount: number, config: Record<string, unknown>): string
     issues.push('❌ VAPID keys not configured - web push will fail');
   }
 
-  if (!config.hasNovuSecretKey || !config.hasNovuAppId) {
-    issues.push('❌ Novu not configured - in-app inbox notifications will fail');
+  if (!config.hasSupabaseUrl || !config.hasSupabaseServiceKey) {
+    issues.push('❌ Supabase service config missing - in-app and scheduled notifications will fail');
   }
 
-  if (!config.hasSupabaseServiceKey) {
-    issues.push('❌ Supabase service role key missing - push queries will fail');
+  if (!config.hasInngestEventKey || !config.hasInngestSigningKey) {
+    issues.push('⚠️ Inngest keys not fully configured - scheduled reminders may not run outside local/dev');
   }
 
   if (issues.length === 0) {

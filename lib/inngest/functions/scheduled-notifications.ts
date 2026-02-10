@@ -164,8 +164,21 @@ export const onRsvpCreated = inngest.createFunction(
       timeZone: 'Asia/Ho_Chi_Minh',
     });
 
-    const referenceId = `${eventId}-${userId}`;
     const scheduled: string[] = [];
+
+    // Cancel any stale pending reminders before re-scheduling.
+    // This keeps the workflow idempotent if the same event fires multiple times
+    // and also clears older "interested" reminders when a user switches to going.
+    await step.run('clear-existing-rsvp-reminders', async () => {
+      return supabase
+        .from('scheduled_notifications')
+        .update({ status: 'cancelled' })
+        .eq('user_id', userId)
+        .eq('reference_id', eventId)
+        .in('reference_type', ['event_rsvp', 'event_interested'])
+        .eq('status', 'pending')
+        .select('id');
+    });
 
     // Schedule 24h reminder
     const time24hBefore = new Date(eventStart.getTime() - 24 * 60 * 60 * 1000);
@@ -185,7 +198,7 @@ export const onRsvpCreated = inngest.createFunction(
             eventTime,
           },
           reference_type: 'event_rsvp',
-          reference_id: referenceId,
+          reference_id: eventId,
         });
       });
       scheduled.push('24h');
@@ -210,7 +223,7 @@ export const onRsvpCreated = inngest.createFunction(
             googleMapsUrl,
           },
           reference_type: 'event_rsvp',
-          reference_id: referenceId,
+          reference_id: eventId,
         });
       });
       scheduled.push('2h');
@@ -237,7 +250,7 @@ export const onRsvpCreated = inngest.createFunction(
             eventTitle,
           },
           reference_type: 'event_rsvp',
-          reference_id: referenceId,
+          reference_id: eventId,
         });
       });
       scheduled.push('feedback');
@@ -262,20 +275,19 @@ export const onRsvpCancelled = inngest.createFunction(
     const supabase = createServiceClient();
     if (!supabase) return { error: 'Supabase client not configured' };
 
-    const referenceId = `${eventId}-${userId}`;
-
     const result = await step.run('cancel-scheduled-notifications', async () => {
       return supabase
         .from('scheduled_notifications')
         .update({ status: 'cancelled' })
-        .eq('reference_type', 'event_rsvp')
-        .eq('reference_id', referenceId)
+        .eq('user_id', userId)
+        .eq('reference_id', eventId)
+        .in('reference_type', ['event_rsvp', 'event_interested'])
         .eq('status', 'pending')
         .select('id');
     });
 
     const cancelled = result.data?.length || 0;
-    console.log(`[inngest] Cancelled ${cancelled} scheduled notification(s) for ${referenceId}`);
+    console.log(`[inngest] Cancelled ${cancelled} scheduled notification(s) for ${eventId}/${userId}`);
 
     return { cancelled };
   }
@@ -318,8 +330,19 @@ export const onRsvpInterested = inngest.createFunction(
       timeZone: 'Asia/Ho_Chi_Minh',
     });
 
-    const referenceId = `${eventId}-${userId}-interested`;
     const scheduled: string[] = [];
+
+    // Cancel stale pending reminders before creating the interested reminder.
+    await step.run('clear-existing-interested-reminders', async () => {
+      return supabase
+        .from('scheduled_notifications')
+        .update({ status: 'cancelled' })
+        .eq('user_id', userId)
+        .eq('reference_id', eventId)
+        .in('reference_type', ['event_interested', 'event_rsvp'])
+        .eq('status', 'pending')
+        .select('id');
+    });
 
     // Schedule 24h reminder only (gentle nudge)
     const time24hBefore = new Date(eventStart.getTime() - 24 * 60 * 60 * 1000);
@@ -339,7 +362,7 @@ export const onRsvpInterested = inngest.createFunction(
             eventTime,
           },
           reference_type: 'event_interested',
-          reference_id: referenceId,
+          reference_id: eventId,
         });
       });
       scheduled.push('24h');
