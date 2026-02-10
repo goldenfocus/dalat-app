@@ -394,7 +394,9 @@
     "sponsorTier1": "Basic (Tier 1)",
     "sponsorTier2": "Premium (Tier 2)",
     "sponsorTier3": "Gold (Tier 3)",
-    "sponsorTierHelp": "Featured events appear first in feeds with a gold badge."
+    "sponsorTierHelp": "Featured events appear first in feeds with a gold badge.",
+    "activityTags": "Activity Type",
+    "activityTagsHelp": "Select tags to help people find your event. AI will also auto-tag based on content."
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",
@@ -1312,7 +1314,9 @@
       "compressing": "Compressing...",
       "processingInCloud": "{count, plural, =1 {1 video processing in cloud} other {# videos processing in cloud}}",
       "inCloud": "In cloud",
-      "videoReadyNotification": "Your video is ready! Tap to view."
+      "videoReadyNotification": "Your video is ready! Tap to view.",
+      "retry": "Retry",
+      "remove": "Remove"
     },
     "proUpload": {
       "title": "Pro Upload",
@@ -1363,6 +1367,12 @@
       "seeAll": "See all",
       "byEvent": "by event",
       "recent": "recent"
+    },
+    "endScreen": {
+      "keepExploring": "Keep exploring",
+      "sameVenue": "Same venue",
+      "sameOrganizer": "Same organizer",
+      "similarVibe": "Similar vibe"
     },
     "fab": {
       "upload": "Share a moment",

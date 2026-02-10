@@ -380,7 +380,9 @@
     "sponsorTier1": "ベーシック (ティア1)",
     "sponsorTier2": "プレミアム (ティア2)",
     "sponsorTier3": "ゴールド (ティア3)",
-    "sponsorTierHelp": "注目イベントはゴールドバッジ付きでフィードの最上部に表示されます。"
+    "sponsorTierHelp": "注目イベントはゴールドバッジ付きでフィードの最上部に表示されます。",
+    "activityTags": "アクティビティタイプ",
+    "activityTagsHelp": "タグを選択して、イベントを見つけやすくしましょう。AIがコンテンツに基づいて自動的にタグ付けも行います。"
   },
   "eventActions": {
     "eventOptions": "イベントオプション",
@@ -1153,7 +1155,9 @@
       "compressing": "圧縮中...",
       "processingInCloud": "{count, plural, =1 {1本の動画をクラウドで処理中} other {#本の動画をクラウドで処理中}}",
       "inCloud": "クラウド",
-      "videoReadyNotification": "動画の準備ができました！タップして見る。"
+      "videoReadyNotification": "動画の準備ができました！タップして見る。",
+      "retry": "再試行",
+      "remove": "削除"
     },
     "proUpload": {
       "title": "プロアップロード",
@@ -1263,6 +1267,12 @@
       "seeAll": "すべて見る",
       "byEvent": "イベント別",
       "recent": "新着"
+    },
+    "endScreen": {
+      "keepExploring": "もっと見る",
+      "sameVenue": "同じ会場",
+      "sameOrganizer": "同じ主催者",
+      "similarVibe": "似た雰囲気"
     },
     "fab": {
       "upload": "モーメントをシェア",

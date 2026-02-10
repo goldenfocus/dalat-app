@@ -394,7 +394,9 @@
     "sponsorTier1": "Basique (Niveau 1)",
     "sponsorTier2": "Premium (Niveau 2)",
     "sponsorTier3": "Or (Niveau 3)",
-    "sponsorTierHelp": "Les événements mis en avant apparaissent en premier avec un badge doré."
+    "sponsorTierHelp": "Les événements mis en avant apparaissent en premier avec un badge doré.",
+    "activityTags": "Type d'activité",
+    "activityTagsHelp": "Sélectionnez des tags pour aider les gens à trouver votre événement. L'IA ajoutera également des tags automatiquement en fonction du contenu."
   },
   "eventActions": {
     "eventOptions": "Options de l'événement",
@@ -1167,7 +1169,9 @@
       "compressing": "Compression...",
       "processingInCloud": "{count, plural, =1 {1 vidéo en cours de traitement} other {# vidéos en cours de traitement}}",
       "inCloud": "Dans le cloud",
-      "videoReadyNotification": "Votre vidéo est prête ! Appuyez pour voir."
+      "videoReadyNotification": "Votre vidéo est prête ! Appuyez pour voir.",
+      "retry": "Réessayer",
+      "remove": "Supprimer"
     },
     "proUpload": {
       "title": "Upload Pro",
@@ -1277,6 +1281,12 @@
       "seeAll": "Voir tout",
       "byEvent": "par événement",
       "recent": "récents"
+    },
+    "endScreen": {
+      "keepExploring": "Continuer à explorer",
+      "sameVenue": "Même lieu",
+      "sameOrganizer": "Même organisateur",
+      "similarVibe": "Ambiance similaire"
     },
     "fab": {
       "upload": "Partager un moment",

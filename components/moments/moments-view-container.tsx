@@ -268,12 +268,14 @@ export function MomentsViewContainer({
       </div>
 
       {/* Immersive view (modal overlay) */}
-      {showImmersive && filteredMoments.length > 0 && (
+      {showImmersive && (
         <ImmersiveMomentView
           moments={filteredMoments}
           initialIndex={immersiveStartIndex}
+          eventId={eventId}
           eventSlug={eventSlug}
           onClose={closeImmersive}
+          onSwitchToGrid={switchToGrid}
           onLoadMore={handleLoadMore}
           hasMore={hasMoreMoments}
           totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}

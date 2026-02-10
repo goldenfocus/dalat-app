@@ -7,6 +7,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "./moment-video-player";
+import { RelatedEventsSection } from "./related-events-section";
 import { CommentsSheet } from "@/components/comments/comments-sheet";
 import { ImmersiveCommentsPanel } from "@/components/comments/immersive-comments-panel";
 import { createClient } from "@/lib/supabase/client";
@@ -37,8 +38,10 @@ const END_PHRASES = [
 interface ImmersiveMomentViewProps {
   moments: MomentWithProfile[];
   initialIndex?: number;
+  eventId: string;
   eventSlug: string;
   onClose: () => void;
+  onSwitchToGrid?: () => void;
   /** Called when user reaches end and there are more moments to load */
   onLoadMore?: () => Promise<void>;
   /** Whether there are more moments available to load */
@@ -50,8 +53,10 @@ interface ImmersiveMomentViewProps {
 export function ImmersiveMomentView({
   moments,
   initialIndex = 0,
+  eventId,
   eventSlug,
   onClose,
+  onSwitchToGrid,
   onLoadMore,
   hasMore = false,
   totalCount,
@@ -66,6 +71,15 @@ export function ImmersiveMomentView({
   const router = useRouter();
 
   const moment = moments[currentIndex];
+
+  // Handle out-of-bounds index (e.g., after filter change reduces array length)
+  useEffect(() => {
+    if (moments.length > 0 && currentIndex >= moments.length) {
+      // Index is out of bounds - clamp to last item and show end screen
+      setCurrentIndex(moments.length - 1);
+      setShowEndScreen(true);
+    }
+  }, [moments.length, currentIndex]);
 
   // Get random phrase (memoized to stay consistent during session)
   const endPhrase = useMemo(() => {
@@ -227,7 +241,25 @@ export function ImmersiveMomentView({
     }
   };
 
-  if (!moment) return null;
+  // Handle empty moments array (e.g., filter returned no results)
+  if (!moment) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <div className="text-center text-white max-w-sm mx-4">
+          <p className="text-lg mb-2">No moments to show</p>
+          <p className="text-white/60 text-sm mb-6">
+            Try changing your filter or check back later
+          </p>
+          <button
+            onClick={onClose}
+            className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all text-white font-medium"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Get optimized image URL
   const imageUrl = moment.content_type === "photo" && moment.media_url
@@ -478,7 +510,7 @@ export function ImmersiveMomentView({
 
             {/* Contributors */}
             {contributors.length > 0 && (
-              <div className="mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-200">
+              <div className="mb-6 animate-in slide-in-from-bottom-4 duration-500 delay-200">
                 <p className="text-white/40 text-xs uppercase tracking-wider mb-3">
                   {contributors.length === 1 ? "The star of the show" : `${contributors.length} contributors made this happen`}
                 </p>
@@ -500,6 +532,16 @@ export function ImmersiveMomentView({
                 </div>
               </div>
             )}
+
+            {/* Related Events - YouTube-style discovery */}
+            <RelatedEventsSection
+              eventId={eventId}
+              onNavigate={(slug) => {
+                router.push(`/events/${slug}/moments?view=immersive`);
+                onClose();
+              }}
+              className="mb-6"
+            />
 
             {/* Action buttons */}
             <div className="flex flex-col gap-3 animate-in slide-in-from-bottom-4 duration-500 delay-300">

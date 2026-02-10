@@ -380,7 +380,9 @@
     "sponsorTier1": "Asas (Peringkat 1)",
     "sponsorTier2": "Premium (Peringkat 2)",
     "sponsorTier3": "Emas (Peringkat 3)",
-    "sponsorTierHelp": "Acara yang ditampilkan muncul dahulu dengan lencana emas."
+    "sponsorTierHelp": "Acara yang ditampilkan muncul dahulu dengan lencana emas.",
+    "activityTags": "Jenis Aktiviti",
+    "activityTagsHelp": "Pilih tag untuk membantu orang mencari acara anda. AI juga akan menambah tag secara automatik berdasarkan kandungan."
   },
   "eventActions": {
     "eventOptions": "Pilihan acara",
@@ -1153,7 +1155,9 @@
       "compressing": "Memampatkan...",
       "processingInCloud": "{count, plural, =1 {1 video diproses di awan} other {# video diproses di awan}}",
       "inCloud": "Di awan",
-      "videoReadyNotification": "Video anda sudah sedia! Ketik untuk lihat."
+      "videoReadyNotification": "Video anda sudah sedia! Ketik untuk lihat.",
+      "retry": "Cuba semula",
+      "remove": "Buang"
     },
     "proUpload": {
       "title": "Muat Naik Pro",
@@ -1263,6 +1267,12 @@
       "seeAll": "Lihat semua",
       "byEvent": "mengikut acara",
       "recent": "terkini"
+    },
+    "endScreen": {
+      "keepExploring": "Terus meneroka",
+      "sameVenue": "Tempat sama",
+      "sameOrganizer": "Penganjur sama",
+      "similarVibe": "Suasana serupa"
     },
     "fab": {
       "upload": "Kongsi momen",

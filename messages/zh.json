@@ -380,7 +380,9 @@
     "sponsorTier1": "基础 (一级)",
     "sponsorTier2": "高级 (二级)",
     "sponsorTier3": "金牌 (三级)",
-    "sponsorTierHelp": "精选活动会带有金色徽章并优先显示在信息流中。"
+    "sponsorTierHelp": "精选活动会带有金色徽章并优先显示在信息流中。",
+    "activityTags": "活动类型",
+    "activityTagsHelp": "选择标签帮助人们找到您的活动。AI也会根据内容自动添加标签。"
   },
   "eventActions": {
     "eventOptions": "活动选项",
@@ -1156,7 +1158,9 @@
       "compressing": "压缩中...",
       "processingInCloud": "{count, plural, =1 {1个视频云端处理中} other {#个视频云端处理中}}",
       "inCloud": "云端",
-      "videoReadyNotification": "您的视频已准备就绪！点击查看。"
+      "videoReadyNotification": "您的视频已准备就绪！点击查看。",
+      "retry": "重试",
+      "remove": "移除"
     },
     "proUpload": {
       "title": "专业上传",
@@ -1266,6 +1270,12 @@
       "seeAll": "查看全部",
       "byEvent": "按活动",
       "recent": "最新"
+    },
+    "endScreen": {
+      "keepExploring": "继续探索",
+      "sameVenue": "同一地点",
+      "sameOrganizer": "同一主办方",
+      "similarVibe": "相似风格"
     },
     "fab": {
       "upload": "分享瞬间",

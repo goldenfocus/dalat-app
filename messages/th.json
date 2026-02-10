@@ -380,7 +380,9 @@
     "sponsorTier1": "พื้นฐาน (ระดับ 1)",
     "sponsorTier2": "พรีเมียม (ระดับ 2)",
     "sponsorTier3": "ทอง (ระดับ 3)",
-    "sponsorTierHelp": "กิจกรรมแนะนำจะแสดงก่อนพร้อมตราทอง"
+    "sponsorTierHelp": "กิจกรรมแนะนำจะแสดงก่อนพร้อมตราทอง",
+    "activityTags": "ประเภทกิจกรรม",
+    "activityTagsHelp": "เลือกแท็กเพื่อช่วยให้ผู้คนค้นหากิจกรรมของคุณ AI จะเพิ่มแท็กอัตโนมัติตามเนื้อหาด้วย"
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",
@@ -1153,7 +1155,9 @@
       "compressing": "กำลังบีบอัด...",
       "processingInCloud": "{count, plural, =1 {1 วิดีโอกำลังประมวลผลบนคลาวด์} other {# วิดีโอกำลังประมวลผลบนคลาวด์}}",
       "inCloud": "บนคลาวด์",
-      "videoReadyNotification": "วิดีโอของคุณพร้อมแล้ว! แตะเพื่อดู"
+      "videoReadyNotification": "วิดีโอของคุณพร้อมแล้ว! แตะเพื่อดู",
+      "retry": "ลองใหม่",
+      "remove": "ลบ"
     },
     "proUpload": {
       "title": "Pro Upload",
@@ -1263,6 +1267,12 @@
       "seeAll": "ดูทั้งหมด",
       "byEvent": "ตามกิจกรรม",
       "recent": "ล่าสุด"
+    },
+    "endScreen": {
+      "keepExploring": "สำรวจต่อ",
+      "sameVenue": "สถานที่เดียวกัน",
+      "sameOrganizer": "ผู้จัดเดียวกัน",
+      "similarVibe": "บรรยากาศคล้ายกัน"
     },
     "fab": {
       "upload": "แชร์โมเมนต์",

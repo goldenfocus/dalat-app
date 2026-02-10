@@ -35,7 +35,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ChevronDown, Settings, Repeat, Sparkles } from "lucide-react";
+import { ChevronDown, Settings, Repeat, Sparkles, Tag } from "lucide-react";
 import { PromoManager } from "@/components/events/promo-manager";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
@@ -43,6 +43,7 @@ import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
 import type { Event, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole, DraftMaterial, EventMaterial } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
 import { finalizeSlug } from "@/lib/utils";
+import { EVENT_TAGS, TAG_CONFIG, type EventTag } from "@/lib/constants/event-tags";
 
 /**
  * Trigger translation for an event (fire-and-forget)
@@ -280,6 +281,11 @@ export function EventForm({
   // Draft materials state (for new events)
   const [draftMaterials, setDraftMaterials] = useState<DraftMaterial[]>([]);
 
+  // Manual tags state (user-selected activity tags)
+  const [selectedTags, setSelectedTags] = useState<EventTag[]>(
+    (event?.ai_tags as EventTag[])?.filter((tag) => EVENT_TAGS.includes(tag as EventTag)) ?? []
+  );
+
   // Pricing state (consolidated hook)
   const {
     priceType,
@@ -512,6 +518,7 @@ export function EventForm({
             ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
             organizer_id: organizerId,
             venue_id: venueIdToSave || null,
+            ai_tags: selectedTags,
             ...(canSetSponsorTier && { sponsor_tier: sponsorTier }),
             // Mark as exception if editing just this event in a series
             ...(isSeriesEvent && { is_exception: true }),
@@ -636,6 +643,7 @@ export function EventForm({
               status: "published",
               organizer_id: organizerId,
               venue_id: venueIdToSave || null,
+              ai_tags: selectedTags.length > 0 ? selectedTags : [],
             })
             .select()
             .single();
@@ -1048,6 +1056,53 @@ export function EventForm({
             onPriceTypeChange={setPriceType}
             onTiersChange={setTicketTiers}
           />
+
+          {/* Activity Tags */}
+          <Collapsible className="pt-4 border-t">
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+              <span className="flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                {t("activityTags") || "Activity Type"}
+                {selectedTags.length > 0 && (
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    {selectedTags.length}
+                  </span>
+                )}
+              </span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              <p className="text-sm text-muted-foreground mb-3">
+                {t("activityTagsHelp") || "Select tags to help people find your event. AI will also auto-tag based on content."}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(['sports', 'fitness', 'music', 'art', 'food', 'workshop', 'meetup', 'outdoor'] as EventTag[]).map((tag) => {
+                  const config = TAG_CONFIG[tag];
+                  const isSelected = selectedTags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedTags(selectedTags.filter((t) => t !== tag));
+                        } else {
+                          setSelectedTags([...selectedTags, tag]);
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        isSelected
+                          ? config.color
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      {config.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Sponsors */}
           <Collapsible className="pt-4 border-t">

@@ -380,7 +380,9 @@
     "sponsorTier1": "Cơ bản (Cấp 1)",
     "sponsorTier2": "Cao cấp (Cấp 2)",
     "sponsorTier3": "Vàng (Cấp 3)",
-    "sponsorTierHelp": "Sự kiện nổi bật xuất hiện đầu tiên với huy hiệu vàng."
+    "sponsorTierHelp": "Sự kiện nổi bật xuất hiện đầu tiên với huy hiệu vàng.",
+    "activityTags": "Loại hoạt động",
+    "activityTagsHelp": "Chọn thẻ để giúp mọi người tìm thấy sự kiện của bạn. AI cũng sẽ tự động gắn thẻ dựa trên nội dung."
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",
@@ -1190,7 +1192,9 @@
       "compressing": "Đang nén...",
       "processingInCloud": "{count, plural, =1 {1 video đang xử lý trên cloud} other {# video đang xử lý trên cloud}}",
       "inCloud": "Trên cloud",
-      "videoReadyNotification": "Video của bạn đã sẵn sàng! Nhấn để xem."
+      "videoReadyNotification": "Video của bạn đã sẵn sàng! Nhấn để xem.",
+      "retry": "Thử lại",
+      "remove": "Xóa"
     },
     "proUpload": {
       "title": "Tải Lên Chuyên Nghiệp",
@@ -1270,6 +1274,12 @@
       "seeAll": "Xem tất cả",
       "byEvent": "theo sự kiện",
       "recent": "mới nhất"
+    },
+    "endScreen": {
+      "keepExploring": "Khám phá thêm",
+      "sameVenue": "Cùng địa điểm",
+      "sameOrganizer": "Cùng người tổ chức",
+      "similarVibe": "Phong cách tương tự"
     },
     "fab": {
       "upload": "Chia sẻ khoảnh khắc",

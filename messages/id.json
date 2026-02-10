@@ -380,7 +380,9 @@
     "sponsorTier1": "Dasar (Tingkat 1)",
     "sponsorTier2": "Premium (Tingkat 2)",
     "sponsorTier3": "Emas (Tingkat 3)",
-    "sponsorTierHelp": "Acara unggulan muncul pertama dengan lencana emas."
+    "sponsorTierHelp": "Acara unggulan muncul pertama dengan lencana emas.",
+    "activityTags": "Jenis Aktivitas",
+    "activityTagsHelp": "Pilih tag untuk membantu orang menemukan acara Anda. AI juga akan menambahkan tag secara otomatis berdasarkan konten."
   },
   "eventActions": {
     "eventOptions": "Opsi acara",
@@ -1153,7 +1155,9 @@
       "compressing": "Mengompresi...",
       "processingInCloud": "{count, plural, =1 {1 video diproses di cloud} other {# video diproses di cloud}}",
       "inCloud": "Di cloud",
-      "videoReadyNotification": "Video Anda sudah siap! Ketuk untuk melihat."
+      "videoReadyNotification": "Video Anda sudah siap! Ketuk untuk melihat.",
+      "retry": "Coba lagi",
+      "remove": "Hapus"
     },
     "proUpload": {
       "title": "Pro Upload",
@@ -1263,6 +1267,12 @@
       "seeAll": "Lihat semua",
       "byEvent": "per acara",
       "recent": "terbaru"
+    },
+    "endScreen": {
+      "keepExploring": "Terus jelajahi",
+      "sameVenue": "Tempat sama",
+      "sameOrganizer": "Penyelenggara sama",
+      "similarVibe": "Suasana mirip"
     },
     "fab": {
       "upload": "Bagikan momen",
