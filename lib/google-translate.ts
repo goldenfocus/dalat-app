@@ -53,23 +53,20 @@ export async function detectLanguage(text: string): Promise<ContentLocale> {
  */
 export async function translateText(
   text: string,
-  targetLocale: ContentLocale,
-  sourceLocale?: ContentLocale
+  targetLocale: ContentLocale
 ): Promise<string> {
   const apiKey = process.env.GOOGLE_CLOUD_TRANSLATION_API_KEY;
   if (!apiKey) {
     throw new Error('GOOGLE_CLOUD_TRANSLATION_API_KEY is not configured');
   }
 
+  // Never pass `source` — let Google auto-detect per translation call.
+  // Forcing a source language (especially a misdetected one) produces garbage.
   const params: Record<string, string> = {
     q: text,
     target: mapToGoogleCode(targetLocale),
     format: 'text',
   };
-
-  if (sourceLocale) {
-    params.source = mapToGoogleCode(sourceLocale);
-  }
 
   const response = await fetch(`${GOOGLE_TRANSLATE_API}?key=${apiKey}`, {
     method: 'POST',
@@ -106,7 +103,7 @@ export async function translateToAllLocales(
         // No need to translate to source language
         translations[locale] = text;
       } else {
-        translations[locale] = await translateText(text, locale, detectedLocale);
+        translations[locale] = await translateText(text, locale);
       }
     })
   );
@@ -147,8 +144,7 @@ export async function batchTranslateFields(
         } else {
           translations[locale][field.field_name] = await translateText(
             field.text,
-            locale,
-            detectedLocale
+            locale
           );
         }
       })

@@ -102,13 +102,14 @@ async function detectLanguage(text: string, apiKey: string): Promise<ContentLoca
 async function translateText(
   text: string,
   targetLocale: ContentLocale,
-  sourceLocale: ContentLocale,
+  _sourceLocale: ContentLocale,
   apiKey: string
 ): Promise<string> {
+  // Don't pass `source` — let Google auto-detect per call.
+  // Forcing a misdetected source produces garbage translations.
   const params = {
     q: text,
     target: mapToGoogleCode(targetLocale),
-    source: mapToGoogleCode(sourceLocale),
     format: "text",
   };
 
