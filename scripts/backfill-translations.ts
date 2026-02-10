@@ -155,14 +155,10 @@ async function translateEvent(
     for (const field of fieldsToTranslate) {
       let translatedText: string;
 
-      if (locale === detectedLocale) {
-        // No translation needed for source language
-        translatedText = field.text;
-      } else {
-        translatedText = await translateText(field.text, locale, detectedLocale, apiKey);
-        // Small delay to avoid rate limits
-        await new Promise((r) => setTimeout(r, 50));
-      }
+      // Always translate — don't skip based on detectedLocale (often wrong)
+      translatedText = await translateText(field.text, locale, detectedLocale, apiKey);
+      // Small delay to avoid rate limits
+      await new Promise((r) => setTimeout(r, 50));
 
       translationInserts.push({
         content_type: "event",

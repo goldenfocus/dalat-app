@@ -320,9 +320,9 @@ export async function triggerTranslationServer(
     }[] = [];
 
     for (const locale of CONTENT_LOCALES) {
-      // Skip same-language translations - they're useless and can contain incorrect data
-      if (locale === detectedLocale) continue;
-
+      // Don't skip based on detectedLocale — detection is unreliable
+      // (e.g. Vietnamese often misdetected as French/English).
+      // Storing a "translation" to the same language is harmless.
       const localeTranslations = translations[locale];
       if (!localeTranslations) continue;
 

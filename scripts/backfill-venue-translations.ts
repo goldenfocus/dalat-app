@@ -150,11 +150,8 @@ async function translateVenue(
     translation_status: string;
   }[] = [];
 
-  // Translate to all locales except the source locale
+  // Translate to ALL locales — don't skip based on detectedLocale (often wrong)
   for (const locale of CONTENT_LOCALES) {
-    // Skip same-language translations
-    if (locale === detectedLocale) continue;
-
     for (const field of fieldsToTranslate) {
       const translatedText = await translateText(field.text, locale, detectedLocale, apiKey);
       // Small delay to avoid rate limits

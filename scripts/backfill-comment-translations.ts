@@ -151,14 +151,10 @@ async function translateComment(
   for (const locale of CONTENT_LOCALES) {
     let translatedText: string;
 
-    if (locale === detectedLocale) {
-      // No translation needed for source language
-      translatedText = comment.content;
-    } else {
-      translatedText = await translateText(comment.content, locale, detectedLocale, apiKey);
-      // Small delay to avoid rate limits
-      await new Promise((r) => setTimeout(r, 50));
-    }
+    // Always translate — don't skip based on detectedLocale (often wrong)
+    translatedText = await translateText(comment.content, locale, detectedLocale, apiKey);
+    // Small delay to avoid rate limits
+    await new Promise((r) => setTimeout(r, 50));
 
     translationInserts.push({
       content_type: "comment",

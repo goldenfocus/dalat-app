@@ -133,9 +133,7 @@ export async function POST(request: Request) {
     }[] = [];
 
     for (const locale of CONTENT_LOCALES) {
-      // Skip same-language translations - they're useless and can contain incorrect data
-      if (locale === detectedLocale) continue;
-
+      // Don't skip based on detectedLocale — detection is unreliable.
       const localeTranslations = translations[locale];
       if (!localeTranslations) continue;
 

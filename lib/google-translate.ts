@@ -97,14 +97,12 @@ export async function translateToAllLocales(
   // Translate to all locales in parallel
   const translations: Record<string, string> = {};
 
+  // Translate to ALL locales — don't skip based on detectedLocale because
+  // detectLanguage() is unreliable (often misdetects vi as en/fr).
+  // One redundant translation is cheap; a missing one breaks UX.
   await Promise.all(
     CONTENT_LOCALES.map(async (locale) => {
-      if (locale === detectedLocale) {
-        // No need to translate to source language
-        translations[locale] = text;
-      } else {
-        translations[locale] = await translateText(text, locale);
-      }
+      translations[locale] = await translateText(text, locale);
     })
   );
 
@@ -135,18 +133,15 @@ export async function batchTranslateFields(
     translations[locale] = {};
   }
 
-  // Translate all fields to all locales in parallel
+  // Translate all fields to ALL locales — don't skip based on detectedLocale
+  // because detectLanguage() is unreliable (often misdetects vi as en/fr).
   await Promise.all(
     fields.flatMap((field) =>
       CONTENT_LOCALES.map(async (locale) => {
-        if (locale === detectedLocale) {
-          translations[locale][field.field_name] = field.text;
-        } else {
-          translations[locale][field.field_name] = await translateText(
-            field.text,
-            locale
-          );
-        }
+        translations[locale][field.field_name] = await translateText(
+          field.text,
+          locale
+        );
       })
     )
   );
