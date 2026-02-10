@@ -1168,7 +1168,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
           // Also batch embed for photos
           const photoMomentIds = completedBulkUploads
-            .filter((u) => u.type !== "video" && u.momentId)
+            .filter((u) => !u.isVideo && u.momentId)
             .map((u) => u.momentId) as string[];
           if (photoMomentIds.length > 0) {
             fetch("/api/moments/embed", {
