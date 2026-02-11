@@ -1098,8 +1098,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     endsAt={event.ends_at}
                     existingFeedback={userFeedback}
                     questionnaire={questionnaire}
-                    maxPlusOnes={event.max_plus_ones ?? 0}
-                    plusOneGuests={currentRsvp?.plus_one_guests ?? []}
                   />
                 </RsvpCardObserver>
 
