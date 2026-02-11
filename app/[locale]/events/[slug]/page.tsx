@@ -25,6 +25,7 @@ import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { CopyAddress } from "@/components/events/copy-address";
 import { ConfirmAttendanceHandler } from "@/components/events/confirm-attendance-handler";
 import { AttendeeList } from "@/components/events/attendee-list";
+import { SidebarAttendeePreview } from "@/components/events/sidebar-attendee-preview";
 import { EventMediaDisplay } from "@/components/events/event-media-display";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat, formatInDaLatAsync } from "@/lib/timezone";
@@ -325,6 +326,16 @@ async function getAllRsvps(eventId: string): Promise<AllRsvpsResult> {
     waitlist: rsvps.filter((r) => r.status === "waitlist"),
     interested: rsvps.filter((r) => r.status === "interested"),
   };
+}
+
+async function getUserFollowingIds(userId: string | null): Promise<Set<string>> {
+  if (!userId) return new Set();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("user_follows")
+    .select("following_id")
+    .eq("follower_id", userId);
+  return new Set(data?.map((f) => f.following_id) ?? []);
 }
 
 async function getCurrentUserId(): Promise<string | null> {
@@ -630,7 +641,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
-  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult, questionnaire] = await Promise.all([
+  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult, questionnaire, followingIds] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
@@ -656,6 +667,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getEventPlaylistSummary(event.id),
     getEventPromo(event.id),
     getEventQuestionnaireServer(event.id),
+    getUserFollowingIds(currentUserId),
   ]);
 
   // Destructure combined RSVP result
@@ -949,7 +961,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             )}
 
             {/* Attendees */}
-            <AttendeeList attendees={attendees} waitlist={waitlist} interested={interested} isPast={isPast} />
+            <AttendeeList attendees={attendees} waitlist={waitlist} interested={interested} isPast={isPast} followedUserIds={followingIds} />
 
             {/* Comments Section */}
             <EventCommentsSection
@@ -1033,33 +1045,28 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   </div>
                 )}
 
-                {/* Spots - only show counts to logged-in users */}
-                {isLoggedIn ? (
-                  <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">
-                        {spotsText} {isPast ? t("went") : t("going")}
-                        {(counts?.interested_count ?? 0) > 0 && (
-                          <span className="text-muted-foreground font-normal">
-                            {" "}· {counts?.interested_count} {t("interested")}
-                          </span>
-                        )}
-                      </p>
-                      {(counts?.waitlist_count ?? 0) > 0 && (
-                        <p className="text-sm text-muted-foreground">
-                          {counts?.waitlist_count} {t("onWaitlist")}
-                        </p>
+                {/* Spots & attendee preview */}
+                <div className="flex items-center gap-3">
+                  <Users className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">
+                      {spotsText} {isPast ? t("went") : t("going")}
+                      {(counts?.interested_count ?? 0) > 0 && (
+                        <span className="text-muted-foreground font-normal">
+                          {" "}· {counts?.interested_count} {t("interested")}
+                        </span>
                       )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-muted-foreground" />
-                    <p className="text-muted-foreground text-sm">
-                      {t("signInToSeeAttendees")}
                     </p>
+                    {(counts?.waitlist_count ?? 0) > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        {counts?.waitlist_count} {t("onWaitlist")}
+                      </p>
+                    )}
                   </div>
+                </div>
+                {/* Attendee avatar preview */}
+                {attendees.length > 0 && (
+                  <SidebarAttendeePreview attendees={attendees} isPast={isPast} />
                 )}
 
                 {/* External link */}
