@@ -421,6 +421,16 @@ export interface Event {
   event_series?: EventSeries;
 }
 
+export interface PlusOneGuest {
+  id: string;
+  rsvp_id: string;
+  name: string;
+  email: string | null;
+  invitation_id: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface Rsvp {
   id: string;
   event_id: string;
@@ -428,8 +438,14 @@ export interface Rsvp {
   status: "going" | "waitlist" | "cancelled" | "interested";
   plus_ones: number;
   created_at: string;
+  // Check-in tracking
+  checked_in_at: string | null;
+  checked_in_by: string | null;
+  checkin_note: string | null;
+  no_show_at: string | null;
   // Joined data
   profiles?: Profile;
+  plus_one_guests?: PlusOneGuest[];
 }
 
 export interface EventCounts {

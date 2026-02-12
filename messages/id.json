@@ -393,7 +393,25 @@
     "createSimilar": "Buat acara serupa",
     "deleteEvent": "Hapus acara",
     "deleteConfirm": "Hapus?",
-    "deleting": "Menghapus..."
+    "deleting": "Menghapus...",
+    "checkIn": "Absensi"
+  },
+  "checkin": {
+    "title": "Absensi",
+    "searchPlaceholder": "Cari nama atau email...",
+    "checkedIn": "Sudah hadir",
+    "pending": "Menunggu",
+    "noShow": "Tidak hadir",
+    "noShows": "Tidak hadir",
+    "guests": "Tamu",
+    "noResults": "Peserta tidak ditemukan",
+    "noAttendees": "Belum ada peserta",
+    "checkInButton": "Absen",
+    "undoCheckIn": "Batalkan absensi",
+    "markNoShow": "Tandai tidak hadir",
+    "undoNoShow": "Batalkan tidak hadir",
+    "lateArrival": "Terlambat",
+    "guestOf": "Tamu dari {host}"
   },
   "eventSettings": {
     "title": "Pengaturan Acara",

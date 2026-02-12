@@ -393,7 +393,25 @@
     "createSimilar": "สร้างกิจกรรมที่คล้ายกัน",
     "deleteEvent": "ลบกิจกรรม",
     "deleteConfirm": "ลบ?",
-    "deleting": "กำลังลบ..."
+    "deleting": "กำลังลบ...",
+    "checkIn": "เช็คอิน"
+  },
+  "checkin": {
+    "title": "เช็คอิน",
+    "searchPlaceholder": "ค้นหาชื่อหรืออีเมล...",
+    "checkedIn": "เช็คอินแล้ว",
+    "pending": "รอดำเนินการ",
+    "noShow": "ไม่มา",
+    "noShows": "ไม่มา",
+    "guests": "แขก",
+    "noResults": "ไม่พบผู้เข้าร่วม",
+    "noAttendees": "ยังไม่มีผู้เข้าร่วม",
+    "checkInButton": "เช็คอิน",
+    "undoCheckIn": "ยกเลิกเช็คอิน",
+    "markNoShow": "ทำเครื่องหมายไม่มา",
+    "undoNoShow": "ยกเลิกไม่มา",
+    "lateArrival": "มาสาย",
+    "guestOf": "แขกของ {host}"
   },
   "eventSettings": {
     "title": "การตั้งค่ากิจกรรม",

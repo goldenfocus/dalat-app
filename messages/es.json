@@ -393,7 +393,25 @@
     "createSimilar": "Crear evento similar",
     "deleteEvent": "Eliminar evento",
     "deleteConfirm": "¿Eliminar?",
-    "deleting": "Eliminando..."
+    "deleting": "Eliminando...",
+    "checkIn": "Registrar"
+  },
+  "checkin": {
+    "title": "Registro",
+    "searchPlaceholder": "Buscar nombre o email...",
+    "checkedIn": "Registrado",
+    "pending": "Pendiente",
+    "noShow": "Ausente",
+    "noShows": "Ausentes",
+    "guests": "Invitados",
+    "noResults": "No se encontraron asistentes",
+    "noAttendees": "Aún no hay asistentes",
+    "checkInButton": "Registrar",
+    "undoCheckIn": "Deshacer registro",
+    "markNoShow": "Marcar como ausente",
+    "undoNoShow": "Deshacer ausencia",
+    "lateArrival": "Llegada tardía",
+    "guestOf": "Invitado de {host}"
   },
   "eventSettings": {
     "title": "Configuración del Evento",

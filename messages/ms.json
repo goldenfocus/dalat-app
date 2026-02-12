@@ -393,7 +393,25 @@
     "createSimilar": "Cipta acara serupa",
     "deleteEvent": "Padam acara",
     "deleteConfirm": "Padam?",
-    "deleting": "Memadam..."
+    "deleting": "Memadam...",
+    "checkIn": "Daftar masuk"
+  },
+  "checkin": {
+    "title": "Daftar Masuk",
+    "searchPlaceholder": "Cari nama atau emel...",
+    "checkedIn": "Telah daftar masuk",
+    "pending": "Menunggu",
+    "noShow": "Tidak hadir",
+    "noShows": "Tidak hadir",
+    "guests": "Tetamu",
+    "noResults": "Tiada peserta ditemui",
+    "noAttendees": "Belum ada peserta",
+    "checkInButton": "Daftar masuk",
+    "undoCheckIn": "Batal daftar masuk",
+    "markNoShow": "Tanda tidak hadir",
+    "undoNoShow": "Batal tidak hadir",
+    "lateArrival": "Lewat tiba",
+    "guestOf": "Tetamu {host}"
   },
   "eventSettings": {
     "title": "Tetapan Acara",

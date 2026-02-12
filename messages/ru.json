@@ -393,7 +393,25 @@
     "createSimilar": "Создать похожее событие",
     "deleteEvent": "Удалить событие",
     "deleteConfirm": "Удалить?",
-    "deleting": "Удаление..."
+    "deleting": "Удаление...",
+    "checkIn": "Отметиться"
+  },
+  "checkin": {
+    "title": "Отметка",
+    "searchPlaceholder": "Поиск по имени или email...",
+    "checkedIn": "Отмечен",
+    "pending": "Ожидание",
+    "noShow": "Не пришёл",
+    "noShows": "Не пришли",
+    "guests": "Гости",
+    "noResults": "Участники не найдены",
+    "noAttendees": "Пока нет участников",
+    "checkInButton": "Отметить",
+    "undoCheckIn": "Отменить отметку",
+    "markNoShow": "Отметить как не пришёл",
+    "undoNoShow": "Отменить неявку",
+    "lateArrival": "Опоздание",
+    "guestOf": "Гость {host}"
   },
   "eventSettings": {
     "title": "Настройки события",

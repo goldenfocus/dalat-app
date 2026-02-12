@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, Pencil, Trash2, Copy, Repeat } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Copy, Repeat, ClipboardCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,10 @@ export function EventActions({ eventId, eventSlug, seriesSlug }: EventActionsPro
     if (seriesSlug) {
       router.push(`/series/${seriesSlug}/edit`);
     }
+  }
+
+  function handleCheckIn() {
+    router.push(`/events/${eventSlug}/checkin`);
   }
 
   function handleCreateSimilar() {
@@ -99,6 +103,10 @@ export function EventActions({ eventId, eventSlug, seriesSlug }: EventActionsPro
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleCheckIn}>
+          <ClipboardCheck className="w-4 h-4 mr-2" />
+          {t("checkIn")}
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleEdit}>
           <Pencil className="w-4 h-4 mr-2" />
           {t("editEvent")}
