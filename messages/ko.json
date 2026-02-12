@@ -2094,6 +2094,23 @@
     "responseRate": "{rate}% 응답률",
     "andMore": "외 {count}개..."
   },
+  "reconfirmation": {
+    "title": "재확인",
+    "backToEvent": "이벤트로 돌아가기",
+    "going": "참석 예정",
+    "confirmed": "확인됨",
+    "pending": "대기 중",
+    "cancelled": "취소됨",
+    "confirmationRate": "확인률",
+    "confirmedSection": "확인됨",
+    "pendingSection": "응답 대기 중",
+    "rePingButton": "대기 중인 {count}명에게 재알림",
+    "rePingSent": "{count}명의 참석자에게 전송됨",
+    "rePingError": "문제가 발생했습니다",
+    "rePingCooldown": "몇 시간 후에 다시 알림을 보낼 수 있습니다",
+    "reconfirmBadge": "{confirmed}/{total} 확인됨",
+    "reconfirmLink": "재확인 보기"
+  },
   "pickleball": {
     "title": "달랏 피클볼",
     "subtitle": "피클볼 게임을 찾고 조직하세요",

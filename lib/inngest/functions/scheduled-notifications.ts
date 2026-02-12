@@ -73,8 +73,28 @@ export const processScheduledNotifications = inngest.createFunction(
               .eq('id', scheduled.id)
               .eq('status', 'pending');
 
-            // Send the notification
             const payload = scheduled.payload as NotificationPayload;
+
+            // Smart check: skip starting nudge if attendee already confirmed
+            if (payload.type === 'event_starting_nudge' && 'eventId' in payload) {
+              const { data: rsvp } = await supabase
+                .from('rsvps')
+                .select('confirmed_at')
+                .eq('user_id', scheduled.user_id)
+                .eq('event_id', payload.eventId)
+                .eq('status', 'going')
+                .single();
+
+              if (rsvp?.confirmed_at) {
+                await supabase
+                  .from('scheduled_notifications')
+                  .update({ status: 'cancelled', error_message: 'Skipped: attendee already confirmed' })
+                  .eq('id', scheduled.id);
+                return { success: true, skipped: true };
+              }
+            }
+
+            // Send the notification
             const notifyResult = await notify(payload);
 
             // Update status based on result
@@ -125,12 +145,28 @@ export const processScheduledNotifications = inngest.createFunction(
 );
 
 /**
- * Handle RSVP created event - schedule reminders.
+ * Default reminder config — used when no per-event config exists.
+ */
+const DEFAULT_REMINDER_CONFIG = {
+  reminder_7d: true,
+  reminder_24h: true,
+  reminder_2h: true,
+  starting_nudge: true,
+  feedback: true,
+  feedback_delay_hours: 3,
+};
+
+/**
+ * Handle RSVP created event - schedule the full reminder cascade.
  *
- * When a user RSVPs to an event, we schedule:
- * - 24h reminder (confirm attendance)
- * - 2h reminder (final reminder)
- * - Feedback request (3h after event ends)
+ * When a user RSVPs to an event, we schedule up to 5 reminders:
+ * 1. 7 days before  → confirm_attendance_7d  (if >7d away)
+ * 2. 24 hours before → confirm_attendance_24h (existing)
+ * 3. 2 hours before  → final_reminder_2h     (existing)
+ * 4. 15 min after start → event_starting_nudge (only if NOT yet confirmed)
+ * 5. N hours after end  → feedback_request     (existing)
+ *
+ * Each reminder is gated by per-event config (defaults to all enabled).
  */
 export const onRsvpCreated = inngest.createFunction(
   {
@@ -164,7 +200,23 @@ export const onRsvpCreated = inngest.createFunction(
       timeZone: 'Asia/Ho_Chi_Minh',
     });
 
+    // Day of week for the 7d reminder (e.g. "Saturday")
+    const eventDayOfWeek = eventStart.toLocaleDateString('en-US', {
+      weekday: 'long',
+      timeZone: 'Asia/Ho_Chi_Minh',
+    });
+
     const scheduled: string[] = [];
+
+    // Fetch per-event reminder config (use defaults if none)
+    const config = await step.run('fetch-reminder-config', async () => {
+      const { data } = await supabase
+        .from('event_reminder_config')
+        .select('*')
+        .eq('event_id', eventId)
+        .single();
+      return data || DEFAULT_REMINDER_CONFIG;
+    });
 
     // Cancel any stale pending reminders before re-scheduling.
     // This keeps the workflow idempotent if the same event fires multiple times
@@ -180,80 +232,143 @@ export const onRsvpCreated = inngest.createFunction(
         .select('id');
     });
 
-    // Schedule 24h reminder
-    const time24hBefore = new Date(eventStart.getTime() - 24 * 60 * 60 * 1000);
-    if (time24hBefore > now) {
-      await step.run('schedule-24h-reminder', async () => {
-        return supabase.from('scheduled_notifications').insert({
-          user_id: userId,
-          type: 'confirm_attendance_24h',
-          scheduled_for: time24hBefore.toISOString(),
-          payload: {
+    // 1. Schedule 7d reminder
+    if (config.reminder_7d) {
+      const time7dBefore = new Date(eventStart.getTime() - 7 * 24 * 60 * 60 * 1000);
+      if (time7dBefore > now) {
+        await step.run('schedule-7d-reminder', async () => {
+          return supabase.from('scheduled_notifications').insert({
+            user_id: userId,
+            type: 'confirm_attendance_7d',
+            scheduled_for: time7dBefore.toISOString(),
+            payload: {
+              type: 'confirm_attendance_7d',
+              userId,
+              locale,
+              eventId,
+              eventSlug,
+              eventTitle,
+              eventTime,
+              eventDayOfWeek,
+            },
+            reference_type: 'event_rsvp',
+            reference_id: eventId,
+          });
+        });
+        scheduled.push('7d');
+      }
+    }
+
+    // 2. Schedule 24h reminder
+    if (config.reminder_24h) {
+      const time24hBefore = new Date(eventStart.getTime() - 24 * 60 * 60 * 1000);
+      if (time24hBefore > now) {
+        await step.run('schedule-24h-reminder', async () => {
+          return supabase.from('scheduled_notifications').insert({
+            user_id: userId,
             type: 'confirm_attendance_24h',
-            userId,
-            locale,
-            eventId,
-            eventSlug,
-            eventTitle,
-            eventTime,
-          },
-          reference_type: 'event_rsvp',
-          reference_id: eventId,
+            scheduled_for: time24hBefore.toISOString(),
+            payload: {
+              type: 'confirm_attendance_24h',
+              userId,
+              locale,
+              eventId,
+              eventSlug,
+              eventTitle,
+              eventTime,
+            },
+            reference_type: 'event_rsvp',
+            reference_id: eventId,
+          });
         });
-      });
-      scheduled.push('24h');
+        scheduled.push('24h');
+      }
     }
 
-    // Schedule 2h reminder
-    const time2hBefore = new Date(eventStart.getTime() - 2 * 60 * 60 * 1000);
-    if (time2hBefore > now) {
-      await step.run('schedule-2h-reminder', async () => {
-        return supabase.from('scheduled_notifications').insert({
-          user_id: userId,
-          type: 'final_reminder_2h',
-          scheduled_for: time2hBefore.toISOString(),
-          payload: {
+    // 3. Schedule 2h reminder
+    if (config.reminder_2h) {
+      const time2hBefore = new Date(eventStart.getTime() - 2 * 60 * 60 * 1000);
+      if (time2hBefore > now) {
+        await step.run('schedule-2h-reminder', async () => {
+          return supabase.from('scheduled_notifications').insert({
+            user_id: userId,
             type: 'final_reminder_2h',
-            userId,
-            locale,
-            eventId,
-            eventSlug,
-            eventTitle,
-            locationName: locationName || 'the venue',
-            googleMapsUrl,
-          },
-          reference_type: 'event_rsvp',
-          reference_id: eventId,
+            scheduled_for: time2hBefore.toISOString(),
+            payload: {
+              type: 'final_reminder_2h',
+              userId,
+              locale,
+              eventId,
+              eventSlug,
+              eventTitle,
+              locationName: locationName || 'the venue',
+              googleMapsUrl,
+            },
+            reference_type: 'event_rsvp',
+            reference_id: eventId,
+          });
         });
-      });
-      scheduled.push('2h');
+        scheduled.push('2h');
+      }
     }
 
-    // Schedule feedback request (3h after event ends)
-    const eventEnd = endsAt
-      ? new Date(endsAt)
-      : new Date(eventStart.getTime() + 4 * 60 * 60 * 1000);
-    const feedbackTime = new Date(eventEnd.getTime() + 3 * 60 * 60 * 1000);
-
-    if (feedbackTime > now) {
-      await step.run('schedule-feedback-request', async () => {
-        return supabase.from('scheduled_notifications').insert({
-          user_id: userId,
-          type: 'feedback_request',
-          scheduled_for: feedbackTime.toISOString(),
-          payload: {
-            type: 'feedback_request',
-            userId,
-            locale,
-            eventId,
-            eventSlug,
-            eventTitle,
-          },
-          reference_type: 'event_rsvp',
-          reference_id: eventId,
+    // 4. Schedule starting nudge (15 min after event start)
+    // The processScheduledNotifications cron will check confirmed_at
+    // before sending — confirmed attendees won't be nagged.
+    if (config.starting_nudge) {
+      const nudgeTime = new Date(eventStart.getTime() + 15 * 60 * 1000);
+      if (nudgeTime > now) {
+        await step.run('schedule-starting-nudge', async () => {
+          return supabase.from('scheduled_notifications').insert({
+            user_id: userId,
+            type: 'event_starting_nudge',
+            scheduled_for: nudgeTime.toISOString(),
+            payload: {
+              type: 'event_starting_nudge',
+              userId,
+              locale,
+              eventId,
+              eventSlug,
+              eventTitle,
+              locationName: locationName || 'the venue',
+              googleMapsUrl,
+            },
+            reference_type: 'event_rsvp',
+            reference_id: eventId,
+          });
         });
-      });
-      scheduled.push('feedback');
+        scheduled.push('starting_nudge');
+      }
+    }
+
+    // 5. Schedule feedback request (N hours after event ends)
+    if (config.feedback) {
+      const feedbackDelay = (config.feedback_delay_hours || 3) * 60 * 60 * 1000;
+      const eventEnd = endsAt
+        ? new Date(endsAt)
+        : new Date(eventStart.getTime() + 4 * 60 * 60 * 1000);
+      const feedbackTime = new Date(eventEnd.getTime() + feedbackDelay);
+
+      if (feedbackTime > now) {
+        await step.run('schedule-feedback-request', async () => {
+          return supabase.from('scheduled_notifications').insert({
+            user_id: userId,
+            type: 'feedback_request',
+            scheduled_for: feedbackTime.toISOString(),
+            payload: {
+              type: 'feedback_request',
+              userId,
+              locale,
+              eventId,
+              eventSlug,
+              eventTitle,
+            },
+            reference_type: 'event_rsvp',
+            reference_id: eventId,
+          });
+        });
+        scheduled.push('feedback');
+      }
     }
 
     return { scheduled };

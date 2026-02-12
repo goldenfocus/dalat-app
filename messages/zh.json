@@ -2109,6 +2109,23 @@
     "anonymous": "匿名访客",
     "noAnswer": "未回答"
   },
+  "reconfirmation": {
+    "title": "再次确认",
+    "backToEvent": "返回活动",
+    "going": "参加",
+    "confirmed": "已确认",
+    "pending": "待确认",
+    "cancelled": "已取消",
+    "confirmationRate": "确认率",
+    "confirmedSection": "已确认",
+    "pendingSection": "等待回复",
+    "rePingButton": "重新提醒 {count} 位待确认",
+    "rePingSent": "已发送给 {count} 位参加者",
+    "rePingError": "出了点问题",
+    "rePingCooldown": "几小时后可以再次提醒",
+    "reconfirmBadge": "{confirmed}/{total} 已确认",
+    "reconfirmLink": "查看再次确认"
+  },
   "pickleball": {
     "title": "大叻匹克球",
     "subtitle": "寻找和组织匹克球比赛",

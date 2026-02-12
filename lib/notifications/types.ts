@@ -27,7 +27,11 @@ export type NotificationType =
   // Video processing notifications
   | 'video_ready'
   // Social graph notifications
-  | 'new_follower';
+  | 'new_follower'
+  // Smart reminder types
+  | 'confirm_attendance_7d'
+  | 'event_starting_nudge'
+  | 'organizer_re_ping';
 
 export type NotificationChannel = 'in_app' | 'push' | 'email';
 
@@ -288,6 +292,26 @@ export interface NewFollowerPayload extends BaseNotificationPayload {
   followerAvatarUrl: string | null;
 }
 
+// ============================================
+// Smart Reminder Notification Payloads
+// ============================================
+
+export interface ConfirmAttendance7dPayload extends EventNotificationPayload {
+  type: 'confirm_attendance_7d';
+  eventTime: string;
+  eventDayOfWeek: string; // e.g. "Saturday"
+}
+
+export interface EventStartingNudgePayload extends EventNotificationPayload {
+  type: 'event_starting_nudge';
+  locationName: string;
+}
+
+export interface OrganizerRePingPayload extends EventNotificationPayload {
+  type: 'organizer_re_ping';
+  organizerName: string;
+}
+
 export type NotificationPayload =
   | RsvpConfirmationPayload
   | ConfirmAttendance24hPayload
@@ -311,7 +335,11 @@ export type NotificationPayload =
   // Video processing notifications
   | VideoReadyPayload
   // Social graph notifications
-  | NewFollowerPayload;
+  | NewFollowerPayload
+  // Smart reminder notifications
+  | ConfirmAttendance7dPayload
+  | EventStartingNudgePayload
+  | OrganizerRePingPayload;
 
 // ============================================
 // Notify Options

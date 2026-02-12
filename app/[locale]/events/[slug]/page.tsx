@@ -25,6 +25,7 @@ import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { CopyAddress } from "@/components/events/copy-address";
 import { ConfirmAttendanceHandler } from "@/components/events/confirm-attendance-handler";
 import { AttendeeList } from "@/components/events/attendee-list";
+import { ReconfirmationBadge } from "@/components/events/reconfirmation-badge";
 import { EventMediaDisplay } from "@/components/events/event-media-display";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat, formatInDaLatAsync } from "@/lib/timezone";
@@ -946,6 +947,15 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             {/* Materials (PDFs, videos, etc.) */}
             {materials.length > 0 && (
               <EventMaterialsSummary materials={materials} />
+            )}
+
+            {/* Reconfirmation badge for organizers */}
+            {canManageEvent && !isPast && (
+              <ReconfirmationBadge
+                eventId={event.id}
+                eventSlug={event.slug}
+                totalGoing={counts?.going_spots ?? 0}
+              />
             )}
 
             {/* Attendees */}

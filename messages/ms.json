@@ -2106,6 +2106,23 @@
     "anonymous": "Tetamu tanpa nama",
     "noAnswer": "Tiada jawapan"
   },
+  "reconfirmation": {
+    "title": "Pengesahan semula",
+    "backToEvent": "Kembali ke acara",
+    "going": "Akan hadir",
+    "confirmed": "Disahkan",
+    "pending": "Menunggu",
+    "cancelled": "Dibatalkan",
+    "confirmationRate": "Kadar pengesahan",
+    "confirmedSection": "Disahkan",
+    "pendingSection": "Menunggu jawapan",
+    "rePingButton": "Ingatkan semula {count} menunggu",
+    "rePingSent": "Dihantar kepada {count} peserta",
+    "rePingError": "Sesuatu tidak kena",
+    "rePingCooldown": "Anda boleh ingatkan semula dalam beberapa jam",
+    "reconfirmBadge": "{confirmed}/{total} disahkan",
+    "reconfirmLink": "Lihat pengesahan semula"
+  },
   "pickleball": {
     "title": "Pickleball di Da Lat",
     "subtitle": "Cari dan anjurkan permainan pickleball",

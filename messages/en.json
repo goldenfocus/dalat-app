@@ -2159,6 +2159,23 @@
     "responseRate": "{rate}% response rate",
     "andMore": "and {count} more..."
   },
+  "reconfirmation": {
+    "title": "Reconfirmation",
+    "backToEvent": "Back to event",
+    "going": "Going",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "cancelled": "Cancelled",
+    "confirmationRate": "Confirmation rate",
+    "confirmedSection": "Confirmed",
+    "pendingSection": "Awaiting response",
+    "rePingButton": "Re-ping {count} pending",
+    "rePingSent": "Sent to {count} attendees",
+    "rePingError": "Something went wrong",
+    "rePingCooldown": "You can re-ping again in a few hours",
+    "reconfirmBadge": "{confirmed}/{total} confirmed",
+    "reconfirmLink": "View reconfirmation"
+  },
   "activity": {
     "title": "Activity",
     "noActivity": "Follow people to see their activity here",

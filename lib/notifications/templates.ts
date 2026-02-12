@@ -24,6 +24,9 @@ import type {
   ThreadActivityPayload,
   VideoReadyPayload,
   NewFollowerPayload,
+  ConfirmAttendance7dPayload,
+  EventStartingNudgePayload,
+  OrganizerRePingPayload,
   NotificationPayload,
 } from './types';
 
@@ -186,11 +189,28 @@ const translations = {
     fr: (name: string) => `${name} a commencé à vous suivre`,
     vi: (name: string) => `${name} đã bắt đầu theo dõi bạn`,
   },
+  // Smart reminders
+  confirmAttendance7d: {
+    en: (title: string, day: string) => `"${title}" is next ${day}. Still planning to come?`,
+    fr: (title: string, day: string) => `"${title}" est ${day} prochain. Toujours partant(e) ?`,
+    vi: (title: string, day: string) => `"${title}" vào ${day} tới. Bạn vẫn đến chứ?`,
+  },
+  eventStartingNudge: {
+    en: (title: string, location: string) => `"${title}" started 15 min ago at ${location}! On your way?`,
+    fr: (title: string, location: string) => `"${title}" a commencé il y a 15 min à ${location} ! En route ?`,
+    vi: (title: string, location: string) => `"${title}" đã bắt đầu 15 phút trước tại ${location}! Bạn đang trên đường đến?`,
+  },
+  organizerRePing: {
+    en: (organizer: string, title: string) => `${organizer} is checking in — still coming to "${title}"?`,
+    fr: (organizer: string, title: string) => `${organizer} vérifie — vous venez toujours à "${title}" ?`,
+    vi: (organizer: string, title: string) => `${organizer} đang xác nhận — bạn vẫn đến "${title}" chứ?`,
+  },
   buttons: {
     viewProfile: { en: 'View profile', fr: 'Voir le profil', vi: 'Xem hồ sơ' },
     viewEvent: { en: 'View Event', fr: 'Voir', vi: 'Xem sự kiện' },
     yes: { en: 'Yes, coming', fr: 'Oui', vi: 'Có, tôi đến' },
     no: { en: "Can't make it", fr: 'Non', vi: 'Không thể đến' },
+    onMyWay: { en: 'On my way!', fr: 'En route !', vi: 'Đang trên đường!' },
     getDirections: { en: 'Get Directions', fr: 'Itinéraire', vi: 'Chỉ đường' },
     changePlans: { en: 'Change plans', fr: 'Modifier', vi: 'Thay đổi' },
     shareFeedback: { en: 'Share feedback', fr: 'Donner mon avis', vi: 'Chia sẻ nhận xét' },
@@ -823,6 +843,90 @@ function newFollowerTemplate(payload: NewFollowerPayload): TemplateResult {
 }
 
 // ============================================
+// Smart Reminder Templates
+// ============================================
+
+function confirmAttendance7dTemplate(payload: ConfirmAttendance7dPayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+  const baseUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
+
+  const title = translations.confirmAttendance7d[locale](payload.eventTitle, payload.eventDayOfWeek);
+  const body = translations.email.clickToConfirm[locale];
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: `${baseUrl}?confirm=yes`,
+      primaryActionLabel: translations.buttons.yes[locale],
+      secondaryActionUrl: `${baseUrl}?cancel=true`,
+      secondaryActionLabel: translations.buttons.changePlans[locale],
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: `${baseUrl}?confirm=yes`,
+      tag: `7d-${payload.eventSlug}`,
+      requireInteraction: true,
+    },
+  };
+}
+
+function eventStartingNudgeTemplate(payload: EventStartingNudgePayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
+
+  const title = translations.eventStartingNudge[locale](payload.eventTitle, payload.locationName);
+  const body = translations.buttons.onMyWay[locale];
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: payload.googleMapsUrl || eventUrl,
+      primaryActionLabel: payload.googleMapsUrl
+        ? translations.buttons.getDirections[locale]
+        : translations.buttons.viewEvent[locale],
+      secondaryActionUrl: `${eventUrl}?cancel=true`,
+      secondaryActionLabel: translations.buttons.no[locale],
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: payload.googleMapsUrl || eventUrl,
+      tag: `nudge-${payload.eventSlug}`,
+      requireInteraction: true,
+    },
+  };
+}
+
+function organizerRePingTemplate(payload: OrganizerRePingPayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+  const baseUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
+
+  const title = translations.organizerRePing[locale](payload.organizerName, payload.eventTitle);
+  const body = translations.email.clickToConfirm[locale];
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: `${baseUrl}?confirm=yes`,
+      primaryActionLabel: translations.buttons.yes[locale],
+      secondaryActionUrl: `${baseUrl}?cancel=true`,
+      secondaryActionLabel: translations.buttons.no[locale],
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: `${baseUrl}?confirm=yes`,
+      tag: `re-ping-${payload.eventSlug}`,
+      requireInteraction: true,
+    },
+  };
+}
+
+// ============================================
 // Email HTML Generator for Event Invitations
 // ============================================
 
@@ -1003,6 +1107,13 @@ export function getNotificationTemplate(payload: NotificationPayload): TemplateR
     // Social graph notifications
     case 'new_follower':
       return newFollowerTemplate(payload);
+    // Smart reminder notifications
+    case 'confirm_attendance_7d':
+      return confirmAttendance7dTemplate(payload);
+    case 'event_starting_nudge':
+      return eventStartingNudgeTemplate(payload);
+    case 'organizer_re_ping':
+      return organizerRePingTemplate(payload);
     default:
       throw new Error(`Unknown notification type: ${(payload as NotificationPayload).type}`);
   }
