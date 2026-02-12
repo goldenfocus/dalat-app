@@ -73,27 +73,25 @@ export async function POST(
     return NextResponse.json({ ok: true, notified: 0, message: "No pending attendees" });
   }
 
-  // Send re-ping notifications
-  let notified = 0;
-  for (const rsvp of pendingRsvps) {
-    const profileData = rsvp.profiles as unknown as { locale: string } | null;
-    const payload: OrganizerRePingPayload = {
-      type: "organizer_re_ping",
-      userId: rsvp.user_id,
-      locale: (profileData?.locale as OrganizerRePingPayload["locale"]) || "en",
-      eventId: event.id,
-      eventSlug: event.slug,
-      eventTitle: event.title,
-      organizerName,
-    };
-
-    try {
-      await notify(payload);
-      notified++;
-    } catch (err) {
-      console.error(`[re-ping] Failed to notify ${rsvp.user_id}:`, err);
-    }
-  }
+  // Send re-ping notifications in parallel to avoid Vercel function timeout
+  const results = await Promise.allSettled(
+    pendingRsvps.map((rsvp) => {
+      const profileData = rsvp.profiles as unknown as { locale: string } | null;
+      const payload: OrganizerRePingPayload = {
+        type: "organizer_re_ping",
+        userId: rsvp.user_id,
+        locale: (profileData?.locale as OrganizerRePingPayload["locale"]) || "en",
+        eventId: event.id,
+        eventSlug: event.slug,
+        eventTitle: event.title,
+        organizerName,
+      };
+      return notify(payload);
+    })
+  );
+  const notified = results.filter(
+    (r) => r.status === "fulfilled" && r.value.success
+  ).length;
 
   // Update last_re_ping_at (upsert into config table)
   await supabase
