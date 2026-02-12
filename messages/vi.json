@@ -393,7 +393,25 @@
     "createSimilar": "Tạo sự kiện tương tự",
     "deleteEvent": "Xóa sự kiện",
     "deleteConfirm": "Xóa?",
-    "deleting": "Đang xóa..."
+    "deleting": "Đang xóa...",
+    "checkIn": "Điểm danh"
+  },
+  "checkin": {
+    "title": "Điểm danh",
+    "searchPlaceholder": "Tìm tên hoặc email...",
+    "checkedIn": "Đã điểm danh",
+    "pending": "Chờ",
+    "noShow": "Vắng mặt",
+    "noShows": "Vắng mặt",
+    "guests": "Khách",
+    "noResults": "Không tìm thấy người tham dự",
+    "noAttendees": "Chưa có người tham dự",
+    "checkInButton": "Điểm danh",
+    "undoCheckIn": "Hủy điểm danh",
+    "markNoShow": "Đánh dấu vắng mặt",
+    "undoNoShow": "Hủy vắng mặt",
+    "lateArrival": "Đến muộn",
+    "guestOf": "Khách của {host}"
   },
   "eventSettings": {
     "title": "Cài đặt sự kiện",

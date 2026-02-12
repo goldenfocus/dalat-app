@@ -393,7 +393,25 @@
     "createSimilar": "類似イベントを作成",
     "deleteEvent": "イベントを削除",
     "deleteConfirm": "削除しますか？",
-    "deleting": "削除中..."
+    "deleting": "削除中...",
+    "checkIn": "チェックイン"
+  },
+  "checkin": {
+    "title": "チェックイン",
+    "searchPlaceholder": "名前またはメールで検索...",
+    "checkedIn": "チェックイン済み",
+    "pending": "未確認",
+    "noShow": "不参加",
+    "noShows": "不参加",
+    "guests": "ゲスト",
+    "noResults": "該当する参加者がいません",
+    "noAttendees": "参加者はまだいません",
+    "checkInButton": "チェックイン",
+    "undoCheckIn": "チェックイン取消",
+    "markNoShow": "不参加にする",
+    "undoNoShow": "不参加を取消",
+    "lateArrival": "遅刻",
+    "guestOf": "{host}のゲスト"
   },
   "eventSettings": {
     "title": "イベント設定",

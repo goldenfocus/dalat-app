@@ -393,7 +393,25 @@
     "createSimilar": "Ähnliches Event erstellen",
     "deleteEvent": "Event löschen",
     "deleteConfirm": "Löschen?",
-    "deleting": "Wird gelöscht..."
+    "deleting": "Wird gelöscht...",
+    "checkIn": "Einchecken"
+  },
+  "checkin": {
+    "title": "Einchecken",
+    "searchPlaceholder": "Name oder E-Mail suchen...",
+    "checkedIn": "Eingecheckt",
+    "pending": "Ausstehend",
+    "noShow": "Nicht erschienen",
+    "noShows": "Nicht erschienen",
+    "guests": "Gäste",
+    "noResults": "Keine Teilnehmer gefunden",
+    "noAttendees": "Noch keine Teilnehmer",
+    "checkInButton": "Einchecken",
+    "undoCheckIn": "Einchecken rückgängig",
+    "markNoShow": "Als nicht erschienen markieren",
+    "undoNoShow": "Nicht erschienen aufheben",
+    "lateArrival": "Verspätung",
+    "guestOf": "Gast von {host}"
   },
   "eventSettings": {
     "title": "Event-Einstellungen",

@@ -393,7 +393,25 @@
     "createSimilar": "비슷한 이벤트 만들기",
     "deleteEvent": "이벤트 삭제",
     "deleteConfirm": "삭제하시겠습니까?",
-    "deleting": "삭제 중..."
+    "deleting": "삭제 중...",
+    "checkIn": "체크인"
+  },
+  "checkin": {
+    "title": "체크인",
+    "searchPlaceholder": "이름 또는 이메일 검색...",
+    "checkedIn": "체크인 완료",
+    "pending": "대기 중",
+    "noShow": "불참",
+    "noShows": "불참",
+    "guests": "게스트",
+    "noResults": "일치하는 참석자 없음",
+    "noAttendees": "참석자 없음",
+    "checkInButton": "체크인",
+    "undoCheckIn": "체크인 취소",
+    "markNoShow": "불참 처리",
+    "undoNoShow": "불참 취소",
+    "lateArrival": "늦은 도착",
+    "guestOf": "{host}의 게스트"
   },
   "eventSettings": {
     "title": "이벤트 설정",

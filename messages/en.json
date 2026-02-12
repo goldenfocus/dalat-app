@@ -487,7 +487,25 @@
     "createSimilar": "Create similar event",
     "deleteEvent": "Delete event",
     "deleteConfirm": "Delete?",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "checkIn": "Check in"
+  },
+  "checkin": {
+    "title": "Check In",
+    "searchPlaceholder": "Search name or email...",
+    "checkedIn": "Checked in",
+    "pending": "Pending",
+    "noShow": "No-show",
+    "noShows": "No-shows",
+    "guests": "Guests",
+    "noResults": "No matching attendees",
+    "noAttendees": "No attendees yet",
+    "checkInButton": "Check in",
+    "undoCheckIn": "Undo check-in",
+    "markNoShow": "Mark no-show",
+    "undoNoShow": "Undo no-show",
+    "lateArrival": "Late arrival",
+    "guestOf": "Guest of {host}"
   },
   "eventSettings": {
     "title": "Event Settings",

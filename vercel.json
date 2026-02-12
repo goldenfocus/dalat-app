@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/backfill-embeddings?limit=20&delay=5000",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/mark-no-shows",
+      "schedule": "0 16 * * *"
     }
   ]
 }

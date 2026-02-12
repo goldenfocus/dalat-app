@@ -407,7 +407,25 @@
     "createSimilar": "Créer un événement similaire",
     "deleteEvent": "Supprimer l'événement",
     "deleteConfirm": "Supprimer ?",
-    "deleting": "Suppression..."
+    "deleting": "Suppression...",
+    "checkIn": "Pointage"
+  },
+  "checkin": {
+    "title": "Pointage",
+    "searchPlaceholder": "Rechercher nom ou email...",
+    "checkedIn": "Présent",
+    "pending": "En attente",
+    "noShow": "Absent",
+    "noShows": "Absents",
+    "guests": "Invités",
+    "noResults": "Aucun participant trouvé",
+    "noAttendees": "Aucun participant",
+    "checkInButton": "Pointer",
+    "undoCheckIn": "Annuler le pointage",
+    "markNoShow": "Marquer absent",
+    "undoNoShow": "Annuler l'absence",
+    "lateArrival": "Arrivée tardive",
+    "guestOf": "Invité de {host}"
   },
   "eventSettings": {
     "title": "Paramètres de l'événement",

@@ -393,7 +393,25 @@
     "createSimilar": "创建类似活动",
     "deleteEvent": "删除活动",
     "deleteConfirm": "确定删除？",
-    "deleting": "删除中..."
+    "deleting": "删除中...",
+    "checkIn": "签到"
+  },
+  "checkin": {
+    "title": "签到",
+    "searchPlaceholder": "搜索姓名或邮箱...",
+    "checkedIn": "已签到",
+    "pending": "待定",
+    "noShow": "缺席",
+    "noShows": "缺席",
+    "guests": "嘉宾",
+    "noResults": "未找到匹配的参与者",
+    "noAttendees": "暂无参与者",
+    "checkInButton": "签到",
+    "undoCheckIn": "撤销签到",
+    "markNoShow": "标记缺席",
+    "undoNoShow": "撤销缺席",
+    "lateArrival": "迟到",
+    "guestOf": "{host}的嘉宾"
   },
   "eventSettings": {
     "title": "活动设置",
