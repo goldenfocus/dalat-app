@@ -411,7 +411,9 @@
     "markNoShow": "Tandai tidak hadir",
     "undoNoShow": "Batalkan tidak hadir",
     "lateArrival": "Terlambat",
-    "guestOf": "Tamu dari {host}"
+    "guestOf": "Tamu dari {host}",
+    "shareLink": "Bagikan tautan",
+    "linkCopied": "Tersalin!"
   },
   "eventSettings": {
     "title": "Pengaturan Acara",

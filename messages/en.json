@@ -505,7 +505,9 @@
     "markNoShow": "Mark no-show",
     "undoNoShow": "Undo no-show",
     "lateArrival": "Late arrival",
-    "guestOf": "Guest of {host}"
+    "guestOf": "Guest of {host}",
+    "shareLink": "Share link",
+    "linkCopied": "Copied!"
   },
   "eventSettings": {
     "title": "Event Settings",

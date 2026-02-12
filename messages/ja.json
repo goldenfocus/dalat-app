@@ -411,7 +411,9 @@
     "markNoShow": "不参加にする",
     "undoNoShow": "不参加を取消",
     "lateArrival": "遅刻",
-    "guestOf": "{host}のゲスト"
+    "guestOf": "{host}のゲスト",
+    "shareLink": "リンクを共有",
+    "linkCopied": "コピー済み!"
   },
   "eventSettings": {
     "title": "イベント設定",

@@ -2,11 +2,12 @@
 
 import { useState, useMemo, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Search, Check, X, UserCheck, Clock, UserX } from "lucide-react";
+import { ArrowLeft, Search, Check, X, UserCheck, Clock, UserX, Share2, CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { cn } from "@/lib/utils";
 import type { CheckinAttendee } from "@/app/[locale]/events/[slug]/checkin/page";
@@ -17,6 +18,8 @@ interface CheckinInterfaceProps {
   eventTitle: string;
   capacity: number | null;
   attendees: CheckinAttendee[];
+  checkinCode: string | null;
+  isOrganizer: boolean;
 }
 
 type AttendeeStatus = "checked_in" | "pending" | "no_show";
@@ -37,12 +40,15 @@ export function CheckinInterface({
   eventTitle,
   capacity,
   attendees: initialAttendees,
+  checkinCode,
+  isOrganizer,
 }: CheckinInterfaceProps) {
   const t = useTranslations("checkin");
   const router = useRouter();
   const [attendees, setAttendees] = useState(initialAttendees);
   const [search, setSearch] = useState("");
   const [, startTransition] = useTransition();
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Stats computed from current state
   const stats = useMemo(() => {
@@ -81,10 +87,26 @@ export function CheckinInterface({
     });
   }, [attendees, search]);
 
+  // Share link handler
+  const handleShareLink = useCallback(async () => {
+    if (!checkinCode) return;
+    const url = `${window.location.origin}/events/${eventSlug}/checkin?code=${checkinCode}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: eventTitle, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      }
+    } catch {
+      // User cancelled share dialog
+    }
+  }, [checkinCode, eventSlug, eventTitle]);
+
   // Optimistic check-in
   const handleCheckIn = useCallback(
     (rsvpId: string) => {
-      // Optimistic update
       setAttendees((prev) =>
         prev.map((a) =>
           a.id === rsvpId
@@ -93,20 +115,19 @@ export function CheckinInterface({
         )
       );
 
-      // RPC call in background
       startTransition(async () => {
         const supabase = createClient();
         const { data } = await supabase.rpc("checkin_attendee", {
           p_rsvp_id: rsvpId,
           p_event_id: eventId,
+          p_checkin_code: checkinCode,
         });
         if (!data?.ok) {
-          // Revert on failure
           router.refresh();
         }
       });
     },
-    [eventId, router]
+    [eventId, checkinCode, router]
   );
 
   // Optimistic undo check-in
@@ -125,13 +146,14 @@ export function CheckinInterface({
         const { data } = await supabase.rpc("undo_checkin", {
           p_rsvp_id: rsvpId,
           p_event_id: eventId,
+          p_checkin_code: checkinCode,
         });
         if (!data?.ok) {
           router.refresh();
         }
       });
     },
-    [eventId, router]
+    [eventId, checkinCode, router]
   );
 
   // Optimistic toggle no-show
@@ -153,13 +175,14 @@ export function CheckinInterface({
           p_rsvp_id: rsvpId,
           p_event_id: eventId,
           p_is_no_show: isNoShow,
+          p_checkin_code: checkinCode,
         });
         if (!data?.ok) {
           router.refresh();
         }
       });
     },
-    [eventId, router]
+    [eventId, checkinCode, router]
   );
 
   return (
@@ -167,13 +190,35 @@ export function CheckinInterface({
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b">
         <div className="max-w-lg mx-auto px-4 py-3">
-          <Link
-            href={`/events/${eventSlug}`}
-            className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{t("title")}</span>
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link
+              href={`/events/${eventSlug}`}
+              className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>{t("title")}</span>
+            </Link>
+            {isOrganizer && checkinCode && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShareLink}
+                className="gap-1.5"
+              >
+                {linkCopied ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    {t("linkCopied")}
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-4 h-4" />
+                    {t("shareLink")}
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
           <h1 className="text-lg font-semibold truncate mt-1">{eventTitle}</h1>
         </div>
       </div>

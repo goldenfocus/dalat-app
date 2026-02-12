@@ -411,7 +411,9 @@
     "markNoShow": "Отметить как не пришёл",
     "undoNoShow": "Отменить неявку",
     "lateArrival": "Опоздание",
-    "guestOf": "Гость {host}"
+    "guestOf": "Гость {host}",
+    "shareLink": "Поделиться ссылкой",
+    "linkCopied": "Скопировано!"
   },
   "eventSettings": {
     "title": "Настройки события",

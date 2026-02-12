@@ -411,7 +411,9 @@
     "markNoShow": "Đánh dấu vắng mặt",
     "undoNoShow": "Hủy vắng mặt",
     "lateArrival": "Đến muộn",
-    "guestOf": "Khách của {host}"
+    "guestOf": "Khách của {host}",
+    "shareLink": "Chia sẻ link",
+    "linkCopied": "Đã sao chép!"
   },
   "eventSettings": {
     "title": "Cài đặt sự kiện",

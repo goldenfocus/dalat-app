@@ -411,7 +411,9 @@
     "markNoShow": "Als nicht erschienen markieren",
     "undoNoShow": "Nicht erschienen aufheben",
     "lateArrival": "Verspätung",
-    "guestOf": "Gast von {host}"
+    "guestOf": "Gast von {host}",
+    "shareLink": "Link teilen",
+    "linkCopied": "Kopiert!"
   },
   "eventSettings": {
     "title": "Event-Einstellungen",

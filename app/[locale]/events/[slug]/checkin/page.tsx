@@ -5,6 +5,7 @@ import { CheckinInterface } from "@/components/events/checkin/checkin-interface"
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export type CheckinAttendee = Rsvp & {
@@ -13,27 +14,29 @@ export type CheckinAttendee = Rsvp & {
   auth_email?: string;
 };
 
-export default async function CheckinPage({ params }: PageProps) {
+export default async function CheckinPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const sp = await searchParams;
+  const code = typeof sp.code === "string" ? sp.code : null;
   const supabase = await createClient();
 
-  // Get current user
+  // Get current user (must be logged in)
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) return notFound();
 
-  // Get event
+  // Get event (include checkin_code for validation)
   const { data: event } = await supabase
     .from("events")
-    .select("id, slug, title, created_by, capacity, starts_at, ends_at")
+    .select("id, slug, title, created_by, capacity, starts_at, ends_at, checkin_code")
     .eq("slug", slug)
     .single();
 
   if (!event) return notFound();
 
-  // Permission gate: must be event creator or admin
+  // Permission gate: creator, admin, OR valid checkin code
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
@@ -44,8 +47,10 @@ export default async function CheckinPage({ params }: PageProps) {
   const isAdmin = profile?.role
     ? hasRoleLevel(profile.role as UserRole, "admin")
     : false;
+  const hasValidCode = code !== null && event.checkin_code === code;
+  const isOrganizer = isCreator || isAdmin;
 
-  if (!isCreator && !isAdmin) return notFound();
+  if (!isOrganizer && !hasValidCode) return notFound();
 
   // Fetch all "going" RSVPs with profiles and plus-one guests
   const { data: rsvps } = await supabase
@@ -64,6 +69,8 @@ export default async function CheckinPage({ params }: PageProps) {
       eventTitle={event.title}
       capacity={event.capacity}
       attendees={attendees}
+      checkinCode={hasValidCode ? code : isOrganizer ? event.checkin_code : null}
+      isOrganizer={isOrganizer}
     />
   );
 }

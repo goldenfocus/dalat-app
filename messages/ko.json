@@ -411,7 +411,9 @@
     "markNoShow": "불참 처리",
     "undoNoShow": "불참 취소",
     "lateArrival": "늦은 도착",
-    "guestOf": "{host}의 게스트"
+    "guestOf": "{host}의 게스트",
+    "shareLink": "링크 공유",
+    "linkCopied": "복사됨!"
   },
   "eventSettings": {
     "title": "이벤트 설정",

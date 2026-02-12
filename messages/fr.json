@@ -425,7 +425,9 @@
     "markNoShow": "Marquer absent",
     "undoNoShow": "Annuler l'absence",
     "lateArrival": "Arrivée tardive",
-    "guestOf": "Invité de {host}"
+    "guestOf": "Invité de {host}",
+    "shareLink": "Partager le lien",
+    "linkCopied": "Copié !"
   },
   "eventSettings": {
     "title": "Paramètres de l'événement",

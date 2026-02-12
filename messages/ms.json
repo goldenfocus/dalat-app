@@ -411,7 +411,9 @@
     "markNoShow": "Tanda tidak hadir",
     "undoNoShow": "Batal tidak hadir",
     "lateArrival": "Lewat tiba",
-    "guestOf": "Tetamu {host}"
+    "guestOf": "Tetamu {host}",
+    "shareLink": "Kongsi pautan",
+    "linkCopied": "Disalin!"
   },
   "eventSettings": {
     "title": "Tetapan Acara",

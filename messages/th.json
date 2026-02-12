@@ -411,7 +411,9 @@
     "markNoShow": "ทำเครื่องหมายไม่มา",
     "undoNoShow": "ยกเลิกไม่มา",
     "lateArrival": "มาสาย",
-    "guestOf": "แขกของ {host}"
+    "guestOf": "แขกของ {host}",
+    "shareLink": "แชร์ลิงก์",
+    "linkCopied": "คัดลอกแล้ว!"
   },
   "eventSettings": {
     "title": "การตั้งค่ากิจกรรม",

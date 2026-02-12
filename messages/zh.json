@@ -411,7 +411,9 @@
     "markNoShow": "标记缺席",
     "undoNoShow": "撤销缺席",
     "lateArrival": "迟到",
-    "guestOf": "{host}的嘉宾"
+    "guestOf": "{host}的嘉宾",
+    "shareLink": "分享链接",
+    "linkCopied": "已复制!"
   },
   "eventSettings": {
     "title": "活动设置",
