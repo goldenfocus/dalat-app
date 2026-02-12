@@ -31,7 +31,6 @@ interface PostCreationCelebrationProps {
   eventTitle: string;
   eventDescription: string | null;
   startsAt: string;
-  imageUrl?: string | null;
 }
 
 interface InviteResult {
@@ -48,7 +47,6 @@ export function PostCreationCelebration({
   eventTitle,
   eventDescription,
   startsAt,
-  imageUrl,
 }: PostCreationCelebrationProps) {
   const router = useRouter();
   const t = useTranslations("celebration");
@@ -208,7 +206,6 @@ export function PostCreationCelebration({
               eventTitle={eventTitle}
               eventDescription={eventDescription}
               startsAt={startsAt}
-              imageUrl={imageUrl}
               showWhatsApp
             />
           </div>

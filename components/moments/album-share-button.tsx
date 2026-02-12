@@ -9,7 +9,6 @@ interface AlbumShareButtonProps {
   eventSlug: string;
   eventTitle: string;
   eventDate: string;
-  eventImageUrl: string | null;
   locationName: string | null;
   momentCount: number;
 }
@@ -18,7 +17,6 @@ export function AlbumShareButton({
   eventSlug,
   eventTitle,
   eventDate,
-  eventImageUrl,
   locationName,
   momentCount,
 }: AlbumShareButtonProps) {
@@ -35,7 +33,6 @@ export function AlbumShareButton({
       title: eventTitle,
       text: shareText,
       url: momentsUrl,
-      imageUrl: eventImageUrl,
     });
 
   return (

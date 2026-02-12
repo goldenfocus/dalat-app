@@ -7,26 +7,17 @@ interface ShareOptions {
   title: string;
   text?: string;
   url: string;
-  imageUrl?: string | null;
-}
-
-async function fetchImageBlob(imageUrl: string): Promise<Blob | null> {
-  try {
-    const response = await fetch(imageUrl);
-    if (!response.ok) return null;
-    return await response.blob();
-  } catch {
-    return null;
-  }
 }
 
 /**
  * Shared hook for Web Share API + clipboard fallback.
  *
- * Fixes a known Android bug: when navigator.share() is called with files,
- * many Android apps drop the `url` field. We embed the URL in the `text`
- * so the link is always included regardless of how the receiving app
- * handles share data.
+ * We intentionally do NOT share image files via navigator.share().
+ * On Android, passing `files` causes apps (WhatsApp, Telegram, etc.)
+ * to treat the share as an "image share" — the URL gets buried or
+ * dropped entirely. Instead, we share text + url only. The receiving
+ * app fetches the OG image from the URL's meta tags automatically,
+ * giving a proper link preview card with the image.
  */
 export function useShare() {
   const [copied, setCopied] = useState(false);
@@ -70,37 +61,15 @@ export function useShare() {
   );
 
   /**
-   * Share via native Web Share API with optional image.
+   * Share via native Web Share API (text + url only).
    * Falls back to clipboard copy if unavailable or on error.
    */
   const share = useCallback(
-    async ({ title, text, url, imageUrl }: ShareOptions) => {
+    async ({ title, text, url }: ShareOptions) => {
       triggerHaptic("selection");
 
       if (canShare) {
         try {
-          // Try sharing with image first
-          if (imageUrl && navigator.canShare) {
-            const imageBlob = await fetchImageBlob(imageUrl);
-            if (imageBlob) {
-              const file = new File([imageBlob], "event.jpg", {
-                type: imageBlob.type,
-              });
-              // Android fix: embed URL in text because many Android apps
-              // ignore the `url` field when files are present.
-              const shareData = {
-                title,
-                text: text ? `${text}\n\n${url}` : url,
-                url,
-                files: [file],
-              };
-              if (navigator.canShare(shareData)) {
-                await navigator.share(shareData);
-                return;
-              }
-            }
-          }
-          // Share without image
           await navigator.share({
             title,
             ...(text && { text }),

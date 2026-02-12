@@ -1240,7 +1240,6 @@ export function EventForm({
           eventTitle={createdEvent.title}
           eventDescription={createdEvent.description}
           startsAt={createdEvent.startsAt}
-          imageUrl={createdEvent.imageUrl}
         />
       )}
     </form>

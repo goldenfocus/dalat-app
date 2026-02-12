@@ -23,7 +23,6 @@ interface InviteModalProps {
   eventTitle: string;
   eventDescription: string | null;
   startsAt: string;
-  imageUrl?: string | null;
 }
 
 interface InviteResult {
@@ -44,7 +43,7 @@ type Invitee =
   | { type: "email"; email: string; name?: string }
   | { type: "user"; user: UserSearchResult };
 
-export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt, imageUrl }: InviteModalProps) {
+export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt }: InviteModalProps) {
   const t = useTranslations("invite");
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -351,7 +350,6 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
               eventTitle={eventTitle}
               eventDescription={eventDescription}
               startsAt={startsAt}
-              imageUrl={imageUrl}
               showWhatsApp
             />
           </div>

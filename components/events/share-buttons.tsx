@@ -10,7 +10,6 @@ interface ShareButtonsProps {
   eventTitle: string;
   eventDescription: string | null;
   startsAt: string;
-  imageUrl?: string | null;
   showWhatsApp?: boolean;
 }
 
@@ -19,7 +18,6 @@ export function ShareButtons({
   eventTitle,
   eventDescription,
   startsAt,
-  imageUrl,
   showWhatsApp = false,
 }: ShareButtonsProps) {
   const t = useTranslations("invite");
@@ -48,7 +46,6 @@ export function ShareButtons({
       title: eventTitle,
       text: shareText,
       url: eventUrl,
-      imageUrl,
     });
 
   const handleCopyLink = () =>
@@ -76,7 +73,6 @@ export function ShareButtons({
       title: eventTitle,
       text: shareText,
       url: eventUrl,
-      imageUrl,
     });
 
   return (

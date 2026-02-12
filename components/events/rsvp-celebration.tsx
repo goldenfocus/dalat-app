@@ -18,7 +18,6 @@ interface RsvpCelebrationProps {
   eventDescription: string | null;
   startsAt: string;
   endsAt?: string | null;
-  imageUrl?: string | null;
   locationName?: string | null;
   address?: string | null;
   googleMapsUrl?: string | null;
@@ -35,7 +34,6 @@ export function RsvpCelebration({
   eventDescription,
   startsAt,
   endsAt,
-  imageUrl,
   locationName,
   address,
   googleMapsUrl,
@@ -400,7 +398,6 @@ export function RsvpCelebration({
               eventTitle={eventTitle}
               eventDescription={eventDescription}
               startsAt={startsAt}
-              imageUrl={imageUrl}
               showWhatsApp
             />
 

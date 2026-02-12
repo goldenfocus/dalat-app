@@ -10,7 +10,6 @@ interface EventShareButtonProps {
   eventTitle: string;
   eventDescription: string | null;
   startsAt: string;
-  imageUrl?: string | null;
 }
 
 export function EventShareButton({
@@ -18,7 +17,6 @@ export function EventShareButton({
   eventTitle,
   eventDescription,
   startsAt,
-  imageUrl,
 }: EventShareButtonProps) {
   const t = useTranslations("invite");
   const locale = useLocale();
@@ -48,7 +46,6 @@ export function EventShareButton({
       title: eventTitle,
       text: shareText,
       url: eventUrl,
-      imageUrl,
     });
 
   return (

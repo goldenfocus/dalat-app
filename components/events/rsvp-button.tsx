@@ -341,7 +341,6 @@ export function RsvpButton({
       eventDescription={eventDescription}
       startsAt={startsAt}
       endsAt={endsAt}
-      imageUrl={eventImageUrl}
       locationName={locationName}
       address={address}
       googleMapsUrl={googleMapsUrl}

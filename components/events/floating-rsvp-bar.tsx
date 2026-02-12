@@ -188,7 +188,6 @@ export function FloatingRsvpBar({
           eventDescription={eventDescription}
           startsAt={startsAt}
           endsAt={endsAt}
-          imageUrl={eventImageUrl}
           locationName={locationName}
           address={address}
           googleMapsUrl={googleMapsUrl}

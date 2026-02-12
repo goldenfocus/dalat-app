@@ -232,7 +232,6 @@ export function DiscoveryEventMomentsGroup({ group, commentCounts }: DiscoveryEv
           eventSlug={group.event_slug}
           eventTitle={group.event_title}
           eventDate={group.event_starts_at}
-          eventImageUrl={group.event_image_url}
           locationName={group.event_location_name}
           momentCount={group.total_moment_count}
         />
