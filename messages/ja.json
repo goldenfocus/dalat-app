@@ -2106,6 +2106,23 @@
     "anonymous": "匿名ゲスト",
     "noAnswer": "回答なし"
   },
+  "reconfirmation": {
+    "title": "再確認",
+    "backToEvent": "イベントに戻る",
+    "going": "参加予定",
+    "confirmed": "確認済み",
+    "pending": "保留中",
+    "cancelled": "キャンセル済み",
+    "confirmationRate": "確認率",
+    "confirmedSection": "確認済み",
+    "pendingSection": "回答待ち",
+    "rePingButton": "保留中の{count}名に再通知",
+    "rePingSent": "{count}名の参加者に送信済み",
+    "rePingError": "エラーが発生しました",
+    "rePingCooldown": "数時間後に再通知できます",
+    "reconfirmBadge": "{confirmed}/{total} 確認済み",
+    "reconfirmLink": "再確認を表示"
+  },
   "pickleball": {
     "title": "ダラットのピックルボール",
     "subtitle": "ピックルボールゲームを見つけて開催",

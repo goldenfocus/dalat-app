@@ -61,6 +61,11 @@ const DEFAULT_CHANNELS: Record<NotificationType, NotificationChannel[]> = {
 
   // Social notifications - in-app + push
   new_follower: ['in_app', 'push'],
+
+  // Smart reminders - in-app + push (time-sensitive confirmations)
+  confirm_attendance_7d: ['in_app', 'push'],
+  event_starting_nudge: ['in_app', 'push'],
+  organizer_re_ping: ['in_app', 'push'],
 };
 
 /**

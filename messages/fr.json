@@ -2091,6 +2091,23 @@
     "responseRate": "{rate}% taux de réponse",
     "andMore": "et {count} autres..."
   },
+  "reconfirmation": {
+    "title": "Reconfirmation",
+    "backToEvent": "Retour à l'événement",
+    "going": "Participe",
+    "confirmed": "Confirmé",
+    "pending": "En attente",
+    "cancelled": "Annulé",
+    "confirmationRate": "Taux de confirmation",
+    "confirmedSection": "Confirmé",
+    "pendingSection": "En attente de réponse",
+    "rePingButton": "Relancer {count} en attente",
+    "rePingSent": "Envoyé à {count} participants",
+    "rePingError": "Une erreur est survenue",
+    "rePingCooldown": "Vous pouvez relancer dans quelques heures",
+    "reconfirmBadge": "{confirmed}/{total} confirmé",
+    "reconfirmLink": "Voir la reconfirmation"
+  },
   "pickleball": {
     "title": "Pickleball à Da Lat",
     "subtitle": "Trouvez et organisez des parties de pickleball",

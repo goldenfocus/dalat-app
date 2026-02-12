@@ -2159,6 +2159,23 @@
     "responseRate": "{rate}% tỷ lệ trả lời",
     "andMore": "và {count} khác..."
   },
+  "reconfirmation": {
+    "title": "Xác nhận lại",
+    "backToEvent": "Quay lại sự kiện",
+    "going": "Sẽ đến",
+    "confirmed": "Đã xác nhận",
+    "pending": "Đang chờ",
+    "cancelled": "Đã hủy",
+    "confirmationRate": "Tỷ lệ xác nhận",
+    "confirmedSection": "Đã xác nhận",
+    "pendingSection": "Đang chờ phản hồi",
+    "rePingButton": "Nhắc lại {count} người chờ",
+    "rePingSent": "Đã gửi đến {count} người tham dự",
+    "rePingError": "Đã xảy ra lỗi",
+    "rePingCooldown": "Bạn có thể nhắc lại sau vài giờ",
+    "reconfirmBadge": "{confirmed}/{total} đã xác nhận",
+    "reconfirmLink": "Xem xác nhận lại"
+  },
   "activity": {
     "title": "Hoạt động",
     "noActivity": "Theo dõi mọi người để xem hoạt động ở đây",

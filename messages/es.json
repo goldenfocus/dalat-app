@@ -2106,6 +2106,23 @@
     "anonymous": "Invitado anónimo",
     "noAnswer": "Sin respuesta"
   },
+  "reconfirmation": {
+    "title": "Reconfirmación",
+    "backToEvent": "Volver al evento",
+    "going": "Asistirá",
+    "confirmed": "Confirmado",
+    "pending": "Pendiente",
+    "cancelled": "Cancelado",
+    "confirmationRate": "Tasa de confirmación",
+    "confirmedSection": "Confirmado",
+    "pendingSection": "Esperando respuesta",
+    "rePingButton": "Recordar a {count} pendientes",
+    "rePingSent": "Enviado a {count} asistentes",
+    "rePingError": "Algo salió mal",
+    "rePingCooldown": "Puedes volver a recordar en unas horas",
+    "reconfirmBadge": "{confirmed}/{total} confirmado",
+    "reconfirmLink": "Ver reconfirmación"
+  },
   "pickleball": {
     "title": "Pickleball en Da Lat",
     "subtitle": "Encuentra y organiza partidos de pickleball",

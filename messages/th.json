@@ -2106,6 +2106,23 @@
     "anonymous": "แขกไม่ระบุตัวตน",
     "noAnswer": "ไม่มีคำตอบ"
   },
+  "reconfirmation": {
+    "title": "ยืนยันอีกครั้ง",
+    "backToEvent": "กลับไปกิจกรรม",
+    "going": "จะไป",
+    "confirmed": "ยืนยันแล้ว",
+    "pending": "รอดำเนินการ",
+    "cancelled": "ยกเลิกแล้ว",
+    "confirmationRate": "อัตราการยืนยัน",
+    "confirmedSection": "ยืนยันแล้ว",
+    "pendingSection": "รอการตอบกลับ",
+    "rePingButton": "แจ้งเตือนอีกครั้ง {count} คนที่รอ",
+    "rePingSent": "ส่งถึง {count} ผู้เข้าร่วมแล้ว",
+    "rePingError": "เกิดข้อผิดพลาด",
+    "rePingCooldown": "คุณสามารถแจ้งเตือนอีกครั้งในอีกไม่กี่ชั่วโมง",
+    "reconfirmBadge": "{confirmed}/{total} ยืนยันแล้ว",
+    "reconfirmLink": "ดูการยืนยันอีกครั้ง"
+  },
   "pickleball": {
     "title": "พิกเคิลบอลในดาลัด",
     "subtitle": "ค้นหาและจัดเกมพิกเคิลบอล",

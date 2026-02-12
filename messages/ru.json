@@ -2106,6 +2106,23 @@
     "anonymous": "Анонимный гость",
     "noAnswer": "Нет ответа"
   },
+  "reconfirmation": {
+    "title": "Повторное подтверждение",
+    "backToEvent": "Назад к мероприятию",
+    "going": "Иду",
+    "confirmed": "Подтверждено",
+    "pending": "Ожидает",
+    "cancelled": "Отменено",
+    "confirmationRate": "Процент подтверждения",
+    "confirmedSection": "Подтверждено",
+    "pendingSection": "Ожидают ответа",
+    "rePingButton": "Напомнить {count} ожидающим",
+    "rePingSent": "Отправлено {count} участникам",
+    "rePingError": "Что-то пошло не так",
+    "rePingCooldown": "Вы можете напомнить снова через несколько часов",
+    "reconfirmBadge": "{confirmed}/{total} подтверждено",
+    "reconfirmLink": "Посмотреть подтверждения"
+  },
   "pickleball": {
     "title": "Пиклбол в Далате",
     "subtitle": "Найдите и организуйте игры в пиклбол",
