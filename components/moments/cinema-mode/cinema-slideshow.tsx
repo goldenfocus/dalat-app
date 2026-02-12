@@ -344,7 +344,7 @@ export function CinemaSlideshow({
   const handleAddMoment = useCallback(() => {
     triggerHaptic("selection");
     exit();
-    router.push(`/events/${eventSlug}/moments/upload`);
+    router.push(`/events/${eventSlug}/moments/new`);
   }, [exit, eventSlug, router]);
 
   if (!currentMoment && !isEnded) {

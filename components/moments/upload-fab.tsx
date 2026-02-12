@@ -16,11 +16,10 @@ interface UploadFABProps {
 
 /**
  * Extracts event slug from pathname if on an event page.
- * Matches: /[locale]/events/[slug] but NOT /[locale]/events/[slug]/moments/...
+ * Matches: /[locale]/events/[slug] and sub-paths like /[locale]/events/[slug]/moments
  */
 function getEventSlugFromPath(pathname: string): string | null {
-  // Match /locale/events/slug but not deeper paths like /moments/new
-  const match = pathname.match(/^\/[a-z]{2}\/events\/([^/]+)$/);
+  const match = pathname.match(/^\/[a-z]{2}\/events\/([^/]+)(?:\/.*)?$/);
   return match ? match[1] : null;
 }
 

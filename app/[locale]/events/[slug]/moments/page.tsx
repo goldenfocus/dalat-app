@@ -236,6 +236,14 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold">{t("moments")}</h1>
             <MusicPlayButton />
+            {canPost && (
+              <Link href={`/events/${slug}/moments/new`} className="ml-auto">
+                <Button size="sm" variant="outline" className="active:scale-95 transition-transform">
+                  <Plus className="w-4 h-4 mr-1" />
+                  {t("addMoment")}
+                </Button>
+              </Link>
+            )}
           </div>
           <Link
             href={`/events/${slug}`}

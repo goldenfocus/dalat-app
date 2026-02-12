@@ -161,10 +161,16 @@ export function MomentsViewContainer({
     setShowCinema(false);
   };
 
-  // Open cinema view
+  // Open cinema view — resume music if it was paused (e.g., user closed mini-player)
   const openCinema = () => {
     setShowCinema(true);
     setShowImmersive(false);
+
+    const audio = useAudioPlayerStore.getState();
+    if (audio.tracks.length > 0 && !audio.isPlaying) {
+      audio.show();
+      audio.play();
+    }
   };
 
   // Close immersive view

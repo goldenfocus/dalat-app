@@ -28,8 +28,13 @@ async function fetchAndPlayEventPlaylist(
   setPlaylist: (tracks: AudioTrack[], playlist: PlaylistInfo, startIndex?: number) => void,
   currentPlaylistSlug: string | undefined
 ): Promise<void> {
-  // Don't restart if already playing from the same event
+  // Same event playlist already loaded — resume if paused instead of restarting
   if (currentPlaylistSlug === eventSlug) {
+    const audio = useAudioPlayerStore.getState();
+    if (audio.tracks.length > 0 && !audio.isPlaying) {
+      audio.show();
+      audio.play();
+    }
     return;
   }
 
