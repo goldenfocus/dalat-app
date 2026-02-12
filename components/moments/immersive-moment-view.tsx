@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
+import { useShare } from "@/lib/hooks/use-share";
 import type { MomentWithProfile } from "@/lib/types";
 
 // Hilariously random end-of-album phrases
@@ -69,6 +70,7 @@ export function ImmersiveMomentView({
   const [showEndScreen, setShowEndScreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { share: nativeShare } = useShare();
 
   const moment = moments[currentIndex];
 
@@ -228,17 +230,9 @@ export function ImmersiveMomentView({
   };
 
   // Share
-  const handleShare = async () => {
+  const handleShare = () => {
     const url = `${window.location.origin}/events/${eventSlug}/moments/${moment.id}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ url });
-      } catch {
-        // User cancelled or error
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-    }
+    nativeShare({ title: "Moment", url });
   };
 
   // Handle empty moments array (e.g., filter returned no results)

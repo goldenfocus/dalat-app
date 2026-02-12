@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Check, Copy, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useShare } from "@/lib/hooks/use-share";
 
 interface ShareButtonsProps {
   eventUrl: string;
@@ -11,24 +11,22 @@ interface ShareButtonsProps {
   eventDescription: string | null;
   startsAt: string;
   imageUrl?: string | null;
-  /** Show WhatsApp as a secondary share option */
   showWhatsApp?: boolean;
 }
 
-export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt, imageUrl, showWhatsApp = false }: ShareButtonsProps) {
+export function ShareButtons({
+  eventUrl,
+  eventTitle,
+  eventDescription,
+  startsAt,
+  imageUrl,
+  showWhatsApp = false,
+}: ShareButtonsProps) {
   const t = useTranslations("invite");
   const locale = useLocale();
-  const [copied, setCopied] = useState(false);
-  const [canShare, setCanShare] = useState(false);
+  const { share, copyText, copied, canShare } = useShare();
 
-  // Check if Web Share API is available (client-side only)
-  useEffect(() => {
-    setCanShare(typeof navigator !== "undefined" && !!navigator.share);
-  }, []);
-
-  // Format date for share message using user's locale
-  const eventDate = new Date(startsAt);
-  const formattedDate = eventDate.toLocaleDateString(locale, {
+  const formattedDate = new Date(startsAt).toLocaleDateString(locale, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -37,93 +35,26 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
     hour12: true,
   });
 
-  // Truncate description to ~100 chars at word boundary
-  const truncateDescription = (desc: string | null, maxLength = 100) => {
-    if (!desc) return null;
-    if (desc.length <= maxLength) return desc;
-    const truncated = desc.slice(0, maxLength);
-    const lastSpace = truncated.lastIndexOf(" ");
-    return lastSpace > 0 ? truncated.slice(0, lastSpace) + "..." : truncated + "...";
-  };
+  const descriptionSnippet = eventDescription
+    ? eventDescription.length <= 100
+      ? eventDescription
+      : (eventDescription.slice(0, eventDescription.lastIndexOf(" ", 100)) || eventDescription.slice(0, 100)) + "..."
+    : null;
 
-  const descriptionSnippet = truncateDescription(eventDescription);
+  const shareText = `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`;
 
-  // Build share message in user's language
-  const shareMessage = `${eventUrl}\n🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`;
+  const handleNativeShare = () =>
+    share({
+      title: eventTitle,
+      text: shareText,
+      url: eventUrl,
+      imageUrl,
+    });
 
-  // Fetch image as blob for sharing
-  const fetchImageBlob = async (): Promise<Blob | null> => {
-    if (!imageUrl) return null;
-    try {
-      const response = await fetch(imageUrl);
-      if (!response.ok) return null;
-      return await response.blob();
-    } catch {
-      return null;
-    }
-  };
-
-  const handleNativeShare = async () => {
-    try {
-      // Try to share with image if available and supported
-      if (imageUrl && navigator.canShare) {
-        const imageBlob = await fetchImageBlob();
-        if (imageBlob) {
-          const file = new File([imageBlob], "event.jpg", { type: imageBlob.type });
-          const shareData = {
-            title: eventTitle,
-            text: `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
-            url: eventUrl,
-            files: [file],
-          };
-          if (navigator.canShare(shareData)) {
-            await navigator.share(shareData);
-            return;
-          }
-        }
-      }
-      // Fallback: share without image
-      await navigator.share({
-        title: eventTitle,
-        text: `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
-        url: eventUrl,
-      });
-    } catch (err) {
-      // User cancelled or share failed - that's okay
-      if ((err as Error).name !== "AbortError") {
-        console.error("Share failed:", err);
-      }
-    }
-  };
-
-  const handleCopyLink = async () => {
-    try {
-      // Use simple writeText for reliability across browsers and contexts
-      await navigator.clipboard.writeText(shareMessage);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Clipboard writeText failed:", err);
-      // Fallback for older browsers or restricted contexts
-      try {
-        const textarea = document.createElement("textarea");
-        textarea.value = shareMessage;
-        textarea.style.position = "fixed";
-        textarea.style.left = "-9999px";
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch {
-        console.error("Fallback copy also failed");
-      }
-    }
-  };
+  const handleCopyLink = () =>
+    copyText(`${eventUrl}\n${shareText}`);
 
   const handleWhatsApp = () => {
-    // Build a nicely formatted message for WhatsApp
     const whatsAppMessage = [
       `🎉 ${t("youreInvited")}`,
       "",
@@ -139,46 +70,18 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
     window.open(`https://wa.me/?text=${encodeURIComponent(whatsAppMessage)}`, "_blank");
   };
 
-  const handleZalo = async () => {
-    // Use native share to get Zalo's contact picker experience
-    // The Web Share API opens Zalo's share dialog where users can select contacts
-    if (canShare) {
-      try {
-        // Try to share with image if available
-        if (imageUrl && navigator.canShare) {
-          const imageBlob = await fetchImageBlob();
-          if (imageBlob) {
-            const file = new File([imageBlob], "event.jpg", { type: imageBlob.type });
-            const shareData = {
-              title: eventTitle,
-              text: `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
-              url: eventUrl,
-              files: [file],
-            };
-            if (navigator.canShare(shareData)) {
-              await navigator.share(shareData);
-              return;
-            }
-          }
-        }
-        // Fallback: share without image
-        await navigator.share({
-          title: eventTitle,
-          text: `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`,
-          url: eventUrl,
-        });
-      } catch (err) {
-        if ((err as Error).name !== "AbortError") {
-          console.error("Share failed:", err);
-        }
-      }
-    }
-  };
+  // Zalo uses native share sheet for best contact picker experience
+  const handleZalo = () =>
+    share({
+      title: eventTitle,
+      text: shareText,
+      url: eventUrl,
+      imageUrl,
+    });
 
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        {/* Native Share - only shown if Web Share API is available */}
         {canShare && (
           <Button
             variant="outline"
@@ -191,7 +94,6 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
           </Button>
         )}
 
-        {/* Copy link - always available */}
         <Button
           variant="outline"
           size="sm"
@@ -212,7 +114,6 @@ export function ShareButtons({ eventUrl, eventTitle, eventDescription, startsAt,
         </Button>
       </div>
 
-      {/* Messenger apps - WhatsApp & Zalo (mobile only - hidden on desktop) */}
       {showWhatsApp && (
         <div className="flex gap-2 md:hidden">
           <Button

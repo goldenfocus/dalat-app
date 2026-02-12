@@ -5,7 +5,7 @@ import Image from "next/image";
 import { RotateCcw, Camera, Grid3X3, Share2, Check, MapPin, Calendar } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { cloudflareLoader } from "@/lib/image-cdn";
-import { triggerHaptic } from "@/lib/haptics";
+import { useShare } from "@/lib/hooks/use-share";
 import type { CinemaEventMeta } from "../moments-view-container";
 
 interface Contributor {
@@ -46,7 +46,7 @@ export function CinemaEndCard({
   onAddMoment,
   onBrowseAll,
 }: CinemaEndCardProps) {
-  const [shared, setShared] = useState(false);
+  const { share: nativeShare, copied: shared } = useShare();
   const [animateIn, setAnimateIn] = useState(false);
 
   // Stagger entrance animation
@@ -64,31 +64,13 @@ export function CinemaEndCard({
     ? `${eventMeta.title} — ${totalMoments} moments captured`
     : `${totalMoments} moments captured`;
 
-  const handleShare = async (e: React.MouseEvent) => {
+  const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    triggerHaptic("selection");
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: eventMeta?.title ?? "Moments",
-          text: shareText,
-          url: shareUrl,
-        });
-        return;
-      } catch (err) {
-        if ((err as Error).name === "AbortError") return;
-      }
-    }
-
-    // Fallback: copy to clipboard
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
-    } catch {
-      // Silent fail
-    }
+    nativeShare({
+      title: eventMeta?.title ?? "Moments",
+      text: shareText,
+      url: shareUrl,
+    });
   };
 
   const handleAction = (fn: () => void) => (e: React.MouseEvent) => {

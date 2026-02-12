@@ -2,22 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Share2, Check, Link } from "lucide-react";
+import { Check, Link } from "lucide-react";
+import { useShare } from "@/lib/hooks/use-share";
 
 interface SharePageButtonProps {
-  /** Optional custom URL to share (defaults to current page) */
   url?: string;
-  /** Optional title for native share dialog */
   title?: string;
-  /** Show label text alongside icon */
   showLabel?: boolean;
   className?: string;
 }
 
-/**
- * Simple share button that uses native share or copies URL to clipboard.
- * Designed for header bars with proper 44px touch target.
- */
 export function SharePageButton({
   url,
   title,
@@ -25,43 +19,20 @@ export function SharePageButton({
   className = "",
 }: SharePageButtonProps) {
   const t = useTranslations("common");
-  const [copied, setCopied] = useState(false);
-  const [canShare, setCanShare] = useState(false);
+  const { share, copied } = useShare();
   const [shareUrl, setShareUrl] = useState(url || "");
 
   useEffect(() => {
-    setCanShare(typeof navigator !== "undefined" && !!navigator.share);
     if (!url && typeof window !== "undefined") {
       setShareUrl(window.location.href);
     }
   }, [url]);
 
-  const handleShare = async () => {
-    const urlToShare = url || shareUrl;
-
-    // Try native share first (mobile)
-    if (canShare) {
-      try {
-        await navigator.share({
-          title: title || document.title,
-          url: urlToShare,
-        });
-        return;
-      } catch (err) {
-        if ((err as Error).name === "AbortError") return;
-        // Fall through to clipboard
-      }
-    }
-
-    // Fallback: copy to clipboard
-    try {
-      await navigator.clipboard.writeText(urlToShare);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
+  const handleShare = () =>
+    share({
+      title: title || (typeof document !== "undefined" ? document.title : ""),
+      url: url || shareUrl,
+    });
 
   return (
     <button

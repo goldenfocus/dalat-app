@@ -2,6 +2,7 @@
 
 import { Share2, Volume2, VolumeX } from "lucide-react";
 import { triggerHaptic } from "@/lib/haptics";
+import { useShare } from "@/lib/hooks/use-share";
 import { CommentsButton } from "@/components/comments";
 
 interface MomentEngagementBarProps {
@@ -36,32 +37,15 @@ export function MomentEngagementBar({
   onMuteToggle,
   commentCount,
 }: MomentEngagementBarProps) {
-  const handleShare = async (e: React.MouseEvent) => {
+  const { share: nativeShare } = useShare();
+
+  const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    triggerHaptic("selection");
-
-    const url = `${window.location.origin}/moments/${momentId}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Moment from ${eventTitle}`,
-          url,
-        });
-      } catch {
-        // User cancelled or share failed - ignore
-      }
-    } else {
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(url);
-        triggerHaptic("medium");
-        // TODO: Show toast notification
-      } catch {
-        // Clipboard access denied - ignore
-      }
-    }
+    nativeShare({
+      title: `Moment from ${eventTitle}`,
+      url: `${window.location.origin}/moments/${momentId}`,
+    });
   };
 
   const handleMuteToggle = (e: React.MouseEvent) => {

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Share2, Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { triggerHaptic } from "@/lib/haptics";
+import { useShare } from "@/lib/hooks/use-share";
 
 interface BlogShareButtonsProps {
   title: string;
@@ -12,50 +11,22 @@ interface BlogShareButtonsProps {
 }
 
 export function BlogShareButtons({ title, url, shareText }: BlogShareButtonsProps) {
-  const [copied, setCopied] = useState(false);
+  const { share, copyText, copied } = useShare();
 
-  const fullUrl = typeof window !== "undefined"
-    ? `${window.location.origin}${url}`
-    : url;
+  const fullUrl =
+    typeof window !== "undefined" ? `${window.location.origin}${url}` : url;
 
-  const handleShare = async () => {
-    triggerHaptic("selection");
-
-    const shareData = {
+  const handleShare = () =>
+    share({
       title,
       text: shareText || title,
       url: fullUrl,
-    };
+    });
 
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-        triggerHaptic("medium");
-      } catch (error) {
-        // User cancelled or error - fall back to copy
-        if ((error as Error).name !== "AbortError") {
-          handleCopy();
-        }
-      }
-    } else {
-      handleCopy();
-    }
-  };
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(fullUrl);
-      setCopied(true);
-      triggerHaptic("medium");
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error("Failed to copy:", error);
-    }
-  };
+  const handleCopy = () => copyText(fullUrl);
 
   return (
     <div className="flex items-center gap-2">
-      {/* Share button (uses native share on mobile) */}
       <Button
         variant="ghost"
         size="sm"
@@ -66,7 +37,6 @@ export function BlogShareButtons({ title, url, shareText }: BlogShareButtonsProp
         <span className="hidden sm:inline">Share</span>
       </Button>
 
-      {/* Copy link button */}
       <Button
         variant="ghost"
         size="sm"

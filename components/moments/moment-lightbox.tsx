@@ -9,6 +9,7 @@ import {
   AudioPlayer,
   PDFPreview,
 } from "@/components/shared/material-renderers";
+import { useShare } from "@/lib/hooks/use-share";
 import type { MomentContentType, MomentVideoStatus } from "@/lib/types";
 
 // Minimal moment data needed for lightbox display
@@ -71,7 +72,7 @@ export function MomentLightbox({
   const [isLandscape, setIsLandscape] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchDiff, setTouchDiff] = useState(0);
-  const [shared, setShared] = useState(false);
+  const { share: nativeShare, copied: shared } = useShare();
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -178,33 +179,14 @@ export function MomentLightbox({
     onClose();
   };
 
-  const handleShare = useCallback(async (e: React.MouseEvent) => {
+  const handleShare = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     const slug = moment.event_slug || eventSlug;
     const shareUrl = slug
       ? `${window.location.origin}/events/${slug}/moments/${moment.id}`
       : `${window.location.origin}/moments/${moment.id}`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: moment.text_content || "Moment",
-          url: shareUrl,
-        });
-        return;
-      } catch (err) {
-        if ((err as Error).name === "AbortError") return;
-      }
-    }
-
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
-    } catch {
-      // Silent fail
-    }
-  }, [moment, eventSlug]);
+    nativeShare({ title: moment.text_content || "Moment", url: shareUrl });
+  }, [moment, eventSlug, nativeShare]);
 
   if (!isOpen || !moment) return null;
 

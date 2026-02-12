@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { Share2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
+import { useShare } from "@/lib/hooks/use-share";
 import {
   useCinemaModeStore,
   useCinemaProgressValue,
@@ -31,7 +32,7 @@ export function CinemaControls({
   const playbackState = useCinemaPlaybackState();
   const showControls = useCinemaShowControls();
   const currentMoment = useCurrentCinemaMoment();
-  const [shared, setShared] = useState(false);
+  const { share: nativeShare, copied: shared } = useShare();
 
   const goTo = useCinemaModeStore.getState().goTo;
 
@@ -42,37 +43,14 @@ export function CinemaControls({
     goTo(index);
   };
 
-  const handleShare = useCallback(async (e: React.MouseEvent) => {
+  const handleShare = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    triggerHaptic("selection");
-
-    // Share the current moment directly
     const momentId = currentMoment?.id;
     const shareUrl = momentId
       ? `${window.location.origin}/events/${eventSlug}/moments/${momentId}`
       : `${window.location.origin}/events/${eventSlug}/moments?view=cinema`;
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: eventTitle ?? "Moment",
-          url: shareUrl,
-        });
-        return;
-      } catch (err) {
-        if ((err as Error).name === "AbortError") return;
-      }
-    }
-
-    // Fallback: copy to clipboard
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
-    } catch {
-      // Silent fail
-    }
-  }, [eventSlug, eventTitle, currentMoment]);
+    nativeShare({ title: eventTitle ?? "Moment", url: shareUrl });
+  }, [eventSlug, eventTitle, currentMoment, nativeShare]);
 
   // Generate timeline segments
   const segments = Array.from({ length: total }, (_, i) => ({
