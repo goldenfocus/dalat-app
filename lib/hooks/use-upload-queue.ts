@@ -15,7 +15,7 @@ import {
   needsConversion,
   generateVideoThumbnail,
 } from "@/lib/media-utils";
-import { convertIfNeeded, uploadHeicServerSide } from "@/lib/media-conversion";
+import { convertIfNeeded, convertHeicOnR2 } from "@/lib/media-conversion";
 import { needsImageCompression, compressImage } from "@/lib/image-compression";
 import type { CompressionProgress } from "@/lib/video-compression";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
@@ -373,19 +373,19 @@ export function useUploadQueue({
 
         let publicUrl: string;
 
-        // If HEIC needs server-side conversion, upload directly through server
-        // This bypasses R2 CORS issues for presigned URLs
+        // Upload to R2 via presigned URL (works for all formats including HEIC)
+        const result = await uploadToStorage("moments", fileToUpload, {
+          filename: fileName,
+        });
+        publicUrl = result.publicUrl;
+
+        // If HEIC, convert to JPEG on R2 server-side
+        // (sends only the path as JSON — avoids Cloudflare WAF blocking binary uploads)
         if (needsServerHeicConversion) {
-          console.log("[UploadQueue] HEIC needs server-side upload+conversion...");
-          const heicResult = await uploadHeicServerSide(fileToUpload, "moments", fileName);
-          publicUrl = heicResult.url;
-          console.log("[UploadQueue] Server-side HEIC upload+conversion complete:", publicUrl);
-        } else {
-          // Normal upload via presigned URL
-          const result = await uploadToStorage("moments", fileToUpload, {
-            filename: fileName,
-          });
-          publicUrl = result.publicUrl;
+          console.log("[UploadQueue] Converting HEIC on R2:", fileName);
+          const convertResult = await convertHeicOnR2("moments", fileName);
+          publicUrl = convertResult.url;
+          console.log("[UploadQueue] HEIC conversion complete:", publicUrl);
         }
 
         console.log(`[UploadQueue] Upload complete: ${file.name} → ${publicUrl}`);

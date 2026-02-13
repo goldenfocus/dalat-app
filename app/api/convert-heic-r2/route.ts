@@ -21,9 +21,6 @@ import { getR2Config } from "@/lib/storage/r2-config";
 
 export const maxDuration = 60; // Allow longer execution
 
-const RATE_LIMIT = 60; // requests per window
-const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
 /**
  * Create S3 client for R2 using centralized config (with .trim() protection)
  */
@@ -59,22 +56,6 @@ export async function POST(request: NextRequest) {
 
   if (authError || !user) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-  }
-
-  // Rate limiting
-  const { data: rateCheck, error: rateError } = await supabase.rpc("check_rate_limit", {
-    p_action: "convert_heic_r2",
-    p_limit: RATE_LIMIT,
-    p_window_ms: RATE_WINDOW_MS,
-  });
-
-  if (rateError) {
-    console.error("[convert-heic-r2] Rate limit check failed:", rateError);
-  } else if (!rateCheck?.allowed) {
-    return NextResponse.json(
-      { error: "Rate limit exceeded. Try again later." },
-      { status: 429 }
-    );
   }
 
   // Get R2 client (uses centralized config with .trim() protection)

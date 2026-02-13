@@ -8,7 +8,7 @@ import {
   needsConversion,
   generateVideoThumbnail,
 } from "@/lib/media-utils";
-import { convertIfNeeded, uploadHeicServerSide } from "@/lib/media-conversion";
+import { convertIfNeeded, convertHeicOnR2 } from "@/lib/media-conversion";
 import {
   needsImageCompression,
   compressImage,
@@ -694,21 +694,21 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
 
         let publicUrl: string;
 
-        // If HEIC needs server-side conversion, upload directly through server
-        // This bypasses R2 CORS issues for presigned URLs
-        if (needsServerHeicConversion) {
-          console.log("[BulkUpload] HEIC needs server-side upload+conversion...");
-          dispatch({ type: "UPDATE_FILE", id, updates: { status: "uploading", progress: 10 } });
+        // Upload to R2 via presigned URL (works for all formats including HEIC)
+        const result = await uploadToStorage("moments", fileToUpload, {
+          filename: fileName,
+        });
+        publicUrl = result.publicUrl;
 
-          const heicResult = await uploadHeicServerSide(fileToUpload, "moments", fileName);
-          publicUrl = heicResult.url;
-          console.log("[BulkUpload] Server-side HEIC upload+conversion complete:", publicUrl);
-        } else {
-          // Normal upload via presigned URL
-          const result = await uploadToStorage("moments", fileToUpload, {
-            filename: fileName,
-          });
-          publicUrl = result.publicUrl;
+        // If HEIC, convert to JPEG server-side (reads from R2, converts, saves JPEG, deletes HEIC)
+        // This avoids sending binary files through Cloudflare WAF (which returns 403)
+        if (needsServerHeicConversion) {
+          console.log("[BulkUpload] Converting HEIC on R2:", fileName);
+          dispatch({ type: "UPDATE_FILE", id, updates: { progress: 80 } });
+
+          const convertResult = await convertHeicOnR2("moments", fileName);
+          publicUrl = convertResult.url;
+          console.log("[BulkUpload] HEIC conversion complete:", publicUrl);
         }
 
         dispatch({

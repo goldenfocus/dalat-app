@@ -210,30 +210,66 @@ export async function uploadHeicServerSide(
 }
 
 /**
- * Convert HEIC file that was uploaded to R2 using server-side sharp
- * Call this after uploading a HEIC file to R2 when needsServerConversion is true
- * @deprecated Use uploadHeicServerSide instead - it handles upload + conversion in one step
+ * Convert a HEIC file already uploaded to R2 into JPEG server-side.
+ * Sends only the path (small JSON), NOT the file binary — so Cloudflare WAF
+ * doesn't block it. The server reads from R2, converts with sharp, saves
+ * the JPEG back, and deletes the original HEIC.
  */
-export async function convertHeicServerSide(
+export async function convertHeicOnR2(
   bucket: string,
   path: string
 ): Promise<{ url: string; path: string }> {
-  console.log("[HEIC] Server-side conversion for:", bucket, path);
+  console.log("[HEIC] Converting on R2:", bucket, path);
 
-  const response = await fetch("/api/convert-heic-r2", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ bucket, path }),
-  });
+  let lastError: Error | null = null;
+  const maxAttempts = 3;
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Server-side HEIC conversion failed");
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+    try {
+      const response = await fetch("/api/convert-heic-r2", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bucket, path }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("[HEIC] R2 conversion complete:", result.url);
+        return { url: result.url, path: result.path };
+      }
+
+      // Don't retry auth errors
+      if (response.status === 401) {
+        const error = await response.json();
+        throw new Error(error.error || "Authentication required");
+      }
+
+      const error = await response.json();
+      lastError = new Error(error.error || "HEIC conversion failed");
+      console.warn(`[HEIC] Convert attempt ${attempt + 1}/${maxAttempts}:`, lastError.message);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof DOMException && err.name === "AbortError") {
+        lastError = new Error("HEIC conversion timed out");
+      } else {
+        lastError = err instanceof Error ? err : new Error(String(err));
+      }
+      // Don't retry auth errors
+      if (lastError.message.includes("Authentication")) throw lastError;
+      console.warn(`[HEIC] Convert attempt ${attempt + 1}/${maxAttempts} failed:`, lastError.message);
+    }
+
+    if (attempt < maxAttempts - 1) {
+      await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+    }
   }
 
-  const result = await response.json();
-  console.log("[HEIC] Server conversion complete:", result.url);
-  return { url: result.url, path: result.path };
+  throw lastError || new Error("HEIC conversion failed after retries");
 }
 
 /**

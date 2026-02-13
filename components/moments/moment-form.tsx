@@ -31,7 +31,7 @@ import {
   needsConversion,
   generateVideoThumbnail,
 } from "@/lib/media-utils";
-import { convertIfNeeded, convertHeicServerSide } from "@/lib/media-conversion";
+import { convertIfNeeded, convertHeicOnR2 } from "@/lib/media-conversion";
 import {
   needsCompression,
   compressVideo,
@@ -561,7 +561,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         ));
 
         try {
-          const conversionResult = await convertHeicServerSide("moments", uploadedPath);
+          const conversionResult = await convertHeicOnR2("moments", uploadedPath);
           publicUrl = conversionResult.url;
           console.log("[Upload] Server-side HEIC conversion complete:", publicUrl);
         } catch (convErr) {

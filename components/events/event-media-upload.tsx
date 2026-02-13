@@ -37,7 +37,7 @@ import {
   needsConversion,
   generateSmartFilename,
 } from "@/lib/media-utils";
-import { convertIfNeeded, uploadHeicServerSide } from "@/lib/media-conversion";
+import { convertIfNeeded, convertHeicOnR2 } from "@/lib/media-conversion";
 import { DisintegrationEffect } from "@/components/ui/disintegration-effect";
 import { ImageVersionHistory } from "@/components/ui/image-version-history";
 
@@ -306,28 +306,28 @@ export function EventMediaUpload({
         finalUrl = data.url;
       } else {
         // Use unified storage abstraction for other buckets (venues, etc.)
-        // HEIC files MUST use server-side upload+conversion (presigned URLs won't work)
+        // Upload to R2 via presigned URL (all formats including HEIC)
+        const result = await uploadFile(bucket, fileToUpload, {
+          entityId: eventId,
+        });
+        finalUrl = result.publicUrl;
+
+        // If HEIC, convert to JPEG on R2 server-side
         if (needsServerHeicConversion) {
-          setConvertStatus("Uploading & converting HEIC...");
+          setConvertStatus("Converting HEIC to JPEG...");
           setIsConverting(true);
           try {
-            const fileName = generateSmartFilename(file.name, eventId, "jpg");
-            const heicResult = await uploadHeicServerSide(fileToUpload, bucket, fileName);
-            finalUrl = heicResult.url;
-            console.log("[EventMediaUpload] Server-side HEIC upload+conversion complete:", finalUrl);
+            const heicPath = result.path;
+            const convertResult = await convertHeicOnR2(bucket, heicPath);
+            finalUrl = convertResult.url;
+            console.log("[EventMediaUpload] HEIC conversion complete:", finalUrl);
           } catch (heicErr) {
-            console.error("[EventMediaUpload] Server-side HEIC upload failed:", heicErr);
-            throw heicErr; // Re-throw to be caught by outer try-catch
+            console.error("[EventMediaUpload] HEIC conversion failed:", heicErr);
+            throw heicErr;
           } finally {
             setIsConverting(false);
             setConvertStatus(null);
           }
-        } else {
-          // Regular files use presigned URL upload
-          const result = await uploadFile(bucket, fileToUpload, {
-            entityId: eventId,
-          });
-          finalUrl = result.publicUrl;
         }
       }
 

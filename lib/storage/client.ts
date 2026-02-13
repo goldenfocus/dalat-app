@@ -186,30 +186,15 @@ export interface UploadOptions {
  * 2. Uses presigned URLs for R2, direct upload for Supabase
  * 3. Returns the public URL of the uploaded file
  *
- * IMPORTANT: HEIC files must use uploadHeicServerSide() instead.
- * Call convertIfNeeded() first and check needsServerConversion flag.
+ * HEIC files are uploaded as-is to R2. The caller is responsible for
+ * triggering server-side conversion via /api/convert-heic-r2 afterward.
  */
 export async function uploadFile(
   bucket: string,
   file: File,
   options: UploadOptions = {}
 ): Promise<UploadResult> {
-  // HEIC files MUST use uploadHeicServerSide() - they cannot use presigned URLs
-  // due to R2 CORS limitations and the need for server-side conversion
   const ext = file.name.split(".").pop()?.toLowerCase();
-  const isHeic =
-    file.type === "image/heic" ||
-    file.type === "image/heif" ||
-    ext === "heic" ||
-    ext === "heif";
-
-  if (isHeic) {
-    throw new Error(
-      "HEIC files must use uploadHeicServerSide() instead of uploadFile(). " +
-        "Call convertIfNeeded() first and check the needsServerConversion flag."
-    );
-  }
-
   const entityId = options.entityId || `temp-${Date.now()}`;
   const fileExt = ext || "jpg";
   const path =
