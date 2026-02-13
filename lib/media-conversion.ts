@@ -156,19 +156,57 @@ export async function uploadHeicServerSide(
   formData.append("bucket", bucket);
   formData.append("path", path);
 
-  const response = await fetch("/api/upload-heic", {
-    method: "POST",
-    body: formData,
-  });
+  let lastError: Error | null = null;
+  const maxAttempts = 3;
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Server-side HEIC upload failed");
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s per attempt
+
+    try {
+      const response = await fetch("/api/upload-heic", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("[HEIC] Server upload complete:", result.url);
+        return { url: result.url, path: result.path };
+      }
+
+      // Don't retry rate limits or auth errors
+      if (response.status === 429 || response.status === 401) {
+        const error = await response.json();
+        throw new Error(error.error || `HEIC upload failed (${response.status})`);
+      }
+
+      const error = await response.json();
+      lastError = new Error(error.error || "Server-side HEIC upload failed");
+      console.warn(`[HEIC] Server error ${response.status}, attempt ${attempt + 1}/${maxAttempts}`);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof DOMException && err.name === "AbortError") {
+        lastError = new Error("HEIC conversion timed out — try a smaller file or retry");
+      } else {
+        lastError = err instanceof Error ? err : new Error(String(err));
+      }
+      // Don't retry non-retryable errors (rate limit, auth)
+      if (lastError.message.includes("Rate limit") || lastError.message.includes("401")) {
+        throw lastError;
+      }
+      console.warn(`[HEIC] Attempt ${attempt + 1}/${maxAttempts} failed:`, lastError.message);
+    }
+
+    // Wait before retry (exponential backoff)
+    if (attempt < maxAttempts - 1) {
+      await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+    }
   }
 
-  const result = await response.json();
-  console.log("[HEIC] Server upload complete:", result.url);
-  return { url: result.url, path: result.path };
+  throw lastError || new Error("HEIC upload failed after retries");
 }
 
 /**

@@ -61,18 +61,34 @@ function isRetryableError(error: unknown): boolean {
 }
 
 /**
- * Fetch with automatic retry for transient failures
+ * Fetch with automatic retry for transient failures.
+ * @param timeoutMs Per-attempt timeout in ms. 0 = no timeout. Default 0.
+ *   Use for server API calls (presign) but NOT for large file uploads.
  */
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
-  maxRetries = MAX_RETRIES
+  maxRetries = MAX_RETRIES,
+  timeoutMs = 0
 ): Promise<Response> {
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let controller: AbortController | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    if (timeoutMs > 0) {
+      controller = new AbortController();
+      timeoutId = setTimeout(() => controller!.abort(), timeoutMs);
+    }
+
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url, {
+        ...options,
+        ...(controller && { signal: controller.signal }),
+      });
+
+      if (timeoutId) clearTimeout(timeoutId);
 
       // Don't retry client errors (4xx) - they won't succeed on retry
       // Do retry server errors (5xx) - they might be transient
@@ -93,6 +109,7 @@ async function fetchWithRetry(
       // Out of retries
       throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
     } catch (error) {
+      if (timeoutId) clearTimeout(timeoutId);
       lastError = error instanceof Error ? error : new Error(String(error));
 
       // If it's a retryable error and we have retries left, try again
@@ -214,7 +231,8 @@ export async function uploadFile(
           contentType,
         }),
       },
-      2 // Fewer retries for presign - it's quick and failures are usually auth issues
+      2, // Fewer retries for presign - it's quick and failures are usually auth issues
+      15000 // 15s timeout per attempt — fail fast instead of hanging if server is down
     );
 
     if (presignResponse.ok) {

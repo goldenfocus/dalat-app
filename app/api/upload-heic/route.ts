@@ -17,8 +17,6 @@ import { getR2Config } from "@/lib/storage/r2-config";
 
 export const maxDuration = 60; // Allow longer execution for large files
 
-const RATE_LIMIT = 30; // requests per window
-const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 /**
@@ -56,22 +54,6 @@ export async function POST(request: NextRequest) {
 
   if (authError || !user) {
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-  }
-
-  // Rate limiting
-  const { data: rateCheck, error: rateError } = await supabase.rpc("check_rate_limit", {
-    p_action: "upload_heic",
-    p_limit: RATE_LIMIT,
-    p_window_ms: RATE_WINDOW_MS,
-  });
-
-  if (rateError) {
-    console.error("[upload-heic] Rate limit check failed:", rateError);
-  } else if (!rateCheck?.allowed) {
-    return NextResponse.json(
-      { error: "Rate limit exceeded. Try again later." },
-      { status: 429 }
-    );
   }
 
   // Get R2 client (uses centralized config with .trim() protection)

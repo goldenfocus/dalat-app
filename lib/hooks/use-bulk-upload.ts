@@ -377,29 +377,37 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
   const isPausedRef = useRef(false);
   const processingRef = useRef(false);
 
-  // Process the upload queue
+  // Refs to avoid stale closures in the async upload chain.
+  // Without these, processQueue → uploadFile → scheduleNextProcess → processQueue
+  // forms a closed loop where each function captures state from the same render,
+  // causing the queue to stall after the first batch of CONCURRENCY_LIMIT files.
+  const filesRef = useRef(state.files);
+  filesRef.current = state.files;
+  const statusRef = useRef(state.status);
+  statusRef.current = state.status;
+  const uploadFileRef = useRef<(fileState: FileUploadState) => Promise<void>>(null!);
+
+  // Process the upload queue — uses refs so it always reads latest state,
+  // even when called from stale closures in async upload callbacks.
   const processQueue = useCallback(async () => {
     if (isPausedRef.current || processingRef.current) return;
     processingRef.current = true;
 
     try {
-      const files = Array.from(state.files.values());
+      const files = Array.from(filesRef.current.values());
       const queued = files.filter((f) => f.status === "queued");
       const activeCount = activeUploadsRef.current.size;
       const availableSlots = CONCURRENCY_LIMIT - activeCount;
 
-      // Start new uploads
       const toStart = queued.slice(0, availableSlots);
       for (const file of toStart) {
-        uploadFile(file);
+        uploadFileRef.current(file);
       }
-
-      // Note: DB saves happen immediately after each upload in saveAsDraft()
-      // No more batch save logic needed - each file is auto-saved as a draft
     } finally {
       processingRef.current = false;
     }
-  }, [state.files, state.eventId, state.batchId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Stable — all state accessed via refs
 
   // Save a single upload as a draft immediately
   const saveAsDraft = async (
@@ -749,27 +757,24 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
     }
   };
 
+  // Keep uploadFileRef pointing to the latest uploadFile each render
+  uploadFileRef.current = uploadFile;
+
   const scheduleNextProcess = useCallback(() => {
-    // Use setTimeout to avoid blocking and allow state to update
     setTimeout(() => {
-      if (!isPausedRef.current && state.status === "uploading") {
+      if (!isPausedRef.current && statusRef.current === "uploading") {
         processQueue();
       }
     }, 100);
-  }, [processQueue, state.status]);
-
-  // Store processQueue in a ref to avoid triggering effect on every state change
-  const processQueueRef = useRef(processQueue);
-  processQueueRef.current = processQueue;
+  }, [processQueue]); // Stable — processQueue is stable, status read from ref
 
   // Start processing when status changes to uploading
-  // IMPORTANT: Only depend on state.status, NOT processQueue (which changes on every file update)
   useEffect(() => {
     if (state.status === "uploading") {
       isPausedRef.current = false;
-      processQueueRef.current();
+      processQueue();
     }
-     
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.status]);
 
   // Cleanup on unmount
