@@ -109,7 +109,11 @@ async function getKaraokeTrack(eventSlug: string, trackId: string, staticClient?
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug, locale, trackId } = await params;
+  const { slug, locale, trackId: rawTrackId } = await params;
+  const uuidMatch = rawTrackId.match(
+    /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+  );
+  const trackId = uuidMatch ? uuidMatch[1] : rawTrackId;
   const supabase = createStaticClient();
   if (!supabase) return { title: "Karaoke" };
   const data = await getKaraokeTrack(slug, trackId, supabase);
@@ -193,7 +197,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function KaraokePage({ params }: PageProps) {
-  const { slug, locale, trackId } = await params;
+  const { slug, locale, trackId: rawTrackId } = await params;
+
+  // Extract UUID from trackId — messaging apps sometimes append share text
+  // to the URL (e.g. "a7888267-...d9 🎤 Sing along to..."), so we strip it
+  const uuidMatch = rawTrackId.match(
+    /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+  );
+  const trackId = uuidMatch ? uuidMatch[1] : rawTrackId;
 
   const data = await getKaraokeTrack(slug, trackId);
 

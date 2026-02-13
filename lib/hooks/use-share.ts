@@ -82,8 +82,8 @@ export function useShare() {
         }
       }
 
-      // Clipboard fallback
-      const copyContent = text ? `${url}\n\n${text}` : url;
+      // Clipboard fallback — text before URL so the link stays clean at the end
+      const copyContent = text ? `${text}\n${url}` : url;
       await copyText(copyContent);
     },
     [canShare, copyText],
