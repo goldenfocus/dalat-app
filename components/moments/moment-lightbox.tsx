@@ -58,6 +58,8 @@ interface MomentLightboxProps {
   eventSlug?: string;
   /** Called when navigating to a different moment */
   onIndexChange?: (index: number) => void;
+  /** Total count from database (may be higher than moments.length during pagination) */
+  totalCount?: number;
 }
 
 export function MomentLightbox({
@@ -67,6 +69,7 @@ export function MomentLightbox({
   onClose,
   eventSlug,
   onIndexChange,
+  totalCount,
 }: MomentLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLandscape, setIsLandscape] = useState(false);
@@ -218,7 +221,7 @@ export function MomentLightbox({
       <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4">
         {/* Counter */}
         <div className="text-white/70 text-sm">
-          {currentIndex + 1} / {moments.length}
+          {currentIndex + 1} / {totalCount ?? moments.length}
         </div>
 
         <div className="flex items-center gap-2">

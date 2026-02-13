@@ -112,7 +112,6 @@ export function CinemaVideoSlide({
         loop={false}
         className="w-full h-full"
         onEnded={onEnded}
-        hideMuteButton
         hideControls
       />
 

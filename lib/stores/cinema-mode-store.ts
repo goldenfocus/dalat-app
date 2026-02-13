@@ -387,7 +387,7 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
 
     set({
       moments: [...moments, ...newMoments],
-      totalCount: moments.length + newMoments.length,
+      // Keep the real totalCount from the database — don't overwrite with loaded count
     });
 
     // Resume if we were waiting for more
