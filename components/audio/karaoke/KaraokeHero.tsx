@@ -11,6 +11,7 @@ import {
   SkipBack,
   SkipForward,
   Loader2,
+  Music,
   RotateCcw,
   RotateCw,
 } from "lucide-react";
@@ -245,8 +246,8 @@ export const KaraokeHero = memo(function KaraokeHero() {
     };
   }, []);
 
-  // Don't render if not in hero mode or no lyrics
-  if (karaokeLevel !== 3 || !hasLyrics) {
+  // Don't render if not in hero mode
+  if (karaokeLevel !== 3) {
     return null;
   }
 
@@ -296,48 +297,75 @@ export const KaraokeHero = memo(function KaraokeHero() {
           </p>
         </div>
 
-        {/* Share + Timing controls */}
+        {/* Share + Timing controls (timing only when lyrics exist) */}
         <div className="flex items-center gap-2">
           <KaraokeShareButton mode="hero" />
-          <TimingControls />
+          {hasLyrics && <TimingControls />}
         </div>
       </div>
 
-      {/* Main lyrics area */}
+      {/* Main content area */}
       <div
         ref={containerRef}
         className="absolute inset-0 flex flex-col items-center justify-center px-8"
         onClick={() => setShowControls(!showControls)}
       >
-        {/* Show countdown during intro */}
-        {(isInIntro || (!isPlaying && lineIndex === -1)) && (
-          <KaraokeCountdown
-            secondsUntilFirst={secondsUntilFirst}
-            isPlaying={isPlaying}
-          />
-        )}
+        {hasLyrics ? (
+          <>
+            {/* Show countdown during intro */}
+            {(isInIntro || (!isPlaying && lineIndex === -1)) && (
+              <KaraokeCountdown
+                secondsUntilFirst={secondsUntilFirst}
+                isPlaying={isPlaying}
+              />
+            )}
 
-        {/* Show instrumental break indicator */}
-        {isInInstrumental && isPlaying && (
-          <InstrumentalBreak nextLyricPreview={nextLyricPreview} />
-        )}
+            {/* Show instrumental break indicator */}
+            {isInInstrumental && isPlaying && (
+              <InstrumentalBreak nextLyricPreview={nextLyricPreview} />
+            )}
 
-        {/* Show lyrics when we have them */}
-        {!isInIntro && !isInInstrumental && surroundingLines.length > 0 && (
-          <div className="space-y-6 max-w-4xl mx-auto text-center">
-            {surroundingLines.map(({ line, index, isCurrent }) => (
-              <div
-                key={index}
-                className={cn(
-                  "transition-all duration-500",
-                  isCurrent
-                    ? "text-4xl sm:text-5xl md:text-6xl font-bold text-primary drop-shadow-glow-strong"
-                    : "text-xl sm:text-2xl md:text-3xl text-white/30"
-                )}
-              >
-                {line.text}
+            {/* Show lyrics when we have them */}
+            {!isInIntro && !isInInstrumental && surroundingLines.length > 0 && (
+              <div className="space-y-6 max-w-4xl mx-auto text-center">
+                {surroundingLines.map(({ line, index, isCurrent }) => (
+                  <div
+                    key={index}
+                    className={cn(
+                      "transition-all duration-500",
+                      isCurrent
+                        ? "text-4xl sm:text-5xl md:text-6xl font-bold text-primary drop-shadow-glow-strong"
+                        : "text-xl sm:text-2xl md:text-3xl text-white/30"
+                    )}
+                  >
+                    {line.text}
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+          </>
+        ) : (
+          /* Visual-only mode: track artwork + title when no lyrics */
+          <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in duration-500">
+            {currentTrack?.thumbnail_url ? (
+              <img
+                src={currentTrack.thumbnail_url}
+                alt={currentTrack.title || ""}
+                className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl object-cover shadow-2xl shadow-primary/20"
+              />
+            ) : (
+              <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl bg-white/10 flex items-center justify-center">
+                <Music className="w-20 h-20 text-white/30" />
+              </div>
+            )}
+            <div className="text-center mt-2">
+              <p className="text-3xl sm:text-4xl font-bold text-white">
+                {currentTrack?.title || "Unknown"}
+              </p>
+              {currentTrack?.artist && (
+                <p className="text-xl text-white/50 mt-2">{currentTrack.artist}</p>
+              )}
+            </div>
           </div>
         )}
       </div>

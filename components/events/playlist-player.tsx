@@ -183,7 +183,7 @@ export function PlaylistPlayer({
     return () => clearTimeout(timeout);
   }, [autoPlay, autoKaraokeLevel, autoStartTrack, startPlaylist, tracks.length]);
 
-  // Handle track click — auto-open karaoke Hero if track has lyrics
+  // Handle track click — always open full-screen Hero from playlist page
   const handleTrackClick = useCallback(
     (index: number) => {
       if (isThisPlaylistActive) {
@@ -192,39 +192,31 @@ export function PlaylistPlayer({
         startPlaylist(index);
       }
 
-      // Auto-open full-screen karaoke if this track has lyrics
-      const track = tracks[index];
-      if (track?.lyrics_lrc) {
-        setTimeout(() => {
-          useAudioPlayerStore.setState({
-            karaokeEnabled: true,
-            karaokeLevel: 3,
-          });
-        }, 150);
-      }
+      setTimeout(() => {
+        useAudioPlayerStore.setState({
+          karaokeEnabled: true,
+          karaokeLevel: 3,
+        });
+      }, 150);
     },
-    [isThisPlaylistActive, storePlayTrack, startPlaylist, tracks]
+    [isThisPlaylistActive, storePlayTrack, startPlaylist]
   );
 
-  // Handle main play button — auto-open karaoke Hero if first track has lyrics
+  // Handle main play button — always open full-screen Hero from playlist page
   const handleMainPlayClick = useCallback(() => {
     if (isThisPlaylistActive) {
       togglePlay();
     } else {
       startPlaylist(0);
 
-      // Auto-open full-screen karaoke if the first track has lyrics
-      const firstTrack = tracks[0];
-      if (firstTrack?.lyrics_lrc) {
-        setTimeout(() => {
-          useAudioPlayerStore.setState({
-            karaokeEnabled: true,
-            karaokeLevel: 3,
-          });
-        }, 150);
-      }
+      setTimeout(() => {
+        useAudioPlayerStore.setState({
+          karaokeEnabled: true,
+          karaokeLevel: 3,
+        });
+      }, 150);
     }
-  }, [isThisPlaylistActive, togglePlay, startPlaylist, tracks]);
+  }, [isThisPlaylistActive, togglePlay, startPlaylist]);
 
   // Handle seek (only works if this playlist is active)
   const handleSeek = useCallback(
