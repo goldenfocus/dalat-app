@@ -57,7 +57,7 @@ export function ReconfirmationDashboard({
     setRePingResult(null);
 
     try {
-      const res = await fetch(`/api/events/${eventId}/re-ping`, { method: "POST" });
+      const res = await fetch(`/api/events/${eventSlug}/re-ping`, { method: "POST" });
       const data = await res.json();
 
       if (data.ok) {

@@ -7,9 +7,9 @@ const RE_PING_COOLDOWN_MS = 4 * 60 * 60 * 1000; // 4 hours
 
 export async function POST(
   _request: Request,
-  { params }: { params: Promise<{ eventId: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { eventId } = await params;
+  const { slug } = await params;
   const supabase = await createClient();
 
   const {
@@ -24,7 +24,7 @@ export async function POST(
   const { data: event } = await supabase
     .from("events")
     .select("id, title, slug, created_by")
-    .eq("id", eventId)
+    .eq("slug", slug)
     .single();
 
   if (!event) {
@@ -39,7 +39,7 @@ export async function POST(
   const { data: config } = await supabase
     .from("event_reminder_config")
     .select("last_re_ping_at")
-    .eq("event_id", eventId)
+    .eq("event_id", event.id)
     .single();
 
   if (config?.last_re_ping_at) {
@@ -65,7 +65,7 @@ export async function POST(
   const { data: pendingRsvps } = await supabase
     .from("rsvps")
     .select("user_id, profiles!inner(locale)")
-    .eq("event_id", eventId)
+    .eq("event_id", event.id)
     .eq("status", "going")
     .is("confirmed_at", null);
 
@@ -97,7 +97,7 @@ export async function POST(
   await supabase
     .from("event_reminder_config")
     .upsert(
-      { event_id: eventId, last_re_ping_at: new Date().toISOString() },
+      { event_id: event.id, last_re_ping_at: new Date().toISOString() },
       { onConflict: "event_id" }
     );
 
