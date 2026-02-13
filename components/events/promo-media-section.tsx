@@ -310,8 +310,6 @@ export function PromoMediaSection({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" />
-          <h3 className="font-medium text-sm">{t("title")}</h3>
           {promoSource === "series" && (
             <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
               {t("usingSeriesPromo")}

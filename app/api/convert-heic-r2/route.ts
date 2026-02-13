@@ -1,22 +1,23 @@
 /**
- * Convert HEIC to JPEG server-side using sharp
+ * Convert HEIC to JPEG server-side using heic-convert (WASM)
  *
  * Strategy to bypass Cloudflare WAF:
  * 1. Client uploads HEIC directly to R2 via presigned URL (bypasses WAF)
  * 2. Client calls this API with the R2 path
- * 3. Server reads HEIC from R2, converts with sharp, saves JPEG back to R2
+ * 3. Server reads HEIC from R2, converts with heic-convert, saves JPEG back to R2
  * 4. Server deletes original HEIC
  * 5. Returns JPEG URL
  *
- * This works because:
- * - File upload goes directly to R2 (not through our server)
- * - This API only receives a path string (not file data)
- * - Sharp has excellent HEIC support via libvips
+ * Why heic-convert instead of sharp?
+ * sharp's prebuilt binary on Vercel Lambda doesn't include the HEVC codec
+ * needed to decode HEIC files (error: "Support for this compression format
+ * has not been built in"). heic-convert uses a WASM-compiled libheif that
+ * includes the de265 HEVC decoder and works on any platform.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import sharp from "sharp";
+import convert from "heic-convert";
 import { getR2Config } from "@/lib/storage/r2-config";
 
 export const maxDuration = 60; // Allow longer execution
@@ -109,10 +110,14 @@ export async function POST(request: NextRequest) {
 
     console.log("[convert-heic-r2] Read HEIC:", heicBuffer.length, "bytes");
 
-    // Convert to JPEG using sharp
-    const jpegBuffer = await sharp(heicBuffer)
-      .jpeg({ quality: 90, mozjpeg: true })
-      .toBuffer();
+    // Convert HEIC to JPEG using heic-convert (WASM-based, works on Vercel)
+    const jpegBuffer = Buffer.from(
+      await convert({
+        buffer: heicBuffer,
+        format: "JPEG",
+        quality: 0.9,
+      })
+    );
 
     console.log("[convert-heic-r2] Converted to JPEG:", jpegBuffer.length, "bytes");
 
