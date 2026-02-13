@@ -395,7 +395,12 @@ export function useUploadQueue({
           dispatch({
             type: "UPDATE_ITEM",
             id,
-            updates: { mediaUrl: publicUrl, progress: 100 },
+            updates: {
+              mediaUrl: publicUrl,
+              // Update preview to converted JPEG URL (original HEIC blob can't render in browsers)
+              ...(needsServerHeicConversion && { previewUrl: publicUrl }),
+              progress: 100,
+            },
           });
 
           // Immediately save as draft to database

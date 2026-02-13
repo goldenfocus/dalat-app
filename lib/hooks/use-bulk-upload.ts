@@ -716,6 +716,8 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
           id,
           updates: {
             mediaUrl: publicUrl,
+            // Update preview to converted JPEG URL (original HEIC blob can't render in browsers)
+            ...(needsServerHeicConversion && { previewUrl: publicUrl }),
             progress: 100,
           },
         });
