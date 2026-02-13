@@ -20,6 +20,7 @@ import {
   FloatingNotes,
   PulseBackground,
   InstrumentalBreak,
+  KaraokeBackgroundSlideshow,
   KaraokeStyles,
 } from "./KaraokeVisuals";
 import { cn } from "@/lib/utils";
@@ -253,6 +254,9 @@ export const KaraokeHero = memo(function KaraokeHero() {
     <div className="fixed inset-0 z-[100] bg-black overflow-hidden animate-in fade-in duration-300">
       {/* Inject animation styles */}
       <KaraokeStyles />
+
+      {/* Background image slideshow (subtle, behind everything) */}
+      <KaraokeBackgroundSlideshow />
 
       {/* Background gradient animation */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-black to-purple-900/20 animate-pulse-slow" />

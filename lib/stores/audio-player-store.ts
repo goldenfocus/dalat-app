@@ -21,6 +21,7 @@ export interface PlaylistInfo {
   eventSlug: string;
   eventTitle: string;
   eventImageUrl: string | null;
+  eventId?: string;
 }
 
 export type RepeatMode = "none" | "one" | "all";

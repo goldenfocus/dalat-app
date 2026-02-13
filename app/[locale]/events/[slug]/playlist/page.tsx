@@ -317,6 +317,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
           eventSlug={slug}
           eventTitle={event.title}
           eventImageUrl={event.image_url}
+          eventId={event.id}
           autoPlay={karaokeLevel !== undefined}
           autoKaraokeLevel={karaokeLevel}
           autoStartTrack={startTrack}

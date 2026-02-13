@@ -66,6 +66,7 @@ export function KaraokePageClient({
         eventSlug: event.slug,
         eventTitle: event.title,
         eventImageUrl: event.image_url,
+        eventId: event.id,
       },
       trackIndex
     );

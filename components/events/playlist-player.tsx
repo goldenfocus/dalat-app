@@ -60,6 +60,7 @@ export interface PlaylistPlayerProps {
   eventSlug: string;
   eventTitle: string;
   eventImageUrl?: string | null;
+  eventId?: string;
   className?: string;
   /** Auto-start playback when component mounts */
   autoPlay?: boolean;
@@ -74,6 +75,7 @@ export function PlaylistPlayer({
   eventSlug,
   eventTitle,
   eventImageUrl,
+  eventId,
   className,
   autoPlay,
   autoKaraokeLevel,
@@ -145,11 +147,11 @@ export function PlaylistPlayer({
 
       setPlaylist(
         audioTracks,
-        { eventSlug, eventTitle, eventImageUrl: eventImageUrl || null },
+        { eventSlug, eventTitle, eventImageUrl: eventImageUrl || null, eventId },
         startIndex
       );
     },
-    [tracks, eventSlug, eventTitle, eventImageUrl, setPlaylist]
+    [tracks, eventSlug, eventTitle, eventImageUrl, eventId, setPlaylist]
   );
 
   // Auto-start playback with karaoke mode from URL params
@@ -181,28 +183,48 @@ export function PlaylistPlayer({
     return () => clearTimeout(timeout);
   }, [autoPlay, autoKaraokeLevel, autoStartTrack, startPlaylist, tracks.length]);
 
-  // Handle track click
+  // Handle track click — auto-open karaoke Hero if track has lyrics
   const handleTrackClick = useCallback(
     (index: number) => {
       if (isThisPlaylistActive) {
-        // Already playing this playlist, just change track
         storePlayTrack(index);
       } else {
-        // Start this playlist from the clicked track
         startPlaylist(index);
       }
+
+      // Auto-open full-screen karaoke if this track has lyrics
+      const track = tracks[index];
+      if (track?.lyrics_lrc) {
+        setTimeout(() => {
+          useAudioPlayerStore.setState({
+            karaokeEnabled: true,
+            karaokeLevel: 3,
+          });
+        }, 150);
+      }
     },
-    [isThisPlaylistActive, storePlayTrack, startPlaylist]
+    [isThisPlaylistActive, storePlayTrack, startPlaylist, tracks]
   );
 
-  // Handle main play button
+  // Handle main play button — auto-open karaoke Hero if first track has lyrics
   const handleMainPlayClick = useCallback(() => {
     if (isThisPlaylistActive) {
       togglePlay();
     } else {
       startPlaylist(0);
+
+      // Auto-open full-screen karaoke if the first track has lyrics
+      const firstTrack = tracks[0];
+      if (firstTrack?.lyrics_lrc) {
+        setTimeout(() => {
+          useAudioPlayerStore.setState({
+            karaokeEnabled: true,
+            karaokeLevel: 3,
+          });
+        }, 150);
+      }
     }
-  }, [isThisPlaylistActive, togglePlay, startPlaylist]);
+  }, [isThisPlaylistActive, togglePlay, startPlaylist, tracks]);
 
   // Handle seek (only works if this playlist is active)
   const handleSeek = useCallback(

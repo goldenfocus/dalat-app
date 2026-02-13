@@ -1,9 +1,10 @@
 "use client";
 
-import { memo, useEffect, useState, useMemo } from "react";
+import { memo, useEffect, useRef, useState, useMemo } from "react";
 import { Music, Mic2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * Floating music note that drifts across the screen
@@ -205,6 +206,102 @@ export const WordSparkle = memo(function WordSparkle() {
     <span className="absolute -top-1 -right-1 animate-ping">
       <Sparkles className="w-3 h-3 text-yellow-400" />
     </span>
+  );
+});
+
+/**
+ * Background slideshow for karaoke — crossfades between event images with heavy blur
+ */
+export const KaraokeBackgroundSlideshow = memo(function KaraokeBackgroundSlideshow() {
+  const playlist = useAudioPlayerStore((s) => s.playlist);
+  const tracks = useAudioPlayerStore((s) => s.tracks);
+
+  const [images, setImages] = useState<string[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [showFirst, setShowFirst] = useState(true);
+  const hasFetched = useRef(false);
+
+  // Collect images from store (event flyer + track thumbnails)
+  const storeImages = useMemo(() => {
+    const urls: string[] = [];
+    if (playlist?.eventImageUrl) urls.push(playlist.eventImageUrl);
+    for (const t of tracks) {
+      if (t.thumbnail_url && !urls.includes(t.thumbnail_url)) {
+        urls.push(t.thumbnail_url);
+      }
+    }
+    return urls;
+  }, [playlist?.eventImageUrl, tracks]);
+
+  // Lazily fetch event moment thumbnails for richer backgrounds
+  useEffect(() => {
+    if (hasFetched.current || !playlist?.eventId) {
+      setImages(storeImages);
+      return;
+    }
+    hasFetched.current = true;
+
+    const fetchMoments = async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("moments")
+          .select("thumbnail_url")
+          .eq("event_id", playlist.eventId!)
+          .not("thumbnail_url", "is", null)
+          .order("quality_score", { ascending: false })
+          .limit(8);
+
+        const momentUrls = (data ?? [])
+          .map((m: { thumbnail_url: string | null }) => m.thumbnail_url as string)
+          .filter((url: string) => !storeImages.includes(url));
+
+        setImages([...storeImages, ...momentUrls]);
+      } catch {
+        setImages(storeImages);
+      }
+    };
+    fetchMoments();
+  }, [playlist?.eventId, storeImages]);
+
+  // Cycle through images with crossfade
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % images.length);
+      setShowFirst((prev) => !prev);
+    }, 12000);
+
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  if (images.length === 0) return null;
+
+  const currentUrl = images[activeIndex];
+  const nextUrl = images[(activeIndex + 1) % images.length];
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Layer A */}
+      <img
+        src={showFirst ? currentUrl : nextUrl}
+        alt=""
+        className={cn(
+          "absolute inset-0 w-full h-full object-cover scale-110 blur-3xl transition-opacity duration-[3000ms]",
+          showFirst ? "opacity-[0.12]" : "opacity-0"
+        )}
+      />
+      {/* Layer B */}
+      <img
+        src={showFirst ? nextUrl : currentUrl}
+        alt=""
+        className={cn(
+          "absolute inset-0 w-full h-full object-cover scale-110 blur-3xl transition-opacity duration-[3000ms]",
+          showFirst ? "opacity-0" : "opacity-[0.12]"
+        )}
+      />
+    </div>
   );
 });
 
