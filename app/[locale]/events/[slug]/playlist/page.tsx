@@ -311,6 +311,17 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
           )}
         </div>
 
+        {/* Event Image */}
+        {event.image_url && (
+          <div className="mb-6 rounded-xl overflow-hidden">
+            <img
+              src={event.image_url}
+              alt={event.title}
+              className="w-full max-h-80 object-cover"
+            />
+          </div>
+        )}
+
         {/* Playlist Player */}
         <PlaylistPlayer
           tracks={tracks}
