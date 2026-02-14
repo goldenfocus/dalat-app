@@ -3,6 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 /**
+ * GET /api/yang-test - Health check
+ */
+export async function GET() {
+  return NextResponse.json({
+    status: "Yang Test API is LIVE!",
+    endpoints: {
+      POST: "Create a test event",
+      DELETE: "Delete recent test events"
+    },
+    timestamp: new Date().toISOString()
+  });
+}
+
+/**
  * POST /api/yang-test - Create a test event (Yang AI Demo)
  */
 export async function POST() {
