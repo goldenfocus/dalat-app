@@ -686,10 +686,14 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
     if (videoItems.length > 0) {
       const uploadVideosSequentially = async () => {
-        const MAX_CONCURRENT_VIDEOS = 2;
-        for (let i = 0; i < videoItems.length; i += MAX_CONCURRENT_VIDEOS) {
-          const batch = videoItems.slice(i, i + MAX_CONCURRENT_VIDEOS);
-          await Promise.allSettled(batch.map(item => uploadFile(item.file, item.id)));
+        // Upload ONE video at a time — each TUS upload spawns multiple PATCH
+        // chunks, and Cloudflare Stream returns 502/CORS errors if overwhelmed.
+        for (const item of videoItems) {
+          await uploadFile(item.file, item.id);
+          // Brief pause between videos to let Cloudflare catch up
+          if (videoItems.indexOf(item) < videoItems.length - 1) {
+            await new Promise(r => setTimeout(r, 500));
+          }
         }
       };
       uploadVideosSequentially();
