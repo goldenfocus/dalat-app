@@ -256,7 +256,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       await audioElement.play();
       set({ isPlaying: true, isLoading: false, autoplayBlocked: false });
     } catch (error) {
-      console.error('Error playing audio:', error);
+      console.warn('[AudioPlayer] Autoplay blocked (will retry on user interaction):', (error as Error).name);
       // Check if this is an autoplay block (NotAllowedError)
       const isAutoplayBlocked = error instanceof Error &&
         (error.name === 'NotAllowedError' || error.message.includes('user didn\'t interact'));
