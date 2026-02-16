@@ -347,8 +347,8 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           // Only uploadUrl — Cloudflare direct_upload URL is pre-created,
           // setting endpoint would cause POST fallback → 400 "Decoding Error"
           uploadUrl: uploadUrl,
-          retryDelays: [0, 1000, 3000, 5000], // Retry delays for flaky connections
-          chunkSize: 50 * 1024 * 1024, // 50MB chunks for better resume on slow connections
+          retryDelays: [0, 1000, 3000, 5000, 10000], // More retries for mobile
+          chunkSize: 10 * 1024 * 1024, // 10MB chunks for better mobile reliability
           metadata: {
             filename: file.name,
             filetype: file.type,
@@ -668,13 +668,31 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
 
     setUploads(prev => [...prev, ...newUploads]);
 
-    // Start uploading each file and generate video previews
-    for (const item of newUploads) {
+    // Separate images and videos for different upload strategies
+    const imageItems = newUploads.filter(item => !item.isVideo);
+    const videoItems = newUploads.filter(item => item.isVideo);
+
+    // Images: upload all in parallel (small, single PUT each)
+    for (const item of imageItems) {
       uploadFile(item.file, item.id);
-      // Generate local thumbnail + duration for videos immediately
-      if (item.isVideo) {
-        generateLocalVideoPreview(item.file, item.id);
-      }
+    }
+
+    // Videos: generate previews immediately, but upload max 2 at a time.
+    // Each TUS upload uses multiple HTTP connections (HEAD + PATCH per chunk),
+    // so concurrent videos quickly exhaust the browser's ~6 connection limit.
+    for (const item of videoItems) {
+      generateLocalVideoPreview(item.file, item.id);
+    }
+
+    if (videoItems.length > 0) {
+      const uploadVideosSequentially = async () => {
+        const MAX_CONCURRENT_VIDEOS = 2;
+        for (let i = 0; i < videoItems.length; i += MAX_CONCURRENT_VIDEOS) {
+          const batch = videoItems.slice(i, i + MAX_CONCURRENT_VIDEOS);
+          await Promise.allSettled(batch.map(item => uploadFile(item.file, item.id)));
+        }
+      };
+      uploadVideosSequentially();
     }
   };
 

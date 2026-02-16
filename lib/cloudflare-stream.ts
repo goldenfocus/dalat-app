@@ -454,6 +454,9 @@ export async function createTusDirectUpload(
 
   // Video UID from stream-media-id header
   const uid = response.headers.get('stream-media-id') || '';
+  if (!uid) {
+    console.warn('[Cloudflare] TUS creation succeeded but stream-media-id header was missing — video may be orphaned');
+  }
 
   return { uid, uploadURL };
 }

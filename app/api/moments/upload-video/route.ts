@@ -55,6 +55,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!fileSizeBytes || fileSizeBytes <= 0) {
+      return NextResponse.json(
+        { error: "Missing or invalid fileSizeBytes" },
+        { status: 400 }
+      );
+    }
+
     // Validate file size (max 500MB to match existing video limit)
     const maxSize = 500 * 1024 * 1024;
     if (fileSizeBytes && fileSizeBytes > maxSize) {
@@ -128,7 +135,7 @@ export async function POST(request: NextRequest) {
     // Must use TUS creation endpoint (not /stream/direct_upload) so the
     // returned URL supports HEAD+PATCH for chunked resumable uploads.
     const { uid, uploadURL } = await createTusDirectUpload(
-      fileSizeBytes || 0,
+      fileSizeBytes,
       {
         maxDurationSeconds: 3600, // 1 hour max
         meta: {
@@ -145,10 +152,14 @@ export async function POST(request: NextRequest) {
       videoUid: uid,
     });
   } catch (error) {
-    console.error("[upload-video] Error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[upload-video] Error:", message);
+
+    // Pass through Cloudflare's error for debugging
+    const isRateLimit = message.includes("429");
     return NextResponse.json(
-      { error: "Failed to create upload URL" },
-      { status: 500 }
+      { error: isRateLimit ? "Too many uploads — please wait a moment" : `Upload failed: ${message}` },
+      { status: isRateLimit ? 429 : 500 }
     );
   }
 }

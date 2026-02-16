@@ -615,8 +615,8 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
                 // Only uploadUrl — Cloudflare direct_upload URL is pre-created,
                 // setting endpoint would cause POST fallback → 400 "Decoding Error"
                 uploadUrl: uploadUrl,
-                retryDelays: [0, 1000, 3000, 5000],
-                chunkSize: 50 * 1024 * 1024,
+                retryDelays: [0, 1000, 3000, 5000, 10000],
+                chunkSize: 10 * 1024 * 1024, // 10MB chunks for reliability
                 metadata: {
                   filename: fileToUpload.name,
                   filetype: fileToUpload.type,
