@@ -592,6 +592,7 @@
     "pastEvents": "過去のイベント",
     "noEventsYet": "まだイベントがありません",
     "cancel": "キャンセル",
+    "refineImage": "調整",
     "avatarStyle": {
       "male": "男性的",
       "maleDesc": "力強く鮮明な特徴",
@@ -1125,6 +1126,7 @@
     "deleteTitle": "モーメントを削除しますか？",
     "deleteConfirm": "このモーメントは完全に削除されます。この操作は取り消せません。",
     "deleteError": "モーメントの削除に失敗しました。もう一度お試しください。",
+    "momentDeleted": "モーメントが削除されました",
     "addCaption": "キャプションを追加...",
     "sharedCaption": "共通キャプション（すべてのデフォルト）",
     "sharedCaptionPlaceholder": "このキャプションは個別のキャプションがない画像に使用されます",

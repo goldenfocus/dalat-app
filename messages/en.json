@@ -703,6 +703,7 @@
     "followersCount": "Followers",
     "followingCount": "following",
     "cancel": "Cancel",
+    "refineImage": "Refine",
     "avatarStyle": {
       "male": "Masculine",
       "maleDesc": "Strong, defined features",
@@ -1262,6 +1263,7 @@
     "deleteTitle": "Delete moment?",
     "deleteConfirm": "This will permanently remove this moment. This action cannot be undone.",
     "deleteError": "Failed to delete moment. Please try again.",
+    "momentDeleted": "Moment deleted",
     "addCaption": "Add a caption...",
     "sharedCaption": "Shared caption (default for all)",
     "sharedCaptionPlaceholder": "This caption will be used for images without individual captions",

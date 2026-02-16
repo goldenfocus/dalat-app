@@ -592,6 +592,7 @@
     "pastEvents": "过去的活动",
     "noEventsYet": "暂无活动",
     "cancel": "取消",
+    "refineImage": "优化",
     "avatarStyle": {
       "male": "男性化",
       "maleDesc": "强壮、轮廓分明的特征",
@@ -1125,6 +1126,7 @@
     "deleteTitle": "删除动态？",
     "deleteConfirm": "这将永久删除此动态。此操作无法撤销。",
     "deleteError": "删除动态失败。请重试。",
+    "momentDeleted": "动态已删除",
     "addCaption": "添加说明...",
     "sharedCaption": "共享说明（所有图片的默认值）",
     "sharedCaptionPlaceholder": "此说明将用于没有单独说明的图片",

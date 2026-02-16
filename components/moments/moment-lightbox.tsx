@@ -10,11 +10,13 @@ import {
   PDFPreview,
 } from "@/components/shared/material-renderers";
 import { useShare } from "@/lib/hooks/use-share";
+import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
 import type { MomentContentType, MomentVideoStatus } from "@/lib/types";
 
 // Minimal moment data needed for lightbox display
 export interface LightboxMoment {
   id: string;
+  user_id?: string;
   content_type: MomentContentType;
   media_url: string | null;
   thumbnail_url?: string | null;
@@ -60,6 +62,8 @@ interface MomentLightboxProps {
   onIndexChange?: (index: number) => void;
   /** Total count from database (may be higher than moments.length during pagination) */
   totalCount?: number;
+  /** Called when a moment is deleted from the lightbox */
+  onMomentDeleted?: (momentId: string) => void;
 }
 
 export function MomentLightbox({
@@ -70,6 +74,7 @@ export function MomentLightbox({
   eventSlug,
   onIndexChange,
   totalCount,
+  onMomentDeleted,
 }: MomentLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLandscape, setIsLandscape] = useState(false);
@@ -182,6 +187,22 @@ export function MomentLightbox({
     onClose();
   };
 
+  // Handle moment deletion from lightbox
+  const handleMomentDeleted = useCallback(() => {
+    if (onMomentDeleted) {
+      onMomentDeleted(moment.id);
+    }
+    // If it was the last moment, close the lightbox
+    if (moments.length <= 1) {
+      onClose();
+      return;
+    }
+    // If we're at the end, go back one
+    if (currentIndex >= moments.length - 1) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  }, [moment?.id, moments.length, currentIndex, onMomentDeleted, onClose]);
+
   const handleShare = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     const slug = moment.event_slug || eventSlug;
@@ -237,6 +258,17 @@ export function MomentLightbox({
               <Share2 className="w-5 h-5 text-white" />
             )}
           </button>
+
+          {/* Moment actions (delete, set cover) */}
+          {moment.user_id && (
+            <MomentActionsMenu
+              momentId={moment.id}
+              momentUserId={moment.user_id}
+              eventSlug={eventSlug || ""}
+              variant="dark"
+              onDeleted={handleMomentDeleted}
+            />
+          )}
 
           {/* Full page link */}
           <button

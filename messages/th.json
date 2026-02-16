@@ -592,6 +592,7 @@
     "pastEvents": "กิจกรรมที่ผ่านมา",
     "noEventsYet": "ยังไม่มีกิจกรรม",
     "cancel": "ยกเลิก",
+    "refineImage": "ปรับปรุง",
     "avatarStyle": {
       "male": "ผู้ชาย",
       "maleDesc": "ลักษณะแข็งแกร่งและชัดเจน",
@@ -1125,6 +1126,7 @@
     "deleteTitle": "ลบ moment?",
     "deleteConfirm": "การดำเนินการนี้จะลบ moment นี้อย่างถาวร ไม่สามารถยกเลิกได้",
     "deleteError": "ลบ moment ไม่สำเร็จ กรุณาลองอีกครั้ง",
+    "momentDeleted": "ลบโมเมนต์แล้ว",
     "addCaption": "เพิ่มคำอธิบาย...",
     "sharedCaption": "คำอธิบายร่วม (ค่าเริ่มต้นสำหรับทั้งหมด)",
     "sharedCaptionPlaceholder": "คำอธิบายนี้จะใช้สำหรับรูปที่ไม่มีคำอธิบายเฉพาะ",

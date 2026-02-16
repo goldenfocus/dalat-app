@@ -592,6 +592,7 @@
     "pastEvents": "Eventos pasados",
     "noEventsYet": "Aún no hay eventos",
     "cancel": "Cancelar",
+    "refineImage": "Refinar",
     "avatarStyle": {
       "male": "Masculino",
       "maleDesc": "Rasgos fuertes y definidos",
@@ -1125,6 +1126,7 @@
     "deleteTitle": "¿Eliminar moment?",
     "deleteConfirm": "Esto eliminará permanentemente este moment. Esta acción no se puede deshacer.",
     "deleteError": "Error al eliminar moment. Por favor intenta de nuevo.",
+    "momentDeleted": "Momento eliminado",
     "addCaption": "Agregar descripción...",
     "sharedCaption": "Descripción compartida (predeterminada para todas)",
     "sharedCaptionPlaceholder": "Esta descripción se usará para imágenes sin descripción individual",

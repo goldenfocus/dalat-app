@@ -606,6 +606,7 @@
     "pastEvents": "Événements passés",
     "noEventsYet": "Pas encore d'événements",
     "cancel": "Annuler",
+    "refineImage": "Affiner",
     "avatarStyle": {
       "male": "Masculin",
       "maleDesc": "Traits forts et définis",
@@ -1139,6 +1140,7 @@
     "deleteTitle": "Supprimer le moment ?",
     "deleteConfirm": "Ce moment sera définitivement supprimé. Cette action est irréversible.",
     "deleteError": "Impossible de supprimer le moment. Veuillez réessayer.",
+    "momentDeleted": "Moment supprimé",
     "addCaption": "Ajouter une légende...",
     "sharedCaption": "Légende partagée (par défaut pour toutes)",
     "sharedCaptionPlaceholder": "Cette légende sera utilisée pour les images sans légende individuelle",

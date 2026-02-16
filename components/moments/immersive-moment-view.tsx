@@ -15,6 +15,7 @@ import type { User } from "@supabase/supabase-js";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { useShare } from "@/lib/hooks/use-share";
+import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
 import type { MomentWithProfile } from "@/lib/types";
 
 // Hilariously random end-of-album phrases
@@ -49,6 +50,8 @@ interface ImmersiveMomentViewProps {
   hasMore?: boolean;
   /** Total number of moments (for progress display when more exist) */
   totalCount?: number;
+  /** Called when a moment is deleted */
+  onMomentDeleted?: (momentId: string) => void;
 }
 
 export function ImmersiveMomentView({
@@ -61,6 +64,7 @@ export function ImmersiveMomentView({
   onLoadMore,
   hasMore = false,
   totalCount,
+  onMomentDeleted,
 }: ImmersiveMomentViewProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -228,6 +232,22 @@ export function ImmersiveMomentView({
     router.push(`/events/${eventSlug}/moments/${moment.id}?from=immersive`);
     onClose();
   };
+
+  // Handle moment deletion
+  const handleMomentDeleted = useCallback(() => {
+    if (onMomentDeleted) {
+      onMomentDeleted(moment.id);
+    }
+    // If it was the last moment, close the view
+    if (moments.length <= 1) {
+      onClose();
+      return;
+    }
+    // If we're at the end, go back one
+    if (currentIndex >= moments.length - 1) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  }, [moment?.id, moments.length, currentIndex, onMomentDeleted, onClose]);
 
   // Share
   const handleShare = () => {
@@ -400,6 +420,15 @@ export function ImmersiveMomentView({
               <Share2 className="w-6 h-6" />
             </button>
 
+            {/* More actions (delete, set cover) */}
+            <MomentActionsMenu
+              momentId={moment.id}
+              momentUserId={moment.user_id}
+              eventSlug={eventSlug}
+              variant="dark"
+              onDeleted={handleMomentDeleted}
+            />
+
             {/* Full page */}
             <button
               onClick={openFullPage}
@@ -454,6 +483,13 @@ export function ImmersiveMomentView({
                 <ExternalLink className="w-4 h-4" />
                 Full page
               </button>
+              <MomentActionsMenu
+                momentId={moment.id}
+                momentUserId={moment.user_id}
+                eventSlug={eventSlug}
+                variant="dark"
+                onDeleted={handleMomentDeleted}
+              />
             </div>
           </div>
         </div>

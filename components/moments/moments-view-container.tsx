@@ -183,6 +183,11 @@ export function MomentsViewContainer({
     setShowCinema(false);
   };
 
+  // Handle moment deletion from immersive view
+  const handleMomentDeleted = useCallback((momentId: string) => {
+    setAllMoments((prev) => prev.filter((m) => m.id !== momentId));
+  }, []);
+
   // Switch from immersive/cinema to grid (and remember preference)
   const switchToGrid = () => {
     setViewMode("grid");
@@ -285,6 +290,7 @@ export function MomentsViewContainer({
           onLoadMore={handleLoadMore}
           hasMore={hasMoreMoments}
           totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
+          onMomentDeleted={handleMomentDeleted}
         />
       )}
 

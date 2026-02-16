@@ -593,6 +593,7 @@
     "pastEvents": "Sự kiện đã qua",
     "noEventsYet": "Chưa có sự kiện nào",
     "cancel": "Hủy",
+    "refineImage": "Tinh chỉnh",
     "avatarStyle": {
       "male": "Nam tính",
       "maleDesc": "Đường nét mạnh mẽ",
@@ -1147,6 +1148,7 @@
     "deleteTitle": "Xóa khoảnh khắc?",
     "deleteConfirm": "Khoảnh khắc này sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.",
     "deleteError": "Không thể xóa khoảnh khắc. Vui lòng thử lại.",
+    "momentDeleted": "Đã xóa khoảnh khắc",
     "addCaption": "Thêm chú thích...",
     "sharedCaption": "Chú thích chung (mặc định cho tất cả)",
     "sharedCaptionPlaceholder": "Chú thích này sẽ được dùng cho ảnh không có chú thích riêng",

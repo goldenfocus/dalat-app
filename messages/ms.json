@@ -592,6 +592,7 @@
     "pastEvents": "Acara Lepas",
     "noEventsYet": "Belum ada acara",
     "cancel": "Batal",
+    "refineImage": "Halusi",
     "avatarStyle": {
       "male": "Maskulin",
       "maleDesc": "Ciri-ciri kuat dan jelas",
@@ -1125,6 +1126,7 @@
     "deleteTitle": "Padam momen?",
     "deleteConfirm": "Ini akan membuang momen ini secara kekal. Tindakan ini tidak boleh dibuat asal.",
     "deleteError": "Gagal memadam momen. Sila cuba lagi.",
+    "momentDeleted": "Momen telah dipadamkan",
     "addCaption": "Tambah kapsyen...",
     "sharedCaption": "Kapsyen kongsi (lalai untuk semua)",
     "sharedCaptionPlaceholder": "Kapsyen ini akan digunakan untuk imej tanpa kapsyen individu",

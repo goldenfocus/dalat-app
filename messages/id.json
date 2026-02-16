@@ -592,6 +592,7 @@
     "pastEvents": "Acara Sebelumnya",
     "noEventsYet": "Belum ada acara",
     "cancel": "Batal",
+    "refineImage": "Perbaiki",
     "avatarStyle": {
       "male": "Maskulin",
       "maleDesc": "Fitur kuat dan tegas",
@@ -1125,6 +1126,7 @@
     "deleteTitle": "Hapus momen?",
     "deleteConfirm": "Ini akan menghapus momen ini secara permanen. Tindakan ini tidak dapat dibatalkan.",
     "deleteError": "Gagal menghapus momen. Silakan coba lagi.",
+    "momentDeleted": "Momen telah dihapus",
     "addCaption": "Tambah keterangan...",
     "sharedCaption": "Keterangan bersama (default untuk semua)",
     "sharedCaptionPlaceholder": "Keterangan ini akan digunakan untuk gambar tanpa keterangan individual",
