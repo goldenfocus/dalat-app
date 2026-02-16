@@ -69,7 +69,8 @@
     "calendar": "캘린더",
     "about": "소개",
     "venues": "장소",
-    "activity": "활동"
+    "activity": "활동",
+    "news": "뉴스"
   },
   "home": {
     "title": "달랏의 이벤트",
@@ -112,7 +113,9 @@
       "seeAll": "모두 보기"
     },
     "forYou": "추천",
-    "forYouSubtitle": "참석한 이벤트 기반 추천"
+    "forYouSubtitle": "참석한 이벤트 기반 추천",
+    "showMore": "{count}개 더 보기",
+    "showLess": "접기"
   },
   "auth": {
     "welcomeTitle": "ĐàLạt.app에 오신 것을 환영합니다",
@@ -2159,5 +2162,26 @@
     "done": "완료",
     "addAnother": "게스트 추가하기",
     "guests": "{count, plural, =0 {게스트 없음} =1 {게스트 1명} other {게스트 #명}}"
+  },
+  "news": {
+    "title": "달랏 뉴스",
+    "subtitle": "달랏의 최신 뉴스와 업데이트",
+    "breaking": "속보",
+    "trending": "인기",
+    "allNews": "전체 뉴스",
+    "seeAll": "모두 보기",
+    "via": "출처",
+    "sources": "출처",
+    "relatedEvents": "관련 이벤트",
+    "backToNews": "뉴스로 돌아가기",
+    "noNews": "아직 뉴스가 없습니다.",
+    "loadMore": "더 보기",
+    "tagTourism": "관광",
+    "tagCulture": "문화",
+    "tagEvents": "이벤트",
+    "tagGovernment": "행정",
+    "tagFoodDrink": "맛집",
+    "tagWeather": "날씨",
+    "tagCommunity": "커뮤니티"
   }
 }

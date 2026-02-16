@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { formatInDaLat } from "@/lib/timezone";
-import { EventCardFramed } from "./event-card-framed";
+import { EventCard } from "./event-card";
 import { EventCardCompact } from "./event-card-compact";
 import { EventListCard } from "./event-list-card";
 import { EventImmersiveCard } from "./event-immersive-card";
@@ -12,6 +12,7 @@ import {
   useEventViewPreferences,
   type EventDensity,
 } from "@/lib/hooks/use-local-storage";
+import { useRecommendedEvents } from "@/components/home/recommended-events-context";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 interface EventGridProps {
@@ -75,13 +76,12 @@ export function EventGrid({
 }: EventGridProps) {
   const { mode, density } = useEventViewPreferences();
   const locale = useLocale() as Locale;
+  const { recommendedIds } = useRecommendedEvents();
 
   // Track which card is flipped (only one at a time)
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
 
   const handleFlip = (eventId: string) => {
-    // If tapping the same card, it's already handled in the card component
-    // If tapping a different card, flip to that one (auto-closes the previous)
     setFlippedCardId(eventId);
   };
 
@@ -89,10 +89,18 @@ export function EventGrid({
   const effectiveDensity = forceCompact ? "compact" : density;
   const effectiveMode = forceCompact ? "grid" : mode;
 
+  // Filter out events already shown in the "For You" section
+  const filteredEvents = useMemo(
+    () => recommendedIds.size > 0
+      ? events.filter((e) => !recommendedIds.has(e.id))
+      : events,
+    [events, recommendedIds]
+  );
+
   // Group events by date for list view
   const groupedEvents = useMemo(
-    () => (effectiveMode === "list" ? groupEventsByDate(events) : []),
-    [events, effectiveMode]
+    () => (effectiveMode === "list" ? groupEventsByDate(filteredEvents) : []),
+    [filteredEvents, effectiveMode]
   );
 
   if (effectiveMode === "list") {
@@ -132,7 +140,7 @@ export function EventGrid({
   if (effectiveMode === "immersive") {
     return (
       <div className={cn("grid", IMMERSIVE_CLASSES[effectiveDensity])}>
-        {events.map((event, index) => {
+        {filteredEvents.map((event, index) => {
           // Skip translation if viewing in the event's original language
           const translation = event.source_locale === locale
             ? undefined
@@ -156,7 +164,7 @@ export function EventGrid({
   if (effectiveDensity === "compact") {
     return (
       <div className={cn("grid", GRID_CLASSES[effectiveDensity])}>
-        {events.map((event, index) => {
+        {filteredEvents.map((event, index) => {
           // Skip translation if viewing in the event's original language
           const translation = event.source_locale === locale
             ? undefined
@@ -176,21 +184,24 @@ export function EventGrid({
     );
   }
 
+  // Default density: use EventCard style (same as For You section)
   return (
     <div className={cn("grid", GRID_CLASSES[effectiveDensity])}>
-      {events.map((event, index) => {
+      {filteredEvents.map((event, index) => {
         // Skip translation if viewing in the event's original language
         const translation = event.source_locale === locale
           ? undefined
           : eventTranslations.get(event.id);
         return (
-          <EventCardFramed
+          <EventCard
             key={event.id}
             event={event}
             counts={counts[event.id]}
             seriesRrule={seriesRrules[event.id]}
             translatedTitle={translation?.title}
             priority={index === 0}
+            isFlipped={flippedCardId === event.id}
+            onFlip={handleFlip}
           />
         );
       })}

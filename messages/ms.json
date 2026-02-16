@@ -69,7 +69,8 @@
     "calendar": "Kalendar",
     "about": "Tentang",
     "venues": "Tempat",
-    "activity": "Aktiviti"
+    "activity": "Aktiviti",
+    "news": "Berita"
   },
   "home": {
     "title": "Acara di Đà Lạt",
@@ -112,7 +113,9 @@
       "seeAll": "Lihat semua"
     },
     "forYou": "Untuk Anda",
-    "forYouSubtitle": "Berdasarkan acara yang anda hadiri"
+    "forYouSubtitle": "Berdasarkan acara yang anda hadiri",
+    "showMore": "Tunjuk {count} lagi",
+    "showLess": "Tunjuk kurang"
   },
   "auth": {
     "welcomeTitle": "Selamat datang ke ĐàLạt.app",
@@ -2171,5 +2174,26 @@
     "done": "Selesai",
     "addAnother": "Tambah tetamu lain",
     "guests": "{count, plural, =0 {Tiada tetamu} =1 {1 tetamu} other {# tetamu}}"
+  },
+  "news": {
+    "title": "Berita DaLat",
+    "subtitle": "Berita dan kemas kini terkini dari Đà Lạt",
+    "breaking": "Terkini",
+    "trending": "Trending",
+    "allNews": "Semua Berita",
+    "seeAll": "Lihat semua",
+    "via": "sumber",
+    "sources": "Sumber",
+    "relatedEvents": "Acara Berkaitan",
+    "backToNews": "Kembali ke Berita",
+    "noNews": "Belum ada berita.",
+    "loadMore": "Muat lagi",
+    "tagTourism": "Pelancongan",
+    "tagCulture": "Budaya",
+    "tagEvents": "Acara",
+    "tagGovernment": "Kerajaan",
+    "tagFoodDrink": "Makanan & Minuman",
+    "tagWeather": "Cuaca",
+    "tagCommunity": "Komuniti"
   }
 }

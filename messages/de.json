@@ -69,7 +69,8 @@
     "calendar": "Kalender",
     "about": "Über uns",
     "venues": "Veranstaltungsorte",
-    "activity": "Aktivität"
+    "activity": "Aktivität",
+    "news": "Nachrichten"
   },
   "home": {
     "title": "Events in Đà Lạt",
@@ -112,7 +113,9 @@
       "seeAll": "Alle anzeigen"
     },
     "forYou": "Für dich",
-    "forYouSubtitle": "Basierend auf besuchten Veranstaltungen"
+    "forYouSubtitle": "Basierend auf besuchten Veranstaltungen",
+    "showMore": "{count} weitere anzeigen",
+    "showLess": "Weniger anzeigen"
   },
   "auth": {
     "welcomeTitle": "Willkommen bei ĐàLạt.app",
@@ -2171,5 +2174,26 @@
     "done": "Fertig",
     "addAnother": "Weiteren Gast hinzufügen",
     "guests": "{count, plural, =0 {Keine Gäste} =1 {1 Gast} other {# Gäste}}"
+  },
+  "news": {
+    "title": "DaLat Nachrichten",
+    "subtitle": "Neueste Nachrichten und Updates aus Đà Lạt",
+    "breaking": "Eilmeldung",
+    "trending": "Beliebt",
+    "allNews": "Alle Nachrichten",
+    "seeAll": "Alle anzeigen",
+    "via": "via",
+    "sources": "Quellen",
+    "relatedEvents": "Verwandte Events",
+    "backToNews": "Zurück zu Nachrichten",
+    "noNews": "Noch keine Nachrichten.",
+    "loadMore": "Mehr laden",
+    "tagTourism": "Tourismus",
+    "tagCulture": "Kultur",
+    "tagEvents": "Veranstaltungen",
+    "tagGovernment": "Verwaltung",
+    "tagFoodDrink": "Essen & Trinken",
+    "tagWeather": "Wetter",
+    "tagCommunity": "Gemeinschaft"
   }
 }

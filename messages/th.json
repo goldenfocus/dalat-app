@@ -69,7 +69,8 @@
     "calendar": "ปฏิทิน",
     "about": "เกี่ยวกับ",
     "venues": "สถานที่",
-    "activity": "กิจกรรม"
+    "activity": "กิจกรรม",
+    "news": "ข่าว"
   },
   "home": {
     "title": "กิจกรรมในดาลัด",
@@ -112,7 +113,9 @@
       "seeAll": "ดูทั้งหมด"
     },
     "forYou": "สำหรับคุณ",
-    "forYouSubtitle": "จากกิจกรรมที่คุณเข้าร่วม"
+    "forYouSubtitle": "จากกิจกรรมที่คุณเข้าร่วม",
+    "showMore": "แสดงอีก {count}",
+    "showLess": "แสดงน้อยลง"
   },
   "auth": {
     "welcomeTitle": "ยินดีต้อนรับสู่ ĐàLạt.app",
@@ -2171,5 +2174,26 @@
     "done": "เสร็จสิ้น",
     "addAnother": "เพิ่มแขกอีกคน",
     "guests": "{count, plural, =0 {ไม่มีแขก} other {# แขก}}"
+  },
+  "news": {
+    "title": "ข่าวดาลัด",
+    "subtitle": "ข่าวสารและอัปเดตล่าสุดจากดาลัด",
+    "breaking": "ด่วน",
+    "trending": "มาแรง",
+    "allNews": "ข่าวทั้งหมด",
+    "seeAll": "ดูทั้งหมด",
+    "via": "จาก",
+    "sources": "แหล่งที่มา",
+    "relatedEvents": "กิจกรรมที่เกี่ยวข้อง",
+    "backToNews": "กลับไปข่าว",
+    "noNews": "ยังไม่มีข่าว",
+    "loadMore": "โหลดเพิ่ม",
+    "tagTourism": "ท่องเที่ยว",
+    "tagCulture": "วัฒนธรรม",
+    "tagEvents": "กิจกรรม",
+    "tagGovernment": "ราชการ",
+    "tagFoodDrink": "อาหาร",
+    "tagWeather": "อากาศ",
+    "tagCommunity": "ชุมชน"
   }
 }

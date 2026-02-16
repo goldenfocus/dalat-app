@@ -69,7 +69,8 @@
     "calendar": "Lịch",
     "about": "Giới thiệu",
     "venues": "Địa điểm",
-    "activity": "Hoạt động"
+    "activity": "Hoạt động",
+    "news": "Tin tức"
   },
   "home": {
     "title": "Sự kiện tại Đà Lạt",
@@ -112,7 +113,9 @@
       "seeAll": "Xem tất cả"
     },
     "forYou": "Dành cho bạn",
-    "forYouSubtitle": "Dựa trên sự kiện bạn đã tham gia"
+    "forYouSubtitle": "Dựa trên sự kiện bạn đã tham gia",
+    "showMore": "Xem thêm {count}",
+    "showLess": "Thu gọn"
   },
   "auth": {
     "welcomeTitle": "Chào mừng đến với ĐàLạt.app",
@@ -2232,5 +2235,26 @@
     "done": "Xong",
     "addAnother": "Thêm khách khác",
     "guests": "{count, plural, =0 {Không có khách} other {# khách}}"
+  },
+  "news": {
+    "title": "Tin Đà Lạt",
+    "subtitle": "Tin tức và cập nhật mới nhất từ Đà Lạt",
+    "breaking": "Nóng",
+    "trending": "Xu hướng",
+    "allNews": "Tất cả tin",
+    "seeAll": "Xem tất cả",
+    "via": "nguồn",
+    "sources": "Nguồn",
+    "relatedEvents": "Sự kiện liên quan",
+    "backToNews": "Quay lại Tin tức",
+    "noNews": "Chưa có tin tức nào.",
+    "loadMore": "Xem thêm",
+    "tagTourism": "Du lịch",
+    "tagCulture": "Văn hóa",
+    "tagEvents": "Sự kiện",
+    "tagGovernment": "Chính quyền",
+    "tagFoodDrink": "Ẩm thực",
+    "tagWeather": "Thời tiết",
+    "tagCommunity": "Cộng đồng"
   }
 }

@@ -69,7 +69,8 @@
     "calendar": "日历",
     "about": "关于",
     "venues": "场馆",
-    "activity": "动态"
+    "activity": "动态",
+    "news": "新闻"
   },
   "home": {
     "title": "大叻活动",
@@ -112,7 +113,9 @@
       "seeAll": "查看全部"
     },
     "forYou": "推荐",
-    "forYouSubtitle": "基于你参加过的活动"
+    "forYouSubtitle": "基于你参加过的活动",
+    "showMore": "显示更多 {count}",
+    "showLess": "收起"
   },
   "auth": {
     "welcomeTitle": "欢迎来到 ĐàLạt.app",
@@ -2174,5 +2177,26 @@
     "done": "完成",
     "addAnother": "添加另一位客人",
     "guests": "{count, plural, =0 {没有客人} =1 {1位客人} other {#位客人}}"
+  },
+  "news": {
+    "title": "大叻新闻",
+    "subtitle": "大叻最新新闻与动态",
+    "breaking": "突发",
+    "trending": "热门",
+    "allNews": "全部新闻",
+    "seeAll": "查看全部",
+    "via": "来源",
+    "sources": "来源",
+    "relatedEvents": "相关活动",
+    "backToNews": "返回新闻",
+    "noNews": "暂无新闻。",
+    "loadMore": "加载更多",
+    "tagTourism": "旅游",
+    "tagCulture": "文化",
+    "tagEvents": "活动",
+    "tagGovernment": "政务",
+    "tagFoodDrink": "美食",
+    "tagWeather": "天气",
+    "tagCommunity": "社区"
   }
 }

@@ -69,7 +69,8 @@
     "calendar": "Календарь",
     "about": "О нас",
     "venues": "Площадки",
-    "activity": "Активность"
+    "activity": "Активность",
+    "news": "Новости"
   },
   "home": {
     "title": "События в Далате",
@@ -112,7 +113,9 @@
       "seeAll": "Смотреть все"
     },
     "forYou": "Для вас",
-    "forYouSubtitle": "На основе посещённых мероприятий"
+    "forYouSubtitle": "На основе посещённых мероприятий",
+    "showMore": "Показать ещё {count}",
+    "showLess": "Свернуть"
   },
   "auth": {
     "welcomeTitle": "Добро пожаловать в ĐàLạt.app",
@@ -2171,5 +2174,26 @@
     "done": "Готово",
     "addAnother": "Добавить ещё гостя",
     "guests": "{count, plural, =0 {Нет гостей} =1 {1 гость} few {# гостя} other {# гостей}}"
+  },
+  "news": {
+    "title": "Новости Далата",
+    "subtitle": "Последние новости и обновления из Далата",
+    "breaking": "Срочно",
+    "trending": "Популярное",
+    "allNews": "Все новости",
+    "seeAll": "Смотреть все",
+    "via": "источник",
+    "sources": "Источники",
+    "relatedEvents": "Связанные события",
+    "backToNews": "Назад к новостям",
+    "noNews": "Новостей пока нет.",
+    "loadMore": "Загрузить ещё",
+    "tagTourism": "Туризм",
+    "tagCulture": "Культура",
+    "tagEvents": "События",
+    "tagGovernment": "Власти",
+    "tagFoodDrink": "Еда и напитки",
+    "tagWeather": "Погода",
+    "tagCommunity": "Сообщество"
   }
 }
