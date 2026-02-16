@@ -298,7 +298,9 @@ export function useUploadQueue({
 
         await new Promise<void>((resolve, reject) => {
           const upload = new tus.Upload(file, {
-            endpoint: uploadUrl,
+            // Cloudflare direct_upload returns a pre-created TUS URL.
+            // Only set uploadUrl (HEAD+PATCH) — never endpoint (POST create),
+            // because Cloudflare rejects POST at this URL with "Decoding Error".
             uploadUrl: uploadUrl,
             retryDelays: [0, 1000, 3000, 5000, 10000], // More retries for mobile
             chunkSize: 10 * 1024 * 1024, // 10MB chunks for better mobile reliability
@@ -322,14 +324,10 @@ export function useUploadQueue({
             },
           });
 
-          // Check for previous uploads to resume (great for flaky connections)
-          upload.findPreviousUploads().then((previousUploads) => {
-            if (previousUploads.length > 0) {
-              console.log("[TUS] Resuming previous upload for:", file.name);
-              upload.resumeFromPreviousUpload(previousUploads[0]);
-            }
-            upload.start();
-          });
+          // Start directly — don't use findPreviousUploads() because
+          // Cloudflare URLs are one-time and expire after 30 minutes.
+          // Resuming with an old expired URL causes 400 errors.
+          upload.start();
         });
 
         console.log(`[UploadQueue] Video uploaded to Cloudflare Stream: ${file.name} → ${videoUid}`);

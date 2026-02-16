@@ -344,8 +344,9 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
       // Upload using TUS (resumable upload)
       return new Promise((resolve, reject) => {
         const upload = new tus.Upload(file, {
-          endpoint: uploadUrl,
-          uploadUrl: uploadUrl, // Direct upload URL from Cloudflare
+          // Only uploadUrl — Cloudflare direct_upload URL is pre-created,
+          // setting endpoint would cause POST fallback → 400 "Decoding Error"
+          uploadUrl: uploadUrl,
           retryDelays: [0, 1000, 3000, 5000], // Retry delays for flaky connections
           chunkSize: 50 * 1024 * 1024, // 50MB chunks for better resume on slow connections
           metadata: {
@@ -366,14 +367,9 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           },
         });
 
-        // Check for previous uploads to resume
-        upload.findPreviousUploads().then((previousUploads) => {
-          if (previousUploads.length > 0) {
-            console.log("[TUS] Resuming previous upload");
-            upload.resumeFromPreviousUpload(previousUploads[0]);
-          }
-          upload.start();
-        });
+        // Start directly — Cloudflare URLs are one-time and expire after 30min.
+        // Don't use findPreviousUploads() as old expired URLs cause 400 errors.
+        upload.start();
       });
     } catch (error) {
       console.error("[Cloudflare] Video upload error:", error);

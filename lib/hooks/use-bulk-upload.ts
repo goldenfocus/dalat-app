@@ -612,7 +612,8 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
 
             await new Promise<void>((resolve, reject) => {
               const upload = new tus.Upload(fileToUpload, {
-                endpoint: uploadUrl,
+                // Only uploadUrl — Cloudflare direct_upload URL is pre-created,
+                // setting endpoint would cause POST fallback → 400 "Decoding Error"
                 uploadUrl: uploadUrl,
                 retryDelays: [0, 1000, 3000, 5000],
                 chunkSize: 50 * 1024 * 1024,
