@@ -88,6 +88,35 @@ export async function updateSession(request: NextRequest) {
   }
 
   // =========================================================================
+  // REDIRECT LOOP DETECTION
+  // =========================================================================
+  // Track rapid redirects via a short-lived cookie. If a user hits 5+ redirects
+  // within 10 seconds, bail out and show a friendly help page instead of looping.
+  const redirectCount = parseInt(request.cookies.get('_rc')?.value || '0', 10);
+  if (redirectCount >= 5) {
+    const locale = getLocaleFromPath(pathname) || routing.defaultLocale;
+    const helpUrl = new URL(`/${locale}/auth/redirect-help`, request.url);
+    const response = NextResponse.redirect(helpUrl);
+    response.cookies.delete('_rc');
+    return response;
+  }
+
+  // Helper: increment redirect counter on redirect responses
+  function trackRedirect(response: NextResponse): NextResponse {
+    if (response.status >= 300 && response.status < 400) {
+      response.cookies.set('_rc', String(redirectCount + 1), {
+        maxAge: 10, path: '/', httpOnly: true, sameSite: 'lax',
+      });
+    } else {
+      // Successful response — clear the counter
+      if (redirectCount > 0) {
+        response.cookies.delete('_rc');
+      }
+    }
+    return response;
+  }
+
+  // =========================================================================
   // UNIFIED SLUG NAMESPACE: Legacy URL Redirects
   // =========================================================================
   // Redirect old /venues/[slug] and /organizers/[slug] URLs to unified /[slug]
@@ -249,7 +278,14 @@ export async function updateSession(request: NextRequest) {
   // For public routes, use next-intl middleware to properly set locale context
   // This is critical for translations to work - skipping this breaks i18n
   if (isPublicRoute) {
-    return spoofBotUA(intlMiddleware(request));
+    // Bypass intlMiddleware for locale-prefixed auth routes to prevent redirect loops.
+    // Root-level /auth/* route handlers redirect to /{locale}/auth/* pages, but
+    // intlMiddleware with localePrefix:'as-needed' strips the default locale prefix,
+    // redirecting back to /auth/* and creating an infinite loop.
+    if (pathWithoutLocale.startsWith('/auth/') && getLocaleFromPath(pathname)) {
+      return spoofBotUA(NextResponse.next({ request }));
+    }
+    return trackRedirect(spoofBotUA(intlMiddleware(request)));
   }
 
   // If the env vars are not set, skip auth check
@@ -290,7 +326,7 @@ export async function updateSession(request: NextRequest) {
     const locale = getLocaleFromPath(pathname) || routing.defaultLocale;
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/auth/login`;
-    return NextResponse.redirect(url);
+    return trackRedirect(NextResponse.redirect(url));
   }
 
   // For authenticated routes, still need to run intl middleware for locale context
@@ -302,5 +338,5 @@ export async function updateSession(request: NextRequest) {
     intlResponse.cookies.set(cookie.name, cookie.value);
   });
 
-  return spoofBotUA(intlResponse);
+  return trackRedirect(spoofBotUA(intlResponse));
 }
