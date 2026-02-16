@@ -613,6 +613,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
             await new Promise<void>((resolve, reject) => {
               const upload = new tus.Upload(fileToUpload, {
                 endpoint: uploadUrl,
+                uploadUrl: uploadUrl,
                 retryDelays: [0, 1000, 3000, 5000],
                 chunkSize: 50 * 1024 * 1024,
                 metadata: {

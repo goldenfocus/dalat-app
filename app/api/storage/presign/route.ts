@@ -1,60 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStorageProvider, isR2Configured } from "@/lib/storage";
-
-/**
- * Valid buckets and their allowed MIME types
- */
-const BUCKET_CONFIG: Record<string, string[]> = {
-  avatars: ["image/jpeg", "image/png", "image/webp", "image/gif"],
-  "event-media": [
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-    "video/mp4",
-    "video/webm",
-    "video/quicktime", // .mov files from iOS
-  ],
-  moments: [
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-    "image/heic", // HEIC from iOS - uploaded to R2, converted server-side
-    "image/heif", // HEIF variant
-    "video/mp4",
-    "video/webm",
-    "video/quicktime", // .mov files from iOS
-  ],
-  "venue-media": ["image/jpeg", "image/png", "image/webp", "image/gif"],
-  "organizer-logos": ["image/jpeg", "image/png", "image/webp"],
-  "persona-references": ["image/jpeg", "image/png", "image/webp"],
-  "moment-materials": [
-    "application/pdf",
-    "audio/mpeg",
-    "audio/wav",
-    "audio/ogg",
-    "audio/mp4",
-    "audio/x-m4a",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-  ],
-  "promo-media": [
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-    "video/mp4",
-    "video/webm",
-    "video/quicktime",
-    "application/pdf",
-  ],
-};
+import { BUCKET_CONFIG } from "@/lib/storage/bucket-config";
 
 /**
  * Generate a presigned URL for direct upload to storage.

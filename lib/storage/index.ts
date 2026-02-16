@@ -55,6 +55,64 @@ export interface StorageProvider {
   ): Promise<string>;
 }
 
+// === Multipart Upload Types ===
+
+export interface CompletedUploadPart {
+  partNumber: number;
+  etag: string;
+}
+
+export interface PresignedPartUrlOptions {
+  expiresIn?: number;
+}
+
+export interface MultipartUploadInitResult {
+  uploadId: string;
+  key: string;
+}
+
+export interface MultipartUploadCompleteResult {
+  location: string;
+  publicUrl: string;
+}
+
+export interface MultipartStorageProvider extends StorageProvider {
+  createMultipartUpload(
+    bucket: string,
+    path: string,
+    contentType: string
+  ): Promise<MultipartUploadInitResult>;
+
+  createPresignedPartUrl(
+    bucket: string,
+    path: string,
+    uploadId: string,
+    partNumber: number,
+    options?: PresignedPartUrlOptions
+  ): Promise<string>;
+
+  createPresignedPartUrls(
+    bucket: string,
+    path: string,
+    uploadId: string,
+    partNumbers: number[],
+    options?: PresignedPartUrlOptions
+  ): Promise<Array<{ partNumber: number; url: string }>>;
+
+  completeMultipartUpload(
+    bucket: string,
+    path: string,
+    uploadId: string,
+    parts: CompletedUploadPart[]
+  ): Promise<MultipartUploadCompleteResult>;
+
+  abortMultipartUpload(
+    bucket: string,
+    path: string,
+    uploadId: string
+  ): Promise<void>;
+}
+
 /**
  * All storage buckets now use R2 for maximum performance.
  * R2 is same-network with Cloudflare Image Resizing = faster everything.

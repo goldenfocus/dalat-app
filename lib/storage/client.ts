@@ -13,11 +13,13 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { generateSmartFilename } from "@/lib/media-utils";
+import { multipartUpload } from "./multipart-upload";
 
 // Retry configuration for upload resilience
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000; // 1 second
 const MAX_RETRY_DELAY = 10000; // 10 seconds
+const MULTIPART_THRESHOLD = 10 * 1024 * 1024; // 10MB - use multipart above this
 
 /**
  * Sleep for a specified duration
@@ -202,6 +204,31 @@ export async function uploadFile(
 
   // Infer content type (handles iOS Safari MIME type issues)
   const contentType = inferContentType(file);
+
+  // Large files: use multipart upload (chunked, parallel, resumable per-chunk)
+  if (file.size > MULTIPART_THRESHOLD) {
+    try {
+      return await multipartUpload({
+        bucket,
+        file,
+        path,
+        contentType,
+        onProgress: options.onProgress,
+      });
+    } catch (error) {
+      // Never swallow user cancellation
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+      // Only fall back to single PUT if R2 is not configured
+      const isR2Unavailable =
+        error instanceof Error && error.message.includes("R2 storage not configured");
+      if (!isR2Unavailable) {
+        throw error;
+      }
+      console.warn("[Upload] R2 not configured, falling back to single PUT");
+    }
+  }
 
   // Try presigned URL first (works for both R2 and Supabase)
   try {
