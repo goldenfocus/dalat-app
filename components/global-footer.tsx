@@ -31,8 +31,8 @@ export function GlobalFooter() {
   const pathWithoutLocale = (pathname ?? "/").replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
 
   return (
-    <footer className="hidden lg:block border-t py-6 mt-auto">
-      <div className="container max-w-6xl mx-auto px-4 space-y-3">
+    <footer className="border-t py-4 lg:py-6 mt-auto mb-20 lg:mb-0">
+      <div className="container max-w-6xl mx-auto px-4 space-y-2 lg:space-y-3">
         {/* Footer text with heart icon */}
         <p className="text-center text-sm text-muted-foreground flex items-center justify-center gap-1.5">
           Made with
@@ -57,6 +57,13 @@ export function GlobalFooter() {
             className="hover:text-muted-foreground transition-colors"
           >
             Blog
+          </Link>
+          <span>·</span>
+          <Link
+            href="/discover"
+            className="hover:text-muted-foreground transition-colors"
+          >
+            Discover
           </Link>
           <span>·</span>
           <a
