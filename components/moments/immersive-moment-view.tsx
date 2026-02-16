@@ -7,6 +7,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "./moment-video-player";
+import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { RelatedEventsSection } from "./related-events-section";
 import { CommentsSheet } from "@/components/comments/comments-sheet";
 import { ImmersiveCommentsPanel } from "@/components/comments/immersive-comments-panel";
@@ -314,11 +315,11 @@ export function ImmersiveMomentView({
           )}
 
           {/* Video */}
-          {moment.content_type === "video" && moment.media_url && (
+          {moment.content_type === "video" && (moment.media_url || moment.cf_video_uid) && (
             <div className="w-full h-full flex items-center justify-center">
               <MomentVideoPlayer
-                src={moment.media_url}
-                hlsSrc={moment.cf_playback_url || undefined}
+                src={moment.media_url || ""}
+                hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid) || undefined}
                 poster={moment.thumbnail_url || undefined}
               />
             </div>

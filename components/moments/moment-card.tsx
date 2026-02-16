@@ -6,7 +6,7 @@ import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 import { Play, MessageCircle, FileText, Music, File } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
-import { getCfStreamThumbnailUrl } from "@/lib/media-utils";
+import { getCfStreamThumbnailUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { getYouTubeThumbnail } from "@/components/shared/material-renderers";
 import type { MomentContentType } from "@/lib/types";
 
@@ -80,7 +80,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
     : null;
 
   // Derive video thumbnail: use stored thumbnail_url, or derive from CF Stream playback URL
-  const derivedThumbnailUrl = moment.thumbnail_url || getCfStreamThumbnailUrl(moment.cf_playback_url);
+  const derivedThumbnailUrl = moment.thumbnail_url || getCfStreamThumbnailUrl(moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid));
 
   // Show thumbnail only if available and not errored
   const showThumbnail = derivedThumbnailUrl && !thumbnailError;

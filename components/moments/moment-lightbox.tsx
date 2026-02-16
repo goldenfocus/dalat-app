@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { X, ChevronLeft, ChevronRight, ExternalLink, Play, Share2, Check } from "lucide-react";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
+import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import {
   AudioPlayer,
   PDFPreview,
@@ -346,20 +347,20 @@ export function MomentLightbox({
         {/* Video */}
         {moment.content_type === "video" && (
           <div className="w-full h-full max-h-[90vh] flex items-center justify-center">
-            {(moment.video_status === "ready" || !moment.cf_video_uid) && moment.media_url ? (
+            {(moment.video_status === "ready" || !moment.cf_video_uid) && (moment.media_url || moment.cf_video_uid) ? (
               <MomentVideoPlayer
-                src={moment.media_url}
-                hlsSrc={moment.cf_playback_url || undefined}
+                src={moment.media_url || ""}
+                hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid) || undefined}
                 poster={moment.thumbnail_url || undefined}
               />
-            ) : (
+            ) : moment.cf_video_uid ? (
               <div className="aspect-video flex items-center justify-center bg-muted/20 rounded-lg">
                 <div className="text-white/70 text-center">
                   <div className="w-12 h-12 border-2 border-white/50 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
                   <p>Video processing...</p>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         )}
 
