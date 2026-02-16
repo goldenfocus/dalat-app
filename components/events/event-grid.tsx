@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { formatInDaLat } from "@/lib/timezone";
-import { EventCard } from "./event-card";
+import { EventCardFramed } from "./event-card-framed";
 import { EventCardCompact } from "./event-card-compact";
 import { EventListCard } from "./event-list-card";
 import { EventImmersiveCard } from "./event-immersive-card";
@@ -78,7 +78,7 @@ export function EventGrid({
   const locale = useLocale() as Locale;
   const { recommendedIds } = useRecommendedEvents();
 
-  // Track which card is flipped (only one at a time)
+  // Track which card is flipped (only one at a time, used in compact view)
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
 
   const handleFlip = (eventId: string) => {
@@ -184,7 +184,7 @@ export function EventGrid({
     );
   }
 
-  // Default density: use EventCard style (same as For You section)
+  // Default density: framed cards with info panel below image
   return (
     <div className={cn("grid", GRID_CLASSES[effectiveDensity])}>
       {filteredEvents.map((event, index) => {
@@ -193,15 +193,13 @@ export function EventGrid({
           ? undefined
           : eventTranslations.get(event.id);
         return (
-          <EventCard
+          <EventCardFramed
             key={event.id}
             event={event}
             counts={counts[event.id]}
             seriesRrule={seriesRrules[event.id]}
             translatedTitle={translation?.title}
             priority={index === 0}
-            isFlipped={flippedCardId === event.id}
-            onFlip={handleFlip}
           />
         );
       })}

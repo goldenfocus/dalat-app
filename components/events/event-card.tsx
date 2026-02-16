@@ -161,8 +161,8 @@ export const EventCard = memo(function EventCard({
                 />
               ) : (
                 <>
-                  {/* Blurred background for contain mode - skip when showFullImage */}
-                  {!showFullImage && event.image_fit !== "cover" && (
+                  {/* Blurred background for contain mode */}
+                  {event.image_fit !== "cover" && (
                     <Image
                       loader={cloudflareLoader}
                       src={event.image_url!}
@@ -182,11 +182,9 @@ export const EventCard = memo(function EventCard({
                     sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
                     className={cn(
                       "transition-transform group-hover:scale-105",
-                      showFullImage
-                        ? "object-contain"
-                        : event.image_fit === "cover" ? "object-cover" : "object-contain"
+                      event.image_fit === "cover" ? "object-cover" : "object-contain"
                     )}
-                    style={event.image_fit === "cover" && !showFullImage && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                    style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                     priority={priority}
                     fetchPriority={priority ? "high" : "auto"}
                     placeholder="blur"
