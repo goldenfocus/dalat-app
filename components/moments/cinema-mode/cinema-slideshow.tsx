@@ -7,6 +7,7 @@ import { CinemaPhotoSlide } from "./cinema-photo-slide";
 import { CinemaVideoSlide } from "./cinema-video-slide";
 import { CinemaControls } from "./cinema-controls";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
+import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { createEffectScheduler, type EffectSchedulerState } from "@/lib/cinema/ken-burns-effects";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
@@ -171,7 +172,7 @@ export function CinemaSlideshow({
         const img = new window.Image();
         img.src = optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen) || moment.media_url;
       } else if (moment?.content_type === "video") {
-        const hlsSrc = moment.cf_playback_url;
+        const hlsSrc = moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid);
         const mp4Src = moment.media_url;
         const key = hlsSrc || mp4Src;
         if (!key || preloadedRef.current.has(key)) return;

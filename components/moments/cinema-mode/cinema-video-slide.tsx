@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { MomentVideoPlayer } from "../moment-video-player";
+import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import type { MomentWithProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -105,7 +106,7 @@ export function CinemaVideoSlide({
       <MomentVideoPlayer
         ref={videoRef}
         src={videoSrc}
-        hlsSrc={moment.cf_playback_url}
+        hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid)}
         poster={moment.thumbnail_url || undefined}
         autoPlay={isActive && !isPaused}
         muted={true}

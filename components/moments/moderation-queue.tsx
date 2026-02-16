@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Check, X, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import { isVideoUrl } from "@/lib/media-utils";
+import { isVideoUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -100,15 +100,15 @@ export function ModerationQueue({ moments: initialMoments }: ModerationQueueProp
               )}
             >
               {/* Media preview */}
-              {moment.content_type !== "text" && moment.media_url && (
+              {moment.content_type !== "text" && (moment.media_url || moment.cf_video_uid) && (
                 <div className="aspect-video bg-muted relative">
                   {isVideo ? (
                     <MomentVideoPlayer
-                      src={moment.media_url!}
-                      hlsSrc={moment.cf_playback_url}
+                      src={moment.media_url || ""}
+                      hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid)}
                       poster={moment.thumbnail_url}
                     />
-                  ) : (
+                  ) : moment.media_url ? (
                     <Image
                       src={moment.media_url}
                       alt={moment.text_content || "Moment photo for review"}
@@ -116,7 +116,7 @@ export function ModerationQueue({ moments: initialMoments }: ModerationQueueProp
                       className="object-contain"
                       sizes="(max-width: 768px) 100vw, 600px"
                     />
-                  )}
+                  ) : null}
                 </div>
               )}
 

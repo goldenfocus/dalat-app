@@ -23,6 +23,7 @@ import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { ExpandableMomentImage } from "@/components/moments/expandable-moment-image";
 import { MomentImagePreloader } from "@/components/moments/moment-image-preloader";
 import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
+import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { hasRoleLevel, type Moment, type Event, type Profile, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
@@ -336,7 +337,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                   moment.video_status === "ready" || !moment.cf_video_uid ? (
                     <MomentVideoPlayer
                       src={moment.media_url || ""}
-                      hlsSrc={moment.cf_playback_url || undefined}
+                      hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid) || undefined}
                       poster={moment.thumbnail_url || undefined}
                     />
                   ) : (

@@ -267,21 +267,26 @@ export function validateMediaFile(file: File): string | null {
     return "GIFs must be less than 15MB";
   }
 
-  // Video size limits - stricter on mobile where compression is unreliable
+  // Video size limit — TUS chunked upload handles large files on any connection
   if (isValidVideo || isMovByExt) {
-    const isMobile = isMobileDevice();
-    const maxVideoSize = isMobile ? MEDIA_SIZE_LIMITS.videoMobile : MEDIA_SIZE_LIMITS.video;
-
-    if (file.size > maxVideoSize) {
-      if (isMobile) {
-        const sizeMB = Math.round(file.size / (1024 * 1024));
-        return `Video too large (${sizeMB}MB). On mobile, videos must be under 50MB. Try uploading from a computer for larger files.`;
-      }
+    if (file.size > MEDIA_SIZE_LIMITS.video) {
       return "Videos must be less than 500MB";
     }
   }
 
   return null;
+}
+
+// Cloudflare Stream customer subdomain (public, used in playback URLs)
+const CF_STREAM_CUSTOMER_CODE = "00b406a96bebe80b300bbaae0cd7f716";
+
+/**
+ * Construct Cloudflare Stream HLS playback URL from a video UID.
+ * Used as fallback when cf_playback_url is not stored in the database.
+ */
+export function getCfStreamPlaybackUrl(videoUid: string | null | undefined): string | null {
+  if (!videoUid) return null;
+  return `https://customer-${CF_STREAM_CUSTOMER_CODE}.cloudflarestream.com/${videoUid}/manifest/video.m3u8`;
 }
 
 /**

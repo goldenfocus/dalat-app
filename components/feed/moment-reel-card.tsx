@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Link } from "@/lib/i18n/routing";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { isVideoUrl } from "@/lib/media-utils";
+import { isVideoUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { ImmersiveImage } from "@/components/events/immersive-image";
 import { VideoPlayer } from "./video-player";
@@ -54,19 +54,19 @@ export function MomentReelCard({
     >
       {/* Media area - fills viewport */}
       <div className="absolute inset-0 overflow-hidden">
-        {moment.media_url ? (
+        {(moment.media_url || moment.cf_video_uid) ? (
           isVideo ? (
             <VideoPlayer
               src={moment.media_url || ""}
-              hlsSrc={moment.cf_playback_url}
+              hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid)}
               isActive={isActive}
               poster={moment.event_image_url || undefined}
               isMuted={isMuted}
               onMuteToggle={handleMuteToggle}
             />
-          ) : (
+          ) : moment.media_url ? (
             <ImmersiveImage src={moment.media_url} alt="" />
-          )
+          ) : null
         ) : moment.event_image_url ? (
           // Fallback: show event image if no moment media
           <ImmersiveImage src={moment.event_image_url} alt="" />
