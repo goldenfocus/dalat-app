@@ -179,8 +179,8 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
           />
         )}
 
-        {/* Video moments (original behavior) */}
-        {moment.content_type === "video" && moment.media_url && (
+        {/* Video moments */}
+        {moment.content_type === "video" && (moment.media_url || moment.cf_video_uid) && (
           <>
             {showThumbnail ? (
               derivedThumbnailUrl.includes('cloudflarestream.com') ? (
