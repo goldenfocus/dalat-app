@@ -60,6 +60,13 @@ export function GlobalFooter() {
           </Link>
           <span>·</span>
           <Link
+            href="/news"
+            className="hover:text-muted-foreground transition-colors"
+          >
+            News
+          </Link>
+          <span>·</span>
+          <Link
             href="/discover"
             className="hover:text-muted-foreground transition-colors"
           >

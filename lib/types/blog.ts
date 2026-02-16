@@ -3,7 +3,7 @@
 // Human-First, Machine-Complete content model
 // ============================================
 
-export type BlogPostSource = 'github_release' | 'manual' | 'daily_summary';
+export type BlogPostSource = 'github_release' | 'manual' | 'daily_summary' | 'news_scrape';
 export type BlogPostStatus = 'draft' | 'experimental' | 'published' | 'deprecated' | 'archived';
 
 export interface BlogCategory {
@@ -94,6 +94,44 @@ export interface BlogPostFull extends BlogPostWithCategory {
   seo_keywords: string[];
   related_feature_slugs: string[];
   created_at: string;
+}
+
+// ============================================
+// News System Types
+// ============================================
+
+export const NEWS_TAGS = [
+  'tourism',
+  'culture',
+  'events',
+  'government',
+  'food-drink',
+  'weather',
+  'community',
+] as const;
+
+export type NewsTag = typeof NEWS_TAGS[number];
+
+// News post with category - extends base blog post with news-specific fields
+export interface NewsPostWithCategory extends BlogPostWithCategory {
+  source_urls: Array<{
+    url: string;
+    title: string;
+    publisher: string;
+    published_at: string | null;
+  }>;
+  source_images: Array<{
+    original_url: string;
+    stored_url: string;
+    attribution: string;
+    alt: string;
+  }>;
+  quality_score: number;
+  is_featured: boolean;
+  is_breaking: boolean;
+  news_tags: string[];
+  news_topic: string | null;
+  related_event_ids: string[];
 }
 
 // Like status for a blog post

@@ -15,6 +15,14 @@
     {
       "path": "/api/cron/mark-no-shows",
       "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/cron/news-scrape",
+      "schedule": "0 2,14 * * *"
+    },
+    {
+      "path": "/api/cron/news-process",
+      "schedule": "0 4,16 * * *"
     }
   ]
 }

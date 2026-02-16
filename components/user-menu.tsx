@@ -4,7 +4,7 @@ import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { User, Settings, ExternalLink, Shield, Building2, LogOut, Loader2 } from "lucide-react";
+import { User, Settings, ExternalLink, Shield, Building2, LogOut, Loader2, Newspaper } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +33,7 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
   const hasAdminAccess = !isGodMode && ADMIN_ROLES.includes(role);
   const isOrganizer = !isGodMode && role === "organizer_verified";
   const t = useTranslations("userMenu");
+  const tNav = useTranslations("nav");
   const tCommon = useTranslations("common");
 
   const handleExitGodMode = async () => {
@@ -105,6 +106,15 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
           <Link href="/settings" className="cursor-pointer">
             <Settings className="w-4 h-4 mr-2" />
             {t("settings")}
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild>
+          <Link href="/news" className="cursor-pointer">
+            <Newspaper className="w-4 h-4 mr-2" />
+            {tNav("news")}
           </Link>
         </DropdownMenuItem>
 

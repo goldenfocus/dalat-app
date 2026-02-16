@@ -72,7 +72,12 @@ export async function updateSession(request: NextRequest) {
     : rawPathname;
 
   // Pass through feed/data routes that live outside /[locale]/ and /api/
-  if (pathname === '/blog/rss.xml' || pathname === '/blog/feed.json') {
+  if (
+    pathname === '/blog/rss.xml' ||
+    pathname === '/blog/feed.json' ||
+    pathname === '/news/rss.xml' ||
+    pathname === '/news/sitemap.xml'
+  ) {
     return NextResponse.next({ request });
   }
 

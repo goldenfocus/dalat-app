@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Building2, Calendar, MapPin, Film, Activity } from "lucide-react";
+import { Building2, Calendar, MapPin, Newspaper, Film, Activity } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 
@@ -24,6 +24,12 @@ const NAV_ITEMS = [
     href: "/venues",
     icon: Building2,
     labelKey: "venues",
+  },
+  {
+    key: "news",
+    href: "/news",
+    icon: Newspaper,
+    labelKey: "news",
   },
   {
     key: "activity",
