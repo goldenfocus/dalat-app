@@ -93,8 +93,9 @@ export function CinemaVideoSlide({
     );
   }
 
-  const videoSrc = moment.media_url;
-  if (!videoSrc) return null;
+  const hlsSrc = moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid) || undefined;
+  const videoSrc = moment.media_url || "";
+  if (!videoSrc && !hlsSrc) return null;
 
   return (
     <div
@@ -106,7 +107,7 @@ export function CinemaVideoSlide({
       <MomentVideoPlayer
         ref={videoRef}
         src={videoSrc}
-        hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid)}
+        hlsSrc={hlsSrc}
         poster={moment.thumbnail_url || undefined}
         autoPlay={isActive && !isPaused}
         muted={true}

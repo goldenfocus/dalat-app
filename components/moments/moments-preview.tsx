@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Camera, ChevronRight, Play, Video } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { isVideoUrl } from "@/lib/media-utils";
+import { isVideoUrl, getCfStreamThumbnailUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import type { MomentWithProfile, MomentCounts } from "@/lib/types";
 
@@ -74,18 +74,31 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                   key={moment.id}
                   className="relative w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0"
                 >
-                  {moment.content_type !== "text" && moment.media_url ? (
-                    isVideoUrl(moment.media_url) ? (
-                      moment.thumbnail_url ? (
-                        // Video with thumbnail - show thumbnail with play icon
+                  {(() => {
+                    const isVideo = moment.content_type === "video" || (moment.media_url && isVideoUrl(moment.media_url));
+                    const thumbUrl = moment.thumbnail_url
+                      || getCfStreamThumbnailUrl(moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid));
+
+                    if (moment.content_type === "text" || (!moment.media_url && !moment.cf_video_uid && !moment.file_url)) {
+                      return (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground p-1">
+                          <span className="line-clamp-3">{moment.text_content}</span>
+                        </div>
+                      );
+                    }
+
+                    if (isVideo) {
+                      const displayUrl = thumbUrl;
+                      return displayUrl ? (
                         <>
                           <Image
-                            loader={cloudflareLoader}
-                            src={moment.thumbnail_url}
+                            loader={displayUrl.includes('cloudflarestream.com') ? undefined : cloudflareLoader}
+                            src={displayUrl}
                             alt={moment.text_content || "Video thumbnail"}
                             fill
                             className="object-cover"
                             sizes="64px"
+                            unoptimized={displayUrl.includes('cloudflarestream.com')}
                           />
                           <div className="absolute inset-0 flex items-center justify-center">
                             <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
@@ -94,28 +107,25 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                           </div>
                         </>
                       ) : (
-                        // Video without thumbnail - show placeholder
                         <div className="w-full h-full bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center">
                           <div className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
                             <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                           </div>
                         </div>
-                      )
-                    ) : (
+                      );
+                    }
+
+                    return (
                       <Image
                         loader={cloudflareLoader}
-                        src={moment.media_url}
+                        src={moment.media_url!}
                         alt={moment.text_content || "Moment thumbnail"}
                         fill
                         className="object-cover"
                         sizes="64px"
                       />
-                    )
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground p-1">
-                      <span className="line-clamp-3">{moment.text_content}</span>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               ))}
               {totalCount > 4 && (

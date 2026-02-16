@@ -26,7 +26,7 @@ interface DiscoveryMomentCardProps {
 }
 
 function DiscoveryMomentCard({ moment, commentCount, onLightboxOpen }: DiscoveryMomentCardProps) {
-  const isVideo = isVideoUrl(moment.media_url);
+  const isVideo = moment.content_type === "video" || isVideoUrl(moment.media_url);
 
   // Derive thumbnail: use stored thumbnail_url, or derive from CF Stream playback URL
   const thumbnailUrl = moment.thumbnail_url || getCfStreamThumbnailUrl(moment.cf_playback_url);
@@ -41,7 +41,7 @@ function DiscoveryMomentCard({ moment, commentCount, onLightboxOpen }: Discovery
   const cardContent = (
     <article className="group relative aspect-square overflow-hidden rounded-lg bg-muted active:scale-[0.98] transition-transform">
       {/* Media content */}
-      {moment.content_type !== "text" && moment.media_url && (
+      {moment.content_type !== "text" && (moment.media_url || moment.cf_video_uid || moment.cf_playback_url) && (
         isVideo ? (
           <>
             {thumbnailUrl ? (
@@ -66,7 +66,7 @@ function DiscoveryMomentCard({ moment, commentCount, onLightboxOpen }: Discovery
           </>
         ) : (
           <Image
-            src={moment.media_url}
+            src={moment.media_url!}
             alt={moment.text_content || "Moment photo"}
             fill
             className="object-cover transition-transform group-hover:scale-105"

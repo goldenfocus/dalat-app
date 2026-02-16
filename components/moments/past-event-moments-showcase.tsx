@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Camera, ChevronRight, Play, Plus, Video } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
+import { getCfStreamThumbnailUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { cn } from "@/lib/utils";
 import type { MomentWithProfile, MomentCounts } from "@/lib/types";
 
@@ -64,33 +65,46 @@ export function PastEventMomentsShowcase({
     priority?: boolean;
   }) => (
     <div className={cn("relative overflow-hidden bg-muted group", className)}>
-      {moment.content_type !== "text" && moment.media_url ? (
-        <>
-          <Image
-            loader={cloudflareLoader}
-            src={moment.thumbnail_url || moment.media_url}
-            alt={moment.text_content || "Moment"}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes={sizes}
-            priority={priority}
-          />
-          {/* Subtle gradient overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          {/* Video play icon */}
-          {moment.content_type === "video" && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-12 h-12 rounded-full bg-black/60 flex items-center justify-center backdrop-blur-sm border border-white/20 transition-transform duration-300 group-hover:scale-110">
-                <Play className="w-5 h-5 text-white fill-white ml-0.5" />
-              </div>
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground p-3 text-center bg-gradient-to-br from-muted to-muted/80">
-          <span className="line-clamp-4">{moment.text_content}</span>
-        </div>
-      )}
+      {(() => {
+        // Derive displayable image: thumbnail, media_url, or CF Stream thumbnail
+        const displayUrl = moment.thumbnail_url
+          || moment.media_url
+          || getCfStreamThumbnailUrl(moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid));
+
+        if (moment.content_type !== "text" && displayUrl) {
+          const useCfLoader = !displayUrl.includes('cloudflarestream.com');
+          return (
+            <>
+              <Image
+                loader={useCfLoader ? cloudflareLoader : undefined}
+                src={displayUrl}
+                alt={moment.text_content || "Moment"}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes={sizes}
+                priority={priority}
+                unoptimized={!useCfLoader}
+              />
+              {/* Subtle gradient overlay for depth */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {/* Video play icon */}
+              {moment.content_type === "video" && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-black/60 flex items-center justify-center backdrop-blur-sm border border-white/20 transition-transform duration-300 group-hover:scale-110">
+                    <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                  </div>
+                </div>
+              )}
+            </>
+          );
+        }
+
+        return (
+          <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground p-3 text-center bg-gradient-to-br from-muted to-muted/80">
+            <span className="line-clamp-4">{moment.text_content}</span>
+          </div>
+        );
+      })()}
       {/* "+N more" overlay */}
       {showOverlay && overlayCount && overlayCount > 0 && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300 group-hover:bg-black/50">
