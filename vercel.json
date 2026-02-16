@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/daily-summary",
+      "schedule": "0 20 * * *"
+    },
+    {
       "path": "/api/cron/sync-dalat-gov",
       "schedule": "0 1 * * *"
     },
