@@ -71,6 +71,11 @@ export async function updateSession(request: NextRequest) {
     ? rawPathname.slice(0, -1)
     : rawPathname;
 
+  // Pass through feed/data routes that live outside /[locale]/ and /api/
+  if (pathname === '/blog/rss.xml' || pathname === '/blog/feed.json') {
+    return NextResponse.next({ request });
+  }
+
   // Detect social media crawlers that Next.js doesn't natively recognize as bots.
   // When detected, we override the User-Agent via response headers so Next.js waits
   // for metadata/Suspense to resolve before streaming <head>. This ensures OG tags
