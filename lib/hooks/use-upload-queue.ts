@@ -172,11 +172,11 @@ export function useUploadQueue({
     try {
       const { data: momentId, error } = await supabaseRef.current.rpc("create_moment_draft", {
         p_event_id: eventId,
-        p_media_url: mediaUrl || "",
+        p_media_url: mediaUrl,
         p_media_type: isVideo ? "video" : "image",
         p_thumbnail_url: thumbnailUrl,
-        // Caption will be added when user publishes
         p_text_content: null,
+        p_cf_video_uid: cfVideoUid,
       });
 
       if (error) throw error;

@@ -400,8 +400,10 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       const availableSlots = CONCURRENCY_LIMIT - activeCount;
 
       const toStart = queued.slice(0, availableSlots);
-      for (const file of toStart) {
-        uploadFileRef.current(file);
+      for (let i = 0; i < toStart.length; i++) {
+        // Stagger requests by 200ms to avoid overwhelming the server
+        if (i > 0) await new Promise(r => setTimeout(r, 200));
+        uploadFileRef.current(toStart[i]);
       }
     } finally {
       processingRef.current = false;
@@ -424,12 +426,11 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
     try {
       const { data: momentId, error } = await supabaseRef.current.rpc("create_moment_draft", {
         p_event_id: state.eventId,
-        p_media_url: mediaUrl || "",
+        p_media_url: mediaUrl,
         p_media_type: isVideo ? "video" : "image",
         p_thumbnail_url: thumbnailUrl,
         p_text_content: caption,
-        // Note: taken_at and video_duration will be null for now
-        // We can add EXIF extraction later if needed
+        p_cf_video_uid: cfVideoUid,
       });
 
       if (error) throw error;

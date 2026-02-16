@@ -163,7 +163,7 @@ export async function compressVideo(
       return file;
     }
   } catch (error) {
-    console.error("[Compression] Failed:", error);
+    console.warn("[Compression] Failed (using original file):", error instanceof Error ? error.message : error);
     report("error", 0, "Compression failed, uploading original...");
     // Return original file on error
     return file;
