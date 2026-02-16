@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
-  createDirectUpload,
+  createTusDirectUpload,
   isCloudflareStreamConfigured,
 } from "@/lib/cloudflare-stream";
 
@@ -124,17 +124,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create direct upload URL from Cloudflare Stream
-    const { uid, uploadURL } = await createDirectUpload({
-      maxDurationSeconds: 3600, // 1 hour max
-      meta: {
-        eventId,
-        userId: user.id,
-        filename: filename || "video.mp4",
-      },
-      // Thumbnail at 10% of video duration
-      thumbnailTimestampPct: 0.1,
-    });
+    // Create TUS-compatible upload URL from Cloudflare Stream
+    // Must use TUS creation endpoint (not /stream/direct_upload) so the
+    // returned URL supports HEAD+PATCH for chunked resumable uploads.
+    const { uid, uploadURL } = await createTusDirectUpload(
+      fileSizeBytes || 0,
+      {
+        maxDurationSeconds: 3600, // 1 hour max
+        meta: {
+          eventId,
+          userId: user.id,
+          filename: filename || "video.mp4",
+        },
+        thumbnailTimestampPct: 0.1,
+      }
+    );
 
     return NextResponse.json({
       uploadUrl: uploadURL,

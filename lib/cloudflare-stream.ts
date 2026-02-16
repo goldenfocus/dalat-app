@@ -353,11 +353,10 @@ export interface CloudflareVideoDetails {
 }
 
 /**
- * Create a direct upload URL for client-side video upload
+ * Create a direct upload URL for client-side video upload (simple PUT)
  *
- * This creates a one-time TUS upload URL that the client can use to upload
- * directly to Cloudflare Stream. The video will be automatically processed
- * and encoded after upload completes.
+ * Returns a URL for simple form/PUT uploads. Does NOT support TUS protocol.
+ * For TUS (chunked, resumable) uploads, use createTusDirectUpload() instead.
  *
  * @see https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/
  */
@@ -385,6 +384,78 @@ export async function createDirectUpload(
     method: 'POST',
     body: JSON.stringify(body),
   });
+}
+
+/**
+ * Create a TUS-compatible direct upload URL for client-side video upload
+ *
+ * Uses POST /stream?direct_user=true with TUS headers to create an upload
+ * that supports HEAD + PATCH (chunked, resumable uploads via tus-js-client).
+ *
+ * The /stream/direct_upload endpoint returns URLs that only support PUT,
+ * NOT TUS protocol. This function creates proper TUS-compatible URLs.
+ *
+ * @param fileSizeBytes - Exact file size (required for TUS Upload-Length header)
+ * @see https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/#using-tus-recommended-for-videos-over-200mb
+ */
+export async function createTusDirectUpload(
+  fileSizeBytes: number,
+  options: DirectUploadOptions = {}
+): Promise<DirectUploadResponse> {
+  const { accountId, apiToken } = getCredentials();
+
+  // Build TUS Upload-Metadata header: "key base64value,key2 base64value2"
+  const metaParts: string[] = [];
+
+  const maxDuration = options.maxDurationSeconds ?? 3600;
+  metaParts.push(`maxDurationSeconds ${Buffer.from(String(maxDuration)).toString('base64')}`);
+
+  if (options.requireSignedURLs !== undefined) {
+    metaParts.push(`requiresignedurls ${Buffer.from(String(options.requireSignedURLs)).toString('base64')}`);
+  }
+
+  if (options.thumbnailTimestampPct !== undefined) {
+    metaParts.push(`thumbnailtimestamppct ${Buffer.from(String(options.thumbnailTimestampPct)).toString('base64')}`);
+  }
+
+  if (options.allowedOrigins?.length) {
+    metaParts.push(`allowedorigins ${Buffer.from(options.allowedOrigins.join(',')).toString('base64')}`);
+  }
+
+  // Custom metadata
+  if (options.meta) {
+    for (const [key, value] of Object.entries(options.meta)) {
+      metaParts.push(`${key} ${Buffer.from(value).toString('base64')}`);
+    }
+  }
+
+  const url = `${CLOUDFLARE_API_BASE}/accounts/${accountId}/stream?direct_user=true`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiToken}`,
+      'Tus-Resumable': '1.0.0',
+      'Upload-Length': String(fileSizeBytes),
+      'Upload-Metadata': metaParts.join(','),
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Cloudflare TUS creation failed: ${response.status} ${text}`);
+  }
+
+  // TUS creation returns 201 with Location header containing the upload URL
+  const uploadURL = response.headers.get('location');
+  if (!uploadURL) {
+    throw new Error('Cloudflare TUS creation did not return Location header');
+  }
+
+  // Video UID from stream-media-id header
+  const uid = response.headers.get('stream-media-id') || '';
+
+  return { uid, uploadURL };
 }
 
 /**
