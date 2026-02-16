@@ -72,7 +72,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .gte('created_at', recentMomentCutoff.toISOString()),
     supabase
       .from('blog_posts')
-      .select('slug, published_at, updated_at, blog_categories(slug)')
+      .select('slug, published_at, updated_at, content_type, blog_categories(slug)')
       .eq('status', 'published')
       .order('published_at', { ascending: false }),
     // Audio content: Playlists and tracks with lyrics for SEO
@@ -99,6 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       slug: p.slug as string,
       published_at: p.published_at as string,
       updated_at: p.updated_at as string,
+      content_type: (p as Record<string, unknown>).content_type as string | null,
       category_slug: ((category as { slug: string } | null)?.slug) ?? 'changelog',
     };
   });
@@ -285,14 +286,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  // Add blog posts
+  // Add blog posts — prioritize by content type
   for (const post of blogPosts) {
+    // Pillar pages get highest priority and weekly freshness
+    const isPillar = post.content_type === 'pillar';
+    const isNews = post.content_type === 'news';
+    const isProgrammatic = post.content_type === 'programmatic';
+
+    const priority = isPillar ? 0.9 : isNews ? 0.7 : isProgrammatic ? 0.75 : 0.65;
+    const changeFrequency = isPillar ? 'weekly' as const
+      : isNews ? 'daily' as const
+      : isProgrammatic ? 'monthly' as const
+      : 'monthly' as const;
+
     for (const locale of allLocales) {
       sitemapEntries.push({
         url: `${baseUrl}/${locale}/blog/${post.category_slug}/${post.slug}`,
         lastModified: new Date(post.updated_at || post.published_at),
-        changeFrequency: 'monthly',
-        priority: 0.65,
+        changeFrequency,
+        priority,
         alternates: {
           languages: Object.fromEntries(
             allLocales.map(l => [l, `${baseUrl}/${l}/blog/${post.category_slug}/${post.slug}`])

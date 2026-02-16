@@ -13,6 +13,21 @@ import {
   processVideoWhenReady,
   processPendingMoments,
   reprocessMoment,
+  // SEO Agent Swarm
+  strategyCommander,
+  keywordScout,
+  newsHarvester,
+  socialSentinel,
+  eventIntelligence,
+  pillarArchitect,
+  contentForge,
+  seoSurgeon,
+  translationBackfill,
+  visualAlchemist,
+  qualityGate,
+  distributionHub,
+  analyticsOracle,
+  internalLinker,
 } from '@/lib/inngest';
 
 // Create the Inngest API handler
@@ -32,5 +47,20 @@ export const { GET, POST, PUT } = serve({
     processVideoWhenReady,
     processPendingMoments,
     reprocessMoment,
+    // SEO Agent Swarm (14 agents)
+    strategyCommander,
+    keywordScout,
+    newsHarvester,
+    socialSentinel,
+    eventIntelligence,
+    pillarArchitect,
+    contentForge,
+    seoSurgeon,
+    translationBackfill,
+    visualAlchemist,
+    qualityGate,
+    distributionHub,
+    analyticsOracle,
+    internalLinker,
   ],
 });

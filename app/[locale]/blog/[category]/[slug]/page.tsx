@@ -10,6 +10,9 @@ import { BlogShareButtons } from "@/components/blog/blog-share-buttons";
 import { TechnicalAccordion } from "@/components/blog/technical-accordion";
 import { CtaButton } from "@/components/blog/cta-button";
 import { MarkdownRenderer } from "@/components/blog/markdown-renderer";
+import { PillarTemplate } from "@/components/blog/pillar-template";
+import { NewsTemplate } from "@/components/blog/news-template";
+import { MonthlyTemplate } from "@/components/blog/monthly-template";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateBlogArticleSchema } from "@/lib/structured-data";
@@ -19,6 +22,7 @@ import { CACHE_TAGS } from "@/lib/cache/server-cache";
 import type { Locale } from "@/lib/i18n/routing";
 import type { ContentLocale } from "@/lib/types";
 import type { BlogPostFull } from "@/lib/types/blog";
+import type { BlogPostContentType } from "@/lib/types/blog";
 
 interface PageProps {
   params: Promise<{ locale: Locale; category: string; slug: string }>;
@@ -167,40 +171,149 @@ export default async function BlogPostPage({ params }: PageProps) {
             {translations.translated_title}
           </h1>
 
-          {/* Story Content (Human-readable) */}
-          <div className="prose prose-lg dark:prose-invert max-w-none mb-8">
-            <MarkdownRenderer content={translations.translated_story_content} />
-          </div>
-
-          {/* CTA Button */}
-          {post.suggested_cta_url && (
-            <CtaButton
-              url={post.suggested_cta_url}
-              text={post.suggested_cta_text || "Try it now"}
-            />
-          )}
-
-          {/* Divider */}
-          <hr className="my-8 border-border" />
-
-          {/* Share */}
-          <div className="flex items-center justify-center mb-8">
-            <BlogShareButtons
-              title={translations.translated_title}
-              url={`/blog/${actualCategory}/${slug}`}
-              shareText={post.social_share_text}
-            />
-          </div>
-
-          {/* Technical Details Accordion */}
-          <TechnicalAccordion content={translations.translated_technical_content} />
-
-          {/* Related Posts (future) */}
-          {/* {post.related_feature_slugs.length > 0 && (
-            <RelatedPosts slugs={post.related_feature_slugs} />
-          )} */}
+          {/* Content — template varies by content_type */}
+          <BlogContent
+            contentType={(post as BlogPostFull & { content_type?: BlogPostContentType }).content_type}
+            storyContent={translations.translated_story_content}
+            technicalContent={translations.translated_technical_content}
+            post={post}
+            slug={slug}
+            actualCategory={actualCategory}
+            translations={translations}
+          />
         </article>
       </main>
+    </>
+  );
+}
+
+/**
+ * Renders content based on blog post type.
+ * Pillar pages get TOC sidebar + FAQ, news gets source attribution,
+ * monthly/programmatic gets weather card. Default gets the standard layout.
+ */
+function BlogContent({
+  contentType,
+  storyContent,
+  technicalContent,
+  post,
+  slug,
+  actualCategory,
+  translations,
+}: {
+  contentType?: BlogPostContentType;
+  storyContent: string;
+  technicalContent: string;
+  post: BlogPostFull;
+  slug: string;
+  actualCategory: string;
+  translations: { translated_title: string; translated_story_content: string; translated_technical_content: string };
+}) {
+  const extPost = post as BlogPostFull & {
+    faq_data?: Array<{ question: string; answer: string }>;
+    reading_time_minutes?: number;
+    data_freshness_at?: string;
+    internal_links?: string[];
+  };
+
+  // Pillar pages: TOC + FAQ + related guides
+  if (contentType === "pillar") {
+    return (
+      <>
+        <PillarTemplate
+          storyContent={storyContent}
+          faqData={extPost.faq_data}
+          readingTime={extPost.reading_time_minutes}
+          lastUpdated={extPost.data_freshness_at}
+          internalLinks={extPost.internal_links}
+        />
+        <hr className="my-8 border-border" />
+        <div className="flex items-center justify-center mb-8">
+          <BlogShareButtons
+            title={translations.translated_title}
+            url={`/blog/${actualCategory}/${slug}`}
+            shareText={post.social_share_text}
+          />
+        </div>
+        <TechnicalAccordion content={technicalContent} />
+      </>
+    );
+  }
+
+  // News articles: source attribution + compact layout
+  if (contentType === "news") {
+    return (
+      <>
+        <NewsTemplate
+          storyContent={storyContent}
+          source={post.source ?? undefined}
+          publishedAt={post.published_at ?? undefined}
+        />
+        <hr className="my-8 border-border" />
+        <div className="flex items-center justify-center mb-8">
+          <BlogShareButtons
+            title={translations.translated_title}
+            url={`/blog/${actualCategory}/${slug}`}
+            shareText={post.social_share_text}
+          />
+        </div>
+      </>
+    );
+  }
+
+  // Monthly/programmatic guides: weather card + FAQ
+  if (contentType === "programmatic") {
+    // Extract month name from slug (e.g., "dalat-in-january" -> "January")
+    const monthMatch = slug.match(/in-(\w+)$/);
+    const month = monthMatch
+      ? monthMatch[1].charAt(0).toUpperCase() + monthMatch[1].slice(1)
+      : undefined;
+
+    return (
+      <>
+        <MonthlyTemplate
+          storyContent={storyContent}
+          month={month}
+          faqData={extPost.faq_data}
+        />
+        <hr className="my-8 border-border" />
+        <div className="flex items-center justify-center mb-8">
+          <BlogShareButtons
+            title={translations.translated_title}
+            url={`/blog/${actualCategory}/${slug}`}
+            shareText={post.social_share_text}
+          />
+        </div>
+        <TechnicalAccordion content={technicalContent} />
+      </>
+    );
+  }
+
+  // Default layout (blog, guide, place)
+  return (
+    <>
+      <div className="prose prose-lg dark:prose-invert max-w-none mb-8">
+        <MarkdownRenderer content={storyContent} />
+      </div>
+
+      {post.suggested_cta_url && (
+        <CtaButton
+          url={post.suggested_cta_url}
+          text={post.suggested_cta_text || "Try it now"}
+        />
+      )}
+
+      <hr className="my-8 border-border" />
+
+      <div className="flex items-center justify-center mb-8">
+        <BlogShareButtons
+          title={translations.translated_title}
+          url={`/blog/${actualCategory}/${slug}`}
+          shareText={post.social_share_text}
+        />
+      </div>
+
+      <TechnicalAccordion content={technicalContent} />
     </>
   );
 }

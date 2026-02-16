@@ -1175,3 +1175,165 @@ export function generateSpeakableSchema(
     },
   };
 }
+
+// ====================================================
+// SEO/AEO/GEO Schema Generators (Phase 4)
+// ====================================================
+
+// Note: generateFAQSchema and generateWebSiteSchema already exist above.
+// The following are NEW schemas added for the SEO pipeline.
+
+/**
+ * Generate HowTo Schema for activity/travel guides.
+ * Powers "How to" rich results (e.g., "How to get to Dalat").
+ */
+export function generateHowToSchema(params: {
+  name: string;
+  description: string;
+  steps: Array<{ name: string; text: string; image?: string }>;
+  totalTime?: string; // ISO 8601 duration, e.g., "PT2H30M"
+  estimatedCost?: { currency: string; value: string };
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: params.name,
+    description: params.description,
+    ...(params.totalTime && { totalTime: params.totalTime }),
+    ...(params.estimatedCost && {
+      estimatedCost: {
+        "@type": "MonetaryAmount",
+        currency: params.estimatedCost.currency,
+        value: params.estimatedCost.value,
+      },
+    }),
+    step: params.steps.map((step, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: step.name,
+      text: step.text,
+      ...(step.image && { image: step.image }),
+    })),
+  };
+}
+
+/**
+ * Generate TouristDestination Schema for the Da Lat mega pillar.
+ * Helps AI assistants and Google understand Da Lat as a destination entity.
+ */
+export function generateTouristDestinationSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "TouristDestination",
+    name: "Da Lat",
+    alternateName: ["Dalat", "Da Lat City"],
+    description:
+      "Highland city in Vietnam's Central Highlands known for cool climate, French colonial architecture, coffee, flowers, and vibrant creative community.",
+    url: SITE_URL,
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: DA_LAT_GEO.latitude,
+      longitude: DA_LAT_GEO.longitude,
+      elevation: "1500",
+    },
+    containedInPlace: {
+      "@type": "AdministrativeArea",
+      name: "Lam Dong Province",
+      containedInPlace: {
+        "@type": "Country",
+        name: "Vietnam",
+      },
+    },
+    touristType: [
+      "Adventure travelers",
+      "Food tourists",
+      "Cultural tourists",
+      "Digital nomads",
+      "Families",
+      "Couples",
+    ],
+    includesAttraction: [
+      {
+        "@type": "TouristAttraction",
+        name: "Xuan Huong Lake",
+        description: "Central lake in the heart of Da Lat city",
+      },
+      {
+        "@type": "TouristAttraction",
+        name: "Langbiang Mountain",
+        description: "Highest peak in the Da Lat area at 2,167m",
+      },
+      {
+        "@type": "TouristAttraction",
+        name: "Da Lat Night Market",
+        description: "Famous night market with local food, crafts, and souvenirs",
+      },
+    ],
+  };
+}
+
+/**
+ * Generate ItemList Schema for "Best of" listicle articles.
+ * Powers ranked list rich snippets in Google.
+ */
+export function generateItemListSchema(params: {
+  name: string;
+  description: string;
+  items: Array<{ name: string; url?: string; position: number; image?: string }>;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: params.name,
+    description: params.description,
+    numberOfItems: params.items.length,
+    itemListElement: params.items.map((item) => ({
+      "@type": "ListItem",
+      position: item.position,
+      name: item.name,
+      ...(item.url && { url: `${SITE_URL}${item.url}` }),
+      ...(item.image && { image: item.image }),
+    })),
+  };
+}
+
+/**
+ * Generate AggregateRating Schema for venue/place pages.
+ * Shows star ratings in search results.
+ */
+export function generateAggregateRatingSchema(params: {
+  name: string;
+  ratingValue: number;
+  ratingCount: number;
+  bestRating?: number;
+}) {
+  return {
+    "@type": "AggregateRating",
+    ratingValue: params.ratingValue,
+    ratingCount: params.ratingCount,
+    bestRating: params.bestRating ?? 5,
+    worstRating: 1,
+  };
+}
+
+/**
+ * Generate Breadcrumb Schema for any page.
+ * Shows navigation path in search results.
+ *
+ * Note: A simpler generateBreadcrumbSchema already exists above for
+ * locale-aware breadcrumbs. This version is for non-locale contexts.
+ */
+export function generateBreadcrumbListSchema(
+  items: Array<{ name: string; url: string }>
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: `${SITE_URL}${item.url}`,
+    })),
+  };
+}

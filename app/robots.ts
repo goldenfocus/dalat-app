@@ -44,7 +44,12 @@ export default function robots(): MetadataRoute.Robots {
           "cohere-ai",        // Cohere AI
           "anthropic-ai",     // Anthropic
         ],
-        allow: "/",
+        allow: [
+          "/",
+          "/llms.txt",           // Machine-readable site manifest
+          "/api/dalat/",         // Public data APIs for AI assistants
+          "/blog/rss.xml",       // RSS feed
+        ],
         disallow: [
           "/api/",
           "/auth/",
