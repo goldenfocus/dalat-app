@@ -39,8 +39,10 @@ export type TranslationFieldName =
   | 'story_content' | 'technical_content' | 'meta_description'
   | 'image_alt' | 'image_description'
   // AI metadata fields for translation
-  | 'ai_description' | 'scene_description' | 'video_summary'
-  | 'audio_summary' | 'pdf_summary'
+  | 'ai_description' | 'ai_title' | 'scene_description'
+  | 'video_summary' | 'video_transcript'
+  | 'audio_summary' | 'audio_transcript'
+  | 'pdf_summary' | 'pdf_extracted_text'
   // Comment content
   | 'content'
   // Track/lyrics content

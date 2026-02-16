@@ -30,6 +30,7 @@ import { EventMediaDisplay } from "@/components/events/event-media-display";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat, formatInDaLatAsync } from "@/lib/timezone";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
+import { MoreAtVenue } from "@/components/events/more-at-venue";
 import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { decodeUnicodeEscapes } from "@/lib/utils";
@@ -94,9 +95,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const eventDescription = translations.description ?? event.description;
 
   const eventDate = formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a");
-  const description = eventDescription
-    ? `${eventDescription.slice(0, 150)}${eventDescription.length > 150 ? "..." : ""}`
-    : `${eventDate}${event.location_name ? ` · ${event.location_name}` : ""} · ĐàLạt.app`;
+
+  // Use keyword-enriched description that ensures Đà Lạt context
+  const { buildSeoDescription } = await import("@/lib/seo/dalat-keywords");
+  const description = buildSeoDescription(eventDescription, {
+    contentType: "event",
+    title,
+    location_name: event.location_name,
+    date: eventDate,
+  });
 
   // Use absolute URL with locale for proper link previews on messaging apps
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}`;
@@ -107,9 +114,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? event.image_url
     : `https://dalat.app/${locale}/events/${slug}/og-image`;
 
+  // Generate keyword-enriched metadata
+  const { getEventSeoKeywords } = await import("@/lib/seo/dalat-keywords");
+  const keywords = getEventSeoKeywords(
+    { title, location_name: event.location_name },
+    locale
+  );
+
   return {
     title: `${title} | ĐàLạt.app`,
     description,
+    keywords,
     openGraph: {
       title,
       description,
@@ -137,10 +152,13 @@ type OrganizerWithOwner = Organizer & {
   owner: Pick<Profile, "avatar_url" | "display_name" | "username"> | null;
 };
 
+type VenueInfo = { id: string; slug: string; name: string };
+
 type EventWithJoins = Event & {
   profiles: Profile;
   organizers: OrganizerWithOwner | null;
   event_series: Pick<EventSeries, "slug" | "title" | "rrule"> | null;
+  venues: VenueInfo | null;
 };
 
 type GetEventResult =
@@ -155,7 +173,7 @@ async function getEvent(slug: string): Promise<GetEventResult> {
   // Include organizer's owner profile for avatar fallback when organizer has no logo
   const { data: event, error } = await supabase
     .from("events")
-    .select("*, profiles(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule)")
+    .select("*, profiles(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule), venues(id, slug, name)")
     .eq("slug", slug)
     .single();
 
@@ -1207,6 +1225,19 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 currentEventId={event.id}
                 locale={locale as Locale}
               />
+            )}
+
+            {/* More events at this venue — internal linking for SEO */}
+            {event.venues && (
+              <Suspense fallback={null}>
+                <MoreAtVenue
+                  venueId={event.venues.id}
+                  venueName={event.venues.name}
+                  venueSlug={event.venues.slug}
+                  currentEventId={event.id}
+                  locale={locale as Locale}
+                />
+              </Suspense>
             )}
           </div>
         </div>

@@ -23,10 +23,11 @@ import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { ExpandableMomentImage } from "@/components/moments/expandable-moment-image";
 import { MomentImagePreloader } from "@/components/moments/moment-image-preloader";
 import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
+import { MomentAiInsights } from "@/components/moments/moment-ai-insights";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import { hasRoleLevel, type Moment, type Event, type Profile, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
+import { hasRoleLevel, type Moment, type Event, type Profile, type MomentMetadata, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
 import {
   YouTubeEmbed,
   AudioPlayer,
@@ -59,15 +60,17 @@ interface PageProps {
 type MomentWithDetails = Moment & {
   profiles: Profile;
   events: Event;
+  moment_metadata: MomentMetadata | null;
 };
 
 async function getMoment(id: string, expectedSlug?: string): Promise<MomentWithDetails | null> {
   const supabase = await createClient();
 
   // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
+  // Join moment_metadata for AI-generated descriptions, tags, and insights
   const { data, error } = await supabase
     .from("moments")
-    .select("*, profiles(*), events!moments_event_id_fkey(*)")
+    .select("*, profiles(*), events!moments_event_id_fkey(*), moment_metadata(*)")
     .eq("id", id)
     .eq("status", "published")
     .single();
@@ -173,7 +176,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: moment } = await supabase
     .from("moments")
-    .select("*, profiles(*), events!moments_event_id_fkey(*)")
+    .select("*, profiles(*), events!moments_event_id_fkey(*), moment_metadata(*)")
     .eq("id", momentId)
     .eq("status", "published")
     .single();
@@ -182,7 +185,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Moment Not Found" };
   }
 
-  return generateMomentMetadata(moment as MomentWithDetails, locale as Locale);
+  const meta = moment.moment_metadata;
+  return generateMomentMetadata(
+    {
+      ...moment,
+      ai_description: meta?.ai_description,
+      ai_tags: meta?.ai_tags,
+      detected_objects: meta?.detected_objects,
+      mood: meta?.mood,
+    } as MomentWithDetails & {
+      ai_description?: string | null;
+      ai_tags?: string[] | null;
+      detected_objects?: string[] | null;
+      mood?: string | null;
+    },
+    locale as Locale
+  );
 }
 
 export default async function MomentDetailPage({ params, searchParams }: PageProps) {
@@ -373,7 +391,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                   <div className="relative aspect-[4/3]">
                     <ExpandableMomentImage
                       src={moment.media_url}
-                      alt={translatedText || "Photo"}
+                      alt={moment.moment_metadata?.ai_description || translatedText || "Photo from Đà Lạt"}
                     />
                   </div>
                 )}
@@ -457,6 +475,24 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                     />
                   )}
                 </div>
+              )}
+
+              {/* AI Insights — crawlable metadata for SEO/AEO */}
+              {moment.moment_metadata && (
+                <MomentAiInsights
+                  aiDescription={moment.moment_metadata.ai_description}
+                  sceneDescription={moment.moment_metadata.scene_description}
+                  aiTags={moment.moment_metadata.ai_tags}
+                  detectedObjects={moment.moment_metadata.detected_objects}
+                  detectedText={moment.moment_metadata.detected_text}
+                  mood={moment.moment_metadata.mood}
+                  dominantColors={moment.moment_metadata.dominant_colors}
+                  locationHints={moment.moment_metadata.location_hints}
+                  videoSummary={moment.moment_metadata.video_summary}
+                  audioSummary={moment.moment_metadata.audio_summary}
+                  pdfSummary={moment.moment_metadata.pdf_summary}
+                  contentType={moment.content_type}
+                />
               )}
 
               {/* Comments */}

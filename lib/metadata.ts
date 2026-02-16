@@ -10,6 +10,12 @@
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
+import {
+  getEventSeoKeywords,
+  getVenueSeoKeywords,
+  getMomentSeoKeywords,
+  buildSeoDescription,
+} from "@/lib/seo/dalat-keywords";
 
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "ĐàLạt.app";
@@ -186,20 +192,17 @@ export function generateVenueMetadata(
     cover_photo_url: string | null;
     venue_type: string | null;
     address: string | null;
+    tags?: string[] | null;
+    cuisine_types?: string[] | null;
   },
   locale: Locale,
   eventCount?: number
 ): Metadata {
-  const venueTypeName = venue.venue_type
-    ? venue.venue_type.charAt(0).toUpperCase() + venue.venue_type.slice(1).replace("_", " ")
-    : "Venue";
-  const description = venue.description
-    ? `${venue.description.slice(0, 150)}${venue.description.length > 150 ? "..." : ""}`
-    : eventCount
-    ? `${venue.name} is a ${venueTypeName.toLowerCase()} in Đà Lạt hosting ${eventCount} upcoming events`
-    : venue.address
-    ? `${venue.name} - ${venueTypeName} located at ${venue.address} in Đà Lạt, Vietnam`
-    : `${venue.name} - ${venueTypeName} in Đà Lạt, Vietnam`;
+  const description = buildSeoDescription(venue.description, {
+    contentType: "venue",
+    title: venue.name,
+    venue_type: venue.venue_type,
+  });
 
   return generateLocalizedMetadata({
     locale,
@@ -208,7 +211,7 @@ export function generateVenueMetadata(
     description,
     image: venue.cover_photo_url || venue.logo_url || undefined,
     type: "profile",
-    keywords: [venue.name, venueTypeName.toLowerCase(), "venue", "Đà Lạt", "events"],
+    keywords: getVenueSeoKeywords(venue, locale),
   });
 }
 
@@ -225,11 +228,12 @@ export function generateOrganizerMetadata(
   locale: Locale,
   eventCount?: number
 ): Metadata {
-  const description = organizer.description
-    ? `${organizer.description.slice(0, 150)}${organizer.description.length > 150 ? "..." : ""}`
-    : eventCount
-    ? `${organizer.name} has organized ${eventCount} events in Đà Lạt, Vietnam`
-    : `${organizer.name} - Event organizer in Đà Lạt, Vietnam`;
+  const description = buildSeoDescription(
+    organizer.description || (eventCount
+      ? `${organizer.name} has organized ${eventCount} events in Đà Lạt, Vietnam`
+      : null),
+    { contentType: "organizer", title: organizer.name }
+  );
 
   return generateLocalizedMetadata({
     locale,
@@ -238,7 +242,7 @@ export function generateOrganizerMetadata(
     description,
     image: organizer.logo_url || undefined,
     type: "profile",
-    keywords: [organizer.name, "organizer", "venue", "events"],
+    keywords: [organizer.name, "organizer", "Đà Lạt", "events", "Vietnam"],
   });
 }
 
@@ -258,13 +262,12 @@ export function generateFestivalMetadata(
   locale: Locale,
   eventCount?: number
 ): Metadata {
-  const description = festival.description
-    ? `${festival.description.slice(0, 150)}${festival.description.length > 150 ? "..." : ""}`
-    : festival.subtitle
-    ? festival.subtitle
-    : eventCount
-    ? `${festival.title} - Festival with ${eventCount} events in Đà Lạt, Vietnam`
-    : `${festival.title} - Festival in Đà Lạt, Vietnam`;
+  const description = buildSeoDescription(
+    festival.description || festival.subtitle || (eventCount
+      ? `${festival.title} — festival with ${eventCount} events in Đà Lạt, Vietnam`
+      : null),
+    { contentType: "festival", title: festival.title }
+  );
 
   return generateLocalizedMetadata({
     locale,
@@ -273,7 +276,7 @@ export function generateFestivalMetadata(
     description,
     image: festival.cover_image_url || undefined,
     type: "article",
-    keywords: [festival.title, "festival", "Đà Lạt"],
+    keywords: [festival.title, "festival", "Đà Lạt", "Vietnam", "lễ hội Đà Lạt"],
     publishedTime: festival.start_date,
   });
 }
@@ -328,7 +331,8 @@ export function generateMomentsDiscoveryMetadata(
 }
 
 /**
- * Generate metadata for an individual moment page
+ * Generate metadata for an individual moment page.
+ * Uses AI-generated descriptions when available for richer SEO.
  */
 export function generateMomentMetadata(
   moment: {
@@ -339,15 +343,30 @@ export function generateMomentMetadata(
     content_type: string;
     user_id: string;
     profiles?: { display_name: string | null; username: string | null };
-    events?: { title: string | null };
+    events?: { title: string | null; location_name?: string | null };
+    // AI metadata (optional, from moment_metadata join)
+    ai_description?: string | null;
+    ai_tags?: string[] | null;
+    detected_objects?: string[] | null;
+    mood?: string | null;
   },
   locale: Locale
 ): Metadata {
   const userName = moment.profiles?.display_name || moment.profiles?.username || "Someone";
   const eventTitle = moment.events?.title || "an event";
-  const description = moment.text_content
-    ? moment.text_content.slice(0, 150)
-    : `${userName} shared a moment from ${eventTitle}`;
+
+  // Prefer AI description for richer SEO, fall back to user text
+  const description = moment.ai_description
+    ? buildSeoDescription(moment.ai_description, {
+        contentType: "moment",
+        title: `${userName}'s moment at ${eventTitle}`,
+      })
+    : moment.text_content
+    ? buildSeoDescription(moment.text_content, {
+        contentType: "moment",
+        title: `${userName}'s moment at ${eventTitle}`,
+      })
+    : `${userName} shared a moment from ${eventTitle} in Đà Lạt, Vietnam`;
 
   const title = `${userName}'s moment at ${eventTitle}`;
   const fallbackOg = `${SITE_URL}/${locale}/moments/${moment.id}/opengraph-image`;
@@ -362,6 +381,16 @@ export function generateMomentMetadata(
     type: "article",
     author: userName,
     publishedTime: moment.created_at,
-    keywords: [userName, eventTitle, "moment", "Đà Lạt"],
+    keywords: getMomentSeoKeywords(
+      {
+        content_type: moment.content_type,
+        ai_tags: moment.ai_tags,
+        detected_objects: moment.detected_objects,
+        mood: moment.mood,
+        event_title: eventTitle,
+        location_name: moment.events?.location_name,
+      },
+      locale
+    ),
   });
 }

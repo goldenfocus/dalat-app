@@ -211,29 +211,29 @@ export const processMomentMetadata = inngest.createFunction(
         });
       });
 
-      // Trigger translations for AI-generated descriptions
-      const aiDescription = metadata.p_ai_description as string | undefined;
-      const sceneDescription = metadata.p_scene_description as string | undefined;
-      const videoSummary = metadata.p_video_summary as string | undefined;
-      const audioSummary = metadata.p_audio_summary as string | undefined;
-      const pdfSummary = metadata.p_pdf_summary as string | undefined;
-
+      // Trigger translations for ALL AI-generated text content.
+      // This powers the multilingual SEO/AEO pipeline — every piece of AI-extracted
+      // text gets translated to 12 languages for discoverability.
       const fieldsToTranslate: { field_name: string; text: string }[] = [];
 
-      if (aiDescription) {
-        fieldsToTranslate.push({ field_name: 'ai_description', text: aiDescription });
-      }
-      if (sceneDescription) {
-        fieldsToTranslate.push({ field_name: 'scene_description', text: sceneDescription });
-      }
-      if (videoSummary) {
-        fieldsToTranslate.push({ field_name: 'video_summary', text: videoSummary });
-      }
-      if (audioSummary) {
-        fieldsToTranslate.push({ field_name: 'audio_summary', text: audioSummary });
-      }
-      if (pdfSummary) {
-        fieldsToTranslate.push({ field_name: 'pdf_summary', text: pdfSummary });
+      const translationCandidates: [string, unknown][] = [
+        ['ai_description', metadata.p_ai_description],
+        ['scene_description', metadata.p_scene_description],
+        ['video_summary', metadata.p_video_summary],
+        ['audio_summary', metadata.p_audio_summary],
+        ['pdf_summary', metadata.p_pdf_summary],
+        ['ai_title', metadata.p_ai_title],
+        ['video_transcript', metadata.p_video_transcript],
+        ['audio_transcript', metadata.p_audio_transcript],
+        ['pdf_extracted_text', metadata.p_pdf_extracted_text],
+      ];
+
+      for (const [fieldName, value] of translationCandidates) {
+        if (typeof value === 'string' && value.length > 0) {
+          // Truncate very long transcripts to keep translation costs reasonable
+          const text = value.length > 5000 ? value.slice(0, 5000) : value;
+          fieldsToTranslate.push({ field_name: fieldName, text });
+        }
       }
 
       if (fieldsToTranslate.length > 0) {
