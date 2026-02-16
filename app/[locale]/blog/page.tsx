@@ -51,7 +51,7 @@ async function getCategories(): Promise<BlogCategory[]> {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
 
-  return generateLocalizedMetadata({
+  const meta = await generateLocalizedMetadata({
     locale,
     path: "/blog",
     title: "Blog",
@@ -59,6 +59,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     keywords: ["dalat", "blog", "changelog", "updates", "release notes"],
     type: "website",
   });
+
+  return {
+    ...meta,
+    alternates: {
+      ...meta.alternates,
+      types: {
+        "application/rss+xml": "https://dalat.app/blog/rss.xml",
+        "application/feed+json": "https://dalat.app/blog/feed.json",
+      },
+    },
+  };
 }
 
 export default async function BlogPage({ params, searchParams }: PageProps) {

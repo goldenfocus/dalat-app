@@ -177,12 +177,14 @@ function BlogPostRow({ post }: { post: AdminBlogPost }) {
     manual: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
     github_release: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
     daily_summary: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+    news_scrape: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   };
 
   const sourceLabels: Record<BlogPostSource, string> = {
     manual: "Manual",
     github_release: "GitHub",
     daily_summary: "Daily",
+    news_scrape: "News",
   };
 
   return (

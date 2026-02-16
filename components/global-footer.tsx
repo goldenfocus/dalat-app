@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Heart } from "lucide-react";
+import { Heart, Rss } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { CONTENT_LOCALES, type ContentLocale } from "@/lib/types";
 
@@ -73,6 +73,15 @@ export function GlobalFooter() {
             className="hover:text-muted-foreground transition-colors"
           >
             goldenfocus.io
+          </a>
+          <span>·</span>
+          <a
+            href="/blog/rss.xml"
+            className="hover:text-muted-foreground transition-colors inline-flex items-center gap-1"
+            title="RSS Feed"
+          >
+            <Rss className="w-3 h-3" />
+            RSS
           </a>
         </p>
 
