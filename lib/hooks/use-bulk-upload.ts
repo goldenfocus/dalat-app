@@ -26,7 +26,7 @@ import type {
   FileMediaType,
 } from "@/lib/bulk-upload/types";
 
-const CONCURRENCY_LIMIT = 5;
+const CONCURRENCY_LIMIT = 2;
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000, 4000]; // Exponential backoff
 
