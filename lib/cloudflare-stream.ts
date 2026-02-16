@@ -15,6 +15,10 @@ import type { CloudflareStreamInput } from '@/lib/types';
 
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';
 
+// Customer subdomain for playback URLs (NOT the account ID!)
+// This is visible in any CF Stream video URL, e.g. customer-XXX.cloudflarestream.com
+const CF_CUSTOMER_SUBDOMAIN = '9g4uycudmu3mklbc';
+
 interface CloudflareApiResponse<T> {
   success: boolean;
   errors: Array<{ code: number; message: string }>;
@@ -189,8 +193,7 @@ export async function listLiveInputs(options?: {
  * This is the WHEP URL that viewers use to watch the stream
  */
 export function getWebRTCPlaybackUrl(liveInputId: string): string {
-  const { accountId } = getCredentials();
-  return `https://customer-${accountId}.cloudflarestream.com/${liveInputId}/webRTC/play`;
+  return `https://customer-${CF_CUSTOMER_SUBDOMAIN}.cloudflarestream.com/${liveInputId}/webRTC/play`;
 }
 
 /**
@@ -198,8 +201,7 @@ export function getWebRTCPlaybackUrl(liveInputId: string): string {
  * Fallback for browsers that don't support WebRTC
  */
 export function getHLSPlaybackUrl(liveInputId: string): string {
-  const { accountId } = getCredentials();
-  return `https://customer-${accountId}.cloudflarestream.com/${liveInputId}/manifest/video.m3u8`;
+  return `https://customer-${CF_CUSTOMER_SUBDOMAIN}.cloudflarestream.com/${liveInputId}/manifest/video.m3u8`;
 }
 
 /**
@@ -489,16 +491,14 @@ export async function deleteVideo(videoUid: string): Promise<void> {
  * adjusts quality based on the viewer's connection speed.
  */
 export function getVODPlaybackUrl(videoUid: string): string {
-  const { accountId } = getCredentials();
-  return `https://customer-${accountId}.cloudflarestream.com/${videoUid}/manifest/video.m3u8`;
+  return `https://customer-${CF_CUSTOMER_SUBDOMAIN}.cloudflarestream.com/${videoUid}/manifest/video.m3u8`;
 }
 
 /**
  * Get the DASH playback URL for a video (alternative to HLS)
  */
 export function getVODDashUrl(videoUid: string): string {
-  const { accountId } = getCredentials();
-  return `https://customer-${accountId}.cloudflarestream.com/${videoUid}/manifest/video.mpd`;
+  return `https://customer-${CF_CUSTOMER_SUBDOMAIN}.cloudflarestream.com/${videoUid}/manifest/video.mpd`;
 }
 
 /**
@@ -514,8 +514,7 @@ export function getVideoThumbnailUrl(
   videoUid: string,
   options?: { time?: number; width?: number; height?: number }
 ): string {
-  const { accountId } = getCredentials();
-  const baseUrl = `https://customer-${accountId}.cloudflarestream.com/${videoUid}/thumbnails/thumbnail.jpg`;
+  const baseUrl = `https://customer-${CF_CUSTOMER_SUBDOMAIN}.cloudflarestream.com/${videoUid}/thumbnails/thumbnail.jpg`;
 
   const params = new URLSearchParams();
   if (options?.time !== undefined) {

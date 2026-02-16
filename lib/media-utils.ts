@@ -278,7 +278,8 @@ export function validateMediaFile(file: File): string | null {
 }
 
 // Cloudflare Stream customer subdomain (public, used in playback URLs)
-const CF_STREAM_CUSTOMER_CODE = "00b406a96bebe80b300bbaae0cd7f716";
+// NOTE: This is NOT the account ID — it's the customer subdomain from CF Stream dashboard
+const CF_STREAM_CUSTOMER_CODE = "9g4uycudmu3mklbc";
 
 /**
  * Construct Cloudflare Stream HLS playback URL from a video UID.

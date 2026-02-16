@@ -37,7 +37,7 @@ const CF_ACCOUNT_ID = env.CLOUDFLARE_ACCOUNT_ID;
 const CF_API_TOKEN = env.CLOUDFLARE_STREAM_API_TOKEN;
 
 function getVODPlaybackUrl(videoUid) {
-  return `https://customer-e5d8gaq1w7nvqw0w.cloudflarestream.com/${videoUid}/manifest/video.m3u8`;
+  return `https://customer-9g4uycudmu3mklbc.cloudflarestream.com/${videoUid}/manifest/video.m3u8`;
 }
 
 async function getVideoDetails(videoUid) {
