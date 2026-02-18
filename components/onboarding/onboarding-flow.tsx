@@ -18,7 +18,6 @@ interface OnboardingFlowProps {
   defaultDisplayName?: string;
   oauthAvatarUrl?: string | null;
   redirectTo?: string;
-  authProvider?: string;
 }
 
 // Progress indicator with connected line
@@ -63,7 +62,6 @@ export function OnboardingFlow({
   defaultDisplayName,
   oauthAvatarUrl,
   redirectTo = "/",
-  authProvider = "email",
 }: OnboardingFlowProps) {
   const t = useTranslations("onboarding");
   const tSettings = useTranslations("settings");
@@ -161,7 +159,6 @@ export function OnboardingFlow({
                 avatarUrl={selectedAvatarUrl}
                 onBack={handleBackToAvatar}
                 redirectTo={redirectTo}
-                hasEmailAuth={authProvider === "email"}
               />
             )}
           </div>

@@ -13,7 +13,6 @@ import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { cn } from "@/lib/utils";
 import { detectBrowserLocale } from "@/lib/locale";
 import { triggerTranslation } from "@/lib/translations-client";
-import { PasswordPromptDialog } from "./password-prompt-dialog";
 import type { Locale } from "@/lib/types";
 
 // Celebration confetti burst
@@ -51,7 +50,6 @@ interface ProfileStepProps {
   avatarUrl: string | null;
   onBack: () => void;
   redirectTo?: string;
-  hasEmailAuth?: boolean; // If true, user signed up with email/password and already has a password
 }
 
 export function ProfileStep({
@@ -60,15 +58,12 @@ export function ProfileStep({
   avatarUrl,
   onBack,
   redirectTo = "/",
-  hasEmailAuth = false,
 }: ProfileStepProps) {
   const router = useRouter();
   const t = useTranslations("onboarding");
   const tProfile = useTranslations("profile");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-
   // Form state
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState(defaultDisplayName || "");
@@ -182,23 +177,10 @@ export function ProfileStep({
         ]);
       }
 
-      // For email auth users, they already have a password - redirect directly
-      // For OAuth users (Google), offer to set a backup password
-      if (hasEmailAuth) {
-        triggerCelebration();
-        router.push(redirectTo);
-        router.refresh();
-      } else {
-        setShowPasswordPrompt(true);
-      }
+      triggerCelebration();
+      router.push(redirectTo);
+      router.refresh();
     });
-  }
-
-  function handlePasswordPromptComplete() {
-    setShowPasswordPrompt(false);
-    triggerCelebration();
-    router.push(redirectTo);
-    router.refresh();
   }
 
   return (
@@ -333,11 +315,6 @@ export function ProfileStep({
         </Button>
       </form>
 
-      {/* Password setup prompt */}
-      <PasswordPromptDialog
-        open={showPasswordPrompt}
-        onComplete={handlePasswordPromptComplete}
-      />
     </div>
   );
 }
