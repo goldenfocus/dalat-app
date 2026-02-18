@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -236,25 +237,15 @@ export function PlaylistInput({
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
       const filePath = `playlists/${eventId}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("event-media")
-        .upload(filePath, upload.file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
+      const uploadResult = await uploadToStorage("event-media", upload.file, {
+        filename: filePath,
+      });
 
       setUploading((prev) =>
         prev.map((u) => (u.id === upload.id ? { ...u, progress: 60 } : u))
       );
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("event-media")
-        .getPublicUrl(filePath);
-
-      const fileUrl = urlData.publicUrl;
+      const fileUrl = uploadResult.publicUrl;
 
       // Step 4: Upload album art if present
       let thumbnailUrl: string | null = null;
@@ -263,19 +254,15 @@ export function PlaylistInput({
         if (artBlob) {
           const artFileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-art.jpg`;
           const artPath = `playlists/${eventId}/${artFileName}`;
+          const artFile = new globalThis.File([artBlob], artFileName, { type: artBlob.type });
 
-          const { error: artError } = await supabase.storage
-            .from("event-media")
-            .upload(artPath, artBlob, {
-              cacheControl: "31536000",
-              upsert: false,
+          try {
+            const artResult = await uploadToStorage("event-media", artFile, {
+              filename: artPath,
             });
-
-          if (!artError) {
-            const { data: artUrlData } = supabase.storage
-              .from("event-media")
-              .getPublicUrl(artPath);
-            thumbnailUrl = artUrlData.publicUrl;
+            thumbnailUrl = artResult.publicUrl;
+          } catch (artErr) {
+            console.warn("Album art upload failed (non-critical):", artErr);
           }
         }
       }

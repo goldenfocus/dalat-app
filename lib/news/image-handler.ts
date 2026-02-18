@@ -1,9 +1,9 @@
 /**
  * Image handling for news articles
- * Downloads source images to Supabase storage, or generates with AI if none available
+ * Downloads source images to R2 storage, or generates with AI if none available
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { getStorageProvider } from '@/lib/storage';
 import { generateCoverImage } from '@/lib/blog/cover-generator';
 
 const USER_AGENT = 'Mozilla/5.0 (compatible; DalatApp/1.0; +https://dalat.app)';
@@ -19,7 +19,7 @@ interface NewsImage {
 }
 
 /**
- * Download an image from a URL and upload to Supabase storage
+ * Download an image from a URL and upload to R2 storage
  */
 async function downloadAndStoreImage(
   imageUrl: string,
@@ -49,8 +49,7 @@ async function downloadAndStoreImage(
     // Skip huge images
     if (arrayBuffer.byteLength > 10 * 1024 * 1024) return null;
 
-    // Convert ArrayBuffer to Uint8Array for Supabase storage upload
-    const buffer = new Uint8Array(arrayBuffer);
+    const buffer = Buffer.from(arrayBuffer);
 
     const ext = contentType.includes('png') ? 'png'
       : contentType.includes('webp') ? 'webp'
@@ -58,27 +57,12 @@ async function downloadAndStoreImage(
 
     const filename = `news/${slug}/${Date.now()}.${ext}`;
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const storage = await getStorageProvider('event-media');
 
-    const { error } = await supabase.storage
-      .from('event-media')
-      .upload(filename, buffer, {
-        contentType,
-        cacheControl: '86400',
-        upsert: false,
-      });
-
-    if (error) {
-      console.error(`[image-handler] Upload failed:`, error);
-      return null;
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('event-media')
-      .getPublicUrl(filename);
+    const publicUrl = await storage.upload('event-media', filename, buffer, {
+      contentType,
+      cacheControl: '86400',
+    });
 
     return {
       original_url: imageUrl,

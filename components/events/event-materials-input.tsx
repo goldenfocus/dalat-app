@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -190,24 +191,14 @@ export function EventMaterialsInput({
     setError(null);
 
     try {
-      const supabase = createClient();
       const ext = file.name.split(".").pop()?.toLowerCase() || "";
       const fileName = `${eventId}/${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("event-materials")
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
+      const result = await uploadToStorage("event-materials", file, {
+        filename: fileName,
+      });
 
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("event-materials")
-        .getPublicUrl(fileName);
-
-      return publicUrl;
+      return result.publicUrl;
     } catch (err) {
       console.error("File upload error:", err);
       setError(t("materialErrors.uploadFailed"));
@@ -314,20 +305,16 @@ export function EventMaterialsInput({
         try {
           const ext = audioMetadata.thumbnailBlob.type.split("/")[1] || "jpg";
           const thumbFileName = `${eventId}/thumb-${Date.now()}-${sortOrderOffset}.${ext}`;
+          const thumbFile = new globalThis.File(
+            [audioMetadata.thumbnailBlob],
+            `thumb.${ext}`,
+            { type: audioMetadata.thumbnailBlob.type }
+          );
 
-          const { error: thumbUploadError } = await supabase.storage
-            .from("event-materials")
-            .upload(thumbFileName, audioMetadata.thumbnailBlob, {
-              cacheControl: "3600",
-              upsert: true,
-            });
-
-          if (!thumbUploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from("event-materials")
-              .getPublicUrl(thumbFileName);
-            thumbnailUrl = publicUrl;
-          }
+          const thumbResult = await uploadToStorage("event-materials", thumbFile, {
+            filename: thumbFileName,
+          });
+          thumbnailUrl = thumbResult.publicUrl;
         } catch (err) {
           console.error("Failed to upload album art:", err);
         }
@@ -1008,21 +995,14 @@ export async function createMaterialsForEvent(
       const ext = draft.pending_file.name.split(".").pop()?.toLowerCase() || "";
       const fileName = `${eventId}/${Date.now()}-${i}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("event-materials")
-        .upload(fileName, draft.pending_file, {
-          cacheControl: "3600",
-          upsert: true,
+      try {
+        const result = await uploadToStorage("event-materials", draft.pending_file, {
+          filename: fileName,
         });
-
-      if (!uploadError) {
-        const { data: { publicUrl } } = supabase.storage
-          .from("event-materials")
-          .getPublicUrl(fileName);
-        fileUrl = publicUrl;
-      } else {
+        fileUrl = result.publicUrl;
+      } catch (uploadErr) {
         // Upload failed - skip this material
-        console.error("Material upload failed:", uploadError);
+        console.error("Material upload failed:", uploadErr);
         continue;
       }
     } else if (fileUrl?.startsWith("blob:")) {
@@ -1035,20 +1015,16 @@ export async function createMaterialsForEvent(
       try {
         const thumbExt = draft.pending_thumbnail.type.split("/")[1] || "jpg";
         const thumbFileName = `${eventId}/thumb-${Date.now()}-${i}.${thumbExt}`;
+        const thumbFile = new globalThis.File(
+          [draft.pending_thumbnail],
+          `thumb.${thumbExt}`,
+          { type: draft.pending_thumbnail.type }
+        );
 
-        const { error: thumbUploadError } = await supabase.storage
-          .from("event-materials")
-          .upload(thumbFileName, draft.pending_thumbnail, {
-            cacheControl: "3600",
-            upsert: true,
-          });
-
-        if (!thumbUploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from("event-materials")
-            .getPublicUrl(thumbFileName);
-          thumbnailUrl = publicUrl;
-        }
+        const thumbResult = await uploadToStorage("event-materials", thumbFile, {
+          filename: thumbFileName,
+        });
+        thumbnailUrl = thumbResult.publicUrl;
       } catch (err) {
         console.error("Failed to upload album art thumbnail:", err);
         // Continue without thumbnail

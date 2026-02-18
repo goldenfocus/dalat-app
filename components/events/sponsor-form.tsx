@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ImageIcon, X, Plus, Loader2, GripVertical, ExternalLink, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { uploadFile } from "@/lib/storage/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -133,24 +134,14 @@ export function SponsorForm({
     setError(null);
 
     try {
-      const supabase = createClient();
       const ext = file.name.split(".").pop()?.toLowerCase() || "png";
       const fileName = `${eventId}/${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("sponsor-logos")
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: true,
-        });
+      const result = await uploadFile("sponsor-logos", file, {
+        filename: fileName,
+      });
 
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("sponsor-logos")
-        .getPublicUrl(fileName);
-
-      return publicUrl;
+      return result.publicUrl;
     } catch (err) {
       console.error("Logo upload error:", err);
       setError("Failed to upload logo");
@@ -713,19 +704,12 @@ export async function createSponsorsForEvent(
       const ext = draft.logo_file.name.split(".").pop()?.toLowerCase() || "png";
       const fileName = `${eventId}/${Date.now()}-${i}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("sponsor-logos")
-        .upload(fileName, draft.logo_file, {
-          cacheControl: "3600",
-          upsert: true,
+      try {
+        const result = await uploadFile("sponsor-logos", draft.logo_file, {
+          filename: fileName,
         });
-
-      if (!uploadError) {
-        const { data: { publicUrl } } = supabase.storage
-          .from("sponsor-logos")
-          .getPublicUrl(fileName);
-        logoUrl = publicUrl;
-      } else {
+        logoUrl = result.publicUrl;
+      } catch {
         // Upload failed - clear blob URL to avoid saving invalid reference
         logoUrl = null;
       }

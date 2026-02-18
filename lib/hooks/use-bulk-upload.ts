@@ -571,22 +571,13 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
           const thumbnailBlob = await generateVideoThumbnail(fileToUpload);
           const thumbnailFileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}_thumb.jpg`;
 
-          // Upload thumbnail to Supabase (small file, fast)
-          const { error: thumbError } = await supabaseRef.current.storage
-            .from("moments")
-            .upload(thumbnailFileName, thumbnailBlob, {
-              cacheControl: "3600",
-              contentType: "image/jpeg",
-              upsert: false,
-            });
-
-          if (!thumbError) {
-            const { data: { publicUrl: thumbUrl } } = supabaseRef.current.storage
-              .from("moments")
-              .getPublicUrl(thumbnailFileName);
-            thumbnailUrl = thumbUrl;
-            console.log("[BulkUpload] Thumbnail uploaded:", thumbnailUrl);
-          }
+          // Upload thumbnail to R2 via presigned URL
+          const thumbFile = new globalThis.File([thumbnailBlob], "thumb.jpg", { type: "image/jpeg" });
+          const thumbResult = await uploadToStorage("moments", thumbFile, {
+            filename: thumbnailFileName,
+          });
+          thumbnailUrl = thumbResult.publicUrl;
+          console.log("[BulkUpload] Thumbnail uploaded:", thumbnailUrl);
         } catch (thumbErr) {
           console.warn("[BulkUpload] Thumbnail generation failed (non-critical):", thumbErr);
         }

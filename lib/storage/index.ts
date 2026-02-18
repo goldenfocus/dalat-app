@@ -120,7 +120,9 @@ export interface MultipartStorageProvider extends StorageProvider {
 const R2_ENABLED_BUCKETS: string[] = [
   'avatars',
   'event-media',
+  'event-materials',
   'moments',
+  'sponsor-logos',
   'venue-media',
   'organizer-logos',
   'persona-references',

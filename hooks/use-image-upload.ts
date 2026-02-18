@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { uploadFile } from "@/lib/storage/client";
 
 interface UseImageUploadOptions {
   initialImageUrl?: string | null;
@@ -25,7 +25,7 @@ interface UseImageUploadReturn {
 
 /**
  * Hook to manage image upload state and logic.
- * Handles file selection, base64 data URLs, and Supabase storage uploads.
+ * Handles file selection, base64 data URLs, and storage uploads via R2/presigned URLs.
  */
 export function useImageUpload({
   initialImageUrl = null,
@@ -43,24 +43,16 @@ export function useImageUpload({
   }, []);
 
   const uploadImage = useCallback(async (eventId: string): Promise<string | null> => {
-    const supabase = createClient();
-
     // If we have a pending file, upload it
     if (pendingFile) {
       const ext = pendingFile.name.split(".").pop()?.toLowerCase() || "jpg";
       const fileName = `${eventId}/${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("event-media")
-        .upload(fileName, pendingFile, { cacheControl: "3600", upsert: true });
+      const result = await uploadFile("event-media", pendingFile, {
+        filename: fileName,
+      });
 
-      if (uploadError) throw new Error("Failed to upload image");
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("event-media")
-        .getPublicUrl(fileName);
-
-      return publicUrl;
+      return result.publicUrl;
     }
 
     // If imageUrl is a base64/data URL (from AI generation), upload it
@@ -69,18 +61,13 @@ export function useImageUpload({
       const blob = await response.blob();
       const ext = blob.type.split("/")[1] || "png";
       const fileName = `${eventId}/${Date.now()}.${ext}`;
+      const file = new File([blob], `generated.${ext}`, { type: blob.type });
 
-      const { error: uploadError } = await supabase.storage
-        .from("event-media")
-        .upload(fileName, blob, { cacheControl: "3600", upsert: true });
+      const result = await uploadFile("event-media", file, {
+        filename: fileName,
+      });
 
-      if (uploadError) throw new Error("Failed to upload generated image");
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("event-media")
-        .getPublicUrl(fileName);
-
-      return publicUrl;
+      return result.publicUrl;
     }
 
     // Otherwise return the URL as-is (external URL or null)
