@@ -33,6 +33,7 @@ import { VenueMap } from "@/components/venues/venue-map";
 import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
 import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { VenueShareButton } from "@/components/venues/venue-share-button";
+import { VenueCopyAddress } from "@/components/venues/venue-copy-address";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
 import { JsonLd } from "@/lib/structured-data";
 
@@ -739,7 +740,6 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               address={translatedAddress}
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
-              addressCopiedLabel={t("addressCopied")}
               locale={locale}
             />
           </section>
@@ -768,10 +768,10 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
                 {venue.address && (
-                  <span className="flex items-center justify-center gap-1 mb-2">
-                    <MapPin className="w-4 h-4" />
-                    {translatedAddress}
-                  </span>
+                  <VenueCopyAddress
+                    address={translatedAddress || venue.address}
+                    copiedLabel={t("addressCopied")}
+                  />
                 )}
                 {t("findUsDescription")}
               </p>

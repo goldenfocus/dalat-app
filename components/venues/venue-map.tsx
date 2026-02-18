@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { MapPin, ExternalLink, Navigation } from "lucide-react";
-import { toast } from "sonner";
 
 interface VenueMapProps {
   latitude: number;
@@ -11,7 +10,6 @@ interface VenueMapProps {
   address?: string | null;
   directionsLabel: string;
   viewOnMapLabel: string;
-  addressCopiedLabel?: string;
   locale?: string;
 }
 
@@ -22,7 +20,6 @@ export function VenueMap({
   address,
   directionsLabel,
   viewOnMapLabel,
-  addressCopiedLabel,
   locale,
 }: VenueMapProps) {
   const [mapError, setMapError] = useState(false);
@@ -38,33 +35,16 @@ export function VenueMap({
   const mapsLink = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
   const directionsLink = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
 
-  const copyAddress = useCallback(async () => {
-    const textToCopy = address || `${latitude}, ${longitude}`;
-    try {
-      await navigator.clipboard.writeText(textToCopy);
-    } catch {
-      // Fallback for restricted contexts
-      const textarea = document.createElement("textarea");
-      textarea.value = textToCopy;
-      textarea.style.position = "fixed";
-      textarea.style.left = "-9999px";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-    }
-    toast.success(addressCopiedLabel || "Address copied!");
-  }, [address, latitude, longitude, addressCopiedLabel]);
-
   return (
     <div className="rounded-xl overflow-hidden border border-border">
-      {/* Map Image — tap to copy address */}
+      {/* Map Image */}
       <div className="relative aspect-[16/9] bg-muted">
         {mapUrl && !mapError ? (
-          <button
-            type="button"
-            onClick={copyAddress}
-            className="block w-full h-full cursor-pointer active:scale-[0.99] transition-transform"
+          <a
+            href={mapsLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full h-full"
           >
             <img
               src={mapUrl}
@@ -74,16 +54,12 @@ export function VenueMap({
             />
             {/* Subtle overlay for better contrast */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-          </button>
+          </a>
         ) : (
-          <button
-            type="button"
-            onClick={copyAddress}
-            className="w-full h-full flex flex-col items-center justify-center text-muted-foreground cursor-pointer"
-          >
+          <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
             <MapPin className="w-8 h-8 mb-2" />
             <p className="text-sm">{address || name}</p>
-          </button>
+          </div>
         )}
       </div>
 
