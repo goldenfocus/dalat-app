@@ -87,5 +87,8 @@ Users can manage notifications in Settings.
 - Web Push API (Native notifications)
 - Tailwind CSS
 - shadcn/ui
-// Force rebuild - Sun Feb  8 10:01:51 AM UTC 2026
-// Dependencies installed - Sun Feb  8 10:08:34 AM UTC 2026
+## Credits
+
+Built by [@vibeyang](https://github.com/vibeyang) with [Claude Code](https://claude.com/claude-code).
+
+**Development philosophy:** Every feature is built by spawning a **team of specialized agents** working in parallel. Instead of one AI doing everything sequentially, Claude Code assembles a squad — each agent is an expert in its domain (database migrations, UI components, API routes, i18n, testing, code review). The goal: **speed through parallelism, accuracy through specialization, and quality through expert review.** A single feature request can trigger 3-5 agents running simultaneously, each owning their piece of the stack.
