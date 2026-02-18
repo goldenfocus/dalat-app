@@ -773,6 +773,29 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.status]);
 
+  // Watchdog: detect stalled queue and restart processing.
+  // The queue can stall when scheduleNextProcess fires before the reducer
+  // updates filesRef, causing processQueue to see no queued files.
+  useEffect(() => {
+    if (state.status !== "uploading") return;
+
+    const watchdog = setInterval(() => {
+      if (isPausedRef.current) return;
+      const files = Array.from(filesRef.current.values());
+      const hasQueued = files.some((f) => f.status === "queued");
+      const activeCount = activeUploadsRef.current.size;
+      const isProcessing = processingRef.current;
+
+      if (hasQueued && activeCount === 0 && !isProcessing) {
+        console.warn("[BulkUpload] Watchdog: queue stalled, restarting...");
+        processQueue();
+      }
+    }, 2000);
+
+    return () => clearInterval(watchdog);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.status]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {

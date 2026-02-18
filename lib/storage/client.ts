@@ -230,75 +230,54 @@ export async function uploadFile(
     }
   }
 
-  // Try presigned URL first (works for both R2 and Supabase)
-  try {
-    const presignResponse = await fetchWithRetry(
-      "/api/storage/presign",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bucket,
-          path,
-          contentType,
-        }),
+  // Upload via R2 presigned URL (no Supabase fallback — all uploads go through R2)
+  const presignResponse = await fetchWithRetry(
+    "/api/storage/presign",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bucket,
+        path,
+        contentType,
+      }),
+    },
+    2, // Fewer retries for presign - it's quick and failures are usually auth issues
+    15000 // 15s timeout per attempt — fail fast instead of hanging if server is down
+  );
+
+  if (!presignResponse.ok) {
+    const errorText = await presignResponse.text().catch(() => "unknown");
+    throw new Error(`Presign failed (${presignResponse.status}): ${errorText}`);
+  }
+
+  const { url, publicUrl, provider } = await presignResponse.json();
+
+  // Read file into memory before uploading to prevent ERR_FILE_NOT_FOUND.
+  // During large batch uploads (100+ files), browser may GC the File handle
+  // before the PUT executes, causing the request body to be unreadable.
+  const fileBuffer = await file.arrayBuffer();
+  const fileBlob = new Blob([fileBuffer], { type: contentType });
+
+  // Upload directly to the presigned URL with retry
+  // This is the critical path where iOS "Load failed" errors happen
+  const uploadResponse = await fetchWithRetry(
+    url,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": contentType,
       },
-      2, // Fewer retries for presign - it's quick and failures are usually auth issues
-      15000 // 15s timeout per attempt — fail fast instead of hanging if server is down
-    );
+      body: fileBlob,
+    },
+    MAX_RETRIES // Full retries for the actual upload
+  );
 
-    if (presignResponse.ok) {
-      const { url, publicUrl, provider } = await presignResponse.json();
-
-      // Upload directly to the presigned URL with retry
-      // This is the critical path where iOS "Load failed" errors happen
-      const uploadResponse = await fetchWithRetry(
-        url,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": contentType,
-          },
-          body: file,
-        },
-        MAX_RETRIES // Full retries for the actual upload
-      );
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
-      }
-
-      return { publicUrl, path, provider };
-    }
-
-    // If presign fails (e.g., not authenticated), fall through to direct upload
-  } catch (error) {
-    console.warn("Presigned upload failed, falling back to direct:", error);
+  if (!uploadResponse.ok) {
+    throw new Error(`R2 upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
   }
 
-  // Fallback: Direct Supabase upload
-  const supabase = createClient();
-
-  const { error: uploadError, data: uploadData } = await supabase.storage
-    .from(bucket)
-    .upload(path, file, {
-      cacheControl: "3600",
-      upsert: true,
-    });
-
-  if (uploadError) {
-    throw new Error(`Upload failed: ${uploadError.message}`);
-  }
-
-  if (!uploadData?.path) {
-    throw new Error("Upload succeeded but no path returned");
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(bucket).getPublicUrl(uploadData.path);
-
-  return { publicUrl, path: uploadData.path, provider: "supabase" };
+  return { publicUrl, path, provider };
 }
 
 /**
