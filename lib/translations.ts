@@ -306,6 +306,11 @@ export async function triggerTranslationServer(
         .from('comments')
         .update({ source_locale: detectedLocale })
         .eq('id', contentId);
+    } else if (contentType === 'blog') {
+      await supabase
+        .from('blog_posts')
+        .update({ source_locale: detectedLocale })
+        .eq('id', contentId);
     }
 
     // Prepare translation inserts
@@ -425,6 +430,43 @@ export async function getBlogTranslationsBatch(
   targetLocale: ContentLocale
 ): Promise<Map<string, { title: string; story_content: string }>> {
   const supabase = await createClient();
+
+  const { data: translations } = await supabase
+    .from('content_translations')
+    .select('content_id, field_name, translated_text')
+    .eq('content_type', 'blog')
+    .in('content_id', postIds)
+    .eq('target_locale', targetLocale)
+    .in('field_name', ['title', 'story_content']);
+
+  const result = new Map<string, { title: string; story_content: string }>();
+
+  if (translations) {
+    for (const t of translations) {
+      const existing = result.get(t.content_id) || { title: '', story_content: '' };
+      if (t.field_name === 'title') {
+        existing.title = t.translated_text;
+      } else if (t.field_name === 'story_content') {
+        existing.story_content = t.translated_text;
+      }
+      result.set(t.content_id, existing);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Same as getBlogTranslationsBatch but uses createStaticClient() instead of
+ * createClient(). Safe to call inside unstable_cache / ISR / generateStaticParams
+ * where there is no HTTP request context (no cookies).
+ */
+export async function getBlogTranslationsBatchStatic(
+  postIds: string[],
+  targetLocale: ContentLocale
+): Promise<Map<string, { title: string; story_content: string }>> {
+  const supabase = createStaticClient();
+  if (!supabase) return new Map();
 
   const { data: translations } = await supabase
     .from('content_translations')

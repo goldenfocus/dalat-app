@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { unstable_cache } from 'next/cache';
 import { createStaticClient } from '@/lib/supabase/server';
+import { getBlogTranslationsBatchStatic } from '@/lib/translations';
+import type { ContentLocale } from '@/lib/types';
 import { NewsHeroCard } from '@/components/news/news-hero-card';
 import { NewsCompactCard } from '@/components/news/news-compact-card';
 import { NewsTagFilter } from '@/components/news/news-tag-filter';
@@ -80,11 +82,41 @@ export default async function NewsPage({ params }: Props) {
     getTrendingNews(),
   ]);
 
+  // Fetch translations for all posts + trending in a single batch
+  const allIds = [
+    ...posts.map((p: any) => p.id),
+    ...trending.map((t: any) => t.id),
+  ].filter(Boolean);
+  const uniqueIds = [...new Set(allIds)];
+
+  const translations =
+    uniqueIds.length > 0 && locale !== 'en'
+      ? await getBlogTranslationsBatchStatic(uniqueIds, locale as ContentLocale)
+      : new Map<string, { title: string; story_content: string }>();
+
+  // Apply translations to posts
+  const translatedPosts = posts.map((p: any) => {
+    const tr = translations.get(p.id);
+    return {
+      ...p,
+      title: tr?.title || p.title,
+      story_content: tr?.story_content || p.story_content,
+    };
+  });
+
+  const translatedTrending = trending.map((item: any) => {
+    const tr = translations.get(item.id);
+    return {
+      ...item,
+      title: tr?.title || item.title,
+    };
+  });
+
   // Separate breaking, featured, and regular
-  const breakingPosts = posts.filter((p: any) => p.is_breaking);
-  const featuredPost = posts.find((p: any) => p.is_featured && !p.is_breaking);
-  const heroPost = featuredPost || posts[0];
-  const regularPosts = posts.filter((p: any) => p !== heroPost && !p.is_breaking);
+  const breakingPosts = translatedPosts.filter((p: any) => p.is_breaking);
+  const featuredPost = translatedPosts.find((p: any) => p.is_featured && !p.is_breaking);
+  const heroPost = featuredPost || translatedPosts[0];
+  const regularPosts = translatedPosts.filter((p: any) => p !== heroPost && !p.is_breaking);
 
   // Extract source names from source_urls
   const getSourceName = (post: any) => {
@@ -164,7 +196,7 @@ export default async function NewsPage({ params }: Props) {
           <div className="hidden lg:block">
             <NewsSidebar
               trendingLabel={t('trending')}
-              trending={trending.map((item: any) => ({
+              trending={translatedTrending.map((item: any) => ({
                 slug: item.slug,
                 title: item.title,
                 like_count: item.like_count,

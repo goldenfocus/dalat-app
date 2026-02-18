@@ -5,6 +5,7 @@ import { processNewsCluster } from '@/lib/news/content-processor';
 import { calculateQualityScore } from '@/lib/news/quality-scorer';
 import { applyInternalLinks } from '@/lib/news/internal-linker';
 import { handleNewsImages } from '@/lib/news/image-handler';
+import { triggerTranslationServer } from '@/lib/translations';
 import type { ScrapedArticle } from '@/lib/news/types';
 
 function getSupabase() {
@@ -209,29 +210,17 @@ export async function GET(request: Request) {
           })
           .in('source_url', clusterSourceUrls);
 
-        // Trigger translation (fire-and-forget)
+        // Trigger translation (server-side, no HTTP fetch needed)
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-            || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-            || 'http://localhost:3000';
-
-          fetch(`${baseUrl}/api/translate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              content_type: 'blog',
-              content_id: post.id,
-              fields: [
-                { field_name: 'title', text: content.title },
-                { field_name: 'story_content', text: linkedStory },
-                { field_name: 'technical_content', text: linkedTechnical },
-                { field_name: 'meta_description', text: content.metaDescription },
-              ],
-              detect_language: true,
-            }),
-          }).catch(err => console.error('[news-process] Translation trigger failed:', err));
+          await triggerTranslationServer('blog', post.id, [
+            { field_name: 'title', text: content.title },
+            { field_name: 'story_content', text: linkedStory },
+            { field_name: 'technical_content', text: linkedTechnical },
+            { field_name: 'meta_description', text: content.metaDescription },
+          ]);
         } catch (translationError) {
-          console.error('[news-process] Translation trigger error:', translationError);
+          // Translation failure should not kill the pipeline
+          console.error('[news-process] Translation failed (non-fatal):', translationError);
         }
 
         console.log(`[news-process] Created post: ${post.id} (${content.title})`);
