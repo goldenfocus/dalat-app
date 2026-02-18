@@ -148,7 +148,7 @@ export function HostDashboard({ userId }: { userId: string | null }) {
       {/* Tier roadmap */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Host tier roadmap</CardTitle>
+          <CardTitle className="text-sm">{t("hostRoadmap")}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="relative">
@@ -193,11 +193,11 @@ export function HostDashboard({ userId }: { userId: string | null }) {
                             isActive ? config.color : "text-muted-foreground"
                           )}
                         >
-                          {config.label}
+                          {t(`tier.${tier}`)}
                         </span>
                         {isCurrent && (
                           <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-                            Current
+                            {t("current")}
                           </span>
                         )}
                       </div>
@@ -255,8 +255,8 @@ export function HostDashboard({ userId }: { userId: string | null }) {
                       {perksAtTier.length === 0 && (
                         <p className="text-xs text-muted-foreground mt-1">
                           {idx === 0
-                            ? "Start your journey. Everyone begins here."
-                            : "Keep growing to unlock more perks!"}
+                            ? t("tierExplorerDesc")
+                            : t("tierGrowDesc")}
                         </p>
                       )}
                     </div>
@@ -274,15 +274,15 @@ export function HostDashboard({ userId }: { userId: string | null }) {
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
             <Plus className="w-6 h-6 text-primary" />
           </div>
-          <h3 className="font-semibold">Ready to host?</h3>
+          <h3 className="font-semibold">{t("readyToHost")}</h3>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-            Create your first event and start earning host points. Every event brings you closer to premium perks.
+            {t("readyToHostDesc")}
           </p>
           <Link
             href="/events/new"
             className="inline-flex items-center gap-1 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium active:scale-95 transition-all"
           >
-            Create an event
+            {t("createEvent")}
             <ChevronRight className="w-4 h-4" />
           </Link>
         </CardContent>

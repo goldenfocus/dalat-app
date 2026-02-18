@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LeaderboardEntry } from "@/components/loyalty/leaderboard-entry";
@@ -24,6 +25,7 @@ interface CurrentUserRank {
 }
 
 export function LeaderboardFull({ userId }: { userId: string | null }) {
+  const t = useTranslations("loyalty");
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [myRank, setMyRank] = useState<CurrentUserRank | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,14 +60,14 @@ export function LeaderboardFull({ userId }: { userId: string | null }) {
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium">Your rank</p>
+              <p className="text-sm font-medium">{t("yourRank")}</p>
               <p className="text-2xl font-bold text-primary">
                 #{myRank.rank}
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm font-semibold tabular-nums">
-                {myRank.points.toLocaleString()} pts
+                {myRank.points.toLocaleString()} {t("pts")}
               </p>
             </div>
           </CardContent>
@@ -80,7 +82,7 @@ export function LeaderboardFull({ userId }: { userId: string | null }) {
         <div className="text-center py-16 space-y-3">
           <Trophy className="w-10 h-10 text-muted-foreground mx-auto" />
           <p className="text-muted-foreground">
-            No one on the leaderboard yet. Be the first!
+            {t("leaderboardEmpty")}
           </p>
         </div>
       ) : (

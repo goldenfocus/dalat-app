@@ -35,10 +35,10 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
     fetch("/api/loyalty/status")
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
-        if (json?.data) {
+        if (json?.data && json.data.enrolled !== false) {
           setLoyalty({
             tier: json.data.current_tier ?? "explorer",
-            points: json.data.total_points ?? 0,
+            points: json.data.current_points ?? 0,
           });
         }
       })

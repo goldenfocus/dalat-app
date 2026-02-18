@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { TierBadge, TIER_CONFIG, type TierKey } from "./tier-badge";
 
@@ -54,6 +55,7 @@ export function LoyaltyProgress({
   currentTier,
   className,
 }: LoyaltyProgressProps) {
+  const t = useTranslations("loyalty");
   const tier = (
     TIER_ORDER.includes(currentTier as TierKey) ? currentTier : "explorer"
   ) as TierKey;
@@ -76,7 +78,7 @@ export function LoyaltyProgress({
             TIER_CONFIG[tier].color,
           )}
         >
-          {currentPoints.toLocaleString()} pts
+          {currentPoints.toLocaleString()} {t("pts")}
         </span>
       </div>
 
@@ -96,15 +98,12 @@ export function LoyaltyProgress({
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         {isMaxTier ? (
           <span className="font-medium text-amber-500">
-            Max tier reached!
+            {t("maxTierReached")}
           </span>
         ) : (
           <>
             <span>
-              {pointsToNext.toLocaleString()} more pts to{" "}
-              <span className={cn("font-medium", TIER_CONFIG[nextTier].color)}>
-                {TIER_CONFIG[nextTier].label}
-              </span>
+              {t("pointsToNext", { points: pointsToNext.toLocaleString(), tier: t(`tier.${nextTier}`) })}
             </span>
             <TierBadge tier={nextTier} size="sm" showLabel={false} />
           </>

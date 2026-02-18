@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 export const TIER_CONFIG = {
   explorer: {
     label: "Explorer",
-    icon: "\u{1F44B}",
+    icon: "\u{1F9ED}",
     color: "text-emerald-500",
     bg: "bg-emerald-500/10",
     border: "border-emerald-500/20",

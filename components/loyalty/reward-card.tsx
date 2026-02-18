@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { TIER_CONFIG, type TierKey } from "./tier-badge";
@@ -91,6 +92,7 @@ export function RewardCard({
   userTier,
   onClaim,
 }: RewardCardProps) {
+  const t = useTranslations("loyalty");
   const [isClaiming, setIsClaiming] = useState(false);
 
   const hasEnoughPoints = userPoints >= reward.points_cost;
@@ -130,7 +132,7 @@ export function RewardCard({
             categoryStyle.border,
           )}
         >
-          {categoryStyle.label}
+          {t(`category.${reward.category}`)}
         </span>
 
         {reward.image_url && (
@@ -156,7 +158,7 @@ export function RewardCard({
       <div className="mt-3 flex items-center gap-2">
         <span className="flex items-center gap-1 text-sm font-bold tabular-nums text-foreground">
           <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-          {reward.points_cost.toLocaleString()} pts
+          {reward.points_cost.toLocaleString()} {t("pts")}
         </span>
 
         {reward.stock_remaining !== null && (
@@ -168,7 +170,7 @@ export function RewardCard({
                 : "text-muted-foreground",
             )}
           >
-            {reward.stock_remaining} left
+            {t("stockLeft", { count: reward.stock_remaining })}
           </span>
         )}
       </div>
@@ -178,16 +180,7 @@ export function RewardCard({
         <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Lock className="h-3 w-3" />
           <span>
-            Requires{" "}
-            <span
-              className={cn(
-                "font-medium",
-                TIER_CONFIG[reward.tier_required as TierKey]?.color ??
-                  "text-foreground",
-              )}
-            >
-              {TIER_CONFIG[reward.tier_required as TierKey]?.label ?? reward.tier_required}
-            </span>
+            {t("insufficientTier", { tier: t(`tier.${reward.tier_required}`) })}
           </span>
         </div>
       )}
@@ -209,19 +202,19 @@ export function RewardCard({
         ) : !hasEnoughPoints ? (
           <>
             <Lock className="h-3.5 w-3.5" />
-            Need {(reward.points_cost - userPoints).toLocaleString()} more pts
+            {t("insufficientPoints", { points: (reward.points_cost - userPoints).toLocaleString() })}
           </>
         ) : !hasTier ? (
           <>
             <Lock className="h-3.5 w-3.5" />
-            Tier locked
+            {t("insufficientTier", { tier: t(`tier.${reward.tier_required}`) })}
           </>
         ) : !inStock ? (
-          "Out of stock"
+          t("outOfStock")
         ) : (
           <>
             <Gift className="h-3.5 w-3.5" />
-            Claim reward
+            {t("claimReward")}
           </>
         )}
       </Button>

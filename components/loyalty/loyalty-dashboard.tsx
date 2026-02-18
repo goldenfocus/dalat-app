@@ -118,13 +118,13 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
         </div>
         <h2 className="text-xl font-bold">{t("title")}</h2>
         <p className="text-muted-foreground max-w-sm mx-auto">
-          Sign in to start earning points, unlock rewards, and climb the leaderboard.
+          {t("signInPrompt")}
         </p>
         <Link
           href="/login"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium active:scale-95 transition-all"
         >
-          Sign in to get started
+          {t("signInCta")}
         </Link>
       </div>
     );
@@ -137,15 +137,15 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
         <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
           <Sparkles className="w-8 h-8 text-emerald-500" />
         </div>
-        <h2 className="text-xl font-bold">Welcome, Explorer!</h2>
+        <h2 className="text-xl font-bold">{t("welcomeTitle")}</h2>
         <p className="text-muted-foreground max-w-sm mx-auto">
-          Start exploring Dalat to earn your first points. RSVP to events, share moments, and join the community.
+          {t("welcomePrompt")}
         </p>
         <Link
           href="/"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium active:scale-95 transition-all"
         >
-          Discover events
+          {t("discoverEvents")}
           <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
@@ -182,7 +182,7 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
       <Tabs defaultValue="overview">
         <TabsList className="w-full grid grid-cols-4 h-11">
           <TabsTrigger value="overview" className="text-xs px-2 py-2">
-            Overview
+            {t("overview")}
           </TabsTrigger>
           <TabsTrigger value="leaderboard" className="text-xs px-2 py-2">
             <Trophy className="w-3.5 h-3.5 mr-1" />
@@ -194,7 +194,7 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
           </TabsTrigger>
           <TabsTrigger value="host" className="text-xs px-2 py-2">
             <Star className="w-3.5 h-3.5 mr-1" />
-            Host
+            {t("host")}
           </TabsTrigger>
         </TabsList>
 
@@ -216,7 +216,7 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
             <CardContent className="pt-0">
               {(status.recent_transactions ?? []).length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">
-                  No activity yet. Start exploring!
+                  {t("noActivity")}
                 </p>
               ) : (
                 <div className="space-y-1">
@@ -232,7 +232,7 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm truncate">
-                            {entry.activity.replace(/_/g, " ")}
+                            {t(`activity.${entry.activity}`)}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {new Date(entry.created_at).toLocaleDateString()}
@@ -252,25 +252,25 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
           {/* Quick stats: how to earn */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Ways to earn</CardTitle>
+              <CardTitle className="text-sm">{t("waysToEarn")}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { icon: Calendar, label: "RSVP to events", pts: 10 },
-                  { icon: Camera, label: "Share moments", pts: 5 },
-                  { icon: MessageSquare, label: "Post comments", pts: 3 },
-                  { icon: Heart, label: "Like moments", pts: 1 },
-                  { icon: Radio, label: "Host events", pts: 30 },
-                  { icon: Users, label: "Invite friends", pts: 10 },
-                ].map(({ icon: Icon, label, pts }) => (
+                  { icon: Calendar, labelKey: "earn.rsvp" as const, pts: 10 },
+                  { icon: Camera, labelKey: "earn.moments" as const, pts: 5 },
+                  { icon: MessageSquare, labelKey: "earn.comments" as const, pts: 3 },
+                  { icon: Heart, labelKey: "earn.likes" as const, pts: 1 },
+                  { icon: Radio, labelKey: "earn.host" as const, pts: 30 },
+                  { icon: Users, labelKey: "earn.invite" as const, pts: 10 },
+                ].map(({ icon: Icon, labelKey, pts }) => (
                   <div
-                    key={label}
+                    key={labelKey}
                     className="flex items-center gap-2.5 rounded-lg border px-3 py-2.5"
                   >
                     <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs truncate">{label}</p>
+                      <p className="text-xs truncate">{t(labelKey)}</p>
                     </div>
                     <span className="text-xs font-bold text-amber-500 tabular-nums shrink-0">
                       +{pts}
@@ -288,7 +288,7 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
             <CardContent className="p-4">
               {topUsers.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-8 text-center">
-                  The leaderboard is heating up. Be among the first!
+                  {t("leaderboardEmpty")}
                 </p>
               ) : (
                 <div className="space-y-1">
@@ -310,7 +310,7 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
                 href="/loyalty/leaderboard"
                 className="flex items-center justify-center gap-1 mt-4 px-4 py-2.5 rounded-xl bg-muted/50 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
               >
-                View full leaderboard
+                {t("viewFullLeaderboard")}
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </CardContent>
@@ -324,15 +324,15 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
               <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto">
                 <Gift className="w-6 h-6 text-amber-500" />
               </div>
-              <h3 className="font-semibold">Rewards catalog</h3>
+              <h3 className="font-semibold">{t("rewardsCatalog")}</h3>
               <p className="text-sm text-muted-foreground">
-                Redeem your points for exclusive perks, badges, and experiences in Dalat.
+                {t("rewardsPrompt")}
               </p>
               <Link
                 href="/loyalty/rewards"
                 className="inline-flex items-center gap-1 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium active:scale-95 transition-all"
               >
-                Browse rewards
+                {t("browseRewards")}
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </CardContent>
@@ -354,7 +354,7 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
                 href="/loyalty/host"
                 className="inline-flex items-center gap-1 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium active:scale-95 transition-all"
               >
-                View host perks
+                {t("viewHostPerks")}
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </CardContent>

@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TierBadge } from "./tier-badge";
@@ -39,6 +42,7 @@ export function LeaderboardEntry({
   points,
   isCurrentUser,
 }: LeaderboardEntryProps) {
+  const t = useTranslations("loyalty");
   const medal = MEDAL_STYLES[rank];
   const isTopThree = rank <= 3;
 
@@ -87,7 +91,7 @@ export function LeaderboardEntry({
           </span>
           {isCurrentUser && (
             <span className="shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-              you
+              {t("you")}
             </span>
           )}
         </div>
@@ -96,7 +100,7 @@ export function LeaderboardEntry({
 
       {/* Points */}
       <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
-        {points.toLocaleString()} pts
+        {points.toLocaleString()} {t("pts")}
       </span>
     </div>
   );

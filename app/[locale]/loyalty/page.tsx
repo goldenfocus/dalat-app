@@ -16,15 +16,13 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "loyalty" });
 
   return generateLocalizedMetadata({
     locale,
     path: "/loyalty",
-    title: locale === "vi" ? "Thành Viên Trung Thành" : "Loyalty",
-    description:
-      locale === "vi"
-        ? "Kiếm điểm, mở khóa phần thưởng, và leo bảng xếp hạng cộng đồng Đà Lạt."
-        : "Earn points, unlock rewards, and climb the Da Lat community leaderboard.",
+    title: t("title"),
+    description: t("subtitle"),
     keywords: ["loyalty", "rewards", "points", "leaderboard", "Dalat"],
   });
 }
@@ -45,15 +43,15 @@ export default async function LoyaltyPage({ params }: PageProps) {
     // Not authenticated, render guest view
   }
 
+  const t = await getTranslations("loyalty");
+
   return (
     <main>
       <h1 className="text-2xl font-bold mb-1">
-        {locale === "vi" ? "Thành Viên" : "Loyalty"}
+        {t("title")}
       </h1>
       <p className="text-muted-foreground mb-6 text-sm">
-        {locale === "vi"
-          ? "Kiếm điểm khi khám phá Đà Lạt. Đổi phần thưởng, mở khóa tính năng."
-          : "Earn points as you explore Dalat. Redeem rewards, unlock perks."}
+        {t("subtitle")}
       </p>
       <LoyaltyDashboard userId={userId} />
     </main>

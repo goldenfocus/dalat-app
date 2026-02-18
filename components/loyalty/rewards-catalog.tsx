@@ -33,13 +33,13 @@ type RewardCategoryValue =
 
 type FilterCategory = "all" | RewardCategoryValue;
 
-const CATEGORIES: { key: FilterCategory; icon: string }[] = [
-  { key: "all", icon: "All" },
-  { key: "experiential", icon: "Experience" },
-  { key: "transactional", icon: "Perk" },
-  { key: "digital", icon: "Digital" },
-  { key: "social", icon: "Social" },
-  { key: "exclusive", icon: "Exclusive" },
+const CATEGORY_KEYS: FilterCategory[] = [
+  "all",
+  "experiential",
+  "transactional",
+  "digital",
+  "social",
+  "exclusive",
 ];
 
 interface Reward {
@@ -163,7 +163,7 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
 
       {/* Category filter */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-        {CATEGORIES.map(({ key, icon }) => (
+        {CATEGORY_KEYS.map((key) => (
           <button
             key={key}
             onClick={() => setActiveCategory(key)}
@@ -174,7 +174,7 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             )}
           >
-            {key === "all" ? icon : t(`category.${key}`)}
+            {key === "all" ? t("categoryAll") : t(`category.${key}`)}
           </button>
         ))}
       </div>
@@ -184,7 +184,7 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
         <div className="text-center py-12 space-y-3">
           <Gift className="w-10 h-10 text-muted-foreground mx-auto" />
           <p className="text-muted-foreground text-sm">
-            No rewards in this category yet. Check back soon!
+            {t("noRewards")}
           </p>
         </div>
       ) : (
@@ -205,28 +205,22 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
       <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Claim this reward?</DialogTitle>
+            <DialogTitle>{t("claimConfirmTitle")}</DialogTitle>
             <DialogDescription>
               {(() => {
                 const reward = rewards.find((r) => r.id === pendingClaim);
                 if (!reward) return null;
-                return (
-                  <>
-                    <span className="font-medium text-foreground">{reward.name}</span>
-                    {" for "}
-                    <span className="font-bold text-amber-500">
-                      {reward.points_cost.toLocaleString()} pts
-                    </span>
-                    . This action can&apos;t be undone.
-                  </>
-                );
+                return t("claimConfirmDesc", {
+                  name: reward.name,
+                  points: reward.points_cost.toLocaleString(),
+                });
               })()}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-row gap-2">
             <DialogClose asChild>
               <Button variant="outline" className="flex-1">
-                Cancel
+                {t("cancel")}
               </Button>
             </DialogClose>
             <Button onClick={handleConfirmClaim} className="flex-1 gap-1.5">
@@ -248,18 +242,17 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
               <Check className="w-8 h-8 text-emerald-500" />
             </div>
             <DialogHeader>
-              <DialogTitle>Reward claimed!</DialogTitle>
+              <DialogTitle>{t("rewardClaimedTitle")}</DialogTitle>
             </DialogHeader>
             {claimedReward && (
               <p className="text-sm text-muted-foreground">
-                You claimed <span className="font-medium text-foreground">{claimedReward.name}</span>.
-                Check your profile to see your rewards.
+                {t("rewardClaimedDesc", { name: claimedReward.name })}
               </p>
             )}
             <DialogClose asChild>
               <Button className="mt-2 gap-1.5">
                 <Sparkles className="w-4 h-4" />
-                Nice!
+                {t("nice")}
               </Button>
             </DialogClose>
           </div>
