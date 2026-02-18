@@ -32,6 +32,7 @@ import { PastEventsSection } from "@/components/venues/past-events-section";
 import { VenueMap } from "@/components/venues/venue-map";
 import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
 import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
+import { VenueShareButton } from "@/components/venues/venue-share-button";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
 import { JsonLd } from "@/lib/structured-data";
 
@@ -738,6 +739,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               address={translatedAddress}
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
+              addressCopiedLabel={t("addressCopied")}
               locale={locale}
             />
           </section>
@@ -774,17 +776,15 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                 {t("findUsDescription")}
               </p>
               <div className="flex flex-wrap justify-center gap-3">
-                {venue.google_maps_url && (
-                  <a
-                    href={venue.google_maps_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
-                  >
-                    <MapPin className="w-4 h-4" />
-                    {t("getDirections")}
-                  </a>
-                )}
+                <VenueShareButton
+                  name={translatedName}
+                  shareText={t("shareVenueText", {
+                    name: translatedName,
+                    address: translatedAddress || venue.address || "",
+                  })}
+                  url={`https://dalat.app/${venue.slug}`}
+                  label={t("shareVenue")}
+                />
                 {venue.website_url && (
                   <a
                     href={venue.website_url}
@@ -794,17 +794,6 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                   >
                     <ExternalLink className="w-4 h-4" />
                     {t("visitWebsite")}
-                  </a>
-                )}
-                {!venue.google_maps_url && venue.latitude && venue.longitude && (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
-                  >
-                    <MapPin className="w-4 h-4" />
-                    {t("getDirections")}
                   </a>
                 )}
               </div>
