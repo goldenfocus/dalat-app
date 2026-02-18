@@ -1922,7 +1922,13 @@
     },
     "pastEventsAtVenue": "Acara sebelumnya di {venue}",
     "noPastEvents": "Belum ada acara sebelumnya",
-    "backToVenue": "Kembali ke tempat"
+    "backToVenue": "Kembali ke tempat",
+    "visitVenue": "Kunjungi {name}",
+    "findUsDescription": "Temukan kami di ĐàLạt.app — acara, foto, ulasan, dan lainnya.",
+    "exploreMore": "Jelajahi Lagi",
+    "allOfType": "Semua {type}",
+    "discoverDaLat": "Jelajahi Da Lat",
+    "venueGuides": "Panduan Tempat"
   },
   "rsvpCelebration": {
     "title": "Kamu akan hadir!",
@@ -2048,92 +2054,77 @@
     "next": "Selanjutnya",
     "submit": "Kirim",
     "cancel": "Lewati pertanyaan",
-    "required": "Wajib",
-    "optional": "Opsional",
-    "textPlaceholder": "Ketik jawaban Anda di sini...",
-    "selectPlaceholder": "Pilih satu opsi",
-    "multiSelectHint": "Pilih semua yang berlaku",
-    "scaleLabels": {
-      "low": "Rendah",
-      "high": "Tinggi"
-    },
-    "success": {
-      "title": "Terima kasih!",
-      "subtitle": "Jawaban Anda telah disimpan",
-      "continue": "Lanjut ke acara"
-    },
     "errors": {
-      "required": "Mohon jawab pertanyaan ini",
+      "required": "Kolom ini wajib diisi",
       "submitFailed": "Gagal mengirim. Silakan coba lagi."
+    },
+    "complete": {
+      "title": "Semua siap!",
+      "subtitle": "Sampai jumpa di acara!",
+      "seeYouSoon": "Sampai jumpa",
+      "done": "Selesai"
     }
   },
   "questionnaireBuilder": {
     "title": "Pertanyaan RSVP",
     "backToEvent": "Kembali ke acara",
+    "description": "Peserta menjawab pertanyaan ini saat mereka RSVP",
     "enableQuestionnaire": "Aktifkan pertanyaan",
     "enableDescription": "Ajukan pertanyaan kepada tamu saat mereka RSVP",
     "introText": "Pesan selamat datang",
-    "introTextPlaceholder": "Mohon luangkan waktu untuk menjawab beberapa pertanyaan...",
-    "introTextDescription": "Ditampilkan kepada tamu sebelum pertanyaan dimulai",
-    "questionsTitle": "Pertanyaan",
+    "introPlaceholder": "Selamat datang! Kami punya beberapa pertanyaan singkat...",
+    "introHint": "Ditampilkan sebelum pertanyaan pertama",
+    "yourQuestions": "Pertanyaan Anda",
     "noQuestions": "Belum ada pertanyaan",
-    "noQuestionsDescription": "Tambahkan pertanyaan dari template atau buat pertanyaan kustom",
-    "addFromTemplates": "Tambah dari template",
-    "addCustomQuestion": "Tambah pertanyaan kustom",
-    "viewResponses": "Lihat jawaban",
-    "saving": "Menyimpan...",
-    "saved": "Tersimpan",
+    "addFromTemplates": "Tambahkan pertanyaan dari template di bawah",
+    "addQuestions": "Tambah pertanyaan",
+    "templates": "pertanyaan",
+    "addFromTemplate": "Tambah dari template",
+    "addCustom": "Tambah pertanyaan kustom",
+    "editQuestion": "Edit pertanyaan",
+    "deleteQuestion": "Hapus pertanyaan",
+    "questionText": "Pertanyaan",
+    "questionType": "Jenis",
     "required": "Wajib",
-    "moveUp": "Pindah ke atas",
-    "moveDown": "Pindah ke bawah",
-    "remove": "Hapus",
-    "templateModal": {
-      "title": "Tambah pertanyaan template",
-      "description": "Pilih pertanyaan yang sudah ada untuk ditambahkan ke kuesioner Anda",
-      "category": {
-        "dietary": "Makanan",
-        "accessibility": "Aksesibilitas",
-        "logistics": "Logistik",
-        "preferences": "Preferensi",
-        "feedback": "Umpan balik",
-        "custom": "Kustom"
-      },
-      "alreadyAdded": "Sudah ditambahkan",
-      "add": "Tambah",
-      "close": "Tutup"
+    "optional": "Opsional",
+    "options": "Opsi",
+    "addOption": "Tambah opsi",
+    "preview": "Pratinjau",
+    "save": "Simpan perubahan",
+    "saving": "Menyimpan...",
+    "saved": "Tersimpan!",
+    "singleChoice": "Pilihan tunggal",
+    "multiChoice": "Pilihan ganda",
+    "textInput": "Teks",
+    "viewResponses": "Lihat jawaban",
+    "categories": {
+      "logistics": "Logistik",
+      "dietary": "Makanan",
+      "contribution": "Kontribusi",
+      "personal": "Pribadi",
+      "custom": "Kustom"
     },
-    "customModal": {
-      "title": "Tambah pertanyaan kustom",
-      "questionText": "Teks pertanyaan",
-      "questionTextPlaceholder": "Ketik pertanyaan Anda...",
-      "questionType": "Jenis pertanyaan",
-      "types": {
-        "text": "Jawaban teks",
-        "textarea": "Teks panjang",
-        "select": "Pilihan tunggal",
-        "multiselect": "Pilihan ganda",
-        "scale": "Skala penilaian"
-      },
-      "options": "Opsi",
-      "optionsDescription": "Satu opsi per baris",
-      "optionsPlaceholder": "Opsi 1\nOpsi 2\nOpsi 3",
-      "scaleRange": "Rentang skala",
-      "cancel": "Batal",
-      "add": "Tambah pertanyaan"
+    "types": {
+      "single_choice": "Pilihan tunggal",
+      "multi_choice": "Pilihan ganda",
+      "text": "Teks"
     }
   },
   "responseDashboard": {
     "title": "Jawaban",
     "backToQuestions": "Kembali ke pertanyaan",
-    "exportCsv": "Ekspor CSV",
-    "noResponses": "Belum ada jawaban",
-    "noResponsesDescription": "Jawaban akan muncul di sini setelah tamu mengisi kuesioner",
-    "responsesCount": "{count} tamu telah menjawab",
-    "guest": "Tamu",
-    "submittedAt": "Dikirim pada",
+    "summary": "Ringkasan",
+    "individual": "Individual",
+    "exportCSV": "Ekspor CSV",
     "responses": "Jawaban",
-    "anonymous": "Tamu anonim",
-    "noAnswer": "Tidak ada jawaban"
+    "ofRsvps": "dari {total} RSVP",
+    "questions": "Pertanyaan",
+    "totalQuestions": "dalam kuesioner",
+    "responded": "{count} sudah menjawab",
+    "notResponded": "{count} belum menjawab",
+    "noResponses": "Belum ada jawaban",
+    "responseRate": "{rate}% tingkat respons",
+    "andMore": "dan {count} lagi..."
   },
   "reconfirmation": {
     "title": "Konfirmasi ulang",

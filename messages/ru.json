@@ -1871,7 +1871,13 @@
     },
     "pastEventsAtVenue": "Прошедшие события в {venue}",
     "noPastEvents": "Пока нет прошедших событий",
-    "backToVenue": "Вернуться к месту"
+    "backToVenue": "Вернуться к месту",
+    "visitVenue": "Посетите {name}",
+    "findUsDescription": "Найдите нас на ĐàLạt.app — мероприятия, фото, отзывы и многое другое.",
+    "exploreMore": "Узнать больше",
+    "allOfType": "Все {type}",
+    "discoverDaLat": "Открыть Далат",
+    "venueGuides": "Гиды по местам"
   },
   "rsvpCelebration": {
     "title": "Вы идёте!",
@@ -2048,92 +2054,77 @@
     "next": "Далее",
     "submit": "Отправить",
     "cancel": "Пропустить вопросы",
-    "required": "Обязательно",
-    "optional": "Необязательно",
-    "textPlaceholder": "Введите ваш ответ...",
-    "selectPlaceholder": "Выберите вариант",
-    "multiSelectHint": "Выберите все подходящие варианты",
-    "scaleLabels": {
-      "low": "Низко",
-      "high": "Высоко"
-    },
-    "success": {
-      "title": "Спасибо!",
-      "subtitle": "Ваши ответы записаны",
-      "continue": "Перейти к мероприятию"
-    },
     "errors": {
-      "required": "Пожалуйста, ответьте на этот вопрос",
+      "required": "Это поле обязательно для заполнения",
       "submitFailed": "Не удалось отправить. Попробуйте снова."
+    },
+    "complete": {
+      "title": "Всё готово!",
+      "subtitle": "Увидимся на мероприятии!",
+      "seeYouSoon": "До скорой встречи",
+      "done": "Готово"
     }
   },
   "questionnaireBuilder": {
     "title": "Вопросы RSVP",
     "backToEvent": "Назад к мероприятию",
+    "description": "Участники отвечают на эти вопросы при регистрации",
     "enableQuestionnaire": "Включить вопросы",
     "enableDescription": "Задавайте вопросы гостям при регистрации",
     "introText": "Приветственное сообщение",
-    "introTextPlaceholder": "Пожалуйста, уделите минутку, чтобы ответить на несколько вопросов...",
-    "introTextDescription": "Показывается гостям перед началом вопросов",
-    "questionsTitle": "Вопросы",
-    "noQuestions": "Вопросы ещё не добавлены",
-    "noQuestionsDescription": "Добавьте вопросы из шаблонов или создайте свои",
-    "addFromTemplates": "Добавить из шаблонов",
-    "addCustomQuestion": "Добавить свой вопрос",
-    "viewResponses": "Просмотр ответов",
-    "saving": "Сохранение...",
-    "saved": "Сохранено",
+    "introPlaceholder": "Добро пожаловать! У нас есть несколько коротких вопросов...",
+    "introHint": "Показывается перед первым вопросом",
+    "yourQuestions": "Ваши вопросы",
+    "noQuestions": "Пока нет вопросов",
+    "addFromTemplates": "Добавьте вопросы из шаблонов ниже",
+    "addQuestions": "Добавить вопросы",
+    "templates": "вопросы",
+    "addFromTemplate": "Добавить из шаблонов",
+    "addCustom": "Добавить свой вопрос",
+    "editQuestion": "Редактировать вопрос",
+    "deleteQuestion": "Удалить вопрос",
+    "questionText": "Вопрос",
+    "questionType": "Тип",
     "required": "Обязательно",
-    "moveUp": "Переместить вверх",
-    "moveDown": "Переместить вниз",
-    "remove": "Удалить",
-    "templateModal": {
-      "title": "Добавить шаблонный вопрос",
-      "description": "Выберите готовые вопросы для добавления в анкету",
-      "category": {
-        "dietary": "Питание",
-        "accessibility": "Доступность",
-        "logistics": "Логистика",
-        "preferences": "Предпочтения",
-        "feedback": "Отзыв",
-        "custom": "Свой"
-      },
-      "alreadyAdded": "Уже добавлено",
-      "add": "Добавить",
-      "close": "Закрыть"
+    "optional": "Необязательно",
+    "options": "Варианты",
+    "addOption": "Добавить вариант",
+    "preview": "Предпросмотр",
+    "save": "Сохранить изменения",
+    "saving": "Сохранение...",
+    "saved": "Сохранено!",
+    "singleChoice": "Один вариант",
+    "multiChoice": "Несколько вариантов",
+    "textInput": "Текст",
+    "viewResponses": "Просмотр ответов",
+    "categories": {
+      "logistics": "Логистика",
+      "dietary": "Питание",
+      "contribution": "Вклад",
+      "personal": "Личное",
+      "custom": "Свой"
     },
-    "customModal": {
-      "title": "Добавить свой вопрос",
-      "questionText": "Текст вопроса",
-      "questionTextPlaceholder": "Введите ваш вопрос...",
-      "questionType": "Тип вопроса",
-      "types": {
-        "text": "Текстовый ответ",
-        "textarea": "Длинный текст",
-        "select": "Выбор одного",
-        "multiselect": "Множественный выбор",
-        "scale": "Шкала оценки"
-      },
-      "options": "Варианты",
-      "optionsDescription": "По одному варианту на строку",
-      "optionsPlaceholder": "Вариант 1\nВариант 2\nВариант 3",
-      "scaleRange": "Диапазон шкалы",
-      "cancel": "Отмена",
-      "add": "Добавить вопрос"
+    "types": {
+      "single_choice": "Один вариант",
+      "multi_choice": "Несколько вариантов",
+      "text": "Текст"
     }
   },
   "responseDashboard": {
     "title": "Ответы",
     "backToQuestions": "Назад к вопросам",
-    "exportCsv": "Экспорт CSV",
-    "noResponses": "Пока нет ответов",
-    "noResponsesDescription": "Ответы появятся здесь после заполнения анкеты гостями",
-    "responsesCount": "{count} гостей ответили",
-    "guest": "Гость",
-    "submittedAt": "Отправлено",
+    "summary": "Сводка",
+    "individual": "По отдельности",
+    "exportCSV": "Экспорт CSV",
     "responses": "Ответы",
-    "anonymous": "Анонимный гость",
-    "noAnswer": "Нет ответа"
+    "ofRsvps": "из {total} регистраций",
+    "questions": "Вопросы",
+    "totalQuestions": "в анкете",
+    "responded": "{count} ответили",
+    "notResponded": "{count} не ответили",
+    "noResponses": "Пока нет ответов",
+    "responseRate": "{rate}% отвечаемость",
+    "andMore": "и ещё {count}..."
   },
   "reconfirmation": {
     "title": "Повторное подтверждение",

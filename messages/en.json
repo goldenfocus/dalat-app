@@ -1905,7 +1905,13 @@
     },
     "pastEventsAtVenue": "Past Events at {venue}",
     "noPastEvents": "No past events yet",
-    "backToVenue": "Back to venue"
+    "backToVenue": "Back to venue",
+    "visitVenue": "Visit {name}",
+    "findUsDescription": "Find us on ĐàLạt.app — events, photos, reviews, and more.",
+    "exploreMore": "Explore More",
+    "allOfType": "All {type}",
+    "discoverDaLat": "Discover Da Lat",
+    "venueGuides": "Venue Guides"
   },
   "rsvpCelebration": {
     "title": "You're going!",

@@ -1885,7 +1885,13 @@
     },
     "pastEventsAtVenue": "Événements passés à {venue}",
     "noPastEvents": "Aucun événement passé",
-    "backToVenue": "Retour au lieu"
+    "backToVenue": "Retour au lieu",
+    "visitVenue": "Visiter {name}",
+    "findUsDescription": "Retrouvez-nous sur ĐàLạt.app — événements, photos, avis et plus encore.",
+    "exploreMore": "Explorer plus",
+    "allOfType": "Tous les {type}",
+    "discoverDaLat": "Découvrir Da Lat",
+    "venueGuides": "Guides des lieux"
   },
   "rsvpCelebration": {
     "title": "Vous y allez !",

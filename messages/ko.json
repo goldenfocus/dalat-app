@@ -1874,7 +1874,13 @@
     },
     "pastEventsAtVenue": "{venue}의 지난 이벤트",
     "noPastEvents": "아직 지난 이벤트가 없습니다",
-    "backToVenue": "장소로 돌아가기"
+    "backToVenue": "장소로 돌아가기",
+    "visitVenue": "{name} 방문하기",
+    "findUsDescription": "ĐàLạt.app에서 찾아보세요 — 이벤트, 사진, 리뷰 등.",
+    "exploreMore": "더 알아보기",
+    "allOfType": "모든 {type}",
+    "discoverDaLat": "달랏 탐험",
+    "venueGuides": "장소 가이드"
   },
   "rsvpCelebration": {
     "title": "참석 확정!",

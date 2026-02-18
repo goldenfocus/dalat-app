@@ -707,11 +707,11 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                     >
                       <span className={isToday ? "text-primary" : "text-muted-foreground"}>
                         {dayLabels[day]}
-                        {isToday && " (Today)"}
+                        {isToday && ` (${t("hoursToday")})`}
                       </span>
                       <span className={hours === "closed" || !hours ? "text-muted-foreground" : ""}>
                         {hours === "closed" || !hours
-                          ? "Closed"
+                          ? t("closedNow")
                           : `${hours.open} - ${hours.close}`}
                       </span>
                     </div>
@@ -736,6 +736,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               address={venue.address}
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
+              locale={locale}
             />
           </section>
         )}
@@ -759,7 +760,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
           <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
             <CardContent className="p-6 text-center">
               <h2 className="text-lg font-semibold mb-2">
-                {locale === "vi" ? `Ghé thăm ${venue.name}` : `Visit ${venue.name}`}
+                {t("visitVenue", { name: venue.name })}
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
                 {venue.address && (
@@ -768,9 +769,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                     {venue.address}
                   </span>
                 )}
-                {locale === "vi"
-                  ? "Tìm trên ĐàLạt.app — sự kiện, ảnh, đánh giá và nhiều hơn nữa."
-                  : "Find us on ĐàLạt.app — events, photos, reviews, and more."}
+                {t("findUsDescription")}
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 {venue.google_maps_url && (
@@ -781,7 +780,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
                   >
                     <MapPin className="w-4 h-4" />
-                    {locale === "vi" ? "Chỉ đường" : "Get Directions"}
+                    {t("getDirections")}
                   </a>
                 )}
                 {venue.website_url && (
@@ -792,7 +791,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium hover:bg-muted active:scale-95 transition-all"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    {locale === "vi" ? "Trang web" : "Website"}
+                    {t("visitWebsite")}
                   </a>
                 )}
                 {!venue.google_maps_url && venue.latitude && venue.longitude && (
@@ -803,7 +802,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
                   >
                     <MapPin className="w-4 h-4" />
-                    {locale === "vi" ? "Chỉ đường" : "Get Directions"}
+                    {t("getDirections")}
                   </a>
                 )}
               </div>
@@ -815,21 +814,21 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         {venue.venue_type && (
           <nav className="mb-8 pt-4 border-t" aria-label="Explore similar venues">
             <h3 className="text-sm font-medium text-muted-foreground mb-3">
-              {locale === "vi" ? "Khám phá thêm" : "Explore More"}
+              {t("exploreMore")}
             </h3>
             <div className="flex flex-wrap gap-2">
               <Link
                 href={`/${venue.venue_type === "cafe" ? "cafes" : venue.venue_type === "bar" ? "bars" : venue.venue_type === "restaurant" ? "restaurants" : venue.venue_type === "gallery" ? "galleries" : venue.venue_type === "park" ? "parks" : venue.venue_type === "hotel" ? "hotels" : venue.venue_type === "homestay" ? "homestays" : venue.venue_type}`}
                 className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors"
               >
-                {locale === "vi" ? `Tất cả ${typeConfig?.label || ""}` : `All ${typeConfig?.label || ""}s`}
+                {t("allOfType", { type: typeConfig?.label || "" })}
               </Link>
               <Link href="/discover" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-                {locale === "vi" ? "Khám phá Đà Lạt" : "Discover Da Lat"}
+                {t("discoverDaLat")}
               </Link>
               <Link href="/blog/venues" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors inline-flex items-center gap-1">
                 <BookOpen className="w-3 h-3" />
-                {locale === "vi" ? "Hướng dẫn địa điểm" : "Venue Guides"}
+                {t("venueGuides")}
               </Link>
             </div>
           </nav>

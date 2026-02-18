@@ -1,5 +1,9 @@
 # dalat.app Development Guidelines
 
+## Vibe Check
+
+See [VIBE.md](./VIBE.md) for tone and voice guidelines. All user-facing copy should follow the Dalat vibe — warm, chill, helpful, never corporate.
+
 ## ⚠️ Multi-AI Workflow
 
 Multiple AI sessions may be running simultaneously on this codebase.
@@ -246,35 +250,57 @@ To add translation support for a new content type:
    - Use `getTranslationsWithFallback()` for single items
    - Create a batch function for list pages if needed
 
-## UI Translations (Static i18n Keys)
+## ⛔ CRITICAL: UI Translations — NEVER Hardcode User-Visible Text
 
-**⚠️ BEFORE writing any UI code that uses translation keys, add the keys to ALL 12 locale files first.**
+**THIS HAS BROKEN PRODUCTION REPEATEDLY. AI AGENTS KEEP MAKING THESE MISTAKES. READ CAREFULLY.**
 
-Translation files are in `messages/` directory:
-- `en.json`, `vi.json`, `ko.json`, `zh.json`, `ru.json`, `fr.json`, `ja.json`, `ms.json`, `th.json`, `de.json`, `es.json`, `id.json`
+This app supports 12 languages. Every piece of text the user sees — headings, buttons, labels, placeholders, empty states, error messages, CTAs, tooltips, toasts, confirmations — **MUST** use `t("keyName")` from `next-intl`.
 
-### The Rule
+### Rules (violating ANY of these breaks the app for non-English users)
 
-When adding **any** new translation key (e.g., `nav.map`, `home.newFeature`):
+1. **NEVER write hardcoded English text in components.** No `<h2>Upcoming Events</h2>`. Use `<h2>{t("upcoming")}</h2>`.
+2. **NEVER use locale ternaries.** No `locale === "vi" ? "Sự kiện" : "Events"`. This only covers 2 of 12 languages. Use `t("keyName")`.
+3. **ALWAYS add translation keys to ALL 12 locale files FIRST, then use the key in the component.**
+4. **Missing keys cause `MISSING_MESSAGE` errors and break page rendering.**
 
-1. **First** add the key to ALL 12 locale files with appropriate translations
-2. **Then** write the component code that uses `t("keyName")`
+### The 12 Locale Files (you MUST update EVERY one)
 
-Missing translation keys cause `MISSING_MESSAGE` errors and can break page rendering.
+Translation files are in `messages/` directory. **Check off every file — if you miss even one, that language breaks:**
 
-### Quick Reference for Translations
+| # | File | Language |
+|---|------|----------|
+| 1 | `messages/en.json` | English |
+| 2 | `messages/vi.json` | Vietnamese |
+| 3 | `messages/ko.json` | Korean |
+| 4 | `messages/zh.json` | Chinese |
+| 5 | `messages/ru.json` | Russian |
+| 6 | `messages/fr.json` | French |
+| 7 | `messages/ja.json` | Japanese |
+| 8 | `messages/ms.json` | Malay |
+| 9 | `messages/th.json` | Thai |
+| 10 | `messages/de.json` | German |
+| 11 | `messages/es.json` | Spanish |
+| 12 | `messages/id.json` | Indonesian |
 
-| Language | Code | Example "Map" |
-|----------|------|---------------|
-| English | en | Map |
-| Vietnamese | vi | Bản đồ |
-| Korean | ko | 지도 |
-| Chinese | zh | 地图 |
-| Russian | ru | Карта |
-| French | fr | Carte |
-| Japanese | ja | マップ |
-| Malay | ms | Peta |
-| Thai | th | แผนที่ |
-| German | de | Karte |
-| Spanish | es | Mapa |
-| Indonesian | id | Peta |
+### Workflow (this order is mandatory)
+
+1. **Write the English text** you need (e.g., "No events found")
+2. **Add the key to ALL 12 files** in `messages/` with proper translations
+3. **Then** use `t("keyName")` in your component
+
+```tsx
+// ❌ WRONG — hardcoded English, breaks for 11 languages
+<p>No events found</p>
+
+// ❌ WRONG — only handles 2 of 12 languages
+<p>{locale === "vi" ? "Không tìm thấy" : "No events found"}</p>
+
+// ✅ CORRECT — works for all 12 languages
+<p>{t("noEventsFound")}</p>
+```
+
+**History of this bug:**
+- AI agents repeatedly write hardcoded English strings in components
+- AI agents write `locale === "vi" ? ... : ...` ternaries that only cover Vietnamese + English
+- AI agents add keys to `en.json` and `vi.json` but forget the other 10 files
+- Every instance breaks the app for users in 10+ languages

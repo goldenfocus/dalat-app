@@ -1871,7 +1871,13 @@
     },
     "pastEventsAtVenue": "กิจกรรมที่ผ่านมาที่ {venue}",
     "noPastEvents": "ยังไม่มีกิจกรรมที่ผ่านมา",
-    "backToVenue": "กลับไปยังสถานที่"
+    "backToVenue": "กลับไปยังสถานที่",
+    "visitVenue": "เยี่ยมชม {name}",
+    "findUsDescription": "ค้นหาเราที่ ĐàLạt.app — อีเวนต์ รูปภาพ รีวิว และอื่นๆ",
+    "exploreMore": "สำรวจเพิ่มเติม",
+    "allOfType": "{type} ทั้งหมด",
+    "discoverDaLat": "สำรวจดาลัด",
+    "venueGuides": "คู่มือสถานที่"
   },
   "rsvpCelebration": {
     "title": "คุณจะไป!",
@@ -2048,92 +2054,77 @@
     "next": "ถัดไป",
     "submit": "ส่ง",
     "cancel": "ข้ามคำถาม",
-    "required": "จำเป็น",
-    "optional": "ไม่บังคับ",
-    "textPlaceholder": "พิมพ์คำตอบของคุณที่นี่...",
-    "selectPlaceholder": "เลือกตัวเลือก",
-    "multiSelectHint": "เลือกทั้งหมดที่ตรง",
-    "scaleLabels": {
-      "low": "ต่ำ",
-      "high": "สูง"
-    },
-    "success": {
-      "title": "ขอบคุณ!",
-      "subtitle": "บันทึกคำตอบของคุณแล้ว",
-      "continue": "ไปที่งาน"
-    },
     "errors": {
-      "required": "กรุณาตอบคำถามนี้",
+      "required": "จำเป็นต้องกรอกข้อมูลนี้",
       "submitFailed": "ส่งไม่สำเร็จ กรุณาลองอีกครั้ง"
+    },
+    "complete": {
+      "title": "เรียบร้อย!",
+      "subtitle": "เจอกันที่งานนะ!",
+      "seeYouSoon": "แล้วเจอกัน",
+      "done": "เสร็จสิ้น"
     }
   },
   "questionnaireBuilder": {
     "title": "คำถาม RSVP",
     "backToEvent": "กลับไปงาน",
+    "description": "ผู้เข้าร่วมจะตอบคำถามเหล่านี้เมื่อ RSVP",
     "enableQuestionnaire": "เปิดใช้งานคำถาม",
     "enableDescription": "ถามคำถามแขกเมื่อพวกเขา RSVP",
     "introText": "ข้อความต้อนรับ",
-    "introTextPlaceholder": "กรุณาสละเวลาตอบคำถามสั้นๆ...",
-    "introTextDescription": "แสดงให้แขกเห็นก่อนเริ่มคำถาม",
-    "questionsTitle": "คำถาม",
+    "introPlaceholder": "ยินดีต้อนรับ! เรามีคำถามสั้นๆ...",
+    "introHint": "แสดงก่อนคำถามแรก",
+    "yourQuestions": "คำถามของคุณ",
     "noQuestions": "ยังไม่มีคำถาม",
-    "noQuestionsDescription": "เพิ่มคำถามจากเทมเพลตหรือสร้างคำถามเอง",
-    "addFromTemplates": "เพิ่มจากเทมเพลต",
-    "addCustomQuestion": "เพิ่มคำถามเอง",
-    "viewResponses": "ดูคำตอบ",
-    "saving": "กำลังบันทึก...",
-    "saved": "บันทึกแล้ว",
+    "addFromTemplates": "เพิ่มคำถามจากเทมเพลตด้านล่าง",
+    "addQuestions": "เพิ่มคำถาม",
+    "templates": "คำถาม",
+    "addFromTemplate": "เพิ่มจากเทมเพลต",
+    "addCustom": "เพิ่มคำถามเอง",
+    "editQuestion": "แก้ไขคำถาม",
+    "deleteQuestion": "ลบคำถาม",
+    "questionText": "คำถาม",
+    "questionType": "ประเภท",
     "required": "จำเป็น",
-    "moveUp": "ย้ายขึ้น",
-    "moveDown": "ย้ายลง",
-    "remove": "ลบ",
-    "templateModal": {
-      "title": "เพิ่มคำถามจากเทมเพลต",
-      "description": "เลือกคำถามสำเร็จรูปเพื่อเพิ่มในแบบสอบถาม",
-      "category": {
-        "dietary": "อาหาร",
-        "accessibility": "การเข้าถึง",
-        "logistics": "โลจิสติกส์",
-        "preferences": "ความชอบ",
-        "feedback": "ความคิดเห็น",
-        "custom": "กำหนดเอง"
-      },
-      "alreadyAdded": "เพิ่มแล้ว",
-      "add": "เพิ่ม",
-      "close": "ปิด"
+    "optional": "ไม่บังคับ",
+    "options": "ตัวเลือก",
+    "addOption": "เพิ่มตัวเลือก",
+    "preview": "ดูตัวอย่าง",
+    "save": "บันทึกการเปลี่ยนแปลง",
+    "saving": "กำลังบันทึก...",
+    "saved": "บันทึกแล้ว!",
+    "singleChoice": "เลือกหนึ่ง",
+    "multiChoice": "เลือกหลายตัว",
+    "textInput": "ข้อความ",
+    "viewResponses": "ดูคำตอบ",
+    "categories": {
+      "logistics": "โลจิสติกส์",
+      "dietary": "อาหาร",
+      "contribution": "การมีส่วนร่วม",
+      "personal": "ส่วนตัว",
+      "custom": "กำหนดเอง"
     },
-    "customModal": {
-      "title": "เพิ่มคำถามเอง",
-      "questionText": "ข้อความคำถาม",
-      "questionTextPlaceholder": "พิมพ์คำถามของคุณ...",
-      "questionType": "ประเภทคำถาม",
-      "types": {
-        "text": "คำตอบข้อความ",
-        "textarea": "ข้อความยาว",
-        "select": "เลือกหนึ่ง",
-        "multiselect": "เลือกหลายตัว",
-        "scale": "มาตราส่วนการให้คะแนน"
-      },
-      "options": "ตัวเลือก",
-      "optionsDescription": "หนึ่งตัวเลือกต่อบรรทัด",
-      "optionsPlaceholder": "ตัวเลือก 1\nตัวเลือก 2\nตัวเลือก 3",
-      "scaleRange": "ช่วงมาตราส่วน",
-      "cancel": "ยกเลิก",
-      "add": "เพิ่มคำถาม"
+    "types": {
+      "single_choice": "เลือกหนึ่ง",
+      "multi_choice": "เลือกหลายตัว",
+      "text": "ข้อความ"
     }
   },
   "responseDashboard": {
     "title": "คำตอบ",
     "backToQuestions": "กลับไปคำถาม",
-    "exportCsv": "ส่งออก CSV",
-    "noResponses": "ยังไม่มีคำตอบ",
-    "noResponsesDescription": "คำตอบจะปรากฏที่นี่หลังจากแขกกรอกแบบสอบถาม",
-    "responsesCount": "{count} แขกได้ตอบแล้ว",
-    "guest": "แขก",
-    "submittedAt": "ส่งเมื่อ",
+    "summary": "สรุป",
+    "individual": "รายบุคคล",
+    "exportCSV": "ส่งออก CSV",
     "responses": "คำตอบ",
-    "anonymous": "แขกไม่ระบุตัวตน",
-    "noAnswer": "ไม่มีคำตอบ"
+    "ofRsvps": "จาก {total} RSVP",
+    "questions": "คำถาม",
+    "totalQuestions": "ในแบบสอบถาม",
+    "responded": "{count} คนตอบแล้ว",
+    "notResponded": "{count} คนยังไม่ตอบ",
+    "noResponses": "ยังไม่มีคำตอบ",
+    "responseRate": "{rate}% อัตราการตอบ",
+    "andMore": "และอีก {count} คน..."
   },
   "reconfirmation": {
     "title": "ยืนยันอีกครั้ง",

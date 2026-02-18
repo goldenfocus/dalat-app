@@ -721,6 +721,7 @@ export default async function VenuePage({ params }: PageProps) {
               address={venue.address}
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
+              locale={locale}
             />
           </section>
         )}

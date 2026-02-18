@@ -1871,7 +1871,13 @@
     },
     "pastEventsAtVenue": "Vergangene Veranstaltungen bei {venue}",
     "noPastEvents": "Noch keine vergangenen Veranstaltungen",
-    "backToVenue": "Zurück zum Veranstaltungsort"
+    "backToVenue": "Zurück zum Veranstaltungsort",
+    "visitVenue": "{name} besuchen",
+    "findUsDescription": "Finden Sie uns auf ĐàLạt.app — Veranstaltungen, Fotos, Bewertungen und mehr.",
+    "exploreMore": "Mehr entdecken",
+    "allOfType": "Alle {type}",
+    "discoverDaLat": "Da Lat entdecken",
+    "venueGuides": "Orte-Guides"
   },
   "rsvpCelebration": {
     "title": "Du bist dabei!",
@@ -2048,92 +2054,77 @@
     "next": "Weiter",
     "submit": "Absenden",
     "cancel": "Fragen überspringen",
-    "required": "Erforderlich",
-    "optional": "Optional",
-    "textPlaceholder": "Gib deine Antwort hier ein...",
-    "selectPlaceholder": "Wähle eine Option",
-    "multiSelectHint": "Wähle alle zutreffenden aus",
-    "scaleLabels": {
-      "low": "Niedrig",
-      "high": "Hoch"
-    },
-    "success": {
-      "title": "Danke!",
-      "subtitle": "Deine Antworten wurden gespeichert",
-      "continue": "Weiter zum Event"
-    },
     "errors": {
-      "required": "Bitte beantworte diese Frage",
+      "required": "Dieses Feld ist erforderlich",
       "submitFailed": "Absenden fehlgeschlagen. Bitte erneut versuchen."
+    },
+    "complete": {
+      "title": "Alles erledigt!",
+      "subtitle": "Wir sehen uns beim Event!",
+      "seeYouSoon": "Bis bald",
+      "done": "Fertig"
     }
   },
   "questionnaireBuilder": {
     "title": "RSVP-Fragen",
     "backToEvent": "Zurück zum Event",
+    "description": "Teilnehmer beantworten diese Fragen bei der Anmeldung",
     "enableQuestionnaire": "Fragen aktivieren",
     "enableDescription": "Stelle Gästen Fragen bei der Anmeldung",
     "introText": "Willkommensnachricht",
-    "introTextPlaceholder": "Bitte nimm dir einen Moment Zeit, um ein paar Fragen zu beantworten...",
-    "introTextDescription": "Wird Gästen vor den Fragen angezeigt",
-    "questionsTitle": "Fragen",
-    "noQuestions": "Noch keine Fragen hinzugefügt",
-    "noQuestionsDescription": "Füge Fragen aus Vorlagen hinzu oder erstelle eigene",
-    "addFromTemplates": "Aus Vorlagen hinzufügen",
-    "addCustomQuestion": "Eigene Frage hinzufügen",
-    "viewResponses": "Antworten ansehen",
-    "saving": "Wird gespeichert...",
-    "saved": "Gespeichert",
+    "introPlaceholder": "Willkommen! Wir haben ein paar kurze Fragen...",
+    "introHint": "Wird vor der ersten Frage angezeigt",
+    "yourQuestions": "Deine Fragen",
+    "noQuestions": "Noch keine Fragen",
+    "addFromTemplates": "Füge Fragen aus den Vorlagen unten hinzu",
+    "addQuestions": "Fragen hinzufügen",
+    "templates": "Fragen",
+    "addFromTemplate": "Aus Vorlagen hinzufügen",
+    "addCustom": "Eigene Frage hinzufügen",
+    "editQuestion": "Frage bearbeiten",
+    "deleteQuestion": "Frage löschen",
+    "questionText": "Frage",
+    "questionType": "Typ",
     "required": "Erforderlich",
-    "moveUp": "Nach oben",
-    "moveDown": "Nach unten",
-    "remove": "Entfernen",
-    "templateModal": {
-      "title": "Vorlagenfrage hinzufügen",
-      "description": "Wähle vordefinierte Fragen für deinen Fragebogen",
-      "category": {
-        "dietary": "Ernährung",
-        "accessibility": "Barrierefreiheit",
-        "logistics": "Logistik",
-        "preferences": "Präferenzen",
-        "feedback": "Feedback",
-        "custom": "Eigene"
-      },
-      "alreadyAdded": "Bereits hinzugefügt",
-      "add": "Hinzufügen",
-      "close": "Schließen"
+    "optional": "Optional",
+    "options": "Optionen",
+    "addOption": "Option hinzufügen",
+    "preview": "Vorschau",
+    "save": "Änderungen speichern",
+    "saving": "Wird gespeichert...",
+    "saved": "Gespeichert!",
+    "singleChoice": "Einfachauswahl",
+    "multiChoice": "Mehrfachauswahl",
+    "textInput": "Text",
+    "viewResponses": "Antworten ansehen",
+    "categories": {
+      "logistics": "Logistik",
+      "dietary": "Ernährung",
+      "contribution": "Beitrag",
+      "personal": "Persönlich",
+      "custom": "Eigene"
     },
-    "customModal": {
-      "title": "Eigene Frage hinzufügen",
-      "questionText": "Fragetext",
-      "questionTextPlaceholder": "Gib deine Frage ein...",
-      "questionType": "Fragetyp",
-      "types": {
-        "text": "Textantwort",
-        "textarea": "Langer Text",
-        "select": "Einfachauswahl",
-        "multiselect": "Mehrfachauswahl",
-        "scale": "Bewertungsskala"
-      },
-      "options": "Optionen",
-      "optionsDescription": "Eine Option pro Zeile",
-      "optionsPlaceholder": "Option 1\nOption 2\nOption 3",
-      "scaleRange": "Skalenbereich",
-      "cancel": "Abbrechen",
-      "add": "Frage hinzufügen"
+    "types": {
+      "single_choice": "Einfachauswahl",
+      "multi_choice": "Mehrfachauswahl",
+      "text": "Text"
     }
   },
   "responseDashboard": {
     "title": "Antworten",
     "backToQuestions": "Zurück zu den Fragen",
-    "exportCsv": "CSV exportieren",
-    "noResponses": "Noch keine Antworten",
-    "noResponsesDescription": "Antworten erscheinen hier, nachdem Gäste den Fragebogen ausgefüllt haben",
-    "responsesCount": "{count} Gäste haben geantwortet",
-    "guest": "Gast",
-    "submittedAt": "Eingereicht am",
+    "summary": "Zusammenfassung",
+    "individual": "Einzeln",
+    "exportCSV": "CSV exportieren",
     "responses": "Antworten",
-    "anonymous": "Anonymer Gast",
-    "noAnswer": "Keine Antwort"
+    "ofRsvps": "von {total} Anmeldungen",
+    "questions": "Fragen",
+    "totalQuestions": "im Fragebogen",
+    "responded": "{count} haben geantwortet",
+    "notResponded": "{count} haben nicht geantwortet",
+    "noResponses": "Noch keine Antworten",
+    "responseRate": "{rate}% Antwortrate",
+    "andMore": "und {count} weitere..."
   },
   "reconfirmation": {
     "title": "Rückbestätigung",

@@ -1874,7 +1874,13 @@
     },
     "pastEventsAtVenue": "Sự kiện đã qua tại {venue}",
     "noPastEvents": "Chưa có sự kiện nào",
-    "backToVenue": "Quay lại địa điểm"
+    "backToVenue": "Quay lại địa điểm",
+    "visitVenue": "Ghé thăm {name}",
+    "findUsDescription": "Tìm trên ĐàLạt.app — sự kiện, ảnh, đánh giá và nhiều hơn nữa.",
+    "exploreMore": "Khám phá thêm",
+    "allOfType": "Tất cả {type}",
+    "discoverDaLat": "Khám phá Đà Lạt",
+    "venueGuides": "Hướng dẫn địa điểm"
   },
   "rsvpCelebration": {
     "title": "Bạn sẽ tham gia!",

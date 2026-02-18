@@ -1874,7 +1874,13 @@
     },
     "pastEventsAtVenue": "{venue}的往期活动",
     "noPastEvents": "暂无往期活动",
-    "backToVenue": "返回场地"
+    "backToVenue": "返回场地",
+    "visitVenue": "访问 {name}",
+    "findUsDescription": "在 ĐàLạt.app 上找到我们 — 活动、照片、评论等。",
+    "exploreMore": "探索更多",
+    "allOfType": "所有{type}",
+    "discoverDaLat": "探索大叻",
+    "venueGuides": "场地指南"
   },
   "rsvpCelebration": {
     "title": "报名成功！",
@@ -2051,92 +2057,77 @@
     "next": "下一个",
     "submit": "提交",
     "cancel": "跳过问题",
-    "required": "必填",
-    "optional": "选填",
-    "textPlaceholder": "在此输入您的回答...",
-    "selectPlaceholder": "选择一个选项",
-    "multiSelectHint": "选择所有适用的选项",
-    "scaleLabels": {
-      "low": "差",
-      "high": "好"
-    },
-    "success": {
-      "title": "感谢您！",
-      "subtitle": "您的回复已记录",
-      "continue": "继续活动"
-    },
     "errors": {
-      "required": "请填写此问题",
-      "submitFailed": "提交失败，请重试"
+      "required": "此项为必填",
+      "submitFailed": "提交失败，请重试。"
+    },
+    "complete": {
+      "title": "全部完成！",
+      "subtitle": "活动见！",
+      "seeYouSoon": "回头见",
+      "done": "完成"
     }
   },
   "questionnaireBuilder": {
-    "title": "RSVP问题",
+    "title": "RSVP 问题",
     "backToEvent": "返回活动",
+    "description": "参加者在确认出席时回答这些问题",
     "enableQuestionnaire": "启用问题",
     "enableDescription": "在访客确认出席时向他们提问",
     "introText": "欢迎消息",
-    "introTextPlaceholder": "请花点时间回答几个问题...",
-    "introTextDescription": "在问题开始前向访客显示",
-    "questionsTitle": "问题",
-    "noQuestions": "尚未添加问题",
-    "noQuestionsDescription": "从模板添加问题或创建自定义问题",
-    "addFromTemplates": "从模板添加",
-    "addCustomQuestion": "添加自定义问题",
-    "viewResponses": "查看回复",
-    "saving": "保存中...",
-    "saved": "已保存",
+    "introPlaceholder": "欢迎！我们有几个简单的问题...",
+    "introHint": "在第一个问题之前显示",
+    "yourQuestions": "您的问题",
+    "noQuestions": "暂无问题",
+    "addFromTemplates": "从下方的模板添加问题",
+    "addQuestions": "添加问题",
+    "templates": "问题",
+    "addFromTemplate": "从模板添加",
+    "addCustom": "添加自定义问题",
+    "editQuestion": "编辑问题",
+    "deleteQuestion": "删除问题",
+    "questionText": "问题",
+    "questionType": "类型",
     "required": "必填",
-    "moveUp": "上移",
-    "moveDown": "下移",
-    "remove": "移除",
-    "templateModal": {
-      "title": "添加模板问题",
-      "description": "选择预设问题以添加到您的问卷",
-      "category": {
-        "dietary": "饮食",
-        "accessibility": "无障碍",
-        "logistics": "后勤",
-        "preferences": "偏好",
-        "feedback": "反馈",
-        "custom": "自定义"
-      },
-      "alreadyAdded": "已添加",
-      "add": "添加",
-      "close": "关闭"
+    "optional": "选填",
+    "options": "选项",
+    "addOption": "添加选项",
+    "preview": "预览",
+    "save": "保存更改",
+    "saving": "保存中...",
+    "saved": "已保存！",
+    "singleChoice": "单选",
+    "multiChoice": "多选",
+    "textInput": "文本",
+    "viewResponses": "查看回复",
+    "categories": {
+      "logistics": "后勤",
+      "dietary": "饮食",
+      "contribution": "贡献",
+      "personal": "个人",
+      "custom": "自定义"
     },
-    "customModal": {
-      "title": "添加自定义问题",
-      "questionText": "问题文本",
-      "questionTextPlaceholder": "输入您的问题...",
-      "questionType": "问题类型",
-      "types": {
-        "text": "文本回答",
-        "textarea": "长文本",
-        "select": "单选",
-        "multiselect": "多选",
-        "scale": "评分量表"
-      },
-      "options": "选项",
-      "optionsDescription": "每行一个选项",
-      "optionsPlaceholder": "选项 1\n选项 2\n选项 3",
-      "scaleRange": "评分范围",
-      "cancel": "取消",
-      "add": "添加问题"
+    "types": {
+      "single_choice": "单选",
+      "multi_choice": "多选",
+      "text": "文本"
     }
   },
   "responseDashboard": {
     "title": "回复",
     "backToQuestions": "返回问题",
-    "exportCsv": "导出 CSV",
-    "noResponses": "暂无回复",
-    "noResponsesDescription": "回复将在访客完成问卷后显示在此处",
-    "responsesCount": "{count} 位访客已回复",
-    "guest": "访客",
-    "submittedAt": "提交时间",
+    "summary": "概要",
+    "individual": "逐个查看",
+    "exportCSV": "导出 CSV",
     "responses": "回复",
-    "anonymous": "匿名访客",
-    "noAnswer": "未回答"
+    "ofRsvps": "共 {total} 人确认出席",
+    "questions": "问题",
+    "totalQuestions": "在问卷中",
+    "responded": "{count} 人已回复",
+    "notResponded": "{count} 人未回复",
+    "noResponses": "暂无回复",
+    "responseRate": "{rate}% 回复率",
+    "andMore": "还有 {count} 人..."
   },
   "reconfirmation": {
     "title": "再次确认",

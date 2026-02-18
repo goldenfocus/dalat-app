@@ -10,6 +10,7 @@ interface VenueMapProps {
   address?: string | null;
   directionsLabel: string;
   viewOnMapLabel: string;
+  locale?: string;
 }
 
 export function VenueMap({
@@ -19,13 +20,15 @@ export function VenueMap({
   address,
   directionsLabel,
   viewOnMapLabel,
+  locale,
 }: VenueMapProps) {
   const [mapError, setMapError] = useState(false);
 
-  // Google Static Maps API URL
+  // Google Static Maps API URL — pass language param so labels match page locale
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const langParam = locale ? `&language=${locale}` : "";
   const mapUrl = apiKey
-    ? `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=15&size=640x360&scale=2&markers=color:red%7C${latitude},${longitude}&key=${apiKey}`
+    ? `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=15&size=640x360&scale=2&markers=color:red%7C${latitude},${longitude}${langParam}&region=VN&key=${apiKey}`
     : null;
 
   // Google Maps links
