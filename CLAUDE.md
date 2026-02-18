@@ -32,6 +32,39 @@ Multiple AI sessions may be running simultaneously on this codebase.
 
 Run these commands yourself using bash. Don't say "please run this command" - just run it.
 
+## ⛔ CRITICAL: NEVER Upload to Supabase Storage
+
+**ALL media uploads MUST go through Cloudflare R2, not Supabase Storage.**
+
+- CDN URL: `https://cdn.dalat.app/{bucket}/{path}`
+- Supabase Storage URLs (`aljcmodwjqlznzcydyor.supabase.co/storage/...`) are **banned** — they bypass the CDN and are slow globally
+
+**For client-side uploads:**
+```tsx
+import { uploadFile } from "@/lib/storage/client";
+const { url } = await uploadFile("event-media", file, { filename });
+// Returns https://cdn.dalat.app/event-media/...
+```
+
+**For server-side uploads:**
+```tsx
+import { getStorageProvider } from "@/lib/storage";
+const provider = getStorageProvider("event-media");
+const publicUrl = await provider.upload(key, buffer, contentType);
+// Returns https://cdn.dalat.app/event-media/...
+```
+
+**NEVER do this:**
+```tsx
+// ❌ WRONG — goes to Supabase Storage, bypasses CDN
+const { data } = await supabase.storage.from("bucket").upload(path, file);
+const { data: { publicUrl } } = supabase.storage.from("bucket").getPublicUrl(path);
+```
+
+**Available R2 buckets:** `avatars`, `event-media`, `moments`, `venue-media`, `organizer-logos`, `event-materials`, `sponsor-logos`, `promo-media`, `moment-materials`
+
+**History:** Feb 2026 — found 432 images on Supabase Storage instead of R2. Migrated all + fixed 6 code paths that were bypassing R2.
+
 ## ⛔ CRITICAL: NEVER Create middleware.ts
 
 **THIS HAS BROKEN PRODUCTION MULTIPLE TIMES. READ CAREFULLY.**
