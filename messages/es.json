@@ -1313,7 +1313,17 @@
       "rsvpHint": "RSVP para subir"
     },
     "setAsCover": "Establecer como portada",
-    "albumCover": "Portada"
+    "albumCover": "Portada",
+    "selection": {
+      "select": "Seleccionar",
+      "selected": "{count} seleccionados",
+      "deleteSelected": "Eliminar",
+      "deleteTitle": "¿Eliminar {count} momentos?",
+      "deleteConfirm": "Esto eliminará permanentemente {count} momentos. Esta acción no se puede deshacer.",
+      "deleting": "Eliminando...",
+      "deleted": "{count} momentos eliminados",
+      "deleteFailed": "{count} no se pudieron eliminar"
+    }
   },
   "tribes": {
     "title": "Tribes",

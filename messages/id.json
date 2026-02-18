@@ -1313,7 +1313,17 @@
       "rsvpHint": "RSVP untuk mengunggah"
     },
     "setAsCover": "Jadikan sampul",
-    "albumCover": "Sampul album"
+    "albumCover": "Sampul album",
+    "selection": {
+      "select": "Pilih",
+      "selected": "{count} dipilih",
+      "deleteSelected": "Hapus",
+      "deleteTitle": "Hapus {count} momen?",
+      "deleteConfirm": "Ini akan menghapus {count} momen secara permanen. Tindakan ini tidak dapat dibatalkan.",
+      "deleting": "Menghapus...",
+      "deleted": "{count} momen dihapus",
+      "deleteFailed": "{count} gagal dihapus"
+    }
   },
   "tribes": {
     "title": "Tribes",

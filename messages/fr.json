@@ -1327,7 +1327,17 @@
       "rsvpHint": "RSVP pour télécharger"
     },
     "setAsCover": "Définir comme couverture",
-    "albumCover": "Couverture"
+    "albumCover": "Couverture",
+    "selection": {
+      "select": "Sélectionner",
+      "selected": "{count} sélectionné(s)",
+      "deleteSelected": "Supprimer",
+      "deleteTitle": "Supprimer {count} moments ?",
+      "deleteConfirm": "Cela supprimera définitivement {count} moments. Cette action est irréversible.",
+      "deleting": "Suppression...",
+      "deleted": "{count} moments supprimés",
+      "deleteFailed": "{count} n'ont pas pu être supprimés"
+    }
   },
   "tribes": {
     "title": "Tribus",

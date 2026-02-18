@@ -1313,7 +1313,17 @@
       "rsvpHint": "RSVP zum Hochladen"
     },
     "setAsCover": "Als Cover festlegen",
-    "albumCover": "Album-Cover"
+    "albumCover": "Album-Cover",
+    "selection": {
+      "select": "Auswählen",
+      "selected": "{count} ausgewählt",
+      "deleteSelected": "Löschen",
+      "deleteTitle": "{count} Moments löschen?",
+      "deleteConfirm": "Dies löscht {count} Moments unwiderruflich. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleting": "Wird gelöscht...",
+      "deleted": "{count} Moments gelöscht",
+      "deleteFailed": "{count} konnten nicht gelöscht werden"
+    }
   },
   "tribes": {
     "title": "Tribes",

@@ -1316,7 +1316,17 @@
       "rsvpHint": "RSVP参加活动后上传"
     },
     "setAsCover": "设为封面",
-    "albumCover": "相册封面"
+    "albumCover": "相册封面",
+    "selection": {
+      "select": "选择",
+      "selected": "已选择 {count} 个",
+      "deleteSelected": "删除",
+      "deleteTitle": "删除 {count} 个瞬间？",
+      "deleteConfirm": "这将永久删除 {count} 个瞬间，此操作无法撤销。",
+      "deleting": "删除中...",
+      "deleted": "已删除 {count} 个瞬间",
+      "deleteFailed": "{count} 个删除失败"
+    }
   },
   "tribes": {
     "title": "部落",

@@ -1313,7 +1313,17 @@
       "rsvpHint": "RSVP เพื่ออัปโหลด"
     },
     "setAsCover": "ตั้งเป็นหน้าปก",
-    "albumCover": "หน้าปกอัลบั้ม"
+    "albumCover": "หน้าปกอัลบั้ม",
+    "selection": {
+      "select": "เลือก",
+      "selected": "เลือกแล้ว {count} รายการ",
+      "deleteSelected": "ลบ",
+      "deleteTitle": "ลบ {count} โมเมนต์?",
+      "deleteConfirm": "การดำเนินการนี้จะลบ {count} โมเมนต์อย่างถาวร ไม่สามารถย้อนกลับได้",
+      "deleting": "กำลังลบ...",
+      "deleted": "ลบ {count} โมเมนต์แล้ว",
+      "deleteFailed": "{count} รายการลบไม่สำเร็จ"
+    }
   },
   "tribes": {
     "title": "Tribes",

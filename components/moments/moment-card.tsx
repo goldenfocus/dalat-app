@@ -40,6 +40,14 @@ interface MomentCardProps {
   commentCount?: number;
   /** Click handler for lightbox mode. When provided, opens lightbox instead of navigating. */
   onLightboxOpen?: () => void;
+  /** Selection mode: when true, card acts as a selectable checkbox */
+  selectMode?: boolean;
+  /** Whether this specific card is selected */
+  isSelected?: boolean;
+  /** Whether the user can select this card (moderator can select all, regular user only their own) */
+  isSelectable?: boolean;
+  /** Toggle selection callback */
+  onSelectionToggle?: () => void;
 }
 
 // Extract YouTube video ID from URL
@@ -57,7 +65,7 @@ function extractVideoId(url: string | null | undefined): string | null {
   return null;
 }
 
-export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOpen }: MomentCardProps) {
+export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOpen, selectMode, isSelected, isSelectable, onSelectionToggle }: MomentCardProps) {
   const [thumbnailError, setThumbnailError] = useState(false);
 
   // Use clean URL format when event slug is available
@@ -94,7 +102,13 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
   };
 
   const cardContent = (
-    <article className="group relative aspect-square overflow-hidden rounded-lg bg-muted active:scale-[0.98] transition-transform">
+    <article className={`group relative aspect-square overflow-hidden rounded-lg bg-muted transition-all ${
+      selectMode && isSelected
+        ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-background scale-[0.95]"
+        : selectMode && !isSelectable
+          ? "opacity-40"
+          : "active:scale-[0.98]"
+    }`}>
         {/* YouTube moments */}
         {moment.content_type === "youtube" && youtubeThumb && (
           <>
@@ -249,8 +263,42 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
             <span>{commentCount}</span>
           </div>
         )}
+
+        {/* Selection checkbox */}
+        {selectMode && isSelectable && (
+          <div className={`absolute top-2 left-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+            isSelected
+              ? "bg-blue-500 border-blue-500"
+              : "bg-black/30 border-white/80 backdrop-blur-sm"
+          }`}>
+            {isSelected && (
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+        )}
       </article>
   );
+
+  // Selection mode: clicking toggles selection
+  if (selectMode) {
+    return (
+      <button
+        type="button"
+        className="block w-full text-left touch-manipulation"
+        onClick={() => {
+          if (isSelectable && onSelectionToggle) {
+            triggerHaptic("selection");
+            onSelectionToggle();
+          }
+        }}
+        disabled={!isSelectable}
+      >
+        {cardContent}
+      </button>
+    );
+  }
 
   // YouTube moments: always open YouTube directly in new tab
   if (moment.content_type === "youtube" && youtubeDirectUrl) {

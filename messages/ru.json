@@ -1313,7 +1313,17 @@
       "rsvpHint": "RSVP на события для загрузки"
     },
     "setAsCover": "Установить обложкой",
-    "albumCover": "Обложка альбома"
+    "albumCover": "Обложка альбома",
+    "selection": {
+      "select": "Выбрать",
+      "selected": "Выбрано: {count}",
+      "deleteSelected": "Удалить",
+      "deleteTitle": "Удалить {count} моментов?",
+      "deleteConfirm": "Это навсегда удалит {count} моментов. Отменить нельзя.",
+      "deleting": "Удаление...",
+      "deleted": "{count} моментов удалено",
+      "deleteFailed": "{count} не удалось удалить"
+    }
   },
   "tribes": {
     "title": "Трайбы",

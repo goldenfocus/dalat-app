@@ -30,6 +30,14 @@ interface InfiniteMomentGridProps {
   onMomentsUpdate?: (moments: MomentWithProfile[]) => void;
   /** Filter by media type (all, photo, video) */
   mediaTypeFilter?: MediaTypeFilter;
+  /** Selection mode props */
+  selectMode?: boolean;
+  selectedIds?: Set<string>;
+  onSelectionToggle?: (momentId: string) => void;
+  /** Current user ID (for determining which moments are selectable) */
+  currentUserId?: string;
+  /** Whether user can moderate (select any moment) */
+  canModerate?: boolean;
 }
 
 export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteMomentGridProps>(function InfiniteMomentGrid({
@@ -41,6 +49,11 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   onMomentClick,
   onMomentsUpdate,
   mediaTypeFilter = "all",
+  selectMode,
+  selectedIds,
+  onSelectionToggle,
+  currentUserId,
+  canModerate,
 }: InfiniteMomentGridProps, ref) {
   const t = useTranslations("moments");
   const [moments, setMoments] = useState<MomentWithProfile[]>(initialMoments);
@@ -150,6 +163,11 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
           moments={filteredMoments}
           eventSlug={eventSlug}
           commentCounts={commentCounts}
+          selectMode={selectMode}
+          selectedIds={selectedIds}
+          onSelectionToggle={onSelectionToggle}
+          currentUserId={currentUserId}
+          canModerate={canModerate}
         />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -161,6 +179,10 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
               from="event"
               commentCount={commentCounts.get(moment.id)}
               onLightboxOpen={onMomentClick ? () => onMomentClick(index) : undefined}
+              selectMode={selectMode}
+              isSelected={selectedIds?.has(moment.id)}
+              isSelectable={canModerate || moment.user_id === currentUserId}
+              onSelectionToggle={onSelectionToggle ? () => onSelectionToggle(moment.id) : undefined}
             />
           ))}
         </div>
@@ -192,10 +214,20 @@ function InnerGridWithLightbox({
   moments,
   eventSlug,
   commentCounts,
+  selectMode,
+  selectedIds,
+  onSelectionToggle,
+  currentUserId,
+  canModerate,
 }: {
   moments: MomentWithProfile[];
   eventSlug: string;
   commentCounts: Map<string, number>;
+  selectMode?: boolean;
+  selectedIds?: Set<string>;
+  onSelectionToggle?: (momentId: string) => void;
+  currentUserId?: string;
+  canModerate?: boolean;
 }) {
   const { openLightbox } = useMomentsLightbox();
 
@@ -208,7 +240,11 @@ function InnerGridWithLightbox({
           eventSlug={eventSlug}
           from="event"
           commentCount={commentCounts.get(moment.id)}
-          onLightboxOpen={() => openLightbox(index)}
+          onLightboxOpen={selectMode ? undefined : () => openLightbox(index)}
+          selectMode={selectMode}
+          isSelected={selectedIds?.has(moment.id)}
+          isSelectable={canModerate || moment.user_id === currentUserId}
+          onSelectionToggle={onSelectionToggle ? () => onSelectionToggle(moment.id) : undefined}
         />
       ))}
     </div>

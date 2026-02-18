@@ -1427,6 +1427,16 @@
     "desktopPill": {
       "message": "Enjoying these? Save your favorites",
       "cta": "Join free"
+    },
+    "selection": {
+      "select": "Select",
+      "selected": "{count} selected",
+      "deleteSelected": "Delete",
+      "deleteTitle": "Delete {count} moments?",
+      "deleteConfirm": "This will permanently delete {count} moments. This cannot be undone.",
+      "deleting": "Deleting...",
+      "deleted": "{count} moments deleted",
+      "deleteFailed": "{count} failed to delete"
     }
   },
   "tribes": {

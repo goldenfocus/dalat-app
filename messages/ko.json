@@ -1316,7 +1316,17 @@
       "rsvpHint": "RSVP하여 업로드하세요"
     },
     "setAsCover": "커버로 설정",
-    "albumCover": "앨범 커버"
+    "albumCover": "앨범 커버",
+    "selection": {
+      "select": "선택",
+      "selected": "{count}개 선택됨",
+      "deleteSelected": "삭제",
+      "deleteTitle": "모먼트 {count}개를 삭제할까요?",
+      "deleteConfirm": "모먼트 {count}개가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+      "deleting": "삭제 중...",
+      "deleted": "모먼트 {count}개 삭제됨",
+      "deleteFailed": "{count}개 삭제 실패"
+    }
   },
   "tribes": {
     "title": "트라이브",

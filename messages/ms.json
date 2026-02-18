@@ -1313,7 +1313,17 @@
       "rsvpHint": "RSVP untuk memuat naik"
     },
     "setAsCover": "Tetapkan sebagai muka depan",
-    "albumCover": "Muka depan album"
+    "albumCover": "Muka depan album",
+    "selection": {
+      "select": "Pilih",
+      "selected": "{count} dipilih",
+      "deleteSelected": "Padam",
+      "deleteTitle": "Padam {count} momen?",
+      "deleteConfirm": "Ini akan memadamkan {count} momen secara kekal. Tindakan ini tidak boleh dibatalkan.",
+      "deleting": "Memadamkan...",
+      "deleted": "{count} momen dipadamkan",
+      "deleteFailed": "{count} gagal dipadamkan"
+    }
   },
   "tribes": {
     "title": "Suku",

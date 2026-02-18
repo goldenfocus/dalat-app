@@ -1316,7 +1316,17 @@
       "rsvpHint": "Đăng ký tham gia để tải lên"
     },
     "setAsCover": "Đặt làm ảnh bìa",
-    "albumCover": "Ảnh bìa album"
+    "albumCover": "Ảnh bìa album",
+    "selection": {
+      "select": "Chọn",
+      "selected": "Đã chọn {count}",
+      "deleteSelected": "Xóa",
+      "deleteTitle": "Xóa {count} khoảnh khắc?",
+      "deleteConfirm": "Thao tác này sẽ xóa vĩnh viễn {count} khoảnh khắc. Không thể hoàn tác.",
+      "deleting": "Đang xóa...",
+      "deleted": "Đã xóa {count} khoảnh khắc",
+      "deleteFailed": "{count} không xóa được"
+    }
   },
   "tribes": {
     "title": "Bộ tộc",

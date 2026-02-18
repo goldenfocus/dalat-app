@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useTranslations } from "next-intl";
+import { CheckSquare, Trash2, X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useMomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 import { ViewModeSwitcher } from "./view-mode-switcher";
 import { FloatingViewModeSwitcher } from "./floating-view-mode-switcher";
@@ -10,7 +13,18 @@ import { ImmersiveMomentView } from "./immersive-moment-view";
 import { CinemaSlideshow } from "./cinema-mode/cinema-slideshow";
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
 import { createClient } from "@/lib/supabase/client";
+import { triggerHaptic } from "@/lib/haptics";
+import { hasRoleLevel, type UserRole } from "@/lib/types";
 import type { MomentWithProfile } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export interface CinemaEventMeta {
   title: string;
@@ -48,6 +62,8 @@ export function MomentsViewContainer({
   eventMeta,
   initialPlaylist,
 }: MomentsViewContainerProps) {
+  const t = useTranslations("moments");
+  const tCommon = useTranslations("common");
   const { viewMode, setViewMode, isLoaded } = useMomentsViewMode("grid");
   const [showImmersive, setShowImmersive] = useState(false);
   const [showCinema, setShowCinema] = useState(false);
@@ -60,9 +76,40 @@ export function MomentsViewContainer({
   const setPlaylist = useAudioPlayerStore((state) => state.setPlaylist);
   const currentPlaylist = useAudioPlayerStore((state) => state.playlist);
 
+  // --- Selection mode state ---
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // --- User permissions (for selection mode) ---
+  const [currentUserId, setCurrentUserId] = useState<string>();
+  const [canModerate, setCanModerate] = useState(false);
+
+  useEffect(() => {
+    async function fetchPermissions() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setCurrentUserId(user.id);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      if (profile?.role) {
+        setCanModerate(hasRoleLevel(profile.role as UserRole, "moderator"));
+      }
+    }
+    fetchPermissions();
+  }, []);
+
   // Track moments loaded so far (for immersive view to access all loaded moments)
   const [allMoments, setAllMoments] = useState<MomentWithProfile[]>(initialMoments);
   const [hasMoreMoments, setHasMoreMoments] = useState(initialHasMore);
+
+  // Can the user use selection mode? (logged in AND either moderator or has own moments)
+  const canSelect = !!currentUserId && (canModerate || allMoments.some(m => m.user_id === currentUserId));
 
   // Media type filter
   const [mediaTypeFilter, setMediaTypeFilter] = useState<MediaTypeFilter>("all");
@@ -188,6 +235,76 @@ export function MomentsViewContainer({
     setAllMoments((prev) => prev.filter((m) => m.id !== momentId));
   }, []);
 
+  // --- Selection mode handlers ---
+  const toggleSelection = useCallback((momentId: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(momentId)) {
+        next.delete(momentId);
+      } else {
+        next.add(momentId);
+      }
+      return next;
+    });
+  }, []);
+
+  const enterSelectMode = useCallback(() => {
+    setSelectMode(true);
+    setSelectedIds(new Set());
+    // Force grid view for selection
+    setShowImmersive(false);
+    setShowCinema(false);
+    triggerHaptic("selection");
+  }, []);
+
+  const exitSelectMode = useCallback(() => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    setIsDeleting(true);
+
+    const supabase = createClient();
+    let deleted = 0;
+    let failed = 0;
+
+    for (const momentId of selectedIds) {
+      const moment = allMoments.find(m => m.id === momentId);
+      if (!moment) continue;
+
+      const isOwner = moment.user_id === currentUserId;
+      const rpcName = isOwner ? "delete_own_moment" : "remove_moment";
+      const params = isOwner
+        ? { p_moment_id: momentId }
+        : { p_moment_id: momentId, p_reason: "Removed by moderator (bulk)" };
+
+      const { data, error } = await supabase.rpc(rpcName, params);
+      if (error || !data?.ok) {
+        failed++;
+      } else {
+        deleted++;
+      }
+    }
+
+    // Remove successfully deleted moments from state
+    setAllMoments(prev => prev.filter(m => !selectedIds.has(m.id)));
+
+    if (deleted > 0) {
+      triggerHaptic("success");
+      toast.success(t("selection.deleted", { count: deleted }));
+    }
+    if (failed > 0) {
+      triggerHaptic("error");
+      toast.error(t("selection.deleteFailed", { count: failed }));
+    }
+
+    setIsDeleting(false);
+    setShowDeleteConfirm(false);
+    exitSelectMode();
+  }, [selectedIds, allMoments, currentUserId, canModerate, exitSelectMode, t]);
+
   // Switch from immersive/cinema to grid (and remember preference)
   const switchToGrid = () => {
     setViewMode("grid");
@@ -244,17 +361,39 @@ export function MomentsViewContainer({
 
   return (
     <>
-      {/* View mode switcher and media type filter */}
+      {/* View mode switcher, media type filter, and select button */}
       <div className="flex items-center justify-end gap-2 mb-4">
-        <MediaTypeFilterToggle
-          value={mediaTypeFilter}
-          onChange={setMediaTypeFilter}
-          hasVideos={hasVideos}
-        />
-        <ViewModeSwitcher
-          viewMode={viewMode}
-          onViewModeChange={handleViewModeChange}
-        />
+        {selectMode ? (
+          <button
+            type="button"
+            onClick={exitSelectMode}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+          >
+            {tCommon("cancel")}
+          </button>
+        ) : (
+          <>
+            {canSelect && (
+              <button
+                type="button"
+                onClick={enterSelectMode}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted active:scale-95"
+              >
+                <CheckSquare className="w-4 h-4" />
+                {t("selection.select")}
+              </button>
+            )}
+            <MediaTypeFilterToggle
+              value={mediaTypeFilter}
+              onChange={setMediaTypeFilter}
+              hasVideos={hasVideos}
+            />
+            <ViewModeSwitcher
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+            />
+          </>
+        )}
       </div>
 
       {/* Grid view (always rendered to maintain scroll position and loaded data) */}
@@ -265,8 +404,8 @@ export function MomentsViewContainer({
           eventSlug={eventSlug}
           initialMoments={initialMoments}
           initialHasMore={initialHasMore}
-          enableLightbox={viewMode === "grid"}
-          onMomentClick={viewMode === "immersive" ? openImmersive : undefined}
+          enableLightbox={viewMode === "grid" && !selectMode}
+          onMomentClick={viewMode === "immersive" && !selectMode ? openImmersive : undefined}
           onMomentsUpdate={(moments) => {
             setAllMoments(moments);
             // Keep hasMore in sync with grid
@@ -275,6 +414,11 @@ export function MomentsViewContainer({
             }
           }}
           mediaTypeFilter={mediaTypeFilter}
+          selectMode={selectMode}
+          selectedIds={selectedIds}
+          onSelectionToggle={toggleSelection}
+          currentUserId={currentUserId}
+          canModerate={canModerate}
         />
       </div>
 
@@ -315,6 +459,67 @@ export function MomentsViewContainer({
           onClose={switchToGrid}
         />
       )}
+
+      {/* Floating selection action bar */}
+      {selectMode && selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-200">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-full bg-background/95 backdrop-blur-md border shadow-lg">
+            <span className="text-sm font-medium tabular-nums">
+              {t("selection.selected", { count: selectedIds.size })}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic("selection");
+                setShowDeleteConfirm(true);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 active:scale-95 transition-all"
+            >
+              <Trash2 className="w-4 h-4" />
+              {t("selection.deleteSelected")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk delete confirmation dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">
+              {t("selection.deleteTitle", { count: selectedIds.size })}
+            </DialogTitle>
+            <DialogDescription>
+              {t("selection.deleteConfirm", { count: selectedIds.size })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+              className="px-3 py-2"
+            >
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleBulkDelete}
+              disabled={isDeleting}
+              className="px-3 py-2"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t("selection.deleting")}
+                </>
+              ) : (
+                t("delete")
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

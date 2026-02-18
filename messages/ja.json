@@ -1313,7 +1313,17 @@
       "rsvpHint": "RSVPしてアップロード"
     },
     "setAsCover": "カバーに設定",
-    "albumCover": "アルバムカバー"
+    "albumCover": "アルバムカバー",
+    "selection": {
+      "select": "選択",
+      "selected": "{count}件選択中",
+      "deleteSelected": "削除",
+      "deleteTitle": "{count}件のモーメントを削除しますか？",
+      "deleteConfirm": "{count}件のモーメントが完全に削除されます。この操作は元に戻せません。",
+      "deleting": "削除中...",
+      "deleted": "{count}件のモーメントを削除しました",
+      "deleteFailed": "{count}件の削除に失敗しました"
+    }
   },
   "tribes": {
     "title": "トライブ",
