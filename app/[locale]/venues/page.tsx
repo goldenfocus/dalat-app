@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Building2 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { getVenueTranslationsBatch } from "@/lib/translations";
 import { VenueCard } from "@/components/venues/venue-card";
 import { VenueCardSkeleton } from "@/components/venues/venue-card-skeleton";
 import { VenueTypeFilter } from "@/components/venues/venue-type-filter";
@@ -72,6 +73,10 @@ interface VenuesContentProps {
 async function VenuesContent({ selectedType, locale }: VenuesContentProps) {
   const allVenues = await getAllVenues();
   const t = await getTranslations("venues");
+
+  // Fetch venue translations for current locale
+  const venueIds = allVenues.map((v) => v.id);
+  const venueTranslations = await getVenueTranslationsBatch(venueIds, locale);
 
   // Compute type counts from all venues
   const typeCounts = computeTypeCounts(allVenues);
@@ -148,7 +153,11 @@ async function VenuesContent({ selectedType, locale }: VenuesContentProps) {
               </h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {happeningNow.map((venue) => (
-                  <VenueCard key={venue.id} venue={venue} />
+                  <VenueCard
+                    key={venue.id}
+                    venue={venue}
+                    translatedName={venueTranslations.get(venue.id)?.title}
+                  />
                 ))}
               </div>
             </section>
@@ -161,7 +170,11 @@ async function VenuesContent({ selectedType, locale }: VenuesContentProps) {
             )}
             <div className="grid gap-4 sm:grid-cols-2">
               {otherVenues.map((venue) => (
-                <VenueCard key={venue.id} venue={venue} />
+                <VenueCard
+                  key={venue.id}
+                  venue={venue}
+                  translatedName={venueTranslations.get(venue.id)?.title}
+                />
               ))}
             </div>
           </section>

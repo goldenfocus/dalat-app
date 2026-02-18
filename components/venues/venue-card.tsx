@@ -12,10 +12,11 @@ import type { VenueListItem } from "@/lib/types";
 
 interface VenueCardProps {
   venue: VenueListItem;
+  translatedName?: string;
   className?: string;
 }
 
-export function VenueCard({ venue, className }: VenueCardProps) {
+export function VenueCard({ venue, translatedName, className }: VenueCardProps) {
   const t = useTranslations("venues");
   const typeConfig = getVenueTypeConfig(venue.venue_type);
   const TypeIcon = typeConfig.icon;
@@ -99,7 +100,7 @@ export function VenueCard({ venue, className }: VenueCardProps) {
         <CardContent className="p-4">
           {/* Name and verified badge */}
           <h3 className="font-semibold truncate flex items-center gap-1.5">
-            {venue.name}
+            {translatedName ?? venue.name}
             {venue.is_verified && (
               <BadgeCheck className="w-4 h-4 text-primary flex-shrink-0" />
             )}

@@ -234,6 +234,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     }
   );
   const translatedDescription = venueTranslations.description ?? venue.description;
+  const translatedName = venueTranslations.title ?? venue.name;
 
   const isUnclaimed = !venue.owner_id;
   const showClaimBanner = isUnclaimed && isLoggedIn && !venue.is_verified;
@@ -342,7 +343,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                   )}
 
                   <h1 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg">
-                    {venue.name}
+                    {translatedName}
                   </h1>
 
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -401,7 +402,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               )}
 
               <h1 className="text-2xl sm:text-3xl font-bold">
-                {venue.name}
+                {translatedName}
               </h1>
 
               <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -578,7 +579,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                   className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/5 text-sm text-primary border border-primary/10"
                 >
                   <Tag className="w-3 h-3" />
-                  {tag.replace(/-/g, " ")}
+                  {t.has(`tagLabels.${tag}`) ? t(`tagLabels.${tag}`) : tag.replace(/-/g, " ")}
                 </span>
               ))}
             </div>
@@ -760,7 +761,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
           <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
             <CardContent className="p-6 text-center">
               <h2 className="text-lg font-semibold mb-2">
-                {t("visitVenue", { name: venue.name })}
+                {t("visitVenue", { name: translatedName })}
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
                 {venue.address && (
