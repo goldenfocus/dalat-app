@@ -12,6 +12,7 @@ import {
 } from "@/components/shared/material-renderers";
 import { useShare } from "@/lib/hooks/use-share";
 import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
+import { MomentWatermark } from "./moment-watermark";
 import type { MomentContentType, MomentVideoStatus } from "@/lib/types";
 
 // Minimal moment data needed for lightbox display
@@ -36,6 +37,9 @@ export interface LightboxMoment {
   audio_thumbnail_url?: string | null;
   // Event info (for mixed-event lightboxes like search results)
   event_slug?: string | null;
+  // User info (for watermark)
+  display_name?: string | null;
+  username?: string | null;
 }
 
 // Extract YouTube video ID from URL (fallback if youtube_video_id is null)
@@ -336,12 +340,15 @@ export function MomentLightbox({
       >
         {/* Photo */}
         {moment.content_type === "photo" && imageUrl && (
-          <img
-            src={imageUrl}
-            alt={moment.text_content || "Photo"}
-            onLoad={handleImageLoad}
-            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-          />
+          <div className="relative">
+            <img
+              src={imageUrl}
+              alt={moment.text_content || "Photo"}
+              onLoad={handleImageLoad}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+            />
+            <MomentWatermark displayName={moment.display_name || moment.username} />
+          </div>
         )}
 
         {/* Video */}
@@ -427,12 +434,15 @@ export function MomentLightbox({
 
         {/* Image material */}
         {moment.content_type === "image" && moment.file_url && (
-          <img
-            src={moment.file_url}
-            alt={moment.text_content || moment.title || "Image"}
-            onLoad={handleImageLoad}
-            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-          />
+          <div className="relative">
+            <img
+              src={moment.file_url}
+              alt={moment.text_content || moment.title || "Image"}
+              onLoad={handleImageLoad}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+            />
+            <MomentWatermark displayName={moment.display_name || moment.username} />
+          </div>
         )}
 
         {/* Text-only */}

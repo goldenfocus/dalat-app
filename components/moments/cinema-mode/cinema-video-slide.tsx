@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { MomentVideoPlayer } from "../moment-video-player";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
+import { MomentWatermark } from "@/components/moments/moment-watermark";
 import type { MomentWithProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -115,6 +116,12 @@ export function CinemaVideoSlide({
         className="w-full h-full"
         onEnded={onEnded}
         hideControls
+      />
+
+      {/* Watermark */}
+      <MomentWatermark
+        displayName={moment.display_name || moment.username}
+        className="z-10"
       />
 
       {/* Buffering indicator */}

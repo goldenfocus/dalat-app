@@ -10,6 +10,7 @@ import {
   prefersReducedMotion,
   getStaticEffect,
 } from "@/lib/cinema/ken-burns-effects";
+import { MomentWatermark } from "@/components/moments/moment-watermark";
 import type { MomentWithProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -138,6 +139,14 @@ export function CinemaPhotoSlide({
           priority
           onLoad={() => setImageReady(true)}
         />
+
+        {/* Watermark */}
+        {imageReady && (
+          <MomentWatermark
+            displayName={moment.display_name || moment.username}
+            className="z-20"
+          />
+        )}
 
         {/* Loading state */}
         {!imageReady && (

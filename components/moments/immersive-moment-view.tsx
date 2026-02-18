@@ -17,6 +17,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { useShare } from "@/lib/hooks/use-share";
 import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
+import { MomentWatermark } from "./moment-watermark";
 import type { MomentWithProfile } from "@/lib/types";
 
 // Hilariously random end-of-album phrases
@@ -306,12 +307,15 @@ export function ImmersiveMomentView({
         <div className="flex-1 relative flex items-center justify-center overflow-hidden px-4 py-16 lg:py-20">
           {/* Photo */}
           {moment.content_type === "photo" && imageUrl && (
-            <img
-              src={imageUrl}
-              alt={moment.text_content || "Photo"}
-              className="max-w-full max-h-full object-contain"
-              style={{ maxHeight: 'calc(100vh - 200px)' }}
-            />
+            <div className="relative max-w-full max-h-full" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+              <img
+                src={imageUrl}
+                alt={moment.text_content || "Photo"}
+                className="max-w-full max-h-full object-contain"
+                style={{ maxHeight: 'calc(100vh - 200px)' }}
+              />
+              <MomentWatermark displayName={moment.display_name || moment.username} />
+            </div>
           )}
 
           {/* Video */}
