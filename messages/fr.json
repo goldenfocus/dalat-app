@@ -2027,7 +2027,8 @@
       "wildlife": "faune",
       "wood-fired": "au feu de bois",
       "zipline": "tyrolienne"
-    }
+    },
+    "ward": "Quartier"
   },
   "rsvpCelebration": {
     "title": "Vous y allez !",

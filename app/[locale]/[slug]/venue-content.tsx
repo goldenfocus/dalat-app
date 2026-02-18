@@ -235,6 +235,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
   );
   const translatedDescription = venueTranslations.description ?? venue.description;
   const translatedName = venueTranslations.title ?? venue.name;
+  const translatedAddress = venue.address?.replace(/\bWard\b/g, t("ward")) ?? null;
 
   const isUnclaimed = !venue.owner_id;
   const showClaimBanner = isUnclaimed && isLoggedIn && !venue.is_verified;
@@ -366,7 +367,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                   {venue.address && (
                     <p className="text-sm text-white/70 mt-2 flex items-start gap-1">
                       <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      {venue.address}
+                      {translatedAddress}
                     </p>
                   )}
                 </div>
@@ -427,7 +428,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               {venue.address && (
                 <p className="text-sm text-muted-foreground mt-2 flex items-start gap-1">
                   <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  {venue.address}
+                  {translatedAddress}
                 </p>
               )}
             </div>
@@ -734,7 +735,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               latitude={venue.latitude}
               longitude={venue.longitude}
               name={venue.name}
-              address={venue.address}
+              address={translatedAddress}
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
               locale={locale}
@@ -767,7 +768,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                 {venue.address && (
                   <span className="flex items-center justify-center gap-1 mb-2">
                     <MapPin className="w-4 h-4" />
-                    {venue.address}
+                    {translatedAddress}
                   </span>
                 )}
                 {t("findUsDescription")}
