@@ -69,69 +69,57 @@ export interface HeicConversionResult {
  * - Server reads from R2, converts with sharp, saves JPEG back
  */
 export async function convertHeicToJpeg(file: File): Promise<HeicConversionResult> {
-  console.log("[HEIC] Starting conversion for:", file.name, "size:", file.size, "type:", file.type);
-
   // Method 1: Try heic2any (WASM-based, works on most browsers)
+  // Suppress console output from the WASM module — "Could not parse HEIF file"
+  // and "ERR_LIBHEIF format not supported" are expected when falling through
+  // to canvas or server-side conversion.
   try {
-    // Dynamic import to ensure WASM loads properly at runtime
     const heic2any = (await import("heic2any")).default;
 
-    console.log("[HEIC] heic2any loaded, starting conversion...");
+    const savedWarn = console.warn;
+    const savedError = console.error;
+    console.warn = () => {};
+    console.error = () => {};
+    let blob: Blob | Blob[];
+    try {
+      blob = await heic2any({
+        blob: file,
+        toType: "image/jpeg",
+        quality: 0.9,
+      });
+    } finally {
+      console.warn = savedWarn;
+      console.error = savedError;
+    }
 
-    const blob = await heic2any({
-      blob: file,
-      toType: "image/jpeg",
-      quality: 0.9,
-    });
-
-    console.log("[HEIC] Conversion complete, blob result:", blob);
-
-    // heic2any can return a single blob or array of blobs (for multi-image HEIC)
     const resultBlob = Array.isArray(blob) ? blob[0] : blob;
 
     if (!resultBlob || resultBlob.size === 0) {
       throw new Error("HEIC conversion produced empty result");
     }
 
-    // Create new file with .jpg extension
     const newName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
     const convertedFile = new File([resultBlob], newName, {
       type: "image/jpeg",
     });
 
-    console.log(
-      "[HEIC] Created converted file:",
-      convertedFile.name,
-      "size:",
-      convertedFile.size
-    );
-
     return { file: convertedFile, needsServerConversion: false };
-  } catch (heic2anyError) {
-    console.warn("[HEIC] heic2any conversion failed, trying canvas fallback:", heic2anyError);
+  } catch {
+    // Expected — fall through to canvas
   }
 
   // Method 2: Try canvas conversion (uses browser's native HEIC decoder)
   // This works on Safari/iOS which is where most HEIC files come from
   try {
-    console.log("[HEIC] Attempting canvas-based conversion (native browser decoder)...");
     const canvasResult = await convertHeicViaCanvas(file);
-
     if (canvasResult) {
-      console.log(
-        "[HEIC] Canvas conversion successful:",
-        canvasResult.name,
-        "size:",
-        canvasResult.size
-      );
       return { file: canvasResult, needsServerConversion: false };
     }
-  } catch (canvasError) {
-    console.warn("[HEIC] Canvas conversion failed:", canvasError);
+  } catch {
+    // Expected — fall through to server-side
   }
 
   // Both client-side methods failed - return original for server-side conversion
-  console.log("[HEIC] Client-side conversion failed, will use server-side conversion for:", file.name);
   return { file, needsServerConversion: true };
 }
 
@@ -149,8 +137,6 @@ export async function uploadHeicServerSide(
   bucket: string,
   path: string
 ): Promise<{ url: string; path: string }> {
-  console.log("[HEIC] Server-side upload and conversion for:", file.name, "->", bucket, path);
-
   const formData = new FormData();
   formData.append("file", file);
   formData.append("bucket", bucket);
@@ -173,7 +159,6 @@ export async function uploadHeicServerSide(
 
       if (response.ok) {
         const result = await response.json();
-        console.log("[HEIC] Server upload complete:", result.url);
         return { url: result.url, path: result.path };
       }
 
@@ -185,7 +170,6 @@ export async function uploadHeicServerSide(
 
       const error = await response.json();
       lastError = new Error(error.error || "Server-side HEIC upload failed");
-      console.warn(`[HEIC] Server error ${response.status}, attempt ${attempt + 1}/${maxAttempts}`);
     } catch (err) {
       clearTimeout(timeoutId);
       if (err instanceof DOMException && err.name === "AbortError") {
@@ -197,7 +181,6 @@ export async function uploadHeicServerSide(
       if (lastError.message.includes("Rate limit") || lastError.message.includes("401")) {
         throw lastError;
       }
-      console.warn(`[HEIC] Attempt ${attempt + 1}/${maxAttempts} failed:`, lastError.message);
     }
 
     // Wait before retry (exponential backoff)
@@ -219,8 +202,6 @@ export async function convertHeicOnR2(
   bucket: string,
   path: string
 ): Promise<{ url: string; path: string }> {
-  console.log("[HEIC] Converting on R2:", bucket, path);
-
   let lastError: Error | null = null;
   const maxAttempts = 3;
 
@@ -239,7 +220,6 @@ export async function convertHeicOnR2(
 
       if (response.ok) {
         const result = await response.json();
-        console.log("[HEIC] R2 conversion complete:", result.url);
         return { url: result.url, path: result.path };
       }
 
@@ -251,7 +231,6 @@ export async function convertHeicOnR2(
 
       const error = await response.json();
       lastError = new Error(error.error || "HEIC conversion failed");
-      console.warn(`[HEIC] Convert attempt ${attempt + 1}/${maxAttempts}:`, lastError.message);
     } catch (err) {
       clearTimeout(timeoutId);
       if (err instanceof DOMException && err.name === "AbortError") {
@@ -259,9 +238,7 @@ export async function convertHeicOnR2(
       } else {
         lastError = err instanceof Error ? err : new Error(String(err));
       }
-      // Don't retry auth errors
       if (lastError.message.includes("Authentication")) throw lastError;
-      console.warn(`[HEIC] Convert attempt ${attempt + 1}/${maxAttempts} failed:`, lastError.message);
     }
 
     if (attempt < maxAttempts - 1) {
@@ -394,16 +371,10 @@ export async function convertIfNeeded(
     ext === "heic" ||
     ext === "heif";
 
-  console.log("[Convert] Checking file:", file.name, "type:", file.type, "ext:", ext, "isHeic:", isHeic);
-
   if (isHeic) {
     onProgress?.("Converting HEIC to JPEG...");
-    console.log("[Convert] Starting HEIC conversion...");
-    const result = await convertHeicToJpeg(file);
-    console.log("[Convert] HEIC conversion result:", result.file.name, result.file.type, result.file.size, "needsServerConversion:", result.needsServerConversion);
-    return result;
+    return await convertHeicToJpeg(file);
   }
 
-  console.log("[Convert] No conversion needed, returning original");
   return { file, needsServerConversion: false };
 }

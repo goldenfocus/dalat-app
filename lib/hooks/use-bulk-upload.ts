@@ -90,6 +90,42 @@ function getFileMediaType(file: File): FileMediaType {
   return "photo";
 }
 
+/**
+ * Generate a tiny data URL thumbnail for preview.
+ * Data URLs are embedded strings — they never go stale like blob URLs do
+ * when the browser GCs File handles during large batch uploads (212+ files).
+ */
+async function generatePreviewDataUrl(file: File): Promise<string | null> {
+  // Videos and HEIC files can't be decoded by most browsers — skip
+  if (file.type.startsWith("video/")) return null;
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (ext === "heic" || ext === "heif" || ext === "mov") return null;
+
+  const blobUrl = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject();
+      img.src = blobUrl;
+    });
+    URL.revokeObjectURL(blobUrl);
+
+    const MAX = 80;
+    const scale = Math.min(MAX / img.naturalWidth, MAX / img.naturalHeight, 1);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", 0.5);
+  } catch {
+    URL.revokeObjectURL(blobUrl);
+    return null;
+  }
+}
+
 function bulkUploadReducer(
   state: BulkUploadState,
   action: BulkUploadAction
@@ -107,7 +143,7 @@ function bulkUploadReducer(
           type: getFileMediaType(file),
           status: "queued",
           progress: 0,
-          previewUrl: URL.createObjectURL(file),
+          previewUrl: null, // Generated async — data URLs instead of blob URLs
           mediaUrl: null,
           thumbnailUrl: null,
           cfVideoUid: null,
@@ -130,10 +166,6 @@ function bulkUploadReducer(
 
     case "REMOVE_FILE": {
       const files = new Map(state.files);
-      const file = files.get(action.id);
-      if (file?.previewUrl) {
-        URL.revokeObjectURL(file.previewUrl);
-      }
       files.delete(action.id);
       return {
         ...state,
@@ -238,9 +270,6 @@ function bulkUploadReducer(
       const files = new Map(state.files);
       for (const [id, file] of files) {
         if (file.status === "complete") {
-          if (file.previewUrl) {
-            URL.revokeObjectURL(file.previewUrl);
-          }
           files.delete(id);
         }
       }
@@ -319,12 +348,6 @@ function bulkUploadReducer(
     }
 
     case "RESET": {
-      // Cleanup all preview URLs
-      for (const file of state.files.values()) {
-        if (file.previewUrl) {
-          URL.revokeObjectURL(file.previewUrl);
-        }
-      }
       return {
         ...state,
         batchId: crypto.randomUUID(),
@@ -466,14 +489,12 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
   const uploadFile = async (fileState: FileUploadState) => {
     const { id, file } = fileState;
     activeUploadsRef.current.add(id);
-    console.log("[BulkUpload] Starting upload for:", file.name, "type:", file.type, "size:", file.size);
 
     dispatch({ type: "UPDATE_FILE", id, updates: { status: "validating" } });
 
     // Validate
     const error = validateMediaFile(file);
     if (error) {
-      console.log("[BulkUpload] Validation failed:", error);
       dispatch({ type: "UPDATE_FILE", id, updates: { status: "error", error } });
       activeUploadsRef.current.delete(id);
       scheduleNextProcess();
@@ -485,26 +506,22 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
 
     // Convert if needed (HEIC → JPEG, MOV → MP4)
     const conversionNeeded = needsConversion(file);
-    console.log("[BulkUpload] needsConversion result:", conversionNeeded);
 
     if (conversionNeeded) {
-      console.log("[BulkUpload] Conversion needed, setting status to converting");
       dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting" } });
       try {
-        console.log("[BulkUpload] Calling convertIfNeeded...");
         const conversionResult = await convertIfNeeded(file);
         fileToUpload = conversionResult.file;
         needsServerHeicConversion = conversionResult.needsServerConversion;
-        console.log("[BulkUpload] Conversion complete:", fileToUpload.name, fileToUpload.type, fileToUpload.size, "needsServerConversion:", needsServerHeicConversion);
 
         // Update preview with converted file (only if actually converted)
         if (!needsServerHeicConversion) {
-          const newPreviewUrl = URL.createObjectURL(fileToUpload);
+          const dataUrl = await generatePreviewDataUrl(fileToUpload);
           dispatch({
             type: "UPDATE_FILE",
             id,
             updates: {
-              previewUrl: newPreviewUrl,
+              ...(dataUrl && { previewUrl: dataUrl }),
               type: getFileMediaType(fileToUpload),
             },
           });
@@ -527,23 +544,21 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
 
     // Compress large images (>3MB) before upload - critical for iOS reliability
     if (needsImageCompression(fileToUpload)) {
-      console.log("[BulkUpload] Image needs compression:", fileToUpload.size);
-      dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting" } }); // Reuse converting status for compression
+      dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting" } });
 
       try {
         const result = await compressImage(fileToUpload);
         if (result.wasCompressed) {
           fileToUpload = result.file;
-          console.log(
-            `[BulkUpload] Image compressed: ${result.originalSize} → ${result.compressedSize}`
-          );
           // Update preview with compressed file
-          const newPreviewUrl = URL.createObjectURL(fileToUpload);
-          dispatch({
-            type: "UPDATE_FILE",
-            id,
-            updates: { previewUrl: newPreviewUrl },
-          });
+          const dataUrl = await generatePreviewDataUrl(fileToUpload);
+          if (dataUrl) {
+            dispatch({
+              type: "UPDATE_FILE",
+              id,
+              updates: { previewUrl: dataUrl },
+            });
+          }
         }
       } catch (err) {
         console.error("[BulkUpload] Image compression error:", err);
@@ -551,7 +566,6 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       }
     }
 
-    console.log("[BulkUpload] Proceeding to upload:", fileToUpload.name, fileToUpload.type);
     dispatch({ type: "UPDATE_FILE", id, updates: { status: "uploading", progress: 0 } });
 
     try {
@@ -563,12 +577,10 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         // ========================================
         // VIDEO: Try Cloudflare Stream, fall back to R2
         // ========================================
-        console.log("[BulkUpload] Video detected, trying Cloudflare Stream...");
 
         // 1. Generate client-side thumbnail for immediate display
         let thumbnailUrl: string | null = null;
         try {
-          console.log("[BulkUpload] Generating video thumbnail...");
           const thumbnailBlob = await generateVideoThumbnail(fileToUpload);
           const thumbnailFileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}_thumb.jpg`;
 
@@ -578,9 +590,8 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
             filename: thumbnailFileName,
           });
           thumbnailUrl = thumbResult.publicUrl;
-          console.log("[BulkUpload] Thumbnail uploaded:", thumbnailUrl);
-        } catch (thumbErr) {
-          console.warn("[BulkUpload] Thumbnail generation failed (non-critical):", thumbErr);
+        } catch {
+          // Non-critical — video works without thumbnail
         }
 
         // Try Cloudflare Stream first
@@ -598,7 +609,6 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
 
           if (uploadUrlResponse.ok) {
             const { uploadUrl, videoUid } = await uploadUrlResponse.json();
-            console.log("[BulkUpload] Got Cloudflare upload URL, videoUid:", videoUid);
 
             // Upload video to Cloudflare via TUS protocol
             const tus = await import("tus-js-client");
@@ -615,7 +625,6 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
                   filetype: fileToUpload.type,
                 },
                 onError: (error) => {
-                  console.error("[BulkUpload] TUS upload error:", error);
                   reject(new Error(error.message || "Video upload failed"));
                 },
                 onProgress: (bytesUploaded, bytesTotal) => {
@@ -626,10 +635,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
                     updates: { progress },
                   });
                 },
-                onSuccess: () => {
-                  console.log("[BulkUpload] Video uploaded to Cloudflare Stream");
-                  resolve();
-                },
+                onSuccess: () => resolve(),
               });
               upload.start();
             });
@@ -651,16 +657,14 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
             await saveAsDraft(id, null, thumbnailUrl, videoUid, true, fileState.caption, fileState.fileHash);
             usedCloudflare = true;
           } else {
-            const errorData = await uploadUrlResponse.json();
-            console.warn("[BulkUpload] Cloudflare Stream unavailable:", errorData.error);
+            // Cloudflare Stream unavailable — fall through to R2
           }
-        } catch (cfError) {
-          console.warn("[BulkUpload] Cloudflare Stream failed, falling back to R2:", cfError);
+        } catch {
+          // Cloudflare Stream failed — fall through to R2
         }
 
         // Fallback to R2 storage if Cloudflare failed
         if (!usedCloudflare) {
-          console.log("[BulkUpload] Using R2 storage fallback for video...");
           const fileName = `${state.eventId}/${state.userId}/${timestamp}_${id.slice(0, 8)}.${ext}`;
 
           const { publicUrl } = await uploadToStorage("moments", fileToUpload, {
@@ -698,12 +702,9 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         // If HEIC, convert to JPEG server-side (reads from R2, converts, saves JPEG, deletes HEIC)
         // This avoids sending binary files through Cloudflare WAF (which returns 403)
         if (needsServerHeicConversion) {
-          console.log("[BulkUpload] Converting HEIC on R2:", fileName);
           dispatch({ type: "UPDATE_FILE", id, updates: { progress: 80 } });
-
           const convertResult = await convertHeicOnR2("moments", fileName);
           publicUrl = convertResult.url;
-          console.log("[BulkUpload] HEIC conversion complete:", publicUrl);
         }
 
         dispatch({
@@ -797,16 +798,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.status]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      for (const file of state.files.values()) {
-        if (file.previewUrl) {
-          URL.revokeObjectURL(file.previewUrl);
-        }
-      }
-    };
-  }, []);
+  // No blob URL cleanup needed — previews use data URLs (embedded strings)
 
   return {
     state,
@@ -828,6 +820,22 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
       });
       if (validFiles.length > 0) {
         dispatch({ type: "ADD_FILES", files: validFiles });
+
+        // Generate data URL thumbnails in the background (non-blocking).
+        // Data URLs never go stale, unlike blob URLs which fail with
+        // ERR_FILE_NOT_FOUND when browsers GC File handles in large batches.
+        for (const file of validFiles) {
+          generatePreviewDataUrl(file).then((dataUrl) => {
+            if (!dataUrl) return;
+            // Find the file ID by matching the File object reference
+            const entry = Array.from(filesRef.current.entries()).find(
+              ([, f]) => f.file === file
+            );
+            if (entry) {
+              dispatch({ type: "UPDATE_FILE", id: entry[0], updates: { previewUrl: dataUrl } });
+            }
+          });
+        }
       }
     },
     removeFile: (id: string) => dispatch({ type: "REMOVE_FILE", id }),
@@ -844,7 +852,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         return;
       }
 
-      console.log("[BulkUpload] Hashing", queuedFiles.length, "files for duplicate detection");
+      // Hash all files for duplicate detection
 
       // Mark files as hashing
       for (const file of queuedFiles) {
@@ -872,7 +880,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
 
         // Check which hashes already exist in this album
         const duplicateHashes = await checkDuplicateHashes(eventId, allHashes);
-        console.log("[BulkUpload] Found", duplicateHashes.size, "duplicates");
+        // Mark duplicates as skipped
 
         // Mark duplicates as skipped
         if (duplicateHashes.size > 0) {
