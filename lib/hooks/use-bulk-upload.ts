@@ -431,6 +431,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         p_thumbnail_url: thumbnailUrl,
         p_text_content: caption,
         p_cf_video_uid: cfVideoUid,
+        p_file_hash: fileHash,
       });
 
       if (error) throw error;
