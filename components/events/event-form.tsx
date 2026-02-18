@@ -493,6 +493,9 @@ export function EventForm({
             return;
           }
 
+          // Retranslate after series edit (fire-and-forget)
+          triggerEventTranslation(event.id, title.trim(), description || null);
+
           router.push(`/events/${event.slug}`);
           router.refresh();
         } else {
@@ -544,6 +547,9 @@ export function EventForm({
             setError(updateError.message);
             return;
           }
+
+          // Retranslate after edit (fire-and-forget)
+          triggerEventTranslation(event.id, title.trim(), description || null);
 
           // Navigate to new slug if changed, otherwise original
           const finalSlug = slugEditable && slug ? slug : event.slug;
@@ -613,6 +619,9 @@ export function EventForm({
           if (seriesData.first_event_id) {
             triggerEventTranslation(seriesData.first_event_id, title.trim(), description || null);
             triggerAIProcessing(seriesData.first_event_id);
+
+            // Auto-register creator as first attendee (fire-and-forget)
+            void supabase.rpc("rsvp_event", { p_event_id: seriesData.first_event_id, p_plus_ones: 0 });
           }
 
           router.push(`/series/${seriesData.slug}`);
@@ -682,6 +691,9 @@ export function EventForm({
           // Trigger AI processing in background (fire-and-forget)
           triggerEventTranslation(data.id, title.trim(), description || null);
           triggerAIProcessing(data.id);
+
+          // Auto-register creator as first attendee (fire-and-forget)
+          void supabase.rpc("rsvp_event", { p_event_id: data.id, p_plus_ones: 0 });
 
           // Show celebration modal instead of immediate redirect
           setCreatedEvent({
