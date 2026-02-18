@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Upload, Sparkles, Loader2, Camera, User, UserCircle, Wand2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import {
@@ -14,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { generateSmartFilename } from "@/lib/media-utils";
+import { uploadFile } from "@/lib/storage/client";
 import { DefaultAvatars } from "./default-avatars";
 import { AIAvatarDialog } from "@/components/profile/ai-avatar-dialog";
 
@@ -87,26 +86,14 @@ export function AvatarStep({
     return null;
   };
 
-  const uploadToStorage = async (file: File | Blob, ext: string = "jpg"): Promise<string> => {
-    const supabase = createClient();
-    // Generate smart filename - use original name if available, otherwise "avatar"
-    const originalName = file instanceof File ? file.name : "avatar";
-    const fileName = generateSmartFilename(originalName, userId, ext);
+  const uploadAvatar = async (blob: File | Blob, filename: string = "avatar.jpg"): Promise<string> => {
+    // uploadFile expects a File object — wrap Blob if needed
+    const file = blob instanceof File
+      ? blob
+      : new File([blob], filename, { type: blob.type });
 
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(fileName, file, {
-        cacheControl: "3600",
-        upsert: true,
-      });
-
-    if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(fileName);
-
-    return publicUrl;
+    const result = await uploadFile("avatars", file, { entityId: userId });
+    return result.publicUrl;
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,8 +115,7 @@ export function AvatarStep({
     setIsUploading(true);
 
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const publicUrl = await uploadToStorage(file, ext);
+      const publicUrl = await uploadAvatar(file, file.name);
       setPreviewUrl(publicUrl);
     } catch (err) {
       console.error("Upload error:", err);
@@ -154,7 +140,7 @@ export function AvatarStep({
       const response = await fetch(oauthAvatarUrl);
       const blob = await response.blob();
       const ext = blob.type.split("/")[1] || "jpg";
-      const publicUrl = await uploadToStorage(blob, ext);
+      const publicUrl = await uploadAvatar(blob, `google-avatar.${ext}`);
       setPreviewUrl(publicUrl);
       setSelectedDefault(null);
       setIsAIGenerated(false);
@@ -191,19 +177,11 @@ export function AvatarStep({
 
       const { imageUrl } = await response.json();
 
-      // Convert base64 to blob and upload to storage
-      const base64Data = imageUrl.split(",")[1];
-      const mimeType = imageUrl.split(";")[0].split(":")[1];
-      const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: mimeType });
-
-      const ext = mimeType.split("/")[1] || "png";
-      const publicUrl = await uploadToStorage(blob, ext);
+      // Convert data URL to blob via fetch (handles all formats safely)
+      const blobResponse = await fetch(imageUrl);
+      const blob = await blobResponse.blob();
+      const ext = blob.type.split("/")[1] || "png";
+      const publicUrl = await uploadAvatar(blob, `ai-avatar.${ext}`);
       setPreviewUrl(publicUrl);
       setSelectedDefault(null);
       setIsAIGenerated(true);
