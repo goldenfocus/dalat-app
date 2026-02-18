@@ -7,6 +7,7 @@ import {
   getContentOwner,
 } from "@/lib/comments";
 import { triggerTranslationServer } from "@/lib/translations";
+import { awardPoints } from "@/lib/loyalty";
 import type { CommentTargetType, Locale } from "@/lib/types";
 
 /**
@@ -143,6 +144,15 @@ export async function POST(request: NextRequest) {
         { field_name: "content", text: content },
       ]).catch((err) => {
         console.error("[api/comments] Translation failed:", err);
+      });
+    }
+
+    // Award loyalty points for commenting (non-blocking)
+    if (result.comment_id) {
+      void awardPoints(user.id, 'comment_post', {
+        points: 3,
+        referenceId: result.comment_id,
+        referenceType: 'comment',
       });
     }
 

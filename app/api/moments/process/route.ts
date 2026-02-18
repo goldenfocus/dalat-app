@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { inngest } from "@/lib/inngest/client";
 import { createClient } from "@/lib/supabase/server";
+import { awardPoints } from "@/lib/loyalty";
 
 const RATE_LIMIT = 30; // requests per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     // Verify the user owns these moments or is admin
     const { data: moments, error: momentError } = await supabase
       .from("moments")
-      .select("id, user_id")
+      .select("id, user_id, content_type")
       .in("id", idsToProcess);
 
     if (momentError || !moments || moments.length === 0) {
@@ -92,6 +93,15 @@ export async function POST(request: NextRequest) {
         data: { momentId: m.id },
       }))
     );
+
+    // Award loyalty points for each moment upload (non-blocking)
+    for (const m of moments) {
+      void awardPoints(m.user_id, 'moment_upload', {
+        points: m.content_type === 'video' ? 10 : 5,
+        referenceId: m.id,
+        referenceType: 'moment',
+      });
+    }
 
     return NextResponse.json({ success: true, count: moments.length });
   } catch (error) {

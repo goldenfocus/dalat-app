@@ -11,6 +11,7 @@ import type { Profile, Event, ContentLocale, EventMomentsGroup, FollowStatus } f
 import { ClaimProfileBanner, GhostProfileBadge } from "@/components/profile/claim-profile-banner";
 import { UserMomentsTimeline } from "@/components/moments/user-moments-timeline";
 import { FollowButton } from "@/components/profile/follow-button";
+import { TierBadge } from "@/components/loyalty/tier-badge";
 
 interface ProfileContentProps {
   profileId: string;
@@ -98,6 +99,17 @@ async function getFollowStatus(profileId: string): Promise<{ status: FollowStatu
   });
   if (error) return { status: null, currentUserId: user.id };
   return { status: data as unknown as FollowStatus, currentUserId: user.id };
+}
+
+async function getUserLoyaltyTier(userId: string): Promise<{ tier: string; points: number } | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("user_loyalty_status")
+    .select("current_tier, total_points")
+    .eq("user_id", userId)
+    .single();
+  if (!data) return null;
+  return { tier: data.current_tier, points: data.total_points };
 }
 
 const INITIAL_EVENTS = 5;
@@ -201,13 +213,14 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
     getTranslations("common"),
   ]);
 
-  const [events, isOwner, isLoggedIn, bioTranslations, momentsData, followData] = await Promise.all([
+  const [events, isOwner, isLoggedIn, bioTranslations, momentsData, followData, loyaltyData] = await Promise.all([
     getUserEvents(profile.id),
     isCurrentUser(profile.id),
     isUserLoggedIn(),
     getBioTranslations(profile.id, profile.bio, profile.bio_source_locale, locale),
     getUserMoments(profile.id),
     getFollowStatus(profile.id),
+    getUserLoyaltyTier(profile.id),
   ]);
 
   const isGhost = isGhostProfile(profile);
@@ -243,6 +256,7 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
               {profile.display_name || profile.username || tCommon("anonymous")}
             </h1>
             {isGhost && <GhostProfileBadge />}
+            {loyaltyData && <TierBadge tier={loyaltyData.tier} size="sm" />}
           </div>
           {profile.username && (
             <p className="text-muted-foreground">@{profile.username}</p>

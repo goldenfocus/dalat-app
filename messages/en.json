@@ -70,7 +70,8 @@
     "about": "About",
     "venues": "Venues",
     "activity": "Activity",
-    "news": "News"
+    "news": "News",
+    "loyalty": "Loyalty"
   },
   "home": {
     "title": "Events in Đà Lạt",
@@ -807,6 +808,8 @@
     "themeSystem": "System",
     "themeSystemDesc": "Match your device",
     "language": "Language",
+    "loyalty": "Loyalty",
+    "loyaltyPoints": "{points} pts",
     "signOut": "Sign out",
     "exitGodMode": "Exit God Mode"
   },
@@ -1843,6 +1846,9 @@
       "community_center": "Community Center",
       "outdoor": "Outdoor",
       "homestay": "Homestay",
+      "hiking": "Hiking",
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
       "other": "Other"
     },
     "amenities": {
@@ -2256,5 +2262,71 @@
     "tagFoodDrink": "Food & Drink",
     "tagWeather": "Weather",
     "tagCommunity": "Community"
+  },
+  "loyalty": {
+    "title": "Loyalty",
+    "myStatus": "My Status",
+    "leaderboard": "Leaderboard",
+    "rewards": "Rewards",
+    "points": "Points",
+    "pts": "pts",
+    "totalPoints": "Total Points",
+    "currentTier": "Current Tier",
+    "pointsToNext": "{points} more to {tier}",
+    "maxTierReached": "Max tier reached!",
+    "earnedPoints": "+{points} pts",
+    "recentActivity": "Recent Activity",
+    "viewAll": "View All",
+    "claimReward": "Claim",
+    "claimed": "Claimed",
+    "insufficientPoints": "Need {points} more points",
+    "insufficientTier": "Requires {tier} tier",
+    "outOfStock": "Out of Stock",
+    "rank": "Rank #{rank}",
+    "topPercent": "Top {percent}%",
+    "tier": {
+      "explorer": "Explorer",
+      "local": "Local",
+      "insider": "Insider",
+      "legend": "Legend"
+    },
+    "activity": {
+      "event_rsvp": "RSVP'd to event",
+      "event_attendance": "Attended event",
+      "event_checkin": "Checked in",
+      "moment_upload": "Shared a moment",
+      "moment_like": "Liked a moment",
+      "comment_post": "Posted a comment",
+      "profile_complete": "Completed profile",
+      "referral": "Referred a friend",
+      "event_hosted": "Hosted an event",
+      "venue_created": "Added a venue",
+      "blog_published": "Published a blog",
+      "livestream_hosted": "Hosted livestream"
+    },
+    "hostRewards": {
+      "title": "Host Rewards",
+      "subtitle": "Unlock premium tools as you grow",
+      "premiumListing": "Premium Listing",
+      "premiumListingDesc": "Your events appear higher in search results",
+      "analyticsAccess": "Event Analytics",
+      "analyticsAccessDesc": "Access detailed insights about your events",
+      "featuredPlacement": "Featured Placement",
+      "featuredPlacementDesc": "Get featured on the homepage",
+      "prioritySupport": "Priority Support",
+      "prioritySupportDesc": "Fast-track support from our team",
+      "customBranding": "Custom Branding",
+      "customBrandingDesc": "Custom colors and banners for your events",
+      "unlockedAt": "Unlocked at {tier}",
+      "active": "Active",
+      "locked": "Locked"
+    },
+    "category": {
+      "experiential": "Experience",
+      "transactional": "Perk",
+      "digital": "Digital",
+      "social": "Social",
+      "exclusive": "Exclusive"
+    }
   }
 }

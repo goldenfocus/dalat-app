@@ -70,7 +70,8 @@
     "about": "Tentang",
     "venues": "Tempat",
     "activity": "Aktivitas",
-    "news": "Berita"
+    "news": "Berita",
+    "loyalty": "Loyalitas"
   },
   "home": {
     "title": "Acara di Đà Lạt",
@@ -713,6 +714,8 @@
     "themeSystem": "Sistem",
     "themeSystemDesc": "Ikuti perangkat",
     "language": "Bahasa",
+    "loyalty": "Loyalitas",
+    "loyaltyPoints": "{points} poin",
     "signOut": "Keluar",
     "exitGodMode": "Keluar Mode Dewa"
   },
@@ -1860,6 +1863,9 @@
       "community_center": "Pusat Komunitas",
       "outdoor": "Luar Ruangan",
       "homestay": "Homestay",
+      "hiking": "Mendaki",
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
       "other": "Lainnya"
     },
     "amenities": {
@@ -2195,5 +2201,71 @@
     "tagFoodDrink": "Kuliner",
     "tagWeather": "Cuaca",
     "tagCommunity": "Komunitas"
+  },
+  "loyalty": {
+    "title": "Loyalitas",
+    "myStatus": "Status Saya",
+    "leaderboard": "Papan Peringkat",
+    "rewards": "Hadiah",
+    "points": "Poin",
+    "pts": "poin",
+    "totalPoints": "Total Poin",
+    "currentTier": "Tingkat Saat Ini",
+    "pointsToNext": "{points} lagi menuju {tier}",
+    "maxTierReached": "Tingkat tertinggi tercapai!",
+    "earnedPoints": "+{points} poin",
+    "recentActivity": "Aktivitas Terkini",
+    "viewAll": "Lihat Semua",
+    "claimReward": "Klaim",
+    "claimed": "Diklaim",
+    "insufficientPoints": "Butuh {points} poin lagi",
+    "insufficientTier": "Memerlukan tingkat {tier}",
+    "outOfStock": "Habis",
+    "rank": "Peringkat #{rank}",
+    "topPercent": "Top {percent}%",
+    "tier": {
+      "explorer": "Penjelajah",
+      "local": "Warga Lokal",
+      "insider": "Orang Dalam",
+      "legend": "Legenda"
+    },
+    "activity": {
+      "event_rsvp": "Mendaftar ke acara",
+      "event_attendance": "Menghadiri acara",
+      "event_checkin": "Check-in",
+      "moment_upload": "Membagikan momen",
+      "moment_like": "Menyukai momen",
+      "comment_post": "Mengirim komentar",
+      "profile_complete": "Melengkapi profil",
+      "referral": "Mengajak teman",
+      "event_hosted": "Menyelenggarakan acara",
+      "venue_created": "Menambahkan tempat",
+      "blog_published": "Menerbitkan blog",
+      "livestream_hosted": "Mengadakan siaran langsung"
+    },
+    "hostRewards": {
+      "title": "Hadiah Penyelenggara",
+      "subtitle": "Buka alat premium seiring pertumbuhanmu",
+      "premiumListing": "Daftar Premium",
+      "premiumListingDesc": "Acaramu muncul lebih tinggi di hasil pencarian",
+      "analyticsAccess": "Analitik Acara",
+      "analyticsAccessDesc": "Akses wawasan detail tentang acaramu",
+      "featuredPlacement": "Penempatan Unggulan",
+      "featuredPlacementDesc": "Tampil di halaman utama",
+      "prioritySupport": "Dukungan Prioritas",
+      "prioritySupportDesc": "Bantuan cepat dari tim kami",
+      "customBranding": "Branding Kustom",
+      "customBrandingDesc": "Warna dan banner kustom untuk acaramu",
+      "unlockedAt": "Terbuka di tingkat {tier}",
+      "active": "Aktif",
+      "locked": "Terkunci"
+    },
+    "category": {
+      "experiential": "Pengalaman",
+      "transactional": "Keuntungan",
+      "digital": "Digital",
+      "social": "Sosial",
+      "exclusive": "Eksklusif"
+    }
   }
 }

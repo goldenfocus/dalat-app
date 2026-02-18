@@ -70,7 +70,8 @@
     "about": "О нас",
     "venues": "Площадки",
     "activity": "Активность",
-    "news": "Новости"
+    "news": "Новости",
+    "loyalty": "Бонусы"
   },
   "home": {
     "title": "События в Далате",
@@ -713,6 +714,8 @@
     "themeSystem": "Системная",
     "themeSystemDesc": "Как на устройстве",
     "language": "Язык",
+    "loyalty": "Бонусы",
+    "loyaltyPoints": "{points} б.",
     "signOut": "Выйти",
     "exitGodMode": "Выйти из режима бога"
   },
@@ -1809,6 +1812,9 @@
       "community_center": "Общественный центр",
       "outdoor": "На открытом воздухе",
       "homestay": "Хоумстей",
+      "hiking": "Пешие прогулки",
+      "vegetarian": "Вегетарианский",
+      "vegan": "Веганский",
       "other": "Другое"
     },
     "amenities": {
@@ -2195,5 +2201,71 @@
     "tagFoodDrink": "Еда и напитки",
     "tagWeather": "Погода",
     "tagCommunity": "Сообщество"
+  },
+  "loyalty": {
+    "title": "Бонусы",
+    "myStatus": "Мой статус",
+    "leaderboard": "Рейтинг",
+    "rewards": "Награды",
+    "points": "Баллы",
+    "pts": "б.",
+    "totalPoints": "Всего баллов",
+    "currentTier": "Текущий уровень",
+    "pointsToNext": "Ещё {points} до {tier}",
+    "maxTierReached": "Максимальный уровень!",
+    "earnedPoints": "+{points} б.",
+    "recentActivity": "Недавняя активность",
+    "viewAll": "Смотреть все",
+    "claimReward": "Получить",
+    "claimed": "Получено",
+    "insufficientPoints": "Нужно ещё {points} баллов",
+    "insufficientTier": "Нужен уровень {tier}",
+    "outOfStock": "Закончилось",
+    "rank": "Место #{rank}",
+    "topPercent": "Топ {percent}%",
+    "tier": {
+      "explorer": "Исследователь",
+      "local": "Местный",
+      "insider": "Знаток",
+      "legend": "Легенда"
+    },
+    "activity": {
+      "event_rsvp": "Записался на событие",
+      "event_attendance": "Посетил событие",
+      "event_checkin": "Отметился",
+      "moment_upload": "Поделился моментом",
+      "moment_like": "Лайкнул момент",
+      "comment_post": "Оставил комментарий",
+      "profile_complete": "Заполнил профиль",
+      "referral": "Пригласил друга",
+      "event_hosted": "Провёл событие",
+      "venue_created": "Добавил место",
+      "blog_published": "Опубликовал статью",
+      "livestream_hosted": "Провёл трансляцию"
+    },
+    "hostRewards": {
+      "title": "Награды организатора",
+      "subtitle": "Открывай премиум-инструменты по мере роста",
+      "premiumListing": "Премиум-размещение",
+      "premiumListingDesc": "Твои события показываются выше в поиске",
+      "analyticsAccess": "Аналитика событий",
+      "analyticsAccessDesc": "Доступ к подробной статистике событий",
+      "featuredPlacement": "Рекомендуемое размещение",
+      "featuredPlacementDesc": "Попади на главную страницу",
+      "prioritySupport": "Приоритетная поддержка",
+      "prioritySupportDesc": "Быстрая помощь от нашей команды",
+      "customBranding": "Свой стиль",
+      "customBrandingDesc": "Свои цвета и баннеры для событий",
+      "unlockedAt": "Доступно с уровня {tier}",
+      "active": "Активно",
+      "locked": "Заблокировано"
+    },
+    "category": {
+      "experiential": "Впечатления",
+      "transactional": "Бонус",
+      "digital": "Цифровое",
+      "social": "Социальное",
+      "exclusive": "Эксклюзив"
+    }
   }
 }

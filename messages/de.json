@@ -70,7 +70,8 @@
     "about": "Über uns",
     "venues": "Veranstaltungsorte",
     "activity": "Aktivität",
-    "news": "Nachrichten"
+    "news": "Nachrichten",
+    "loyalty": "Treuepunkte"
   },
   "home": {
     "title": "Events in Đà Lạt",
@@ -713,6 +714,8 @@
     "themeSystem": "System",
     "themeSystemDesc": "Gerät folgen",
     "language": "Sprache",
+    "loyalty": "Treuepunkte",
+    "loyaltyPoints": "{points} Pkt.",
     "signOut": "Abmelden",
     "exitGodMode": "God Mode beenden"
   },
@@ -1809,6 +1812,9 @@
       "community_center": "Gemeindezentrum",
       "outdoor": "Outdoor",
       "homestay": "Homestay",
+      "hiking": "Wandern",
+      "vegetarian": "Vegetarisch",
+      "vegan": "Vegan",
       "other": "Sonstiges"
     },
     "amenities": {
@@ -2195,5 +2201,71 @@
     "tagFoodDrink": "Essen & Trinken",
     "tagWeather": "Wetter",
     "tagCommunity": "Gemeinschaft"
+  },
+  "loyalty": {
+    "title": "Treueprogramm",
+    "myStatus": "Mein Status",
+    "leaderboard": "Rangliste",
+    "rewards": "Belohnungen",
+    "points": "Punkte",
+    "pts": "Pkt.",
+    "totalPoints": "Gesamtpunkte",
+    "currentTier": "Aktuelle Stufe",
+    "pointsToNext": "Noch {points} bis {tier}",
+    "maxTierReached": "Höchste Stufe erreicht!",
+    "earnedPoints": "+{points} Pkt.",
+    "recentActivity": "Letzte Aktivitäten",
+    "viewAll": "Alle anzeigen",
+    "claimReward": "Einlösen",
+    "claimed": "Eingelöst",
+    "insufficientPoints": "Du brauchst noch {points} Punkte",
+    "insufficientTier": "Erfordert Stufe {tier}",
+    "outOfStock": "Ausverkauft",
+    "rank": "Platz #{rank}",
+    "topPercent": "Top {percent} %",
+    "tier": {
+      "explorer": "Entdecker",
+      "local": "Einheimischer",
+      "insider": "Insider",
+      "legend": "Legende"
+    },
+    "activity": {
+      "event_rsvp": "Für Event angemeldet",
+      "event_attendance": "Event besucht",
+      "event_checkin": "Eingecheckt",
+      "moment_upload": "Moment geteilt",
+      "moment_like": "Moment geliked",
+      "comment_post": "Kommentar geschrieben",
+      "profile_complete": "Profil vervollständigt",
+      "referral": "Freund empfohlen",
+      "event_hosted": "Event veranstaltet",
+      "venue_created": "Ort hinzugefügt",
+      "blog_published": "Blog veröffentlicht",
+      "livestream_hosted": "Livestream veranstaltet"
+    },
+    "hostRewards": {
+      "title": "Veranstalter-Belohnungen",
+      "subtitle": "Schalte Premium-Tools frei, während du wächst",
+      "premiumListing": "Premium-Listung",
+      "premiumListingDesc": "Deine Events erscheinen weiter oben in den Suchergebnissen",
+      "analyticsAccess": "Event-Analyse",
+      "analyticsAccessDesc": "Detaillierte Einblicke in deine Events",
+      "featuredPlacement": "Hervorgehobene Platzierung",
+      "featuredPlacementDesc": "Werde auf der Startseite angezeigt",
+      "prioritySupport": "Prioritäts-Support",
+      "prioritySupportDesc": "Schnelle Hilfe von unserem Team",
+      "customBranding": "Eigenes Branding",
+      "customBrandingDesc": "Eigene Farben und Banner für deine Events",
+      "unlockedAt": "Freigeschaltet ab Stufe {tier}",
+      "active": "Aktiv",
+      "locked": "Gesperrt"
+    },
+    "category": {
+      "experiential": "Erlebnis",
+      "transactional": "Vorteil",
+      "digital": "Digital",
+      "social": "Sozial",
+      "exclusive": "Exklusiv"
+    }
   }
 }

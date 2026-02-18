@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { notifyOrganizerNewRsvp } from '@/lib/notifications';
+import { awardPoints } from '@/lib/loyalty';
 import type { Locale, InvitationRsvpStatus } from '@/lib/types';
 
 interface RsvpRequest {
@@ -128,6 +129,14 @@ export async function POST(
     } catch (notifyError) {
       console.error('Failed to notify organizer:', notifyError);
       // Don't fail the request if notification fails
+    }
+
+    // Award loyalty points for RSVP (non-blocking)
+    if (invitation.claimed_by) {
+      void awardPoints(invitation.claimed_by, 'event_rsvp', {
+        referenceId: event.id,
+        referenceType: 'event',
+      });
     }
   }
 

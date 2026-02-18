@@ -70,7 +70,8 @@
     "about": "소개",
     "venues": "장소",
     "activity": "활동",
-    "news": "뉴스"
+    "news": "뉴스",
+    "loyalty": "로열티"
   },
   "home": {
     "title": "달랏의 이벤트",
@@ -713,6 +714,8 @@
     "themeSystem": "시스템",
     "themeSystemDesc": "기기 설정 따름",
     "language": "언어",
+    "loyalty": "로열티",
+    "loyaltyPoints": "{points} 포인트",
     "signOut": "로그아웃",
     "exitGodMode": "관리자 모드 종료"
   },
@@ -1812,6 +1815,9 @@
       "community_center": "커뮤니티 센터",
       "outdoor": "야외",
       "homestay": "홈스테이",
+      "hiking": "하이킹",
+      "vegetarian": "채식",
+      "vegan": "비건",
       "other": "기타"
     },
     "amenities": {
@@ -2183,5 +2189,71 @@
     "tagFoodDrink": "맛집",
     "tagWeather": "날씨",
     "tagCommunity": "커뮤니티"
+  },
+  "loyalty": {
+    "title": "로열티",
+    "myStatus": "내 현황",
+    "leaderboard": "리더보드",
+    "rewards": "보상",
+    "points": "포인트",
+    "pts": "점",
+    "totalPoints": "총 포인트",
+    "currentTier": "현재 등급",
+    "pointsToNext": "{tier}까지 {points}점 더 필요",
+    "maxTierReached": "최고 등급 달성!",
+    "earnedPoints": "+{points}점",
+    "recentActivity": "최근 활동",
+    "viewAll": "전체 보기",
+    "claimReward": "받기",
+    "claimed": "수령 완료",
+    "insufficientPoints": "{points}점 더 필요합니다",
+    "insufficientTier": "{tier} 등급이 필요합니다",
+    "outOfStock": "품절",
+    "rank": "{rank}위",
+    "topPercent": "상위 {percent}%",
+    "tier": {
+      "explorer": "탐험가",
+      "local": "현지인",
+      "insider": "인사이더",
+      "legend": "레전드"
+    },
+    "activity": {
+      "event_rsvp": "이벤트에 참석 신청",
+      "event_attendance": "이벤트에 참석",
+      "event_checkin": "체크인 완료",
+      "moment_upload": "순간을 공유",
+      "moment_like": "순간에 좋아요",
+      "comment_post": "댓글 작성",
+      "profile_complete": "프로필 완성",
+      "referral": "친구 추천",
+      "event_hosted": "이벤트 주최",
+      "venue_created": "장소 추가",
+      "blog_published": "블로그 게시",
+      "livestream_hosted": "라이브 방송 진행"
+    },
+    "hostRewards": {
+      "title": "호스트 보상",
+      "subtitle": "성장하면서 프리미엄 도구를 잠금 해제하세요",
+      "premiumListing": "프리미엄 노출",
+      "premiumListingDesc": "이벤트가 검색 결과 상단에 표시됩니다",
+      "analyticsAccess": "이벤트 분석",
+      "analyticsAccessDesc": "이벤트에 대한 상세한 인사이트를 확인하세요",
+      "featuredPlacement": "추천 배치",
+      "featuredPlacementDesc": "홈페이지에 노출됩니다",
+      "prioritySupport": "우선 지원",
+      "prioritySupportDesc": "팀의 빠른 지원을 받으세요",
+      "customBranding": "커스텀 브랜딩",
+      "customBrandingDesc": "이벤트에 맞춤 색상과 배너를 설정하세요",
+      "unlockedAt": "{tier} 등급에서 잠금 해제",
+      "active": "활성",
+      "locked": "잠김"
+    },
+    "category": {
+      "experiential": "체험",
+      "transactional": "혜택",
+      "digital": "디지털",
+      "social": "소셜",
+      "exclusive": "독점"
+    }
   }
 }

@@ -70,7 +70,8 @@
     "about": "关于",
     "venues": "场馆",
     "activity": "动态",
-    "news": "新闻"
+    "news": "新闻",
+    "loyalty": "积分"
   },
   "home": {
     "title": "大叻活动",
@@ -713,6 +714,8 @@
     "themeSystem": "系统",
     "themeSystemDesc": "跟随设备",
     "language": "语言",
+    "loyalty": "积分",
+    "loyaltyPoints": "{points} 分",
     "signOut": "退出",
     "exitGodMode": "退出上帝模式"
   },
@@ -1812,6 +1815,9 @@
       "community_center": "社区中心",
       "outdoor": "户外",
       "homestay": "民宿",
+      "hiking": "徒步",
+      "vegetarian": "素食",
+      "vegan": "纯素",
       "other": "其他"
     },
     "amenities": {
@@ -2198,5 +2204,71 @@
     "tagFoodDrink": "美食",
     "tagWeather": "天气",
     "tagCommunity": "社区"
+  },
+  "loyalty": {
+    "title": "积分",
+    "myStatus": "我的状态",
+    "leaderboard": "排行榜",
+    "rewards": "奖励",
+    "points": "积分",
+    "pts": "分",
+    "totalPoints": "总积分",
+    "currentTier": "当前等级",
+    "pointsToNext": "还需 {points} 分升至 {tier}",
+    "maxTierReached": "已达最高等级！",
+    "earnedPoints": "+{points} 分",
+    "recentActivity": "最近活动",
+    "viewAll": "查看全部",
+    "claimReward": "领取",
+    "claimed": "已领取",
+    "insufficientPoints": "还需 {points} 积分",
+    "insufficientTier": "需要 {tier} 等级",
+    "outOfStock": "已领完",
+    "rank": "第 {rank} 名",
+    "topPercent": "前 {percent}%",
+    "tier": {
+      "explorer": "探索者",
+      "local": "本地人",
+      "insider": "达人",
+      "legend": "传奇"
+    },
+    "activity": {
+      "event_rsvp": "报名了活动",
+      "event_attendance": "参加了活动",
+      "event_checkin": "已签到",
+      "moment_upload": "分享了一个瞬间",
+      "moment_like": "点赞了一个瞬间",
+      "comment_post": "发表了评论",
+      "profile_complete": "完善了个人资料",
+      "referral": "推荐了朋友",
+      "event_hosted": "主办了活动",
+      "venue_created": "添加了场地",
+      "blog_published": "发布了博客",
+      "livestream_hosted": "主持了直播"
+    },
+    "hostRewards": {
+      "title": "主办方奖励",
+      "subtitle": "随着成长解锁高级工具",
+      "premiumListing": "优先展示",
+      "premiumListingDesc": "你的活动在搜索结果中排名更高",
+      "analyticsAccess": "活动分析",
+      "analyticsAccessDesc": "查看活动的详细数据",
+      "featuredPlacement": "首页推荐",
+      "featuredPlacementDesc": "在首页获得推荐位",
+      "prioritySupport": "优先客服",
+      "prioritySupportDesc": "获得团队的快速支持",
+      "customBranding": "自定义品牌",
+      "customBrandingDesc": "为活动自定义颜色和横幅",
+      "unlockedAt": "在 {tier} 等级解锁",
+      "active": "已激活",
+      "locked": "未解锁"
+    },
+    "category": {
+      "experiential": "体验",
+      "transactional": "福利",
+      "digital": "数字",
+      "social": "社交",
+      "exclusive": "专属"
+    }
   }
 }

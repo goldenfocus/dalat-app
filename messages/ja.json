@@ -70,7 +70,8 @@
     "about": "について",
     "venues": "会場",
     "activity": "アクティビティ",
-    "news": "ニュース"
+    "news": "ニュース",
+    "loyalty": "ポイント"
   },
   "home": {
     "title": "ダラットのイベント",
@@ -713,6 +714,8 @@
     "themeSystem": "システム",
     "themeSystemDesc": "デバイスに合わせる",
     "language": "言語",
+    "loyalty": "ポイント",
+    "loyaltyPoints": "{points} pt",
     "signOut": "ログアウト",
     "exitGodMode": "ゴッドモードを終了"
   },
@@ -1809,6 +1812,9 @@
       "community_center": "コミュニティセンター",
       "outdoor": "アウトドア",
       "homestay": "ホームステイ",
+      "hiking": "ハイキング",
+      "vegetarian": "ベジタリアン",
+      "vegan": "ヴィーガン",
       "other": "その他"
     },
     "amenities": {
@@ -2195,5 +2201,71 @@
     "tagFoodDrink": "グルメ",
     "tagWeather": "天気",
     "tagCommunity": "コミュニティ"
+  },
+  "loyalty": {
+    "title": "ロイヤルティ",
+    "myStatus": "マイステータス",
+    "leaderboard": "ランキング",
+    "rewards": "リワード",
+    "points": "ポイント",
+    "pts": "pt",
+    "totalPoints": "合計ポイント",
+    "currentTier": "現在のランク",
+    "pointsToNext": "{tier}まであと{points}ポイント",
+    "maxTierReached": "最高ランク達成！",
+    "earnedPoints": "+{points} pt",
+    "recentActivity": "最近のアクティビティ",
+    "viewAll": "すべて見る",
+    "claimReward": "受け取る",
+    "claimed": "受取済み",
+    "insufficientPoints": "あと{points}ポイント必要です",
+    "insufficientTier": "{tier}ランクが必要です",
+    "outOfStock": "在庫切れ",
+    "rank": "{rank}位",
+    "topPercent": "上位{percent}%",
+    "tier": {
+      "explorer": "エクスプローラー",
+      "local": "ローカル",
+      "insider": "インサイダー",
+      "legend": "レジェンド"
+    },
+    "activity": {
+      "event_rsvp": "イベントに参加登録",
+      "event_attendance": "イベントに参加",
+      "event_checkin": "チェックイン完了",
+      "moment_upload": "モーメントを共有",
+      "moment_like": "モーメントにいいね",
+      "comment_post": "コメントを投稿",
+      "profile_complete": "プロフィールを完成",
+      "referral": "友達を紹介",
+      "event_hosted": "イベントを主催",
+      "venue_created": "会場を追加",
+      "blog_published": "ブログを公開",
+      "livestream_hosted": "ライブ配信を実施"
+    },
+    "hostRewards": {
+      "title": "ホスト特典",
+      "subtitle": "成長とともにプレミアムツールをアンロック",
+      "premiumListing": "プレミアム掲載",
+      "premiumListingDesc": "イベントが検索結果で上位に表示されます",
+      "analyticsAccess": "イベント分析",
+      "analyticsAccessDesc": "イベントの詳細なインサイトにアクセス",
+      "featuredPlacement": "注目の配置",
+      "featuredPlacementDesc": "ホームページに掲載されます",
+      "prioritySupport": "優先サポート",
+      "prioritySupportDesc": "チームからの迅速なサポート",
+      "customBranding": "カスタムブランディング",
+      "customBrandingDesc": "イベントにカスタムカラーとバナーを設定",
+      "unlockedAt": "{tier}ランクでアンロック",
+      "active": "有効",
+      "locked": "ロック中"
+    },
+    "category": {
+      "experiential": "体験",
+      "transactional": "特典",
+      "digital": "デジタル",
+      "social": "ソーシャル",
+      "exclusive": "限定"
+    }
   }
 }

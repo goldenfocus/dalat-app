@@ -70,7 +70,8 @@
     "about": "เกี่ยวกับ",
     "venues": "สถานที่",
     "activity": "กิจกรรม",
-    "news": "ข่าว"
+    "news": "ข่าว",
+    "loyalty": "สะสมแต้ม"
   },
   "home": {
     "title": "กิจกรรมในดาลัด",
@@ -713,6 +714,8 @@
     "themeSystem": "ระบบ",
     "themeSystemDesc": "ตามอุปกรณ์",
     "language": "ภาษา",
+    "loyalty": "สะสมแต้ม",
+    "loyaltyPoints": "{points} แต้ม",
     "signOut": "ออกจากระบบ",
     "exitGodMode": "ออกจากโหมดผู้ดูแลสูงสุด"
   },
@@ -1809,6 +1812,9 @@
       "community_center": "ศูนย์ชุมชน",
       "outdoor": "กลางแจ้ง",
       "homestay": "โฮมสเตย์",
+      "hiking": "เดินป่า",
+      "vegetarian": "มังสวิรัติ",
+      "vegan": "วีแกน",
       "other": "อื่นๆ"
     },
     "amenities": {
@@ -2195,5 +2201,71 @@
     "tagFoodDrink": "อาหาร",
     "tagWeather": "อากาศ",
     "tagCommunity": "ชุมชน"
+  },
+  "loyalty": {
+    "title": "สะสมแต้ม",
+    "myStatus": "สถานะของฉัน",
+    "leaderboard": "อันดับ",
+    "rewards": "รางวัล",
+    "points": "แต้ม",
+    "pts": "แต้ม",
+    "totalPoints": "แต้มรวม",
+    "currentTier": "ระดับปัจจุบัน",
+    "pointsToNext": "อีก {points} แต้มถึง {tier}",
+    "maxTierReached": "ถึงระดับสูงสุดแล้ว!",
+    "earnedPoints": "+{points} แต้ม",
+    "recentActivity": "กิจกรรมล่าสุด",
+    "viewAll": "ดูทั้งหมด",
+    "claimReward": "รับ",
+    "claimed": "รับแล้ว",
+    "insufficientPoints": "ต้องการอีก {points} แต้ม",
+    "insufficientTier": "ต้องการระดับ {tier}",
+    "outOfStock": "หมดแล้ว",
+    "rank": "อันดับที่ {rank}",
+    "topPercent": "ท็อป {percent}%",
+    "tier": {
+      "explorer": "นักสำรวจ",
+      "local": "คนท้องถิ่น",
+      "insider": "คนวงใน",
+      "legend": "ตำนาน"
+    },
+    "activity": {
+      "event_rsvp": "ลงทะเบียนกิจกรรม",
+      "event_attendance": "เข้าร่วมกิจกรรม",
+      "event_checkin": "เช็คอินแล้ว",
+      "moment_upload": "แชร์โมเมนต์",
+      "moment_like": "กดถูกใจโมเมนต์",
+      "comment_post": "โพสต์ความคิดเห็น",
+      "profile_complete": "กรอกโปรไฟล์ครบ",
+      "referral": "แนะนำเพื่อน",
+      "event_hosted": "จัดกิจกรรม",
+      "venue_created": "เพิ่มสถานที่",
+      "blog_published": "เผยแพร่บล็อก",
+      "livestream_hosted": "จัดไลฟ์สด"
+    },
+    "hostRewards": {
+      "title": "รางวัลผู้จัด",
+      "subtitle": "ปลดล็อกเครื่องมือพรีเมียมเมื่อคุณเติบโต",
+      "premiumListing": "รายการพรีเมียม",
+      "premiumListingDesc": "กิจกรรมของคุณแสดงสูงขึ้นในผลค้นหา",
+      "analyticsAccess": "วิเคราะห์กิจกรรม",
+      "analyticsAccessDesc": "เข้าถึงข้อมูลเชิงลึกเกี่ยวกับกิจกรรมของคุณ",
+      "featuredPlacement": "ตำแหน่งแนะนำ",
+      "featuredPlacementDesc": "ปรากฏบนหน้าแรก",
+      "prioritySupport": "การสนับสนุนพิเศษ",
+      "prioritySupportDesc": "รับการช่วยเหลือด่วนจากทีมงาน",
+      "customBranding": "แบรนด์ส่วนตัว",
+      "customBrandingDesc": "สีและแบนเนอร์เฉพาะสำหรับกิจกรรมของคุณ",
+      "unlockedAt": "ปลดล็อกที่ระดับ {tier}",
+      "active": "ใช้งานอยู่",
+      "locked": "ล็อกอยู่"
+    },
+    "category": {
+      "experiential": "ประสบการณ์",
+      "transactional": "สิทธิพิเศษ",
+      "digital": "ดิจิทัล",
+      "social": "สังคม",
+      "exclusive": "พิเศษเฉพาะ"
+    }
   }
 }

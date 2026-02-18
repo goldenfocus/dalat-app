@@ -70,7 +70,8 @@
     "about": "Giới thiệu",
     "venues": "Địa điểm",
     "activity": "Hoạt động",
-    "news": "Tin tức"
+    "news": "Tin tức",
+    "loyalty": "Tích điểm"
   },
   "home": {
     "title": "Sự kiện tại Đà Lạt",
@@ -713,6 +714,8 @@
     "themeSystem": "Hệ thống",
     "themeSystemDesc": "Theo thiết bị",
     "language": "Ngôn ngữ",
+    "loyalty": "Tích điểm",
+    "loyaltyPoints": "{points} điểm",
     "signOut": "Đăng xuất",
     "exitGodMode": "Thoát chế độ xem"
   },
@@ -1812,6 +1815,9 @@
       "community_center": "Trung tâm cộng đồng",
       "outdoor": "Ngoài trời",
       "homestay": "Homestay",
+      "hiking": "Leo Núi",
+      "vegetarian": "Chay",
+      "vegan": "Thuần Chay",
       "other": "Khác"
     },
     "amenities": {
@@ -2256,5 +2262,71 @@
     "tagFoodDrink": "Ẩm thực",
     "tagWeather": "Thời tiết",
     "tagCommunity": "Cộng đồng"
+  },
+  "loyalty": {
+    "title": "Tích điểm",
+    "myStatus": "Trạng thái",
+    "leaderboard": "Bảng xếp hạng",
+    "rewards": "Phần thưởng",
+    "points": "Điểm",
+    "pts": "đ",
+    "totalPoints": "Tổng điểm",
+    "currentTier": "Hạng hiện tại",
+    "pointsToNext": "Còn {points} điểm nữa để lên {tier}",
+    "maxTierReached": "Đã đạt hạng cao nhất!",
+    "earnedPoints": "+{points} đ",
+    "recentActivity": "Hoạt động gần đây",
+    "viewAll": "Xem tất cả",
+    "claimReward": "Nhận",
+    "claimed": "Đã nhận",
+    "insufficientPoints": "Cần thêm {points} điểm",
+    "insufficientTier": "Yêu cầu hạng {tier}",
+    "outOfStock": "Hết hàng",
+    "rank": "Hạng #{rank}",
+    "topPercent": "Top {percent}%",
+    "tier": {
+      "explorer": "Khám phá",
+      "local": "Dân địa phương",
+      "insider": "Thổ địa",
+      "legend": "Huyền thoại"
+    },
+    "activity": {
+      "event_rsvp": "Đã đăng ký sự kiện",
+      "event_attendance": "Đã tham gia sự kiện",
+      "event_checkin": "Đã check-in",
+      "moment_upload": "Đã chia sẻ khoảnh khắc",
+      "moment_like": "Đã thích khoảnh khắc",
+      "comment_post": "Đã bình luận",
+      "profile_complete": "Đã hoàn thiện hồ sơ",
+      "referral": "Đã giới thiệu bạn bè",
+      "event_hosted": "Đã tổ chức sự kiện",
+      "venue_created": "Đã thêm địa điểm",
+      "blog_published": "Đã đăng bài viết",
+      "livestream_hosted": "Đã phát trực tiếp"
+    },
+    "hostRewards": {
+      "title": "Thưởng cho người tổ chức",
+      "subtitle": "Mở khóa công cụ cao cấp khi bạn phát triển",
+      "premiumListing": "Danh sách ưu tiên",
+      "premiumListingDesc": "Sự kiện của bạn hiển thị cao hơn trong kết quả tìm kiếm",
+      "analyticsAccess": "Phân tích sự kiện",
+      "analyticsAccessDesc": "Xem thống kê chi tiết về sự kiện của bạn",
+      "featuredPlacement": "Vị trí nổi bật",
+      "featuredPlacementDesc": "Được hiển thị trên trang chủ",
+      "prioritySupport": "Hỗ trợ ưu tiên",
+      "prioritySupportDesc": "Được hỗ trợ nhanh từ đội ngũ",
+      "customBranding": "Thương hiệu riêng",
+      "customBrandingDesc": "Tùy chỉnh màu sắc và banner cho sự kiện",
+      "unlockedAt": "Mở khóa tại hạng {tier}",
+      "active": "Đang hoạt động",
+      "locked": "Chưa mở khóa"
+    },
+    "category": {
+      "experiential": "Trải nghiệm",
+      "transactional": "Ưu đãi",
+      "digital": "Kỹ thuật số",
+      "social": "Xã hội",
+      "exclusive": "Độc quyền"
+    }
   }
 }

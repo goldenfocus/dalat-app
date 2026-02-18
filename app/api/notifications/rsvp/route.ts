@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { notifyRsvpConfirmation, notifyOrganizerNewRsvp } from '@/lib/notifications';
 import { inngest } from '@/lib/inngest';
+import { awardPoints } from '@/lib/loyalty';
 import type { Locale } from '@/lib/types';
 
 export async function POST(request: Request) {
@@ -86,6 +87,12 @@ export async function POST(request: Request) {
       },
     });
     console.log('[rsvp-notification] Scheduled reminders via Inngest');
+
+    // Award loyalty points for RSVP (non-blocking)
+    void awardPoints(user.id, 'event_rsvp', {
+      referenceId: eventId,
+      referenceType: 'event',
+    });
 
     return NextResponse.json({ success: true, notificationResult: result });
   } catch (error) {

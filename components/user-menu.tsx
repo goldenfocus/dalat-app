@@ -3,8 +3,8 @@
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { User, Settings, ExternalLink, Shield, Building2, LogOut, Loader2, Newspaper } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Settings, ExternalLink, Shield, Building2, LogOut, Loader2, Newspaper, Trophy } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { UserRole } from "@/lib/types";
+import { TierBadge } from "@/components/loyalty/tier-badge";
 
 interface UserMenuProps {
   avatarUrl: string | null;
@@ -28,6 +29,21 @@ const ADMIN_ROLES: UserRole[] = ["superadmin", "admin", "moderator", "contributo
 export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = false }: UserMenuProps) {
   const router = useRouter();
   const [isExiting, setIsExiting] = useState(false);
+  const [loyalty, setLoyalty] = useState<{ tier: string; points: number } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/loyalty/status")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.data) {
+          setLoyalty({
+            tier: json.data.current_tier ?? "explorer",
+            points: json.data.total_points ?? 0,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Hide admin access when in God Mode (full immersion)
   const hasAdminAccess = !isGodMode && ADMIN_ROLES.includes(role);
@@ -115,6 +131,21 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
           <Link href="/news" className="cursor-pointer">
             <Newspaper className="w-4 h-4 mr-2" />
             {tNav("news")}
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link href="/loyalty" className="cursor-pointer">
+            <Trophy className="w-4 h-4 mr-2" />
+            <span className="flex-1">{t("loyalty")}</span>
+            {loyalty && (
+              <span className="ml-auto flex items-center gap-1.5">
+                <TierBadge tier={loyalty.tier} size="sm" showLabel={false} />
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {loyalty.points.toLocaleString()}
+                </span>
+              </span>
+            )}
           </Link>
         </DropdownMenuItem>
 
