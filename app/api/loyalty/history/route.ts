@@ -25,14 +25,14 @@ export async function GET(request: NextRequest) {
     );
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    // Query user_points table (from the loyalty migration)
+    // Query loyalty_point_transactions table (from the loyalty migration)
     const { data: transactions, error, count } = await supabase
-      .from("user_points")
-      .select("id, action_type, points_earned, reference_type, reference_id, description, earned_at", {
+      .from("loyalty_point_transactions")
+      .select("id, activity_type, points_delta, reference_type, reference_id, admin_note, created_at", {
         count: "exact",
       })
       .eq("user_id", user.id)
-      .order("earned_at", { ascending: false })
+      .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) {

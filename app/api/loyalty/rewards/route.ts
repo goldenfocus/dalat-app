@@ -21,31 +21,63 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
 
-    // Use the RPC that includes eligibility checks
-    const { data: rewards, error } = await supabase.rpc(
-      "get_available_rewards",
-      {
-        p_user_id: user.id,
-      }
-    );
+    // Query the rewards table directly (no RPC needed)
+    let query = supabase
+      .from("rewards")
+      .select("id, name, description, category, points_cost, tier_required, is_active, stock_remaining, image_url, max_redemptions_per_user")
+      .eq("is_active", true);
+
+    if (category) {
+      query = query.eq("category", category);
+    }
+
+    const { data: rewards, error } = await query.order("points_cost", { ascending: true });
 
     if (error) {
-      console.error("[api/loyalty/rewards] RPC error:", error);
+      console.error("[api/loyalty/rewards] Query error:", error);
       return NextResponse.json(
         { error: "Failed to fetch rewards" },
         { status: 500 }
       );
     }
 
-    // Filter by category if provided
-    let filteredRewards = rewards || [];
-    if (category) {
-      filteredRewards = filteredRewards.filter(
-        (r: { reward_type: string }) => r.reward_type === category
-      );
-    }
+    // Get user's status for eligibility
+    const { data: userStatus } = await supabase
+      .from("user_loyalty_status")
+      .select("current_tier, current_point_balance")
+      .eq("user_id", user.id)
+      .single();
 
-    return NextResponse.json({ data: filteredRewards });
+    const tierRank: Record<string, number> = {
+      explorer: 0,
+      local: 1,
+      insider: 2,
+      legend: 3,
+    };
+
+    const userTierRank = tierRank[userStatus?.current_tier ?? "explorer"] ?? 0;
+    const userPoints = userStatus?.current_point_balance ?? 0;
+
+    // Add eligibility info to each reward
+    const enrichedRewards = (rewards || []).map((r) => {
+      const requiredTierRank = r.tier_required ? (tierRank[r.tier_required] ?? 0) : 0;
+      return {
+        id: r.id,
+        name: r.name,
+        description: r.description,
+        category: r.category,
+        points_cost: r.points_cost,
+        tier_required: r.tier_required,
+        is_active: r.is_active,
+        stock_remaining: r.stock_remaining,
+        image_url: r.image_url,
+        can_afford: userPoints >= r.points_cost,
+        meets_tier: userTierRank >= requiredTierRank,
+        eligible: userPoints >= r.points_cost && userTierRank >= requiredTierRank,
+      };
+    });
+
+    return NextResponse.json({ data: enrichedRewards });
   } catch (error) {
     console.error("[api/loyalty/rewards] Error:", error);
     return NextResponse.json(

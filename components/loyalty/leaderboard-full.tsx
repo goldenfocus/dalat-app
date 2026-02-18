@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LeaderboardEntry } from "@/components/loyalty/leaderboard-entry";
 import { TierBadge } from "@/components/loyalty/tier-badge";
@@ -20,30 +18,25 @@ interface LeaderboardUser {
   points: number;
 }
 
-interface MyRank {
-  rank: number | null;
-  total_users: number;
-  percentile: number | null;
+interface CurrentUserRank {
+  rank: number;
+  points: number;
 }
 
 export function LeaderboardFull({ userId }: { userId: string | null }) {
-  const t = useTranslations("loyalty");
-  const [period, setPeriod] = useState<"all_time" | "this_month">("all_time");
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
-  const [myRank, setMyRank] = useState<MyRank | null>(null);
+  const [myRank, setMyRank] = useState<CurrentUserRank | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchLeaderboard() {
       setLoading(true);
       try {
-        const res = await fetch(
-          `/api/loyalty/leaderboard?limit=50&period=${period}`
-        );
+        const res = await fetch("/api/loyalty/leaderboard?limit=50");
         if (res.ok) {
-          const { data, myRank: rank } = await res.json();
-          setUsers(data ?? []);
-          setMyRank(rank ?? null);
+          const { data } = await res.json();
+          setUsers(data?.leaderboard ?? []);
+          setMyRank(data?.currentUserRank ?? null);
         }
       } catch (err) {
         console.error("Failed to load leaderboard:", err);
@@ -52,7 +45,7 @@ export function LeaderboardFull({ userId }: { userId: string | null }) {
       }
     }
     fetchLeaderboard();
-  }, [period]);
+  }, []);
 
   // Top 3 podium display
   const top3 = users.slice(0, 3);
@@ -60,21 +53,6 @@ export function LeaderboardFull({ userId }: { userId: string | null }) {
 
   return (
     <div className="space-y-6">
-      {/* Period tabs */}
-      <Tabs
-        defaultValue="all_time"
-        onValueChange={(v) => setPeriod(v as "all_time" | "this_month")}
-      >
-        <TabsList className="w-full grid grid-cols-2 h-11">
-          <TabsTrigger value="all_time" className="py-2">
-            All time
-          </TabsTrigger>
-          <TabsTrigger value="this_month" className="py-2">
-            This month
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       {/* My rank banner */}
       {userId && myRank?.rank && (
         <Card className="border-primary/20 bg-primary/5">
@@ -85,16 +63,11 @@ export function LeaderboardFull({ userId }: { userId: string | null }) {
                 #{myRank.rank}
               </p>
             </div>
-            {myRank.percentile !== null && (
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">
-                  {t("topPercent", { percent: Math.ceil(myRank.percentile) })}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  of {myRank.total_users.toLocaleString()} members
-                </p>
-              </div>
-            )}
+            <div className="text-right">
+              <p className="text-sm font-semibold tabular-nums">
+                {myRank.points.toLocaleString()} pts
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}

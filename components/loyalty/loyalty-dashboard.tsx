@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { LoyaltyProgress } from "@/components/loyalty/loyalty-progress";
 import { LeaderboardEntry } from "@/components/loyalty/leaderboard-entry";
-import { TierBadge, TIER_CONFIG, type TierKey } from "@/components/loyalty/tier-badge";
 import {
   Trophy,
   Gift,
@@ -42,21 +41,16 @@ const ACTION_ICONS: Record<string, typeof Trophy> = {
 
 interface LoyaltyStatus {
   current_tier: string;
-  total_lifetime_points: number;
-  current_cycle_points: number;
-  cycle_type: string;
+  current_points: number;
+  total_earned: number;
+  total_spent: number;
+  enrolled_at: string;
+  last_activity: string | null;
   next_tier: string | null;
-  points_to_next_tier: number;
-  progress_percentage: number;
-  show_on_leaderboard: boolean;
-}
-
-interface PointEntry {
-  id: string;
-  action_type: string;
-  points_earned: number;
-  description: string | null;
-  earned_at: string;
+  points_to_next_tier: number | null;
+  host_rewards: Array<{ reward_type: string; granted_at_tier: string; granted_at: string; metadata: unknown }>;
+  recent_transactions: Array<{ points: number; activity: string; created_at: string }>;
+  enrolled?: boolean;
 }
 
 interface LeaderboardUser {
@@ -72,30 +66,26 @@ interface LeaderboardUser {
 export function LoyaltyDashboard({ userId }: { userId: string | null }) {
   const t = useTranslations("loyalty");
   const [status, setStatus] = useState<LoyaltyStatus | null>(null);
-  const [recentActivity, setRecentActivity] = useState<PointEntry[]>([]);
   const [topUsers, setTopUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statusRes, activityRes, leaderboardRes] = await Promise.all([
+        const [statusRes, leaderboardRes] = await Promise.all([
           fetch("/api/loyalty/status"),
-          fetch("/api/loyalty/activity?limit=5"),
           fetch("/api/loyalty/leaderboard?limit=5"),
         ]);
 
         if (statusRes.ok) {
           const { data } = await statusRes.json();
-          setStatus(data);
-        }
-        if (activityRes.ok) {
-          const { data } = await activityRes.json();
-          setRecentActivity(data ?? []);
+          if (data && data.enrolled !== false) {
+            setStatus(data);
+          }
         }
         if (leaderboardRes.ok) {
           const { data } = await leaderboardRes.json();
-          setTopUsers(data ?? []);
+          setTopUsers(data?.leaderboard ?? []);
         }
       } catch (err) {
         console.error("Failed to load loyalty data:", err);
@@ -168,19 +158,19 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
       <Card>
         <CardContent className="p-5">
           <LoyaltyProgress
-            currentPoints={status.current_cycle_points}
+            currentPoints={status.current_points}
             currentTier={status.current_tier}
           />
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-muted/50 p-3 text-center">
               <p className="text-2xl font-bold tabular-nums">
-                {status.total_lifetime_points.toLocaleString()}
+                {status.total_earned.toLocaleString()}
               </p>
               <p className="text-xs text-muted-foreground">{t("totalPoints")}</p>
             </div>
             <div className="rounded-xl bg-muted/50 p-3 text-center">
               <p className="text-2xl font-bold tabular-nums">
-                {status.current_cycle_points.toLocaleString()}
+                {status.current_points.toLocaleString()}
               </p>
               <p className="text-xs text-muted-foreground">{t("points")}</p>
             </div>
@@ -224,17 +214,17 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              {recentActivity.length === 0 ? (
+              {(status.recent_transactions ?? []).length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">
                   No activity yet. Start exploring!
                 </p>
               ) : (
                 <div className="space-y-1">
-                  {recentActivity.map((entry) => {
-                    const IconComp = ACTION_ICONS[entry.action_type] ?? Sparkles;
+                  {(status.recent_transactions ?? []).map((entry, idx) => {
+                    const IconComp = ACTION_ICONS[entry.activity] ?? Sparkles;
                     return (
                       <div
-                        key={entry.id}
+                        key={idx}
                         className="flex items-center gap-3 rounded-lg px-2 py-2"
                       >
                         <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -242,14 +232,14 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm truncate">
-                            {entry.description ?? entry.action_type.replace(/_/g, " ")}
+                            {entry.activity.replace(/_/g, " ")}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(entry.earned_at).toLocaleDateString()}
+                            {new Date(entry.created_at).toLocaleDateString()}
                           </p>
                         </div>
                         <span className="text-sm font-semibold text-emerald-500 tabular-nums shrink-0">
-                          +{entry.points_earned}
+                          +{entry.points}
                         </span>
                       </div>
                     );

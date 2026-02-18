@@ -8,7 +8,6 @@ import {
   Gift,
   Lock,
   Loader2,
-  Package,
   Sparkles,
 } from "lucide-react";
 
@@ -69,12 +68,14 @@ interface Reward {
   name: string;
   description: string | null;
   category: RewardCategory;
-  pointsCost: number;
-  minTier: string | null;
-  isActive: boolean;
-  stockQuantity: number | null;
-  partnerName?: string | null;
-  partnerLogoUrl?: string | null;
+  points_cost: number;
+  tier_required: string | null;
+  is_active: boolean;
+  stock_remaining: number | null;
+  image_url: string | null;
+  can_afford: boolean;
+  meets_tier: boolean;
+  eligible: boolean;
 }
 
 interface RewardCardProps {
@@ -92,12 +93,12 @@ export function RewardCard({
 }: RewardCardProps) {
   const [isClaiming, setIsClaiming] = useState(false);
 
-  const hasEnoughPoints = userPoints >= reward.pointsCost;
-  const hasTier = meetsMinTier(userTier, reward.minTier);
+  const hasEnoughPoints = userPoints >= reward.points_cost;
+  const hasTier = meetsMinTier(userTier, reward.tier_required);
   const inStock =
-    reward.stockQuantity === null || reward.stockQuantity > 0;
+    reward.stock_remaining === null || reward.stock_remaining > 0;
   const canClaim =
-    reward.isActive && hasEnoughPoints && hasTier && inStock && !!onClaim;
+    reward.is_active && hasEnoughPoints && hasTier && inStock && !!onClaim;
 
   const categoryStyle =
     CATEGORY_STYLES[reward.category] ?? CATEGORY_STYLES.digital;
@@ -116,10 +117,10 @@ export function RewardCard({
     <div
       className={cn(
         "flex flex-col rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md",
-        !reward.isActive && "opacity-60",
+        !reward.is_active && "opacity-60",
       )}
     >
-      {/* Top row: category badge + partner */}
+      {/* Top row: category badge + image */}
       <div className="flex items-start justify-between gap-2">
         <span
           className={cn(
@@ -132,21 +133,12 @@ export function RewardCard({
           {categoryStyle.label}
         </span>
 
-        {reward.partnerName && (
-          <div className="flex items-center gap-1.5">
-            {reward.partnerLogoUrl ? (
-              <img
-                src={reward.partnerLogoUrl}
-                alt={reward.partnerName}
-                className="h-5 w-5 rounded-full object-cover"
-              />
-            ) : (
-              <Package className="h-3.5 w-3.5 text-muted-foreground" />
-            )}
-            <span className="text-[10px] text-muted-foreground">
-              {reward.partnerName}
-            </span>
-          </div>
+        {reward.image_url && (
+          <img
+            src={reward.image_url}
+            alt={reward.name}
+            className="h-8 w-8 rounded-lg object-cover"
+          />
         )}
       </div>
 
@@ -164,25 +156,25 @@ export function RewardCard({
       <div className="mt-3 flex items-center gap-2">
         <span className="flex items-center gap-1 text-sm font-bold tabular-nums text-foreground">
           <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-          {reward.pointsCost.toLocaleString()} pts
+          {reward.points_cost.toLocaleString()} pts
         </span>
 
-        {reward.stockQuantity !== null && (
+        {reward.stock_remaining !== null && (
           <span
             className={cn(
               "text-[10px]",
-              reward.stockQuantity <= 5
+              reward.stock_remaining <= 5
                 ? "font-medium text-red-500"
                 : "text-muted-foreground",
             )}
           >
-            {reward.stockQuantity} left
+            {reward.stock_remaining} left
           </span>
         )}
       </div>
 
       {/* Tier requirement notice */}
-      {reward.minTier && !hasTier && (
+      {reward.tier_required && !hasTier && (
         <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Lock className="h-3 w-3" />
           <span>
@@ -190,11 +182,11 @@ export function RewardCard({
             <span
               className={cn(
                 "font-medium",
-                TIER_CONFIG[reward.minTier as TierKey]?.color ??
+                TIER_CONFIG[reward.tier_required as TierKey]?.color ??
                   "text-foreground",
               )}
             >
-              {TIER_CONFIG[reward.minTier as TierKey]?.label ?? reward.minTier}
+              {TIER_CONFIG[reward.tier_required as TierKey]?.label ?? reward.tier_required}
             </span>
           </span>
         </div>
@@ -217,7 +209,7 @@ export function RewardCard({
         ) : !hasEnoughPoints ? (
           <>
             <Lock className="h-3.5 w-3.5" />
-            Need {(reward.pointsCost - userPoints).toLocaleString()} more pts
+            Need {(reward.points_cost - userPoints).toLocaleString()} more pts
           </>
         ) : !hasTier ? (
           <>

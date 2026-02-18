@@ -78,8 +78,9 @@ const HOST_PERKS: HostPerk[] = [
 
 interface LoyaltyStatus {
   current_tier: string;
-  current_cycle_points: number;
-  total_lifetime_points: number;
+  current_points: number;
+  total_earned: number;
+  enrolled?: boolean;
 }
 
 export function HostDashboard({ userId }: { userId: string | null }) {
@@ -97,7 +98,9 @@ export function HostDashboard({ userId }: { userId: string | null }) {
         const res = await fetch("/api/loyalty/status");
         if (res.ok) {
           const { data } = await res.json();
-          setStatus(data);
+          if (data && data.enrolled !== false) {
+            setStatus(data);
+          }
         }
       } catch (err) {
         console.error("Failed to load loyalty status:", err);
@@ -135,7 +138,7 @@ export function HostDashboard({ userId }: { userId: string | null }) {
         <Card>
           <CardContent className="p-4">
             <LoyaltyProgress
-              currentPoints={status.current_cycle_points}
+              currentPoints={status.current_points}
               currentTier={status.current_tier}
             />
           </CardContent>

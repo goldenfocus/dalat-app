@@ -47,18 +47,20 @@ interface Reward {
   name: string;
   description: string | null;
   category: RewardCategoryValue;
-  pointsCost: number;
-  minTier: string | null;
-  isActive: boolean;
-  stockQuantity: number | null;
-  partnerName?: string | null;
-  partnerLogoUrl?: string | null;
+  points_cost: number;
+  tier_required: string | null;
+  is_active: boolean;
+  stock_remaining: number | null;
+  image_url: string | null;
+  can_afford: boolean;
+  meets_tier: boolean;
+  eligible: boolean;
 }
 
 interface LoyaltyStatus {
   current_tier: string;
-  current_cycle_points: number;
-  total_lifetime_points: number;
+  current_points: number;
+  total_earned: number;
 }
 
 export function RewardsCatalog({ userId }: { userId: string | null }) {
@@ -108,7 +110,7 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
     setClaimingId(pendingClaim);
 
     try {
-      const res = await fetch("/api/loyalty/rewards/claim", {
+      const res = await fetch("/api/loyalty/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rewardId: pendingClaim }),
@@ -152,7 +154,7 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
         <Card>
           <CardContent className="p-4">
             <LoyaltyProgress
-              currentPoints={status.current_cycle_points}
+              currentPoints={status.current_points}
               currentTier={status.current_tier}
             />
           </CardContent>
@@ -191,7 +193,7 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
             <RewardCard
               key={reward.id}
               reward={reward}
-              userPoints={status?.current_cycle_points ?? 0}
+              userPoints={status?.current_points ?? 0}
               userTier={status?.current_tier ?? "explorer"}
               onClaim={userId ? handleClaimRequest : undefined}
             />
@@ -213,7 +215,7 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
                     <span className="font-medium text-foreground">{reward.name}</span>
                     {" for "}
                     <span className="font-bold text-amber-500">
-                      {reward.pointsCost.toLocaleString()} pts
+                      {reward.points_cost.toLocaleString()} pts
                     </span>
                     . This action can&apos;t be undone.
                   </>
