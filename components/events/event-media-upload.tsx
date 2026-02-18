@@ -278,56 +278,27 @@ export function EventMediaUpload({
     try {
       let finalUrl: string;
 
-      if (bucket === "event-media") {
-        // Use server-side upload API for events (bypasses RLS issues)
-        const formData = new FormData();
-        formData.append("file", fileToUpload);
-        formData.append("eventId", eventId);
+      // Upload to R2 via presigned URL (browser → R2 directly, bypasses Cloudflare WAF)
+      const result = await uploadFile(bucket, fileToUpload, {
+        entityId: eventId,
+      });
+      finalUrl = result.publicUrl;
 
-        const response = await fetch("/api/upload/event-media", {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          const message = data.error || "Upload failed";
-          if (message.includes("authorized") || message.includes("permission")) {
-            setError("Permission denied. You may not have rights to edit this event.");
-          } else {
-            setError(`Failed to upload: ${message}`);
-          }
-          setPreviewUrl(currentMediaUrl);
-          setPreviewIsVideo(isVideoUrl(currentMediaUrl));
-          return;
-        }
-
-        finalUrl = data.url;
-      } else {
-        // Use unified storage abstraction for other buckets (venues, etc.)
-        // Upload to R2 via presigned URL (all formats including HEIC)
-        const result = await uploadFile(bucket, fileToUpload, {
-          entityId: eventId,
-        });
-        finalUrl = result.publicUrl;
-
-        // If HEIC, convert to JPEG on R2 server-side
-        if (needsServerHeicConversion) {
-          setConvertStatus("Converting HEIC to JPEG...");
-          setIsConverting(true);
-          try {
-            const heicPath = result.path;
-            const convertResult = await convertHeicOnR2(bucket, heicPath);
-            finalUrl = convertResult.url;
-            console.log("[EventMediaUpload] HEIC conversion complete:", finalUrl);
-          } catch (heicErr) {
-            console.error("[EventMediaUpload] HEIC conversion failed:", heicErr);
-            throw heicErr;
-          } finally {
-            setIsConverting(false);
-            setConvertStatus(null);
-          }
+      // If HEIC, convert to JPEG on R2 server-side
+      if (needsServerHeicConversion) {
+        setConvertStatus("Converting HEIC to JPEG...");
+        setIsConverting(true);
+        try {
+          const heicPath = result.path;
+          const convertResult = await convertHeicOnR2(bucket, heicPath);
+          finalUrl = convertResult.url;
+          console.log("[EventMediaUpload] HEIC conversion complete:", finalUrl);
+        } catch (heicErr) {
+          console.error("[EventMediaUpload] HEIC conversion failed:", heicErr);
+          throw heicErr;
+        } finally {
+          setIsConverting(false);
+          setConvertStatus(null);
         }
       }
 
