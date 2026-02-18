@@ -13,9 +13,13 @@ import {
   Dog,
   Accessibility,
   Camera,
+  Tag,
+  BookOpen,
+  Share2,
+  ExternalLink,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
 import type { Venue, Locale } from "@/lib/types";
@@ -29,6 +33,7 @@ import { VenueMap } from "@/components/venues/venue-map";
 import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
 import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
+import { JsonLd } from "@/lib/structured-data";
 
 interface VenueContentProps {
   venueId: string;
@@ -236,6 +241,44 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
   const typeConfig = venue.venue_type ? getVenueTypeConfig(venue.venue_type) : null;
   const TypeIcon = typeConfig?.icon;
 
+  // Build LocalBusiness structured data for rich SEO
+  const localBusinessSchema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": venue.venue_type === "restaurant" || venue.venue_type === "vegetarian" || venue.venue_type === "vegan"
+      ? "Restaurant"
+      : venue.venue_type === "cafe"
+        ? "CafeOrCoffeeShop"
+        : venue.venue_type === "bar"
+          ? "BarOrPub"
+          : venue.venue_type === "hotel"
+            ? "Hotel"
+            : venue.venue_type === "park"
+              ? "Park"
+              : "LocalBusiness",
+    name: venue.name,
+    description: translatedDescription || venue.description || `${venue.name} in Da Lat, Vietnam`,
+    url: `https://dalat.app/${venue.slug}`,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: venue.address || "",
+      addressLocality: "Da Lat",
+      addressRegion: "Lam Dong",
+      addressCountry: "VN",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: venue.latitude,
+      longitude: venue.longitude,
+    },
+    ...(venue.logo_url && { logo: venue.logo_url }),
+    ...(venue.cover_photo_url && { image: venue.cover_photo_url }),
+    ...(venue.phone && { telephone: venue.phone }),
+    ...(venue.email && { email: venue.email }),
+    ...(venue.website_url && { sameAs: [venue.website_url, venue.facebook_url, venue.instagram_url].filter(Boolean) }),
+    ...(venue.price_range && { priceRange: venue.price_range }),
+    ...(venue.is_verified && { isAccessibleForFree: venue.venue_type === "park" }),
+  };
+
   const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
   const dayLabels: Record<string, string> = {
     monday: "Mon",
@@ -257,6 +300,8 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
   return (
     <>
+      <JsonLd data={localBusinessSchema} />
+
       {/* Hero Section with Cover Photo */}
       {venue.cover_photo_url ? (
         <div className="relative">
@@ -523,6 +568,23 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
           </section>
         )}
 
+        {/* Tags / Features */}
+        {venue.tags && venue.tags.length > 0 && (
+          <section className="mb-8">
+            <div className="flex flex-wrap gap-2">
+              {venue.tags.map((tag: string) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/5 text-sm text-primary border border-primary/10"
+                >
+                  <Tag className="w-3 h-3" />
+                  {tag.replace(/-/g, " ")}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Happening now */}
         {happening_now.length > 0 && (
           <section className="mb-8">
@@ -588,14 +650,6 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               ))}
             </div>
           </section>
-        )}
-
-        {/* No events state */}
-        {upcoming_events.length === 0 && happening_now.length === 0 && (
-          <div className="mb-8 text-center py-8 bg-muted/30 rounded-lg">
-            <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">{t("noUpcomingEvents")}</p>
-          </div>
         )}
 
         {/* Past Events */}
@@ -698,6 +752,87 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               </Link>
             </div>
           </section>
+        )}
+
+        {/* Venue Homepage CTA — for venues that want to link their domain here */}
+        <section className="mb-8 mt-4">
+          <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardContent className="p-6 text-center">
+              <h2 className="text-lg font-semibold mb-2">
+                {locale === "vi" ? `Ghé thăm ${venue.name}` : `Visit ${venue.name}`}
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                {venue.address && (
+                  <span className="flex items-center justify-center gap-1 mb-2">
+                    <MapPin className="w-4 h-4" />
+                    {venue.address}
+                  </span>
+                )}
+                {locale === "vi"
+                  ? "Tìm trên ĐàLạt.app — sự kiện, ảnh, đánh giá và nhiều hơn nữa."
+                  : "Find us on ĐàLạt.app — events, photos, reviews, and more."}
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                {venue.google_maps_url && (
+                  <a
+                    href={venue.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    {locale === "vi" ? "Chỉ đường" : "Get Directions"}
+                  </a>
+                )}
+                {venue.website_url && (
+                  <a
+                    href={venue.website_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium hover:bg-muted active:scale-95 transition-all"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    {locale === "vi" ? "Trang web" : "Website"}
+                  </a>
+                )}
+                {!venue.google_maps_url && venue.latitude && venue.longitude && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    {locale === "vi" ? "Chỉ đường" : "Get Directions"}
+                  </a>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Explore more venues of the same type */}
+        {venue.venue_type && (
+          <nav className="mb-8 pt-4 border-t" aria-label="Explore similar venues">
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">
+              {locale === "vi" ? "Khám phá thêm" : "Explore More"}
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/${venue.venue_type === "cafe" ? "cafes" : venue.venue_type === "bar" ? "bars" : venue.venue_type === "restaurant" ? "restaurants" : venue.venue_type === "gallery" ? "galleries" : venue.venue_type === "park" ? "parks" : venue.venue_type === "hotel" ? "hotels" : venue.venue_type === "homestay" ? "homestays" : venue.venue_type}`}
+                className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors"
+              >
+                {locale === "vi" ? `Tất cả ${typeConfig?.label || ""}` : `All ${typeConfig?.label || ""}s`}
+              </Link>
+              <Link href="/discover" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+                {locale === "vi" ? "Khám phá Đà Lạt" : "Discover Da Lat"}
+              </Link>
+              <Link href="/blog/venues" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors inline-flex items-center gap-1">
+                <BookOpen className="w-3 h-3" />
+                {locale === "vi" ? "Hướng dẫn địa điểm" : "Venue Guides"}
+              </Link>
+            </div>
+          </nav>
         )}
       </div>
     </>

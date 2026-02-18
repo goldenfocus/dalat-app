@@ -240,6 +240,9 @@ const VENUE_TYPE_SCHEMA_MAP: Record<VenueType, string> = {
   community_center: "CivicStructure",
   outdoor: "TouristAttraction",
   homestay: "LodgingBusiness",
+  hiking: "TouristAttraction",
+  vegetarian: "Restaurant",
+  vegan: "Restaurant",
   other: "LocalBusiness",
 };
 
@@ -978,6 +981,88 @@ export function generateBlogArticleSchema(
       "@type": "WebPage",
       "@id": articleUrl,
     },
+  };
+
+  return schema;
+}
+
+/**
+ * Generate NewsArticle schema for news posts
+ * https://schema.org/NewsArticle
+ */
+export function generateNewsArticleSchema(
+  post: BlogPostFull & {
+    source_urls?: Array<{ url: string; title: string; publisher: string; published_at: string | null }>;
+    news_tags?: string[];
+  },
+  locale: string
+) {
+  const articleUrl = `${SITE_URL}/${locale}/blog/news/${post.slug}`;
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: post.title,
+    description: post.meta_description || post.story_content.slice(0, 160),
+    url: articleUrl,
+    datePublished: post.published_at || post.created_at,
+    dateModified: post.published_at || post.created_at,
+
+    // Image
+    ...(post.cover_image_url && {
+      image: [post.cover_image_url],
+    }),
+
+    // Author (ĐàLạt.app as publisher, with source attribution)
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+
+    // Publisher
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/icon-512.png`,
+      },
+    },
+
+    // News-specific
+    articleSection: "DaLat News",
+    dateline: "Đà Lạt, Vietnam",
+
+    // Keywords
+    ...(post.seo_keywords && post.seo_keywords.length > 0 && {
+      keywords: post.seo_keywords.join(", "),
+    }),
+
+    // Content
+    articleBody: post.story_content,
+    wordCount: post.story_content.split(/\s+/).length,
+
+    inLanguage: locale,
+
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": articleUrl,
+    },
+
+    // Source attribution
+    ...(post.source_urls && post.source_urls.length > 0 && {
+      citation: post.source_urls.map(s => ({
+        "@type": "CreativeWork",
+        name: s.title,
+        url: s.url,
+        publisher: {
+          "@type": "Organization",
+          name: s.publisher,
+        },
+      })),
+    }),
   };
 
   return schema;

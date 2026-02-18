@@ -141,19 +141,9 @@ export function VenueCommunityPhotos({
     );
   }
 
-  // Empty state
+  // No photos — just hide the section entirely
   if (photoMoments.length === 0) {
-    return (
-      <section className="mb-8 pt-2">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <Users className="w-5 h-5" />
-          {t("communityPhotos")}
-        </h2>
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          {t("noCommunityPhotos")}
-        </div>
-      </section>
-    );
+    return null;
   }
 
   const currentMoment = lightboxIndex !== null ? photoMoments[lightboxIndex] : null;

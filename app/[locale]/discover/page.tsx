@@ -9,6 +9,7 @@ import { locales } from "@/lib/i18n/routing";
 import {
   Coffee, Wine, UtensilsCrossed, Palette, TreePine, Building2,
   Laptop, Home, Mountain, Music, Camera, CalendarDays, MapPin,
+  Leaf, Sprout,
 } from "lucide-react";
 import type { Locale } from "@/lib/types";
 
@@ -56,6 +57,9 @@ const VENUE_TYPES = [
   { slug: "coworking", icon: Laptop, en: "Coworking", vi: "Coworking", color: "bg-indigo-500/10 text-indigo-600" },
   { slug: "homestays", icon: Home, en: "Homestays", vi: "Homestay", color: "bg-teal-500/10 text-teal-600" },
   { slug: "outdoor", icon: Mountain, en: "Outdoor", vi: "Ngoài Trời", color: "bg-emerald-500/10 text-emerald-600" },
+  { slug: "hiking", icon: Mountain, en: "Hiking", vi: "Leo Núi", color: "bg-emerald-500/10 text-emerald-700" },
+  { slug: "vegetarian", icon: Leaf, en: "Vegetarian", vi: "Chay", color: "bg-lime-500/10 text-lime-600" },
+  { slug: "vegan", icon: Sprout, en: "Vegan", vi: "Thuần Chay", color: "bg-green-500/10 text-green-600" },
 ];
 
 const DISCOVERY_LINKS = [

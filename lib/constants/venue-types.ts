@@ -10,6 +10,9 @@ import {
   Sun,
   Home,
   MapPin,
+  Mountain,
+  Leaf,
+  Sprout,
   type LucideIcon,
 } from "lucide-react";
 import type { VenueType } from "@/lib/types";
@@ -103,6 +106,30 @@ export const VENUE_TYPE_CONFIG: Record<VenueType, VenueTypeConfig> = {
     bgColor: "bg-rose-100",
     darkColor: "dark:text-rose-400",
     darkBgColor: "dark:bg-rose-900/30",
+  },
+  hiking: {
+    icon: Mountain,
+    label: "Hiking",
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-100",
+    darkColor: "dark:text-emerald-400",
+    darkBgColor: "dark:bg-emerald-900/30",
+  },
+  vegetarian: {
+    icon: Leaf,
+    label: "Vegetarian",
+    color: "text-lime-600",
+    bgColor: "bg-lime-100",
+    darkColor: "dark:text-lime-400",
+    darkBgColor: "dark:bg-lime-900/30",
+  },
+  vegan: {
+    icon: Sprout,
+    label: "Vegan",
+    color: "text-green-600",
+    bgColor: "bg-green-100",
+    darkColor: "dark:text-green-400",
+    darkBgColor: "dark:bg-green-900/30",
   },
   other: {
     icon: MapPin,

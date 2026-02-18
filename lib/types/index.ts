@@ -163,6 +163,9 @@ export type VenueType =
   | 'community_center'
   | 'outdoor'
   | 'homestay'
+  | 'hiking'
+  | 'vegetarian'
+  | 'vegan'
   | 'other';
 
 export interface OperatingHours {
@@ -1598,6 +1601,227 @@ export interface ActivityItem {
   // Timestamp
   created_at: string;
 }
+
+// ============================================
+// Loyalty & Rewards Types
+// ============================================
+
+export type LoyaltyTier = 'explorer' | 'regular' | 'insider' | 'ambassador' | 'legend';
+
+export type PointAction =
+  | 'rsvp_going'
+  | 'rsvp_attended'
+  | 'moment_photo'
+  | 'moment_video'
+  | 'moment_audio'
+  | 'moment_liked'
+  | 'moment_like_give'
+  | 'comment_create'
+  | 'comment_received'
+  | 'event_create'
+  | 'event_hosted'
+  | 'invite_sent'
+  | 'invite_accepted'
+  | 'profile_complete'
+  | 'follow_give'
+  | 'follow_received'
+  | 'tribe_create'
+  | 'tribe_join'
+  | 'blog_publish'
+  | 'organizer_verify'
+  | 'venue_create'
+  | 'series_create'
+  | 'livestream_broadcast'
+  | 'feedback_submit'
+  | 'admin_bonus'
+  | 'penalty';
+
+export type RewardType = 'badge' | 'feature' | 'discount' | 'early_access' | 'priority_support' | 'profile_badge' | 'custom_perk';
+
+export type RewardStatus = 'active' | 'seasonal' | 'retired';
+
+export type LoyaltyCycleType = 'lifetime' | 'annual' | 'monthly';
+
+export interface UserPoint {
+  id: string;
+  user_id: string;
+  action_type: PointAction;
+  points_earned: number;
+  reference_type: string | null;
+  reference_id: string | null;
+  description: string | null;
+  metadata: Record<string, unknown>;
+  earned_at: string;
+  cycle_year: number;
+  cycle_month: number;
+  created_at: string;
+}
+
+export interface UserLoyalty {
+  user_id: string;
+  current_tier: LoyaltyTier;
+  total_lifetime_points: number;
+  current_cycle_points: number;
+  cycle_start_date: string;
+  cycle_end_date: string | null;
+  cycle_type: LoyaltyCycleType;
+  tier_achieved_at: string;
+  previous_tier: LoyaltyTier | null;
+  tier_downgraded_at: string | null;
+  show_on_leaderboard: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LoyaltyReward {
+  id: string;
+  slug: string;
+  title: Record<string, string>;
+  description: Record<string, string> | null;
+  reward_type: RewardType;
+  required_tier: LoyaltyTier | null;
+  required_points: number | null;
+  is_one_time_claim: boolean;
+  status: RewardStatus;
+  available_from: string | null;
+  available_until: string | null;
+  max_claims: number | null;
+  current_claims: number;
+  icon_emoji: string | null;
+  icon_url: string | null;
+  badge_color: string | null;
+  feature_key: string | null;
+  discount_percentage: number | null;
+  discount_fixed_amount: number | null;
+  metadata: Record<string, unknown>;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserReward {
+  id: string;
+  user_id: string;
+  reward_id: string;
+  claimed_at: string;
+  expires_at: string | null;
+  is_active: boolean;
+  used_at: string | null;
+  used_for_reference_type: string | null;
+  used_for_reference_id: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  // Joined data
+  loyalty_rewards?: LoyaltyReward;
+}
+
+export interface LoyaltyStatus {
+  user_id: string;
+  current_tier: LoyaltyTier;
+  total_lifetime_points: number;
+  current_cycle_points: number;
+  cycle_type: LoyaltyCycleType;
+  cycle_start_date: string;
+  cycle_end_date: string | null;
+  tier_achieved_at: string;
+  next_tier: LoyaltyTier | null;
+  points_to_next_tier: number;
+  progress_percentage: number;
+  show_on_leaderboard: boolean;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  current_tier: LoyaltyTier;
+  points: number;
+}
+
+export interface LeaderboardRank {
+  on_leaderboard: boolean;
+  rank?: number;
+  total_users?: number;
+  percentile?: number;
+  message?: string;
+}
+
+export interface AvailableReward extends LoyaltyReward {
+  is_eligible: boolean;
+  is_claimed: boolean;
+  claim_count: number;
+}
+
+// Tier display metadata
+export const LOYALTY_TIER_INFO: Record<LoyaltyTier, {
+  label: string;
+  color: string;
+  icon: string;
+  minPoints: number;
+}> = {
+  explorer: {
+    label: 'Explorer',
+    color: '#10B981',
+    icon: '👋',
+    minPoints: 0
+  },
+  regular: {
+    label: 'Regular',
+    color: '#3B82F6',
+    icon: '🎯',
+    minPoints: 100
+  },
+  insider: {
+    label: 'Insider',
+    color: '#F59E0B',
+    icon: '⭐',
+    minPoints: 500
+  },
+  ambassador: {
+    label: 'Ambassador',
+    color: '#8B5CF6',
+    icon: '🏆',
+    minPoints: 1500
+  },
+  legend: {
+    label: 'Legend',
+    color: '#EC4899',
+    icon: '👑',
+    minPoints: 3000
+  }
+};
+
+// Point values for each action (reference for client-side display)
+export const POINT_VALUES: Record<PointAction, number> = {
+  rsvp_going: 10,
+  rsvp_attended: 20,
+  moment_photo: 5,
+  moment_video: 10,
+  moment_audio: 5,
+  moment_liked: 2,
+  moment_like_give: 1,
+  comment_create: 3,
+  comment_received: 2,
+  event_create: 15,
+  event_hosted: 30,
+  invite_sent: 5,
+  invite_accepted: 10,
+  profile_complete: 20,
+  follow_give: 1,
+  follow_received: 3,
+  tribe_create: 25,
+  tribe_join: 5,
+  blog_publish: 40,
+  organizer_verify: 100,
+  venue_create: 30,
+  series_create: 50,
+  livestream_broadcast: 25,
+  feedback_submit: 5,
+  admin_bonus: 0, // Variable
+  penalty: 0 // Variable (negative)
+};
 
 // ============================================
 // Blog Types (re-export from blog.ts)
