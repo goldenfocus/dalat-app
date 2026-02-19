@@ -45,6 +45,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
           BLOG_MODE: ${{ github.event.inputs.mode || 'both' }}
           BLOG_COUNT: ${{ github.event.inputs.count || '1' }}
         run: node scripts/blog-autopilot.mjs

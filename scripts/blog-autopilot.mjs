@@ -24,6 +24,7 @@
  *   ANTHROPIC_API_KEY    (required)
  *   SUPABASE_URL         (required) — e.g. https://xxx.supabase.co
  *   SUPABASE_SERVICE_KEY (required) — service role key
+ *   GOOGLE_AI_API_KEY    (optional) — Gemini for cover image generation
  *   BLOG_MODE            'both' | 'news' | 'seo'  (default: 'both')
  *   BLOG_COUNT           posts per stream           (default: 1)
  */
@@ -33,14 +34,17 @@
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const GEMINI_KEY = process.env.GOOGLE_AI_API_KEY;
 const MODE = process.env.BLOG_MODE || 'both';
 const COUNT = Math.min(parseInt(process.env.BLOG_COUNT || '1', 10), 3);
 const MODEL = 'claude-sonnet-4-20250514';
 const MAX_TOKENS = 8192;
+const GEMINI_MODEL = 'gemini-2.0-flash-exp-image-generation';
 
 if (!API_KEY) { console.error('ANTHROPIC_API_KEY is required'); process.exit(1); }
 if (!SUPABASE_URL) { console.error('SUPABASE_URL is required'); process.exit(1); }
 if (!SUPABASE_KEY) { console.error('SUPABASE_SERVICE_KEY is required'); process.exit(1); }
+if (!GEMINI_KEY) console.warn('  GOOGLE_AI_API_KEY not set — skipping cover images');
 
 // ─── Brand Context ──────────────────────────────────────────────────────────
 
@@ -343,6 +347,106 @@ Output JSON:
   return parseJsonResponse(raw);
 }
 
+// ─── Cover Image Generation (Gemini) ────────────────────────────────────────
+
+async function generateCoverImage(title, slug) {
+  if (!GEMINI_KEY) return null;
+
+  console.log(`    Generating cover image...`);
+
+  const prompt = `Create an abstract, artistic cover image for a blog post about: ${title}
+
+Style guidelines:
+- Modern, clean, atmospheric aesthetic
+- Purple and blue gradient background inspired by dalat.app branding
+- Abstract geometric shapes or flowing lines relevant to the topic
+- Subtle visual elements hinting at Da Lat: misty mountains, pine forests, flowers
+- Atmospheric depth with soft glow effects
+- NO text, NO lettering, NO words
+- Landscape orientation (16:9 aspect ratio)
+- Professional and polished feel`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Gemini ${res.status}: ${err.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const imagePart = parts.find((p) => p.inlineData?.mimeType?.startsWith('image/'));
+
+    if (!imagePart) {
+      console.warn('    No image in Gemini response');
+      return null;
+    }
+
+    // Upload to Supabase Storage
+    const base64 = imagePart.inlineData.data;
+    const mimeType = imagePart.inlineData.mimeType;
+    const ext = mimeType === 'image/png' ? 'png' : 'jpg';
+    const filename = `covers/autopilot-${slug}.${ext}`;
+    const imageBuffer = Buffer.from(base64, 'base64');
+
+    const uploadRes = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/blog-media/${filename}`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': mimeType,
+          'x-upsert': 'true',
+        },
+        body: imageBuffer,
+      }
+    );
+
+    if (!uploadRes.ok) {
+      const err = await uploadRes.text();
+      throw new Error(`Upload ${uploadRes.status}: ${err.slice(0, 200)}`);
+    }
+
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/blog-media/${filename}`;
+    console.log(`    Cover image uploaded`);
+    return publicUrl;
+  } catch (err) {
+    console.warn(`    Cover image failed: ${err.message}`);
+    return null;
+  }
+}
+
+async function updatePostImage(postId, imageUrl) {
+  const url = `${SUPABASE_URL}/rest/v1/blog_posts?id=eq.${postId}`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      cover_image_url: imageUrl,
+      cover_image_alt: 'AI-generated cover image for blog post',
+    }),
+  });
+  if (!res.ok) {
+    console.warn(`    Failed to update post image: ${res.status}`);
+  }
+}
+
 // ─── Post Builder ───────────────────────────────────────────────────────────
 
 function buildPost(generated, categoryMap, existingSlugs, stream) {
@@ -402,10 +506,19 @@ async function main() {
         const post = buildPost(generated, categoryMap, existingSlugs, 'news');
         const inserted = await insertPost(post);
         existingSlugs.add(post.slug);
+
+        // Generate cover image
+        const imageUrl = await generateCoverImage(post.title, post.slug);
+        if (imageUrl && inserted.id) {
+          await updatePostImage(inserted.id, imageUrl);
+          inserted.cover_image_url = imageUrl;
+        }
+
         newPosts.push(inserted);
 
         console.log(`  + NEWS: "${post.title}"`);
         console.log(`    Slug: /${post.slug}`);
+        console.log(`    Image: ${imageUrl ? 'yes' : 'skipped'}`);
         console.log(`    Keywords: ${(post.seo_keywords || []).join(', ')}\n`);
       } catch (err) {
         console.error(`  ! News post ${i + 1} failed: ${err.message}\n`);
@@ -421,10 +534,19 @@ async function main() {
         const post = buildPost(generated, categoryMap, existingSlugs, 'seo');
         const inserted = await insertPost(post);
         existingSlugs.add(post.slug);
+
+        // Generate cover image
+        const imageUrl = await generateCoverImage(post.title, post.slug);
+        if (imageUrl && inserted.id) {
+          await updatePostImage(inserted.id, imageUrl);
+          inserted.cover_image_url = imageUrl;
+        }
+
         newPosts.push(inserted);
 
         console.log(`  + SEO: "${post.title}"`);
         console.log(`    Slug: /${post.slug}`);
+        console.log(`    Image: ${imageUrl ? 'yes' : 'skipped'}`);
         console.log(`    Keywords: ${(post.seo_keywords || []).join(', ')}\n`);
       } catch (err) {
         console.error(`  ! SEO post ${i + 1} failed: ${err.message}\n`);
