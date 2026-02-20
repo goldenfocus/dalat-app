@@ -123,7 +123,7 @@ export function PromoMediaSection({
         .from("moments")
         .select("id, media_url, media_type, thumbnail_url, youtube_video_id, text_content, event_id, moment_metadata(quality_score)")
         .in("event_id", eventIds)
-        .eq("status", "approved")
+        .in("status", ["approved", "published"])
         .not("media_url", "is", null)
         .order("created_at", { ascending: false })
         .limit(50);
