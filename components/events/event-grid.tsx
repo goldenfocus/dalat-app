@@ -12,7 +12,6 @@ import {
   useEventViewPreferences,
   type EventDensity,
 } from "@/lib/hooks/use-local-storage";
-import { useRecommendedEvents } from "@/components/home/recommended-events-context";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 interface EventGridProps {
@@ -76,8 +75,6 @@ export function EventGrid({
 }: EventGridProps) {
   const { mode, density } = useEventViewPreferences();
   const locale = useLocale() as Locale;
-  const { recommendedIds } = useRecommendedEvents();
-
   // Track which card is flipped (only one at a time, used in compact view)
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
 
@@ -89,13 +86,8 @@ export function EventGrid({
   const effectiveDensity = forceCompact ? "compact" : density;
   const effectiveMode = forceCompact ? "grid" : mode;
 
-  // Filter out events already shown in the "For You" section
-  const filteredEvents = useMemo(
-    () => recommendedIds.size > 0
-      ? events.filter((e) => !recommendedIds.has(e.id))
-      : events,
-    [events, recommendedIds]
-  );
+  // Show all events — For You is bonus context, not a replacement for Coming Up
+  const filteredEvents = events;
 
   // Group events by date for list view
   const groupedEvents = useMemo(
