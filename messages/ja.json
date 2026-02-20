@@ -115,6 +115,7 @@
     },
     "forYou": "おすすめ",
     "forYouSubtitle": "参加したイベントに基づく",
+    "forYouDismiss": "おすすめを非表示",
     "showMore": "さらに{count}件表示",
     "showLess": "閉じる"
   },

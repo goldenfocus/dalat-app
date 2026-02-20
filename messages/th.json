@@ -115,6 +115,7 @@
     },
     "forYou": "สำหรับคุณ",
     "forYouSubtitle": "จากกิจกรรมที่คุณเข้าร่วม",
+    "forYouDismiss": "ซ่อนคำแนะนำ",
     "showMore": "แสดงอีก {count}",
     "showLess": "แสดงน้อยลง"
   },

@@ -115,6 +115,7 @@
     },
     "forYou": "추천",
     "forYouSubtitle": "참석한 이벤트 기반 추천",
+    "forYouDismiss": "추천 숨기기",
     "showMore": "{count}개 더 보기",
     "showLess": "접기"
   },

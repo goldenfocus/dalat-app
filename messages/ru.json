@@ -115,6 +115,7 @@
     },
     "forYou": "Для вас",
     "forYouSubtitle": "На основе посещённых мероприятий",
+    "forYouDismiss": "Скрыть рекомендации",
     "showMore": "Показать ещё {count}",
     "showLess": "Свернуть"
   },

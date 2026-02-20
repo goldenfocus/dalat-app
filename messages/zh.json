@@ -115,6 +115,7 @@
     },
     "forYou": "推荐",
     "forYouSubtitle": "基于你参加过的活动",
+    "forYouDismiss": "隐藏推荐",
     "showMore": "显示更多 {count}",
     "showLess": "收起"
   },

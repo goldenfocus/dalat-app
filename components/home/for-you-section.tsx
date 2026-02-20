@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Sparkles, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { EventCard } from "@/components/events/event-card";
@@ -9,11 +9,12 @@ import { useRecommendedEvents } from "@/components/home/recommended-events-conte
 import type { Event, EventCounts, FriendsAttending } from "@/lib/types";
 
 const DEFAULT_VISIBLE = 3;
+const DISMISS_KEY = "hide-for-you-section";
 
 /**
  * Personalized "For You" event recommendations.
  * Client component - user-specific, can't be ISR cached.
- * Shows for logged-in users with recommendations, or featured events for all.
+ * Only shows for logged-in users who have actual personalized recommendations.
  */
 export function ForYouSection() {
   const t = useTranslations("home");
@@ -24,53 +25,41 @@ export function ForYouSection() {
   const [userId, setUserId] = useState<string | null>(null);
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const { setRecommendedIds } = useRecommendedEvents();
+
+  // Check dismiss state from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setDismissed(localStorage.getItem(DISMISS_KEY) === "true");
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchRecommendations() {
       const supabase = createClient();
 
-      // Check if user is logged in
       const { data: { user } } = await supabase.auth.getUser();
 
-      let recommended: Event[] = [];
-
-      if (user) {
-        setUserId(user.id);
-
-        // Fetch recommended events
-        const { data, error } = await supabase.rpc("get_recommended_events", {
-          p_user_id: user.id,
-          p_limit: 6,
-        });
-
-        if (!error && data && data.length > 0) {
-          recommended = data as Event[];
-        }
-      }
-
-      // Also fetch featured/sponsored events to ensure they're included
-      const { data: featured } = await supabase
-        .from("events")
-        .select("*")
-        .gt("sponsor_tier", 0)
-        .eq("status", "published")
-        .gt("starts_at", new Date().toISOString())
-        .order("sponsor_tier", { ascending: false })
-        .limit(3);
-
-      // Merge featured into recommendations (featured first, dedup by id)
-      if (featured && featured.length > 0) {
-        const existingIds = new Set(recommended.map((e) => e.id));
-        const newFeatured = (featured as Event[]).filter((e) => !existingIds.has(e.id));
-        recommended = [...newFeatured, ...recommended];
-      }
-
-      if (recommended.length === 0) {
+      // Only show personalized recommendations for logged-in users
+      if (!user) {
         setLoading(false);
         return;
       }
 
+      setUserId(user.id);
+
+      const { data, error } = await supabase.rpc("get_recommended_events", {
+        p_user_id: user.id,
+        p_limit: 6,
+      });
+
+      if (error || !data || data.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const recommended = data as Event[];
       setEvents(recommended);
 
       // Register IDs for dedup with Coming Up section
@@ -79,34 +68,25 @@ export function ForYouSection() {
       // Batch fetch counts and friends attending
       const eventIds = recommended.map((e) => e.id);
 
-      const promises: Promise<any>[] = [
+      const [countsResult, friendsResult] = await Promise.all([
         supabase.rpc("get_event_counts_batch", { p_event_ids: eventIds }),
-      ];
+        supabase.rpc("get_friends_attending_batch", {
+          p_user_id: user.id,
+          p_event_ids: eventIds,
+        }),
+      ]);
 
-      if (user) {
-        promises.push(
-          supabase.rpc("get_friends_attending_batch", {
-            p_user_id: user.id,
-            p_event_ids: eventIds,
-          })
-        );
-      }
-
-      const results = await Promise.all(promises);
-
-      // Process counts
-      if (results[0].data) {
+      if (countsResult.data) {
         const countsMap: Record<string, EventCounts> = {};
-        for (const row of results[0].data as Array<{ event_id: string } & EventCounts>) {
+        for (const row of countsResult.data as Array<{ event_id: string } & EventCounts>) {
           countsMap[row.event_id] = row;
         }
         setCounts(countsMap);
       }
 
-      // Process friends attending
-      if (results[1]?.data) {
+      if (friendsResult.data) {
         const friendsMap: Record<string, FriendsAttending> = {};
-        for (const item of results[1].data as FriendsAttending[]) {
+        for (const item of friendsResult.data as FriendsAttending[]) {
           friendsMap[item.event_id] = item;
         }
         setFriendsData(friendsMap);
@@ -118,12 +98,14 @@ export function ForYouSection() {
     fetchRecommendations();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Don't render anything while loading or if no recommendations
-  if (loading) {
-    return <ForYouSkeleton />;
+  function handleDismiss() {
+    localStorage.setItem(DISMISS_KEY, "true");
+    setDismissed(true);
+    // Clear recommended IDs so Coming Up section shows them instead
+    setRecommendedIds([]);
   }
 
-  if (events.length === 0) {
+  if (loading || dismissed || events.length === 0) {
     return null;
   }
 
@@ -133,11 +115,19 @@ export function ForYouSection() {
   return (
     <section className="mb-8">
       <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="w-5 h-5 text-amber-500" />
-        <div>
+        <Sparkles className="w-5 h-5 text-amber-500 shrink-0" />
+        <div className="flex-1 min-w-0">
           <h2 className="text-lg font-bold tracking-tight">{t("forYou")}</h2>
           <p className="text-xs text-muted-foreground">{t("forYouSubtitle")}</p>
         </div>
+        <button
+          onClick={handleDismiss}
+          title={t("forYouDismiss")}
+          className="p-2 -mr-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg shrink-0"
+          aria-label={t("forYouDismiss")}
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -154,7 +144,6 @@ export function ForYouSection() {
         ))}
       </div>
 
-      {/* Show more / show less */}
       {hasMore && (
         <button
           onClick={() => setExpanded(!expanded)}
@@ -173,22 +162,6 @@ export function ForYouSection() {
           )}
         </button>
       )}
-    </section>
-  );
-}
-
-function ForYouSkeleton() {
-  return (
-    <section className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-5 h-5 bg-muted rounded animate-pulse" />
-        <div className="w-24 h-6 bg-muted rounded animate-pulse" />
-      </div>
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="aspect-[4/5] bg-muted animate-pulse rounded-xl" />
-        ))}
-      </div>
     </section>
   );
 }

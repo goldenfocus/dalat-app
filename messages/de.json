@@ -115,6 +115,7 @@
     },
     "forYou": "Für dich",
     "forYouSubtitle": "Basierend auf besuchten Veranstaltungen",
+    "forYouDismiss": "Empfehlungen ausblenden",
     "showMore": "{count} weitere anzeigen",
     "showLess": "Weniger anzeigen"
   },
