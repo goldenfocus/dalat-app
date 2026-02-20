@@ -61,7 +61,7 @@ export const getCachedEventsByLifecycle = unstable_cache(
       return [];
     }
   },
-  ["events-by-lifecycle-v6"], // v6: uses deduplicated RPC for recurring events
+  ["events-by-lifecycle-v7"], // v7: cache bust for stale homepage data
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.events],
