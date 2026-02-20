@@ -209,7 +209,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           {/* News Sources */}
           {post.category_slug === 'news' && Array.isArray((post as any).source_urls) && ((post as any).source_urls as any[]).length > 0 && (
             <NewsSourcesSection
-              label="Sources"
+              label={t("sources")}
               sources={(post as any).source_urls as any[]}
             />
           )}

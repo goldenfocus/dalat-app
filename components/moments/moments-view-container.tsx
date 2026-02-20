@@ -270,6 +270,7 @@ export function MomentsViewContainer({
     const supabase = createClient();
     let deleted = 0;
     let failed = 0;
+    const deletedIds = new Set<string>();
 
     for (const momentId of selectedIds) {
       const moment = allMoments.find(m => m.id === momentId);
@@ -286,11 +287,12 @@ export function MomentsViewContainer({
         failed++;
       } else {
         deleted++;
+        deletedIds.add(momentId);
       }
     }
 
-    // Remove successfully deleted moments from state
-    setAllMoments(prev => prev.filter(m => !selectedIds.has(m.id)));
+    // Only remove successfully deleted moments from state
+    setAllMoments(prev => prev.filter(m => !deletedIds.has(m.id)));
 
     if (deleted > 0) {
       triggerHaptic("success");
