@@ -344,6 +344,7 @@ export function MomentsViewContainer({
         // Single file: direct download
         const m = downloadable[0];
         const response = await fetch(m.media_url!);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const blob = await response.blob();
         const ext = m.content_type === "video" ? "mp4" : "jpg";
         const url = URL.createObjectURL(blob);
@@ -361,22 +362,32 @@ export function MomentsViewContainer({
         const zip = new JSZip();
 
         let completed = 0;
+        let failed = 0;
         const toastId = toast.loading(t("selection.downloading"));
 
         await Promise.all(
           downloadable.map(async (m, i) => {
             try {
               const response = await fetch(m.media_url!);
+              if (!response.ok) throw new Error(`HTTP ${response.status}`);
               const blob = await response.blob();
               const ext = m.content_type === "video" ? "mp4" : "jpg";
               zip.file(`moment-${i + 1}.${ext}`, blob);
-            } catch {
-              // Skip failed downloads
+            } catch (err) {
+              failed++;
+              console.warn(`[bulk-download] Failed to fetch moment ${m.id}:`, err);
+            } finally {
+              completed++;
+              toast.loading(`${completed}/${downloadable.length}...`, { id: toastId });
             }
-            completed++;
-            toast.loading(`${completed}/${downloadable.length}...`, { id: toastId });
           })
         );
+
+        if (failed === downloadable.length) {
+          toast.error(t("selection.downloadFailed"), { id: toastId });
+          setIsDownloading(false);
+          return;
+        }
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
         const url = URL.createObjectURL(zipBlob);
@@ -387,10 +398,16 @@ export function MomentsViewContainer({
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        toast.success(t("selection.downloadComplete"), { id: toastId });
+
+        if (failed > 0) {
+          toast.warning(`${downloadable.length - failed}/${downloadable.length} downloaded`, { id: toastId });
+        } else {
+          toast.success(t("selection.downloadComplete"), { id: toastId });
+        }
       }
       triggerHaptic("success");
-    } catch {
+    } catch (err) {
+      console.error("[bulk-download] Download failed:", err);
       toast.error(t("selection.downloadFailed"));
       triggerHaptic("error");
     }
