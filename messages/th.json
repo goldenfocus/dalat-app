@@ -2099,9 +2099,9 @@
     "noMomentsInSeries": "No media found in past events",
     "selected": "selected",
     "cancel": "Cancel",
-    "import": "Import Selected",,
+    "import": "Import Selected",
     "pastMomentsTitle": "บรรยากาศจากครั้งที่แล้ว",
-    "seeAll": "ดูทั้งหมด"
+    "seeAll": "ดูทั้งหมด",
     "scope": {
       "title": "ใช้การเปลี่ยนแปลงกับ:",
       "thisOnly": "กิจกรรมนี้เท่านั้น",

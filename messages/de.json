@@ -2099,9 +2099,9 @@
     "noMomentsInSeries": "No media found in past events",
     "selected": "selected",
     "cancel": "Cancel",
-    "import": "Import Selected",,
+    "import": "Import Selected",
     "pastMomentsTitle": "Stimmung vom letzten Mal",
-    "seeAll": "Alle ansehen"
+    "seeAll": "Alle ansehen",
     "scope": {
       "title": "Änderungen anwenden auf:",
       "thisOnly": "Nur dieses Event",

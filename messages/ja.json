@@ -2099,9 +2099,9 @@
     "noMomentsInSeries": "No media found in past events",
     "selected": "selected",
     "cancel": "Cancel",
-    "import": "Import Selected",,
+    "import": "Import Selected",
     "pastMomentsTitle": "前回のイベントの雰囲気",
-    "seeAll": "すべて見る"
+    "seeAll": "すべて見る",
     "scope": {
       "title": "変更を適用:",
       "thisOnly": "このイベントのみ",

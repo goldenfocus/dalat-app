@@ -2099,9 +2099,9 @@
     "noMomentsInSeries": "No media found in past events",
     "selected": "selected",
     "cancel": "Cancel",
-    "import": "Import Selected",,
+    "import": "Import Selected",
     "pastMomentsTitle": "Атмосфера прошлого раза",
-    "seeAll": "Смотреть все"
+    "seeAll": "Смотреть все",
     "scope": {
       "title": "Применить изменения к:",
       "thisOnly": "Только это событие",

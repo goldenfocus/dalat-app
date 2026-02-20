@@ -2113,9 +2113,9 @@
     "noMomentsInSeries": "No media found in past events",
     "selected": "selected",
     "cancel": "Cancel",
-    "import": "Import Selected",,
+    "import": "Import Selected",
     "pastMomentsTitle": "L'ambiance de la dernière fois",
-    "seeAll": "Voir tout"
+    "seeAll": "Voir tout",
     "scope": {
       "title": "Appliquer les modifications à :",
       "thisOnly": "Cet événement uniquement",

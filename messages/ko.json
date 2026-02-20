@@ -2102,9 +2102,9 @@
     "noMomentsInSeries": "No media found in past events",
     "selected": "selected",
     "cancel": "Cancel",
-    "import": "Import Selected",,
+    "import": "Import Selected",
     "pastMomentsTitle": "지난 이벤트의 분위기",
-    "seeAll": "모두 보기"
+    "seeAll": "모두 보기",
     "scope": {
       "title": "변경사항 적용:",
       "thisOnly": "이 이벤트만",
