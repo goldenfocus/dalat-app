@@ -2101,7 +2101,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "前回のイベントの雰囲気",
-    "seeAll": "すべて見る",
+    "seeAll": "すべてのモーメントを見る",
+    "curateVibes": "選ぶ",
+    "curateVibesTitle": "ベストモーメントを選ぶ",
+    "curateVibesHint": "最大6つのモーメントを選択してください。",
+    "saveVibes": "保存",
     "scope": {
       "title": "変更を適用:",
       "thisOnly": "このイベントのみ",

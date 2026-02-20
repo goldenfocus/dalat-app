@@ -1419,7 +1419,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "Ambiente de la última vez",
-    "seeAll": "Ver todo",
+    "seeAll": "Ver todos los momentos",
+    "curateVibes": "Curar",
+    "curateVibesTitle": "Elige tus momentos",
+    "curateVibesHint": "Elige hasta 6 momentos para destacar.",
+    "saveVibes": "Guardar selección",
     "scope": {
       "title": "Aplicar cambios a:",
       "thisOnly": "Solo este evento",

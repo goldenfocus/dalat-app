@@ -472,10 +472,39 @@ type PastMoment = {
 async function getPastMoments(
   seriesId: string | null | undefined,
   currentEventId: string,
-  createdBy: string
+  createdBy: string,
+  pinnedIds?: string[] | null
 ): Promise<PastMoment[]> {
   try {
     const supabase = await createClient();
+
+    // If org has pinned specific moments, fetch exactly those
+    if (pinnedIds?.length) {
+      const { data: moments } = await supabase
+        .from("moments")
+        .select("id, media_url, thumbnail_url, event_id, events(slug, title, starts_at)")
+        .in("id", pinnedIds)
+        .eq("status", "published")
+        .not("media_url", "is", null);
+
+      if (!moments?.length) return [];
+      // Preserve pinned order
+      const ordered = pinnedIds
+        .map((id) => moments.find((m) => m.id === id))
+        .filter(Boolean) as typeof moments;
+      return ordered.map((m) => {
+        const ev = Array.isArray(m.events) ? m.events[0] : m.events;
+        return {
+          id: m.id,
+          media_url: m.media_url as string,
+          thumbnail_url: m.thumbnail_url,
+          event_slug: (ev as { slug: string })?.slug ?? "",
+          event_title: (ev as { title: string })?.title ?? "",
+          event_date: (ev as { starts_at: string })?.starts_at ?? "",
+        };
+      });
+    }
+
     let pastEventIds: string[] = [];
     const eventMap = new Map<string, { slug: string; title: string; starts_at: string }>();
 
@@ -758,8 +787,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   ]);
 
   // Fetch past moments for auto-display when no promo exists (series first, organizer fallback)
+  // If org has pinned specific moments via vibe_moment_ids, those take priority
+  const vibeMomentIds = (event as { vibe_moment_ids?: string[] | null }).vibe_moment_ids ?? null;
   const pastMoments = promoResult.promo.length === 0
-    ? await getPastMoments(event.series_id, event.id, event.created_by)
+    ? await getPastMoments(event.series_id, event.id, event.created_by, vibeMomentIds)
     : [];
 
   // Destructure combined RSVP result
@@ -1044,6 +1075,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               seriesId={event.series_id}
               isSeriesEvent={!!event.series_id}
               pastMoments={pastMoments}
+              vibeMomentIds={vibeMomentIds}
             />
 
             {/* Materials (PDFs, videos, etc.) */}

@@ -2101,7 +2101,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "Атмосфера прошлого раза",
-    "seeAll": "Смотреть все",
+    "seeAll": "Все моменты",
+    "curateVibes": "Выбрать",
+    "curateVibesTitle": "Выберите лучшие моменты",
+    "curateVibesHint": "Выберите до 6 моментов для раздела «Атмосфера прошлого раза».",
+    "saveVibes": "Сохранить выбор",
     "scope": {
       "title": "Применить изменения к:",
       "thisOnly": "Только это событие",

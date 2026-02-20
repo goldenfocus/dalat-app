@@ -2101,7 +2101,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "Suasana kali lepas",
-    "seeAll": "Lihat semua",
+    "seeAll": "Lihat semua momen",
+    "curateVibes": "Pilih",
+    "curateVibesTitle": "Pilih momen terbaik",
+    "curateVibesHint": "Pilih sehingga 6 momen untuk ditampilkan.",
+    "saveVibes": "Simpan pilihan",
     "scope": {
       "title": "Terapkan perubahan ke:",
       "thisOnly": "Acara ini sahaja",

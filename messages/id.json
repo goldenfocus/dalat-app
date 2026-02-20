@@ -1419,7 +1419,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "Suasana dari terakhir kali",
-    "seeAll": "Lihat semua",
+    "seeAll": "Lihat semua momen",
+    "curateVibes": "Pilih",
+    "curateVibesTitle": "Pilih momen terbaik",
+    "curateVibesHint": "Pilih hingga 6 momen untuk ditampilkan.",
+    "saveVibes": "Simpan pilihan",
     "scope": {
       "title": "Terapkan perubahan ke:",
       "thisOnly": "Hanya acara ini",

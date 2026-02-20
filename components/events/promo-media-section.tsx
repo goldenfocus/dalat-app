@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight, Images, Loader2, Check, Repeat, Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight, Images, Loader2, Check, Repeat, Upload, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -33,6 +34,7 @@ interface PromoMediaSectionProps {
   seriesId?: string | null;
   isSeriesEvent?: boolean;
   pastMoments?: PastMoment[];
+  vibeMomentIds?: string[] | null;
 }
 
 interface SeriesMoment {
@@ -58,19 +60,26 @@ export function PromoMediaSection({
   seriesId,
   isSeriesEvent = false,
   pastMoments = [],
+  vibeMomentIds,
 }: PromoMediaSectionProps) {
   const t = useTranslations("promo");
+  const router = useRouter();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   // State for inline promo management
   const [promo, setPromo] = useState(initialPromo);
   const [promoSource, setPromoSource] = useState(initialPromoSource);
   const [showPicker, setShowPicker] = useState(false);
+  const [showVibeCurator, setShowVibeCurator] = useState(false);
   const [seriesMoments, setSeriesMoments] = useState<SeriesMoment[]>([]);
   const [selectedMomentIds, setSelectedMomentIds] = useState<Set<string>>(new Set());
+  const [selectedVibeMomentIds, setSelectedVibeMomentIds] = useState<Set<string>>(
+    new Set(vibeMomentIds ?? [])
+  );
   const [isLoadingMoments, setIsLoadingMoments] = useState(false);
   const [updateScope, setUpdateScope] = useState<PromoUpdateScope>("this_event");
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingVibes, setIsSavingVibes] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -160,6 +169,46 @@ export function PromoMediaSection({
     setShowPicker(true);
     setSelectedMomentIds(new Set());
     if (seriesId) fetchSeriesMoments();
+  };
+
+  const handleOpenVibeCurator = () => {
+    setShowVibeCurator(true);
+    setSelectedVibeMomentIds(new Set(vibeMomentIds ?? []));
+    fetchSeriesMoments();
+  };
+
+  const handleSaveVibePicks = async () => {
+    if (!eventSlug) return;
+    setIsSavingVibes(true);
+    try {
+      const response = await fetch(`/api/events/${eventSlug}/vibe-picks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ moment_ids: Array.from(selectedVibeMomentIds) }),
+      });
+      if (response.ok) {
+        setShowVibeCurator(false);
+        router.refresh();
+      } else {
+        console.error("Failed to save vibe picks:", await response.text());
+      }
+    } catch (error) {
+      console.error("Failed to save vibe picks:", error);
+    } finally {
+      setIsSavingVibes(false);
+    }
+  };
+
+  const toggleVibeMomentSelection = (momentId: string) => {
+    setSelectedVibeMomentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(momentId)) {
+        next.delete(momentId);
+      } else if (next.size < 6) {
+        next.add(momentId);
+      }
+      return next;
+    });
   };
 
   const toggleMomentSelection = (momentId: string) => {
@@ -388,23 +437,30 @@ export function PromoMediaSection({
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
               {promo.length === 0 && isOwner && canManageInline && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="h-7 px-2 text-xs text-muted-foreground"
-                >
-                  {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
-                  {isUploading ? t("uploading") : t("uploadNew")}
-                </Button>
+                <>
+                  {isSeriesEvent && !!seriesId && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleOpenVibeCurator}
+                      className="h-7 px-2 text-xs text-muted-foreground"
+                    >
+                      <Pencil className="w-3 h-3 mr-1" />
+                      {t("curateVibes")}
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="h-7 px-2 text-xs text-muted-foreground"
+                  >
+                    {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+                    {isUploading ? t("uploading") : t("uploadNew")}
+                  </Button>
+                </>
               )}
-              <Link
-                href={`/events/${sourceEvent.event_slug}/moments`}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-              >
-                {t("seeAll")} →
-              </Link>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-2">
@@ -421,6 +477,16 @@ export function PromoMediaSection({
               );
             })}
           </div>
+          {/* Big "See all" CTA */}
+          <Link href={`/events/${sourceEvent.event_slug}/moments`}>
+            <Button
+              variant="outline"
+              className="w-full gap-2 font-medium"
+            >
+              {t("seeAll")}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       )}
 
@@ -438,6 +504,21 @@ export function PromoMediaSection({
           setUpdateScope={setUpdateScope}
           isSaving={isSaving}
           onImport={handleImportMoments}
+          t={t}
+        />
+      )}
+
+      {/* Vibe curator dialog */}
+      {isOwner && canManageInline && (
+        <VibeCuratorDialog
+          open={showVibeCurator}
+          onOpenChange={setShowVibeCurator}
+          isLoadingMoments={isLoadingMoments}
+          momentsByEvent={momentsByEvent}
+          selectedVibeMomentIds={selectedVibeMomentIds}
+          toggleVibeMomentSelection={toggleVibeMomentSelection}
+          isSaving={isSavingVibes}
+          onSave={handleSaveVibePicks}
           t={t}
         />
       )}
@@ -711,6 +792,119 @@ function MomentPickerDialog({
                 <Check className="w-4 h-4 mr-2" />
               )}
               {t("import")}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Vibe Curator Dialog ──────────────────────────────────────────────────────
+interface VibeCuratorDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  isLoadingMoments: boolean;
+  momentsByEvent: Record<string, { title: string; date: string; moments: SeriesMoment[] }>;
+  selectedVibeMomentIds: Set<string>;
+  toggleVibeMomentSelection: (id: string) => void;
+  isSaving: boolean;
+  onSave: () => void;
+  t: ReturnType<typeof useTranslations<"promo">>;
+}
+
+function VibeCuratorDialog({
+  open,
+  onOpenChange,
+  isLoadingMoments,
+  momentsByEvent,
+  selectedVibeMomentIds,
+  toggleVibeMomentSelection,
+  isSaving,
+  onSave,
+  t,
+}: VibeCuratorDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Images className="w-5 h-5" />
+            {t("curateVibesTitle")}
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground">{t("curateVibesHint")}</p>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto">
+          {isLoadingMoments ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : Object.keys(momentsByEvent).length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>{t("noMomentsInSeries")}</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(momentsByEvent).map(([slug, { title, date, moments }]) => (
+                <div key={slug} className="space-y-2">
+                  <h4 className="text-sm font-medium">
+                    {title}
+                    <span className="text-muted-foreground font-normal ml-2">
+                      {new Date(date).toLocaleDateString()}
+                    </span>
+                  </h4>
+                  <div className="grid grid-cols-4 gap-2">
+                    {moments.map((moment) => {
+                      const isSelected = selectedVibeMomentIds.has(moment.id);
+                      const atMax = selectedVibeMomentIds.size >= 6 && !isSelected;
+                      return (
+                        <button
+                          key={moment.id}
+                          type="button"
+                          onClick={() => toggleVibeMomentSelection(moment.id)}
+                          disabled={atMax}
+                          className={cn(
+                            "aspect-square rounded-lg overflow-hidden relative group",
+                            isSelected && "ring-2 ring-primary ring-offset-2",
+                            atMax && "opacity-40 cursor-not-allowed"
+                          )}
+                        >
+                          <MomentThumbnail moment={moment} />
+                          {isSelected && (
+                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                              <Check className="w-6 h-6 text-primary" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between pt-4 border-t">
+          <p className="text-sm text-muted-foreground">
+            {selectedVibeMomentIds.size}/6 {t("selected")}
+          </p>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t("cancel")}
+            </Button>
+            <Button
+              type="button"
+              onClick={onSave}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4 mr-2" />
+              )}
+              {t("saveVibes")}
             </Button>
           </div>
         </div>

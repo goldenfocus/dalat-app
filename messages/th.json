@@ -2101,7 +2101,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "บรรยากาศจากครั้งที่แล้ว",
-    "seeAll": "ดูทั้งหมด",
+    "seeAll": "ดูทุกช่วงเวลา",
+    "curateVibes": "คัดเลือก",
+    "curateVibesTitle": "เลือกช่วงเวลาที่ดีที่สุด",
+    "curateVibesHint": "เลือกสูงสุด 6 ช่วงเวลาเพื่อแสดง",
+    "saveVibes": "บันทึกการเลือก",
     "scope": {
       "title": "ใช้การเปลี่ยนแปลงกับ:",
       "thisOnly": "กิจกรรมนี้เท่านั้น",

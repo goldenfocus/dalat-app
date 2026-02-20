@@ -2115,7 +2115,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "L'ambiance de la dernière fois",
-    "seeAll": "Voir tout",
+    "seeAll": "Voir tous les moments",
+    "curateVibes": "Sélectionner",
+    "curateVibesTitle": "Choisissez vos moments",
+    "curateVibesHint": "Choisissez jusqu'à 6 moments à mettre en avant.",
+    "saveVibes": "Enregistrer",
     "scope": {
       "title": "Appliquer les modifications à :",
       "thisOnly": "Cet événement uniquement",

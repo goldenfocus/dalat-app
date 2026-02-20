@@ -2208,7 +2208,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "Vibes from last time",
-    "seeAll": "See all",
+    "seeAll": "See all moments",
+    "curateVibes": "Curate",
+    "curateVibesTitle": "Pick your vibe moments",
+    "curateVibesHint": "Choose up to 6 moments to feature in the \"Vibes from last time\" section.",
+    "saveVibes": "Save picks",
     "scope": {
       "title": "Apply changes to:",
       "thisOnly": "This event only",

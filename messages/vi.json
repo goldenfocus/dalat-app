@@ -2177,7 +2177,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "Khoảnh khắc từ lần trước",
-    "seeAll": "Xem tất cả",
+    "seeAll": "Xem tất cả khoảnh khắc",
+    "curateVibes": "Chọn lọc",
+    "curateVibesTitle": "Chọn khoảnh khắc hay nhất",
+    "curateVibesHint": "Chọn tối đa 6 khoảnh khắc để hiển thị.",
+    "saveVibes": "Lưu lựa chọn",
     "scope": {
       "title": "Áp dụng thay đổi cho:",
       "thisOnly": "Chỉ sự kiện này",

@@ -2101,7 +2101,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "Stimmung vom letzten Mal",
-    "seeAll": "Alle ansehen",
+    "seeAll": "Alle Momente ansehen",
+    "curateVibes": "Auswählen",
+    "curateVibesTitle": "Vibe-Momente auswählen",
+    "curateVibesHint": "Wähle bis zu 6 Momente für den Bereich Stimmung vom letzten Mal aus.",
+    "saveVibes": "Auswahl speichern",
     "scope": {
       "title": "Änderungen anwenden auf:",
       "thisOnly": "Nur dieses Event",

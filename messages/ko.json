@@ -2104,7 +2104,11 @@
     "cancel": "Cancel",
     "import": "Import Selected",
     "pastMomentsTitle": "지난 이벤트의 분위기",
-    "seeAll": "모두 보기",
+    "seeAll": "모든 순간 보기",
+    "curateVibes": "선별하기",
+    "curateVibesTitle": "분위기 순간 선택",
+    "curateVibesHint": "최대 6개의 순간을 선택하세요.",
+    "saveVibes": "선택 저장",
     "scope": {
       "title": "변경사항 적용:",
       "thisOnly": "이 이벤트만",
