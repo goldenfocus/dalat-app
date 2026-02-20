@@ -1322,7 +1322,13 @@
       "deleteConfirm": "Это навсегда удалит {count} моментов. Отменить нельзя.",
       "deleting": "Удаление...",
       "deleted": "{count} моментов удалено",
-      "deleteFailed": "{count} не удалось удалить"
+      "deleteFailed": "{count} не удалось удалить",
+      "selectAll": "Выбрать все",
+      "deselectAll": "Снять выделение",
+      "download": "Скачать",
+      "downloading": "Загрузка...",
+      "downloadComplete": "Загрузка завершена",
+      "downloadFailed": "Ошибка загрузки"
     }
   },
   "tribes": {

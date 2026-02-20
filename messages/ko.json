@@ -1325,7 +1325,13 @@
       "deleteConfirm": "모먼트 {count}개가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
       "deleting": "삭제 중...",
       "deleted": "모먼트 {count}개 삭제됨",
-      "deleteFailed": "{count}개 삭제 실패"
+      "deleteFailed": "{count}개 삭제 실패",
+      "selectAll": "전체 선택",
+      "deselectAll": "전체 해제",
+      "download": "다운로드",
+      "downloading": "다운로드 중...",
+      "downloadComplete": "다운로드 완료",
+      "downloadFailed": "다운로드 실패"
     }
   },
   "tribes": {

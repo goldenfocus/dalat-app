@@ -1322,7 +1322,13 @@
       "deleteConfirm": "การดำเนินการนี้จะลบ {count} โมเมนต์อย่างถาวร ไม่สามารถย้อนกลับได้",
       "deleting": "กำลังลบ...",
       "deleted": "ลบ {count} โมเมนต์แล้ว",
-      "deleteFailed": "{count} รายการลบไม่สำเร็จ"
+      "deleteFailed": "{count} รายการลบไม่สำเร็จ",
+      "selectAll": "เลือกทั้งหมด",
+      "deselectAll": "ยกเลิกทั้งหมด",
+      "download": "ดาวน์โหลด",
+      "downloading": "กำลังดาวน์โหลด...",
+      "downloadComplete": "ดาวน์โหลดสำเร็จ",
+      "downloadFailed": "ดาวน์โหลดล้มเหลว"
     }
   },
   "tribes": {

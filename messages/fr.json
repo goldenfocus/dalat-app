@@ -1336,7 +1336,13 @@
       "deleteConfirm": "Cela supprimera définitivement {count} moments. Cette action est irréversible.",
       "deleting": "Suppression...",
       "deleted": "{count} moments supprimés",
-      "deleteFailed": "{count} n'ont pas pu être supprimés"
+      "deleteFailed": "{count} n'ont pas pu être supprimés",
+      "selectAll": "Tout sélectionner",
+      "deselectAll": "Tout désélectionner",
+      "download": "Télécharger",
+      "downloading": "Téléchargement...",
+      "downloadComplete": "Téléchargement terminé",
+      "downloadFailed": "Échec du téléchargement"
     }
   },
   "tribes": {

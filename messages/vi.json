@@ -1325,7 +1325,13 @@
       "deleteConfirm": "Thao tác này sẽ xóa vĩnh viễn {count} khoảnh khắc. Không thể hoàn tác.",
       "deleting": "Đang xóa...",
       "deleted": "Đã xóa {count} khoảnh khắc",
-      "deleteFailed": "{count} không xóa được"
+      "deleteFailed": "{count} không xóa được",
+      "selectAll": "Chọn tất cả",
+      "deselectAll": "Bỏ chọn tất cả",
+      "download": "Tải xuống",
+      "downloading": "Đang tải...",
+      "downloadComplete": "Tải xong",
+      "downloadFailed": "Tải thất bại"
     }
   },
   "tribes": {

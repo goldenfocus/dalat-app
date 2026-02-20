@@ -1322,7 +1322,13 @@
       "deleteConfirm": "{count}件のモーメントが完全に削除されます。この操作は元に戻せません。",
       "deleting": "削除中...",
       "deleted": "{count}件のモーメントを削除しました",
-      "deleteFailed": "{count}件の削除に失敗しました"
+      "deleteFailed": "{count}件の削除に失敗しました",
+      "selectAll": "すべて選択",
+      "deselectAll": "すべて解除",
+      "download": "ダウンロード",
+      "downloading": "ダウンロード中...",
+      "downloadComplete": "ダウンロード完了",
+      "downloadFailed": "ダウンロードに失敗しました"
     }
   },
   "tribes": {

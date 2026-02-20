@@ -1322,7 +1322,13 @@
       "deleteConfirm": "Dies löscht {count} Moments unwiderruflich. Diese Aktion kann nicht rückgängig gemacht werden.",
       "deleting": "Wird gelöscht...",
       "deleted": "{count} Moments gelöscht",
-      "deleteFailed": "{count} konnten nicht gelöscht werden"
+      "deleteFailed": "{count} konnten nicht gelöscht werden",
+      "selectAll": "Alle auswählen",
+      "deselectAll": "Alle abwählen",
+      "download": "Herunterladen",
+      "downloading": "Wird heruntergeladen...",
+      "downloadComplete": "Download abgeschlossen",
+      "downloadFailed": "Download fehlgeschlagen"
     }
   },
   "tribes": {

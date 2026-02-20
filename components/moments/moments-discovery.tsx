@@ -63,6 +63,9 @@ function toLightboxMoments(moments: MomentWithEvent[]): LightboxMoment[] {
     cf_playback_url: m.cf_playback_url,
     video_status: m.video_status,
     event_slug: m.event_slug,
+    // User info for watermark
+    display_name: m.display_name,
+    username: m.username,
   }));
 }
 

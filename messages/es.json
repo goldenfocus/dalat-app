@@ -1322,7 +1322,13 @@
       "deleteConfirm": "Esto eliminará permanentemente {count} momentos. Esta acción no se puede deshacer.",
       "deleting": "Eliminando...",
       "deleted": "{count} momentos eliminados",
-      "deleteFailed": "{count} no se pudieron eliminar"
+      "deleteFailed": "{count} no se pudieron eliminar",
+      "selectAll": "Seleccionar todo",
+      "deselectAll": "Deseleccionar todo",
+      "download": "Descargar",
+      "downloading": "Descargando...",
+      "downloadComplete": "Descarga completa",
+      "downloadFailed": "Error de descarga"
     }
   },
   "tribes": {

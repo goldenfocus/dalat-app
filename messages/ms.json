@@ -1322,7 +1322,13 @@
       "deleteConfirm": "Ini akan memadamkan {count} momen secara kekal. Tindakan ini tidak boleh dibatalkan.",
       "deleting": "Memadamkan...",
       "deleted": "{count} momen dipadamkan",
-      "deleteFailed": "{count} gagal dipadamkan"
+      "deleteFailed": "{count} gagal dipadamkan",
+      "selectAll": "Pilih semua",
+      "deselectAll": "Nyahpilih semua",
+      "download": "Muat turun",
+      "downloading": "Memuat turun...",
+      "downloadComplete": "Muat turun selesai",
+      "downloadFailed": "Muat turun gagal"
     }
   },
   "tribes": {

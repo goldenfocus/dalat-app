@@ -1325,7 +1325,13 @@
       "deleteConfirm": "这将永久删除 {count} 个瞬间，此操作无法撤销。",
       "deleting": "删除中...",
       "deleted": "已删除 {count} 个瞬间",
-      "deleteFailed": "{count} 个删除失败"
+      "deleteFailed": "{count} 个删除失败",
+      "selectAll": "全选",
+      "deselectAll": "取消全选",
+      "download": "下载",
+      "downloading": "下载中...",
+      "downloadComplete": "下载完成",
+      "downloadFailed": "下载失败"
     }
   },
   "tribes": {

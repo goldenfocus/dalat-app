@@ -1436,7 +1436,13 @@
       "deleteConfirm": "This will permanently delete {count} moments. This cannot be undone.",
       "deleting": "Deleting...",
       "deleted": "{count} moments deleted",
-      "deleteFailed": "{count} failed to delete"
+      "deleteFailed": "{count} failed to delete",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "download": "Download",
+      "downloading": "Downloading...",
+      "downloadComplete": "Download complete",
+      "downloadFailed": "Download failed"
     }
   },
   "tribes": {

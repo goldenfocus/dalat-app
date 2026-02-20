@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { CheckSquare, Trash2, X, Loader2 } from "lucide-react";
+import { CheckSquare, Trash2, X, Loader2, Download, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useMomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 import { ViewModeSwitcher } from "./view-mode-switcher";
@@ -81,6 +81,7 @@ export function MomentsViewContainer({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // --- User permissions (for selection mode) ---
   const [currentUserId, setCurrentUserId] = useState<string>();
@@ -305,6 +306,98 @@ export function MomentsViewContainer({
     exitSelectMode();
   }, [selectedIds, allMoments, currentUserId, canModerate, exitSelectMode, t]);
 
+  // --- Select all / deselect all ---
+  const selectableIds = useMemo(() => {
+    return new Set(
+      allMoments
+        .filter(m => canModerate || m.user_id === currentUserId)
+        .map(m => m.id)
+    );
+  }, [allMoments, canModerate, currentUserId]);
+
+  const allSelected = selectableIds.size > 0 && [...selectableIds].every(id => selectedIds.has(id));
+
+  const toggleSelectAll = useCallback(() => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(selectableIds));
+    }
+    triggerHaptic("selection");
+  }, [allSelected, selectableIds]);
+
+  // --- Bulk download ---
+  const handleBulkDownload = useCallback(async () => {
+    const downloadable = allMoments.filter(
+      m => selectedIds.has(m.id) && m.media_url
+    );
+    if (downloadable.length === 0) {
+      toast.error(t("selection.downloadFailed"));
+      return;
+    }
+
+    setIsDownloading(true);
+    triggerHaptic("selection");
+
+    try {
+      if (downloadable.length === 1) {
+        // Single file: direct download
+        const m = downloadable[0];
+        const response = await fetch(m.media_url!);
+        const blob = await response.blob();
+        const ext = m.content_type === "video" ? "mp4" : "jpg";
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `dalat-moment-${m.id.slice(0, 8)}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success(t("selection.downloadComplete"));
+      } else {
+        // Multiple files: zip with JSZip
+        const JSZip = (await import("jszip")).default;
+        const zip = new JSZip();
+
+        let completed = 0;
+        const toastId = toast.loading(t("selection.downloading"));
+
+        await Promise.all(
+          downloadable.map(async (m, i) => {
+            try {
+              const response = await fetch(m.media_url!);
+              const blob = await response.blob();
+              const ext = m.content_type === "video" ? "mp4" : "jpg";
+              zip.file(`moment-${i + 1}.${ext}`, blob);
+            } catch {
+              // Skip failed downloads
+            }
+            completed++;
+            toast.loading(`${completed}/${downloadable.length}...`, { id: toastId });
+          })
+        );
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `dalat-moments-${eventSlug}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success(t("selection.downloadComplete"), { id: toastId });
+      }
+      triggerHaptic("success");
+    } catch {
+      toast.error(t("selection.downloadFailed"));
+      triggerHaptic("error");
+    }
+
+    setIsDownloading(false);
+  }, [selectedIds, allMoments, eventSlug, t]);
+
   // Switch from immersive/cinema to grid (and remember preference)
   const switchToGrid = () => {
     setViewMode("grid");
@@ -361,40 +454,95 @@ export function MomentsViewContainer({
 
   return (
     <>
-      {/* View mode switcher, media type filter, and select button */}
-      <div className="flex items-center justify-end gap-2 mb-4">
-        {selectMode ? (
-          <button
-            type="button"
-            onClick={exitSelectMode}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
-          >
-            {tCommon("cancel")}
-          </button>
-        ) : (
-          <>
-            {canSelect && (
+      {/* Selection mode: Google Photos-style top bar */}
+      {selectMode ? (
+        <div className="sticky top-0 z-40 -mx-4 px-4 py-3 bg-primary text-primary-foreground mb-4 animate-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center justify-between gap-2">
+            {/* Left: close + count */}
+            <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={enterSelectMode}
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted active:scale-95"
+                onClick={exitSelectMode}
+                className="p-2 -ml-2 rounded-full hover:bg-white/10 active:scale-95 transition-all"
+                aria-label={tCommon("cancel")}
               >
-                <CheckSquare className="w-4 h-4" />
-                {t("selection.select")}
+                <X className="w-5 h-5" />
               </button>
-            )}
-            <MediaTypeFilterToggle
-              value={mediaTypeFilter}
-              onChange={setMediaTypeFilter}
-              hasVideos={hasVideos}
-            />
-            <ViewModeSwitcher
-              viewMode={viewMode}
-              onViewModeChange={handleViewModeChange}
-            />
-          </>
-        )}
-      </div>
+              <span className="text-sm font-semibold tabular-nums">
+                {t("selection.selected", { count: selectedIds.size })}
+              </span>
+            </div>
+
+            {/* Right: actions */}
+            <div className="flex items-center gap-1">
+              {/* Select all / deselect all */}
+              <button
+                type="button"
+                onClick={toggleSelectAll}
+                className="p-2.5 rounded-full hover:bg-white/10 active:scale-95 transition-all"
+                aria-label={allSelected ? t("selection.deselectAll") : t("selection.selectAll")}
+                title={allSelected ? t("selection.deselectAll") : t("selection.selectAll")}
+              >
+                <CheckCheck className={`w-5 h-5 ${allSelected ? "opacity-100" : "opacity-60"}`} />
+              </button>
+
+              {/* Download */}
+              <button
+                type="button"
+                onClick={handleBulkDownload}
+                disabled={selectedIds.size === 0 || isDownloading}
+                className="p-2.5 rounded-full hover:bg-white/10 active:scale-95 transition-all disabled:opacity-30"
+                aria-label={t("selection.download")}
+                title={t("selection.download")}
+              >
+                {isDownloading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Download className="w-5 h-5" />
+                )}
+              </button>
+
+              {/* Delete */}
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic("selection");
+                  setShowDeleteConfirm(true);
+                }}
+                disabled={selectedIds.size === 0}
+                className="p-2.5 rounded-full hover:bg-white/10 active:scale-95 transition-all disabled:opacity-30"
+                aria-label={t("selection.deleteSelected")}
+                title={t("selection.deleteSelected")}
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Normal mode: view switcher + select button */
+        <div className="flex items-center justify-end gap-2 mb-4">
+          {canSelect && (
+            <button
+              type="button"
+              onClick={enterSelectMode}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted active:scale-95"
+            >
+              <CheckSquare className="w-4 h-4" />
+              {t("selection.select")}
+            </button>
+          )}
+          <MediaTypeFilterToggle
+            value={mediaTypeFilter}
+            onChange={setMediaTypeFilter}
+            hasVideos={hasVideos}
+          />
+          <ViewModeSwitcher
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+          />
+        </div>
+      )}
 
       {/* Grid view (always rendered to maintain scroll position and loaded data) */}
       <div className={(viewMode === "immersive" && showImmersive) || (viewMode === "cinema" && showCinema) ? "hidden" : ""}>
@@ -458,28 +606,6 @@ export function MomentsViewContainer({
           onViewModeChange={handleViewModeChange}
           onClose={switchToGrid}
         />
-      )}
-
-      {/* Floating selection action bar */}
-      {selectMode && selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-200">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-full bg-background/95 backdrop-blur-md border shadow-lg">
-            <span className="text-sm font-medium tabular-nums">
-              {t("selection.selected", { count: selectedIds.size })}
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                triggerHaptic("selection");
-                setShowDeleteConfirm(true);
-              }}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 active:scale-95 transition-all"
-            >
-              <Trash2 className="w-4 h-4" />
-              {t("selection.deleteSelected")}
-            </button>
-          </div>
-        </div>
       )}
 
       {/* Bulk delete confirmation dialog */}
