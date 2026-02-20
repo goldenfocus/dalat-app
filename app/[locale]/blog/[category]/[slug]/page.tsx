@@ -13,6 +13,8 @@ import { MarkdownRenderer } from "@/components/blog/markdown-renderer";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateBlogArticleSchema } from "@/lib/structured-data";
+import { NewsSourcesSection } from "@/components/news/news-sources-section";
+import { generateNewsArticleSchema } from "@/lib/structured-data";
 import { getBlogTranslations } from "@/lib/translations";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache/server-cache";
@@ -113,7 +115,16 @@ export default async function BlogPostPage({ params }: PageProps) {
     locale
   );
 
-  const articleSchema = generateBlogArticleSchema(post, locale);
+  const articleSchema = post.category_slug === 'news'
+    ? generateNewsArticleSchema(
+        {
+          ...post,
+          source_urls: (post as any).source_urls ?? [],
+          news_tags: (post as any).news_tags ?? [],
+        },
+        locale
+      )
+    : generateBlogArticleSchema(post, locale);
 
   return (
     <>
@@ -194,6 +205,14 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Technical Details Accordion */}
           <TechnicalAccordion content={translations.translated_technical_content} />
+
+          {/* News Sources */}
+          {post.category_slug === 'news' && Array.isArray((post as any).source_urls) && ((post as any).source_urls as any[]).length > 0 && (
+            <NewsSourcesSection
+              label="Sources"
+              sources={(post as any).source_urls as any[]}
+            />
+          )}
 
           {/* Related Posts (future) */}
           {/* {post.related_feature_slugs.length > 0 && (
