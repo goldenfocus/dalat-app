@@ -13,6 +13,15 @@ import { cn } from "@/lib/utils";
 import { uploadFile } from "@/lib/storage/client";
 import type { EventPromoMedia, PromoSource, PromoUpdateScope } from "@/lib/types";
 
+interface PastMoment {
+  id: string;
+  media_url: string;
+  thumbnail_url: string | null;
+  event_slug: string;
+  event_title: string;
+  event_date: string;
+}
+
 interface PromoMediaSectionProps {
   promo: EventPromoMedia[];
   isOwner: boolean;
@@ -23,6 +32,7 @@ interface PromoMediaSectionProps {
   eventSlug?: string;
   seriesId?: string | null;
   isSeriesEvent?: boolean;
+  pastMoments?: PastMoment[];
 }
 
 interface SeriesMoment {
@@ -47,6 +57,7 @@ export function PromoMediaSection({
   eventSlug,
   seriesId,
   isSeriesEvent = false,
+  pastMoments = [],
 }: PromoMediaSectionProps) {
   const t = useTranslations("promo");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -224,7 +235,74 @@ export function PromoMediaSection({
   }, {} as Record<string, { title: string; date: string; moments: SeriesMoment[] }>);
 
   if (promo.length === 0) {
-    // Only show empty state for owners
+    // Auto-show past moments from the series / organizer for everyone
+    if (pastMoments.length > 0) {
+      const sourceEvent = pastMoments[0];
+      return (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*,application/pdf"
+            multiple
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                <Images className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-sm font-medium text-muted-foreground">{t("pastMomentsTitle")}</span>
+                <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground truncate">
+                  {sourceEvent.event_title}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {isOwner && canManageInline && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="h-7 px-2 text-xs text-muted-foreground"
+                  >
+                    {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+                    {isUploading ? t("uploading") : t("uploadNew")}
+                  </Button>
+                )}
+                <Link
+                  href={`/events/${sourceEvent.event_slug}/moments`}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                >
+                  {t("seeAll")} →
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {pastMoments.slice(0, 6).map((moment) => {
+                const thumb = moment.thumbnail_url || moment.media_url;
+                return (
+                  <Link key={moment.id} href={`/events/${moment.event_slug}/moments`}>
+                    <div className="aspect-square rounded-lg overflow-hidden bg-muted group">
+                      {thumb && (
+                        <img
+                          src={thumb}
+                          alt=""
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        </>
+      );
+    }
+
+    // No past moments — only show empty state for owners
     if (!isOwner) return null;
 
     return (

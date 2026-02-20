@@ -2206,6 +2206,8 @@
     "selected": "selected",
     "cancel": "Cancel",
     "import": "Import Selected",
+    "pastMomentsTitle": "Vibes from last time",
+    "seeAll": "See all",
     "scope": {
       "title": "Apply changes to:",
       "thisOnly": "This event only",

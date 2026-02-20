@@ -460,6 +460,86 @@ interface EventPromoResult {
   hasOverride: boolean;
 }
 
+type PastMoment = {
+  id: string;
+  media_url: string;
+  thumbnail_url: string | null;
+  event_slug: string;
+  event_title: string;
+  event_date: string;
+};
+
+async function getPastMoments(
+  seriesId: string | null | undefined,
+  currentEventId: string,
+  createdBy: string
+): Promise<PastMoment[]> {
+  try {
+    const supabase = await createClient();
+    let pastEventIds: string[] = [];
+    const eventMap = new Map<string, { slug: string; title: string; starts_at: string }>();
+
+    if (seriesId) {
+      const { data: pastEvents } = await supabase
+        .from("events")
+        .select("id, slug, title, starts_at")
+        .eq("series_id", seriesId)
+        .neq("id", currentEventId)
+        .lt("starts_at", new Date().toISOString())
+        .order("starts_at", { ascending: false })
+        .limit(3);
+      if (pastEvents?.length) {
+        pastEventIds = pastEvents.map((e) => e.id);
+        pastEvents.forEach((e) => eventMap.set(e.id, e));
+      }
+    }
+
+    if (pastEventIds.length === 0) {
+      const { data: pastEvents } = await supabase
+        .from("events")
+        .select("id, slug, title, starts_at")
+        .eq("created_by", createdBy)
+        .neq("id", currentEventId)
+        .lt("starts_at", new Date().toISOString())
+        .eq("status", "published")
+        .order("starts_at", { ascending: false })
+        .limit(2);
+      if (pastEvents?.length) {
+        pastEventIds = pastEvents.map((e) => e.id);
+        pastEvents.forEach((e) => eventMap.set(e.id, e));
+      }
+    }
+
+    if (pastEventIds.length === 0) return [];
+
+    const { data: moments } = await supabase
+      .from("moments")
+      .select("id, media_url, thumbnail_url, event_id")
+      .in("event_id", pastEventIds)
+      .eq("status", "published")
+      .not("media_url", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(9);
+
+    if (!moments?.length) return [];
+    return moments
+      .filter((m) => eventMap.has(m.event_id))
+      .map((m) => {
+        const ev = eventMap.get(m.event_id)!;
+        return {
+          id: m.id,
+          media_url: m.media_url as string,
+          thumbnail_url: m.thumbnail_url,
+          event_slug: ev.slug,
+          event_title: ev.title,
+          event_date: ev.starts_at,
+        };
+      });
+  } catch {
+    return [];
+  }
+}
+
 async function getEventPromo(eventId: string): Promise<EventPromoResult> {
   const supabase = await createClient();
 
@@ -676,6 +756,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getEventPromo(event.id),
     getEventQuestionnaireServer(event.id),
   ]);
+
+  // Fetch past moments for auto-display when no promo exists (series first, organizer fallback)
+  const pastMoments = promoResult.promo.length === 0
+    ? await getPastMoments(event.series_id, event.id, event.created_by)
+    : [];
 
   // Destructure combined RSVP result
   const { attendees, waitlist, interested } = allRsvps;
@@ -958,6 +1043,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               eventSlug={event.slug}
               seriesId={event.series_id}
               isSeriesEvent={!!event.series_id}
+              pastMoments={pastMoments}
             />
 
             {/* Materials (PDFs, videos, etc.) */}

@@ -1416,7 +1416,9 @@
     "noMomentsInSeries": "No media found in past events",
     "selected": "selected",
     "cancel": "Cancel",
-    "import": "Import Selected",
+    "import": "Import Selected",,
+    "pastMomentsTitle": "Ambiente de la última vez",
+    "seeAll": "Ver todo"
     "scope": {
       "title": "Aplicar cambios a:",
       "thisOnly": "Solo este evento",

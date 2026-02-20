@@ -2174,7 +2174,9 @@
     "noMomentsInSeries": "No media found in past events",
     "selected": "selected",
     "cancel": "Cancel",
-    "import": "Import Selected",
+    "import": "Import Selected",,
+    "pastMomentsTitle": "Khoảnh khắc từ lần trước",
+    "seeAll": "Xem tất cả"
     "scope": {
       "title": "Áp dụng thay đổi cho:",
       "thisOnly": "Chỉ sự kiện này",
