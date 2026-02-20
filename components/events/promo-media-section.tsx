@@ -234,103 +234,128 @@ export function PromoMediaSection({
     return acc;
   }, {} as Record<string, { title: string; date: string; moments: SeriesMoment[] }>);
 
-  if (promo.length === 0) {
-    // Auto-show past moments from the series / organizer for everyone
-    if (pastMoments.length > 0) {
-      const sourceEvent = pastMoments[0];
-      return (
-        <>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,video/*,application/pdf"
-            multiple
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-          <section className="space-y-3">
+  // Nothing to show to non-owners
+  if (!isOwner && promo.length === 0 && pastMoments.length === 0) return null;
+
+  const openLightbox = (index: number) => setLightboxIndex(index);
+  const closeLightbox = () => setLightboxIndex(null);
+  const goNext = () => setLightboxIndex((i) => (i !== null && i < promo.length - 1 ? i + 1 : i));
+  const goPrev = () => setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : i));
+
+  const sourceEvent = pastMoments[0];
+
+  return (
+    <section className="space-y-4">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*,application/pdf"
+        multiple
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
+      {/* ── Promotional media ── */}
+      {promo.length > 0 && (
+        <div className="space-y-3">
+          {/* Owner management bar */}
+          {isOwner && (
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
-                <Images className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-sm font-medium text-muted-foreground">{t("pastMomentsTitle")}</span>
-                <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground truncate">
-                  {sourceEvent.event_title}
-                </span>
+              <div className="flex items-center gap-2">
+                {promoSource === "series" && (
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                    {t("usingSeriesPromo")}
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {isOwner && canManageInline && (
+              <div className="flex items-center gap-1">
+                {canManageInline && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
-                    className="h-7 px-2 text-xs text-muted-foreground"
+                    className="h-8 px-2 text-muted-foreground"
                   >
-                    {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+                    {isUploading ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Upload className="w-3.5 h-3.5 mr-1" />}
                     {isUploading ? t("uploading") : t("uploadNew")}
                   </Button>
                 )}
-                <Link
-                  href={`/events/${sourceEvent.event_slug}/moments`}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-                >
-                  {t("seeAll")} →
-                </Link>
+                {canImportFromSeries && (
+                  <Button variant="ghost" size="sm" onClick={handleOpenPicker} className="h-8 px-2 text-muted-foreground">
+                    <Images className="w-3.5 h-3.5 mr-1" />
+                    {t("importFromMoments")}
+                  </Button>
+                )}
+                {!canManageInline && onEditClick && (
+                  <Button variant="ghost" size="sm" onClick={onEditClick} className="h-8 px-2 text-muted-foreground">
+                    <Pencil className="w-3.5 h-3.5 mr-1" />
+                    {t("editPromo")}
+                  </Button>
+                )}
               </div>
             </div>
+          )}
 
-            <div className="grid grid-cols-3 gap-2">
-              {pastMoments.slice(0, 6).map((moment) => {
-                const thumb = moment.thumbnail_url || moment.media_url;
-                return (
-                  <Link key={moment.id} href={`/events/${moment.event_slug}/moments`}>
-                    <div className="aspect-square rounded-lg overflow-hidden bg-muted group">
-                      {thumb && (
-                        <img
-                          src={thumb}
-                          alt=""
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                        />
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-        </>
-      );
-    }
+          {/* Promo grid */}
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {promo.slice(0, 8).map((item, index) => (
+              <PromoThumbnail
+                key={item.id}
+                item={item}
+                onClick={() => openLightbox(index)}
+                canDelete={canManageInline}
+                onDelete={() => handleDeletePromo(item.id)}
+              />
+            ))}
+            {promo.length > 8 && (
+              <button
+                onClick={() => openLightbox(8)}
+                className="aspect-square rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 transition-colors"
+              >
+                <span className="text-sm font-medium">+{promo.length - 8}</span>
+              </button>
+            )}
+          </div>
 
-    // No past moments — only show empty state for owners
-    if (!isOwner) return null;
+          {/* Lightbox */}
+          <Dialog open={lightboxIndex !== null} onOpenChange={() => closeLightbox()}>
+            <DialogContent className="max-w-4xl p-0 bg-black/95 border-none">
+              <div className="relative w-full h-[80vh] flex items-center justify-center">
+                <button onClick={closeLightbox} className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+                {lightboxIndex !== null && lightboxIndex > 0 && (
+                  <button onClick={goPrev} className="absolute left-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                )}
+                {lightboxIndex !== null && lightboxIndex < promo.length - 1 && (
+                  <button onClick={goNext} className="absolute right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                )}
+                {lightboxIndex !== null && <PromoLightboxContent item={promo[lightboxIndex]} />}
+                {lightboxIndex !== null && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+                    {lightboxIndex + 1} / {promo.length}
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
 
-    return (
-      <>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,video/*,application/pdf"
-          multiple
-          onChange={handleFileUpload}
-          className="hidden"
-        />
+      {/* Owner empty state — no promo, no past moments */}
+      {promo.length === 0 && isOwner && pastMoments.length === 0 && (
         <div className="rounded-lg border border-dashed border-muted-foreground/30 p-6 text-center">
           <Sparkles className="w-8 h-8 mx-auto text-muted-foreground/50 mb-2" />
           <p className="text-sm text-muted-foreground mb-3">{t("noPromo")}</p>
           <div className="flex flex-wrap items-center justify-center gap-2">
             {canManageInline && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                {isUploading ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4 mr-2" />
-                )}
+              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
                 {isUploading ? t("uploading") : t("uploadNew")}
               </Button>
             )}
@@ -348,163 +373,58 @@ export function PromoMediaSection({
             )}
           </div>
         </div>
+      )}
 
-        {/* Moment picker dialog */}
-        {canImportFromSeries && (
-          <MomentPickerDialog
-            open={showPicker}
-            onOpenChange={setShowPicker}
-            isSeriesEvent={isSeriesEvent}
-            isLoadingMoments={isLoadingMoments}
-            momentsByEvent={momentsByEvent}
-            selectedMomentIds={selectedMomentIds}
-            toggleMomentSelection={toggleMomentSelection}
-            updateScope={updateScope}
-            setUpdateScope={setUpdateScope}
-            isSaving={isSaving}
-            onImport={handleImportMoments}
-            t={t}
-          />
-        )}
-      </>
-    );
-  }
-
-  const openLightbox = (index: number) => setLightboxIndex(index);
-  const closeLightbox = () => setLightboxIndex(null);
-  const goNext = () => setLightboxIndex((i) => (i !== null && i < promo.length - 1 ? i + 1 : i));
-  const goPrev = () => setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : i));
-
-  return (
-    <section className="space-y-3">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*,video/*,application/pdf"
-        multiple
-        onChange={handleFileUpload}
-        className="hidden"
-      />
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {promoSource === "series" && (
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
-              {t("usingSeriesPromo")}
-            </span>
-          )}
+      {/* ── Past moments — always shown when available ── */}
+      {pastMoments.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <Images className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-sm font-medium text-muted-foreground">{t("pastMomentsTitle")}</span>
+              <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground truncate">
+                {sourceEvent.event_title}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {promo.length === 0 && isOwner && canManageInline && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="h-7 px-2 text-xs text-muted-foreground"
+                >
+                  {isUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+                  {isUploading ? t("uploading") : t("uploadNew")}
+                </Button>
+              )}
+              <Link
+                href={`/events/${sourceEvent.event_slug}/moments`}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+              >
+                {t("seeAll")} →
+              </Link>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {pastMoments.slice(0, 6).map((moment) => {
+              const thumb = moment.thumbnail_url || moment.media_url;
+              return (
+                <Link key={moment.id} href={`/events/${moment.event_slug}/moments`}>
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted group">
+                    {thumb && (
+                      <img src={thumb} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
-        {isOwner && (
-          <div className="flex items-center gap-1">
-            {canManageInline && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="h-8 px-2 text-muted-foreground"
-              >
-                {isUploading ? (
-                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                ) : (
-                  <Upload className="w-3.5 h-3.5 mr-1" />
-                )}
-                {isUploading ? t("uploading") : t("uploadNew")}
-              </Button>
-            )}
-            {canImportFromSeries && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleOpenPicker}
-                className="h-8 px-2 text-muted-foreground"
-              >
-                <Images className="w-3.5 h-3.5 mr-1" />
-                {t("importFromMoments")}
-              </Button>
-            )}
-            {!canManageInline && onEditClick && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onEditClick}
-                className="h-8 px-2 text-muted-foreground"
-              >
-                <Pencil className="w-3.5 h-3.5 mr-1" />
-                {t("editPromo")}
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
+      )}
 
-      {/* Gallery Grid */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-        {promo.slice(0, 8).map((item, index) => (
-          <PromoThumbnail
-            key={item.id}
-            item={item}
-            onClick={() => openLightbox(index)}
-            canDelete={canManageInline}
-            onDelete={() => handleDeletePromo(item.id)}
-          />
-        ))}
-        {promo.length > 8 && (
-          <button
-            onClick={() => openLightbox(8)}
-            className="aspect-square rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 transition-colors"
-          >
-            <span className="text-sm font-medium">+{promo.length - 8}</span>
-          </button>
-        )}
-      </div>
-
-      {/* Lightbox */}
-      <Dialog open={lightboxIndex !== null} onOpenChange={() => closeLightbox()}>
-        <DialogContent className="max-w-4xl p-0 bg-black/95 border-none">
-          <div className="relative w-full h-[80vh] flex items-center justify-center">
-            {/* Close button */}
-            <button
-              onClick={closeLightbox}
-              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Navigation */}
-            {lightboxIndex !== null && lightboxIndex > 0 && (
-              <button
-                onClick={goPrev}
-                className="absolute left-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-            )}
-            {lightboxIndex !== null && lightboxIndex < promo.length - 1 && (
-              <button
-                onClick={goNext}
-                className="absolute right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            )}
-
-            {/* Content */}
-            {lightboxIndex !== null && (
-              <PromoLightboxContent item={promo[lightboxIndex]} />
-            )}
-
-            {/* Counter */}
-            {lightboxIndex !== null && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
-                {lightboxIndex + 1} / {promo.length}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Moment picker dialog for inline management */}
+      {/* Moment picker dialog */}
       {canImportFromSeries && (
         <MomentPickerDialog
           open={showPicker}
