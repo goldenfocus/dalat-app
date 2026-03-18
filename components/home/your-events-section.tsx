@@ -278,6 +278,8 @@ function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents
           album: row.track_album,
           thumbnail_url: row.track_thumbnail_url,
           duration_seconds: row.track_duration_seconds,
+          lyrics_lrc: row.track_lyrics_lrc,
+          timing_offset: row.track_timing_offset || 0,
         }));
 
       if (tracks.length === 0) return;
