@@ -30,29 +30,22 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
       {
-        // Explicitly allow AI crawlers for AEO (AI Engine Optimization)
-        // These crawlers power AI assistants like ChatGPT, Claude, Perplexity
+        // AI crawlers: allow content pages only, block dynamic/expensive routes
+        // that trigger server-side functions and cause invocation spikes
         userAgent: [
-          "ChatGPT-User",     // OpenAI ChatGPT browse mode
-          "GPTBot",           // OpenAI general crawler
-          "Claude-Web",       // Anthropic Claude
-          "ClaudeBot",        // Anthropic Claude crawler
-          "PerplexityBot",    // Perplexity AI
-          "Applebot-Extended", // Apple Intelligence
-          "GoogleOther",      // Google AI features
-          "Google-Extended",  // Google Bard/Gemini
-          "cohere-ai",        // Cohere AI
-          "anthropic-ai",     // Anthropic
+          "ChatGPT-User",
+          "GPTBot",
+          "Claude-Web",
+          "ClaudeBot",
+          "PerplexityBot",
+          "Applebot-Extended",
+          "GoogleOther",
+          "Google-Extended",
+          "cohere-ai",
+          "anthropic-ai",
         ],
-        allow: "/",
-        disallow: [
-          "/api/",
-          "/auth/",
-          "/admin/",
-          "/organizer/",
-          "/protected/",
-          "/settings/",
-        ],
+        allow: ["/blog/", "/events/", "/about", "/faq", "/contact"],
+        disallow: "/",
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
