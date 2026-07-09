@@ -68,8 +68,9 @@ export async function translateText(
 /**
  * Translate a set of named fields to one target locale in a single AI call.
  * Returns { field_name: translated_text }.
+ * Exported for incremental per-locale workflows (translate-pending cron).
  */
-async function translateFieldsToLocale(
+export async function translateFieldsToLocale(
   fields: { field_name: string; text: string }[],
   targetLocale: ContentLocale
 ): Promise<Record<string, string>> {

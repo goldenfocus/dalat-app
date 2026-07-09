@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import sharp from "sharp";
+import convert from "heic-convert";
 import { getR2Config } from "@/lib/storage/r2-config";
 
 export const maxDuration = 60; // Allow longer execution for large files
@@ -93,10 +93,14 @@ export async function POST(request: NextRequest) {
 
     console.log("[upload-heic] Converting to JPEG...");
 
-    // Convert to JPEG using sharp
-    const jpegBuffer = await sharp(heicBuffer)
-      .jpeg({ quality: 90, mozjpeg: true })
-      .toBuffer();
+    // Convert to JPEG using heic-convert (pure JS/WASM — sharp's native
+    // binary can't run on Cloudflare Workers)
+    const jpegArrayBuffer = await convert({
+      buffer: heicBuffer,
+      format: "JPEG",
+      quality: 0.9,
+    });
+    const jpegBuffer = Buffer.from(jpegArrayBuffer);
 
     console.log("[upload-heic] Converted:", jpegBuffer.length, "bytes");
 

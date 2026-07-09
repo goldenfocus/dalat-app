@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { batchTranslateFields } from '@/lib/google-translate';
+import { translateFieldsToLocale, detectLanguage } from '@/lib/google-translate';
 import { CONTENT_LOCALES, ContentLocale } from '@/lib/types';
 
 /**
  * Self-healing translation cron.
  *
  * Finds published content whose content_translations coverage is incomplete
- * and translates it via the free AI provider chain, newest first, until the
- * time budget runs out. This both handles new content (news-process no longer
- * translates inline) and gradually backfills any historical gaps.
+ * and translates it via the free AI provider chain, newest first, one locale
+ * at a time so every unit of work is upserted immediately (a long blog post
+ * can take minutes per locale on the local model — nothing is lost when the
+ * time budget cuts a run short). Handles new content (news-process no longer
+ * translates inline) and gradually backfills historical gaps.
  */
 
 function getSupabase() {
@@ -21,8 +23,10 @@ function getSupabase() {
 
 export const maxDuration = 300;
 
-/** Stop picking up new items after this much of the budget is spent */
-const TIME_BUDGET_MS = 240_000;
+/** Stop starting new locale translations after this much time.
+ * Cloudflare cron invocations get up to 15 min wall clock — long blog posts
+ * take ~2.5 min per locale on the local model. */
+const TIME_BUDGET_MS = 720_000;
 /** Max content items examined per content type per run */
 const SCAN_LIMIT = 25;
 
@@ -31,6 +35,7 @@ interface WorkItem {
   contentId: string;
   sourceLocale: ContentLocale | null;
   fields: { field_name: string; text: string }[];
+  missingLocales: ContentLocale[];
 }
 
 export async function GET(request: Request) {
@@ -45,63 +50,71 @@ export async function GET(request: Request) {
 
   const supabase = getSupabase();
   const startedAt = Date.now();
-  const done: string[] = [];
+  let localesDone = 0;
   let errors = 0;
 
   try {
     const work = await collectWork(supabase);
 
-    for (const item of work) {
-      if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+    // Diagnostic mode: report the work list without translating
+    if (new URL(request.url).searchParams.has('scan')) {
+      return NextResponse.json({
+        scan: true,
+        elapsed_s: Math.round((Date.now() - startedAt) / 1000),
+        pending: work.map(
+          (w) => `${w.contentType}:${w.contentId} (${w.missingLocales.length} locales)`
+        ),
+      });
+    }
 
-      try {
-        const { detectedLocale, translations } = await batchTranslateFields(
-          item.fields,
-          item.sourceLocale ?? undefined
-        );
+    outer: for (const item of work) {
+      const sourceLocale =
+        item.sourceLocale ?? (await detectLanguage(item.fields[0].text));
 
-        const inserts: Record<string, string>[] = [];
-        for (const locale of CONTENT_LOCALES) {
-          const localeTranslations = translations[locale];
-          if (!localeTranslations) continue;
-          for (const field of item.fields) {
-            const translatedText = localeTranslations[field.field_name];
-            if (!translatedText) continue;
-            inserts.push({
+      for (const locale of item.missingLocales) {
+        if (Date.now() - startedAt > TIME_BUDGET_MS) break outer;
+
+        try {
+          const translated =
+            locale === sourceLocale
+              ? Object.fromEntries(item.fields.map((f) => [f.field_name, f.text]))
+              : await translateFieldsToLocale(item.fields, locale);
+
+          const inserts = item.fields
+            .filter((f) => translated[f.field_name])
+            .map((f) => ({
               content_type: item.contentType,
               content_id: item.contentId,
-              source_locale: detectedLocale,
+              source_locale: sourceLocale,
               target_locale: locale,
-              field_name: field.field_name,
-              translated_text: translatedText,
+              field_name: f.field_name,
+              translated_text: translated[f.field_name],
               translation_status: 'auto',
-            });
+            }));
+
+          if (inserts.length > 0) {
+            const { error } = await supabase
+              .from('content_translations')
+              .upsert(inserts, {
+                onConflict: 'content_type,content_id,target_locale,field_name',
+              });
+            if (error) throw error;
+            localesDone++;
           }
+        } catch (err) {
+          errors++;
+          console.error(
+            `[translate-pending] ${item.contentType}:${item.contentId} ${locale} failed:`,
+            err
+          );
         }
-
-        if (inserts.length > 0) {
-          const { error } = await supabase
-            .from('content_translations')
-            .upsert(inserts, {
-              onConflict: 'content_type,content_id,target_locale,field_name',
-            });
-          if (error) throw error;
-        }
-
-        done.push(`${item.contentType}:${item.contentId}`);
-        console.log(
-          `[translate-pending] ${item.contentType}:${item.contentId} -> ${inserts.length} rows`
-        );
-      } catch (err) {
-        errors++;
-        console.error(`[translate-pending] ${item.contentType}:${item.contentId} failed:`, err);
       }
     }
 
     return NextResponse.json({
       success: true,
-      pending_found: work.length,
-      translated: done.length,
+      pending_items: work.length,
+      locales_translated: localesDone,
       errors,
       elapsed_s: Math.round((Date.now() - startedAt) / 1000),
     });
@@ -112,12 +125,12 @@ export async function GET(request: Request) {
 }
 
 /**
- * Collect content items with incomplete translation coverage, newest first.
+ * Collect content items with missing translation locales, newest first.
  */
 async function collectWork(
   supabase: ReturnType<typeof getSupabase>
 ): Promise<WorkItem[]> {
-  const work: WorkItem[] = [];
+  const candidates: Omit<WorkItem, 'missingLocales'>[] = [];
 
   // --- Blog posts ---
   const { data: posts } = await supabase
@@ -135,12 +148,10 @@ async function collectWork(
       { field_name: 'meta_description', text: post.meta_description },
     ].filter((f) => f.text && f.text.trim().length > 0);
     if (fields.length === 0) continue;
-    if (await isIncomplete(supabase, 'blog', post.id, fields.length)) {
-      work.push({ contentType: 'blog', contentId: post.id, sourceLocale: post.source_locale, fields });
-    }
+    candidates.push({ contentType: 'blog', contentId: post.id, sourceLocale: post.source_locale, fields });
   }
 
-  // --- Events (upcoming and recent) ---
+  // --- Events (newest first) ---
   const { data: events } = await supabase
     .from('events')
     .select('id, title, description, source_locale')
@@ -153,9 +164,7 @@ async function collectWork(
       { field_name: 'description', text: event.description },
     ].filter((f) => f.text && f.text.trim().length > 0);
     if (fields.length === 0) continue;
-    if (await isIncomplete(supabase, 'event', event.id, fields.length)) {
-      work.push({ contentType: 'event', contentId: event.id, sourceLocale: event.source_locale, fields });
-    }
+    candidates.push({ contentType: 'event', contentId: event.id, sourceLocale: event.source_locale, fields });
   }
 
   // --- Moments ---
@@ -168,29 +177,41 @@ async function collectWork(
 
   for (const moment of moments ?? []) {
     if (!moment.text_content?.trim()) continue;
-    const fields = [{ field_name: 'text_content', text: moment.text_content }];
-    if (await isIncomplete(supabase, 'moment', moment.id, fields.length)) {
-      work.push({ contentType: 'moment', contentId: moment.id, sourceLocale: moment.source_locale, fields });
+    candidates.push({
+      contentType: 'moment',
+      contentId: moment.id,
+      sourceLocale: moment.source_locale,
+      fields: [{ field_name: 'text_content', text: moment.text_content }],
+    });
+  }
+
+  // One query for existing coverage of ALL candidates (per-item HEAD count
+  // queries hang from workerd, and one GET is faster anyway). A locale is
+  // complete when it has a row for every field of the item.
+  const ids = candidates.map((c) => c.contentId);
+  const covered = new Map<string, Map<string, number>>();
+  for (let i = 0; i < ids.length; i += 50) {
+    const { data: rows } = await supabase
+      .from('content_translations')
+      .select('content_type, content_id, target_locale')
+      .in('content_id', ids.slice(i, i + 50));
+    for (const row of rows ?? []) {
+      const key = `${row.content_type}:${row.content_id}`;
+      const perLocale = covered.get(key) ?? new Map<string, number>();
+      perLocale.set(row.target_locale, (perLocale.get(row.target_locale) ?? 0) + 1);
+      covered.set(key, perLocale);
     }
   }
 
+  const work: WorkItem[] = [];
+  for (const c of candidates) {
+    const perLocale = covered.get(`${c.contentType}:${c.contentId}`);
+    const missingLocales = CONTENT_LOCALES.filter(
+      (locale) => (perLocale?.get(locale) ?? 0) < c.fields.length
+    );
+    if (missingLocales.length > 0) {
+      work.push({ ...c, missingLocales });
+    }
+  }
   return work;
-}
-
-/**
- * A content item is incomplete when it has fewer translation rows than
- * fields x locales.
- */
-async function isIncomplete(
-  supabase: ReturnType<typeof getSupabase>,
-  contentType: string,
-  contentId: string,
-  fieldCount: number
-): Promise<boolean> {
-  const { count } = await supabase
-    .from('content_translations')
-    .select('id', { count: 'exact', head: true })
-    .eq('content_type', contentType)
-    .eq('content_id', contentId);
-  return (count ?? 0) < fieldCount * CONTENT_LOCALES.length;
 }

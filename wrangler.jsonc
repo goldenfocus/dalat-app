@@ -1,0 +1,71 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dalat-app",
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2025-05-05",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  // Production traffic: dalat.app DNS stays pointed at Vercel but is proxied
+  // through Cloudflare, so these routes intercept at the edge. Rollback =
+  // remove the routes (traffic falls through to Vercel again).
+  "routes": [
+    { "pattern": "dalat.app/*", "zone_id": "5daec682767ecc839e693fbdab17eab4" },
+    { "pattern": "www.dalat.app/*", "zone_id": "5daec682767ecc839e693fbdab17eab4" }
+  ],
+  // Cloudflare Images binding — lets the OpenNext image handler actually
+  // resize/compress next/image requests (otherwise originals pass through)
+  "images": {
+    "binding": "IMAGES"
+  },
+  // Next SSR + AI-backed cron routes need headroom beyond the 30s default
+  "limits": {
+    "cpu_ms": 300000
+  },
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "dalat-app-cache"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "NEXT_TAG_CACHE_D1",
+      "database_name": "dalat-app-tags",
+      "database_id": "4a1a4547-81f5-45d6-99f1-65222b790d31"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler"]
+    }
+  ],
+  // Mirrors vercel.json crons; cloudflare/worker.ts maps expression -> path.
+  // news-process stays at 3,15 UTC (before the legacy Vercel project's 4,16
+  // run) so the working pipeline drains the queue first.
+  "triggers": {
+    "crons": [
+      "0 20 * * *",
+      "0 1 * * *",
+      "0 3 * * *",
+      "0 16 * * *",
+      "0 2,14 * * *",
+      "0 3,15 * * *",
+      "30 */2 * * *"
+    ]
+  }
+}

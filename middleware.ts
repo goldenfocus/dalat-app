@@ -1,7 +1,11 @@
 import { updateSession } from "@/lib/supabase/proxy";
 import { type NextRequest } from "next/server";
 
-export async function proxy(request: NextRequest) {
+// Edge middleware (NOT proxy.ts): the OpenNext Cloudflare adapter only
+// supports edge middleware, and in Next 16 proxy.ts always compiles to the
+// unsupported Node runtime. Exactly ONE of middleware.ts/proxy.ts may exist
+// — both at once crashes the app (enforced by the prebuild script).
+export async function middleware(request: NextRequest) {
   return await updateSession(request);
 }
 

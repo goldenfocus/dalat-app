@@ -65,11 +65,13 @@ const { data: { publicUrl } } = supabase.storage.from("bucket").getPublicUrl(pat
 
 **History:** Feb 2026 — found 432 images on Supabase Storage instead of R2. Migrated all + fixed 6 code paths that were bypassing R2.
 
-## ⛔ CRITICAL: NEVER Create middleware.ts
+## ⛔ CRITICAL: NEVER Have BOTH middleware.ts AND proxy.ts
 
 **THIS HAS BROKEN PRODUCTION MULTIPLE TIMES. READ CAREFULLY.**
 
 Next.js 16 renamed `middleware.ts` to `proxy.ts`. Having both files **crashes the entire app**.
+
+**July 2026 (Cloudflare migration):** this app now deploys to Cloudflare Workers via OpenNext, which only supports **edge** middleware. In Next 16, `proxy.ts` always compiles to the Node runtime (unsupported on Workers), so the app uses **`middleware.ts` (edge) and must NOT have a `proxy.ts`**. The prebuild script enforces "never both".
 
 ## ⛔ CRITICAL: Moments Strip RPC - PRESERVE cover_moment_id
 
@@ -99,12 +101,12 @@ ORDER BY
 
 | File | Status |
 |------|--------|
-| `proxy.ts` | ✅ Use this for all request interception |
-| `middleware.ts` | ⛔ **NEVER CREATE THIS FILE** |
+| `middleware.ts` | ✅ Use this (edge runtime — required by OpenNext/Cloudflare) |
+| `proxy.ts` | ⛔ **NEVER CREATE THIS FILE** (Node runtime, unsupported on Workers) |
 
-The build will fail if `middleware.ts` exists (enforced by `prebuild` script).
+The build will fail if BOTH files exist (enforced by `prebuild` script).
 
-**If you need middleware functionality:** Edit `proxy.ts` at the project root. That's it.
+**If you need middleware functionality:** Edit `middleware.ts` at the project root. That's it.
 
 ## Mobile-First Touch Targets
 

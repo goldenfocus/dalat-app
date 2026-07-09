@@ -1,0 +1,76 @@
+/**
+ * Custom worker entry: OpenNext fetch handler + cron trigger support.
+ *
+ * Cloudflare cron triggers identify themselves only by the cron EXPRESSION,
+ * so this maps each expression from wrangler.jsonc to the Vercel-style cron
+ * route(s) it replaces. Requests are dispatched to the worker's own fetch
+ * handler (no external network round-trip) with the CRON_SECRET the routes
+ * expect.
+ */
+// @ts-expect-error generated at build time by `opennextjs-cloudflare build`
+import worker, { DOQueueHandler } from "../.open-next/worker.js";
+
+export { DOQueueHandler };
+
+const CRON_ROUTES: Record<string, string[]> = {
+  "0 20 * * *": ["/api/cron/daily-summary"],
+  "0 1 * * *": ["/api/cron/sync-dalat-gov"],
+  "0 3 * * *": ["/api/cron/backfill-embeddings?limit=20&delay=5000"],
+  "0 16 * * *": ["/api/cron/mark-no-shows"],
+  "0 2,14 * * *": ["/api/cron/news-scrape"],
+  "0 3,15 * * *": ["/api/cron/news-process"],
+  "30 */2 * * *": ["/api/cron/translate-pending"],
+};
+
+interface Env {
+  CRON_SECRET?: string;
+  NEXT_PUBLIC_APP_URL?: string;
+  [key: string]: unknown;
+}
+
+// Minimal local mirrors of Cloudflare worker types so the Next.js typecheck
+// passes without pulling @cloudflare/workers-types into the app's tsconfig.
+interface ScheduledEvent {
+  cron: string;
+  scheduledTime: number;
+}
+interface WaitableContext {
+  waitUntil(promise: Promise<unknown>): void;
+}
+
+export default {
+  async fetch(request: Request, env: Env, ctx: unknown) {
+    // Vercel used to handle the www -> apex redirect at the platform level
+    const url = new URL(request.url);
+    if (url.hostname === "www.dalat.app") {
+      url.hostname = "dalat.app";
+      return Response.redirect(url.toString(), 301);
+    }
+    return worker.fetch(request, env, ctx);
+  },
+
+  async scheduled(event: ScheduledEvent, env: Env, ctx: WaitableContext) {
+    const paths = CRON_ROUTES[event.cron];
+    if (!paths) {
+      console.error(`[cron] no route mapped for expression "${event.cron}"`);
+      return;
+    }
+    const base = env.NEXT_PUBLIC_APP_URL || "https://dalat.app";
+
+    ctx.waitUntil(
+      Promise.all(
+        paths.map(async (path) => {
+          const request = new Request(`${base}${path}`, {
+            headers: { authorization: `Bearer ${env.CRON_SECRET ?? ""}` },
+          });
+          try {
+            const res = await worker.fetch(request, env, ctx);
+            console.log(`[cron] ${path} -> ${res.status} ${(await res.text()).slice(0, 300)}`);
+          } catch (err) {
+            console.error(`[cron] ${path} failed:`, err);
+          }
+        })
+      )
+    );
+  },
+};

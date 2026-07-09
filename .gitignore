@@ -44,3 +44,7 @@ next-env.d.ts
 # claude code
 .claude/
 supabase/.temp/
+
+# Cloudflare Workers build artifacts
+.open-next/
+.wrangler/

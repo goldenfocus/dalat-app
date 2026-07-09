@@ -55,8 +55,9 @@ const nextConfig: NextConfig = {
       "recharts",
       "react-hook-form",
     ],
-    // Enable optimized CSS output
-    optimizeCss: true,
+    // optimizeCss (critters inlining) removes .next/static/css, which the
+    // OpenNext Cloudflare bundler expects — keep it off on Workers.
+    optimizeCss: false,
     // Enable faster builds with granular chunking
     webpackBuildWorker: true,
   },
