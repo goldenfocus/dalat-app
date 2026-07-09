@@ -4,6 +4,7 @@ import { Link } from "@/lib/i18n/routing";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { EventGrid } from "@/components/events/event-grid";
+import { getCachedEventSocialBatch } from "@/lib/cache/server-cache";
 import { EventViewToggle } from "@/components/events/event-view-toggle";
 import { Pagination } from "@/components/ui/pagination";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -168,8 +169,9 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
   }
 
   const eventIds = events.map((e) => e.id);
-  const [counts, eventTranslations] = await Promise.all([
+  const [counts, social, eventTranslations] = await Promise.all([
     getEventCounts(eventIds),
+    getCachedEventSocialBatch(eventIds),
     getEventTranslationsBatch(eventIds, locale as ContentLocale),
   ]);
 
@@ -247,6 +249,7 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
             <EventGrid
               events={events}
               counts={counts}
+              social={social}
               eventTranslations={eventTranslations}
             />
           ) : (

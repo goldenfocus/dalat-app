@@ -6,11 +6,12 @@ import { useRouter } from "@/lib/i18n/routing";
 import { useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
-import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
+import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { usePrefetch } from "@/lib/prefetch";
 import { MapPin, Calendar, Clock } from "lucide-react";
+import { getCardCoverUrl, type EventSocial } from "@/lib/events/social-proof";
 import type { Event, Locale } from "@/lib/types";
 
 const BLUR_DATA_URL =
@@ -18,6 +19,7 @@ const BLUR_DATA_URL =
 
 interface EventCardCompactProps {
   event: Event;
+  social?: EventSocial;
   translatedTitle?: string;
   priority?: boolean;
   isFlipped?: boolean;
@@ -32,6 +34,7 @@ interface EventCardCompactProps {
  */
 export const EventCardCompact = memo(function EventCardCompact({
   event,
+  social,
   translatedTitle,
   priority,
   isFlipped = false,
@@ -66,8 +69,9 @@ export const EventCardCompact = memo(function EventCardCompact({
     }
   };
 
-  const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
-  const imageIsVideo = isVideoUrl(event.image_url);
+  const coverUrl = getCardCoverUrl(event.image_url, social);
+  const hasCustomImage = !!coverUrl;
+  const imageIsVideo = isVideoUrl(coverUrl);
   const displayTitle = translatedTitle || event.title;
 
   return (
@@ -99,7 +103,7 @@ export const EventCardCompact = memo(function EventCardCompact({
             {hasCustomImage ? (
               imageIsVideo ? (
                 <video
-                  src={event.image_url!}
+                  src={coverUrl!}
                   className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
                   style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                   muted
@@ -115,7 +119,7 @@ export const EventCardCompact = memo(function EventCardCompact({
                   {event.image_fit !== "cover" && (
                     <Image
                       loader={cloudflareLoader}
-                      src={event.image_url!}
+                      src={coverUrl!}
                       alt=""
                       fill
                       sizes="(max-width: 640px) 50vw, 33vw"
@@ -125,7 +129,7 @@ export const EventCardCompact = memo(function EventCardCompact({
                   )}
                   <Image
                     loader={cloudflareLoader}
-                    src={event.image_url!}
+                    src={coverUrl!}
                     alt={displayTitle}
                     fill
                     sizes="(max-width: 640px) 50vw, 33vw"
@@ -172,7 +176,7 @@ export const EventCardCompact = memo(function EventCardCompact({
             {hasCustomImage && !imageIsVideo && (
               <Image
                 loader={cloudflareLoader}
-                src={event.image_url!}
+                src={coverUrl!}
                 alt=""
                 fill
                 sizes="(max-width: 640px) 50vw, 33vw"

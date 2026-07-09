@@ -9,9 +9,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
-import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
+import { isVideoUrl } from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
+import { getCardCoverUrl, getPastProof, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 // Tiny gradient placeholder for perceived instant loading
@@ -21,6 +22,7 @@ const BLUR_DATA_URL =
 interface EventCardFramedProps {
   event: Event;
   counts?: EventCounts;
+  social?: EventSocial;
   seriesRrule?: string;
   translatedTitle?: string;
   priority?: boolean;
@@ -37,6 +39,7 @@ interface EventCardFramedProps {
 export const EventCardFramed = memo(function EventCardFramed({
   event,
   counts,
+  social,
   seriesRrule,
   translatedTitle,
   priority,
@@ -44,10 +47,14 @@ export const EventCardFramed = memo(function EventCardFramed({
   const t = useTranslations("events");
   const locale = useLocale() as Locale;
 
-  const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
-  const imageIsVideo = isVideoUrl(event.image_url);
+  const coverUrl = getCardCoverUrl(event.image_url, social);
+  const hasCustomImage = !!coverUrl;
+  const isFallbackCover = hasCustomImage && coverUrl !== event.image_url;
+  const imageIsVideo = isVideoUrl(coverUrl);
   const displayTitle = translatedTitle || event.title;
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
+  const goingSpots = counts?.going_spots ?? 0;
+  const pastProof = getPastProof(social);
 
   return (
     <Link
@@ -63,18 +70,26 @@ export const EventCardFramed = memo(function EventCardFramed({
       )}>
         {/* Image container - edge to edge, no frame */}
         <div className="relative aspect-[4/5] overflow-hidden group">
-            {/* Capacity badge - shows spots when event has a cap */}
+            {/* Capacity badge - never advertises a near-zero count; below the
+                threshold it shows open spots instead */}
             {event.capacity ? (
-              <div className={cn(
-                "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
-                (counts?.going_spots ?? 0) >= event.capacity ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
-              )}>
-                <Users className="w-3 h-3" />
-                {counts?.going_spots ?? 0}/{event.capacity}
-              </div>
+              shouldShowGoingCount(goingSpots) ? (
+                <div className={cn(
+                  "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
+                  goingSpots >= event.capacity ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
+                )}>
+                  <Users className="w-3 h-3" />
+                  {goingSpots}/{event.capacity}
+                </div>
+              ) : (
+                <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  {t("spotsAvailable", { count: event.capacity - goingSpots })}
+                </div>
+              )
             ) : (
               /* Popular badge (only for non-sponsored events with 20+ attendees, no cap) */
-              !isSponsored && (counts?.going_spots ?? 0) >= 20 && (
+              !isSponsored && goingSpots >= 20 && (
                 <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
                   {t("popular")}
                 </div>
@@ -92,7 +107,7 @@ export const EventCardFramed = memo(function EventCardFramed({
             {hasCustomImage ? (
               imageIsVideo ? (
                 <video
-                  src={event.image_url!}
+                  src={coverUrl!}
                   className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
                   style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                   muted
@@ -108,7 +123,7 @@ export const EventCardFramed = memo(function EventCardFramed({
                   {event.image_fit !== "cover" && (
                     <Image
                       loader={cloudflareLoader}
-                      src={event.image_url!}
+                      src={coverUrl!}
                       alt=""
                       fill
                       sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
@@ -119,7 +134,7 @@ export const EventCardFramed = memo(function EventCardFramed({
                   {/* Main image */}
                   <Image
                     loader={cloudflareLoader}
-                    src={event.image_url!}
+                    src={coverUrl!}
                     alt={displayTitle}
                     fill
                     sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
@@ -137,6 +152,13 @@ export const EventCardFramed = memo(function EventCardFramed({
                 title={displayTitle}
                 className="object-cover w-full h-full"
               />
+            )}
+
+            {/* Photographer credit for fallback covers (real moment from a past occurrence) */}
+            {isFallbackCover && social?.fallback_photo_credit && (
+              <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full">
+                {t("photoBy", { name: social.fallback_photo_credit })}
+              </div>
             )}
 
           {/* Hover overlay */}
@@ -161,6 +183,18 @@ export const EventCardFramed = memo(function EventCardFramed({
               <div className="flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                 <span className="truncate">{decodeUnicodeEscapes(event.location_name)}</span>
+              </div>
+            )}
+
+            {/* Past-proof: real history beats a near-zero going count */}
+            {!shouldShowGoingCount(goingSpots) && pastProof && (
+              <div className="flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">
+                  {pastProof.kind === "both" && t("pastProofBoth", { went: pastProof.went, photos: pastProof.photos })}
+                  {pastProof.kind === "photos" && t("pastProofPhotos", { photos: pastProof.photos })}
+                  {pastProof.kind === "went" && t("pastProofWent", { went: pastProof.went })}
+                </span>
               </div>
             )}
           </div>

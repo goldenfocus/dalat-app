@@ -8,11 +8,12 @@ import { useTranslations, useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
-import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
+import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { usePrefetch } from "@/lib/prefetch";
 import { decodeUnicodeEscapes } from "@/lib/utils";
+import { getCardCoverUrl, getPastProof, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
 import type { Event, EventCounts, Locale } from "@/lib/types";
 
 const BLUR_DATA_URL =
@@ -21,6 +22,7 @@ const BLUR_DATA_URL =
 interface EventImmersiveCardProps {
   event: Event;
   counts?: EventCounts;
+  social?: EventSocial;
   seriesRrule?: string;
   translatedTitle?: string;
   priority?: boolean;
@@ -43,6 +45,7 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
 export const EventImmersiveCard = memo(function EventImmersiveCard({
   event,
   counts,
+  social,
   seriesRrule,
   translatedTitle,
   priority,
@@ -56,18 +59,20 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
     prefetchEventCounts(event.id);
   };
 
+  const goingSpots = counts?.going_spots ?? 0;
   const spotsText = event.capacity
-    ? `${counts?.going_spots ?? 0}/${event.capacity}`
-    : `${counts?.going_spots ?? 0}`;
+    ? `${goingSpots}/${event.capacity}`
+    : `${goingSpots}`;
 
-  const isFull = event.capacity
-    ? (counts?.going_spots ?? 0) >= event.capacity
-    : false;
+  const isFull = event.capacity ? goingSpots >= event.capacity : false;
 
   const isPast = isEventPast(event.starts_at, event.ends_at);
-  const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
-  const imageIsVideo = isVideoUrl(event.image_url);
+  const coverUrl = getCardCoverUrl(event.image_url, social);
+  const hasCustomImage = !!coverUrl;
+  const isFallbackCover = hasCustomImage && coverUrl !== event.image_url;
+  const imageIsVideo = isVideoUrl(coverUrl);
   const displayTitle = translatedTitle || event.title;
+  const pastProof = getPastProof(social);
 
   return (
     <Link
@@ -82,7 +87,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
         {hasCustomImage ? (
           imageIsVideo ? (
             <video
-              src={event.image_url!}
+              src={coverUrl!}
               className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
               style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
               muted
@@ -98,7 +103,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
               {event.image_fit !== "cover" && (
                 <Image
                   loader={cloudflareLoader}
-                  src={event.image_url!}
+                  src={coverUrl!}
                   alt=""
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
@@ -108,7 +113,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
               )}
               <Image
                 loader={cloudflareLoader}
-                src={event.image_url!}
+                src={coverUrl!}
                 alt={displayTitle}
                 fill
                 sizes="(max-width: 640px) 100vw, 50vw"
@@ -137,9 +142,18 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
       )}
 
       {/* Popular badge - top right */}
-      {(counts?.going_spots ?? 0) >= 20 && (
+      {goingSpots >= 20 && (
         <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-amber-500/90 text-white text-xs font-medium rounded-full">
           {t("popular")}
+        </div>
+      )}
+
+      {/* Photographer credit for fallback covers */}
+      {isFallbackCover && social?.fallback_photo_credit && (
+        <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full"
+          style={goingSpots >= 20 ? { top: "3.25rem" } : undefined}
+        >
+          {t("photoBy", { name: social.fallback_photo_credit })}
         </div>
       )}
 
@@ -168,20 +182,37 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
             </div>
           )}
 
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
-            <span>
-              {spotsText} {isPast ? t("went") : t("going")}
-              {isFull && (
-                <span className="ml-1 text-orange-300">({t("full")})</span>
-              )}
-              {(counts?.interested_count ?? 0) > 0 && (
-                <span className="ml-1 opacity-80">
-                  &middot; {counts?.interested_count} {t("interested")}
-                </span>
-              )}
-            </span>
-          </div>
+          {/* Going count only when meaningful; past-proof beats a near-zero count */}
+          {shouldShowGoingCount(goingSpots) ? (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+              <span>
+                {spotsText} {isPast ? t("went") : t("going")}
+                {isFull && (
+                  <span className="ml-1 text-orange-300">({t("full")})</span>
+                )}
+                {(counts?.interested_count ?? 0) > 0 && (
+                  <span className="ml-1 opacity-80">
+                    &middot; {counts?.interested_count} {t("interested")}
+                  </span>
+                )}
+              </span>
+            </div>
+          ) : pastProof && !isPast ? (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+              <span className="line-clamp-1">
+                {pastProof.kind === "both" && t("pastProofBoth", { went: pastProof.went, photos: pastProof.photos })}
+                {pastProof.kind === "photos" && t("pastProofPhotos", { photos: pastProof.photos })}
+                {pastProof.kind === "went" && t("pastProofWent", { went: pastProof.went })}
+              </span>
+            </div>
+          ) : event.capacity && !isPast ? (
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+              <span>{t("spotsAvailable", { count: event.capacity - goingSpots })}</span>
+            </div>
+          ) : null}
         </div>
       </div>
 

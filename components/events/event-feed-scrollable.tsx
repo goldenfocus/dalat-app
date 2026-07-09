@@ -9,6 +9,7 @@ import { getEventTranslationsBatch } from "@/lib/translations";
 import {
   getCachedEventsByLifecycle,
   getCachedEventCountsBatch,
+  getCachedEventSocialBatch,
 } from "@/lib/cache/server-cache";
 
 interface EventFeedScrollableProps {
@@ -40,9 +41,10 @@ export async function EventFeedScrollable({
     ...upcomingEvents.map((e) => e.id),
   ];
 
-  // Batch fetch counts and translations
-  const [counts, eventTranslations] = await Promise.all([
+  // Batch fetch counts, social-proof data, and translations
+  const [counts, social, eventTranslations] = await Promise.all([
     getCachedEventCountsBatch(allEventIds),
+    getCachedEventSocialBatch(allEventIds),
     getEventTranslationsBatch(allEventIds, locale as ContentLocale),
   ]);
 
@@ -83,6 +85,7 @@ export async function EventFeedScrollable({
                   key={event.id}
                   event={event}
                   counts={counts[event.id]}
+                  social={social[event.id]}
                   translatedTitle={translation?.title}
                 />
               );
@@ -111,6 +114,7 @@ export async function EventFeedScrollable({
         <EventGrid
           events={upcomingEvents}
           counts={counts}
+          social={social}
           eventTranslations={eventTranslations}
           seriesRrules={seriesRrules}
         />
