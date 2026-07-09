@@ -56,7 +56,10 @@ export async function GET(request: Request) {
       .select('*')
       .eq('status', 'pending')
       .order('scraped_at', { ascending: true })
-      .limit(50);
+      // Small batches: keyword extraction runs ~8s/article on the local
+      // model and deferred articles get re-clustered next run, so a big
+      // batch spends the whole time budget clustering instead of writing.
+      .limit(12);
 
     if (fetchError) {
       console.error('[news-process] Failed to fetch articles:', fetchError);
