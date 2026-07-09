@@ -132,6 +132,16 @@ export function parseEventDate(
   return null;
 }
 
+/**
+ * Normalize Facebook event URL variants (m./mbasic./bare host, trailing slash,
+ * tracking params, ?event_time_id for recurring events) to one canonical form,
+ * so exact-match dedupe on external_chat_url doesn't re-import the same event.
+ */
+export function canonicalizeFacebookEventUrl(url: string): string {
+  const match = url.match(/facebook\.com\/events\/(\d+)/i);
+  return match ? `https://www.facebook.com/events/${match[1]}` : url;
+}
+
 export function generateMapsUrl(
   latitude?: number | string,
   longitude?: number | string,

@@ -5,7 +5,28 @@ vi.mock("@/lib/storage", () => ({
   getStorageProvider: vi.fn(async () => ({ upload: uploadMock })),
 }));
 
-import { downloadAndUploadImage, parseEventDate } from "./utils";
+import {
+  downloadAndUploadImage,
+  parseEventDate,
+  canonicalizeFacebookEventUrl,
+} from "./utils";
+
+describe("canonicalizeFacebookEventUrl", () => {
+  it.each([
+    ["https://m.facebook.com/events/123456789/", "https://www.facebook.com/events/123456789"],
+    ["https://www.facebook.com/events/123456789?ref=newsfeed", "https://www.facebook.com/events/123456789"],
+    ["https://www.facebook.com/events/123456789/?event_time_id=987", "https://www.facebook.com/events/123456789"],
+    ["https://facebook.com/events/123456789", "https://www.facebook.com/events/123456789"],
+  ])("canonicalizes %s", (input, expected) => {
+    expect(canonicalizeFacebookEventUrl(input)).toBe(expected);
+  });
+
+  it("returns non-FB-event URLs unchanged", () => {
+    expect(canonicalizeFacebookEventUrl("https://ticketbox.vn/e/1")).toBe(
+      "https://ticketbox.vn/e/1"
+    );
+  });
+});
 import { getStorageProvider } from "@/lib/storage";
 
 describe("parseEventDate", () => {

@@ -5,6 +5,7 @@ import {
   generateUniqueSlug,
   findOrCreateOrganizer,
   checkDuplicateByUrl,
+  canonicalizeFacebookEventUrl,
   generateMapsUrl,
   createEmptyResult,
   downloadAndUploadImage,
@@ -38,8 +39,9 @@ export async function processFacebookEvents(
         continue;
       }
 
-      // Check for duplicates
-      if (await checkDuplicateByUrl(supabase, event.url)) {
+      // Check for duplicates (canonical form — URL variants must not re-import)
+      const canonicalUrl = canonicalizeFacebookEventUrl(event.url);
+      if (await checkDuplicateByUrl(supabase, canonicalUrl)) {
         result.skipped++;
         continue;
       }
@@ -69,7 +71,7 @@ export async function processFacebookEvents(
         location_name: normalized.locationName,
         address: normalized.address,
         google_maps_url: normalized.mapsUrl,
-        external_chat_url: event.url,
+        external_chat_url: canonicalUrl,
         image_url: imageUrl,
         status: IMPORT_STATUS,
         timezone: "Asia/Ho_Chi_Minh",
