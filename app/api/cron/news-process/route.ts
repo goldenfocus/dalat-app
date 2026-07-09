@@ -28,9 +28,28 @@ export async function GET(request: Request) {
   }
 
   const supabase = getSupabase();
+  const startedAt = Date.now();
   let articleIds: string[] = [];
 
   try {
+    // 0a. Recover articles stranded in 'processing' by a killed run (client
+    // timeout / platform limit). Runs are 12h apart, so nothing legitimate
+    // is mid-flight when this fires.
+    await supabase
+      .from('news_raw_articles')
+      .update({ status: 'pending' })
+      .eq('status', 'processing');
+
+    // 0b. Recover recent articles the LEGACY Vercel deployment poisoned:
+    // its crons still run with dead AI keys and mark everything 'skipped'.
+    // Re-evaluating a genuinely irrelevant article costs seconds on the
+    // free local model. Remove once the legacy project is deleted.
+    await supabase
+      .from('news_raw_articles')
+      .update({ status: 'pending' })
+      .eq('status', 'skipped')
+      .gte('scraped_at', new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString());
+
     // 1. Load pending raw articles
     const { data: rawArticles, error: fetchError } = await supabase
       .from('news_raw_articles')
@@ -98,11 +117,24 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'News category not found' }, { status: 500 });
     }
 
-    // 5. Process each cluster
+    // 5. Process each cluster (time-budgeted: content generation on the
+    // local model takes 1-2 min per cluster and Cloudflare cron invocations
+    // get ~15 min — leftovers go back to 'pending' for the next run)
+    const TIME_BUDGET_MS = 10 * 60 * 1000;
     let postsCreated = 0;
     let errors = 0;
+    let deferred = 0;
 
     for (const cluster of clusters) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) {
+        const leftoverUrls = cluster.articles.map(a => a.sourceUrl);
+        await supabase
+          .from('news_raw_articles')
+          .update({ status: 'pending' })
+          .in('source_url', leftoverUrls);
+        deferred++;
+        continue;
+      }
       try {
         const clusterSourceUrls = cluster.articles.map(a => a.sourceUrl);
 
@@ -230,7 +262,9 @@ export async function GET(request: Request) {
       raw_articles: rawArticles.length,
       clusters: clusters.length,
       posts_created: postsCreated,
+      clusters_deferred: deferred,
       errors,
+      elapsed_s: Math.round((Date.now() - startedAt) / 1000),
     });
   } catch (error) {
     console.error('[news-process] Fatal error:', error);
