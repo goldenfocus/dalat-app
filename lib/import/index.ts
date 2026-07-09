@@ -25,10 +25,3 @@ export {
   type FlipFetchOptions,
 } from "./processors/flip";
 
-// TicketGo scraper
-export {
-  fetchTicketGoEvent,
-  discoverTicketGoEvents,
-  processTicketGoEvents,
-  type TicketGoEvent,
-} from "./processors/ticketgo";

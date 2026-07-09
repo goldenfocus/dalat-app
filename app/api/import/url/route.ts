@@ -3,7 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { processFacebookEvents } from "@/lib/import/processors/facebook";
 import { processLumaEvents, type LumaEvent } from "@/lib/import/processors/luma";
-import { fetchTicketGoEvent, processTicketGoEvents, type TicketGoEvent } from "@/lib/import/processors/ticketgo";
 import { fetchFlipEvent, processFlipEvents, type FlipEvent } from "@/lib/import/processors/flip";
 import { fetchArticle, extractEventsFromArticle, type GovArticle } from "@/lib/import/processors/dalat-gov";
 import type { FacebookEvent } from "@/lib/import/types";
@@ -101,9 +100,6 @@ export async function POST(request: Request) {
       } else {
         actorId = "apify~facebook-events-scraper";
       }
-    } else if (url.includes("ticketgo.vn")) {
-      platform = "ticketgo";
-      actorId = ""; // Not used - we fetch TicketGo directly via HTML scraping
     } else if (url.includes("flip.vn")) {
       platform = "flip";
       actorId = ""; // Not used - we fetch Flip directly via HTML scraping
@@ -123,18 +119,7 @@ export async function POST(request: Request) {
 
     let items: unknown[];
 
-    if (platform === "ticketgo") {
-      // Fetch TicketGo directly via HTML scraping
-      const ticketgoData = await fetchTicketGoEvent(url);
-      if (!ticketgoData) {
-        return NextResponse.json(
-          { error: "Could not fetch TicketGo event. Make sure the URL is a valid event page." },
-          { status: 404 }
-        );
-      }
-      items = [ticketgoData];
-      console.log(`URL Import: Got TicketGo event: ${ticketgoData.title}`);
-    } else if (platform === "flip") {
+    if (platform === "flip") {
       // Fetch Flip.vn directly via HTML scraping (Open Graph meta tags)
       // For multi-showtime events, date/time can be provided as override
       const flipData = await fetchFlipEvent(url, {
@@ -226,7 +211,7 @@ export async function POST(request: Request) {
       const genericData = await fetchGenericEvent(url);
       if (!genericData) {
         return NextResponse.json(
-          { error: "Could not fetch event. Supported platforms: Facebook, Flip.vn, TicketGo, Lu.ma, dalat-info.gov.vn, or sites with /events/ API" },
+          { error: "Could not fetch event. Supported platforms: Facebook, Flip.vn, Lu.ma, dalat-info.gov.vn, or sites with /events/ API" },
           { status: 400 }
         );
       }
@@ -359,8 +344,6 @@ export async function POST(request: Request) {
     let result;
     if (platform === "facebook") {
       result = await processFacebookEvents(supabase, items as FacebookEvent[], user.id);
-    } else if (platform === "ticketgo") {
-      result = await processTicketGoEvents(supabase, items as TicketGoEvent[], user.id);
     } else if (platform === "flip") {
       result = await processFlipEvents(supabase, items as FlipEvent[], user.id);
     } else {

@@ -7,8 +7,6 @@ import {
   onRsvpInterested,
   onCommentCreated,
   dailyBlogSummary,
-  dailyEventDiscovery,
-  manualEventDiscovery,
   processMomentMetadata,
   processVideoWhenReady,
   processPendingMoments,
@@ -25,8 +23,6 @@ export const { GET, POST, PUT } = serve({
     onRsvpInterested,
     onCommentCreated,
     dailyBlogSummary,
-    dailyEventDiscovery,
-    manualEventDiscovery,
     // Moment AI processing
     processMomentMetadata,
     processVideoWhenReady,
