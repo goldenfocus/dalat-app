@@ -1049,8 +1049,9 @@ export function EventForm({
                 <Input
                   id="capacity"
                   name="capacity"
-                  type="number"
-                  min="1"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   defaultValue={initialCapacity ?? ""}
                   className="w-24"
                 />
