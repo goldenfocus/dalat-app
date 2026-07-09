@@ -445,7 +445,7 @@ export function EventForm({
 
     // Convert Đà Lạt time to UTC for storage
     const startsAt = toUTCFromDaLat(date, time);
-    const capacity = capacityStr ? parseInt(capacityStr, 10) : null;
+    const capacity = capacityStr ? parseInt(capacityStr.replace(/\D/g, ""), 10) || null : null;
 
     const supabase = createClient();
 
@@ -617,12 +617,10 @@ export function EventForm({
           }
 
           // Trigger AI processing for the first event (fire-and-forget)
+          // (creator auto-RSVP happens in the DB via on_event_created_auto_rsvp)
           if (seriesData.first_event_id) {
             triggerEventTranslation(seriesData.first_event_id, title.trim(), description || null);
             triggerAIProcessing(seriesData.first_event_id);
-
-            // Auto-register creator as first attendee (fire-and-forget)
-            void supabase.rpc("rsvp_event", { p_event_id: seriesData.first_event_id, p_plus_ones: 0 });
           }
 
           router.push(`/series/${seriesData.slug}`);
@@ -690,11 +688,9 @@ export function EventForm({
           }
 
           // Trigger AI processing in background (fire-and-forget)
+          // (creator auto-RSVP happens in the DB via on_event_created_auto_rsvp)
           triggerEventTranslation(data.id, title.trim(), description || null);
           triggerAIProcessing(data.id);
-
-          // Auto-register creator as first attendee (fire-and-forget)
-          void supabase.rpc("rsvp_event", { p_event_id: data.id, p_plus_ones: 0 });
 
           // Show celebration modal instead of immediate redirect
           setCreatedEvent({

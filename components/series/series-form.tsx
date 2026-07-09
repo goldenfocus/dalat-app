@@ -342,10 +342,11 @@ export function SeriesForm({ series, userId: _userId }: SeriesFormProps) {
               {hasCapacityLimit && (
                 <Input
                   id="capacity"
-                  type="number"
-                  min="1"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={capacity}
-                  onChange={(e) => setCapacity(e.target.value)}
+                  onChange={(e) => setCapacity(e.target.value.replace(/\D/g, ""))}
                   className="w-24"
                 />
               )}
