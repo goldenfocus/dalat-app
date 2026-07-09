@@ -2,7 +2,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import type { ProcessResult } from "./utils";
 
 /**
- * Heartbeat logging for import runs — see supabase/migrations/20260928_001_import_runs.sql.
+ * Heartbeat logging for import runs — see supabase/migrations/20260929_001_import_runs.sql.
  * Every scraper run records what it saw, so "broken" is distinguishable from
  * "found nothing" (the ambiguity that let the aggregator die silently for 5 months).
  */
