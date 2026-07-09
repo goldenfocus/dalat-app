@@ -3,7 +3,7 @@
  * Groups articles about the same story using AI-extracted keywords
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { aiChatJson } from '@/lib/ai/provider';
 import type { ScrapedArticle, ArticleCluster } from './types';
 import { NEWS_CLUSTERING_SYSTEM, buildClusteringPrompt } from './news-prompt';
 
@@ -29,55 +29,23 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Parse JSON from Claude's response, stripping markdown code fences if present
- */
-function parseJsonResponse(text: string): ClusteringResult {
-  let jsonText = text.trim();
-
-  // Strip markdown code fences
-  if (jsonText.startsWith('```json')) jsonText = jsonText.slice(7);
-  else if (jsonText.startsWith('```')) jsonText = jsonText.slice(3);
-  if (jsonText.endsWith('```')) jsonText = jsonText.slice(0, -3);
-  jsonText = jsonText.trim();
-
-  try {
-    return JSON.parse(jsonText) as ClusteringResult;
-  } catch {
-    // Try to extract JSON object from the response
-    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]) as ClusteringResult;
-    }
-    throw new Error(`Failed to parse clustering JSON: ${jsonText.slice(0, 200)}`);
-  }
-}
-
-/**
- * Extract topic keywords from a single article using Claude Haiku
- * Includes retry logic for rate limits and transient errors
+ * Extract topic keywords from a single article using the free AI provider chain
+ * (local Ollama -> Cloudflare Workers AI -> OpenRouter). The chain already
+ * falls back across providers; the retry loop here covers JSON parse hiccups.
  */
 async function extractTopicKeywords(
-  client: Anthropic,
   article: ScrapedArticle
 ): Promise<ClusteringResult | null> {
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const response = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 256,
+      const result = await aiChatJson<ClusteringResult>({
         system: NEWS_CLUSTERING_SYSTEM,
-        messages: [{
-          role: 'user',
-          content: buildClusteringPrompt(article.title, article.content),
-        }],
+        prompt: buildClusteringPrompt(article.title, article.content),
+        maxTokens: 256,
+        temperature: 0.2,
       });
-
-      const text = response.content.find(c => c.type === 'text');
-      if (!text || text.type !== 'text') return null;
-
-      const result = parseJsonResponse(text.text);
 
       // Validate required fields
       if (!Array.isArray(result.keywords) || result.keywords.length === 0) {
@@ -95,14 +63,7 @@ async function extractTopicKeywords(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
-      const isRateLimited = lastError.message.includes('rate_limit') ||
-        lastError.message.includes('429') ||
-        lastError.message.includes('overloaded');
-      const isServerError = lastError.message.includes('500') ||
-        lastError.message.includes('503') ||
-        lastError.message.includes('529');
-
-      if ((isRateLimited || isServerError) && attempt < MAX_RETRIES - 1) {
+      if (attempt < MAX_RETRIES - 1) {
         const delay = BASE_DELAY_MS * Math.pow(2, attempt);
         console.warn(`[clusterer] Retry ${attempt + 1}/${MAX_RETRIES} for "${article.title.slice(0, 40)}..." after ${delay}ms`);
         await sleep(delay);
@@ -149,7 +110,6 @@ export async function clusterArticles(
   clusters: ArticleCluster[];
   skipped: ScrapedArticle[];
 }> {
-  const client = new Anthropic();
   const clusters: ArticleCluster[] = [];
   const skipped: ScrapedArticle[] = [];
 
@@ -164,7 +124,7 @@ export async function clusterArticles(
   }> = [];
 
   for (const article of articles) {
-    const result = await extractTopicKeywords(client, article);
+    const result = await extractTopicKeywords(article);
 
     // Brief delay between API calls to respect rate limits
     await sleep(INTER_CALL_DELAY_MS);

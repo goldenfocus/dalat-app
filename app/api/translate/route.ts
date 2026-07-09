@@ -22,9 +22,12 @@ interface TranslateRequest {
   detect_language?: boolean;
 }
 
+// LLM translation is much slower than the old Google Translate API
+export const maxDuration = 180;
+
 /**
  * POST /api/translate
- * Translates content to all 12 supported languages using Google Cloud Translation API
+ * Translates content to all 12 supported languages via the free AI provider chain
  */
 export async function POST(request: Request) {
   const supabase = await createClient();

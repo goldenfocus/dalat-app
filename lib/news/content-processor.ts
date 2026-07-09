@@ -3,7 +3,7 @@
  * Takes clustered articles and generates original blog posts
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { aiChat } from '@/lib/ai/provider';
 import type { ArticleCluster, NewsContentOutput } from './types';
 import { NEWS_REWRITE_SYSTEM, buildRewritePrompt } from './news-prompt';
 
@@ -50,8 +50,6 @@ function parseJsonResponse(text: string): Record<string, unknown> {
 export async function processNewsCluster(
   cluster: ArticleCluster
 ): Promise<NewsContentOutput> {
-  const client = new Anthropic();
-
   const articles = cluster.articles.map(a => ({
     title: a.title,
     content: a.content,
@@ -63,22 +61,16 @@ export async function processNewsCluster(
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const response = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 3000,
+      const responseText = await aiChat({
         system: NEWS_REWRITE_SYSTEM,
-        messages: [{
-          role: 'user',
-          content: buildRewritePrompt(articles),
-        }],
+        prompt: buildRewritePrompt(articles),
+        json: true,
+        maxTokens: 3000,
+        temperature: 0.5,
+        timeoutMs: 180_000, // long generation on the local model
       });
 
-      const textContent = response.content.find(c => c.type === 'text');
-      if (!textContent || textContent.type !== 'text') {
-        throw new Error('No text response from Claude');
-      }
-
-      const parsed = parseJsonResponse(textContent.text);
+      const parsed = parseJsonResponse(responseText);
 
       // Build source URLs array
       const sourceUrls = cluster.articles.map(a => ({
@@ -114,15 +106,10 @@ export async function processNewsCluster(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
-      // Check if this is a retryable error (rate limit or server error)
-      const isRateLimited = lastError.message.includes('rate_limit') ||
-        lastError.message.includes('429') ||
-        lastError.message.includes('overloaded');
-      const isServerError = lastError.message.includes('500') ||
-        lastError.message.includes('503') ||
-        lastError.message.includes('529');
-
-      if ((isRateLimited || isServerError) && attempt < MAX_RETRIES - 1) {
+      // The provider chain already fell back across all free providers,
+      // so any error here is worth a backoff-and-retry (transient rate
+      // limits on free tiers, JSON parse hiccups).
+      if (attempt < MAX_RETRIES - 1) {
         const delay = BASE_DELAY_MS * Math.pow(2, attempt);
         console.warn(`[content-processor] Retry ${attempt + 1}/${MAX_RETRIES} after ${delay}ms: ${lastError.message}`);
         await sleep(delay);
