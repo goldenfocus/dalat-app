@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { getGodModeCookieName } from "@/lib/god-mode";
+import { getGodModeAdminTokenCookieName } from "@/lib/god-mode";
 
 export async function GET() {
   const cookieStore = await cookies();
-  const godModeTargetId = cookieStore.get(getGodModeCookieName())?.value;
+  // The httpOnly admin-token stash is the source of truth: it is only set by
+  // the impersonate route after verifying superadmin. The current session IS
+  // the impersonated target, so we return their profile for the banner.
+  const impersonating = !!cookieStore.get(getGodModeAdminTokenCookieName())?.value;
 
-  // No god mode cookie = not impersonating
-  if (!godModeTargetId) {
+  if (!impersonating) {
     return NextResponse.json({ isActive: false, targetProfile: null });
   }
 
@@ -21,22 +23,10 @@ export async function GET() {
     return NextResponse.json({ isActive: false, targetProfile: null });
   }
 
-  // Verify user is a superadmin
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profile?.role !== "superadmin") {
-    return NextResponse.json({ isActive: false, targetProfile: null });
-  }
-
-  // Get the target profile
   const { data: targetProfile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", godModeTargetId)
+    .eq("id", user.id)
     .single();
 
   if (!targetProfile) {
