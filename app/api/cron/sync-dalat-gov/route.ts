@@ -4,6 +4,8 @@ import {
   fetchGovArticles,
   processGovArticles,
 } from "@/lib/import/processors/dalat-gov";
+import { reportImportRun } from "@/lib/import/report-run";
+import { createEmptyResult } from "@/lib/import/utils";
 
 // Allow longer execution time for scraping + AI extraction
 export const maxDuration = 300;
@@ -34,12 +36,21 @@ export async function GET(request: Request) {
 
   console.log("[sync-dalat-gov] Starting dalat-info.gov.vn event scrape...");
 
+  const startedAt = new Date();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   try {
     // 1. Fetch articles from gov.vn categories
     const articles = await fetchGovArticles();
 
     if (articles.length === 0) {
       console.log("[sync-dalat-gov] No articles found");
+      // Zero articles is heartbeat-worthy: once could be a quiet day,
+      // twice in a row means the site structure changed under us.
+      await reportImportRun(supabase, "dalat-gov", startedAt, 0, createEmptyResult());
       return NextResponse.json({
         success: true,
         message: "No articles found",
@@ -51,12 +62,10 @@ export async function GET(request: Request) {
     console.log(`[sync-dalat-gov] Scraped ${articles.length} articles`);
 
     // 2. Process articles and extract events
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
     const result = await processGovArticles(supabase, articles);
+
+    // 3. Heartbeat + Telegram digest
+    await reportImportRun(supabase, "dalat-gov", startedAt, articles.length, result);
 
     console.log("[sync-dalat-gov] Scrape complete:", {
       articlesScraped: articles.length,
