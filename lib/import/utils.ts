@@ -1,5 +1,9 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { parse as parseDateFns, isValid as isValidDate, format as formatDate } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
 import { getStorageProvider } from "@/lib/storage";
+
+const DALAT_TIMEZONE = "Asia/Ho_Chi_Minh";
 
 /**
  * Shared utilities for event import processors
@@ -102,23 +106,29 @@ export function parseEventDate(
   if (!dateStr) return null;
 
   try {
-    // Try ISO format first
-    const iso = new Date(dateStr);
-    if (!isNaN(iso.getTime())) {
-      return iso.toISOString();
+    // ISO / RFC formats carry their own structure — trust the platform parser.
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+      const withTime =
+        timeStr && !dateStr.includes("T") ? `${dateStr}T${timeStr}` : dateStr;
+      const iso = new Date(withTime);
+      return isNaN(iso.getTime()) ? null : iso.toISOString();
     }
 
-    // Try with time appended
-    const withTime = timeStr ? `${dateStr} ${timeStr}` : dateStr;
-    const parsed = new Date(withTime);
-
-    if (!isNaN(parsed.getTime())) {
-      return parsed.toISOString();
+    // Vietnamese day-first formats, interpreted in Đà Lạt time.
+    // new Date("25/07/2026") would read as MM/DD → wrong-month event with no error.
+    const time = timeStr && /^\d{1,2}:\d{2}/.test(timeStr) ? timeStr : "00:00";
+    for (const fmt of ["dd/MM/yyyy", "d/M/yyyy", "dd-MM-yyyy"]) {
+      const parsed = parseDateFns(dateStr.trim(), fmt, new Date());
+      if (isValidDate(parsed)) {
+        const local = `${formatDate(parsed, "yyyy-MM-dd")}T${time}`;
+        return fromZonedTime(local, DALAT_TIMEZONE).toISOString();
+      }
     }
   } catch {
     // Fall through
   }
 
+  // Unparseable dates are a skip (counted upstream), never a guess.
   return null;
 }
 
