@@ -94,14 +94,24 @@ export async function translateFieldsToLocale(
     timeoutMs,
   });
 
-  // Guard: the model must return every field, non-empty
+  // Accept partial results: models occasionally omit a field on long
+  // content. Present fields are upserted; coverage tracking retries the
+  // missing ones on the next run. Only a fully-empty response is an error.
   const out: Record<string, string> = {};
+  const missing: string[] = [];
   for (const f of fields) {
     const t = result[f.field_name];
-    if (typeof t !== 'string' || !t.trim()) {
-      throw new Error(`[translate] missing field "${f.field_name}" in ${targetLocale} response`);
+    if (typeof t === 'string' && t.trim()) {
+      out[f.field_name] = t.trim();
+    } else {
+      missing.push(f.field_name);
     }
-    out[f.field_name] = t.trim();
+  }
+  if (Object.keys(out).length === 0) {
+    throw new Error(`[translate] empty ${targetLocale} response (fields: ${fields.map((f) => f.field_name).join(', ')})`);
+  }
+  if (missing.length > 0) {
+    console.warn(`[translate] ${targetLocale} response missing: ${missing.join(', ')} — will retry later`);
   }
   return out;
 }
