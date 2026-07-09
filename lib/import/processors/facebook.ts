@@ -11,6 +11,7 @@ import {
   type ProcessResult,
 } from "../utils";
 import { triggerTranslationServer } from "@/lib/translations";
+import { IMPORT_STATUS, MAX_IMPORTS_PER_RUN } from "../import-config";
 
 export async function processFacebookEvents(
   supabase: SupabaseClient,
@@ -21,6 +22,14 @@ export async function processFacebookEvents(
 
   for (const event of events) {
     try {
+      if (result.processed >= MAX_IMPORTS_PER_RUN) {
+        result.skipped++;
+        result.details.push(
+          `Cap reached (${MAX_IMPORTS_PER_RUN}) — skipped: ${event.url}`
+        );
+        continue;
+      }
+
       const normalized = normalizeFacebookEvent(event);
 
       if (!normalized.title || !normalized.startsAt) {
@@ -62,7 +71,7 @@ export async function processFacebookEvents(
         google_maps_url: normalized.mapsUrl,
         external_chat_url: event.url,
         image_url: imageUrl,
-        status: "published",
+        status: IMPORT_STATUS,
         timezone: "Asia/Ho_Chi_Minh",
         organizer_id: organizerId,
         created_by: createdBy,

@@ -12,6 +12,7 @@ import {
 } from "../utils";
 import { triggerTranslationServer } from "@/lib/translations";
 import { EXTRACTION_MODEL } from "../extraction-model";
+import { IMPORT_STATUS, MAX_IMPORTS_PER_RUN } from "../import-config";
 import { fromZonedTime } from "date-fns-tz";
 
 const anthropic = new Anthropic();
@@ -357,6 +358,14 @@ export async function processGovArticles(
       // Process each extracted event
       for (const event of events) {
         try {
+          if (result.processed >= MAX_IMPORTS_PER_RUN) {
+            result.skipped++;
+            result.details.push(
+              `Cap reached (${MAX_IMPORTS_PER_RUN}) — skipped: ${event.title}`
+            );
+            continue;
+          }
+
           // Check for duplicates by title + date
           const eventDate = event.startDate;
           const { data: existingByTitle } = await supabase
@@ -417,7 +426,7 @@ export async function processGovArticles(
               ),
               external_chat_url: article.url, // Link back to source article
               image_url: imageUrl,
-              status: "published",
+              status: IMPORT_STATUS,
               timezone: "Asia/Ho_Chi_Minh",
               organizer_id: organizerId,
               created_by: createdBy,
