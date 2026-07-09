@@ -27,8 +27,20 @@ Multiple AI sessions may be running simultaneously on this codebase.
 | Tool | Examples |
 |------|----------|
 | **Supabase** | `npx supabase db push`, `npx supabase migration list` |
-| **Vercel** | `vercel env pull`, `vercel --prod` |
+| **Wrangler** (Cloudflare) | `npx opennextjs-cloudflare build && npx wrangler deploy` |
 | **GitHub** | `gh pr create`, `gh issue list`, `gh pr merge` |
+
+## 🚀 Hosting: Cloudflare Workers (migrated from Vercel, July 2026)
+
+dalat.app runs on **Cloudflare Workers** via `@opennextjs/cloudflare`:
+
+- **Deploy:** `npx opennextjs-cloudflare build && npx wrangler deploy` (needs `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` env)
+- **Config:** `wrangler.jsonc` (routes, crons, R2/D1/DO bindings), `open-next.config.ts`, `cloudflare/worker.ts` (custom entry: cron dispatch + www redirect)
+- **Crons:** Cloudflare cron triggers in `wrangler.jsonc`, mapped to `/api/cron/*` routes in `cloudflare/worker.ts`. Keep both files in sync when adding a cron. `vercel.json` is legacy — do not add crons there.
+- **Secrets:** `npx wrangler secret bulk <file.json>` (NOT Vercel env)
+- **Runtime constraints:** no native binaries (sharp is banned — use `heic-convert`), edge middleware only, `optimizeCss` must stay off
+- **workerd gotcha:** Supabase `head: true` count queries hang from Workers — use GET queries and count in JS
+- The old Vercel project (`vibeyangs-projects/dalat-app`) still exists but no longer serves traffic; its DNS records pass through Cloudflare where worker routes intercept. Rollback = remove `routes` from wrangler.jsonc and redeploy.
 
 Run these commands yourself using bash. Don't say "please run this command" - just run it.
 
