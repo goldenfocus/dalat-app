@@ -141,6 +141,27 @@ export async function GET(request: Request) {
       try {
         const clusterSourceUrls = cluster.articles.map(a => a.sourceUrl);
 
+        // Dedup by source: if any article in this cluster already produced a
+        // post (a re-processed article gets nondeterministic keywords, so the
+        // fingerprint check below can miss), point to that post instead of
+        // writing a near-duplicate.
+        const { data: alreadyPosted } = await supabase
+          .from('news_raw_articles')
+          .select('blog_post_id')
+          .in('source_url', clusterSourceUrls)
+          .not('blog_post_id', 'is', null)
+          .limit(1)
+          .maybeSingle();
+
+        if (alreadyPosted?.blog_post_id) {
+          console.log(`[news-process] Cluster already has a post (${alreadyPosted.blog_post_id}), skipping: ${cluster.keywords.join(', ')}`);
+          await supabase
+            .from('news_raw_articles')
+            .update({ status: 'processed', blog_post_id: alreadyPosted.blog_post_id, processed_at: new Date().toISOString() })
+            .in('source_url', clusterSourceUrls);
+          continue;
+        }
+
         // Check dedup by content fingerprint
         const { data: existingPost } = await supabase
           .from('blog_posts')
