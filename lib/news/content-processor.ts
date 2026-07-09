@@ -65,9 +65,10 @@ export async function processNewsCluster(
         system: NEWS_REWRITE_SYSTEM,
         prompt: buildRewritePrompt(articles),
         json: true,
-        maxTokens: 3000,
+        // 3000 truncated long posts mid-string -> unparseable JSON
+        maxTokens: 4000,
         temperature: 0.5,
-        timeoutMs: 180_000, // long generation on the local model
+        timeoutMs: 220_000, // long generation on the local model
       });
 
       const parsed = parseJsonResponse(responseText);
