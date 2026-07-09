@@ -4,6 +4,7 @@ import type {
   Event,
   EventWithSeriesData,
   EventCounts,
+  EventSocial,
   ContentLocale,
   TranslationContentType,
 } from "@/lib/types";
@@ -321,6 +322,62 @@ export function getCachedEventCountsBatch(eventIds: string[]): Promise<Record<st
     ["event-counts-batch-v2", sortedIds.join(",")],
     {
       revalidate: 30, // 30 seconds
+      tags: [CACHE_TAGS.events],
+    }
+  )();
+}
+
+/**
+ * Cached batch social-proof data (fallback covers + past-occurrence stats).
+ * Columns are denormalized on events and refreshed nightly by the
+ * refresh-fallback-covers cron, so a plain select is enough — no RPC.
+ * Same factory pattern as getCachedEventCountsBatch.
+ */
+export function getCachedEventSocialBatch(eventIds: string[]): Promise<Record<string, EventSocial>> {
+  if (eventIds.length === 0) return Promise.resolve({});
+
+  const sortedIds = [...eventIds].sort();
+
+  return unstable_cache(
+    async (): Promise<Record<string, EventSocial>> => {
+      try {
+        const supabase = createStaticClient();
+        if (!supabase) {
+          console.error("Failed to create Supabase client (missing env vars)");
+          return {};
+        }
+
+        const { data, error } = await supabase
+          .from("events")
+          .select(
+            "id, fallback_image_url, fallback_photo_credit, last_occurrence_went, last_occurrence_photos"
+          )
+          .in("id", sortedIds);
+
+        if (error) {
+          console.error("Error fetching batch event social data:", error);
+          return {};
+        }
+
+        const social: Record<string, EventSocial> = {};
+        for (const row of data || []) {
+          social[row.id] = {
+            event_id: row.id,
+            fallback_image_url: row.fallback_image_url,
+            fallback_photo_credit: row.fallback_photo_credit,
+            last_occurrence_went: row.last_occurrence_went,
+            last_occurrence_photos: row.last_occurrence_photos,
+          };
+        }
+        return social;
+      } catch (err) {
+        console.error("Exception in getCachedEventSocialBatch:", err);
+        return {};
+      }
+    },
+    ["event-social-batch", sortedIds.join(",")],
+    {
+      revalidate: 300, // 5 minutes — data only changes on the nightly refresh
       tags: [CACHE_TAGS.events],
     }
   )();

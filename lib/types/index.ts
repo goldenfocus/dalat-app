@@ -461,6 +461,10 @@ export interface EventCounts {
   interested_count: number;
 }
 
+// Write-time social-proof data (fallback cover + past-occurrence stats),
+// resolved nightly by refresh_fallback_covers(). See lib/events/social-proof.ts.
+export type { EventSocial } from "@/lib/events/social-proof";
+
 /**
  * Event with series metadata from deduplicated feed RPC.
  * Extends Event with series info for badge display.
