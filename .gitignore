@@ -44,3 +44,6 @@ next-env.d.ts
 # claude code
 .claude/
 supabase/.temp/
+
+# per-session git worktrees (multi-AI workflow)
+.worktrees/
