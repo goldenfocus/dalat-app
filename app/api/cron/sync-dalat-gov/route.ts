@@ -70,14 +70,20 @@ export async function GET(request: Request) {
       console.log("[sync-dalat-gov] Details:", result.details.slice(0, 30));
     }
 
-    return NextResponse.json({
-      success: true,
-      articlesScraped: articles.length,
-      eventsImported: result.processed,
-      skipped: result.skipped,
-      errors: result.errors,
-      details: result.details.slice(0, 50),
-    });
+    // Total failure must look like failure to any monitor — never "success, 0 events"
+    const totalFailure = result.errors > 0 && result.processed === 0;
+
+    return NextResponse.json(
+      {
+        success: !totalFailure,
+        articlesScraped: articles.length,
+        eventsImported: result.processed,
+        skipped: result.skipped,
+        errors: result.errors,
+        details: result.details.slice(0, 50),
+      },
+      { status: totalFailure ? 500 : 200 }
+    );
   } catch (error) {
     console.error("[sync-dalat-gov] Error:", error);
     return NextResponse.json(

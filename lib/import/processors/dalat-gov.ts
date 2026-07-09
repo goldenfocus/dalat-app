@@ -11,6 +11,8 @@ import {
   type ProcessResult,
 } from "../utils";
 import { triggerTranslationServer } from "@/lib/translations";
+import { EXTRACTION_MODEL } from "../extraction-model";
+import { fromZonedTime } from "date-fns-tz";
 
 const anthropic = new Anthropic();
 
@@ -209,7 +211,7 @@ export async function fetchArticle(url: string): Promise<GovArticle | null> {
 export async function extractEventsFromArticle(article: GovArticle): Promise<ExtractedEvent[]> {
   try {
     const response = await anthropic.messages.create({
-      model: "claude-3-5-haiku-20241022",
+      model: EXTRACTION_MODEL,
       max_tokens: 2000,
       messages: [
         {
@@ -268,8 +270,15 @@ Output ONLY the JSON array, no other text.`,
         /^\d{4}-\d{2}-\d{2}$/.test(e.startDate)
     );
   } catch (error) {
-    console.error(`[dalat-gov] Error extracting events from ${article.url}:`, error);
-    return [];
+    // A malformed model answer means "nothing extractable" — safe to treat as empty.
+    if (error instanceof SyntaxError) {
+      console.warn(`[dalat-gov] Unparseable extraction output for ${article.url}`);
+      return [];
+    }
+    // API errors (retired model, auth, rate limit) must be LOUD, never "no events".
+    // Swallowing these is how the pipeline died silently for 5 months.
+    console.error(`[dalat-gov] Extraction API error for ${article.url}:`, error);
+    throw error;
   }
 }
 
@@ -371,18 +380,17 @@ export async function processGovArticles(
           );
           const slug = await generateUniqueSlug(supabase, slugify(event.title));
 
-          // Build starts_at timestamp
-          let startsAt = event.startDate;
-          if (event.startTime) {
-            startsAt = `${event.startDate}T${event.startTime}:00`;
-          } else {
-            startsAt = `${event.startDate}T09:00:00`; // Default to 9 AM
-          }
+          // Build starts_at timestamp — extracted times are Đà Lạt local time,
+          // so convert explicitly (a bare string would be stored as UTC, 7h off)
+          const localStart = event.startTime
+            ? `${event.startDate}T${event.startTime}:00`
+            : `${event.startDate}T09:00:00`; // Default to 9 AM
+          const startsAt = fromZonedTime(localStart, "Asia/Ho_Chi_Minh").toISOString();
 
           // Build ends_at if available
           let endsAt: string | null = null;
           if (event.endDate) {
-            endsAt = `${event.endDate}T22:00:00`; // Default end time
+            endsAt = fromZonedTime(`${event.endDate}T22:00:00`, "Asia/Ho_Chi_Minh").toISOString(); // Default end time
           }
 
           // Try to download first image from article

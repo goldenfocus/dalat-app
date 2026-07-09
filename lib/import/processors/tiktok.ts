@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
+import { EXTRACTION_MODEL } from "../extraction-model";
 import type { TikTokPost, ExtractedEvent } from "../types";
 import {
   slugify,
@@ -101,7 +102,7 @@ async function extractEventFromTikTok(
 ): Promise<ExtractedEvent> {
   try {
     const response = await client.messages.create({
-      model: "claude-haiku-4-20250514",
+      model: EXTRACTION_MODEL,
       max_tokens: 500,
       system: `You analyze TikTok captions to detect events in Đà Lạt, Vietnam.
 Return JSON only, no markdown. Structure:
