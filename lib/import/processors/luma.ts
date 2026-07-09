@@ -84,7 +84,6 @@ export async function processLumaEvents(
 
       // Download and re-upload image to our storage
       const imageUrl = await downloadAndUploadImage(
-        supabase,
         normalized.imageUrl,
         slug
       );

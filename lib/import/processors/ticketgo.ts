@@ -217,7 +217,8 @@ export async function processTicketGoEvents(
       const slug = await generateUniqueSlug(supabase, slugify(event.title));
 
       // Download and re-upload image to our storage
-      const imageUrl = await downloadAndUploadImage(supabase, event.imageUrl, slug);
+      const imageUrl = await downloadAndUploadImage(
+        event.imageUrl, slug);
 
       // Calculate price range for display
       const priceInfo = event.tickets?.length

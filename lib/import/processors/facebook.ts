@@ -46,7 +46,6 @@ export async function processFacebookEvents(
 
       // Download and re-upload image to our storage (external CDN URLs expire)
       const imageUrl = await downloadAndUploadImage(
-        supabase,
         normalized.imageUrl,
         slug
       );

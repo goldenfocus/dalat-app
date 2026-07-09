@@ -387,8 +387,7 @@ export async function processGovArticles(
 
           // Try to download first image from article
           const imageUrl = await downloadAndUploadImage(
-            supabase,
-            article.imageUrls[0] || null,
+        article.imageUrls[0] || null,
             slug
           );
 

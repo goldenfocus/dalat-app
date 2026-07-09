@@ -52,7 +52,6 @@ export async function processInstagramPosts(
 
       // Download and re-upload image to our storage (external CDN URLs expire)
       const imageUrl = await downloadAndUploadImage(
-        supabase,
         post.displayUrl || post.images?.[0],
         slug
       );

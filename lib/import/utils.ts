@@ -1,4 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { getStorageProvider } from "@/lib/storage";
 
 /**
  * Shared utilities for event import processors
@@ -151,14 +152,13 @@ export function createEmptyResult(): ProcessResult {
 }
 
 /**
- * Download an image from an external URL and upload it to Supabase Storage.
- * Returns the permanent public URL, or null if the download/upload fails.
+ * Download an image from an external URL and upload it to Cloudflare R2.
+ * Returns the permanent CDN URL, or null if the download/upload fails.
  *
  * This prevents dependency on external CDN URLs (Facebook, Instagram, etc.)
  * which often expire after hours or days.
  */
 export async function downloadAndUploadImage(
-  supabase: SupabaseClient,
   externalUrl: string | null | undefined,
   eventSlug: string
 ): Promise<string | null> {
@@ -207,24 +207,14 @@ export async function downloadAndUploadImage(
     // Generate unique filename: eventSlug/timestamp.ext
     const fileName = `${eventSlug}/${Date.now()}.${ext}`;
 
-    // Upload to Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from("event-media")
-      .upload(fileName, buffer, {
-        contentType,
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.warn(`Failed to upload image for ${eventSlug}:`, uploadError);
-      return null;
-    }
-
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("event-media").getPublicUrl(fileName);
+    // Upload via the storage provider (R2 → cdn.dalat.app; Supabase Storage is banned)
+    const provider = await getStorageProvider("event-media");
+    const publicUrl = await provider.upload(
+      "event-media",
+      fileName,
+      Buffer.from(buffer),
+      { contentType, cacheControl: "3600" }
+    );
 
     return publicUrl;
   } catch (error) {

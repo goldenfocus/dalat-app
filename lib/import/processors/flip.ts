@@ -355,7 +355,8 @@ export async function processFlipEvents(
       const slug = await generateUniqueSlug(supabase, slugify(event.title));
 
       // Download and re-upload image to our storage
-      const imageUrl = await downloadAndUploadImage(supabase, event.imageUrl, slug);
+      const imageUrl = await downloadAndUploadImage(
+        event.imageUrl, slug);
 
       const { data: newEvent, error } = await supabase.from("events").insert({
         slug,

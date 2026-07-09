@@ -56,7 +56,8 @@ export async function processTikTokPosts(
       const coverImage = post.videoMeta?.coverUrl || post.covers?.[0];
 
       // Download and re-upload image to our storage (external CDN URLs expire)
-      const imageUrl = await downloadAndUploadImage(supabase, coverImage, slug);
+      const imageUrl = await downloadAndUploadImage(
+        coverImage, slug);
 
       const { error } = await supabase.from("events").insert({
         slug,
