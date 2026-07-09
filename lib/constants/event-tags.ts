@@ -7,7 +7,7 @@
 export const EVENT_TAGS = [
   // Activities
   'music', 'yoga', 'meditation', 'fitness', 'dance', 'art', 'photography',
-  'cooking', 'workshop', 'class', 'tour', 'hiking', 'sports', 'pickleball',
+  'cooking', 'workshop', 'class', 'tour', 'hiking', 'sports', 'pickleball', 'games',
   // Social
   'meetup', 'networking', 'community', 'party', 'celebration',
   // Food & Drink
@@ -29,7 +29,7 @@ export type TagIconName =
   | 'Trophy' | 'Users' | 'Handshake' | 'PartyPopper' | 'Sparkles' | 'UtensilsCrossed'
   | 'Coffee' | 'Store' | 'Wine' | 'Tent' | 'Mic2' | 'Frame' | 'Theater' | 'Film'
   | 'Heart' | 'Droplets' | 'Baby' | 'Sun' | 'Home' | 'Gift' | 'HeartHandshake'
-  | 'CircleDot';
+  | 'CircleDot' | 'Dices';
 
 // Tag display configuration with colors and icons
 export const TAG_CONFIG: Record<EventTag, { label: string; color: string; icon: TagIconName }> = {
@@ -48,6 +48,7 @@ export const TAG_CONFIG: Record<EventTag, { label: string; color: string; icon: 
   hiking: { label: 'Hiking', icon: 'Mountain', color: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200' },
   sports: { label: 'Sports', icon: 'Trophy', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
   pickleball: { label: 'Pickleball', icon: 'CircleDot', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
+  games: { label: 'Games', icon: 'Dices', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' },
   // Social
   meetup: { label: 'Meetup', icon: 'Users', color: 'bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200' },
   networking: { label: 'Networking', icon: 'Handshake', color: 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200' },

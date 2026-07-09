@@ -163,6 +163,7 @@ export function EventForm({
   // Only moderators and above can select organizers
   const canSelectOrganizer = hasRoleLevel(userRole, "moderator");
   const t = useTranslations("eventForm");
+  const tTags = useTranslations("eventTags");
   const tErrors = useTranslations("errors");
   const tPlaylist = useTranslations("playlist");
   const tSeries = useTranslations("series");
@@ -1088,7 +1089,7 @@ export function EventForm({
                 {t("activityTagsHelp") || "Select tags to help people find your event. AI will also auto-tag based on content."}
               </p>
               <div className="flex flex-wrap gap-2">
-                {(['sports', 'fitness', 'music', 'art', 'food', 'workshop', 'meetup', 'outdoor'] as EventTag[]).map((tag) => {
+                {(['sports', 'fitness', 'music', 'art', 'food', 'games', 'workshop', 'meetup', 'outdoor'] as EventTag[]).map((tag) => {
                   const config = TAG_CONFIG[tag];
                   const isSelected = selectedTags.includes(tag);
                   return (
@@ -1108,7 +1109,7 @@ export function EventForm({
                           : "bg-muted text-muted-foreground hover:bg-muted/80"
                       }`}
                     >
-                      {config.label}
+                      {tTags(tag)}
                     </button>
                   );
                 })}
