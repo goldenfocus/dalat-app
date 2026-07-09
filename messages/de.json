@@ -247,7 +247,12 @@
     },
     "friendsGoing": "{count} Freunde nehmen teil",
     "othersYouFollow": "+ {count} denen du folgst",
-    "andMore": "und mehr"
+    "andMore": "und mehr",
+    "pastProofBoth": "Letztes Mal: {went} dabei · {photos} Fotos",
+    "pastProofPhotos": "{photos} Fotos vom letzten Mal",
+    "pastProofWent": "Letztes Mal {went} dabei",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} Plätze"
   },
   "rsvp": {
     "imGoing": "Ich bin dabei",

@@ -247,7 +247,12 @@
     },
     "friendsGoing": "{count} друзей пойдут",
     "othersYouFollow": "+ {count} ваших подписок",
-    "andMore": "и ещё"
+    "andMore": "и ещё",
+    "pastProofBoth": "В прошлый раз: {went} были · {photos} фото",
+    "pastProofPhotos": "{photos} фото с прошлого раза",
+    "pastProofWent": "В прошлый раз были {went}",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} мест"
   },
   "rsvp": {
     "imGoing": "Я пойду",

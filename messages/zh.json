@@ -247,7 +247,12 @@
     },
     "friendsGoing": "{count}位好友参加",
     "othersYouFollow": "+ 你关注的{count}人",
-    "andMore": "等"
+    "andMore": "等",
+    "pastProofBoth": "上次 {went} 人参加 · {photos} 张照片",
+    "pastProofPhotos": "上次 {photos} 张照片",
+    "pastProofWent": "上次 {went} 人参加",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} 个名额"
   },
   "rsvp": {
     "imGoing": "我要参加",

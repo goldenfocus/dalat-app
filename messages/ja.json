@@ -247,7 +247,12 @@
     },
     "friendsGoing": "フォロー中の{count}人が参加",
     "othersYouFollow": "+ フォロー中の{count}人",
-    "andMore": "他"
+    "andMore": "他",
+    "pastProofBoth": "前回{went}人参加・写真{photos}枚",
+    "pastProofPhotos": "前回の写真{photos}枚",
+    "pastProofWent": "前回{went}人参加",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "残り{count}枠"
   },
   "rsvp": {
     "imGoing": "参加する",

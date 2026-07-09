@@ -247,7 +247,12 @@
     },
     "friendsGoing": "친구 {count}명 참석",
     "othersYouFollow": "+ 팔로우하는 {count}명",
-    "andMore": "외"
+    "andMore": "외",
+    "pastProofBoth": "지난번 {went}명 참여 · 사진 {photos}장",
+    "pastProofPhotos": "지난번 사진 {photos}장",
+    "pastProofWent": "지난번 {went}명 참여",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count}자리"
   },
   "rsvp": {
     "imGoing": "참석합니다",

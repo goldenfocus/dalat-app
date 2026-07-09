@@ -247,7 +247,12 @@
     },
     "friendsGoing": "{count} rakan akan hadir",
     "othersYouFollow": "+ {count} yang anda ikuti",
-    "andMore": "dan lagi"
+    "andMore": "dan lagi",
+    "pastProofBoth": "{went} hadir · {photos} foto kali lepas",
+    "pastProofPhotos": "{photos} foto kali lepas",
+    "pastProofWent": "{went} hadir kali lepas",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} tempat"
   },
   "rsvp": {
     "imGoing": "Saya hadir",

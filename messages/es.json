@@ -247,7 +247,12 @@
     },
     "friendsGoing": "{count} amigos asistirán",
     "othersYouFollow": "+ {count} que sigues",
-    "andMore": "y más"
+    "andMore": "y más",
+    "pastProofBoth": "{went} fueron · {photos} fotos la última vez",
+    "pastProofPhotos": "{photos} fotos la última vez",
+    "pastProofWent": "{went} fueron la última vez",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} plazas"
   },
   "rsvp": {
     "imGoing": "Voy a ir",

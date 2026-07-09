@@ -247,7 +247,12 @@
     },
     "friendsGoing": "เพื่อน {count} คนจะไป",
     "othersYouFollow": "+ {count} คนที่คุณติดตาม",
-    "andMore": "และอื่นๆ"
+    "andMore": "และอื่นๆ",
+    "pastProofBoth": "ครั้งก่อน {went} คนมา · {photos} รูป",
+    "pastProofPhotos": "{photos} รูปจากครั้งก่อน",
+    "pastProofWent": "ครั้งก่อน {went} คนมา",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} ที่"
   },
   "rsvp": {
     "imGoing": "ฉันจะไป",

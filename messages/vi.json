@@ -247,7 +247,12 @@
     },
     "friendsGoing": "{count} bạn bè sẽ đến",
     "othersYouFollow": "+ {count} người bạn theo dõi",
-    "andMore": "và thêm"
+    "andMore": "và thêm",
+    "pastProofBoth": "{went} người đi · {photos} ảnh lần trước",
+    "pastProofPhotos": "{photos} ảnh lần trước",
+    "pastProofWent": "{went} người đi lần trước",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} chỗ"
   },
   "rsvp": {
     "imGoing": "Tôi sẽ đi",
