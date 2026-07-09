@@ -29,7 +29,10 @@ const MAX_DEFAULT_COVERS = 40;
 // At least one card must render a real moment photo as its cover.
 const hasMomentCover = /cdn\.dalat\.app\/moments\//.test(html);
 
-const zeroGoing = /(^|[^0-9.])0\/\d+|(^|[^0-9.])0 going/.test(html);
+// Zero counts only matter in visible text — script tags carry RSC/JSON
+// payloads full of URLs like ".../e520e0/1773997607125.jpeg" that false-match.
+const visibleHtml = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
+const zeroGoing = /(^|[^0-9a-z.])0\/\d+|(^|[^0-9a-z.])0 going/i.test(visibleHtml);
 
 let failed = false;
 if (defaultCovers > MAX_DEFAULT_COVERS) {
