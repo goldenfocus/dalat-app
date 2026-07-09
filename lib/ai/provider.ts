@@ -92,6 +92,9 @@ async function cloudflareAI(opts: AIChatOptions): Promise<string> {
         messages,
         temperature: opts.temperature ?? 0.4,
         max_tokens: opts.maxTokens ?? 2048,
+        // Without native JSON mode, Llama emits unquoted markdown values
+        // ("story_content": ## Heading...) that no lenient parser survives
+        ...(opts.json ? { response_format: { type: 'json_object' } } : {}),
       }),
       signal: AbortSignal.timeout(opts.timeoutMs ?? DEFAULT_TIMEOUT_MS),
     }
@@ -130,6 +133,7 @@ async function openRouter(opts: AIChatOptions): Promise<string> {
           messages,
           temperature: opts.temperature ?? 0.4,
           max_tokens: opts.maxTokens ?? 2048,
+          ...(opts.json ? { response_format: { type: 'json_object' } } : {}),
         }),
         signal: AbortSignal.timeout(opts.timeoutMs ?? DEFAULT_TIMEOUT_MS),
       });
