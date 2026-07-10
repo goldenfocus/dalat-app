@@ -20,6 +20,8 @@ claude   # complete login, then exit
 #    Needs: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
 #           TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
 #           R2_* keys (event cover image uploads).
+#    Optional: IMPORT_CREATED_BY (profile UUID owning imported events;
+#              defaults to the 'yan' profile).
 #    Pull from the vault / vercel env pull — do NOT hand-type keys.
 
 # 4. Smoke test (processes real pending rows into DRAFT events)

@@ -55,13 +55,17 @@ export async function findOrCreateOrganizer(
   const slug = slugify(organizerName);
   if (!slug) return null;
 
-  // Check if exists by slug or name
+  // Look up by slug. (Slug is derived from the name, so this covers exact
+  // name matches too. An .or() filter string is NOT safe here: Vietnamese
+  // organizer names contain commas — "Sở Văn hóa, Thể thao..." — which
+  // PostgREST parses as condition separators, silently breaking the lookup
+  // and turning every re-import into a duplicate-slug insert error.)
   const { data: existing } = await supabase
     .from("organizers")
     .select("id")
-    .or(`slug.eq.${slug},name.ilike.${organizerName}`)
+    .eq("slug", slug)
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (existing) return existing.id;
 

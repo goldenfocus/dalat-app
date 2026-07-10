@@ -135,10 +135,13 @@ function canaryRow(today: string) {
       title: `Canary pipeline check ${today}`,
       publishDate: today,
       imageUrls: [],
+      // Must read like a REAL event announcement — the extractor correctly
+      // rejects "system check" prose, so a self-describing canary never
+      // hatches (learned in the first smoke test).
       content:
-        `Sự kiện "Canary Pipeline Check" sẽ diễn ra vào ngày ${d}/${m}/${y} ` +
+        `Triển lãm ảnh "Canary Pipeline Check" sẽ khai mạc vào ngày ${d}/${m}/${y} ` +
         `lúc 09:00 tại Quảng trường Lâm Viên, Đà Lạt. ` +
-        `Đây là sự kiện kiểm tra hệ thống tự động của dalat.app. ` +
+        `Triển lãm trưng bày 31 bức ảnh về loài chim hoàng yến và vé vào cửa miễn phí. ` +
         `Ban tổ chức: dalat.app Pipeline Monitor.`,
     },
   };

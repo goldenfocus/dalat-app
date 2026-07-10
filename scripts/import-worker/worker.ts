@@ -277,6 +277,24 @@ async function translateAndStore(
 
 // ---------- main ----------
 
+/**
+ * events.created_by is NOT NULL — imports need a system identity.
+ * IMPORT_CREATED_BY env wins; otherwise fall back to the site owner's
+ * profile (matches who owns all previously imported events).
+ */
+async function resolveCreatedBy(supabase: SupabaseClient): Promise<string> {
+  if (process.env.IMPORT_CREATED_BY) return process.env.IMPORT_CREATED_BY;
+  const { data } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("username", "yan")
+    .single();
+  if (!data?.id) {
+    throw new Error("IMPORT_CREATED_BY not set and no 'yan' profile found");
+  }
+  return data.id;
+}
+
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -284,6 +302,7 @@ async function main() {
     throw new Error("NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing — see README");
   }
   const supabase = createClient(url, key);
+  const createdBy = await resolveCreatedBy(supabase);
 
   const startedAt = new Date();
   const result = createEmptyResult();
@@ -331,6 +350,7 @@ async function main() {
         }
 
         const isCanary = row.source === "canary";
+        const errorsBefore = result.errors;
         const imported = await importExtractedEvents(
           supabase,
           row.payload,
@@ -338,7 +358,9 @@ async function main() {
           result,
           // Canary events NEVER publish and never need translations —
           // they exist to prove the chain, then health-check deletes them.
-          isCanary ? { status: "draft", sourcePlatform: "canary" } : {}
+          isCanary
+            ? { status: "draft", sourcePlatform: "canary", createdBy }
+            : { createdBy }
         );
 
         if (!isCanary) {
@@ -346,7 +368,18 @@ async function main() {
             await translateAndStore(supabase, ev.id, ev.title, ev.description);
           }
         }
-        await markDone(supabase, [row.id]);
+
+        // Insert errors leave the row retryable (title+date dedup makes a
+        // retry safe for the events that DID land) — done means done.
+        if (result.errors > errorsBefore) {
+          await markFailed(
+            supabase,
+            [row],
+            result.details.slice(-3).join("\n")
+          );
+        } else {
+          await markDone(supabase, [row.id]);
+        }
       } catch (err) {
         const detail = `Row ${row.source_uid}: ${err instanceof Error ? err.message : String(err)}`;
         console.error(`[worker] ${detail}`);
