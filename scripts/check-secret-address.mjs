@@ -8,20 +8,23 @@ import { readFileSync } from "fs";
 const slug = process.argv[2] ?? "canary-secret-address";
 const SENTINEL = "CANARY-SECRET-ADDR-7719";
 
-// Supabase anon credentials: env first, .env.local fallback
+// Supabase anon credentials: env first, .env.local fallback.
+// Vercel-pulled values can carry a literal trailing "\n" inside the quotes.
 function envVar(name) {
   if (process.env[name]) return process.env[name];
   try {
     const envFile = readFileSync(new URL("../.env.local", import.meta.url), "utf8");
     const match = envFile.match(new RegExp(`^${name}="?([^"\\n]+)"?$`, "m"));
-    return match?.[1];
+    return match?.[1]?.replace(/\\n$/, "").trim();
   } catch {
     return undefined;
   }
 }
 
 const supabaseUrl = envVar("NEXT_PUBLIC_SUPABASE_URL");
-const anonKey = envVar("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+const anonKey =
+  envVar("NEXT_PUBLIC_SUPABASE_ANON_KEY") ??
+  envVar("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
 if (!supabaseUrl || !anonKey) {
   console.error("FAIL: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY not found");
   process.exit(1);
