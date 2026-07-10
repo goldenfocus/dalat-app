@@ -58,7 +58,8 @@ Stale worktrees confuse the next session — don't leave them behind.
 
 ### Rule 5: Existing safety rules still apply
 
-- Always ask the user before committing or pushing
+- Small, single-concern, low-risk changes (no migration, no RLS, no money path, no CI/CD or CLAUDE.md content beyond what was asked): commit and push without asking — follow the Rule 3 pipeline and post a Post-Deploy Summary after
+- Still ask first for: migrations, RLS, financial logic, CI/CD config, destructive DB ops, or anything you're unsure about
 - Never force push, ever
 - Only one `npm run dev` can own port 3000 — if another session has it, use `npm run dev -- -p 3001` (or higher)
 
