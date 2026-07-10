@@ -21,7 +21,8 @@ Access types: `public` (instant join), `request` (approval), `invite_only`, `sec
 ### 1. `/tribes` index — `app/[locale]/tribes/page.tsx`
 
 - Server component, ISR: data via `unstable_cache` + `createStaticClient` (never `createClient` — ISR rule in CLAUDE.md), `revalidate: 300`.
-- Query (same visibility rule as `GET /api/tribes`): listed public/request tribes with member count; ordered by member count desc, then `created_at` desc. No creator join — cards don't display the creator. No pagination at launch (single fetch, cap 60).
+- Query (same visibility rule as `GET /api/tribes`): listed public/request tribes; ordered by `created_at` asc (stable, seed order). No creator join — cards don't display the creator. No pagination at launch (single fetch, cap 60).
+- **No member counts at launch:** `tribe_members` RLS only reveals rows to members/creators, so anonymous ISR renders would show 0 for every tribe. Rather than a Tier A RLS/migration change, cards omit counts; revisit with a denormalized `member_count` column when tribes have real membership.
 - Page header: translated title + subtitle, "Start a tribe" button → `/tribes/new`.
 - Grid of `TribeCard`s: 2-col mobile → 3-col desktop.
 - Empty state (defensive; should not render post-seed): mist-vibe founder CTA → `/tribes/new`.
@@ -31,7 +32,7 @@ Access types: `public` (instant join), `request` (approval), `invite_only`, `sec
 ### 2. `TribeCard` — `components/tribes/tribe-card.tsx`
 
 - Tribe-identity-first: cover/avatar if present, else deterministic gradient + tribe initial (seeded tribes share one owner; creator identity is deliberately not shown on cards).
-- Name, description (`line-clamp-2`), member count (pluralized i18n key), access badge: "Open" (`public`) / "Request to join" (`request`).
+- Name, description (`line-clamp-2`), access badge: "Open to all" (`public`) / "Request to join" (`request`). No member count (see RLS note above).
 - Whole card is a `Link` to `/tribes/[slug]`, ≥44px touch target, `active:scale` feedback per touch-target conventions.
 
 ### 3. Homepage strip — `components/home/tribes-strip.tsx`
@@ -47,10 +48,11 @@ Access types: `public` (instant join), `request` (approval), `invite_only`, `sec
 - `tribes` is already registered in `lib/i18n/client-namespaces.ts` — no registration change needed. Guard (`scripts/check-client-namespaces.mjs`) must pass; deploy must be verified green after push (Jul 9 incident).
 - Tribe names/descriptions are user content shown as-is; adding tribes to the content-translation pipeline is out of scope.
 
-### 5. Seeding — `scripts/seed-tribes.mjs`
+### 5. Seeding — `scripts/seed-tribes.sql` via `scripts/supabase-run-sql.sh`
 
-- One-time script; credentials from env (`SUPABASE_SERVICE_ROLE_KEY` via `.env.local` / vault) — **never hardcoded** (Jul 9 security-review finding on sibling scripts).
-- Owner resolved at runtime: `profiles` row matching `SEED_OWNER_USERNAME` env var (script exits with a clear error if unset or not found — no guessing).
+- Idempotent SQL (`WHERE NOT EXISTS` per slug) run through the SQL runner — the `.env.local` service key is stale (Jul 2026 memory), so prod writes never rely on it; nothing hardcoded.
+- Owner resolved by querying `profiles` first; if ambiguous, stop and ask Yan.
+- Each seed also gets a `tribe_members` leader row for the owner (mirrors the create API).
 - Inserts 8 tribes: Hiking & Trails, Coffee Crawl, Pickleball Đà Lạt, Digital Nomads, Photography Walks, Food Adventures, Sunrise Runners, Board Games & Chill — `access_type: 'public'`, `is_listed: true`, slugs kebab-case, descriptions in the Dalat vibe (warm, cheeky, no corporate).
 - Idempotent: skips a slug that already exists.
 - Run once against prod after the code deploys; tribes are editable/deletable through the existing UI afterward.
