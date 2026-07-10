@@ -2,8 +2,8 @@ import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/lib/i18n/routing";
-import { createClient } from "@/lib/supabase/server";
-import { DynamicEventMap } from "@/components/map/dynamic-event-map";
+import { createStaticClient } from "@/lib/supabase/server";
+import { DynamicEventMap, type MapEvent } from "@/components/map/dynamic-event-map";
 import type { Event, VenueMapMarker } from "@/lib/types";
 import type { Metadata } from "next";
 import { generateLocalizedMetadata } from "@/lib/metadata";
@@ -12,6 +12,9 @@ import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 const SITE_URL = "https://dalat.app";
 
 export const maxDuration = 60;
+
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
@@ -29,13 +32,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 interface MapData {
-  events: Event[];
+  events: MapEvent[];
   happeningEventIds: string[];
   venues: VenueMapMarker[];
 }
 
 async function getMapData(): Promise<MapData> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[map] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty map");
+    return { events: [], happeningEventIds: [], venues: [] };
+  }
 
   // Fetch upcoming events with location data
   const { data: events, error } = await supabase.rpc("get_events_by_lifecycle", {
@@ -62,6 +69,19 @@ async function getMapData(): Promise<MapData> {
     ...(happeningEvents || []),
   ] as Event[];
 
+  // Project to only the fields the map components render (keeps payload small)
+  const mapEvents: MapEvent[] = allEvents.map((event) => ({
+    id: event.id,
+    slug: event.slug,
+    title: event.title,
+    starts_at: event.starts_at,
+    latitude: event.latitude,
+    longitude: event.longitude,
+    location_name: event.location_name,
+    image_url: event.image_url,
+    ai_tags: event.ai_tags,
+  }));
+
   // Fetch venues for map display
   const { data: venues, error: venuesError } = await supabase.rpc("get_venues_for_map", {
     p_types: null,
@@ -73,7 +93,7 @@ async function getMapData(): Promise<MapData> {
   }
 
   return {
-    events: allEvents,
+    events: mapEvents,
     happeningEventIds,
     venues: (venues || []) as VenueMapMarker[],
   };

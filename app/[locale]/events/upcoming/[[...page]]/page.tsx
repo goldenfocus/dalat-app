@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { locales, type Locale } from "@/lib/i18n/routing";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import { EventGrid } from "@/components/events/event-grid";
 import { getCachedEventSocialBatch } from "@/lib/cache/server-cache";
 import { EventViewToggle } from "@/components/events/event-view-toggle";
@@ -64,7 +64,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getUpcomingEvents(limit: number, offset: number) {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[upcoming] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty page");
+    return [];
+  }
 
   // Try the new paginated RPC first, fallback to basic query
   const { data, error } = await supabase.rpc("get_upcoming_events_paginated", {
@@ -94,7 +98,11 @@ async function getUpcomingEvents(limit: number, offset: number) {
 }
 
 async function getUpcomingEventsCount() {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[upcoming] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering zero count");
+    return 0;
+  }
 
   // Try the new count RPC first
   const { data, error } = await supabase.rpc("get_upcoming_events_count");
@@ -121,7 +129,11 @@ async function getUpcomingEventsCount() {
 async function getEventCounts(eventIds: string[]) {
   if (eventIds.length === 0) return {};
 
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[upcoming] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty counts");
+    return {};
+  }
   const { data: rsvps } = await supabase
     .from("rsvps")
     .select("event_id, status, plus_ones")

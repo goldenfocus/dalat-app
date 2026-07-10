@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node -e \"const fs=require('fs'); if(fs.existsSync('middleware.ts')){console.error('\\x1b[31mERROR: middleware.ts exists! Next.js 16 uses proxy.ts instead.\\nDelete middleware.ts and use proxy.ts only.\\x1b[0m');process.exit(1)}\"",
+    "prebuild": "node -e \"const fs=require('fs'); if(fs.existsSync('middleware.ts')){console.error('\\x1b[31mERROR: middleware.ts exists! Next.js 16 uses proxy.ts instead.\\nDelete middleware.ts and use proxy.ts only.\\x1b[0m');process.exit(1)}\" && node scripts/check-client-namespaces.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . && npm run check:no-middleware",

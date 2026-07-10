@@ -4,6 +4,21 @@ import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
 import type { Event, VenueMapMarker } from "@/lib/types";
 
+// Subset of Event fields the map actually renders — keeps the payload
+// passed across the server/client boundary small.
+export type MapEvent = Pick<
+  Event,
+  | "id"
+  | "slug"
+  | "title"
+  | "starts_at"
+  | "latitude"
+  | "longitude"
+  | "location_name"
+  | "image_url"
+  | "ai_tags"
+>;
+
 function MapSkeleton() {
   return (
     <div className="h-full flex items-center justify-center bg-muted/30">
@@ -16,7 +31,7 @@ function MapSkeleton() {
 }
 
 interface DynamicEventMapProps {
-  events: Event[];
+  events: MapEvent[];
   happeningEventIds?: string[];
   venues?: VenueMapMarker[];
 }

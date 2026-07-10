@@ -14,27 +14,15 @@ function escapePostgrestValue(input: string): string {
 }
 
 /**
- * GET /api/search/suggestions?q=query
- * Returns lightweight event suggestions for instant search
- * Uses AI to expand queries with translations and synonyms
+ * Query published events matching any of the given terms.
+ * Each term searches title, description, and location_name.
+ * PostgREST reserved chars (commas, dots, parens) require double-quoted values
  */
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const query = searchParams.get("q")?.trim();
-
-  if (!query || query.length < 2) {
-    return NextResponse.json({ suggestions: [] });
-  }
-
-  // Expand query with AI (translations + synonyms)
-  const expandedTerms = await expandSearchQuery(query);
-
-  const supabase = await createClient();
-
-  // Build OR filter for all expanded terms
-  // Each term searches title, description, and location_name
-  // PostgREST reserved chars (commas, dots, parens) require double-quoted values
-  const orFilters = expandedTerms
+async function fetchMatchingEvents(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  terms: string[]
+) {
+  const orFilters = terms
     .map((term) => {
       // Escape to prevent PostgREST filter injection (both from user input and AI output)
       const escaped = escapePostgrestValue(term);
@@ -51,13 +39,82 @@ export async function GET(request: NextRequest) {
     .limit(6);
 
   if (error) {
-    console.error("Search suggestions error:", error);
-    return NextResponse.json({ suggestions: [], expandedTerms });
+    throw new Error(`Search suggestions query failed: ${error.message}`);
   }
+
+  return events || [];
+}
+
+/**
+ * GET /api/search/suggestions?q=query
+ * Returns lightweight event suggestions for instant search
+ * Uses AI to expand queries with translations and synonyms
+ */
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const query = searchParams.get("q")?.trim();
+
+  if (!query || query.length < 2) {
+    return NextResponse.json({ suggestions: [] });
+  }
+
+  const supabase = await createClient();
+
+  // Raw-term DB query and AI expansion run concurrently.
+  // Expansion is cached (24h) and time-boxed (1.5s) inside expandSearchQuery;
+  // extra expanded terms are queried only once expansion resolves.
+  // Each leg fails independently: a dead raw query is a real outage (503),
+  // a dead expansion leg only degrades results.
+  const [rawResult, expandedResult] = await Promise.allSettled([
+    fetchMatchingEvents(supabase, [query]),
+    expandSearchQuery(query).then(async (expandedTerms) => {
+      const extraTerms = expandedTerms.filter(
+        (term) => term.toLowerCase() !== query.toLowerCase()
+      );
+      const events =
+        extraTerms.length > 0
+          ? await fetchMatchingEvents(supabase, extraTerms)
+          : [];
+      return { expandedTerms, events };
+    }),
+  ]);
+
+  if (rawResult.status === "rejected") {
+    console.error("Search suggestions raw query failed:", rawResult.reason);
+    return NextResponse.json(
+      { suggestions: [], degraded: true },
+      { status: 503 }
+    );
+  }
+
+  const rawEvents = rawResult.value;
+  if (expandedResult.status === "rejected") {
+    console.error(
+      "Search suggestions expansion leg failed:",
+      expandedResult.reason
+    );
+  }
+  const expanded =
+    expandedResult.status === "fulfilled"
+      ? expandedResult.value
+      : { expandedTerms: [] as string[], events: [] as typeof rawEvents };
+
+  // Merge raw + expanded matches, dedupe by id, keep newest-first order
+  const seen = new Set<string>();
+  const events = [...rawEvents, ...expanded.events]
+    .filter((event) => {
+      if (seen.has(event.id)) return false;
+      seen.add(event.id);
+      return true;
+    })
+    .sort(
+      (a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()
+    )
+    .slice(0, 6);
 
   // Categorize by lifecycle
   const now = new Date();
-  const suggestions = (events || []).map((event) => {
+  const suggestions = events.map((event) => {
     const start = new Date(event.starts_at);
     // If no end date, assume event ends at end of start day
     const end = event.ends_at
@@ -87,6 +144,9 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     suggestions,
     // Include expanded terms for debugging/transparency
-    expandedTerms: expandedTerms.length > 1 ? expandedTerms : undefined,
+    expandedTerms:
+      expanded.expandedTerms.length > 1 ? expanded.expandedTerms : undefined,
+    // Flag partial results so the client can tell them apart from "no matches"
+    ...(expandedResult.status === "rejected" ? { degraded: true } : {}),
   });
 }

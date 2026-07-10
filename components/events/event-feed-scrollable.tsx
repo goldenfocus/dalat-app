@@ -4,7 +4,12 @@ import { Radio, Calendar, History } from "lucide-react";
 import { EventHeroCard } from "./event-hero-card";
 import { EventGrid } from "./event-grid";
 import { EventViewToggle } from "./event-view-toggle";
-import type { ContentLocale, Locale } from "@/lib/types";
+import type {
+  CardEvent,
+  ContentLocale,
+  EventWithSeriesData,
+  Locale,
+} from "@/lib/types";
 import { getEventTranslationsBatch } from "@/lib/translations";
 import {
   getCachedEventsByLifecycle,
@@ -15,6 +20,24 @@ import {
 interface EventFeedScrollableProps {
   locale: Locale;
   happeningCount: number;
+}
+
+/** Strip full RPC rows down to the fields cards actually render. */
+function toCardEvent(event: EventWithSeriesData): CardEvent {
+  return {
+    id: event.id,
+    slug: event.slug,
+    title: event.title,
+    image_url: event.image_url,
+    image_fit: event.image_fit,
+    focal_point: event.focal_point,
+    location_name: event.location_name,
+    starts_at: event.starts_at,
+    ends_at: event.ends_at,
+    capacity: event.capacity,
+    sponsor_tier: event.sponsor_tier,
+    source_locale: event.source_locale,
+  };
 }
 
 /**
@@ -56,6 +79,10 @@ export async function EventFeedScrollable({
     }
   });
 
+  // Only serialize card-rendered fields to the client
+  const happeningCardEvents = happeningEvents.map(toCardEvent);
+  const upcomingCardEvents = upcomingEvents.map(toCardEvent);
+
   return (
     <div className="space-y-8">
       {/* ═══════════════════════════════════════════════════════════════════════
@@ -76,7 +103,7 @@ export async function EventFeedScrollable({
 
           {/* Hero cards for live events */}
           <div className="space-y-4">
-            {happeningEvents.map((event) => {
+            {happeningCardEvents.map((event) => {
               const translation = event.source_locale === locale
                 ? undefined
                 : eventTranslations.get(event.id);
@@ -112,7 +139,7 @@ export async function EventFeedScrollable({
 
         {/* Event grid */}
         <EventGrid
-          events={upcomingEvents}
+          events={upcomingCardEvents}
           counts={counts}
           social={social}
           eventTranslations={eventTranslations}

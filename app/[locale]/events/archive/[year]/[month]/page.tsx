@@ -5,7 +5,7 @@ import { Link } from "@/lib/i18n/routing";
 export const maxDuration = 60;
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { locales, type Locale } from "@/lib/i18n/routing";
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import { MonthNavigation } from "@/components/events/month-navigation";
 import { ArchiveEventsList } from "@/components/events/archive-events-list";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -73,7 +73,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getEventsByMonth(year: number, month: number) {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[archive] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty page");
+    return [];
+  }
   const { data: events, error } = await supabase.rpc("get_events_by_month", {
     p_year: year,
     p_month: month,
@@ -91,7 +95,11 @@ async function getEventsByMonth(year: number, month: number) {
 async function getEventCounts(eventIds: string[]) {
   if (eventIds.length === 0) return {};
 
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[archive] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty counts");
+    return {};
+  }
   const { data: rsvps } = await supabase
     .from("rsvps")
     .select("event_id, status, plus_ones")
@@ -120,7 +128,11 @@ async function getEventCounts(eventIds: string[]) {
 async function getMomentsCounts(eventIds: string[]) {
   if (eventIds.length === 0) return {};
 
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[archive] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty counts");
+    return {};
+  }
   const { data, error } = await supabase.rpc("get_events_moments_counts", {
     p_event_ids: eventIds,
   });

@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Camera, Search } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { MomentsFeed } from "@/components/feed/moments-feed";
 import { MomentsFilterBar, type MomentsFilterOption } from "./moments-filter-bar";
 import { InfiniteMomentDiscoveryGrouped } from "./infinite-moment-discovery-grouped";
@@ -23,13 +24,37 @@ const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> =
 interface MomentsDiscoveryMobileProps {
   initialMoments: MomentWithEvent[];
   initialHasMore: boolean;
-  isAuthenticated?: boolean;
 }
 
 interface MomentsDiscoveryDesktopProps {
   initialGroups: DiscoveryEventMomentsGroup[];
   initialHasMore: boolean;
-  isAuthenticated?: boolean;
+}
+
+/**
+ * Derive auth state client-side so the page can be statically cached.
+ * Defaults to logged-out rendering until the session resolves.
+ */
+function useIsAuthenticated() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session?.user);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAuth();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return isAuthenticated;
 }
 
 function useMomentFilters() {
@@ -91,8 +116,8 @@ function SearchResultsGridWithLightbox({ moments }: { moments: MomentWithEvent[]
 export function MomentsDiscoveryMobile({
   initialMoments,
   initialHasMore,
-  isAuthenticated = false,
 }: MomentsDiscoveryMobileProps) {
+  const isAuthenticated = useIsAuthenticated();
   const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -143,8 +168,8 @@ export function MomentsDiscoveryMobile({
 export function MomentsDiscoveryDesktop({
   initialGroups,
   initialHasMore,
-  isAuthenticated = false,
 }: MomentsDiscoveryDesktopProps) {
+  const isAuthenticated = useIsAuthenticated();
   const t = useTranslations("moments");
   const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
 

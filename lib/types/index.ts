@@ -426,6 +426,27 @@ export interface Event {
   event_series?: EventSeries;
 }
 
+/**
+ * Minimal event shape for card components (grid/list/immersive/hero).
+ * Server components map full rows to this before crossing the client
+ * boundary so unused columns aren't serialized to the browser.
+ */
+export type CardEvent = Pick<
+  Event,
+  | "id"
+  | "slug"
+  | "title"
+  | "image_url"
+  | "image_fit"
+  | "focal_point"
+  | "location_name"
+  | "starts_at"
+  | "ends_at"
+  | "capacity"
+  | "sponsor_tier"
+  | "source_locale"
+>;
+
 export interface PlusOneGuest {
   id: string;
   rsvp_id: string;

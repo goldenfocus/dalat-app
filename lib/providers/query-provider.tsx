@@ -47,13 +47,16 @@ const ReactQueryDevtools =
 /**
  * TanStack Query provider with code splitting.
  *
- * The @tanstack/react-query library (~70KB) is loaded asynchronously,
- * but children are rendered immediately via Suspense fallback.
- * This improves initial page load for pages that don't use React Query.
+ * The @tanstack/react-query library (~70KB) is loaded asynchronously.
+ * The Suspense fallback MUST be null (not {children}): rendering children
+ * without a QueryClient crashes any component using useQuery — fatal during
+ * static prerender (broke `next build` on /[locale]/moments). The import
+ * resolves in a microtask and prerender waits for allReady, so the final
+ * HTML always contains the real content, never the fallback.
  */
 export function QueryProvider({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={children}>
+    <Suspense fallback={null}>
       <LazyQueryClientProvider>
         {children}
         {ReactQueryDevtools && (

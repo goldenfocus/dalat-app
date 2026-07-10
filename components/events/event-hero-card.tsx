@@ -9,12 +9,13 @@ import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl } from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
+import { useLazyVideo } from "@/lib/hooks/use-lazy-video";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { getCardCoverUrl, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
-import type { Event, EventCounts, Locale } from "@/lib/types";
+import type { CardEvent, EventCounts, Locale } from "@/lib/types";
 
 interface EventHeroCardProps {
-  event: Event;
+  event: CardEvent;
   counts?: EventCounts;
   social?: EventSocial;
   translatedTitle?: string;
@@ -37,6 +38,7 @@ export const EventHeroCard = memo(function EventHeroCard({
   const coverUrl = getCardCoverUrl(event.image_url, social);
   const hasCustomImage = !!coverUrl;
   const imageIsVideo = isVideoUrl(coverUrl);
+  const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null, { eager: true });
   const displayTitle = translatedTitle || event.title;
   const goingSpots = counts?.going_spots ?? 0;
 
@@ -70,16 +72,15 @@ export const EventHeroCard = memo(function EventHeroCard({
         <div className="flex flex-col sm:flex-row">
           {/* Image section */}
           <div className="relative w-full sm:w-2/5 aspect-[16/9] sm:aspect-auto sm:min-h-[200px]">
-            {hasCustomImage ? (
+            {hasCustomImage && !videoFailed ? (
               imageIsVideo ? (
                 <video
-                  src={coverUrl!}
+                  ref={videoRef}
                   className={`absolute inset-0 w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
                   style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                   muted
                   loop
                   playsInline
-                  autoPlay
                   preload="metadata"
                 />
               ) : (

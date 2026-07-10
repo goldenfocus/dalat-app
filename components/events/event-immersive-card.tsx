@@ -11,16 +11,17 @@ import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
+import { useLazyVideo } from "@/lib/hooks/use-lazy-video";
 import { usePrefetch } from "@/lib/prefetch";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { getCardCoverUrl, getPastProof, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
-import type { Event, EventCounts, Locale } from "@/lib/types";
+import type { CardEvent, EventCounts, Locale } from "@/lib/types";
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZTVlNWU1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZjVmNWY1Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNnKSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIi8+PC9zdmc+";
 
 interface EventImmersiveCardProps {
-  event: Event;
+  event: CardEvent;
   counts?: EventCounts;
   social?: EventSocial;
   seriesRrule?: string;
@@ -71,6 +72,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
   const hasCustomImage = !!coverUrl;
   const isFallbackCover = hasCustomImage && coverUrl !== event.image_url;
   const imageIsVideo = isVideoUrl(coverUrl);
+  const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null);
   const displayTitle = translatedTitle || event.title;
   const pastProof = getPastProof(social);
 
@@ -84,17 +86,16 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
     >
       {/* Full-bleed image */}
       <div className="absolute inset-0">
-        {hasCustomImage ? (
+        {hasCustomImage && !videoFailed ? (
           imageIsVideo ? (
             <video
-              src={coverUrl!}
+              ref={videoRef}
               className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
               style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
               muted
               loop
               playsInline
-              autoPlay
-              preload="metadata"
+              preload="none"
               aria-hidden="true"
             />
           ) : (

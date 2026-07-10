@@ -12,10 +12,10 @@ import {
   useEventViewPreferences,
   type EventDensity,
 } from "@/lib/hooks/use-local-storage";
-import type { Event, EventCounts, EventSocial, Locale } from "@/lib/types";
+import type { CardEvent, EventCounts, EventSocial, Locale } from "@/lib/types";
 
 interface EventGridProps {
-  events: Event[];
+  events: CardEvent[];
   counts: Record<string, EventCounts | undefined>;
   eventTranslations: Map<string, { title?: string }>;
   seriesRrules?: Record<string, string>;
@@ -43,8 +43,8 @@ const LIST_CLASSES: Record<EventDensity, string> = {
  * Groups events by their start date (in Da Lat timezone).
  * Returns an array of [dateKey, events[]] tuples.
  */
-function groupEventsByDate(events: Event[]): [string, Event[]][] {
-  const groups = new Map<string, Event[]>();
+function groupEventsByDate(events: CardEvent[]): [string, CardEvent[]][] {
+  const groups = new Map<string, CardEvent[]>();
 
   for (const event of events) {
     // Use ISO date as key for grouping (yyyy-MM-dd in Da Lat timezone)

@@ -32,8 +32,8 @@ export function NotificationPrompt() {
     // Check if user is logged in
     async function checkAndPrompt() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
       if (hasPrompted.current) return;
 
       hasPrompted.current = true;

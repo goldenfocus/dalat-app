@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
+import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { cn } from "@/lib/utils";
 
 interface UserAvatarProps {
@@ -39,7 +40,7 @@ export function UserAvatar({
 
   const avatar = (
     <Avatar className={cn(sizeClasses[size], className)}>
-      {src && <AvatarImage src={src} alt={alt} />}
+      {src && <AvatarImage src={optimizedImageUrl(src, imagePresets.avatar) || src} alt={alt} />}
       <AvatarFallback className={cn("bg-primary/20", fallbackClassName)} />
     </Avatar>
   );

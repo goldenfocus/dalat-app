@@ -14,13 +14,13 @@ import { cloudflareLoader } from "@/lib/image-cdn";
 import { usePrefetch } from "@/lib/prefetch";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { getCardCoverUrl, getPastProof, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
-import type { Event, EventCounts, Locale } from "@/lib/types";
+import type { CardEvent, EventCounts, Locale } from "@/lib/types";
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZTVlNWU1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZjVmNWY1Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNnKSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIi8+PC9zdmc+";
 
 interface EventListCardProps {
-  event: Event;
+  event: CardEvent;
   counts?: EventCounts;
   social?: EventSocial;
   seriesRrule?: string;

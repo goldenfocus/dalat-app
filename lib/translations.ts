@@ -380,7 +380,7 @@ export function isValidContentLocale(locale: string): locale is ContentLocale {
 export async function getEventTranslationsBatch(
   eventIds: string[],
   targetLocale: ContentLocale
-): Promise<Map<string, { title: string; description: string | null }>> {
+): Promise<Map<string, { title: string }>> {
   if (eventIds.length === 0) {
     return new Map();
   }
@@ -395,23 +395,17 @@ export async function getEventTranslationsBatch(
 
     const { data: translations } = await supabase
       .from('content_translations')
-      .select('content_id, field_name, translated_text')
+      .select('content_id, translated_text')
       .eq('content_type', 'event')
       .in('content_id', eventIds)
       .eq('target_locale', targetLocale)
-      .in('field_name', ['title', 'description']);
+      .eq('field_name', 'title');
 
-    const result = new Map<string, { title: string; description: string | null }>();
+    const result = new Map<string, { title: string }>();
 
     if (translations) {
       for (const t of translations) {
-        const existing = result.get(t.content_id) || { title: '', description: null };
-        if (t.field_name === 'title') {
-          existing.title = t.translated_text;
-        } else if (t.field_name === 'description') {
-          existing.description = t.translated_text;
-        }
-        result.set(t.content_id, existing);
+        result.set(t.content_id, { title: t.translated_text });
       }
     }
 
@@ -429,7 +423,7 @@ export async function getEventTranslationsBatch(
 export async function getVenueTranslationsBatch(
   venueIds: string[],
   targetLocale: ContentLocale
-): Promise<Map<string, { title?: string; description?: string }>> {
+): Promise<Map<string, { title?: string }>> {
   if (venueIds.length === 0) {
     return new Map();
   }
@@ -443,23 +437,17 @@ export async function getVenueTranslationsBatch(
 
     const { data: translations } = await supabase
       .from('content_translations')
-      .select('content_id, field_name, translated_text')
+      .select('content_id, translated_text')
       .eq('content_type', 'venue')
       .in('content_id', venueIds)
       .eq('target_locale', targetLocale)
-      .in('field_name', ['title', 'description']);
+      .eq('field_name', 'title');
 
-    const result = new Map<string, { title?: string; description?: string }>();
+    const result = new Map<string, { title?: string }>();
 
     if (translations) {
       for (const t of translations) {
-        const existing = result.get(t.content_id) || {};
-        if (t.field_name === 'title') {
-          existing.title = t.translated_text;
-        } else if (t.field_name === 'description') {
-          existing.description = t.translated_text;
-        }
-        result.set(t.content_id, existing);
+        result.set(t.content_id, { title: t.translated_text });
       }
     }
 

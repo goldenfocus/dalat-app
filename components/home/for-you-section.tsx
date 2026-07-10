@@ -39,7 +39,8 @@ export function ForYouSection() {
     async function fetchRecommendations() {
       const supabase = createClient();
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
 
       // Only show personalized recommendations for logged-in users
       if (!user) {

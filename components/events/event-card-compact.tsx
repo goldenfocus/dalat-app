@@ -9,16 +9,17 @@ import { formatInDaLat } from "@/lib/timezone";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
+import { useLazyVideo } from "@/lib/hooks/use-lazy-video";
 import { usePrefetch } from "@/lib/prefetch";
 import { MapPin, Calendar, Clock } from "lucide-react";
 import { getCardCoverUrl, type EventSocial } from "@/lib/events/social-proof";
-import type { Event, Locale } from "@/lib/types";
+import type { CardEvent, Locale } from "@/lib/types";
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZTVlNWU1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZjVmNWY1Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNnKSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIi8+PC9zdmc+";
 
 interface EventCardCompactProps {
-  event: Event;
+  event: CardEvent;
   social?: EventSocial;
   translatedTitle?: string;
   priority?: boolean;
@@ -72,6 +73,7 @@ export const EventCardCompact = memo(function EventCardCompact({
   const coverUrl = getCardCoverUrl(event.image_url, social);
   const hasCustomImage = !!coverUrl;
   const imageIsVideo = isVideoUrl(coverUrl);
+  const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null);
   const displayTitle = translatedTitle || event.title;
 
   return (
@@ -100,17 +102,16 @@ export const EventCardCompact = memo(function EventCardCompact({
         >
           {/* Full-bleed image */}
           <div className="absolute inset-0">
-            {hasCustomImage ? (
+            {hasCustomImage && !videoFailed ? (
               imageIsVideo ? (
                 <video
-                  src={coverUrl!}
+                  ref={videoRef}
                   className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
                   style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                   muted
                   loop
                   playsInline
-                  autoPlay
-                  preload="metadata"
+                  preload="none"
                   aria-hidden="true"
                 />
               ) : (
