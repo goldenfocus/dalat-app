@@ -23,6 +23,7 @@ import {
 import { HeroImageSection } from "@/components/home/hero-image-section";
 import { MomentsStripServer } from "@/components/home/moments-strip-server";
 import { ForYouSection } from "@/components/home/for-you-section";
+import { TribesStrip } from "@/components/home/tribes-strip";
 import { RecommendedEventsProvider } from "@/components/home/recommended-events-context";
 import { JsonLd, generateWebSiteSchema } from "@/lib/structured-data";
 
@@ -118,6 +119,11 @@ export default async function Home({ params }: PageProps) {
             />
           </Suspense>
         </RecommendedEventsProvider>
+
+        {/* Tribes discovery strip */}
+        <Suspense fallback={null}>
+          <TribesStrip />
+        </Suspense>
       </div>
     </main>
     </>
