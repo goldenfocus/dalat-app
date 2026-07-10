@@ -271,6 +271,7 @@ export async function updateSession(request: NextRequest) {
     pathWithoutLocale.startsWith("/organizers") ||
     pathWithoutLocale.startsWith("/venues") ||  // Public venue pages
     pathWithoutLocale.startsWith("/moments") ||  // Public moments discovery
+    pathWithoutLocale.startsWith("/tribes") ||  // Public tribes discovery + detail (/tribes/new self-gates)
     pathWithoutLocale.startsWith("/feed") ||  // Public moments feed
     pathWithoutLocale.startsWith("/blog") ||  // Public blog articles
     pathWithoutLocale.startsWith("/map") ||  // Public map view
