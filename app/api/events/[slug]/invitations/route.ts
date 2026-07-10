@@ -377,10 +377,10 @@ export async function POST(
         if (inserted && inserted.length > 0) {
           // Fan out via scheduled_notifications — /api/cron/process-notifications
           // delivers due rows every 5 min through notify() with built-in retries.
-          // Stagger scheduled_for to pace Resend (~2 req/s, free tier ~100/day):
-          // 30s apart keeps each cron batch to ~10 sends; rows beyond the daily
-          // email cap start tomorrow.
-          const EMAILS_PER_DAY = Number(process.env.AUDIENCE_BLAST_DAILY_EMAIL_CAP ?? 90);
+          // Stagger scheduled_for to pace Resend (~2 req/s); rows beyond the daily
+          // email cap start tomorrow. Default sized for the Pro plan (50k/mo) —
+          // set AUDIENCE_BLAST_DAILY_EMAIL_CAP=90 if ever back on the free tier.
+          const EMAILS_PER_DAY = Number(process.env.AUDIENCE_BLAST_DAILY_EMAIL_CAP ?? 5000);
           const startMs = Date.now();
           const DAY_MS = 24 * 60 * 60 * 1000;
           const note = personalNote?.trim() || null;
