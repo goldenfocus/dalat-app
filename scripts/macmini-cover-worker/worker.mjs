@@ -142,6 +142,13 @@ async function processJob(job) {
     const seconds = ((Date.now() - started) / 1000).toFixed(1);
     log(`[worker] done slug=${job.slug} tier=macmini duration=${seconds}s`);
   } catch (err) {
+    // GPU OOM = transient contention (ollama re-warms models during news
+    // crons), not a broken job — don't burn the failure budget, just back
+    // off and let the next poll retry.
+    if (/Insufficient Memory|OutOfMemory/i.test(String(err))) {
+      log(`[worker] OOM slug=${job.slug} — GPU busy, backing off this cycle`);
+      return 'oom';
+    }
     failures.set(job.id, (failures.get(job.id) || 0) + 1);
     log(`[worker] FAILED slug=${job.slug}:`, err.stack || err, err.cause ?? '');
   } finally {
@@ -169,7 +176,8 @@ async function cycle() {
       }
       continue;
     }
-    await processJob(job);
+    const outcome = await processJob(job);
+    if (outcome === 'oom') break; // GPU is busy — the rest of the batch would OOM too
   }
 }
 
