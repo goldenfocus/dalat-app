@@ -45,6 +45,11 @@ const POLL_MINUTES = Number(env.POLL_MINUTES) || 10;
 const MFLUX_BIN = env.MFLUX_BIN || 'mflux-generate';
 const MODEL = env.MODEL || 'schnell';
 const STEPS = Number(env.STEPS) || 3;
+// Extra CLI flags for mflux (e.g. --low-ram), space-separated.
+const MFLUX_EXTRA_ARGS = (env.MFLUX_EXTRA_ARGS || '').split(/\s+/).filter(Boolean);
+// Shell command run before each generation — e.g. unload ollama models so
+// mflux gets the full Metal memory budget (klein-4b peaks ~15GB on a 24GB mini).
+const PRE_GENERATE_CMD = env.PRE_GENERATE_CMD || '';
 
 if (!ADMIN_API_KEY) {
   console.error('[worker] ADMIN_API_KEY is required (worker.env or env). Exiting.');
@@ -77,12 +82,16 @@ async function api(path, options = {}) {
 }
 
 function generateImage(job, outputPath) {
+  if (PRE_GENERATE_CMD) {
+    spawnSync('/bin/sh', ['-c', PRE_GENERATE_CMD], { timeout: 60 * 1000, encoding: 'utf8' });
+  }
   const args = [
     '--model', MODEL,
     '--quantize', '4',
     '--steps', String(STEPS),
     '--width', '1216',
     '--height', '640',
+    ...MFLUX_EXTRA_ARGS,
     '--prompt', job.prompt,
     '--output', outputPath,
   ];
