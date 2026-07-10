@@ -5,11 +5,11 @@ import { execFileSync } from "child_process";
 import { brotliDecompressSync, gunzipSync } from "zlib";
 
 // Ceilings. Never raise one without a comment explaining why.
-const HTML_BUDGET = 55000; // compressed bytes — ratchet down to 35000 after i18n split lands
+const HTML_BUDGET = 50000; // compressed bytes — ratcheted from 55000 (46.4k after Jul 2026 overhaul)
 const JS_BUDGET = 520000; // compressed bytes, summed across all /_next/static scripts
 const CHUNK_BUDGET = 34; // max /_next/static script tags on the homepage
-// Flip to true once the Cloudflare cache rule for / exists.
-const ENFORCE_EDGE_HIT = false;
+// Cloudflare cache rules live since Jul 2026 — anon second hit must be HIT.
+const ENFORCE_EDGE_HIT = true;
 
 const url = process.argv[2] ?? "https://dalat.app/";
 const origin = new URL(url).origin;
