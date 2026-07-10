@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  launchd job for the dalat.app import worker (Mac mini).
+  Install: see scripts/import-worker/README.md
+
+  Timing: the Vercel scrape cron enqueues at 01:00 UTC and health-check
+  verifies at 02:30 UTC. Schedule the worker inside that window.
+  The two entries below cover it from any common timezone AND give a
+  same-night retry if the first run hits a rate limit; runs are idempotent.
+  01:30 UTC = 20:30 states-side ET = 08:30 Đà Lạt (adjust to YOUR local time).
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.dalat.import-worker</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>cd __REPO_PATH__ &amp;&amp; npm run import:worker</string>
+  </array>
+
+  <!-- __HOUR1__:__MIN1__ and __HOUR2__:__MIN2__ LOCAL time; pick values
+       that land between 01:15 and 02:15 UTC. -->
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict>
+      <key>Hour</key><integer>__HOUR1__</integer>
+      <key>Minute</key><integer>__MIN1__</integer>
+    </dict>
+    <dict>
+      <key>Hour</key><integer>__HOUR2__</integer>
+      <key>Minute</key><integer>__MIN2__</integer>
+    </dict>
+  </array>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/dalat-import-worker.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/dalat-import-worker.err</string>
+
+  <!-- Missed-window catch-up after sleep/reboot: launchd coalesces missed
+       StartCalendarInterval firings into one run at next wake. -->
+</dict>
+</plist>

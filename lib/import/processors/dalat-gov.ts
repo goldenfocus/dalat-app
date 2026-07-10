@@ -1,19 +1,16 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import {
-  slugify,
-  generateUniqueSlug,
-  findOrCreateOrganizer,
   checkDuplicateByUrl,
-  generateMapsUrl,
   createEmptyResult,
-  downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
+import {
+  importExtractedEvents,
+  type ExtractedEvent,
+} from "../import-events";
 import { triggerTranslationServer } from "@/lib/translations";
 import { EXTRACTION_MODEL } from "../extraction-model";
-import { IMPORT_STATUS, MAX_IMPORTS_PER_RUN } from "../import-config";
-import { fromZonedTime } from "date-fns-tz";
 
 const anthropic = new Anthropic();
 
@@ -27,21 +24,6 @@ const CATEGORIES_TO_SCRAPE = [
   "/danh-muc/du-lich", // Tourism
   "/danh-muc/van-hoa", // Culture
 ];
-
-/**
- * Event extracted from a gov.vn article by AI
- */
-interface ExtractedEvent {
-  title: string;
-  description: string;
-  startDate: string; // ISO format or Vietnamese date
-  endDate?: string;
-  startTime?: string;
-  locationName?: string;
-  address?: string;
-  organizerName?: string;
-  imageUrl?: string;
-}
 
 /**
  * Article scraped from gov.vn
@@ -355,120 +337,27 @@ export async function processGovArticles(
 
       console.log(`[dalat-gov] Found ${events.length} events in: ${article.title}`);
 
-      // Process each extracted event
-      for (const event of events) {
-        try {
-          if (result.processed >= MAX_IMPORTS_PER_RUN) {
-            result.skipped++;
-            result.details.push(
-              `Cap reached (${MAX_IMPORTS_PER_RUN}) — skipped: ${event.title}`
-            );
-            continue;
-          }
-
-          // Check for duplicates by title + date
-          const eventDate = event.startDate;
-          const { data: existingByTitle } = await supabase
-            .from("events")
-            .select("id")
-            .ilike("title", event.title)
-            .gte("starts_at", eventDate)
-            .lt("starts_at", getNextDay(eventDate))
-            .limit(1)
-            .single();
-
-          if (existingByTitle) {
-            result.skipped++;
-            result.details.push(`Skipped: Similar event exists - ${event.title}`);
-            continue;
-          }
-
-          const organizerId = await findOrCreateOrganizer(
-            supabase,
-            event.organizerName || "Sở Văn hóa, Thể thao và Du lịch Lâm Đồng"
-          );
-          const slug = await generateUniqueSlug(supabase, slugify(event.title));
-
-          // Build starts_at timestamp — extracted times are Đà Lạt local time,
-          // so convert explicitly (a bare string would be stored as UTC, 7h off)
-          const localStart = event.startTime
-            ? `${event.startDate}T${event.startTime}:00`
-            : `${event.startDate}T09:00:00`; // Default to 9 AM
-          const startsAt = fromZonedTime(localStart, "Asia/Ho_Chi_Minh").toISOString();
-
-          // Build ends_at if available
-          let endsAt: string | null = null;
-          if (event.endDate) {
-            endsAt = fromZonedTime(`${event.endDate}T22:00:00`, "Asia/Ho_Chi_Minh").toISOString(); // Default end time
-          }
-
-          // Try to download first image from article
-          const imageUrl = await downloadAndUploadImage(
-        article.imageUrls[0] || null,
-            slug
-          );
-
-          const { data: newEvent, error } = await supabase
-            .from("events")
-            .insert({
-              slug,
-              title: event.title,
-              description: event.description,
-              starts_at: startsAt,
-              ends_at: endsAt,
-              location_name: event.locationName || "Đà Lạt",
-              address: event.address,
-              google_maps_url: generateMapsUrl(
-                undefined,
-                undefined,
-                event.locationName,
-                "Đà Lạt"
-              ),
-              external_chat_url: article.url, // Link back to source article
-              image_url: imageUrl,
-              status: IMPORT_STATUS,
-              timezone: "Asia/Ho_Chi_Minh",
-              organizer_id: organizerId,
-              created_by: createdBy,
-              source_platform: "dalat-gov",
-              source_metadata: {
-                article_url: article.url,
-                article_title: article.title,
-                publish_date: article.publishDate,
-                imported_at: new Date().toISOString(),
-              },
-            })
-            .select("id")
-            .single();
-
-          if (error) {
-            result.errors++;
-            result.details.push(`Error: ${event.title} - ${error.message}`);
-          } else {
-            result.processed++;
-            result.details.push(`Imported: ${event.title}`);
-
-            // Trigger translation
-            if (newEvent?.id) {
-              const fieldsToTranslate = [];
-              if (event.title) {
-                fieldsToTranslate.push({ field_name: "title" as const, text: event.title });
-              }
-              if (event.description) {
-                fieldsToTranslate.push({
-                  field_name: "description" as const,
-                  text: event.description,
-                });
-              }
-
-              if (fieldsToTranslate.length > 0) {
-                await triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
-              }
-            }
-          }
-        } catch (err) {
-          result.errors++;
-          result.details.push(`Exception: ${event.title} - ${err}`);
+      // Insert events via the shared importer, then translate (server path)
+      const imported = await importExtractedEvents(
+        supabase,
+        article,
+        events,
+        result,
+        { createdBy }
+      );
+      for (const ev of imported) {
+        const fieldsToTranslate = [];
+        if (ev.title) {
+          fieldsToTranslate.push({ field_name: "title" as const, text: ev.title });
+        }
+        if (ev.description) {
+          fieldsToTranslate.push({
+            field_name: "description" as const,
+            text: ev.description,
+          });
+        }
+        if (fieldsToTranslate.length > 0) {
+          await triggerTranslationServer("event", ev.id, fieldsToTranslate);
         }
       }
     } catch (err) {
@@ -478,11 +367,4 @@ export async function processGovArticles(
   }
 
   return result;
-}
-
-function getNextDay(dateStr?: string | null): string {
-  if (!dateStr) return "9999-12-31";
-  const date = new Date(dateStr);
-  date.setDate(date.getDate() + 1);
-  return date.toISOString().split("T")[0];
 }

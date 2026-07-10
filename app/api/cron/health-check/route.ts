@@ -14,8 +14,13 @@ const MIN_UPCOMING_14D = 8;
 // A watched source with no run in this window is presumed dead.
 const MAX_HEARTBEAT_AGE_H = 48;
 
-// Add "facebook" once the Apify schedule is re-enabled (it webhooks daily).
-const WATCHED_SOURCES = ["dalat-gov"];
+// Add "facebook" once a Facebook leg ships (phase 2 of the zero-cost design).
+// macmini-extract = the Mac mini worker draining import_queue.
+const WATCHED_SOURCES = ["dalat-gov", "macmini-extract"];
+
+// Queue rows stuck pending/processing longer than this mean the worker
+// is dead, auth-expired, or wedged — raw articles are piling up.
+const MAX_QUEUE_AGE_H = 48;
 
 // Content promise: /news must never look dead either.
 const MAX_NEWS_AGE_H = 26;
@@ -87,7 +92,50 @@ export async function GET(request: Request) {
     }
   }
 
-  // 4. Content health: /news freshness, backlog, dead-cluster retry, pipeline errors.
+  // 4. Import queue backlog: rows the Mac mini worker should have drained
+  const backlogCutoff = new Date(Date.now() - MAX_QUEUE_AGE_H * 3600_000).toISOString();
+  const { count: backlog } = await supabase
+    .from("import_queue")
+    .select("*", { count: "exact", head: true })
+    .in("status", ["pending", "processing"])
+    .lt("created_at", backlogCutoff);
+  if ((backlog ?? 0) > 0) {
+    problems.push(
+      `import_queue: ${backlog} rows older than ${MAX_QUEUE_AGE_H}h still unprocessed — is the Mac mini worker running?`
+    );
+  }
+
+  // 5. Canary: the daily synthetic article must have hatched into a draft
+  // event — proves scrape → queue → extract → insert end to end, which
+  // heartbeats alone cannot (they only prove "a job ran").
+  const { data: canaries } = await supabase
+    .from("events")
+    .select("id, created_at")
+    .eq("source_platform", "canary");
+  const freshCanary = (canaries ?? []).some(
+    (c) => Date.now() - new Date(c.created_at).getTime() < 26 * 3600_000
+  );
+  // Only demand a canary once the pipeline has hatched one before —
+  // otherwise this would alert daily during initial Mac mini setup.
+  const { count: canaryRuns } = await supabase
+    .from("import_queue")
+    .select("*", { count: "exact", head: true })
+    .eq("source", "canary")
+    .eq("status", "done");
+  if ((canaryRuns ?? 0) > 0 && !freshCanary) {
+    problems.push(
+      "canary: no synthetic event hatched in 26h — extraction chain broken end to end"
+    );
+  }
+  // Canaries are checked, then culled — they must never accumulate.
+  if (canaries && canaries.length > 0) {
+    await supabase
+      .from("events")
+      .delete()
+      .in("id", canaries.map((c) => c.id));
+  }
+
+  // 6. Content health: /news freshness, backlog, dead-cluster retry, pipeline errors.
   const content = await checkContentHealth(supabase, problems);
 
   if (problems.length > 0) {
