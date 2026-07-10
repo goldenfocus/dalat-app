@@ -111,7 +111,7 @@ export interface ScheduledNotification {
   type: NotificationType;
   scheduled_for: string;
   payload: NotificationPayload;
-  status: 'pending' | 'sent' | 'cancelled' | 'failed';
+  status: 'pending' | 'processing' | 'sent' | 'cancelled' | 'failed';
   sent_at: string | null;
   error_message: string | null;
   reference_type: string | null;

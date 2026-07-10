@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { notifyWaitlistPromotion, notifyWaitlistPositionUpdate } from '@/lib/notifications';
-import { inngest } from '@/lib/inngest';
+import { scheduleRsvpReminders, cancelRsvpReminders } from '@/lib/notifications/scheduler';
 import type { Locale } from '@/lib/types';
 
 // Called when someone cancels their RSVP - handles waitlist promotion notification
@@ -21,13 +21,7 @@ export async function POST(request: Request) {
   }
 
   // Cancel any scheduled reminders for the user who cancelled
-  await inngest.send({
-    name: 'rsvp/cancelled',
-    data: {
-      userId: user.id,
-      eventId,
-    },
-  });
+  await cancelRsvpReminders(user.id, eventId);
 
   // If no one was promoted, nothing more to do
   if (!promotedUserId) {
@@ -63,20 +57,17 @@ export async function POST(request: Request) {
       event.slug
     );
 
-    // Schedule reminders for the promoted user via Inngest
-    await inngest.send({
-      name: 'rsvp/created',
-      data: {
-        userId: promotedUserId,
-        locale,
-        eventId,
-        eventTitle: event.title,
-        eventSlug: event.slug,
-        startsAt: event.starts_at,
-        endsAt: event.ends_at,
-        locationName: event.location_name,
-        googleMapsUrl: event.google_maps_url,
-      },
+    // Schedule reminders for the promoted user
+    await scheduleRsvpReminders({
+      userId: promotedUserId,
+      locale,
+      eventId,
+      eventTitle: event.title,
+      eventSlug: event.slug,
+      startsAt: event.starts_at,
+      endsAt: event.ends_at,
+      locationName: event.location_name,
+      googleMapsUrl: event.google_maps_url,
     });
 
     // Notify remaining waitlisted users of their new position
