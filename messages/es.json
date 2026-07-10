@@ -1699,7 +1699,16 @@
     "allPosts": "Todos",
     "noPosts": "Aún no hay artículos. ¡Vuelve pronto!",
     "backToBlog": "Volver al Blog",
-    "translated": "Traducido"
+    "translated": "Traducido",
+    "sources": "Fuentes",
+    "via": "vía",
+    "loadMore": "Cargar más",
+    "newerPosts": "Más recientes",
+    "olderPosts": "Más antiguos",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "thisWeek": "Esta semana",
+    "older": "Anteriores"
   },
   "streaming": {
     "goLive": "Transmitir en vivo",
@@ -2380,7 +2389,11 @@
     "tagGovernment": "Gobierno",
     "tagFoodDrink": "Gastronomía",
     "tagWeather": "Clima",
-    "tagCommunity": "Comunidad"
+    "tagCommunity": "Comunidad",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "thisWeek": "Esta semana",
+    "older": "Anteriores"
   },
   "loyalty": {
     "title": "Lealtad",

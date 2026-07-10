@@ -994,6 +994,7 @@ export function generateNewsArticleSchema(
   post: BlogPostFull & {
     source_urls?: Array<{ url: string; title: string; publisher: string; published_at: string | null }>;
     news_tags?: string[];
+    updated_at?: string;
   },
   locale: string
 ) {
@@ -1006,12 +1007,10 @@ export function generateNewsArticleSchema(
     description: post.meta_description || post.story_content.slice(0, 160),
     url: articleUrl,
     datePublished: post.published_at || post.created_at,
-    dateModified: post.published_at || post.created_at,
+    dateModified: post.updated_at || post.published_at || post.created_at,
 
-    // Image
-    ...(post.cover_image_url && {
-      image: [post.cover_image_url],
-    }),
+    // Image (generated OG image as fallback for posts without a cover)
+    image: [post.cover_image_url || `${articleUrl}/opengraph-image`],
 
     // Author (ĐàLạt.app as publisher, with source attribution)
     author: {
@@ -1053,6 +1052,7 @@ export function generateNewsArticleSchema(
 
     // Source attribution
     ...(post.source_urls && post.source_urls.length > 0 && {
+      isBasedOn: post.source_urls.map(s => s.url),
       citation: post.source_urls.map(s => ({
         "@type": "CreativeWork",
         name: s.title,

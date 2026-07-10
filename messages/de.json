@@ -1642,7 +1642,16 @@
     "allPosts": "Alle",
     "noPosts": "Noch keine Beiträge. Schauen Sie bald wieder vorbei!",
     "backToBlog": "Zurück zum Blog",
-    "translated": "Übersetzt"
+    "translated": "Übersetzt",
+    "sources": "Quellen",
+    "via": "via",
+    "loadMore": "Mehr laden",
+    "newerPosts": "Neuere",
+    "olderPosts": "Ältere",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "thisWeek": "Diese Woche",
+    "older": "Früher"
   },
   "streaming": {
     "goLive": "Live gehen",
@@ -2380,7 +2389,11 @@
     "tagGovernment": "Verwaltung",
     "tagFoodDrink": "Essen & Trinken",
     "tagWeather": "Wetter",
-    "tagCommunity": "Gemeinschaft"
+    "tagCommunity": "Gemeinschaft",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "thisWeek": "Diese Woche",
+    "older": "Früher"
   },
   "loyalty": {
     "title": "Treueprogramm",

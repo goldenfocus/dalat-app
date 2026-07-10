@@ -1642,7 +1642,16 @@
     "allPosts": "Semua",
     "noPosts": "Belum ada artikel. Sila datang semula!",
     "backToBlog": "Kembali ke Blog",
-    "translated": "Diterjemah"
+    "translated": "Diterjemah",
+    "sources": "Sumber",
+    "via": "sumber",
+    "loadMore": "Muat lagi",
+    "newerPosts": "Lebih baharu",
+    "olderPosts": "Lebih lama",
+    "today": "Hari ini",
+    "yesterday": "Semalam",
+    "thisWeek": "Minggu ini",
+    "older": "Lebih awal"
   },
   "streaming": {
     "goLive": "Mulakan Siaran",
@@ -2380,7 +2389,11 @@
     "tagGovernment": "Kerajaan",
     "tagFoodDrink": "Makanan & Minuman",
     "tagWeather": "Cuaca",
-    "tagCommunity": "Komuniti"
+    "tagCommunity": "Komuniti",
+    "today": "Hari ini",
+    "yesterday": "Semalam",
+    "thisWeek": "Minggu ini",
+    "older": "Lebih awal"
   },
   "loyalty": {
     "title": "Kesetiaan",

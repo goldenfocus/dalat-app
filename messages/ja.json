@@ -1642,7 +1642,16 @@
     "allPosts": "すべて",
     "noPosts": "まだ記事がありません。またお越しください！",
     "backToBlog": "ブログに戻る",
-    "translated": "翻訳済み"
+    "translated": "翻訳済み",
+    "sources": "出典",
+    "via": "出典",
+    "loadMore": "もっと見る",
+    "newerPosts": "新しい記事",
+    "olderPosts": "過去の記事",
+    "today": "今日",
+    "yesterday": "昨日",
+    "thisWeek": "今週",
+    "older": "それ以前"
   },
   "streaming": {
     "goLive": "ライブ配信",
@@ -2380,7 +2389,11 @@
     "tagGovernment": "行政",
     "tagFoodDrink": "グルメ",
     "tagWeather": "天気",
-    "tagCommunity": "コミュニティ"
+    "tagCommunity": "コミュニティ",
+    "today": "今日",
+    "yesterday": "昨日",
+    "thisWeek": "今週",
+    "older": "それ以前"
   },
   "loyalty": {
     "title": "ロイヤルティ",

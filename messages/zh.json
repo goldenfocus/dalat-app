@@ -1645,7 +1645,16 @@
     "allPosts": "全部",
     "noPosts": "暂无文章。敬请期待！",
     "backToBlog": "返回博客",
-    "translated": "已翻译"
+    "translated": "已翻译",
+    "sources": "来源",
+    "via": "来源",
+    "loadMore": "加载更多",
+    "newerPosts": "较新",
+    "olderPosts": "较早",
+    "today": "今天",
+    "yesterday": "昨天",
+    "thisWeek": "本周",
+    "older": "更早"
   },
   "streaming": {
     "goLive": "开始直播",
@@ -2383,7 +2392,11 @@
     "tagGovernment": "政务",
     "tagFoodDrink": "美食",
     "tagWeather": "天气",
-    "tagCommunity": "社区"
+    "tagCommunity": "社区",
+    "today": "今天",
+    "yesterday": "昨天",
+    "thisWeek": "本周",
+    "older": "更早"
   },
   "loyalty": {
     "title": "积分",

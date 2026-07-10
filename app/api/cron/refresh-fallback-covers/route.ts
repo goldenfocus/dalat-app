@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { generateCoverViaChain } from "@/lib/ai/cover-chain";
+import { logPipelineEvent } from "@/lib/news/pipeline-log";
 
 function getSupabase() {
   return createClient(
@@ -67,11 +69,73 @@ export async function GET(request: Request) {
       }
     }
 
+    // Blog cover backfill — server-side fallback for posts the Mac mini
+    // worker hasn't gotten to. Small batch (3) keeps the cron fast; the
+    // mini + this cron together drain the backlog. Fully isolated so the
+    // event-covers behavior above is never broken.
+    let blogCovers = 0;
+    try {
+      const { data: posts } = await supabase
+        .from("blog_posts")
+        .select("id, slug, title, meta_description")
+        .is("cover_image_url", null)
+        .eq("status", "published")
+        .order("published_at", { ascending: false, nullsFirst: false })
+        .limit(3);
+
+      for (const post of posts ?? []) {
+        const result = await generateCoverViaChain({
+          postId: post.id,
+          slug: post.slug,
+          title: post.title,
+          description: post.meta_description ?? undefined,
+        });
+        if (!result) continue;
+
+        const { error: coverError } = await supabase
+          .from("blog_posts")
+          .update({ cover_image_url: result.url, cover_image_alt: post.title })
+          .eq("id", post.id)
+          .is("cover_image_url", null);
+
+        if (coverError) {
+          console.error(
+            `[refresh-fallback-covers] blog cover update failed for ${post.slug}:`,
+            coverError
+          );
+          await logPipelineEvent(supabase, {
+            stage: "refresh-fallback-covers",
+            postId: post.id,
+            level: "error",
+            message: `Generated cover not attached: ${coverError.message}`,
+            meta: { postId: post.id, url: result.url },
+          });
+        } else {
+          blogCovers++;
+          console.log(
+            `[refresh-fallback-covers] blog cover set: slug=${post.slug} tier=${result.tier}`
+          );
+        }
+      }
+    } catch (err) {
+      console.error("[refresh-fallback-covers] blog backfill failed:", err);
+      await logPipelineEvent(supabase, {
+        stage: "refresh-fallback-covers",
+        level: "error",
+        message: `Blog cover backfill failed: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+
     console.log("[refresh-fallback-covers] Result:", {
       updated: data?.updated,
       notified: unique.length,
+      blog_covers: blogCovers,
     });
-    return NextResponse.json({ ...data, notified: unique.length });
+    return NextResponse.json({
+      ...data,
+      notified: unique.length,
+      blog_covers: blogCovers,
+    });
   } catch (err) {
     console.error("[refresh-fallback-covers] Unexpected error:", err);
     return NextResponse.json(

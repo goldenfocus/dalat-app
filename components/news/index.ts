@@ -4,3 +4,4 @@ export { NewsTagFilter } from './news-tag-filter';
 export { NewsSidebar } from './news-sidebar';
 export { BreakingTicker } from './breaking-ticker';
 export { NewsSourcesSection } from './news-sources-section';
+export { NewsLoadMore } from './news-load-more';

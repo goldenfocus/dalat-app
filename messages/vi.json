@@ -1645,7 +1645,16 @@
     "allPosts": "Tất cả",
     "noPosts": "Chưa có bài viết. Quay lại sớm nhé!",
     "backToBlog": "Quay lại Blog",
-    "translated": "Đã dịch"
+    "translated": "Đã dịch",
+    "sources": "Nguồn",
+    "via": "theo",
+    "loadMore": "Xem thêm",
+    "newerPosts": "Mới hơn",
+    "olderPosts": "Cũ hơn",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "thisWeek": "Tuần này",
+    "older": "Trước đó"
   },
   "upcomingEvents": {
     "title": "Sự kiện sắp tới tại Đà Lạt",
@@ -2456,7 +2465,11 @@
     "tagGovernment": "Chính quyền",
     "tagFoodDrink": "Ẩm thực",
     "tagWeather": "Thời tiết",
-    "tagCommunity": "Cộng đồng"
+    "tagCommunity": "Cộng đồng",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "thisWeek": "Tuần này",
+    "older": "Trước đó"
   },
   "loyalty": {
     "title": "Tích điểm",

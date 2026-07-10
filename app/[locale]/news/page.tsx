@@ -8,10 +8,13 @@ import { NewsHeroCard } from '@/components/news/news-hero-card';
 import { NewsCompactCard } from '@/components/news/news-compact-card';
 import { NewsTagFilter } from '@/components/news/news-tag-filter';
 import { NewsSidebar } from '@/components/news/news-sidebar';
+import { NewsLoadMore } from '@/components/news/news-load-more';
 import { BreakingTicker } from '@/components/news/breaking-ticker';
+import { groupByRecency } from '@/lib/blog/date-groups';
 import { Newspaper } from 'lucide-react';
 
 const SITE_URL = 'https://dalat.app';
+const PAGE_SIZE = 25;
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -48,7 +51,7 @@ const getNewsPosts = unstable_cache(
     if (!supabase) return [];
 
     const { data } = await supabase.rpc('get_news_posts', {
-      p_limit: 25,
+      p_limit: PAGE_SIZE,
       p_offset: 0,
     });
 
@@ -118,6 +121,9 @@ export default async function NewsPage({ params }: Props) {
   const heroPost = featuredPost || translatedPosts[0];
   const regularPosts = translatedPosts.filter((p: any) => p !== heroPost && !p.is_breaking);
 
+  // Group the regular list by recency (Vietnam-time day boundaries)
+  const groupedPosts = groupByRecency(regularPosts, (p: any) => p.published_at);
+
   // Extract source names from source_urls
   const getSourceName = (post: any) => {
     const sources = post.source_urls as any[];
@@ -176,20 +182,36 @@ export default async function NewsPage({ params }: Props) {
               />
             )}
 
-            {/* Grid of compact cards */}
-            <div className="grid gap-3 sm:grid-cols-2">
-              {regularPosts.map((post: any) => (
-                <NewsCompactCard
-                  key={post.id}
-                  slug={post.slug}
-                  title={post.title}
-                  coverImageUrl={post.cover_image_url}
-                  publishedAt={post.published_at}
-                  newsTags={post.news_tags || []}
-                  sourceName={getSourceName(post)}
-                />
-              ))}
-            </div>
+            {/* Compact cards, grouped by recency */}
+            {groupedPosts.map((group) => (
+              <section key={group.key}>
+                <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t(group.key)}
+                </h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {group.items.map((post: any) => (
+                    <NewsCompactCard
+                      key={post.id}
+                      slug={post.slug}
+                      title={post.title}
+                      coverImageUrl={post.cover_image_url}
+                      publishedAt={post.published_at}
+                      newsTags={post.news_tags || []}
+                      sourceName={getSourceName(post)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            {/* Load more (appends below the grouped list) */}
+            {posts.length === PAGE_SIZE && (
+              <NewsLoadMore
+                label={t('loadMore')}
+                initialOffset={posts.length}
+                locale={locale}
+              />
+            )}
           </div>
 
           {/* Sidebar */}

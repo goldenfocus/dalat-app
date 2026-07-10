@@ -5,6 +5,8 @@ import { processNewsCluster } from '@/lib/news/content-processor';
 import { calculateQualityScore } from '@/lib/news/quality-scorer';
 import { applyInternalLinks } from '@/lib/news/internal-linker';
 import { handleNewsImages } from '@/lib/news/image-handler';
+import { logPipelineEvent } from '@/lib/news/pipeline-log';
+import { normalizeStoryContent } from '@/lib/blog/normalize-content';
 import { triggerTranslationServer } from '@/lib/translations';
 import type { ScrapedArticle } from '@/lib/news/types';
 
@@ -29,6 +31,7 @@ export async function GET(request: Request) {
   }
 
   const supabase = getSupabase();
+  const runId = crypto.randomUUID();
   let articleIds: string[] = [];
 
   try {
@@ -50,6 +53,13 @@ export async function GET(request: Request) {
     }
 
     console.log(`[news-process] Processing ${rawArticles.length} pending articles`);
+    await logPipelineEvent(supabase, {
+      runId,
+      stage: 'news-process',
+      level: 'info',
+      message: 'Run started',
+      meta: { rawArticles: rawArticles.length },
+    });
 
     // Mark as processing (track IDs for recovery on fatal error)
     articleIds = rawArticles.map(a => a.id);
@@ -76,10 +86,18 @@ export async function GET(request: Request) {
     // Mark skipped articles (batch by source URLs)
     if (skipped.length > 0) {
       const skippedUrls = skipped.map(a => a.sourceUrl);
-      await supabase
+      const { error: skipError } = await supabase
         .from('news_raw_articles')
         .update({ status: 'skipped' })
         .in('source_url', skippedUrls);
+      if (skipError) {
+        await logPipelineEvent(supabase, {
+          runId,
+          stage: 'news-process',
+          level: 'error',
+          message: `Failed to mark articles skipped: ${skipError.message}`,
+        });
+      }
     }
 
     // 4. Get news category ID
@@ -91,6 +109,12 @@ export async function GET(request: Request) {
 
     if (!category) {
       console.error('[news-process] News category not found');
+      await logPipelineEvent(supabase, {
+        runId,
+        stage: 'news-process',
+        level: 'error',
+        message: 'News category not found — run aborted, articles reset to pending',
+      });
       // Reset articles back to pending so they can be retried
       await supabase
         .from('news_raw_articles')
@@ -131,8 +155,11 @@ export async function GET(request: Request) {
         const quality = calculateQualityScore(content);
         console.log(`[news-process] Quality: ${quality.total.toFixed(2)} -> ${quality.suggestedStatus}`);
 
-        // Apply internal links
-        const linkedStory = await applyInternalLinks(content.storyContent, content.internalLinks);
+        // Apply internal links + normalize markdown (belt-and-suspenders against
+        // single-line AI output)
+        const linkedStory = normalizeStoryContent(
+          await applyInternalLinks(content.storyContent, content.internalLinks)
+        );
         const linkedTechnical = await applyInternalLinks(content.technicalContent);
 
         // Handle images (pass AI-generated descriptions for fallback cover generation)
@@ -141,6 +168,7 @@ export async function GET(request: Request) {
           allImages,
           cluster.articles[0].sourceName,
           content.suggestedSlug,
+          content.title,
           content.imageDescriptions
         );
 
@@ -159,6 +187,15 @@ export async function GET(request: Request) {
 
         // Insert blog post
         const now = new Date().toISOString();
+        // published_at is ALWAYS set: earliest source article date, else now.
+        // Experimental posts are listed on /news too — NULL sorts them to the
+        // bottom and breaks the detail page.
+        const sourceTimestamps = cluster.articles
+          .map(a => (a.publishedAt ? new Date(a.publishedAt).getTime() : NaN))
+          .filter(t => !Number.isNaN(t));
+        const publishedAt = sourceTimestamps.length > 0
+          ? new Date(Math.min(...sourceTimestamps)).toISOString()
+          : now;
         const { data: post, error: insertError } = await supabase
           .from('blog_posts')
           .insert({
@@ -169,7 +206,7 @@ export async function GET(request: Request) {
             source: 'news_scrape',
             source_locale: 'vi',
             status: quality.suggestedStatus,
-            published_at: quality.suggestedStatus === 'published' ? now : null,
+            published_at: publishedAt,
             category_id: category.id,
             meta_description: content.metaDescription,
             seo_keywords: content.seoKeywords,
@@ -187,6 +224,13 @@ export async function GET(request: Request) {
         if (insertError) {
           console.error('[news-process] Insert error:', insertError);
           errors++;
+          await logPipelineEvent(supabase, {
+            runId,
+            stage: 'news-process',
+            level: 'error',
+            message: `Insert failed for cluster: ${insertError.message}`,
+            meta: { topic: cluster.keywords.join(', '), slug },
+          });
           // Mark articles as error (batch)
           await supabase
             .from('news_raw_articles')
@@ -198,7 +242,7 @@ export async function GET(request: Request) {
         postsCreated++;
 
         // Mark raw articles as processed (batch)
-        await supabase
+        const { error: markError } = await supabase
           .from('news_raw_articles')
           .update({
             status: 'processed',
@@ -209,6 +253,15 @@ export async function GET(request: Request) {
             topic_keywords: cluster.keywords,
           })
           .in('source_url', clusterSourceUrls);
+        if (markError) {
+          await logPipelineEvent(supabase, {
+            runId,
+            stage: 'news-process',
+            postId: post.id,
+            level: 'error',
+            message: `Failed to mark articles processed: ${markError.message}`,
+          });
+        }
 
         // Trigger translation (server-side, no HTTP fetch needed)
         try {
@@ -221,12 +274,26 @@ export async function GET(request: Request) {
         } catch (translationError) {
           // Translation failure should not kill the pipeline
           console.error('[news-process] Translation failed (non-fatal):', translationError);
+          await logPipelineEvent(supabase, {
+            runId,
+            stage: 'news-process',
+            postId: post.id,
+            level: 'error',
+            message: `Translation trigger failed: ${translationError instanceof Error ? translationError.message : String(translationError)}`,
+          });
         }
 
         console.log(`[news-process] Created post: ${post.id} (${content.title})`);
       } catch (clusterError) {
         console.error(`[news-process] Cluster processing failed:`, clusterError);
         errors++;
+        await logPipelineEvent(supabase, {
+          runId,
+          stage: 'news-process',
+          level: 'error',
+          message: `Cluster processing failed: ${clusterError instanceof Error ? clusterError.message : String(clusterError)}`,
+          meta: { topic: cluster.keywords.join(', ') },
+        });
         // Mark articles as error (batch)
         const clusterSourceUrls = cluster.articles.map(a => a.sourceUrl);
         await supabase
@@ -235,6 +302,25 @@ export async function GET(request: Request) {
           .in('source_url', clusterSourceUrls);
       }
     }
+
+    // Zero clusters + every article skipped almost always means the
+    // clusterer (or its upstream API) failed, not that nothing was newsworthy.
+    const allSkipped = clusters.length === 0 && skipped.length === rawArticles.length;
+    await logPipelineEvent(supabase, {
+      runId,
+      stage: 'news-process',
+      level: allSkipped ? 'error' : errors > 0 ? 'warn' : 'info',
+      message: allSkipped
+        ? 'Run finished: zero clusters, all articles skipped — possible clusterer/API failure'
+        : 'Run finished',
+      meta: {
+        rawArticles: rawArticles.length,
+        clusters: clusters.length,
+        created: postsCreated,
+        skipped: skipped.length,
+        errors,
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -245,6 +331,12 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('[news-process] Fatal error:', error);
+    await logPipelineEvent(supabase, {
+      runId,
+      stage: 'news-process',
+      level: 'error',
+      message: `Run failed: ${error instanceof Error ? error.message : String(error)}`,
+    });
     // Reset any articles stuck in 'processing' back to 'pending' so they can be retried
     if (articleIds.length > 0) {
       try {

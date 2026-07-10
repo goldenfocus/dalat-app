@@ -1642,7 +1642,16 @@
     "allPosts": "ทั้งหมด",
     "noPosts": "ยังไม่มีบทความ กลับมาใหม่เร็วๆ นี้!",
     "backToBlog": "กลับไปยังบล็อก",
-    "translated": "แปลแล้ว"
+    "translated": "แปลแล้ว",
+    "sources": "แหล่งที่มา",
+    "via": "จาก",
+    "loadMore": "โหลดเพิ่ม",
+    "newerPosts": "ใหม่กว่า",
+    "olderPosts": "เก่ากว่า",
+    "today": "วันนี้",
+    "yesterday": "เมื่อวาน",
+    "thisWeek": "สัปดาห์นี้",
+    "older": "ก่อนหน้านี้"
   },
   "streaming": {
     "goLive": "ถ่ายทอดสด",
@@ -2380,7 +2389,11 @@
     "tagGovernment": "ราชการ",
     "tagFoodDrink": "อาหาร",
     "tagWeather": "อากาศ",
-    "tagCommunity": "ชุมชน"
+    "tagCommunity": "ชุมชน",
+    "today": "วันนี้",
+    "yesterday": "เมื่อวาน",
+    "thisWeek": "สัปดาห์นี้",
+    "older": "ก่อนหน้านี้"
   },
   "loyalty": {
     "title": "สะสมแต้ม",

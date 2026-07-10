@@ -1645,7 +1645,16 @@
     "allPosts": "전체",
     "noPosts": "아직 게시물이 없습니다. 곧 다시 확인해 주세요!",
     "backToBlog": "블로그로 돌아가기",
-    "translated": "번역됨"
+    "translated": "번역됨",
+    "sources": "출처",
+    "via": "출처",
+    "loadMore": "더 보기",
+    "newerPosts": "최신 글",
+    "olderPosts": "이전 글",
+    "today": "오늘",
+    "yesterday": "어제",
+    "thisWeek": "이번 주",
+    "older": "그 이전"
   },
   "streaming": {
     "goLive": "라이브 시작",
@@ -2383,7 +2392,11 @@
     "tagGovernment": "행정",
     "tagFoodDrink": "맛집",
     "tagWeather": "날씨",
-    "tagCommunity": "커뮤니티"
+    "tagCommunity": "커뮤니티",
+    "today": "오늘",
+    "yesterday": "어제",
+    "thisWeek": "이번 주",
+    "older": "그 이전"
   },
   "loyalty": {
     "title": "로열티",

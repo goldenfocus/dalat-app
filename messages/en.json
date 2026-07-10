@@ -1676,7 +1676,16 @@
     "allPosts": "All",
     "noPosts": "No posts yet. Check back soon!",
     "backToBlog": "Back to Blog",
-    "translated": "Translated"
+    "translated": "Translated",
+    "sources": "Sources",
+    "via": "via",
+    "loadMore": "Load more",
+    "newerPosts": "Newer",
+    "olderPosts": "Older",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "older": "Earlier"
   },
   "upcomingEvents": {
     "title": "Upcoming Events in Đà Lạt",
@@ -2456,7 +2465,11 @@
     "tagGovernment": "Government",
     "tagFoodDrink": "Food & Drink",
     "tagWeather": "Weather",
-    "tagCommunity": "Community"
+    "tagCommunity": "Community",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "older": "Earlier"
   },
   "loyalty": {
     "title": "Loyalty",

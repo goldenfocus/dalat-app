@@ -1642,7 +1642,16 @@
     "allPosts": "Все",
     "noPosts": "Пока нет статей. Загляните позже!",
     "backToBlog": "Вернуться в блог",
-    "translated": "Переведено"
+    "translated": "Переведено",
+    "sources": "Источники",
+    "via": "источник",
+    "loadMore": "Загрузить ещё",
+    "newerPosts": "Новее",
+    "olderPosts": "Старее",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "thisWeek": "На этой неделе",
+    "older": "Ранее"
   },
   "streaming": {
     "goLive": "Начать трансляцию",
@@ -2380,7 +2389,11 @@
     "tagGovernment": "Власти",
     "tagFoodDrink": "Еда и напитки",
     "tagWeather": "Погода",
-    "tagCommunity": "Сообщество"
+    "tagCommunity": "Сообщество",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "thisWeek": "На этой неделе",
+    "older": "Ранее"
   },
   "loyalty": {
     "title": "Бонусы",

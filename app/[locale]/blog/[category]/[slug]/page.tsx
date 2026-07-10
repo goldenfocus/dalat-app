@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Languages } from "lucide-react";
 import { BlogCoverImage } from "@/components/blog/blog-cover-image";
+import { GeneratedCover } from "@/components/blog/generated-cover";
 import { format } from "date-fns";
 import { createStaticClient } from "@/lib/supabase/server";
 import { getTranslations } from "next-intl/server";
@@ -26,12 +27,32 @@ interface PageProps {
   params: Promise<{ locale: Locale; category: string; slug: string }>;
 }
 
+interface NewsSourceUrl {
+  url: string;
+  title: string;
+  publisher: string;
+  published_at: string | null;
+}
+
+interface NewsSourceImage {
+  original_url: string;
+  stored_url: string;
+  attribution: string;
+  alt: string;
+}
+
+type BlogPostWithNewsExtras = BlogPostFull & {
+  source_urls?: NewsSourceUrl[];
+  source_images?: NewsSourceImage[];
+  updated_at?: string;
+};
+
 /**
  * Cached blog post fetcher - uses static client for ISR compatibility.
  * Revalidates every 5 minutes.
  */
 const getCachedBlogPost = unstable_cache(
-  async (slug: string): Promise<BlogPostFull | null> => {
+  async (slug: string): Promise<BlogPostWithNewsExtras | null> => {
     const supabase = createStaticClient();
     if (!supabase) return null;
 
@@ -43,7 +64,30 @@ const getCachedBlogPost = unstable_cache(
       return null;
     }
 
-    return data[0] as BlogPostFull;
+    const post = data[0] as BlogPostWithNewsExtras;
+
+    // News extras (source attribution + inline images) aren't in the RPC's
+    // return table — fetch them directly. Published posts are publicly
+    // readable, so this works with the anon static client.
+    if (post.category_slug === "news") {
+      const { data: extras, error: extrasError } = await supabase
+        .from("blog_posts")
+        .select("source_urls, source_images, updated_at")
+        .eq("id", post.id)
+        .maybeSingle();
+
+      if (extrasError) {
+        console.error("[blog-post] Failed to fetch news extras:", extrasError);
+      }
+
+      if (extras) {
+        post.source_urls = extras.source_urls ?? [];
+        post.source_images = extras.source_images ?? [];
+        post.updated_at = extras.updated_at ?? undefined;
+      }
+    }
+
+    return post;
   },
   ["blog-post-by-slug"],
   {
@@ -119,12 +163,24 @@ export default async function BlogPostPage({ params }: PageProps) {
     ? generateNewsArticleSchema(
         {
           ...post,
-          source_urls: (post as any).source_urls ?? [],
-          news_tags: (post as any).news_tags ?? [],
+          source_urls: post.source_urls ?? [],
+          news_tags: [],
         },
         locale
       )
     : generateBlogArticleSchema(post, locale);
+
+  // Source images woven into the article body (skip the cover, max 2)
+  const inlineImages = (post.source_images ?? [])
+    .filter(
+      (img) => img?.stored_url && img.stored_url !== post.cover_image_url
+    )
+    .slice(0, 2)
+    .map((img) => ({
+      url: img.stored_url,
+      alt: img.alt || undefined,
+      attribution: img.attribution || undefined,
+    }));
 
   return (
     <>
@@ -142,10 +198,17 @@ export default async function BlogPostPage({ params }: PageProps) {
           </Link>
 
           {/* Cover Image */}
-          {post.cover_image_url && (
+          {post.cover_image_url ? (
             <BlogCoverImage
               src={post.cover_image_url}
               alt={translations.translated_title}
+            />
+          ) : (
+            <GeneratedCover
+              title={translations.translated_title}
+              seed={slug}
+              categoryLabel={post.category_name ?? undefined}
+              className="w-full rounded-xl mb-8"
             />
           )}
 
@@ -180,7 +243,10 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Story Content (Human-readable) */}
           <div className="prose prose-lg dark:prose-invert max-w-none mb-8">
-            <MarkdownRenderer content={translations.translated_story_content} />
+            <MarkdownRenderer
+              content={translations.translated_story_content}
+              inlineImages={inlineImages.length > 0 ? inlineImages : undefined}
+            />
           </div>
 
           {/* CTA Button */}
@@ -207,10 +273,10 @@ export default async function BlogPostPage({ params }: PageProps) {
           <TechnicalAccordion content={translations.translated_technical_content} />
 
           {/* News Sources */}
-          {post.category_slug === 'news' && Array.isArray((post as any).source_urls) && ((post as any).source_urls as any[]).length > 0 && (
+          {post.category_slug === 'news' && (post.source_urls?.length ?? 0) > 0 && (
             <NewsSourcesSection
               label={t("sources")}
-              sources={(post as any).source_urls as any[]}
+              sources={post.source_urls!}
             />
           )}
 

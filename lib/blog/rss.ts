@@ -1,4 +1,6 @@
 import type { BlogPostWithCategory } from "@/lib/types/blog";
+import { normalizeStoryContent } from "@/lib/blog/normalize-content";
+import { markdownToPlainText } from "@/lib/blog/strip-markdown";
 
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "dalat.app";
@@ -31,11 +33,11 @@ export function generateRssFeed(
         ? new Date(post.published_at).toUTCString()
         : new Date().toUTCString();
 
-      // Extract first paragraph for description
-      const description = post.story_content
-        .split("\n\n")[0]
-        .replace(/[#*_`]/g, "")
-        .slice(0, 300);
+      // Extract first paragraph for description, as plain text
+      const description = markdownToPlainText(
+        normalizeStoryContent(post.story_content).split("\n\n")[0],
+        300
+      );
 
       return `
     <item>

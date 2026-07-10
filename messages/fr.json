@@ -1656,7 +1656,16 @@
     "allPosts": "Tous",
     "noPosts": "Pas encore d'articles. Revenez bientôt !",
     "backToBlog": "Retour au Blog",
-    "translated": "Traduit"
+    "translated": "Traduit",
+    "sources": "Sources",
+    "via": "via",
+    "loadMore": "Charger plus",
+    "newerPosts": "Plus récents",
+    "olderPosts": "Plus anciens",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "thisWeek": "Cette semaine",
+    "older": "Plus ancien"
   },
   "upcomingEvents": {
     "title": "Événements à venir à Đà Lạt",
@@ -2380,7 +2389,11 @@
     "tagGovernment": "Administration",
     "tagFoodDrink": "Gastronomie",
     "tagWeather": "Météo",
-    "tagCommunity": "Communauté"
+    "tagCommunity": "Communauté",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "thisWeek": "Cette semaine",
+    "older": "Plus ancien"
   },
   "loyalty": {
     "title": "Fidélité",

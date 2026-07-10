@@ -83,6 +83,7 @@ export const BUCKET_CONFIG: Record<string, string[]> = {
     "video/quicktime",
     "application/pdf",
   ],
+  "blog-media": ["image/jpeg", "image/png", "image/webp"],
 };
 
 export function validateBucketAndContentType(
