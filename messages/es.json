@@ -268,6 +268,13 @@
     "waitlistAutoPromote": "Obtendrás un lugar automáticamente cuando haya disponibilidad"
   },
   "eventForm": {
+    "linkedPastEvent": "Momentos de un evento pasado",
+    "linkedPastEventHelp": "Muestra los momentos de un evento pasado en esta página hasta que este evento tenga los suyos. Solo los administradores pueden configurarlo.",
+    "linkedPastEventError": "No se pudo actualizar el enlace. Inténtalo de nuevo.",
+    "searchPastEvents": "Buscar eventos pasados…",
+    "searchingEvents": "Buscando…",
+    "noPastEventsFound": "No se encontraron eventos pasados",
+    "unlinkPastEvent": "Desvincular",
     "createEvent": "Crear Evento",
     "editEvent": "Editar Evento",
     "title": "Título del evento",

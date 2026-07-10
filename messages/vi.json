@@ -268,6 +268,13 @@
     "waitlistAutoPromote": "Bạn sẽ tự động có chỗ khi có người hủy"
   },
   "eventForm": {
+    "linkedPastEvent": "Khoảnh khắc từ sự kiện trước",
+    "linkedPastEventHelp": "Hiển thị khoảnh khắc của một sự kiện trước trên trang này cho đến khi sự kiện này có khoảnh khắc riêng. Chỉ quản trị viên mới có thể thiết lập.",
+    "linkedPastEventError": "Không thể cập nhật liên kết. Vui lòng thử lại.",
+    "searchPastEvents": "Tìm sự kiện đã diễn ra…",
+    "searchingEvents": "Đang tìm…",
+    "noPastEventsFound": "Không tìm thấy sự kiện nào",
+    "unlinkPastEvent": "Bỏ liên kết",
     "createEvent": "Tạo sự kiện",
     "editEvent": "Chỉnh sửa sự kiện",
     "title": "Tiêu đề sự kiện",

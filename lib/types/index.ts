@@ -418,6 +418,8 @@ export interface Event {
   series_instance_date: string | null;
   is_exception: boolean;
   exception_type: "modified" | "cancelled" | "rescheduled" | null;
+  // Admin-set reference: show this past event's moments until we have our own
+  linked_past_event_id: string | null;
   // Joined data
   profiles?: Profile;
   tribes?: Tribe;

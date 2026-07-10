@@ -268,6 +268,13 @@
     "waitlistAutoPromote": "有空位时您将自动获得名额"
   },
   "eventForm": {
+    "linkedPastEvent": "往期活动的精彩瞬间",
+    "linkedPastEventHelp": "在本活动拥有自己的精彩瞬间之前，在此页面展示往期活动的精彩瞬间。仅管理员可设置。",
+    "linkedPastEventError": "无法更新链接，请重试。",
+    "searchPastEvents": "搜索往期活动…",
+    "searchingEvents": "搜索中…",
+    "noPastEventsFound": "未找到往期活动",
+    "unlinkPastEvent": "取消关联",
     "createEvent": "创建活动",
     "editEvent": "编辑活动",
     "title": "活动标题",

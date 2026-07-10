@@ -37,6 +37,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ChevronDown, Settings, Repeat, Sparkles, Tag } from "lucide-react";
 import { PromoManager } from "@/components/events/promo-manager";
+import { LinkedPastEventPicker } from "@/components/events/linked-past-event-picker";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
@@ -1032,6 +1033,14 @@ export function EventForm({
                 {t("sponsorTierHelp") || "Featured events appear first in feeds with a gold badge."}
               </p>
             </div>
+          )}
+
+          {/* Admin: showcase a past event's moments until this one has its own */}
+          {event && canSetSponsorTier && (
+            <LinkedPastEventPicker
+              eventId={event.id}
+              initialLinkedEventId={event.linked_past_event_id ?? null}
+            />
           )}
 
           {/* Capacity */}

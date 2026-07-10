@@ -268,6 +268,13 @@
     "waitlistAutoPromote": "Anda akan mendapat tempat secara automatik apabila ada kekosongan"
   },
   "eventForm": {
+    "linkedPastEvent": "Detik daripada acara lepas",
+    "linkedPastEventHelp": "Paparkan detik acara lepas di halaman ini sehingga acara ini mempunyai detiknya sendiri. Hanya pentadbir boleh menetapkannya.",
+    "linkedPastEventError": "Tidak dapat mengemas kini pautan. Cuba lagi.",
+    "searchPastEvents": "Cari acara lepas…",
+    "searchingEvents": "Mencari…",
+    "noPastEventsFound": "Tiada acara lepas dijumpai",
+    "unlinkPastEvent": "Nyahpaut",
     "createEvent": "Cipta Acara",
     "editEvent": "Edit Acara",
     "title": "Tajuk acara",

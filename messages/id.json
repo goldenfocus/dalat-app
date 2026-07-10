@@ -268,6 +268,13 @@
     "waitlistAutoPromote": "Anda akan mendapat tempat secara otomatis saat tersedia"
   },
   "eventForm": {
+    "linkedPastEvent": "Momen dari acara sebelumnya",
+    "linkedPastEventHelp": "Tampilkan momen acara sebelumnya di halaman ini sampai acara ini punya momennya sendiri. Hanya admin yang bisa mengaturnya.",
+    "linkedPastEventError": "Tidak dapat memperbarui tautan. Coba lagi.",
+    "searchPastEvents": "Cari acara sebelumnya…",
+    "searchingEvents": "Mencari…",
+    "noPastEventsFound": "Acara sebelumnya tidak ditemukan",
+    "unlinkPastEvent": "Putuskan tautan",
     "createEvent": "Buat Acara",
     "editEvent": "Edit Acara",
     "title": "Judul acara",

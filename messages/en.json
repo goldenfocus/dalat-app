@@ -282,6 +282,13 @@
     "positiveRating": "{percentage}% positive ({count} reviews)"
   },
   "eventForm": {
+    "linkedPastEvent": "Moments from a past event",
+    "linkedPastEventHelp": "Show a past event's moments on this page until this event has its own. Only admins can set this.",
+    "linkedPastEventError": "Couldn't update the link. Try again.",
+    "searchPastEvents": "Search past events…",
+    "searchingEvents": "Searching…",
+    "noPastEventsFound": "No past events found",
+    "unlinkPastEvent": "Unlink",
     "createEvent": "Create Event",
     "editEvent": "Edit Event",
     "pageTitle": "Share Something With the Community",

@@ -282,6 +282,13 @@
     "positiveRating": "{percentage}% positif ({count} avis)"
   },
   "eventForm": {
+    "linkedPastEvent": "Moments d'un événement passé",
+    "linkedPastEventHelp": "Afficher les moments d'un événement passé sur cette page jusqu'à ce que cet événement ait les siens. Réservé aux administrateurs.",
+    "linkedPastEventError": "Impossible de mettre à jour le lien. Réessayez.",
+    "searchPastEvents": "Rechercher des événements passés…",
+    "searchingEvents": "Recherche…",
+    "noPastEventsFound": "Aucun événement passé trouvé",
+    "unlinkPastEvent": "Dissocier",
     "createEvent": "Créer un événement",
     "editEvent": "Modifier l'événement",
     "title": "Titre de l'événement",

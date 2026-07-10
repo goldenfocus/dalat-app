@@ -268,6 +268,13 @@
     "waitlistAutoPromote": "Du bekommst automatisch einen Platz, wenn einer frei wird"
   },
   "eventForm": {
+    "linkedPastEvent": "Momente eines früheren Events",
+    "linkedPastEventHelp": "Zeigt die Momente eines früheren Events auf dieser Seite, bis dieses Event eigene hat. Nur Admins können dies festlegen.",
+    "linkedPastEventError": "Verknüpfung konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+    "searchPastEvents": "Frühere Events suchen…",
+    "searchingEvents": "Suche…",
+    "noPastEventsFound": "Keine früheren Events gefunden",
+    "unlinkPastEvent": "Verknüpfung lösen",
     "createEvent": "Event erstellen",
     "editEvent": "Event bearbeiten",
     "title": "Event-Titel",

@@ -473,7 +473,8 @@ async function getPastMoments(
   seriesId: string | null | undefined,
   currentEventId: string,
   createdBy: string,
-  pinnedIds?: string[] | null
+  pinnedIds?: string[] | null,
+  linkedPastEventId?: string | null
 ): Promise<PastMoment[]> {
   try {
     const supabase = await createClient();
@@ -508,7 +509,21 @@ async function getPastMoments(
     let pastEventIds: string[] = [];
     const eventMap = new Map<string, { slug: string; title: string; starts_at: string }>();
 
-    if (seriesId) {
+    // Admin-linked past event takes priority over series/creator heuristics
+    if (linkedPastEventId) {
+      const { data: linkedEvent } = await supabase
+        .from("events")
+        .select("id, slug, title, starts_at")
+        .eq("id", linkedPastEventId)
+        .eq("status", "published")
+        .single();
+      if (linkedEvent) {
+        pastEventIds = [linkedEvent.id];
+        eventMap.set(linkedEvent.id, linkedEvent);
+      }
+    }
+
+    if (pastEventIds.length === 0 && seriesId) {
       const { data: pastEvents } = await supabase
         .from("events")
         .select("id, slug, title, starts_at")
@@ -789,8 +804,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   // Fetch past moments for auto-display when no promo exists (series first, organizer fallback)
   // If org has pinned specific moments via vibe_moment_ids, those take priority
   const vibeMomentIds = (event as { vibe_moment_ids?: string[] | null }).vibe_moment_ids ?? null;
+  // Admin-linked past event only feeds the strip until this event has its own moments
+  const linkedPastEventId = momentsPreview.length === 0 ? event.linked_past_event_id : null;
   const pastMoments = promoResult.promo.length === 0
-    ? await getPastMoments(event.series_id, event.id, event.created_by, vibeMomentIds)
+    ? await getPastMoments(event.series_id, event.id, event.created_by, vibeMomentIds, linkedPastEventId)
     : [];
 
   // Destructure combined RSVP result
