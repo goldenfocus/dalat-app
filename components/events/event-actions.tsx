@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MoreHorizontal, Pencil, Trash2, Copy, Repeat, ClipboardCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -51,16 +50,16 @@ export function EventActions({ eventId, eventSlug, seriesSlug }: EventActionsPro
       return;
     }
 
-    const supabase = createClient();
-
     startTransition(async () => {
-      const { error } = await supabase
-        .from("events")
-        .delete()
-        .eq("id", eventId);
+      // Delete server-side so ISR/data caches get revalidated — a client-side
+      // supabase delete leaves the event on cached pages until TTLs expire
+      const response = await fetch(`/api/events/${eventSlug}`, {
+        method: "DELETE",
+      });
 
-      if (error) {
-        console.error("Failed to delete event:", error);
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        console.error("Failed to delete event:", data?.error ?? response.status);
         setShowConfirm(false);
         return;
       }
