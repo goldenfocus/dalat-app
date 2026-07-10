@@ -252,7 +252,9 @@
     "pastProofPhotos": "上次 {photos} 张照片",
     "pastProofWent": "上次 {went} 人参加",
     "photoBy": "📸 @{name}",
-    "spotsAvailable": "{count} 个名额"
+    "spotsAvailable": "{count} 个名额",
+    "secretAddressLockHint": "确认参加后即可查看确切地址",
+    "secretAddressRevealedHint": "只有宾客可以看到此地址"
   },
   "rsvp": {
     "imGoing": "我要参加",
@@ -403,7 +405,14 @@
     "sponsorTier3": "金牌 (三级)",
     "sponsorTierHelp": "精选活动会带有金色徽章并优先显示在信息流中。",
     "activityTags": "活动类型",
-    "activityTagsHelp": "选择标签帮助人们找到您的活动。AI也会根据内容自动添加标签。"
+    "activityTagsHelp": "选择标签帮助人们找到您的活动。AI也会根据内容自动添加标签。",
+    "secretAddress": "秘密地址",
+    "secretAddressHelp": "确切地址将被隐藏——只有确认参加的宾客才能看到。我们还会在活动当天早上把地址发送给宾客。",
+    "secretAddressPublicLabel": "所有人看到的内容",
+    "secretAddressPublicLabelPlaceholder": "例如:夜市附近的一栋房子",
+    "secretAddressPublicLabelHelp": "代替地址显示的大致区域提示。",
+    "secretAddressArrivalNotes": "到达须知(仅宾客可见)",
+    "secretAddressArrivalNotesPlaceholder": "门禁密码、停车提示、Zalo/WhatsApp 群链接…"
   },
   "eventActions": {
     "eventOptions": "活动选项",

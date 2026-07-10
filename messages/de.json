@@ -252,7 +252,9 @@
     "pastProofPhotos": "{photos} Fotos vom letzten Mal",
     "pastProofWent": "Letztes Mal {went} dabei",
     "photoBy": "📸 @{name}",
-    "spotsAvailable": "{count} Plätze"
+    "spotsAvailable": "{count} Plätze",
+    "secretAddressLockHint": "Genaue Adresse wird nach deiner Zusage angezeigt",
+    "secretAddressRevealedHint": "Nur Gäste sehen diese Adresse"
   },
   "rsvp": {
     "imGoing": "Ich bin dabei",
@@ -403,7 +405,14 @@
     "sponsorTier3": "Gold (Stufe 3)",
     "sponsorTierHelp": "Hervorgehobene Events erscheinen zuerst mit goldenem Abzeichen.",
     "activityTags": "Aktivitätstyp",
-    "activityTagsHelp": "Wählen Sie Tags, damit andere Ihr Event finden können. KI wird auch automatisch Tags basierend auf dem Inhalt hinzufügen."
+    "activityTagsHelp": "Wählen Sie Tags, damit andere Ihr Event finden können. KI wird auch automatisch Tags basierend auf dem Inhalt hinzufügen.",
+    "secretAddress": "Geheime Adresse",
+    "secretAddressHelp": "Die genaue Adresse bleibt verborgen — nur Gäste mit Zusage können sie sehen. Am Morgen des Events senden wir sie den Gästen zusätzlich zu.",
+    "secretAddressPublicLabel": "Was alle sehen",
+    "secretAddressPublicLabelPlaceholder": "z. B. Ein Haus nahe dem Nachtmarkt",
+    "secretAddressPublicLabelHelp": "Ein grober Gebietshinweis, der statt der Adresse angezeigt wird.",
+    "secretAddressArrivalNotes": "Ankunftshinweise (nur für Gäste)",
+    "secretAddressArrivalNotesPlaceholder": "Türcode, Parktipps, Zalo/WhatsApp-Gruppenlink…"
   },
   "eventActions": {
     "eventOptions": "Event-Optionen",

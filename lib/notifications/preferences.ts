@@ -66,6 +66,9 @@ const DEFAULT_CHANNELS: Record<NotificationType, NotificationChannel[]> = {
   confirm_attendance_7d: ['in_app', 'push'],
   event_starting_nudge: ['in_app', 'push'],
   organizer_re_ping: ['in_app', 'push'],
+
+  // Secret address reveal - all channels (guests must not miss the address)
+  event_address_reveal: ['in_app', 'push', 'email'],
 };
 
 /**

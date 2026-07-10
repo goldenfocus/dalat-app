@@ -252,7 +252,9 @@
     "pastProofPhotos": "{photos} รูปจากครั้งก่อน",
     "pastProofWent": "ครั้งก่อน {went} คนมา",
     "photoBy": "📸 @{name}",
-    "spotsAvailable": "{count} ที่"
+    "spotsAvailable": "{count} ที่",
+    "secretAddressLockHint": "ที่อยู่จริงจะแสดงหลังจากคุณยืนยันเข้าร่วม",
+    "secretAddressRevealedHint": "เฉพาะแขกเท่านั้นที่เห็นที่อยู่นี้"
   },
   "rsvp": {
     "imGoing": "ฉันจะไป",
@@ -403,7 +405,14 @@
     "sponsorTier3": "ทอง (ระดับ 3)",
     "sponsorTierHelp": "กิจกรรมแนะนำจะแสดงก่อนพร้อมตราทอง",
     "activityTags": "ประเภทกิจกรรม",
-    "activityTagsHelp": "เลือกแท็กเพื่อช่วยให้ผู้คนค้นหากิจกรรมของคุณ AI จะเพิ่มแท็กอัตโนมัติตามเนื้อหาด้วย"
+    "activityTagsHelp": "เลือกแท็กเพื่อช่วยให้ผู้คนค้นหากิจกรรมของคุณ AI จะเพิ่มแท็กอัตโนมัติตามเนื้อหาด้วย",
+    "secretAddress": "ที่อยู่ลับ",
+    "secretAddressHelp": "ที่อยู่จริงจะถูกซ่อนไว้ — เฉพาะแขกที่ยืนยันเข้าร่วมเท่านั้นที่จะเห็น เราจะส่งที่อยู่ให้แขกในเช้าวันงานด้วย",
+    "secretAddressPublicLabel": "สิ่งที่ทุกคนเห็น",
+    "secretAddressPublicLabelPlaceholder": "เช่น บ้านใกล้ตลาดกลางคืน",
+    "secretAddressPublicLabelHelp": "คำใบ้ย่านโดยประมาณที่แสดงแทนที่อยู่",
+    "secretAddressArrivalNotes": "หมายเหตุการเดินทาง (เฉพาะแขก)",
+    "secretAddressArrivalNotesPlaceholder": "รหัสประตู เคล็ดลับที่จอดรถ ลิงก์กลุ่ม Zalo/WhatsApp…"
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",

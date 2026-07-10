@@ -35,13 +35,14 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ChevronDown, Settings, Repeat, Sparkles, Tag } from "lucide-react";
+import { ChevronDown, Settings, Repeat, Sparkles, Tag, Lock } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { PromoManager } from "@/components/events/promo-manager";
 import { LinkedPastEventPicker } from "@/components/events/linked-past-event-picker";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
-import type { Event, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole, DraftMaterial, EventMaterial } from "@/lib/types";
+import type { Event, EventPrivateDetails, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole, DraftMaterial, EventMaterial } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
 import { finalizeSlug } from "@/lib/utils";
 import { EVENT_TAGS, TAG_CONFIG, type EventTag } from "@/lib/constants/event-tags";
@@ -128,6 +129,8 @@ interface EventFormProps {
   // For playlist management
   initialPlaylistId?: string | null;
   initialPlaylistTracks?: PlaylistTrack[];
+  // Secret address: real location for editing (RLS lets only host/admin read)
+  initialPrivateDetails?: EventPrivateDetails | null;
 }
 
 /**
@@ -159,6 +162,7 @@ export function EventForm({
   pendingMomentsCount = 0,
   initialPlaylistId,
   initialPlaylistTracks = [],
+  initialPrivateDetails = null,
 }: EventFormProps) {
   const router = useRouter();
   // Only moderators and above can select organizers
@@ -253,6 +257,14 @@ export function EventForm({
   // Online event state
   const [isOnline, setIsOnline] = useState(event?.is_online ?? false);
   const [onlineLink, setOnlineLink] = useState(event?.online_link ?? "");
+
+  // Secret address state (guests-only location details)
+  const [secretAddress, setSecretAddress] = useState(event?.has_private_details ?? false);
+  // For secret events, location_name already holds the public area label
+  const [publicLabel, setPublicLabel] = useState(
+    event?.has_private_details ? (event.location_name ?? "") : ""
+  );
+  const [arrivalNotes, setArrivalNotes] = useState(initialPrivateDetails?.arrival_notes ?? "");
 
   // Slug validation state (consolidated hook)
   const {
@@ -414,6 +426,10 @@ export function EventForm({
     // Use state-managed venueId (set by LocationPicker or VenueLinker)
     const venueIdToSave = venueId;
 
+    // Secret address only applies to non-venue, non-recurring, single events
+    const isSecret =
+      secretAddress && !venueIdToSave && !recurrence.isRecurring && !isSeriesEvent;
+
     // Validate required fields with specific error messages
     const missingFields: string[] = [];
     if (!title.trim()) missingFields.push(tErrors("fieldTitle"));
@@ -449,6 +465,22 @@ export function EventForm({
     const capacity = capacityStr ? parseInt(capacityStr.replace(/\D/g, ""), 10) || null : null;
 
     const supabase = createClient();
+
+    // Save the real location into the RLS-gated private table (secret events).
+    // The events row itself only ever carries the public area label.
+    const upsertPrivateDetails = async (eventId: string) => {
+      const { error: privateError } = await supabase
+        .from("event_private_details")
+        .upsert({
+          event_id: eventId,
+          address: address || null,
+          google_maps_url: googleMapsUrl || null,
+          latitude,
+          longitude,
+          arrival_notes: arrivalNotes.trim() || null,
+        });
+      return privateError;
+    };
 
     startTransition(async () => {
       try {
@@ -507,11 +539,12 @@ export function EventForm({
             description: description || null,
             image_url: imageUrl,
             starts_at: startsAt,
-            location_name: locationName || null,
-            address: address || null,
-            google_maps_url: googleMapsUrl || null,
-            latitude,
-            longitude,
+            location_name: isSecret ? (publicLabel.trim() || null) : (locationName || null),
+            address: isSecret ? null : (address || null),
+            google_maps_url: isSecret ? null : (googleMapsUrl || null),
+            latitude: isSecret ? null : latitude,
+            longitude: isSecret ? null : longitude,
+            has_private_details: isSecret,
             external_chat_url: externalChatUrl || null,
             is_online: isOnline,
             online_link: isOnline ? (onlineLink || null) : null,
@@ -548,6 +581,20 @@ export function EventForm({
           if (updateError) {
             setError(updateError.message);
             return;
+          }
+
+          // Sync the private details table with the secret toggle
+          if (isSecret) {
+            const privateError = await upsertPrivateDetails(event.id);
+            if (privateError) {
+              setError(privateError.message);
+              return;
+            }
+          } else if (event.has_private_details) {
+            await supabase
+              .from("event_private_details")
+              .delete()
+              .eq("event_id", event.id);
           }
 
           // Retranslate after edit (fire-and-forget)
@@ -634,11 +681,12 @@ export function EventForm({
               title: title.trim(),
               description: description || null,
               starts_at: startsAt,
-              location_name: locationName || null,
-              address: address || null,
-              google_maps_url: googleMapsUrl || null,
-              latitude,
-              longitude,
+              location_name: isSecret ? (publicLabel.trim() || null) : (locationName || null),
+              address: isSecret ? null : (address || null),
+              google_maps_url: isSecret ? null : (googleMapsUrl || null),
+              latitude: isSecret ? null : latitude,
+              longitude: isSecret ? null : longitude,
+              has_private_details: isSecret,
               external_chat_url: externalChatUrl || null,
               is_online: isOnline,
               online_link: isOnline ? (onlineLink || null) : null,
@@ -660,6 +708,15 @@ export function EventForm({
           if (insertError) {
             setError(insertError.message);
             return;
+          }
+
+          // Save the real location for secret events (RLS-gated table)
+          if (isSecret) {
+            const privateError = await upsertPrivateDetails(data.id);
+            if (privateError) {
+              setError(privateError.message);
+              return;
+            }
           }
 
           // Upload image if we have one (file, base64, or URL)
@@ -926,15 +983,20 @@ export function EventForm({
           <>
             <LocationPicker
               defaultValue={
-                event?.location_name
+                event?.location_name || initialPrivateDetails
                   ? {
-                      type: event.venue_id ? "venue" : "place",
-                      venueId: event.venue_id ?? undefined,
-                      name: event.location_name,
-                      address: event.address || "",
-                      googleMapsUrl: event.google_maps_url || "",
-                      latitude: event.latitude ?? null,
-                      longitude: event.longitude ?? null,
+                      type: event?.venue_id ? "venue" : "place",
+                      venueId: event?.venue_id ?? undefined,
+                      // Secret events: location_name is the public label; the
+                      // real location comes from the private details row
+                      name: event?.has_private_details
+                        ? (initialPrivateDetails?.address || event?.location_name || "")
+                        : (event?.location_name || ""),
+                      address: event?.address || initialPrivateDetails?.address || "",
+                      googleMapsUrl:
+                        event?.google_maps_url || initialPrivateDetails?.google_maps_url || "",
+                      latitude: event?.latitude ?? initialPrivateDetails?.latitude ?? null,
+                      longitude: event?.longitude ?? initialPrivateDetails?.longitude ?? null,
                     }
                   : copyDefaults?.locationName
                     ? {
@@ -965,6 +1027,60 @@ export function EventForm({
               onVenueChange={handleVenueLink}
               disabled={isPending}
             />
+
+            {/* Secret address (not for venues or recurring events) */}
+            {!venueId && !recurrence.isRecurring && !isSeriesEvent && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="secretAddress"
+                    checked={secretAddress}
+                    onCheckedChange={(checked) => setSecretAddress(!!checked)}
+                  />
+                  <Label
+                    htmlFor="secretAddress"
+                    className="cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    {t("secretAddress")}
+                  </Label>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("secretAddressHelp")}
+                </p>
+                {secretAddress && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="secret_public_label">
+                        {t("secretAddressPublicLabel")}
+                      </Label>
+                      <Input
+                        id="secret_public_label"
+                        type="text"
+                        value={publicLabel}
+                        onChange={(e) => setPublicLabel(e.target.value)}
+                        placeholder={t("secretAddressPublicLabelPlaceholder")}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {t("secretAddressPublicLabelHelp")}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="arrival_notes">
+                        {t("secretAddressArrivalNotes")}
+                      </Label>
+                      <Textarea
+                        id="arrival_notes"
+                        value={arrivalNotes}
+                        onChange={(e) => setArrivalNotes(e.target.value)}
+                        placeholder={t("secretAddressArrivalNotesPlaceholder")}
+                        rows={2}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </>
           )}
 

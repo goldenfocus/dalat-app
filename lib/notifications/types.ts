@@ -31,7 +31,9 @@ export type NotificationType =
   // Smart reminder types
   | 'confirm_attendance_7d'
   | 'event_starting_nudge'
-  | 'organizer_re_ping';
+  | 'organizer_re_ping'
+  // Secret address morning-of reveal
+  | 'event_address_reveal';
 
 export type NotificationChannel = 'in_app' | 'push' | 'email';
 
@@ -312,6 +314,14 @@ export interface OrganizerRePingPayload extends EventNotificationPayload {
   organizerName: string;
 }
 
+export interface EventAddressRevealPayload extends EventNotificationPayload {
+  type: 'event_address_reveal';
+  eventTime: string;
+  address: string | null;
+  googleMapsUrl: string | null;
+  arrivalNotes: string | null;
+}
+
 export type NotificationPayload =
   | RsvpConfirmationPayload
   | ConfirmAttendance24hPayload
@@ -339,7 +349,9 @@ export type NotificationPayload =
   // Smart reminder notifications
   | ConfirmAttendance7dPayload
   | EventStartingNudgePayload
-  | OrganizerRePingPayload;
+  | OrganizerRePingPayload
+  // Secret address morning-of reveal
+  | EventAddressRevealPayload;
 
 // ============================================
 // Notify Options

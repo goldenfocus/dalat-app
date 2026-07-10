@@ -252,7 +252,9 @@
     "pastProofPhotos": "{photos} photos last time",
     "pastProofWent": "{went} went last time",
     "photoBy": "📸 @{name}",
-    "spotsAvailable": "{count} spots"
+    "spotsAvailable": "{count} spots",
+    "secretAddressLockHint": "Exact address revealed after you RSVP",
+    "secretAddressRevealedHint": "Only guests can see this address"
   },
   "rsvp": {
     "imGoing": "I'm going",
@@ -417,7 +419,14 @@
     "sponsorTier3": "Gold (Tier 3)",
     "sponsorTierHelp": "Featured events appear first in feeds with a gold badge.",
     "activityTags": "Activity Type",
-    "activityTagsHelp": "Select tags to help people find your event. AI will also auto-tag based on content."
+    "activityTagsHelp": "Select tags to help people find your event. AI will also auto-tag based on content.",
+    "secretAddress": "Secret address",
+    "secretAddressHelp": "The exact address stays hidden — only guests who RSVP Going can see it. We'll also send it to them the morning of the event.",
+    "secretAddressPublicLabel": "What everyone sees",
+    "secretAddressPublicLabelPlaceholder": "e.g. A house near the Night Market",
+    "secretAddressPublicLabelHelp": "A general area hint shown instead of the address.",
+    "secretAddressArrivalNotes": "Arrival notes (guests only)",
+    "secretAddressArrivalNotesPlaceholder": "Door code, parking tips, Zalo/WhatsApp group link…"
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",

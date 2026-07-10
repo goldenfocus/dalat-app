@@ -252,7 +252,9 @@
     "pastProofPhotos": "{photos} ảnh lần trước",
     "pastProofWent": "{went} người đi lần trước",
     "photoBy": "📸 @{name}",
-    "spotsAvailable": "{count} chỗ"
+    "spotsAvailable": "{count} chỗ",
+    "secretAddressLockHint": "Địa chỉ chính xác sẽ hiện sau khi bạn xác nhận tham gia",
+    "secretAddressRevealedHint": "Chỉ khách mời mới thấy địa chỉ này"
   },
   "rsvp": {
     "imGoing": "Tôi sẽ đi",
@@ -403,7 +405,14 @@
     "sponsorTier3": "Vàng (Cấp 3)",
     "sponsorTierHelp": "Sự kiện nổi bật xuất hiện đầu tiên với huy hiệu vàng.",
     "activityTags": "Loại hoạt động",
-    "activityTagsHelp": "Chọn thẻ để giúp mọi người tìm thấy sự kiện của bạn. AI cũng sẽ tự động gắn thẻ dựa trên nội dung."
+    "activityTagsHelp": "Chọn thẻ để giúp mọi người tìm thấy sự kiện của bạn. AI cũng sẽ tự động gắn thẻ dựa trên nội dung.",
+    "secretAddress": "Địa chỉ bí mật",
+    "secretAddressHelp": "Địa chỉ chính xác sẽ được ẩn — chỉ khách đã xác nhận tham gia mới thấy. Chúng tôi cũng sẽ gửi địa chỉ cho khách vào buổi sáng ngày diễn ra sự kiện.",
+    "secretAddressPublicLabel": "Mọi người sẽ thấy gì",
+    "secretAddressPublicLabelPlaceholder": "VD: Một ngôi nhà gần Chợ Đêm",
+    "secretAddressPublicLabelHelp": "Gợi ý khu vực chung hiển thị thay cho địa chỉ.",
+    "secretAddressArrivalNotes": "Ghi chú khi đến (chỉ khách mời)",
+    "secretAddressArrivalNotesPlaceholder": "Mã cửa, chỗ đậu xe, link nhóm Zalo/WhatsApp…"
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",

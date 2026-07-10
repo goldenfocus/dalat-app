@@ -252,7 +252,9 @@
     "pastProofPhotos": "{photos} foto terakhir kali",
     "pastProofWent": "{went} hadir terakhir kali",
     "photoBy": "📸 @{name}",
-    "spotsAvailable": "{count} tempat"
+    "spotsAvailable": "{count} tempat",
+    "secretAddressLockHint": "Alamat persis akan terlihat setelah kamu RSVP",
+    "secretAddressRevealedHint": "Hanya tamu yang bisa melihat alamat ini"
   },
   "rsvp": {
     "imGoing": "Saya hadir",
@@ -403,7 +405,14 @@
     "sponsorTier3": "Emas (Tingkat 3)",
     "sponsorTierHelp": "Acara unggulan muncul pertama dengan lencana emas.",
     "activityTags": "Jenis Aktivitas",
-    "activityTagsHelp": "Pilih tag untuk membantu orang menemukan acara Anda. AI juga akan menambahkan tag secara otomatis berdasarkan konten."
+    "activityTagsHelp": "Pilih tag untuk membantu orang menemukan acara Anda. AI juga akan menambahkan tag secara otomatis berdasarkan konten.",
+    "secretAddress": "Alamat rahasia",
+    "secretAddressHelp": "Alamat persis disembunyikan — hanya tamu yang RSVP Hadir yang bisa melihatnya. Kami juga akan mengirimkannya ke tamu pada pagi hari acara.",
+    "secretAddressPublicLabel": "Yang dilihat semua orang",
+    "secretAddressPublicLabelPlaceholder": "mis. Rumah dekat Pasar Malam",
+    "secretAddressPublicLabelHelp": "Petunjuk area umum yang ditampilkan sebagai pengganti alamat.",
+    "secretAddressArrivalNotes": "Catatan kedatangan (khusus tamu)",
+    "secretAddressArrivalNotesPlaceholder": "Kode pintu, tips parkir, tautan grup Zalo/WhatsApp…"
   },
   "eventActions": {
     "eventOptions": "Opsi acara",

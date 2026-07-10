@@ -27,6 +27,7 @@ import type {
   ConfirmAttendance7dPayload,
   EventStartingNudgePayload,
   OrganizerRePingPayload,
+  EventAddressRevealPayload,
   NotificationPayload,
 } from './types';
 
@@ -1062,6 +1063,81 @@ function generateEventInvitationEmailHtml(
 // Main Template Function
 // ============================================
 
+// ============================================
+// Secret Address Reveal (morning-of)
+// ============================================
+
+const addressRevealTranslations = {
+  title: {
+    en: (title: string) => `🏠 Here's the address for "${title}"`,
+    fr: (title: string) => `🏠 Voici l'adresse pour "${title}"`,
+    vi: (title: string) => `🏠 Đây là địa chỉ cho "${title}"`,
+  },
+  today: {
+    en: (time: string) => `Today at ${time}`,
+    fr: (time: string) => `Aujourd'hui à ${time}`,
+    vi: (time: string) => `Hôm nay lúc ${time}`,
+  },
+  keepItCozy: {
+    en: 'The host shared this just with the guest list — see you there!',
+    fr: "L'hôte partage cette adresse uniquement avec les invités — à ce soir !",
+    vi: 'Chủ nhà chỉ chia sẻ địa chỉ này với khách mời — hẹn gặp bạn!',
+  },
+};
+
+function eventAddressRevealTemplate(payload: EventAddressRevealPayload): TemplateResult {
+  const locale = getNotificationLocale(payload.locale);
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
+
+  const title = addressRevealTranslations.title[locale](payload.eventTitle);
+
+  const bodyParts: string[] = [addressRevealTranslations.today[locale](payload.eventTime)];
+  if (payload.address) bodyParts.push(payload.address);
+  if (payload.arrivalNotes) bodyParts.push(payload.arrivalNotes);
+  const body = bodyParts.join(' · ');
+
+  const actionUrl = payload.googleMapsUrl || eventUrl;
+  const actionLabel = payload.googleMapsUrl
+    ? translations.buttons.getDirections[locale]
+    : translations.buttons.viewEvent[locale];
+
+  const textLines = [
+    title,
+    '',
+    addressRevealTranslations.today[locale](payload.eventTime),
+  ];
+  if (payload.address) textLines.push(payload.address);
+  if (payload.arrivalNotes) textLines.push('', payload.arrivalNotes);
+  if (payload.googleMapsUrl) textLines.push('', `Directions: ${payload.googleMapsUrl}`);
+  textLines.push('', `Event: ${eventUrl}`, '', addressRevealTranslations.keepItCozy[locale]);
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: actionUrl,
+      primaryActionLabel: actionLabel,
+      secondaryActionUrl: eventUrl,
+      secondaryActionLabel: translations.buttons.viewEvent[locale],
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: actionUrl,
+      tag: `address-${payload.eventSlug}`,
+      requireInteraction: true,
+    },
+    email: {
+      title,
+      body: `${body} — ${addressRevealTranslations.keepItCozy[locale]}`,
+      subject: title,
+      primaryActionUrl: actionUrl,
+      primaryActionLabel: actionLabel,
+      text: textLines.join('\n'),
+    },
+  };
+}
+
 export function getNotificationTemplate(payload: NotificationPayload): TemplateResult {
   switch (payload.type) {
     case 'rsvp_confirmation':
@@ -1114,6 +1190,9 @@ export function getNotificationTemplate(payload: NotificationPayload): TemplateR
       return eventStartingNudgeTemplate(payload);
     case 'organizer_re_ping':
       return organizerRePingTemplate(payload);
+    // Secret address reveal
+    case 'event_address_reveal':
+      return eventAddressRevealTemplate(payload);
     default:
       throw new Error(`Unknown notification type: ${(payload as NotificationPayload).type}`);
   }

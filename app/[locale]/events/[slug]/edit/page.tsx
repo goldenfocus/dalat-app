@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 // Increase serverless function timeout
 export const maxDuration = 60;
 import { EventForm } from "@/components/events/event-form";
-import { hasRoleLevel, type Event, type Sponsor, type EventSponsor, type EventSettings, type UserRole, type EventMaterial } from "@/lib/types";
+import { hasRoleLevel, type Event, type EventPrivateDetails, type Sponsor, type EventSponsor, type EventSettings, type UserRole, type EventMaterial } from "@/lib/types";
 
 interface PlaylistData {
   playlistId: string | null;
@@ -59,6 +59,17 @@ export default async function EditEventPage({ params }: PageProps) {
 
   if (!isCreator && !isAdmin) {
     redirect(`/events/${slug}`);
+  }
+
+  // Fetch the real location for secret events (RLS: host/admin only)
+  let privateDetails: EventPrivateDetails | null = null;
+  if (event.has_private_details) {
+    const { data } = await supabase
+      .from("event_private_details")
+      .select("*")
+      .eq("event_id", event.id)
+      .maybeSingle();
+    privateDetails = data as EventPrivateDetails | null;
   }
 
   // Fetch sponsors for this event
@@ -125,6 +136,7 @@ export default async function EditEventPage({ params }: PageProps) {
           pendingMomentsCount={pendingCount}
           initialPlaylistId={playlistData.playlistId}
           initialPlaylistTracks={playlistData.tracks}
+          initialPrivateDetails={privateDetails}
         />
       </div>
     </main>

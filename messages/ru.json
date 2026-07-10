@@ -252,7 +252,9 @@
     "pastProofPhotos": "{photos} фото с прошлого раза",
     "pastProofWent": "В прошлый раз были {went}",
     "photoBy": "📸 @{name}",
-    "spotsAvailable": "{count} мест"
+    "spotsAvailable": "{count} мест",
+    "secretAddressLockHint": "Точный адрес откроется после подтверждения участия",
+    "secretAddressRevealedHint": "Этот адрес видят только гости"
   },
   "rsvp": {
     "imGoing": "Я пойду",
@@ -403,7 +405,14 @@
     "sponsorTier3": "Золотой (Уровень 3)",
     "sponsorTierHelp": "Избранные мероприятия отображаются первыми с золотым значком.",
     "activityTags": "Тип активности",
-    "activityTagsHelp": "Выберите теги, чтобы люди могли найти ваше мероприятие. ИИ также автоматически добавит теги на основе содержания."
+    "activityTagsHelp": "Выберите теги, чтобы люди могли найти ваше мероприятие. ИИ также автоматически добавит теги на основе содержания.",
+    "secretAddress": "Секретный адрес",
+    "secretAddressHelp": "Точный адрес скрыт — его видят только гости, подтвердившие участие. Утром в день события мы также отправим им адрес.",
+    "secretAddressPublicLabel": "Что видят все",
+    "secretAddressPublicLabelPlaceholder": "напр. Дом рядом с ночным рынком",
+    "secretAddressPublicLabelHelp": "Примерный район, отображаемый вместо адреса.",
+    "secretAddressArrivalNotes": "Заметки о прибытии (только для гостей)",
+    "secretAddressArrivalNotesPlaceholder": "Код от двери, парковка, ссылка на группу Zalo/WhatsApp…"
   },
   "eventActions": {
     "eventOptions": "Опции события",

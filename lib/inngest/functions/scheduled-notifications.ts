@@ -1,7 +1,8 @@
 import { inngest } from '../client';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { notify } from '@/lib/notifications';
 import type { NotificationPayload } from '@/lib/notifications/types';
+import type { Locale } from '@/lib/types';
 
 /**
  * Create a service role Supabase client for accessing scheduled notifications.
@@ -11,6 +12,83 @@ function createServiceClient() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey) return null;
   return createClient(url, serviceKey);
+}
+
+/**
+ * Secret address reveal: one scheduled row per EVENT (created by the
+ * schedule_address_reveal DB trigger). The going roster and the address are
+ * resolved HERE, at send time — so waitlist promotions, cancellations, and
+ * address edits between scheduling and sending are all naturally correct.
+ */
+async function sendAddressReveal(
+  supabase: SupabaseClient,
+  eventId: string
+): Promise<{ skipped?: boolean; reason?: string; sent?: number }> {
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, slug, title, starts_at, status, has_private_details, created_by')
+    .eq('id', eventId)
+    .single();
+
+  if (!event || event.status !== 'published' || !event.has_private_details) {
+    return { skipped: true, reason: 'Event no longer has a secret address' };
+  }
+
+  const { data: details } = await supabase
+    .from('event_private_details')
+    .select('address, google_maps_url, arrival_notes')
+    .eq('event_id', eventId)
+    .maybeSingle();
+
+  if (!details || (!details.address && !details.google_maps_url && !details.arrival_notes)) {
+    return { skipped: true, reason: 'No private details to reveal' };
+  }
+
+  const { data: goingRsvps } = await supabase
+    .from('rsvps')
+    .select('user_id')
+    .eq('event_id', eventId)
+    .eq('status', 'going');
+
+  const guestIds = (goingRsvps ?? [])
+    .map((r) => r.user_id as string)
+    .filter((id) => id !== event.created_by); // the host knows the address
+
+  if (guestIds.length === 0) return { sent: 0 };
+
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, locale')
+    .in('id', guestIds);
+  const localeByUser = new Map(
+    (profiles ?? []).map((p) => [p.id as string, p.locale as Locale])
+  );
+
+  const eventTime = new Date(event.starts_at).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Ho_Chi_Minh',
+  });
+
+  let sent = 0;
+  for (const userId of guestIds) {
+    const result = await notify({
+      type: 'event_address_reveal',
+      userId,
+      locale: localeByUser.get(userId) || ('en' as Locale),
+      eventId: event.id,
+      eventSlug: event.slug,
+      eventTitle: event.title,
+      eventTime,
+      address: details.address,
+      googleMapsUrl: details.google_maps_url,
+      arrivalNotes: details.arrival_notes,
+    });
+    if (result.success) sent++;
+  }
+
+  return { sent };
 }
 
 /**
@@ -74,6 +152,21 @@ export const processScheduledNotifications = inngest.createFunction(
               .eq('status', 'pending');
 
             const payload = scheduled.payload as NotificationPayload;
+
+            // Secret address reveal: per-event row — fan out to the current
+            // going roster instead of sending to a single user
+            if (payload.type === 'event_address_reveal') {
+              const revealResult = await sendAddressReveal(supabase, payload.eventId);
+              await supabase
+                .from('scheduled_notifications')
+                .update(
+                  revealResult.skipped
+                    ? { status: 'cancelled', error_message: revealResult.reason }
+                    : { status: 'sent', sent_at: new Date().toISOString() }
+                )
+                .eq('id', scheduled.id);
+              return { success: true, sent: revealResult.sent ?? 0 };
+            }
 
             // Smart check: skip starting nudge if attendee already confirmed
             if (payload.type === 'event_starting_nudge' && 'eventId' in payload) {

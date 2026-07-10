@@ -252,7 +252,9 @@
     "pastProofPhotos": "지난번 사진 {photos}장",
     "pastProofWent": "지난번 {went}명 참여",
     "photoBy": "📸 @{name}",
-    "spotsAvailable": "{count}자리"
+    "spotsAvailable": "{count}자리",
+    "secretAddressLockHint": "RSVP 후 정확한 주소가 공개됩니다",
+    "secretAddressRevealedHint": "게스트만 이 주소를 볼 수 있어요"
   },
   "rsvp": {
     "imGoing": "참석합니다",
@@ -403,7 +405,14 @@
     "sponsorTier3": "골드 (3등급)",
     "sponsorTierHelp": "추천 이벤트는 골드 배지와 함께 피드 상단에 표시됩니다.",
     "activityTags": "활동 유형",
-    "activityTagsHelp": "태그를 선택하여 사람들이 이벤트를 쉽게 찾을 수 있도록 도와주세요. AI가 콘텐츠를 기반으로 자동 태그도 추가합니다."
+    "activityTagsHelp": "태그를 선택하여 사람들이 이벤트를 쉽게 찾을 수 있도록 도와주세요. AI가 콘텐츠를 기반으로 자동 태그도 추가합니다.",
+    "secretAddress": "비밀 주소",
+    "secretAddressHelp": "정확한 주소는 숨겨집니다 — 참석으로 RSVP한 게스트만 볼 수 있어요. 행사 당일 아침에 게스트에게 주소를 보내드립니다.",
+    "secretAddressPublicLabel": "모두에게 보이는 내용",
+    "secretAddressPublicLabelPlaceholder": "예: 야시장 근처 주택",
+    "secretAddressPublicLabelHelp": "주소 대신 표시되는 대략적인 지역 안내입니다.",
+    "secretAddressArrivalNotes": "도착 안내 (게스트 전용)",
+    "secretAddressArrivalNotesPlaceholder": "출입문 비밀번호, 주차 팁, Zalo/WhatsApp 그룹 링크…"
   },
   "eventActions": {
     "eventOptions": "이벤트 옵션",

@@ -384,6 +384,9 @@ export interface Event {
   google_maps_url: string | null;
   latitude: number | null;
   longitude: number | null;
+  // Secret address: when true, the public location columns above are NULL and
+  // the real address lives in event_private_details (RLS-gated)
+  has_private_details: boolean;
   external_chat_url: string | null;
   starts_at: string;
   ends_at: string | null;
@@ -448,6 +451,21 @@ export type CardEvent = Pick<
   | "sponsor_tier"
   | "source_locale"
 >;
+
+/**
+ * Guests-only event details (secret address). Readable via RLS only by the
+ * host, admins, and users with an RSVP status of exactly 'going'.
+ */
+export interface EventPrivateDetails {
+  event_id: string;
+  address: string | null;
+  google_maps_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  arrival_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface PlusOneGuest {
   id: string;

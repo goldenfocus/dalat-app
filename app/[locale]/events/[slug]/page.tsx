@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
-import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat, Video, Music, Play } from "lucide-react";
+import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat, Video, Music, Play, Lock } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
@@ -42,7 +42,7 @@ import { EventMaterialsSummary } from "@/components/events/event-materials";
 import { EventMaterialsStructuredData } from "@/components/events/event-materials-structured-data";
 import { EventCommentsSection } from "@/components/comments";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
-import type { Event, EventCounts, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial, EventPromoMedia, PromoSource } from "@/lib/types";
+import type { Event, EventCounts, EventPrivateDetails, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial, EventPromoMedia, PromoSource } from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -238,6 +238,25 @@ async function getFeedbackStats(eventId: string): Promise<FeedbackStats | null> 
   });
 
   return data as FeedbackStats | null;
+}
+
+async function getPrivateDetails(
+  eventId: string,
+  hasPrivateDetails: boolean
+): Promise<EventPrivateDetails | null> {
+  if (!hasPrivateDetails) return null;
+
+  const supabase = await createClient();
+
+  // RLS returns a row only for the host, admins, or guests who are going —
+  // everyone else gets null and sees the lock hint instead.
+  const { data } = await supabase
+    .from("event_private_details")
+    .select("*")
+    .eq("event_id", eventId)
+    .maybeSingle();
+
+  return data as EventPrivateDetails | null;
 }
 
 async function getCurrentUserRsvp(eventId: string): Promise<Rsvp | null> {
@@ -773,7 +792,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
-  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult, questionnaire] = await Promise.all([
+  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult, questionnaire, privateDetails] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
@@ -799,6 +818,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getEventPlaylistSummary(event.id),
     getEventPromo(event.id),
     getEventQuestionnaireServer(event.id),
+    getPrivateDetails(event.id, event.has_private_details),
   ]);
 
   // Fetch past moments for auto-display when no promo exists (series first, organizer fallback)
@@ -1169,19 +1189,19 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 )}
 
                 {/* Location */}
-                {(event.location_name || event.address) && (
+                {(event.location_name || event.address || event.has_private_details) && (
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
                     <div className="space-y-1">
                       {event.location_name && (
                         <p className="font-medium">{decodeUnicodeEscapes(event.location_name)}</p>
                       )}
-                      {event.address && (
-                        <CopyAddress address={event.address} />
+                      {(event.address || privateDetails?.address) && (
+                        <CopyAddress address={(event.address || privateDetails?.address) as string} />
                       )}
-                      {event.google_maps_url && (
+                      {(event.google_maps_url || privateDetails?.google_maps_url) && (
                         <a
-                          href={event.google_maps_url}
+                          href={(event.google_maps_url || privateDetails?.google_maps_url) as string}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-primary hover:underline flex items-center gap-1"
@@ -1189,6 +1209,23 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                           {t("viewOnMap")}
                           <ExternalLink className="w-3 h-3" />
                         </a>
+                      )}
+                      {/* Secret address: guests-only extras or the lock hint */}
+                      {privateDetails?.arrival_notes && (
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          <Linkify text={privateDetails.arrival_notes} />
+                        </p>
+                      )}
+                      {event.has_private_details && privateDetails && (
+                        <p className="text-xs text-muted-foreground">
+                          {t("secretAddressRevealedHint")}
+                        </p>
+                      )}
+                      {event.has_private_details && !privateDetails && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                          <Lock className="w-3.5 h-3.5 shrink-0" />
+                          {t("secretAddressLockHint")}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -1248,8 +1285,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     eventDescription={event.description}
                     eventImageUrl={event.image_url}
                     locationName={event.location_name}
-                    address={event.address}
-                    googleMapsUrl={event.google_maps_url}
+                    address={event.address ?? privateDetails?.address ?? null}
+                    googleMapsUrl={event.google_maps_url ?? privateDetails?.google_maps_url ?? null}
                     capacity={event.capacity}
                     goingSpots={counts?.going_spots ?? 0}
                     currentRsvp={currentRsvp}
@@ -1278,8 +1315,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     title={event.title}
                     description={event.description}
                     locationName={event.location_name}
-                    address={event.address}
-                    googleMapsUrl={event.google_maps_url}
+                    address={event.address ?? privateDetails?.address ?? null}
+                    googleMapsUrl={event.google_maps_url ?? privateDetails?.google_maps_url ?? null}
                     startsAt={event.starts_at}
                     endsAt={event.ends_at}
                     url={`https://dalat.app/events/${event.slug}`}
@@ -1386,8 +1423,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         eventDescription={event.description}
         eventImageUrl={event.image_url}
         locationName={event.location_name}
-        address={event.address}
-        googleMapsUrl={event.google_maps_url}
+        address={event.address ?? privateDetails?.address ?? null}
+        googleMapsUrl={event.google_maps_url ?? privateDetails?.google_maps_url ?? null}
         capacity={event.capacity}
         goingSpots={counts?.going_spots ?? 0}
         currentRsvp={currentRsvp}
