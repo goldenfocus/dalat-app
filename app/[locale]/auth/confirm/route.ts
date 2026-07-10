@@ -12,7 +12,12 @@ export async function GET(
   const url = new URL(request.url);
   const token_hash = url.searchParams.get("token_hash");
   const type = url.searchParams.get("type") as EmailOtpType | null;
-  const next = url.searchParams.get("next") ?? "/";
+  // Recovery links must land on the set-password form — the /auth/verify
+  // click-through gate drops the `next` param, so derive it from `type`.
+  const next =
+    type === "recovery"
+      ? "/auth/reset-password"
+      : url.searchParams.get("next") ?? "/";
 
   // Helper to create locale-prefixed redirect with optional cookie
   const createRedirect = (path: string, locale: string, setCookie = false) => {
