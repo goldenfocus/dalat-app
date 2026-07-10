@@ -20,7 +20,19 @@ import {
 import { LocationPicker, type SelectedLocation } from "@/components/events/location-picker";
 import { VenueLinker } from "@/components/events/venue-linker";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
-import { FlyerBuilder } from "@/components/events/flyer-builder";
+import dynamic from "next/dynamic";
+
+// FlyerBuilder pulls canvas/image tooling — keep it out of the initial event-form chunk
+const FlyerBuilder = dynamic(
+  () =>
+    import("@/components/events/flyer-builder").then((m) => m.FlyerBuilder),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-40 rounded-lg bg-muted animate-pulse" aria-hidden />
+    ),
+  }
+);
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
 import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
 import { EventMaterialsInput, createMaterialsForEvent } from "@/components/events/event-materials-input";

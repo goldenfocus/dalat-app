@@ -9,6 +9,19 @@
     scrollbar-gutter: stable;
   }
 
+  /* System font stack — no webfont download (faster FCP than Geist) */
+  body {
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial,
+      sans-serif;
+  }
+
   /* ============================================
    * DALAT COLOR PALETTE - "Pine & Mist"
    * Inspired by Dalat's pine forests, morning mist,

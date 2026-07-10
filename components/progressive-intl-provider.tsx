@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import {
-  CLIENT_NAMESPACES,
-  CORE_CLIENT_NAMESPACES,
-} from "@/lib/i18n/client-namespaces";
+import { CORE_CLIENT_NAMESPACES } from "@/lib/i18n/client-namespaces";
+import { extraNamespacesForPath } from "@/lib/i18n/route-message-islands";
 import type { Locale } from "@/lib/i18n/routing";
 
 type Messages = Record<string, unknown>;
@@ -26,12 +25,26 @@ const LOCALE_LOADERS: Record<Locale, () => Promise<{ default: Messages }>> = {
   id: () => import("@/messages/id.json"),
 };
 
+// Module-level cache: one JSON parse per locale per session
+const localeCache = new Map<Locale, Messages>();
+
 function pickNamespaces(all: Messages, namespaces: readonly string[]): Messages {
   const out: Messages = {};
   for (const ns of namespaces) {
     if (ns in all) out[ns] = all[ns];
   }
   return out;
+}
+
+async function loadLocaleMessages(locale: Locale): Promise<Messages> {
+  const cached = localeCache.get(locale);
+  if (cached) return cached;
+  const loader = LOCALE_LOADERS[locale];
+  if (!loader) return {};
+  const mod = await loader();
+  const full = (mod.default ?? mod) as Messages;
+  localeCache.set(locale, full);
+  return full;
 }
 
 interface Props {
@@ -42,65 +55,73 @@ interface Props {
 }
 
 /**
- * Ships core i18n with HTML, then hydrates the full client dictionary after
- * paint so event forms / invite / loyalty / etc. still have keys without
- * bloating every page's initial payload (~45KB saved on wire HTML+RSC).
+ * Ships core i18n with HTML, then loads route-level message islands only when
+ * the path needs them. Homepage never pulls the full client dictionary.
  */
 export function ProgressiveIntlProvider({
   locale,
   coreMessages,
   children,
 }: Props) {
+  const pathname = usePathname() ?? "/";
   const [messages, setMessages] = useState<Messages>(coreMessages);
+  const loadedExtrasRef = useRef<Set<string>>(new Set());
 
+  // Reset core on locale change
+  useEffect(() => {
+    setMessages(coreMessages);
+    loadedExtrasRef.current = new Set();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only on locale switch
+  }, [locale]);
+
+  // Route-level islands: load only what's missing for this path
   useEffect(() => {
     let cancelled = false;
-    const loader = LOCALE_LOADERS[locale];
-    if (!loader) return;
+    const extras = extraNamespacesForPath(pathname);
+    if (extras.length === 0) return;
 
-    // Prefer idle, but don't wait forever — soft-nav to deep pages needs keys.
-    const run = () => {
-      loader()
-        .then((mod) => {
-          if (cancelled) return;
-          const full = (mod.default ?? mod) as Messages;
-          // Always keep core + any remaining client namespaces.
-          const merged = {
-            ...pickNamespaces(full, CORE_CLIENT_NAMESPACES),
-            ...pickNamespaces(full, CLIENT_NAMESPACES),
-          };
-          setMessages(merged);
-        })
-        .catch((err) => {
-          console.error("[i18n] failed to load full client messages", err);
-        });
-    };
+    const missing = extras.filter((ns) => !loadedExtrasRef.current.has(ns));
+    if (missing.length === 0) return;
 
-    let idleId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(run, { timeout: 1200 });
-    } else {
-      timeoutId = setTimeout(run, 50);
-    }
+    loadLocaleMessages(locale)
+      .then((full) => {
+        if (cancelled) return;
+        const picked = pickNamespaces(full, missing);
+        for (const ns of missing) loadedExtrasRef.current.add(ns);
+        setMessages((prev) => ({
+          ...prev,
+          // Keep core authoritative from server
+          ...pickNamespaces(prev, CORE_CLIENT_NAMESPACES),
+          ...picked,
+        }));
+      })
+      .catch((err) => {
+        console.error("[i18n] failed to load route message island", err);
+      });
 
     return () => {
       cancelled = true;
-      if (idleId !== undefined && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
     };
-  }, [locale]);
-
-  // On locale change, reset to the server-provided core set (full dict reloads above).
-  useEffect(() => {
-    setMessages(coreMessages);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only reset when locale switches
-  }, [locale]);
+  }, [pathname, locale]);
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <NextIntlClientProvider
+      locale={locale}
+      messages={messages}
+      // Soft-nav island may lag one frame — never crash the tree on a missing key
+      onError={(err) => {
+        if (
+          err.code === "MISSING_MESSAGE" ||
+          err.code === "ENVIRONMENT_FALLBACK"
+        ) {
+          return;
+        }
+        console.error("[i18n]", err);
+      }}
+      getMessageFallback={({ namespace, key }) =>
+        namespace ? `${namespace}.${key}` : key
+      }
+    >
       {children}
     </NextIntlClientProvider>
   );

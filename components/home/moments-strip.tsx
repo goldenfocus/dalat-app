@@ -53,7 +53,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
       const supabase = createClient();
       const { data } = await supabase.rpc('get_homepage_moments_strip', {
         p_user_id: null,
-        p_limit: 12,
+        p_limit: 6,
         p_sort: sortBy,
       });
       if (data) setMoments(data);
@@ -150,12 +150,13 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                   <img
                     src={cloudflareLoader({
                       src: getThumbnailUrl(moment)!,
-                      width: 240,
-                      quality: 80,
+                      width: 200,
+                      quality: 65,
                     })}
                     alt={moment.event_title}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    decoding="async"
                     onError={() => handleImageError(moment.id)}
                   />
                 ) : (
@@ -219,15 +220,14 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
       {/* Desktop: Framed card layout - clean image with info below */}
       <div className="hidden lg:block container max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-6 gap-3">
-          {moments.slice(0, 6).map((moment, index) => (
+          {moments.slice(0, 6).map((moment) => (
             <button
               key={moment.id}
               onClick={() => handleMomentClick(moment)}
               className={cn(
                 "group text-left rounded-xl overflow-hidden bg-card border border-border/50",
                 "hover:border-foreground/20 hover:shadow-lg transition-all duration-200",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                index >= 5 && moments.length > 6 && "opacity-80"
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               )}
             >
               {/* Clean image - no overlays except play button */}
@@ -236,12 +236,13 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                   <img
                     src={cloudflareLoader({
                       src: getThumbnailUrl(moment)!,
-                      width: 400,
-                      quality: 80,
+                      width: 320,
+                      quality: 65,
                     })}
                     alt={moment.event_title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
+                    decoding="async"
                     onError={() => handleImageError(moment.id)}
                   />
                 ) : (
@@ -260,15 +261,6 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                     <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
                       <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                     </div>
-                  </div>
-                )}
-
-                {/* "View more" indicator on last card */}
-                {index === 5 && moments.length > 6 && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">
-                      +{moments.length - 6} more
-                    </span>
                   </div>
                 )}
               </div>

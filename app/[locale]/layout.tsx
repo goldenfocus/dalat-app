@@ -89,7 +89,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   // Ship only shell/homepage namespaces in the first RSC payload.
-  // ProgressiveIntlProvider loads the rest after paint (see CORE_CLIENT_NAMESPACES).
+  // ProgressiveIntlProvider merges route-level islands on demand (never idle full-dict on home).
   // Full CLIENT_NAMESPACES list still enforced by scripts/check-client-namespaces.mjs.
   const messages = await getMessages();
   const coreMessages = Object.fromEntries(

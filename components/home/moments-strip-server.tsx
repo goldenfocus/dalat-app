@@ -8,7 +8,8 @@ import { MomentsStrip } from "./moments-strip";
  * Uses unstable_cache so ISR regenerations don't hit Supabase every time.
  */
 export async function MomentsStripServer() {
-  const moments = await getCachedHomepageMomentsStrip(12, "event_date");
+  // 6 thumbs is enough for the strip (mobile scroll + desktop 6-col) — half the LCP competition
+  const moments = await getCachedHomepageMomentsStrip(6, "event_date");
 
   if (!moments || moments.length === 0) {
     return null;
