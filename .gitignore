@@ -48,3 +48,6 @@ supabase/.temp/
 
 # per-session git worktrees (multi-AI workflow)
 .worktrees/
+
+# Playwright MCP snapshots — can capture dashboard pages showing live secrets
+.playwright-mcp/
