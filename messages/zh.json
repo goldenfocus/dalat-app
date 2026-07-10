@@ -1365,6 +1365,7 @@
     }
   },
   "tribes": {
+    "dateAtTime": "{date} {time}",
     "title": "部落",
     "createTribe": "创建部落",
     "joinTribe": "加入部落",

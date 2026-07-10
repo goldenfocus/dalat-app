@@ -24,14 +24,12 @@ export function TribeEventsList({ events, locale }: TribeEventsListProps) {
     <div className="space-y-4">
       {events.map((event) => {
         const eventDate = new Date(event.starts_at);
-        const formattedDate = eventDate.toLocaleDateString(
-          locale === "vi" ? "vi-VN" : locale === "fr" ? "fr-FR" : "en-US",
-          { weekday: "short", month: "short", day: "numeric", timeZone: DALAT_TIMEZONE }
-        );
-        const formattedTime = eventDate.toLocaleTimeString(
-          locale === "vi" ? "vi-VN" : locale === "fr" ? "fr-FR" : "en-US",
-          { hour: "numeric", minute: "2-digit", hour12: true, timeZone: DALAT_TIMEZONE }
-        );
+        const formattedDate = eventDate.toLocaleDateString(locale, {
+          weekday: "short", month: "short", day: "numeric", timeZone: DALAT_TIMEZONE,
+        });
+        const formattedTime = eventDate.toLocaleTimeString(locale, {
+          hour: "numeric", minute: "2-digit", hour12: true, timeZone: DALAT_TIMEZONE,
+        });
 
         return (
           <Link
@@ -56,7 +54,7 @@ export function TribeEventsList({ events, locale }: TribeEventsListProps) {
                 <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    {formattedDate} at {formattedTime}
+                    {t("dateAtTime", { date: formattedDate, time: formattedTime })}
                   </span>
                 </div>
 

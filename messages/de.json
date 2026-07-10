@@ -1362,6 +1362,7 @@
     }
   },
   "tribes": {
+    "dateAtTime": "{date} um {time}",
     "title": "Tribes",
     "createTribe": "Tribe erstellen",
     "joinTribe": "Tribe beitreten",

@@ -1362,6 +1362,7 @@
     }
   },
   "tribes": {
+    "dateAtTime": "{date} pukul {time}",
     "title": "Tribes",
     "createTribe": "Buat Tribe",
     "joinTribe": "Gabung Tribe",

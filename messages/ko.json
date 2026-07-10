@@ -1365,6 +1365,7 @@
     }
   },
   "tribes": {
+    "dateAtTime": "{date} {time}",
     "title": "트라이브",
     "createTribe": "트라이브 만들기",
     "joinTribe": "트라이브 참가",

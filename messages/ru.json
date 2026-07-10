@@ -1362,6 +1362,7 @@
     }
   },
   "tribes": {
+    "dateAtTime": "{date} в {time}",
     "title": "Трайбы",
     "createTribe": "Создать трайб",
     "joinTribe": "Вступить в трайб",

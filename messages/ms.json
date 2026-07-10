@@ -1362,6 +1362,7 @@
     }
   },
   "tribes": {
+    "dateAtTime": "{date} pada {time}",
     "title": "Suku",
     "createTribe": "Cipta Suku",
     "joinTribe": "Sertai Suku",

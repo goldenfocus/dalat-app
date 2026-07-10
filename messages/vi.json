@@ -1365,6 +1365,7 @@
     }
   },
   "tribes": {
+    "dateAtTime": "{date} lúc {time}",
     "title": "Bộ tộc",
     "createTribe": "Tạo bộ tộc",
     "joinTribe": "Tham gia bộ tộc",

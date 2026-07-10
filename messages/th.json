@@ -1362,6 +1362,7 @@
     }
   },
   "tribes": {
+    "dateAtTime": "{date} เวลา {time}",
     "title": "Tribes",
     "createTribe": "สร้าง Tribe",
     "joinTribe": "เข้าร่วม Tribe",

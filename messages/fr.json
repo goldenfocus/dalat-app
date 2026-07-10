@@ -1376,6 +1376,7 @@
     }
   },
   "tribes": {
+    "dateAtTime": "{date} à {time}",
     "title": "Tribus",
     "createTribe": "Créer une tribu",
     "joinTribe": "Rejoindre la tribu",
