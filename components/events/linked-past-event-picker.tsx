@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DALAT_TIMEZONE } from "@/lib/timezone";
 
 interface PastEventOption {
   id: string;
@@ -104,6 +105,7 @@ export function LinkedPastEventPicker({
       year: "numeric",
       month: "short",
       day: "numeric",
+      timeZone: DALAT_TIMEZONE,
     });
 
   return (

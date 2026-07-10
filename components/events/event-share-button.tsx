@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Share2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useShare } from "@/lib/hooks/use-share";
+import { DALAT_TIMEZONE } from "@/lib/timezone";
 
 interface EventShareButtonProps {
   eventSlug: string;
@@ -31,6 +32,7 @@ export function EventShareButton({
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
+    timeZone: DALAT_TIMEZONE,
   });
 
   const descriptionSnippet = eventDescription

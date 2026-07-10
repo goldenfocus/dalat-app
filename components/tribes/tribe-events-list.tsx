@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Calendar, MapPin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { decodeUnicodeEscapes } from "@/lib/utils";
+import { DALAT_TIMEZONE } from "@/lib/timezone";
 import type { Event, Profile } from "@/lib/types";
 
 interface TribeEventsListProps {
@@ -25,11 +26,11 @@ export function TribeEventsList({ events, locale }: TribeEventsListProps) {
         const eventDate = new Date(event.starts_at);
         const formattedDate = eventDate.toLocaleDateString(
           locale === "vi" ? "vi-VN" : locale === "fr" ? "fr-FR" : "en-US",
-          { weekday: "short", month: "short", day: "numeric" }
+          { weekday: "short", month: "short", day: "numeric", timeZone: DALAT_TIMEZONE }
         );
         const formattedTime = eventDate.toLocaleTimeString(
           locale === "vi" ? "vi-VN" : locale === "fr" ? "fr-FR" : "en-US",
-          { hour: "numeric", minute: "2-digit", hour12: true }
+          { hour: "numeric", minute: "2-digit", hour12: true, timeZone: DALAT_TIMEZONE }
         );
 
         return (
@@ -42,10 +43,10 @@ export function TribeEventsList({ events, locale }: TribeEventsListProps) {
               {/* Date badge */}
               <div className="flex flex-col items-center justify-center w-14 h-14 bg-primary/10 rounded-lg shrink-0">
                 <span className="text-xs font-medium text-primary uppercase">
-                  {eventDate.toLocaleDateString(locale, { month: "short" })}
+                  {eventDate.toLocaleDateString(locale, { month: "short", timeZone: DALAT_TIMEZONE })}
                 </span>
                 <span className="text-xl font-bold text-primary">
-                  {eventDate.getDate()}
+                  {eventDate.toLocaleDateString("en-US", { day: "numeric", timeZone: DALAT_TIMEZONE })}
                 </span>
               </div>
 
