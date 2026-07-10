@@ -1129,7 +1129,12 @@
     ],
     "usernamePlaceholder": "Cari mengikut nama atau nama pengguna",
     "usernameHint": "Taip sekurang-kurangnya 2 aksara untuk mencari",
-    "noInvitees": "Sila tambah sekurang-kurangnya seorang untuk dijemput"
+    "noInvitees": "Sila tambah sekurang-kurangnya seorang untuk dijemput",
+    "audienceEveryone": "Semua orang",
+    "audiencePeople": "{count} orang",
+    "personalNoteLabel": "Tambah nota peribadi",
+    "personalNotePlaceholder": "Kenapa mereka patut datang? (pilihan)",
+    "audienceNoRecipients": "Semua orang di sini sudah dijemput atau dihubungi baru-baru ini"
   },
   "moments": {
     "moments": "Momen",

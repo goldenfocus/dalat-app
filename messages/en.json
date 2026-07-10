@@ -1223,7 +1223,12 @@
       "Thanks for being a force for connection",
       "You're the reason the room will be full",
       "Keep being the connector you are"
-    ]
+    ],
+    "audienceEveryone": "Everyone",
+    "audiencePeople": "{count} people",
+    "personalNoteLabel": "Add a personal note",
+    "personalNotePlaceholder": "Why should they come? (optional)",
+    "audienceNoRecipients": "Everyone here was already invited or reached recently"
   },
   "celebration": {
     "title": "You just made Da Lat better!",

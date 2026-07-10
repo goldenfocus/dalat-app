@@ -20,6 +20,8 @@ export interface SendEmailOptions {
   to: string;
   content: EmailNotificationContent;
   replyTo?: string;
+  /** Tokenized unsubscribe URL. When present, adds List-Unsubscribe headers + footer link. */
+  unsubscribeUrl?: string;
 }
 
 /**
@@ -28,7 +30,7 @@ export interface SendEmailOptions {
 export async function sendEmailNotification(
   options: SendEmailOptions
 ): Promise<ChannelResult> {
-  const { to, content, replyTo } = options;
+  const { to, content, replyTo, unsubscribeUrl } = options;
   const client = getResendClient();
 
   if (!client) {
@@ -41,8 +43,8 @@ export async function sendEmailNotification(
 
   try {
     const inspiringFooter = getRandomInspiringFooter();
-    const html = content.html || generateDefaultEmailHtml(content, inspiringFooter);
-    const text = content.text || generateDefaultEmailText(content, inspiringFooter);
+    const html = content.html || generateDefaultEmailHtml(content, inspiringFooter, unsubscribeUrl);
+    const text = content.text || generateDefaultEmailText(content, inspiringFooter, unsubscribeUrl);
 
     const result = await client.emails.send({
       from: 'Dalat Events <events@dalat.app>',
@@ -51,6 +53,14 @@ export async function sendEmailNotification(
       html,
       text, // Plain text alternative for better deliverability
       replyTo,
+      ...(unsubscribeUrl
+        ? {
+            headers: {
+              'List-Unsubscribe': `<${unsubscribeUrl}>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
+          }
+        : {}),
     });
 
     if (result.error) {
@@ -144,7 +154,7 @@ export async function sendBulkEmails(
 /**
  * Generate default HTML email from notification content.
  */
-function generateDefaultEmailHtml(content: EmailNotificationContent, inspiringFooter: string): string {
+function generateDefaultEmailHtml(content: EmailNotificationContent, inspiringFooter: string, unsubscribeUrl?: string): string {
   const primaryButton = content.primaryActionUrl && content.primaryActionLabel
     ? `<a href="${content.primaryActionUrl}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; margin-right: 10px;">${content.primaryActionLabel}</a>`
     : '';
@@ -162,11 +172,11 @@ function generateDefaultEmailHtml(content: EmailNotificationContent, inspiringFo
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 24px;">${content.title}</h1>
+    <h1 style="color: white; margin: 0; font-size: 24px;">${content.titleHtml || content.title}</h1>
   </div>
 
   <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 12px 12px;">
-    <p style="font-size: 16px; margin-bottom: 20px;">${content.body}</p>
+    <p style="font-size: 16px; margin-bottom: 20px;">${content.bodyHtml || content.body}</p>
 
     ${(primaryButton || secondaryButton) ? `
     <div style="text-align: center; margin: 30px 0;">
@@ -183,6 +193,11 @@ function generateDefaultEmailHtml(content: EmailNotificationContent, inspiringFo
     <p style="font-size: 12px; color: #9ca3af; margin: 0;">
       Sent via <a href="https://dalat.app" style="color: #667eea; text-decoration: none;">ĐàLạt.app</a>
     </p>
+    ${unsubscribeUrl ? `
+    <p style="font-size: 12px; color: #9ca3af; margin: 8px 0 0 0;">
+      <a href="${unsubscribeUrl}" style="color: #9ca3af; text-decoration: underline;">Unsubscribe</a>
+    </p>
+    ` : ''}
   </div>
 </body>
 </html>
@@ -193,7 +208,7 @@ function generateDefaultEmailHtml(content: EmailNotificationContent, inspiringFo
  * Generate plain text email from notification content.
  * Important for email deliverability - spam filters prefer emails with text alternatives.
  */
-function generateDefaultEmailText(content: EmailNotificationContent, inspiringFooter: string): string {
+function generateDefaultEmailText(content: EmailNotificationContent, inspiringFooter: string, unsubscribeUrl?: string): string {
   const lines: string[] = [
     content.title,
     '',
@@ -210,6 +225,10 @@ function generateDefaultEmailText(content: EmailNotificationContent, inspiringFo
   }
 
   lines.push('', '---', `"${inspiringFooter}"`, '', 'Sent via ĐàLạt.app (https://dalat.app)');
+
+  if (unsubscribeUrl) {
+    lines.push('', `Unsubscribe: ${unsubscribeUrl}`);
+  }
 
   return lines.join('\n');
 }

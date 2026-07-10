@@ -14,6 +14,7 @@ import type {
   FeedbackRequestPayload,
   EventInvitationPayload,
   UserInvitationPayload,
+  AudienceInvitationPayload,
   TribeJoinRequestPayload,
   TribeRequestApprovedPayload,
   TribeRequestRejectedPayload,
@@ -599,6 +600,117 @@ function userInvitationTemplate(payload: UserInvitationPayload): TemplateResult 
   };
 }
 
+// ============================================
+// Audience invitation (@all / @games blasts) — ALL 12 locales
+// ============================================
+
+const AUDIENCE_LOCALE_TAG: Record<Locale, string> = {
+  en: 'en-US', vi: 'vi-VN', ko: 'ko-KR', zh: 'zh-CN', ru: 'ru-RU', fr: 'fr-FR',
+  ja: 'ja-JP', ms: 'ms-MY', th: 'th-TH', de: 'de-DE', es: 'es-ES', id: 'id-ID',
+};
+
+const audienceStrings: {
+  title: Record<Locale, (inviter: string, title: string) => string>;
+  imIn: Record<Locale, string>;
+  viewEvent: Record<Locale, string>;
+} = {
+  title: {
+    en: (inviter, title) => `${inviter} invited you to "${title}"`,
+    vi: (inviter, title) => `${inviter} đã mời bạn tham gia "${title}"`,
+    ko: (inviter, title) => `${inviter}님이 "${title}"에 초대했어요`,
+    zh: (inviter, title) => `${inviter} 邀请你参加「${title}」`,
+    ru: (inviter, title) => `${inviter} приглашает вас на «${title}»`,
+    fr: (inviter, title) => `${inviter} vous invite à "${title}"`,
+    ja: (inviter, title) => `${inviter}さんが「${title}」に招待しました`,
+    ms: (inviter, title) => `${inviter} menjemput anda ke "${title}"`,
+    th: (inviter, title) => `${inviter} ชวนคุณไปงาน "${title}"`,
+    de: (inviter, title) => `${inviter} hat dich zu "${title}" eingeladen`,
+    es: (inviter, title) => `${inviter} te invitó a "${title}"`,
+    id: (inviter, title) => `${inviter} mengundangmu ke "${title}"`,
+  },
+  imIn: {
+    en: "I'm in 🎉", vi: 'Tham gia ngay 🎉', ko: '참석할래요 🎉', zh: '我要参加 🎉',
+    ru: 'Я иду 🎉', fr: "J'y serai 🎉", ja: '参加します 🎉', ms: 'Saya datang 🎉',
+    th: 'ไปด้วย 🎉', de: 'Ich bin dabei 🎉', es: '¡Me apunto! 🎉', id: 'Aku ikut 🎉',
+  },
+  viewEvent: {
+    en: 'View event', vi: 'Xem sự kiện', ko: '이벤트 보기', zh: '查看活动',
+    ru: 'Посмотреть событие', fr: "Voir l'événement", ja: 'イベントを見る', ms: 'Lihat acara',
+    th: 'ดูกิจกรรม', de: 'Event ansehen', es: 'Ver evento', id: 'Lihat acara',
+  },
+};
+
+// HTML-escape for user-controlled fields that end up inside email HTML
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function audienceInvitationTemplate(payload: AudienceInvitationPayload): TemplateResult {
+  const locale: Locale = AUDIENCE_LOCALE_TAG[payload.locale] ? payload.locale : 'en';
+  const localeTag = AUDIENCE_LOCALE_TAG[locale];
+  const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
+  const rsvpUrl = `${getBaseUrl()}/invite/${payload.token}`;
+
+  const eventDate = new Date(payload.startsAt);
+  const formattedDate = eventDate.toLocaleDateString(localeTag, {
+    weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Ho_Chi_Minh',
+  });
+  const formattedTime = eventDate.toLocaleTimeString(localeTag, {
+    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Ho_Chi_Minh',
+  });
+
+  // Plain-text variants (in-app, push, and the email text/plain MIME part)
+  const title = audienceStrings.title[locale](payload.inviterName, payload.eventTitle);
+  const logistics = `📅 ${formattedDate} · ${formattedTime}${payload.locationName ? ` · 📍 ${payload.locationName}` : ''}`;
+  // Personal note is deliberately untranslated — a human note in the sender's own words is the point.
+  const emailBodyText = payload.personalNote
+    ? `${logistics}\n\n💬 "${payload.personalNote}" — ${payload.inviterName}`
+    : logistics;
+
+  // HTML-escaped variants for the email HTML part only
+  const titleHtml = audienceStrings.title[locale](
+    escapeHtml(payload.inviterName),
+    escapeHtml(payload.eventTitle)
+  );
+  const logisticsHtml = `📅 ${formattedDate} · ${formattedTime}${payload.locationName ? ` · 📍 ${escapeHtml(payload.locationName)}` : ''}`;
+  const bodyHtml = payload.personalNote
+    ? `${logisticsHtml}<br><br>💬 "${escapeHtml(payload.personalNote)}" — ${escapeHtml(payload.inviterName)}`
+    : logisticsHtml;
+
+  return {
+    inApp: {
+      title,
+      body: logistics,
+      primaryActionUrl: eventUrl,
+      primaryActionLabel: audienceStrings.viewEvent[locale],
+    },
+    push: {
+      title,
+      body: logistics,
+      primaryActionUrl: eventUrl,
+      tag: `audience-invite-${payload.eventSlug}`,
+      requireInteraction: true,
+    },
+    email: {
+      subject: `${title} ${getRandomSubjectEmoji()}`,
+      title,
+      titleHtml,
+      body: emailBodyText,
+      bodyHtml,
+      // One-tap token RSVP — no login wall for dormant users
+      primaryActionUrl: rsvpUrl,
+      primaryActionLabel: audienceStrings.imIn[locale],
+      secondaryActionUrl: eventUrl,
+      secondaryActionLabel: audienceStrings.viewEvent[locale],
+    },
+  };
+}
+
 function tribeJoinRequestTemplate(payload: TribeJoinRequestPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
   const tribeUrl = `${getBaseUrl()}/tribes/${payload.tribeSlug}?tab=requests`;
@@ -1160,6 +1272,8 @@ export function getNotificationTemplate(payload: NotificationPayload): TemplateR
       return eventInvitationTemplate(payload);
     case 'user_invitation':
       return userInvitationTemplate(payload);
+    case 'audience_invitation':
+      return audienceInvitationTemplate(payload);
     case 'tribe_join_request':
       return tribeJoinRequestTemplate(payload);
     case 'tribe_request_approved':

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Send, Loader2, Check, X, UserPlus } from "lucide-react";
+import { Send, Loader2, Check, X, UserPlus, Megaphone } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,17 +17,22 @@ import { ShareButtons } from "./share-buttons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { InviteSendingAnimation } from "./invite-sending-animation";
 import { InviteCelebration } from "./invite-celebration";
+import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 
 interface InviteModalProps {
   eventSlug: string;
   eventTitle: string;
   eventDescription: string | null;
   startsAt: string;
+  /** Viewer has admin/superadmin role — unlocks @all / @tag audience mentions */
+  isAdmin?: boolean;
 }
 
 interface InviteResult {
   email?: string;
   userId?: string;
+  /** Synthesized client-side for audience chips (server returns only a queued count) */
+  audienceKey?: string;
   success: boolean;
   error?: string;
 }
@@ -39,11 +44,17 @@ interface UserSearchResult {
   avatarUrl: string | null;
 }
 
+interface AudienceOption {
+  key: string;
+  count: number;
+}
+
 type Invitee =
   | { type: "email"; email: string; name?: string }
-  | { type: "user"; user: UserSearchResult };
+  | { type: "user"; user: UserSearchResult }
+  | { type: "audience"; key: string; count: number };
 
-export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt }: InviteModalProps) {
+export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt, isAdmin = false }: InviteModalProps) {
   const t = useTranslations("invite");
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -52,6 +63,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
   const [results, setResults] = useState<InviteResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationCount, setCelebrationCount] = useState(0);
+  const [audienceOptions, setAudienceOptions] = useState<AudienceOption[]>([]);
+  const [personalNote, setPersonalNote] = useState("");
 
   // Auto-detect input mode: email if contains @domain.tld pattern, username otherwise
   const isEmailInput = useCallback((value: string) => {
@@ -76,6 +90,32 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
 
   // Username search is active when not typing an email and has 2+ chars
   const isUsernameSearch = !isEmailInput(inputValue) && inputValue.length >= 2;
+
+  // Audience mentions (@all / @games) — admin only. "@" lists all, "@ga" filters.
+  const audienceQuery = inputValue.startsWith("@") ? inputValue.slice(1).toLowerCase() : null;
+  const audienceMatches =
+    isAdmin && audienceQuery !== null
+      ? audienceOptions.filter(
+          (a) =>
+            a.key.startsWith(audienceQuery) &&
+            !invitees.some((inv) => inv.type === "audience" && inv.key === a.key)
+        )
+      : [];
+
+  // Load audience options once per open (admins only)
+  useEffect(() => {
+    if (!open || !isAdmin) return;
+    let cancelled = false;
+    fetch("/api/audiences")
+      .then((r) => (r.ok ? r.json() : { audiences: [] }))
+      .then((data) => {
+        if (!cancelled) setAudienceOptions(data.audiences || []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [open, isAdmin]);
 
   // Debounced user search
   useEffect(() => {
@@ -138,6 +178,19 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
     return matches.map(email => ({ type: "email" as const, email: email.toLowerCase().trim() }));
   }, []);
 
+  const addAudience = useCallback((option: AudienceOption) => {
+    setInvitees((prev) =>
+      prev.some((inv) => inv.type === "audience" && inv.key === option.key)
+        ? prev
+        : [...prev, { type: "audience", key: option.key, count: option.count }]
+    );
+    setInputValue("");
+    setShowDropdown(false);
+    setUserResults([]);
+    setError(null);
+    inputRef.current?.focus();
+  }, []);
+
   const addUser = useCallback((user: UserSearchResult) => {
     // Check if user already added
     const alreadyAdded = invitees.some(
@@ -174,11 +227,12 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
   }, [inputValue, invitees, parseEmails, isEmailInput]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Handle dropdown navigation
-    if (showDropdown && userResults.length > 0) {
+    // Handle dropdown navigation (audience rows are pinned above user results)
+    const combinedLength = audienceMatches.length + (showDropdown ? userResults.length : 0);
+    if (combinedLength > 0) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedIndex(prev => Math.min(prev + 1, userResults.length - 1));
+        setSelectedIndex(prev => Math.min(prev + 1, combinedLength - 1));
         return;
       }
       if (e.key === "ArrowUp") {
@@ -188,7 +242,11 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
       }
       if (e.key === "Enter") {
         e.preventDefault();
-        addUser(userResults[selectedIndex]);
+        if (selectedIndex < audienceMatches.length) {
+          addAudience(audienceMatches[selectedIndex]);
+        } else if (userResults[selectedIndex - audienceMatches.length]) {
+          addUser(userResults[selectedIndex - audienceMatches.length]);
+        }
         return;
       }
       if (e.key === "Escape") {
@@ -236,19 +294,27 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
     setError(null);
     setResults([]);
 
-    // Separate email and user invitees
+    // Separate email, user, and audience invitees
     const emailInvitees = finalInvitees
       .filter((inv): inv is Invitee & { type: "email" } => inv.type === "email")
       .map(inv => ({ email: inv.email, name: inv.name }));
     const userInvitees = finalInvitees
       .filter((inv): inv is Invitee & { type: "user" } => inv.type === "user")
       .map(inv => ({ userId: inv.user.id, username: inv.user.username }));
+    const audienceKeys = finalInvitees
+      .filter((inv): inv is Invitee & { type: "audience" } => inv.type === "audience")
+      .map(inv => inv.key);
 
     try {
       const response = await fetch(`/api/events/${eventSlug}/invitations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emails: emailInvitees, users: userInvitees }),
+        body: JSON.stringify({
+          emails: emailInvitees,
+          users: userInvitees,
+          audiences: audienceKeys,
+          personalNote: personalNote.trim() || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -264,7 +330,15 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
         return;
       }
 
-      setResults(data.results);
+      // Audience chips get synthesized results: the server only returns a queued
+      // count, and the sending animation must not show success when nothing queued
+      const audienceResults: InviteResult[] = audienceKeys.map((key) => ({
+        audienceKey: key,
+        success: (data.queued || 0) > 0,
+        error: (data.queued || 0) > 0 ? undefined : t("audienceNoRecipients"),
+      }));
+      const combinedResults: InviteResult[] = [...data.results, ...audienceResults];
+      setResults(combinedResults);
 
       // Clear successful invitees from the list
       const failedEmails = new Set(
@@ -277,15 +351,18 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
       setInvitees(invitees.filter(inv => {
         if (inv.type === "email") return failedEmails.has(inv.email);
         if (inv.type === "user") return failedUserIds.has(inv.user.id);
+        // Audience chips: the blast is queued server-side — always clear them
         return false;
       }));
 
-      // Show celebration if any invites succeeded
+      // Show celebration if any invites succeeded or an audience blast was queued
       const sentSuccessfully = data.results.filter((r: InviteResult) => r.success).length;
-      if (sentSuccessfully > 0) {
+      const totalSuccess = sentSuccessfully + (data.queued || 0);
+      if (totalSuccess > 0) {
         // Close dialog immediately and show celebration
         setSending(false);
         setOpen(false);
+        setCelebrationCount(totalSuccess);
         setShowCelebration(true);
         return;
       }
@@ -308,6 +385,8 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
       setUserResults([]);
       setShowDropdown(false);
       setShowCelebration(false);
+      setCelebrationCount(0);
+      setPersonalNote("");
     }
   };
 
@@ -383,21 +462,44 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
                   <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
                 )}
 
-                {/* User search dropdown */}
-                {showDropdown && userResults.length > 0 && (
+                {/* Audience + user search dropdown (audience rows pinned on top) */}
+                {(audienceMatches.length > 0 || (showDropdown && userResults.length > 0)) && (
                   <div
                     ref={dropdownRef}
                     className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-lg overflow-hidden"
                   >
-                    {userResults.map((user, index) => (
+                    {audienceMatches.map((option, index) => (
                       <button
-                        key={user.id}
+                        key={`audience-${option.key}`}
                         type="button"
                         className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent transition-colors ${
                           index === selectedIndex ? "bg-accent" : ""
                         }`}
-                        onClick={() => addUser(user)}
+                        onClick={() => addAudience(option)}
                         onMouseEnter={() => setSelectedIndex(index)}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <Megaphone className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            @{option.key === "all" ? t("audienceEveryone").toLowerCase() : option.key}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {t("audiencePeople", { count: option.count })}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                    {showDropdown && userResults.map((user, index) => (
+                      <button
+                        key={user.id}
+                        type="button"
+                        className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent transition-colors ${
+                          index + audienceMatches.length === selectedIndex ? "bg-accent" : ""
+                        }`}
+                        onClick={() => addUser(user)}
+                        onMouseEnter={() => setSelectedIndex(index + audienceMatches.length)}
                       >
                         <Avatar className="w-8 h-8">
                           <AvatarImage src={user.avatarUrl || undefined} />
@@ -438,9 +540,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
             <div className="flex flex-wrap gap-2">
               {invitees.map((inv, index) => (
                 <span
-                  key={inv.type === "email" ? inv.email : inv.user.id}
+                  key={inv.type === "email" ? inv.email : inv.type === "user" ? inv.user.id : `aud-${inv.key}`}
                   className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-sm ${
-                    inv.type === "user"
+                    inv.type === "user" || inv.type === "audience"
                       ? "bg-primary/10 text-primary border border-primary/20"
                       : "bg-secondary text-secondary-foreground"
                   }`}
@@ -453,12 +555,22 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
                       </AvatarFallback>
                     </Avatar>
                   )}
+                  {inv.type === "audience" && <Megaphone className="w-3.5 h-3.5" />}
                   {inv.type === "user" ? (
                     <span className="flex items-center gap-1">
                       <span className="font-medium">{inv.user.displayName || `@${inv.user.username}`}</span>
                       {inv.user.displayName && (
                         <span className="text-xs text-muted-foreground">@{inv.user.username}</span>
                       )}
+                    </span>
+                  ) : inv.type === "audience" ? (
+                    <span className="flex items-center gap-1">
+                      <span className="font-medium">
+                        @{inv.key === "all" ? t("audienceEveryone").toLowerCase() : inv.key}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {t("audiencePeople", { count: inv.count })}
+                      </span>
                     </span>
                   ) : (
                     inv.email
@@ -473,6 +585,21 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
                   </button>
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Personal note — shown only for audience blasts */}
+          {invitees.some((inv) => inv.type === "audience") && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{t("personalNoteLabel")}</Label>
+              <AIEnhanceTextarea
+                value={personalNote}
+                onChange={setPersonalNote}
+                context="a short personal invitation note for a community event"
+                placeholder={t("personalNotePlaceholder")}
+                rows={2}
+                className="text-base"
+              />
             </div>
           )}
 
@@ -491,9 +618,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
                 </p>
               )}
               {results.filter(r => !r.success).map((r, idx) => (
-                <p key={r.email || r.userId || idx} className="text-sm text-destructive flex items-center gap-2">
+                <p key={r.email || r.userId || r.audienceKey || idx} className="text-sm text-destructive flex items-center gap-2">
                   <X className="w-4 h-4" />
-                  {r.email || r.userId}: {r.error}
+                  {r.email || r.userId || (r.audienceKey ? `@${r.audienceKey}` : "")}: {r.error}
                 </p>
               ))}
             </div>
@@ -506,7 +633,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
             className="w-full gap-2"
           >
             <Send className="w-4 h-4" />
-            {t("sendInvites", { count: invitees.length })}
+            {t("sendInvites", {
+              count: invitees.reduce((sum, inv) => sum + (inv.type === "audience" ? inv.count : 1), 0),
+            })}
           </Button>
         </div>
         )}
@@ -514,9 +643,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt 
     </Dialog>
 
     {/* Celebration overlay - MUST be outside Dialog for proper centering */}
-    {showCelebration && successCount > 0 && (
+    {showCelebration && celebrationCount > 0 && (
       <InviteCelebration
-        successCount={successCount}
+        successCount={celebrationCount}
         onComplete={handleCelebrationComplete}
       />
     )}

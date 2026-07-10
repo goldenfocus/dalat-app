@@ -33,7 +33,9 @@ export type NotificationType =
   | 'event_starting_nudge'
   | 'organizer_re_ping'
   // Secret address morning-of reveal
-  | 'event_address_reveal';
+  | 'event_address_reveal'
+  // Admin audience blast (@all / @games)
+  | 'audience_invitation';
 
 export type NotificationChannel = 'in_app' | 'push' | 'email';
 
@@ -55,6 +57,10 @@ export interface EmailNotificationContent extends NotificationContent {
   html?: string;
   text?: string; // Plain text alternative for better deliverability
   replyTo?: string;
+  /** HTML-safe overrides for the default generator. title/body stay plain text
+   *  (used verbatim in the text/plain MIME part); these are used in the HTML part. */
+  titleHtml?: string;
+  bodyHtml?: string;
 }
 
 export interface PushNotificationContent extends NotificationContent {
@@ -200,6 +206,15 @@ export interface UserInvitationPayload extends EventNotificationPayload {
   startsAt: string;
 }
 
+export interface AudienceInvitationPayload extends EventNotificationPayload {
+  type: 'audience_invitation';
+  inviterName: string;
+  startsAt: string;
+  /** event_invitations.token — powers the no-login one-tap RSVP link in email */
+  token: string;
+  personalNote?: string | null;
+}
+
 export interface TribeJoinRequestPayload extends BaseNotificationPayload {
   type: 'tribe_join_request';
   requesterName: string;
@@ -333,6 +348,7 @@ export type NotificationPayload =
   | FeedbackRequestPayload
   | EventInvitationPayload
   | UserInvitationPayload
+  | AudienceInvitationPayload
   | TribeJoinRequestPayload
   | TribeRequestApprovedPayload
   | TribeRequestRejectedPayload

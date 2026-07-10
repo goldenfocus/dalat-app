@@ -69,6 +69,9 @@ const DEFAULT_CHANNELS: Record<NotificationType, NotificationChannel[]> = {
 
   // Secret address reveal - all channels (guests must not miss the address)
   event_address_reveal: ['in_app', 'push', 'email'],
+
+  // Admin audience blasts - all channels; email is the one that reaches dormant users
+  audience_invitation: ['in_app', 'push', 'email'],
 };
 
 /**

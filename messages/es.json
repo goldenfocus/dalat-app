@@ -1129,7 +1129,12 @@
     ],
     "usernamePlaceholder": "Buscar por nombre o usuario",
     "usernameHint": "Escribe al menos 2 caracteres para buscar",
-    "noInvitees": "Por favor agrega al menos una persona para invitar"
+    "noInvitees": "Por favor agrega al menos una persona para invitar",
+    "audienceEveryone": "Todos",
+    "audiencePeople": "{count} personas",
+    "personalNoteLabel": "Añadir una nota personal",
+    "personalNotePlaceholder": "¿Por qué deberían venir? (opcional)",
+    "audienceNoRecipients": "Todos aquí ya fueron invitados o contactados recientemente"
   },
   "moments": {
     "moments": "Momentos",

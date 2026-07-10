@@ -1129,7 +1129,12 @@
     ],
     "usernamePlaceholder": "按姓名或用户名搜索",
     "usernameHint": "请输入至少2个字符进行搜索",
-    "noInvitees": "请添加至少一位邀请对象"
+    "noInvitees": "请添加至少一位邀请对象",
+    "audienceEveryone": "所有人",
+    "audiencePeople": "{count} 人",
+    "personalNoteLabel": "添加个人留言",
+    "personalNotePlaceholder": "为什么值得参加？（可选）",
+    "audienceNoRecipients": "这里的所有人都已被邀请或最近已收到通知"
   },
   "moments": {
     "moments": "瞬间",

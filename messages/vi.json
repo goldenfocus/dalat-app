@@ -1129,7 +1129,12 @@
     ],
     "usernamePlaceholder": "Tìm theo tên hoặc tên người dùng",
     "usernameHint": "Nhập ít nhất 2 ký tự để tìm kiếm",
-    "noInvitees": "Vui lòng thêm ít nhất một người để mời"
+    "noInvitees": "Vui lòng thêm ít nhất một người để mời",
+    "audienceEveryone": "Tất cả mọi người",
+    "audiencePeople": "{count} người",
+    "personalNoteLabel": "Thêm lời nhắn cá nhân",
+    "personalNotePlaceholder": "Vì sao họ nên tham gia? (không bắt buộc)",
+    "audienceNoRecipients": "Mọi người ở đây đã được mời hoặc đã nhận thông báo gần đây"
   },
   "moments": {
     "moments": "Khoảnh khắc",

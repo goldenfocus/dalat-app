@@ -1129,7 +1129,12 @@
     ],
     "usernamePlaceholder": "ค้นหาด้วยชื่อหรือชื่อผู้ใช้",
     "usernameHint": "พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหา",
-    "noInvitees": "กรุณาเพิ่มอย่างน้อยหนึ่งคนเพื่อเชิญ"
+    "noInvitees": "กรุณาเพิ่มอย่างน้อยหนึ่งคนเพื่อเชิญ",
+    "audienceEveryone": "ทุกคน",
+    "audiencePeople": "{count} คน",
+    "personalNoteLabel": "เพิ่มข้อความส่วนตัว",
+    "personalNotePlaceholder": "ทำไมถึงควรมา? (ไม่บังคับ)",
+    "audienceNoRecipients": "ทุกคนที่นี่ได้รับคำเชิญหรือการแจ้งเตือนไปแล้วเมื่อเร็ว ๆ นี้"
   },
   "moments": {
     "moments": "โมเมนต์",

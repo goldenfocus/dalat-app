@@ -1129,7 +1129,12 @@
     ],
     "usernamePlaceholder": "Поиск по имени или логину",
     "usernameHint": "Введите минимум 2 символа для поиска",
-    "noInvitees": "Добавьте хотя бы одного человека для приглашения"
+    "noInvitees": "Добавьте хотя бы одного человека для приглашения",
+    "audienceEveryone": "Все пользователи",
+    "audiencePeople": "{count} чел.",
+    "personalNoteLabel": "Добавить личное сообщение",
+    "personalNotePlaceholder": "Почему стоит прийти? (необязательно)",
+    "audienceNoRecipients": "Все здесь уже приглашены или недавно получали уведомление"
   },
   "moments": {
     "moments": "Моменты",

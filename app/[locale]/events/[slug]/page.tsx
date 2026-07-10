@@ -908,6 +908,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 eventTitle={event.title}
                 eventDescription={event.description}
                 startsAt={event.starts_at}
+                isAdmin={isAdmin}
               />
               <EventSettingsSheet
                 eventId={event.id}

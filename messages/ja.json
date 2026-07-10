@@ -1129,7 +1129,12 @@
     ],
     "usernamePlaceholder": "名前またはユーザー名で検索",
     "usernameHint": "検索するには2文字以上入力してください",
-    "noInvitees": "招待する人を少なくとも1人追加してください"
+    "noInvitees": "招待する人を少なくとも1人追加してください",
+    "audienceEveryone": "全員",
+    "audiencePeople": "{count}人",
+    "personalNoteLabel": "メッセージを追加",
+    "personalNotePlaceholder": "参加すべき理由は？（任意）",
+    "audienceNoRecipients": "全員がすでに招待済みか、最近通知を受け取っています"
   },
   "moments": {
     "moments": "モーメント",

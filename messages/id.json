@@ -1129,7 +1129,12 @@
     ],
     "usernamePlaceholder": "Cari berdasarkan nama atau username",
     "usernameHint": "Ketik minimal 2 karakter untuk mencari",
-    "noInvitees": "Silakan tambahkan setidaknya satu orang untuk diundang"
+    "noInvitees": "Silakan tambahkan setidaknya satu orang untuk diundang",
+    "audienceEveryone": "Semua orang",
+    "audiencePeople": "{count} orang",
+    "personalNoteLabel": "Tambahkan catatan pribadi",
+    "personalNotePlaceholder": "Kenapa mereka harus datang? (opsional)",
+    "audienceNoRecipients": "Semua orang di sini sudah diundang atau dihubungi baru-baru ini"
   },
   "moments": {
     "moments": "Momen",

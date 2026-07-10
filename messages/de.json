@@ -1129,7 +1129,12 @@
     ],
     "usernamePlaceholder": "Nach Name oder Benutzername suchen",
     "usernameHint": "Mindestens 2 Zeichen eingeben, um zu suchen",
-    "noInvitees": "Bitte füge mindestens eine Person hinzu, die eingeladen werden soll"
+    "noInvitees": "Bitte füge mindestens eine Person hinzu, die eingeladen werden soll",
+    "audienceEveryone": "Alle",
+    "audiencePeople": "{count} Personen",
+    "personalNoteLabel": "Persönliche Nachricht hinzufügen",
+    "personalNotePlaceholder": "Warum sollten sie kommen? (optional)",
+    "audienceNoRecipients": "Alle hier wurden bereits eingeladen oder kürzlich benachrichtigt"
   },
   "moments": {
     "moments": "Moments",
