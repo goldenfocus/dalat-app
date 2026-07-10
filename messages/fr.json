@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "Perdu dans la brume ?",
+    "description": "Comme un détour dans un coin inexploré de Đà Lạt, cette page n'existe pas. Mais le chemin du retour est à un clic.",
+    "backHome": "Retour à l'accueil",
+    "tagline": "Événements · Gens · Moments · Amour · Đà Lạt 🇻🇳"
+  },
   "hero": {
     "headline": "À Đà Lạt en ce moment ✨",
     "subtitle": "Où la ville se retrouve",

@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "Tersesat dalam kabut?",
+    "description": "Seperti tersasar ke sudut Đà Lạt yang belum terjamah, halaman ini tidak ada. Tapi jalan pulang hanya satu klik saja.",
+    "backHome": "Kembali ke Beranda",
+    "tagline": "Acara · Orang · Momen · Cinta · Đà Lạt 🇻🇳"
+  },
   "hero": {
     "headline": "Temukan acara. Jelajahi tempat.",
     "subtitle": "Bergabunglah dengan komunitas di Đà Lạt",

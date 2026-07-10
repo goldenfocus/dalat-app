@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "Lost in the mist?",
+    "description": "Like wandering into an undiscovered corner of Đà Lạt, this page doesn't exist. But the journey home is just a click away.",
+    "backHome": "Back to Home",
+    "tagline": "Events · People · Moments · Love · Đà Lạt 🇻🇳"
+  },
   "hero": {
     "headline": "Happening in Đà Lạt ✨",
     "subtitle": "Where the city comes together",

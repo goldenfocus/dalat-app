@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "¿Perdido en la niebla?",
+    "description": "Como adentrarse en un rincón inexplorado de Đà Lạt, esta página no existe. Pero el camino a casa está a un solo clic.",
+    "backHome": "Volver al inicio",
+    "tagline": "Eventos · Gente · Momentos · Amor · Đà Lạt 🇻🇳"
+  },
   "hero": {
     "headline": "Encuentra eventos. Descubre lugares.",
     "subtitle": "Únete a la comunidad en Đà Lạt",
