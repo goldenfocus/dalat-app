@@ -200,7 +200,10 @@ if (required.size < 20) {
 let declared;
 try {
   const source = readFileSync(NAMESPACES_FILE, "utf8");
-  const match = source.match(/CLIENT_NAMESPACES[^=]*=\s*\[([\s\S]*?)\]/);
+  // Word-boundary + export const so CORE_CLIENT_NAMESPACES is not matched.
+  const match = source.match(
+    /\bexport const CLIENT_NAMESPACES\s*=\s*\[([\s\S]*?)\]/
+  );
   if (!match) throw new Error("CLIENT_NAMESPACES array not found");
   declared = new Set([...match[1].matchAll(/["'`]([^"'`]+)["'`]/g)].map((x) => x[1]));
 } catch (err) {

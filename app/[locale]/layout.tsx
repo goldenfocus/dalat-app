@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ThemeProvider } from "next-themes";
-import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { GlobalFooter } from "@/components/global-footer";
 import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-context";
 import { routing, buildLocales, type Locale } from "@/lib/i18n/routing";
-import { CLIENT_NAMESPACES } from "@/lib/i18n/client-namespaces";
+import { CORE_CLIENT_NAMESPACES } from "@/lib/i18n/client-namespaces";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { QueryProvider } from "@/lib/providers/query-provider";
 import { LocalePreloader } from "@/components/locale-preloader";
 import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { ProgressiveIntlProvider } from "@/components/progressive-intl-provider";
 import {
   DeferredBadgeClearer,
   DeferredGodModeIndicator,
@@ -88,22 +88,22 @@ export default async function LocaleLayout({ children, params }: Props) {
   // Enable static rendering
   setRequestLocale(locale);
 
-  // Pass only the namespaces client components actually use — the full
-  // messages object would be serialized into every page's RSC payload.
-  // Guarded by scripts/check-client-namespaces.mjs in prebuild.
+  // Ship only shell/homepage namespaces in the first RSC payload.
+  // ProgressiveIntlProvider loads the rest after paint (see CORE_CLIENT_NAMESPACES).
+  // Full CLIENT_NAMESPACES list still enforced by scripts/check-client-namespaces.mjs.
   const messages = await getMessages();
-  const clientMessages = Object.fromEntries(
-    CLIENT_NAMESPACES.filter((ns) => {
+  const coreMessages = Object.fromEntries(
+    CORE_CLIENT_NAMESPACES.filter((ns) => {
       if (ns in messages) return true;
       console.error(
-        `[layout] client namespace "${ns}" missing from "${locale}" messages — client components using it will crash`
+        `[layout] core client namespace "${ns}" missing from "${locale}" messages — shell will crash`
       );
       return false;
-    }).map((ns) => [ns, messages[ns]])
+    }).map((ns) => [ns, messages[ns as keyof typeof messages]])
   );
 
   return (
-    <NextIntlClientProvider locale={locale} messages={clientMessages}>
+    <ProgressiveIntlProvider locale={locale as Locale} coreMessages={coreMessages}>
       <script
         type="speculationrules"
         dangerouslySetInnerHTML={{ __html: speculationRules }}
@@ -152,6 +152,6 @@ export default async function LocaleLayout({ children, params }: Props) {
           </ScrollRestorationProvider>
         </ThemeProvider>
       </QueryProvider>
-    </NextIntlClientProvider>
+    </ProgressiveIntlProvider>
   );
 }

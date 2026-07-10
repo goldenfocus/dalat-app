@@ -27,7 +27,7 @@ interface MomentsStripProps {
  * Desktop: Elegant card-based layout with hover effects.
  */
 export function MomentsStrip({ initialMoments = [], title, className }: MomentsStripProps) {
-  const t = useTranslations();
+  const t = useTranslations("moments");
   const router = useRouter();
   const [moments, setMoments] = useState(initialMoments);
   const [sort, setSort] = useState<MomentStripSort>('event_date');
@@ -98,7 +98,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
         <div className="flex items-center gap-2">
           <Images className="w-4 h-4 text-muted-foreground hidden lg:block" />
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            {title || t("moments.strip.title")}
+            {title || t("strip.title")}
           </h2>
           {/* Subtle sort toggle */}
           <span className="text-muted-foreground/50 hidden sm:inline">·</span>
@@ -111,7 +111,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
               )}
               disabled={isLoading}
             >
-              {t("moments.strip.byEvent")}
+              {t("strip.byEvent")}
             </button>
             <span className="text-muted-foreground/30">/</span>
             <button
@@ -122,7 +122,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
               )}
               disabled={isLoading}
             >
-              {t("moments.strip.recent")}
+              {t("strip.recent")}
             </button>
           </div>
         </div>
@@ -130,7 +130,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
           href="/moments"
           className="text-xs lg:text-sm text-muted-foreground hover:text-foreground flex items-center gap-0.5 transition-colors"
         >
-          {t("moments.strip.seeAll")}
+          {t("strip.seeAll")}
           <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
         </Link>
       </div>

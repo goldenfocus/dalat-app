@@ -1,8 +1,27 @@
 // Top-level message namespaces required by "use client" components.
-// The [locale] layout passes ONLY these namespaces to NextIntlClientProvider,
-// keeping the rest of messages/*.json out of every page's RSC payload.
-// Generated + enforced by scripts/check-client-namespaces.mjs (runs in prebuild):
-// it fails the build if a client component uses a namespace missing here.
+// The [locale] layout initially ships CORE_CLIENT_NAMESPACES in the RSC payload
+// (homepage shell + global chrome). ProgressiveIntlProvider then merges the
+// rest of CLIENT_NAMESPACES after first paint so deep pages still work.
+// Enforced by scripts/check-client-namespaces.mjs (runs in prebuild).
+export const CORE_CLIENT_NAMESPACES = [
+  "auth",
+  "common",
+  "errors",
+  "events",
+  "home",
+  "install",
+  "moments",
+  "nav",
+  "notifications",
+  "playlist",
+  "rsvp",
+  "series",
+  "translations",
+  "tribes",
+  "userMenu",
+  "viewToggle",
+] as const;
+
 export const CLIENT_NAMESPACES = [
   "activity",
   "archive",
