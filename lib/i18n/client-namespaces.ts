@@ -34,6 +34,7 @@ export const CLIENT_NAMESPACES = [
   "moments",
   "nav",
   "news",
+  "notFound",
   "notifications",
   "onboarding",
   "organizer",

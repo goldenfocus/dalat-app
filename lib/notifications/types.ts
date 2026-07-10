@@ -376,6 +376,9 @@ export type NotificationPayload =
 export interface NotifyOptions {
   // Override default channels for this notification
   channels?: NotificationChannel[];
+  // Restrict to a subset of channels — intersects with preference-derived
+  // channels (unlike `channels`, which overrides preferences entirely)
+  onlyChannels?: NotificationChannel[];
   // Skip preference check (for critical notifications)
   skipPreferences?: boolean;
   // Schedule for later

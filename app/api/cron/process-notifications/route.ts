@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { notify } from '@/lib/notifications';
-import type { NotificationPayload } from '@/lib/notifications/types';
+import type { NotificationPayload, NotificationChannel } from '@/lib/notifications/types';
 import type { Locale } from '@/lib/types';
 
 export const maxDuration = 300;
@@ -190,6 +190,11 @@ export async function GET(request: Request) {
       if (!claimed || claimed.length === 0) continue; // another run got it
 
       const payload = scheduled.payload as NotificationPayload;
+      // Rows can restrict delivery to specific channels (e.g. audience blasts
+      // schedule email-only rows — in-app/push already went out at blast time)
+      const { onlyChannels } = scheduled.payload as {
+        onlyChannels?: NotificationChannel[];
+      };
 
       // Secret address reveal: per-event row — fan out to the current
       // going roster instead of sending to a single user
@@ -228,7 +233,7 @@ export async function GET(request: Request) {
       }
 
       // Send the notification
-      const notifyResult = await notify(payload);
+      const notifyResult = await notify(payload, onlyChannels ? { onlyChannels } : {});
 
       if (notifyResult.success) {
         const { error: sentError } = await supabase

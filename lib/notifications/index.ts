@@ -77,7 +77,7 @@ export async function notify(
   payload: NotificationPayload,
   options: NotifyOptions = {}
 ): Promise<NotifyResult> {
-  const { channels: forcedChannels, skipPreferences } = options;
+  const { channels: forcedChannels, skipPreferences, onlyChannels } = options;
 
   console.log(`[notify] Starting notification: ${payload.type} for user ${payload.userId}`);
 
@@ -91,6 +91,10 @@ export async function notify(
     enabledChannels = ['in_app', 'push'];
   } else {
     enabledChannels = await getChannelsForNotification(payload.userId, payload.type);
+  }
+
+  if (onlyChannels) {
+    enabledChannels = enabledChannels.filter((c) => onlyChannels.includes(c));
   }
 
   if (enabledChannels.length === 0) {

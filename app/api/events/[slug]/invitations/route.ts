@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceRoleClient } from '@supabase/supabase-js';
-import { notifyUserInvitation, sendEmailInvitation } from '@/lib/notifications';
+import { notify, notifyUserInvitation, sendEmailInvitation } from '@/lib/notifications';
+import type { AudienceInvitationPayload } from '@/lib/notifications';
 import {
   isValidAudienceKey,
   resolveAudienceMembers,
@@ -9,6 +10,10 @@ import {
   subtractExclusions,
 } from '@/lib/audiences/resolve';
 import type { Locale, InviteQuotaCheck } from '@/lib/types';
+
+// Manual email invites pace Resend inline (1s/email) and audience blasts run an
+// after() fan-out — both need more than the default function window
+export const maxDuration = 300;
 
 interface InviteRequest {
   emails?: Array<{ email: string; name?: string }>;
@@ -375,15 +380,31 @@ export async function POST(
         }
 
         if (inserted && inserted.length > 0) {
-          // Fan out via scheduled_notifications — /api/cron/process-notifications
-          // delivers due rows every 5 min through notify() with built-in retries.
-          // Stagger scheduled_for to pace Resend (~2 req/s); rows beyond the daily
-          // email cap start tomorrow. Default sized for the Pro plan (50k/mo) —
-          // set AUDIENCE_BLAST_DAILY_EMAIL_CAP=90 if ever back on the free tier.
+          // Two-track fan-out: email goes via scheduled_notifications —
+          // /api/cron/process-notifications delivers due rows every 5 min through
+          // notify() with built-in retries, staggered to pace Resend (~2 req/s);
+          // rows beyond the daily email cap start tomorrow. Default sized for the
+          // Pro plan (50k/mo) — set AUDIENCE_BLAST_DAILY_EMAIL_CAP=90 if ever back
+          // on the free tier. In-app + push have no rate limit and are sent
+          // immediately after the response (see after() below).
           const EMAILS_PER_DAY = Number(process.env.AUDIENCE_BLAST_DAILY_EMAIL_CAP ?? 5000);
           const startMs = Date.now();
           const DAY_MS = 24 * 60 * 60 * 1000;
           const note = personalNote?.trim() || null;
+
+          const payloadFor = (inv: { claimed_by: string; token: string }): AudienceInvitationPayload => ({
+            type: 'audience_invitation',
+            userId: inv.claimed_by,
+            locale: (profileById.get(inv.claimed_by)?.locale as Locale) || 'en',
+            eventId: event.id,
+            eventSlug: event.slug,
+            eventTitle: event.title,
+            startsAt: event.starts_at,
+            locationName: event.location_name,
+            inviterName,
+            token: inv.token,
+            personalNote: note,
+          });
 
           const scheduledRows = inserted.map((inv: { id: string; claimed_by: string; token: string }, i: number) => {
             const dayOffset = Math.floor(i / EMAILS_PER_DAY) * DAY_MS;
@@ -395,19 +416,9 @@ export async function POST(
               status: 'pending',
               reference_type: 'audience_blast',
               reference_id: event.id,
-              payload: {
-                type: 'audience_invitation',
-                userId: inv.claimed_by,
-                locale: (profileById.get(inv.claimed_by)?.locale as Locale) || 'en',
-                eventId: event.id,
-                eventSlug: event.slug,
-                eventTitle: event.title,
-                startsAt: event.starts_at,
-                locationName: event.location_name,
-                inviterName,
-                token: inv.token,
-                personalNote: note,
-              },
+              // onlyChannels: the cron delivers email only — in-app + push
+              // already went out instantly below (prevents double delivery)
+              payload: { ...payloadFor(inv), onlyChannels: ['email'] },
             };
           });
 
@@ -434,6 +445,30 @@ export async function POST(
             .from('event_invitations')
             .update({ status: 'sent', sent_at: new Date().toISOString() })
             .in('id', inserted.map((r: { id: string }) => r.id));
+
+          // In-app + push land instantly — the bell/PWA ping should not wait on
+          // the email stagger. Best-effort (no retry): the scheduled email above
+          // is the guaranteed-delivery channel.
+          const instantRecipients = [...inserted];
+          after(async () => {
+            const BATCH = 15;
+            for (let i = 0; i < instantRecipients.length; i += BATCH) {
+              const batch = instantRecipients.slice(i, i + BATCH);
+              await Promise.all(
+                batch.map(async (inv: { claimed_by: string; token: string }) => {
+                  try {
+                    await notify(payloadFor(inv), { onlyChannels: ['in_app', 'push'] });
+                  } catch (err) {
+                    console.error(
+                      '[invitations] instant in-app/push failed for user',
+                      inv.claimed_by,
+                      err instanceof Error ? err.message : err
+                    );
+                  }
+                })
+              );
+            }
+          });
 
           audienceQueued = inserted.length;
         }
