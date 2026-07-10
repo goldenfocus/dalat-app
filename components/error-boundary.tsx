@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, type ReactNode } from "react";
+import { unstable_rethrow, usePathname } from "next/navigation";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -9,18 +10,26 @@ interface Props {
   fallback?: ReactNode;
 }
 
+interface InnerProps extends Props {
+  pathname: string | null;
+}
+
 interface State {
   hasError: boolean;
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
+class ErrorBoundaryInner extends Component<InnerProps, State> {
+  constructor(props: InnerProps) {
     super(props);
     this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): State {
+    // notFound()/redirect() throw control-flow errors that Next.js must
+    // handle itself — catching them here would replace the 404 page with
+    // a generic error screen.
+    unstable_rethrow(error);
     return { hasError: true, error };
   }
 
@@ -30,6 +39,15 @@ export class ErrorBoundary extends Component<Props, State> {
       // TODO: Send to error tracking service (Sentry, etc.)
     }
     console.error("ErrorBoundary caught:", error, errorInfo);
+  }
+
+  componentDidUpdate(prevProps: InnerProps) {
+    // This boundary lives in the locale layout, which persists across
+    // client-side navigations — without this reset, one caught error
+    // would keep showing the error screen on every subsequent route.
+    if (this.state.hasError && prevProps.pathname !== this.props.pathname) {
+      this.setState({ hasError: false, error: null });
+    }
   }
 
   handleReset = () => {
@@ -84,4 +102,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return this.props.children;
   }
+}
+
+export function ErrorBoundary({ children, fallback }: Props) {
+  const pathname = usePathname();
+  return (
+    <ErrorBoundaryInner pathname={pathname} fallback={fallback}>
+      {children}
+    </ErrorBoundaryInner>
+  );
 }
