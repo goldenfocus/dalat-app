@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link, type Locale } from "@/lib/i18n/routing";
+import { Link, buildLocales, type Locale } from "@/lib/i18n/routing";
 import { createStaticClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -90,8 +90,7 @@ type PageProps = {
 };
 
 export async function generateStaticParams() {
-  const locales: Locale[] = ["en", "vi", "ko", "zh", "ru", "fr", "ja", "ms", "th", "de", "es", "id"];
-  return locales.flatMap((locale) =>
+  return buildLocales.flatMap((locale) =>
     EVENT_TAGS.map((tag) => ({ locale, tag }))
   );
 }

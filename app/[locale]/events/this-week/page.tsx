@@ -4,7 +4,7 @@ import { Link } from "@/lib/i18n/routing";
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { locales, type Locale } from "@/lib/i18n/routing";
+import { buildLocales, type Locale } from "@/lib/i18n/routing";
 import { createStaticClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -17,7 +17,7 @@ type PageProps = {
 };
 
 export async function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

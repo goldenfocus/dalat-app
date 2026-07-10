@@ -9,7 +9,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { VenueListItem, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
-import { locales } from "@/lib/i18n/routing";
+import { buildLocales } from "@/lib/i18n/routing";
 
 const SITE_URL = "https://dalat.app";
 const VENUE_TYPE = "park" as const;
@@ -20,7 +20,7 @@ type PageProps = {
 
 // Generate static pages for all locales
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 // SEO-optimized metadata targeting "dalat parks" keywords

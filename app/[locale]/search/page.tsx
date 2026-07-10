@@ -1,6 +1,6 @@
 import { Search } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { type Locale, locales } from "@/lib/i18n/routing";
+import { type Locale, buildLocales } from "@/lib/i18n/routing";
 import { EventSearchBar } from "@/components/events/event-search-bar";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
@@ -10,7 +10,7 @@ type PageProps = {
 };
 
 export async function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

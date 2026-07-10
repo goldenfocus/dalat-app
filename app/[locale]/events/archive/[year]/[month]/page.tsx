@@ -4,7 +4,7 @@ import { Link } from "@/lib/i18n/routing";
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { locales, type Locale } from "@/lib/i18n/routing";
+import { buildLocales, type Locale } from "@/lib/i18n/routing";
 import { createStaticClient } from "@/lib/supabase/server";
 import { MonthNavigation } from "@/components/events/month-navigation";
 import { ArchiveEventsList } from "@/components/events/archive-events-list";
@@ -36,7 +36,7 @@ export async function generateStaticParams() {
 
   const params: { locale: string; year: string; month: string }[] = [];
 
-  for (const locale of locales) {
+  for (const locale of buildLocales) {
     for (const { year, month } of monthsWithEvents) {
       params.push({
         locale,

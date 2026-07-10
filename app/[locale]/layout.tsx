@@ -5,7 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { GlobalFooter } from "@/components/global-footer";
 import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-context";
-import { routing, type Locale } from "@/lib/i18n/routing";
+import { routing, buildLocales, type Locale } from "@/lib/i18n/routing";
 import { CLIENT_NAMESPACES } from "@/lib/i18n/client-namespaces";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
 import { QueryProvider } from "@/lib/providers/query-provider";
@@ -43,9 +43,9 @@ interface Props {
   params: Promise<{ locale: string }>;
 }
 
-// Generate static params for all locales
+// Prerender only buildLocales; the rest render on-demand via ISR
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 // Generate metadata with hreflang for all 12 locales (SEO)

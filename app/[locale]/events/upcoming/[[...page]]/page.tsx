@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
-import { locales, type Locale } from "@/lib/i18n/routing";
+import { buildLocales, type Locale } from "@/lib/i18n/routing";
 import { createStaticClient } from "@/lib/supabase/server";
 import { EventGrid } from "@/components/events/event-grid";
 import { getCachedEventSocialBatch } from "@/lib/cache/server-cache";
@@ -35,7 +35,7 @@ function getPageNumber(pageParam: string[] | undefined): number {
 export async function generateStaticParams() {
   const params: { locale: string; page: string[] | undefined }[] = [];
 
-  for (const locale of locales) {
+  for (const locale of buildLocales) {
     // Page 1 (no page param)
     params.push({ locale, page: undefined });
     // Pages 2-3

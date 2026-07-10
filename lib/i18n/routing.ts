@@ -6,6 +6,12 @@ import { createNavigation } from 'next-intl/navigation';
 export const locales = ['en', 'vi', 'ko', 'zh', 'ru', 'fr', 'ja', 'ms', 'th', 'de', 'es', 'id'] as const;
 export type Locale = (typeof locales)[number];
 
+// Locales prerendered at build time (generateStaticParams). The other locales
+// still work — dynamicParams is true everywhere, so they render on first
+// request via ISR and are cached after that. Keeping this list short is what
+// keeps Vercel builds fast: every entry multiplies the static page count.
+export const buildLocales = ['en', 'vi'] as const satisfies readonly Locale[];
+
 export const routing = defineRouting({
   locales,
   defaultLocale: 'en',
