@@ -45,10 +45,13 @@ export default async function TribesPage({ params }: PageProps) {
   return (
     <main className="container max-w-6xl mx-auto px-4 py-8">
       <JsonLd
-        data={generateBreadcrumbSchema([
-          { name: "Home", url: `https://dalat.app/${locale}` },
-          { name: t("discoverTitle"), url: `https://dalat.app/${locale}/tribes` },
-        ])}
+        data={generateBreadcrumbSchema(
+          [
+            { name: "Home", url: `https://dalat.app/${locale}` },
+            { name: t("discoverTitle"), url: `https://dalat.app/${locale}/tribes` },
+          ],
+          locale
+        )}
       />
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div className="space-y-1">
