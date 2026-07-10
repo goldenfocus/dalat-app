@@ -243,6 +243,13 @@ async function cycle() {
   }
   log(`[worker] ${jobs.length} job(s)`);
   for (const job of jobs) {
+    // A user may be watching a dialog — interactive jobs jump the line
+    // between covers so a backfill batch can't block them for minutes.
+    try {
+      await imageCycle();
+    } catch (err) {
+      log('[worker] image cycle error (between covers):', err.stack || err);
+    }
     const failCount = failures.get(job.id) || 0;
     if (failCount >= 3) {
       if (failCount === 3) {
