@@ -9,7 +9,7 @@ import {
   generateSpeakableSchema,
 } from "@/lib/structured-data";
 import { Music, Mic2, ExternalLink, Clock, User, Disc, Globe } from "lucide-react";
-import { formatDuration } from "@/lib/audio-metadata";
+import { formatDuration } from "@/lib/format-duration";
 import { getTrackLyricsTranslation } from "@/lib/translations";
 import type { ContentLocale } from "@/lib/types";
 import { LOCALE_FLAGS, LOCALE_NAMES } from "@/lib/types";

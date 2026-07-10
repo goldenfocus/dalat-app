@@ -84,6 +84,12 @@ export default function RootLayout({
         {/* Critical resource hints for faster connections */}
         <link
           rel="preconnect"
+          href="https://cdn.dalat.app"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://cdn.dalat.app" />
+        <link
+          rel="preconnect"
           href="https://aljcmodwjqlznzcydyor.supabase.co"
           crossOrigin="anonymous"
         />

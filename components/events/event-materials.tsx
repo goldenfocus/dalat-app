@@ -19,7 +19,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { EventMaterial, MaterialType } from "@/lib/types";
-import { formatDuration } from "@/lib/audio-metadata";
+import { formatDuration } from "@/lib/format-duration";
 
 interface EventMaterialsProps {
   materials: EventMaterial[];

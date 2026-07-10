@@ -1,23 +1,16 @@
-import { createStaticClient } from "@/lib/supabase/server";
+import { getCachedHomepageMomentsStrip } from "@/lib/cache/server-cache";
 import { MomentsStrip } from "./moments-strip";
 
 /**
  * Server component wrapper to fetch moments strip data.
  * Separated from the client component to avoid "use client" bundling issues.
  * Default sort is 'event_date' (by when the event happened).
+ * Uses unstable_cache so ISR regenerations don't hit Supabase every time.
  */
 export async function MomentsStripServer() {
-  const supabase = createStaticClient();
-  if (!supabase) return null;
+  const moments = await getCachedHomepageMomentsStrip(12, "event_date");
 
-  // Fetch with default 'event_date' sort - client can refetch with different sort
-  const { data: moments, error } = await supabase.rpc('get_homepage_moments_strip', {
-    p_user_id: null,
-    p_limit: 12,
-    p_sort: 'event_date',
-  });
-
-  if (error || !moments || moments.length === 0) {
+  if (!moments || moments.length === 0) {
     return null;
   }
 

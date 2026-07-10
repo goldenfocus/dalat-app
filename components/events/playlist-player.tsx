@@ -19,7 +19,7 @@ import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { formatDuration } from "@/lib/audio-metadata";
+import { formatDuration } from "@/lib/format-duration";
 import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
 
 /** Time display with toggle between elapsed/remaining */

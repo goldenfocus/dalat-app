@@ -2,9 +2,15 @@
  * Audio metadata extraction utility
  * Extracts ID3 tags (title, artist, album, duration, album art) from audio files
  * Uses music-metadata package which supports MP3, M4A, FLAC, OGG, etc.
+ *
+ * IMPORTANT: music-metadata is dynamically imported so UI-only call sites
+ * that only need formatDuration do not pull ~1MB of parse code into the
+ * global layout chunk (MiniPlayer lives on every page).
  */
 
-import * as mm from "music-metadata";
+import { formatDuration } from "@/lib/format-duration";
+
+export { formatDuration };
 
 export interface AudioMetadata {
   title: string | null;
@@ -26,6 +32,9 @@ export interface AudioMetadata {
  */
 export async function extractAudioMetadata(file: File): Promise<AudioMetadata> {
   try {
+    // Dynamic import — keep music-metadata out of the shared client graph
+    const mm = await import("music-metadata");
+
     // Read file as ArrayBuffer for music-metadata
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
@@ -134,22 +143,6 @@ export function albumArtToDataUrl(
   if (!blob) return null;
 
   return URL.createObjectURL(blob);
-}
-
-/**
- * Format duration in seconds to MM:SS or HH:MM:SS
- */
-export function formatDuration(seconds: number | null): string {
-  if (seconds === null || seconds === 0) return "";
-
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  }
-  return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
 
 /**

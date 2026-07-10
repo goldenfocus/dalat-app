@@ -36,7 +36,13 @@ export function ForYouSection() {
   }, []);
 
   useEffect(() => {
+    // Defer personalized fetches so they don't compete with LCP/hydration.
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
     async function fetchRecommendations() {
+      if (cancelled) return;
       const supabase = createClient();
 
       const { data: { session } } = await supabase.auth.getSession();
@@ -44,10 +50,11 @@ export function ForYouSection() {
 
       // Only show personalized recommendations for logged-in users
       if (!user) {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
         return;
       }
 
+      if (cancelled) return;
       setUserId(user.id);
 
       const { data, error } = await supabase.rpc("get_recommended_events", {
@@ -93,10 +100,25 @@ export function ForYouSection() {
         setFriendsData(friendsMap);
       }
 
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
 
-    fetchRecommendations();
+    const start = () => {
+      void fetchRecommendations();
+    };
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(start, { timeout: 2000 });
+    } else {
+      timeoutId = setTimeout(start, 150);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleDismiss() {

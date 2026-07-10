@@ -7,6 +7,7 @@ import type {
   EventSocial,
   ContentLocale,
   TranslationContentType,
+  MomentStripItem,
 } from "@/lib/types";
 
 /**
@@ -451,5 +452,37 @@ export const getCachedHomepageConfig = unstable_cache(
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.homepageConfig],
+  }
+);
+
+/**
+ * Cached homepage moments strip (anonymous sort defaults).
+ * Avoids a cold Supabase RPC on every ISR regeneration.
+ */
+export const getCachedHomepageMomentsStrip = unstable_cache(
+  async (
+    limit: number = 12,
+    sort: "event_date" | "recent" = "event_date"
+  ): Promise<MomentStripItem[]> => {
+    const supabase = createStaticClient();
+    if (!supabase) return [];
+
+    const { data, error } = await supabase.rpc("get_homepage_moments_strip", {
+      p_user_id: null,
+      p_limit: limit,
+      p_sort: sort,
+    });
+
+    if (error) {
+      console.error("Error fetching homepage moments strip:", error);
+      return [];
+    }
+
+    return (data as MomentStripItem[]) ?? [];
+  },
+  ["homepage-moments-strip-v1"],
+  {
+    revalidate: 60,
+    tags: [CACHE_TAGS.moments],
   }
 );
