@@ -147,6 +147,9 @@ export async function fetchArticle(url: string): Promise<GovArticle | null> {
       content = articleMatch ? articleMatch[1] : "";
     }
 
+    // Keep the raw content HTML for image extraction before stripping tags
+    const rawContent = content;
+
     // Strip HTML tags but preserve line breaks
     content = content
       .replace(/<br\s*\/?>/gi, "\n")
@@ -164,15 +167,31 @@ export async function fetchArticle(url: string): Promise<GovArticle | null> {
       .replace(/\n{3,}/g, "\n\n")
       .trim();
 
-    // Extract image URLs
+    // Extract image URLs from the CONTENT region only, not the whole page.
+    // Real article photos usually live on external CDNs (daknong.1cdn.vn,
+    // lamdongtourism.com.vn, …) while the site's own /images/ assets are page
+    // chrome — including 24x16 language-picker flags. The old whole-page +
+    // same-domain filter kept exactly the flags and dropped the real photos,
+    // so every imported event got a blurry flag cover (fixed Jul 10 2026).
     const imageUrls: string[] = [];
-    const imgMatches = html.matchAll(/<img[^>]+src="([^"]+)"[^>]*>/gi);
+    const chromeImageRe = /logo|icon|favicon|flag|tin-nhiem|avatar/i;
+    const ogImageMatch = html.match(
+      /<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i
+    );
+    if (ogImageMatch && !chromeImageRe.test(ogImageMatch[1])) {
+      imageUrls.push(ogImageMatch[1]);
+    }
+    const imgMatches = rawContent.matchAll(/<img[^>]+src="([^"]+)"[^>]*>/gi);
     for (const match of imgMatches) {
       let imgUrl = match[1];
       if (imgUrl.startsWith("/")) {
         imgUrl = `${BASE_URL}${imgUrl}`;
       }
-      if (imgUrl.includes("dalat-info.gov.vn") && !imgUrl.includes("logo") && !imgUrl.includes("icon")) {
+      if (
+        imgUrl.startsWith("http") &&
+        !chromeImageRe.test(imgUrl) &&
+        !imageUrls.includes(imgUrl)
+      ) {
         imageUrls.push(imgUrl);
       }
     }

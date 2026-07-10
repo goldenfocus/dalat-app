@@ -208,8 +208,11 @@ export async function downloadAndUploadImage(
     const contentType = response.headers.get("content-type") || "image/jpeg";
     const buffer = await response.arrayBuffer();
 
-    // Skip if too small (likely an error page) or too large
-    if (buffer.byteLength < 1000) {
+    // Skip if too small or too large. Real cover photos are never under a
+    // few KB — sub-5KB files are page chrome (a 24x16 language-flag icon
+    // shipped as blurry event covers on Jul 10 2026), tracking pixels, or
+    // error pages.
+    if (buffer.byteLength < 5000) {
       console.warn(`Image too small, likely invalid: ${externalUrl}`);
       return null;
     }
