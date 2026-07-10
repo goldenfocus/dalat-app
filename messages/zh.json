@@ -1371,6 +1371,15 @@
     }
   },
   "tribes": {
+    "findYourTribe": "找到你的部落",
+    "discoverTitle": "大叻部落",
+    "discoverSubtitle": "小小社群，大大乐趣——加入让这座城市如家般温暖的圈子。",
+    "startTribe": "创建部落",
+    "seeAll": "查看全部",
+    "accessOpen": "向所有人开放",
+    "accessRequest": "需申请加入",
+    "emptyTitle": "还没有部落——雾中正等待第一个社群。",
+    "emptyCta": "成为创始人",
     "dateAtTime": "{date} {time}",
     "title": "部落",
     "createTribe": "创建部落",

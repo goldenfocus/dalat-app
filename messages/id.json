@@ -1368,6 +1368,15 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Temukan tribe-mu",
+    "discoverTitle": "Tribe Đà Lạt",
+    "discoverSubtitle": "Komunitas kecil, keseruan besar — gabung dengan kru yang membuat kota ini terasa seperti rumah.",
+    "startTribe": "Mulai tribe",
+    "seeAll": "Lihat semua",
+    "accessOpen": "Terbuka untuk semua",
+    "accessRequest": "Perlu izin bergabung",
+    "emptyTitle": "Belum ada tribe — kabut menanti kru pertamanya.",
+    "emptyCta": "Jadi pendiri",
     "dateAtTime": "{date} pukul {time}",
     "title": "Tribes",
     "createTribe": "Buat Tribe",

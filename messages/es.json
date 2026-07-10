@@ -1368,6 +1368,15 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Encuentra tu tribu",
+    "discoverTitle": "Tribus de Đà Lạt",
+    "discoverSubtitle": "Comunidades pequeñas, gran ambiente — únete a los grupos que hacen de esta ciudad un hogar.",
+    "startTribe": "Crear una tribu",
+    "seeAll": "Ver todas",
+    "accessOpen": "Abierta a todos",
+    "accessRequest": "Solicitud para unirse",
+    "emptyTitle": "Aún no hay tribus — la niebla espera a su primer grupo.",
+    "emptyCta": "Sé quien la funde",
     "dateAtTime": "{date} a las {time}",
     "title": "Tribes",
     "createTribe": "Crear Tribe",

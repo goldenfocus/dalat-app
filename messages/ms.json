@@ -1368,6 +1368,15 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Cari tribe anda",
+    "discoverTitle": "Tribe Đà Lạt",
+    "discoverSubtitle": "Komuniti kecil, keseronokan besar — sertai kumpulan yang menjadikan bandar ini terasa seperti rumah.",
+    "startTribe": "Mulakan tribe",
+    "seeAll": "Lihat semua",
+    "accessOpen": "Terbuka untuk semua",
+    "accessRequest": "Perlu mohon untuk sertai",
+    "emptyTitle": "Belum ada tribe — kabus menanti kumpulan pertamanya.",
+    "emptyCta": "Jadi pengasas",
     "dateAtTime": "{date} pada {time}",
     "title": "Suku",
     "createTribe": "Cipta Suku",

@@ -1482,6 +1482,15 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Find your tribe",
+    "discoverTitle": "Tribes of Đà Lạt",
+    "discoverSubtitle": "Little communities, big vibes — join the crews that make this city feel like home.",
+    "startTribe": "Start a tribe",
+    "seeAll": "See all",
+    "accessOpen": "Open to all",
+    "accessRequest": "Request to join",
+    "emptyTitle": "No tribes yet — the mist is waiting for its first crew.",
+    "emptyCta": "Be the founder",
     "dateAtTime": "{date} at {time}",
     "title": "Tribes",
     "createTribe": "Create Tribe",

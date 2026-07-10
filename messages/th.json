@@ -1368,6 +1368,15 @@
     }
   },
   "tribes": {
+    "findYourTribe": "ค้นหาไทรบ์ของคุณ",
+    "discoverTitle": "ไทรบ์แห่งดาลัด",
+    "discoverSubtitle": "คอมมูนิตี้เล็ก ๆ ที่อบอุ่น — เข้าร่วมแก๊งที่ทำให้เมืองนี้เหมือนบ้าน",
+    "startTribe": "สร้างไทรบ์",
+    "seeAll": "ดูทั้งหมด",
+    "accessOpen": "เปิดรับทุกคน",
+    "accessRequest": "ต้องขอเข้าร่วม",
+    "emptyTitle": "ยังไม่มีไทรบ์ — สายหมอกกำลังรอแก๊งแรกอยู่",
+    "emptyCta": "เป็นผู้ก่อตั้ง",
     "dateAtTime": "{date} เวลา {time}",
     "title": "Tribes",
     "createTribe": "สร้าง Tribe",

@@ -1371,6 +1371,15 @@
     }
   },
   "tribes": {
+    "findYourTribe": "나의 트라이브 찾기",
+    "discoverTitle": "달랏의 트라이브",
+    "discoverSubtitle": "작은 커뮤니티, 큰 즐거움 — 이 도시를 집처럼 느끼게 해주는 모임에 함께하세요.",
+    "startTribe": "트라이브 만들기",
+    "seeAll": "모두 보기",
+    "accessOpen": "누구나 참여 가능",
+    "accessRequest": "가입 신청 필요",
+    "emptyTitle": "아직 트라이브가 없어요 — 안개가 첫 모임을 기다리고 있어요.",
+    "emptyCta": "첫 창립자 되기",
     "dateAtTime": "{date} {time}",
     "title": "트라이브",
     "createTribe": "트라이브 만들기",

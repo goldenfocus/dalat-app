@@ -1368,6 +1368,15 @@
     }
   },
   "tribes": {
+    "findYourTribe": "自分のトライブを見つけよう",
+    "discoverTitle": "ダラットのトライブ",
+    "discoverSubtitle": "小さなコミュニティ、大きな楽しさ——この街を我が家にしてくれる仲間に出会おう。",
+    "startTribe": "トライブを作る",
+    "seeAll": "すべて見る",
+    "accessOpen": "誰でも参加OK",
+    "accessRequest": "参加には承認が必要",
+    "emptyTitle": "まだトライブがありません——霧が最初の仲間を待っています。",
+    "emptyCta": "創設者になる",
     "dateAtTime": "{date} {time}",
     "title": "トライブ",
     "createTribe": "トライブを作成",

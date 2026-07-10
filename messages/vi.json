@@ -1371,6 +1371,15 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Tìm hội của bạn",
+    "discoverTitle": "Các hội nhóm Đà Lạt",
+    "discoverSubtitle": "Cộng đồng nhỏ, niềm vui lớn — tham gia những hội nhóm khiến thành phố này thân thương như nhà.",
+    "startTribe": "Lập hội mới",
+    "seeAll": "Xem tất cả",
+    "accessOpen": "Mở cho mọi người",
+    "accessRequest": "Cần duyệt để tham gia",
+    "emptyTitle": "Chưa có hội nhóm nào — sương mù đang chờ nhóm đầu tiên.",
+    "emptyCta": "Làm người sáng lập",
     "dateAtTime": "{date} lúc {time}",
     "title": "Bộ tộc",
     "createTribe": "Tạo bộ tộc",
