@@ -61,7 +61,13 @@
       "message": "이 페이지는 다른 언어입니다. {language}(으)로 전환하시겠습니까?",
       "switch": "{language}(으)로 보기",
       "dismiss": "현재 언어 유지"
-    }
+    },
+    "aiQueueWait": "이미지를 그리는 중 — 보통 1–3분 걸려요 ✨",
+    "aiWorkerOffline": "AI 화가가 잠시 쉬고 있어요. 잠시 후 다시 시도해 주세요.",
+    "aiRefineUnavailable": "보정 기능은 잠시 쉬는 중이에요 — 새로 생성해 보세요.",
+    "aiTooManyPending": "다른 이미지가 아직 생성 중이에요. 조금만 기다려 주세요.",
+    "aiTimeout": "평소보다 오래 걸리네요 — 곧 나타날 수 있어요. 안 되면 다시 시도해 주세요.",
+    "aiGenerationFailed": "이번에는 생성에 실패했어요. 다시 시도해 주세요."
   },
   "nav": {
     "events": "이벤트",

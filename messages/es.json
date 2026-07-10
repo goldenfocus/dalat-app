@@ -61,7 +61,13 @@
       "message": "Esta página está en otro idioma. ¿Cambiar a {language}?",
       "switch": "Ver en {language}",
       "dismiss": "Mantener idioma actual"
-    }
+    },
+    "aiQueueWait": "Pintando tu imagen — suele tardar 1–3 minutos ✨",
+    "aiWorkerOffline": "El pintor de IA está descansando. Inténtalo en un momento.",
+    "aiRefineUnavailable": "Los retoques están en pausa — genera una imagen nueva.",
+    "aiTooManyPending": "Tus otras imágenes aún se están generando. Espera un momento.",
+    "aiTimeout": "Está tardando más de lo normal — puede que aún aparezca. Si no, inténtalo de nuevo.",
+    "aiGenerationFailed": "Esta vez no funcionó. Inténtalo otra vez."
   },
   "nav": {
     "events": "Eventos",

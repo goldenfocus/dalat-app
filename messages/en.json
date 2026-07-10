@@ -61,7 +61,13 @@
       "message": "This page is in a different language. Switch to {language}?",
       "switch": "View in {language}",
       "dismiss": "Keep current language"
-    }
+    },
+    "aiQueueWait": "Painting your image — usually takes 1–3 minutes ✨",
+    "aiWorkerOffline": "The AI painter is taking a nap. Try again in a bit.",
+    "aiRefineUnavailable": "Refining is on a break — generate a fresh one instead.",
+    "aiTooManyPending": "Your other images are still cooking. Give them a minute first.",
+    "aiTimeout": "Taking longer than usual — it may still show up shortly. Try again if not.",
+    "aiGenerationFailed": "Generation didn't work this time. Give it another go."
   },
   "nav": {
     "events": "Events",

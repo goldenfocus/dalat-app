@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 /**
- * dalat.app cover-image worker — runs 24/7 on a Mac mini (Apple Silicon).
+ * dalat.app image worker — runs 24/7 on a Mac mini (Apple Silicon).
  *
- * Loop:
- *   1. GET  /api/admin/cover-jobs          -> posts needing covers (+ prompts)
- *   2. mflux-generate (FLUX schnell, local) -> /tmp/cover-<id>.png
- *   3. POST /api/admin/cover-jobs/presign  -> presigned R2 PUT URL
- *   4. PUT  image bytes directly to R2      (never through dalat.app — WAF)
- *   5. POST /api/admin/cover-jobs/complete -> sets cover_image_url
+ * Two queues, one GPU:
+ *   A. Interactive image jobs (avatars, event/venue covers) — polled every
+ *      IMAGE_POLL_SECONDS via POST /api/admin/image-jobs/claim (which also
+ *      doubles as the worker heartbeat), generated at the job's dimensions,
+ *      PUT to a presigned R2 URL, then /complete. Failures -> /fail.
+ *   B. Blog cover backfill — the original flow, polled every POLL_MINUTES:
+ *      GET /api/admin/cover-jobs -> generate -> /presign -> PUT -> /complete.
+ *
+ * Interactive jobs always drain before the backfill touches the GPU.
  *
  * Plain Node >= 20, zero npm deps. Config from ./worker.env or process.env.
  * The worker must never die: every error is logged and the loop continues.
@@ -42,6 +45,8 @@ const env = loadEnv();
 const BASE_URL = (env.DALAT_BASE_URL || 'https://dalat.app').replace(/\/$/, '');
 const ADMIN_API_KEY = env.ADMIN_API_KEY;
 const POLL_MINUTES = Number(env.POLL_MINUTES) || 10;
+// Interactive jobs poll fast — a user is watching a dialog.
+const IMAGE_POLL_SECONDS = Number(env.IMAGE_POLL_SECONDS) || 30;
 const MFLUX_BIN = env.MFLUX_BIN || 'mflux-generate';
 const MODEL = env.MODEL || 'schnell';
 const STEPS = Number(env.STEPS) || 3;
@@ -89,8 +94,8 @@ function generateImage(job, outputPath) {
     '--model', MODEL,
     '--quantize', '4',
     '--steps', String(STEPS),
-    '--width', '1216',
-    '--height', '640',
+    '--width', String(job.width || 1216),
+    '--height', String(job.height || 640),
     ...MFLUX_EXTRA_ARGS,
     '--prompt', job.prompt,
     '--output', outputPath,
@@ -160,6 +165,76 @@ async function processJob(job) {
   }
 }
 
+// ── Interactive image jobs (avatars, event/venue covers) ──────────────
+
+async function processImageJob(job) {
+  const started = Date.now();
+  const outputPath = `/tmp/imagejob-${job.id}.png`;
+
+  try {
+    generateImage(job, outputPath);
+
+    const { uploadUrl } = await api('/api/admin/image-jobs/presign', {
+      method: 'POST',
+      body: JSON.stringify({ jobId: job.id }),
+    });
+
+    const bytes = readFileSync(outputPath);
+    const putRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'image/png' },
+      body: bytes,
+    });
+    if (!putRes.ok) {
+      throw new Error(`R2 PUT failed: ${putRes.status} ${await putRes.text().catch(() => '')}`);
+    }
+
+    await api('/api/admin/image-jobs/complete', {
+      method: 'POST',
+      body: JSON.stringify({ jobId: job.id }),
+    });
+
+    const seconds = ((Date.now() - started) / 1000).toFixed(1);
+    log(`[worker] image job done id=${job.id} context=${job.context} duration=${seconds}s`);
+  } catch (err) {
+    // OOM = transient GPU contention; leave the job leased so the 5-min
+    // lease expiry retries it after the contention window, not instantly.
+    if (/Insufficient Memory|OutOfMemory/i.test(String(err))) {
+      log(`[worker] OOM image job id=${job.id} — GPU busy, backing off this cycle`);
+      return 'oom';
+    }
+    log(`[worker] image job FAILED id=${job.id}:`, err.stack || err, err.cause ?? '');
+    await api('/api/admin/image-jobs/fail', {
+      method: 'POST',
+      body: JSON.stringify({ jobId: job.id, error: String(err).slice(0, 500) }),
+    }).catch((failErr) => log('[worker] could not report failure:', failErr));
+  } finally {
+    try {
+      if (existsSync(outputPath)) unlinkSync(outputPath);
+    } catch {
+      // best effort cleanup
+    }
+  }
+}
+
+// The claim call is also the worker heartbeat — the app refuses to enqueue
+// when it hasn't seen one recently, so this must run every iteration.
+async function imageCycle() {
+  const { jobs } = await api('/api/admin/image-jobs/claim', {
+    method: 'POST',
+    body: JSON.stringify({ limit: 2 }),
+  });
+  if (!jobs || jobs.length === 0) return;
+
+  log(`[worker] ${jobs.length} image job(s)`);
+  for (const job of jobs) {
+    const outcome = await processImageJob(job);
+    if (outcome === 'oom') break; // GPU is busy — the rest would OOM too
+  }
+}
+
+// ── Blog cover backfill (original flow) ────────────────────────────────
+
 async function cycle() {
   const { jobs } = await api('/api/admin/cover-jobs');
   if (!jobs || jobs.length === 0) {
@@ -184,15 +259,24 @@ async function cycle() {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function main() {
-  log(`[worker] starting — base=${BASE_URL} model=${MODEL} steps=${STEPS} poll=${POLL_MINUTES}m`);
+  log(`[worker] starting — base=${BASE_URL} model=${MODEL} steps=${STEPS} imagePoll=${IMAGE_POLL_SECONDS}s coverPoll=${POLL_MINUTES}m`);
+  let lastCoverCycle = 0;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
-      await cycle();
+      await imageCycle();
     } catch (err) {
-      log('[worker] cycle error:', err.stack || err, err.cause ?? '');
+      log('[worker] image cycle error:', err.stack || err, err.cause ?? '');
     }
-    await sleep(POLL_MINUTES * 60 * 1000);
+    if (Date.now() - lastCoverCycle >= POLL_MINUTES * 60 * 1000) {
+      lastCoverCycle = Date.now();
+      try {
+        await cycle();
+      } catch (err) {
+        log('[worker] cycle error:', err.stack || err, err.cause ?? '');
+      }
+    }
+    await sleep(IMAGE_POLL_SECONDS * 1000);
   }
 }
 

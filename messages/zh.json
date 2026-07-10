@@ -61,7 +61,13 @@
       "message": "此页面使用的是其他语言。切换到{language}？",
       "switch": "切换到{language}",
       "dismiss": "保持当前语言"
-    }
+    },
+    "aiQueueWait": "正在为你绘制图片 — 通常需要 1–3 分钟 ✨",
+    "aiWorkerOffline": "AI 画师正在小憩，请稍后再试。",
+    "aiRefineUnavailable": "润色功能暂时不可用 — 试试重新生成一张吧。",
+    "aiTooManyPending": "你的其他图片还在生成中，请稍等片刻。",
+    "aiTimeout": "比平时慢一些 — 图片可能马上就好。如果没有，请重试。",
+    "aiGenerationFailed": "这次生成失败了，再试一次吧。"
   },
   "nav": {
     "events": "活动",

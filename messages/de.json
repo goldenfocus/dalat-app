@@ -61,7 +61,13 @@
       "message": "Diese Seite ist in einer anderen Sprache. Zu {language} wechseln?",
       "switch": "Auf {language} anzeigen",
       "dismiss": "Aktuelle Sprache beibehalten"
-    }
+    },
+    "aiQueueWait": "Dein Bild wird gemalt — dauert meist 1–3 Minuten ✨",
+    "aiWorkerOffline": "Der KI-Maler macht gerade Pause. Versuch es gleich nochmal.",
+    "aiRefineUnavailable": "Verfeinern ist gerade nicht verfügbar — erstelle stattdessen ein neues Bild.",
+    "aiTooManyPending": "Deine anderen Bilder werden noch erstellt. Warte kurz.",
+    "aiTimeout": "Dauert länger als üblich — das Bild kann gleich noch erscheinen. Sonst versuch es nochmal.",
+    "aiGenerationFailed": "Diesmal hat es nicht geklappt. Versuch es nochmal."
   },
   "nav": {
     "events": "Events",

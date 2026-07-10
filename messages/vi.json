@@ -61,7 +61,13 @@
       "message": "Trang này đang ở ngôn ngữ khác. Chuyển sang {language}?",
       "switch": "Xem bằng {language}",
       "dismiss": "Giữ ngôn ngữ hiện tại"
-    }
+    },
+    "aiQueueWait": "Đang vẽ ảnh của bạn — thường mất 1–3 phút ✨",
+    "aiWorkerOffline": "Hoạ sĩ AI đang nghỉ một chút. Thử lại sau nhé.",
+    "aiRefineUnavailable": "Tính năng chỉnh sửa đang tạm nghỉ — hãy tạo ảnh mới nhé.",
+    "aiTooManyPending": "Ảnh khác của bạn vẫn đang được vẽ. Chờ một chút nhé.",
+    "aiTimeout": "Lâu hơn bình thường một chút — ảnh có thể vẫn sẽ xuất hiện. Nếu không, thử lại nhé.",
+    "aiGenerationFailed": "Lần này chưa tạo được ảnh. Thử lại nhé."
   },
   "nav": {
     "events": "Sự kiện",

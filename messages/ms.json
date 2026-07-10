@@ -61,7 +61,13 @@
       "message": "Halaman ini dalam bahasa lain. Tukar ke {language}?",
       "switch": "Lihat dalam {language}",
       "dismiss": "Kekal bahasa semasa"
-    }
+    },
+    "aiQueueWait": "Sedang melukis imej anda — biasanya 1–3 minit ✨",
+    "aiWorkerOffline": "Pelukis AI sedang berehat. Cuba lagi sebentar nanti.",
+    "aiRefineUnavailable": "Penambahbaikan sedang berehat — jana imej baharu.",
+    "aiTooManyPending": "Imej anda yang lain masih dijana. Tunggu sebentar dulu.",
+    "aiTimeout": "Mengambil masa lebih lama dari biasa — imej mungkin akan muncul sebentar lagi. Jika tidak, cuba lagi.",
+    "aiGenerationFailed": "Kali ini tidak berjaya. Cuba sekali lagi."
   },
   "nav": {
     "events": "Acara",
