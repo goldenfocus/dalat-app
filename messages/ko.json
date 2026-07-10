@@ -1439,7 +1439,14 @@
     "createdBy": "{name}이(가) 만듦",
     "joinedOn": "{date}에 가입",
     "myTribes": "내 트라이브",
-    "pendingRequests": "대기 중인 요청"
+    "pendingRequests": "대기 중인 요청",
+    "coverImage": "커버 이미지",
+    "coverImageHint": "가로형 이미지가 가장 좋아요 — 약 1200×600.",
+    "uploadCover": "커버 업로드",
+    "replaceCover": "커버 변경",
+    "removeCover": "삭제",
+    "coverUploading": "업로드 중...",
+    "coverUploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요."
   },
   "feed": {
     "title": "피드",

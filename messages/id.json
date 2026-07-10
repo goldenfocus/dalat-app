@@ -1436,7 +1436,14 @@
     "createdBy": "Dibuat oleh {name}",
     "joinedOn": "Bergabung {date}",
     "myTribes": "Tribes Saya",
-    "pendingRequests": "Permintaan Tertunda"
+    "pendingRequests": "Permintaan Tertunda",
+    "coverImage": "Gambar Sampul",
+    "coverImageHint": "Lanskap paling cocok — sekitar 1200×600.",
+    "uploadCover": "Unggah sampul",
+    "replaceCover": "Ganti sampul",
+    "removeCover": "Hapus",
+    "coverUploading": "Mengunggah...",
+    "coverUploadFailed": "Gagal mengunggah. Silakan coba lagi."
   },
   "feed": {
     "title": "Feed",

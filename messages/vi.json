@@ -1439,7 +1439,14 @@
     "createdBy": "Được tạo bởi {name}",
     "joinedOn": "Tham gia {date}",
     "myTribes": "Bộ tộc của tôi",
-    "pendingRequests": "Yêu cầu đang chờ"
+    "pendingRequests": "Yêu cầu đang chờ",
+    "coverImage": "Ảnh bìa",
+    "coverImageHint": "Ảnh ngang đẹp nhất — khoảng 1200×600.",
+    "uploadCover": "Tải ảnh bìa lên",
+    "replaceCover": "Thay ảnh bìa",
+    "removeCover": "Xóa",
+    "coverUploading": "Đang tải lên...",
+    "coverUploadFailed": "Tải lên thất bại. Vui lòng thử lại."
   },
   "feed": {
     "title": "Bảng tin",

@@ -1450,7 +1450,14 @@
     "createdBy": "Créée par {name}",
     "joinedOn": "Rejoint le {date}",
     "myTribes": "Mes Tribus",
-    "pendingRequests": "Demandes en attente"
+    "pendingRequests": "Demandes en attente",
+    "coverImage": "Image de couverture",
+    "coverImageHint": "Le format paysage est idéal — environ 1200×600.",
+    "uploadCover": "Ajouter une couverture",
+    "replaceCover": "Remplacer la couverture",
+    "removeCover": "Supprimer",
+    "coverUploading": "Envoi en cours...",
+    "coverUploadFailed": "Échec de l'envoi. Veuillez réessayer."
   },
   "feed": {
     "title": "Fil",

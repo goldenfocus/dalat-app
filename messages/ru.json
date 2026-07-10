@@ -1436,7 +1436,14 @@
     "createdBy": "Создал {name}",
     "joinedOn": "Вступил {date}",
     "myTribes": "Мои трайбы",
-    "pendingRequests": "Ожидающие запросы"
+    "pendingRequests": "Ожидающие запросы",
+    "coverImage": "Обложка",
+    "coverImageHint": "Лучше всего подходит горизонтальное изображение — примерно 1200×600.",
+    "uploadCover": "Загрузить обложку",
+    "replaceCover": "Заменить обложку",
+    "removeCover": "Удалить",
+    "coverUploading": "Загрузка...",
+    "coverUploadFailed": "Не удалось загрузить. Попробуйте ещё раз."
   },
   "feed": {
     "title": "Лента",

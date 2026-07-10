@@ -1436,7 +1436,14 @@
     "createdBy": "Erstellt von {name}",
     "joinedOn": "Beigetreten am {date}",
     "myTribes": "Meine Tribes",
-    "pendingRequests": "Ausstehende Anfragen"
+    "pendingRequests": "Ausstehende Anfragen",
+    "coverImage": "Titelbild",
+    "coverImageHint": "Querformat eignet sich am besten — etwa 1200×600.",
+    "uploadCover": "Titelbild hochladen",
+    "replaceCover": "Titelbild ersetzen",
+    "removeCover": "Entfernen",
+    "coverUploading": "Wird hochgeladen...",
+    "coverUploadFailed": "Upload fehlgeschlagen. Bitte erneut versuchen."
   },
   "feed": {
     "title": "Feed",

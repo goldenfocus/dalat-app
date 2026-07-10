@@ -1436,7 +1436,14 @@
     "createdBy": "{name}が作成",
     "joinedOn": "{date}に参加",
     "myTribes": "マイトライブ",
-    "pendingRequests": "保留中のリクエスト"
+    "pendingRequests": "保留中のリクエスト",
+    "coverImage": "カバー画像",
+    "coverImageHint": "横長の画像がおすすめです — 約1200×600。",
+    "uploadCover": "カバーをアップロード",
+    "replaceCover": "カバーを変更",
+    "removeCover": "削除",
+    "coverUploading": "アップロード中...",
+    "coverUploadFailed": "アップロードに失敗しました。もう一度お試しください。"
   },
   "feed": {
     "title": "フィード",

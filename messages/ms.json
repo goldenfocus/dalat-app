@@ -1436,7 +1436,14 @@
     "createdBy": "Dicipta oleh {name}",
     "joinedOn": "Sertai pada {date}",
     "myTribes": "Suku Saya",
-    "pendingRequests": "Permintaan Menunggu"
+    "pendingRequests": "Permintaan Menunggu",
+    "coverImage": "Imej Muka Depan",
+    "coverImageHint": "Lanskap paling sesuai — sekitar 1200×600.",
+    "uploadCover": "Muat naik muka depan",
+    "replaceCover": "Ganti muka depan",
+    "removeCover": "Buang",
+    "coverUploading": "Sedang dimuat naik...",
+    "coverUploadFailed": "Muat naik gagal. Sila cuba lagi."
   },
   "feed": {
     "title": "Suapan",

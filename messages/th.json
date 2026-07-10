@@ -1436,7 +1436,14 @@
     "createdBy": "สร้างโดย {name}",
     "joinedOn": "เข้าร่วมเมื่อ {date}",
     "myTribes": "Tribes ของฉัน",
-    "pendingRequests": "คำขอที่รอดำเนินการ"
+    "pendingRequests": "คำขอที่รอดำเนินการ",
+    "coverImage": "รูปปก",
+    "coverImageHint": "แนวนอนเหมาะที่สุด — ประมาณ 1200×600",
+    "uploadCover": "อัปโหลดรูปปก",
+    "replaceCover": "เปลี่ยนรูปปก",
+    "removeCover": "ลบ",
+    "coverUploading": "กำลังอัปโหลด...",
+    "coverUploadFailed": "อัปโหลดไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"
   },
   "feed": {
     "title": "ฟีด",

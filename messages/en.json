@@ -1550,7 +1550,14 @@
     "createdBy": "Created by {name}",
     "joinedOn": "Joined {date}",
     "myTribes": "My Tribes",
-    "pendingRequests": "Pending Requests"
+    "pendingRequests": "Pending Requests",
+    "coverImage": "Cover Image",
+    "coverImageHint": "Landscape works best — around 1200×600.",
+    "uploadCover": "Upload cover",
+    "replaceCover": "Replace cover",
+    "removeCover": "Remove",
+    "coverUploading": "Uploading...",
+    "coverUploadFailed": "Upload failed. Please try again."
   },
   "feed": {
     "title": "Feed",

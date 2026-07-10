@@ -1439,7 +1439,14 @@
     "createdBy": "由 {name} 创建",
     "joinedOn": "加入于 {date}",
     "myTribes": "我的部落",
-    "pendingRequests": "待处理请求"
+    "pendingRequests": "待处理请求",
+    "coverImage": "封面图片",
+    "coverImageHint": "横向图片效果最佳——约 1200×600。",
+    "uploadCover": "上传封面",
+    "replaceCover": "更换封面",
+    "removeCover": "移除",
+    "coverUploading": "上传中...",
+    "coverUploadFailed": "上传失败,请重试。"
   },
   "feed": {
     "title": "动态",

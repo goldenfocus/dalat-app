@@ -1436,7 +1436,14 @@
     "createdBy": "Creado por {name}",
     "joinedOn": "Se unió el {date}",
     "myTribes": "Mis Tribes",
-    "pendingRequests": "Solicitudes Pendientes"
+    "pendingRequests": "Solicitudes Pendientes",
+    "coverImage": "Imagen de portada",
+    "coverImageHint": "El formato horizontal funciona mejor — alrededor de 1200×600.",
+    "uploadCover": "Subir portada",
+    "replaceCover": "Reemplazar portada",
+    "removeCover": "Quitar",
+    "coverUploading": "Subiendo...",
+    "coverUploadFailed": "Error al subir. Inténtalo de nuevo."
   },
   "feed": {
     "title": "Feed",
