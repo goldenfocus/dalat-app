@@ -2570,6 +2570,7 @@
     "resetClock": "Set semula",
     "done": "Selesai",
     "soundOn": "Bunyi hidup",
-    "soundOff": "Bunyi mati"
+    "soundOff": "Bunyi mati",
+    "levelOf": "Tahap {n} / {total}"
   }
 }

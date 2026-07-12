@@ -2646,6 +2646,7 @@
     "resetClock": "Đặt lại",
     "done": "Xong",
     "soundOn": "Bật âm thanh",
-    "soundOff": "Tắt âm thanh"
+    "soundOff": "Tắt âm thanh",
+    "levelOf": "Cấp {n} / {total}"
   }
 }

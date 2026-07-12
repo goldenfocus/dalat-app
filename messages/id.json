@@ -2570,6 +2570,7 @@
     "resetClock": "Atur ulang",
     "done": "Selesai",
     "soundOn": "Suara aktif",
-    "soundOff": "Suara mati"
+    "soundOff": "Suara mati",
+    "levelOf": "Level {n} / {total}"
   }
 }

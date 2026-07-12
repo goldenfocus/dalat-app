@@ -2573,6 +2573,7 @@
     "resetClock": "重置",
     "done": "完成",
     "soundOn": "开启声音",
-    "soundOff": "关闭声音"
+    "soundOff": "关闭声音",
+    "levelOf": "第 {n} / {total} 级"
   }
 }

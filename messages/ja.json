@@ -2570,6 +2570,7 @@
     "resetClock": "リセット",
     "done": "完了",
     "soundOn": "サウンドオン",
-    "soundOff": "サウンドオフ"
+    "soundOff": "サウンドオフ",
+    "levelOf": "レベル {n} / {total}"
   }
 }

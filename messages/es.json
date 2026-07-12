@@ -2570,6 +2570,7 @@
     "resetClock": "Restablecer",
     "done": "Listo",
     "soundOn": "Sonido activado",
-    "soundOff": "Sonido desactivado"
+    "soundOff": "Sonido desactivado",
+    "levelOf": "Nivel {n} de {total}"
   }
 }

@@ -336,9 +336,12 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
 
       {/* main display */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-0">
-        <div className="text-lg sm:text-xl uppercase tracking-[0.3em] text-zinc-500 mb-2">
-          {t("level", { n: levelIdx + 1 })}
-        </div>
+        <button
+          onClick={() => setEditing(true)}
+          className="text-lg sm:text-xl uppercase tracking-[0.3em] text-zinc-500 hover:text-zinc-300 mb-2 px-3 py-2 rounded-lg active:scale-95 transition-all"
+        >
+          {t("levelOf", { n: levelIdx + 1, total: levels.length })}
+        </button>
         <div className="font-bold tabular-nums leading-none text-[26vw] sm:text-[18vw] md:text-[14vw]">
           {mins}:{secs.toString().padStart(2, "0")}
         </div>
@@ -455,9 +458,9 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
               {levels.map((lvl, i) => (
                 <div
                   key={i}
-                  className={`grid grid-cols-[2rem_1fr_1fr_1fr_1fr_2rem] gap-2 items-center ${i === levelIdx ? "text-amber-400" : ""}`}
+                  className={`grid grid-cols-[2rem_1fr_1fr_1fr_1fr_2rem] gap-2 items-center rounded-lg ${i === levelIdx ? "text-amber-400 bg-amber-400/10 -mx-1 px-1" : ""}`}
                 >
-                  <span className="text-sm tabular-nums">{i + 1}</span>
+                  <span className="text-sm tabular-nums">{i === levelIdx ? "▶" : i + 1}</span>
                   {(["sb", "bb", "ante", "minutes"] as const).map((field) => (
                     <input
                       key={field}

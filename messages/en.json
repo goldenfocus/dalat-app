@@ -2646,6 +2646,7 @@
     "resetClock": "Reset",
     "done": "Done",
     "soundOn": "Sound on",
-    "soundOff": "Sound off"
+    "soundOff": "Sound off",
+    "levelOf": "Level {n} of {total}"
   }
 }

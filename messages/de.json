@@ -2570,6 +2570,7 @@
     "resetClock": "Zurücksetzen",
     "done": "Fertig",
     "soundOn": "Ton an",
-    "soundOff": "Ton aus"
+    "soundOff": "Ton aus",
+    "levelOf": "Level {n} von {total}"
   }
 }

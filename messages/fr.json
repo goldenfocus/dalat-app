@@ -2570,6 +2570,7 @@
     "resetClock": "Réinitialiser",
     "done": "Terminé",
     "soundOn": "Son activé",
-    "soundOff": "Son coupé"
+    "soundOff": "Son coupé",
+    "levelOf": "Niveau {n} sur {total}"
   }
 }

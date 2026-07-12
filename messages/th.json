@@ -2570,6 +2570,7 @@
     "resetClock": "รีเซ็ต",
     "done": "เสร็จสิ้น",
     "soundOn": "เปิดเสียง",
-    "soundOff": "ปิดเสียง"
+    "soundOff": "ปิดเสียง",
+    "levelOf": "ระดับ {n} / {total}"
   }
 }
