@@ -84,6 +84,10 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
     ],
   },
   {
+    test: (p) => /^\/events\/[^/]+\/table$/.test(p),
+    namespaces: ["pokerTable"],
+  },
+  {
     // Single event detail (not list/new/edit)
     test: (p) =>
       /^\/events\/[^/]+$/.test(p) &&
