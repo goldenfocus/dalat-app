@@ -167,12 +167,34 @@ async function processJob(job) {
 
 // ── Interactive image jobs (avatars, event/venue covers) ──────────────
 
+// A user is watching a dialog, so an OOM (ollama re-warmed mid-generation)
+// must not park the job for the whole 5-min lease. Re-evict and retry in
+// place — PRE_GENERATE_CMD runs again inside generateImage on every try.
+const OOM_INPLACE_RETRIES = 2;
+const OOM_RETRY_DELAY_MS = 20 * 1000;
+
+function generateImageWithOomRetry(job, outputPath) {
+  return (async () => {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        generateImage(job, outputPath);
+        return;
+      } catch (err) {
+        const isOom = /Insufficient Memory|OutOfMemory/i.test(String(err));
+        if (!isOom || attempt >= OOM_INPLACE_RETRIES) throw err;
+        log(`[worker] OOM image job id=${job.id} — re-evicting ollama, in-place retry ${attempt + 1}/${OOM_INPLACE_RETRIES}`);
+        await sleep(OOM_RETRY_DELAY_MS);
+      }
+    }
+  })();
+}
+
 async function processImageJob(job) {
   const started = Date.now();
   const outputPath = `/tmp/imagejob-${job.id}.png`;
 
   try {
-    generateImage(job, outputPath);
+    await generateImageWithOomRetry(job, outputPath);
 
     const { uploadUrl } = await api('/api/admin/image-jobs/presign', {
       method: 'POST',
@@ -197,10 +219,10 @@ async function processImageJob(job) {
     const seconds = ((Date.now() - started) / 1000).toFixed(1);
     log(`[worker] image job done id=${job.id} context=${job.context} duration=${seconds}s`);
   } catch (err) {
-    // OOM = transient GPU contention; leave the job leased so the 5-min
-    // lease expiry retries it after the contention window, not instantly.
+    // Still OOM after in-place retries = sustained contention; leave the
+    // job leased so the 5-min lease expiry retries it after the window.
     if (/Insufficient Memory|OutOfMemory/i.test(String(err))) {
-      log(`[worker] OOM image job id=${job.id} — GPU busy, backing off this cycle`);
+      log(`[worker] OOM image job id=${job.id} — GPU busy after ${OOM_INPLACE_RETRIES} in-place retries, backing off`);
       return 'oom';
     }
     log(`[worker] image job FAILED id=${job.id}:`, err.stack || err, err.cause ?? '');
