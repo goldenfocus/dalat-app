@@ -93,6 +93,8 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
           if (s.phase === "running" && s.endsAt && s.endsAt > Date.now()) {
             setPhase("running");
             setEndsAt(s.endsAt);
+            // Refresh mid-level: re-arm screen wake lock without waiting for a tap
+            acquireWakeLock();
           } else if (s.phase === "paused" && s.remainingMs) {
             setPhase("paused");
             setRemainingMs(s.remainingMs);
