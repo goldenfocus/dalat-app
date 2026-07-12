@@ -155,6 +155,23 @@ export async function updateSession(request: NextRequest) {
 
   // =========================================================================
 
+  // Password recovery links skip the "Confirm your email" interstitial and go
+  // straight to the reset form. The token is only consumed on form submit, so
+  // the form itself is the human gate against email security scanners.
+  // (app/auth/verify/route.ts has the same branch but is bypassed since the
+  // matcher stopped excluding auth/verify — this is where the request lands.)
+  const verifyMatch = pathname.match(/^(?:\/([a-z]{2}))?\/auth\/verify$/);
+  if (verifyMatch && request.nextUrl.searchParams.get('type') === 'recovery') {
+    const tokenHash = request.nextUrl.searchParams.get('token_hash');
+    if (tokenHash) {
+      const localeParam = verifyMatch[1] || request.nextUrl.searchParams.get('locale') || '';
+      const locale = isLocale(localeParam) ? localeParam : routing.defaultLocale;
+      const url = new URL(`/${locale}/auth/reset-password`, request.url);
+      url.searchParams.set('token_hash', tokenHash);
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Skip locale handling for API routes and static files
   const shouldSkipLocale =
     pathname.startsWith('/api/') ||
