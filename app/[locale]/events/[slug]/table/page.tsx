@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { TableClock } from "@/components/events/table-clock";
 
@@ -23,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function TableClockPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const supabase = await createClient();
 
   const { data: event, error } = await supabase
@@ -34,5 +36,13 @@ export default async function TableClockPage({ params }: PageProps) {
 
   if (error || !event || event.status !== "published") notFound();
 
-  return <TableClock eventSlug={event.slug} eventTitle={event.title} />;
+  // The layout only ships core namespaces to the client provider; scope
+  // pokerTable here so SSR renders real strings instead of fallback keys.
+  const messages = await getMessages();
+
+  return (
+    <NextIntlClientProvider locale={locale} messages={{ pokerTable: messages.pokerTable }}>
+      <TableClock eventSlug={event.slug} eventTitle={event.title} />
+    </NextIntlClientProvider>
+  );
 }
