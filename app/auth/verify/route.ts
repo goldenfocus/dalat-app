@@ -12,6 +12,10 @@ import { type NextRequest } from "next/server";
  * 3. User clicks "Confirm" button on that page
  * 4. Browser redirects to /auth/confirm which verifies via verifyOtp()
  *
+ * Exception: password recovery skips the interstitial and goes straight to
+ * the reset form — the form submit is the human gate there, so the token
+ * is only consumed when the user sets their new password.
+ *
  * Note: We use token_hash instead of token to bypass the PKCE flow,
  * which fixes authentication issues when magic links open in a different
  * browser than the PWA (where the PKCE verifier is stored).
@@ -24,6 +28,12 @@ export async function GET(request: NextRequest) {
 
   if (!tokenHash) {
     return NextResponse.redirect(new URL(`/${locale}/auth/error?error=No token provided`, url.origin));
+  }
+
+  if (type === "recovery") {
+    const resetPageUrl = new URL(`/${locale}/auth/reset-password`, url.origin);
+    resetPageUrl.searchParams.set("token_hash", tokenHash);
+    return NextResponse.redirect(resetPageUrl);
   }
 
   // Redirect to our confirmation page with token_hash
