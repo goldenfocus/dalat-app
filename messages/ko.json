@@ -2574,6 +2574,8 @@
     "done": "완료",
     "soundOn": "소리 켜기",
     "soundOff": "소리 끄기",
-    "levelOf": "레벨 {n} / {total}"
+    "levelOf": "레벨 {n} / {total}",
+    "minutesPerLevel": "레벨당 분",
+    "applyToAll": "전체 적용"
   }
 }

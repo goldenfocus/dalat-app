@@ -2571,6 +2571,8 @@
     "done": "完了",
     "soundOn": "サウンドオン",
     "soundOff": "サウンドオフ",
-    "levelOf": "レベル {n} / {total}"
+    "levelOf": "レベル {n} / {total}",
+    "minutesPerLevel": "レベルごとの分数",
+    "applyToAll": "すべてに適用"
   }
 }

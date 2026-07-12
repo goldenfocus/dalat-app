@@ -2571,6 +2571,8 @@
     "done": "เสร็จสิ้น",
     "soundOn": "เปิดเสียง",
     "soundOff": "ปิดเสียง",
-    "levelOf": "ระดับ {n} / {total}"
+    "levelOf": "ระดับ {n} / {total}",
+    "minutesPerLevel": "นาทีต่อระดับ",
+    "applyToAll": "ใช้กับทั้งหมด"
   }
 }

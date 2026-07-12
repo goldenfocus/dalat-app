@@ -2647,6 +2647,8 @@
     "done": "Xong",
     "soundOn": "Bật âm thanh",
     "soundOff": "Tắt âm thanh",
-    "levelOf": "Cấp {n} / {total}"
+    "levelOf": "Cấp {n} / {total}",
+    "minutesPerLevel": "Phút mỗi cấp",
+    "applyToAll": "Áp dụng tất cả"
   }
 }

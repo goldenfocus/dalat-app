@@ -2647,6 +2647,8 @@
     "done": "Done",
     "soundOn": "Sound on",
     "soundOff": "Sound off",
-    "levelOf": "Level {n} of {total}"
+    "levelOf": "Level {n} of {total}",
+    "minutesPerLevel": "Minutes per level",
+    "applyToAll": "Apply to all"
   }
 }

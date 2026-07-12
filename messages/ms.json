@@ -2571,6 +2571,8 @@
     "done": "Selesai",
     "soundOn": "Bunyi hidup",
     "soundOff": "Bunyi mati",
-    "levelOf": "Tahap {n} / {total}"
+    "levelOf": "Tahap {n} / {total}",
+    "minutesPerLevel": "Minit setiap tahap",
+    "applyToAll": "Guna untuk semua"
   }
 }

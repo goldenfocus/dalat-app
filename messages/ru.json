@@ -2571,6 +2571,8 @@
     "done": "Готово",
     "soundOn": "Звук включён",
     "soundOff": "Звук выключен",
-    "levelOf": "Уровень {n} из {total}"
+    "levelOf": "Уровень {n} из {total}",
+    "minutesPerLevel": "Минут на уровень",
+    "applyToAll": "Применить ко всем"
   }
 }

@@ -2571,6 +2571,8 @@
     "done": "Selesai",
     "soundOn": "Suara aktif",
     "soundOff": "Suara mati",
-    "levelOf": "Level {n} / {total}"
+    "levelOf": "Level {n} / {total}",
+    "minutesPerLevel": "Menit per level",
+    "applyToAll": "Terapkan ke semua"
   }
 }

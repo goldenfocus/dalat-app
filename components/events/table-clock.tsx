@@ -71,6 +71,7 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
   const [remainingMs, setRemainingMs] = useState<number | null>(null);
   const [muted, setMuted] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [bulkMinutes, setBulkMinutes] = useState("20");
   const [hydrated, setHydrated] = useState(false);
   const [displayMs, setDisplayMs] = useState(10 * 60_000);
 
@@ -292,6 +293,19 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
     });
   };
 
+  const applyBulkMinutes = () => {
+    const m = parseInt(bulkMinutes, 10);
+    if (Number.isNaN(m) || m <= 0) return;
+    // Extend/shrink the level in progress by the delta so the change is felt now
+    const delta = (m - levels[levelIdx].minutes) * 60_000;
+    if (phase === "running" && endsAt !== null) {
+      setEndsAt(Math.max(Date.now() + 1000, endsAt + delta));
+    } else if (phase === "paused" && remainingMs !== null) {
+      setRemainingMs(Math.max(1000, remainingMs + delta));
+    }
+    setLevels((prev) => prev.map((l) => ({ ...l, minutes: m })));
+  };
+
   const applyPreset = (minutes: number) => {
     setLevels(makeLevels(minutes));
     setLevelIdx(0);
@@ -443,6 +457,24 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
                 className="px-4 py-2 rounded-full bg-zinc-900 text-sm active:scale-95 transition-all"
               >
                 {t("presetStandard")}
+              </button>
+            </div>
+
+            <div className="text-sm text-zinc-500 mb-2">{t("minutesPerLevel")}</div>
+            <div className="flex items-center gap-2 mb-6">
+              <input
+                type="text"
+                inputMode="numeric"
+                value={bulkMinutes}
+                onChange={(e) => setBulkMinutes(e.target.value.replace(/\D/g, ""))}
+                aria-label={t("minutesPerLevel")}
+                className="w-24 text-base bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-white tabular-nums"
+              />
+              <button
+                onClick={applyBulkMinutes}
+                className="px-4 py-2 rounded-full bg-amber-400 text-zinc-950 text-sm font-semibold active:scale-95 transition-all"
+              >
+                {t("applyToAll")}
               </button>
             </div>
 

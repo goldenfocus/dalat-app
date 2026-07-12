@@ -2571,6 +2571,8 @@
     "done": "Terminé",
     "soundOn": "Son activé",
     "soundOff": "Son coupé",
-    "levelOf": "Niveau {n} sur {total}"
+    "levelOf": "Niveau {n} sur {total}",
+    "minutesPerLevel": "Minutes par niveau",
+    "applyToAll": "Appliquer à tous"
   }
 }
