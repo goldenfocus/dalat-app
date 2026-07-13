@@ -18,6 +18,7 @@ import {
   DeferredGodModeIndicator,
   DeferredHeartbeat,
   DeferredInstallAppBanner,
+  DeferredIosViewportAnchor,
   DeferredLocaleMismatchBanner,
   DeferredMiniPlayer,
   DeferredNotificationPrompt,
@@ -137,6 +138,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <DeferredSwUpdateHandler />
               <DeferredLocaleMismatchBanner />
               <DeferredInstallAppBanner />
+              <DeferredIosViewportAnchor />
               <SiteHeader />
               <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
                 <ErrorBoundary>

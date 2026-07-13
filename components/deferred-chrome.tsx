@@ -59,6 +59,12 @@ export const DeferredLocaleMismatchBanner = dynamic(
   { ssr: false }
 );
 
+export const DeferredIosViewportAnchor = dynamic(
+  () =>
+    import("@/components/ios-viewport-anchor").then((m) => m.IosViewportAnchor),
+  { ssr: false }
+);
+
 export const DeferredGodModeIndicator = dynamic(
   () =>
     import("@/components/god-mode-indicator").then(
