@@ -310,12 +310,12 @@ export function EventSettingsForm({
               {durationPreset === "multi_day" && (
                 <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-150">
                   <input
-                    type="number"
-                    min="2"
-                    max="14"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={multiDayCount}
                     onChange={(e) => {
-                      const days = Math.max(2, Math.min(14, parseInt(e.target.value) || 2));
+                      const days = Math.max(2, Math.min(14, parseInt(e.target.value.replace(/\D/g, ""), 10) || 2));
                       handleDurationChange("multi_day", days);
                     }}
                     className="w-16 px-2 py-1 text-sm border rounded-md bg-background"

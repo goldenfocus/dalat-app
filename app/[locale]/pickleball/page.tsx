@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link, type Locale } from "@/lib/i18n/routing";
+import { Link, buildLocales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -19,10 +19,9 @@ type PageProps = {
   params: Promise<{ locale: Locale }>;
 };
 
-// Generate for all locales
+// Prerender only buildLocales; the rest render on-demand via ISR
 export async function generateStaticParams() {
-  const locales: Locale[] = ["en", "vi", "ko", "zh", "ru", "fr", "ja", "ms", "th", "de", "es", "id"];
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 // SEO-optimized metadata for pickleball searches

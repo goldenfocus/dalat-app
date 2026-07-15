@@ -10,9 +10,11 @@ import {
   ChevronUp,
 } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { ImageVersionHistory } from "@/components/ui/image-version-history";
 import { cn } from "@/lib/utils";
+import { generateImageViaQueue, ImageJobError } from "@/lib/ai/image-job-client";
 import type { ImageVersionContentType, ImageVersionFieldName } from "@/lib/types";
 
 export type ImageContext = "event-cover" | "blog-cover" | "avatar" | "organizer-logo";
@@ -111,6 +113,7 @@ export function AIImageGenerator({
   className,
   disabled = false,
 }: AIImageGeneratorProps) {
+  const tCommon = useTranslations("common");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCustomizePrompt, setShowCustomizePrompt] = useState(false);
@@ -120,6 +123,23 @@ export function AIImageGenerator({
   const [refinementPrompt, setRefinementPrompt] = useState("");
 
   const buildDefaultPrompt = () => DEFAULT_PROMPTS[context](title, content);
+
+  // Map queue error codes to translated messages
+  const describeError = (err: unknown, fallback: string) => {
+    const codeKeys: Record<string, string> = {
+      worker_offline: "aiWorkerOffline",
+      rate_limit_unavailable: "aiWorkerOffline",
+      context_unavailable: "aiWorkerOffline",
+      refine_unavailable: "aiRefineUnavailable",
+      too_many_pending: "aiTooManyPending",
+      timeout: "aiTimeout",
+      generation_failed: "aiGenerationFailed",
+    };
+    if (err instanceof ImageJobError && err.code && codeKeys[err.code]) {
+      return tCommon(codeKeys[err.code]);
+    }
+    return err instanceof Error ? err.message : fallback;
+  };
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -137,35 +157,12 @@ export function AIImageGenerator({
         payload.customPrompt = customPrompt.trim();
       }
 
-      const res = await fetch("/api/ai/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
-        const contentType = res.headers.get("content-type");
-        if (contentType?.includes("application/json")) {
-          const data = await res.json();
-          throw new Error(data.error || "Generation failed");
-        } else {
-          // Non-JSON response (likely from API gateway)
-          const text = await res.text();
-          if (res.status === 413 || text.toLowerCase().includes("too large")) {
-            throw new Error("Request too large. Try a shorter prompt.");
-          }
-          throw new Error(`Server error (${res.status}): ${text.slice(0, 100)}`);
-        }
-      }
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      onImageChange(data.imageUrl);
+      // Enqueued on the local image worker; resolves when the job completes
+      const imageUrl = await generateImageViaQueue(payload);
+      onImageChange(imageUrl);
     } catch (err) {
       console.error("Failed to generate image:", err);
-      setError(err instanceof Error ? err.message : "Generation failed");
+      setError(describeError(err, tCommon("aiGenerationFailed")));
     } finally {
       setIsGenerating(false);
     }
@@ -178,42 +175,19 @@ export function AIImageGenerator({
     setError(null);
 
     try {
-      const res = await fetch("/api/ai/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          context,
-          entityId,
-          existingImageUrl: currentImageUrl,
-          refinementPrompt: refinementPrompt.trim(),
-        }),
+      const imageUrl = await generateImageViaQueue({
+        context,
+        entityId,
+        existingImageUrl: currentImageUrl,
+        refinementPrompt: refinementPrompt.trim(),
       });
 
-      if (!res.ok) {
-        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
-        const contentType = res.headers.get("content-type");
-        if (contentType?.includes("application/json")) {
-          const data = await res.json();
-          throw new Error(data.error || "Refinement failed");
-        } else {
-          // Non-JSON response (likely from API gateway)
-          const text = await res.text();
-          if (res.status === 413 || text.toLowerCase().includes("too large")) {
-            throw new Error("Image is too large to refine. Try uploading a smaller image or generating a new one.");
-          }
-          throw new Error(`Server error (${res.status}): ${text.slice(0, 100)}`);
-        }
-      }
-
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      onImageChange(data.imageUrl);
+      onImageChange(imageUrl);
       setRefinementPrompt("");
       setShowRefinement(false);
     } catch (err) {
       console.error("Failed to refine image:", err);
-      setError(err instanceof Error ? err.message : "Refinement failed");
+      setError(describeError(err, tCommon("aiGenerationFailed")));
     } finally {
       setIsGenerating(false);
     }
@@ -315,6 +289,13 @@ export function AIImageGenerator({
         )}
         {currentImageUrl ? "Regenerate with AI" : "Generate with AI"}
       </button>
+
+      {/* Queue wait hint — generation runs on the local worker (1-3 min) */}
+      {isGenerating && (
+        <p className="text-xs text-muted-foreground text-center">
+          {tCommon("aiQueueWait")}
+        </p>
+      )}
 
       {/* Refinement - collapsible, only when image exists */}
       {currentImageUrl && (

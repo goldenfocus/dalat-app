@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
 import "./globals.css";
 
 const siteUrl = "https://dalat.app";
@@ -65,14 +64,6 @@ export const metadata: Metadata = {
   },
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  display: "optional", // Faster first render, fallback if font not loaded quickly
-  subsets: ["latin"],
-  preload: true,
-  adjustFontFallback: true, // Reduce CLS with better fallback metrics
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -84,6 +75,12 @@ export default function RootLayout({
         {/* Critical resource hints for faster connections */}
         <link
           rel="preconnect"
+          href="https://cdn.dalat.app"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://cdn.dalat.app" />
+        <link
+          rel="preconnect"
           href="https://aljcmodwjqlznzcydyor.supabase.co"
           crossOrigin="anonymous"
         />
@@ -91,18 +88,11 @@ export default function RootLayout({
           rel="dns-prefetch"
           href="https://aljcmodwjqlznzcydyor.supabase.co"
         />
-        {/* Preconnect to Google Fonts for Geist */}
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
         {/* Apple touch icon for iOS home screen */}
         <link rel="apple-touch-icon" href="/android-chrome-192x192.png" />
       </head>
-      <body className={`${geistSans.className} antialiased`}>
-        {children}
-      </body>
+      {/* System font stack via globals.css — zero webfont bytes, faster FCP */}
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

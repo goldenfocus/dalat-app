@@ -8,19 +8,21 @@ import { useTranslations, useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
-import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
+import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { usePrefetch } from "@/lib/prefetch";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import type { Event, EventCounts, Locale } from "@/lib/types";
+import { getCardCoverUrl, getPastProof, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
+import type { CardEvent, EventCounts, Locale } from "@/lib/types";
 
 const BLUR_DATA_URL =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZTVlNWU1Ii8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjZjVmNWY1Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNnKSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIi8+PC9zdmc+";
 
 interface EventListCardProps {
-  event: Event;
+  event: CardEvent;
   counts?: EventCounts;
+  social?: EventSocial;
   seriesRrule?: string;
   translatedTitle?: string;
   /** When true, only shows time (date is shown in section header) */
@@ -44,6 +46,7 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
 export const EventListCard = memo(function EventListCard({
   event,
   counts,
+  social,
   seriesRrule,
   translatedTitle,
   hideDate,
@@ -57,14 +60,17 @@ export const EventListCard = memo(function EventListCard({
     prefetchEventCounts(event.id);
   };
 
+  const goingSpots = counts?.going_spots ?? 0;
   const spotsText = event.capacity
-    ? `${counts?.going_spots ?? 0}/${event.capacity}`
-    : `${counts?.going_spots ?? 0}`;
+    ? `${goingSpots}/${event.capacity}`
+    : `${goingSpots}`;
 
   const isPast = isEventPast(event.starts_at, event.ends_at);
-  const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
-  const imageIsVideo = isVideoUrl(event.image_url);
+  const coverUrl = getCardCoverUrl(event.image_url, social);
+  const hasCustomImage = !!coverUrl;
+  const imageIsVideo = isVideoUrl(coverUrl);
   const displayTitle = translatedTitle || event.title;
+  const pastProof = getPastProof(social);
 
   return (
     <Link
@@ -79,7 +85,7 @@ export const EventListCard = memo(function EventListCard({
         {hasCustomImage ? (
           imageIsVideo ? (
             <video
-              src={event.image_url!}
+              src={coverUrl!}
               className="w-full h-full object-cover"
               muted
               loop
@@ -90,7 +96,7 @@ export const EventListCard = memo(function EventListCard({
           ) : (
             <Image
               loader={cloudflareLoader}
-              src={event.image_url!}
+              src={coverUrl!}
               alt={displayTitle}
               fill
               sizes="96px"
@@ -134,12 +140,29 @@ export const EventListCard = memo(function EventListCard({
           </div>
         )}
 
-        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
-          <Users className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-          <span>
-            {spotsText} {isPast ? t("went") : t("going")}
-          </span>
-        </div>
+        {/* Going count only when meaningful; past-proof beats a near-zero count */}
+        {shouldShowGoingCount(goingSpots) ? (
+          <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
+            <Users className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+            <span>
+              {spotsText} {isPast ? t("went") : t("going")}
+            </span>
+          </div>
+        ) : pastProof && !isPast ? (
+          <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
+            <Users className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+            <span className="truncate">
+              {pastProof.kind === "both" && t("pastProofBoth", { went: pastProof.went, photos: pastProof.photos })}
+              {pastProof.kind === "photos" && t("pastProofPhotos", { photos: pastProof.photos })}
+              {pastProof.kind === "went" && t("pastProofWent", { went: pastProof.went })}
+            </span>
+          </div>
+        ) : event.capacity && !isPast ? (
+          <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
+            <Users className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
+            <span>{t("spotsAvailable", { count: event.capacity - goingSpots })}</span>
+          </div>
+        ) : null}
       </div>
     </Link>
   );

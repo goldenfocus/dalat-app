@@ -82,6 +82,11 @@ export async function POST(request: NextRequest) {
     formData.append("response_format", "verbose_json");
     formData.append("timestamp_granularities[]", "segment");
     formData.append("timestamp_granularities[]", "word");
+    // Vocabulary bias — without this Whisper mishears "DaLat" as "the lab"
+    formData.append(
+      "prompt",
+      `Song: "${track.title || ""}"${track.artist ? ` by ${track.artist}` : ""} — sung in and about DaLat (Đà Lạt), Vietnam, from the dalat.app community. Vocabulary: DaLat, Da Lat, Đà Lạt, dalat.app, Langbiang, Xuân Hương, Vietnam.`
+    );
 
     const whisperResponse = await fetch(
       "https://api.openai.com/v1/audio/transcriptions",

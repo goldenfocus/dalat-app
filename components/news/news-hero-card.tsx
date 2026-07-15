@@ -1,7 +1,10 @@
 import Image from 'next/image';
 import { Link } from '@/lib/i18n/routing';
-import { Clock, TrendingUp } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { formatTimeAgo } from '@/lib/news/format-time-ago';
+import { markdownToPlainText } from '@/lib/blog/strip-markdown';
+import { normalizeStoryContent } from '@/lib/blog/normalize-content';
+import { GeneratedCover } from '@/components/blog/generated-cover';
 
 interface NewsHeroCardProps {
   slug: string;
@@ -24,11 +27,7 @@ export function NewsHeroCard({
   newsTags,
   sourceName,
 }: NewsHeroCardProps) {
-  const excerpt =
-    storyContent
-      .replace(/[#*[\]()]/g, '')
-      .slice(0, 200)
-      .trim() + '...';
+  const excerpt = markdownToPlainText(normalizeStoryContent(storyContent), 200);
 
   const timeAgo = publishedAt ? formatTimeAgo(publishedAt) : null;
 
@@ -48,9 +47,12 @@ export function NewsHeroCard({
             priority
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-muted">
-            <TrendingUp className="h-12 w-12 text-muted-foreground/30" />
-          </div>
+          // No categoryLabel — the card already overlays the tag badge
+          <GeneratedCover
+            title={title}
+            seed={slug}
+            className="h-full aspect-auto"
+          />
         )}
         {isBreaking && (
           <div className="absolute left-3 top-3 rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold text-white uppercase tracking-wider animate-pulse">

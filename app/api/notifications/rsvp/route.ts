@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { notifyRsvpConfirmation, notifyOrganizerNewRsvp } from '@/lib/notifications';
-import { inngest } from '@/lib/inngest';
+import { scheduleRsvpReminders } from '@/lib/notifications/scheduler';
 import { awardPoints } from '@/lib/loyalty';
 import type { Locale } from '@/lib/types';
 
@@ -71,22 +71,19 @@ export async function POST(request: Request) {
       console.log('[rsvp-notification] Organizer notified of new RSVP');
     }
 
-    // Schedule reminders via Inngest
-    await inngest.send({
-      name: 'rsvp/created',
-      data: {
-        userId: user.id,
-        locale,
-        eventId,
-        eventTitle: event.title,
-        eventSlug: event.slug,
-        startsAt: event.starts_at,
-        endsAt: event.ends_at,
-        locationName: event.location_name,
-        googleMapsUrl: event.google_maps_url,
-      },
+    // Schedule reminders (delivered by /api/cron/process-notifications)
+    const scheduled = await scheduleRsvpReminders({
+      userId: user.id,
+      locale,
+      eventId,
+      eventTitle: event.title,
+      eventSlug: event.slug,
+      startsAt: event.starts_at,
+      endsAt: event.ends_at,
+      locationName: event.location_name,
+      googleMapsUrl: event.google_maps_url,
     });
-    console.log('[rsvp-notification] Scheduled reminders via Inngest');
+    console.log('[rsvp-notification] Scheduled reminders:', scheduled);
 
     // Award loyalty points for RSVP (non-blocking)
     void awardPoints(user.id, 'event_rsvp', {

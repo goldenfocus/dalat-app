@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
+import { EXTRACTION_MODEL } from "../extraction-model";
 import type { TikTokPost, ExtractedEvent } from "../types";
 import {
   slugify,
@@ -56,7 +57,8 @@ export async function processTikTokPosts(
       const coverImage = post.videoMeta?.coverUrl || post.covers?.[0];
 
       // Download and re-upload image to our storage (external CDN URLs expire)
-      const imageUrl = await downloadAndUploadImage(supabase, coverImage, slug);
+      const imageUrl = await downloadAndUploadImage(
+        coverImage, slug);
 
       const { error } = await supabase.from("events").insert({
         slug,
@@ -100,7 +102,7 @@ async function extractEventFromTikTok(
 ): Promise<ExtractedEvent> {
   try {
     const response = await client.messages.create({
-      model: "claude-haiku-4-20250514",
+      model: EXTRACTION_MODEL,
       max_tokens: 500,
       system: `You analyze TikTok captions to detect events in Đà Lạt, Vietnam.
 Return JSON only, no markdown. Structure:

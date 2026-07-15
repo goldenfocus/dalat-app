@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { locales } from "@/lib/i18n/routing";
+import { buildLocales } from "@/lib/i18n/routing";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { HostDashboard } from "@/components/loyalty/host-dashboard";
@@ -11,7 +11,7 @@ type PageProps = {
 };
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

@@ -3,13 +3,49 @@
 //
 // IMPORTANT: Update SW_VERSION when deploying new features
 // This triggers the update flow for all users
-const SW_VERSION = '1.0.2';
+const SW_VERSION = '1.0.5';
 
 const APP_URL = self.location.origin;
 
-// Cache names
+// Cache names. PAGES_CACHE is keyed by SW_VERSION so cached HTML (which
+// references content-hashed chunk URLs) is evicted whenever the SW updates.
 const STATIC_CACHE = 'dalat-static-v1';
 const IMAGE_CACHE = 'dalat-images-v1';
+const PAGES_CACHE = `dalat-pages-${SW_VERSION}`;
+
+// Max entries in the page-shell cache (oldest evicted first)
+const PAGES_CACHE_LIMIT = 30;
+
+// Only cache known-public content pages. Everything else (organizer, settings,
+// loyalty, editors, …) server-renders user-specific HTML that must never be
+// served stale to a different user.
+const isCacheablePage = (pathname) => {
+  // Strip the optional 2-letter locale prefix (/vi/events/x → /events/x)
+  const path = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '') || '/';
+  // Auth-gated sub-routes under the public prefixes render user-specific HTML
+  if (/\/(?:new|edit|settings|moderation|responses|checkin|reconfirmation|questionnaire|broadcast|pro-upload|download)(?:\/|$)/.test(path)) {
+    return false;
+  }
+  return path === '/' || /^\/(?:events|venues|map|moments)(?:\/|$)/.test(path);
+};
+
+// Never cache page HTML on localhost — dev server HTML must stay fresh
+const IS_LOCAL_DEV =
+  self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
+
+// Put a page in the cache, re-adding so recently used entries sort last (simple LRU)
+const putPage = (cache, request, response) =>
+  cache
+    .delete(request)
+    .then(() => cache.put(request, response))
+    .then(() => cache.keys())
+    .then(keys => {
+      if (keys.length > PAGES_CACHE_LIMIT) {
+        return Promise.all(
+          keys.slice(0, keys.length - PAGES_CACHE_LIMIT).map(key => cache.delete(key))
+        );
+      }
+    });
 
 // Static assets to precache (improves FCP on repeat visits)
 const PRECACHE_ASSETS = [
@@ -37,7 +73,7 @@ self.addEventListener('activate', (event) => {
       caches.keys().then(keys =>
         Promise.all(
           keys
-            .filter(key => key !== STATIC_CACHE && key !== IMAGE_CACHE)
+            .filter(key => key !== STATIC_CACHE && key !== IMAGE_CACHE && key !== PAGES_CACHE)
             .map(key => caches.delete(key))
         )
       ),
@@ -96,6 +132,41 @@ self.addEventListener('fetch', (event) => {
             return response;
           });
           return cached || fetchPromise;
+        })
+      )
+    );
+    return;
+  }
+
+  // Stale-while-revalidate for page navigations (instant shell on repeat visits)
+  if (
+    request.mode === 'navigate' &&
+    !IS_LOCAL_DEV &&
+    url.origin === self.location.origin &&
+    isCacheablePage(url.pathname)
+  ) {
+    event.respondWith(
+      caches.open(PAGES_CACHE).then(cache =>
+        cache.match(request).then(cached => {
+          const fetchPromise = fetch(request).then(response => {
+            if (response.ok && !response.redirected) {
+              event.waitUntil(putPage(cache, request, response.clone()));
+            } else {
+              // Redirect/non-OK (e.g. logged out) — the cached copy is stale
+              event.waitUntil(cache.delete(request));
+            }
+            return response;
+          });
+          if (cached) {
+            // Serve cached HTML immediately, revalidate in the background
+            event.waitUntil(
+              fetchPromise.catch((err) => {
+                console.warn('[SW] page revalidation failed:', url.pathname, err);
+              })
+            );
+            return cached;
+          }
+          return fetchPromise;
         })
       )
     );

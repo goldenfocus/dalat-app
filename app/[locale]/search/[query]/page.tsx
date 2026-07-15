@@ -5,7 +5,7 @@ export const maxDuration = 60;
 
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
-import { locales, type Locale } from "@/lib/i18n/routing";
+import { buildLocales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { EventSearchBar } from "@/components/events/event-search-bar";
@@ -44,7 +44,7 @@ type PageProps = {
 export async function generateStaticParams() {
   const params: { locale: string; query: string }[] = [];
 
-  for (const locale of locales) {
+  for (const locale of buildLocales) {
     for (const query of POPULAR_SEARCHES) {
       params.push({ locale, query });
     }

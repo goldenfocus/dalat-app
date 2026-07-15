@@ -7,14 +7,17 @@ import { MapPin, Users, Clock, Radio } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
-import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
+import { isVideoUrl } from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
+import { useLazyVideo } from "@/lib/hooks/use-lazy-video";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import type { Event, EventCounts, Locale } from "@/lib/types";
+import { getCardCoverUrl, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
+import type { CardEvent, EventCounts, Locale } from "@/lib/types";
 
 interface EventHeroCardProps {
-  event: Event;
+  event: CardEvent;
   counts?: EventCounts;
+  social?: EventSocial;
   translatedTitle?: string;
 }
 
@@ -25,15 +28,19 @@ interface EventHeroCardProps {
 export const EventHeroCard = memo(function EventHeroCard({
   event,
   counts,
+  social,
   translatedTitle,
 }: EventHeroCardProps) {
   const t = useTranslations("events");
   const tHome = useTranslations("home");
   const locale = useLocale() as Locale;
 
-  const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
-  const imageIsVideo = isVideoUrl(event.image_url);
+  const coverUrl = getCardCoverUrl(event.image_url, social);
+  const hasCustomImage = !!coverUrl;
+  const imageIsVideo = isVideoUrl(coverUrl);
+  const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null, { eager: true });
   const displayTitle = translatedTitle || event.title;
+  const goingSpots = counts?.going_spots ?? 0;
 
   // Calculate time info
   const startTime = new Date(event.starts_at);
@@ -65,16 +72,15 @@ export const EventHeroCard = memo(function EventHeroCard({
         <div className="flex flex-col sm:flex-row">
           {/* Image section */}
           <div className="relative w-full sm:w-2/5 aspect-[16/9] sm:aspect-auto sm:min-h-[200px]">
-            {hasCustomImage ? (
+            {hasCustomImage && !videoFailed ? (
               imageIsVideo ? (
                 <video
-                  src={event.image_url!}
+                  ref={videoRef}
                   className={`absolute inset-0 w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
                   style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
                   muted
                   loop
                   playsInline
-                  autoPlay
                   preload="metadata"
                 />
               ) : (
@@ -83,7 +89,7 @@ export const EventHeroCard = memo(function EventHeroCard({
                   {event.image_fit !== "cover" && (
                     <Image
                       loader={cloudflareLoader}
-                      src={event.image_url!}
+                      src={coverUrl!}
                       alt=""
                       fill
                       sizes="(max-width: 640px) 100vw, 40vw"
@@ -93,7 +99,7 @@ export const EventHeroCard = memo(function EventHeroCard({
                   )}
                   <Image
                     loader={cloudflareLoader}
-                    src={event.image_url!}
+                    src={coverUrl!}
                     alt={displayTitle}
                     fill
                     sizes="(max-width: 640px) 100vw, 40vw"
@@ -145,11 +151,13 @@ export const EventHeroCard = memo(function EventHeroCard({
                 </div>
               )}
 
-              {/* Attendees */}
-              <div className="flex items-center gap-1.5">
-                <Users className="w-4 h-4" />
-                <span>{spotsText} {t("going")}</span>
-              </div>
+              {/* Attendees - hidden when the count would read as "dead event" */}
+              {shouldShowGoingCount(goingSpots) && (
+                <div className="flex items-center gap-1.5">
+                  <Users className="w-4 h-4" />
+                  <span>{spotsText} {t("going")}</span>
+                </div>
+              )}
             </div>
 
             {/* CTA hint */}

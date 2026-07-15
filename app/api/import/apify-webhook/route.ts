@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { processApifyPayload } from "@/lib/import/apify-processor";
+import { reportImportRun } from "@/lib/import/report-run";
 import type { ApifyWebhookPayload } from "@/lib/import/types";
 
 /**
@@ -71,6 +73,8 @@ export async function POST(request: Request) {
       `Apify webhook: Processing ${items.length} items from actor ${actorId}, run ${actorRunId}`
     );
 
+    const startedAt = new Date();
+
     // Process based on actor type
     const result = await processApifyPayload({
       actorId,
@@ -81,6 +85,13 @@ export async function POST(request: Request) {
     console.log(
       `Apify webhook: Processed ${result.processed}, skipped ${result.skipped}, errors ${result.errors}`
     );
+
+    // Heartbeat + Telegram digest
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    await reportImportRun(supabase, "facebook", startedAt, items.length, result);
 
     return NextResponse.json({
       success: true,

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link, type Locale } from "@/lib/i18n/routing";
-import { createClient } from "@/lib/supabase/server";
+import { Link, buildLocales, type Locale } from "@/lib/i18n/routing";
+import { createStaticClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
@@ -17,7 +17,7 @@ import {
   Camera, ChefHat, Wrench, GraduationCap, Compass, Mountain,
   Trophy, Users, Handshake, PartyPopper, Sparkles, UtensilsCrossed,
   Coffee, Store, Wine, Tent, Mic2, Frame, Theater, Film,
-  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake, CircleDot,
+  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake, CircleDot, Dices,
   type LucideIcon,
 } from "lucide-react";
 import type { Event, EventCounts } from "@/lib/types";
@@ -32,7 +32,7 @@ const ICON_MAP: Record<TagIconName, LucideIcon> = {
   Camera, ChefHat, Wrench, GraduationCap, Compass, Mountain,
   Trophy, Users, Handshake, PartyPopper, Sparkles, UtensilsCrossed,
   Coffee, Store, Wine, Tent, Mic2, Frame, Theater, Film,
-  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake, CircleDot,
+  Heart, Droplets, Baby, Sun, Home, Gift, HeartHandshake, CircleDot, Dices,
 };
 
 // Tag descriptions for hero sections
@@ -52,6 +52,7 @@ const TAG_DESCRIPTIONS: Record<EventTag, string> = {
   hiking: "Trek through pine forests, waterfalls, and mountain trails",
   sports: "Competitive and recreational sports activities for all skill levels",
   pickleball: "Find and organize pickleball games in Da Lat's perfect climate",
+  games: "Poker nights, board games, trivia, and friendly competition",
   // Social
   meetup: "Connect with like-minded people at casual social gatherings",
   networking: "Build professional connections and grow your network",
@@ -89,8 +90,7 @@ type PageProps = {
 };
 
 export async function generateStaticParams() {
-  const locales: Locale[] = ["en", "vi", "ko", "zh", "ru", "fr", "ja", "ms", "th", "de", "es", "id"];
-  return locales.flatMap((locale) =>
+  return buildLocales.flatMap((locale) =>
     EVENT_TAGS.map((tag) => ({ locale, tag }))
   );
 }
@@ -115,7 +115,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getEventsByTag(tag: EventTag) {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[tags] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty page");
+    return [];
+  }
 
   const { data: events, error } = await supabase
     .from("events")
@@ -137,7 +141,11 @@ async function getEventsByTag(tag: EventTag) {
 async function getEventCounts(eventIds: string[]) {
   if (eventIds.length === 0) return {};
 
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[tags] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty counts");
+    return {};
+  }
   const { data: rsvps } = await supabase
     .from("rsvps")
     .select("event_id, status, plus_ones")

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { inngest } from "@/lib/inngest/client";
 import { createClient } from "@/lib/supabase/server";
 import { awardPoints } from "@/lib/loyalty";
 
@@ -86,13 +85,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Trigger Inngest jobs for all moments in one batch
-    await inngest.send(
-      moments.map((m) => ({
-        name: "moment/process-metadata" as const,
-        data: { momentId: m.id },
-      }))
-    );
+    // AI metadata processing is parked: the old Inngest pipeline never ran in
+    // production (moment_metadata has 0 rows ever) and Inngest is removed.
+    // The homepage strip falls back to a default quality score, so skipping
+    // processing is the status quo. Loyalty points below still apply.
 
     // Award loyalty points for each moment upload (non-blocking)
     for (const m of moments) {

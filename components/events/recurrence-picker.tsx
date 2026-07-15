@@ -142,12 +142,12 @@ export function RecurrencePicker({
           <div className="flex items-center gap-2">
             <span className="text-sm">{t("every")}</span>
             <Input
-              type="number"
-              min="1"
-              max="99"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={value.interval}
               onChange={(e) =>
-                updateField("interval", parseInt(e.target.value, 10) || 1)
+                updateField("interval", Math.min(99, parseInt(e.target.value.replace(/\D/g, ""), 10) || 1))
               }
               className="w-16"
             />
@@ -237,12 +237,12 @@ export function RecurrencePicker({
               {value.endType === "count" && (
                 <div className="flex items-center gap-2">
                   <Input
-                    type="number"
-                    min="1"
-                    max="999"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={value.endCount || ""}
                     onChange={(e) =>
-                      updateField("endCount", parseInt(e.target.value, 10) || undefined)
+                      updateField("endCount", Math.min(999, parseInt(e.target.value.replace(/\D/g, ""), 10)) || undefined)
                     }
                     className="w-20"
                     placeholder="10"

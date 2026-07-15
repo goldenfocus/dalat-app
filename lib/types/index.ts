@@ -384,6 +384,9 @@ export interface Event {
   google_maps_url: string | null;
   latitude: number | null;
   longitude: number | null;
+  // Secret address: when true, the public location columns above are NULL and
+  // the real address lives in event_private_details (RLS-gated)
+  has_private_details: boolean;
   external_chat_url: string | null;
   starts_at: string;
   ends_at: string | null;
@@ -418,12 +421,50 @@ export interface Event {
   series_instance_date: string | null;
   is_exception: boolean;
   exception_type: "modified" | "cancelled" | "rescheduled" | null;
+  // Admin-set reference: show this past event's moments until we have our own
+  linked_past_event_id: string | null;
   // Joined data
   profiles?: Profile;
   tribes?: Tribe;
   organizers?: Organizer;
   venues?: Venue;  // WHERE the event happens
   event_series?: EventSeries;
+}
+
+/**
+ * Minimal event shape for card components (grid/list/immersive/hero).
+ * Server components map full rows to this before crossing the client
+ * boundary so unused columns aren't serialized to the browser.
+ */
+export type CardEvent = Pick<
+  Event,
+  | "id"
+  | "slug"
+  | "title"
+  | "image_url"
+  | "image_fit"
+  | "focal_point"
+  | "location_name"
+  | "starts_at"
+  | "ends_at"
+  | "capacity"
+  | "sponsor_tier"
+  | "source_locale"
+>;
+
+/**
+ * Guests-only event details (secret address). Readable via RLS only by the
+ * host, admins, and users with an RSVP status of exactly 'going'.
+ */
+export interface EventPrivateDetails {
+  event_id: string;
+  address: string | null;
+  google_maps_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  arrival_notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PlusOneGuest {
@@ -460,6 +501,10 @@ export interface EventCounts {
   waitlist_count: number;
   interested_count: number;
 }
+
+// Write-time social-proof data (fallback cover + past-occurrence stats),
+// resolved nightly by refresh_fallback_covers(). See lib/events/social-proof.ts.
+export type { EventSocial } from "@/lib/events/social-proof";
 
 /**
  * Event with series metadata from deduplicated feed RPC.

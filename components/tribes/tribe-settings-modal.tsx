@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Copy, RefreshCw, Trash2 } from "lucide-react";
+import { Copy, ImagePlus, Loader2, RefreshCw, Trash2, X } from "lucide-react";
+import { uploadFile } from "@/lib/storage/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,40 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
   const [inviteCode, setInviteCode] = useState(tribe.invite_code);
   const [error, setError] = useState<string | null>(null);
 
+  const [coverUrl, setCoverUrl] = useState<string | null>(tribe.cover_image_url);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleCoverSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    setError(null);
+    const preview = URL.createObjectURL(file);
+    setCoverPreview(preview);
+    setIsUploadingCover(true);
+    try {
+      const { publicUrl } = await uploadFile("event-media", file, {
+        entityId: `tribe-${tribe.id}`,
+      });
+      setCoverUrl(publicUrl);
+    } catch {
+      URL.revokeObjectURL(preview);
+      setCoverPreview(null);
+      setError(t("coverUploadFailed"));
+    } finally {
+      setIsUploadingCover(false);
+    }
+  }
+
+  function handleRemoveCover() {
+    if (coverPreview) URL.revokeObjectURL(coverPreview);
+    setCoverPreview(null);
+    setCoverUrl(null);
+  }
+
   async function handleSave() {
     setError(null);
 
@@ -46,6 +81,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
           description: description.trim() || null,
           access_type: accessType,
           is_listed: isListed,
+          cover_image_url: coverUrl,
         }),
       });
 
@@ -83,12 +119,68 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("settings")}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t("coverImage")}</Label>
+              <div className="relative h-32 rounded-lg overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
+                {coverPreview || coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={coverPreview || coverUrl || undefined}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-primary">
+                    {name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {isUploadingCover && (
+                  <div className="absolute inset-0 bg-background/60 flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">{t("coverUploading")}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => coverInputRef.current?.click()}
+                  disabled={isUploadingCover}
+                  className="px-3 py-2 active:scale-95 transition-all"
+                >
+                  <ImagePlus className="w-4 h-4 mr-2" />
+                  {coverPreview || coverUrl ? t("replaceCover") : t("uploadCover")}
+                </Button>
+                {(coverPreview || coverUrl) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleRemoveCover}
+                    disabled={isUploadingCover}
+                    className="px-3 py-2 active:scale-95 transition-all text-muted-foreground"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    {t("removeCover")}
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{t("coverImageHint")}</p>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleCoverSelect}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="tribe-name">Name</Label>
               <Input
@@ -182,7 +274,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
             <Button variant="outline" onClick={() => onOpenChange(false)} className="px-3 py-2">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={isPending} className="px-3 py-2">
+            <Button onClick={handleSave} disabled={isPending || isUploadingCover} className="px-3 py-2">
               {isPending ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>

@@ -16,11 +16,14 @@ interface UserSearchResult {
 
 type Invitee =
   | { type: "email"; email: string; name?: string }
-  | { type: "user"; user: UserSearchResult };
+  | { type: "user"; user: UserSearchResult }
+  | { type: "audience"; key: string; count: number };
 
 interface InviteResult {
   email?: string;
   userId?: string;
+  /** Synthesized client-side for audience chips */
+  audienceKey?: string;
   success: boolean;
   error?: string;
 }
@@ -48,6 +51,9 @@ export function InviteSendingAnimation({
   const getInviteeText = useCallback((invitee: Invitee): string => {
     if (invitee.type === "email") {
       return invitee.email;
+    }
+    if (invitee.type === "audience") {
+      return `@${invitee.key}`;
     }
     return `@${invitee.user.username}`;
   }, []);
@@ -98,7 +104,9 @@ export function InviteSendingAnimation({
         const result = results.find((r) =>
           invitee.type === "email"
             ? r.email === invitee.email
-            : r.userId === invitee.user.id
+            : invitee.type === "user"
+              ? r.userId === invitee.user.id
+              : r.audienceKey === invitee.key
         );
         setStatuses((prev) => {
           const next = [...prev];
@@ -140,7 +148,9 @@ export function InviteSendingAnimation({
           const result = results.find((r) =>
             invitee.type === "email"
               ? r.email === invitee.email
-              : r.userId === invitee.user.id
+              : invitee.type === "user"
+                ? r.userId === invitee.user.id
+                : r.audienceKey === invitee.key
           );
           next[index] = result?.success !== false ? "success" : "failed";
         }
@@ -222,7 +232,7 @@ export function InviteSendingAnimation({
 
             return (
               <div
-                key={invitee.type === "email" ? invitee.email : invitee.user.id}
+                key={invitee.type === "email" ? invitee.email : invitee.type === "user" ? invitee.user.id : `aud-${invitee.key}`}
                 className={cn(
                   "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-500",
                   status === "waiting" && "opacity-30",

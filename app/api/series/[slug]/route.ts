@@ -216,7 +216,13 @@ export async function PATCH(request: Request, { params }: Params) {
         query = query.gt("starts_at", new Date().toISOString());
       }
 
-      await query;
+      const { error: eventsError } = await query;
+      if (eventsError) {
+        return NextResponse.json(
+          { error: "Failed to update series events: " + eventsError.message },
+          { status: 500 }
+        );
+      }
     }
 
     // If time changed, update start/end times for future non-exception events
@@ -238,13 +244,20 @@ export async function PATCH(request: Request, { params }: Params) {
           const startsAt = fromZonedTime(localDateTime, DALAT_TIMEZONE);
           const endsAt = new Date(startsAt.getTime() + newDuration * 60 * 1000);
 
-          await supabase
+          const { error: timeError } = await supabase
             .from("events")
             .update({
               starts_at: startsAt.toISOString(),
               ends_at: endsAt.toISOString(),
             })
             .eq("id", event.id);
+
+          if (timeError) {
+            return NextResponse.json(
+              { error: "Failed to update event times: " + timeError.message },
+              { status: 500 }
+            );
+          }
         }
       }
     }
@@ -308,24 +321,45 @@ export async function DELETE(request: Request, { params }: Params) {
 
   if (deleteScope === "all") {
     // Cancel all events in series (past and future)
-    await supabase
+    const { error: cancelError } = await supabase
       .from("events")
       .update({ status: "cancelled" })
       .eq("series_id", series.id);
+
+    if (cancelError) {
+      return NextResponse.json(
+        { error: "Failed to cancel events: " + cancelError.message },
+        { status: 500 }
+      );
+    }
   } else if (deleteScope === "future") {
     // Cancel only future events
-    await supabase
+    const { error: cancelError } = await supabase
       .from("events")
       .update({ status: "cancelled" })
       .eq("series_id", series.id)
       .gt("starts_at", new Date().toISOString());
+
+    if (cancelError) {
+      return NextResponse.json(
+        { error: "Failed to cancel events: " + cancelError.message },
+        { status: 500 }
+      );
+    }
   }
 
   // Mark series as cancelled
-  await supabase
+  const { error: seriesError } = await supabase
     .from("event_series")
     .update({ status: "cancelled" })
     .eq("id", series.id);
+
+  if (seriesError) {
+    return NextResponse.json(
+      { error: "Failed to cancel series: " + seriesError.message },
+      { status: 500 }
+    );
+  }
 
   // Revalidate homepage and event caches
   revalidateTag(CACHE_TAGS.events, "max");

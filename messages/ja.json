@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "霧の中で迷子ですか？",
+    "description": "ダラットの未踏の一角に迷い込んだように、このページは存在しません。でも、おうちへの帰り道はクリックひとつです。",
+    "backHome": "ホームに戻る",
+    "tagline": "イベント · 人々 · モーメント · 愛 · ダラット 🇻🇳"
+  },
   "hero": {
     "headline": "イベントを見つけよう。会場を発見しよう。",
     "subtitle": "ダラットのコミュニティに参加しよう",
@@ -55,7 +61,13 @@
       "message": "このページは別の言語で表示されています。{language}に切り替えますか？",
       "switch": "{language}で表示",
       "dismiss": "現在の言語を維持"
-    }
+    },
+    "aiQueueWait": "画像を描いています — 通常1〜3分かかります ✨",
+    "aiWorkerOffline": "AIペインターはひと休み中です。しばらくしてからお試しください。",
+    "aiRefineUnavailable": "リファイン機能はお休み中です — 新しく生成してみてください。",
+    "aiTooManyPending": "他の画像を生成中です。少しお待ちください。",
+    "aiTimeout": "いつもより時間がかかっています — まもなく表示されるかもしれません。だめならもう一度お試しください。",
+    "aiGenerationFailed": "今回は生成できませんでした。もう一度お試しください。"
   },
   "nav": {
     "events": "イベント",
@@ -155,7 +167,9 @@
     "newPassword": "新しいパスワード",
     "newPasswordPlaceholder": "新しいパスワードを入力",
     "setNewPassword": "新しいパスワードを設定",
-    "passwordResetSuccess": "パスワードがリセットされました！ログインできます。",
+    "passwordResetSuccess": "パスワードを更新しました — ログイン済みです！",
+    "resetLinkExpired": "この再設定リンクは期限切れか、すでに使用されています。",
+    "requestNewLink": "新しいリンクをリクエスト",
     "emailRequired": "メールアドレスを入力してください",
     "or": "または",
     "continueWithEmail": "メールで続ける",
@@ -247,7 +261,14 @@
     },
     "friendsGoing": "フォロー中の{count}人が参加",
     "othersYouFollow": "+ フォロー中の{count}人",
-    "andMore": "他"
+    "andMore": "他",
+    "pastProofBoth": "前回{went}人参加・写真{photos}枚",
+    "pastProofPhotos": "前回の写真{photos}枚",
+    "pastProofWent": "前回{went}人参加",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "残り{count}枠",
+    "secretAddressLockHint": "RSVP後に正確な住所が表示されます",
+    "secretAddressRevealedHint": "この住所はゲストのみに表示されます"
   },
   "rsvp": {
     "imGoing": "参加する",
@@ -263,6 +284,13 @@
     "waitlistAutoPromote": "空きが出ると自動的に参加になります"
   },
   "eventForm": {
+    "linkedPastEvent": "過去のイベントのモーメント",
+    "linkedPastEventHelp": "このイベントに独自のモーメントができるまで、過去のイベントのモーメントをこのページに表示します。管理者のみ設定できます。",
+    "linkedPastEventError": "リンクを更新できませんでした。もう一度お試しください。",
+    "searchPastEvents": "過去のイベントを検索…",
+    "searchingEvents": "検索中…",
+    "noPastEventsFound": "過去のイベントが見つかりません",
+    "unlinkPastEvent": "リンク解除",
     "createEvent": "イベントを作成",
     "editEvent": "イベントを編集",
     "title": "イベントタイトル",
@@ -289,6 +317,9 @@
     "locationVenuesSection": "会場",
     "locationPlacesSection": "その他の場所",
     "locationNoResults": "場所が見つかりません",
+    "locationUseCustom": "「{text}」を使う",
+    "locationUseAsTyped": "入力したとおりの住所で保存",
+    "locationSearchUnavailable": "現在、場所の検索は利用できません。下の項目から入力したとおりの住所を使用できます。",
     "locationLoading": "読み込み中...",
     "locationCoordinatesDetected": "座標を検出しました",
     "locationResolvingUrl": "リンクから位置を抽出中...",
@@ -388,7 +419,14 @@
     "sponsorTier3": "ゴールド (ティア3)",
     "sponsorTierHelp": "注目イベントはゴールドバッジ付きでフィードの最上部に表示されます。",
     "activityTags": "アクティビティタイプ",
-    "activityTagsHelp": "タグを選択して、イベントを見つけやすくしましょう。AIがコンテンツに基づいて自動的にタグ付けも行います。"
+    "activityTagsHelp": "タグを選択して、イベントを見つけやすくしましょう。AIがコンテンツに基づいて自動的にタグ付けも行います。",
+    "secretAddress": "シークレット住所",
+    "secretAddressHelp": "正確な住所は非公開です。参加でRSVPしたゲストのみ見ることができます。イベント当日の朝にもゲストへ住所をお送りします。",
+    "secretAddressPublicLabel": "全員に表示される内容",
+    "secretAddressPublicLabelPlaceholder": "例:ナイトマーケット近くの一軒家",
+    "secretAddressPublicLabelHelp": "住所の代わりに表示されるおおまかなエリアの説明です。",
+    "secretAddressArrivalNotes": "到着メモ(ゲスト限定)",
+    "secretAddressArrivalNotesPlaceholder": "ドアコード、駐車場のヒント、Zalo/WhatsAppグループのリンク…"
   },
   "eventActions": {
     "eventOptions": "イベントオプション",
@@ -1105,7 +1143,12 @@
     ],
     "usernamePlaceholder": "名前またはユーザー名で検索",
     "usernameHint": "検索するには2文字以上入力してください",
-    "noInvitees": "招待する人を少なくとも1人追加してください"
+    "noInvitees": "招待する人を少なくとも1人追加してください",
+    "audienceEveryone": "全員",
+    "audiencePeople": "{count}人",
+    "personalNoteLabel": "メッセージを追加",
+    "personalNotePlaceholder": "参加すべき理由は？（任意）",
+    "audienceNoRecipients": "全員がすでに招待済みか、最近通知を受け取っています"
   },
   "moments": {
     "moments": "モーメント",
@@ -1333,6 +1376,16 @@
     }
   },
   "tribes": {
+    "findYourTribe": "自分のトライブを見つけよう",
+    "discoverTitle": "ダラットのトライブ",
+    "discoverSubtitle": "小さなコミュニティ、大きな楽しさ——この街を我が家にしてくれる仲間に出会おう。",
+    "startTribe": "トライブを作る",
+    "seeAll": "すべて見る",
+    "accessOpen": "誰でも参加OK",
+    "accessRequest": "参加には承認が必要",
+    "emptyTitle": "まだトライブがありません——霧が最初の仲間を待っています。",
+    "emptyCta": "創設者になる",
+    "dateAtTime": "{date} {time}",
     "title": "トライブ",
     "createTribe": "トライブを作成",
     "joinTribe": "トライブに参加",
@@ -1385,7 +1438,14 @@
     "createdBy": "{name}が作成",
     "joinedOn": "{date}に参加",
     "myTribes": "マイトライブ",
-    "pendingRequests": "保留中のリクエスト"
+    "pendingRequests": "保留中のリクエスト",
+    "coverImage": "カバー画像",
+    "coverImageHint": "横長の画像がおすすめです — 約1200×600。",
+    "uploadCover": "カバーをアップロード",
+    "replaceCover": "カバーを変更",
+    "removeCover": "削除",
+    "coverUploading": "アップロード中...",
+    "coverUploadFailed": "アップロードに失敗しました。もう一度お試しください。"
   },
   "feed": {
     "title": "フィード",
@@ -1618,7 +1678,16 @@
     "allPosts": "すべて",
     "noPosts": "まだ記事がありません。またお越しください！",
     "backToBlog": "ブログに戻る",
-    "translated": "翻訳済み"
+    "translated": "翻訳済み",
+    "sources": "出典",
+    "via": "出典",
+    "loadMore": "もっと見る",
+    "newerPosts": "新しい記事",
+    "olderPosts": "過去の記事",
+    "today": "今日",
+    "yesterday": "昨日",
+    "thisWeek": "今週",
+    "older": "それ以前"
   },
   "streaming": {
     "goLive": "ライブ配信",
@@ -1759,6 +1828,8 @@
     "tour": "ツアー",
     "hiking": "ハイキング",
     "sports": "スポーツ",
+    "pickleball": "ピックルボール",
+    "games": "ゲーム",
     "meetup": "ミートアップ",
     "networking": "交流会",
     "community": "コミュニティ",
@@ -2354,7 +2425,11 @@
     "tagGovernment": "行政",
     "tagFoodDrink": "グルメ",
     "tagWeather": "天気",
-    "tagCommunity": "コミュニティ"
+    "tagCommunity": "コミュニティ",
+    "today": "今日",
+    "yesterday": "昨日",
+    "thisWeek": "今週",
+    "older": "それ以前"
   },
   "loyalty": {
     "title": "ロイヤルティ",
@@ -2467,5 +2542,37 @@
     "readyToHostDesc": "最初のイベントを作成してホストポイントを獲得しましょう。",
     "createEvent": "イベントを作成",
     "noOneYet": "まだリーダーボードに誰もいません。最初の一人になりましょう！"
+  },
+  "pokerTable": {
+    "level": "レベル {n}",
+    "ante": "アンティ",
+    "next": "次",
+    "tapToStart": "タップしてスタート",
+    "shuffleUp": "シャッフルアップ・アンド・ディール！",
+    "voiceBlindsUp": "ブラインドアップ！{sb}、{bb}になりました",
+    "voiceBlindsUpAnte": "ブラインドアップ！{sb}、{bb}、アンティ{ante}になりました",
+    "voiceOneMinute": "このレベルは残り1分です",
+    "pause": "一時停止",
+    "resume": "再開",
+    "prevLevel": "前のレベル",
+    "nextLevel": "次のレベル",
+    "addMinute": "+1分",
+    "editLevels": "レベルを編集",
+    "presets": "プリセット",
+    "presetHyper": "ハイパー · 6分",
+    "presetTurbo": "ターボ · 10分",
+    "presetStandard": "スタンダード · 15分",
+    "smallBlind": "SB",
+    "bigBlind": "BB",
+    "minutesShort": "分",
+    "addLevel": "レベルを追加",
+    "removeLevel": "レベルを削除",
+    "resetClock": "リセット",
+    "done": "完了",
+    "soundOn": "サウンドオン",
+    "soundOff": "サウンドオフ",
+    "levelOf": "レベル {n} / {total}",
+    "minutesPerLevel": "レベルごとの分数",
+    "applyToAll": "すべてに適用"
   }
 }

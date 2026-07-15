@@ -1,5 +1,9 @@
+import { preload } from "react-dom";
 import { getTranslations } from "next-intl/server";
-import { optimizedImageUrl } from "@/lib/image-cdn";
+import { generateSrcSet, optimizedImageUrl } from "@/lib/image-cdn";
+
+const HERO_WIDTHS = [640, 750, 1080, 1440, 1920];
+const HERO_SIZES = "100vw";
 
 interface HeroImageSectionProps {
   imageUrl: string;
@@ -21,6 +25,21 @@ export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectio
     format: "auto",
   });
 
+  // Responsive candidates so phones don't download the 1920px desktop image
+  const srcSet = generateSrcSet(imageUrl, HERO_WIDTHS, {
+    quality: 80,
+    format: "auto",
+  });
+
+  // Preload the LCP image with the exact srcset/sizes the <img> below renders,
+  // so the browser picks the same candidate and nothing downloads twice
+  preload(optimizedUrl || imageUrl, {
+    as: "image",
+    fetchPriority: "high",
+    imageSrcSet: srcSet,
+    imageSizes: HERO_SIZES,
+  });
+
   return (
     <section className="relative overflow-hidden">
       {/* Full-bleed image container - improved aspect ratios for better imagery showcase */}
@@ -29,6 +48,8 @@ export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectio
       <div className="aspect-[16/9] sm:aspect-[2/1] lg:aspect-auto lg:h-[400px] bg-muted overflow-hidden">
         <img
           src={optimizedUrl || imageUrl}
+          srcSet={srcSet}
+          sizes={HERO_SIZES}
           alt=""
           role="presentation"
           className="w-full h-full object-cover animate-hero-breathe"

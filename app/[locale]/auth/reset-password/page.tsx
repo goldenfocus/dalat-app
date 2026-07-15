@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/lib/i18n/routing";
 import { ArrowLeft, Loader2, Eye, EyeOff, CheckCircle } from "lucide-react";
@@ -17,24 +18,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const t = useTranslations("auth");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [linkExpired, setLinkExpired] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Recovery links land here with a token_hash; it's only consumed on submit
+  // so email security scanners loading the page can't invalidate the link.
+  const tokenHash = searchParams?.get("token_hash");
+  const tokenVerifiedRef = useRef(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    if (!password) {
-      setError(t("emailPasswordRequired"));
-      return;
-    }
 
     if (password !== confirmPassword) {
       setError(t("passwordsDoNotMatch"));
@@ -50,15 +53,38 @@ export default function ResetPasswordPage() {
 
     try {
       const supabase = createClient();
+
+      if (tokenHash && !tokenVerifiedRef.current) {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          type: "recovery",
+          token_hash: tokenHash,
+        });
+
+        if (verifyError) {
+          console.error("Password reset verifyOtp failed:", verifyError);
+          // Only a rejected token means the link is dead — network/rate-limit
+          // errors keep the form on screen so the user can simply retry.
+          if (verifyError.code === "otp_expired" || verifyError.status === 403) {
+            setLinkExpired(true);
+          } else {
+            setError(t("somethingWentWrong"));
+          }
+          return;
+        }
+
+        tokenVerifiedRef.current = true;
+      }
+
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
         setError(error.message);
       } else {
         setSuccess(true);
-        // Redirect to login after 2 seconds
+        // updateUser leaves the user signed in — send them home, not to login
         setTimeout(() => {
-          router.push("/auth/login");
+          router.push("/");
+          router.refresh();
         }, 2000);
       }
     } catch {
@@ -92,6 +118,15 @@ export default function ResetPasswordPage() {
                   {t("passwordResetSuccess")}
                 </AlertDescription>
               </Alert>
+            ) : linkExpired ? (
+              <div className="space-y-4">
+                <Alert variant="destructive">
+                  <AlertDescription>{t("resetLinkExpired")}</AlertDescription>
+                </Alert>
+                <Button asChild className="w-full h-12">
+                  <Link href="/auth/forgot-password">{t("requestNewLink")}</Link>
+                </Button>
+              </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
@@ -162,5 +197,19 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "在雾中迷路了？",
+    "description": "就像走进大叻一个未被发现的角落，这个页面并不存在。不过回家的路，只需轻轻一点。",
+    "backHome": "返回首页",
+    "tagline": "活动 · 人们 · 时刻 · 爱 · 大叻 🇻🇳"
+  },
   "hero": {
     "headline": "发现活动。探索场地。",
     "subtitle": "加入大叻社区",
@@ -55,7 +61,13 @@
       "message": "此页面使用的是其他语言。切换到{language}？",
       "switch": "切换到{language}",
       "dismiss": "保持当前语言"
-    }
+    },
+    "aiQueueWait": "正在为你绘制图片 — 通常需要 1–3 分钟 ✨",
+    "aiWorkerOffline": "AI 画师正在小憩，请稍后再试。",
+    "aiRefineUnavailable": "润色功能暂时不可用 — 试试重新生成一张吧。",
+    "aiTooManyPending": "你的其他图片还在生成中，请稍等片刻。",
+    "aiTimeout": "比平时慢一些 — 图片可能马上就好。如果没有，请重试。",
+    "aiGenerationFailed": "这次生成失败了，再试一次吧。"
   },
   "nav": {
     "events": "活动",
@@ -155,7 +167,9 @@
     "newPassword": "新密码",
     "newPasswordPlaceholder": "输入新密码",
     "setNewPassword": "设置新密码",
-    "passwordResetSuccess": "密码重置成功！您现在可以登录了。",
+    "passwordResetSuccess": "密码已更新 — 你已登录！",
+    "resetLinkExpired": "此重置链接已过期或已被使用。",
+    "requestNewLink": "请求新链接",
     "emailRequired": "请输入您的邮箱",
     "or": "或",
     "continueWithEmail": "使用邮箱继续",
@@ -247,7 +261,14 @@
     },
     "friendsGoing": "{count}位好友参加",
     "othersYouFollow": "+ 你关注的{count}人",
-    "andMore": "等"
+    "andMore": "等",
+    "pastProofBoth": "上次 {went} 人参加 · {photos} 张照片",
+    "pastProofPhotos": "上次 {photos} 张照片",
+    "pastProofWent": "上次 {went} 人参加",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} 个名额",
+    "secretAddressLockHint": "确认参加后即可查看确切地址",
+    "secretAddressRevealedHint": "只有宾客可以看到此地址"
   },
   "rsvp": {
     "imGoing": "我要参加",
@@ -263,6 +284,13 @@
     "waitlistAutoPromote": "有空位时您将自动获得名额"
   },
   "eventForm": {
+    "linkedPastEvent": "往期活动的精彩瞬间",
+    "linkedPastEventHelp": "在本活动拥有自己的精彩瞬间之前，在此页面展示往期活动的精彩瞬间。仅管理员可设置。",
+    "linkedPastEventError": "无法更新链接，请重试。",
+    "searchPastEvents": "搜索往期活动…",
+    "searchingEvents": "搜索中…",
+    "noPastEventsFound": "未找到往期活动",
+    "unlinkPastEvent": "取消关联",
     "createEvent": "创建活动",
     "editEvent": "编辑活动",
     "title": "活动标题",
@@ -289,6 +317,9 @@
     "locationVenuesSection": "场地",
     "locationPlacesSection": "其他位置",
     "locationNoResults": "未找到位置",
+    "locationUseCustom": "使用“{text}”",
+    "locationUseAsTyped": "按输入原样保存该地址",
+    "locationSearchUnavailable": "位置搜索暂时不可用——你仍可在下方按输入原样使用该地址。",
     "locationLoading": "加载中...",
     "locationCoordinatesDetected": "已识别坐标",
     "locationResolvingUrl": "正在从链接提取位置...",
@@ -388,7 +419,14 @@
     "sponsorTier3": "金牌 (三级)",
     "sponsorTierHelp": "精选活动会带有金色徽章并优先显示在信息流中。",
     "activityTags": "活动类型",
-    "activityTagsHelp": "选择标签帮助人们找到您的活动。AI也会根据内容自动添加标签。"
+    "activityTagsHelp": "选择标签帮助人们找到您的活动。AI也会根据内容自动添加标签。",
+    "secretAddress": "秘密地址",
+    "secretAddressHelp": "确切地址将被隐藏——只有确认参加的宾客才能看到。我们还会在活动当天早上把地址发送给宾客。",
+    "secretAddressPublicLabel": "所有人看到的内容",
+    "secretAddressPublicLabelPlaceholder": "例如:夜市附近的一栋房子",
+    "secretAddressPublicLabelHelp": "代替地址显示的大致区域提示。",
+    "secretAddressArrivalNotes": "到达须知(仅宾客可见)",
+    "secretAddressArrivalNotesPlaceholder": "门禁密码、停车提示、Zalo/WhatsApp 群链接…"
   },
   "eventActions": {
     "eventOptions": "活动选项",
@@ -1105,7 +1143,12 @@
     ],
     "usernamePlaceholder": "按姓名或用户名搜索",
     "usernameHint": "请输入至少2个字符进行搜索",
-    "noInvitees": "请添加至少一位邀请对象"
+    "noInvitees": "请添加至少一位邀请对象",
+    "audienceEveryone": "所有人",
+    "audiencePeople": "{count} 人",
+    "personalNoteLabel": "添加个人留言",
+    "personalNotePlaceholder": "为什么值得参加？（可选）",
+    "audienceNoRecipients": "这里的所有人都已被邀请或最近已收到通知"
   },
   "moments": {
     "moments": "瞬间",
@@ -1336,6 +1379,16 @@
     }
   },
   "tribes": {
+    "findYourTribe": "找到你的部落",
+    "discoverTitle": "大叻部落",
+    "discoverSubtitle": "小小社群，大大乐趣——加入让这座城市如家般温暖的圈子。",
+    "startTribe": "创建部落",
+    "seeAll": "查看全部",
+    "accessOpen": "向所有人开放",
+    "accessRequest": "需申请加入",
+    "emptyTitle": "还没有部落——雾中正等待第一个社群。",
+    "emptyCta": "成为创始人",
+    "dateAtTime": "{date} {time}",
     "title": "部落",
     "createTribe": "创建部落",
     "joinTribe": "加入部落",
@@ -1388,7 +1441,14 @@
     "createdBy": "由 {name} 创建",
     "joinedOn": "加入于 {date}",
     "myTribes": "我的部落",
-    "pendingRequests": "待处理请求"
+    "pendingRequests": "待处理请求",
+    "coverImage": "封面图片",
+    "coverImageHint": "横向图片效果最佳——约 1200×600。",
+    "uploadCover": "上传封面",
+    "replaceCover": "更换封面",
+    "removeCover": "移除",
+    "coverUploading": "上传中...",
+    "coverUploadFailed": "上传失败,请重试。"
   },
   "feed": {
     "title": "动态",
@@ -1621,7 +1681,16 @@
     "allPosts": "全部",
     "noPosts": "暂无文章。敬请期待！",
     "backToBlog": "返回博客",
-    "translated": "已翻译"
+    "translated": "已翻译",
+    "sources": "来源",
+    "via": "来源",
+    "loadMore": "加载更多",
+    "newerPosts": "较新",
+    "olderPosts": "较早",
+    "today": "今天",
+    "yesterday": "昨天",
+    "thisWeek": "本周",
+    "older": "更早"
   },
   "streaming": {
     "goLive": "开始直播",
@@ -1762,6 +1831,8 @@
     "tour": "旅行",
     "hiking": "徒步",
     "sports": "体育",
+    "pickleball": "匹克球",
+    "games": "游戏",
     "meetup": "聚会",
     "networking": "社交",
     "community": "社区",
@@ -2357,7 +2428,11 @@
     "tagGovernment": "政务",
     "tagFoodDrink": "美食",
     "tagWeather": "天气",
-    "tagCommunity": "社区"
+    "tagCommunity": "社区",
+    "today": "今天",
+    "yesterday": "昨天",
+    "thisWeek": "本周",
+    "older": "更早"
   },
   "loyalty": {
     "title": "积分",
@@ -2470,5 +2545,37 @@
     "readyToHostDesc": "创建你的第一个活动，开始赚取主办积分。每场活动都让你更接近高级特权。",
     "createEvent": "创建活动",
     "noOneYet": "排行榜还没有人。争做第一！"
+  },
+  "pokerTable": {
+    "level": "第 {n} 级",
+    "ante": "前注",
+    "next": "下一级",
+    "tapToStart": "点击开始",
+    "shuffleUp": "洗牌发牌！",
+    "voiceBlindsUp": "盲注上升！现在是 {sb}，{bb}",
+    "voiceBlindsUpAnte": "盲注上升！现在是 {sb}，{bb}，前注 {ante}",
+    "voiceOneMinute": "本级还剩一分钟",
+    "pause": "暂停",
+    "resume": "继续",
+    "prevLevel": "上一级",
+    "nextLevel": "下一级",
+    "addMinute": "+1 分钟",
+    "editLevels": "编辑盲注级别",
+    "presets": "预设",
+    "presetHyper": "极速 · 6 分钟",
+    "presetTurbo": "快速 · 10 分钟",
+    "presetStandard": "标准 · 15 分钟",
+    "smallBlind": "小盲",
+    "bigBlind": "大盲",
+    "minutesShort": "分钟",
+    "addLevel": "添加级别",
+    "removeLevel": "删除级别",
+    "resetClock": "重置",
+    "done": "完成",
+    "soundOn": "开启声音",
+    "soundOff": "关闭声音",
+    "levelOf": "第 {n} / {total} 级",
+    "minutesPerLevel": "每级分钟数",
+    "applyToAll": "应用到全部"
   }
 }

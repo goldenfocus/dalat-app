@@ -16,17 +16,15 @@ Mood: Atmospheric, inviting, energetic yet sophisticated.
 Important: Do NOT include any text or lettering in the image. Create only the visual background.
 Aspect ratio: 2:1 landscape orientation.`,
 
-  "blog-cover": (title: string, content?: string) => `Create an abstract, artistic cover image for a blog post about: ${title}
+  "blog-cover": (title: string, content?: string) => `Atmospheric editorial photograph evoking: ${title}
 
-Context: ${content?.slice(0, 200) || "A blog post about technology and community events"}
+Context: ${content?.slice(0, 200) || "Life in Đà Lạt, Vietnam"}
 
 Style guidelines:
-- Modern, clean, tech-forward aesthetic
-- Purple and blue gradient background inspired by dalat.app branding
-- Abstract geometric shapes or flowing lines relevant to the topic
-- Subtle visual elements that hint at the subject matter
-- Atmospheric depth with soft glow effects
-- NO text, NO lettering, NO words
+- Setting inspired by Đà Lạt, Vietnam highlands: misty pine forests, lakes, flower gardens, French colonial streets — pick whatever fits the subject
+- Cinematic natural light, soft haze, purple-blue dusk tones
+- Photographic realism with gentle depth of field
+- Pure imagery only: absolutely no words, letters, numbers, signs, logos or watermarks
 - Landscape orientation (16:9 aspect ratio)
 - Professional and polished feel`,
 

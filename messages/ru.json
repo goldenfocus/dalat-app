@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "Заблудились в тумане?",
+    "description": "Как будто вы забрели в неизведанный уголок Далата — этой страницы не существует. Но дорога домой — всего в одном клике.",
+    "backHome": "Вернуться домой",
+    "tagline": "События · Люди · Моменты · Любовь · Далат 🇻🇳"
+  },
   "hero": {
     "headline": "Находите события. Открывайте места.",
     "subtitle": "Присоединяйтесь к сообществу в Далате",
@@ -55,7 +61,13 @@
       "message": "Эта страница на другом языке. Переключиться на {language}?",
       "switch": "Смотреть на {language}",
       "dismiss": "Оставить текущий язык"
-    }
+    },
+    "aiQueueWait": "Рисуем ваше изображение — обычно 1–3 минуты ✨",
+    "aiWorkerOffline": "ИИ-художник отдыхает. Попробуйте чуть позже.",
+    "aiRefineUnavailable": "Доработка временно недоступна — создайте новое изображение.",
+    "aiTooManyPending": "Ваши другие изображения ещё готовятся. Подождите немного.",
+    "aiTimeout": "Занимает дольше обычного — изображение может вот-вот появиться. Если нет, попробуйте снова.",
+    "aiGenerationFailed": "В этот раз не получилось. Попробуйте ещё раз."
   },
   "nav": {
     "events": "События",
@@ -155,7 +167,9 @@
     "newPassword": "Новый пароль",
     "newPasswordPlaceholder": "Введите новый пароль",
     "setNewPassword": "Установить новый пароль",
-    "passwordResetSuccess": "Пароль успешно сброшен! Теперь вы можете войти.",
+    "passwordResetSuccess": "Пароль обновлён — вы вошли в систему!",
+    "resetLinkExpired": "Эта ссылка для сброса устарела или уже была использована.",
+    "requestNewLink": "Запросить новую ссылку",
     "emailRequired": "Пожалуйста, введите email",
     "or": "или",
     "continueWithEmail": "Продолжить с email",
@@ -247,7 +261,14 @@
     },
     "friendsGoing": "{count} друзей пойдут",
     "othersYouFollow": "+ {count} ваших подписок",
-    "andMore": "и ещё"
+    "andMore": "и ещё",
+    "pastProofBoth": "В прошлый раз: {went} были · {photos} фото",
+    "pastProofPhotos": "{photos} фото с прошлого раза",
+    "pastProofWent": "В прошлый раз были {went}",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} мест",
+    "secretAddressLockHint": "Точный адрес откроется после подтверждения участия",
+    "secretAddressRevealedHint": "Этот адрес видят только гости"
   },
   "rsvp": {
     "imGoing": "Я пойду",
@@ -263,6 +284,13 @@
     "waitlistAutoPromote": "Вы автоматически получите место, когда оно освободится"
   },
   "eventForm": {
+    "linkedPastEvent": "Моменты с прошлого события",
+    "linkedPastEventHelp": "Показывать моменты прошлого события на этой странице, пока у этого события не появятся свои. Настраивается только администраторами.",
+    "linkedPastEventError": "Не удалось обновить связь. Попробуйте ещё раз.",
+    "searchPastEvents": "Поиск прошедших событий…",
+    "searchingEvents": "Поиск…",
+    "noPastEventsFound": "Прошедшие события не найдены",
+    "unlinkPastEvent": "Отвязать",
     "createEvent": "Создать событие",
     "editEvent": "Редактировать событие",
     "title": "Название события",
@@ -289,6 +317,9 @@
     "locationVenuesSection": "Площадки",
     "locationPlacesSection": "Другие места",
     "locationNoResults": "Места не найдены",
+    "locationUseCustom": "Использовать «{text}»",
+    "locationUseAsTyped": "Сохранить адрес в точности как введено",
+    "locationSearchUnavailable": "Поиск мест сейчас недоступен — ниже можно использовать адрес в точности как введено.",
     "locationLoading": "Загрузка...",
     "locationCoordinatesDetected": "Координаты определены",
     "locationResolvingUrl": "Извлечение местоположения из ссылки...",
@@ -388,7 +419,14 @@
     "sponsorTier3": "Золотой (Уровень 3)",
     "sponsorTierHelp": "Избранные мероприятия отображаются первыми с золотым значком.",
     "activityTags": "Тип активности",
-    "activityTagsHelp": "Выберите теги, чтобы люди могли найти ваше мероприятие. ИИ также автоматически добавит теги на основе содержания."
+    "activityTagsHelp": "Выберите теги, чтобы люди могли найти ваше мероприятие. ИИ также автоматически добавит теги на основе содержания.",
+    "secretAddress": "Секретный адрес",
+    "secretAddressHelp": "Точный адрес скрыт — его видят только гости, подтвердившие участие. Утром в день события мы также отправим им адрес.",
+    "secretAddressPublicLabel": "Что видят все",
+    "secretAddressPublicLabelPlaceholder": "напр. Дом рядом с ночным рынком",
+    "secretAddressPublicLabelHelp": "Примерный район, отображаемый вместо адреса.",
+    "secretAddressArrivalNotes": "Заметки о прибытии (только для гостей)",
+    "secretAddressArrivalNotesPlaceholder": "Код от двери, парковка, ссылка на группу Zalo/WhatsApp…"
   },
   "eventActions": {
     "eventOptions": "Опции события",
@@ -1105,7 +1143,12 @@
     ],
     "usernamePlaceholder": "Поиск по имени или логину",
     "usernameHint": "Введите минимум 2 символа для поиска",
-    "noInvitees": "Добавьте хотя бы одного человека для приглашения"
+    "noInvitees": "Добавьте хотя бы одного человека для приглашения",
+    "audienceEveryone": "Все пользователи",
+    "audiencePeople": "{count} чел.",
+    "personalNoteLabel": "Добавить личное сообщение",
+    "personalNotePlaceholder": "Почему стоит прийти? (необязательно)",
+    "audienceNoRecipients": "Все здесь уже приглашены или недавно получали уведомление"
   },
   "moments": {
     "moments": "Моменты",
@@ -1333,6 +1376,16 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Найди своё племя",
+    "discoverTitle": "Племена Далата",
+    "discoverSubtitle": "Маленькие сообщества, большая атмосфера — присоединяйтесь к компаниям, с которыми этот город становится домом.",
+    "startTribe": "Создать племя",
+    "seeAll": "Смотреть все",
+    "accessOpen": "Открыто для всех",
+    "accessRequest": "По заявке",
+    "emptyTitle": "Племён пока нет — туман ждёт свою первую компанию.",
+    "emptyCta": "Стать основателем",
+    "dateAtTime": "{date} в {time}",
     "title": "Трайбы",
     "createTribe": "Создать трайб",
     "joinTribe": "Вступить в трайб",
@@ -1385,7 +1438,14 @@
     "createdBy": "Создал {name}",
     "joinedOn": "Вступил {date}",
     "myTribes": "Мои трайбы",
-    "pendingRequests": "Ожидающие запросы"
+    "pendingRequests": "Ожидающие запросы",
+    "coverImage": "Обложка",
+    "coverImageHint": "Лучше всего подходит горизонтальное изображение — примерно 1200×600.",
+    "uploadCover": "Загрузить обложку",
+    "replaceCover": "Заменить обложку",
+    "removeCover": "Удалить",
+    "coverUploading": "Загрузка...",
+    "coverUploadFailed": "Не удалось загрузить. Попробуйте ещё раз."
   },
   "feed": {
     "title": "Лента",
@@ -1618,7 +1678,16 @@
     "allPosts": "Все",
     "noPosts": "Пока нет статей. Загляните позже!",
     "backToBlog": "Вернуться в блог",
-    "translated": "Переведено"
+    "translated": "Переведено",
+    "sources": "Источники",
+    "via": "источник",
+    "loadMore": "Загрузить ещё",
+    "newerPosts": "Новее",
+    "olderPosts": "Старее",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "thisWeek": "На этой неделе",
+    "older": "Ранее"
   },
   "streaming": {
     "goLive": "Начать трансляцию",
@@ -1759,6 +1828,8 @@
     "tour": "Тур",
     "hiking": "Походы",
     "sports": "Спорт",
+    "pickleball": "Пиклбол",
+    "games": "Игры",
     "meetup": "Встреча",
     "networking": "Нетворкинг",
     "community": "Сообщество",
@@ -2354,7 +2425,11 @@
     "tagGovernment": "Власти",
     "tagFoodDrink": "Еда и напитки",
     "tagWeather": "Погода",
-    "tagCommunity": "Сообщество"
+    "tagCommunity": "Сообщество",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "thisWeek": "На этой неделе",
+    "older": "Ранее"
   },
   "loyalty": {
     "title": "Бонусы",
@@ -2467,5 +2542,37 @@
     "readyToHostDesc": "Создайте первое событие и начните зарабатывать баллы организатора.",
     "createEvent": "Создать событие",
     "noOneYet": "В рейтинге пока никого. Будьте первым!"
+  },
+  "pokerTable": {
+    "level": "Уровень {n}",
+    "ante": "Анте",
+    "next": "Далее",
+    "tapToStart": "Нажмите, чтобы начать",
+    "shuffleUp": "Тасуем и раздаём!",
+    "voiceBlindsUp": "Блайнды растут! Теперь {sb}, {bb}",
+    "voiceBlindsUpAnte": "Блайнды растут! Теперь {sb}, {bb}, анте {ante}",
+    "voiceOneMinute": "До конца уровня осталась одна минута",
+    "pause": "Пауза",
+    "resume": "Продолжить",
+    "prevLevel": "Предыдущий уровень",
+    "nextLevel": "Следующий уровень",
+    "addMinute": "+1 мин",
+    "editLevels": "Изменить уровни",
+    "presets": "Пресеты",
+    "presetHyper": "Гипер · 6 мин",
+    "presetTurbo": "Турбо · 10 мин",
+    "presetStandard": "Стандарт · 15 мин",
+    "smallBlind": "МБ",
+    "bigBlind": "ББ",
+    "minutesShort": "Мин",
+    "addLevel": "Добавить уровень",
+    "removeLevel": "Удалить уровень",
+    "resetClock": "Сброс",
+    "done": "Готово",
+    "soundOn": "Звук включён",
+    "soundOff": "Звук выключен",
+    "levelOf": "Уровень {n} из {total}",
+    "minutesPerLevel": "Минут на уровень",
+    "applyToAll": "Применить ко всем"
   }
 }

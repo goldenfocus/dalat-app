@@ -69,6 +69,11 @@ export function optimizedImageUrl(
 ): string | null {
   if (!src) return null;
 
+  // Already optimized — don't double-wrap into a nested URL
+  if (src.includes("/cdn-cgi/image/")) {
+    return src;
+  }
+
   // Only optimize storage URLs (Supabase or R2)
   if (!isStorageUrl(src)) {
     return src;
@@ -124,8 +129,8 @@ export const imagePresets = {
   /** Event detail hero image - quality 70 for better LCP on slow networks */
   eventHero: { width: 1200, quality: 70 },
 
-  /** Avatar/profile picture */
-  avatar: { width: 96, height: 96, fit: "cover" as const },
+  /** Avatar/profile picture (192px covers 96px display @2x) */
+  avatar: { width: 192, height: 192, fit: "cover" as const },
 
   /** Large avatar for profile page */
   avatarLarge: { width: 256, height: 256, fit: "cover" as const },

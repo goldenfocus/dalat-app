@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { RotatingPhrase } from "@/components/ui/rotating-phrase";
+import { generateImageViaQueue, ImageJobError } from "@/lib/ai/image-job-client";
 import Image from "next/image";
 
 interface AIAvatarDialogProps {
@@ -98,6 +99,7 @@ export function AIAvatarDialog({
   customTrigger,
 }: AIAvatarDialogProps) {
   const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<DialogMode>(initialMode === "refine" ? "refine" : "selection");
   const [selectedStyle, setSelectedStyle] = useState<AvatarStyle>("neutral");
@@ -108,6 +110,26 @@ export function AIAvatarDialog({
   // Preview state
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isZoomed, setIsZoomed] = useState(false);
+
+  // Map queue error codes to translated messages
+  const describeError = useCallback(
+    (err: unknown, fallback: string) => {
+      const codeKeys: Record<string, string> = {
+        worker_offline: "aiWorkerOffline",
+        rate_limit_unavailable: "aiWorkerOffline",
+        context_unavailable: "aiWorkerOffline",
+        refine_unavailable: "aiRefineUnavailable",
+        too_many_pending: "aiTooManyPending",
+        timeout: "aiTimeout",
+        generation_failed: "aiGenerationFailed",
+      };
+      if (err instanceof ImageJobError && err.code && codeKeys[err.code]) {
+        return tCommon(codeKeys[err.code]);
+      }
+      return err instanceof Error ? err.message : fallback;
+    },
+    [tCommon]
+  );
 
   // Reset dialog state when closing
   const handleOpenChange = useCallback((newOpen: boolean) => {
@@ -166,40 +188,19 @@ Important:
     setMode("generating");
 
     try {
-      const response = await fetch("/api/ai/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          context: "avatar",
-          customPrompt: buildAvatarPrompt(),
-          entityId: profileId,
-        }),
+      // Enqueued on the local image worker; resolves when the job completes
+      const imageUrl = await generateImageViaQueue({
+        context: "avatar",
+        customPrompt: buildAvatarPrompt(),
+        entityId: profileId,
       });
 
-      if (!response.ok) {
-        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
-        const contentType = response.headers.get("content-type");
-        if (contentType?.includes("application/json")) {
-          const data = await response.json();
-          throw new Error(data.error || "Failed to generate avatar");
-        } else {
-          // Non-JSON response (likely from API gateway)
-          const text = await response.text();
-          if (response.status === 413 || text.toLowerCase().includes("too large")) {
-            throw new Error("Request too large. Try a shorter description.");
-          }
-          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
-        }
-      }
-
-      const data = await response.json();
-
       // Show preview instead of closing
-      setPreviewUrl(data.imageUrl);
+      setPreviewUrl(imageUrl);
       setMode("preview");
     } catch (err) {
       console.error("AI avatar generation error:", err);
-      setError(err instanceof Error ? err.message : t("uploadFailed"));
+      setError(describeError(err, t("uploadFailed")));
       setMode("selection"); // Go back to selection on error
     } finally {
       setIsGenerating(false);
@@ -216,41 +217,19 @@ Important:
     setIsGenerating(true);
 
     try {
-      const response = await fetch("/api/ai/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          context: "avatar",
-          entityId: profileId,
-          existingImageUrl: imageToRefine,
-          refinementPrompt: prompt,
-        }),
+      const imageUrl = await generateImageViaQueue({
+        context: "avatar",
+        entityId: profileId,
+        existingImageUrl: imageToRefine,
+        refinementPrompt: prompt,
       });
 
-      if (!response.ok) {
-        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
-        const contentType = response.headers.get("content-type");
-        if (contentType?.includes("application/json")) {
-          const data = await response.json();
-          throw new Error(data.error || "Failed to refine avatar");
-        } else {
-          // Non-JSON response (likely from API gateway)
-          const text = await response.text();
-          if (response.status === 413 || text.toLowerCase().includes("too large")) {
-            throw new Error("Image is too large to refine. Try generating a new avatar instead.");
-          }
-          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
-        }
-      }
-
-      const data = await response.json();
-
       // Update preview with refined result
-      setPreviewUrl(data.imageUrl);
+      setPreviewUrl(imageUrl);
       setRefinementPrompt("");
     } catch (err) {
       console.error("AI avatar refinement error:", err);
-      setError(err instanceof Error ? err.message : t("uploadFailed"));
+      setError(describeError(err, t("uploadFailed")));
     } finally {
       setIsGenerating(false);
     }
@@ -561,6 +540,9 @@ Important:
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
                 <RotatingPhrase className="text-sm text-muted-foreground text-center max-w-xs" />
+                <p className="mt-3 text-xs text-muted-foreground text-center max-w-xs">
+                  {tCommon("aiQueueWait")}
+                </p>
               </div>
             </>
           ) : (

@@ -68,7 +68,9 @@ interface WhisperResponse {
  * Call Whisper API with timestamp granularities for LRC generation.
  */
 async function transcribeWithTimestamps(
-  audioUrl: string
+  audioUrl: string,
+  title?: string | null,
+  artist?: string | null
 ): Promise<WhisperResponse | null> {
   try {
     console.log(`  Downloading audio from: ${audioUrl.slice(0, 80)}...`);
@@ -91,6 +93,11 @@ async function transcribeWithTimestamps(
     formData.append("response_format", "verbose_json");
     formData.append("timestamp_granularities[]", "segment");
     formData.append("timestamp_granularities[]", "word");
+    // Vocabulary bias — without this Whisper mishears "DaLat" as "the lab"
+    formData.append(
+      "prompt",
+      `Song: "${title || ""}"${artist ? ` by ${artist}` : ""} — sung in and about DaLat (Đà Lạt), Vietnam, from the dalat.app community. Vocabulary: DaLat, Da Lat, Đà Lạt, dalat.app, Langbiang, Xuân Hương, Vietnam.`
+    );
 
     console.log("  Calling Whisper API...");
 
@@ -214,7 +221,7 @@ async function processAudioMoments() {
     }
 
     // Transcribe with Whisper
-    const transcription = await transcribeWithTimestamps(moment.file_url);
+    const transcription = await transcribeWithTimestamps(moment.file_url, moment.title, moment.artist);
 
     if (!transcription) {
       console.log("  [FAILED] Could not transcribe audio");
@@ -292,7 +299,7 @@ async function processEventMaterials() {
     }
 
     // Transcribe with Whisper
-    const transcription = await transcribeWithTimestamps(material.file_url);
+    const transcription = await transcribeWithTimestamps(material.file_url, material.title, material.artist);
 
     if (!transcription) {
       console.log("  [FAILED] Could not transcribe audio");
@@ -371,7 +378,7 @@ async function processPlaylistTracks() {
     }
 
     // Transcribe with Whisper
-    const transcription = await transcribeWithTimestamps(track.file_url);
+    const transcription = await transcribeWithTimestamps(track.file_url, track.title, track.artist);
 
     if (!transcription) {
       console.log("  [FAILED] Could not transcribe audio");

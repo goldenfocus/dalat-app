@@ -6,10 +6,10 @@ import { useTranslations } from "next-intl";
 import { triggerHaptic } from "@/lib/haptics";
 import { formatInDaLat } from "@/lib/timezone";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import type { Event } from "@/lib/types";
+import type { MapEvent } from "./dynamic-event-map";
 
 interface EventPopupCardProps {
-  event: Event;
+  event: MapEvent;
   onClose: () => void;
 }
 

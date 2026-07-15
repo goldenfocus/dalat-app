@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { formatDuration } from "@/lib/audio-metadata";
+import { formatDuration } from "@/lib/format-duration";
 
 // Re-export formatDuration for convenience
 export { formatDuration };

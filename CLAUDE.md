@@ -4,21 +4,64 @@
 
 See [VIBE.md](./VIBE.md) for tone and voice guidelines. All user-facing copy should follow the Dalat vibe — warm, chill, helpful, never corporate.
 
-## ⚠️ Multi-AI Workflow
+## ⚠️ Multi-AI Workflow — Worktree Protocol
 
-Multiple AI sessions may be running simultaneously on this codebase.
+Multiple AI sessions (tabs) run on this repo at the same time. **The main checkout (`~/dalat-app`) is shared space — treat it as READ-ONLY.** Every session does its work in its own git worktree.
 
-**Before making changes:**
-1. Run `git status` to check for uncommitted changes from other sessions
-2. If you see changes you didn't make, tell the user before proceeding
+### Rule 1: Worktree first, edits second
 
-**Before committing:**
-1. Always ask the user before committing or pushing
-2. Never force push or rebase without explicit permission
+Before making ANY file change, create your own worktree and work there for the rest of the session:
 
-**If conflicts arise:**
-- Stop and inform the user
-- Don't try to resolve conflicts automatically
+```bash
+git fetch origin main
+git worktree add .worktrees/<short-task-name> -b <short-task-name> origin/main
+cd .worktrees/<short-task-name>
+ln -sf ../../.env.local .env.local   # worktrees don't share untracked files
+npm install                          # node_modules isn't shared either
+```
+
+- Name the worktree after the task (`.worktrees/fix-map-popup`, `.worktrees/plus-ones`), one concern per worktree.
+- Read-only work (exploring, searching, answering questions, running read-only commands) is fine from the main checkout — anything that writes a file is not.
+- If Claude Code offers a native worktree tool (EnterWorktree / auto-isolation), use it — it accomplishes the same thing.
+
+### Rule 2: Never touch another session's files
+
+- In the main checkout, uncommitted changes you didn't make belong to another session. **Never** stash, reset, checkout, or commit them. If they block you, tell the user.
+- Stage by explicit path only: `git add <file> <file>`. **NEVER** `git add -A` or `git add .` — blanket staging is how one session's commit swallows another session's half-finished work.
+- Before committing, run `git status` and confirm every staged file traces to YOUR task.
+
+### Rule 3: Rebase before every push
+
+Pushing always follows this exact sequence (from your worktree):
+
+```bash
+git fetch origin main
+git rebase origin/main       # replay your commits on the latest main
+npm run build                # re-verify AFTER rebasing — main may have moved under you
+git push origin HEAD:main
+```
+
+- Push rejected because main moved again? Repeat the sequence. **Never force push.**
+- Rebase conflict? Stop and inform the user — don't resolve conflicts automatically.
+
+### Rule 4: Clean up after yourself
+
+After your push lands (or the task is abandoned):
+
+```bash
+cd ~/dalat-app
+git worktree remove .worktrees/<short-task-name>
+git branch -D <short-task-name>
+```
+
+Stale worktrees confuse the next session — don't leave them behind.
+
+### Rule 5: Existing safety rules still apply
+
+- Small, single-concern, low-risk changes (no migration, no RLS, no money path, no CI/CD or CLAUDE.md content beyond what was asked): commit and push without asking — follow the Rule 3 pipeline and post a Post-Deploy Summary after
+- Still ask first for: migrations, RLS, financial logic, CI/CD config, destructive DB ops, or anything you're unsure about
+- Never force push, ever
+- Only one `npm run dev` can own port 3000 — if another session has it, use `npm run dev -- -p 3001` (or higher)
 
 ## CLI Tools - Always Use Directly
 

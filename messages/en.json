@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "Lost in the mist?",
+    "description": "Like wandering into an undiscovered corner of Đà Lạt, this page doesn't exist. But the journey home is just a click away.",
+    "backHome": "Back to Home",
+    "tagline": "Events · People · Moments · Love · Đà Lạt 🇻🇳"
+  },
   "hero": {
     "headline": "Happening in Đà Lạt ✨",
     "subtitle": "Where the city comes together",
@@ -55,7 +61,13 @@
       "message": "This page is in a different language. Switch to {language}?",
       "switch": "View in {language}",
       "dismiss": "Keep current language"
-    }
+    },
+    "aiQueueWait": "Painting your image — usually takes 1–3 minutes ✨",
+    "aiWorkerOffline": "The AI painter is taking a nap. Try again in a bit.",
+    "aiRefineUnavailable": "Refining is on a break — generate a fresh one instead.",
+    "aiTooManyPending": "Your other images are still cooking. Give them a minute first.",
+    "aiTimeout": "Taking longer than usual — it may still show up shortly. Try again if not.",
+    "aiGenerationFailed": "Generation didn't work this time. Give it another go."
   },
   "nav": {
     "events": "Events",
@@ -163,7 +175,9 @@
     "newPassword": "New password",
     "newPasswordPlaceholder": "Enter your new password",
     "setNewPassword": "Set new password",
-    "passwordResetSuccess": "Password reset successfully! You can now sign in.",
+    "passwordResetSuccess": "Password updated — you're signed in!",
+    "resetLinkExpired": "This reset link has expired or was already used.",
+    "requestNewLink": "Request a new link",
     "verifyTitle": "Confirm your email",
     "verifyDescription": "Click the button below to complete sign in to ĐàLạt.app",
     "verifyButton": "Complete Sign In",
@@ -247,7 +261,14 @@
     },
     "friendsGoing": "{count} friends going",
     "othersYouFollow": "+ {count} others you follow",
-    "andMore": "and more"
+    "andMore": "and more",
+    "pastProofBoth": "{went} went · {photos} photos last time",
+    "pastProofPhotos": "{photos} photos last time",
+    "pastProofWent": "{went} went last time",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} spots",
+    "secretAddressLockHint": "Exact address revealed after you RSVP",
+    "secretAddressRevealedHint": "Only guests can see this address"
   },
   "rsvp": {
     "imGoing": "I'm going",
@@ -277,6 +298,13 @@
     "positiveRating": "{percentage}% positive ({count} reviews)"
   },
   "eventForm": {
+    "linkedPastEvent": "Moments from a past event",
+    "linkedPastEventHelp": "Show a past event's moments on this page until this event has its own. Only admins can set this.",
+    "linkedPastEventError": "Couldn't update the link. Try again.",
+    "searchPastEvents": "Search past events…",
+    "searchingEvents": "Searching…",
+    "noPastEventsFound": "No past events found",
+    "unlinkPastEvent": "Unlink",
     "createEvent": "Create Event",
     "editEvent": "Edit Event",
     "pageTitle": "Share Something With the Community",
@@ -309,6 +337,9 @@
     "locationVenuesSection": "Venues",
     "locationPlacesSection": "Other Locations",
     "locationNoResults": "No locations found",
+    "locationUseCustom": "Use \"{text}\"",
+    "locationUseAsTyped": "Save this address exactly as typed",
+    "locationSearchUnavailable": "Location search is unavailable right now — you can still use your address exactly as typed below.",
     "locationLoading": "Loading...",
     "locationCoordinatesDetected": "Coordinates detected",
     "locationResolvingUrl": "Extracting location from link...",
@@ -402,7 +433,14 @@
     "sponsorTier3": "Gold (Tier 3)",
     "sponsorTierHelp": "Featured events appear first in feeds with a gold badge.",
     "activityTags": "Activity Type",
-    "activityTagsHelp": "Select tags to help people find your event. AI will also auto-tag based on content."
+    "activityTagsHelp": "Select tags to help people find your event. AI will also auto-tag based on content.",
+    "secretAddress": "Secret address",
+    "secretAddressHelp": "The exact address stays hidden — only guests who RSVP Going can see it. We'll also send it to them the morning of the event.",
+    "secretAddressPublicLabel": "What everyone sees",
+    "secretAddressPublicLabelPlaceholder": "e.g. A house near the Night Market",
+    "secretAddressPublicLabelHelp": "A general area hint shown instead of the address.",
+    "secretAddressArrivalNotes": "Arrival notes (guests only)",
+    "secretAddressArrivalNotesPlaceholder": "Door code, parking tips, Zalo/WhatsApp group link…"
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",
@@ -1199,7 +1237,12 @@
       "Thanks for being a force for connection",
       "You're the reason the room will be full",
       "Keep being the connector you are"
-    ]
+    ],
+    "audienceEveryone": "Everyone",
+    "audiencePeople": "{count} people",
+    "personalNoteLabel": "Add a personal note",
+    "personalNotePlaceholder": "Why should they come? (optional)",
+    "audienceNoRecipients": "Everyone here was already invited or reached recently"
   },
   "celebration": {
     "title": "You just made Da Lat better!",
@@ -1447,6 +1490,16 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Find your tribe",
+    "discoverTitle": "Tribes of Đà Lạt",
+    "discoverSubtitle": "Little communities, big vibes — join the crews that make this city feel like home.",
+    "startTribe": "Start a tribe",
+    "seeAll": "See all",
+    "accessOpen": "Open to all",
+    "accessRequest": "Request to join",
+    "emptyTitle": "No tribes yet — the mist is waiting for its first crew.",
+    "emptyCta": "Be the founder",
+    "dateAtTime": "{date} at {time}",
     "title": "Tribes",
     "createTribe": "Create Tribe",
     "joinTribe": "Join Tribe",
@@ -1499,7 +1552,14 @@
     "createdBy": "Created by {name}",
     "joinedOn": "Joined {date}",
     "myTribes": "My Tribes",
-    "pendingRequests": "Pending Requests"
+    "pendingRequests": "Pending Requests",
+    "coverImage": "Cover Image",
+    "coverImageHint": "Landscape works best — around 1200×600.",
+    "uploadCover": "Upload cover",
+    "replaceCover": "Replace cover",
+    "removeCover": "Remove",
+    "coverUploading": "Uploading...",
+    "coverUploadFailed": "Upload failed. Please try again."
   },
   "feed": {
     "title": "Feed",
@@ -1652,7 +1712,16 @@
     "allPosts": "All",
     "noPosts": "No posts yet. Check back soon!",
     "backToBlog": "Back to Blog",
-    "translated": "Translated"
+    "translated": "Translated",
+    "sources": "Sources",
+    "via": "via",
+    "loadMore": "Load more",
+    "newerPosts": "Newer",
+    "olderPosts": "Older",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "older": "Earlier"
   },
   "upcomingEvents": {
     "title": "Upcoming Events in Đà Lạt",
@@ -1793,6 +1862,8 @@
     "tour": "Tour",
     "hiking": "Hiking",
     "sports": "Sports",
+    "pickleball": "Pickleball",
+    "games": "Games",
     "meetup": "Meetup",
     "networking": "Networking",
     "community": "Community",
@@ -2430,7 +2501,11 @@
     "tagGovernment": "Government",
     "tagFoodDrink": "Food & Drink",
     "tagWeather": "Weather",
-    "tagCommunity": "Community"
+    "tagCommunity": "Community",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "older": "Earlier"
   },
   "loyalty": {
     "title": "Loyalty",
@@ -2543,5 +2618,37 @@
     "readyToHostDesc": "Create your first event and start earning host points. Every event brings you closer to premium perks.",
     "createEvent": "Create an event",
     "noOneYet": "No one on the leaderboard yet. Be the first!"
+  },
+  "pokerTable": {
+    "level": "Level {n}",
+    "ante": "Ante",
+    "next": "Next",
+    "tapToStart": "Tap to start",
+    "shuffleUp": "Shuffle up and deal!",
+    "voiceBlindsUp": "Blinds up! Now {sb}, {bb}",
+    "voiceBlindsUpAnte": "Blinds up! Now {sb}, {bb}, ante {ante}",
+    "voiceOneMinute": "One minute left in this level",
+    "pause": "Pause",
+    "resume": "Resume",
+    "prevLevel": "Previous level",
+    "nextLevel": "Next level",
+    "addMinute": "+1 min",
+    "editLevels": "Edit levels",
+    "presets": "Presets",
+    "presetHyper": "Hyper · 6 min",
+    "presetTurbo": "Turbo · 10 min",
+    "presetStandard": "Standard · 15 min",
+    "smallBlind": "SB",
+    "bigBlind": "BB",
+    "minutesShort": "Min",
+    "addLevel": "Add level",
+    "removeLevel": "Remove level",
+    "resetClock": "Reset",
+    "done": "Done",
+    "soundOn": "Sound on",
+    "soundOff": "Sound off",
+    "levelOf": "Level {n} of {total}",
+    "minutesPerLevel": "Minutes per level",
+    "applyToAll": "Apply to all"
   }
 }

@@ -33,7 +33,7 @@ import {
   useLyricsOffset,
   useCurrentTrack,
 } from "@/lib/stores/audio-player-store";
-import { formatDuration } from "@/lib/audio-metadata";
+import { formatDuration } from "@/lib/format-duration";
 import { createClient } from "@/lib/supabase/client";
 
 /**

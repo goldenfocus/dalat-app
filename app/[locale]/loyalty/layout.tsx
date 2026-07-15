@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { locales } from "@/lib/i18n/routing";
+import { buildLocales } from "@/lib/i18n/routing";
 
 type LayoutProps = {
   params: Promise<{ locale: string }>;
@@ -9,7 +9,7 @@ type LayoutProps = {
 };
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 export default async function LoyaltyLayout({ params, children }: LayoutProps) {

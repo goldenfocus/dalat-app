@@ -11,7 +11,7 @@ import {
   useCurrentTrackLyrics,
   useLyricsOffset,
 } from "@/lib/stores/audio-player-store";
-import { formatDuration } from "@/lib/audio-metadata";
+import { formatDuration } from "@/lib/format-duration";
 
 
 /**

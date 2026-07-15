@@ -70,12 +70,12 @@ export const EventCard = memo(function EventCard({
     e.preventDefault();
     triggerHaptic("selection");
 
-    if (isFlipped) {
-      // Already flipped - navigate to event
+    if (isFlipped || !onFlip) {
+      // Already flipped (or no flip wiring) - navigate to event
       router.push(`/events/${event.slug}`);
     } else {
       // Not flipped - flip it
-      onFlip?.(event.id);
+      onFlip(event.id);
     }
   };
 

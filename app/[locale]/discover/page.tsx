@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createStaticClient } from "@/lib/supabase/server";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema, generateWebSiteSchema } from "@/lib/structured-data";
-import { locales } from "@/lib/i18n/routing";
+import { buildLocales } from "@/lib/i18n/routing";
 import {
   Coffee, Wine, UtensilsCrossed, Palette, TreePine, Building2,
   Laptop, Home, Mountain, Music, Camera, CalendarDays, MapPin,
@@ -18,7 +18,7 @@ type PageProps = {
 };
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MapPin, Loader2, X, Check, Navigation } from "lucide-react";
+import { MapPin, Loader2, X, Check, Navigation, PenLine } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
@@ -15,6 +15,12 @@ import {
   formatCoordinates,
   type ParsedCoordinates,
 } from "@/lib/geo/parse-location";
+import {
+  buildLocationFieldValues,
+  googleMapsSearchUrl,
+  isCustomLocationCandidate,
+  makeCustomLocation,
+} from "@/lib/geo/location-form-values";
 
 // Venue result from our API
 interface VenueResult {
@@ -28,9 +34,9 @@ interface VenueResult {
   isVerified: boolean;
 }
 
-// Selected location data (either venue or Google Place)
+// Selected location data (venue, Google Place, or free-form address)
 export interface SelectedLocation {
-  type: "venue" | "place";
+  type: "venue" | "place" | "custom";
   venueId?: string;
   placeId?: string;
   name: string;
@@ -74,6 +80,9 @@ export function LocationPicker({
   const [isGoogleReady, setIsGoogleReady] = useState(false);
   const [isLoadingScript, setIsLoadingScript] = useState(false);
 
+  // True when a search backend failed — the typed text still saves as a custom address
+  const [searchDegraded, setSearchDegraded] = useState(false);
+
   // Smart detection state for coordinates/URLs
   const [detectedCoords, setDetectedCoords] = useState<ParsedCoordinates | null>(null);
   const [isResolvingUrl, setIsResolvingUrl] = useState(false);
@@ -82,6 +91,7 @@ export function LocationPicker({
 
   const sessionToken =
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
+  const searchSeq = useRef(0);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -189,7 +199,7 @@ export function LocationPicker({
   }, []);
 
   // Search venues by query
-  const searchVenues = useCallback(async (searchQuery: string) => {
+  const searchVenues = useCallback(async (searchQuery: string, seq: number) => {
     if (searchQuery.length < MIN_CHARS) {
       setVenues([]);
       return;
@@ -205,6 +215,7 @@ export function LocationPicker({
     } catch (error) {
       console.error("Venue search error:", error);
       setVenues([]);
+      if (seq === searchSeq.current) setSearchDegraded(true);
     } finally {
       setIsLoadingVenues(false);
     }
@@ -347,7 +358,7 @@ export function LocationPicker({
 
   // Search Google Places
   const searchPlaces = useCallback(
-    async (searchQuery: string) => {
+    async (searchQuery: string, seq: number) => {
       if (!isGoogleReady || searchQuery.length < MIN_CHARS) {
         setPlaceSuggestions([]);
         return;
@@ -370,6 +381,7 @@ export function LocationPicker({
       } catch (error) {
         console.error("Places search error:", error);
         setPlaceSuggestions([]);
+        if (seq === searchSeq.current) setSearchDegraded(true);
       } finally {
         setIsLoading(false);
       }
@@ -400,6 +412,8 @@ export function LocationPicker({
 
     if (value.length >= MIN_CHARS) {
       debounceTimer.current = setTimeout(async () => {
+        const seq = ++searchSeq.current;
+        setSearchDegraded(false);
         // Try smart detection first (coordinates or URLs)
         const detected = await handleSmartDetection(value);
         if (detected) {
@@ -410,8 +424,8 @@ export function LocationPicker({
         }
 
         // Not coordinates/URL - proceed with normal search
-        searchVenues(value);
-        searchPlaces(value);
+        searchVenues(value, seq);
+        searchPlaces(value, seq);
         setIsOpen(true);
       }, DEBOUNCE_MS);
     } else if (value.length === 0) {
@@ -428,7 +442,11 @@ export function LocationPicker({
 
   const handleFocus = () => {
     loadGoogleMaps();
-    if (venues.length > 0 || placeSuggestions.length > 0) {
+    if (
+      venues.length > 0 ||
+      placeSuggestions.length > 0 ||
+      (isCustomLocationCandidate(query) && !detectedCoords)
+    ) {
       setIsOpen(true);
     } else if (!query && !selectedLocation) {
       // Fetch popular venues on first focus when empty
@@ -446,7 +464,7 @@ export function LocationPicker({
       longitude: venue.longitude,
       googleMapsUrl:
         venue.googleMapsUrl ||
-        `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`,
+        googleMapsSearchUrl(`${venue.latitude},${venue.longitude}`),
     };
 
     setQuery(venue.name);
@@ -504,6 +522,22 @@ export function LocationPicker({
     }
   };
 
+  const handleSelectCustom = () => {
+    if (!isCustomLocationCandidate(query)) return;
+
+    const location: SelectedLocation = {
+      type: "custom",
+      ...makeCustomLocation(query),
+    };
+
+    setQuery(location.name);
+    setSelectedLocation(location);
+    setSelectedVenueId(null);
+    setIsOpen(false);
+    onLocationSelect?.(location);
+    onVenueIdChange?.(null);
+  };
+
   const handleClear = () => {
     setQuery("");
     setSelectedLocation(null);
@@ -512,6 +546,7 @@ export function LocationPicker({
     setPlaceSuggestions([]);
     setDetectedCoords(null);
     setUrlResolveError(null);
+    setSearchDegraded(false);
     onLocationSelect?.(null);
     onVenueIdChange?.(null);
     inputRef.current?.focus();
@@ -519,6 +554,9 @@ export function LocationPicker({
 
   const hasResults = venues.length > 0 || placeSuggestions.length > 0;
   const showLoading = isLoading || isLoadingVenues || isLoadingScript || isResolvingUrl;
+  const customText = query.trim();
+  const canOfferCustom = isCustomLocationCandidate(query) && !detectedCoords;
+  const locationFields = buildLocationFieldValues(selectedLocation, query);
 
   return (
     <div ref={containerRef} className="relative space-y-2">
@@ -559,7 +597,8 @@ export function LocationPicker({
       {/* Selected location info */}
       {selectedLocation && (
         <p className="text-sm text-muted-foreground flex items-center gap-1">
-          {selectedLocation.type === "venue" && (
+          {(selectedLocation.type === "venue" ||
+            selectedLocation.type === "custom") && (
             <Check className="w-3 h-3 text-green-500" />
           )}
           {detectedCoords && !isReverseGeocoding && (
@@ -596,7 +635,7 @@ export function LocationPicker({
       )}
 
       {/* Dropdown */}
-      {isOpen && hasResults && (
+      {isOpen && (hasResults || canOfferCustom) && (
         <ul className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-72 overflow-auto">
           {/* Venues section */}
           {venues.length > 0 && (
@@ -681,14 +720,44 @@ export function LocationPicker({
               })}
             </>
           )}
-        </ul>
-      )}
 
-      {/* No results message */}
-      {isOpen && !hasResults && !showLoading && query.length >= MIN_CHARS && (
-        <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg p-3 text-sm text-muted-foreground">
-          {t("locationNoResults") || "No locations found"}
-        </div>
+          {/* Search backend down — be honest instead of "no results" */}
+          {!hasResults && searchDegraded && !showLoading && (
+            <li className="px-3 py-2 text-sm text-amber-600">
+              {t("locationSearchUnavailable")}
+            </li>
+          )}
+
+          {/* Genuinely no matches */}
+          {!hasResults && !searchDegraded && !showLoading && (
+            <li className="px-3 py-2 text-sm text-muted-foreground">
+              {t("locationNoResults")}
+            </li>
+          )}
+
+          {/* Free-form fallback — never a dead end */}
+          {canOfferCustom && (
+            <li className={hasResults ? "border-t" : ""}>
+              <button
+                type="button"
+                onClick={handleSelectCustom}
+                className="w-full px-3 py-2 text-left hover:bg-muted active:bg-muted active:scale-[0.99] transition-all flex items-start gap-2"
+              >
+                <div className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0 mt-0.5 bg-gray-100 dark:bg-gray-800">
+                  <PenLine className="w-3.5 h-3.5 text-gray-500" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-sm">
+                    {t("locationUseCustom", { text: customText })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("locationUseAsTyped")}
+                  </p>
+                </div>
+              </button>
+            </li>
+          )}
+        </ul>
       )}
 
       {/* Hidden inputs for form submission */}
@@ -700,28 +769,16 @@ export function LocationPicker({
       <input
         type="hidden"
         name="location_name"
-        value={selectedLocation?.name || ""}
+        value={locationFields.location_name}
       />
-      <input
-        type="hidden"
-        name="address"
-        value={selectedLocation?.address || ""}
-      />
+      <input type="hidden" name="address" value={locationFields.address} />
       <input
         type="hidden"
         name="google_maps_url"
-        value={selectedLocation?.googleMapsUrl || ""}
+        value={locationFields.google_maps_url}
       />
-      <input
-        type="hidden"
-        name="latitude"
-        value={selectedLocation?.latitude ?? ""}
-      />
-      <input
-        type="hidden"
-        name="longitude"
-        value={selectedLocation?.longitude ?? ""}
-      />
+      <input type="hidden" name="latitude" value={locationFields.latitude} />
+      <input type="hidden" name="longitude" value={locationFields.longitude} />
     </div>
   );
 }

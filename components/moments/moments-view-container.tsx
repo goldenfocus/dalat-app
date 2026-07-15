@@ -10,7 +10,14 @@ import { FloatingViewModeSwitcher } from "./floating-view-mode-switcher";
 import { MediaTypeFilterToggle, type MediaTypeFilter } from "./media-type-filter";
 import { InfiniteMomentGrid, type InfiniteMomentGridHandle } from "./infinite-moment-grid";
 import { ImmersiveMomentView } from "./immersive-moment-view";
-import { CinemaSlideshow } from "./cinema-mode/cinema-slideshow";
+import dynamic from "next/dynamic";
+
+// Cinema mode is opt-in and heavy — code-split out of the default moments view
+const CinemaSlideshow = dynamic(
+  () =>
+    import("./cinema-mode/cinema-slideshow").then((m) => m.CinemaSlideshow),
+  { ssr: false }
+);
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
 import { createClient } from "@/lib/supabase/client";
 import { triggerHaptic } from "@/lib/haptics";

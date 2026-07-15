@@ -4,8 +4,8 @@ import { Link } from "@/lib/i18n/routing";
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { locales, type Locale } from "@/lib/i18n/routing";
-import { createClient } from "@/lib/supabase/server";
+import { buildLocales, type Locale } from "@/lib/i18n/routing";
+import { createStaticClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
@@ -17,7 +17,7 @@ type PageProps = {
 };
 
 export async function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -34,7 +34,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getEventsThisWeek() {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[this-week] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty page");
+    return [];
+  }
   const { data: events, error } = await supabase.rpc("get_events_this_week", {
     p_limit: 50,
   });
@@ -50,7 +54,11 @@ async function getEventsThisWeek() {
 async function getEventCounts(eventIds: string[]) {
   if (eventIds.length === 0) return {};
 
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[this-week] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty counts");
+    return {};
+  }
   const { data: rsvps } = await supabase
     .from("rsvps")
     .select("event_id, status, plus_ones")

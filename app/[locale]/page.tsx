@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import type { Metadata } from "next";
+import { preload } from "react-dom";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
@@ -12,7 +12,8 @@ import { setRequestLocale } from "next-intl/server";
 import { HeroSection } from "@/components/home/hero-section";
 import { EventFeedScrollable, EventFeedScrollableSkeleton } from "@/components/events/event-feed-scrollable";
 import { YourEventsSection } from "@/components/home/your-events-section";
-import { optimizedImageUrl } from "@/lib/image-cdn";
+import { cloudflareLoader } from "@/lib/image-cdn";
+import { isVideoUrl } from "@/lib/media-utils";
 import type { Locale } from "@/lib/i18n/routing";
 import {
   getCachedEventsByLifecycle,
@@ -22,6 +23,7 @@ import {
 import { HeroImageSection } from "@/components/home/hero-image-section";
 import { MomentsStripServer } from "@/components/home/moments-strip-server";
 import { ForYouSection } from "@/components/home/for-you-section";
+import { TribesStrip } from "@/components/home/tribes-strip";
 import { RecommendedEventsProvider } from "@/components/home/recommended-events-context";
 import { JsonLd, generateWebSiteSchema } from "@/lib/structured-data";
 
@@ -29,57 +31,14 @@ type PageProps = {
   params: Promise<{ locale: Locale }>;
 };
 
-/**
- * Generate metadata with LCP image preload for faster PageSpeed scores.
- * Preloads hero image if configured, otherwise preloads first event image.
- */
-export async function generateMetadata(): Promise<Metadata> {
-  // Check for hero image first (takes priority as LCP element)
-  const homepageConfig = await getCachedHomepageConfig();
-
-  if (homepageConfig?.hero_image_url) {
-    // Preload hero image at full width for desktop
-    const preloadUrl = optimizedImageUrl(homepageConfig.hero_image_url, {
-      width: 1920,
-      quality: 80,
-      format: "auto",
-    });
-
-    if (preloadUrl) {
-      return {
-        other: {
-          link: `<${preloadUrl}>; rel=preload; as=image; fetchpriority=high`,
-        },
-      };
-    }
-  }
-
-  // Fallback: preload first event image
-  const events = await getCachedEventsByLifecycle("upcoming", 1);
-  const firstEvent = events[0];
-
-  if (!firstEvent?.image_url) {
-    return {};
-  }
-
-  // Build preload URL using Cloudflare CDN
-  // 200px matches actual mobile render size (~45vw on 390px screen = ~175px)
-  const preloadUrl = optimizedImageUrl(firstEvent.image_url, {
-    width: 200,
-    quality: 70,
-    format: "auto",
-  });
-
-  if (!preloadUrl) {
-    return {};
-  }
-
-  return {
-    other: {
-      link: `<${preloadUrl}>; rel=preload; as=image; fetchpriority=high`,
-    },
-  };
-}
+// Mirrors the srcset next/image emits for the visually-first event card
+// (fill + cloudflareLoader, quality 70): EVENT_CARD_SIZES matches
+// EventCardFramed ("Coming Up"), HERO_CARD_SIZES matches EventHeroCard
+// ("Happening Now"). Both sizes yield the same width list, so the preload
+// and the card share one download either way.
+const EVENT_CARD_SIZES = "(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw";
+const HERO_CARD_SIZES = "(max-width: 640px) 100vw, 40vw";
+const EVENT_CARD_WIDTHS = [256, 384, 640, 750, 828, 1080, 1200, 1920];
 
 export default async function Home({ params }: PageProps) {
   const { locale } = await params;
@@ -91,6 +50,29 @@ export default async function Home({ params }: PageProps) {
     getCachedLifecycleCounts(),
     getCachedHomepageConfig(),
   ]);
+
+  // Preload the LCP image: with a hero configured, HeroImageSection preloads
+  // its own image; otherwise preload the visually-first event card's image —
+  // the "Happening Now" hero card when there are live events, else the first
+  // "Coming Up" card
+  if (!homepageConfig?.hero_image_url) {
+    const hasHappening = lifecycleCounts.happening > 0;
+    const events = await getCachedEventsByLifecycle(
+      hasHappening ? "happening" : "upcoming",
+      1
+    );
+    const cardImageUrl = events[0]?.image_url;
+    if (cardImageUrl && !isVideoUrl(cardImageUrl)) {
+      preload(cloudflareLoader({ src: cardImageUrl, width: 1920 }), {
+        as: "image",
+        fetchPriority: "high",
+        imageSrcSet: EVENT_CARD_WIDTHS.map(
+          (width) => `${cloudflareLoader({ src: cardImageUrl, width })} ${width}w`
+        ).join(", "),
+        imageSizes: hasHappening ? HERO_CARD_SIZES : EVENT_CARD_SIZES,
+      });
+    }
+  }
 
   // Generate WebSite schema for sitelinks search box in Google
   const websiteSchema = generateWebSiteSchema(locale);
@@ -137,6 +119,11 @@ export default async function Home({ params }: PageProps) {
             />
           </Suspense>
         </RecommendedEventsProvider>
+
+        {/* Tribes discovery strip */}
+        <Suspense fallback={null}>
+          <TribesStrip />
+        </Suspense>
       </div>
     </main>
     </>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Search, Loader2, MapPin, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DALAT_TIMEZONE } from "@/lib/timezone";
 
 interface SearchSuggestion {
   id: string;
@@ -35,6 +36,7 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
+    timeZone: DALAT_TIMEZONE,
   });
 }
 

@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "Lạc giữa sương mù?",
+    "description": "Như lạc vào một góc chưa ai khám phá của Đà Lạt, trang này không tồn tại. Nhưng đường về nhà chỉ cách một cú nhấp.",
+    "backHome": "Về trang chủ",
+    "tagline": "Sự kiện · Mọi người · Khoảnh khắc · Yêu thương · Đà Lạt 🇻🇳"
+  },
   "hero": {
     "headline": "Đang diễn ra tại Đà Lạt ✨",
     "subtitle": "Nơi thành phố gặp gỡ",
@@ -55,7 +61,13 @@
       "message": "Trang này đang ở ngôn ngữ khác. Chuyển sang {language}?",
       "switch": "Xem bằng {language}",
       "dismiss": "Giữ ngôn ngữ hiện tại"
-    }
+    },
+    "aiQueueWait": "Đang vẽ ảnh của bạn — thường mất 1–3 phút ✨",
+    "aiWorkerOffline": "Hoạ sĩ AI đang nghỉ một chút. Thử lại sau nhé.",
+    "aiRefineUnavailable": "Tính năng chỉnh sửa đang tạm nghỉ — hãy tạo ảnh mới nhé.",
+    "aiTooManyPending": "Ảnh khác của bạn vẫn đang được vẽ. Chờ một chút nhé.",
+    "aiTimeout": "Lâu hơn bình thường một chút — ảnh có thể vẫn sẽ xuất hiện. Nếu không, thử lại nhé.",
+    "aiGenerationFailed": "Lần này chưa tạo được ảnh. Thử lại nhé."
   },
   "nav": {
     "events": "Sự kiện",
@@ -152,7 +164,9 @@
     "newPassword": "Mật khẩu mới",
     "newPasswordPlaceholder": "Nhập mật khẩu mới",
     "setNewPassword": "Đặt mật khẩu mới",
-    "passwordResetSuccess": "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.",
+    "passwordResetSuccess": "Đã cập nhật mật khẩu — bạn đã đăng nhập!",
+    "resetLinkExpired": "Liên kết đặt lại này đã hết hạn hoặc đã được sử dụng.",
+    "requestNewLink": "Yêu cầu liên kết mới",
     "accountCreatedCheckEmail": "Đã tạo tài khoản! Kiểm tra email để xác nhận.",
     "signInOrCreateHint": "Mới đến? Chúng tôi sẽ tự động tạo tài khoản cho bạn.",
     "signInWithPassword": "Đăng nhập bằng mật khẩu",
@@ -247,7 +261,14 @@
     },
     "friendsGoing": "{count} bạn bè sẽ đến",
     "othersYouFollow": "+ {count} người bạn theo dõi",
-    "andMore": "và thêm"
+    "andMore": "và thêm",
+    "pastProofBoth": "{went} người đi · {photos} ảnh lần trước",
+    "pastProofPhotos": "{photos} ảnh lần trước",
+    "pastProofWent": "{went} người đi lần trước",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} chỗ",
+    "secretAddressLockHint": "Địa chỉ chính xác sẽ hiện sau khi bạn xác nhận tham gia",
+    "secretAddressRevealedHint": "Chỉ khách mời mới thấy địa chỉ này"
   },
   "rsvp": {
     "imGoing": "Tôi sẽ đi",
@@ -263,6 +284,13 @@
     "waitlistAutoPromote": "Bạn sẽ tự động có chỗ khi có người hủy"
   },
   "eventForm": {
+    "linkedPastEvent": "Khoảnh khắc từ sự kiện trước",
+    "linkedPastEventHelp": "Hiển thị khoảnh khắc của một sự kiện trước trên trang này cho đến khi sự kiện này có khoảnh khắc riêng. Chỉ quản trị viên mới có thể thiết lập.",
+    "linkedPastEventError": "Không thể cập nhật liên kết. Vui lòng thử lại.",
+    "searchPastEvents": "Tìm sự kiện đã diễn ra…",
+    "searchingEvents": "Đang tìm…",
+    "noPastEventsFound": "Không tìm thấy sự kiện nào",
+    "unlinkPastEvent": "Bỏ liên kết",
     "createEvent": "Tạo sự kiện",
     "editEvent": "Chỉnh sửa sự kiện",
     "title": "Tiêu đề sự kiện",
@@ -289,6 +317,9 @@
     "locationVenuesSection": "Địa điểm",
     "locationPlacesSection": "Vị trí khác",
     "locationNoResults": "Không tìm thấy địa điểm",
+    "locationUseCustom": "Dùng \"{text}\"",
+    "locationUseAsTyped": "Lưu địa chỉ đúng như đã nhập",
+    "locationSearchUnavailable": "Tìm kiếm địa điểm hiện không khả dụng — bạn vẫn có thể dùng địa chỉ đúng như đã nhập ở bên dưới.",
     "locationLoading": "Đang tải...",
     "locationCoordinatesDetected": "Đã nhận diện tọa độ",
     "locationResolvingUrl": "Đang trích xuất vị trí từ link...",
@@ -388,7 +419,14 @@
     "sponsorTier3": "Vàng (Cấp 3)",
     "sponsorTierHelp": "Sự kiện nổi bật xuất hiện đầu tiên với huy hiệu vàng.",
     "activityTags": "Loại hoạt động",
-    "activityTagsHelp": "Chọn thẻ để giúp mọi người tìm thấy sự kiện của bạn. AI cũng sẽ tự động gắn thẻ dựa trên nội dung."
+    "activityTagsHelp": "Chọn thẻ để giúp mọi người tìm thấy sự kiện của bạn. AI cũng sẽ tự động gắn thẻ dựa trên nội dung.",
+    "secretAddress": "Địa chỉ bí mật",
+    "secretAddressHelp": "Địa chỉ chính xác sẽ được ẩn — chỉ khách đã xác nhận tham gia mới thấy. Chúng tôi cũng sẽ gửi địa chỉ cho khách vào buổi sáng ngày diễn ra sự kiện.",
+    "secretAddressPublicLabel": "Mọi người sẽ thấy gì",
+    "secretAddressPublicLabelPlaceholder": "VD: Một ngôi nhà gần Chợ Đêm",
+    "secretAddressPublicLabelHelp": "Gợi ý khu vực chung hiển thị thay cho địa chỉ.",
+    "secretAddressArrivalNotes": "Ghi chú khi đến (chỉ khách mời)",
+    "secretAddressArrivalNotesPlaceholder": "Mã cửa, chỗ đậu xe, link nhóm Zalo/WhatsApp…"
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",
@@ -1105,7 +1143,12 @@
     ],
     "usernamePlaceholder": "Tìm theo tên hoặc tên người dùng",
     "usernameHint": "Nhập ít nhất 2 ký tự để tìm kiếm",
-    "noInvitees": "Vui lòng thêm ít nhất một người để mời"
+    "noInvitees": "Vui lòng thêm ít nhất một người để mời",
+    "audienceEveryone": "Tất cả mọi người",
+    "audiencePeople": "{count} người",
+    "personalNoteLabel": "Thêm lời nhắn cá nhân",
+    "personalNotePlaceholder": "Vì sao họ nên tham gia? (không bắt buộc)",
+    "audienceNoRecipients": "Mọi người ở đây đã được mời hoặc đã nhận thông báo gần đây"
   },
   "moments": {
     "moments": "Khoảnh khắc",
@@ -1336,6 +1379,16 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Tìm hội của bạn",
+    "discoverTitle": "Các hội nhóm Đà Lạt",
+    "discoverSubtitle": "Cộng đồng nhỏ, niềm vui lớn — tham gia những hội nhóm khiến thành phố này thân thương như nhà.",
+    "startTribe": "Lập hội mới",
+    "seeAll": "Xem tất cả",
+    "accessOpen": "Mở cho mọi người",
+    "accessRequest": "Cần duyệt để tham gia",
+    "emptyTitle": "Chưa có hội nhóm nào — sương mù đang chờ nhóm đầu tiên.",
+    "emptyCta": "Làm người sáng lập",
+    "dateAtTime": "{date} lúc {time}",
     "title": "Bộ tộc",
     "createTribe": "Tạo bộ tộc",
     "joinTribe": "Tham gia bộ tộc",
@@ -1388,7 +1441,14 @@
     "createdBy": "Được tạo bởi {name}",
     "joinedOn": "Tham gia {date}",
     "myTribes": "Bộ tộc của tôi",
-    "pendingRequests": "Yêu cầu đang chờ"
+    "pendingRequests": "Yêu cầu đang chờ",
+    "coverImage": "Ảnh bìa",
+    "coverImageHint": "Ảnh ngang đẹp nhất — khoảng 1200×600.",
+    "uploadCover": "Tải ảnh bìa lên",
+    "replaceCover": "Thay ảnh bìa",
+    "removeCover": "Xóa",
+    "coverUploading": "Đang tải lên...",
+    "coverUploadFailed": "Tải lên thất bại. Vui lòng thử lại."
   },
   "feed": {
     "title": "Bảng tin",
@@ -1621,7 +1681,16 @@
     "allPosts": "Tất cả",
     "noPosts": "Chưa có bài viết. Quay lại sớm nhé!",
     "backToBlog": "Quay lại Blog",
-    "translated": "Đã dịch"
+    "translated": "Đã dịch",
+    "sources": "Nguồn",
+    "via": "theo",
+    "loadMore": "Xem thêm",
+    "newerPosts": "Mới hơn",
+    "olderPosts": "Cũ hơn",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "thisWeek": "Tuần này",
+    "older": "Trước đó"
   },
   "upcomingEvents": {
     "title": "Sự kiện sắp tới tại Đà Lạt",
@@ -1762,6 +1831,8 @@
     "tour": "Tour",
     "hiking": "Leo núi",
     "sports": "Thể thao",
+    "pickleball": "Pickleball",
+    "games": "Trò chơi",
     "meetup": "Gặp mặt",
     "networking": "Kết nối",
     "community": "Cộng đồng",
@@ -2430,7 +2501,11 @@
     "tagGovernment": "Chính quyền",
     "tagFoodDrink": "Ẩm thực",
     "tagWeather": "Thời tiết",
-    "tagCommunity": "Cộng đồng"
+    "tagCommunity": "Cộng đồng",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "thisWeek": "Tuần này",
+    "older": "Trước đó"
   },
   "loyalty": {
     "title": "Tích điểm",
@@ -2543,5 +2618,37 @@
     "readyToHostDesc": "Tạo sự kiện đầu tiên và bắt đầu kiếm điểm tổ chức. Mỗi sự kiện đưa bạn gần hơn đến đặc quyền cao cấp.",
     "createEvent": "Tạo sự kiện",
     "noOneYet": "Chưa ai trên bảng xếp hạng. Hãy là người đầu tiên!"
+  },
+  "pokerTable": {
+    "level": "Cấp {n}",
+    "ante": "Ante",
+    "next": "Tiếp theo",
+    "tapToStart": "Chạm để bắt đầu",
+    "shuffleUp": "Xào bài và chia thôi!",
+    "voiceBlindsUp": "Blind tăng! Bây giờ {sb}, {bb}",
+    "voiceBlindsUpAnte": "Blind tăng! Bây giờ {sb}, {bb}, ante {ante}",
+    "voiceOneMinute": "Còn một phút ở cấp này",
+    "pause": "Tạm dừng",
+    "resume": "Tiếp tục",
+    "prevLevel": "Cấp trước",
+    "nextLevel": "Cấp tiếp theo",
+    "addMinute": "+1 phút",
+    "editLevels": "Chỉnh cấp blind",
+    "presets": "Mẫu có sẵn",
+    "presetHyper": "Hyper · 6 phút",
+    "presetTurbo": "Turbo · 10 phút",
+    "presetStandard": "Chuẩn · 15 phút",
+    "smallBlind": "SB",
+    "bigBlind": "BB",
+    "minutesShort": "Phút",
+    "addLevel": "Thêm cấp",
+    "removeLevel": "Xóa cấp",
+    "resetClock": "Đặt lại",
+    "done": "Xong",
+    "soundOn": "Bật âm thanh",
+    "soundOff": "Tắt âm thanh",
+    "levelOf": "Cấp {n} / {total}",
+    "minutesPerLevel": "Phút mỗi cấp",
+    "applyToAll": "Áp dụng tất cả"
   }
 }

@@ -1,10 +1,12 @@
 import { Building2, Calendar, MapPin, Film } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButtonClient } from "@/components/auth-button-client";
-import { LocalePicker } from "@/components/locale-picker";
 import { CreateEventLink } from "@/components/auth/create-event-link";
-import { HeaderSearch } from "@/components/search/header-search";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  DeferredHeaderSearch,
+  DeferredLocalePicker,
+} from "@/components/site-header-deferred";
 
 interface SiteHeaderProps {
   /** Optional content to render on the right side before AuthButton */
@@ -14,6 +16,7 @@ interface SiteHeaderProps {
 /**
  * Static site header that preserves ISR caching.
  * Auth-dependent elements (CreateEventLink, AuthButton) are handled client-side.
+ * Search + locale picker are deferred client chunks (see site-header-deferred).
  */
 export function SiteHeader({ actions }: SiteHeaderProps) {
   return (
@@ -24,7 +27,7 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
             ĐàLạt.app
           </Link>
           <div className="flex items-center gap-1">
-            <LocalePicker />
+            <DeferredLocalePicker />
             <ThemeToggle />
           </div>
         </div>
@@ -57,7 +60,7 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
           >
             <Film className="w-5 h-5" aria-hidden="true" />
           </Link>
-          <HeaderSearch />
+          <DeferredHeaderSearch />
           <CreateEventLink />
           {actions}
           <AuthButtonClient />

@@ -21,8 +21,8 @@ export function MobileMenu({ variant = "default" }: MobileMenuProps) {
   useEffect(() => {
     async function checkAuth() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session?.user);
     }
     checkAuth();
   }, []);

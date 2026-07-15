@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
-import { locales, type Locale } from "@/lib/i18n/routing";
-import { createClient } from "@/lib/supabase/server";
+import { buildLocales, type Locale } from "@/lib/i18n/routing";
+import { createStaticClient } from "@/lib/supabase/server";
 import { EventGrid } from "@/components/events/event-grid";
+import { getCachedEventSocialBatch } from "@/lib/cache/server-cache";
 import { EventViewToggle } from "@/components/events/event-view-toggle";
 import { Pagination } from "@/components/ui/pagination";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -34,7 +35,7 @@ function getPageNumber(pageParam: string[] | undefined): number {
 export async function generateStaticParams() {
   const params: { locale: string; page: string[] | undefined }[] = [];
 
-  for (const locale of locales) {
+  for (const locale of buildLocales) {
     // Page 1 (no page param)
     params.push({ locale, page: undefined });
     // Pages 2-3
@@ -63,7 +64,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getUpcomingEvents(limit: number, offset: number) {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[upcoming] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty page");
+    return [];
+  }
 
   // Try the new paginated RPC first, fallback to basic query
   const { data, error } = await supabase.rpc("get_upcoming_events_paginated", {
@@ -93,7 +98,11 @@ async function getUpcomingEvents(limit: number, offset: number) {
 }
 
 async function getUpcomingEventsCount() {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[upcoming] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering zero count");
+    return 0;
+  }
 
   // Try the new count RPC first
   const { data, error } = await supabase.rpc("get_upcoming_events_count");
@@ -120,7 +129,11 @@ async function getUpcomingEventsCount() {
 async function getEventCounts(eventIds: string[]) {
   if (eventIds.length === 0) return {};
 
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[upcoming] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty counts");
+    return {};
+  }
   const { data: rsvps } = await supabase
     .from("rsvps")
     .select("event_id, status, plus_ones")
@@ -168,8 +181,9 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
   }
 
   const eventIds = events.map((e) => e.id);
-  const [counts, eventTranslations] = await Promise.all([
+  const [counts, social, eventTranslations] = await Promise.all([
     getEventCounts(eventIds),
+    getCachedEventSocialBatch(eventIds),
     getEventTranslationsBatch(eventIds, locale as ContentLocale),
   ]);
 
@@ -247,6 +261,7 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
             <EventGrid
               events={events}
               counts={counts}
+              social={social}
               eventTranslations={eventTranslations}
             />
           ) : (

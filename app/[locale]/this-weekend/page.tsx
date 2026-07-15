@@ -8,7 +8,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Event, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
-import { locales } from "@/lib/i18n/routing";
+import { buildLocales } from "@/lib/i18n/routing";
 import { formatInDaLat, DALAT_TIMEZONE } from "@/lib/timezone";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { nextSaturday, nextSunday, isSaturday, isSunday, isAfter, startOfDay, endOfDay } from "date-fns";
@@ -20,7 +20,7 @@ type PageProps = {
 };
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 // SEO-optimized for "dalat this weekend" searches

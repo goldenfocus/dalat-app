@@ -180,10 +180,12 @@ export function TicketTierInput({
                     <div className="flex items-center gap-2">
                       <div className="flex-1">
                         <Input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           placeholder={t("pricePlaceholder")}
                           value={tier.price || ""}
-                          onChange={(e) => updateTier(index, "price", parseInt(e.target.value) || 0)}
+                          onChange={(e) => updateTier(index, "price", parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)}
                           className="text-right"
                         />
                       </div>
@@ -222,10 +224,12 @@ export function TicketTierInput({
                         />
                         <div className="flex gap-2">
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             placeholder={t("pricePlaceholder")}
                             value={tier.price || ""}
-                            onChange={(e) => updateTier(index, "price", parseInt(e.target.value) || 0)}
+                            onChange={(e) => updateTier(index, "price", parseInt(e.target.value.replace(/\D/g, ""), 10) || 0)}
                             className="text-right"
                           />
                           <Select

@@ -1,5 +1,10 @@
 {
+  "regions": ["sin1"],
   "crons": [
+    {
+      "path": "/api/cron/process-notifications",
+      "schedule": "*/5 * * * *"
+    },
     {
       "path": "/api/cron/daily-summary",
       "schedule": "0 20 * * *"
@@ -27,6 +32,18 @@
     {
       "path": "/api/cron/translate-pending",
       "schedule": "30 */2 * * *"
+    },
+    {
+      "path": "/api/cron/refresh-fallback-covers",
+      "schedule": "30 20 * * *"
+    },
+    {
+      "path": "/api/cron/ghost-boost",
+      "schedule": "7 * * * *"
+    },
+    {
+      "path": "/api/cron/health-check",
+      "schedule": "30 2 * * *"
     }
   ]
 }

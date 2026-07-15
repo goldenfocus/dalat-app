@@ -1,8 +1,9 @@
 {
   "private": true,
   "scripts": {
+    "import:worker": "tsx scripts/import-worker/worker.ts",
     "dev": "next dev",
-    "prebuild": "node -e \"const fs=require('fs'); if(fs.existsSync('middleware.ts')&&fs.existsSync('proxy.ts')){console.error('\\x1b[31mERROR: middleware.ts AND proxy.ts both exist! Having both crashes the app.\\nCloudflare/OpenNext requires edge middleware: keep middleware.ts, delete proxy.ts.\\x1b[0m');process.exit(1)}\"",
+    "prebuild": "node -e \"const fs=require('fs'); if(fs.existsSync('middleware.ts')&&fs.existsSync('proxy.ts')){console.error('\\x1b[31mERROR: middleware.ts AND proxy.ts both exist! Having both crashes the app.\\nCloudflare/OpenNext requires edge middleware: keep middleware.ts, delete proxy.ts.\\x1b[0m');process.exit(1)}\" && node scripts/check-client-namespaces.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . && npm run check:no-middleware",
@@ -45,7 +46,6 @@
     "heic-convert": "^2.1.0",
     "heic2any": "^0.0.4",
     "hls.js": "^1.6.15",
-    "inngest": "^3.54.2",
     "jszip": "^3.10.1",
     "lucide-react": "^0.563.0",
     "music-metadata": "^11.11.0",
@@ -92,6 +92,7 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.23.0",
     "typescript": "^5",
     "vitest": "^4.0.16",
     "wrangler": "^4.107.1"

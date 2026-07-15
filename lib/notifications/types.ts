@@ -31,7 +31,11 @@ export type NotificationType =
   // Smart reminder types
   | 'confirm_attendance_7d'
   | 'event_starting_nudge'
-  | 'organizer_re_ping';
+  | 'organizer_re_ping'
+  // Secret address morning-of reveal
+  | 'event_address_reveal'
+  // Admin audience blast (@all / @games)
+  | 'audience_invitation';
 
 export type NotificationChannel = 'in_app' | 'push' | 'email';
 
@@ -53,6 +57,10 @@ export interface EmailNotificationContent extends NotificationContent {
   html?: string;
   text?: string; // Plain text alternative for better deliverability
   replyTo?: string;
+  /** HTML-safe overrides for the default generator. title/body stay plain text
+   *  (used verbatim in the text/plain MIME part); these are used in the HTML part. */
+  titleHtml?: string;
+  bodyHtml?: string;
 }
 
 export interface PushNotificationContent extends NotificationContent {
@@ -109,7 +117,7 @@ export interface ScheduledNotification {
   type: NotificationType;
   scheduled_for: string;
   payload: NotificationPayload;
-  status: 'pending' | 'sent' | 'cancelled' | 'failed';
+  status: 'pending' | 'processing' | 'sent' | 'cancelled' | 'failed';
   sent_at: string | null;
   error_message: string | null;
   reference_type: string | null;
@@ -196,6 +204,15 @@ export interface UserInvitationPayload extends EventNotificationPayload {
   type: 'user_invitation';
   inviterName: string;
   startsAt: string;
+}
+
+export interface AudienceInvitationPayload extends EventNotificationPayload {
+  type: 'audience_invitation';
+  inviterName: string;
+  startsAt: string;
+  /** event_invitations.token — powers the no-login one-tap RSVP link in email */
+  token: string;
+  personalNote?: string | null;
 }
 
 export interface TribeJoinRequestPayload extends BaseNotificationPayload {
@@ -312,6 +329,14 @@ export interface OrganizerRePingPayload extends EventNotificationPayload {
   organizerName: string;
 }
 
+export interface EventAddressRevealPayload extends EventNotificationPayload {
+  type: 'event_address_reveal';
+  eventTime: string;
+  address: string | null;
+  googleMapsUrl: string | null;
+  arrivalNotes: string | null;
+}
+
 export type NotificationPayload =
   | RsvpConfirmationPayload
   | ConfirmAttendance24hPayload
@@ -323,6 +348,7 @@ export type NotificationPayload =
   | FeedbackRequestPayload
   | EventInvitationPayload
   | UserInvitationPayload
+  | AudienceInvitationPayload
   | TribeJoinRequestPayload
   | TribeRequestApprovedPayload
   | TribeRequestRejectedPayload
@@ -339,7 +365,9 @@ export type NotificationPayload =
   // Smart reminder notifications
   | ConfirmAttendance7dPayload
   | EventStartingNudgePayload
-  | OrganizerRePingPayload;
+  | OrganizerRePingPayload
+  // Secret address morning-of reveal
+  | EventAddressRevealPayload;
 
 // ============================================
 // Notify Options
@@ -348,6 +376,9 @@ export type NotificationPayload =
 export interface NotifyOptions {
   // Override default channels for this notification
   channels?: NotificationChannel[];
+  // Restrict to a subset of channels — intersects with preference-derived
+  // channels (unlike `channels`, which overrides preferences entirely)
+  onlyChannels?: NotificationChannel[];
   // Skip preference check (for critical notifications)
   skipPreferences?: boolean;
   // Schedule for later

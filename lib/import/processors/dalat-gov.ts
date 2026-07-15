@@ -1,16 +1,16 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import {
-  slugify,
-  generateUniqueSlug,
-  findOrCreateOrganizer,
   checkDuplicateByUrl,
-  generateMapsUrl,
   createEmptyResult,
-  downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
+import {
+  importExtractedEvents,
+  type ExtractedEvent,
+} from "../import-events";
 import { triggerTranslationServer } from "@/lib/translations";
+import { EXTRACTION_MODEL } from "../extraction-model";
 
 const anthropic = new Anthropic();
 
@@ -24,21 +24,6 @@ const CATEGORIES_TO_SCRAPE = [
   "/danh-muc/du-lich", // Tourism
   "/danh-muc/van-hoa", // Culture
 ];
-
-/**
- * Event extracted from a gov.vn article by AI
- */
-interface ExtractedEvent {
-  title: string;
-  description: string;
-  startDate: string; // ISO format or Vietnamese date
-  endDate?: string;
-  startTime?: string;
-  locationName?: string;
-  address?: string;
-  organizerName?: string;
-  imageUrl?: string;
-}
 
 /**
  * Article scraped from gov.vn
@@ -162,6 +147,9 @@ export async function fetchArticle(url: string): Promise<GovArticle | null> {
       content = articleMatch ? articleMatch[1] : "";
     }
 
+    // Keep the raw content HTML for image extraction before stripping tags
+    const rawContent = content;
+
     // Strip HTML tags but preserve line breaks
     content = content
       .replace(/<br\s*\/?>/gi, "\n")
@@ -179,15 +167,31 @@ export async function fetchArticle(url: string): Promise<GovArticle | null> {
       .replace(/\n{3,}/g, "\n\n")
       .trim();
 
-    // Extract image URLs
+    // Extract image URLs from the CONTENT region only, not the whole page.
+    // Real article photos usually live on external CDNs (daknong.1cdn.vn,
+    // lamdongtourism.com.vn, …) while the site's own /images/ assets are page
+    // chrome — including 24x16 language-picker flags. The old whole-page +
+    // same-domain filter kept exactly the flags and dropped the real photos,
+    // so every imported event got a blurry flag cover (fixed Jul 10 2026).
     const imageUrls: string[] = [];
-    const imgMatches = html.matchAll(/<img[^>]+src="([^"]+)"[^>]*>/gi);
+    const chromeImageRe = /logo|icon|favicon|flag|tin-nhiem|avatar/i;
+    const ogImageMatch = html.match(
+      /<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i
+    );
+    if (ogImageMatch && !chromeImageRe.test(ogImageMatch[1])) {
+      imageUrls.push(ogImageMatch[1]);
+    }
+    const imgMatches = rawContent.matchAll(/<img[^>]+src="([^"]+)"[^>]*>/gi);
     for (const match of imgMatches) {
       let imgUrl = match[1];
       if (imgUrl.startsWith("/")) {
         imgUrl = `${BASE_URL}${imgUrl}`;
       }
-      if (imgUrl.includes("dalat-info.gov.vn") && !imgUrl.includes("logo") && !imgUrl.includes("icon")) {
+      if (
+        imgUrl.startsWith("http") &&
+        !chromeImageRe.test(imgUrl) &&
+        !imageUrls.includes(imgUrl)
+      ) {
         imageUrls.push(imgUrl);
       }
     }
@@ -209,7 +213,7 @@ export async function fetchArticle(url: string): Promise<GovArticle | null> {
 export async function extractEventsFromArticle(article: GovArticle): Promise<ExtractedEvent[]> {
   try {
     const response = await anthropic.messages.create({
-      model: "claude-3-5-haiku-20241022",
+      model: EXTRACTION_MODEL,
       max_tokens: 2000,
       messages: [
         {
@@ -268,8 +272,15 @@ Output ONLY the JSON array, no other text.`,
         /^\d{4}-\d{2}-\d{2}$/.test(e.startDate)
     );
   } catch (error) {
-    console.error(`[dalat-gov] Error extracting events from ${article.url}:`, error);
-    return [];
+    // A malformed model answer means "nothing extractable" — safe to treat as empty.
+    if (error instanceof SyntaxError) {
+      console.warn(`[dalat-gov] Unparseable extraction output for ${article.url}`);
+      return [];
+    }
+    // API errors (retired model, auth, rate limit) must be LOUD, never "no events".
+    // Swallowing these is how the pipeline died silently for 5 months.
+    console.error(`[dalat-gov] Extraction API error for ${article.url}:`, error);
+    throw error;
   }
 }
 
@@ -345,114 +356,27 @@ export async function processGovArticles(
 
       console.log(`[dalat-gov] Found ${events.length} events in: ${article.title}`);
 
-      // Process each extracted event
-      for (const event of events) {
-        try {
-          // Check for duplicates by title + date
-          const eventDate = event.startDate;
-          const { data: existingByTitle } = await supabase
-            .from("events")
-            .select("id")
-            .ilike("title", event.title)
-            .gte("starts_at", eventDate)
-            .lt("starts_at", getNextDay(eventDate))
-            .limit(1)
-            .single();
-
-          if (existingByTitle) {
-            result.skipped++;
-            result.details.push(`Skipped: Similar event exists - ${event.title}`);
-            continue;
-          }
-
-          const organizerId = await findOrCreateOrganizer(
-            supabase,
-            event.organizerName || "Sở Văn hóa, Thể thao và Du lịch Lâm Đồng"
-          );
-          const slug = await generateUniqueSlug(supabase, slugify(event.title));
-
-          // Build starts_at timestamp
-          let startsAt = event.startDate;
-          if (event.startTime) {
-            startsAt = `${event.startDate}T${event.startTime}:00`;
-          } else {
-            startsAt = `${event.startDate}T09:00:00`; // Default to 9 AM
-          }
-
-          // Build ends_at if available
-          let endsAt: string | null = null;
-          if (event.endDate) {
-            endsAt = `${event.endDate}T22:00:00`; // Default end time
-          }
-
-          // Try to download first image from article
-          const imageUrl = await downloadAndUploadImage(
-            supabase,
-            article.imageUrls[0] || null,
-            slug
-          );
-
-          const { data: newEvent, error } = await supabase
-            .from("events")
-            .insert({
-              slug,
-              title: event.title,
-              description: event.description,
-              starts_at: startsAt,
-              ends_at: endsAt,
-              location_name: event.locationName || "Đà Lạt",
-              address: event.address,
-              google_maps_url: generateMapsUrl(
-                undefined,
-                undefined,
-                event.locationName,
-                "Đà Lạt"
-              ),
-              external_chat_url: article.url, // Link back to source article
-              image_url: imageUrl,
-              status: "published",
-              timezone: "Asia/Ho_Chi_Minh",
-              organizer_id: organizerId,
-              created_by: createdBy,
-              source_platform: "dalat-gov",
-              source_metadata: {
-                article_url: article.url,
-                article_title: article.title,
-                publish_date: article.publishDate,
-                imported_at: new Date().toISOString(),
-              },
-            })
-            .select("id")
-            .single();
-
-          if (error) {
-            result.errors++;
-            result.details.push(`Error: ${event.title} - ${error.message}`);
-          } else {
-            result.processed++;
-            result.details.push(`Imported: ${event.title}`);
-
-            // Trigger translation
-            if (newEvent?.id) {
-              const fieldsToTranslate = [];
-              if (event.title) {
-                fieldsToTranslate.push({ field_name: "title" as const, text: event.title });
-              }
-              if (event.description) {
-                fieldsToTranslate.push({
-                  field_name: "description" as const,
-                  text: event.description,
-                });
-              }
-
-              if (fieldsToTranslate.length > 0) {
-                await triggerTranslationServer("event", newEvent.id, fieldsToTranslate);
-              }
-            }
-          }
-        } catch (err) {
-          result.errors++;
-          result.details.push(`Exception: ${event.title} - ${err}`);
+      // Insert events via the shared importer, then translate (server path)
+      const imported = await importExtractedEvents(
+        supabase,
+        article,
+        events,
+        result,
+        { createdBy }
+      );
+      for (const ev of imported) {
+        const fieldsToTranslate = [];
+        if (ev.title) {
+          fieldsToTranslate.push({ field_name: "title" as const, text: ev.title });
+        }
+        if (ev.description) {
+          fieldsToTranslate.push({
+            field_name: "description" as const,
+            text: ev.description,
+          });
+        }
+        if (fieldsToTranslate.length > 0) {
+          await triggerTranslationServer("event", ev.id, fieldsToTranslate);
         }
       }
     } catch (err) {
@@ -462,11 +386,4 @@ export async function processGovArticles(
   }
 
   return result;
-}
-
-function getNextDay(dateStr?: string | null): string {
-  if (!dateStr) return "9999-12-31";
-  const date = new Date(dateStr);
-  date.setDate(date.getDate() + 1);
-  return date.toISOString().split("T")[0];
 }

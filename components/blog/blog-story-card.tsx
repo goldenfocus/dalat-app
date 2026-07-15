@@ -3,6 +3,9 @@ import Image from "next/image";
 import { Heart, Calendar } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { markdownToPlainText } from "@/lib/blog/strip-markdown";
+import { normalizeStoryContent } from "@/lib/blog/normalize-content";
+import { GeneratedCover } from "@/components/blog/generated-cover";
 import type { BlogPostWithCategory } from "@/lib/types/blog";
 
 interface BlogStoryCardProps {
@@ -15,11 +18,11 @@ export function BlogStoryCard({ post }: BlogStoryCardProps) {
     ? new Date(post.published_at)
     : new Date();
 
-  // Extract first paragraph from story content for preview
-  const preview = post.story_content
-    .split("\n\n")[0]
-    .replace(/[#*_`]/g, "")
-    .slice(0, 200);
+  // Plain-text preview of the story content
+  const preview = markdownToPlainText(
+    normalizeStoryContent(post.story_content),
+    200
+  );
 
   return (
     <Link
@@ -31,7 +34,7 @@ export function BlogStoryCard({ post }: BlogStoryCardProps) {
       )}
     >
       {/* Cover Image */}
-      {post.cover_image_url && (
+      {post.cover_image_url ? (
         <div className="relative aspect-[2/1] overflow-hidden bg-muted">
           <Image
             src={post.cover_image_url}
@@ -41,6 +44,13 @@ export function BlogStoryCard({ post }: BlogStoryCardProps) {
             sizes="(max-width: 768px) 100vw, 768px"
           />
         </div>
+      ) : (
+        <GeneratedCover
+          title={post.title}
+          seed={post.slug}
+          categoryLabel={post.category_name ?? undefined}
+          className="aspect-[2/1]"
+        />
       )}
 
       {/* Content */}
@@ -69,10 +79,7 @@ export function BlogStoryCard({ post }: BlogStoryCardProps) {
         </h2>
 
         {/* Preview */}
-        <p className="text-muted-foreground line-clamp-2 mb-4">
-          {preview}
-          {preview.length >= 200 && "..."}
-        </p>
+        <p className="text-muted-foreground line-clamp-2 mb-4">{preview}</p>
 
         {/* Footer */}
         <div className="flex items-center justify-between text-sm text-muted-foreground">

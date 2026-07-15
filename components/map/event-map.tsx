@@ -6,7 +6,8 @@ import { useTranslations, useLocale } from "next-intl";
 import { Loader2, Navigation } from "lucide-react";
 import { startOfDay, endOfDay, isAfter, parseISO } from "date-fns";
 import Supercluster from "supercluster";
-import type { Event, VenueMapMarker } from "@/lib/types";
+import type { VenueMapMarker } from "@/lib/types";
+import type { MapEvent } from "./dynamic-event-map";
 import type { EventTag } from "@/lib/constants/event-tags";
 import { createVenueMarkerElement } from "./venue-marker";
 import { VenuePopupCard } from "./venue-popup-card";
@@ -32,7 +33,7 @@ const DATE_PRESET_DAYS: Record<DatePreset, number | null> = {
 };
 
 interface EventMapProps {
-  events: Event[];
+  events: MapEvent[];
   happeningEventIds?: string[];
   venues?: VenueMapMarker[];
 }
@@ -195,7 +196,7 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<MapEvent | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<VenueMapMarker | null>(null);
   const [selectedTags, setSelectedTags] = useState<EventTag[]>([]);
   const [datePreset, setDatePreset] = useState<DatePreset>("7days");
@@ -300,7 +301,7 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
 
   // Map from event ID to event for quick lookup
   const eventsById = useMemo(() => {
-    const map = new Map<string, Event>();
+    const map = new Map<string, MapEvent>();
     eventsWithLocation.forEach(event => map.set(event.id, event));
     return map;
   }, [eventsWithLocation]);

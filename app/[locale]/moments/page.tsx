@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import {
   MomentsDiscoveryDesktop,
   MomentsDiscoveryMobile,
@@ -9,6 +9,9 @@ import { generateMomentsDiscoveryMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentsDiscoverySchema } from "@/lib/structured-data";
 import type { Locale } from "@/lib/i18n/routing";
 import type { MomentWithEvent, DiscoveryEventMomentsGroup } from "@/lib/types";
+
+// ISR: Revalidate every 60 seconds (auth state is derived client-side)
+export const revalidate = 60;
 
 const INITIAL_PAGE_SIZE = 12;
 const INITIAL_EVENTS = 5;
@@ -20,7 +23,11 @@ interface PageProps {
 
 // Flat moments for mobile TikTok-style feed
 async function getMoments(): Promise<MomentWithEvent[]> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[moments] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty feed");
+    return [];
+  }
 
   const { data, error } = await supabase.rpc("get_feed_moments", {
     p_limit: INITIAL_PAGE_SIZE,
@@ -41,7 +48,11 @@ async function getMomentsGrouped(): Promise<{
   groups: DiscoveryEventMomentsGroup[];
   hasMore: boolean;
 }> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[moments] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty feed");
+    return { groups: [], hasMore: false };
+  }
 
   const { data, error } = await supabase.rpc("get_feed_moments_grouped", {
     p_event_limit: INITIAL_EVENTS,
@@ -74,11 +85,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function MomentsDiscoveryPage({ params }: PageProps) {
   const { locale } = await params;
-
-  // Get auth state for gating
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const isAuthenticated = !!user;
+  setRequestLocale(locale);
 
   // Fetch both flat (mobile) and grouped (desktop) data in parallel
   const [moments, groupedData, t] = await Promise.all([
@@ -106,7 +113,6 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
         <MomentsDiscoveryMobile
           initialMoments={moments}
           initialHasMore={mobileHasMore}
-          isAuthenticated={isAuthenticated}
         />
       </div>
 
@@ -116,7 +122,6 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
           <MomentsDiscoveryDesktop
             initialGroups={groupedData.groups}
             initialHasMore={groupedData.hasMore}
-            isAuthenticated={isAuthenticated}
           />
         </div>
       </main>

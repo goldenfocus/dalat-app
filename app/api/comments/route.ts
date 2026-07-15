@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { inngest } from "@/lib/inngest/client";
+import { sendCommentNotifications } from "@/lib/notifications/comment-notifications";
 import {
   getCommentsWithTranslations,
   createComment,
@@ -156,12 +156,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Send notification via Inngest (fire-and-forget, don't block the response)
+    // Send notifications after the response — after() keeps the lambda
+    // alive on Vercel so the work isn't killed mid-flight when we return
     if (contentOwner && result.comment_id) {
-      inngest.send({
-        name: "comment/created",
-        data: {
-          commentId: result.comment_id,
+      const commentId = result.comment_id;
+      after(() =>
+        sendCommentNotifications({
+          commentId,
           contentType: targetType,
           contentId: targetId,
           contentOwnerId: contentOwner.ownerId,
@@ -171,10 +172,10 @@ export async function POST(request: NextRequest) {
           commentContent: content,
           parentCommentId: parentId,
           parentCommentAuthorId: result.parent_author_id,
-        },
-      }).catch((err) => {
-        console.error("[api/comments] Failed to send notification:", err);
-      });
+        }).catch((err) => {
+          console.error("[api/comments] Failed to send notification:", err);
+        })
+      );
     }
 
     return NextResponse.json({

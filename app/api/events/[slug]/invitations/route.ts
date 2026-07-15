@@ -1,11 +1,27 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyUserInvitation, sendEmailInvitation } from '@/lib/notifications';
+import { createClient as createServiceRoleClient } from '@supabase/supabase-js';
+import { notify, notifyUserInvitation, sendEmailInvitation } from '@/lib/notifications';
+import type { AudienceInvitationPayload } from '@/lib/notifications';
+import {
+  isValidAudienceKey,
+  resolveAudienceMembers,
+  getBlastExclusions,
+  subtractExclusions,
+} from '@/lib/audiences/resolve';
 import type { Locale, InviteQuotaCheck } from '@/lib/types';
+
+// Manual email invites pace Resend inline (1s/email) and audience blasts run an
+// after() fan-out — both need more than the default function window
+export const maxDuration = 300;
 
 interface InviteRequest {
   emails?: Array<{ email: string; name?: string }>;
   users?: Array<{ userId: string; username: string }>;
+  /** Admin-only: audience keys ('all' or an EventTag). Each member gets a real invitation. */
+  audiences?: string[];
+  /** Optional human note rendered in the blast email (untranslated on purpose). */
+  personalNote?: string;
 }
 
 // POST /api/events/[slug]/invitations - Send invitations
@@ -33,37 +49,57 @@ export async function POST(
   }
 
   const body: InviteRequest = await request.json();
-  const { emails = [], users = [] } = body;
+  const { emails = [], users = [], audiences = [], personalNote } = body;
 
   const totalInvites = emails.length + users.length;
-  if (totalInvites === 0) {
-    return NextResponse.json({ error: 'emails or users array required' }, { status: 400 });
+  if (totalInvites === 0 && audiences.length === 0) {
+    return NextResponse.json({ error: 'emails, users, or audiences array required' }, { status: 400 });
   }
 
-  // Check quota before sending
-  const { data: quotaCheck } = await supabase.rpc('check_invite_quota', {
-    p_user_id: user.id,
-    p_count: totalInvites,
-  }) as { data: InviteQuotaCheck | null };
+  // Check quota before sending (audience blasts are admin-only; admins are unlimited)
+  if (totalInvites > 0) {
+    const { data: quotaCheck } = await supabase.rpc('check_invite_quota', {
+      p_user_id: user.id,
+      p_count: totalInvites,
+    }) as { data: InviteQuotaCheck | null };
 
-  if (!quotaCheck?.allowed) {
-    return NextResponse.json({
-      error: 'Quota exceeded',
-      reason: quotaCheck?.reason,
-      remaining_daily: quotaCheck?.remaining_daily,
-      remaining_weekly: quotaCheck?.remaining_weekly,
-    }, { status: 429 });
+    if (!quotaCheck?.allowed) {
+      return NextResponse.json({
+        error: 'Quota exceeded',
+        reason: quotaCheck?.reason,
+        remaining_daily: quotaCheck?.remaining_daily,
+        remaining_weekly: quotaCheck?.remaining_weekly,
+      }, { status: 429 });
+    }
   }
 
   // Get inviter profile
   const { data: profile } = await supabase
     .from('profiles')
-    .select('display_name, username, locale')
+    .select('display_name, username, locale, role')
     .eq('id', user.id)
     .single();
 
   const inviterName = profile?.display_name || profile?.username || 'Someone';
   const inviterLocale = (profile?.locale as Locale) || 'en';
+
+  // Validate the audience request BEFORE any personal invites go out — a late 4xx
+  // after emails were sent makes the client retry and double-send.
+  const validAudiences = audiences.filter(isValidAudienceKey);
+  const serviceUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (audiences.length > 0) {
+    if (profile?.role !== 'admin' && profile?.role !== 'superadmin') {
+      return NextResponse.json({ error: 'Not authorized for audience invites' }, { status: 403 });
+    }
+    if (validAudiences.length !== audiences.length) {
+      const invalid = audiences.filter((a) => !isValidAudienceKey(a));
+      return NextResponse.json({ error: `Unknown audience: ${invalid.join(', ')}` }, { status: 400 });
+    }
+    if (!serviceUrl || !serviceKey) {
+      return NextResponse.json({ error: 'Server not configured for audience invites' }, { status: 500 });
+    }
+  }
 
   const results: Array<{ email?: string; userId?: string; username?: string; success: boolean; error?: string; token?: string }> = [];
 
@@ -285,11 +321,170 @@ export async function POST(
     });
   }
 
+  // ---- Audience blasts (@all / @games) — validated above, admin only ----
+  let audienceQueued = 0;
+  if (validAudiences.length > 0 && serviceUrl && serviceKey) {
+    const admin = createServiceRoleClient(serviceUrl, serviceKey);
+
+    try {
+      const excluded = await getBlastExclusions(admin, event.id, user.id);
+
+      // Resolve every audience; first audience to claim a user wins (for the analytics column)
+      const memberAudience = new Map<string, string>();
+      for (const key of validAudiences) {
+        const members = subtractExclusions(
+          await resolveAudienceMembers(admin, key),
+          excluded
+        );
+        for (const memberId of members) {
+          if (!memberAudience.has(memberId)) memberAudience.set(memberId, key);
+        }
+      }
+
+      if (memberAudience.size > 0) {
+        // Real names on the rows — otherwise the organizer's new_rsvp notification and
+        // invitation list show the synthetic user-<uuid>@dalat.app address
+        const { data: memberProfiles } = await admin
+          .from('profiles')
+          .select('id, display_name, username, locale')
+          .in('id', [...memberAudience.keys()]);
+        const profileById = new Map(
+          (memberProfiles ?? []).map((p: { id: string; display_name: string | null; username: string | null; locale: string | null }) => [
+            p.id,
+            p,
+          ])
+        );
+
+        const rows = [...memberAudience.entries()].map(([memberId, audienceKey]) => {
+          const p = profileById.get(memberId);
+          return {
+            event_id: event.id,
+            invited_by: user.id,
+            email: `user-${memberId}@dalat.app`,
+            name: p?.display_name || p?.username || null,
+            status: 'pending',
+            claimed_by: memberId,
+            audience: audienceKey,
+          };
+        });
+
+        // ON CONFLICT DO NOTHING — never re-notify an already-invited user
+        const { data: inserted, error: insertError } = await admin
+          .from('event_invitations')
+          .upsert(rows, { onConflict: 'event_id,email', ignoreDuplicates: true })
+          .select('id, claimed_by, token');
+
+        if (insertError) {
+          console.error('[invitations] audience batch insert failed:', insertError);
+          return NextResponse.json({ error: 'Failed to create audience invitations' }, { status: 500 });
+        }
+
+        if (inserted && inserted.length > 0) {
+          // Two-track fan-out: email goes via scheduled_notifications —
+          // /api/cron/process-notifications delivers due rows every 5 min through
+          // notify() with built-in retries, staggered to pace Resend (~2 req/s);
+          // rows beyond the daily email cap start tomorrow. Default sized for the
+          // Pro plan (50k/mo) — set AUDIENCE_BLAST_DAILY_EMAIL_CAP=90 if ever back
+          // on the free tier. In-app + push have no rate limit and are sent
+          // immediately after the response (see after() below).
+          const EMAILS_PER_DAY = Number(process.env.AUDIENCE_BLAST_DAILY_EMAIL_CAP ?? 5000);
+          const startMs = Date.now();
+          const DAY_MS = 24 * 60 * 60 * 1000;
+          const note = personalNote?.trim() || null;
+
+          const payloadFor = (inv: { claimed_by: string; token: string }): AudienceInvitationPayload => ({
+            type: 'audience_invitation',
+            userId: inv.claimed_by,
+            locale: (profileById.get(inv.claimed_by)?.locale as Locale) || 'en',
+            eventId: event.id,
+            eventSlug: event.slug,
+            eventTitle: event.title,
+            startsAt: event.starts_at,
+            locationName: event.location_name,
+            inviterName,
+            token: inv.token,
+            personalNote: note,
+          });
+
+          const scheduledRows = inserted.map((inv: { id: string; claimed_by: string; token: string }, i: number) => {
+            const dayOffset = Math.floor(i / EMAILS_PER_DAY) * DAY_MS;
+            const scheduledFor = new Date(startMs + dayOffset + (i % EMAILS_PER_DAY) * 30_000);
+            return {
+              user_id: inv.claimed_by,
+              type: 'audience_invitation',
+              scheduled_for: scheduledFor.toISOString(),
+              status: 'pending',
+              reference_type: 'audience_blast',
+              reference_id: event.id,
+              // onlyChannels: the cron delivers email only — in-app + push
+              // already went out instantly below (prevents double delivery)
+              payload: { ...payloadFor(inv), onlyChannels: ['email'] },
+            };
+          });
+
+          const { error: scheduleError } = await admin
+            .from('scheduled_notifications')
+            .insert(scheduledRows);
+
+          if (scheduleError) {
+            // Invitations exist but nothing is scheduled — surface loudly so the
+            // admin retries the blast (upsert dedupe makes the retry safe... but a
+            // retry skips existing rows, so log the ids for manual recovery too).
+            console.error(
+              '[invitations] audience schedule insert failed:',
+              scheduleError.message,
+              'invitation ids:',
+              inserted.map((r: { id: string }) => r.id).join(',')
+            );
+            return NextResponse.json({ error: 'Failed to schedule audience notifications' }, { status: 500 });
+          }
+
+          // Delivery is delegated to the cron (with retries); mark queued rows sent
+          // so the creator's panel doesn't show them as stuck 'pending' forever.
+          await admin
+            .from('event_invitations')
+            .update({ status: 'sent', sent_at: new Date().toISOString() })
+            .in('id', inserted.map((r: { id: string }) => r.id));
+
+          // In-app + push land instantly — the bell/PWA ping should not wait on
+          // the email stagger. Best-effort (no retry): the scheduled email above
+          // is the guaranteed-delivery channel.
+          const instantRecipients = [...inserted];
+          after(async () => {
+            const BATCH = 15;
+            for (let i = 0; i < instantRecipients.length; i += BATCH) {
+              const batch = instantRecipients.slice(i, i + BATCH);
+              await Promise.all(
+                batch.map(async (inv: { claimed_by: string; token: string }) => {
+                  try {
+                    await notify(payloadFor(inv), { onlyChannels: ['in_app', 'push'] });
+                  } catch (err) {
+                    console.error(
+                      '[invitations] instant in-app/push failed for user',
+                      inv.claimed_by,
+                      err instanceof Error ? err.message : err
+                    );
+                  }
+                })
+              );
+            }
+          });
+
+          audienceQueued = inserted.length;
+        }
+      }
+    } catch (err) {
+      console.error('[invitations] audience resolution failed:', err);
+      return NextResponse.json({ error: 'Failed to resolve audience' }, { status: 500 });
+    }
+  }
+
   return NextResponse.json({
     success: true,
     results,
     sent: successCount,
     failed: results.length - successCount,
+    queued: audienceQueued,
   });
 }
 

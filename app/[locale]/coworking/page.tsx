@@ -9,7 +9,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { VenueListItem, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
-import { locales } from "@/lib/i18n/routing";
+import { buildLocales } from "@/lib/i18n/routing";
 
 const SITE_URL = "https://dalat.app";
 const VENUE_TYPE = "coworking" as const;
@@ -19,7 +19,7 @@ type PageProps = {
 };
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 // SEO-optimized for digital nomads searching "coworking dalat"

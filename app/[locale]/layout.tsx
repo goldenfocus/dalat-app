@@ -1,38 +1,52 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ThemeProvider } from "next-themes";
-import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { BadgeClearer } from "@/components/badge-clearer";
-import { NotificationPrompt } from "@/components/notification-prompt";
-import { SwUpdateHandler } from "@/components/sw-update-handler";
-import { LocaleMismatchBanner } from "@/components/locale-mismatch-banner";
-import { InstallAppBanner } from "@/components/pwa";
 import { GlobalFooter } from "@/components/global-footer";
 import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-context";
-import { PerformanceMonitor } from "@/components/performance-monitor";
-import { routing, type Locale } from "@/lib/i18n/routing";
+import { routing, buildLocales, type Locale } from "@/lib/i18n/routing";
+import { CORE_CLIENT_NAMESPACES } from "@/lib/i18n/client-namespaces";
 import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
-import { GodModeIndicatorWrapper } from "@/components/god-mode-indicator";
 import { QueryProvider } from "@/lib/providers/query-provider";
 import { LocalePreloader } from "@/components/locale-preloader";
-import { UploadFAB } from "@/components/moments/upload-fab";
 import { SiteHeader } from "@/components/site-header";
-import { MiniPlayer } from "@/components/audio/mini-player";
-import { Heartbeat } from "@/components/heartbeat";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { ProgressiveIntlProvider } from "@/components/progressive-intl-provider";
+import {
+  DeferredBadgeClearer,
+  DeferredGodModeIndicator,
+  DeferredHeartbeat,
+  DeferredInstallAppBanner,
+  DeferredIosViewportAnchor,
+  DeferredLocaleMismatchBanner,
+  DeferredMiniPlayer,
+  DeferredNotificationPrompt,
+  DeferredPerformanceMonitor,
+  DeferredSwUpdateHandler,
+  DeferredUploadFAB,
+} from "@/components/deferred-chrome";
 
 const siteUrl = "https://dalat.app";
+
+// Chrome-only progressive enhancement; other browsers ignore the script.
+// Event links come in both shapes: /events/<slug> (default locale, unprefixed
+// via localePrefix: 'as-needed') and /<locale>/events/<slug>.
+const speculationRules = JSON.stringify({
+  prerender: [
+    { where: { href_matches: ["/events/*", "/*/events/*"] }, eagerness: "moderate" },
+  ],
+  prefetch: [{ where: { href_matches: "/*" }, eagerness: "conservative" }],
+});
 
 interface Props {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }
 
-// Generate static params for all locales
+// Prerender only buildLocales; the rest render on-demand via ISR
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return buildLocales.map((locale) => ({ locale }));
 }
 
 // Generate metadata with hreflang for all 12 locales (SEO)
@@ -43,8 +57,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: `${siteUrl}/${locale}`,
       languages: {
-        // The Global Twelve
-        'en': `${siteUrl}/en`,
+        // The Global Twelve — 'en' is the default locale and lives at the
+        // root (localePrefix: 'as-needed'); /en 307-redirects, which Google
+        // treats as a broken alternate.
+        'en': siteUrl,
         'vi': `${siteUrl}/vi`,
         'ko': `${siteUrl}/ko`,
         'zh': `${siteUrl}/zh`,
@@ -56,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         'de': `${siteUrl}/de`,
         'es': `${siteUrl}/es`,
         'id': `${siteUrl}/id`,
-        'x-default': `${siteUrl}/en`,
+        'x-default': siteUrl,
       },
     },
   };
@@ -73,10 +89,26 @@ export default async function LocaleLayout({ children, params }: Props) {
   // Enable static rendering
   setRequestLocale(locale);
 
+  // Ship only shell/homepage namespaces in the first RSC payload.
+  // ProgressiveIntlProvider merges route-level islands on demand (never idle full-dict on home).
+  // Full CLIENT_NAMESPACES list still enforced by scripts/check-client-namespaces.mjs.
   const messages = await getMessages();
+  const coreMessages = Object.fromEntries(
+    CORE_CLIENT_NAMESPACES.filter((ns) => {
+      if (ns in messages) return true;
+      console.error(
+        `[layout] core client namespace "${ns}" missing from "${locale}" messages — shell will crash`
+      );
+      return false;
+    }).map((ns) => [ns, messages[ns as keyof typeof messages]])
+  );
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <ProgressiveIntlProvider locale={locale as Locale} coreMessages={coreMessages}>
+      <script
+        type="speculationrules"
+        dangerouslySetInnerHTML={{ __html: speculationRules }}
+      />
       <QueryProvider>
         <ThemeProvider
           attribute="class"
@@ -99,28 +131,29 @@ export default async function LocaleLayout({ children, params }: Props) {
             />
             <LocalePreloader />
             <div className="min-h-screen flex flex-col">
-              <PerformanceMonitor />
-              <Heartbeat />
-              <BadgeClearer />
-              <NotificationPrompt />
-              <SwUpdateHandler />
-              <LocaleMismatchBanner />
-              <InstallAppBanner />
+              <DeferredPerformanceMonitor />
+              <DeferredHeartbeat />
+              <DeferredBadgeClearer />
+              <DeferredNotificationPrompt />
+              <DeferredSwUpdateHandler />
+              <DeferredLocaleMismatchBanner />
+              <DeferredInstallAppBanner />
+              <DeferredIosViewportAnchor />
               <SiteHeader />
               <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
                 <ErrorBoundary>
                   {children}
                 </ErrorBoundary>
               </main>
-              <MiniPlayer />
+              <DeferredMiniPlayer />
               <MobileBottomNav />
-              <UploadFAB />
+              <DeferredUploadFAB />
               <GlobalFooter />
-              <GodModeIndicatorWrapper />
+              <DeferredGodModeIndicator />
             </div>
           </ScrollRestorationProvider>
         </ThemeProvider>
       </QueryProvider>
-    </NextIntlClientProvider>
+    </ProgressiveIntlProvider>
   );
 }

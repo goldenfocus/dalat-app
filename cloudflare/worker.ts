@@ -21,6 +21,10 @@ const CRON_ROUTES: Record<string, string[]> = {
   "0 2,14 * * *": ["/api/cron/news-scrape"],
   "0 3,15 * * *": ["/api/cron/news-process"],
   "30 */2 * * *": ["/api/cron/translate-pending"],
+  "*/5 * * * *": ["/api/cron/process-notifications"],
+  "30 20 * * *": ["/api/cron/refresh-fallback-covers"],
+  "7 * * * *": ["/api/cron/ghost-boost"],
+  "30 2 * * *": ["/api/cron/health-check"],
 };
 
 interface Env {

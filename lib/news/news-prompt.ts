@@ -47,10 +47,12 @@ Given one or more source articles about the same news story, write an ORIGINAL a
 }
 
 ## Story Content Guidelines
+- CRITICAL: story_content MUST be well-formed markdown with 3-6 SHORT paragraphs, each separated by a BLANK LINE (\\n\\n in the JSON string). Never output the whole article as a single line.
+- CRITICAL: Do NOT start story_content with a heading (no leading "## ..."). The title is rendered separately above the article \u2014 begin directly with the opening paragraph.
 - Write as a warm local journalist who knows \u0110\u00e0 L\u1ea1t intimately
 - Open with the most newsworthy fact
 - Include local context that only someone who lives in \u0110\u00e0 L\u1ea1t would know
-- Use markdown: ## for subheadings, **bold** for emphasis
+- Use markdown: ## for subheadings (only mid-article, never as the first line), **bold** for emphasis
 - Include quotes from sources when available (attributed)
 - End with relevance to the community
 - 300-500 words, no bullet points in the main narrative

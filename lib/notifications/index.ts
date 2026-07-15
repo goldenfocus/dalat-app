@@ -32,6 +32,7 @@ import { getNotificationTemplate } from './templates';
 import { sendInAppNotification } from './channels/in-app';
 import { sendPushNotification } from './channels/push';
 import { sendEmailNotification } from './channels/email';
+import { buildUnsubscribeUrl } from './unsubscribe';
 
 // Re-export types for convenience
 export * from './types';
@@ -76,7 +77,7 @@ export async function notify(
   payload: NotificationPayload,
   options: NotifyOptions = {}
 ): Promise<NotifyResult> {
-  const { channels: forcedChannels, skipPreferences } = options;
+  const { channels: forcedChannels, skipPreferences, onlyChannels } = options;
 
   console.log(`[notify] Starting notification: ${payload.type} for user ${payload.userId}`);
 
@@ -90,6 +91,10 @@ export async function notify(
     enabledChannels = ['in_app', 'push'];
   } else {
     enabledChannels = await getChannelsForNotification(payload.userId, payload.type);
+  }
+
+  if (onlyChannels) {
+    enabledChannels = enabledChannels.filter((c) => onlyChannels.includes(c));
   }
 
   if (enabledChannels.length === 0) {
@@ -134,10 +139,12 @@ export async function notify(
   if (enabledChannels.includes('email') && template.email) {
     const userEmail = await getUserEmail(payload.userId);
     if (userEmail) {
+      const scope = payload.type === 'audience_invitation' ? 'audience' : 'all';
       sendPromises.push(
         sendEmailNotification({
           to: userEmail,
           content: template.email,
+          unsubscribeUrl: buildUnsubscribeUrl(payload.userId, scope) ?? undefined,
         }).then((result) => {
           results.push(result);
         })

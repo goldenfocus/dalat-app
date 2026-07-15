@@ -45,8 +45,8 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session?.user);
     };
     checkAuth();
 
@@ -67,7 +67,8 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
       setIsLoading(true);
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
         if (!user) return;
 
         const { data, error } = await supabase.rpc('get_user_recent_events_for_upload', {

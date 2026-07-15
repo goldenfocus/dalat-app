@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "Tersesat dalam kabut?",
+    "description": "Seperti tersasar ke sudut Đà Lạt yang belum terjamah, halaman ini tidak ada. Tapi jalan pulang hanya satu klik saja.",
+    "backHome": "Kembali ke Beranda",
+    "tagline": "Acara · Orang · Momen · Cinta · Đà Lạt 🇻🇳"
+  },
   "hero": {
     "headline": "Temukan acara. Jelajahi tempat.",
     "subtitle": "Bergabunglah dengan komunitas di Đà Lạt",
@@ -55,7 +61,13 @@
       "message": "Halaman ini dalam bahasa lain. Ganti ke {language}?",
       "switch": "Lihat dalam {language}",
       "dismiss": "Tetap bahasa saat ini"
-    }
+    },
+    "aiQueueWait": "Sedang melukis gambarmu — biasanya 1–3 menit ✨",
+    "aiWorkerOffline": "Pelukis AI sedang istirahat. Coba lagi sebentar lagi.",
+    "aiRefineUnavailable": "Fitur penyempurnaan sedang istirahat — buat gambar baru saja.",
+    "aiTooManyPending": "Gambarmu yang lain masih diproses. Tunggu sebentar dulu.",
+    "aiTimeout": "Lebih lama dari biasanya — gambarnya mungkin masih akan muncul. Kalau tidak, coba lagi.",
+    "aiGenerationFailed": "Kali ini gagal. Coba lagi ya."
   },
   "nav": {
     "events": "Acara",
@@ -155,7 +167,9 @@
     "newPassword": "Kata sandi baru",
     "newPasswordPlaceholder": "Masukkan kata sandi baru Anda",
     "setNewPassword": "Tetapkan kata sandi baru",
-    "passwordResetSuccess": "Kata sandi berhasil direset! Anda sekarang dapat masuk.",
+    "passwordResetSuccess": "Kata sandi diperbarui — kamu sudah masuk!",
+    "resetLinkExpired": "Tautan reset ini sudah kedaluwarsa atau sudah digunakan.",
+    "requestNewLink": "Minta tautan baru",
     "emailRequired": "Silakan masukkan email Anda",
     "or": "atau",
     "continueWithEmail": "Lanjutkan dengan email",
@@ -247,7 +261,14 @@
     },
     "friendsGoing": "{count} teman akan hadir",
     "othersYouFollow": "+ {count} yang kamu ikuti",
-    "andMore": "dan lainnya"
+    "andMore": "dan lainnya",
+    "pastProofBoth": "{went} hadir · {photos} foto terakhir kali",
+    "pastProofPhotos": "{photos} foto terakhir kali",
+    "pastProofWent": "{went} hadir terakhir kali",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} tempat",
+    "secretAddressLockHint": "Alamat persis akan terlihat setelah kamu RSVP",
+    "secretAddressRevealedHint": "Hanya tamu yang bisa melihat alamat ini"
   },
   "rsvp": {
     "imGoing": "Saya hadir",
@@ -263,6 +284,13 @@
     "waitlistAutoPromote": "Anda akan mendapat tempat secara otomatis saat tersedia"
   },
   "eventForm": {
+    "linkedPastEvent": "Momen dari acara sebelumnya",
+    "linkedPastEventHelp": "Tampilkan momen acara sebelumnya di halaman ini sampai acara ini punya momennya sendiri. Hanya admin yang bisa mengaturnya.",
+    "linkedPastEventError": "Tidak dapat memperbarui tautan. Coba lagi.",
+    "searchPastEvents": "Cari acara sebelumnya…",
+    "searchingEvents": "Mencari…",
+    "noPastEventsFound": "Acara sebelumnya tidak ditemukan",
+    "unlinkPastEvent": "Putuskan tautan",
     "createEvent": "Buat Acara",
     "editEvent": "Edit Acara",
     "title": "Judul acara",
@@ -289,6 +317,9 @@
     "locationVenuesSection": "Tempat",
     "locationPlacesSection": "Lokasi Lain",
     "locationNoResults": "Tidak ada lokasi ditemukan",
+    "locationUseCustom": "Gunakan \"{text}\"",
+    "locationUseAsTyped": "Simpan alamat persis seperti yang diketik",
+    "locationSearchUnavailable": "Pencarian lokasi sedang tidak tersedia — kamu tetap bisa memakai alamat persis seperti yang diketik di bawah.",
     "locationLoading": "Memuat...",
     "locationCoordinatesDetected": "Koordinat terdeteksi",
     "locationResolvingUrl": "Mengekstrak lokasi dari tautan...",
@@ -388,7 +419,14 @@
     "sponsorTier3": "Emas (Tingkat 3)",
     "sponsorTierHelp": "Acara unggulan muncul pertama dengan lencana emas.",
     "activityTags": "Jenis Aktivitas",
-    "activityTagsHelp": "Pilih tag untuk membantu orang menemukan acara Anda. AI juga akan menambahkan tag secara otomatis berdasarkan konten."
+    "activityTagsHelp": "Pilih tag untuk membantu orang menemukan acara Anda. AI juga akan menambahkan tag secara otomatis berdasarkan konten.",
+    "secretAddress": "Alamat rahasia",
+    "secretAddressHelp": "Alamat persis disembunyikan — hanya tamu yang RSVP Hadir yang bisa melihatnya. Kami juga akan mengirimkannya ke tamu pada pagi hari acara.",
+    "secretAddressPublicLabel": "Yang dilihat semua orang",
+    "secretAddressPublicLabelPlaceholder": "mis. Rumah dekat Pasar Malam",
+    "secretAddressPublicLabelHelp": "Petunjuk area umum yang ditampilkan sebagai pengganti alamat.",
+    "secretAddressArrivalNotes": "Catatan kedatangan (khusus tamu)",
+    "secretAddressArrivalNotesPlaceholder": "Kode pintu, tips parkir, tautan grup Zalo/WhatsApp…"
   },
   "eventActions": {
     "eventOptions": "Opsi acara",
@@ -1105,7 +1143,12 @@
     ],
     "usernamePlaceholder": "Cari berdasarkan nama atau username",
     "usernameHint": "Ketik minimal 2 karakter untuk mencari",
-    "noInvitees": "Silakan tambahkan setidaknya satu orang untuk diundang"
+    "noInvitees": "Silakan tambahkan setidaknya satu orang untuk diundang",
+    "audienceEveryone": "Semua orang",
+    "audiencePeople": "{count} orang",
+    "personalNoteLabel": "Tambahkan catatan pribadi",
+    "personalNotePlaceholder": "Kenapa mereka harus datang? (opsional)",
+    "audienceNoRecipients": "Semua orang di sini sudah diundang atau dihubungi baru-baru ini"
   },
   "moments": {
     "moments": "Momen",
@@ -1333,6 +1376,16 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Temukan tribe-mu",
+    "discoverTitle": "Tribe Đà Lạt",
+    "discoverSubtitle": "Komunitas kecil, keseruan besar — gabung dengan kru yang membuat kota ini terasa seperti rumah.",
+    "startTribe": "Mulai tribe",
+    "seeAll": "Lihat semua",
+    "accessOpen": "Terbuka untuk semua",
+    "accessRequest": "Perlu izin bergabung",
+    "emptyTitle": "Belum ada tribe — kabut menanti kru pertamanya.",
+    "emptyCta": "Jadi pendiri",
+    "dateAtTime": "{date} pukul {time}",
     "title": "Tribes",
     "createTribe": "Buat Tribe",
     "joinTribe": "Gabung Tribe",
@@ -1385,7 +1438,14 @@
     "createdBy": "Dibuat oleh {name}",
     "joinedOn": "Bergabung {date}",
     "myTribes": "Tribes Saya",
-    "pendingRequests": "Permintaan Tertunda"
+    "pendingRequests": "Permintaan Tertunda",
+    "coverImage": "Gambar Sampul",
+    "coverImageHint": "Lanskap paling cocok — sekitar 1200×600.",
+    "uploadCover": "Unggah sampul",
+    "replaceCover": "Ganti sampul",
+    "removeCover": "Hapus",
+    "coverUploading": "Mengunggah...",
+    "coverUploadFailed": "Gagal mengunggah. Silakan coba lagi."
   },
   "feed": {
     "title": "Feed",
@@ -1675,7 +1735,16 @@
     "allPosts": "Semua",
     "noPosts": "Belum ada artikel. Kembali lagi nanti!",
     "backToBlog": "Kembali ke Blog",
-    "translated": "Diterjemahkan"
+    "translated": "Diterjemahkan",
+    "sources": "Sumber",
+    "via": "sumber",
+    "loadMore": "Muat lebih",
+    "newerPosts": "Lebih baru",
+    "olderPosts": "Lebih lama",
+    "today": "Hari ini",
+    "yesterday": "Kemarin",
+    "thisWeek": "Minggu ini",
+    "older": "Sebelumnya"
   },
   "streaming": {
     "goLive": "Mulai Siaran",
@@ -1816,6 +1885,8 @@
     "tour": "Tur",
     "hiking": "Mendaki",
     "sports": "Olahraga",
+    "pickleball": "Pickleball",
+    "games": "Permainan",
     "meetup": "Pertemuan",
     "networking": "Jaringan",
     "community": "Komunitas",
@@ -2354,7 +2425,11 @@
     "tagGovernment": "Pemerintah",
     "tagFoodDrink": "Kuliner",
     "tagWeather": "Cuaca",
-    "tagCommunity": "Komunitas"
+    "tagCommunity": "Komunitas",
+    "today": "Hari ini",
+    "yesterday": "Kemarin",
+    "thisWeek": "Minggu ini",
+    "older": "Sebelumnya"
   },
   "loyalty": {
     "title": "Loyalitas",
@@ -2467,5 +2542,37 @@
     "readyToHostDesc": "Buat acara pertamamu dan mulai kumpulkan poin tuan rumah.",
     "createEvent": "Buat acara",
     "noOneYet": "Belum ada siapa pun di papan peringkat. Jadilah yang pertama!"
+  },
+  "pokerTable": {
+    "level": "Level {n}",
+    "ante": "Ante",
+    "next": "Berikutnya",
+    "tapToStart": "Ketuk untuk mulai",
+    "shuffleUp": "Kocok dan bagikan!",
+    "voiceBlindsUp": "Blind naik! Sekarang {sb}, {bb}",
+    "voiceBlindsUpAnte": "Blind naik! Sekarang {sb}, {bb}, ante {ante}",
+    "voiceOneMinute": "Tersisa satu menit di level ini",
+    "pause": "Jeda",
+    "resume": "Lanjutkan",
+    "prevLevel": "Level sebelumnya",
+    "nextLevel": "Level berikutnya",
+    "addMinute": "+1 mnt",
+    "editLevels": "Edit level",
+    "presets": "Preset",
+    "presetHyper": "Hiper · 6 mnt",
+    "presetTurbo": "Turbo · 10 mnt",
+    "presetStandard": "Standar · 15 mnt",
+    "smallBlind": "SB",
+    "bigBlind": "BB",
+    "minutesShort": "Mnt",
+    "addLevel": "Tambah level",
+    "removeLevel": "Hapus level",
+    "resetClock": "Atur ulang",
+    "done": "Selesai",
+    "soundOn": "Suara aktif",
+    "soundOff": "Suara mati",
+    "levelOf": "Level {n} / {total}",
+    "minutesPerLevel": "Menit per level",
+    "applyToAll": "Terapkan ke semua"
   }
 }

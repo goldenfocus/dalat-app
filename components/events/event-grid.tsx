@@ -12,13 +12,15 @@ import {
   useEventViewPreferences,
   type EventDensity,
 } from "@/lib/hooks/use-local-storage";
-import type { Event, EventCounts, Locale } from "@/lib/types";
+import type { CardEvent, EventCounts, EventSocial, Locale } from "@/lib/types";
 
 interface EventGridProps {
-  events: Event[];
+  events: CardEvent[];
   counts: Record<string, EventCounts | undefined>;
   eventTranslations: Map<string, { title?: string }>;
   seriesRrules?: Record<string, string>;
+  /** Write-time social-proof data (fallback covers, past-occurrence stats) */
+  social?: Record<string, EventSocial | undefined>;
   /** Force compact card display regardless of user preference */
   forceCompact?: boolean;
 }
@@ -41,8 +43,8 @@ const LIST_CLASSES: Record<EventDensity, string> = {
  * Groups events by their start date (in Da Lat timezone).
  * Returns an array of [dateKey, events[]] tuples.
  */
-function groupEventsByDate(events: Event[]): [string, Event[]][] {
-  const groups = new Map<string, Event[]>();
+function groupEventsByDate(events: CardEvent[]): [string, CardEvent[]][] {
+  const groups = new Map<string, CardEvent[]>();
 
   for (const event of events) {
     // Use ISO date as key for grouping (yyyy-MM-dd in Da Lat timezone)
@@ -71,6 +73,7 @@ export function EventGrid({
   counts,
   eventTranslations,
   seriesRrules = {},
+  social = {},
   forceCompact = false,
 }: EventGridProps) {
   const { mode, density } = useEventViewPreferences();
@@ -116,6 +119,7 @@ export function EventGrid({
                     key={event.id}
                     event={event}
                     counts={counts[event.id]}
+                    social={social[event.id]}
                     seriesRrule={seriesRrules[event.id]}
                     translatedTitle={translation?.title}
                     hideDate
@@ -142,6 +146,7 @@ export function EventGrid({
               key={event.id}
               event={event}
               counts={counts[event.id]}
+              social={social[event.id]}
               seriesRrule={seriesRrules[event.id]}
               translatedTitle={translation?.title}
               priority={index === 0}
@@ -165,6 +170,7 @@ export function EventGrid({
             <EventCardCompact
               key={event.id}
               event={event}
+              social={social[event.id]}
               translatedTitle={translation?.title}
               priority={index < 2}
               isFlipped={flippedCardId === event.id}
@@ -189,6 +195,7 @@ export function EventGrid({
             key={event.id}
             event={event}
             counts={counts[event.id]}
+            social={social[event.id]}
             seriesRrule={seriesRrules[event.id]}
             translatedTitle={translation?.title}
             priority={index === 0}

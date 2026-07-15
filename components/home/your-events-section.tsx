@@ -43,16 +43,24 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
+    // Defer personalized fetches so they don't compete with LCP/hydration.
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
     async function fetchUserEvents() {
+      if (cancelled) return;
       const supabase = createClient();
 
       // Check auth
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
         return;
       }
 
+      if (cancelled) return;
       setIsLoggedIn(true);
 
       // Fetch user's RSVPs with event data
@@ -159,10 +167,25 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
         }
       }
 
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     }
 
-    fetchUserEvents();
+    const start = () => {
+      void fetchUserEvents();
+    };
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(start, { timeout: 2000 });
+    } else {
+      timeoutId = setTimeout(start, 150);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, []);
 
   // Don't render anything if not logged in or no events

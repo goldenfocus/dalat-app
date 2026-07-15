@@ -206,7 +206,8 @@ export function generateVenueMetadata(
 
   return generateLocalizedMetadata({
     locale,
-    path: `/venues/${venue.slug}`,
+    // Vanity URL — /venues/[slug] 301s to /[slug]; canonical must be the URL that serves 200
+    path: `/${venue.slug}`,
     title: venue.name,
     description,
     image: venue.cover_photo_url || venue.logo_url || undefined,
@@ -237,7 +238,8 @@ export function generateOrganizerMetadata(
 
   return generateLocalizedMetadata({
     locale,
-    path: `/organizers/${organizer.slug}`,
+    // Vanity URL — /organizers/[slug] 301s to /[slug]; canonical must be the URL that serves 200
+    path: `/${organizer.slug}`,
     title: organizer.name,
     description,
     image: organizer.logo_url || undefined,

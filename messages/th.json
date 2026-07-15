@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "หลงอยู่ในสายหมอกหรือเปล่า?",
+    "description": "เหมือนเดินหลงเข้าไปในมุมที่ยังไม่มีใครค้นพบของดาลัด หน้านี้ไม่มีอยู่จริง แต่ทางกลับบ้านอยู่แค่คลิกเดียว",
+    "backHome": "กลับหน้าแรก",
+    "tagline": "อีเวนต์ · ผู้คน · โมเมนต์ · ความรัก · ดาลัด 🇻🇳"
+  },
   "hero": {
     "headline": "ค้นหากิจกรรม ค้นพบสถานที่",
     "subtitle": "เข้าร่วมชุมชนในดาลัด",
@@ -55,7 +61,13 @@
       "message": "หน้านี้อยู่ในภาษาอื่น เปลี่ยนเป็น{language}ไหม?",
       "switch": "ดูใน{language}",
       "dismiss": "ใช้ภาษาปัจจุบัน"
-    }
+    },
+    "aiQueueWait": "กำลังวาดภาพของคุณ — ปกติใช้เวลา 1–3 นาที ✨",
+    "aiWorkerOffline": "จิตรกร AI กำลังพักอยู่ ลองใหม่อีกสักครู่นะ",
+    "aiRefineUnavailable": "ฟีเจอร์ปรับแต่งพักชั่วคราว — ลองสร้างภาพใหม่แทน",
+    "aiTooManyPending": "ภาพอื่นของคุณยังสร้างไม่เสร็จ รอสักครู่ก่อนนะ",
+    "aiTimeout": "นานกว่าปกติหน่อย — ภาพอาจปรากฏในไม่ช้า ถ้าไม่มา ลองใหม่อีกครั้ง",
+    "aiGenerationFailed": "ครั้งนี้สร้างไม่สำเร็จ ลองอีกครั้งนะ"
   },
   "nav": {
     "events": "กิจกรรม",
@@ -155,7 +167,9 @@
     "newPassword": "รหัสผ่านใหม่",
     "newPasswordPlaceholder": "ใส่รหัสผ่านใหม่ของคุณ",
     "setNewPassword": "ตั้งรหัสผ่านใหม่",
-    "passwordResetSuccess": "รีเซ็ตรหัสผ่านสำเร็จ! คุณสามารถเข้าสู่ระบบได้แล้ว",
+    "passwordResetSuccess": "อัปเดตรหัสผ่านแล้ว — คุณเข้าสู่ระบบแล้ว!",
+    "resetLinkExpired": "ลิงก์รีเซ็ตนี้หมดอายุหรือถูกใช้ไปแล้ว",
+    "requestNewLink": "ขอลิงก์ใหม่",
     "emailRequired": "กรุณากรอกอีเมลของคุณ",
     "or": "หรือ",
     "continueWithEmail": "ดำเนินการต่อด้วยอีเมล",
@@ -247,7 +261,14 @@
     },
     "friendsGoing": "เพื่อน {count} คนจะไป",
     "othersYouFollow": "+ {count} คนที่คุณติดตาม",
-    "andMore": "และอื่นๆ"
+    "andMore": "และอื่นๆ",
+    "pastProofBoth": "ครั้งก่อน {went} คนมา · {photos} รูป",
+    "pastProofPhotos": "{photos} รูปจากครั้งก่อน",
+    "pastProofWent": "ครั้งก่อน {went} คนมา",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} ที่",
+    "secretAddressLockHint": "ที่อยู่จริงจะแสดงหลังจากคุณยืนยันเข้าร่วม",
+    "secretAddressRevealedHint": "เฉพาะแขกเท่านั้นที่เห็นที่อยู่นี้"
   },
   "rsvp": {
     "imGoing": "ฉันจะไป",
@@ -263,6 +284,13 @@
     "waitlistAutoPromote": "คุณจะได้ที่อัตโนมัติเมื่อมีที่ว่าง"
   },
   "eventForm": {
+    "linkedPastEvent": "โมเมนต์จากอีเวนต์ที่ผ่านมา",
+    "linkedPastEventHelp": "แสดงโมเมนต์ของอีเวนต์ที่ผ่านมาบนหน้านี้จนกว่าอีเวนต์นี้จะมีโมเมนต์ของตัวเอง เฉพาะผู้ดูแลระบบเท่านั้นที่ตั้งค่าได้",
+    "linkedPastEventError": "ไม่สามารถอัปเดตลิงก์ได้ กรุณาลองใหม่",
+    "searchPastEvents": "ค้นหาอีเวนต์ที่ผ่านมา…",
+    "searchingEvents": "กำลังค้นหา…",
+    "noPastEventsFound": "ไม่พบอีเวนต์ที่ผ่านมา",
+    "unlinkPastEvent": "ยกเลิกการเชื่อมโยง",
     "createEvent": "สร้างกิจกรรม",
     "editEvent": "แก้ไขกิจกรรม",
     "title": "ชื่อกิจกรรม",
@@ -289,6 +317,9 @@
     "locationVenuesSection": "สถานที่",
     "locationPlacesSection": "ตำแหน่งอื่น",
     "locationNoResults": "ไม่พบสถานที่",
+    "locationUseCustom": "ใช้ \"{text}\"",
+    "locationUseAsTyped": "บันทึกที่อยู่ตามที่พิมพ์",
+    "locationSearchUnavailable": "ขณะนี้ค้นหาสถานที่ไม่ได้ — คุณยังใช้ที่อยู่ตามที่พิมพ์ได้จากตัวเลือกด้านล่าง",
     "locationLoading": "กำลังโหลด...",
     "locationCoordinatesDetected": "ตรวจพบพิกัด",
     "locationResolvingUrl": "กำลังดึงตำแหน่งจากลิงก์...",
@@ -388,7 +419,14 @@
     "sponsorTier3": "ทอง (ระดับ 3)",
     "sponsorTierHelp": "กิจกรรมแนะนำจะแสดงก่อนพร้อมตราทอง",
     "activityTags": "ประเภทกิจกรรม",
-    "activityTagsHelp": "เลือกแท็กเพื่อช่วยให้ผู้คนค้นหากิจกรรมของคุณ AI จะเพิ่มแท็กอัตโนมัติตามเนื้อหาด้วย"
+    "activityTagsHelp": "เลือกแท็กเพื่อช่วยให้ผู้คนค้นหากิจกรรมของคุณ AI จะเพิ่มแท็กอัตโนมัติตามเนื้อหาด้วย",
+    "secretAddress": "ที่อยู่ลับ",
+    "secretAddressHelp": "ที่อยู่จริงจะถูกซ่อนไว้ — เฉพาะแขกที่ยืนยันเข้าร่วมเท่านั้นที่จะเห็น เราจะส่งที่อยู่ให้แขกในเช้าวันงานด้วย",
+    "secretAddressPublicLabel": "สิ่งที่ทุกคนเห็น",
+    "secretAddressPublicLabelPlaceholder": "เช่น บ้านใกล้ตลาดกลางคืน",
+    "secretAddressPublicLabelHelp": "คำใบ้ย่านโดยประมาณที่แสดงแทนที่อยู่",
+    "secretAddressArrivalNotes": "หมายเหตุการเดินทาง (เฉพาะแขก)",
+    "secretAddressArrivalNotesPlaceholder": "รหัสประตู เคล็ดลับที่จอดรถ ลิงก์กลุ่ม Zalo/WhatsApp…"
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",
@@ -1105,7 +1143,12 @@
     ],
     "usernamePlaceholder": "ค้นหาด้วยชื่อหรือชื่อผู้ใช้",
     "usernameHint": "พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหา",
-    "noInvitees": "กรุณาเพิ่มอย่างน้อยหนึ่งคนเพื่อเชิญ"
+    "noInvitees": "กรุณาเพิ่มอย่างน้อยหนึ่งคนเพื่อเชิญ",
+    "audienceEveryone": "ทุกคน",
+    "audiencePeople": "{count} คน",
+    "personalNoteLabel": "เพิ่มข้อความส่วนตัว",
+    "personalNotePlaceholder": "ทำไมถึงควรมา? (ไม่บังคับ)",
+    "audienceNoRecipients": "ทุกคนที่นี่ได้รับคำเชิญหรือการแจ้งเตือนไปแล้วเมื่อเร็ว ๆ นี้"
   },
   "moments": {
     "moments": "โมเมนต์",
@@ -1333,6 +1376,16 @@
     }
   },
   "tribes": {
+    "findYourTribe": "ค้นหาไทรบ์ของคุณ",
+    "discoverTitle": "ไทรบ์แห่งดาลัด",
+    "discoverSubtitle": "คอมมูนิตี้เล็ก ๆ ที่อบอุ่น — เข้าร่วมแก๊งที่ทำให้เมืองนี้เหมือนบ้าน",
+    "startTribe": "สร้างไทรบ์",
+    "seeAll": "ดูทั้งหมด",
+    "accessOpen": "เปิดรับทุกคน",
+    "accessRequest": "ต้องขอเข้าร่วม",
+    "emptyTitle": "ยังไม่มีไทรบ์ — สายหมอกกำลังรอแก๊งแรกอยู่",
+    "emptyCta": "เป็นผู้ก่อตั้ง",
+    "dateAtTime": "{date} เวลา {time}",
     "title": "Tribes",
     "createTribe": "สร้าง Tribe",
     "joinTribe": "เข้าร่วม Tribe",
@@ -1385,7 +1438,14 @@
     "createdBy": "สร้างโดย {name}",
     "joinedOn": "เข้าร่วมเมื่อ {date}",
     "myTribes": "Tribes ของฉัน",
-    "pendingRequests": "คำขอที่รอดำเนินการ"
+    "pendingRequests": "คำขอที่รอดำเนินการ",
+    "coverImage": "รูปปก",
+    "coverImageHint": "แนวนอนเหมาะที่สุด — ประมาณ 1200×600",
+    "uploadCover": "อัปโหลดรูปปก",
+    "replaceCover": "เปลี่ยนรูปปก",
+    "removeCover": "ลบ",
+    "coverUploading": "กำลังอัปโหลด...",
+    "coverUploadFailed": "อัปโหลดไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"
   },
   "feed": {
     "title": "ฟีด",
@@ -1618,7 +1678,16 @@
     "allPosts": "ทั้งหมด",
     "noPosts": "ยังไม่มีบทความ กลับมาใหม่เร็วๆ นี้!",
     "backToBlog": "กลับไปยังบล็อก",
-    "translated": "แปลแล้ว"
+    "translated": "แปลแล้ว",
+    "sources": "แหล่งที่มา",
+    "via": "จาก",
+    "loadMore": "โหลดเพิ่ม",
+    "newerPosts": "ใหม่กว่า",
+    "olderPosts": "เก่ากว่า",
+    "today": "วันนี้",
+    "yesterday": "เมื่อวาน",
+    "thisWeek": "สัปดาห์นี้",
+    "older": "ก่อนหน้านี้"
   },
   "streaming": {
     "goLive": "ถ่ายทอดสด",
@@ -1759,6 +1828,8 @@
     "tour": "ทัวร์",
     "hiking": "เดินป่า",
     "sports": "กีฬา",
+    "pickleball": "พิคเคิลบอล",
+    "games": "เกม",
     "meetup": "พบปะ",
     "networking": "สร้างเครือข่าย",
     "community": "ชุมชน",
@@ -2354,7 +2425,11 @@
     "tagGovernment": "ราชการ",
     "tagFoodDrink": "อาหาร",
     "tagWeather": "อากาศ",
-    "tagCommunity": "ชุมชน"
+    "tagCommunity": "ชุมชน",
+    "today": "วันนี้",
+    "yesterday": "เมื่อวาน",
+    "thisWeek": "สัปดาห์นี้",
+    "older": "ก่อนหน้านี้"
   },
   "loyalty": {
     "title": "สะสมแต้ม",
@@ -2467,5 +2542,37 @@
     "readyToHostDesc": "สร้างกิจกรรมแรกและเริ่มสะสมคะแนนผู้จัด",
     "createEvent": "สร้างกิจกรรม",
     "noOneYet": "ยังไม่มีใครในกระดานผู้นำ มาเป็นคนแรก!"
+  },
+  "pokerTable": {
+    "level": "ระดับ {n}",
+    "ante": "อันเต้",
+    "next": "ถัดไป",
+    "tapToStart": "แตะเพื่อเริ่ม",
+    "shuffleUp": "สับไพ่แล้วแจกเลย!",
+    "voiceBlindsUp": "บลายด์ขึ้นแล้ว! ตอนนี้ {sb}, {bb}",
+    "voiceBlindsUpAnte": "บลายด์ขึ้นแล้ว! ตอนนี้ {sb}, {bb} อันเต้ {ante}",
+    "voiceOneMinute": "เหลืออีกหนึ่งนาทีในระดับนี้",
+    "pause": "หยุดชั่วคราว",
+    "resume": "เล่นต่อ",
+    "prevLevel": "ระดับก่อนหน้า",
+    "nextLevel": "ระดับถัดไป",
+    "addMinute": "+1 นาที",
+    "editLevels": "แก้ไขระดับ",
+    "presets": "ค่าที่ตั้งไว้",
+    "presetHyper": "ไฮเปอร์ · 6 นาที",
+    "presetTurbo": "เทอร์โบ · 10 นาที",
+    "presetStandard": "มาตรฐาน · 15 นาที",
+    "smallBlind": "SB",
+    "bigBlind": "BB",
+    "minutesShort": "นาที",
+    "addLevel": "เพิ่มระดับ",
+    "removeLevel": "ลบระดับ",
+    "resetClock": "รีเซ็ต",
+    "done": "เสร็จสิ้น",
+    "soundOn": "เปิดเสียง",
+    "soundOff": "ปิดเสียง",
+    "levelOf": "ระดับ {n} / {total}",
+    "minutesPerLevel": "นาทีต่อระดับ",
+    "applyToAll": "ใช้กับทั้งหมด"
   }
 }

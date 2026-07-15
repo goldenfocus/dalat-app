@@ -23,7 +23,8 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { formatDuration } from "@/lib/audio-metadata";
+import dynamic from "next/dynamic";
+import { formatDuration } from "@/lib/format-duration";
 import {
   useAudioPlayerStore,
   useCurrentTrack,
@@ -33,12 +34,25 @@ import {
   useVolume,
   useIsMuted,
 } from "@/lib/stores/audio-player-store";
-import {
-  KaraokeFooterLine,
-  KaraokeToggleButton,
-  KaraokeTheater,
-  KaraokeHero,
-} from "./karaoke";
+
+// Karaoke UI is only needed when the player is open — keep it out of the
+// shared layout chunk that loads on every page.
+const KaraokeFooterLine = dynamic(
+  () => import("./karaoke").then((m) => m.KaraokeFooterLine),
+  { ssr: false }
+);
+const KaraokeToggleButton = dynamic(
+  () => import("./karaoke").then((m) => m.KaraokeToggleButton),
+  { ssr: false }
+);
+const KaraokeTheater = dynamic(
+  () => import("./karaoke").then((m) => m.KaraokeTheater),
+  { ssr: false }
+);
+const KaraokeHero = dynamic(
+  () => import("./karaoke").then((m) => m.KaraokeHero),
+  { ssr: false }
+);
 
 export function MiniPlayer() {
   const router = useRouter();

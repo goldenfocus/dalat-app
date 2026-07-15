@@ -32,12 +32,12 @@ export function Heartbeat() {
 
     const checkAuthAndStart = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      isAuthenticatedRef.current = !!user;
+      isAuthenticatedRef.current = !!session?.user;
 
-      if (user) {
+      if (session?.user) {
         // Send initial heartbeat on mount
         sendHeartbeat();
 

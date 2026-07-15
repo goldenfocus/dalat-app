@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const recentMomentCutoff = new Date();
   recentMomentCutoff.setDate(recentMomentCutoff.getDate() - 90);
 
-  const [eventsResult, festivalsResult, organizersResult, monthsResult, momentsResult, blogPostsResult, playlistsResult] = await Promise.all([
+  const [eventsResult, festivalsResult, organizersResult, venuesResult, monthsResult, momentsResult, blogPostsResult, playlistsResult] = await Promise.all([
     supabase
       .from('events')
       .select('slug, updated_at')
@@ -63,6 +63,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('slug, updated_at'),
     supabase
       .from('organizers')
+      .select('slug, updated_at'),
+    supabase
+      .from('venues')
       .select('slug, updated_at'),
     supabase.rpc('get_months_with_events'),
     // Use explicit FK hint to disambiguate from events.cover_moment_id relationship
@@ -90,6 +93,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const events = eventsResult.data ?? [];
   const festivals = festivalsResult.data ?? [];
   const organizers = organizersResult.data ?? [];
+  const venues = venuesResult.data ?? [];
   const monthsWithEvents = (monthsResult.data ?? []) as { year: number; month: number; event_count: number }[];
   const momentsRaw = momentsResult.data ?? [];
   const blogPostsRaw = blogPostsResult.data ?? [];
@@ -192,17 +196,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Add organizers
+  // Add organizers (unified vanity URLs — /organizers/[slug] 301s to /[slug])
   for (const organizer of organizers) {
     for (const locale of allLocales) {
       sitemapEntries.push({
-        url: `${baseUrl}/${locale}/organizers/${organizer.slug}`,
+        url: `${baseUrl}/${locale}/${organizer.slug}`,
         lastModified: new Date(organizer.updated_at),
         changeFrequency: 'weekly',
         priority: 0.6,
         alternates: {
           languages: Object.fromEntries(
-            allLocales.map(l => [l, `${baseUrl}/${l}/organizers/${organizer.slug}`])
+            allLocales.map(l => [l, `${baseUrl}/${l}/${organizer.slug}`])
+          ),
+        },
+      });
+    }
+  }
+
+  // Add venues (unified vanity URLs — /venues/[slug] 301s to /[slug])
+  for (const venue of venues) {
+    for (const locale of allLocales) {
+      sitemapEntries.push({
+        url: `${baseUrl}/${locale}/${venue.slug}`,
+        lastModified: new Date(venue.updated_at),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+        alternates: {
+          languages: Object.fromEntries(
+            allLocales.map(l => [l, `${baseUrl}/${l}/${venue.slug}`])
           ),
         },
       });

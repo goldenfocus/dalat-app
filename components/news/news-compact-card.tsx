@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Link } from '@/lib/i18n/routing';
 import { Clock } from 'lucide-react';
 import { formatTimeAgo } from '@/lib/news/format-time-ago';
+import { GeneratedCover } from '@/components/blog/generated-cover';
 
 interface NewsCompactCardProps {
   slug: string;
@@ -27,8 +28,8 @@ export function NewsCompactCard({
       href={`/blog/news/${slug}`}
       className="group flex gap-3 rounded-lg border border-border/50 bg-card p-3 min-h-[72px] transition-colors hover:bg-accent/50 active:scale-[0.99] active:bg-accent/70"
     >
-      {coverImageUrl && (
-        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
+      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
+        {coverImageUrl ? (
           <Image
             src={coverImageUrl}
             alt={title}
@@ -36,8 +37,11 @@ export function NewsCompactCard({
             className="object-cover"
             sizes="80px"
           />
-        </div>
-      )}
+        ) : (
+          /* Empty title: at 80px the gradient + glyph alone reads best */
+          <GeneratedCover title="" seed={slug} className="h-full aspect-auto p-2 sm:p-2" />
+        )}
+      </div>
       <div className="flex flex-1 flex-col justify-between min-w-0">
         <h3 className="text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {title}

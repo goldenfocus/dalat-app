@@ -134,11 +134,13 @@ export async function updateSession(request: NextRequest) {
 
   // Check for legacy venue URLs: /venues/[slug] or /{locale}/venues/[slug]
   // But NOT /venues/[slug]/events (venue event list) - that stays
+  // Default locale redirects to the unprefixed vanity URL (localePrefix: 'as-needed'),
+  // otherwise intlMiddleware bounces /en/[slug] a second time.
   const legacyVenueMatch = pathname.match(/^(?:\/([a-z]{2}))?\/venues\/([a-zA-Z0-9_-]+)$/);
   if (legacyVenueMatch) {
     const [, locale, venueSlug] = legacyVenueMatch;
-    const targetLocale = locale || routing.defaultLocale;
-    const url = new URL(`/${targetLocale}/${venueSlug}`, request.url);
+    const prefix = locale && locale !== routing.defaultLocale ? `/${locale}` : '';
+    const url = new URL(`${prefix}/${venueSlug}`, request.url);
     return NextResponse.redirect(url, { status: 301 });
   }
 
@@ -146,12 +148,29 @@ export async function updateSession(request: NextRequest) {
   const legacyOrganizerMatch = pathname.match(/^(?:\/([a-z]{2}))?\/organizers\/([a-zA-Z0-9_-]+)$/);
   if (legacyOrganizerMatch) {
     const [, locale, organizerSlug] = legacyOrganizerMatch;
-    const targetLocale = locale || routing.defaultLocale;
-    const url = new URL(`/${targetLocale}/${organizerSlug}`, request.url);
+    const prefix = locale && locale !== routing.defaultLocale ? `/${locale}` : '';
+    const url = new URL(`${prefix}/${organizerSlug}`, request.url);
     return NextResponse.redirect(url, { status: 301 });
   }
 
   // =========================================================================
+
+  // Password recovery links skip the "Confirm your email" interstitial and go
+  // straight to the reset form. The token is only consumed on form submit, so
+  // the form itself is the human gate against email security scanners.
+  // (app/auth/verify/route.ts has the same branch but is bypassed since the
+  // matcher stopped excluding auth/verify — this is where the request lands.)
+  const verifyMatch = pathname.match(/^(?:\/([a-z]{2}))?\/auth\/verify$/);
+  if (verifyMatch && request.nextUrl.searchParams.get('type') === 'recovery') {
+    const tokenHash = request.nextUrl.searchParams.get('token_hash');
+    if (tokenHash) {
+      const localeParam = verifyMatch[1] || request.nextUrl.searchParams.get('locale') || '';
+      const locale = isLocale(localeParam) ? localeParam : routing.defaultLocale;
+      const url = new URL(`/${locale}/auth/reset-password`, request.url);
+      url.searchParams.set('token_hash', tokenHash);
+      return NextResponse.redirect(url);
+    }
+  }
 
   // Skip locale handling for API routes and static files
   const shouldSkipLocale =
@@ -258,26 +277,28 @@ export async function updateSession(request: NextRequest) {
 
   // Determine public routes BEFORE any cookie/session handling
   // This is critical for ISR caching - avoid cookie operations on cacheable pages
+  //
+  // Auth gating is a PROTECTED-LIST, not a public allowlist: content pages
+  // (events, venues, vanity slugs, category pages, news, search, ...) must stay
+  // reachable logged-out and crawlable by Googlebot. The previous allowlist went
+  // stale as routes were added, login-walling every locale-prefixed content URL
+  // that wasn't on it (/vi/restaurants, /en/about, all venue vanity pages, ...).
+  // Routes listed here also enforce auth server-side, except /activity which
+  // relies on this middleware gate.
   const pathWithoutLocale = pathname.replace(localeStripRegex, '');
-  const isPublicRoute =
-    pathWithoutLocale === "/" ||
-    pathWithoutLocale === "" ||
-    pathWithoutLocale.startsWith("/login") ||
-    pathWithoutLocale.startsWith("/auth") ||
-    pathname.startsWith("/auth") || // Root-level auth routes
-    pathname.startsWith("/api") ||
-    pathWithoutLocale.startsWith("/events") ||
-    pathWithoutLocale.startsWith("/festivals") ||
-    pathWithoutLocale.startsWith("/organizers") ||
-    pathWithoutLocale.startsWith("/venues") ||  // Public venue pages
-    pathWithoutLocale.startsWith("/moments") ||  // Public moments discovery
-    pathWithoutLocale.startsWith("/feed") ||  // Public moments feed
-    pathWithoutLocale.startsWith("/blog") ||  // Public blog articles
-    pathWithoutLocale.startsWith("/map") ||  // Public map view
-    pathWithoutLocale.startsWith("/calendar") ||  // Public calendar view
-    pathWithoutLocale.startsWith("/test") ||  // Test pages (dev only)
-    pathWithoutLocale.startsWith("/invite") ||  // Public invite links
-    pathWithoutLocale.startsWith("/@");  // Public profile pages
+  const PROTECTED_PREFIXES = [
+    "/protected",
+    "/settings",
+    "/admin",
+    "/onboarding",
+    "/organizer", // organizer dashboard — /organizers (public directory) won't match
+    "/activity",
+    "/loyalty",
+  ];
+  const isPublicRoute = !PROTECTED_PREFIXES.some(
+    (prefix) =>
+      pathWithoutLocale === prefix || pathWithoutLocale.startsWith(`${prefix}/`),
+  );
 
   // API routes should pass through without any middleware processing
   // next-intl middleware expects locale prefixes which API routes don't have

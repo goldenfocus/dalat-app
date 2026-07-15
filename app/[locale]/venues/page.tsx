@@ -1,11 +1,9 @@
 import { Suspense } from "react";
-import { Building2 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
+import { createStaticClient } from "@/lib/supabase/server";
 import { getVenueTranslationsBatch } from "@/lib/translations";
-import { VenueCard } from "@/components/venues/venue-card";
 import { VenueCardSkeleton } from "@/components/venues/venue-card-skeleton";
-import { VenueTypeFilter } from "@/components/venues/venue-type-filter";
+import { VenuesDirectory } from "@/components/venues/venues-directory";
 import type { VenueListItem, VenueType, Locale } from "@/lib/types";
 import type { Metadata } from "next";
 import { generateLocalizedMetadata } from "@/lib/metadata";
@@ -13,9 +11,11 @@ import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 
 const SITE_URL = "https://dalat.app";
 
+// ISR: Revalidate every 5 minutes (type filter is applied client-side)
+export const revalidate = 300;
+
 type PageProps = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ type?: string }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -30,7 +30,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 async function getAllVenues(): Promise<VenueListItem[]> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[venues] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty directory");
+    return [];
+  }
 
   const { data, error } = await supabase.rpc("get_venues_for_discovery", {
     p_type: null,
@@ -65,30 +69,21 @@ function VenuesLoading() {
   );
 }
 
-interface VenuesContentProps {
-  selectedType: VenueType | null;
-  locale: Locale;
-}
-
-async function VenuesContent({ selectedType, locale }: VenuesContentProps) {
+async function VenuesContent({ locale }: { locale: Locale }) {
   const allVenues = await getAllVenues();
-  const t = await getTranslations("venues");
 
   // Fetch venue translations for current locale
   const venueIds = allVenues.map((v) => v.id);
   const venueTranslations = await getVenueTranslationsBatch(venueIds, locale);
 
+  // Serialize translations for the client boundary (Maps aren't serializable)
+  const translatedNames: Record<string, string> = {};
+  venueTranslations.forEach((translation, id) => {
+    if (translation.title) translatedNames[id] = translation.title;
+  });
+
   // Compute type counts from all venues
   const typeCounts = computeTypeCounts(allVenues);
-
-  // Filter venues by selected type
-  const filteredVenues = selectedType
-    ? allVenues.filter((v) => v.venue_type === selectedType)
-    : allVenues;
-
-  // Separate venues with happening now
-  const happeningNow = filteredVenues.filter((v) => v.has_happening_now);
-  const otherVenues = filteredVenues.filter((v) => !v.has_happening_now);
 
   // Generate structured data for SEO
   const breadcrumbSchema = generateBreadcrumbSchema(
@@ -105,8 +100,8 @@ async function VenuesContent({ selectedType, locale }: VenuesContentProps) {
     name: "Venues in Da Lat",
     description:
       "Cafes, bars, galleries, and event spaces in Da Lat, Vietnam",
-    numberOfItems: filteredVenues.length,
-    itemListElement: filteredVenues.slice(0, 50).map((venue, index) => ({
+    numberOfItems: allVenues.length,
+    itemListElement: allVenues.slice(0, 50).map((venue, index) => ({
       "@type": "ListItem",
       position: index + 1,
       url: `${SITE_URL}/${locale}/venues/${venue.slug}`,
@@ -126,85 +121,22 @@ async function VenuesContent({ selectedType, locale }: VenuesContentProps) {
   return (
     <>
       <JsonLd data={[breadcrumbSchema, venueListSchema]} />
-      {/* Type filter - only shows types with venues */}
-      <div className="mb-6">
-        <VenueTypeFilter selectedType={selectedType} typeCounts={typeCounts} />
-      </div>
-
-      {/* Venues grid */}
-      {filteredVenues.length === 0 ? (
-        <div className="text-center py-16">
-          <Building2 className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-          <p className="text-lg font-medium text-muted-foreground mb-1">
-            {t("noVenues")}
-          </p>
-          <p className="text-sm text-muted-foreground/70">
-            {t("noVenuesDescription")}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {/* Happening Now Section */}
-          {happeningNow.length > 0 && (
-            <section>
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-foreground/60 rounded-full" />
-                {t("happeningNow")}
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {happeningNow.map((venue) => (
-                  <VenueCard
-                    key={venue.id}
-                    venue={venue}
-                    translatedName={venueTranslations.get(venue.id)?.title}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* All Venues */}
-          <section>
-            {happeningNow.length > 0 && (
-              <h2 className="text-lg font-semibold mb-4">{t("title")}</h2>
-            )}
-            <div className="grid gap-4 sm:grid-cols-2">
-              {otherVenues.map((venue) => (
-                <VenueCard
-                  key={venue.id}
-                  venue={venue}
-                  translatedName={venueTranslations.get(venue.id)?.title}
-                />
-              ))}
-            </div>
-          </section>
-        </div>
-      )}
+      {/* useSearchParams (type filter) needs its own Suspense boundary for static rendering */}
+      <Suspense fallback={<VenuesLoading />}>
+        <VenuesDirectory
+          venues={allVenues}
+          translatedNames={translatedNames}
+          typeCounts={typeCounts}
+        />
+      </Suspense>
     </>
   );
 }
 
-export default async function VenuesPage({ params, searchParams }: PageProps) {
+export default async function VenuesPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { type } = await searchParams;
   const t = await getTranslations("venues");
-
-  // Validate type parameter
-  const validTypes = [
-    "cafe",
-    "bar",
-    "restaurant",
-    "gallery",
-    "park",
-    "hotel",
-    "coworking",
-    "community_center",
-    "outdoor",
-    "homestay",
-    "other",
-  ];
-  const selectedType = type && validTypes.includes(type) ? (type as VenueType) : null;
 
   return (
     <main className="min-h-screen pb-20">
@@ -214,7 +146,7 @@ export default async function VenuesPage({ params, searchParams }: PageProps) {
 
         {/* Content with filter and grid */}
         <Suspense fallback={<VenuesLoading />}>
-          <VenuesContent selectedType={selectedType} locale={locale} />
+          <VenuesContent locale={locale} />
         </Suspense>
       </div>
     </main>

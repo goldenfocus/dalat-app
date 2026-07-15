@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "안개 속에서 길을 잃으셨나요?",
+    "description": "달랏의 미지의 골목에 들어선 것처럼, 이 페이지는 존재하지 않아요. 하지만 집으로 가는 길은 클릭 한 번이면 충분해요.",
+    "backHome": "홈으로 돌아가기",
+    "tagline": "이벤트 · 사람들 · 순간들 · 사랑 · 달랏 🇻🇳"
+  },
   "hero": {
     "headline": "이벤트를 찾고. 장소를 발견하세요.",
     "subtitle": "달랏에서 커뮤니티에 참여하세요",
@@ -55,7 +61,13 @@
       "message": "이 페이지는 다른 언어입니다. {language}(으)로 전환하시겠습니까?",
       "switch": "{language}(으)로 보기",
       "dismiss": "현재 언어 유지"
-    }
+    },
+    "aiQueueWait": "이미지를 그리는 중 — 보통 1–3분 걸려요 ✨",
+    "aiWorkerOffline": "AI 화가가 잠시 쉬고 있어요. 잠시 후 다시 시도해 주세요.",
+    "aiRefineUnavailable": "보정 기능은 잠시 쉬는 중이에요 — 새로 생성해 보세요.",
+    "aiTooManyPending": "다른 이미지가 아직 생성 중이에요. 조금만 기다려 주세요.",
+    "aiTimeout": "평소보다 오래 걸리네요 — 곧 나타날 수 있어요. 안 되면 다시 시도해 주세요.",
+    "aiGenerationFailed": "이번에는 생성에 실패했어요. 다시 시도해 주세요."
   },
   "nav": {
     "events": "이벤트",
@@ -155,7 +167,9 @@
     "newPassword": "새 비밀번호",
     "newPasswordPlaceholder": "새 비밀번호를 입력하세요",
     "setNewPassword": "새 비밀번호 설정",
-    "passwordResetSuccess": "비밀번호가 성공적으로 재설정되었습니다! 이제 로그인할 수 있습니다.",
+    "passwordResetSuccess": "비밀번호가 변경되었어요 — 로그인되었습니다!",
+    "resetLinkExpired": "이 재설정 링크는 만료되었거나 이미 사용되었습니다.",
+    "requestNewLink": "새 링크 요청",
     "emailRequired": "이메일을 입력해주세요",
     "or": "또는",
     "continueWithEmail": "이메일로 계속",
@@ -247,7 +261,14 @@
     },
     "friendsGoing": "친구 {count}명 참석",
     "othersYouFollow": "+ 팔로우하는 {count}명",
-    "andMore": "외"
+    "andMore": "외",
+    "pastProofBoth": "지난번 {went}명 참여 · 사진 {photos}장",
+    "pastProofPhotos": "지난번 사진 {photos}장",
+    "pastProofWent": "지난번 {went}명 참여",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count}자리",
+    "secretAddressLockHint": "RSVP 후 정확한 주소가 공개됩니다",
+    "secretAddressRevealedHint": "게스트만 이 주소를 볼 수 있어요"
   },
   "rsvp": {
     "imGoing": "참석합니다",
@@ -263,6 +284,13 @@
     "waitlistAutoPromote": "자리가 생기면 자동으로 참석으로 변경됩니다"
   },
   "eventForm": {
+    "linkedPastEvent": "지난 이벤트의 모먼트",
+    "linkedPastEventHelp": "이 이벤트에 자체 모먼트가 생길 때까지 지난 이벤트의 모먼트를 이 페이지에 표시합니다. 관리자만 설정할 수 있습니다.",
+    "linkedPastEventError": "링크를 업데이트할 수 없습니다. 다시 시도해 주세요.",
+    "searchPastEvents": "지난 이벤트 검색…",
+    "searchingEvents": "검색 중…",
+    "noPastEventsFound": "지난 이벤트를 찾을 수 없습니다",
+    "unlinkPastEvent": "연결 해제",
     "createEvent": "이벤트 만들기",
     "editEvent": "이벤트 편집",
     "title": "이벤트 제목",
@@ -289,6 +317,9 @@
     "locationVenuesSection": "장소",
     "locationPlacesSection": "기타 위치",
     "locationNoResults": "장소를 찾을 수 없습니다",
+    "locationUseCustom": "\"{text}\" 사용",
+    "locationUseAsTyped": "입력한 그대로 주소 저장",
+    "locationSearchUnavailable": "지금은 위치 검색을 사용할 수 없어요 — 아래에서 입력한 주소를 그대로 사용할 수 있습니다.",
     "locationLoading": "로딩 중...",
     "locationCoordinatesDetected": "좌표 감지됨",
     "locationResolvingUrl": "링크에서 위치 추출 중...",
@@ -388,7 +419,14 @@
     "sponsorTier3": "골드 (3등급)",
     "sponsorTierHelp": "추천 이벤트는 골드 배지와 함께 피드 상단에 표시됩니다.",
     "activityTags": "활동 유형",
-    "activityTagsHelp": "태그를 선택하여 사람들이 이벤트를 쉽게 찾을 수 있도록 도와주세요. AI가 콘텐츠를 기반으로 자동 태그도 추가합니다."
+    "activityTagsHelp": "태그를 선택하여 사람들이 이벤트를 쉽게 찾을 수 있도록 도와주세요. AI가 콘텐츠를 기반으로 자동 태그도 추가합니다.",
+    "secretAddress": "비밀 주소",
+    "secretAddressHelp": "정확한 주소는 숨겨집니다 — 참석으로 RSVP한 게스트만 볼 수 있어요. 행사 당일 아침에 게스트에게 주소를 보내드립니다.",
+    "secretAddressPublicLabel": "모두에게 보이는 내용",
+    "secretAddressPublicLabelPlaceholder": "예: 야시장 근처 주택",
+    "secretAddressPublicLabelHelp": "주소 대신 표시되는 대략적인 지역 안내입니다.",
+    "secretAddressArrivalNotes": "도착 안내 (게스트 전용)",
+    "secretAddressArrivalNotesPlaceholder": "출입문 비밀번호, 주차 팁, Zalo/WhatsApp 그룹 링크…"
   },
   "eventActions": {
     "eventOptions": "이벤트 옵션",
@@ -1105,7 +1143,12 @@
     ],
     "usernamePlaceholder": "이름 또는 사용자명으로 검색",
     "usernameHint": "검색하려면 2자 이상 입력하세요",
-    "noInvitees": "초대할 사람을 최소 한 명 추가해 주세요"
+    "noInvitees": "초대할 사람을 최소 한 명 추가해 주세요",
+    "audienceEveryone": "모든 사용자",
+    "audiencePeople": "{count}명",
+    "personalNoteLabel": "개인 메시지 추가",
+    "personalNotePlaceholder": "왜 와야 할까요? (선택 사항)",
+    "audienceNoRecipients": "모두 이미 초대되었거나 최근에 알림을 받았어요"
   },
   "moments": {
     "moments": "모먼트",
@@ -1336,6 +1379,16 @@
     }
   },
   "tribes": {
+    "findYourTribe": "나의 트라이브 찾기",
+    "discoverTitle": "달랏의 트라이브",
+    "discoverSubtitle": "작은 커뮤니티, 큰 즐거움 — 이 도시를 집처럼 느끼게 해주는 모임에 함께하세요.",
+    "startTribe": "트라이브 만들기",
+    "seeAll": "모두 보기",
+    "accessOpen": "누구나 참여 가능",
+    "accessRequest": "가입 신청 필요",
+    "emptyTitle": "아직 트라이브가 없어요 — 안개가 첫 모임을 기다리고 있어요.",
+    "emptyCta": "첫 창립자 되기",
+    "dateAtTime": "{date} {time}",
     "title": "트라이브",
     "createTribe": "트라이브 만들기",
     "joinTribe": "트라이브 참가",
@@ -1388,7 +1441,14 @@
     "createdBy": "{name}이(가) 만듦",
     "joinedOn": "{date}에 가입",
     "myTribes": "내 트라이브",
-    "pendingRequests": "대기 중인 요청"
+    "pendingRequests": "대기 중인 요청",
+    "coverImage": "커버 이미지",
+    "coverImageHint": "가로형 이미지가 가장 좋아요 — 약 1200×600.",
+    "uploadCover": "커버 업로드",
+    "replaceCover": "커버 변경",
+    "removeCover": "삭제",
+    "coverUploading": "업로드 중...",
+    "coverUploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요."
   },
   "feed": {
     "title": "피드",
@@ -1621,7 +1681,16 @@
     "allPosts": "전체",
     "noPosts": "아직 게시물이 없습니다. 곧 다시 확인해 주세요!",
     "backToBlog": "블로그로 돌아가기",
-    "translated": "번역됨"
+    "translated": "번역됨",
+    "sources": "출처",
+    "via": "출처",
+    "loadMore": "더 보기",
+    "newerPosts": "최신 글",
+    "olderPosts": "이전 글",
+    "today": "오늘",
+    "yesterday": "어제",
+    "thisWeek": "이번 주",
+    "older": "그 이전"
   },
   "streaming": {
     "goLive": "라이브 시작",
@@ -1762,6 +1831,8 @@
     "tour": "투어",
     "hiking": "하이킹",
     "sports": "스포츠",
+    "pickleball": "피클볼",
+    "games": "게임",
     "meetup": "모임",
     "networking": "네트워킹",
     "community": "커뮤니티",
@@ -2357,7 +2428,11 @@
     "tagGovernment": "행정",
     "tagFoodDrink": "맛집",
     "tagWeather": "날씨",
-    "tagCommunity": "커뮤니티"
+    "tagCommunity": "커뮤니티",
+    "today": "오늘",
+    "yesterday": "어제",
+    "thisWeek": "이번 주",
+    "older": "그 이전"
   },
   "loyalty": {
     "title": "로열티",
@@ -2470,5 +2545,37 @@
     "readyToHostDesc": "첫 이벤트를 만들고 호스트 포인트를 적립하세요. 매 이벤트가 프리미엄 혜택에 다가갑니다.",
     "createEvent": "이벤트 만들기",
     "noOneYet": "아직 리더보드에 아무도 없습니다. 첫 번째가 되세요!"
+  },
+  "pokerTable": {
+    "level": "레벨 {n}",
+    "ante": "앤티",
+    "next": "다음",
+    "tapToStart": "탭하여 시작",
+    "shuffleUp": "셔플 업 앤 딜!",
+    "voiceBlindsUp": "블라인드 업! 이제 {sb}, {bb}입니다",
+    "voiceBlindsUpAnte": "블라인드 업! 이제 {sb}, {bb}, 앤티 {ante}입니다",
+    "voiceOneMinute": "이 레벨이 1분 남았습니다",
+    "pause": "일시정지",
+    "resume": "계속",
+    "prevLevel": "이전 레벨",
+    "nextLevel": "다음 레벨",
+    "addMinute": "+1분",
+    "editLevels": "레벨 편집",
+    "presets": "프리셋",
+    "presetHyper": "하이퍼 · 6분",
+    "presetTurbo": "터보 · 10분",
+    "presetStandard": "스탠다드 · 15분",
+    "smallBlind": "SB",
+    "bigBlind": "BB",
+    "minutesShort": "분",
+    "addLevel": "레벨 추가",
+    "removeLevel": "레벨 삭제",
+    "resetClock": "초기화",
+    "done": "완료",
+    "soundOn": "소리 켜기",
+    "soundOff": "소리 끄기",
+    "levelOf": "레벨 {n} / {total}",
+    "minutesPerLevel": "레벨당 분",
+    "applyToAll": "전체 적용"
   }
 }

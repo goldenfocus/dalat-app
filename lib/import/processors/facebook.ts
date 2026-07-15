@@ -5,12 +5,14 @@ import {
   generateUniqueSlug,
   findOrCreateOrganizer,
   checkDuplicateByUrl,
+  canonicalizeFacebookEventUrl,
   generateMapsUrl,
   createEmptyResult,
   downloadAndUploadImage,
   type ProcessResult,
 } from "../utils";
 import { triggerTranslationServer } from "@/lib/translations";
+import { IMPORT_STATUS, MAX_IMPORTS_PER_RUN } from "../import-config";
 
 export async function processFacebookEvents(
   supabase: SupabaseClient,
@@ -21,6 +23,14 @@ export async function processFacebookEvents(
 
   for (const event of events) {
     try {
+      if (result.processed >= MAX_IMPORTS_PER_RUN) {
+        result.skipped++;
+        result.details.push(
+          `Cap reached (${MAX_IMPORTS_PER_RUN}) — skipped: ${event.url}`
+        );
+        continue;
+      }
+
       const normalized = normalizeFacebookEvent(event);
 
       if (!normalized.title || !normalized.startsAt) {
@@ -29,8 +39,9 @@ export async function processFacebookEvents(
         continue;
       }
 
-      // Check for duplicates
-      if (await checkDuplicateByUrl(supabase, event.url)) {
+      // Check for duplicates (canonical form — URL variants must not re-import)
+      const canonicalUrl = canonicalizeFacebookEventUrl(event.url);
+      if (await checkDuplicateByUrl(supabase, canonicalUrl)) {
         result.skipped++;
         continue;
       }
@@ -46,7 +57,6 @@ export async function processFacebookEvents(
 
       // Download and re-upload image to our storage (external CDN URLs expire)
       const imageUrl = await downloadAndUploadImage(
-        supabase,
         normalized.imageUrl,
         slug
       );
@@ -61,9 +71,9 @@ export async function processFacebookEvents(
         location_name: normalized.locationName,
         address: normalized.address,
         google_maps_url: normalized.mapsUrl,
-        external_chat_url: event.url,
+        external_chat_url: canonicalUrl,
         image_url: imageUrl,
-        status: "published",
+        status: IMPORT_STATUS,
         timezone: "Asia/Ho_Chi_Minh",
         organizer_id: organizerId,
         created_by: createdBy,

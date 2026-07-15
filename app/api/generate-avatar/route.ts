@@ -1,9 +1,11 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { enqueueImageJob } from "@/lib/ai/image-jobs";
 
-// Gemini image generation can take 30-60s
-export const maxDuration = 60;
+/**
+ * Enqueues an avatar generation job for the Mac mini worker (local FLUX)
+ * and returns 202 + jobId. Clients poll /api/ai/generate-image/status.
+ */
 
 const RATE_LIMIT = 5; // requests per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -51,7 +53,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Database-backed rate limiting (survives cold starts)
+    // Database-backed rate limiting (survives cold starts). Fails closed:
+    // enqueueing is cheap for an attacker.
     const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
       p_action: 'generate_avatar',
       p_limit: RATE_LIMIT,
@@ -60,8 +63,12 @@ export async function POST(request: Request) {
 
     if (rateError) {
       console.error("[generate-avatar] Rate limit check failed:", rateError);
-      // Fail open - allow request but log the error
-    } else if (!rateCheck?.allowed) {
+      return NextResponse.json(
+        { error: "Try again in a moment.", code: "rate_limit_unavailable" },
+        { status: 503 }
+      );
+    }
+    if (!rateCheck?.allowed) {
       return NextResponse.json(
         {
           error: "Rate limit exceeded. Try again in an hour.",
@@ -73,23 +80,6 @@ export async function POST(request: Request) {
     }
 
     const { displayName, style = "neutral", customPrompt } = await request.json();
-
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "AI generation is not configured" },
-        { status: 503 }
-      );
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-
-    const model = genAI.getGenerativeModel({
-      model: "gemini-3-pro-image-preview",
-      generationConfig: {
-        responseModalities: ["TEXT", "IMAGE"],
-      } as never,
-    });
 
     // Sanitize inputs
     const sanitizedName = sanitizeDisplayName(displayName);
@@ -134,52 +124,24 @@ Important:
 - Suitable for use as a profile picture`;
     }
 
-    console.log("[generate-avatar] Calling Gemini for avatar generation");
+    const result = await enqueueImageJob({
+      supabase,
+      userId: user.id,
+      context: "avatar",
+      prompt,
+      entityId: user.id,
+    });
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-
-    const parts = response.candidates?.[0]?.content?.parts;
-    if (!parts) {
-      console.error("[generate-avatar] No parts in response");
-      throw new Error("No response from AI model");
+    if (!result.ok) {
+      return NextResponse.json(
+        { error: result.error, code: result.code },
+        { status: result.status ?? 500 }
+      );
     }
 
-    const imagePart = parts.find(
-      (part) => "inlineData" in part && part.inlineData?.mimeType?.startsWith("image/")
-    );
-
-    if (!imagePart || !("inlineData" in imagePart)) {
-      console.error("[generate-avatar] No image part found");
-      throw new Error("No image generated");
-    }
-
-    console.log("[generate-avatar] Successfully generated avatar");
-
-    const base64Data = imagePart.inlineData!.data;
-    const mimeType = imagePart.inlineData!.mimeType;
-
-    const imageUrl = `data:${mimeType};base64,${base64Data}`;
-
-    return NextResponse.json({ imageUrl });
+    return NextResponse.json({ jobId: result.jobId }, { status: 202 });
   } catch (error) {
     console.error("Avatar generation error:", error);
-
-    if (error instanceof Error) {
-      if (error.message.includes("API key")) {
-        return NextResponse.json(
-          { error: "AI service configuration error" },
-          { status: 503 }
-        );
-      }
-      if (error.message.includes("quota") || error.message.includes("limit")) {
-        return NextResponse.json(
-          { error: "AI generation limit reached. Try again later." },
-          { status: 429 }
-        );
-      }
-    }
-
     return NextResponse.json(
       { error: "Failed to generate avatar" },
       { status: 500 }

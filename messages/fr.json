@@ -1,4 +1,10 @@
 {
+  "notFound": {
+    "title": "Perdu dans la brume ?",
+    "description": "Comme un détour dans un coin inexploré de Đà Lạt, cette page n'existe pas. Mais le chemin du retour est à un clic.",
+    "backHome": "Retour à l'accueil",
+    "tagline": "Événements · Gens · Moments · Amour · Đà Lạt 🇻🇳"
+  },
   "hero": {
     "headline": "À Đà Lạt en ce moment ✨",
     "subtitle": "Où la ville se retrouve",
@@ -55,7 +61,13 @@
       "message": "Cette page est dans une autre langue. Passer en {language} ?",
       "switch": "Voir en {language}",
       "dismiss": "Garder la langue actuelle"
-    }
+    },
+    "aiQueueWait": "On peint votre image — comptez 1 à 3 minutes ✨",
+    "aiWorkerOffline": "Le peintre IA fait une sieste. Réessayez dans un instant.",
+    "aiRefineUnavailable": "Les retouches sont en pause — générez plutôt une nouvelle image.",
+    "aiTooManyPending": "Vos autres images sont encore en cours. Patientez un instant.",
+    "aiTimeout": "C'est plus long que d'habitude — l'image peut encore arriver. Sinon, réessayez.",
+    "aiGenerationFailed": "La génération a échoué cette fois. Réessayez."
   },
   "nav": {
     "events": "Événements",
@@ -152,7 +164,9 @@
     "newPassword": "Nouveau mot de passe",
     "newPasswordPlaceholder": "Entrez votre nouveau mot de passe",
     "setNewPassword": "Définir le nouveau mot de passe",
-    "passwordResetSuccess": "Mot de passe réinitialisé ! Vous pouvez maintenant vous connecter.",
+    "passwordResetSuccess": "Mot de passe mis à jour — vous êtes connecté !",
+    "resetLinkExpired": "Ce lien de réinitialisation a expiré ou a déjà été utilisé.",
+    "requestNewLink": "Demander un nouveau lien",
     "accountCreatedCheckEmail": "Compte créé ! Vérifiez votre email pour confirmer.",
     "signInOrCreateHint": "Nouveau ? Nous créerons votre compte automatiquement.",
     "signInWithPassword": "Se connecter avec mot de passe",
@@ -247,7 +261,14 @@
     },
     "friendsGoing": "{count} amis y vont",
     "othersYouFollow": "+ {count} que vous suivez",
-    "andMore": "et plus"
+    "andMore": "et plus",
+    "pastProofBoth": "{went} venus · {photos} photos la dernière fois",
+    "pastProofPhotos": "{photos} photos la dernière fois",
+    "pastProofWent": "{went} venus la dernière fois",
+    "photoBy": "📸 @{name}",
+    "spotsAvailable": "{count} places",
+    "secretAddressLockHint": "Adresse exacte révélée après votre RSVP",
+    "secretAddressRevealedHint": "Seuls les invités voient cette adresse"
   },
   "rsvp": {
     "imGoing": "Je participe",
@@ -277,6 +298,13 @@
     "positiveRating": "{percentage}% positif ({count} avis)"
   },
   "eventForm": {
+    "linkedPastEvent": "Moments d'un événement passé",
+    "linkedPastEventHelp": "Afficher les moments d'un événement passé sur cette page jusqu'à ce que cet événement ait les siens. Réservé aux administrateurs.",
+    "linkedPastEventError": "Impossible de mettre à jour le lien. Réessayez.",
+    "searchPastEvents": "Rechercher des événements passés…",
+    "searchingEvents": "Recherche…",
+    "noPastEventsFound": "Aucun événement passé trouvé",
+    "unlinkPastEvent": "Dissocier",
     "createEvent": "Créer un événement",
     "editEvent": "Modifier l'événement",
     "title": "Titre de l'événement",
@@ -303,6 +331,9 @@
     "locationVenuesSection": "Lieux",
     "locationPlacesSection": "Autres emplacements",
     "locationNoResults": "Aucun lieu trouvé",
+    "locationUseCustom": "Utiliser « {text} »",
+    "locationUseAsTyped": "Enregistrer l'adresse telle que saisie",
+    "locationSearchUnavailable": "La recherche de lieux est momentanément indisponible — vous pouvez tout de même utiliser l'adresse telle que saisie ci-dessous.",
     "locationLoading": "Chargement...",
     "locationCoordinatesDetected": "Coordonnées détectées",
     "locationResolvingUrl": "Extraction de l'emplacement du lien...",
@@ -402,7 +433,14 @@
     "sponsorTier3": "Or (Niveau 3)",
     "sponsorTierHelp": "Les événements mis en avant apparaissent en premier avec un badge doré.",
     "activityTags": "Type d'activité",
-    "activityTagsHelp": "Sélectionnez des tags pour aider les gens à trouver votre événement. L'IA ajoutera également des tags automatiquement en fonction du contenu."
+    "activityTagsHelp": "Sélectionnez des tags pour aider les gens à trouver votre événement. L'IA ajoutera également des tags automatiquement en fonction du contenu.",
+    "secretAddress": "Adresse secrète",
+    "secretAddressHelp": "L'adresse exacte reste cachée — seuls les invités qui confirment leur venue peuvent la voir. Nous la leur enverrons aussi le matin de l'événement.",
+    "secretAddressPublicLabel": "Ce que tout le monde voit",
+    "secretAddressPublicLabelPlaceholder": "ex. Une maison près du marché de nuit",
+    "secretAddressPublicLabelHelp": "Une indication de quartier affichée à la place de l'adresse.",
+    "secretAddressArrivalNotes": "Infos d'arrivée (invités uniquement)",
+    "secretAddressArrivalNotesPlaceholder": "Code d'entrée, parking, lien du groupe Zalo/WhatsApp…"
   },
   "eventActions": {
     "eventOptions": "Options de l'événement",
@@ -1119,7 +1157,12 @@
     ],
     "usernamePlaceholder": "Rechercher par nom ou pseudo",
     "usernameHint": "Tapez au moins 2 caractères pour rechercher",
-    "noInvitees": "Veuillez ajouter au moins une personne à inviter"
+    "noInvitees": "Veuillez ajouter au moins une personne à inviter",
+    "audienceEveryone": "Tout le monde",
+    "audiencePeople": "{count} personnes",
+    "personalNoteLabel": "Ajouter un mot personnel",
+    "personalNotePlaceholder": "Pourquoi venir ? (facultatif)",
+    "audienceNoRecipients": "Tout le monde ici a déjà été invité ou contacté récemment"
   },
   "moments": {
     "moments": "Moments",
@@ -1347,6 +1390,16 @@
     }
   },
   "tribes": {
+    "findYourTribe": "Trouvez votre tribu",
+    "discoverTitle": "Les tribus de Đà Lạt",
+    "discoverSubtitle": "Petites communautés, grande ambiance — rejoignez les bandes qui font de cette ville un chez-soi.",
+    "startTribe": "Créer une tribu",
+    "seeAll": "Voir tout",
+    "accessOpen": "Ouvert à tous",
+    "accessRequest": "Sur demande",
+    "emptyTitle": "Pas encore de tribus — la brume attend sa première bande.",
+    "emptyCta": "Devenir fondateur",
+    "dateAtTime": "{date} à {time}",
     "title": "Tribus",
     "createTribe": "Créer une tribu",
     "joinTribe": "Rejoindre la tribu",
@@ -1399,7 +1452,14 @@
     "createdBy": "Créée par {name}",
     "joinedOn": "Rejoint le {date}",
     "myTribes": "Mes Tribus",
-    "pendingRequests": "Demandes en attente"
+    "pendingRequests": "Demandes en attente",
+    "coverImage": "Image de couverture",
+    "coverImageHint": "Le format paysage est idéal — environ 1200×600.",
+    "uploadCover": "Ajouter une couverture",
+    "replaceCover": "Remplacer la couverture",
+    "removeCover": "Supprimer",
+    "coverUploading": "Envoi en cours...",
+    "coverUploadFailed": "Échec de l'envoi. Veuillez réessayer."
   },
   "feed": {
     "title": "Fil",
@@ -1632,7 +1692,16 @@
     "allPosts": "Tous",
     "noPosts": "Pas encore d'articles. Revenez bientôt !",
     "backToBlog": "Retour au Blog",
-    "translated": "Traduit"
+    "translated": "Traduit",
+    "sources": "Sources",
+    "via": "via",
+    "loadMore": "Charger plus",
+    "newerPosts": "Plus récents",
+    "olderPosts": "Plus anciens",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "thisWeek": "Cette semaine",
+    "older": "Plus ancien"
   },
   "upcomingEvents": {
     "title": "Événements à venir à Đà Lạt",
@@ -1773,6 +1842,8 @@
     "tour": "Visite",
     "hiking": "Randonnée",
     "sports": "Sports",
+    "pickleball": "Pickleball",
+    "games": "Jeux",
     "meetup": "Rencontre",
     "networking": "Réseautage",
     "community": "Communauté",
@@ -2354,7 +2425,11 @@
     "tagGovernment": "Administration",
     "tagFoodDrink": "Gastronomie",
     "tagWeather": "Météo",
-    "tagCommunity": "Communauté"
+    "tagCommunity": "Communauté",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "thisWeek": "Cette semaine",
+    "older": "Plus ancien"
   },
   "loyalty": {
     "title": "Fidélité",
@@ -2467,5 +2542,37 @@
     "readyToHostDesc": "Créez votre premier événement et gagnez des points organisateur. Chaque événement vous rapproche des avantages premium.",
     "createEvent": "Créer un événement",
     "noOneYet": "Personne au classement encore. Soyez le premier !"
+  },
+  "pokerTable": {
+    "level": "Niveau {n}",
+    "ante": "Ante",
+    "next": "Suivant",
+    "tapToStart": "Touchez pour commencer",
+    "shuffleUp": "Mélangez et distribuez !",
+    "voiceBlindsUp": "Les blindes augmentent ! Maintenant {sb}, {bb}",
+    "voiceBlindsUpAnte": "Les blindes augmentent ! Maintenant {sb}, {bb}, ante {ante}",
+    "voiceOneMinute": "Plus qu'une minute dans ce niveau",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "prevLevel": "Niveau précédent",
+    "nextLevel": "Niveau suivant",
+    "addMinute": "+1 min",
+    "editLevels": "Modifier les niveaux",
+    "presets": "Préréglages",
+    "presetHyper": "Hyper · 6 min",
+    "presetTurbo": "Turbo · 10 min",
+    "presetStandard": "Standard · 15 min",
+    "smallBlind": "SB",
+    "bigBlind": "BB",
+    "minutesShort": "Min",
+    "addLevel": "Ajouter un niveau",
+    "removeLevel": "Supprimer le niveau",
+    "resetClock": "Réinitialiser",
+    "done": "Terminé",
+    "soundOn": "Son activé",
+    "soundOff": "Son coupé",
+    "levelOf": "Niveau {n} sur {total}",
+    "minutesPerLevel": "Minutes par niveau",
+    "applyToAll": "Appliquer à tous"
   }
 }

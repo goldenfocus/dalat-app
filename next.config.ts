@@ -84,6 +84,18 @@ const nextConfig: NextConfig = {
         destination: "/:locale/events/new",
         permanent: false,
       },
+      {
+        // /events → /events/upcoming (instant 307; the app/[locale]/events page
+        // fallback prerenders as a 1s meta-refresh, too slow for a hot path)
+        source: "/events",
+        destination: "/events/upcoming",
+        permanent: false,
+      },
+      {
+        source: "/:locale(en|vi|ko|zh|ru|fr|ja|ms|th|de|es|id)/events",
+        destination: "/:locale/events/upcoming",
+        permanent: false,
+      },
     ];
   },
 

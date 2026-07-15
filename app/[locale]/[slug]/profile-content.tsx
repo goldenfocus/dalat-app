@@ -28,49 +28,25 @@ async function getProfile(profileId: string): Promise<Profile | null> {
   return data as Profile | null;
 }
 
-async function getUserEvents(userId: string): Promise<Event[]> {
+async function getUserEvents(
+  userId: string
+): Promise<{ upcoming: Event[]; past: Event[] }> {
   const supabase = await createClient();
 
-  // Query 1: Events created by this user
-  const { data: createdEvents } = await supabase
-    .from("events")
-    .select("*")
-    .eq("created_by", userId)
-    .eq("status", "published")
-    .order("starts_at", { ascending: false })
-    .limit(10);
-
-  // Get organizer IDs that this user owns
-  const { data: ownedOrganizers } = await supabase
-    .from("organizers")
-    .select("id")
-    .eq("owner_id", userId);
-
-  const organizerIds = (ownedOrganizers ?? []).map((o) => o.id);
-
-  // Query 2: Events where user owns the organizer (if any)
-  let organizedEvents: Event[] = [];
-  if (organizerIds.length > 0) {
-    const { data } = await supabase
-      .from("events")
-      .select("*")
-      .in("organizer_id", organizerIds)
-      .eq("status", "published")
-      .order("starts_at", { ascending: false })
-      .limit(10);
-    organizedEvents = (data ?? []) as Event[];
+  // Upcoming = soonest first, recurring series collapsed to their next
+  // occurrence; past = most recent first. Split/collapse happens in SQL —
+  // fetching a date-ordered slice here and splitting client-side hid
+  // near-term events behind far-future series instances.
+  const { data, error } = await supabase.rpc("get_profile_events", {
+    p_profile_id: userId,
+  });
+  if (error) {
+    console.error("get_profile_events failed:", error);
+    return { upcoming: [], past: [] };
   }
 
-  // Combine and deduplicate by event ID
-  const allEvents = [...(createdEvents ?? []), ...organizedEvents];
-  const uniqueEvents = Array.from(
-    new Map(allEvents.map((e) => [e.id, e])).values()
-  ) as Event[];
-
-  // Sort by starts_at descending and limit
-  return uniqueEvents
-    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime())
-    .slice(0, 10);
+  const result = data as { upcoming: Event[] | null; past: Event[] | null } | null;
+  return { upcoming: result?.upcoming ?? [], past: result?.past ?? [] };
 }
 
 async function isCurrentUser(profileId: string): Promise<boolean> {
@@ -226,10 +202,8 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
   const isGhost = isGhostProfile(profile);
   const showClaimBanner = isGhost && isLoggedIn && !isOwner;
 
-  const upcomingEvents = events
-    .filter((e) => new Date(e.starts_at) > new Date())
-    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
-  const pastEvents = events.filter((e) => new Date(e.starts_at) <= new Date());
+  const { upcoming: upcomingEvents, past: pastEvents } = events;
+  const totalEventCount = upcomingEvents.length + pastEvents.length;
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
@@ -238,7 +212,7 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
         <ClaimProfileBanner
           ghostProfileId={profile.id}
           ghostDisplayName={profile.display_name || profile.username || t("anonymous")}
-          eventCount={events.length}
+          eventCount={totalEventCount}
         />
       )}
 
@@ -354,7 +328,7 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
           </section>
         )}
 
-        {events.length === 0 && (
+        {totalEventCount === 0 && (
           <p className="text-muted-foreground text-center py-8">
             {t("noEventsYet")}
           </p>

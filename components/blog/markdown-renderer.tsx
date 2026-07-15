@@ -2,6 +2,7 @@
 
 import { Suspense, lazy, useMemo } from "react";
 import type { Components } from "react-markdown";
+import { normalizeStoryContent } from "@/lib/blog/normalize-content";
 
 // Lazy-load react-markdown with remark-gfm bundled together
 const LazyMarkdownWithGfm = lazy(async () => {
@@ -27,8 +28,48 @@ const LazyMarkdownWithGfm = lazy(async () => {
   };
 });
 
+export interface InlineImage {
+  url: string;
+  alt?: string;
+  attribution?: string;
+}
+
 interface MarkdownRendererProps {
   content: string;
+  /** Source images to weave into the article body (after the 2nd and 4th paragraphs). */
+  inlineImages?: InlineImage[];
+}
+
+// Positions (1-based paragraph index) after which inline images are inserted
+const INLINE_IMAGE_POSITIONS = [2, 4];
+
+/**
+ * Insert markdown image lines after the 2nd and 4th paragraphs (when those
+ * paragraphs exist). Attribution rides along as the image title —
+ * react-markdown passes it to the img component, which renders a figcaption.
+ */
+function insertInlineImages(text: string, images: InlineImage[]): string {
+  const paragraphs = text.split(/\n\n+/);
+  const out: string[] = [];
+  let inserted = 0;
+
+  paragraphs.forEach((paragraph, i) => {
+    out.push(paragraph);
+    if (
+      inserted < images.length &&
+      INLINE_IMAGE_POSITIONS[inserted] === i + 1
+    ) {
+      const image = images[inserted];
+      const alt = (image.alt ?? "").replace(/[[\]]/g, "");
+      const title = image.attribution
+        ? ` "${image.attribution.replace(/"/g, "'")}"`
+        : "";
+      out.push(`![${alt}](${image.url}${title})`);
+      inserted++;
+    }
+  });
+
+  return out.join("\n\n");
 }
 
 const components: Components = {
@@ -38,10 +79,9 @@ const components: Components = {
       {children}
     </h2>
   ),
-  // Rich H2 with accent bar
+  // Rich H2 with accent bar (border, not flex — flex splits inline children into columns)
   h2: ({ children }) => (
-    <h2 className="text-xl font-bold mt-10 mb-4 text-foreground flex items-center gap-2">
-      <span className="w-1 h-6 bg-primary rounded-full shrink-0" />
+    <h2 className="text-xl font-bold mt-10 mb-4 text-foreground border-l-4 border-primary pl-3">
       {children}
     </h2>
   ),
@@ -147,8 +187,8 @@ const components: Components = {
       {children}
     </pre>
   ),
-  // Images
-  img: ({ src, alt }) => (
+  // Images (title carries source attribution when present)
+  img: ({ src, alt, title }) => (
     <figure className="my-6">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -157,9 +197,9 @@ const components: Components = {
         className="w-full rounded-xl shadow-md"
         loading="lazy"
       />
-      {alt && (
+      {(title || alt) && (
         <figcaption className="text-center text-sm text-muted-foreground/60 mt-2 italic">
-          {alt}
+          {title || alt}
         </figcaption>
       )}
     </figure>
@@ -180,13 +220,19 @@ function MarkdownSkeleton() {
   );
 }
 
-export function MarkdownRenderer({ content }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, inlineImages }: MarkdownRendererProps) {
   const safeContent = useMemo(() => {
     let text = content ?? "";
+    // Reflow pathological single-line auto-generated posts into paragraphs
+    text = normalizeStoryContent(text);
     // Strip leading H1 (the page renders its own title)
     text = text.replace(/^#\s+[^\n]+\n+/, "");
+    // Weave source images into the article body
+    if (inlineImages && inlineImages.length > 0) {
+      text = insertInlineImages(text, inlineImages);
+    }
     return text;
-  }, [content]);
+  }, [content, inlineImages]);
 
   return (
     <Suspense fallback={<MarkdownSkeleton />}>

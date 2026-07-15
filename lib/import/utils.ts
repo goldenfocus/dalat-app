@@ -1,4 +1,9 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { parse as parseDateFns, isValid as isValidDate, format as formatDate } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
+import { getStorageProvider } from "@/lib/storage";
+
+const DALAT_TIMEZONE = "Asia/Ho_Chi_Minh";
 
 /**
  * Shared utilities for event import processors
@@ -50,13 +55,17 @@ export async function findOrCreateOrganizer(
   const slug = slugify(organizerName);
   if (!slug) return null;
 
-  // Check if exists by slug or name
+  // Look up by slug. (Slug is derived from the name, so this covers exact
+  // name matches too. An .or() filter string is NOT safe here: Vietnamese
+  // organizer names contain commas — "Sở Văn hóa, Thể thao..." — which
+  // PostgREST parses as condition separators, silently breaking the lookup
+  // and turning every re-import into a duplicate-slug insert error.)
   const { data: existing } = await supabase
     .from("organizers")
     .select("id")
-    .or(`slug.eq.${slug},name.ilike.${organizerName}`)
+    .eq("slug", slug)
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (existing) return existing.id;
 
@@ -101,24 +110,40 @@ export function parseEventDate(
   if (!dateStr) return null;
 
   try {
-    // Try ISO format first
-    const iso = new Date(dateStr);
-    if (!isNaN(iso.getTime())) {
-      return iso.toISOString();
+    // ISO / RFC formats carry their own structure — trust the platform parser.
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+      const withTime =
+        timeStr && !dateStr.includes("T") ? `${dateStr}T${timeStr}` : dateStr;
+      const iso = new Date(withTime);
+      return isNaN(iso.getTime()) ? null : iso.toISOString();
     }
 
-    // Try with time appended
-    const withTime = timeStr ? `${dateStr} ${timeStr}` : dateStr;
-    const parsed = new Date(withTime);
-
-    if (!isNaN(parsed.getTime())) {
-      return parsed.toISOString();
+    // Vietnamese day-first formats, interpreted in Đà Lạt time.
+    // new Date("25/07/2026") would read as MM/DD → wrong-month event with no error.
+    const time = timeStr && /^\d{1,2}:\d{2}/.test(timeStr) ? timeStr : "00:00";
+    for (const fmt of ["dd/MM/yyyy", "d/M/yyyy", "dd-MM-yyyy"]) {
+      const parsed = parseDateFns(dateStr.trim(), fmt, new Date());
+      if (isValidDate(parsed)) {
+        const local = `${formatDate(parsed, "yyyy-MM-dd")}T${time}`;
+        return fromZonedTime(local, DALAT_TIMEZONE).toISOString();
+      }
     }
   } catch {
     // Fall through
   }
 
+  // Unparseable dates are a skip (counted upstream), never a guess.
   return null;
+}
+
+/**
+ * Normalize Facebook event URL variants (m./mbasic./bare host, trailing slash,
+ * tracking params, ?event_time_id for recurring events) to one canonical form,
+ * so exact-match dedupe on external_chat_url doesn't re-import the same event.
+ */
+export function canonicalizeFacebookEventUrl(url: string): string {
+  const match = url.match(/facebook\.com\/events\/(\d+)/i);
+  return match ? `https://www.facebook.com/events/${match[1]}` : url;
 }
 
 export function generateMapsUrl(
@@ -151,14 +176,13 @@ export function createEmptyResult(): ProcessResult {
 }
 
 /**
- * Download an image from an external URL and upload it to Supabase Storage.
- * Returns the permanent public URL, or null if the download/upload fails.
+ * Download an image from an external URL and upload it to Cloudflare R2.
+ * Returns the permanent CDN URL, or null if the download/upload fails.
  *
  * This prevents dependency on external CDN URLs (Facebook, Instagram, etc.)
  * which often expire after hours or days.
  */
 export async function downloadAndUploadImage(
-  supabase: SupabaseClient,
   externalUrl: string | null | undefined,
   eventSlug: string
 ): Promise<string | null> {
@@ -184,8 +208,11 @@ export async function downloadAndUploadImage(
     const contentType = response.headers.get("content-type") || "image/jpeg";
     const buffer = await response.arrayBuffer();
 
-    // Skip if too small (likely an error page) or too large
-    if (buffer.byteLength < 1000) {
+    // Skip if too small or too large. Real cover photos are never under a
+    // few KB — sub-5KB files are page chrome (a 24x16 language-flag icon
+    // shipped as blurry event covers on Jul 10 2026), tracking pixels, or
+    // error pages.
+    if (buffer.byteLength < 5000) {
       console.warn(`Image too small, likely invalid: ${externalUrl}`);
       return null;
     }
@@ -207,24 +234,14 @@ export async function downloadAndUploadImage(
     // Generate unique filename: eventSlug/timestamp.ext
     const fileName = `${eventSlug}/${Date.now()}.${ext}`;
 
-    // Upload to Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from("event-media")
-      .upload(fileName, buffer, {
-        contentType,
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.warn(`Failed to upload image for ${eventSlug}:`, uploadError);
-      return null;
-    }
-
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("event-media").getPublicUrl(fileName);
+    // Upload via the storage provider (R2 → cdn.dalat.app; Supabase Storage is banned)
+    const provider = await getStorageProvider("event-media");
+    const publicUrl = await provider.upload(
+      "event-media",
+      fileName,
+      Buffer.from(buffer),
+      { contentType, cacheControl: "3600" }
+    );
 
     return publicUrl;
   } catch (error) {

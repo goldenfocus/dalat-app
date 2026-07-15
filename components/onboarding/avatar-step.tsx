@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { uploadFile } from "@/lib/storage/client";
+import { generateImageViaQueue, ImageJobError } from "@/lib/ai/image-job-client";
 import { DefaultAvatars } from "./default-avatars";
 import { AIAvatarDialog } from "@/components/profile/ai-avatar-dialog";
 
@@ -36,6 +37,7 @@ export function AvatarStep({
 }: AvatarStepProps) {
   const t = useTranslations("onboarding");
   const tProfile = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const [previewUrl, setPreviewUrl] = useState<string | null>(oauthAvatarUrl || null);
   const [selectedDefault, setSelectedDefault] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -65,9 +67,10 @@ export function AvatarStep({
       return;
     }
 
+    // Generation runs on the local image worker and takes 1-3 minutes
     const timers = [
-      setTimeout(() => setGenerationStage(1), 3000),  // After 3s
-      setTimeout(() => setGenerationStage(2), 8000),  // After 8s
+      setTimeout(() => setGenerationStage(1), 30_000),
+      setTimeout(() => setGenerationStage(2), 90_000),
     ];
 
     return () => timers.forEach(clearTimeout);
@@ -160,29 +163,18 @@ export function AvatarStep({
     setIsGenerating(true);
 
     try {
-      const response = await fetch("/api/generate-avatar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      // Enqueued on the local image worker; resolves with the CDN URL
+      // (already in the avatars bucket — no re-upload needed)
+      const imageUrl = await generateImageViaQueue(
+        {
           displayName,
           style: selectedStyle,
           customPrompt: selectedStyle === "custom" ? customPrompt : undefined,
-        }),
-      });
+        },
+        { endpoint: "/api/generate-avatar" }
+      );
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to generate avatar");
-      }
-
-      const { imageUrl } = await response.json();
-
-      // Convert data URL to blob via fetch (handles all formats safely)
-      const blobResponse = await fetch(imageUrl);
-      const blob = await blobResponse.blob();
-      const ext = blob.type.split("/")[1] || "png";
-      const publicUrl = await uploadAvatar(blob, `ai-avatar.${ext}`);
-      setPreviewUrl(publicUrl);
+      setPreviewUrl(imageUrl);
       setSelectedDefault(null);
       setIsAIGenerated(true);
       setShowAIDialog(false);
@@ -191,7 +183,18 @@ export function AvatarStep({
       setCustomPrompt("");
     } catch (err) {
       console.error("AI generation error:", err);
-      setError(err instanceof Error ? err.message : t("avatarStep.generationFailed"));
+      const codeKeys: Record<string, string> = {
+        worker_offline: "aiWorkerOffline",
+        rate_limit_unavailable: "aiWorkerOffline",
+        too_many_pending: "aiTooManyPending",
+        timeout: "aiTimeout",
+        generation_failed: "aiGenerationFailed",
+      };
+      if (err instanceof ImageJobError && err.code && codeKeys[err.code]) {
+        setError(tCommon(codeKeys[err.code]));
+      } else {
+        setError(err instanceof Error ? err.message : t("avatarStep.generationFailed"));
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -468,6 +471,13 @@ export function AvatarStep({
               )}
             </Button>
           </div>
+
+          {/* Queue wait hint — generation runs on the local worker (1-3 min) */}
+          {isGenerating && (
+            <p className="text-xs text-muted-foreground text-center">
+              {tCommon("aiQueueWait")}
+            </p>
+          )}
         </DialogContent>
       </Dialog>
     </div>
