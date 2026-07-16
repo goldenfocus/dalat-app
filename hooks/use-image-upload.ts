@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { uploadFile } from "@/lib/storage/client";
+import { needsConversion } from "@/lib/media-utils";
+import { convertHeicOnR2 } from "@/lib/media-conversion";
 
 interface UseImageUploadOptions {
   initialImageUrl?: string | null;
@@ -51,6 +53,13 @@ export function useImageUpload({
       const result = await uploadFile("event-media", pendingFile, {
         filename: fileName,
       });
+
+      // HEIC that couldn't be converted client-side: convert on R2 so the
+      // stored cover URL is a browser-displayable JPEG, never a raw .heic
+      if (needsConversion(pendingFile)) {
+        const converted = await convertHeicOnR2("event-media", result.path);
+        return converted.url;
+      }
 
       return result.publicUrl;
     }

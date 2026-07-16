@@ -28,7 +28,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { RotatingPhrase } from "@/components/ui/rotating-phrase";
-import { validateMediaFile, ALLOWED_MEDIA_TYPES } from "@/lib/media-utils";
+import { validateMediaFile, needsConversion, ALLOWED_MEDIA_TYPES } from "@/lib/media-utils";
+import { convertIfNeeded } from "@/lib/media-conversion";
 
 // Fun placeholder examples for event titles
 const TITLE_PLACEHOLDERS = [
@@ -155,6 +156,7 @@ export function FlyerBuilder({
   const [urlInput, setUrlInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingUrl, setIsLoadingUrl] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(imageUrl);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -192,23 +194,40 @@ export function FlyerBuilder({
   }, [previewUrl]);
 
   const handleFile = useCallback(
-    (file: File) => {
+    async (file: File) => {
       setError(null);
       const validationError = validateMediaFile(file);
       if (validationError) {
         setError(validationError);
         return;
       }
-      if (!file.type.startsWith("image/")) {
+      // needsConversion() catches HEIC files whose MIME type the browser
+      // leaves empty (common on Android) — they're still images
+      if (!file.type.startsWith("image/") && !needsConversion(file)) {
         setError(t("imagesOnly"));
         return;
       }
+
+      // HEIC can't be rendered by <img> in most browsers — convert to JPEG
+      // before previewing. If the browser can't convert it, keep the original;
+      // useImageUpload converts it server-side on R2 after upload.
+      let fileToUse = file;
+      if (needsConversion(file)) {
+        setIsConverting(true);
+        try {
+          const { file: converted } = await convertIfNeeded(file);
+          fileToUse = converted;
+        } finally {
+          setIsConverting(false);
+        }
+      }
+
       revokeExistingBlobUrl();
-      const objectUrl = URL.createObjectURL(file);
+      const objectUrl = URL.createObjectURL(fileToUse);
       setPreviewUrl(objectUrl);
-      onImageChange(objectUrl, file);
+      onImageChange(objectUrl, fileToUse);
     },
-    [onImageChange, revokeExistingBlobUrl]
+    [onImageChange, revokeExistingBlobUrl, t]
   );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -570,7 +589,7 @@ export function FlyerBuilder({
         )}
 
         {/* Loading overlay */}
-        {(isGenerating || isLoadingUrl) && (
+        {(isGenerating || isLoadingUrl || isConverting) && (
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3 px-4">
             <Loader2 className="w-8 h-8 text-white animate-spin" />
             <RotatingPhrase className="text-sm text-white/90 text-center max-w-xs" />
@@ -710,7 +729,7 @@ export function FlyerBuilder({
               variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isGenerating || isLoadingUrl}
+              disabled={isGenerating || isLoadingUrl || isConverting}
             >
               <Upload className="w-4 h-4" />
               Upload
@@ -721,7 +740,7 @@ export function FlyerBuilder({
               variant="outline"
               size="sm"
               onClick={() => setShowUrlInput(true)}
-              disabled={isGenerating || isLoadingUrl}
+              disabled={isGenerating || isLoadingUrl || isConverting}
             >
               <LinkIcon className="w-4 h-4" />
               Link
@@ -732,7 +751,7 @@ export function FlyerBuilder({
               variant="outline"
               size="sm"
               onClick={handleOpenPromptEditor}
-              disabled={isGenerating || isLoadingUrl}
+              disabled={isGenerating || isLoadingUrl || isConverting}
             >
               <Sparkles className="w-4 h-4" />
               AI
@@ -801,7 +820,7 @@ export function FlyerBuilder({
             <button
               type="button"
               onClick={() => setShowRefinement(!showRefinement)}
-              disabled={isGenerating || isLoadingUrl}
+              disabled={isGenerating || isLoadingUrl || isConverting}
               className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 transition-colors text-sm disabled:opacity-50"
             >
               <span className="flex items-center gap-2 text-violet-400">
@@ -823,7 +842,7 @@ export function FlyerBuilder({
                   placeholder={t("refinementPlaceholder")}
                   rows={2}
                   className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm resize-none"
-                  disabled={isGenerating || isLoadingUrl}
+                  disabled={isGenerating || isLoadingUrl || isConverting}
                 />
                 <Button
                   type="button"
