@@ -11,6 +11,8 @@
   "observability": {
     "enabled": true
   },
+  // Required: unminified the bundle exceeds the 10MB Workers gzip cap
+  "minify": true,
   // Production traffic: dalat.app DNS stays pointed at Vercel but is proxied
   // through Cloudflare, so these routes intercept at the edge. Rollback =
   // remove the routes (traffic falls through to Vercel again).
