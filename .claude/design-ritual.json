@@ -1,0 +1,7 @@
+{
+  "site": "dalat.app",
+  "publisher": "r2-cdn-redirect",
+  "r2_bucket": "dalat-app-media",
+  "designs_prefix": "designs/",
+  "cdn_url": "https://cdn.dalat.app"
+}

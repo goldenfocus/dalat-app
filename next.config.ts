@@ -96,6 +96,18 @@ const nextConfig: NextConfig = {
         destination: "/:locale/events/upcoming",
         permanent: false,
       },
+      {
+        // Design ritual gallery — prototypes live on R2, served via the CDN.
+        // Config redirects run before middleware, so i18n rewrites never see these.
+        source: "/designs",
+        destination: "https://cdn.dalat.app/designs/index.html",
+        permanent: false,
+      },
+      {
+        source: "/designs/:slug",
+        destination: "https://cdn.dalat.app/designs/:slug.html",
+        permanent: false,
+      },
     ];
   },
 
