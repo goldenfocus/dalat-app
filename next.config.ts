@@ -105,7 +105,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/designs/:slug",
-        destination: "https://cdn.dalat.app/designs/:slug.html",
+        destination: "https://cdn.dalat.app/designs/:slug",
         permanent: false,
       },
     ];
