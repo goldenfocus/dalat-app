@@ -19,6 +19,14 @@ export type RouteIsland = {
 
 const CORE_SET = new Set<string>(CORE_CLIENT_NAMESPACES);
 
+/**
+ * Segment-anchored section match: /section or /section/... — never a vanity
+ * /[slug] that merely starts with the same letters (e.g. /signature-lounge
+ * must NOT match "sign", /organizers must NOT match "organizer").
+ */
+const inSection = (p: string, ...sections: string[]) =>
+  sections.some((s) => p === `/${s}` || p.startsWith(`/${s}/`));
+
 /** Strip locale prefix from pathname → app path starting with / */
 export function stripLocalePrefix(pathname: string): string {
   const segments = pathname.split("/").filter(Boolean);
@@ -38,12 +46,13 @@ export function stripLocalePrefix(pathname: string): string {
  */
 function isCoreOnlyPath(path: string): boolean {
   if (path === "/" || path === "") return true;
-  // Event discovery lists — server-rendered, core events/home keys only
+  // Event discovery lists — server-rendered, core events/home keys only.
+  // NOTE: /events/archive is NOT core-only — its filter bar needs "archive"
+  // (island below); core-only paths never merge extra namespaces.
   if (
     path === "/events/upcoming" ||
     path === "/events/this-week" ||
     path === "/events/this-month" ||
-    path.startsWith("/events/archive") ||
     path.startsWith("/events/tags/") ||
     path === "/pickleball"
   ) {
@@ -54,16 +63,21 @@ function isCoreOnlyPath(path: string): boolean {
 
 export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
   {
-    test: (p) => p === "/map" || p.startsWith("/map/"),
+    test: (p) => inSection(p, "map"),
     namespaces: ["mapPage", "venues", "categories", "eventTags"],
   },
   {
-    test: (p) => p.startsWith("/venues"),
+    test: (p) => inSection(p, "venues"),
     namespaces: ["venues", "mapPage", "categories"],
   },
   {
-    test: (p) => p.startsWith("/loyalty"),
+    test: (p) => inSection(p, "loyalty"),
     namespaces: ["loyalty"],
+  },
+  {
+    // Archive filter/sort bar (archive-events-list, archive-filters)
+    test: (p) => p.startsWith("/events/archive"),
+    namespaces: ["archive"],
   },
   {
     test: (p) =>
@@ -81,6 +95,9 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
       "promo",
       "questionnaireBuilder",
       "series",
+      // PostCreationCelebration dialog after create/edit
+      "celebration",
+      "invite",
     ],
   },
   {
@@ -114,35 +131,36 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
     ],
   },
   {
-    test: (p) => p.startsWith("/calendar"),
+    test: (p) => inSection(p, "calendar"),
     namespaces: ["calendar", "calendarView", "eventTags", "categories"],
   },
   {
-    test: (p) => p.startsWith("/settings") || p.startsWith("/protected"),
+    test: (p) => inSection(p, "settings", "protected"),
     namespaces: ["settings", "profile", "onboarding"],
   },
   {
-    test: (p) => p.startsWith("/tribes") || p.startsWith("/contacts"),
+    test: (p) => inSection(p, "tribes", "contacts"),
     namespaces: ["tribes", "contacts"],
   },
   {
-    test: (p) => p.startsWith("/profile") || p.startsWith("/settings/profile"),
+    test: (p) => inSection(p, "profile"),
     namespaces: ["profile", "loyalty"],
   },
   {
-    test: (p) => p.startsWith("/news"),
+    test: (p) => inSection(p, "news"),
     namespaces: ["news"],
   },
   {
-    test: (p) => p.startsWith("/feed"),
+    test: (p) => inSection(p, "feed"),
     namespaces: ["feed", "comments"],
   },
   {
-    test: (p) => p.startsWith("/moments"),
-    namespaces: ["moments", "playlist"],
+    test: (p) => inSection(p, "moments"),
+    // comments: CommentsButton via moment-engagement-bar
+    namespaces: ["moments", "playlist", "comments"],
   },
   {
-    test: (p) => p.startsWith("/organizer") || p.startsWith("/admin"),
+    test: (p) => inSection(p, "organizer", "admin"),
     namespaces: [
       "organizer",
       "eventForm",
@@ -151,14 +169,17 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
       "festival",
       "series",
       "activity",
+      // event-media-upload.tsx (admin homepage/venue forms) uses flyerBuilder keys
+      "flyerBuilder",
     ],
   },
   {
-    test: (p) => p.startsWith("/onboarding"),
-    namespaces: ["onboarding"],
+    // ProfileStep/AvatarStep/LanguageStep also use profile + settings keys
+    test: (p) => inSection(p, "onboarding"),
+    namespaces: ["onboarding", "profile", "settings"],
   },
   {
-    test: (p) => p.startsWith("/login") || p.startsWith("/auth") || p.startsWith("/sign"),
+    test: (p) => inSection(p, "auth", "login", "sign-in", "sign-up", "signup"),
     namespaces: ["auth"],
   },
 ];
