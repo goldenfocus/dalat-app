@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowLeft, Radio, Video } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ export function ViewerInterface({
   initialMessages,
   locale,
 }: ViewerInterfaceProps) {
+  const t = useTranslations('streaming');
   const { streams, hasLiveStream } = useStreamStatus({ eventId: event.id, enabled: true });
   const liveStream = streams.find((s) => s.status === 'live' || s.status === 'connecting' || s.status === 'reconnecting');
   const totalViewers = streams.reduce((sum, s) => sum + s.current_viewers, 0);
@@ -44,13 +46,13 @@ export function ViewerInterface({
           href={`/events/${event.slug}`}
           className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
         >
-          <ArrowLeft className="w-4 h-4" /><span>Back to event</span>
+          <ArrowLeft className="w-4 h-4" /><span>{t('backToEvent')}</span>
         </Link>
         <div className="flex items-center gap-3">
           {hasLiveStream && <StreamStatusBadge status="live" viewerCount={totalViewers} size="md" />}
           {isEventCreator && (
             <Link href={`/events/${event.slug}/live/broadcast`}>
-              <Button variant="outline" size="sm"><Video className="h-4 w-4 mr-2" />Go Live</Button>
+              <Button variant="outline" size="sm"><Video className="h-4 w-4 mr-2" />{t('goLive')}</Button>
             </Link>
           )}
         </div>
@@ -63,8 +65,8 @@ export function ViewerInterface({
           ) : (
             <div className="aspect-video bg-muted rounded-lg flex flex-col items-center justify-center">
               <Radio className="h-12 w-12 text-muted-foreground/50 mb-3" />
-              <h2 className="text-lg font-medium mb-1">No active stream</h2>
-              <p className="text-muted-foreground text-sm">The stream hasn&apos;t started yet. Check back soon!</p>
+              <h2 className="text-lg font-medium mb-1">{t('noActiveStream')}</h2>
+              <p className="text-muted-foreground text-sm">{t('streamNotStarted')}</p>
             </div>
           )}
 
@@ -77,14 +79,14 @@ export function ViewerInterface({
               </Avatar>
               <div>
                 <p className="font-medium">{event.creator.display_name || event.creator.username || 'Unknown'}</p>
-                <p className="text-sm text-muted-foreground">Event host</p>
+                <p className="text-sm text-muted-foreground">{t('eventHost')}</p>
               </div>
             </div>
             {liveStream && (
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 {liveStream.angle_label && <span className="bg-muted px-2 py-1 rounded">{liveStream.angle_label}</span>}
                 {liveStream.started_at && (
-                  <span>Started {new Date(liveStream.started_at).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })}</span>
+                  <span>{t('startedAt', { time: new Date(liveStream.started_at).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' }) })}</span>
                 )}
               </div>
             )}

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import {
   JsonLd,
@@ -125,14 +126,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? parseLrcToLines(track.lyrics_lrc).slice(0, 4).join(" / ")
     : "";
 
-  // SEO-optimized title
-  const title = locale === "vi"
-    ? `${trackTitle} - ${artist} | Loi Bai Hat | Dalat.app`
-    : `${trackTitle} - ${artist} | Lyrics | Dalat.app`;
+  const t = await getTranslations({ locale, namespace: "playlist.lyrics" });
 
-  const description = locale === "vi"
-    ? `Loi bai hat "${trackTitle}" cua ${artist}. ${lyricsPreview}... Hat karaoke online tai Dalat.app`
-    : `Lyrics for "${trackTitle}" by ${artist}. ${lyricsPreview}... Sing karaoke online at Dalat.app`;
+  // SEO-optimized title
+  const title = t("metaTitle", { trackTitle, artist });
+
+  const description = t("metaDescription", { trackTitle, artist, preview: lyricsPreview });
 
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/lyrics/${trackId}`;
   const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;
@@ -209,6 +208,7 @@ export default async function LyricsPage({ params }: PageProps) {
   const { track, event } = data;
   const trackTitle = track.title || "Untitled";
   const artist = track.artist || "Unknown Artist";
+  const t = await getTranslations("playlist.lyrics");
 
   // Get translated lyrics
   const { lyrics: translatedLyrics, is_translated } = await getTrackLyricsTranslation(
@@ -248,7 +248,7 @@ export default async function LyricsPage({ params }: PageProps) {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 -ml-1 px-2 py-1 rounded-lg transition-colors"
           >
             <Music className="w-4 h-4" />
-            <span>{locale === "vi" ? "Quay lai playlist" : "Back to playlist"}</span>
+            <span>{t("backToPlaylist")}</span>
           </Link>
 
           {/* Track header */}
@@ -278,7 +278,7 @@ export default async function LyricsPage({ params }: PageProps) {
             className="flex items-center justify-center gap-2 w-full py-4 px-6 mb-8 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors"
           >
             <Mic2 className="w-5 h-5" />
-            <span>{locale === "vi" ? "Hat Karaoke Ngay" : "Sing Karaoke Now"}</span>
+            <span>{t("singKaraokeNow")}</span>
             <ExternalLink className="w-4 h-4 ml-1" />
           </Link>
 
@@ -286,7 +286,7 @@ export default async function LyricsPage({ params }: PageProps) {
           <article className="prose prose-lg dark:prose-invert max-w-none">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Music className="w-5 h-5" />
-              {locale === "vi" ? "Lời Bài Hát" : "Lyrics"}
+              {t("heading")}
               {is_translated && (
                 <span className="inline-flex items-center gap-1 text-xs font-normal px-2 py-0.5 bg-primary/10 text-primary rounded-full">
                   <Globe className="w-3 h-3" />
@@ -308,7 +308,7 @@ export default async function LyricsPage({ params }: PageProps) {
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>{locale === "vi" ? "Khong co loi bai hat" : "No lyrics available"}</p>
+                <p>{t("noLyrics")}</p>
               </div>
             )}
           </article>
@@ -320,16 +320,14 @@ export default async function LyricsPage({ params }: PageProps) {
               className="inline-flex items-center gap-2 text-primary hover:underline font-medium"
             >
               <Mic2 className="w-4 h-4" />
-              {locale === "vi" ? "Hat karaoke voi nhac" : "Sing along with karaoke"}
+              {t("singAlong")}
             </Link>
           </div>
 
           {/* SEO footer with event info */}
           <footer className="mt-12 pt-8 border-t text-sm text-muted-foreground">
             <p>
-              {locale === "vi"
-                ? `Loi bai hat "${trackTitle}" tu su kien "${event.title}" tren DaLat.app. Hat karaoke online voi loi hien thi theo nhac.`
-                : `Lyrics for "${trackTitle}" from "${event.title}" on DaLat.app. Sing karaoke online with synchronized lyrics.`}
+              {t("seoFooter", { trackTitle, eventTitle: event.title })}
             </p>
           </footer>
         </div>

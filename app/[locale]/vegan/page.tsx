@@ -25,19 +25,13 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
 
-  const title = locale === "vi"
-    ? "Nhà Hàng Thuần Chay Đà Lạt - 100% Thực Vật"
-    : "Vegan Restaurants in Da Lat - 100% Plant-Based";
-
-  const description = locale === "vi"
-    ? "Khám phá các nhà hàng thuần chay ở Đà Lạt. Ẩm thực 100% thực vật, từ phở chay đến bánh mì chay và nhiều hơn nữa."
-    : "Discover vegan restaurants in Da Lat. 100% plant-based cuisine from vegan pho to vegan banh mi and more.";
+  const t = await getTranslations({ locale, namespace: "venuePages" });
 
   return generateLocalizedMetadata({
     locale,
     path: "/vegan",
-    title,
-    description,
+    title: t("vegan.metaTitle"),
+    description: t("vegan.metaDescription"),
     keywords: [
       "vegan Da Lat", "vegan restaurants Da Lat",
       "nhà hàng thuần chay Đà Lạt", "ẩm thực thuần chay",
@@ -77,6 +71,7 @@ function VenuesLoading() {
 async function VeganContent({ locale }: { locale: Locale }) {
   const venues = await getVenuesByType();
   const t = await getTranslations("venues");
+  const tp = await getTranslations({ locale, namespace: "venuePages" });
 
   const happeningNow = venues.filter((v) => v.has_happening_now);
   const otherVenues = venues.filter((v) => !v.has_happening_now);
@@ -146,19 +141,17 @@ async function VeganContent({ locale }: { locale: Locale }) {
       <JsonLd data={[breadcrumbSchema, venueListSchema, faqSchema]} />
 
       <p className="text-muted-foreground mb-6">
-        {locale === "vi" ? (
+        {tp.rich("vegan.intro", {
+          count: venues.length,
+          strong: (chunks) => <strong>{chunks}</strong>,
+        })}
+        {happeningNow.length > 0 && (
           <>
-            Khám phá <strong>{venues.length} nhà hàng thuần chay</strong> tại Đà Lạt.
-            {happeningNow.length > 0 && (
-              <> <strong>{happeningNow.length}</strong> đang có sự kiện ngay bây giờ.</>
-            )}
-          </>
-        ) : (
-          <>
-            Discover <strong>{venues.length} vegan restaurants</strong> in Da Lat.
-            {happeningNow.length > 0 && (
-              <> <strong>{happeningNow.length}</strong> have events happening now.</>
-            )}
+            {" "}
+            {tp.rich("shared.introHappeningNow", {
+              count: happeningNow.length,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </>
         )}
       </p>
@@ -179,7 +172,7 @@ async function VeganContent({ locale }: { locale: Locale }) {
             <section>
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                {locale === "vi" ? "Đang có sự kiện" : "Happening Now"}
+                {tp("shared.happeningNow")}
               </h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {happeningNow.map((venue) => (
@@ -191,7 +184,7 @@ async function VeganContent({ locale }: { locale: Locale }) {
 
           <section>
             <h2 className="text-lg font-semibold mb-4">
-              {locale === "vi" ? "Tất cả nhà hàng thuần chay" : "All Vegan Restaurants"}
+              {tp("vegan.allHeading")}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {otherVenues.map((venue) => (
@@ -204,20 +197,20 @@ async function VeganContent({ locale }: { locale: Locale }) {
 
       <nav className="mt-12 pt-8 border-t" aria-label="Explore other venue types">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
-          {locale === "vi" ? "Khám phá thêm" : "Explore More"}
+          {tp("shared.exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
           <Link href="/vegetarian" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Chay" : "Vegetarian"}
+            {tp("shared.chips.vegetarian")}
           </Link>
           <Link href="/restaurants" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Nhà hàng" : "Restaurants"}
+            {tp("shared.chips.restaurants")}
           </Link>
           <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Quán cà phê" : "Cafes"}
+            {tp("shared.chips.cafes")}
           </Link>
           <Link href="/venues" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Tất cả địa điểm" : "All Venues"}
+            {tp("shared.chips.allVenues")}
           </Link>
         </div>
       </nav>
@@ -229,11 +222,13 @@ export default async function VeganPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations({ locale, namespace: "venuePages" });
+
   return (
     <main className="min-h-screen pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-2">
-          {locale === "vi" ? "Nhà Hàng Thuần Chay Đà Lạt" : "Vegan Restaurants in Da Lat"}
+          {t("vegan.h1")}
         </h1>
 
         <Suspense fallback={<VenuesLoading />}>

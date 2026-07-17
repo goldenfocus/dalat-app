@@ -8,34 +8,26 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { triggerHaptic } from "@/lib/haptics";
 
-// Fun, cheeky success messages for setting cover
-const SET_COVER_MESSAGES = [
-  { title: "✨ Main character energy!", description: "This photo is now the star of the show." },
-  { title: "🎨 Album glow-up complete!", description: "Looking fresh on the homepage." },
-  { title: "📸 New cover, who dis?", description: "Your album just got a makeover." },
-  { title: "🤌 Chef's kiss!", description: "This one's going straight to the top." },
-  { title: "⭐ Cover material!", description: "This photo was born for this moment." },
-  { title: "🎖️ Promotion granted!", description: "From regular photo to album VIP." },
-  { title: "🔦 Spotlight: ON", description: "This moment is now front and center." },
-  { title: "💅 First impressions matter!", description: "And this one nails it." },
-];
+// Fun, cheeky success messages for setting cover (translated under moments.setCover)
+const SET_COVER_KEYS = [
+  "success1",
+  "success2",
+  "success3",
+  "success4",
+  "success5",
+  "success6",
+  "success7",
+  "success8",
+] as const;
 
 // Fun messages for removing cover
-const REMOVE_COVER_MESSAGES = [
-  { title: "🪖 Back to civilian life", description: "This photo has been relieved of cover duties." },
-  { title: "🔄 Plot twist!", description: "Someone else gets to shine now." },
-  { title: "✓ Cover removed", description: "The album will auto-pick something fabulous." },
-];
+const REMOVE_COVER_KEYS = ["remove1", "remove2", "remove3"] as const;
 
 // Error messages (still kind!)
-const ERROR_MESSAGES = [
-  { title: "😅 Oops, that didn't work!", description: "Mind trying again? Tech gremlins are real." },
-  { title: "🚀 Houston, we have a problem", description: "The cover couldn't be updated. Let's retry!" },
-  { title: "🙈 Well, that's awkward...", description: "Something went wrong. One more try?" },
-];
+const ERROR_KEYS = ["error1", "error2", "error3"] as const;
 
-function getRandomMessage<T>(messages: T[]): T {
-  return messages[Math.floor(Math.random() * messages.length)];
+function getRandomKey<T>(keys: readonly T[]): T {
+  return keys[Math.floor(Math.random() * keys.length)];
 }
 
 interface SetCoverButtonProps {
@@ -47,6 +39,7 @@ interface SetCoverButtonProps {
 
 export function SetCoverButton({ momentId, isCover, canSetCover }: SetCoverButtonProps) {
   const t = useTranslations("moments");
+  const tCover = useTranslations("moments.setCover");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -67,12 +60,12 @@ export function SetCoverButton({ momentId, isCover, canSetCover }: SetCoverButto
         triggerHaptic("success");
 
         // Show fun success toast
-        const msg = isCover
-          ? getRandomMessage(REMOVE_COVER_MESSAGES)
-          : getRandomMessage(SET_COVER_MESSAGES);
+        const key = isCover
+          ? getRandomKey(REMOVE_COVER_KEYS)
+          : getRandomKey(SET_COVER_KEYS);
 
-        toast.success(msg.title, {
-          description: msg.description,
+        toast.success(tCover(`${key}.title`), {
+          description: tCover(`${key}.description`),
         });
 
         router.refresh();
@@ -81,18 +74,18 @@ export function SetCoverButton({ momentId, isCover, canSetCover }: SetCoverButto
         console.error("Failed to set cover:", data.error);
         triggerHaptic("error");
 
-        const errorMsg = getRandomMessage(ERROR_MESSAGES);
-        toast.error(errorMsg.title, {
-          description: data.error || errorMsg.description,
+        const errorKey = getRandomKey(ERROR_KEYS);
+        toast.error(tCover(`${errorKey}.title`), {
+          description: data.error || tCover(`${errorKey}.description`),
         });
       }
     } catch (error) {
       console.error("Set cover error:", error);
       triggerHaptic("error");
 
-      const errorMsg = getRandomMessage(ERROR_MESSAGES);
-      toast.error(errorMsg.title, {
-        description: errorMsg.description,
+      const errorKey = getRandomKey(ERROR_KEYS);
+      toast.error(tCover(`${errorKey}.title`), {
+        description: tCover(`${errorKey}.description`),
       });
     } finally {
       setIsLoading(false);

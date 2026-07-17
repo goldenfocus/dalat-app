@@ -11,7 +11,7 @@ import {
   Share2,
   BadgeCheck,
 } from "lucide-react";
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import type { Festival, FestivalOrganizer, FestivalEvent, FestivalUpdate, Locale } from "@/lib/types";
 import { FestivalTabs } from "@/components/festivals/festival-tabs";
@@ -113,7 +113,7 @@ export async function generateMetadata({ params }: FestivalPageProps): Promise<M
 }
 
 export default async function FestivalPage({ params }: FestivalPageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const [tCommon, tEvents] = await Promise.all([
     getTranslations("common"),
     getTranslations("events"),
@@ -132,10 +132,10 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
   // Format dates
   const startDate = new Date(festival.start_date);
   const endDate = new Date(festival.end_date);
-  const dateRange = `${startDate.toLocaleDateString("vi-VN", {
+  const dateRange = `${startDate.toLocaleDateString(locale, {
     day: "numeric",
     month: "long",
-  })} - ${endDate.toLocaleDateString("vi-VN", {
+  })} - ${endDate.toLocaleDateString(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -155,7 +155,6 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
   );
 
   // Generate structured data for SEO and AEO
-  const locale = await getLocale();
   const festivalSchema = generateFestivalSchema(festival, locale, events.length);
   const breadcrumbSchema = generateBreadcrumbSchema(
     [

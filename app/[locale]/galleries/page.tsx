@@ -27,19 +27,13 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
 
-  const title = locale === "vi"
-    ? "Phòng Tranh Đà Lạt - Gallery & Triển Lãm Nghệ Thuật"
-    : "Art Galleries in Da Lat - Exhibitions & Art Spaces";
-
-  const description = locale === "vi"
-    ? "Khám phá các phòng tranh và không gian nghệ thuật tốt nhất ở Đà Lạt. Triển lãm, sự kiện nghệ thuật và văn hóa cập nhật hàng ngày."
-    : "Discover the best art galleries and creative spaces in Da Lat. Art exhibitions, cultural events, and artist showcases updated daily.";
+  const t = await getTranslations({ locale, namespace: "venuePages" });
 
   return generateLocalizedMetadata({
     locale,
     path: "/galleries",
-    title,
-    description,
+    title: t("galleries.metaTitle"),
+    description: t("galleries.metaDescription"),
     keywords: [
       "Da Lat galleries",
       "Dalat art",
@@ -82,6 +76,7 @@ function VenuesLoading() {
 async function GalleriesContent({ locale }: { locale: Locale }) {
   const venues = await getVenuesByType();
   const t = await getTranslations("venues");
+  const tp = await getTranslations({ locale, namespace: "venuePages" });
 
   // Separate venues with happening now
   const happeningNow = venues.filter((v) => v.has_happening_now);
@@ -166,19 +161,17 @@ async function GalleriesContent({ locale }: { locale: Locale }) {
 
       {/* SEO-optimized intro paragraph */}
       <p className="text-muted-foreground mb-6">
-        {locale === "vi" ? (
+        {tp.rich("galleries.intro", {
+          count: venues.length,
+          strong: (chunks) => <strong>{chunks}</strong>,
+        })}
+        {happeningNow.length > 0 && (
           <>
-            Khám phá <strong>{venues.length} phòng tranh</strong> và không gian nghệ thuật tại Đà Lạt.
-            {happeningNow.length > 0 && (
-              <> <strong>{happeningNow.length}</strong> đang có triển lãm ngay bây giờ.</>
-            )}
-          </>
-        ) : (
-          <>
-            Discover <strong>{venues.length} galleries</strong> and art spaces in Da Lat.
-            {happeningNow.length > 0 && (
-              <> <strong>{happeningNow.length}</strong> have exhibitions happening now.</>
-            )}
+            {" "}
+            {tp.rich("shared.introExhibitionsNow", {
+              count: happeningNow.length,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </>
         )}
       </p>
@@ -201,7 +194,7 @@ async function GalleriesContent({ locale }: { locale: Locale }) {
             <section>
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                {locale === "vi" ? "Đang có triển lãm" : "Exhibitions Now"}
+                {tp("shared.exhibitionsNow")}
               </h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {happeningNow.map((venue) => (
@@ -214,7 +207,7 @@ async function GalleriesContent({ locale }: { locale: Locale }) {
           {/* All Galleries */}
           <section>
             <h2 className="text-lg font-semibold mb-4">
-              {locale === "vi" ? "Tất cả phòng tranh" : "All Galleries"}
+              {tp("galleries.allHeading")}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {otherVenues.map((venue) => (
@@ -228,20 +221,20 @@ async function GalleriesContent({ locale }: { locale: Locale }) {
       {/* Cross-links to other venue types */}
       <nav className="mt-12 pt-8 border-t" aria-label="Explore other venue types">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
-          {locale === "vi" ? "Khám phá thêm" : "Explore More"}
+          {tp("shared.exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
           <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Quán Cà Phê" : "Cafes"}
+            {tp("shared.chips.cafes")}
           </Link>
           <Link href="/bars" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Quán Bar" : "Bars"}
+            {tp("shared.chips.bars")}
           </Link>
           <Link href="/restaurants" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Nhà hàng" : "Restaurants"}
+            {tp("shared.chips.restaurants")}
           </Link>
           <Link href="/venues" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Tất cả địa điểm" : "All Venues"}
+            {tp("shared.chips.allVenues")}
           </Link>
         </div>
       </nav>
@@ -253,12 +246,14 @@ export default async function GalleriesPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations({ locale, namespace: "venuePages" });
+
   return (
     <main className="min-h-screen pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-6">
         {/* SEO-optimized H1 */}
         <h1 className="text-2xl font-bold mb-2">
-          {locale === "vi" ? "Phòng Tranh Đà Lạt" : "Art Galleries in Da Lat"}
+          {t("galleries.h1")}
         </h1>
 
         <Suspense fallback={<VenuesLoading />}>

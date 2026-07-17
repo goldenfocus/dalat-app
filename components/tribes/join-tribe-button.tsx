@@ -106,7 +106,7 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
               </DialogDescription>
             </DialogHeader>
             <Textarea
-              placeholder="Why would you like to join?"
+              placeholder={t("requestMessagePlaceholder")}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={3}

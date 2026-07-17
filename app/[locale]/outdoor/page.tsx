@@ -25,19 +25,13 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
 
-  const title = locale === "vi"
-    ? "Hoạt Động Ngoài Trời Đà Lạt - Sự Kiện & Địa Điểm"
-    : "Outdoor Activities in Da Lat - Events & Venues";
-
-  const description = locale === "vi"
-    ? "Khám phá các địa điểm ngoài trời ở Đà Lạt tổ chức sự kiện, festival và hoạt động thiên nhiên. Trải nghiệm cao nguyên tuyệt vời."
-    : "Discover outdoor venues in Da Lat hosting events, festivals, and nature activities. Experience the beautiful highlands.";
+  const t = await getTranslations({ locale, namespace: "venuePages" });
 
   return generateLocalizedMetadata({
     locale,
     path: "/outdoor",
-    title,
-    description,
+    title: t("outdoor.metaTitle"),
+    description: t("outdoor.metaDescription"),
     keywords: [
       "Da Lat outdoor",
       "outdoor activities Da Lat",
@@ -80,6 +74,7 @@ function VenuesLoading() {
 async function OutdoorContent({ locale }: { locale: Locale }) {
   const venues = await getVenuesByType();
   const t = await getTranslations("venues");
+  const tp = await getTranslations({ locale, namespace: "venuePages" });
 
   const happeningNow = venues.filter((v) => v.has_happening_now);
   const otherVenues = venues.filter((v) => !v.has_happening_now);
@@ -148,19 +143,17 @@ async function OutdoorContent({ locale }: { locale: Locale }) {
       <JsonLd data={[breadcrumbSchema, venueListSchema, faqSchema]} />
 
       <p className="text-muted-foreground mb-6">
-        {locale === "vi" ? (
+        {tp.rich("outdoor.intro", {
+          count: venues.length,
+          strong: (chunks) => <strong>{chunks}</strong>,
+        })}
+        {happeningNow.length > 0 && (
           <>
-            Khám phá <strong>{venues.length} địa điểm ngoài trời</strong> tại Đà Lạt.
-            {happeningNow.length > 0 && (
-              <> <strong>{happeningNow.length}</strong> đang có sự kiện ngay bây giờ.</>
-            )}
-          </>
-        ) : (
-          <>
-            Discover <strong>{venues.length} outdoor venues</strong> in Da Lat.
-            {happeningNow.length > 0 && (
-              <> <strong>{happeningNow.length}</strong> have events happening now.</>
-            )}
+            {" "}
+            {tp.rich("shared.introHappeningNow", {
+              count: happeningNow.length,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </>
         )}
       </p>
@@ -181,7 +174,7 @@ async function OutdoorContent({ locale }: { locale: Locale }) {
             <section>
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                {locale === "vi" ? "Đang có sự kiện" : "Happening Now"}
+                {tp("shared.happeningNow")}
               </h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {happeningNow.map((venue) => (
@@ -193,7 +186,7 @@ async function OutdoorContent({ locale }: { locale: Locale }) {
 
           <section>
             <h2 className="text-lg font-semibold mb-4">
-              {locale === "vi" ? "Tất cả địa điểm ngoài trời" : "All Outdoor Venues"}
+              {tp("outdoor.allHeading")}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {otherVenues.map((venue) => (
@@ -206,17 +199,17 @@ async function OutdoorContent({ locale }: { locale: Locale }) {
 
       <nav className="mt-12 pt-8 border-t" aria-label="Explore other venue types">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
-          {locale === "vi" ? "Khám phá thêm" : "Explore More"}
+          {tp("shared.exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
           <Link href="/parks" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Công viên" : "Parks"}
+            {tp("shared.chips.parks")}
           </Link>
           <Link href="/festivals" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Lễ hội" : "Festivals"}
+            {tp("shared.chips.festivals")}
           </Link>
           <Link href="/venues" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Tất cả địa điểm" : "All Venues"}
+            {tp("shared.chips.allVenues")}
           </Link>
         </div>
       </nav>
@@ -228,11 +221,13 @@ export default async function OutdoorPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations({ locale, namespace: "venuePages" });
+
   return (
     <main className="min-h-screen pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-2">
-          {locale === "vi" ? "Hoạt Động Ngoài Trời Đà Lạt" : "Outdoor Activities in Da Lat"}
+          {t("outdoor.h1")}
         </h1>
 
         <Suspense fallback={<VenuesLoading />}>

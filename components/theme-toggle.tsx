@@ -1,6 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import {
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
  * Shows sun/moon icon, opens popover with full theme selector on click.
  */
 export function ThemeToggle() {
+  const t = useTranslations("common");
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
@@ -35,7 +37,7 @@ export function ThemeToggle() {
             "p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
-          aria-label="Change theme"
+          aria-label={t("changeTheme")}
         >
           {mounted ? (
             isLight ? (

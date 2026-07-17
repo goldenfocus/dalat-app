@@ -225,7 +225,7 @@ export function InstantSearch({
           ref={dropdownRef}
           className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50"
         >
-          <ul id={listboxId} role="listbox" aria-label="Search suggestions" className="py-1">
+          <ul id={listboxId} role="listbox" aria-label={t("search.suggestions")} className="py-1">
             {suggestions.map((suggestion, index) => (
               <li
                 key={suggestion.id}

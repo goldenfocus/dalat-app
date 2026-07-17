@@ -67,7 +67,19 @@
     "aiRefineUnavailable": "リファイン機能はお休み中です — 新しく生成してみてください。",
     "aiTooManyPending": "他の画像を生成中です。少しお待ちください。",
     "aiTimeout": "いつもより時間がかかっています — まもなく表示されるかもしれません。だめならもう一度お試しください。",
-    "aiGenerationFailed": "今回は生成できませんでした。もう一度お試しください。"
+    "aiGenerationFailed": "今回は生成できませんでした。もう一度お試しください。",
+    "changeTheme": "テーマを変更",
+    "selectLanguage": "言語を選択",
+    "close": "閉じる",
+    "previousPhoto": "前の写真",
+    "nextPhoto": "次の写真",
+    "pagination": "ページネーション",
+    "goToPreviousPage": "前のページへ",
+    "goToNextPage": "次のページへ",
+    "goToPage": "{page}ページへ移動",
+    "enhanceWithAI": "AIでブラッシュアップ",
+    "enhancePromptPlaceholder": "チップをクリックするか、希望を入力してください...",
+    "refinePromptPlaceholder": "例：紫のトーンを強めて、もっと抽象的に..."
   },
   "nav": {
     "events": "イベント",
@@ -83,7 +95,15 @@
     "venues": "会場",
     "activity": "アクティビティ",
     "news": "ニュース",
-    "loyalty": "ポイント"
+    "loyalty": "ポイント",
+    "openMenu": "メニューを開く",
+    "closeMenu": "メニューを閉じる",
+    "primary": "メイン",
+    "footer": {
+      "love": "愛",
+      "rssFeed": "RSSフィード",
+      "discover": "探索"
+    }
   },
   "home": {
     "title": "ダラットのイベント",
@@ -107,7 +127,10 @@
       "noResults": "「{query}」に一致するイベントが見つかりません",
       "clearSearch": "検索をクリア",
       "viewAll": "「{query}」の検索結果をすべて見る",
-      "searchFor": "「{query}」を検索"
+      "searchFor": "「{query}」を検索",
+      "title": "検索",
+      "close": "検索を閉じる",
+      "suggestions": "検索候補"
     },
     "browseArchive": "過去のイベント",
     "seeAllUpcoming": "今後のイベントをすべて見る",
@@ -201,7 +224,68 @@
       "dismiss": "閉じる",
       "thisApp": "このアプリ"
     },
-    "continueWithApple": "Appleで続ける"
+    "continueWithApple": "Appleで続ける",
+    "updatePassword": {
+      "description": "以下に新しいパスワードを入力してください。",
+      "saving": "保存中..."
+    },
+    "error": {
+      "title": "おっと！",
+      "alreadyConfirmed": "メールアドレスはすでに確認済みかもしれません。",
+      "linkExpired": "このリンクは期限切れか、すでに使用されています。",
+      "genericMessage": "問題が発生しました。ログインするか、新しいリンクをリクエストしてください。",
+      "trySigningIn": "ログインしてみる"
+    },
+    "redirectHelp": {
+      "title": "ちょっと迷子になりました",
+      "description": "ブラウザとサーバーがループにはまってしまいました。よくあることなので、一緒に解決しましょう。",
+      "cookiesBlockedTitle": "Cookieがブロックされています",
+      "cookiesBlockedDescription": "ログイン状態を保つにはCookieが必要です。dalat.appでCookieを有効にして、もう一度お試しください。",
+      "quickFixes": "簡単な対処法：",
+      "fix1": "dalat.appの<strong>Cookieを削除</strong>して、もう一度お試しください（下のボタンで実行できます）",
+      "fix2": "<strong>別のブラウザ</strong>（Chrome、Safari、Edge）を試してみてください",
+      "fix3": "<strong>Firefox</strong>をお使いの場合は、このサイトでCookieがブロックされていないか確認してください",
+      "clearAndRetry": "Cookieを削除してやり直す",
+      "openInNewTab": "新しいタブで開く",
+      "quote1": {
+        "text": "最高の景色は、いちばん険しい坂の先にある。",
+        "origin": "ランビアン山のどこかで"
+      },
+      "quote2": {
+        "text": "霧もいつかは晴れるもの。",
+        "origin": "ダラットの朝"
+      },
+      "quote3": {
+        "text": "おいしいコーヒー一杯で、たいていのことは解決する。",
+        "origin": "ダラットのすべてのカフェ"
+      },
+      "quote4": {
+        "text": "さまよう者がみな迷っているわけではない——Cookieを削除すればいいだけの人もいる。",
+        "origin": "古のインターネットのことわざ"
+      },
+      "quote5": {
+        "text": "花は急いで咲いたりしない。ひと息つこう。",
+        "origin": "ダラットの花園"
+      },
+      "quote6": {
+        "text": "どんなリダイレクトループにも出口はある。",
+        "origin": "楽観的な開発者たち"
+      },
+      "quote7": {
+        "text": "ダラットでは、雨さえも美しい。",
+        "origin": "雨季の知恵"
+      },
+      "quote8": {
+        "text": "千ページの旅も、一クリックから始まる。",
+        "origin": "ウェブの哲学"
+      }
+    },
+    "forgotPasswordPage": {
+      "successTitle": "メールをご確認ください",
+      "successDescription": "パスワードリセットの手順を送信しました",
+      "successHint": "メールアドレスとパスワードで登録している場合、パスワードリセットのメールが届きます。",
+      "sending": "送信中..."
+    }
   },
   "errors": {
     "somethingWentWrong": "申し訳ありません、問題が発生しました。",
@@ -220,7 +304,10 @@
     "noPermission": "役割を変更する権限がありません",
     "invalidRole": "無効な役割が選択されました",
     "cannotDemoteSelf": "自分自身を降格することはできません",
-    "userNotFound": "ユーザーが見つかりません"
+    "userNotFound": "ユーザーが見つかりません",
+    "unexpectedError": "予期しないエラーが発生しました。ページを再読み込みしてみてください。",
+    "tryAgain": "もう一度試す",
+    "refreshPage": "ページを再読み込み"
   },
   "events": {
     "popular": "人気",
@@ -268,7 +355,9 @@
     "photoBy": "📸 @{name}",
     "spotsAvailable": "残り{count}枠",
     "secretAddressLockHint": "RSVP後に正確な住所が表示されます",
-    "secretAddressRevealedHint": "この住所はゲストのみに表示されます"
+    "secretAddressRevealedHint": "この住所はゲストのみに表示されます",
+    "moreAtVenue": "<link>{venue}</link>のその他のイベント",
+    "allEventsAtVenue": "この会場のすべてのイベント"
   },
   "rsvp": {
     "imGoing": "参加する",
@@ -706,6 +795,70 @@
       "changePassword": "パスワードを変更",
       "savePassword": "パスワードを保存",
       "passwordUpdated": "パスワードが更新されました！"
+    },
+    "verification": {
+      "title": "認証",
+      "verifiedTitle": "認証済みです！",
+      "verifiedDescription": "主催者アカウントが認証されました。フェスティバルや公式イベントを作成できます。",
+      "createFestival": "フェスティバルを作成",
+      "goToDashboard": "ダッシュボードへ",
+      "pageTitle": "主催者認証",
+      "becomeVerified": "認証済み主催者になる",
+      "intro": "認証済み主催者はDaLat.appで公式のフェスティバルやイベントを作成できます。これはĐà Lạtの正規の団体、会場、イベント主催者向けです。",
+      "benefitFestivals": "公式ブランディングでフェスティバルを作成・管理",
+      "benefitBadge": "イベントに「公式」バッジが付き、優先的に表示されます",
+      "benefitAnnouncements": "フェスティバルのフォロワーに最新情報やお知らせを投稿",
+      "pendingNotice": "すでに審査待ちの認証リクエストがあります。",
+      "pendingWait": "審査が完了するまでお待ちください。",
+      "status": {
+        "pending": {
+          "title": "リクエスト審査待ち",
+          "description": "認証リクエストを審査中です。"
+        },
+        "more_info_needed": {
+          "title": "追加情報が必要です",
+          "description": "認証を完了するには、追加情報を提供してください。"
+        },
+        "approved": {
+          "title": "リクエスト承認済み",
+          "description": "おめでとうございます！認証が承認されました。"
+        },
+        "rejected": {
+          "title": "リクエスト却下",
+          "description": "認証リクエストは承認されませんでした。"
+        }
+      },
+      "organizationLabel": "組織：",
+      "submittedDate": "{date}に送信",
+      "requestedInformation": "必要な情報：",
+      "reasonLabel": "理由：",
+      "requestSubmitted": "リクエストが送信されました！",
+      "requestSubmittedDescription": "リクエストを確認し、近日中にご連絡します。",
+      "updateYourRequest": "リクエストを更新",
+      "requestVerification": "認証をリクエスト",
+      "organizationName": "組織名 *",
+      "organizationNamePlaceholder": "組織または会場名",
+      "organizationType": "組織タイプ *",
+      "typeVenue": "会場（カフェ、バー、レストラン）",
+      "typeCultural": "文化団体",
+      "typeFestival": "フェスティバル委員会",
+      "typeWard": "区（Phường）",
+      "typeCity": "市政府",
+      "typeBusiness": "ビジネス",
+      "typeOther": "その他",
+      "aboutOrganization": "組織について",
+      "aboutPlaceholder": "どのようなイベントを主催していますか？",
+      "contactEmail": "連絡先メール",
+      "contactEmailPlaceholder": "contact@example.com",
+      "contactPhone": "連絡先電話番号",
+      "contactPhonePlaceholder": "+84...",
+      "proofLink": "証明リンク（ウェブサイト/Facebook）*",
+      "proofLinkPlaceholder": "https://facebook.com/your-page",
+      "proofLinkHelp": "公式ウェブサイトまたはSNSページへのリンク",
+      "additionalInfo": "追加情報",
+      "additionalInfoPlaceholder": "組織の認証に役立つ追加情報...",
+      "submitRequest": "リクエストを送信",
+      "updateRequestBtn": "リクエストを更新"
     }
   },
   "notifications": {
@@ -1296,7 +1449,9 @@
     },
     "desktopPill": {
       "message": "気に入りましたか？お気に入りを保存",
-      "cta": "無料で参加"
+      "cta": "無料で参加",
+      "signUpInvitation": "登録への招待",
+      "dismiss": "閉じる"
     },
     "discoveryMode": "探索モード",
     "differentEvent": "別のイベントから",
@@ -1373,6 +1528,74 @@
       "downloading": "ダウンロード中...",
       "downloadComplete": "ダウンロード完了",
       "downloadFailed": "ダウンロードに失敗しました"
+    },
+    "searchMoments": "モーメントを検索",
+    "lightbox": {
+      "shareMoment": "モーメントをシェア",
+      "openFullPage": "フルページで開く",
+      "close": "閉じる",
+      "previous": "前へ",
+      "next": "次へ",
+      "viewComments": "コメントを見る",
+      "backToLastMoment": "最後のモーメントに戻る"
+    },
+    "setCover": {
+      "success1": {
+        "title": "✨ 主役の風格！",
+        "description": "この写真が今日からショーの主役です。"
+      },
+      "success2": {
+        "title": "🎨 アルバム、大変身完了！",
+        "description": "ホームページで輝きを放っています。"
+      },
+      "success3": {
+        "title": "📸 新しいカバー、どちらさま？",
+        "description": "アルバムがイメチェンしました。"
+      },
+      "success4": {
+        "title": "🤌 シェフも脱帽！",
+        "description": "この一枚、まっすぐトップへ直行です。"
+      },
+      "success5": {
+        "title": "⭐ カバー向きの逸材！",
+        "description": "この写真は、この瞬間のために生まれてきました。"
+      },
+      "success6": {
+        "title": "🎖️ 昇進おめでとうございます！",
+        "description": "ただの写真から、アルバムのVIPへ。"
+      },
+      "success7": {
+        "title": "🔦 スポットライト：ON",
+        "description": "このモーメントがど真ん中に躍り出ました。"
+      },
+      "success8": {
+        "title": "💅 第一印象がすべて！",
+        "description": "この一枚なら文句なしです。"
+      },
+      "remove1": {
+        "title": "🪖 一般市民に戻りました",
+        "description": "この写真はカバーの任務を解かれました。"
+      },
+      "remove2": {
+        "title": "🔄 まさかの展開！",
+        "description": "次は別の一枚が輝く番です。"
+      },
+      "remove3": {
+        "title": "✓ カバーを解除しました",
+        "description": "アルバムが素敵な一枚を自動で選びます。"
+      },
+      "error1": {
+        "title": "😅 おっと、うまくいきませんでした！",
+        "description": "もう一度試してみてください。テックの小鬼は実在します。"
+      },
+      "error2": {
+        "title": "🚀 ヒューストン、問題発生です",
+        "description": "カバーを更新できませんでした。リトライしましょう！"
+      },
+      "error3": {
+        "title": "🙈 なんとも気まずい...",
+        "description": "問題が発生しました。もう一回だけ？"
+      }
     }
   },
   "tribes": {
@@ -1445,7 +1668,21 @@
     "replaceCover": "カバーを変更",
     "removeCover": "削除",
     "coverUploading": "アップロード中...",
-    "coverUploadFailed": "アップロードに失敗しました。もう一度お試しください。"
+    "coverUploadFailed": "アップロードに失敗しました。もう一度お試しください。",
+    "form": {
+      "name": "名前",
+      "namePlaceholder": "トライブ名を入力",
+      "descriptionOptional": "説明（任意）",
+      "descriptionPlaceholder": "どんなトライブですか？"
+    },
+    "requestMessagePlaceholder": "参加したい理由は？",
+    "settingsForm": {
+      "name": "名前",
+      "description": "説明",
+      "showInSearch": "検索に表示"
+    },
+    "invalidCodeTitle": "無効な招待コード",
+    "invalidCodeDescription": "この招待コードは無効か、期限切れです。"
   },
   "feed": {
     "title": "フィード",
@@ -1694,7 +1931,18 @@
     "goLiveDescription": "何をシェアしますか？",
     "goLivePlaceholder": "スアンフォン湖の夕日...",
     "goingLive": "配信を開始中...",
-    "goLiveError": "配信を開始できませんでした。もう一度お試しください。"
+    "goLiveError": "配信を開始できませんでした。もう一度お試しください。",
+    "backToEvent": "イベントに戻る",
+    "noActiveStream": "配信中のストリームはありません",
+    "streamNotStarted": "配信はまだ始まっていません。また後でチェックしてください！",
+    "eventHost": "イベント主催者",
+    "startedAt": "{time}に開始",
+    "watchLive": "ライブを見る",
+    "liveChat": "ライブチャット",
+    "connecting": "接続中...",
+    "noMessagesYet": "まだメッセージがありません",
+    "beFirstToSay": "最初のひと言をどうぞ！",
+    "streamOffline": "配信はオフラインです"
   },
   "install": {
     "banner": {
@@ -1779,7 +2027,10 @@
     "upcoming": "予定",
     "venue": "会場",
     "viewEvent": "イベントを見る",
-    "viewVenue": "会場を見る"
+    "viewVenue": "会場を見る",
+    "close": "閉じる",
+    "getDirections": "経路案内",
+    "showMyLocation": "現在地を表示"
   },
   "calendarView": {
     "days": {
@@ -2105,7 +2356,14 @@
       "wood-fired": "薪焼き",
       "zipline": "ジップライン"
     },
-    "ward": "区"
+    "ward": "区",
+    "contactOptions": "連絡方法",
+    "sms": "SMS",
+    "photoLightbox": {
+      "close": "閉じる",
+      "previousPhoto": "前の写真",
+      "nextPhoto": "次の写真"
+    }
   },
   "rsvpCelebration": {
     "title": "参加確定！",
@@ -2205,7 +2463,8 @@
     "seeOriginal": "原文を見る",
     "seeTranslation": "翻訳を見る",
     "translatedFrom": "翻訳済み",
-    "translating": "翻訳中..."
+    "translating": "翻訳中...",
+    "cancelReply": "返信をキャンセル"
   },
   "feedback": {
     "howWasIt": "イベントはいかがでしたか？",
@@ -2266,7 +2525,57 @@
     "sortDuration": "長さ順",
     "sortTitle": "タイトル",
     "sortArtistLabel": "アーティスト",
-    "sortDurationLabel": "時間"
+    "sortDurationLabel": "時間",
+    "volume": "音量",
+    "downloadTrack": "トラックをダウンロード",
+    "toggleShuffle": "シャッフルを切り替え",
+    "karaokeUi": {
+      "collapseLyrics": "歌詞を折りたたむ",
+      "expandLyrics": "歌詞を展開",
+      "fullScreen": "全画面表示",
+      "exitFullScreen": "全画面表示を終了",
+      "rewind15": "15秒戻す",
+      "forward15": "15秒進める",
+      "earlier": "早く",
+      "later": "遅く",
+      "showLyricsEarlier": "歌詞を早めに表示（テレプロンプターモード）",
+      "showLyricsLater": "歌詞を遅めに表示",
+      "saveTiming": "タイミングを全ユーザーに保存",
+      "showLyrics": "歌詞を表示",
+      "hideLyrics": "歌詞を隠す",
+      "noLyrics": "歌詞なし",
+      "noLyricsAvailable": "歌詞がありません"
+    },
+    "karaokeMetaTitle": "🎤 カラオケ {trackTitle} - {artist} | ダラットで歌おう",
+    "karaokeMetaDescription": "同期表示の歌詞で{trackTitle}をカラオケで歌おう。ダラットのカラオケ、ベトナム音楽、友達と一緒に。{eventTitle}の全{count}曲。",
+    "metaDescription": "{eventTitle}の{count, plural, one {オーディオトラック#件} other {オーディオトラック#件}}を聴こう{duration}",
+    "metaDurationSuffix": "（{minutes}分）",
+    "karaokeSubtitle": "同期歌詞で一緒に歌おう • ダラットカラオケ",
+    "viewFullEvent": "イベントの詳細を見る",
+    "downloadPage": {
+      "metaTitle": "{trackTitle}をダウンロード - {artist} | MP3 | ĐàLạt.app",
+      "metaDescription": "{artist}の「{trackTitle}」を無料でダウンロード。ベトナム・ダラットの「{eventTitle}」イベントの高音質MP3。",
+      "backToPlaylist": "プレイリストに戻る",
+      "downloading": "ダウンロード中...",
+      "downloadFree": "MP3を無料ダウンロード",
+      "singKaraoke": "カラオケで歌う",
+      "viewLyrics": "歌詞を見る",
+      "seoFooter": "ベトナム・ダラットの「{eventTitle}」イベントから、{artist}の「{trackTitle}」をダウンロード。無料・高音質。"
+    },
+    "lyrics": {
+      "metaTitle": "{trackTitle} - {artist} | 歌詞 | Dalat.app",
+      "metaDescription": "{artist}の「{trackTitle}」の歌詞。{preview}... Dalat.appでオンラインカラオケを歌おう",
+      "backToPlaylist": "プレイリストに戻る",
+      "singKaraokeNow": "今すぐカラオケで歌う",
+      "heading": "歌詞",
+      "noLyrics": "歌詞がありません",
+      "singAlong": "カラオケで一緒に歌おう",
+      "seoFooter": "DaLat.appの「{eventTitle}」より「{trackTitle}」の歌詞。同期歌詞でオンラインカラオケを歌おう。"
+    },
+    "karaoke": {
+      "metaTitle": "🎤 カラオケ {trackTitle} - {artist} | ダラットで歌おう",
+      "metaDescription": "同期歌詞で{trackTitle}をカラオケで歌おう。ダラットのカラオケ、ベトナム音楽。{eventTitle}より。"
+    }
   },
   "activity": {
     "title": "アクティビティ",
@@ -2541,7 +2850,12 @@
     "readyToHost": "主催する準備はできましたか？",
     "readyToHostDesc": "最初のイベントを作成してホストポイントを獲得しましょう。",
     "createEvent": "イベントを作成",
-    "noOneYet": "まだリーダーボードに誰もいません。最初の一人になりましょう！"
+    "noOneYet": "まだリーダーボードに誰もいません。最初の一人になりましょう！",
+    "rewardsMetaDescription": "ポイントを特典、バッジ、ダラットの特別な体験と交換しよう。",
+    "rewardsSubtitle": "ポイントを特典や特別な体験と交換しましょう。",
+    "leaderboardMetaDescription": "ダラットコミュニティをリードしているのは誰？最もアクティブなメンバートップ50。",
+    "leaderboardSubtitle": "ダラットコミュニティをリードしているのは誰？",
+    "hostMetaDescription": "ダラットでより多くのイベントを主催して、プレミアムホストツールをアンロックしよう。"
   },
   "pokerTable": {
     "level": "レベル {n}",
@@ -2574,5 +2888,190 @@
     "levelOf": "レベル {n} / {total}",
     "minutesPerLevel": "レベルごとの分数",
     "applyToAll": "すべてに適用"
+  },
+  "tonight": {
+    "title": "今夜のダラット",
+    "metaTitle": "今夜のダラット - イベント＆ナイトライフ（{date}）",
+    "metaDescription": "今夜ダラットで開催されるライブ音楽、バー、DJ、ナイトライフを発見しよう。リアルタイムで更新。",
+    "eventsCount": "今夜のイベント<strong>{count}</strong>件（{date}）",
+    "emptyTitle": "今夜のイベントはありません",
+    "emptyDescription": "週末のイベントをチェックするか、会場を探索してみてください",
+    "ctaThisWeekend": "今週末",
+    "ctaBars": "バー",
+    "happeningNow": "開催中",
+    "laterTonight": "今夜これから",
+    "exploreMore": "もっと探す",
+    "chipThisWeekend": "今週末",
+    "chipBars": "バー",
+    "chipCafes": "カフェ",
+    "chipCalendar": "カレンダー"
+  },
+  "thisWeekend": {
+    "title": "今週末のダラット",
+    "metaTitle": "今週末のダラット（{date}）- イベント＆楽しみ方",
+    "metaDescription": "ダラットの週末イベントを発見しよう：ライブ音楽、フェスティバル、展示、アウトドアアクティビティ。リアルタイムで更新。",
+    "eventsCount": "{from}〜{to}のイベント<strong>{count}</strong>件",
+    "emptyTitle": "今週末のイベントはありません",
+    "emptyDescription": "今後のイベントをチェックするか、会場を探索してみてください",
+    "ctaUpcomingEvents": "今後のイベント",
+    "saturday": "土曜日（{date}）",
+    "sunday": "日曜日（{date}）",
+    "exploreMore": "もっと探す",
+    "chipTonight": "今夜",
+    "chipUpcoming": "今後",
+    "chipCalendar": "カレンダー",
+    "chipFestivals": "フェスティバル"
+  },
+  "venuePages": {
+    "shared": {
+      "happeningNow": "開催中",
+      "eventsNow": "開催中のイベント",
+      "exhibitionsNow": "開催中の展示",
+      "exploreMore": "もっと探す",
+      "introHappeningRightNow": "うち<strong>{count}</strong>軒で今まさにイベント開催中。",
+      "introHappeningNow": "うち<strong>{count}</strong>軒でイベント開催中。",
+      "introExhibitionsNow": "うち<strong>{count}</strong>軒で展示開催中。",
+      "chips": {
+        "cafes": "カフェ",
+        "bars": "バー",
+        "restaurants": "レストラン",
+        "galleries": "ギャラリー",
+        "vegetarian": "ベジタリアン",
+        "vegan": "ヴィーガン",
+        "hotels": "ホテル",
+        "homestays": "ホームステイ",
+        "coworking": "コワーキング",
+        "communityCenters": "コミュニティセンター",
+        "parks": "公園",
+        "outdoor": "アウトドア",
+        "festivals": "フェスティバル",
+        "allVenues": "すべての会場"
+      }
+    },
+    "cafes": {
+      "metaTitle": "ダラットのカフェ - コーヒーショップ＆イベント会場",
+      "metaDescription": "ライブイベント、音楽、コミュニティの集まりを開催するダラットのベストカフェを発見しよう。最新情報を毎日更新。",
+      "h1": "ダラットのカフェ",
+      "intro": "ダラットでイベントを開催する<strong>{count}軒のカフェ</strong>を発見しよう。",
+      "allHeading": "すべてのカフェ"
+    },
+    "bars": {
+      "metaTitle": "ダラットのバー - ナイトライフ＆ライブイベント",
+      "metaDescription": "ライブ音楽、DJ、ナイトライフイベントが楽しめるダラットのベストバーを発見しよう。最新情報を毎日更新。",
+      "h1": "ダラットのバー",
+      "intro": "ダラットでイベントを開催する<strong>{count}軒のバー</strong>を発見しよう。",
+      "allHeading": "すべてのバー"
+    },
+    "restaurants": {
+      "metaTitle": "ダラットのレストラン - グルメ＆イベント",
+      "metaDescription": "フードイベント、ライブ音楽、集まりを開催するダラットのベストレストランを発見しよう。最新情報を毎日更新。",
+      "h1": "ダラットのレストラン",
+      "intro": "ダラットでイベントを開催する<strong>{count}軒のレストラン</strong>を発見しよう。",
+      "allHeading": "すべてのレストラン"
+    },
+    "vegan": {
+      "metaTitle": "ダラットのヴィーガンレストラン - 100％プラントベース",
+      "metaDescription": "ダラットのヴィーガンレストランを発見しよう。ヴィーガンフォーからヴィーガンバインミーまで、100％植物由来の料理が楽しめます。",
+      "h1": "ダラットのヴィーガンレストラン",
+      "intro": "ダラットの<strong>{count}軒のヴィーガンレストラン</strong>を発見しよう。",
+      "allHeading": "すべてのヴィーガンレストラン"
+    },
+    "vegetarian": {
+      "metaTitle": "ダラットのベジタリアンレストラン - プラントベースの食事",
+      "metaDescription": "ダラットのベストベジタリアンレストランを発見しよう。伝統的なベトナム精進料理、ビュッフェ、プラントベースの食事。",
+      "h1": "ダラットのベジタリアンレストラン",
+      "intro": "ダラットの<strong>{count}軒のベジタリアンレストラン</strong>を発見しよう。",
+      "allHeading": "すべてのベジタリアンレストラン"
+    },
+    "coworking": {
+      "metaTitle": "ダラットのコワーキングスペース - 仕事＆イベント",
+      "metaDescription": "デジタルノマドにぴったりのダラットのベストコワーキングスペースを発見しよう。高速WiFi、おいしいコーヒー、活気あるコミュニティイベント。",
+      "h1": "ダラットのコワーキングスペース",
+      "intro": "ダラットの<strong>{count}軒のコワーキングスペース</strong>を発見しよう。",
+      "allHeading": "すべてのコワーキングスペース"
+    },
+    "communityCenters": {
+      "metaTitle": "ダラットのコミュニティセンター - イベント＆アクティビティ",
+      "metaDescription": "イベント、ワークショップ、グループ活動を開催するダラットのコミュニティセンターを発見しよう。地元コミュニティとつながろう。",
+      "h1": "ダラットのコミュニティセンター",
+      "intro": "ダラットの<strong>{count}軒のコミュニティセンター</strong>を発見しよう。",
+      "allHeading": "すべてのコミュニティセンター"
+    },
+    "hotels": {
+      "metaTitle": "ダラットのホテル - 宿泊＆イベント",
+      "metaDescription": "イベント、カンファレンス、お祝いの場となるダラットのホテルを発見しよう。宿泊とユニークな体験をまとめて。",
+      "h1": "ダラットのホテル",
+      "intro": "ダラットでイベントを開催する<strong>{count}軒のホテル</strong>を発見しよう。",
+      "allHeading": "すべてのホテル"
+    },
+    "homestays": {
+      "metaTitle": "ダラットのホームステイ - ローカルな滞在＆イベント",
+      "metaDescription": "ユニークなローカル体験ができるダラットのホームステイを発見しよう。アットホームな滞在、コミュニティイベント、地元の文化。",
+      "h1": "ダラットのホームステイ",
+      "intro": "ダラットの<strong>{count}軒のホームステイ</strong>を発見しよう。",
+      "allHeading": "すべてのホームステイ"
+    },
+    "galleries": {
+      "metaTitle": "ダラットのアートギャラリー - 展示＆アートスペース",
+      "metaDescription": "ダラットのベストアートギャラリーとクリエイティブスペースを発見しよう。アート展、文化イベント、アーティストショーケースを毎日更新。",
+      "h1": "ダラットのアートギャラリー",
+      "intro": "ダラットの<strong>{count}軒のギャラリー</strong>とアートスペースを発見しよう。",
+      "allHeading": "すべてのギャラリー"
+    },
+    "hiking": {
+      "metaTitle": "ダラットのハイキング＆トレッキング - トレイル＆スポット",
+      "metaDescription": "ダラットのベストハイキングトレイルを発見しよう。ランビアン山からビドゥップ国立公園まで、高原の素晴らしい自然を体験できます。",
+      "h1": "ダラットのハイキング＆トレッキング",
+      "intro": "ダラットの<strong>{count}件のハイキングトレイル＆トレッキングスポット</strong>を発見しよう。",
+      "allHeading": "すべてのハイキングスポット"
+    },
+    "parks": {
+      "metaTitle": "ダラットの公園 - 自然＆アウトドアイベント",
+      "metaDescription": "ダラットのベスト公園と緑地を発見しよう。アウトドアイベント、ピクニック、自然アクティビティを毎日更新。",
+      "h1": "ダラットの公園",
+      "intro": "ダラットの<strong>{count}カ所の公園</strong>と緑地を発見しよう。",
+      "allHeading": "すべての公園"
+    },
+    "outdoor": {
+      "metaTitle": "ダラットのアウトドアアクティビティ - イベント＆会場",
+      "metaDescription": "イベント、フェスティバル、自然アクティビティを開催するダラットのアウトドア会場を発見しよう。美しい高原を体験できます。",
+      "h1": "ダラットのアウトドアアクティビティ",
+      "intro": "ダラットの<strong>{count}カ所のアウトドア会場</strong>を発見しよう。",
+      "allHeading": "すべてのアウトドア会場"
+    },
+    "discover": {
+      "metaTitle": "ダラットを探索 - イベント、会場、モーメントなど",
+      "metaDescription": "ダラットを発見しよう：今日のイベント、カフェ、レストラン、ライブ音楽、アート、コミュニティの本物のモーメント。毎日更新。",
+      "h1": "ダラットを探索",
+      "subtitle": "ベトナムの愛される高原都市から届く、イベント、会場、グルメ、そして本物のモーメント。",
+      "statsEvents": "イベント",
+      "statsVenues": "会場",
+      "statsMoments": "モーメント",
+      "quickDiscoverHeading": "クイック探索",
+      "exploreByTypeHeading": "会場タイプで探す",
+      "aboutHeading": "ĐàLạt.appについて",
+      "aboutBody": "ĐàLạt.appは、ベトナム・ラムドン省ダラット（Đà Lạt）のコミュニティ主導のイベント発見プラットフォームです。居心地のいいカフェでのライブ音楽からアート展、クリエイティブなワークショップ、季節のフェスティバルまで、ベトナムの高原都市の魅力を見つけて体験するお手伝いをします。今夜や今週末のイベントを探したり、次のダラット旅行の計画にもどうぞ。",
+      "links": {
+        "tonight": "今夜のイベント",
+        "thisWeekend": "今週末",
+        "moments": "写真＆動画",
+        "map": "マップ",
+        "festivals": "フェスティバル"
+      },
+      "types": {
+        "cafes": "カフェ",
+        "bars": "バー",
+        "restaurants": "レストラン",
+        "galleries": "ギャラリー",
+        "parks": "公園",
+        "hotels": "ホテル",
+        "coworking": "コワーキング",
+        "homestays": "ホームステイ",
+        "outdoor": "アウトドア",
+        "hiking": "ハイキング",
+        "vegetarian": "ベジタリアン",
+        "vegan": "ヴィーガン"
+      }
+    }
   }
 }

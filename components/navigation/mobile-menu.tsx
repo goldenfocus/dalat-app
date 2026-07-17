@@ -58,7 +58,7 @@ export function MobileMenu({ variant = "default" }: MobileMenuProps) {
       <button
         onClick={toggleMenu}
         className={buttonClass}
-        aria-label="Open menu"
+        aria-label={t("openMenu")}
         aria-expanded={isOpen}
       >
         <Menu className="w-5 h-5" />
@@ -80,7 +80,7 @@ export function MobileMenu({ variant = "default" }: MobileMenuProps) {
               <button
                 onClick={closeMenu}
                 className="p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-lg"
-                aria-label="Close menu"
+                aria-label={t("closeMenu")}
               >
                 <X className="w-5 h-5" />
               </button>

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
 import { Music, Download, Mic2, Clock, User, Disc, ArrowLeft } from "lucide-react";
@@ -91,15 +92,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { track, event } = data;
   const trackTitle = track.title || "Track";
   const artist = track.artist || event.title;
+  const t = await getTranslations({ locale, namespace: "playlist.downloadPage" });
 
   // SEO-optimized for download queries
-  const title = locale === "vi"
-    ? `Tải ${trackTitle} - ${artist} | MP3 Download | ĐàLạt.app`
-    : `Download ${trackTitle} - ${artist} | MP3 | ĐàLạt.app`;
+  const title = t("metaTitle", { trackTitle, artist });
 
-  const description = locale === "vi"
-    ? `Tải nhạc "${trackTitle}" của ${artist} miễn phí. MP3 chất lượng cao từ sự kiện "${event.title}" tại Đà Lạt.`
-    : `Download "${trackTitle}" by ${artist} for free. High quality MP3 from "${event.title}" event in Da Lat, Vietnam.`;
+  const description = t("metaDescription", { trackTitle, artist, eventTitle: event.title });
 
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/download/${trackId}`;
   const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;
@@ -168,6 +166,7 @@ export default async function DownloadPage({ params }: PageProps) {
   const { track, event } = data;
   const trackTitle = track.title || "Untitled";
   const artist = track.artist || "Unknown Artist";
+  const t = await getTranslations("playlist.downloadPage");
 
   // Generate structured data
   const musicSchema = {
@@ -195,7 +194,7 @@ export default async function DownloadPage({ params }: PageProps) {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 -ml-1 px-2 py-1 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{locale === "vi" ? "Quay lại playlist" : "Back to playlist"}</span>
+            <span>{t("backToPlaylist")}</span>
           </Link>
 
           {/* Track card */}
@@ -235,7 +234,6 @@ export default async function DownloadPage({ params }: PageProps) {
               <DownloadButton
                 fileUrl={track.file_url}
                 filename={`${trackTitle} - ${artist}.mp3`}
-                locale={locale}
               />
 
               {/* Alternative actions */}
@@ -245,14 +243,14 @@ export default async function DownloadPage({ params }: PageProps) {
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-secondary text-secondary-foreground rounded-xl font-medium hover:bg-secondary/80 transition-colors"
                 >
                   <Mic2 className="w-5 h-5" />
-                  <span>{locale === "vi" ? "Hát Karaoke" : "Sing Karaoke"}</span>
+                  <span>{t("singKaraoke")}</span>
                 </Link>
                 <Link
                   href={`/${locale}/events/${slug}/lyrics/${trackId}`}
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-secondary text-secondary-foreground rounded-xl font-medium hover:bg-secondary/80 transition-colors"
                 >
                   <Music className="w-5 h-5" />
-                  <span>{locale === "vi" ? "Xem Lời Bài Hát" : "View Lyrics"}</span>
+                  <span>{t("viewLyrics")}</span>
                 </Link>
               </div>
             </div>
@@ -261,9 +259,7 @@ export default async function DownloadPage({ params }: PageProps) {
           {/* SEO content */}
           <div className="mt-8 text-center text-sm text-muted-foreground">
             <p>
-              {locale === "vi"
-                ? `Tải nhạc "${trackTitle}" của ${artist} từ sự kiện "${event.title}" tại Đà Lạt. Miễn phí, chất lượng cao.`
-                : `Download "${trackTitle}" by ${artist} from "${event.title}" event in Da Lat, Vietnam. Free, high quality.`}
+              {t("seoFooter", { trackTitle, artist, eventTitle: event.title })}
             </p>
           </div>
         </div>

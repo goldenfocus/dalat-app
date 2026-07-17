@@ -16,15 +16,13 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "loyalty" });
 
   return generateLocalizedMetadata({
     locale,
     path: "/loyalty/leaderboard",
-    title: locale === "vi" ? "Bảng Xếp Hạng" : "Leaderboard",
-    description:
-      locale === "vi"
-        ? "Xem ai đang dẫn đầu cộng đồng Đà Lạt. Top 50 thành viên tích cực nhất."
-        : "See who's leading the Da Lat community. Top 50 most active members.",
+    title: t("leaderboard"),
+    description: t("leaderboardMetaDescription"),
     keywords: ["leaderboard", "ranking", "community", "Dalat", "points"],
   });
 }
@@ -49,9 +47,7 @@ export default async function LeaderboardPage({ params }: PageProps) {
     <main>
       <h1 className="text-2xl font-bold mb-1">{t("leaderboard")}</h1>
       <p className="text-muted-foreground mb-6 text-sm">
-        {locale === "vi"
-          ? "Ai dang dẫn đầu trong cộng đồng Đà Lạt?"
-          : "Who's leading the Dalat community?"}
+        {t("leaderboardSubtitle")}
       </p>
       <LeaderboardFull userId={userId} />
     </main>

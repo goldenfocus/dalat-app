@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { Download } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface DownloadButtonProps {
   fileUrl: string;
   filename: string;
-  locale: string;
 }
 
-export function DownloadButton({ fileUrl, filename, locale }: DownloadButtonProps) {
+export function DownloadButton({ fileUrl, filename }: DownloadButtonProps) {
+  const t = useTranslations("playlist.downloadPage");
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
@@ -47,12 +48,12 @@ export function DownloadButton({ fileUrl, filename, locale }: DownloadButtonProp
       {isDownloading ? (
         <>
           <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-          <span>{locale === "vi" ? "Đang tải..." : "Downloading..."}</span>
+          <span>{t("downloading")}</span>
         </>
       ) : (
         <>
           <Download className="w-6 h-6" />
-          <span>{locale === "vi" ? "Tải MP3 Miễn Phí" : "Download MP3 Free"}</span>
+          <span>{t("downloadFree")}</span>
         </>
       )}
     </button>

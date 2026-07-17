@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Check, X, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { isVideoUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
@@ -21,6 +21,7 @@ export function ModerationQueue({ moments: initialMoments }: ModerationQueueProp
   const router = useRouter();
   const t = useTranslations("moments.moderation");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const [moments, setMoments] = useState(initialMoments);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -141,7 +142,7 @@ export function ModerationQueue({ moments: initialMoments }: ModerationQueueProp
                       {moment.display_name || moment.username || tCommon("anonymous")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(moment.created_at).toLocaleDateString()}
+                      {new Date(moment.created_at).toLocaleDateString(locale)}
                     </p>
                   </div>
                 </div>

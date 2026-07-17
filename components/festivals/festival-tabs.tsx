@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MessageSquare, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ export function FestivalTabs({
   updates,
 }: FestivalTabsProps) {
   const t = useTranslations("festival");
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<Tab>("program");
   const totalEvents = officialEvents.length + communityEvents.length;
 
@@ -123,7 +124,7 @@ export function FestivalTabs({
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">{update.title}</CardTitle>
                   <CardDescription>
-                    {new Date(update.posted_at).toLocaleDateString()}
+                    {new Date(update.posted_at).toLocaleDateString(locale)}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

@@ -20,7 +20,7 @@ import {
   FileText,
 } from "lucide-react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
@@ -57,6 +57,7 @@ const KaraokeHero = dynamic(
 export function MiniPlayer() {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations("playlist");
 
   const isVisible = useIsPlayerVisible();
   const currentTrack = useCurrentTrack();
@@ -352,7 +353,7 @@ export function MiniPlayer() {
               <Link
                 href={`/${locale}/events/${playlist.eventSlug}/lyrics/${currentTrack.id}`}
                 className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                aria-label="View lyrics"
+                aria-label={t("viewLyrics")}
               >
                 <FileText className="w-4 h-4" />
               </Link>
@@ -406,7 +407,7 @@ export function MiniPlayer() {
                         }
                       }}
                       className="w-24 h-1 accent-primary cursor-pointer"
-                      aria-label="Volume"
+                      aria-label={t("volume")}
                     />
                     {/* Mute button inside popup for mobile */}
                     <button
@@ -427,7 +428,7 @@ export function MiniPlayer() {
               className="h-8 w-8 text-muted-foreground"
               onClick={handleDownload}
               disabled={isDownloading || !currentTrack?.file_url}
-              aria-label="Download track"
+              aria-label={t("downloadTrack")}
             >
               {isDownloading ? (
                 <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
@@ -459,7 +460,7 @@ export function MiniPlayer() {
                 "p-1 rounded transition-colors",
                 shuffle ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
-              aria-label="Toggle shuffle"
+              aria-label={t("toggleShuffle")}
             >
               <Shuffle className="w-4 h-4" />
             </button>

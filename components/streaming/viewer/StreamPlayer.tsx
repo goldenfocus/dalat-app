@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Volume2, VolumeX, Maximize, RefreshCw, AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +23,7 @@ export function StreamPlayer({
   className,
   onError,
 }: StreamPlayerProps) {
+  const t = useTranslations('streaming');
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playerState, setPlayerState] = useState<PlayerState>('loading');
   const [isMuted, setIsMuted] = useState(initialMuted);
@@ -136,7 +138,7 @@ export function StreamPlayer({
       <div className={cn('relative aspect-video bg-black flex items-center justify-center', className)}>
         <div className="text-white/60 text-center">
           <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-          <p>Stream offline</p>
+          <p>{t('streamOffline')}</p>
         </div>
       </div>
     );

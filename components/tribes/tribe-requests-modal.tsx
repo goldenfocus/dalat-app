@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,6 +19,7 @@ type RequestWithProfile = TribeRequest & { profiles: Profile };
 
 export function TribeRequestsModal({ tribeSlug, open, onOpenChange }: TribeRequestsModalProps) {
   const t = useTranslations("tribes");
+  const locale = useLocale();
   const router = useRouter();
   const [requests, setRequests] = useState<RequestWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +91,7 @@ export function TribeRequestsModal({ tribeSlug, open, onOpenChange }: TribeReque
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{request.message}</p>
                   )}
                   <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(request.created_at).toLocaleDateString()}
+                    {new Date(request.created_at).toLocaleDateString(locale)}
                   </p>
                 </div>
                 <div className="flex gap-1">

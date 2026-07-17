@@ -1,4 +1,5 @@
 import { Link } from "@/lib/i18n/routing";
+import { getTranslations } from "next-intl/server";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
@@ -41,18 +42,26 @@ export async function MoreAtVenue({
 
   if (!events || events.length === 0) return null;
 
+  const t = await getTranslations("events");
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <MapPin className="w-4 h-4 text-muted-foreground" />
-          <span>More at</span>
-          <Link
-            href={`/venues/${venueSlug}`}
-            className="font-semibold hover:underline"
-          >
-            {decodeUnicodeEscapes(venueName)}
-          </Link>
+          <span>
+            {t.rich("moreAtVenue", {
+              venue: decodeUnicodeEscapes(venueName),
+              link: (chunks) => (
+                <Link
+                  href={`/venues/${venueSlug}`}
+                  className="font-semibold hover:underline"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0 space-y-3">
@@ -86,7 +95,7 @@ export async function MoreAtVenue({
           href={`/venues/${venueSlug}`}
           className="flex items-center justify-center gap-1 text-sm text-primary hover:underline pt-2"
         >
-          All events at this venue
+          {t("allEventsAtVenue")}
           <ArrowRight className="w-3 h-3" />
         </Link>
       </CardContent>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -65,6 +65,7 @@ interface LeaderboardUser {
 
 export function LoyaltyDashboard({ userId }: { userId: string | null }) {
   const t = useTranslations("loyalty");
+  const locale = useLocale();
   const [status, setStatus] = useState<LoyaltyStatus | null>(null);
   const [topUsers, setTopUsers] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -235,7 +236,7 @@ export function LoyaltyDashboard({ userId }: { userId: string | null }) {
                             {t(`activity.${entry.activity}`)}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(entry.created_at).toLocaleDateString()}
+                            {new Date(entry.created_at).toLocaleDateString(locale)}
                           </p>
                         </div>
                         <span className="text-sm font-semibold text-emerald-500 tabular-nums shrink-0">

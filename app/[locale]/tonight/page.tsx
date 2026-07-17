@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Moon } from "lucide-react";
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { Link } from "@/lib/i18n/routing";
@@ -10,7 +10,7 @@ import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { buildLocales } from "@/lib/i18n/routing";
 import { DALAT_TIMEZONE } from "@/lib/timezone";
-import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+import { toZonedTime } from "date-fns-tz";
 import { endOfDay, setHours, startOfDay, addDays } from "date-fns";
 
 const SITE_URL = "https://dalat.app";
@@ -26,23 +26,21 @@ export function generateStaticParams() {
 // SEO-optimized for "dalat tonight" and "things to do tonight in dalat" searches
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "tonight" });
 
   const now = toZonedTime(new Date(), DALAT_TIMEZONE);
-  const todayStr = formatInTimeZone(now, DALAT_TIMEZONE, "EEEE, MMMM d");
-
-  const title = locale === "vi"
-    ? `Đà Lạt Tối Nay - Sự Kiện & Nightlife (${todayStr})`
-    : `Da Lat Tonight - Events & Nightlife (${todayStr})`;
-
-  const description = locale === "vi"
-    ? `Khám phá các sự kiện tối nay ở Đà Lạt: nhạc sống, bar, DJ và hoạt động đêm. Cập nhật theo thời gian thực.`
-    : `Discover what's happening tonight in Da Lat: live music, bars, DJs, and nightlife. Updated in real-time.`;
+  const todayStr = now.toLocaleDateString(locale, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: DALAT_TIMEZONE,
+  });
 
   return generateLocalizedMetadata({
     locale,
     path: "/tonight",
-    title,
-    description,
+    title: t("metaTitle", { date: todayStr }),
+    description: t("metaDescription"),
     keywords: [
       "Da Lat tonight",
       "what to do tonight in Dalat",
@@ -96,8 +94,14 @@ function EventsLoading() {
 
 async function TonightContent({ locale }: { locale: Locale }) {
   const { happening, upcoming } = await getTonightEvents();
+  const t = await getTranslations({ locale, namespace: "tonight" });
   const now = toZonedTime(new Date(), DALAT_TIMEZONE);
-  const todayStr = formatInTimeZone(now, DALAT_TIMEZONE, "EEEE, MMMM d");
+  const todayStr = now.toLocaleDateString(locale, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: DALAT_TIMEZONE,
+  });
 
   const totalEvents = happening.length + upcoming.length;
 
@@ -174,40 +178,34 @@ async function TonightContent({ locale }: { locale: Locale }) {
 
       {/* Date display */}
       <p className="text-muted-foreground mb-6">
-        {locale === "vi" ? (
-          <>
-            <strong>{totalEvents}</strong> sự kiện tối nay ({todayStr})
-          </>
-        ) : (
-          <>
-            <strong>{totalEvents}</strong> events tonight ({todayStr})
-          </>
-        )}
+        {t.rich("eventsCount", {
+          count: totalEvents,
+          date: todayStr,
+          strong: (chunks) => <strong>{chunks}</strong>,
+        })}
       </p>
 
       {totalEvents === 0 ? (
         <div className="text-center py-16">
           <Moon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
           <p className="text-lg font-medium text-muted-foreground mb-1">
-            {locale === "vi" ? "Chưa có sự kiện tối nay" : "No events tonight"}
+            {t("emptyTitle")}
           </p>
           <p className="text-sm text-muted-foreground/70 mb-4">
-            {locale === "vi"
-              ? "Xem các sự kiện cuối tuần hoặc khám phá các địa điểm"
-              : "Check out weekend events or explore venues"}
+            {t("emptyDescription")}
           </p>
           <div className="flex justify-center gap-3">
             <Link
               href="/this-weekend"
               className="text-sm px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              {locale === "vi" ? "Cuối Tuần Này" : "This Weekend"}
+              {t("ctaThisWeekend")}
             </Link>
             <Link
               href="/bars"
               className="text-sm px-4 py-2 rounded-lg border hover:bg-muted"
             >
-              {locale === "vi" ? "Quán Bar" : "Bars"}
+              {t("ctaBars")}
             </Link>
           </div>
         </div>
@@ -218,7 +216,7 @@ async function TonightContent({ locale }: { locale: Locale }) {
             <section>
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                {locale === "vi" ? "Đang Diễn Ra" : "Happening Now"}
+                {t("happeningNow")}
               </h2>
               <div className="space-y-4">
                 {happening.map((event) => (
@@ -232,7 +230,7 @@ async function TonightContent({ locale }: { locale: Locale }) {
           {upcoming.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold mb-4">
-                {locale === "vi" ? "Tối Nay" : "Later Tonight"}
+                {t("laterTonight")}
               </h2>
               <div className="space-y-4">
                 {upcoming.map((event) => (
@@ -247,20 +245,20 @@ async function TonightContent({ locale }: { locale: Locale }) {
       {/* Cross-links */}
       <nav className="mt-12 pt-8 border-t" aria-label="Explore more">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
-          {locale === "vi" ? "Khám phá thêm" : "Explore More"}
+          {t("exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
           <Link href="/this-weekend" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Cuối Tuần" : "This Weekend"}
+            {t("chipThisWeekend")}
           </Link>
           <Link href="/bars" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Quán Bar" : "Bars"}
+            {t("chipBars")}
           </Link>
           <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Quán Cà Phê" : "Cafes"}
+            {t("chipCafes")}
           </Link>
           <Link href="/calendar" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Lịch" : "Calendar"}
+            {t("chipCalendar")}
           </Link>
         </div>
       </nav>
@@ -271,12 +269,13 @@ async function TonightContent({ locale }: { locale: Locale }) {
 export default async function TonightPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "tonight" });
 
   return (
     <main className="min-h-screen pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-2">
-          {locale === "vi" ? "Đà Lạt Tối Nay" : "Da Lat Tonight"}
+          {t("title")}
         </h1>
 
         <Suspense fallback={<EventsLoading />}>

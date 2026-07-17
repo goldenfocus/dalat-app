@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 
 interface ImageLightboxProps {
@@ -11,6 +12,7 @@ interface ImageLightboxProps {
 }
 
 export function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightboxProps) {
+  const t = useTranslations("common");
   const [isLandscape, setIsLandscape] = useState(false);
 
   const handleEscape = useCallback(
@@ -67,7 +69,7 @@ export function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightboxProps)
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-        aria-label="Close"
+        aria-label={t("close")}
       >
         <X className="w-6 h-6 text-white" />
       </button>

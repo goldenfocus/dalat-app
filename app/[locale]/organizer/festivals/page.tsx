@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ArrowLeft, Plus, Calendar, MapPin, BadgeCheck, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { Festival } from "@/lib/types";
 
 async function getMyFestivals(userId: string) {
@@ -21,6 +21,7 @@ async function getMyFestivals(userId: string) {
 export default async function OrganizerFestivalsPage() {
   const supabase = await createClient();
   const t = await getTranslations("organizerPortal");
+  const locale = await getLocale();
 
   const {
     data: { user },
@@ -63,7 +64,7 @@ export default async function OrganizerFestivalsPage() {
       {festivals.length > 0 ? (
         <div className="grid gap-4">
           {festivals.map((festival) => (
-            <FestivalRow key={festival.id} festival={festival} />
+            <FestivalRow key={festival.id} festival={festival} locale={locale} />
           ))}
         </div>
       ) : (
@@ -86,13 +87,13 @@ export default async function OrganizerFestivalsPage() {
   );
 }
 
-function FestivalRow({ festival }: { festival: Festival }) {
+function FestivalRow({ festival, locale }: { festival: Festival; locale: string }) {
   const startDate = new Date(festival.start_date);
   const endDate = new Date(festival.end_date);
-  const dateRange = `${startDate.toLocaleDateString("vi-VN", {
+  const dateRange = `${startDate.toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
-  })} - ${endDate.toLocaleDateString("vi-VN", {
+  })} - ${endDate.toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",

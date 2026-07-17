@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { MessageCircle, WifiOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useChatSubscription } from '@/lib/hooks/use-chat-subscription';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
@@ -23,6 +24,7 @@ export function StreamChat({
   initialMessages = [],
   className,
 }: StreamChatProps) {
+  const t = useTranslations('streaming');
   const { messages, isConnected, error, sendMessage, deleteMessage } = useChatSubscription({
     eventId,
     enabled: true,
@@ -52,12 +54,12 @@ export function StreamChat({
       <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
         <div className="flex items-center gap-2">
           <MessageCircle className="h-4 w-4" />
-          <span className="font-medium text-sm">Live Chat</span>
+          <span className="font-medium text-sm">{t('liveChat')}</span>
         </div>
         <div className="flex items-center gap-2">
           {!isConnected ? (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <WifiOff className="h-3 w-3" /><span>Connecting...</span>
+              <WifiOff className="h-3 w-3" /><span>{t('connecting')}</span>
             </div>
           ) : (
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -69,8 +71,8 @@ export function StreamChat({
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm p-4">
             <MessageCircle className="h-8 w-8 mb-2 opacity-50" />
-            <p>No messages yet</p>
-            <p className="text-xs">Be the first to say something!</p>
+            <p>{t('noMessagesYet')}</p>
+            <p className="text-xs">{t('beFirstToSay')}</p>
           </div>
         ) : (
           <div className="py-2">

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, MessageCircle, Share2, ExternalLink, Grid3X3, Loader2, RotateCcw, Camera, Sparkles } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -76,6 +77,7 @@ export function ImmersiveMomentView({
   const [showEndScreen, setShowEndScreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const t = useTranslations("moments");
   const { share: nativeShare } = useShare();
 
   const moment = moments[currentIndex];
@@ -348,7 +350,7 @@ export function ImmersiveMomentView({
                 "w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transition-all",
                 hasPrev ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
               )}
-              aria-label="Previous"
+              aria-label={t("lightbox.previous")}
             >
               <ChevronUp className="w-6 h-6" />
             </button>
@@ -359,7 +361,7 @@ export function ImmersiveMomentView({
                 "w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transition-all",
                 (hasNext || hasMore) ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
               )}
-              aria-label="Next"
+              aria-label={t("lightbox.next")}
             >
               {isLoadingMore ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -377,7 +379,7 @@ export function ImmersiveMomentView({
               "hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm items-center justify-center text-white transition-all",
               hasPrev ? "hover:bg-white/20 hover:scale-105" : "opacity-30 cursor-not-allowed"
             )}
-            aria-label="Previous"
+            aria-label={t("lightbox.previous")}
           >
             <ChevronLeft className="w-7 h-7" />
           </button>
@@ -388,7 +390,7 @@ export function ImmersiveMomentView({
               "hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm items-center justify-center text-white transition-all",
               (hasNext || hasMore) ? "hover:bg-white/20 hover:scale-105" : "opacity-30 cursor-not-allowed"
             )}
-            aria-label="Next"
+            aria-label={t("lightbox.next")}
           >
             {isLoadingMore ? (
               <Loader2 className="w-6 h-6 animate-spin" />
@@ -406,7 +408,7 @@ export function ImmersiveMomentView({
                 setShowComments(true);
               }}
               className="relative w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all"
-              aria-label="View comments"
+              aria-label={t("lightbox.viewComments")}
             >
               <MessageCircle className="w-6 h-6" />
               {(commentCounts.get(moment.id) ?? 0) > 0 && (
@@ -420,7 +422,7 @@ export function ImmersiveMomentView({
             <button
               onClick={handleShare}
               className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              aria-label="Share"
+              aria-label={t("share")}
             >
               <Share2 className="w-6 h-6" />
             </button>
@@ -438,7 +440,7 @@ export function ImmersiveMomentView({
             <button
               onClick={openFullPage}
               className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              aria-label="Open full page"
+              aria-label={t("lightbox.openFullPage")}
             >
               <ExternalLink className="w-5 h-5" />
             </button>
@@ -618,7 +620,7 @@ export function ImmersiveMomentView({
           <button
             onClick={() => setShowEndScreen(false)}
             className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            aria-label="Back to last moment"
+            aria-label={t("lightbox.backToLastMoment")}
           >
             <X className="w-6 h-6 text-white" />
           </button>

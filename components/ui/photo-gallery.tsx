@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { VenuePhoto } from "@/lib/types";
 
@@ -10,6 +11,7 @@ interface PhotoGalleryProps {
 }
 
 export function PhotoGallery({ photos, className }: PhotoGalleryProps) {
+  const t = useTranslations("common");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const isOpen = lightboxIndex !== null;
 
@@ -86,7 +88,7 @@ export function PhotoGallery({ photos, className }: PhotoGalleryProps) {
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors active:scale-95"
-            aria-label="Close"
+            aria-label={t("close")}
           >
             <X className="w-6 h-6 text-white" />
           </button>
@@ -100,7 +102,7 @@ export function PhotoGallery({ photos, className }: PhotoGalleryProps) {
                   handlePrevious();
                 }}
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors active:scale-95"
-                aria-label="Previous photo"
+                aria-label={t("previousPhoto")}
               >
                 <ChevronLeft className="w-6 h-6 text-white" />
               </button>
@@ -110,7 +112,7 @@ export function PhotoGallery({ photos, className }: PhotoGalleryProps) {
                   handleNext();
                 }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors active:scale-95"
-                aria-label="Next photo"
+                aria-label={t("nextPhoto")}
               >
                 <ChevronRight className="w-6 h-6 text-white" />
               </button>

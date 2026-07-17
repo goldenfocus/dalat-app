@@ -44,7 +44,7 @@ export function TribeEventsList({ events, locale }: TribeEventsListProps) {
                   {eventDate.toLocaleDateString(locale, { month: "short", timeZone: DALAT_TIMEZONE })}
                 </span>
                 <span className="text-xl font-bold text-primary">
-                  {eventDate.toLocaleDateString("en-US", { day: "numeric", timeZone: DALAT_TIMEZONE })}
+                  {eventDate.toLocaleDateString(locale, { day: "numeric", timeZone: DALAT_TIMEZONE })}
                 </span>
               </div>
 

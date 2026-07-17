@@ -16,15 +16,13 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "loyalty" });
 
   return generateLocalizedMetadata({
     locale,
     path: "/loyalty/host",
-    title: locale === "vi" ? "Phần Thưởng Cho Người Tổ Chức" : "Host Rewards",
-    description:
-      locale === "vi"
-        ? "Mở khóa công cụ premium khi bạn tổ chức nhiều sự kiện hơn tại Đà Lạt."
-        : "Unlock premium host tools as you organize more events in Da Lat.",
+    title: t("hostRewards.title"),
+    description: t("hostMetaDescription"),
     keywords: ["host", "rewards", "organizer", "perks", "events", "Dalat"],
   });
 }

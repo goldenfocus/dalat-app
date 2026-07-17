@@ -322,7 +322,7 @@ export function AIImageGenerator({
               <textarea
                 value={refinementPrompt}
                 onChange={(e) => setRefinementPrompt(e.target.value)}
-                placeholder="e.g., Add more purple tones, make it more abstract..."
+                placeholder={tCommon("refinePromptPlaceholder")}
                 rows={2}
                 className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/50 text-sm resize-none"
                 disabled={disabled || isGenerating}

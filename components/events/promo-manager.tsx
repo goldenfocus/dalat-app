@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -61,6 +61,7 @@ export function PromoManager({
   isSeriesEvent,
 }: PromoManagerProps) {
   const t = useTranslations("promo");
+  const locale = useLocale();
 
   const [promoItems, setPromoItems] = useState<EventPromoMedia[]>([]);
   const [promoSource, setPromoSource] = useState<"event" | "series" | undefined>();
@@ -309,7 +310,7 @@ export function PromoManager({
               <div className="space-y-6">
                 {Object.entries(momentsByEvent).map(([slug, { title, date, moments }]) => (
                   <div key={slug} className="space-y-2">
-                    <h4 className="text-sm font-medium">{title}<span className="text-muted-foreground font-normal ml-2">{new Date(date).toLocaleDateString()}</span></h4>
+                    <h4 className="text-sm font-medium">{title}<span className="text-muted-foreground font-normal ml-2">{new Date(date).toLocaleDateString(locale)}</span></h4>
                     <div className="grid grid-cols-4 gap-2">
                       {moments.map((moment) => {
                         const isSelected = selectedMomentIds.has(moment.id);

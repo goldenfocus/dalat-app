@@ -16,15 +16,13 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "loyalty" });
 
   return generateLocalizedMetadata({
     locale,
     path: "/loyalty/rewards",
-    title: locale === "vi" ? "Phần Thưởng" : "Rewards",
-    description:
-      locale === "vi"
-        ? "Đổi điểm lấy phần thưởng, huy hiệu, và trải nghiệm đặc biệt tại Đà Lạt."
-        : "Redeem points for rewards, badges, and exclusive experiences in Da Lat.",
+    title: t("rewards"),
+    description: t("rewardsMetaDescription"),
     keywords: ["rewards", "perks", "badges", "redeem", "points", "Dalat"],
   });
 }
@@ -49,9 +47,7 @@ export default async function RewardsPage({ params }: PageProps) {
     <main>
       <h1 className="text-2xl font-bold mb-1">{t("rewards")}</h1>
       <p className="text-muted-foreground mb-6 text-sm">
-        {locale === "vi"
-          ? "Đổi điểm lấy phần thưởng và trải nghiệm đặc biệt."
-          : "Redeem your points for perks and exclusive experiences."}
+        {t("rewardsSubtitle")}
       </p>
       <RewardsCatalog userId={userId} />
     </main>

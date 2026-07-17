@@ -69,7 +69,7 @@ export function MobileBottomNav() {
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      aria-label="Primary"
+      aria-label={tNav("primary")}
     >
       <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
         {NAV_ITEMS.map((item) => {

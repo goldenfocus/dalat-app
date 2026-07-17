@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Camera, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -29,6 +30,7 @@ function getEventSlugFromPath(pathname: string): string | null {
  * Auto-detects event pages and links directly to that event's moment upload.
  */
 export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
+  const t = useTranslations("moments");
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [recentEvents, setRecentEvents] = useState<RecentEventForUpload[]>([]);
@@ -134,7 +136,7 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
           "bottom-[calc(5rem+env(safe-area-inset-bottom)+1rem)] right-4",
           className
         )}
-        aria-label="Share a moment"
+        aria-label={t("shareYourMoment")}
       >
         <div className="relative">
           <Camera className="w-6 h-6" />

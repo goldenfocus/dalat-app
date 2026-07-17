@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,8 @@ export function VerificationRequestForm({
   userId,
   existingRequest,
 }: VerificationRequestFormProps) {
+  const t = useTranslations("settings.verification");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [organizerName, setOrganizerName] = useState(existingRequest?.organizer_name || "");
@@ -80,9 +83,9 @@ export function VerificationRequestForm({
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <h3 className="text-xl font-semibold mb-2">Request Submitted!</h3>
+          <h3 className="text-xl font-semibold mb-2">{t("requestSubmitted")}</h3>
           <p className="text-muted-foreground">
-            We&apos;ll review your request and get back to you soon.
+            {t("requestSubmittedDescription")}
           </p>
         </CardContent>
       </Card>
@@ -93,24 +96,24 @@ export function VerificationRequestForm({
     <Card>
       <CardHeader>
         <CardTitle>
-          {existingRequest ? "Update Your Request" : "Request Verification"}
+          {existingRequest ? t("updateYourRequest") : t("requestVerification")}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="organizerName">Organization Name *</Label>
+            <Label htmlFor="organizerName">{t("organizationName")}</Label>
             <Input
               id="organizerName"
               value={organizerName}
               onChange={(e) => setOrganizerName(e.target.value)}
-              placeholder="Your organization or venue name"
+              placeholder={t("organizationNamePlaceholder")}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="organizerType">Organization Type *</Label>
+            <Label htmlFor="organizerType">{t("organizationType")}</Label>
             <select
               id="organizerType"
               value={organizerType}
@@ -118,23 +121,23 @@ export function VerificationRequestForm({
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               required
             >
-              <option value="venue">Venue (Cafe, Bar, Restaurant)</option>
-              <option value="cultural_org">Cultural Organization</option>
-              <option value="committee">Festival Committee</option>
-              <option value="ward">Ward (Phường)</option>
-              <option value="city">City Government</option>
-              <option value="business">Business</option>
-              <option value="other">Other</option>
+              <option value="venue">{t("typeVenue")}</option>
+              <option value="cultural_org">{t("typeCultural")}</option>
+              <option value="committee">{t("typeFestival")}</option>
+              <option value="ward">{t("typeWard")}</option>
+              <option value="city">{t("typeCity")}</option>
+              <option value="business">{t("typeBusiness")}</option>
+              <option value="other">{t("typeOther")}</option>
             </select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="organizerDescription">About your organization</Label>
+            <Label htmlFor="organizerDescription">{t("aboutOrganization")}</Label>
             <textarea
               id="organizerDescription"
               value={organizerDescription}
               onChange={(e) => setOrganizerDescription(e.target.value)}
-              placeholder="What kind of events do you organize?"
+              placeholder={t("aboutPlaceholder")}
               rows={3}
               className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
             />
@@ -142,49 +145,49 @@ export function VerificationRequestForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="contactEmail">Contact Email</Label>
+              <Label htmlFor="contactEmail">{t("contactEmail")}</Label>
               <EmailInput
                 id="contactEmail"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 onBlur={(e) => setContactEmail(e.target.value)}
-                placeholder="contact@example.com"
+                placeholder={t("contactEmailPlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contactPhone">Contact Phone</Label>
+              <Label htmlFor="contactPhone">{t("contactPhone")}</Label>
               <Input
                 id="contactPhone"
                 type="tel"
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
-                placeholder="+84..."
+                placeholder={t("contactPhonePlaceholder")}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="proofLink">Proof Link (Website/Facebook) *</Label>
+            <Label htmlFor="proofLink">{t("proofLink")}</Label>
             <Input
               id="proofLink"
               type="url"
               value={proofLink}
               onChange={(e) => setProofLink(e.target.value)}
-              placeholder="https://facebook.com/your-page"
+              placeholder={t("proofLinkPlaceholder")}
               required
             />
             <p className="text-xs text-muted-foreground">
-              Link to your official website or social media page
+              {t("proofLinkHelp")}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="proofMessage">Additional Information</Label>
+            <Label htmlFor="proofMessage">{t("additionalInfo")}</Label>
             <textarea
               id="proofMessage"
               value={proofMessage}
               onChange={(e) => setProofMessage(e.target.value)}
-              placeholder="Any additional context to help us verify your organization..."
+              placeholder={t("additionalInfoPlaceholder")}
               rows={3}
               className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
             />
@@ -194,12 +197,12 @@ export function VerificationRequestForm({
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Submitting...
+                {tCommon("submitting")}
               </>
             ) : existingRequest ? (
-              "Update Request"
+              t("updateRequestBtn")
             ) : (
-              "Submit Request"
+              t("submitRequest")
             )}
           </Button>
         </form>

@@ -241,7 +241,7 @@ export function HeaderSearch() {
           )}
           role="dialog"
           aria-modal="true"
-          aria-label="Search"
+          aria-label={t("search.title")}
         >
           {/* Backdrop */}
           <div
@@ -290,7 +290,7 @@ export function HeaderSearch() {
               <button
                 onClick={handleClose}
                 className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
-                aria-label="Close search"
+                aria-label={t("search.close")}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -302,7 +302,7 @@ export function HeaderSearch() {
                 <ul
                   id={listboxId}
                   role="listbox"
-                  aria-label="Search suggestions"
+                  aria-label={t("search.suggestions")}
                   className="py-1"
                 >
                   {suggestions.map((suggestion, index) => (

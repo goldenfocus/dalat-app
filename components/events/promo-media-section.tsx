@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight, Images, Loader2, Check, Repeat, Upload, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -682,6 +682,7 @@ function MomentPickerDialog({
   onImport,
   t,
 }: MomentPickerDialogProps) {
+  const locale = useLocale();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
@@ -741,7 +742,7 @@ function MomentPickerDialog({
                   <h4 className="text-sm font-medium">
                     {title}
                     <span className="text-muted-foreground font-normal ml-2">
-                      {new Date(date).toLocaleDateString()}
+                      {new Date(date).toLocaleDateString(locale)}
                     </span>
                   </h4>
                   <div className="grid grid-cols-4 gap-2">
@@ -824,6 +825,7 @@ function VibeCuratorDialog({
   onSave,
   t,
 }: VibeCuratorDialogProps) {
+  const locale = useLocale();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
@@ -851,7 +853,7 @@ function VibeCuratorDialog({
                   <h4 className="text-sm font-medium">
                     {title}
                     <span className="text-muted-foreground font-normal ml-2">
-                      {new Date(date).toLocaleDateString()}
+                      {new Date(date).toLocaleDateString(locale)}
                     </span>
                   </h4>
                   <div className="grid grid-cols-4 gap-2">

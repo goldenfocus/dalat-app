@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useEffect, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, RotateCcw, RotateCw } from "lucide-react";
 import { KaraokeShareButton } from "./KaraokeShareButton";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ import { formatDuration } from "@/lib/format-duration";
  * Auto-scrolls to keep current line centered.
  */
 export const KaraokeTheater = memo(function KaraokeTheater() {
+  const t = useTranslations("playlist");
   const karaokeLevel = useKaraokeLevel();
   const lyricsLrc = useCurrentTrackLyrics();
   const lyricsOffset = useLyricsOffset();
@@ -92,7 +94,7 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
           <button
             onClick={() => setKaraokeLevel(1)}
             className="p-2 -ml-2 text-white/60 hover:text-white transition-colors"
-            aria-label="Collapse lyrics"
+            aria-label={t("karaokeUi.collapseLyrics")}
           >
             <ChevronDown className="w-5 h-5" />
           </button>
@@ -109,7 +111,7 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
           <button
             onClick={() => setKaraokeLevel(3)}
             className="p-2 -mr-2 text-white/60 hover:text-white transition-colors"
-            aria-label="Full screen"
+            aria-label={t("karaokeUi.fullScreen")}
           >
             <ChevronUp className="w-5 h-5" />
           </button>
@@ -167,7 +169,7 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
               <button
                 onClick={() => skipBy(-15)}
                 className="relative p-2 text-white/50 hover:text-white transition-colors"
-                aria-label="Rewind 15 seconds"
+                aria-label={t("karaokeUi.rewind15")}
               >
                 <RotateCcw className="w-5 h-5" />
                 <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold mt-0.5">15</span>
@@ -175,7 +177,7 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
               <button
                 onClick={() => skipBy(15)}
                 className="relative p-2 text-white/50 hover:text-white transition-colors"
-                aria-label="Forward 15 seconds"
+                aria-label={t("karaokeUi.forward15")}
               >
                 <RotateCw className="w-5 h-5" />
                 <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold mt-0.5">15</span>
@@ -187,10 +189,10 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
               <button
                 onClick={() => adjustLyricsOffset(-100)}
                 className="flex items-center gap-0.5 pl-2 pr-1 py-1 text-white/50 hover:text-white text-xs transition-colors"
-                aria-label="Earlier"
+                aria-label={t("karaokeUi.earlier")}
               >
                 <ChevronLeft className="w-3 h-3" />
-                <span className="text-[10px]">Earlier</span>
+                <span className="text-[10px]">{t("karaokeUi.earlier")}</span>
               </button>
               <span className="text-[10px] text-white/40 w-10 text-center tabular-nums">
                 {lyricsOffset >= 0 ? "+" : ""}{Math.round(lyricsOffset / 100) / 10}s
@@ -198,9 +200,9 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
               <button
                 onClick={() => adjustLyricsOffset(100)}
                 className="flex items-center gap-0.5 pl-1 pr-2 py-1 text-white/50 hover:text-white text-xs transition-colors"
-                aria-label="Later"
+                aria-label={t("karaokeUi.later")}
               >
-                <span className="text-[10px]">Later</span>
+                <span className="text-[10px]">{t("karaokeUi.later")}</span>
                 <ChevronRight className="w-3 h-3" />
               </button>
             </div>

@@ -1,5 +1,5 @@
 import { Link } from "@/lib/i18n/routing";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import {
   Calendar,
@@ -103,6 +103,7 @@ async function getRecentEvents(userId: string, limit = 5) {
 export default async function OrganizerDashboard() {
   const supabase = await createClient();
   const t = await getTranslations("organizerPortal");
+  const locale = await getLocale();
 
   const {
     data: { user },
@@ -202,7 +203,7 @@ export default async function OrganizerDashboard() {
                     </Link>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <span>
-                        {new Date(event.starts_at).toLocaleDateString("en-US", {
+                        {new Date(event.starts_at).toLocaleDateString(locale, {
                           month: "short",
                           day: "numeric",
                         })}

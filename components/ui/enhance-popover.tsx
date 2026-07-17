@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { Sparkles, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCustomEnhanceChips } from "@/lib/hooks/use-custom-enhance-chips";
@@ -58,6 +59,7 @@ export function EnhancePopover({
   isEnhancing,
   triggerRef,
 }: EnhancePopoverProps) {
+  const t = useTranslations("common");
   const [selectedChipId, setSelectedChipId] = React.useState<string | null>(null);
   const [editablePrompt, setEditablePrompt] = React.useState("");
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
@@ -318,7 +320,7 @@ export function EnhancePopover({
                 handleDirectedEnhance();
               }
             }}
-            placeholder="Click a chip or describe what you want..."
+            placeholder={t("enhancePromptPlaceholder")}
             disabled={isEnhancing}
             rows={3}
             className={cn(

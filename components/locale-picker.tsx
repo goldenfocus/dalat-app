@@ -3,7 +3,7 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { Link, usePathname } from "@/lib/i18n/routing";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { CONTENT_LOCALES, LOCALE_FLAGS, type ContentLocale } from "@/lib/types";
@@ -37,6 +37,7 @@ interface LocalePickerProps {
  */
 export function LocalePicker({ variant = "default", className, userId }: LocalePickerProps) {
   const locale = useLocale() as ContentLocale;
+  const t = useTranslations("common");
   const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
@@ -158,7 +159,7 @@ export function LocalePicker({ variant = "default", className, userId }: LocaleP
             )}
           >
             <nav
-              aria-label="Select language"
+              aria-label={t("selectLanguage")}
               className="grid grid-cols-4 gap-1"
             >
               {CONTENT_LOCALES.map((loc) => (

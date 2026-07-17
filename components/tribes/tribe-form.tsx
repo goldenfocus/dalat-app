@@ -26,6 +26,7 @@ const accessTypes: { value: TribeAccessType; icon: React.ReactNode; labelKey: st
 export function TribeForm({ locale }: TribeFormProps) {
   const router = useRouter();
   const t = useTranslations("tribes");
+  const tCommon = useTranslations("common");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -71,30 +72,30 @@ export function TribeForm({ locale }: TribeFormProps) {
         className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Back</span>
+        <span>{tCommon("back")}</span>
       </Link>
 
       <h1 className="text-2xl font-bold mt-6 mb-8">{t("createTribe")}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name">{t("form.name")}</Label>
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Enter tribe name"
+            placeholder={t("form.namePlaceholder")}
             maxLength={100}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Description (optional)</Label>
+          <Label htmlFor="description">{t("form.descriptionOptional")}</Label>
           <Textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="What's this tribe about?"
+            placeholder={t("form.descriptionPlaceholder")}
             rows={3}
           />
         </div>

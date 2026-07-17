@@ -732,7 +732,7 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
         <button
           onClick={handleNearMe}
           className="absolute bottom-24 right-4 bg-background hover:bg-muted text-foreground h-12 px-4 rounded-full shadow-lg border border-border flex items-center gap-2 transition-all duration-200 active:scale-95 hover:shadow-xl"
-          title="Show my location"
+          title={t("showMyLocation")}
         >
           <Navigation className="w-5 h-5 text-blue-500" />
           <span className="hidden sm:inline font-medium text-sm">{t("nearMe")}</span>

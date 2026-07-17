@@ -126,7 +126,7 @@ export default async function FestivalsPage({ params }: PageProps) {
             <h2 className="text-2xl font-bold mb-6">{tFestival("activeUpcoming")}</h2>
             <div className="grid gap-6 sm:grid-cols-2">
               {activeFestivals.map((festival) => (
-                <FestivalCard key={festival.id} festival={festival} />
+                <FestivalCard key={festival.id} festival={festival} locale={locale} />
               ))}
             </div>
           </section>
@@ -140,7 +140,7 @@ export default async function FestivalsPage({ params }: PageProps) {
             </h2>
             <div className="grid gap-6 sm:grid-cols-2">
               {pastFestivals.map((festival) => (
-                <FestivalCard key={festival.id} festival={festival} isPast />
+                <FestivalCard key={festival.id} festival={festival} locale={locale} isPast />
               ))}
             </div>
           </section>
@@ -164,6 +164,7 @@ export default async function FestivalsPage({ params }: PageProps) {
 
 function FestivalCard({
   festival,
+  locale,
   isPast,
 }: {
   festival: Festival & {
@@ -171,14 +172,15 @@ function FestivalCard({
       organizers: { id: string; name: string; logo_url: string | null; is_verified: boolean };
     })[];
   };
+  locale: Locale;
   isPast?: boolean;
 }) {
   const startDate = new Date(festival.start_date);
   const endDate = new Date(festival.end_date);
-  const dateRange = `${startDate.toLocaleDateString("vi-VN", {
+  const dateRange = `${startDate.toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
-  })} - ${endDate.toLocaleDateString("vi-VN", {
+  })} - ${endDate.toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",

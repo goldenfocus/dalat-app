@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { JoinByCodeForm } from "@/components/tribes/join-by-code-form";
 
@@ -11,11 +12,12 @@ export default async function JoinByCodePage({ params }: PageProps) {
   const tribe = tribes?.[0];
 
   if (!tribe) {
+    const t = await getTranslations({ locale, namespace: "tribes" });
     return (
       <main className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Invalid Invite Code</h1>
-          <p className="text-muted-foreground">This invite code is invalid or has expired.</p>
+          <h1 className="text-2xl font-bold mb-2">{t("invalidCodeTitle")}</h1>
+          <p className="text-muted-foreground">{t("invalidCodeDescription")}</p>
         </div>
       </main>
     );

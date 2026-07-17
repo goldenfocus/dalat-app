@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { KaraokePageClient } from "./karaoke-page-client";
 import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
@@ -125,15 +126,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { track, event } = data;
   const trackTitle = track.title || "Bài hát";
   const artist = track.artist || event.title;
+  const t = await getTranslations({ locale, namespace: "playlist.karaoke" });
 
   // SEO-optimized title with Vietnamese/English
-  const title = locale === "vi"
-    ? `🎤 Karaoke ${trackTitle} - ${artist} | Hát Karaoke Online Đà Lạt`
-    : `🎤 Karaoke ${trackTitle} - ${artist} | Sing Along Da Lat`;
+  const title = t("metaTitle", { trackTitle, artist });
 
-  const description = locale === "vi"
-    ? `Hát karaoke online ${trackTitle} với lời bài hát hiển thị theo nhạc. Karaoke Đà Lạt, nhạc Việt Nam, hát cùng bạn bè. Từ sự kiện ${event.title}.`
-    : `Sing karaoke ${trackTitle} with synchronized lyrics. Da Lat karaoke, Vietnamese music. From ${event.title}.`;
+  const description = t("metaDescription", { trackTitle, eventTitle: event.title });
 
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/karaoke/${trackId}`;
   const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;

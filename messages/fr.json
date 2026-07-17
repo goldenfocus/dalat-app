@@ -67,7 +67,19 @@
     "aiRefineUnavailable": "Les retouches sont en pause — générez plutôt une nouvelle image.",
     "aiTooManyPending": "Vos autres images sont encore en cours. Patientez un instant.",
     "aiTimeout": "C'est plus long que d'habitude — l'image peut encore arriver. Sinon, réessayez.",
-    "aiGenerationFailed": "La génération a échoué cette fois. Réessayez."
+    "aiGenerationFailed": "La génération a échoué cette fois. Réessayez.",
+    "changeTheme": "Changer de thème",
+    "selectLanguage": "Choisir la langue",
+    "close": "Fermer",
+    "previousPhoto": "Photo précédente",
+    "nextPhoto": "Photo suivante",
+    "pagination": "Pagination",
+    "goToPreviousPage": "Page précédente",
+    "goToNextPage": "Page suivante",
+    "goToPage": "Aller à la page {page}",
+    "enhanceWithAI": "Améliorer avec l'IA",
+    "enhancePromptPlaceholder": "Cliquez sur une puce ou décrivez ce que vous voulez...",
+    "refinePromptPlaceholder": "ex. : Ajouter plus de tons violets, rendre plus abstrait..."
   },
   "nav": {
     "events": "Événements",
@@ -83,7 +95,15 @@
     "venues": "Lieux",
     "activity": "Activité",
     "news": "Actualités",
-    "loyalty": "Fidélité"
+    "loyalty": "Fidélité",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "primary": "Principal",
+    "footer": {
+      "love": "amour",
+      "rssFeed": "Flux RSS",
+      "discover": "Découvrir"
+    }
   },
   "home": {
     "title": "Événements à Đà Lạt",
@@ -107,7 +127,10 @@
       "noResults": "Aucun événement trouvé pour \"{query}\"",
       "clearSearch": "Effacer la recherche",
       "viewAll": "Voir tous les résultats pour \"{query}\"",
-      "searchFor": "Rechercher \"{query}\""
+      "searchFor": "Rechercher \"{query}\"",
+      "title": "Recherche",
+      "close": "Fermer la recherche",
+      "suggestions": "Suggestions de recherche"
     },
     "browseArchive": "Événements passés",
     "seeAllUpcoming": "Voir tous les événements à venir",
@@ -201,7 +224,68 @@
       "dismiss": "Fermer",
       "thisApp": "cette application"
     },
-    "continueWithApple": "Continuer avec Apple"
+    "continueWithApple": "Continuer avec Apple",
+    "updatePassword": {
+      "description": "Veuillez saisir votre nouveau mot de passe ci-dessous.",
+      "saving": "Enregistrement..."
+    },
+    "error": {
+      "title": "Oups !",
+      "alreadyConfirmed": "Votre email est peut-être déjà confirmé.",
+      "linkExpired": "Ce lien a expiré ou a déjà été utilisé.",
+      "genericMessage": "Une erreur s'est produite. Essayez de vous connecter ou demandez un nouveau lien.",
+      "trySigningIn": "Essayer de se connecter"
+    },
+    "redirectHelp": {
+      "title": "On s'est un peu perdus",
+      "description": "Votre navigateur et notre serveur ont tourné en boucle. Ça arrive — on va arranger ça.",
+      "cookiesBlockedTitle": "Les cookies sont bloqués",
+      "cookiesBlockedDescription": "Nous avons besoin des cookies pour vous garder connecté. Activez-les pour dalat.app et réessayez.",
+      "quickFixes": "Solutions rapides :",
+      "fix1": "<strong>Effacez les cookies</strong> pour dalat.app et réessayez (le bouton ci-dessous s'en charge)",
+      "fix2": "Essayez un <strong>autre navigateur</strong> (Chrome, Safari ou Edge)",
+      "fix3": "Si vous utilisez <strong>Firefox</strong>, vérifiez que les cookies ne sont pas bloqués pour ce site",
+      "clearAndRetry": "Effacer les cookies et repartir à zéro",
+      "openInNewTab": "Ouvrir dans un nouvel onglet",
+      "quote1": {
+        "text": "La plus belle vue vient après la montée la plus rude.",
+        "origin": "Quelque part sur le pic Langbiang"
+      },
+      "quote2": {
+        "text": "Même le brouillard finit par se lever.",
+        "origin": "Les matins de Dalat"
+      },
+      "quote3": {
+        "text": "Un bon café règle presque tout.",
+        "origin": "Tous les cafés de Dalat"
+      },
+      "quote4": {
+        "text": "Tous ceux qui errent ne sont pas perdus — certains doivent juste effacer leurs cookies.",
+        "origin": "Ancien proverbe d'internet"
+      },
+      "quote5": {
+        "text": "Les fleurs ne se pressent pas pour éclore. Respirez un bon coup.",
+        "origin": "Jardin aux fleurs de Dalat"
+      },
+      "quote6": {
+        "text": "Chaque boucle de redirection a une sortie.",
+        "origin": "Développeurs optimistes"
+      },
+      "quote7": {
+        "text": "À Dalat, même la pluie est belle.",
+        "origin": "Sagesse de la saison des pluies"
+      },
+      "quote8": {
+        "text": "Un voyage de mille pages commence par un simple clic.",
+        "origin": "Philosophie du web"
+      }
+    },
+    "forgotPasswordPage": {
+      "successTitle": "Vérifiez vos emails",
+      "successDescription": "Instructions de réinitialisation envoyées",
+      "successHint": "Si vous êtes inscrit avec votre email et un mot de passe, vous recevrez un email de réinitialisation.",
+      "sending": "Envoi..."
+    }
   },
   "errors": {
     "somethingWentWrong": "Désolé, une erreur s'est produite.",
@@ -220,7 +304,10 @@
     "noPermission": "Vous n'avez pas la permission de changer les rôles",
     "invalidRole": "Rôle sélectionné invalide",
     "cannotDemoteSelf": "Vous ne pouvez pas vous rétrograder",
-    "userNotFound": "Utilisateur non trouvé"
+    "userNotFound": "Utilisateur non trouvé",
+    "unexpectedError": "Une erreur inattendue s'est produite. Essayez de rafraîchir la page.",
+    "tryAgain": "Réessayer",
+    "refreshPage": "Rafraîchir la page"
   },
   "events": {
     "popular": "Populaire",
@@ -268,7 +355,9 @@
     "photoBy": "📸 @{name}",
     "spotsAvailable": "{count} places",
     "secretAddressLockHint": "Adresse exacte révélée après votre RSVP",
-    "secretAddressRevealedHint": "Seuls les invités voient cette adresse"
+    "secretAddressRevealedHint": "Seuls les invités voient cette adresse",
+    "moreAtVenue": "Plus d'événements à <link>{venue}</link>",
+    "allEventsAtVenue": "Tous les événements dans ce lieu"
   },
   "rsvp": {
     "imGoing": "Je participe",
@@ -720,6 +809,70 @@
       "changePassword": "Modifier le mot de passe",
       "savePassword": "Enregistrer le mot de passe",
       "passwordUpdated": "Mot de passe mis à jour !"
+    },
+    "verification": {
+      "title": "Vérification",
+      "verifiedTitle": "Vous êtes vérifié !",
+      "verifiedDescription": "Votre compte organisateur a été vérifié. Vous pouvez désormais créer des festivals et des événements officiels.",
+      "createFestival": "Créer un festival",
+      "goToDashboard": "Aller au tableau de bord",
+      "pageTitle": "Vérification d'organisateur",
+      "becomeVerified": "Devenez un organisateur vérifié",
+      "intro": "Les organisateurs vérifiés peuvent créer des festivals et des événements officiels sur DaLat.app. C'est réservé aux organisations, lieux et organisateurs d'événements légitimes de Đà Lạt.",
+      "benefitFestivals": "Créez et gérez des festivals avec une image officielle",
+      "benefitBadge": "Vos événements reçoivent le badge \"Officiel\" et un placement prioritaire",
+      "benefitAnnouncements": "Publiez des mises à jour et des annonces pour les abonnés de votre festival",
+      "pendingNotice": "Vous avez déjà une demande de vérification en attente.",
+      "pendingWait": "Merci de patienter le temps qu'elle soit examinée.",
+      "status": {
+        "pending": {
+          "title": "Demande en attente",
+          "description": "Votre demande de vérification est en cours d'examen."
+        },
+        "more_info_needed": {
+          "title": "Informations supplémentaires requises",
+          "description": "Veuillez fournir des informations supplémentaires pour finaliser votre vérification."
+        },
+        "approved": {
+          "title": "Demande approuvée",
+          "description": "Félicitations ! Votre vérification a été approuvée."
+        },
+        "rejected": {
+          "title": "Demande rejetée",
+          "description": "Votre demande de vérification n'a pas été approuvée."
+        }
+      },
+      "organizationLabel": "Organisation :",
+      "submittedDate": "Soumis le {date}",
+      "requestedInformation": "Informations demandées :",
+      "reasonLabel": "Raison :",
+      "requestSubmitted": "Demande envoyée !",
+      "requestSubmittedDescription": "Nous examinerons votre demande et vous répondrons bientôt.",
+      "updateYourRequest": "Mettre à jour votre demande",
+      "requestVerification": "Demander une vérification",
+      "organizationName": "Nom de l'organisation *",
+      "organizationNamePlaceholder": "Nom de votre organisation ou lieu",
+      "organizationType": "Type d'organisation *",
+      "typeVenue": "Lieu (Café, Bar, Restaurant)",
+      "typeCultural": "Organisation culturelle",
+      "typeFestival": "Comité de festival",
+      "typeWard": "Quartier (Phường)",
+      "typeCity": "Gouvernement municipal",
+      "typeBusiness": "Entreprise",
+      "typeOther": "Autre",
+      "aboutOrganization": "À propos de votre organisation",
+      "aboutPlaceholder": "Quel type d'événements organisez-vous ?",
+      "contactEmail": "Email de contact",
+      "contactEmailPlaceholder": "contact@example.com",
+      "contactPhone": "Téléphone de contact",
+      "contactPhonePlaceholder": "+84...",
+      "proofLink": "Lien de preuve (Site web/Facebook) *",
+      "proofLinkPlaceholder": "https://facebook.com/votre-page",
+      "proofLinkHelp": "Lien vers votre site officiel ou page de réseau social",
+      "additionalInfo": "Informations supplémentaires",
+      "additionalInfoPlaceholder": "Tout contexte supplémentaire pour nous aider à vérifier votre organisation...",
+      "submitRequest": "Envoyer la demande",
+      "updateRequestBtn": "Mettre à jour la demande"
     }
   },
   "notifications": {
@@ -1310,7 +1463,9 @@
     },
     "desktopPill": {
       "message": "Vous aimez ? Sauvegardez vos favoris",
-      "cta": "Rejoindre gratuitement"
+      "cta": "Rejoindre gratuitement",
+      "signUpInvitation": "Invitation à s'inscrire",
+      "dismiss": "Ignorer"
     },
     "discoveryMode": "Découverte",
     "differentEvent": "D'un autre événement",
@@ -1387,6 +1542,74 @@
       "downloading": "Téléchargement...",
       "downloadComplete": "Téléchargement terminé",
       "downloadFailed": "Échec du téléchargement"
+    },
+    "searchMoments": "Rechercher des moments",
+    "lightbox": {
+      "shareMoment": "Partager le moment",
+      "openFullPage": "Ouvrir en pleine page",
+      "close": "Fermer",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "viewComments": "Voir les commentaires",
+      "backToLastMoment": "Revenir au dernier moment"
+    },
+    "setCover": {
+      "success1": {
+        "title": "✨ Une vraie tête d'affiche !",
+        "description": "Cette photo est désormais la star du spectacle."
+      },
+      "success2": {
+        "title": "🎨 Relooking d'album réussi !",
+        "description": "Ça a fière allure sur la page d'accueil."
+      },
+      "success3": {
+        "title": "📸 Nouvelle couv', enchanté !",
+        "description": "Votre album vient de s'offrir une métamorphose."
+      },
+      "success4": {
+        "title": "🤌 Un baiser de chef !",
+        "description": "Celle-ci file droit vers le sommet."
+      },
+      "success5": {
+        "title": "⭐ L'étoffe d'une couverture !",
+        "description": "Cette photo était née pour ce moment."
+      },
+      "success6": {
+        "title": "🎖️ Promotion accordée !",
+        "description": "De simple photo à VIP de l'album."
+      },
+      "success7": {
+        "title": "🔦 Projecteur : ALLUMÉ",
+        "description": "Ce moment est maintenant sur le devant de la scène."
+      },
+      "success8": {
+        "title": "💅 La première impression compte !",
+        "description": "Et celle-ci fait mouche."
+      },
+      "remove1": {
+        "title": "🪖 Retour à la vie civile",
+        "description": "Cette photo est relevée de ses fonctions de couverture."
+      },
+      "remove2": {
+        "title": "🔄 Coup de théâtre !",
+        "description": "C'est au tour de quelqu'un d'autre de briller."
+      },
+      "remove3": {
+        "title": "✓ Couverture retirée",
+        "description": "L'album choisira automatiquement quelque chose de fabuleux."
+      },
+      "error1": {
+        "title": "😅 Oups, ça n'a pas marché !",
+        "description": "On réessaie ? Les gremlins de la tech existent vraiment."
+      },
+      "error2": {
+        "title": "🚀 Houston, on a un problème",
+        "description": "La couverture n'a pas pu être mise à jour. On retente !"
+      },
+      "error3": {
+        "title": "🙈 Bon, c'est gênant...",
+        "description": "Quelque chose a mal tourné. Encore un essai ?"
+      }
     }
   },
   "tribes": {
@@ -1459,7 +1682,21 @@
     "replaceCover": "Remplacer la couverture",
     "removeCover": "Supprimer",
     "coverUploading": "Envoi en cours...",
-    "coverUploadFailed": "Échec de l'envoi. Veuillez réessayer."
+    "coverUploadFailed": "Échec de l'envoi. Veuillez réessayer.",
+    "form": {
+      "name": "Nom",
+      "namePlaceholder": "Nom de la tribu",
+      "descriptionOptional": "Description (facultatif)",
+      "descriptionPlaceholder": "De quoi parle cette tribu ?"
+    },
+    "requestMessagePlaceholder": "Pourquoi souhaitez-vous nous rejoindre ?",
+    "settingsForm": {
+      "name": "Nom",
+      "description": "Description",
+      "showInSearch": "Afficher dans la recherche"
+    },
+    "invalidCodeTitle": "Code d'invitation invalide",
+    "invalidCodeDescription": "Ce code d'invitation est invalide ou a expiré."
   },
   "feed": {
     "title": "Fil",
@@ -1719,7 +1956,18 @@
     "goLiveDescription": "Que partagez-vous ?",
     "goLivePlaceholder": "Coucher de soleil au lac Xuan Huong...",
     "goingLive": "Passage en direct...",
-    "goLiveError": "Impossible de démarrer le stream. Veuillez réessayer."
+    "goLiveError": "Impossible de démarrer le stream. Veuillez réessayer.",
+    "backToEvent": "Retour à l'événement",
+    "noActiveStream": "Aucun direct en cours",
+    "streamNotStarted": "Le direct n'a pas encore commencé. Revenez bientôt !",
+    "eventHost": "Hôte de l'événement",
+    "startedAt": "Commencé {time}",
+    "watchLive": "Regarder en direct",
+    "liveChat": "Chat en direct",
+    "connecting": "Connexion...",
+    "noMessagesYet": "Pas encore de messages",
+    "beFirstToSay": "Soyez le premier à dire quelque chose !",
+    "streamOffline": "Direct hors ligne"
   },
   "install": {
     "banner": {
@@ -1804,7 +2052,10 @@
     "upcoming": "À venir",
     "venue": "Lieu",
     "viewEvent": "Voir l'événement",
-    "viewVenue": "Voir le lieu"
+    "viewVenue": "Voir le lieu",
+    "close": "Fermer",
+    "getDirections": "Itinéraire",
+    "showMyLocation": "Afficher ma position"
   },
   "calendarView": {
     "days": {
@@ -2119,7 +2370,14 @@
       "wood-fired": "au feu de bois",
       "zipline": "tyrolienne"
     },
-    "ward": "Quartier"
+    "ward": "Quartier",
+    "contactOptions": "Options de contact",
+    "sms": "SMS",
+    "photoLightbox": {
+      "close": "Fermer",
+      "previousPhoto": "Photo précédente",
+      "nextPhoto": "Photo suivante"
+    }
   },
   "rsvpCelebration": {
     "title": "Vous y allez !",
@@ -2219,7 +2477,8 @@
     "seeOriginal": "Voir l'original",
     "seeTranslation": "Voir la traduction",
     "translatedFrom": "Traduit",
-    "translating": "traduction..."
+    "translating": "traduction...",
+    "cancelReply": "Annuler la réponse"
   },
   "celebration": {
     "title": "Vous venez de rendre Đà Lạt meilleur !",
@@ -2266,7 +2525,57 @@
     "sortDuration": "Trier par durée",
     "sortTitle": "Titre",
     "sortArtistLabel": "Artiste",
-    "sortDurationLabel": "Durée"
+    "sortDurationLabel": "Durée",
+    "volume": "Volume",
+    "downloadTrack": "Télécharger le morceau",
+    "toggleShuffle": "Activer/désactiver la lecture aléatoire",
+    "karaokeUi": {
+      "collapseLyrics": "Réduire les paroles",
+      "expandLyrics": "Déplier les paroles",
+      "fullScreen": "Plein écran",
+      "exitFullScreen": "Quitter le plein écran",
+      "rewind15": "Reculer de 15 secondes",
+      "forward15": "Avancer de 15 secondes",
+      "earlier": "Plus tôt",
+      "later": "Plus tard",
+      "showLyricsEarlier": "Afficher les paroles plus tôt (mode téléprompteur)",
+      "showLyricsLater": "Afficher les paroles plus tard",
+      "saveTiming": "Enregistrer le timing pour tous les utilisateurs",
+      "showLyrics": "Afficher les paroles",
+      "hideLyrics": "Masquer les paroles",
+      "noLyrics": "Pas de paroles",
+      "noLyricsAvailable": "Paroles non disponibles"
+    },
+    "karaokeMetaTitle": "🎤 Karaoké {trackTitle} - {artist} | Chantez à Da Lat",
+    "karaokeMetaDescription": "Chantez {trackTitle} en karaoké avec paroles synchronisées. Karaoké à Da Lat, musique vietnamienne, chantez entre amis. {count} morceaux de {eventTitle}.",
+    "metaDescription": "Écoutez {count, plural, one {# piste audio} other {# pistes audio}} de {eventTitle}{duration}",
+    "metaDurationSuffix": " ({minutes} min)",
+    "karaokeSubtitle": "Chantez avec les paroles synchronisées • Karaoké Da Lat",
+    "viewFullEvent": "Voir tous les détails de l'événement",
+    "downloadPage": {
+      "metaTitle": "Télécharger {trackTitle} - {artist} | MP3 | ĐàLạt.app",
+      "metaDescription": "Téléchargez \"{trackTitle}\" de {artist} gratuitement. MP3 haute qualité de l'événement \"{eventTitle}\" à Da Lat, Vietnam.",
+      "backToPlaylist": "Retour à la playlist",
+      "downloading": "Téléchargement...",
+      "downloadFree": "Télécharger le MP3 gratuitement",
+      "singKaraoke": "Chanter en karaoké",
+      "viewLyrics": "Voir les paroles",
+      "seoFooter": "Téléchargez \"{trackTitle}\" de {artist}, de l'événement \"{eventTitle}\" à Da Lat, Vietnam. Gratuit et haute qualité."
+    },
+    "lyrics": {
+      "metaTitle": "{trackTitle} - {artist} | Paroles | Dalat.app",
+      "metaDescription": "Paroles de \"{trackTitle}\" par {artist}. {preview}... Chantez en karaoké en ligne sur Dalat.app",
+      "backToPlaylist": "Retour à la playlist",
+      "singKaraokeNow": "Chanter en karaoké maintenant",
+      "heading": "Paroles",
+      "noLyrics": "Paroles non disponibles",
+      "singAlong": "Chantez en mode karaoké",
+      "seoFooter": "Paroles de \"{trackTitle}\" de l'événement \"{eventTitle}\" sur DaLat.app. Chantez en karaoké en ligne avec paroles synchronisées."
+    },
+    "karaoke": {
+      "metaTitle": "🎤 Karaoké {trackTitle} - {artist} | Chantez à Da Lat",
+      "metaDescription": "Chantez {trackTitle} en karaoké avec paroles synchronisées. Karaoké à Da Lat, musique vietnamienne. De {eventTitle}."
+    }
   },
   "activity": {
     "title": "Activité",
@@ -2541,7 +2850,12 @@
     "readyToHost": "Prêt à organiser ?",
     "readyToHostDesc": "Créez votre premier événement et gagnez des points organisateur. Chaque événement vous rapproche des avantages premium.",
     "createEvent": "Créer un événement",
-    "noOneYet": "Personne au classement encore. Soyez le premier !"
+    "noOneYet": "Personne au classement encore. Soyez le premier !",
+    "rewardsMetaDescription": "Échange tes points contre des récompenses, des badges et des expériences exclusives à Da Lat.",
+    "rewardsSubtitle": "Échange tes points contre des avantages et des expériences exclusives.",
+    "leaderboardMetaDescription": "Découvre qui mène la communauté de Da Lat. Le top 50 des membres les plus actifs.",
+    "leaderboardSubtitle": "Qui mène la communauté de Dalat ?",
+    "hostMetaDescription": "Débloque des outils d'organisateur premium en organisant plus d'événements à Da Lat."
   },
   "pokerTable": {
     "level": "Niveau {n}",
@@ -2574,5 +2888,190 @@
     "levelOf": "Niveau {n} sur {total}",
     "minutesPerLevel": "Minutes par niveau",
     "applyToAll": "Appliquer à tous"
+  },
+  "tonight": {
+    "title": "Da Lat ce soir",
+    "metaTitle": "Da Lat ce soir - Événements et vie nocturne ({date})",
+    "metaDescription": "Découvrez ce qui se passe ce soir à Da Lat : musique live, bars, DJs et vie nocturne. Mis à jour en temps réel.",
+    "eventsCount": "<strong>{count}</strong> événements ce soir ({date})",
+    "emptyTitle": "Aucun événement ce soir",
+    "emptyDescription": "Découvrez les événements du week-end ou explorez les lieux",
+    "ctaThisWeekend": "Ce week-end",
+    "ctaBars": "Bars",
+    "happeningNow": "En ce moment",
+    "laterTonight": "Plus tard ce soir",
+    "exploreMore": "Explorer davantage",
+    "chipThisWeekend": "Ce week-end",
+    "chipBars": "Bars",
+    "chipCafes": "Cafés",
+    "chipCalendar": "Calendrier"
+  },
+  "thisWeekend": {
+    "title": "Da Lat ce week-end",
+    "metaTitle": "Da Lat ce week-end ({date}) - Événements et activités",
+    "metaDescription": "Découvrez les événements du week-end à Da Lat : musique live, festivals, expositions et activités de plein air. Mis à jour en temps réel.",
+    "eventsCount": "<strong>{count}</strong> événements du {from} au {to}",
+    "emptyTitle": "Aucun événement ce week-end",
+    "emptyDescription": "Découvrez les événements à venir ou explorez les lieux",
+    "ctaUpcomingEvents": "Événements à venir",
+    "saturday": "Samedi ({date})",
+    "sunday": "Dimanche ({date})",
+    "exploreMore": "Explorer davantage",
+    "chipTonight": "Ce soir",
+    "chipUpcoming": "À venir",
+    "chipCalendar": "Calendrier",
+    "chipFestivals": "Festivals"
+  },
+  "venuePages": {
+    "shared": {
+      "happeningNow": "En ce moment",
+      "eventsNow": "Événements en cours",
+      "exhibitionsNow": "Expositions en cours",
+      "exploreMore": "Explorer davantage",
+      "introHappeningRightNow": "<strong>{count}</strong> ont des événements en ce moment même.",
+      "introHappeningNow": "<strong>{count}</strong> ont des événements en cours.",
+      "introExhibitionsNow": "<strong>{count}</strong> ont des expositions en cours.",
+      "chips": {
+        "cafes": "Cafés",
+        "bars": "Bars",
+        "restaurants": "Restaurants",
+        "galleries": "Galeries",
+        "vegetarian": "Végétarien",
+        "vegan": "Végan",
+        "hotels": "Hôtels",
+        "homestays": "Homestays",
+        "coworking": "Coworking",
+        "communityCenters": "Centres communautaires",
+        "parks": "Parcs",
+        "outdoor": "Plein air",
+        "festivals": "Festivals",
+        "allVenues": "Tous les lieux"
+      }
+    },
+    "cafes": {
+      "metaTitle": "Cafés à Da Lat - Coffee shops et lieux d'événements",
+      "metaDescription": "Découvrez les meilleurs cafés de Da Lat qui accueillent événements live, musique et rencontres communautaires. Mis à jour chaque jour avec ce qui se passe en ce moment.",
+      "h1": "Cafés à Da Lat",
+      "intro": "Découvrez <strong>{count} cafés</strong> qui accueillent des événements à Da Lat.",
+      "allHeading": "Tous les cafés"
+    },
+    "bars": {
+      "metaTitle": "Bars à Da Lat - Vie nocturne et événements live",
+      "metaDescription": "Découvrez les meilleurs bars de Da Lat avec musique live, DJs et soirées. Mis à jour chaque jour avec ce qui se passe en ce moment.",
+      "h1": "Bars à Da Lat",
+      "intro": "Découvrez <strong>{count} bars</strong> qui accueillent des événements à Da Lat.",
+      "allHeading": "Tous les bars"
+    },
+    "restaurants": {
+      "metaTitle": "Restaurants à Da Lat - Gastronomie et événements",
+      "metaDescription": "Découvrez les meilleurs restaurants de Da Lat qui accueillent événements culinaires, musique live et rencontres. Mis à jour chaque jour avec ce qui se passe en ce moment.",
+      "h1": "Restaurants à Da Lat",
+      "intro": "Découvrez <strong>{count} restaurants</strong> qui accueillent des événements à Da Lat.",
+      "allHeading": "Tous les restaurants"
+    },
+    "vegan": {
+      "metaTitle": "Restaurants végans à Da Lat - 100% végétal",
+      "metaDescription": "Découvrez les restaurants végans de Da Lat. Une cuisine 100% végétale, du phở végan au bánh mì végan et plus encore.",
+      "h1": "Restaurants végans à Da Lat",
+      "intro": "Découvrez <strong>{count} restaurants végans</strong> à Da Lat.",
+      "allHeading": "Tous les restaurants végans"
+    },
+    "vegetarian": {
+      "metaTitle": "Restaurants végétariens à Da Lat - Cuisine végétale",
+      "metaDescription": "Découvrez les meilleurs restaurants végétariens de Da Lat. Cuisine végétarienne vietnamienne traditionnelle, buffets et plats à base de plantes.",
+      "h1": "Restaurants végétariens à Da Lat",
+      "intro": "Découvrez <strong>{count} restaurants végétariens</strong> à Da Lat.",
+      "allHeading": "Tous les restaurants végétariens"
+    },
+    "coworking": {
+      "metaTitle": "Espaces de coworking à Da Lat - Travail et événements",
+      "metaDescription": "Découvrez les meilleurs espaces de coworking de Da Lat pour les nomades numériques. WiFi rapide, excellent café et communauté dynamique.",
+      "h1": "Espaces de coworking à Da Lat",
+      "intro": "Découvrez <strong>{count} espaces de coworking</strong> à Da Lat.",
+      "allHeading": "Tous les espaces de coworking"
+    },
+    "communityCenters": {
+      "metaTitle": "Centres communautaires à Da Lat - Événements et activités",
+      "metaDescription": "Découvrez les centres communautaires de Da Lat qui accueillent événements, ateliers et activités de groupe. Connectez-vous à la communauté locale.",
+      "h1": "Centres communautaires à Da Lat",
+      "intro": "Découvrez <strong>{count} centres communautaires</strong> à Da Lat.",
+      "allHeading": "Tous les centres communautaires"
+    },
+    "hotels": {
+      "metaTitle": "Hôtels à Da Lat - Hébergement et événements",
+      "metaDescription": "Découvrez les hôtels de Da Lat qui accueillent événements, conférences et célébrations. Un séjour combiné à des expériences uniques.",
+      "h1": "Hôtels à Da Lat",
+      "intro": "Découvrez <strong>{count} hôtels</strong> qui accueillent des événements à Da Lat.",
+      "allHeading": "Tous les hôtels"
+    },
+    "homestays": {
+      "metaTitle": "Homestays à Da Lat - Séjours chez l'habitant et événements",
+      "metaDescription": "Découvrez les homestays de Da Lat et leurs expériences locales uniques. Séjours conviviaux, événements communautaires et culture locale.",
+      "h1": "Homestays à Da Lat",
+      "intro": "Découvrez <strong>{count} homestays</strong> à Da Lat.",
+      "allHeading": "Tous les homestays"
+    },
+    "galleries": {
+      "metaTitle": "Galeries d'art à Da Lat - Expositions et espaces artistiques",
+      "metaDescription": "Découvrez les meilleures galeries d'art et espaces créatifs de Da Lat. Expositions, événements culturels et artistes à l'honneur, mis à jour chaque jour.",
+      "h1": "Galeries d'art à Da Lat",
+      "intro": "Découvrez <strong>{count} galeries</strong> et espaces d'art à Da Lat.",
+      "allHeading": "Toutes les galeries"
+    },
+    "hiking": {
+      "metaTitle": "Randonnée et trek à Da Lat - Sentiers et spots",
+      "metaDescription": "Découvrez les meilleurs sentiers de randonnée de Da Lat. Du pic Langbiang au parc national de Bidoup, vivez la splendide nature des hauts plateaux.",
+      "h1": "Randonnée et trek à Da Lat",
+      "intro": "Découvrez <strong>{count} sentiers de randonnée et spots de trek</strong> à Da Lat.",
+      "allHeading": "Tous les spots de randonnée"
+    },
+    "parks": {
+      "metaTitle": "Parcs à Da Lat - Nature et événements en plein air",
+      "metaDescription": "Découvrez les meilleurs parcs et espaces verts de Da Lat. Événements en plein air, pique-niques et activités nature mis à jour chaque jour.",
+      "h1": "Parcs à Da Lat",
+      "intro": "Découvrez <strong>{count} parcs</strong> et espaces verts à Da Lat.",
+      "allHeading": "Tous les parcs"
+    },
+    "outdoor": {
+      "metaTitle": "Activités de plein air à Da Lat - Événements et lieux",
+      "metaDescription": "Découvrez les lieux de plein air de Da Lat qui accueillent événements, festivals et activités nature. Vivez la beauté des hauts plateaux.",
+      "h1": "Activités de plein air à Da Lat",
+      "intro": "Découvrez <strong>{count} lieux de plein air</strong> à Da Lat.",
+      "allHeading": "Tous les lieux de plein air"
+    },
+    "discover": {
+      "metaTitle": "Découvrir Da Lat - Événements, lieux, moments et plus",
+      "metaDescription": "Découvrez Da Lat : événements du jour, cafés, restaurants, musique live, art et moments authentiques de la communauté. Mis à jour chaque jour.",
+      "h1": "Découvrir Da Lat",
+      "subtitle": "Événements, lieux, gastronomie et moments authentiques de la ville des hauts plateaux chérie du Vietnam.",
+      "statsEvents": "Événements",
+      "statsVenues": "Lieux",
+      "statsMoments": "Moments",
+      "quickDiscoverHeading": "Découverte rapide",
+      "exploreByTypeHeading": "Explorer par type de lieu",
+      "aboutHeading": "À propos de ĐàLạt.app",
+      "aboutBody": "ĐàLạt.app est la plateforme communautaire de découverte d'événements de Da Lat (Đà Lạt), Lam Dong, Vietnam. De la musique live dans des cafés cosy aux expositions d'art, ateliers créatifs et festivals saisonniers, nous vous aidons à trouver et vivre le meilleur de la ville des hauts plateaux du Vietnam. Découvrez les événements de ce soir, de ce week-end, ou planifiez votre prochain voyage à Da Lat.",
+      "links": {
+        "tonight": "Au programme ce soir",
+        "thisWeekend": "Ce week-end",
+        "moments": "Photos et vidéos",
+        "map": "Carte",
+        "festivals": "Festivals"
+      },
+      "types": {
+        "cafes": "Cafés",
+        "bars": "Bars",
+        "restaurants": "Restaurants",
+        "galleries": "Galeries",
+        "parks": "Parcs",
+        "hotels": "Hôtels",
+        "coworking": "Coworking",
+        "homestays": "Homestays",
+        "outdoor": "Plein air",
+        "hiking": "Randonnée",
+        "vegetarian": "Végétarien",
+        "vegan": "Végan"
+      }
+    }
   }
 }

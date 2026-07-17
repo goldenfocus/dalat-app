@@ -1,6 +1,7 @@
 "use client";
 
 import { Phone, MessageCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ interface PhoneActionButtonProps {
 }
 
 export function PhoneActionButton({ phone, zaloUrl, className }: PhoneActionButtonProps) {
+  const t = useTranslations("venues");
   // Format phone for SMS (remove spaces and special chars except +)
   const smsPhone = phone.replace(/[^\d+]/g, "");
 
@@ -23,7 +25,7 @@ export function PhoneActionButton({ phone, zaloUrl, className }: PhoneActionButt
       <DropdownMenuTrigger asChild>
         <button
           className={className}
-          aria-label="Contact options"
+          aria-label={t("contactOptions")}
         >
           <Phone className="w-4 h-4" />
         </button>
@@ -32,13 +34,13 @@ export function PhoneActionButton({ phone, zaloUrl, className }: PhoneActionButt
         <DropdownMenuItem asChild className="py-3 px-4 text-base cursor-pointer">
           <a href={`tel:${phone}`} className="flex items-center gap-3">
             <Phone className="w-5 h-5" />
-            <span>Call</span>
+            <span>{t("callVenue")}</span>
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="py-3 px-4 text-base cursor-pointer">
           <a href={`sms:${smsPhone}`} className="flex items-center gap-3">
             <MessageCircle className="w-5 h-5" />
-            <span>SMS</span>
+            <span>{t("sms")}</span>
           </a>
         </DropdownMenuItem>
         {zaloUrl && (

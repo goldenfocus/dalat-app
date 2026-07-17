@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Calendar } from "lucide-react";
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { Link } from "@/lib/i18n/routing";
@@ -10,7 +10,7 @@ import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { buildLocales } from "@/lib/i18n/routing";
 import { formatInDaLat, DALAT_TIMEZONE } from "@/lib/timezone";
-import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+import { toZonedTime } from "date-fns-tz";
 import { nextSaturday, nextSunday, isSaturday, isSunday, isAfter, startOfDay, endOfDay } from "date-fns";
 
 const SITE_URL = "https://dalat.app";
@@ -26,25 +26,22 @@ export function generateStaticParams() {
 // SEO-optimized for "dalat this weekend" searches
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "thisWeekend" });
 
   // Get weekend date range for dynamic title
   const now = toZonedTime(new Date(), DALAT_TIMEZONE);
   const saturday = isSaturday(now) ? now : isSunday(now) ? now : nextSaturday(now);
-  const weekendDate = formatInTimeZone(saturday, DALAT_TIMEZONE, "MMM d");
-
-  const title = locale === "vi"
-    ? `Đà Lạt Cuối Tuần Này (${weekendDate}) - Sự Kiện & Hoạt Động`
-    : `Da Lat This Weekend (${weekendDate}) - Events & Things to Do`;
-
-  const description = locale === "vi"
-    ? `Khám phá các sự kiện cuối tuần ở Đà Lạt: nhạc sống, lễ hội, triển lãm và hoạt động ngoài trời. Cập nhật theo thời gian thực.`
-    : `Discover weekend events in Da Lat: live music, festivals, exhibitions, and outdoor activities. Updated in real-time.`;
+  const weekendDate = saturday.toLocaleDateString(locale, {
+    month: "short",
+    day: "numeric",
+    timeZone: DALAT_TIMEZONE,
+  });
 
   return generateLocalizedMetadata({
     locale,
     path: "/this-weekend",
-    title,
-    description,
+    title: t("metaTitle", { date: weekendDate }),
+    description: t("metaDescription"),
     keywords: [
       "Da Lat this weekend",
       "what to do in Dalat this weekend",
@@ -113,10 +110,22 @@ function EventsLoading() {
 
 async function WeekendContent({ locale }: { locale: Locale }) {
   const events = await getWeekendEvents();
+  const t = await getTranslations({ locale, namespace: "thisWeekend" });
   const { start, end } = getWeekendBounds();
 
-  const saturdayStr = formatInTimeZone(start, DALAT_TIMEZONE, "EEEE, MMMM d");
-  const sundayStr = formatInTimeZone(end, DALAT_TIMEZONE, "EEEE, MMMM d");
+  const longDate: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: DALAT_TIMEZONE,
+  };
+  const shortDate: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+    timeZone: DALAT_TIMEZONE,
+  };
+  const saturdayStr = start.toLocaleDateString(locale, longDate);
+  const sundayStr = end.toLocaleDateString(locale, longDate);
 
   // Group events by day
   const saturdayEvents = events.filter((e) => {
@@ -201,34 +210,29 @@ async function WeekendContent({ locale }: { locale: Locale }) {
 
       {/* Date range display */}
       <p className="text-muted-foreground mb-6">
-        {locale === "vi" ? (
-          <>
-            <strong>{events.length}</strong> sự kiện diễn ra từ {saturdayStr} đến {sundayStr}
-          </>
-        ) : (
-          <>
-            <strong>{events.length}</strong> events from {saturdayStr} to {sundayStr}
-          </>
-        )}
+        {t.rich("eventsCount", {
+          count: events.length,
+          from: saturdayStr,
+          to: sundayStr,
+          strong: (chunks) => <strong>{chunks}</strong>,
+        })}
       </p>
 
       {events.length === 0 ? (
         <div className="text-center py-16">
           <Calendar className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
           <p className="text-lg font-medium text-muted-foreground mb-1">
-            {locale === "vi" ? "Chưa có sự kiện cuối tuần này" : "No events this weekend"}
+            {t("emptyTitle")}
           </p>
           <p className="text-sm text-muted-foreground/70 mb-4">
-            {locale === "vi"
-              ? "Xem các sự kiện sắp tới hoặc khám phá các địa điểm"
-              : "Check out upcoming events or explore venues"}
+            {t("emptyDescription")}
           </p>
           <div className="flex justify-center gap-3">
             <Link
               href="/events/upcoming"
               className="text-sm px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              {locale === "vi" ? "Sự kiện sắp tới" : "Upcoming Events"}
+              {t("ctaUpcomingEvents")}
             </Link>
           </div>
         </div>
@@ -238,7 +242,7 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           {saturdayEvents.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold mb-4">
-                {locale === "vi" ? `Thứ Bảy (${formatInTimeZone(start, DALAT_TIMEZONE, "d/M")})` : `Saturday (${formatInTimeZone(start, DALAT_TIMEZONE, "MMM d")})`}
+                {t("saturday", { date: start.toLocaleDateString(locale, shortDate) })}
               </h2>
               <div className="space-y-4">
                 {saturdayEvents.map((event) => (
@@ -252,7 +256,7 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           {sundayEvents.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold mb-4">
-                {locale === "vi" ? `Chủ Nhật (${formatInTimeZone(end, DALAT_TIMEZONE, "d/M")})` : `Sunday (${formatInTimeZone(end, DALAT_TIMEZONE, "MMM d")})`}
+                {t("sunday", { date: end.toLocaleDateString(locale, shortDate) })}
               </h2>
               <div className="space-y-4">
                 {sundayEvents.map((event) => (
@@ -267,20 +271,20 @@ async function WeekendContent({ locale }: { locale: Locale }) {
       {/* Cross-links */}
       <nav className="mt-12 pt-8 border-t" aria-label="Explore more">
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
-          {locale === "vi" ? "Khám phá thêm" : "Explore More"}
+          {t("exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
           <Link href="/tonight" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Tối Nay" : "Tonight"}
+            {t("chipTonight")}
           </Link>
           <Link href="/events/upcoming" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Sắp Tới" : "Upcoming"}
+            {t("chipUpcoming")}
           </Link>
           <Link href="/calendar" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Lịch" : "Calendar"}
+            {t("chipCalendar")}
           </Link>
           <Link href="/festivals" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {locale === "vi" ? "Lễ Hội" : "Festivals"}
+            {t("chipFestivals")}
           </Link>
         </div>
       </nav>
@@ -291,12 +295,13 @@ async function WeekendContent({ locale }: { locale: Locale }) {
 export default async function ThisWeekendPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "thisWeekend" });
 
   return (
     <main className="min-h-screen pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-2">
-          {locale === "vi" ? "Đà Lạt Cuối Tuần Này" : "Da Lat This Weekend"}
+          {t("title")}
         </h1>
 
         <Suspense fallback={<EventsLoading />}>

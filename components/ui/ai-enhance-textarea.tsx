@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { EnhancePopover } from "@/components/ui/enhance-popover";
@@ -36,6 +37,7 @@ const AIEnhanceTextarea = React.forwardRef<
     },
     ref
   ) => {
+    const t = useTranslations("common");
     const [isEnhancing, setIsEnhancing] = React.useState(false);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [internalValue, setInternalValue] = React.useState(
@@ -111,7 +113,7 @@ const AIEnhanceTextarea = React.forwardRef<
                 isPopoverOpen && "text-foreground bg-accent",
                 isEnhancing && "animate-pulse"
               )}
-              title="Enhance with AI"
+              title={t("enhanceWithAI")}
             >
               {isEnhancing ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

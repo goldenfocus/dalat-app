@@ -2,7 +2,7 @@ import { Link } from "@/lib/i18n/routing";
 import { ArrowLeft, Plus, Calendar, Users, MapPin, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 
 async function getMyEvents(userId: string) {
@@ -43,6 +43,7 @@ async function getMyEvents(userId: string) {
 export default async function OrganizerEventsPage() {
   const supabase = await createClient();
   const t = await getTranslations("organizerPortal");
+  const locale = await getLocale();
 
   const {
     data: { user },
@@ -139,7 +140,7 @@ export default async function OrganizerEventsPage() {
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         <span>
-                          {startsAt.toLocaleDateString("en-US", {
+                          {startsAt.toLocaleDateString(locale, {
                             month: "short",
                             day: "numeric",
                             year:

@@ -72,7 +72,7 @@ export function EventPopupCard({ event, onClose }: EventPopupCardProps) {
                 triggerHaptic("selection");
               }}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors active:scale-95"
-              title="Get directions"
+              title={t("getDirections")}
             >
               <Route className="w-4 h-4" />
               <span>{t("directions")}</span>
@@ -89,7 +89,7 @@ export function EventPopupCard({ event, onClose }: EventPopupCardProps) {
           onClose();
         }}
         className="absolute top-2 right-2 w-7 h-7 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center active:scale-95 transition-all"
-        aria-label="Close"
+        aria-label={t("close")}
       >
         <X className="w-4 h-4" />
       </button>

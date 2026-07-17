@@ -237,7 +237,7 @@ export function VenueCommunityPhotos({
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors active:scale-95"
-            aria-label="Close"
+            aria-label={t("photoLightbox.close")}
           >
             <X className="w-6 h-6 text-white" />
           </button>
@@ -251,7 +251,7 @@ export function VenueCommunityPhotos({
                   handlePrevious();
                 }}
                 className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors active:scale-95"
-                aria-label="Previous photo"
+                aria-label={t("photoLightbox.previousPhoto")}
               >
                 <ChevronLeft className="w-6 h-6 text-white" />
               </button>
@@ -261,7 +261,7 @@ export function VenueCommunityPhotos({
                   handleNext();
                 }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors active:scale-95"
-                aria-label="Next photo"
+                aria-label={t("photoLightbox.nextPhoto")}
               >
                 <ChevronRight className="w-6 h-6 text-white" />
               </button>

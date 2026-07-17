@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ export function ProfileForm({
   redirectTo = "/",
 }: ProfileFormProps) {
   const router = useRouter();
+  const t = useTranslations("profile");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [usernameError, setUsernameError] = useState<string | null>(null);
@@ -121,7 +123,7 @@ export function ProfileForm({
               <Input
                 id="username"
                 name="username"
-                placeholder="yourname"
+                placeholder={t("usernamePlaceholder")}
                 required
                 pattern="[a-z0-9][a-z0-9._-]*[a-z0-9]|[a-z0-9]{3}"
                 onChange={(e) => {
@@ -140,11 +142,11 @@ export function ProfileForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="display_name">Display name</Label>
+            <Label htmlFor="display_name">{t("displayName")}</Label>
             <Input
               id="display_name"
               name="display_name"
-              placeholder="Your Name"
+              placeholder={t("displayNamePlaceholder")}
               defaultValue={defaultDisplayName}
             />
             <p className="text-xs text-muted-foreground">

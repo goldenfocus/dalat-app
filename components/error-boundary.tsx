@@ -2,6 +2,7 @@
 
 import { Component, type ReactNode } from "react";
 import { unstable_rethrow, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +13,12 @@ interface Props {
 
 interface InnerProps extends Props {
   pathname: string | null;
+  labels: {
+    title: string;
+    description: string;
+    tryAgain: string;
+    refreshPage: string;
+  };
 }
 
 interface State {
@@ -66,22 +73,22 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
             <AlertTriangle className="h-8 w-8 text-destructive" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold">Something went wrong</h2>
+            <h2 className="text-xl font-semibold">{this.props.labels.title}</h2>
             <p className="text-sm text-muted-foreground max-w-md">
-              An unexpected error occurred. Please try refreshing the page.
+              {this.props.labels.description}
             </p>
           </div>
           <div className="flex gap-2">
             <Button onClick={this.handleReset} variant="outline" size="sm">
               <RefreshCw className="mr-2 h-4 w-4" />
-              Try again
+              {this.props.labels.tryAgain}
             </Button>
             <Button
               onClick={() => window.location.reload()}
               variant="default"
               size="sm"
             >
-              Refresh page
+              {this.props.labels.refreshPage}
             </Button>
           </div>
           {process.env.NODE_ENV === "development" && this.state.error && (
@@ -106,8 +113,18 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
 
 export function ErrorBoundary({ children, fallback }: Props) {
   const pathname = usePathname();
+  const t = useTranslations("errors");
   return (
-    <ErrorBoundaryInner pathname={pathname} fallback={fallback}>
+    <ErrorBoundaryInner
+      pathname={pathname}
+      fallback={fallback}
+      labels={{
+        title: t("somethingWentWrong"),
+        description: t("unexpectedError"),
+        tryAgain: t("tryAgain"),
+        refreshPage: t("refreshPage"),
+      }}
+    >
       {children}
     </ErrorBoundaryInner>
   );

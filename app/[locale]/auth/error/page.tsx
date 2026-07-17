@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/routing";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
 async function ErrorContent({
@@ -8,6 +9,7 @@ async function ErrorContent({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  const t = await getTranslations("auth");
   const params = await searchParams;
   const error = params?.error;
 
@@ -17,9 +19,9 @@ async function ErrorContent({
 
   // User-friendly hint based on error type
   const friendlyHint = isAlreadyConfirmed
-    ? "Your email may already be confirmed."
+    ? t("error.alreadyConfirmed")
     : isExpiredLink
-    ? "This link has expired or was already used."
+    ? t("error.linkExpired")
     : null;
 
   return (
@@ -33,22 +35,23 @@ async function ErrorContent({
         </>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Something went wrong. Please try signing in or request a new link.
+          {t("error.genericMessage")}
         </p>
       )}
 
       <Button asChild className="w-full">
-        <Link href="/auth/login">Try signing in</Link>
+        <Link href="/auth/login">{t("error.trySigningIn")}</Link>
       </Button>
     </div>
   );
 }
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  const t = await getTranslations("auth");
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm">
@@ -56,7 +59,7 @@ export default function Page({
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">
-                Oops!
+                {t("error.title")}
               </CardTitle>
             </CardHeader>
             <CardContent>

@@ -117,6 +117,7 @@ export function MomentsDiscoveryMobile({
   initialMoments,
   initialHasMore,
 }: MomentsDiscoveryMobileProps) {
+  const t = useTranslations("moments");
   const isAuthenticated = useIsAuthenticated();
   const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -141,7 +142,7 @@ export function MomentsDiscoveryMobile({
             <button
               onClick={() => setIsSearchOpen(true)}
               className="flex-shrink-0 p-2.5 rounded-full bg-white/10 backdrop-blur-sm text-white/90 hover:text-white hover:bg-white/20 active:scale-95 transition-all"
-              aria-label="Search moments"
+              aria-label={t("searchMoments")}
             >
               <Search className="w-5 h-5" />
             </button>

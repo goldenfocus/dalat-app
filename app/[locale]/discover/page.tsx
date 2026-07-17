@@ -24,19 +24,13 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
 
-  const title = locale === "vi"
-    ? "Khám Phá Đà Lạt - Sự Kiện, Địa Điểm, Khoảnh Khắc"
-    : "Discover Da Lat - Events, Venues, Moments & More";
-
-  const description = locale === "vi"
-    ? "Khám phá Đà Lạt: sự kiện hôm nay, quán cafe, nhà hàng, nhạc sống, nghệ thuật, và khoảnh khắc từ cộng đồng. Cập nhật mỗi ngày."
-    : "Discover Da Lat: today's events, cafes, restaurants, live music, art, and authentic moments from the community. Updated daily.";
+  const t = await getTranslations({ locale, namespace: "venuePages" });
 
   return generateLocalizedMetadata({
     locale,
     path: "/discover",
-    title,
-    description,
+    title: t("discover.metaTitle"),
+    description: t("discover.metaDescription"),
     keywords: [
       "Đà Lạt", "Da Lat", "Dalat",
       "things to do in Dalat", "Dalat events", "Dalat cafes",
@@ -48,31 +42,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 const VENUE_TYPES = [
-  { slug: "cafes", icon: Coffee, en: "Cafes", vi: "Quán Cà Phê", color: "bg-amber-500/10 text-amber-600" },
-  { slug: "bars", icon: Wine, en: "Bars", vi: "Quán Bar", color: "bg-purple-500/10 text-purple-600" },
-  { slug: "restaurants", icon: UtensilsCrossed, en: "Restaurants", vi: "Nhà Hàng", color: "bg-red-500/10 text-red-600" },
-  { slug: "galleries", icon: Palette, en: "Galleries", vi: "Phòng Tranh", color: "bg-pink-500/10 text-pink-600" },
-  { slug: "parks", icon: TreePine, en: "Parks", vi: "Công Viên", color: "bg-green-500/10 text-green-600" },
-  { slug: "hotels", icon: Building2, en: "Hotels", vi: "Khách Sạn", color: "bg-blue-500/10 text-blue-600" },
-  { slug: "coworking", icon: Laptop, en: "Coworking", vi: "Coworking", color: "bg-indigo-500/10 text-indigo-600" },
-  { slug: "homestays", icon: Home, en: "Homestays", vi: "Homestay", color: "bg-teal-500/10 text-teal-600" },
-  { slug: "outdoor", icon: Mountain, en: "Outdoor", vi: "Ngoài Trời", color: "bg-emerald-500/10 text-emerald-600" },
-  { slug: "hiking", icon: Mountain, en: "Hiking", vi: "Leo Núi", color: "bg-emerald-500/10 text-emerald-700" },
-  { slug: "vegetarian", icon: Leaf, en: "Vegetarian", vi: "Chay", color: "bg-lime-500/10 text-lime-600" },
-  { slug: "vegan", icon: Sprout, en: "Vegan", vi: "Thuần Chay", color: "bg-green-500/10 text-green-600" },
+  { slug: "cafes", icon: Coffee, color: "bg-amber-500/10 text-amber-600" },
+  { slug: "bars", icon: Wine, color: "bg-purple-500/10 text-purple-600" },
+  { slug: "restaurants", icon: UtensilsCrossed, color: "bg-red-500/10 text-red-600" },
+  { slug: "galleries", icon: Palette, color: "bg-pink-500/10 text-pink-600" },
+  { slug: "parks", icon: TreePine, color: "bg-green-500/10 text-green-600" },
+  { slug: "hotels", icon: Building2, color: "bg-blue-500/10 text-blue-600" },
+  { slug: "coworking", icon: Laptop, color: "bg-indigo-500/10 text-indigo-600" },
+  { slug: "homestays", icon: Home, color: "bg-teal-500/10 text-teal-600" },
+  { slug: "outdoor", icon: Mountain, color: "bg-emerald-500/10 text-emerald-600" },
+  { slug: "hiking", icon: Mountain, color: "bg-emerald-500/10 text-emerald-700" },
+  { slug: "vegetarian", icon: Leaf, color: "bg-lime-500/10 text-lime-600" },
+  { slug: "vegan", icon: Sprout, color: "bg-green-500/10 text-green-600" },
 ];
 
 const DISCOVERY_LINKS = [
-  { href: "/tonight", en: "What's On Tonight", vi: "Hôm Nay", icon: CalendarDays },
-  { href: "/this-weekend", en: "This Weekend", vi: "Cuối Tuần Này", icon: CalendarDays },
-  { href: "/moments", en: "Photos & Videos", vi: "Ảnh & Video", icon: Camera },
-  { href: "/map", en: "Map", vi: "Bản Đồ", icon: MapPin },
-  { href: "/festivals", en: "Festivals", vi: "Lễ Hội", icon: Music },
+  { href: "/tonight", key: "tonight", icon: CalendarDays },
+  { href: "/this-weekend", key: "thisWeekend", icon: CalendarDays },
+  { href: "/moments", key: "moments", icon: Camera },
+  { href: "/map", key: "map", icon: MapPin },
+  { href: "/festivals", key: "festivals", icon: Music },
 ];
 
 async function DiscoverStats({ locale }: { locale: Locale }) {
   const supabase = createStaticClient();
   if (!supabase) return null;
+
+  const t = await getTranslations({ locale, namespace: "venuePages" });
 
   const [
     { count: eventCount },
@@ -88,15 +84,15 @@ async function DiscoverStats({ locale }: { locale: Locale }) {
     <div className="grid grid-cols-3 gap-4 mb-8">
       <div className="text-center p-4 rounded-xl bg-primary/5">
         <p className="text-2xl font-bold text-primary">{eventCount || 0}+</p>
-        <p className="text-sm text-muted-foreground">{locale === "vi" ? "Sự kiện" : "Events"}</p>
+        <p className="text-sm text-muted-foreground">{t("discover.statsEvents")}</p>
       </div>
       <div className="text-center p-4 rounded-xl bg-primary/5">
         <p className="text-2xl font-bold text-primary">{venueCount || 0}+</p>
-        <p className="text-sm text-muted-foreground">{locale === "vi" ? "Địa điểm" : "Venues"}</p>
+        <p className="text-sm text-muted-foreground">{t("discover.statsVenues")}</p>
       </div>
       <div className="text-center p-4 rounded-xl bg-primary/5">
         <p className="text-2xl font-bold text-primary">{momentCount || 0}+</p>
-        <p className="text-sm text-muted-foreground">{locale === "vi" ? "Khoảnh khắc" : "Moments"}</p>
+        <p className="text-sm text-muted-foreground">{t("discover.statsMoments")}</p>
       </div>
     </div>
   );
@@ -105,6 +101,8 @@ async function DiscoverStats({ locale }: { locale: Locale }) {
 export default async function DiscoverPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  const t = await getTranslations({ locale, namespace: "venuePages" });
 
   const isVi = locale === "vi";
 
@@ -155,12 +153,10 @@ export default async function DiscoverPage({ params }: PageProps) {
       <div className="container max-w-4xl mx-auto px-4 py-6">
         {/* SEO-optimized H1 */}
         <h1 className="text-3xl font-bold mb-2">
-          {isVi ? "Khám Phá Đà Lạt" : "Discover Da Lat"}
+          {t("discover.h1")}
         </h1>
         <p className="text-muted-foreground mb-6">
-          {isVi
-            ? "Sự kiện, địa điểm, ẩm thực và khoảnh khắc từ thành phố sương mù trên cao nguyên Việt Nam."
-            : "Events, venues, food, and authentic moments from Vietnam's beloved highland city."}
+          {t("discover.subtitle")}
         </p>
 
         {/* Live stats */}
@@ -171,17 +167,17 @@ export default async function DiscoverPage({ params }: PageProps) {
         {/* Quick discovery links */}
         <section className="mb-10">
           <h2 className="text-lg font-semibold mb-4">
-            {isVi ? "Tìm nhanh" : "Quick Discover"}
+            {t("discover.quickDiscoverHeading")}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {DISCOVERY_LINKS.map(({ href, en, vi, icon: Icon }) => (
+            {DISCOVERY_LINKS.map(({ href, key, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
                 className="flex items-center gap-3 p-4 rounded-xl border hover:bg-muted/50 transition-colors active:scale-95"
               >
                 <Icon className="w-5 h-5 text-primary" />
-                <span className="font-medium text-sm">{isVi ? vi : en}</span>
+                <span className="font-medium text-sm">{t(`discover.links.${key}`)}</span>
               </Link>
             ))}
           </div>
@@ -190,10 +186,10 @@ export default async function DiscoverPage({ params }: PageProps) {
         {/* Venue types grid — SEO-rich internal links */}
         <section className="mb-10">
           <h2 className="text-lg font-semibold mb-4">
-            {isVi ? "Khám phá theo loại địa điểm" : "Explore by Venue Type"}
+            {t("discover.exploreByTypeHeading")}
           </h2>
           <div className="grid grid-cols-3 sm:grid-cols-3 gap-3">
-            {VENUE_TYPES.map(({ slug, icon: Icon, en, vi, color }) => (
+            {VENUE_TYPES.map(({ slug, icon: Icon, color }) => (
               <Link
                 key={slug}
                 href={`/${slug}`}
@@ -202,7 +198,7 @@ export default async function DiscoverPage({ params }: PageProps) {
                 <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="font-medium text-sm">{isVi ? vi : en}</span>
+                <span className="font-medium text-sm">{t(`discover.types.${slug}`)}</span>
               </Link>
             ))}
           </div>
@@ -211,23 +207,9 @@ export default async function DiscoverPage({ params }: PageProps) {
         {/* SEO content section — visible to crawlers, adds keyword density */}
         <section className="prose prose-sm max-w-none text-muted-foreground">
           <h2 className="text-lg font-semibold text-foreground">
-            {isVi ? "Về ĐàLạt.app" : "About ĐàLạt.app"}
+            {t("discover.aboutHeading")}
           </h2>
-          {isVi ? (
-            <p>
-              ĐàLạt.app là nền tảng khám phá sự kiện và cộng đồng tại Đà Lạt, Lâm Đồng, Việt Nam.
-              Từ nhạc sống ở các quán cà phê đến triển lãm nghệ thuật, workshop sáng tạo và lễ hội,
-              chúng tôi giúp bạn tìm và trải nghiệm những điều tốt nhất của thành phố sương mù.
-              Khám phá các sự kiện hôm nay, cuối tuần này, hoặc lên kế hoạch cho chuyến đi Đà Lạt tiếp theo.
-            </p>
-          ) : (
-            <p>
-              ĐàLạt.app is the community-powered event discovery platform for Da Lat (Đà Lạt),
-              Lam Dong, Vietnam. From live music at cozy cafes to art exhibitions, creative workshops,
-              and seasonal festivals, we help you find and experience the best of Vietnam&apos;s highland city.
-              Discover events happening tonight, this weekend, or plan your next trip to Da Lat.
-            </p>
-          )}
+          <p>{t("discover.aboutBody")}</p>
         </section>
       </div>
     </main>

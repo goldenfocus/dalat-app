@@ -42,7 +42,7 @@ export function MomentsJoinPill({ delay = 2000 }: MomentsJoinPillProps) {
     <div
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300"
       role="complementary"
-      aria-label="Sign up invitation"
+      aria-label={t("signUpInvitation")}
     >
       <div className="flex items-center gap-3 bg-background/95 backdrop-blur-sm border shadow-lg rounded-full pl-4 pr-2 py-2">
         {/* Icon */}
@@ -66,7 +66,7 @@ export function MomentsJoinPill({ delay = 2000 }: MomentsJoinPillProps) {
         <button
           onClick={handleDismiss}
           className="p-1.5 rounded-full hover:bg-muted transition-colors"
-          aria-label="Dismiss"
+          aria-label={t("dismiss")}
         >
           <X className="w-4 h-4 text-muted-foreground" />
         </button>

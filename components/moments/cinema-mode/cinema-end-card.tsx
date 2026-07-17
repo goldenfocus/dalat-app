@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useLocale } from "next-intl";
 import Image from "next/image";
 import { RotateCcw, Camera, Grid3X3, Share2, Check, MapPin, Calendar } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -24,10 +25,10 @@ interface CinemaEndCardProps {
   onBrowseAll?: () => void;
 }
 
-function formatEventDate(isoDate: string): string {
+function formatEventDate(isoDate: string, locale: string): string {
   try {
     const date = new Date(isoDate);
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString(locale, {
       month: "long",
       day: "numeric",
       year: "numeric",
@@ -46,6 +47,7 @@ export function CinemaEndCard({
   onAddMoment,
   onBrowseAll,
 }: CinemaEndCardProps) {
+  const locale = useLocale();
   const { share: nativeShare, copied: shared } = useShare();
   const [animateIn, setAnimateIn] = useState(false);
 
@@ -78,7 +80,7 @@ export function CinemaEndCard({
     fn();
   };
 
-  const eventDate = eventMeta?.date ? formatEventDate(eventMeta.date) : null;
+  const eventDate = eventMeta?.date ? formatEventDate(eventMeta.date, locale) : null;
 
   return (
     <div className="fixed inset-0 z-30 bg-black overflow-hidden">

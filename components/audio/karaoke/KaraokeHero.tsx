@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useEffect, useRef, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   ChevronDown,
   ChevronLeft,
@@ -40,6 +41,8 @@ import { createClient } from "@/lib/supabase/client";
  * Timing controls with clearer labels and admin save option.
  */
 function TimingControls() {
+  const t = useTranslations("playlist");
+  const tCommon = useTranslations("common");
   const lyricsOffset = useLyricsOffset();
   const { adjustLyricsOffset } = useAudioPlayerStore();
   const currentTrack = useCurrentTrack();
@@ -111,10 +114,10 @@ function TimingControls() {
         <button
           onClick={() => adjustLyricsOffset(-100)}
           className="flex items-center gap-0.5 pl-3 pr-1 py-1.5 text-white/70 hover:text-white text-xs transition-colors"
-          title="Show lyrics earlier (teleprompter mode)"
+          title={t("karaokeUi.showLyricsEarlier")}
         >
           <ChevronLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Earlier</span>
+          <span className="hidden sm:inline">{t("karaokeUi.earlier")}</span>
         </button>
 
         {/* Current offset display */}
@@ -126,9 +129,9 @@ function TimingControls() {
         <button
           onClick={() => adjustLyricsOffset(100)}
           className="flex items-center gap-0.5 pl-1 pr-3 py-1.5 text-white/70 hover:text-white text-xs transition-colors"
-          title="Show lyrics later"
+          title={t("karaokeUi.showLyricsLater")}
         >
-          <span className="hidden sm:inline">Later</span>
+          <span className="hidden sm:inline">{t("karaokeUi.later")}</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -144,14 +147,14 @@ function TimingControls() {
               ? "bg-white/5 text-white/30"
               : "bg-primary/80 text-white hover:bg-primary"
           )}
-          title="Save timing for all users"
+          title={t("karaokeUi.saveTiming")}
         >
           {isSaving ? (
             <Loader2 className="w-3 h-3 animate-spin" />
           ) : (
             <Save className="w-3 h-3" />
           )}
-          <span className="hidden sm:inline">Save</span>
+          <span className="hidden sm:inline">{tCommon("save")}</span>
         </button>
       )}
     </div>
@@ -166,6 +169,7 @@ function TimingControls() {
  * Designed for karaoke sessions and sing-alongs.
  */
 export const KaraokeHero = memo(function KaraokeHero() {
+  const t = useTranslations("playlist");
   const karaokeLevel = useKaraokeLevel();
   const lyricsLrc = useCurrentTrackLyrics();
   const lyricsOffset = useLyricsOffset();
@@ -282,7 +286,7 @@ export const KaraokeHero = memo(function KaraokeHero() {
         <button
           onClick={() => setKaraokeLevel(2)}
           className="p-3 bg-white/10 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-all"
-          aria-label="Exit full screen"
+          aria-label={t("karaokeUi.exitFullScreen")}
         >
           <ChevronDown className="w-6 h-6" />
         </button>
@@ -401,7 +405,7 @@ export const KaraokeHero = memo(function KaraokeHero() {
           <button
             onClick={previous}
             className="p-3 text-white/60 hover:text-white transition-colors"
-            aria-label="Previous track"
+            aria-label={t("previous")}
           >
             <SkipBack className="w-7 h-7" />
           </button>
@@ -410,7 +414,7 @@ export const KaraokeHero = memo(function KaraokeHero() {
           <button
             onClick={() => skipBy(-15)}
             className="relative p-2 text-white/60 hover:text-white transition-colors"
-            aria-label="Rewind 15 seconds"
+            aria-label={t("karaokeUi.rewind15")}
           >
             <RotateCcw className="w-7 h-7" />
             <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold mt-0.5">15</span>
@@ -419,7 +423,7 @@ export const KaraokeHero = memo(function KaraokeHero() {
           <button
             onClick={togglePlay}
             className="p-5 bg-primary rounded-full text-primary-foreground hover:bg-primary/90 transition-colors"
-            aria-label={isPlaying ? "Pause" : "Play"}
+            aria-label={isPlaying ? t("pause") : t("play")}
           >
             {isPlaying ? (
               <Pause className="w-10 h-10" />
@@ -432,7 +436,7 @@ export const KaraokeHero = memo(function KaraokeHero() {
           <button
             onClick={() => skipBy(15)}
             className="relative p-2 text-white/60 hover:text-white transition-colors"
-            aria-label="Forward 15 seconds"
+            aria-label={t("karaokeUi.forward15")}
           >
             <RotateCw className="w-7 h-7" />
             <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold mt-0.5">15</span>
@@ -441,7 +445,7 @@ export const KaraokeHero = memo(function KaraokeHero() {
           <button
             onClick={next}
             className="p-3 text-white/60 hover:text-white transition-colors"
-            aria-label="Next track"
+            aria-label={t("next")}
           >
             <SkipForward className="w-7 h-7" />
           </button>

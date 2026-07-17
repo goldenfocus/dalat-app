@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { ChevronUp, Mic2, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentLyric } from "@/lib/hooks/use-current-lyric";
@@ -20,6 +21,7 @@ import {
  * Tapping expands to Level 2 (Theater mode).
  */
 export const KaraokeFooterLine = memo(function KaraokeFooterLine() {
+  const t = useTranslations("playlist");
   const karaokeEnabled = useKaraokeEnabled();
   const karaokeLevel = useKaraokeLevel();
   const lyricsLrc = useCurrentTrackLyrics();
@@ -53,15 +55,15 @@ export const KaraokeFooterLine = memo(function KaraokeFooterLine() {
           hasLyrics ? "hover:text-foreground" : "opacity-50 cursor-not-allowed"
         )}
         disabled={!hasLyrics}
-        aria-label={hasLyrics ? "Show lyrics" : "No lyrics available"}
+        aria-label={hasLyrics ? t("karaokeUi.showLyrics") : t("karaokeUi.noLyricsAvailable")}
       >
         {hasLyrics ? (
           <>
             <MicOff className="w-3.5 h-3.5" />
-            <span>Show lyrics</span>
+            <span>{t("karaokeUi.showLyrics")}</span>
           </>
         ) : (
-          <span>No lyrics</span>
+          <span>{t("karaokeUi.noLyrics")}</span>
         )}
       </button>
     );
@@ -73,10 +75,10 @@ export const KaraokeFooterLine = memo(function KaraokeFooterLine() {
       <button
         onClick={() => setKaraokeLevel(1)}
         className="flex items-center justify-center gap-2 px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-        aria-label="Show lyrics"
+        aria-label={t("karaokeUi.showLyrics")}
       >
         <Mic2 className="w-3.5 h-3.5" />
-        <span>Show lyrics</span>
+        <span>{t("karaokeUi.showLyrics")}</span>
       </button>
     );
   }
@@ -86,7 +88,7 @@ export const KaraokeFooterLine = memo(function KaraokeFooterLine() {
     <button
       onClick={handleExpand}
       className="w-full px-4 py-2 text-center border-t border-border/50 hover:bg-muted/30 transition-colors group"
-      aria-label="Expand lyrics"
+      aria-label={t("karaokeUi.expandLyrics")}
     >
       <div className="flex items-center justify-center gap-2">
         {/* Current lyric line */}
@@ -120,6 +122,7 @@ export const KaraokeFooterLine = memo(function KaraokeFooterLine() {
  * Shows mic icon and toggles karaoke on/off.
  */
 export const KaraokeToggleButton = memo(function KaraokeToggleButton() {
+  const t = useTranslations("playlist");
   const karaokeEnabled = useKaraokeEnabled();
   const lyricsLrc = useCurrentTrackLyrics();
   const { toggleKaraoke } = useAudioPlayerStore();
@@ -136,7 +139,7 @@ export const KaraokeToggleButton = memo(function KaraokeToggleButton() {
           ? "text-primary bg-primary/10"
           : "text-muted-foreground hover:text-foreground"
       )}
-      aria-label={karaokeEnabled ? "Hide lyrics" : "Show lyrics"}
+      aria-label={karaokeEnabled ? t("karaokeUi.hideLyrics") : t("karaokeUi.showLyrics")}
     >
       {karaokeEnabled ? (
         <Mic2 className="w-4 h-4" />

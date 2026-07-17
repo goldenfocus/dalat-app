@@ -123,6 +123,8 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const trackIndex = track ? parseInt(track, 10) : 0;
   const currentTrack = tracks[trackIndex] || tracks[0];
 
+  const t = await getTranslations({ locale, namespace: "playlist" });
+
   // Build SEO-optimized title and description
   let title: string;
   let description: string;
@@ -132,18 +134,16 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     const trackTitle = currentTrack.title || "Bài hát";
     const artist = currentTrack.artist || event.title;
 
-    title = locale === "vi"
-      ? `🎤 Karaoke ${trackTitle} - ${artist} | Hát Karaoke Đà Lạt Online`
-      : `🎤 Karaoke ${trackTitle} - ${artist} | Sing Along Da Lat`;
+    title = t("karaokeMetaTitle", { trackTitle, artist });
 
-    description = locale === "vi"
-      ? `Hát karaoke online ${trackTitle} với lời bài hát hiển thị theo nhạc. Karaoke Đà Lạt, nhạc Việt Nam, hát cùng bạn bè. ${tracks.length} bài hát từ ${event.title}.`
-      : `Sing karaoke ${trackTitle} with synchronized lyrics display. Da Lat karaoke, Vietnamese music, sing along with friends. ${tracks.length} tracks from ${event.title}.`;
+    description = t("karaokeMetaDescription", { trackTitle, count: tracks.length, eventTitle: event.title });
   } else {
-    title = `${event.title} - Playlist`;
-    description = locale === "vi"
-      ? `Nghe ${tracks.length} bài nhạc từ ${event.title}${durationMinutes > 0 ? ` (${durationMinutes} phút)` : ""}. Karaoke online Đà Lạt, nhạc sự kiện.`
-      : `Listen to ${tracks.length} audio track${tracks.length !== 1 ? "s" : ""} from ${event.title}${durationMinutes > 0 ? ` (${durationMinutes} min)` : ""}`;
+    title = `${event.title} - ${t("title")}`;
+    description = t("metaDescription", {
+      count: tracks.length,
+      eventTitle: event.title,
+      duration: durationMinutes > 0 ? t("metaDurationSuffix", { minutes: durationMinutes }) : "",
+    });
   }
 
   const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/playlist`;
@@ -295,9 +295,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
                 {event.location_name && ` · ${event.location_name}`}
               </p>
               <p className="text-xs text-muted-foreground/70">
-                {locale === "vi"
-                  ? "Hát karaoke online với lời bài hát đồng bộ • Karaoke Đà Lạt"
-                  : "Sing along with synchronized lyrics • Da Lat Karaoke"}
+                {t("karaokeSubtitle")}
               </p>
             </>
           ) : (
@@ -340,7 +338,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
             href={`/events/${slug}`}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            View full event details &rarr;
+            {t("viewFullEvent")} &rarr;
           </Link>
         </div>
       </div>

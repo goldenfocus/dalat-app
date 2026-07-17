@@ -67,7 +67,19 @@
     "aiRefineUnavailable": "Fitur penyempurnaan sedang istirahat — buat gambar baru saja.",
     "aiTooManyPending": "Gambarmu yang lain masih diproses. Tunggu sebentar dulu.",
     "aiTimeout": "Lebih lama dari biasanya — gambarnya mungkin masih akan muncul. Kalau tidak, coba lagi.",
-    "aiGenerationFailed": "Kali ini gagal. Coba lagi ya."
+    "aiGenerationFailed": "Kali ini gagal. Coba lagi ya.",
+    "changeTheme": "Ganti tema",
+    "selectLanguage": "Pilih bahasa",
+    "close": "Tutup",
+    "previousPhoto": "Foto sebelumnya",
+    "nextPhoto": "Foto berikutnya",
+    "pagination": "Navigasi halaman",
+    "goToPreviousPage": "Ke halaman sebelumnya",
+    "goToNextPage": "Ke halaman berikutnya",
+    "goToPage": "Ke halaman {page}",
+    "enhanceWithAI": "Sempurnakan dengan AI",
+    "enhancePromptPlaceholder": "Klik salah satu chip atau jelaskan yang Anda inginkan...",
+    "refinePromptPlaceholder": "mis., Tambahkan nuansa ungu, buat lebih abstrak..."
   },
   "nav": {
     "events": "Acara",
@@ -83,7 +95,15 @@
     "venues": "Tempat",
     "activity": "Aktivitas",
     "news": "Berita",
-    "loyalty": "Loyalitas"
+    "loyalty": "Loyalitas",
+    "openMenu": "Buka menu",
+    "closeMenu": "Tutup menu",
+    "primary": "Utama",
+    "footer": {
+      "love": "cinta",
+      "rssFeed": "Umpan RSS",
+      "discover": "Jelajahi"
+    }
   },
   "home": {
     "title": "Acara di Đà Lạt",
@@ -107,7 +127,10 @@
       "noResults": "Tidak ada acara ditemukan untuk \"{query}\"",
       "clearSearch": "Hapus pencarian",
       "viewAll": "Lihat semua hasil untuk \"{query}\"",
-      "searchFor": "Cari \"{query}\""
+      "searchFor": "Cari \"{query}\"",
+      "title": "Cari",
+      "close": "Tutup pencarian",
+      "suggestions": "Saran pencarian"
     },
     "browseArchive": "Acara sebelumnya",
     "seeAllUpcoming": "Lihat semua acara mendatang",
@@ -201,7 +224,68 @@
       "dismiss": "Tutup",
       "thisApp": "aplikasi ini"
     },
-    "continueWithApple": "Lanjutkan dengan Apple"
+    "continueWithApple": "Lanjutkan dengan Apple",
+    "updatePassword": {
+      "description": "Silakan masukkan kata sandi baru Anda di bawah ini.",
+      "saving": "Menyimpan..."
+    },
+    "error": {
+      "title": "Ups!",
+      "alreadyConfirmed": "Email Anda mungkin sudah terkonfirmasi.",
+      "linkExpired": "Tautan ini sudah kedaluwarsa atau sudah digunakan.",
+      "genericMessage": "Terjadi kesalahan. Silakan coba masuk atau minta tautan baru.",
+      "trySigningIn": "Coba masuk"
+    },
+    "redirectHelp": {
+      "title": "Sedikit tersesat",
+      "description": "Browser Anda dan server kami tersangkut dalam putaran. Kadang memang begitu — mari kita bereskan.",
+      "cookiesBlockedTitle": "Cookie diblokir",
+      "cookiesBlockedDescription": "Kami butuh cookie agar Anda tetap masuk. Aktifkan untuk dalat.app lalu coba lagi.",
+      "quickFixes": "Solusi cepat:",
+      "fix1": "<strong>Hapus cookie</strong> untuk dalat.app lalu coba lagi (tombol di bawah melakukannya)",
+      "fix2": "Coba <strong>browser lain</strong> (Chrome, Safari, atau Edge)",
+      "fix3": "Jika memakai <strong>Firefox</strong>, pastikan cookie tidak diblokir untuk situs ini",
+      "clearAndRetry": "Hapus cookie & mulai dari awal",
+      "openInNewTab": "Buka di tab baru",
+      "quote1": {
+        "text": "Pemandangan terbaik datang setelah pendakian terberat.",
+        "origin": "Di suatu tempat di Puncak Langbiang"
+      },
+      "quote2": {
+        "text": "Kabut pun akhirnya menghilang.",
+        "origin": "Pagi hari di Đà Lạt"
+      },
+      "quote3": {
+        "text": "Secangkir kopi enak menyelesaikan hampir semua masalah.",
+        "origin": "Setiap kafe di Đà Lạt"
+      },
+      "quote4": {
+        "text": "Tidak semua yang mengembara itu tersesat — sebagian hanya perlu menghapus cookie.",
+        "origin": "Pepatah internet kuno"
+      },
+      "quote5": {
+        "text": "Bunga tidak terburu-buru mekar. Tarik napas dulu.",
+        "origin": "Taman Bunga Đà Lạt"
+      },
+      "quote6": {
+        "text": "Setiap putaran redirect punya jalan keluar.",
+        "origin": "Para developer yang optimis"
+      },
+      "quote7": {
+        "text": "Di Đà Lạt, hujan pun terasa indah.",
+        "origin": "Kearifan musim hujan"
+      },
+      "quote8": {
+        "text": "Perjalanan seribu halaman dimulai dari satu klik.",
+        "origin": "Filosofi web"
+      }
+    },
+    "forgotPasswordPage": {
+      "successTitle": "Periksa Email Anda",
+      "successDescription": "Instruksi reset kata sandi telah dikirim",
+      "successHint": "Jika Anda mendaftar dengan email dan kata sandi, Anda akan menerima email reset kata sandi.",
+      "sending": "Mengirim..."
+    }
   },
   "errors": {
     "somethingWentWrong": "Maaf, terjadi kesalahan.",
@@ -220,7 +304,10 @@
     "noPermission": "Anda tidak memiliki izin untuk mengubah peran",
     "invalidRole": "Peran yang dipilih tidak valid",
     "cannotDemoteSelf": "Anda tidak dapat menurunkan diri sendiri",
-    "userNotFound": "Pengguna tidak ditemukan"
+    "userNotFound": "Pengguna tidak ditemukan",
+    "unexpectedError": "Terjadi kesalahan tak terduga. Silakan coba muat ulang halaman.",
+    "tryAgain": "Coba lagi",
+    "refreshPage": "Muat ulang halaman"
   },
   "events": {
     "popular": "Populer",
@@ -268,7 +355,9 @@
     "photoBy": "📸 @{name}",
     "spotsAvailable": "{count} tempat",
     "secretAddressLockHint": "Alamat persis akan terlihat setelah kamu RSVP",
-    "secretAddressRevealedHint": "Hanya tamu yang bisa melihat alamat ini"
+    "secretAddressRevealedHint": "Hanya tamu yang bisa melihat alamat ini",
+    "moreAtVenue": "Lainnya di <link>{venue}</link>",
+    "allEventsAtVenue": "Semua acara di tempat ini"
   },
   "rsvp": {
     "imGoing": "Saya hadir",
@@ -706,6 +795,70 @@
       "changePassword": "Ubah kata sandi",
       "savePassword": "Simpan kata sandi",
       "passwordUpdated": "Kata sandi diperbarui!"
+    },
+    "verification": {
+      "title": "Verifikasi",
+      "verifiedTitle": "Anda Terverifikasi!",
+      "verifiedDescription": "Akun penyelenggara Anda telah terverifikasi. Sekarang Anda bisa membuat festival dan acara resmi.",
+      "createFestival": "Buat Festival",
+      "goToDashboard": "Ke Dasbor",
+      "pageTitle": "Verifikasi Penyelenggara",
+      "becomeVerified": "Jadilah Penyelenggara Terverifikasi",
+      "intro": "Penyelenggara terverifikasi dapat membuat festival dan acara resmi di DaLat.app. Ini untuk organisasi, tempat, dan penyelenggara acara yang sah di Đà Lạt.",
+      "benefitFestivals": "Buat dan kelola festival dengan branding resmi",
+      "benefitBadge": "Acara Anda mendapat lencana \"Resmi\" dan penempatan prioritas",
+      "benefitAnnouncements": "Kirim pembaruan dan pengumuman ke pengikut festival Anda",
+      "pendingNotice": "Anda sudah memiliki permintaan verifikasi yang tertunda.",
+      "pendingWait": "Mohon tunggu hingga selesai ditinjau.",
+      "status": {
+        "pending": {
+          "title": "Permintaan Tertunda",
+          "description": "Permintaan verifikasi Anda sedang ditinjau."
+        },
+        "more_info_needed": {
+          "title": "Butuh Informasi Tambahan",
+          "description": "Mohon berikan informasi tambahan untuk menyelesaikan verifikasi Anda."
+        },
+        "approved": {
+          "title": "Permintaan Disetujui",
+          "description": "Selamat! Verifikasi Anda telah disetujui."
+        },
+        "rejected": {
+          "title": "Permintaan Ditolak",
+          "description": "Permintaan verifikasi Anda tidak disetujui."
+        }
+      },
+      "organizationLabel": "Organisasi:",
+      "submittedDate": "Dikirim {date}",
+      "requestedInformation": "Informasi yang Diminta:",
+      "reasonLabel": "Alasan:",
+      "requestSubmitted": "Permintaan Terkirim!",
+      "requestSubmittedDescription": "Kami akan meninjau permintaan Anda dan segera menghubungi Anda.",
+      "updateYourRequest": "Perbarui Permintaan Anda",
+      "requestVerification": "Minta Verifikasi",
+      "organizationName": "Nama Organisasi *",
+      "organizationNamePlaceholder": "Nama organisasi atau tempat Anda",
+      "organizationType": "Jenis Organisasi *",
+      "typeVenue": "Tempat (Kafe, Bar, Restoran)",
+      "typeCultural": "Organisasi Budaya",
+      "typeFestival": "Panitia Festival",
+      "typeWard": "Kelurahan (Phường)",
+      "typeCity": "Pemerintah Kota",
+      "typeBusiness": "Bisnis",
+      "typeOther": "Lainnya",
+      "aboutOrganization": "Tentang organisasi Anda",
+      "aboutPlaceholder": "Jenis acara apa yang Anda selenggarakan?",
+      "contactEmail": "Email Kontak",
+      "contactEmailPlaceholder": "kontak@contoh.com",
+      "contactPhone": "Telepon Kontak",
+      "contactPhonePlaceholder": "+84...",
+      "proofLink": "Tautan Bukti (Website/Facebook) *",
+      "proofLinkPlaceholder": "https://facebook.com/halaman-anda",
+      "proofLinkHelp": "Tautan ke website resmi atau halaman media sosial Anda",
+      "additionalInfo": "Informasi Tambahan",
+      "additionalInfoPlaceholder": "Konteks tambahan untuk membantu kami memverifikasi organisasi Anda...",
+      "submitRequest": "Kirim Permintaan",
+      "updateRequestBtn": "Perbarui Permintaan"
     }
   },
   "notifications": {
@@ -1296,7 +1449,9 @@
     },
     "desktopPill": {
       "message": "Suka? Simpan favoritmu",
-      "cta": "Gabung gratis"
+      "cta": "Gabung gratis",
+      "signUpInvitation": "Undangan mendaftar",
+      "dismiss": "Tutup"
     },
     "discoveryMode": "Jelajah",
     "differentEvent": "Dari acara lain",
@@ -1373,6 +1528,74 @@
       "downloading": "Mengunduh...",
       "downloadComplete": "Unduhan selesai",
       "downloadFailed": "Unduhan gagal"
+    },
+    "searchMoments": "Cari momen",
+    "lightbox": {
+      "shareMoment": "Bagikan momen",
+      "openFullPage": "Buka halaman penuh",
+      "close": "Tutup",
+      "previous": "Sebelumnya",
+      "next": "Berikutnya",
+      "viewComments": "Lihat komentar",
+      "backToLastMoment": "Kembali ke momen terakhir"
+    },
+    "setCover": {
+      "success1": {
+        "title": "✨ Aura tokoh utama!",
+        "description": "Foto ini sekarang jadi bintang utamanya."
+      },
+      "success2": {
+        "title": "🎨 Album makin glow up!",
+        "description": "Tampil kece di beranda."
+      },
+      "success3": {
+        "title": "📸 Sampul baru, siapa nih?",
+        "description": "Albummu baru saja dapat penampilan baru."
+      },
+      "success4": {
+        "title": "🤌 Sempurna tanpa cela!",
+        "description": "Yang satu ini langsung naik ke puncak."
+      },
+      "success5": {
+        "title": "⭐ Memang bakat jadi sampul!",
+        "description": "Foto ini memang terlahir untuk momen ini."
+      },
+      "success6": {
+        "title": "🎖️ Naik pangkat!",
+        "description": "Dari foto biasa jadi VIP album."
+      },
+      "success7": {
+        "title": "🔦 Lampu sorot: NYALA",
+        "description": "Momen ini sekarang tampil paling depan."
+      },
+      "success8": {
+        "title": "💅 Kesan pertama itu penting!",
+        "description": "Dan yang ini juara banget."
+      },
+      "remove1": {
+        "title": "🪖 Kembali jadi warga sipil",
+        "description": "Foto ini sudah dibebastugaskan dari jabatan sampul."
+      },
+      "remove2": {
+        "title": "🔄 Plot twist!",
+        "description": "Sekarang giliran yang lain bersinar."
+      },
+      "remove3": {
+        "title": "✓ Sampul dihapus",
+        "description": "Album akan otomatis memilih yang paling kece."
+      },
+      "error1": {
+        "title": "😅 Ups, gagal nih!",
+        "description": "Mau coba lagi? Gremlin teknologi itu nyata."
+      },
+      "error2": {
+        "title": "🚀 Houston, ada masalah",
+        "description": "Sampul tidak bisa diperbarui. Ayo coba lagi!"
+      },
+      "error3": {
+        "title": "🙈 Wah, jadi canggung...",
+        "description": "Ada yang salah. Coba sekali lagi?"
+      }
     }
   },
   "tribes": {
@@ -1445,7 +1668,21 @@
     "replaceCover": "Ganti sampul",
     "removeCover": "Hapus",
     "coverUploading": "Mengunggah...",
-    "coverUploadFailed": "Gagal mengunggah. Silakan coba lagi."
+    "coverUploadFailed": "Gagal mengunggah. Silakan coba lagi.",
+    "form": {
+      "name": "Nama",
+      "namePlaceholder": "Masukkan nama tribe",
+      "descriptionOptional": "Deskripsi (opsional)",
+      "descriptionPlaceholder": "Tribe ini tentang apa?"
+    },
+    "requestMessagePlaceholder": "Kenapa kamu ingin bergabung?",
+    "settingsForm": {
+      "name": "Nama",
+      "description": "Deskripsi",
+      "showInSearch": "Tampilkan di pencarian"
+    },
+    "invalidCodeTitle": "Kode Undangan Tidak Valid",
+    "invalidCodeDescription": "Kode undangan ini tidak valid atau sudah kedaluwarsa."
   },
   "feed": {
     "title": "Feed",
@@ -1512,7 +1749,8 @@
     "seeOriginal": "Lihat asli",
     "seeTranslation": "Lihat terjemahan",
     "translatedFrom": "Diterjemahkan",
-    "translating": "menerjemahkan..."
+    "translating": "menerjemahkan...",
+    "cancelReply": "Batalkan balasan"
   },
   "contacts": {
     "title": "Kontak",
@@ -1751,7 +1989,18 @@
     "goLiveDescription": "Apa yang kamu bagikan?",
     "goLivePlaceholder": "Matahari terbenam di Danau Xuan Huong...",
     "goingLive": "Memulai siaran...",
-    "goLiveError": "Tidak dapat memulai siaran. Silakan coba lagi."
+    "goLiveError": "Tidak dapat memulai siaran. Silakan coba lagi.",
+    "backToEvent": "Kembali ke acara",
+    "noActiveStream": "Tidak ada siaran aktif",
+    "streamNotStarted": "Siaran belum dimulai. Cek lagi sebentar lagi!",
+    "eventHost": "Penyelenggara acara",
+    "startedAt": "Dimulai {time}",
+    "watchLive": "Tonton Langsung",
+    "liveChat": "Obrolan Langsung",
+    "connecting": "Menghubungkan...",
+    "noMessagesYet": "Belum ada pesan",
+    "beFirstToSay": "Jadilah yang pertama menyapa!",
+    "streamOffline": "Siaran offline"
   },
   "install": {
     "banner": {
@@ -1836,7 +2085,10 @@
     "upcoming": "Akan datang",
     "venue": "Tempat",
     "viewEvent": "Lihat acara",
-    "viewVenue": "Lihat tempat"
+    "viewVenue": "Lihat tempat",
+    "close": "Tutup",
+    "getDirections": "Petunjuk arah",
+    "showMyLocation": "Tampilkan lokasi saya"
   },
   "calendarView": {
     "days": {
@@ -2162,7 +2414,14 @@
       "wood-fired": "berbahan bakar kayu",
       "zipline": "zipline"
     },
-    "ward": "Kelurahan"
+    "ward": "Kelurahan",
+    "contactOptions": "Opsi kontak",
+    "sms": "SMS",
+    "photoLightbox": {
+      "close": "Tutup",
+      "previousPhoto": "Foto sebelumnya",
+      "nextPhoto": "Foto berikutnya"
+    }
   },
   "rsvpCelebration": {
     "title": "Kamu akan hadir!",
@@ -2266,7 +2525,57 @@
     "sortDuration": "Urutkan berdasarkan durasi",
     "sortTitle": "Judul",
     "sortArtistLabel": "Artis",
-    "sortDurationLabel": "Durasi"
+    "sortDurationLabel": "Durasi",
+    "volume": "Volume",
+    "downloadTrack": "Unduh lagu",
+    "toggleShuffle": "Mode acak",
+    "karaokeUi": {
+      "collapseLyrics": "Ciutkan lirik",
+      "expandLyrics": "Perluas lirik",
+      "fullScreen": "Layar penuh",
+      "exitFullScreen": "Keluar dari layar penuh",
+      "rewind15": "Mundur 15 detik",
+      "forward15": "Maju 15 detik",
+      "earlier": "Lebih awal",
+      "later": "Lebih lambat",
+      "showLyricsEarlier": "Tampilkan lirik lebih awal (mode teleprompter)",
+      "showLyricsLater": "Tampilkan lirik lebih lambat",
+      "saveTiming": "Simpan pengaturan waktu untuk semua pengguna",
+      "showLyrics": "Tampilkan lirik",
+      "hideLyrics": "Sembunyikan lirik",
+      "noLyrics": "Tidak ada lirik",
+      "noLyricsAvailable": "Lirik tidak tersedia"
+    },
+    "karaokeMetaTitle": "🎤 Karaoke {trackTitle} - {artist} | Nyanyi Bareng di Đà Lạt",
+    "karaokeMetaDescription": "Nyanyikan karaoke {trackTitle} dengan tampilan lirik tersinkronisasi. Karaoke Đà Lạt, musik Vietnam, nyanyi bareng teman. {count} lagu dari {eventTitle}.",
+    "metaDescription": "Dengarkan {count, plural, one {# trek audio} other {# trek audio}} dari {eventTitle}{duration}",
+    "metaDurationSuffix": " ({minutes} menit)",
+    "karaokeSubtitle": "Nyanyi bareng dengan lirik tersinkronisasi • Karaoke Đà Lạt",
+    "viewFullEvent": "Lihat detail acara lengkap",
+    "downloadPage": {
+      "metaTitle": "Unduh {trackTitle} - {artist} | MP3 | ĐàLạt.app",
+      "metaDescription": "Unduh \"{trackTitle}\" dari {artist} secara gratis. MP3 kualitas tinggi dari acara \"{eventTitle}\" di Đà Lạt, Vietnam.",
+      "backToPlaylist": "Kembali ke playlist",
+      "downloading": "Mengunduh...",
+      "downloadFree": "Unduh MP3 Gratis",
+      "singKaraoke": "Nyanyi Karaoke",
+      "viewLyrics": "Lihat Lirik",
+      "seoFooter": "Unduh \"{trackTitle}\" dari {artist} dari acara \"{eventTitle}\" di Đà Lạt, Vietnam. Gratis, kualitas tinggi."
+    },
+    "lyrics": {
+      "metaTitle": "{trackTitle} - {artist} | Lirik | Dalat.app",
+      "metaDescription": "Lirik \"{trackTitle}\" dari {artist}. {preview}... Nyanyi karaoke online di Dalat.app",
+      "backToPlaylist": "Kembali ke playlist",
+      "singKaraokeNow": "Nyanyi Karaoke Sekarang",
+      "heading": "Lirik",
+      "noLyrics": "Lirik tidak tersedia",
+      "singAlong": "Nyanyi bareng dengan karaoke",
+      "seoFooter": "Lirik \"{trackTitle}\" dari \"{eventTitle}\" di DaLat.app. Nyanyi karaoke online dengan lirik tersinkronisasi."
+    },
+    "karaoke": {
+      "metaTitle": "🎤 Karaoke {trackTitle} - {artist} | Nyanyi Bareng di Đà Lạt",
+      "metaDescription": "Nyanyikan karaoke {trackTitle} dengan lirik tersinkronisasi. Karaoke Đà Lạt, musik Vietnam. Dari {eventTitle}."
+    }
   },
   "activity": {
     "title": "Aktivitas",
@@ -2541,7 +2850,12 @@
     "readyToHost": "Siap menyelenggarakan?",
     "readyToHostDesc": "Buat acara pertamamu dan mulai kumpulkan poin tuan rumah.",
     "createEvent": "Buat acara",
-    "noOneYet": "Belum ada siapa pun di papan peringkat. Jadilah yang pertama!"
+    "noOneYet": "Belum ada siapa pun di papan peringkat. Jadilah yang pertama!",
+    "rewardsMetaDescription": "Tukarkan poin dengan hadiah, lencana, dan pengalaman eksklusif di Đà Lạt.",
+    "rewardsSubtitle": "Tukarkan poinmu dengan keuntungan dan pengalaman eksklusif.",
+    "leaderboardMetaDescription": "Lihat siapa yang memimpin komunitas Đà Lạt. 50 anggota paling aktif.",
+    "leaderboardSubtitle": "Siapa yang memimpin komunitas Đà Lạt?",
+    "hostMetaDescription": "Buka alat host premium seiring kamu menyelenggarakan lebih banyak acara di Đà Lạt."
   },
   "pokerTable": {
     "level": "Level {n}",
@@ -2574,5 +2888,190 @@
     "levelOf": "Level {n} / {total}",
     "minutesPerLevel": "Menit per level",
     "applyToAll": "Terapkan ke semua"
+  },
+  "tonight": {
+    "title": "Đà Lạt Malam Ini",
+    "metaTitle": "Đà Lạt Malam Ini - Acara & Kehidupan Malam ({date})",
+    "metaDescription": "Temukan apa yang terjadi malam ini di Đà Lạt: musik live, bar, DJ, dan kehidupan malam. Diperbarui secara real-time.",
+    "eventsCount": "<strong>{count}</strong> acara malam ini ({date})",
+    "emptyTitle": "Tidak ada acara malam ini",
+    "emptyDescription": "Cek acara akhir pekan atau jelajahi tempat",
+    "ctaThisWeekend": "Akhir Pekan Ini",
+    "ctaBars": "Bar",
+    "happeningNow": "Sedang Berlangsung",
+    "laterTonight": "Nanti Malam",
+    "exploreMore": "Jelajahi Lebih Banyak",
+    "chipThisWeekend": "Akhir Pekan Ini",
+    "chipBars": "Bar",
+    "chipCafes": "Kafe",
+    "chipCalendar": "Kalender"
+  },
+  "thisWeekend": {
+    "title": "Đà Lạt Akhir Pekan Ini",
+    "metaTitle": "Đà Lạt Akhir Pekan Ini ({date}) - Acara & Aktivitas Seru",
+    "metaDescription": "Temukan acara akhir pekan di Đà Lạt: musik live, festival, pameran, dan aktivitas luar ruang. Diperbarui secara real-time.",
+    "eventsCount": "<strong>{count}</strong> acara dari {from} sampai {to}",
+    "emptyTitle": "Tidak ada acara akhir pekan ini",
+    "emptyDescription": "Cek acara mendatang atau jelajahi tempat",
+    "ctaUpcomingEvents": "Acara Mendatang",
+    "saturday": "Sabtu ({date})",
+    "sunday": "Minggu ({date})",
+    "exploreMore": "Jelajahi Lebih Banyak",
+    "chipTonight": "Malam Ini",
+    "chipUpcoming": "Mendatang",
+    "chipCalendar": "Kalender",
+    "chipFestivals": "Festival"
+  },
+  "venuePages": {
+    "shared": {
+      "happeningNow": "Sedang Berlangsung",
+      "eventsNow": "Acara Sekarang",
+      "exhibitionsNow": "Pameran Sekarang",
+      "exploreMore": "Jelajahi Lebih Banyak",
+      "introHappeningRightNow": "<strong>{count}</strong> punya acara yang sedang berlangsung saat ini.",
+      "introHappeningNow": "<strong>{count}</strong> punya acara yang sedang berlangsung.",
+      "introExhibitionsNow": "<strong>{count}</strong> punya pameran yang sedang berlangsung.",
+      "chips": {
+        "cafes": "Kafe",
+        "bars": "Bar",
+        "restaurants": "Restoran",
+        "galleries": "Galeri",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan",
+        "hotels": "Hotel",
+        "homestays": "Homestay",
+        "coworking": "Coworking",
+        "communityCenters": "Pusat Komunitas",
+        "parks": "Taman",
+        "outdoor": "Luar Ruang",
+        "festivals": "Festival",
+        "allVenues": "Semua Tempat"
+      }
+    },
+    "cafes": {
+      "metaTitle": "Kafe di Đà Lạt - Kedai Kopi & Tempat Acara",
+      "metaDescription": "Temukan kafe terbaik di Đà Lạt yang mengadakan acara live, musik, dan pertemuan komunitas. Diperbarui setiap hari dengan yang sedang berlangsung.",
+      "h1": "Kafe di Đà Lạt",
+      "intro": "Temukan <strong>{count} kafe</strong> yang mengadakan acara di Đà Lạt.",
+      "allHeading": "Semua Kafe"
+    },
+    "bars": {
+      "metaTitle": "Bar di Đà Lạt - Kehidupan Malam & Acara Live",
+      "metaDescription": "Temukan bar terbaik di Đà Lạt dengan musik live, DJ, dan acara kehidupan malam. Diperbarui setiap hari dengan yang sedang berlangsung.",
+      "h1": "Bar di Đà Lạt",
+      "intro": "Temukan <strong>{count} bar</strong> yang mengadakan acara di Đà Lạt.",
+      "allHeading": "Semua Bar"
+    },
+    "restaurants": {
+      "metaTitle": "Restoran di Đà Lạt - Kuliner & Acara",
+      "metaDescription": "Temukan restoran terbaik di Đà Lạt yang mengadakan acara kuliner, musik live, dan pertemuan. Diperbarui setiap hari dengan yang sedang berlangsung.",
+      "h1": "Restoran di Đà Lạt",
+      "intro": "Temukan <strong>{count} restoran</strong> yang mengadakan acara di Đà Lạt.",
+      "allHeading": "Semua Restoran"
+    },
+    "vegan": {
+      "metaTitle": "Restoran Vegan di Đà Lạt - 100% Nabati",
+      "metaDescription": "Temukan restoran vegan di Đà Lạt. Kuliner 100% nabati, dari pho vegan hingga banh mi vegan dan lainnya.",
+      "h1": "Restoran Vegan di Đà Lạt",
+      "intro": "Temukan <strong>{count} restoran vegan</strong> di Đà Lạt.",
+      "allHeading": "Semua Restoran Vegan"
+    },
+    "vegetarian": {
+      "metaTitle": "Restoran Vegetarian di Đà Lạt - Hidangan Nabati",
+      "metaDescription": "Temukan restoran vegetarian terbaik di Đà Lạt. Kuliner vegetarian tradisional Vietnam, prasmanan, dan hidangan nabati.",
+      "h1": "Restoran Vegetarian di Đà Lạt",
+      "intro": "Temukan <strong>{count} restoran vegetarian</strong> di Đà Lạt.",
+      "allHeading": "Semua Restoran Vegetarian"
+    },
+    "coworking": {
+      "metaTitle": "Ruang Coworking di Đà Lạt - Kerja & Acara",
+      "metaDescription": "Temukan ruang coworking terbaik di Đà Lạt untuk digital nomad. WiFi cepat, kopi enak, dan acara komunitas yang hidup.",
+      "h1": "Ruang Coworking di Đà Lạt",
+      "intro": "Temukan <strong>{count} ruang coworking</strong> di Đà Lạt.",
+      "allHeading": "Semua Ruang Coworking"
+    },
+    "communityCenters": {
+      "metaTitle": "Pusat Komunitas di Đà Lạt - Acara & Aktivitas",
+      "metaDescription": "Temukan pusat komunitas di Đà Lạt yang mengadakan acara, workshop, dan aktivitas kelompok. Terhubung dengan komunitas lokal.",
+      "h1": "Pusat Komunitas di Đà Lạt",
+      "intro": "Temukan <strong>{count} pusat komunitas</strong> di Đà Lạt.",
+      "allHeading": "Semua Pusat Komunitas"
+    },
+    "hotels": {
+      "metaTitle": "Hotel di Đà Lạt - Akomodasi & Acara",
+      "metaDescription": "Temukan hotel di Đà Lạt yang mengadakan acara, konferensi, dan perayaan. Menginap sekaligus menikmati pengalaman unik.",
+      "h1": "Hotel di Đà Lạt",
+      "intro": "Temukan <strong>{count} hotel</strong> yang mengadakan acara di Đà Lạt.",
+      "allHeading": "Semua Hotel"
+    },
+    "homestays": {
+      "metaTitle": "Homestay di Đà Lạt - Penginapan Lokal & Acara",
+      "metaDescription": "Temukan homestay di Đà Lạt dengan pengalaman lokal yang unik. Penginapan ramah, acara komunitas, dan budaya lokal.",
+      "h1": "Homestay di Đà Lạt",
+      "intro": "Temukan <strong>{count} homestay</strong> di Đà Lạt.",
+      "allHeading": "Semua Homestay"
+    },
+    "galleries": {
+      "metaTitle": "Galeri Seni di Đà Lạt - Pameran & Ruang Seni",
+      "metaDescription": "Temukan galeri seni dan ruang kreatif terbaik di Đà Lạt. Pameran seni, acara budaya, dan pertunjukan seniman diperbarui setiap hari.",
+      "h1": "Galeri Seni di Đà Lạt",
+      "intro": "Temukan <strong>{count} galeri</strong> dan ruang seni di Đà Lạt.",
+      "allHeading": "Semua Galeri"
+    },
+    "hiking": {
+      "metaTitle": "Hiking & Trekking di Đà Lạt - Jalur & Spot",
+      "metaDescription": "Temukan jalur hiking terbaik di Đà Lạt. Dari Puncak Langbiang hingga Taman Nasional Bidoup, rasakan keindahan alam dataran tinggi.",
+      "h1": "Hiking & Trekking di Đà Lạt",
+      "intro": "Temukan <strong>{count} jalur hiking & spot trekking</strong> di Đà Lạt.",
+      "allHeading": "Semua Spot Hiking"
+    },
+    "parks": {
+      "metaTitle": "Taman di Đà Lạt - Alam & Acara Luar Ruang",
+      "metaDescription": "Temukan taman dan ruang hijau terbaik di Đà Lạt. Acara luar ruang, piknik, dan aktivitas alam diperbarui setiap hari.",
+      "h1": "Taman di Đà Lạt",
+      "intro": "Temukan <strong>{count} taman</strong> dan ruang hijau di Đà Lạt.",
+      "allHeading": "Semua Taman"
+    },
+    "outdoor": {
+      "metaTitle": "Aktivitas Luar Ruang di Đà Lạt - Acara & Tempat",
+      "metaDescription": "Temukan tempat luar ruang di Đà Lạt yang mengadakan acara, festival, dan aktivitas alam. Rasakan keindahan dataran tinggi.",
+      "h1": "Aktivitas Luar Ruang di Đà Lạt",
+      "intro": "Temukan <strong>{count} tempat luar ruang</strong> di Đà Lạt.",
+      "allHeading": "Semua Tempat Luar Ruang"
+    },
+    "discover": {
+      "metaTitle": "Jelajahi Đà Lạt - Acara, Tempat, Momen & Lainnya",
+      "metaDescription": "Jelajahi Đà Lạt: acara hari ini, kafe, restoran, musik live, seni, dan momen autentik dari komunitas. Diperbarui setiap hari.",
+      "h1": "Jelajahi Đà Lạt",
+      "subtitle": "Acara, tempat, kuliner, dan momen autentik dari kota dataran tinggi kesayangan Vietnam.",
+      "statsEvents": "Acara",
+      "statsVenues": "Tempat",
+      "statsMoments": "Momen",
+      "quickDiscoverHeading": "Jelajah Cepat",
+      "exploreByTypeHeading": "Jelajahi berdasarkan Jenis Tempat",
+      "aboutHeading": "Tentang ĐàLạt.app",
+      "aboutBody": "ĐàLạt.app adalah platform penemuan acara berbasis komunitas untuk Da Lat (Đà Lạt), Lam Dong, Vietnam. Dari musik live di kafe yang nyaman hingga pameran seni, workshop kreatif, dan festival musiman, kami membantu kamu menemukan dan menikmati yang terbaik dari kota dataran tinggi Vietnam ini. Temukan acara malam ini, akhir pekan ini, atau rencanakan perjalananmu berikutnya ke Đà Lạt.",
+      "links": {
+        "tonight": "Acara Malam Ini",
+        "thisWeekend": "Akhir Pekan Ini",
+        "moments": "Foto & Video",
+        "map": "Peta",
+        "festivals": "Festival"
+      },
+      "types": {
+        "cafes": "Kafe",
+        "bars": "Bar",
+        "restaurants": "Restoran",
+        "galleries": "Galeri",
+        "parks": "Taman",
+        "hotels": "Hotel",
+        "coworking": "Coworking",
+        "homestays": "Homestay",
+        "outdoor": "Luar Ruang",
+        "hiking": "Hiking",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan"
+      }
+    }
   }
 }

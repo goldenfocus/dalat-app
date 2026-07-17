@@ -182,7 +182,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tribe-name">Name</Label>
+              <Label htmlFor="tribe-name">{t("settingsForm.name")}</Label>
               <Input
                 id="tribe-name"
                 value={name}
@@ -192,7 +192,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tribe-description">Description</Label>
+              <Label htmlFor="tribe-description">{t("settingsForm.description")}</Label>
               <Textarea
                 id="tribe-description"
                 value={description}
@@ -218,7 +218,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
 
             {accessType !== "secret" && (
               <div className="flex items-center justify-between">
-                <Label htmlFor="tribe-listed">Show in search</Label>
+                <Label htmlFor="tribe-listed">{t("settingsForm.showInSearch")}</Label>
                 <Switch
                   id="tribe-listed"
                   checked={isListed}

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Heart, Rss } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { CONTENT_LOCALES, type ContentLocale } from "@/lib/types";
@@ -26,6 +27,8 @@ const LOCALE_LABELS: Record<ContentLocale, string> = {
  */
 export function GlobalFooter() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+  const tHome = useTranslations("home");
 
   // Remove locale prefix for language links
   const pathWithoutLocale = (pathname ?? "/").replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
@@ -35,12 +38,14 @@ export function GlobalFooter() {
       <div className="container max-w-6xl mx-auto px-4 space-y-2 lg:space-y-3">
         {/* Footer text with heart icon */}
         <p className="text-center text-sm text-muted-foreground flex items-center justify-center gap-1.5">
-          Made with
-          <Heart
-            className="w-4 h-4 text-red-500 fill-red-500 inline-block"
-            aria-label="love"
-          />
-          for Đà Lạt, Vietnam
+          {tHome.rich("footer", {
+            heart: () => (
+              <Heart
+                className="w-4 h-4 text-red-500 fill-red-500 inline-block"
+                aria-label={t("footer.love")}
+              />
+            ),
+          })}
         </p>
 
         {/* Links */}
@@ -49,28 +54,28 @@ export function GlobalFooter() {
             href="/about"
             className="hover:text-muted-foreground transition-colors"
           >
-            About
+            {t("about")}
           </Link>
           <span>·</span>
           <Link
             href="/blog"
             className="hover:text-muted-foreground transition-colors"
           >
-            Blog
+            {t("blog")}
           </Link>
           <span>·</span>
           <Link
             href="/news"
             className="hover:text-muted-foreground transition-colors"
           >
-            News
+            {t("news")}
           </Link>
           <span>·</span>
           <Link
             href="/discover"
             className="hover:text-muted-foreground transition-colors"
           >
-            Discover
+            {t("footer.discover")}
           </Link>
           <span>·</span>
           <a
@@ -85,7 +90,7 @@ export function GlobalFooter() {
           <a
             href="/blog/rss.xml"
             className="hover:text-muted-foreground transition-colors inline-flex items-center gap-1"
-            title="RSS Feed"
+            title={t("footer.rssFeed")}
           >
             <Rss className="w-3 h-3" />
             RSS

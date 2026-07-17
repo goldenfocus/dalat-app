@@ -67,7 +67,19 @@
     "aiRefineUnavailable": "보정 기능은 잠시 쉬는 중이에요 — 새로 생성해 보세요.",
     "aiTooManyPending": "다른 이미지가 아직 생성 중이에요. 조금만 기다려 주세요.",
     "aiTimeout": "평소보다 오래 걸리네요 — 곧 나타날 수 있어요. 안 되면 다시 시도해 주세요.",
-    "aiGenerationFailed": "이번에는 생성에 실패했어요. 다시 시도해 주세요."
+    "aiGenerationFailed": "이번에는 생성에 실패했어요. 다시 시도해 주세요.",
+    "changeTheme": "테마 변경",
+    "selectLanguage": "언어 선택",
+    "close": "닫기",
+    "previousPhoto": "이전 사진",
+    "nextPhoto": "다음 사진",
+    "pagination": "페이지네이션",
+    "goToPreviousPage": "이전 페이지로 이동",
+    "goToNextPage": "다음 페이지로 이동",
+    "goToPage": "{page} 페이지로 이동",
+    "enhanceWithAI": "AI로 다듬기",
+    "enhancePromptPlaceholder": "칩을 누르거나 원하는 내용을 설명해 주세요...",
+    "refinePromptPlaceholder": "예: 보라색 톤을 더하고, 좀 더 추상적으로..."
   },
   "nav": {
     "events": "이벤트",
@@ -83,7 +95,15 @@
     "venues": "장소",
     "activity": "활동",
     "news": "뉴스",
-    "loyalty": "로열티"
+    "loyalty": "로열티",
+    "openMenu": "메뉴 열기",
+    "closeMenu": "메뉴 닫기",
+    "primary": "주 메뉴",
+    "footer": {
+      "love": "사랑",
+      "rssFeed": "RSS 피드",
+      "discover": "둘러보기"
+    }
   },
   "home": {
     "title": "달랏의 이벤트",
@@ -107,7 +127,10 @@
       "noResults": "\"{query}\"에 대한 이벤트를 찾을 수 없습니다",
       "clearSearch": "검색 지우기",
       "viewAll": "\"{query}\"에 대한 모든 결과 보기",
-      "searchFor": "\"{query}\" 검색"
+      "searchFor": "\"{query}\" 검색",
+      "title": "검색",
+      "close": "검색 닫기",
+      "suggestions": "검색 제안"
     },
     "browseArchive": "지난 이벤트 보기",
     "seeAllUpcoming": "예정된 모든 이벤트 보기",
@@ -201,7 +224,68 @@
       "dismiss": "닫기",
       "thisApp": "이 앱"
     },
-    "continueWithApple": "Apple로 계속하기"
+    "continueWithApple": "Apple로 계속하기",
+    "updatePassword": {
+      "description": "아래에 새 비밀번호를 입력해 주세요.",
+      "saving": "저장 중..."
+    },
+    "error": {
+      "title": "이런!",
+      "alreadyConfirmed": "이메일이 이미 확인되었을 수 있어요.",
+      "linkExpired": "이 링크는 만료되었거나 이미 사용되었어요.",
+      "genericMessage": "문제가 발생했어요. 로그인해 보시거나 새 링크를 요청해 주세요.",
+      "trySigningIn": "로그인해 보기"
+    },
+    "redirectHelp": {
+      "title": "길을 살짝 잃었어요",
+      "description": "브라우저와 서버가 서로 뱅뱅 도는 중이에요. 가끔 있는 일이니 같이 해결해 봐요.",
+      "cookiesBlockedTitle": "쿠키가 차단되어 있어요",
+      "cookiesBlockedDescription": "로그인 상태를 유지하려면 쿠키가 필요해요. dalat.app에서 쿠키를 허용하고 다시 시도해 주세요.",
+      "quickFixes": "빠른 해결법:",
+      "fix1": "dalat.app의 <strong>쿠키를 삭제</strong>하고 다시 시도해 보세요 (아래 버튼이 해줘요)",
+      "fix2": "<strong>다른 브라우저</strong>를 사용해 보세요 (Chrome, Safari, Edge)",
+      "fix3": "<strong>Firefox</strong>를 사용 중이라면 이 사이트의 쿠키가 차단되지 않았는지 확인해 주세요",
+      "clearAndRetry": "쿠키 지우고 새로 시작",
+      "openInNewTab": "새 탭에서 열기",
+      "quote1": {
+        "text": "가장 멋진 풍경은 가장 힘든 오르막 뒤에 있어요.",
+        "origin": "랑비앙 봉우리 어딘가에서"
+      },
+      "quote2": {
+        "text": "안개도 언젠가는 걷혀요.",
+        "origin": "달랏의 아침"
+      },
+      "quote3": {
+        "text": "좋은 커피 한 잔이면 웬만한 건 다 해결돼요.",
+        "origin": "달랏의 모든 카페"
+      },
+      "quote4": {
+        "text": "방황하는 모든 이가 길을 잃은 건 아니에요 — 쿠키만 지우면 되는 사람도 있죠.",
+        "origin": "유서 깊은 인터넷 격언"
+      },
+      "quote5": {
+        "text": "꽃은 서둘러 피지 않아요. 숨 한번 고르세요.",
+        "origin": "달랏 꽃 정원"
+      },
+      "quote6": {
+        "text": "모든 리디렉션 루프에는 출구가 있어요.",
+        "origin": "낙관적인 개발자들"
+      },
+      "quote7": {
+        "text": "달랏에서는 비마저 아름다워요.",
+        "origin": "우기의 지혜"
+      },
+      "quote8": {
+        "text": "천 페이지의 여정도 클릭 한 번에서 시작돼요.",
+        "origin": "웹 철학"
+      }
+    },
+    "forgotPasswordPage": {
+      "successTitle": "이메일을 확인해 주세요",
+      "successDescription": "비밀번호 재설정 안내를 보냈어요",
+      "successHint": "이메일과 비밀번호로 가입하셨다면 비밀번호 재설정 이메일을 받게 됩니다.",
+      "sending": "보내는 중..."
+    }
   },
   "errors": {
     "somethingWentWrong": "죄송합니다, 문제가 발생했습니다.",
@@ -220,7 +304,10 @@
     "noPermission": "역할을 변경할 권한이 없습니다",
     "invalidRole": "잘못된 역할이 선택되었습니다",
     "cannotDemoteSelf": "자신의 등급을 낮출 수 없습니다",
-    "userNotFound": "사용자를 찾을 수 없습니다"
+    "userNotFound": "사용자를 찾을 수 없습니다",
+    "unexpectedError": "예기치 않은 오류가 발생했어요. 페이지를 새로고침해 보세요.",
+    "tryAgain": "다시 시도",
+    "refreshPage": "페이지 새로고침"
   },
   "events": {
     "popular": "인기",
@@ -268,7 +355,9 @@
     "photoBy": "📸 @{name}",
     "spotsAvailable": "{count}자리",
     "secretAddressLockHint": "RSVP 후 정확한 주소가 공개됩니다",
-    "secretAddressRevealedHint": "게스트만 이 주소를 볼 수 있어요"
+    "secretAddressRevealedHint": "게스트만 이 주소를 볼 수 있어요",
+    "moreAtVenue": "<link>{venue}</link>에서 더 보기",
+    "allEventsAtVenue": "이 장소의 모든 이벤트"
   },
   "rsvp": {
     "imGoing": "참석합니다",
@@ -706,6 +795,70 @@
       "changePassword": "비밀번호 변경",
       "savePassword": "비밀번호 저장",
       "passwordUpdated": "비밀번호가 업데이트되었습니다!"
+    },
+    "verification": {
+      "title": "인증",
+      "verifiedTitle": "인증 완료!",
+      "verifiedDescription": "주최자 계정이 인증되었어요. 이제 축제와 공식 이벤트를 만들 수 있어요.",
+      "createFestival": "축제 만들기",
+      "goToDashboard": "대시보드로 이동",
+      "pageTitle": "주최자 인증",
+      "becomeVerified": "인증된 주최자 되기",
+      "intro": "인증된 주최자는 DaLat.app에서 공식 축제와 이벤트를 만들 수 있어요. Đà Lạt의 정식 단체, 장소, 이벤트 주최자를 위한 제도예요.",
+      "benefitFestivals": "공식 브랜딩으로 축제를 만들고 관리",
+      "benefitBadge": "이벤트에 \"공식\" 배지와 우선 노출 제공",
+      "benefitAnnouncements": "축제 팔로워에게 업데이트와 공지 게시",
+      "pendingNotice": "이미 대기 중인 인증 요청이 있어요.",
+      "pendingWait": "검토가 완료될 때까지 기다려 주세요.",
+      "status": {
+        "pending": {
+          "title": "요청 대기 중",
+          "description": "인증 요청을 검토하고 있어요."
+        },
+        "more_info_needed": {
+          "title": "추가 정보 필요",
+          "description": "인증을 완료하려면 추가 정보를 제공해 주세요."
+        },
+        "approved": {
+          "title": "요청 승인됨",
+          "description": "축하해요! 인증이 승인되었어요."
+        },
+        "rejected": {
+          "title": "요청 거절됨",
+          "description": "인증 요청이 승인되지 않았어요."
+        }
+      },
+      "organizationLabel": "조직:",
+      "submittedDate": "{date}에 제출됨",
+      "requestedInformation": "요청된 정보:",
+      "reasonLabel": "사유:",
+      "requestSubmitted": "요청이 제출되었습니다!",
+      "requestSubmittedDescription": "요청을 검토하고 곧 연락드리겠습니다.",
+      "updateYourRequest": "요청 업데이트",
+      "requestVerification": "인증 요청",
+      "organizationName": "조직명 *",
+      "organizationNamePlaceholder": "조직 또는 장소 이름",
+      "organizationType": "조직 유형 *",
+      "typeVenue": "장소 (카페, 바, 레스토랑)",
+      "typeCultural": "문화 단체",
+      "typeFestival": "축제 위원회",
+      "typeWard": "동 (Phường)",
+      "typeCity": "시 정부",
+      "typeBusiness": "사업체",
+      "typeOther": "기타",
+      "aboutOrganization": "조직 소개",
+      "aboutPlaceholder": "어떤 종류의 이벤트를 주최하시나요?",
+      "contactEmail": "연락처 이메일",
+      "contactEmailPlaceholder": "contact@example.com",
+      "contactPhone": "연락처 전화번호",
+      "contactPhonePlaceholder": "+84...",
+      "proofLink": "증빙 링크 (웹사이트/Facebook) *",
+      "proofLinkPlaceholder": "https://facebook.com/your-page",
+      "proofLinkHelp": "공식 웹사이트 또는 소셜 미디어 페이지 링크",
+      "additionalInfo": "추가 정보",
+      "additionalInfoPlaceholder": "조직 인증에 도움이 될 추가 정보...",
+      "submitRequest": "요청 제출",
+      "updateRequestBtn": "요청 업데이트"
     }
   },
   "notifications": {
@@ -1299,7 +1452,9 @@
     },
     "desktopPill": {
       "message": "마음에 드시나요? 즐겨찾기에 저장하세요",
-      "cta": "무료로 가입"
+      "cta": "무료로 가입",
+      "signUpInvitation": "가입 초대",
+      "dismiss": "닫기"
     },
     "discoveryMode": "탐색",
     "differentEvent": "다른 이벤트에서",
@@ -1376,6 +1531,74 @@
       "downloading": "다운로드 중...",
       "downloadComplete": "다운로드 완료",
       "downloadFailed": "다운로드 실패"
+    },
+    "searchMoments": "모먼트 검색",
+    "lightbox": {
+      "shareMoment": "모먼트 공유",
+      "openFullPage": "전체 페이지로 열기",
+      "close": "닫기",
+      "previous": "이전",
+      "next": "다음",
+      "viewComments": "댓글 보기",
+      "backToLastMoment": "마지막 모먼트로 돌아가기"
+    },
+    "setCover": {
+      "success1": {
+        "title": "✨ 주인공 등장!",
+        "description": "이 사진이 이제 무대의 주인공이에요."
+      },
+      "success2": {
+        "title": "🎨 앨범 환골탈태 완료!",
+        "description": "홈페이지에서 한층 산뜻해 보여요."
+      },
+      "success3": {
+        "title": "📸 새 커버 등장, 누구시죠?",
+        "description": "앨범이 방금 새 단장을 마쳤어요."
+      },
+      "success4": {
+        "title": "🤌 셰프의 키스!",
+        "description": "이 사진, 바로 맨 위로 직행이에요."
+      },
+      "success5": {
+        "title": "⭐ 커버감 인정!",
+        "description": "이 순간을 위해 태어난 사진이에요."
+      },
+      "success6": {
+        "title": "🎖️ 승진 축하해요!",
+        "description": "평범한 사진에서 앨범 VIP로."
+      },
+      "success7": {
+        "title": "🔦 스포트라이트: 켜짐",
+        "description": "이 모먼트가 이제 정중앙에 딱!"
+      },
+      "success8": {
+        "title": "💅 첫인상이 전부죠!",
+        "description": "이 사진은 그걸 완벽하게 해냈어요."
+      },
+      "remove1": {
+        "title": "🪖 민간인 신분으로 복귀",
+        "description": "이 사진은 커버 임무에서 해제되었어요."
+      },
+      "remove2": {
+        "title": "🔄 반전 등장!",
+        "description": "이제 다른 사진이 빛날 차례예요."
+      },
+      "remove3": {
+        "title": "✓ 커버 해제 완료",
+        "description": "앨범이 알아서 멋진 사진을 골라줄 거예요."
+      },
+      "error1": {
+        "title": "😅 앗, 잘 안 됐어요!",
+        "description": "한 번만 더 시도해 주실래요? 기술 요정이 심술을 부렸나 봐요."
+      },
+      "error2": {
+        "title": "🚀 휴스턴, 문제가 생겼어요",
+        "description": "커버를 업데이트하지 못했어요. 다시 해봐요!"
+      },
+      "error3": {
+        "title": "🙈 이거 참 민망하네요...",
+        "description": "문제가 생겼어요. 한 번 더 해볼까요?"
+      }
     }
   },
   "tribes": {
@@ -1448,7 +1671,21 @@
     "replaceCover": "커버 변경",
     "removeCover": "삭제",
     "coverUploading": "업로드 중...",
-    "coverUploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요."
+    "coverUploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요.",
+    "form": {
+      "name": "이름",
+      "namePlaceholder": "트라이브 이름을 입력하세요",
+      "descriptionOptional": "설명 (선택)",
+      "descriptionPlaceholder": "어떤 트라이브인가요?"
+    },
+    "requestMessagePlaceholder": "왜 참가하고 싶으신가요?",
+    "settingsForm": {
+      "name": "이름",
+      "description": "설명",
+      "showInSearch": "검색에 표시"
+    },
+    "invalidCodeTitle": "유효하지 않은 초대 코드",
+    "invalidCodeDescription": "이 초대 코드는 유효하지 않거나 만료되었어요."
   },
   "feed": {
     "title": "피드",
@@ -1697,7 +1934,18 @@
     "goLiveDescription": "무엇을 공유하시나요?",
     "goLivePlaceholder": "쑤안흐엉 호수의 일몰...",
     "goingLive": "라이브 시작 중...",
-    "goLiveError": "스트림을 시작할 수 없습니다. 다시 시도해 주세요."
+    "goLiveError": "스트림을 시작할 수 없습니다. 다시 시도해 주세요.",
+    "backToEvent": "이벤트로 돌아가기",
+    "noActiveStream": "진행 중인 스트림 없음",
+    "streamNotStarted": "스트림이 아직 시작되지 않았어요. 잠시 후 다시 확인해 주세요!",
+    "eventHost": "이벤트 호스트",
+    "startedAt": "{time}에 시작",
+    "watchLive": "라이브 보기",
+    "liveChat": "라이브 채팅",
+    "connecting": "연결 중...",
+    "noMessagesYet": "아직 메시지가 없어요",
+    "beFirstToSay": "첫 마디를 남겨 보세요!",
+    "streamOffline": "스트림 오프라인"
   },
   "install": {
     "banner": {
@@ -1782,7 +2030,10 @@
     "upcoming": "예정",
     "venue": "장소",
     "viewEvent": "이벤트 보기",
-    "viewVenue": "장소 보기"
+    "viewVenue": "장소 보기",
+    "close": "닫기",
+    "getDirections": "길찾기",
+    "showMyLocation": "내 위치 표시"
   },
   "calendarView": {
     "days": {
@@ -2108,7 +2359,14 @@
       "wood-fired": "나무를 연료로 사용하는",
       "zipline": "짚라인"
     },
-    "ward": "동"
+    "ward": "동",
+    "contactOptions": "연락 방법",
+    "sms": "SMS",
+    "photoLightbox": {
+      "close": "닫기",
+      "previousPhoto": "이전 사진",
+      "nextPhoto": "다음 사진"
+    }
   },
   "rsvpCelebration": {
     "title": "참석 확정!",
@@ -2208,7 +2466,8 @@
     "seeOriginal": "원문 보기",
     "seeTranslation": "번역 보기",
     "translatedFrom": "번역됨",
-    "translating": "번역 중..."
+    "translating": "번역 중...",
+    "cancelReply": "답글 취소"
   },
   "feedback": {
     "howWasIt": "이벤트는 어떠셨나요?",
@@ -2269,7 +2528,57 @@
     "sortDuration": "길이별 정렬",
     "sortTitle": "제목",
     "sortArtistLabel": "아티스트",
-    "sortDurationLabel": "길이"
+    "sortDurationLabel": "길이",
+    "volume": "볼륨",
+    "downloadTrack": "곡 다운로드",
+    "toggleShuffle": "셔플 켜기/끄기",
+    "karaokeUi": {
+      "collapseLyrics": "가사 접기",
+      "expandLyrics": "가사 펼치기",
+      "fullScreen": "전체 화면",
+      "exitFullScreen": "전체 화면 종료",
+      "rewind15": "15초 뒤로",
+      "forward15": "15초 앞으로",
+      "earlier": "더 일찍",
+      "later": "더 늦게",
+      "showLyricsEarlier": "가사를 더 일찍 표시 (텔레프롬프터 모드)",
+      "showLyricsLater": "가사를 더 늦게 표시",
+      "saveTiming": "모든 사용자에게 타이밍 저장",
+      "showLyrics": "가사 표시",
+      "hideLyrics": "가사 숨기기",
+      "noLyrics": "가사 없음",
+      "noLyricsAvailable": "가사가 없어요"
+    },
+    "karaokeMetaTitle": "🎤 노래방 {trackTitle} - {artist} | 달랏에서 함께 불러요",
+    "karaokeMetaDescription": "싱크 가사와 함께 {trackTitle} 노래방을 즐겨 보세요. 달랏 노래방, 베트남 음악, 친구들과 함께 부르는 노래. {eventTitle}의 {count}곡.",
+    "metaDescription": "{eventTitle}의 {count, plural, one {오디오 트랙 #개} other {오디오 트랙 #개}}를 들어 보세요{duration}",
+    "metaDurationSuffix": " ({minutes}분)",
+    "karaokeSubtitle": "싱크 가사와 함께 따라 불러요 • 달랏 노래방",
+    "viewFullEvent": "이벤트 상세 보기",
+    "downloadPage": {
+      "metaTitle": "{trackTitle} 다운로드 - {artist} | MP3 | ĐàLạt.app",
+      "metaDescription": "{artist}의 \"{trackTitle}\"을(를) 무료로 다운로드하세요. 베트남 달랏 \"{eventTitle}\" 이벤트의 고음질 MP3.",
+      "backToPlaylist": "재생목록으로 돌아가기",
+      "downloading": "다운로드 중...",
+      "downloadFree": "MP3 무료 다운로드",
+      "singKaraoke": "노래방 부르기",
+      "viewLyrics": "가사 보기",
+      "seoFooter": "베트남 달랏 \"{eventTitle}\" 이벤트에서 {artist}의 \"{trackTitle}\"을(를) 다운로드하세요. 무료, 고음질."
+    },
+    "lyrics": {
+      "metaTitle": "{trackTitle} - {artist} | 가사 | Dalat.app",
+      "metaDescription": "{artist}의 \"{trackTitle}\" 가사. {preview}... Dalat.app에서 온라인 노래방을 즐겨 보세요",
+      "backToPlaylist": "재생목록으로 돌아가기",
+      "singKaraokeNow": "지금 노래방 부르기",
+      "heading": "가사",
+      "noLyrics": "가사가 없어요",
+      "singAlong": "노래방으로 따라 부르기",
+      "seoFooter": "DaLat.app의 \"{eventTitle}\" 중 \"{trackTitle}\" 가사. 싱크 가사와 함께 온라인 노래방을 즐겨 보세요."
+    },
+    "karaoke": {
+      "metaTitle": "🎤 노래방 {trackTitle} - {artist} | 달랏에서 함께 불러요",
+      "metaDescription": "싱크 가사와 함께 {trackTitle} 노래방을 즐겨 보세요. 달랏 노래방, 베트남 음악. {eventTitle} 중에서."
+    }
   },
   "activity": {
     "title": "활동",
@@ -2544,7 +2853,12 @@
     "readyToHost": "주최할 준비가 되셨나요?",
     "readyToHostDesc": "첫 이벤트를 만들고 호스트 포인트를 적립하세요. 매 이벤트가 프리미엄 혜택에 다가갑니다.",
     "createEvent": "이벤트 만들기",
-    "noOneYet": "아직 리더보드에 아무도 없습니다. 첫 번째가 되세요!"
+    "noOneYet": "아직 리더보드에 아무도 없습니다. 첫 번째가 되세요!",
+    "rewardsMetaDescription": "포인트로 보상, 배지, 달랏만의 특별한 경험을 받아 보세요.",
+    "rewardsSubtitle": "포인트를 혜택과 특별한 경험으로 바꿔 보세요.",
+    "leaderboardMetaDescription": "달랏 커뮤니티를 이끄는 사람들을 만나 보세요. 가장 활발한 멤버 톱 50.",
+    "leaderboardSubtitle": "달랏 커뮤니티를 이끄는 사람은 누구일까요?",
+    "hostMetaDescription": "달랏에서 더 많은 이벤트를 주최할수록 프리미엄 호스트 도구가 열려요."
   },
   "pokerTable": {
     "level": "레벨 {n}",
@@ -2577,5 +2891,190 @@
     "levelOf": "레벨 {n} / {total}",
     "minutesPerLevel": "레벨당 분",
     "applyToAll": "전체 적용"
+  },
+  "tonight": {
+    "title": "오늘 밤 달랏",
+    "metaTitle": "오늘 밤 달랏 - 이벤트 & 나이트라이프 ({date})",
+    "metaDescription": "오늘 밤 달랏에서 열리는 라이브 음악, 바, DJ, 나이트라이프를 만나 보세요. 실시간 업데이트.",
+    "eventsCount": "오늘 밤 이벤트 <strong>{count}</strong>개 ({date})",
+    "emptyTitle": "오늘 밤 이벤트가 없어요",
+    "emptyDescription": "주말 이벤트를 확인하거나 장소를 둘러보세요",
+    "ctaThisWeekend": "이번 주말",
+    "ctaBars": "바",
+    "happeningNow": "지금 진행 중",
+    "laterTonight": "오늘 밤 늦게",
+    "exploreMore": "더 둘러보기",
+    "chipThisWeekend": "이번 주말",
+    "chipBars": "바",
+    "chipCafes": "카페",
+    "chipCalendar": "캘린더"
+  },
+  "thisWeekend": {
+    "title": "이번 주말 달랏",
+    "metaTitle": "이번 주말 달랏 ({date}) - 이벤트 & 즐길 거리",
+    "metaDescription": "이번 주말 달랏의 라이브 음악, 축제, 전시, 야외 활동을 만나 보세요. 실시간 업데이트.",
+    "eventsCount": "{from}부터 {to}까지 이벤트 <strong>{count}</strong>개",
+    "emptyTitle": "이번 주말 이벤트가 없어요",
+    "emptyDescription": "다가오는 이벤트를 확인하거나 장소를 둘러보세요",
+    "ctaUpcomingEvents": "다가오는 이벤트",
+    "saturday": "토요일 ({date})",
+    "sunday": "일요일 ({date})",
+    "exploreMore": "더 둘러보기",
+    "chipTonight": "오늘 밤",
+    "chipUpcoming": "다가오는 이벤트",
+    "chipCalendar": "캘린더",
+    "chipFestivals": "축제"
+  },
+  "venuePages": {
+    "shared": {
+      "happeningNow": "지금 진행 중",
+      "eventsNow": "지금 이벤트 중",
+      "exhibitionsNow": "지금 전시 중",
+      "exploreMore": "더 둘러보기",
+      "introHappeningRightNow": "<strong>{count}</strong>곳에서 바로 지금 이벤트가 진행 중이에요.",
+      "introHappeningNow": "<strong>{count}</strong>곳에서 이벤트가 진행 중이에요.",
+      "introExhibitionsNow": "<strong>{count}</strong>곳에서 전시가 진행 중이에요.",
+      "chips": {
+        "cafes": "카페",
+        "bars": "바",
+        "restaurants": "레스토랑",
+        "galleries": "갤러리",
+        "vegetarian": "채식",
+        "vegan": "비건",
+        "hotels": "호텔",
+        "homestays": "홈스테이",
+        "coworking": "코워킹",
+        "communityCenters": "커뮤니티 센터",
+        "parks": "공원",
+        "outdoor": "야외",
+        "festivals": "축제",
+        "allVenues": "모든 장소"
+      }
+    },
+    "cafes": {
+      "metaTitle": "달랏 카페 - 커피숍 & 이벤트 장소",
+      "metaDescription": "라이브 이벤트, 음악, 커뮤니티 모임이 열리는 달랏 최고의 카페들을 만나 보세요. 지금 진행 중인 소식으로 매일 업데이트.",
+      "h1": "달랏의 카페",
+      "intro": "달랏에서 이벤트를 여는 <strong>카페 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 카페"
+    },
+    "bars": {
+      "metaTitle": "달랏 바 - 나이트라이프 & 라이브 이벤트",
+      "metaDescription": "라이브 음악, DJ, 나이트라이프 이벤트가 있는 달랏 최고의 바를 만나 보세요. 지금 진행 중인 소식으로 매일 업데이트.",
+      "h1": "달랏의 바",
+      "intro": "달랏에서 이벤트를 여는 <strong>바 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 바"
+    },
+    "restaurants": {
+      "metaTitle": "달랏 레스토랑 - 다이닝 & 이벤트",
+      "metaDescription": "푸드 이벤트, 라이브 음악, 모임이 열리는 달랏 최고의 레스토랑을 만나 보세요. 지금 진행 중인 소식으로 매일 업데이트.",
+      "h1": "달랏의 레스토랑",
+      "intro": "달랏에서 이벤트를 여는 <strong>레스토랑 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 레스토랑"
+    },
+    "vegan": {
+      "metaTitle": "달랏 비건 레스토랑 - 100% 식물성 요리",
+      "metaDescription": "달랏의 비건 레스토랑을 만나 보세요. 비건 쌀국수부터 비건 반미까지 100% 식물성 요리.",
+      "h1": "달랏의 비건 레스토랑",
+      "intro": "달랏의 <strong>비건 레스토랑 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 비건 레스토랑"
+    },
+    "vegetarian": {
+      "metaTitle": "달랏 채식 레스토랑 - 식물성 다이닝",
+      "metaDescription": "달랏 최고의 채식 레스토랑을 만나 보세요. 전통 베트남 채식 요리, 뷔페, 식물성 다이닝.",
+      "h1": "달랏의 채식 레스토랑",
+      "intro": "달랏의 <strong>채식 레스토랑 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 채식 레스토랑"
+    },
+    "coworking": {
+      "metaTitle": "달랏 코워킹 스페이스 - 업무 & 이벤트",
+      "metaDescription": "디지털 노마드를 위한 달랏 최고의 코워킹 스페이스를 만나 보세요. 빠른 와이파이, 맛있는 커피, 활기찬 커뮤니티 이벤트.",
+      "h1": "달랏의 코워킹 스페이스",
+      "intro": "달랏의 <strong>코워킹 스페이스 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 코워킹 스페이스"
+    },
+    "communityCenters": {
+      "metaTitle": "달랏 커뮤니티 센터 - 이벤트 & 활동",
+      "metaDescription": "이벤트, 워크숍, 모임 활동이 열리는 달랏의 커뮤니티 센터를 만나 보세요. 지역 커뮤니티와 이어져 보세요.",
+      "h1": "달랏의 커뮤니티 센터",
+      "intro": "달랏의 <strong>커뮤니티 센터 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 커뮤니티 센터"
+    },
+    "hotels": {
+      "metaTitle": "달랏 호텔 - 숙박 & 이벤트",
+      "metaDescription": "이벤트, 컨퍼런스, 축하 행사가 열리는 달랏의 호텔을 만나 보세요. 특별한 경험과 함께하는 숙박.",
+      "h1": "달랏의 호텔",
+      "intro": "달랏에서 이벤트를 여는 <strong>호텔 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 호텔"
+    },
+    "homestays": {
+      "metaTitle": "달랏 홈스테이 - 로컬 숙소 & 이벤트",
+      "metaDescription": "특별한 로컬 경험이 있는 달랏의 홈스테이를 만나 보세요. 정겨운 숙소, 커뮤니티 이벤트, 지역 문화.",
+      "h1": "달랏의 홈스테이",
+      "intro": "달랏의 <strong>홈스테이 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 홈스테이"
+    },
+    "galleries": {
+      "metaTitle": "달랏 아트 갤러리 - 전시 & 예술 공간",
+      "metaDescription": "달랏 최고의 아트 갤러리와 창작 공간을 만나 보세요. 미술 전시, 문화 이벤트, 아티스트 쇼케이스를 매일 업데이트.",
+      "h1": "달랏의 아트 갤러리",
+      "intro": "달랏의 <strong>갤러리 {count}곳</strong>과 예술 공간을 만나 보세요.",
+      "allHeading": "모든 갤러리"
+    },
+    "hiking": {
+      "metaTitle": "달랏 하이킹 & 트레킹 - 트레일 & 명소",
+      "metaDescription": "달랏 최고의 하이킹 트레일을 만나 보세요. 랑비앙 봉우리부터 비둡 국립공원까지, 아름다운 고원의 자연을 경험해 보세요.",
+      "h1": "달랏의 하이킹 & 트레킹",
+      "intro": "달랏의 <strong>하이킹 트레일 & 트레킹 명소 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 하이킹 명소"
+    },
+    "parks": {
+      "metaTitle": "달랏 공원 - 자연 & 야외 이벤트",
+      "metaDescription": "달랏 최고의 공원과 녹지 공간을 만나 보세요. 야외 이벤트, 피크닉, 자연 활동을 매일 업데이트.",
+      "h1": "달랏의 공원",
+      "intro": "달랏의 <strong>공원 {count}곳</strong>과 녹지 공간을 만나 보세요.",
+      "allHeading": "모든 공원"
+    },
+    "outdoor": {
+      "metaTitle": "달랏 야외 활동 - 이벤트 & 장소",
+      "metaDescription": "이벤트, 축제, 자연 활동이 열리는 달랏의 야외 장소를 만나 보세요. 아름다운 고원을 경험해 보세요.",
+      "h1": "달랏의 야외 활동",
+      "intro": "달랏의 <strong>야외 장소 {count}곳</strong>을 만나 보세요.",
+      "allHeading": "모든 야외 장소"
+    },
+    "discover": {
+      "metaTitle": "달랏 둘러보기 - 이벤트, 장소, 모먼트 & 더 보기",
+      "metaDescription": "달랏 둘러보기: 오늘의 이벤트, 카페, 레스토랑, 라이브 음악, 예술, 그리고 커뮤니티의 진짜 모먼트. 매일 업데이트.",
+      "h1": "달랏 둘러보기",
+      "subtitle": "베트남이 사랑하는 고원 도시의 이벤트, 장소, 음식, 그리고 진짜 모먼트.",
+      "statsEvents": "이벤트",
+      "statsVenues": "장소",
+      "statsMoments": "모먼트",
+      "quickDiscoverHeading": "빠르게 둘러보기",
+      "exploreByTypeHeading": "장소 유형별 탐색",
+      "aboutHeading": "ĐàLạt.app 소개",
+      "aboutBody": "ĐàLạt.app은 베트남 럼동성 달랏(Đà Lạt)을 위한 커뮤니티 기반 이벤트 발견 플랫폼이에요. 아늑한 카페의 라이브 음악부터 미술 전시, 창작 워크숍, 계절 축제까지 — 베트남 고원 도시의 가장 멋진 순간들을 찾고 경험할 수 있게 도와드려요. 오늘 밤이나 이번 주말의 이벤트를 찾아보거나, 다음 달랏 여행을 계획해 보세요.",
+      "links": {
+        "tonight": "오늘 밤 뭐 하지",
+        "thisWeekend": "이번 주말",
+        "moments": "사진 & 영상",
+        "map": "지도",
+        "festivals": "축제"
+      },
+      "types": {
+        "cafes": "카페",
+        "bars": "바",
+        "restaurants": "레스토랑",
+        "galleries": "갤러리",
+        "parks": "공원",
+        "hotels": "호텔",
+        "coworking": "코워킹",
+        "homestays": "홈스테이",
+        "outdoor": "야외",
+        "hiking": "하이킹",
+        "vegetarian": "채식",
+        "vegan": "비건"
+      }
+    }
   }
 }

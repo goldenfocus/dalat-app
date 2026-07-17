@@ -67,7 +67,19 @@
     "aiRefineUnavailable": "Tính năng chỉnh sửa đang tạm nghỉ — hãy tạo ảnh mới nhé.",
     "aiTooManyPending": "Ảnh khác của bạn vẫn đang được vẽ. Chờ một chút nhé.",
     "aiTimeout": "Lâu hơn bình thường một chút — ảnh có thể vẫn sẽ xuất hiện. Nếu không, thử lại nhé.",
-    "aiGenerationFailed": "Lần này chưa tạo được ảnh. Thử lại nhé."
+    "aiGenerationFailed": "Lần này chưa tạo được ảnh. Thử lại nhé.",
+    "changeTheme": "Đổi giao diện",
+    "selectLanguage": "Chọn ngôn ngữ",
+    "close": "Đóng",
+    "previousPhoto": "Ảnh trước",
+    "nextPhoto": "Ảnh sau",
+    "pagination": "Phân trang",
+    "goToPreviousPage": "Về trang trước",
+    "goToNextPage": "Sang trang sau",
+    "goToPage": "Đến trang {page}",
+    "enhanceWithAI": "Cải thiện bằng AI",
+    "enhancePromptPlaceholder": "Chọn một gợi ý hoặc mô tả điều bạn muốn...",
+    "refinePromptPlaceholder": "Ví dụ: Thêm tông tím, trừu tượng hơn một chút..."
   },
   "nav": {
     "events": "Sự kiện",
@@ -83,7 +95,15 @@
     "venues": "Địa điểm",
     "activity": "Hoạt động",
     "news": "Tin tức",
-    "loyalty": "Tích điểm"
+    "loyalty": "Tích điểm",
+    "openMenu": "Mở menu",
+    "closeMenu": "Đóng menu",
+    "primary": "Chính",
+    "footer": {
+      "love": "tình yêu",
+      "rssFeed": "Nguồn RSS",
+      "discover": "Khám phá"
+    }
   },
   "home": {
     "title": "Sự kiện tại Đà Lạt",
@@ -107,7 +127,10 @@
       "noResults": "Không tìm thấy sự kiện",
       "clearSearch": "Xóa tìm kiếm",
       "viewAll": "Xem tất cả kết quả cho \"{query}\"",
-      "searchFor": "Tìm kiếm \"{query}\""
+      "searchFor": "Tìm kiếm \"{query}\"",
+      "title": "Tìm kiếm",
+      "close": "Đóng tìm kiếm",
+      "suggestions": "Gợi ý tìm kiếm"
     },
     "browseArchive": "Xem sự kiện đã qua",
     "seeAllUpcoming": "Xem tất cả sự kiện sắp tới",
@@ -201,7 +224,68 @@
       "dismiss": "Bỏ qua",
       "thisApp": "ứng dụng này"
     },
-    "continueWithApple": "Tiếp tục với Apple"
+    "continueWithApple": "Tiếp tục với Apple",
+    "updatePassword": {
+      "description": "Nhập mật khẩu mới của bạn bên dưới nhé.",
+      "saving": "Đang lưu..."
+    },
+    "error": {
+      "title": "Ối!",
+      "alreadyConfirmed": "Có thể email của bạn đã được xác nhận rồi.",
+      "linkExpired": "Liên kết này đã hết hạn hoặc đã được dùng rồi.",
+      "genericMessage": "Có gì đó không ổn. Hãy thử đăng nhập hoặc yêu cầu liên kết mới nhé.",
+      "trySigningIn": "Thử đăng nhập"
+    },
+    "redirectHelp": {
+      "title": "Hơi lạc đường một chút",
+      "description": "Trình duyệt của bạn và máy chủ của chúng tôi bị kẹt trong một vòng lặp. Chuyện thường mà — cùng gỡ nhé.",
+      "cookiesBlockedTitle": "Cookie đang bị chặn",
+      "cookiesBlockedDescription": "Chúng tôi cần cookie để giữ bạn luôn đăng nhập. Hãy bật cookie cho dalat.app rồi thử lại nhé.",
+      "quickFixes": "Cách khắc phục nhanh:",
+      "fix1": "<strong>Xóa cookie</strong> cho dalat.app rồi thử lại (nút bên dưới sẽ làm giúp bạn)",
+      "fix2": "Thử một <strong>trình duyệt khác</strong> (Chrome, Safari hoặc Edge)",
+      "fix3": "Nếu dùng <strong>Firefox</strong>, hãy kiểm tra xem cookie có bị chặn cho trang này không",
+      "clearAndRetry": "Xóa cookie & bắt đầu lại",
+      "openInNewTab": "Mở trong tab mới",
+      "quote1": {
+        "text": "Cảnh đẹp nhất luôn nằm sau con dốc khó leo nhất.",
+        "origin": "Đâu đó trên đỉnh Langbiang"
+      },
+      "quote2": {
+        "text": "Rồi sương mù cũng sẽ tan thôi.",
+        "origin": "Những buổi sáng Đà Lạt"
+      },
+      "quote3": {
+        "text": "Một ly cà phê ngon giải quyết được hầu hết mọi chuyện.",
+        "origin": "Mọi quán cà phê ở Đà Lạt"
+      },
+      "quote4": {
+        "text": "Không phải ai lang thang cũng lạc đường — có người chỉ cần xóa cookie thôi.",
+        "origin": "Tục ngữ internet cổ"
+      },
+      "quote5": {
+        "text": "Hoa không vội nở. Hít thở sâu một chút nào.",
+        "origin": "Vườn hoa Đà Lạt"
+      },
+      "quote6": {
+        "text": "Vòng lặp chuyển hướng nào cũng có lối ra.",
+        "origin": "Những lập trình viên lạc quan"
+      },
+      "quote7": {
+        "text": "Ở Đà Lạt, đến cơn mưa cũng đẹp.",
+        "origin": "Trí tuệ mùa mưa"
+      },
+      "quote8": {
+        "text": "Hành trình ngàn trang bắt đầu từ một cú nhấp chuột.",
+        "origin": "Triết lý web"
+      }
+    },
+    "forgotPasswordPage": {
+      "successTitle": "Kiểm tra email của bạn",
+      "successDescription": "Đã gửi hướng dẫn đặt lại mật khẩu",
+      "successHint": "Nếu bạn đã đăng ký bằng email và mật khẩu, bạn sẽ nhận được email đặt lại mật khẩu.",
+      "sending": "Đang gửi..."
+    }
   },
   "errors": {
     "somethingWentWrong": "Xin lỗi, đã xảy ra lỗi.",
@@ -220,7 +304,10 @@
     "noPermission": "Bạn không có quyền thay đổi vai trò",
     "invalidRole": "Vai trò được chọn không hợp lệ",
     "cannotDemoteSelf": "Bạn không thể tự hạ cấp mình",
-    "userNotFound": "Không tìm thấy người dùng"
+    "userNotFound": "Không tìm thấy người dùng",
+    "unexpectedError": "Đã xảy ra lỗi không mong muốn. Hãy thử tải lại trang nhé.",
+    "tryAgain": "Thử lại",
+    "refreshPage": "Tải lại trang"
   },
   "events": {
     "popular": "Phổ biến",
@@ -268,7 +355,9 @@
     "photoBy": "📸 @{name}",
     "spotsAvailable": "{count} chỗ",
     "secretAddressLockHint": "Địa chỉ chính xác sẽ hiện sau khi bạn xác nhận tham gia",
-    "secretAddressRevealedHint": "Chỉ khách mời mới thấy địa chỉ này"
+    "secretAddressRevealedHint": "Chỉ khách mời mới thấy địa chỉ này",
+    "moreAtVenue": "Xem thêm tại <link>{venue}</link>",
+    "allEventsAtVenue": "Tất cả sự kiện tại địa điểm này"
   },
   "rsvp": {
     "imGoing": "Tôi sẽ đi",
@@ -706,6 +795,70 @@
       "changePassword": "Đổi mật khẩu",
       "savePassword": "Lưu mật khẩu",
       "passwordUpdated": "Đã cập nhật mật khẩu!"
+    },
+    "verification": {
+      "title": "Xác minh",
+      "verifiedTitle": "Bạn đã được xác minh!",
+      "verifiedDescription": "Tài khoản nhà tổ chức của bạn đã được xác minh. Giờ bạn có thể tạo lễ hội và sự kiện chính thức.",
+      "createFestival": "Tạo lễ hội",
+      "goToDashboard": "Đến trang quản lý",
+      "pageTitle": "Xác minh nhà tổ chức",
+      "becomeVerified": "Trở thành nhà tổ chức được xác minh",
+      "intro": "Nhà tổ chức được xác minh có thể tạo lễ hội và sự kiện chính thức trên DaLat.app. Dành cho các tổ chức, địa điểm và nhà tổ chức sự kiện uy tín tại Đà Lạt.",
+      "benefitFestivals": "Tạo và quản lý lễ hội với thương hiệu chính thức",
+      "benefitBadge": "Sự kiện của bạn được gắn huy hiệu \"Chính thức\" và ưu tiên hiển thị",
+      "benefitAnnouncements": "Đăng cập nhật và thông báo cho người theo dõi lễ hội của bạn",
+      "pendingNotice": "Bạn đã có một yêu cầu xác minh đang chờ xử lý.",
+      "pendingWait": "Vui lòng chờ yêu cầu được xem xét nhé.",
+      "status": {
+        "pending": {
+          "title": "Yêu cầu đang chờ",
+          "description": "Yêu cầu xác minh của bạn đang được xem xét."
+        },
+        "more_info_needed": {
+          "title": "Cần thêm thông tin",
+          "description": "Vui lòng cung cấp thêm thông tin để hoàn tất xác minh."
+        },
+        "approved": {
+          "title": "Yêu cầu được duyệt",
+          "description": "Chúc mừng! Yêu cầu xác minh của bạn đã được duyệt."
+        },
+        "rejected": {
+          "title": "Yêu cầu bị từ chối",
+          "description": "Yêu cầu xác minh của bạn chưa được duyệt."
+        }
+      },
+      "organizationLabel": "Tổ chức:",
+      "submittedDate": "Đã gửi {date}",
+      "requestedInformation": "Thông tin được yêu cầu:",
+      "reasonLabel": "Lý do:",
+      "requestSubmitted": "Đã gửi yêu cầu!",
+      "requestSubmittedDescription": "Chúng tôi sẽ xem xét yêu cầu và phản hồi sớm.",
+      "updateYourRequest": "Cập nhật yêu cầu của bạn",
+      "requestVerification": "Yêu cầu xác minh",
+      "organizationName": "Tên tổ chức *",
+      "organizationNamePlaceholder": "Tên tổ chức hoặc địa điểm của bạn",
+      "organizationType": "Loại tổ chức *",
+      "typeVenue": "Địa điểm (Quán cà phê, Bar, Nhà hàng)",
+      "typeCultural": "Tổ chức văn hóa",
+      "typeFestival": "Ban tổ chức lễ hội",
+      "typeWard": "Phường",
+      "typeCity": "Chính quyền thành phố",
+      "typeBusiness": "Doanh nghiệp",
+      "typeOther": "Khác",
+      "aboutOrganization": "Về tổ chức của bạn",
+      "aboutPlaceholder": "Bạn tổ chức loại sự kiện nào?",
+      "contactEmail": "Email liên hệ",
+      "contactEmailPlaceholder": "contact@example.com",
+      "contactPhone": "Điện thoại liên hệ",
+      "contactPhonePlaceholder": "+84...",
+      "proofLink": "Liên kết chứng minh (Website/Facebook) *",
+      "proofLinkPlaceholder": "https://facebook.com/trang-cua-ban",
+      "proofLinkHelp": "Liên kết đến website chính thức hoặc trang mạng xã hội",
+      "additionalInfo": "Thông tin bổ sung",
+      "additionalInfoPlaceholder": "Bất kỳ thông tin nào giúp chúng tôi xác minh tổ chức của bạn...",
+      "submitRequest": "Gửi yêu cầu",
+      "updateRequestBtn": "Cập nhật yêu cầu"
     }
   },
   "notifications": {
@@ -1329,7 +1482,9 @@
     },
     "desktopPill": {
       "message": "Thích những gì bạn thấy? Lưu yêu thích của bạn",
-      "cta": "Tham gia miễn phí"
+      "cta": "Tham gia miễn phí",
+      "signUpInvitation": "Lời mời đăng ký",
+      "dismiss": "Bỏ qua"
     },
     "discoveryMode": "Khám phá",
     "differentEvent": "Từ sự kiện khác",
@@ -1376,6 +1531,74 @@
       "downloading": "Đang tải...",
       "downloadComplete": "Tải xong",
       "downloadFailed": "Tải thất bại"
+    },
+    "searchMoments": "Tìm khoảnh khắc",
+    "lightbox": {
+      "shareMoment": "Chia sẻ khoảnh khắc",
+      "openFullPage": "Mở trang đầy đủ",
+      "close": "Đóng",
+      "previous": "Trước",
+      "next": "Tiếp",
+      "viewComments": "Xem bình luận",
+      "backToLastMoment": "Quay lại khoảnh khắc trước"
+    },
+    "setCover": {
+      "success1": {
+        "title": "✨ Đúng chuẩn nhân vật chính!",
+        "description": "Tấm ảnh này giờ là ngôi sao sáng nhất."
+      },
+      "success2": {
+        "title": "🎨 Album lột xác thành công!",
+        "description": "Nhìn tươi mới hẳn trên trang chủ."
+      },
+      "success3": {
+        "title": "📸 Ảnh bìa mới, ai đây ta?",
+        "description": "Album của bạn vừa được tân trang."
+      },
+      "success4": {
+        "title": "🤌 Đỉnh của chóp!",
+        "description": "Tấm này lên thẳng vị trí đầu bảng."
+      },
+      "success5": {
+        "title": "⭐ Chuẩn chất ảnh bìa!",
+        "description": "Tấm ảnh này sinh ra là để dành cho khoảnh khắc này."
+      },
+      "success6": {
+        "title": "🎖️ Thăng chức thành công!",
+        "description": "Từ ảnh thường lên hàng VIP của album."
+      },
+      "success7": {
+        "title": "🔦 Đèn sân khấu: BẬT",
+        "description": "Khoảnh khắc này giờ đứng ngay trung tâm."
+      },
+      "success8": {
+        "title": "💅 Ấn tượng đầu tiên là tất cả!",
+        "description": "Và tấm này làm quá tốt luôn."
+      },
+      "remove1": {
+        "title": "🪖 Về lại đời thường",
+        "description": "Tấm ảnh này đã được miễn nhiệm vụ làm bìa."
+      },
+      "remove2": {
+        "title": "🔄 Cú twist bất ngờ!",
+        "description": "Giờ đến lượt tấm khác tỏa sáng."
+      },
+      "remove3": {
+        "title": "✓ Đã gỡ ảnh bìa",
+        "description": "Album sẽ tự chọn một tấm thật xinh."
+      },
+      "error1": {
+        "title": "😅 Ối, chưa được rồi!",
+        "description": "Thử lại nhé? Mấy con bug tinh nghịch là có thật."
+      },
+      "error2": {
+        "title": "🚀 Houston, ta gặp sự cố rồi",
+        "description": "Chưa cập nhật được ảnh bìa. Thử lại nào!"
+      },
+      "error3": {
+        "title": "🙈 Hơi quê xíu...",
+        "description": "Có gì đó không ổn. Thử thêm lần nữa nhé?"
+      }
     }
   },
   "tribes": {
@@ -1448,7 +1671,21 @@
     "replaceCover": "Thay ảnh bìa",
     "removeCover": "Xóa",
     "coverUploading": "Đang tải lên...",
-    "coverUploadFailed": "Tải lên thất bại. Vui lòng thử lại."
+    "coverUploadFailed": "Tải lên thất bại. Vui lòng thử lại.",
+    "invalidCodeTitle": "Mã Mời Không Hợp Lệ",
+    "invalidCodeDescription": "Mã mời này không hợp lệ hoặc đã hết hạn.",
+    "form": {
+      "name": "Tên",
+      "namePlaceholder": "Nhập tên hội",
+      "descriptionOptional": "Mô tả (không bắt buộc)",
+      "descriptionPlaceholder": "Hội này về điều gì?"
+    },
+    "requestMessagePlaceholder": "Vì sao bạn muốn tham gia?",
+    "settingsForm": {
+      "name": "Tên",
+      "description": "Mô tả",
+      "showInSearch": "Hiện trong tìm kiếm"
+    }
   },
   "feed": {
     "title": "Bảng tin",
@@ -1708,7 +1945,18 @@
     "goLiveDescription": "Bạn đang chia sẻ gì?",
     "goLivePlaceholder": "Hoàng hôn tại hồ Xuân Hương...",
     "goingLive": "Đang kết nối...",
-    "goLiveError": "Không thể bắt đầu phát. Vui lòng thử lại."
+    "goLiveError": "Không thể bắt đầu phát. Vui lòng thử lại.",
+    "backToEvent": "Quay lại sự kiện",
+    "noActiveStream": "Chưa có buổi phát trực tiếp",
+    "streamNotStarted": "Buổi phát trực tiếp chưa bắt đầu. Quay lại sau nhé!",
+    "eventHost": "Chủ sự kiện",
+    "startedAt": "Bắt đầu lúc {time}",
+    "watchLive": "Xem trực tiếp",
+    "liveChat": "Trò chuyện trực tiếp",
+    "connecting": "Đang kết nối...",
+    "noMessagesYet": "Chưa có tin nhắn nào",
+    "beFirstToSay": "Hãy là người đầu tiên lên tiếng nhé!",
+    "streamOffline": "Chưa phát trực tiếp"
   },
   "install": {
     "banner": {
@@ -1793,7 +2041,10 @@
     "upcoming": "Sắp tới",
     "venue": "Địa điểm",
     "viewEvent": "Xem sự kiện",
-    "viewVenue": "Xem địa điểm"
+    "viewVenue": "Xem địa điểm",
+    "close": "Đóng",
+    "getDirections": "Chỉ đường",
+    "showMyLocation": "Hiện vị trí của tôi"
   },
   "calendarView": {
     "days": {
@@ -2108,7 +2359,14 @@
       "wood-fired": "đốt bằng củi",
       "zipline": "đường trượt zipline"
     },
-    "ward": "Phường"
+    "ward": "Phường",
+    "contactOptions": "Các cách liên hệ",
+    "sms": "SMS",
+    "photoLightbox": {
+      "close": "Đóng",
+      "previousPhoto": "Ảnh trước",
+      "nextPhoto": "Ảnh sau"
+    }
   },
   "rsvpCelebration": {
     "title": "Bạn sẽ tham gia!",
@@ -2281,7 +2539,8 @@
     "seeOriginal": "Xem bản gốc",
     "seeTranslation": "Xem bản dịch",
     "translatedFrom": "Đã dịch",
-    "translating": "đang dịch..."
+    "translating": "đang dịch...",
+    "cancelReply": "Hủy trả lời"
   },
   "feedback": {
     "howWasIt": "Sự kiện thế nào?",
@@ -2342,7 +2601,57 @@
     "sortDuration": "Sắp xếp theo thời lượng",
     "sortTitle": "Tên",
     "sortArtistLabel": "Nghệ sĩ",
-    "sortDurationLabel": "Thời gian"
+    "sortDurationLabel": "Thời gian",
+    "karaokeMetaTitle": "🎤 Karaoke {trackTitle} - {artist} | Hát Karaoke Đà Lạt Online",
+    "karaokeMetaDescription": "Hát karaoke online {trackTitle} với lời bài hát hiển thị theo nhạc. Karaoke Đà Lạt, nhạc Việt Nam, hát cùng bạn bè. {count} bài hát từ {eventTitle}.",
+    "metaDescription": "Nghe {count} bài nhạc từ {eventTitle}{duration}. Karaoke online Đà Lạt, nhạc sự kiện.",
+    "metaDurationSuffix": " ({minutes} phút)",
+    "karaokeSubtitle": "Hát karaoke online với lời bài hát đồng bộ • Karaoke Đà Lạt",
+    "viewFullEvent": "Xem chi tiết sự kiện",
+    "downloadPage": {
+      "metaTitle": "Tải {trackTitle} - {artist} | MP3 Download | ĐàLạt.app",
+      "metaDescription": "Tải nhạc \"{trackTitle}\" của {artist} miễn phí. MP3 chất lượng cao từ sự kiện \"{eventTitle}\" tại Đà Lạt.",
+      "backToPlaylist": "Quay lại playlist",
+      "downloading": "Đang tải...",
+      "downloadFree": "Tải MP3 Miễn Phí",
+      "singKaraoke": "Hát Karaoke",
+      "viewLyrics": "Xem Lời Bài Hát",
+      "seoFooter": "Tải nhạc \"{trackTitle}\" của {artist} từ sự kiện \"{eventTitle}\" tại Đà Lạt. Miễn phí, chất lượng cao."
+    },
+    "lyrics": {
+      "metaTitle": "{trackTitle} - {artist} | Loi Bai Hat | Dalat.app",
+      "metaDescription": "Loi bai hat \"{trackTitle}\" cua {artist}. {preview}... Hat karaoke online tai Dalat.app",
+      "backToPlaylist": "Quay lai playlist",
+      "singKaraokeNow": "Hat Karaoke Ngay",
+      "heading": "Lời Bài Hát",
+      "noLyrics": "Khong co loi bai hat",
+      "singAlong": "Hat karaoke voi nhac",
+      "seoFooter": "Loi bai hat \"{trackTitle}\" tu su kien \"{eventTitle}\" tren DaLat.app. Hat karaoke online voi loi hien thi theo nhac."
+    },
+    "karaoke": {
+      "metaTitle": "🎤 Karaoke {trackTitle} - {artist} | Hát Karaoke Online Đà Lạt",
+      "metaDescription": "Hát karaoke online {trackTitle} với lời bài hát hiển thị theo nhạc. Karaoke Đà Lạt, nhạc Việt Nam, hát cùng bạn bè. Từ sự kiện {eventTitle}."
+    },
+    "volume": "Âm lượng",
+    "downloadTrack": "Tải bài hát",
+    "toggleShuffle": "Bật/tắt phát ngẫu nhiên",
+    "karaokeUi": {
+      "collapseLyrics": "Thu gọn lời bài hát",
+      "expandLyrics": "Mở rộng lời bài hát",
+      "fullScreen": "Toàn màn hình",
+      "exitFullScreen": "Thoát toàn màn hình",
+      "rewind15": "Tua lại 15 giây",
+      "forward15": "Tua tới 15 giây",
+      "earlier": "Sớm hơn",
+      "later": "Trễ hơn",
+      "showLyricsEarlier": "Hiện lời sớm hơn (chế độ máy nhắc chữ)",
+      "showLyricsLater": "Hiện lời trễ hơn",
+      "saveTiming": "Lưu căn thời gian cho mọi người",
+      "showLyrics": "Hiện lời bài hát",
+      "hideLyrics": "Ẩn lời bài hát",
+      "noLyrics": "Không có lời",
+      "noLyricsAvailable": "Chưa có lời bài hát"
+    }
   },
   "questionnaire": {
     "welcome": {
@@ -2617,7 +2926,12 @@
     "readyToHost": "Sẵn sàng tổ chức?",
     "readyToHostDesc": "Tạo sự kiện đầu tiên và bắt đầu kiếm điểm tổ chức. Mỗi sự kiện đưa bạn gần hơn đến đặc quyền cao cấp.",
     "createEvent": "Tạo sự kiện",
-    "noOneYet": "Chưa ai trên bảng xếp hạng. Hãy là người đầu tiên!"
+    "noOneYet": "Chưa ai trên bảng xếp hạng. Hãy là người đầu tiên!",
+    "rewardsMetaDescription": "Đổi điểm lấy phần thưởng, huy hiệu, và trải nghiệm đặc biệt tại Đà Lạt.",
+    "rewardsSubtitle": "Đổi điểm lấy phần thưởng và trải nghiệm đặc biệt.",
+    "leaderboardMetaDescription": "Xem ai đang dẫn đầu cộng đồng Đà Lạt. Top 50 thành viên tích cực nhất.",
+    "leaderboardSubtitle": "Ai đang dẫn đầu trong cộng đồng Đà Lạt?",
+    "hostMetaDescription": "Mở khóa công cụ premium khi bạn tổ chức nhiều sự kiện hơn tại Đà Lạt."
   },
   "pokerTable": {
     "level": "Cấp {n}",
@@ -2650,5 +2964,190 @@
     "levelOf": "Cấp {n} / {total}",
     "minutesPerLevel": "Phút mỗi cấp",
     "applyToAll": "Áp dụng tất cả"
+  },
+  "tonight": {
+    "title": "Đà Lạt Tối Nay",
+    "metaTitle": "Đà Lạt Tối Nay - Sự Kiện & Nightlife ({date})",
+    "metaDescription": "Khám phá các sự kiện tối nay ở Đà Lạt: nhạc sống, bar, DJ và hoạt động đêm. Cập nhật theo thời gian thực.",
+    "eventsCount": "<strong>{count}</strong> sự kiện tối nay ({date})",
+    "emptyTitle": "Chưa có sự kiện tối nay",
+    "emptyDescription": "Xem các sự kiện cuối tuần hoặc khám phá các địa điểm",
+    "ctaThisWeekend": "Cuối Tuần Này",
+    "ctaBars": "Quán Bar",
+    "happeningNow": "Đang Diễn Ra",
+    "laterTonight": "Tối Nay",
+    "exploreMore": "Khám phá thêm",
+    "chipThisWeekend": "Cuối Tuần",
+    "chipBars": "Quán Bar",
+    "chipCafes": "Quán Cà Phê",
+    "chipCalendar": "Lịch"
+  },
+  "thisWeekend": {
+    "title": "Đà Lạt Cuối Tuần Này",
+    "metaTitle": "Đà Lạt Cuối Tuần Này ({date}) - Sự Kiện & Hoạt Động",
+    "metaDescription": "Khám phá các sự kiện cuối tuần ở Đà Lạt: nhạc sống, lễ hội, triển lãm và hoạt động ngoài trời. Cập nhật theo thời gian thực.",
+    "eventsCount": "<strong>{count}</strong> sự kiện diễn ra từ {from} đến {to}",
+    "emptyTitle": "Chưa có sự kiện cuối tuần này",
+    "emptyDescription": "Xem các sự kiện sắp tới hoặc khám phá các địa điểm",
+    "ctaUpcomingEvents": "Sự kiện sắp tới",
+    "saturday": "Thứ Bảy ({date})",
+    "sunday": "Chủ Nhật ({date})",
+    "exploreMore": "Khám phá thêm",
+    "chipTonight": "Tối Nay",
+    "chipUpcoming": "Sắp Tới",
+    "chipCalendar": "Lịch",
+    "chipFestivals": "Lễ Hội"
+  },
+  "venuePages": {
+    "shared": {
+      "happeningNow": "Đang có sự kiện",
+      "eventsNow": "Đang có sự kiện",
+      "exhibitionsNow": "Đang có triển lãm",
+      "exploreMore": "Khám phá thêm",
+      "introHappeningRightNow": "<strong>{count}</strong> đang có sự kiện ngay bây giờ.",
+      "introHappeningNow": "<strong>{count}</strong> đang có sự kiện ngay bây giờ.",
+      "introExhibitionsNow": "<strong>{count}</strong> đang có triển lãm ngay bây giờ.",
+      "chips": {
+        "cafes": "Quán Cà Phê",
+        "bars": "Quán Bar",
+        "restaurants": "Nhà hàng",
+        "galleries": "Phòng tranh",
+        "vegetarian": "Chay",
+        "vegan": "Thuần chay",
+        "hotels": "Khách sạn",
+        "homestays": "Homestay",
+        "coworking": "Coworking",
+        "communityCenters": "Trung Tâm Cộng Đồng",
+        "parks": "Công viên",
+        "outdoor": "Ngoài trời",
+        "festivals": "Lễ hội",
+        "allVenues": "Tất cả địa điểm"
+      }
+    },
+    "cafes": {
+      "metaTitle": "Quán Cà Phê Đà Lạt - Địa Điểm Tổ Chức Sự Kiện",
+      "metaDescription": "Khám phá các quán cà phê tốt nhất ở Đà Lạt với sự kiện trực tiếp, nhạc sống và không gian làm việc. Cập nhật hàng ngày với các sự kiện đang diễn ra.",
+      "h1": "Quán Cà Phê Đà Lạt",
+      "intro": "Khám phá <strong>{count} quán cà phê</strong> tổ chức sự kiện tại Đà Lạt.",
+      "allHeading": "Tất cả quán cà phê"
+    },
+    "bars": {
+      "metaTitle": "Quán Bar Đà Lạt - Nightlife & Sự Kiện Đêm",
+      "metaDescription": "Khám phá các quán bar tốt nhất ở Đà Lạt với nhạc sống, DJ và sự kiện đêm. Cập nhật hàng ngày với các sự kiện đang diễn ra.",
+      "h1": "Quán Bar Đà Lạt",
+      "intro": "Khám phá <strong>{count} quán bar</strong> tổ chức sự kiện tại Đà Lạt.",
+      "allHeading": "Tất cả quán bar"
+    },
+    "restaurants": {
+      "metaTitle": "Nhà Hàng Đà Lạt - Ẩm Thực & Sự Kiện",
+      "metaDescription": "Khám phá các nhà hàng tốt nhất ở Đà Lạt tổ chức sự kiện ẩm thực, nhạc sống và các buổi gặp mặt. Cập nhật hàng ngày.",
+      "h1": "Nhà Hàng Đà Lạt",
+      "intro": "Khám phá <strong>{count} nhà hàng</strong> tổ chức sự kiện tại Đà Lạt.",
+      "allHeading": "Tất cả nhà hàng"
+    },
+    "vegan": {
+      "metaTitle": "Nhà Hàng Thuần Chay Đà Lạt - 100% Thực Vật",
+      "metaDescription": "Khám phá các nhà hàng thuần chay ở Đà Lạt. Ẩm thực 100% thực vật, từ phở chay đến bánh mì chay và nhiều hơn nữa.",
+      "h1": "Nhà Hàng Thuần Chay Đà Lạt",
+      "intro": "Khám phá <strong>{count} nhà hàng thuần chay</strong> tại Đà Lạt.",
+      "allHeading": "Tất cả nhà hàng thuần chay"
+    },
+    "vegetarian": {
+      "metaTitle": "Nhà Hàng Chay Đà Lạt - Cơm Chay & Ẩm Thực Chay",
+      "metaDescription": "Khám phá các nhà hàng chay ngon nhất Đà Lạt. Cơm chay, phở chay, buffet chay và nhiều món ăn chay truyền thống Việt Nam.",
+      "h1": "Nhà Hàng Chay Đà Lạt",
+      "intro": "Khám phá <strong>{count} nhà hàng chay</strong> tại Đà Lạt.",
+      "allHeading": "Tất cả nhà hàng chay"
+    },
+    "coworking": {
+      "metaTitle": "Coworking Đà Lạt - Không Gian Làm Việc & Sự Kiện",
+      "metaDescription": "Khám phá các không gian coworking tốt nhất ở Đà Lạt cho digital nomads. WiFi nhanh, cà phê ngon và cộng đồng năng động.",
+      "h1": "Coworking Đà Lạt",
+      "intro": "Khám phá <strong>{count} không gian coworking</strong> tại Đà Lạt.",
+      "allHeading": "Tất cả coworking"
+    },
+    "communityCenters": {
+      "metaTitle": "Trung Tâm Cộng Đồng Đà Lạt - Sự Kiện & Hoạt Động",
+      "metaDescription": "Khám phá các trung tâm cộng đồng ở Đà Lạt tổ chức sự kiện, workshop và hoạt động nhóm. Kết nối với cộng đồng địa phương.",
+      "h1": "Trung Tâm Cộng Đồng Đà Lạt",
+      "intro": "Khám phá <strong>{count} trung tâm cộng đồng</strong> tại Đà Lạt.",
+      "allHeading": "Tất cả trung tâm cộng đồng"
+    },
+    "hotels": {
+      "metaTitle": "Khách Sạn Đà Lạt - Lưu Trú & Sự Kiện",
+      "metaDescription": "Khám phá các khách sạn ở Đà Lạt tổ chức sự kiện, hội nghị và tiệc cưới. Lưu trú kết hợp trải nghiệm độc đáo.",
+      "h1": "Khách Sạn Đà Lạt",
+      "intro": "Khám phá <strong>{count} khách sạn</strong> tổ chức sự kiện tại Đà Lạt.",
+      "allHeading": "Tất cả khách sạn"
+    },
+    "homestays": {
+      "metaTitle": "Homestay Đà Lạt - Lưu Trú Địa Phương & Sự Kiện",
+      "metaDescription": "Khám phá các homestay ở Đà Lạt với trải nghiệm địa phương độc đáo. Lưu trú thân thiện, sự kiện cộng đồng và văn hóa địa phương.",
+      "h1": "Homestay Đà Lạt",
+      "intro": "Khám phá <strong>{count} homestay</strong> tại Đà Lạt.",
+      "allHeading": "Tất cả homestay"
+    },
+    "galleries": {
+      "metaTitle": "Phòng Tranh Đà Lạt - Gallery & Triển Lãm Nghệ Thuật",
+      "metaDescription": "Khám phá các phòng tranh và không gian nghệ thuật tốt nhất ở Đà Lạt. Triển lãm, sự kiện nghệ thuật và văn hóa cập nhật hàng ngày.",
+      "h1": "Phòng Tranh Đà Lạt",
+      "intro": "Khám phá <strong>{count} phòng tranh</strong> và không gian nghệ thuật tại Đà Lạt.",
+      "allHeading": "Tất cả phòng tranh"
+    },
+    "hiking": {
+      "metaTitle": "Leo Núi & Trekking Đà Lạt - Đường Mòn & Địa Điểm",
+      "metaDescription": "Khám phá các đường mòn leo núi đẹp nhất Đà Lạt. Từ đỉnh Langbiang đến Vườn Quốc gia Bidoup, trải nghiệm thiên nhiên cao nguyên tuyệt vời.",
+      "h1": "Leo Núi & Trekking Đà Lạt",
+      "intro": "Khám phá <strong>{count} điểm leo núi & trekking</strong> tại Đà Lạt.",
+      "allHeading": "Tất cả điểm leo núi"
+    },
+    "parks": {
+      "metaTitle": "Công Viên Đà Lạt - Thiên Nhiên & Sự Kiện Ngoài Trời",
+      "metaDescription": "Khám phá các công viên và không gian xanh tốt nhất ở Đà Lạt. Sự kiện ngoài trời, picnic và hoạt động thiên nhiên cập nhật hàng ngày.",
+      "h1": "Công Viên Đà Lạt",
+      "intro": "Khám phá <strong>{count} công viên</strong> và không gian xanh tại Đà Lạt.",
+      "allHeading": "Tất cả công viên"
+    },
+    "outdoor": {
+      "metaTitle": "Hoạt Động Ngoài Trời Đà Lạt - Sự Kiện & Địa Điểm",
+      "metaDescription": "Khám phá các địa điểm ngoài trời ở Đà Lạt tổ chức sự kiện, festival và hoạt động thiên nhiên. Trải nghiệm cao nguyên tuyệt vời.",
+      "h1": "Hoạt Động Ngoài Trời Đà Lạt",
+      "intro": "Khám phá <strong>{count} địa điểm ngoài trời</strong> tại Đà Lạt.",
+      "allHeading": "Tất cả địa điểm ngoài trời"
+    },
+    "discover": {
+      "metaTitle": "Khám Phá Đà Lạt - Sự Kiện, Địa Điểm, Khoảnh Khắc",
+      "metaDescription": "Khám phá Đà Lạt: sự kiện hôm nay, quán cafe, nhà hàng, nhạc sống, nghệ thuật, và khoảnh khắc từ cộng đồng. Cập nhật mỗi ngày.",
+      "h1": "Khám Phá Đà Lạt",
+      "subtitle": "Sự kiện, địa điểm, ẩm thực và khoảnh khắc từ thành phố sương mù trên cao nguyên Việt Nam.",
+      "statsEvents": "Sự kiện",
+      "statsVenues": "Địa điểm",
+      "statsMoments": "Khoảnh khắc",
+      "quickDiscoverHeading": "Tìm nhanh",
+      "exploreByTypeHeading": "Khám phá theo loại địa điểm",
+      "aboutHeading": "Về ĐàLạt.app",
+      "aboutBody": "ĐàLạt.app là nền tảng khám phá sự kiện và cộng đồng tại Đà Lạt, Lâm Đồng, Việt Nam. Từ nhạc sống ở các quán cà phê đến triển lãm nghệ thuật, workshop sáng tạo và lễ hội, chúng tôi giúp bạn tìm và trải nghiệm những điều tốt nhất của thành phố sương mù. Khám phá các sự kiện hôm nay, cuối tuần này, hoặc lên kế hoạch cho chuyến đi Đà Lạt tiếp theo.",
+      "links": {
+        "tonight": "Hôm Nay",
+        "thisWeekend": "Cuối Tuần Này",
+        "moments": "Ảnh & Video",
+        "map": "Bản Đồ",
+        "festivals": "Lễ Hội"
+      },
+      "types": {
+        "cafes": "Quán Cà Phê",
+        "bars": "Quán Bar",
+        "restaurants": "Nhà Hàng",
+        "galleries": "Phòng Tranh",
+        "parks": "Công Viên",
+        "hotels": "Khách Sạn",
+        "coworking": "Coworking",
+        "homestays": "Homestay",
+        "outdoor": "Ngoài Trời",
+        "hiking": "Leo Núi",
+        "vegetarian": "Chay",
+        "vegan": "Thuần Chay"
+      }
+    }
   }
 }

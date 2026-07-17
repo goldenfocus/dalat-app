@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { cn } from "@/lib/utils";
 
@@ -60,13 +61,14 @@ export function Pagination({
   baseUrl,
   className,
 }: PaginationProps) {
+  const t = useTranslations("common");
   if (totalPages <= 1) return null;
 
   const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   return (
     <nav
-      aria-label="Pagination"
+      aria-label={t("pagination")}
       className={cn("flex items-center justify-center gap-1", className)}
     >
       {/* Previous button */}
@@ -74,7 +76,7 @@ export function Pagination({
         <Link
           href={getPageUrl(baseUrl, currentPage - 1)}
           className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground active:scale-95 transition-all"
-          aria-label="Go to previous page"
+          aria-label={t("goToPreviousPage")}
         >
           <ChevronLeft className="h-4 w-4" />
         </Link>
@@ -109,7 +111,7 @@ export function Pagination({
                 ? "bg-primary text-primary-foreground shadow"
                 : "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
             )}
-            aria-label={`Go to page ${page}`}
+            aria-label={t("goToPage", { page })}
             aria-current={isActive ? "page" : undefined}
           >
             {page}
@@ -122,7 +124,7 @@ export function Pagination({
         <Link
           href={getPageUrl(baseUrl, currentPage + 1)}
           className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground active:scale-95 transition-all"
-          aria-label="Go to next page"
+          aria-label={t("goToNextPage")}
         >
           <ChevronRight className="h-4 w-4" />
         </Link>

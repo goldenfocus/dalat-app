@@ -1,6 +1,7 @@
 'use client';
 
 import { Radio, Video } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import { Button } from '@/components/ui/button';
 import { useStreamStatus } from '@/lib/hooks/use-stream-status';
@@ -24,6 +25,7 @@ export function WatchLiveButton({
   isHappening,
   className,
 }: WatchLiveButtonProps) {
+  const t = useTranslations('streaming');
   const { hasLiveStream, streams } = useStreamStatus({
     eventId,
     enabled: isHappening,
@@ -38,7 +40,7 @@ export function WatchLiveButton({
       <Link href={`/events/${eventSlug}/live`} className={className}>
         <Button variant="destructive" className="w-full gap-2 animate-pulse hover:animate-none">
           <Radio className="h-4 w-4" />
-          <span>Watch Live</span>
+          <span>{t('watchLive')}</span>
           {totalViewers > 0 && (
             <span className="bg-white/20 px-1.5 py-0.5 rounded text-xs">{totalViewers}</span>
           )}
@@ -52,7 +54,7 @@ export function WatchLiveButton({
       <Link href={`/events/${eventSlug}/live/broadcast`} className={className}>
         <Button variant="outline" className="w-full gap-2">
           <Video className="h-4 w-4" />
-          <span>Go Live</span>
+          <span>{t('goLive')}</span>
         </Button>
       </Link>
     );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { X, ChevronLeft, ChevronRight, ExternalLink, Play, Share2, Check } from "lucide-react";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
@@ -85,6 +86,7 @@ export function MomentLightbox({
   const [isLandscape, setIsLandscape] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchDiff, setTouchDiff] = useState(0);
+  const t = useTranslations("moments.lightbox");
   const { share: nativeShare, copied: shared } = useShare();
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -255,7 +257,7 @@ export function MomentLightbox({
           <button
             onClick={handleShare}
             className="p-2 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all"
-            aria-label="Share moment"
+            aria-label={t("shareMoment")}
           >
             {shared ? (
               <Check className="w-5 h-5 text-green-400" />
@@ -282,8 +284,8 @@ export function MomentLightbox({
               openFullPage();
             }}
             className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            aria-label="Open full page"
-            title="Open full page"
+            aria-label={t("openFullPage")}
+            title={t("openFullPage")}
           >
             <ExternalLink className="w-5 h-5 text-white" />
           </button>
@@ -295,7 +297,7 @@ export function MomentLightbox({
               onClose();
             }}
             className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            aria-label="Close"
+            aria-label={t("close")}
           >
             <X className="w-6 h-6 text-white" />
           </button>
@@ -310,7 +312,7 @@ export function MomentLightbox({
             goToPrev();
           }}
           className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
-          aria-label="Previous"
+          aria-label={t("previous")}
         >
           <ChevronLeft className="w-7 h-7" />
         </button>
@@ -323,7 +325,7 @@ export function MomentLightbox({
             goToNext();
           }}
           className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
-          aria-label="Next"
+          aria-label={t("next")}
         >
           <ChevronRight className="w-7 h-7" />
         </button>
