@@ -951,7 +951,7 @@ export interface MomentWithMetadata extends Moment {
 // PROMO MEDIA TYPES
 // ============================================
 
-export type PromoMediaType = 'image' | 'video' | 'youtube' | 'pdf';
+export type PromoMediaType = 'image' | 'video' | 'youtube' | 'pdf' | 'soundcloud';
 export type PromoUpdateScope = 'this_event' | 'future' | 'all';
 export type PromoSource = 'event' | 'series';
 

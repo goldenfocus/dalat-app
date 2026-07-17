@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight, Images, Loader2, Check, Repeat, Upload, ArrowRight } from "lucide-react";
+import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight, Images, Loader2, Check, Repeat, Upload, ArrowRight, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -540,6 +540,7 @@ function PromoThumbnail({
   const isVideo = item.media_type === "video";
   const isYouTube = item.media_type === "youtube";
   const isPdf = item.media_type === "pdf";
+  const isSoundCloud = item.media_type === "soundcloud";
 
   const thumbnailUrl = item.thumbnail_url || item.media_url;
   const youTubeThumbnail = item.youtube_video_id
@@ -570,14 +571,26 @@ function PromoThumbnail({
           <FileText className="w-8 h-8 text-muted-foreground" />
         </div>
       )}
-      {!thumbnailUrl && !youTubeThumbnail && !isPdf && (
+      {isSoundCloud &&
+        (item.thumbnail_url ? (
+          <img
+            src={item.thumbnail_url}
+            alt={item.title || "Promo"}
+            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-muted">
+            <Music className="w-8 h-8 text-muted-foreground" />
+          </div>
+        ))}
+      {!thumbnailUrl && !youTubeThumbnail && !isPdf && !isSoundCloud && (
         <div className="w-full h-full flex items-center justify-center bg-muted">
           <ImageIcon className="w-8 h-8 text-muted-foreground" />
         </div>
       )}
 
       {/* Video/YouTube play icon overlay */}
-      {(isVideo || isYouTube) && (
+      {(isVideo || isYouTube || isSoundCloud) && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center">
             <Play className="w-5 h-5 text-white fill-white ml-0.5" />
@@ -630,6 +643,17 @@ function PromoLightboxContent({ item }: { item: EventPromoMedia }) {
         className="w-full h-full max-w-3xl aspect-video"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
+      />
+    );
+  }
+
+  if (item.media_type === "soundcloud" && item.media_url) {
+    return (
+      <iframe
+        src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(item.media_url)}&color=%23ff5500&auto_play=true&visual=true&show_comments=false`}
+        className="w-full max-w-3xl h-[60vh]"
+        allow="autoplay"
+        title={item.title || "SoundCloud"}
       />
     );
   }

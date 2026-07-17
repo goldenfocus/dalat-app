@@ -18,6 +18,7 @@ import {
   Play,
   FileText,
   Upload,
+  Music,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadFile } from "@/lib/storage/client";
@@ -348,6 +349,7 @@ function PromoThumbnail({ item }: { item: EventPromoMedia }) {
   const isVideo = item.media_type === "video";
   const isYouTube = item.media_type === "youtube";
   const isPdf = item.media_type === "pdf";
+  const isSoundCloud = item.media_type === "soundcloud";
   const youTubeThumbnail = item.youtube_video_id ? `https://img.youtube.com/vi/${item.youtube_video_id}/mqdefault.jpg` : null;
 
   return (
@@ -355,7 +357,10 @@ function PromoThumbnail({ item }: { item: EventPromoMedia }) {
       {(item.media_type === "image" || isVideo) && thumbnailUrl && <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" />}
       {isYouTube && youTubeThumbnail && <img src={youTubeThumbnail} alt="" className="w-full h-full object-cover" />}
       {isPdf && <div className="w-full h-full flex items-center justify-center"><FileText className="w-6 h-6 text-muted-foreground" /></div>}
-      {(isVideo || isYouTube) && <div className="absolute inset-0 flex items-center justify-center"><div className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center"><Play className="w-4 h-4 text-white fill-white ml-0.5" /></div></div>}
+      {isSoundCloud && (item.thumbnail_url
+        ? <img src={item.thumbnail_url} alt="" className="w-full h-full object-cover" />
+        : <div className="w-full h-full flex items-center justify-center"><Music className="w-6 h-6 text-muted-foreground" /></div>)}
+      {(isVideo || isYouTube || isSoundCloud) && <div className="absolute inset-0 flex items-center justify-center"><div className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center"><Play className="w-4 h-4 text-white fill-white ml-0.5" /></div></div>}
     </>
   );
 }
