@@ -239,10 +239,16 @@ export function PromoMediaSection({
 
   const handleDeletePromo = async (promoId: string) => {
     if (!eventSlug) return;
+    const previous = promo;
+    setPromo((prev) => prev.filter((p) => p.id !== promoId));
     try {
       const response = await fetch(`/api/events/${eventSlug}/promo?id=${promoId}`, { method: "DELETE" });
-      if (response.ok) fetchPromo();
+      if (!response.ok) {
+        setPromo(previous);
+        console.error("Failed to delete promo:", response.status);
+      }
     } catch (error) {
+      setPromo(previous);
       console.error("Failed to delete promo:", error);
     }
   };
@@ -320,6 +326,7 @@ export function PromoMediaSection({
               <div className="flex items-center gap-1">
                 {canManageInline && (
                   <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
@@ -331,13 +338,13 @@ export function PromoMediaSection({
                   </Button>
                 )}
                 {canImportFromSeries && (
-                  <Button variant="ghost" size="sm" onClick={handleOpenPicker} className="h-8 px-2 text-muted-foreground">
+                  <Button type="button" variant="ghost" size="sm" onClick={handleOpenPicker} className="h-8 px-2 text-muted-foreground">
                     <Images className="w-3.5 h-3.5 mr-1" />
                     {t("importFromMoments")}
                   </Button>
                 )}
                 {!canManageInline && onEditClick && (
-                  <Button variant="ghost" size="sm" onClick={onEditClick} className="h-8 px-2 text-muted-foreground">
+                  <Button type="button" variant="ghost" size="sm" onClick={onEditClick} className="h-8 px-2 text-muted-foreground">
                     <Pencil className="w-3.5 h-3.5 mr-1" />
                     {t("editPromo")}
                   </Button>
@@ -359,6 +366,7 @@ export function PromoMediaSection({
             ))}
             {promo.length > 8 && (
               <button
+                type="button"
                 onClick={() => openLightbox(8)}
                 className="aspect-square rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 transition-colors"
               >
@@ -371,16 +379,16 @@ export function PromoMediaSection({
           <Dialog open={lightboxIndex !== null} onOpenChange={() => closeLightbox()}>
             <DialogContent className="max-w-4xl p-0 bg-black/95 border-none">
               <div className="relative w-full h-[80vh] flex items-center justify-center">
-                <button onClick={closeLightbox} className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+                <button type="button" onClick={closeLightbox} className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
                 {lightboxIndex !== null && lightboxIndex > 0 && (
-                  <button onClick={goPrev} className="absolute left-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+                  <button type="button" onClick={goPrev} className="absolute left-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                 )}
                 {lightboxIndex !== null && lightboxIndex < promo.length - 1 && (
-                  <button onClick={goNext} className="absolute right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+                  <button type="button" onClick={goNext} className="absolute right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
                     <ChevronRight className="w-6 h-6" />
                   </button>
                 )}
@@ -403,19 +411,19 @@ export function PromoMediaSection({
           <p className="text-sm text-muted-foreground mb-3">{t("noPromo")}</p>
           <div className="flex flex-wrap items-center justify-center gap-2">
             {canManageInline && (
-              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                 {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
                 {isUploading ? t("uploading") : t("uploadNew")}
               </Button>
             )}
             {canImportFromSeries && (
-              <Button variant="outline" size="sm" onClick={handleOpenPicker}>
+              <Button type="button" variant="outline" size="sm" onClick={handleOpenPicker}>
                 <Images className="w-4 h-4 mr-2" />
                 {t("importFromMoments")}
               </Button>
             )}
             {!canManageInline && onEditClick && (
-              <Button variant="outline" size="sm" onClick={onEditClick}>
+              <Button type="button" variant="outline" size="sm" onClick={onEditClick}>
                 <Sparkles className="w-4 h-4 mr-2" />
                 {t("addPromo")}
               </Button>
@@ -440,6 +448,7 @@ export function PromoMediaSection({
                 <>
                   {isSeriesEvent && !!seriesId && (
                     <Button
+                      type="button"
                       variant="ghost"
                       size="sm"
                       onClick={handleOpenVibeCurator}
@@ -450,6 +459,7 @@ export function PromoMediaSection({
                     </Button>
                   )}
                   <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
@@ -480,6 +490,7 @@ export function PromoMediaSection({
           {/* Big "See all" CTA */}
           <Link href={`/events/${sourceEvent.event_slug}/moments`}>
             <Button
+              type="button"
               variant="outline"
               className="w-full gap-2 font-medium"
             >
@@ -549,6 +560,7 @@ function PromoThumbnail({
 
   return (
     <button
+      type="button"
       onClick={onClick}
       className="aspect-square rounded-lg overflow-hidden relative group bg-muted"
     >
@@ -601,6 +613,7 @@ function PromoThumbnail({
       {/* Delete button for owners */}
       {canDelete && onDelete && (
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDelete();

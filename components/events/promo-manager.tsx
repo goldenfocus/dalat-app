@@ -181,10 +181,16 @@ export function PromoManager({
   };
 
   const handleDeletePromo = async (promoId: string) => {
+    const previous = promoItems;
+    setPromoItems((prev) => prev.filter((p) => p.id !== promoId));
     try {
       const response = await fetch(`/api/events/${eventSlug}/promo?id=${promoId}`, { method: "DELETE" });
-      if (response.ok) fetchPromo();
+      if (!response.ok) {
+        setPromoItems(previous);
+        console.error("Failed to delete promo:", response.status);
+      }
     } catch (error) {
+      setPromoItems(previous);
       console.error("Failed to delete promo:", error);
     }
   };
@@ -243,7 +249,7 @@ export function PromoManager({
             {promoItems.map((item) => (
               <div key={item.id} className="aspect-square rounded-lg overflow-hidden relative group bg-muted">
                 <PromoThumbnail item={item} />
-                <button onClick={() => handleDeletePromo(item.id)} className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <button type="button" onClick={() => handleDeletePromo(item.id)} className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                   <X className="w-3 h-3" />
                 </button>
               </div>
