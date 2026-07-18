@@ -132,24 +132,9 @@ async function collectWork(
 ): Promise<WorkItem[]> {
   const candidates: Omit<WorkItem, 'missingLocales'>[] = [];
 
-  // --- Blog posts ---
-  const { data: posts } = await supabase
-    .from('blog_posts')
-    .select('id, title, story_content, technical_content, meta_description, source_locale')
-    .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .limit(SCAN_LIMIT);
-
-  for (const post of posts ?? []) {
-    const fields = [
-      { field_name: 'title', text: post.title },
-      { field_name: 'story_content', text: post.story_content },
-      { field_name: 'technical_content', text: post.technical_content },
-      { field_name: 'meta_description', text: post.meta_description },
-    ].filter((f) => f.text && f.text.trim().length > 0);
-    if (fields.length === 0) continue;
-    candidates.push({ contentType: 'blog', contentId: post.id, sourceLocale: post.source_locale, fields });
-  }
+  // Short user-facing content (events, moments) heals within one run; blogs
+  // go last — a single long post can eat minutes per locale and would starve
+  // everything queued behind it.
 
   // --- Events (newest first) ---
   const { data: events } = await supabase
@@ -185,21 +170,55 @@ async function collectWork(
     });
   }
 
+  // --- Blog posts ---
+  const { data: posts } = await supabase
+    .from('blog_posts')
+    .select('id, title, story_content, technical_content, meta_description, source_locale')
+    .eq('status', 'published')
+    .order('published_at', { ascending: false })
+    .limit(SCAN_LIMIT);
+
+  for (const post of posts ?? []) {
+    const fields = [
+      { field_name: 'title', text: post.title },
+      { field_name: 'story_content', text: post.story_content },
+      { field_name: 'technical_content', text: post.technical_content },
+      { field_name: 'meta_description', text: post.meta_description },
+    ].filter((f) => f.text && f.text.trim().length > 0);
+    if (fields.length === 0) continue;
+    candidates.push({ contentType: 'blog', contentId: post.id, sourceLocale: post.source_locale, fields });
+  }
+
   // One query for existing coverage of ALL candidates (per-item HEAD count
   // queries hang from workerd, and one GET is faster anyway). A locale is
   // complete when it has a row for every field of the item.
   const ids = candidates.map((c) => c.contentId);
   const covered = new Map<string, Map<string, number>>();
+  // PostgREST silently caps a response at 1000 rows; 50 ids can own up to
+  // ~2400 coverage rows, and truncated rows read as "untranslated" — which
+  // made the cron re-translate finished content forever. Page until done.
+  const PAGE_SIZE = 1000;
   for (let i = 0; i < ids.length; i += 50) {
-    const { data: rows } = await supabase
-      .from('content_translations')
-      .select('content_type, content_id, target_locale')
-      .in('content_id', ids.slice(i, i + 50));
-    for (const row of rows ?? []) {
-      const key = `${row.content_type}:${row.content_id}`;
-      const perLocale = covered.get(key) ?? new Map<string, number>();
-      perLocale.set(row.target_locale, (perLocale.get(row.target_locale) ?? 0) + 1);
-      covered.set(key, perLocale);
+    const chunk = ids.slice(i, i + 50);
+    for (let offset = 0; ; offset += PAGE_SIZE) {
+      const { data: rows, error } = await supabase
+        .from('content_translations')
+        .select('content_type, content_id, target_locale')
+        .in('content_id', chunk)
+        .order('id')
+        .range(offset, offset + PAGE_SIZE - 1);
+      if (error) {
+        // A partial coverage map would mark done work as missing and burn the
+        // whole run re-translating it — bail and let the next run retry.
+        throw new Error(`[translate-pending] coverage query failed: ${error.message}`);
+      }
+      for (const row of rows ?? []) {
+        const key = `${row.content_type}:${row.content_id}`;
+        const perLocale = covered.get(key) ?? new Map<string, number>();
+        perLocale.set(row.target_locale, (perLocale.get(row.target_locale) ?? 0) + 1);
+        covered.set(key, perLocale);
+      }
+      if (!rows || rows.length < PAGE_SIZE) break;
     }
   }
 
