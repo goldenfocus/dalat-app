@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
+import { Plus } from "lucide-react";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/lib/i18n/routing";
+import { Button } from "@/components/ui/button";
 import { TribeHeader } from "@/components/tribes/tribe-header";
 import { TribeMembersList } from "@/components/tribes/tribe-members-list";
 import { TribeEventsList } from "@/components/tribes/tribe-events-list";
@@ -56,7 +59,17 @@ export default async function TribePage({ params }: PageProps) {
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
         {!membership && <JoinTribeButton tribe={tribe} pendingRequest={pendingRequest} isAuthenticated={!!user} />}
         <section>
-          <h2 className="text-lg font-semibold mb-4">{t("events")}</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">{t("events")}</h2>
+            {isAdmin && (
+              <Link href={`/events/new?tribe=${tribe.slug}`}>
+                <Button variant="outline" size="sm" className="gap-2 px-3 py-2 active:scale-95 transition-all">
+                  <Plus className="w-4 h-4" />
+                  {t("createEvent")}
+                </Button>
+              </Link>
+            )}
+          </div>
           <TribeEventsList events={events || []} locale={locale} />
         </section>
         {membership && (

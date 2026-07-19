@@ -51,9 +51,19 @@ export function TribeHeader({ tribe, membership, isAdmin }: TribeHeaderProps) {
         {/* Content */}
         <div className="max-w-4xl mx-auto px-4 -mt-16 relative">
           <div className="flex flex-col md:flex-row md:items-end gap-4">
-            {/* Avatar placeholder for tribe */}
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl bg-primary/10 border-4 border-background flex items-center justify-center text-4xl font-bold text-primary">
-              {tribe.name.charAt(0).toUpperCase()}
+            {/* Tribe avatar (letter fallback when none) */}
+            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-xl bg-primary/10 border-4 border-background flex items-center justify-center text-4xl font-bold text-primary overflow-hidden">
+              {tribe.settings?.avatar_url ? (
+                <Image
+                  src={tribe.settings.avatar_url}
+                  alt={tribe.name}
+                  fill
+                  sizes="128px"
+                  className="object-cover"
+                />
+              ) : (
+                tribe.name.charAt(0).toUpperCase()
+              )}
             </div>
 
             <div className="flex-1 pb-4">

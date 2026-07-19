@@ -54,7 +54,7 @@ import { LinkedPastEventPicker } from "@/components/events/linked-past-event-pic
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
-import type { Event, EventPrivateDetails, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole, DraftMaterial, EventMaterial } from "@/lib/types";
+import type { Event, EventPrivateDetails, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole, DraftMaterial, EventMaterial, Tribe, TribeEventVisibility, TribeMemberRole } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
 import { finalizeSlug } from "@/lib/utils";
 import { EVENT_TAGS, TAG_CONFIG, type EventTag } from "@/lib/constants/event-tags";
@@ -143,7 +143,11 @@ interface EventFormProps {
   initialPlaylistTracks?: PlaylistTrack[];
   // Secret address: real location for editing (RLS lets only host/admin read)
   initialPrivateDetails?: EventPrivateDetails | null;
+  // Preselect a tribe in "Hosting as" (from /events/new?tribe=<slug>)
+  initialTribeSlug?: string;
 }
+
+type HostableTribe = Pick<Tribe, "id" | "slug" | "name" | "access_type">;
 
 /**
  * Normalize a URL by adding https:// if no protocol is present
@@ -175,6 +179,7 @@ export function EventForm({
   initialPlaylistId,
   initialPlaylistTracks = [],
   initialPrivateDetails = null,
+  initialTribeSlug,
 }: EventFormProps) {
   const router = useRouter();
   // Only moderators and above can select organizers
@@ -333,6 +338,12 @@ export function EventForm({
   );
   const [organizers, setOrganizers] = useState<Pick<Organizer, 'id' | 'name' | 'slug' | 'logo_url'>[]>([]);
 
+  // "Hosting as" tribe state (new events only — tribes where user is leader/admin)
+  const [hostableTribes, setHostableTribes] = useState<HostableTribe[]>([]);
+  const [tribesLoadState, setTribesLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [tribeId, setTribeId] = useState<string | null>(null);
+  const [tribeVisibility, setTribeVisibility] = useState<TribeEventVisibility>("members_only");
+
   // Sponsor tier state (admin only)
   const canSetSponsorTier = hasRoleLevel(userRole, "admin");
   const [sponsorTier, setSponsorTier] = useState<number | null>(
@@ -371,6 +382,53 @@ export function EventForm({
     }
     fetchOrganizers();
   }, []);
+
+  // Fetch tribes the user can host as (leader/admin) — new events only
+  useEffect(() => {
+    if (isEditing) return;
+    async function fetchHostableTribes() {
+      try {
+        const res = await fetch("/api/tribes/me");
+        if (!res.ok) {
+          console.error("Failed to fetch hostable tribes: HTTP", res.status);
+          setTribesLoadState("error");
+          return;
+        }
+        const data = await res.json();
+        const leadTribes: HostableTribe[] = (data.tribes || [])
+          .filter((m: { role: TribeMemberRole }) => m.role === "leader" || m.role === "admin")
+          .map((m: { tribes: HostableTribe | null }) => m.tribes)
+          .filter(Boolean);
+        setHostableTribes(leadTribes);
+        if (initialTribeSlug) {
+          const preselected = leadTribes.find((tr) => tr.slug === initialTribeSlug);
+          if (preselected) {
+            setTribeId(preselected.id);
+            setTribeVisibility(preselected.access_type === "public" ? "public" : "members_only");
+          }
+        }
+        setTribesLoadState("ready");
+      } catch (error) {
+        console.error("Failed to fetch hostable tribes:", error);
+        setTribesLoadState("error");
+      }
+    }
+    fetchHostableTribes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing, initialTribeSlug]);
+
+  function handleHostingTribeChange(value: string) {
+    if (value === "personal") {
+      setTribeId(null);
+      return;
+    }
+    setTribeId(value);
+    // Default visibility from the tribe's access type — creator can override below
+    const selected = hostableTribes.find((tr) => tr.id === value);
+    if (selected) {
+      setTribeVisibility(selected.access_type === "public" ? "public" : "members_only");
+    }
+  }
 
   // Handle title change and auto-suggest slug
   const handleTitleChange = useCallback(
@@ -655,6 +713,8 @@ export function EventForm({
               rrule_count: recurrence.endType === "count" ? recurrence.endCount : null,
               organizer_id: organizerId,
               venue_id: venueIdToSave || null,
+              tribe_id: tribeId,
+              ...(tribeId ? { tribe_visibility: tribeVisibility } : {}),
             }),
           });
 
@@ -713,6 +773,8 @@ export function EventForm({
               organizer_id: organizerId,
               venue_id: venueIdToSave || null,
               ai_tags: selectedTags.length > 0 ? selectedTags : [],
+              tribe_id: tribeId,
+              ...(tribeId ? { tribe_visibility: tribeVisibility } : {}),
             })
             .select()
             .single();
@@ -1113,6 +1175,56 @@ export function EventForm({
             )}
           </div>
 
+          {/* Preselected tribe couldn't load / wasn't found — warn before a personal event gets created */}
+          {!isEditing &&
+            initialTribeSlug &&
+            (tribesLoadState === "error" ||
+              (tribesLoadState === "ready" &&
+                !hostableTribes.some((tr) => tr.slug === initialTribeSlug))) && (
+              <p className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm text-amber-600">
+                {t("tribesLoadFailed")}
+              </p>
+            )}
+
+          {/* Hosting as — tribe selector (new events, tribe leaders/admins only) */}
+          {!isEditing && hostableTribes.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="hostingAs">{t("hostingAs")}</Label>
+              <Select value={tribeId ?? "personal"} onValueChange={handleHostingTribeChange}>
+                <SelectTrigger id="hostingAs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="personal">{t("hostingPersonal")}</SelectItem>
+                  {hostableTribes.map((tr) => (
+                    <SelectItem key={tr.id} value={tr.id}>
+                      {tr.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">{t("hostingAsHelp")}</p>
+              {tribeId && (
+                <div className="space-y-2 pt-2">
+                  <Label htmlFor="tribeVisibility">{t("tribeVisibility")}</Label>
+                  <Select
+                    value={tribeVisibility}
+                    onValueChange={(v) => setTribeVisibility(v as TribeEventVisibility)}
+                  >
+                    <SelectTrigger id="tribeVisibility">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">{t("tribeVisibilityPublic")}</SelectItem>
+                      <SelectItem value="members_only">{t("tribeVisibilityMembers")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">{t("tribeVisibilityHelp")}</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Organizer (only show for moderators+ if organizers exist) */}
           {canSelectOrganizer && organizers.length > 0 && (
             <div className="space-y-2">
@@ -1362,7 +1474,12 @@ export function EventForm({
             <p className="text-sm text-red-500">{error}</p>
           )}
 
-          <Button type="submit" disabled={isPending} className="w-full">
+          <Button
+            type="submit"
+            // Preselected tribe still loading — don't let a personal event slip out before it lands
+            disabled={isPending || (!isEditing && !!initialTribeSlug && tribesLoadState === "loading")}
+            className="w-full"
+          >
             {isPending
               ? isEditing
                 ? t("saving")

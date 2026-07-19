@@ -44,19 +44,32 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
-  const { data: tribe } = await supabase.from('tribes').select('id, created_by').eq('slug', slug).single();
+  const { data: tribe, error: tribeError } = await supabase.from('tribes').select('id, created_by, settings').eq('slug', slug).single();
+  if (tribeError && tribeError.code !== 'PGRST116') {
+    console.error("Tribe fetch error:", tribeError);
+    return NextResponse.json({ error: 'Failed to load tribe' }, { status: 500 });
+  }
   if (!tribe) return NextResponse.json({ error: 'Tribe not found' }, { status: 404 });
 
-  const { data: membership } = await supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
+  const { data: membership, error: membershipError } = await supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
+  if (membershipError && membershipError.code !== 'PGRST116') {
+    console.error("Tribe membership fetch error:", membershipError);
+    return NextResponse.json({ error: 'Failed to load membership' }, { status: 500 });
+  }
   const isAdmin = tribe.created_by === user.id || membership?.role === 'leader' || membership?.role === 'admin';
   if (!isAdmin) return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
 
   const body = await request.json();
   const { name, description, access_type, cover_image_url, is_listed } = body;
 
+  // avatar_url lives inside the settings jsonb — merge, never clobber other keys
+  const settingsUpdate = 'avatar_url' in body
+    ? { settings: { ...(tribe.settings ?? {}), avatar_url: body.avatar_url || null } }
+    : {};
+
   const { data: updated, error } = await supabase
     .from('tribes')
-    .update({ name: name?.trim(), description: description?.trim(), access_type, cover_image_url, is_listed, updated_at: new Date().toISOString() })
+    .update({ name: name?.trim(), description: description?.trim(), access_type, cover_image_url, is_listed, ...settingsUpdate, updated_at: new Date().toISOString() })
     .eq('id', tribe.id)
     .select()
     .single();

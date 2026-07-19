@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "z. B. Ein Haus nahe dem Nachtmarkt",
     "secretAddressPublicLabelHelp": "Ein grober Gebietshinweis, der statt der Adresse angezeigt wird.",
     "secretAddressArrivalNotes": "Ankunftshinweise (nur für Gäste)",
-    "secretAddressArrivalNotesPlaceholder": "Türcode, Parktipps, Zalo/WhatsApp-Gruppenlink…"
+    "secretAddressArrivalNotesPlaceholder": "Türcode, Parktipps, Zalo/WhatsApp-Gruppenlink…",
+    "hostingAs": "Veranstaltet als",
+    "hostingPersonal": "Persönlich",
+    "hostingAsHelp": "Veranstalte dieses Event im Namen deines Tribes — es erscheint auf der Tribe-Seite.",
+    "tribeVisibility": "Wer kann es sehen",
+    "tribeVisibilityPublic": "Alle (öffentlich)",
+    "tribeVisibilityMembers": "Nur Tribe-Mitglieder",
+    "tribeVisibilityHelp": "Events nur für Mitglieder sind für Personen außerhalb des Tribes verborgen.",
+    "tribesLoadFailed": "Deine Tribes konnten nicht geladen werden — dieses Event wird als persönliches Event erstellt."
   },
   "eventActions": {
     "eventOptions": "Event-Optionen",
@@ -1682,7 +1690,14 @@
       "showInSearch": "In der Suche anzeigen"
     },
     "invalidCodeTitle": "Ungültiger Einladungscode",
-    "invalidCodeDescription": "Dieser Einladungscode ist ungültig oder abgelaufen."
+    "invalidCodeDescription": "Dieser Einladungscode ist ungültig oder abgelaufen.",
+    "avatar": "Hauptbild",
+    "uploadAvatar": "Bild hinzufügen",
+    "replaceAvatar": "Bild ersetzen",
+    "removeAvatar": "Entfernen",
+    "avatarHint": "Quadratisch eignet sich am besten — etwa 400×400.",
+    "avatarUploadFailed": "Upload fehlgeschlagen. Bitte erneut versuchen.",
+    "createEvent": "Event erstellen"
   },
   "feed": {
     "title": "Feed",

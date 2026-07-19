@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "VD: Một ngôi nhà gần Chợ Đêm",
     "secretAddressPublicLabelHelp": "Gợi ý khu vực chung hiển thị thay cho địa chỉ.",
     "secretAddressArrivalNotes": "Ghi chú khi đến (chỉ khách mời)",
-    "secretAddressArrivalNotesPlaceholder": "Mã cửa, chỗ đậu xe, link nhóm Zalo/WhatsApp…"
+    "secretAddressArrivalNotesPlaceholder": "Mã cửa, chỗ đậu xe, link nhóm Zalo/WhatsApp…",
+    "hostingAs": "Tổ chức với tư cách",
+    "hostingPersonal": "Cá nhân",
+    "hostingAsHelp": "Tổ chức sự kiện này dưới danh nghĩa bộ tộc của bạn — sự kiện sẽ hiển thị trên trang bộ tộc.",
+    "tribeVisibility": "Ai có thể xem",
+    "tribeVisibilityPublic": "Mọi người (công khai)",
+    "tribeVisibilityMembers": "Chỉ thành viên bộ tộc",
+    "tribeVisibilityHelp": "Sự kiện chỉ dành cho thành viên sẽ ẩn với người ngoài bộ tộc.",
+    "tribesLoadFailed": "Không thể tải bộ tộc của bạn — sự kiện này sẽ được tạo dưới dạng sự kiện cá nhân."
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",
@@ -1685,7 +1693,14 @@
       "name": "Tên",
       "description": "Mô tả",
       "showInSearch": "Hiện trong tìm kiếm"
-    }
+    },
+    "avatar": "Ảnh đại diện",
+    "uploadAvatar": "Thêm ảnh",
+    "replaceAvatar": "Thay ảnh",
+    "removeAvatar": "Xóa",
+    "avatarHint": "Ảnh vuông đẹp nhất — khoảng 400×400.",
+    "avatarUploadFailed": "Tải lên thất bại. Vui lòng thử lại.",
+    "createEvent": "Tạo sự kiện"
   },
   "feed": {
     "title": "Bảng tin",

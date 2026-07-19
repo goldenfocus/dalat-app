@@ -529,7 +529,15 @@
     "secretAddressPublicLabelPlaceholder": "ex. Une maison près du marché de nuit",
     "secretAddressPublicLabelHelp": "Une indication de quartier affichée à la place de l'adresse.",
     "secretAddressArrivalNotes": "Infos d'arrivée (invités uniquement)",
-    "secretAddressArrivalNotesPlaceholder": "Code d'entrée, parking, lien du groupe Zalo/WhatsApp…"
+    "secretAddressArrivalNotesPlaceholder": "Code d'entrée, parking, lien du groupe Zalo/WhatsApp…",
+    "hostingAs": "Organisé en tant que",
+    "hostingPersonal": "Personnel",
+    "hostingAsHelp": "Organisez cet événement au nom de votre tribu — il apparaîtra sur la page de la tribu.",
+    "tribeVisibility": "Qui peut le voir",
+    "tribeVisibilityPublic": "Tout le monde (public)",
+    "tribeVisibilityMembers": "Membres de la tribu uniquement",
+    "tribeVisibilityHelp": "Les événements réservés aux membres sont masqués pour les personnes hors de la tribu.",
+    "tribesLoadFailed": "Impossible de charger vos tribus — cet événement sera créé comme un événement personnel."
   },
   "eventActions": {
     "eventOptions": "Options de l'événement",
@@ -1696,7 +1704,14 @@
       "showInSearch": "Afficher dans la recherche"
     },
     "invalidCodeTitle": "Code d'invitation invalide",
-    "invalidCodeDescription": "Ce code d'invitation est invalide ou a expiré."
+    "invalidCodeDescription": "Ce code d'invitation est invalide ou a expiré.",
+    "avatar": "Image principale",
+    "uploadAvatar": "Ajouter une image",
+    "replaceAvatar": "Remplacer l'image",
+    "removeAvatar": "Supprimer",
+    "avatarHint": "Le format carré est idéal — environ 400×400.",
+    "avatarUploadFailed": "Échec de l'envoi. Veuillez réessayer.",
+    "createEvent": "Créer un événement"
   },
   "feed": {
     "title": "Fil",

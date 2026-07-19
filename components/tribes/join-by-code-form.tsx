@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { Tribe } from "@/lib/types";
 
 interface JoinByCodeFormProps {
-  tribe: Pick<Tribe, "slug" | "name" | "description" | "cover_image_url" | "access_type">;
+  tribe: Pick<Tribe, "slug" | "name" | "description" | "cover_image_url" | "access_type" | "settings">;
   code: string;
   isAuthenticated: boolean;
   locale: string;
@@ -63,8 +63,18 @@ export function JoinByCodeForm({ tribe, code, isAuthenticated, locale }: JoinByC
       )}
 
       <CardHeader className="text-center">
-        <div className="mx-auto w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary mb-2">
-          {tribe.name.charAt(0).toUpperCase()}
+        <div className="relative mx-auto w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary mb-2 overflow-hidden">
+          {tribe.settings?.avatar_url ? (
+            <Image
+              src={tribe.settings.avatar_url}
+              alt={tribe.name}
+              fill
+              sizes="64px"
+              className="object-cover"
+            />
+          ) : (
+            tribe.name.charAt(0).toUpperCase()
+          )}
         </div>
         <CardTitle>{tribe.name}</CardTitle>
         {tribe.description && (

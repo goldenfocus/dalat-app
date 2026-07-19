@@ -40,6 +40,44 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(tribe.settings?.avatar_url ?? null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleAvatarSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    setError(null);
+    const preview = URL.createObjectURL(file);
+    setAvatarPreview(preview);
+    setIsUploadingAvatar(true);
+    try {
+      const { publicUrl } = await uploadFile("event-media", file, {
+        entityId: `tribe-${tribe.id}`,
+      });
+      setAvatarUrl(publicUrl);
+    } catch (err) {
+      console.error("Tribe avatar upload error:", err);
+      URL.revokeObjectURL(preview);
+      setAvatarPreview(null);
+      // Aborted uploads aren't failures — revert the preview silently
+      if (!(err instanceof DOMException && err.name === "AbortError")) {
+        setError(t("avatarUploadFailed"));
+      }
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  }
+
+  function handleRemoveAvatar() {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview(null);
+    setAvatarUrl(null);
+  }
+
   async function handleCoverSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -82,6 +120,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
           access_type: accessType,
           is_listed: isListed,
           cover_image_url: coverUrl,
+          avatar_url: avatarUrl,
         }),
       });
 
@@ -125,6 +164,63 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
           </DialogHeader>
 
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t("avatar")}</Label>
+              <div className="flex items-center gap-3">
+                <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-primary/10 shrink-0">
+                  {avatarPreview || avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={avatarPreview || avatarUrl || undefined}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-primary">
+                      {name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {isUploadingAvatar && (
+                    <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    className="px-3 py-2 active:scale-95 transition-all"
+                  >
+                    <ImagePlus className="w-4 h-4 mr-2" />
+                    {avatarPreview || avatarUrl ? t("replaceAvatar") : t("uploadAvatar")}
+                  </Button>
+                  {(avatarPreview || avatarUrl) && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={handleRemoveAvatar}
+                      disabled={isUploadingAvatar}
+                      className="px-3 py-2 active:scale-95 transition-all text-muted-foreground"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      {t("removeAvatar")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">{t("avatarHint")}</p>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleAvatarSelect}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label>{t("coverImage")}</Label>
               <div className="relative h-32 rounded-lg overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
@@ -274,7 +370,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
             <Button variant="outline" onClick={() => onOpenChange(false)} className="px-3 py-2">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={isPending || isUploadingCover} className="px-3 py-2">
+            <Button onClick={handleSave} disabled={isPending || isUploadingCover || isUploadingAvatar} className="px-3 py-2">
               {isPending ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>

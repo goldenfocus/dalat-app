@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "mis. Rumah dekat Pasar Malam",
     "secretAddressPublicLabelHelp": "Petunjuk area umum yang ditampilkan sebagai pengganti alamat.",
     "secretAddressArrivalNotes": "Catatan kedatangan (khusus tamu)",
-    "secretAddressArrivalNotesPlaceholder": "Kode pintu, tips parkir, tautan grup Zalo/WhatsApp…"
+    "secretAddressArrivalNotesPlaceholder": "Kode pintu, tips parkir, tautan grup Zalo/WhatsApp…",
+    "hostingAs": "Diselenggarakan sebagai",
+    "hostingPersonal": "Pribadi",
+    "hostingAsHelp": "Selenggarakan acara ini atas nama Tribe kamu — akan tampil di halaman Tribe.",
+    "tribeVisibility": "Siapa yang bisa melihat",
+    "tribeVisibilityPublic": "Semua orang (publik)",
+    "tribeVisibilityMembers": "Hanya anggota Tribe",
+    "tribeVisibilityHelp": "Acara khusus anggota disembunyikan dari orang di luar Tribe.",
+    "tribesLoadFailed": "Tidak dapat memuat Tribe kamu — acara ini akan dibuat sebagai acara pribadi."
   },
   "eventActions": {
     "eventOptions": "Opsi acara",
@@ -1682,7 +1690,14 @@
       "showInSearch": "Tampilkan di pencarian"
     },
     "invalidCodeTitle": "Kode Undangan Tidak Valid",
-    "invalidCodeDescription": "Kode undangan ini tidak valid atau sudah kedaluwarsa."
+    "invalidCodeDescription": "Kode undangan ini tidak valid atau sudah kedaluwarsa.",
+    "avatar": "Gambar Utama",
+    "uploadAvatar": "Tambah gambar",
+    "replaceAvatar": "Ganti gambar",
+    "removeAvatar": "Hapus",
+    "avatarHint": "Bentuk persegi paling cocok — sekitar 400×400.",
+    "avatarUploadFailed": "Gagal mengunggah. Silakan coba lagi.",
+    "createEvent": "Buat acara"
   },
   "feed": {
     "title": "Feed",

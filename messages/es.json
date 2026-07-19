@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "ej. Una casa cerca del Mercado Nocturno",
     "secretAddressPublicLabelHelp": "Una pista de la zona que se muestra en lugar de la dirección.",
     "secretAddressArrivalNotes": "Notas de llegada (solo invitados)",
-    "secretAddressArrivalNotesPlaceholder": "Código de la puerta, consejos de aparcamiento, enlace del grupo de Zalo/WhatsApp…"
+    "secretAddressArrivalNotesPlaceholder": "Código de la puerta, consejos de aparcamiento, enlace del grupo de Zalo/WhatsApp…",
+    "hostingAs": "Organizado como",
+    "hostingPersonal": "Personal",
+    "hostingAsHelp": "Organiza este evento en nombre de tu Tribe — aparecerá en la página del Tribe.",
+    "tribeVisibility": "Quién puede verlo",
+    "tribeVisibilityPublic": "Todos (público)",
+    "tribeVisibilityMembers": "Solo miembros del Tribe",
+    "tribeVisibilityHelp": "Los eventos solo para miembros quedan ocultos para quienes no pertenecen al Tribe.",
+    "tribesLoadFailed": "No pudimos cargar tus Tribes — este evento se creará como un evento personal."
   },
   "eventActions": {
     "eventOptions": "Opciones del evento",
@@ -1682,7 +1690,14 @@
       "showInSearch": "Mostrar en búsqueda"
     },
     "invalidCodeTitle": "Código de Invitación Inválido",
-    "invalidCodeDescription": "Este código de invitación no es válido o ha caducado."
+    "invalidCodeDescription": "Este código de invitación no es válido o ha caducado.",
+    "avatar": "Imagen principal",
+    "uploadAvatar": "Añadir imagen",
+    "replaceAvatar": "Reemplazar imagen",
+    "removeAvatar": "Quitar",
+    "avatarHint": "El formato cuadrado funciona mejor — alrededor de 400×400.",
+    "avatarUploadFailed": "Error al subir. Inténtalo de nuevo.",
+    "createEvent": "Crear evento"
   },
   "feed": {
     "title": "Feed",

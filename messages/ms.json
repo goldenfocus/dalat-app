@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "cth. Rumah berhampiran Pasar Malam",
     "secretAddressPublicLabelHelp": "Petunjuk kawasan umum yang dipaparkan menggantikan alamat.",
     "secretAddressArrivalNotes": "Nota ketibaan (tetamu sahaja)",
-    "secretAddressArrivalNotesPlaceholder": "Kod pintu, tip letak kereta, pautan kumpulan Zalo/WhatsApp…"
+    "secretAddressArrivalNotesPlaceholder": "Kod pintu, tip letak kereta, pautan kumpulan Zalo/WhatsApp…",
+    "hostingAs": "Dianjurkan sebagai",
+    "hostingPersonal": "Peribadi",
+    "hostingAsHelp": "Anjurkan acara ini atas nama suku anda — ia akan dipaparkan di halaman suku.",
+    "tribeVisibility": "Siapa boleh lihat",
+    "tribeVisibilityPublic": "Semua orang (awam)",
+    "tribeVisibilityMembers": "Ahli suku sahaja",
+    "tribeVisibilityHelp": "Acara khas ahli disembunyikan daripada orang luar suku.",
+    "tribesLoadFailed": "Tidak dapat memuatkan suku anda — acara ini akan dicipta sebagai acara peribadi."
   },
   "eventActions": {
     "eventOptions": "Pilihan acara",
@@ -1682,7 +1690,14 @@
       "showInSearch": "Tunjuk dalam carian"
     },
     "invalidCodeTitle": "Kod Jemputan Tidak Sah",
-    "invalidCodeDescription": "Kod jemputan ini tidak sah atau telah tamat tempoh."
+    "invalidCodeDescription": "Kod jemputan ini tidak sah atau telah tamat tempoh.",
+    "avatar": "Gambar Utama",
+    "uploadAvatar": "Tambah gambar",
+    "replaceAvatar": "Ganti gambar",
+    "removeAvatar": "Buang",
+    "avatarHint": "Bentuk segi empat sama paling sesuai — sekitar 400×400.",
+    "avatarUploadFailed": "Muat naik gagal. Sila cuba lagi.",
+    "createEvent": "Cipta acara"
   },
   "feed": {
     "title": "Suapan",

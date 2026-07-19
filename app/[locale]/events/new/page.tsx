@@ -9,7 +9,7 @@ import { EventForm } from "@/components/events/event-form";
 import type { Event, Sponsor, EventSponsor, UserRole } from "@/lib/types";
 
 interface PageProps {
-  searchParams: Promise<{ copyFrom?: string }>;
+  searchParams: Promise<{ copyFrom?: string; tribe?: string }>;
 }
 
 // Data to copy from source event
@@ -45,7 +45,7 @@ async function getCopyFromData(eventId: string): Promise<CopyFromData | null> {
 
 export default async function NewEventPage({ searchParams }: PageProps) {
   const supabase = await createClient();
-  const { copyFrom } = await searchParams;
+  const { copyFrom, tribe } = await searchParams;
   const t = await getTranslations("eventForm");
 
   const {
@@ -93,6 +93,7 @@ export default async function NewEventPage({ searchParams }: PageProps) {
           userRole={(profile?.role as UserRole) ?? "user"}
           copyFromEvent={copyFromData?.event}
           copyFromSponsors={copyFromData?.sponsors}
+          initialTribeSlug={tribe}
         />
       </div>
     </main>

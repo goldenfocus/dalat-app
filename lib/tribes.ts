@@ -4,7 +4,7 @@ import type { Tribe } from "@/lib/types";
 
 export type DiscoverTribe = Pick<
   Tribe,
-  "id" | "slug" | "name" | "description" | "cover_image_url" | "access_type"
+  "id" | "slug" | "name" | "description" | "cover_image_url" | "access_type" | "settings"
 >;
 
 /**
@@ -20,7 +20,7 @@ export const getDiscoverTribes = unstable_cache(
 
     const { data, error } = await supabase
       .from("tribes")
-      .select("id, slug, name, description, cover_image_url, access_type")
+      .select("id, slug, name, description, cover_image_url, access_type, settings")
       .in("access_type", ["public", "request"])
       .eq("is_listed", true)
       .order("created_at", { ascending: true })

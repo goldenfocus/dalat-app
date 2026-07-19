@@ -72,8 +72,8 @@ export function MyTribesDropdown({ locale }: MyTribesDropdownProps) {
               className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-sm transition-colors"
             >
               <Avatar className="w-6 h-6">
-                {membership.tribes.cover_image_url ? (
-                  <AvatarImage src={membership.tribes.cover_image_url} />
+                {membership.tribes.settings?.avatar_url || membership.tribes.cover_image_url ? (
+                  <AvatarImage src={membership.tribes.settings?.avatar_url || membership.tribes.cover_image_url || undefined} />
                 ) : null}
                 <AvatarFallback className="text-xs">
                   {membership.tribes.name.charAt(0).toUpperCase()}
@@ -98,8 +98,8 @@ export function MyTribesDropdown({ locale }: MyTribesDropdownProps) {
                   className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-sm transition-colors opacity-60"
                 >
                   <Avatar className="w-6 h-6">
-                    {request.tribes.cover_image_url ? (
-                      <AvatarImage src={request.tribes.cover_image_url} />
+                    {request.tribes.settings?.avatar_url || request.tribes.cover_image_url ? (
+                      <AvatarImage src={request.tribes.settings?.avatar_url || request.tribes.cover_image_url || undefined} />
                     ) : null}
                     <AvatarFallback className="text-xs">
                       {request.tribes.name.charAt(0).toUpperCase()}

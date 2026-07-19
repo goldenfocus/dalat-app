@@ -529,7 +529,15 @@
     "secretAddressPublicLabelPlaceholder": "e.g. A house near the Night Market",
     "secretAddressPublicLabelHelp": "A general area hint shown instead of the address.",
     "secretAddressArrivalNotes": "Arrival notes (guests only)",
-    "secretAddressArrivalNotesPlaceholder": "Door code, parking tips, Zalo/WhatsApp group link…"
+    "secretAddressArrivalNotesPlaceholder": "Door code, parking tips, Zalo/WhatsApp group link…",
+    "hostingAs": "Hosting as",
+    "hostingPersonal": "Just me",
+    "hostingAsHelp": "Host this event as one of your tribes — it'll show up on the tribe page.",
+    "tribeVisibility": "Who can see it",
+    "tribeVisibilityPublic": "Everyone (public)",
+    "tribeVisibilityMembers": "Tribe members only",
+    "tribeVisibilityHelp": "Members-only events are hidden from people outside the tribe.",
+    "tribesLoadFailed": "Couldn't load your tribes — this event will be created as a personal event."
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",
@@ -1796,7 +1804,14 @@
       "name": "Name",
       "description": "Description",
       "showInSearch": "Show in search"
-    }
+    },
+    "avatar": "Main Picture",
+    "uploadAvatar": "Add picture",
+    "replaceAvatar": "Replace picture",
+    "removeAvatar": "Remove",
+    "avatarHint": "Square works best — around 400×400.",
+    "avatarUploadFailed": "Upload failed. Please try again.",
+    "createEvent": "Create event"
   },
   "feed": {
     "title": "Feed",

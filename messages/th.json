@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "เช่น บ้านใกล้ตลาดกลางคืน",
     "secretAddressPublicLabelHelp": "คำใบ้ย่านโดยประมาณที่แสดงแทนที่อยู่",
     "secretAddressArrivalNotes": "หมายเหตุการเดินทาง (เฉพาะแขก)",
-    "secretAddressArrivalNotesPlaceholder": "รหัสประตู เคล็ดลับที่จอดรถ ลิงก์กลุ่ม Zalo/WhatsApp…"
+    "secretAddressArrivalNotesPlaceholder": "รหัสประตู เคล็ดลับที่จอดรถ ลิงก์กลุ่ม Zalo/WhatsApp…",
+    "hostingAs": "จัดในนาม",
+    "hostingPersonal": "ส่วนตัว",
+    "hostingAsHelp": "จัดอีเวนต์นี้ในนาม Tribe ของคุณ — อีเวนต์จะแสดงบนหน้า Tribe",
+    "tribeVisibility": "ใครเห็นได้บ้าง",
+    "tribeVisibilityPublic": "ทุกคน (สาธารณะ)",
+    "tribeVisibilityMembers": "เฉพาะสมาชิก Tribe",
+    "tribeVisibilityHelp": "อีเวนต์เฉพาะสมาชิกจะถูกซ่อนจากคนนอก Tribe",
+    "tribesLoadFailed": "โหลด Tribe ของคุณไม่สำเร็จ — อีเวนต์นี้จะถูกสร้างเป็นอีเวนต์ส่วนตัว"
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",
@@ -1682,7 +1690,14 @@
       "showInSearch": "แสดงในการค้นหา"
     },
     "invalidCodeTitle": "รหัสเชิญไม่ถูกต้อง",
-    "invalidCodeDescription": "รหัสเชิญนี้ไม่ถูกต้องหรือหมดอายุแล้ว"
+    "invalidCodeDescription": "รหัสเชิญนี้ไม่ถูกต้องหรือหมดอายุแล้ว",
+    "avatar": "รูปหลัก",
+    "uploadAvatar": "เพิ่มรูป",
+    "replaceAvatar": "เปลี่ยนรูป",
+    "removeAvatar": "ลบ",
+    "avatarHint": "รูปสี่เหลี่ยมจัตุรัสเหมาะที่สุด — ประมาณ 400×400",
+    "avatarUploadFailed": "อัปโหลดไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+    "createEvent": "สร้างอีเวนต์"
   },
   "feed": {
     "title": "ฟีด",

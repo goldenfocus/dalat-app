@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "예: 야시장 근처 주택",
     "secretAddressPublicLabelHelp": "주소 대신 표시되는 대략적인 지역 안내입니다.",
     "secretAddressArrivalNotes": "도착 안내 (게스트 전용)",
-    "secretAddressArrivalNotesPlaceholder": "출입문 비밀번호, 주차 팁, Zalo/WhatsApp 그룹 링크…"
+    "secretAddressArrivalNotesPlaceholder": "출입문 비밀번호, 주차 팁, Zalo/WhatsApp 그룹 링크…",
+    "hostingAs": "주최 주체",
+    "hostingPersonal": "개인",
+    "hostingAsHelp": "트라이브 이름으로 이벤트를 주최하세요 — 트라이브 페이지에 표시됩니다.",
+    "tribeVisibility": "공개 범위",
+    "tribeVisibilityPublic": "전체 공개",
+    "tribeVisibilityMembers": "트라이브 멤버만",
+    "tribeVisibilityHelp": "멤버 전용 이벤트는 트라이브 외부 사람에게 보이지 않습니다.",
+    "tribesLoadFailed": "트라이브를 불러오지 못했어요 — 이 이벤트는 개인 이벤트로 만들어집니다."
   },
   "eventActions": {
     "eventOptions": "이벤트 옵션",
@@ -1685,7 +1693,14 @@
       "showInSearch": "검색에 표시"
     },
     "invalidCodeTitle": "유효하지 않은 초대 코드",
-    "invalidCodeDescription": "이 초대 코드는 유효하지 않거나 만료되었어요."
+    "invalidCodeDescription": "이 초대 코드는 유효하지 않거나 만료되었어요.",
+    "avatar": "대표 이미지",
+    "uploadAvatar": "이미지 추가",
+    "replaceAvatar": "이미지 변경",
+    "removeAvatar": "삭제",
+    "avatarHint": "정사각형 이미지가 가장 좋아요 — 약 400×400.",
+    "avatarUploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요.",
+    "createEvent": "이벤트 만들기"
   },
   "feed": {
     "title": "피드",

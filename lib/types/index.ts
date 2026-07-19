@@ -294,6 +294,11 @@ export type TribeMemberStatus = 'active' | 'banned';
 export type TribeRequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 export type TribeEventVisibility = 'public' | 'members_only';
 
+export interface TribeSettings {
+  avatar_url?: string | null;
+  [key: string]: unknown;
+}
+
 export interface Tribe {
   id: string;
   slug: string;
@@ -304,7 +309,7 @@ export interface Tribe {
   invite_code: string | null;
   invite_code_expires_at: string | null;
   is_listed: boolean;
-  settings: Record<string, unknown>;
+  settings: TribeSettings;
   created_by: string;
   created_at: string;
   updated_at: string;

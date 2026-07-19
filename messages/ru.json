@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "напр. Дом рядом с ночным рынком",
     "secretAddressPublicLabelHelp": "Примерный район, отображаемый вместо адреса.",
     "secretAddressArrivalNotes": "Заметки о прибытии (только для гостей)",
-    "secretAddressArrivalNotesPlaceholder": "Код от двери, парковка, ссылка на группу Zalo/WhatsApp…"
+    "secretAddressArrivalNotesPlaceholder": "Код от двери, парковка, ссылка на группу Zalo/WhatsApp…",
+    "hostingAs": "Организатор",
+    "hostingPersonal": "Лично",
+    "hostingAsHelp": "Проведите это событие от имени вашего трайба — оно появится на странице трайба.",
+    "tribeVisibility": "Кто может видеть",
+    "tribeVisibilityPublic": "Все (открыто)",
+    "tribeVisibilityMembers": "Только участники трайба",
+    "tribeVisibilityHelp": "События только для участников скрыты от людей вне трайба.",
+    "tribesLoadFailed": "Не удалось загрузить ваши трайбы — событие будет создано как личное."
   },
   "eventActions": {
     "eventOptions": "Опции события",
@@ -1682,7 +1690,14 @@
       "showInSearch": "Показывать в поиске"
     },
     "invalidCodeTitle": "Недействительный код приглашения",
-    "invalidCodeDescription": "Этот код приглашения недействителен или истёк."
+    "invalidCodeDescription": "Этот код приглашения недействителен или истёк.",
+    "avatar": "Основное изображение",
+    "uploadAvatar": "Добавить изображение",
+    "replaceAvatar": "Заменить изображение",
+    "removeAvatar": "Удалить",
+    "avatarHint": "Лучше всего подходит квадратное изображение — примерно 400×400.",
+    "avatarUploadFailed": "Не удалось загрузить. Попробуйте ещё раз.",
+    "createEvent": "Создать событие"
   },
   "feed": {
     "title": "Лента",

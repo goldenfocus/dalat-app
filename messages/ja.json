@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "例:ナイトマーケット近くの一軒家",
     "secretAddressPublicLabelHelp": "住所の代わりに表示されるおおまかなエリアの説明です。",
     "secretAddressArrivalNotes": "到着メモ(ゲスト限定)",
-    "secretAddressArrivalNotesPlaceholder": "ドアコード、駐車場のヒント、Zalo/WhatsAppグループのリンク…"
+    "secretAddressArrivalNotesPlaceholder": "ドアコード、駐車場のヒント、Zalo/WhatsAppグループのリンク…",
+    "hostingAs": "主催者として",
+    "hostingPersonal": "個人",
+    "hostingAsHelp": "トライブとしてイベントを主催しましょう — トライブページに表示されます。",
+    "tribeVisibility": "公開範囲",
+    "tribeVisibilityPublic": "全員に公開",
+    "tribeVisibilityMembers": "トライブのメンバーのみ",
+    "tribeVisibilityHelp": "メンバー限定イベントはトライブ外の人には表示されません。",
+    "tribesLoadFailed": "トライブを読み込めませんでした — このイベントは個人イベントとして作成されます。"
   },
   "eventActions": {
     "eventOptions": "イベントオプション",
@@ -1682,7 +1690,14 @@
       "showInSearch": "検索に表示"
     },
     "invalidCodeTitle": "無効な招待コード",
-    "invalidCodeDescription": "この招待コードは無効か、期限切れです。"
+    "invalidCodeDescription": "この招待コードは無効か、期限切れです。",
+    "avatar": "メイン画像",
+    "uploadAvatar": "画像を追加",
+    "replaceAvatar": "画像を変更",
+    "removeAvatar": "削除",
+    "avatarHint": "正方形の画像がおすすめです — 約400×400。",
+    "avatarUploadFailed": "アップロードに失敗しました。もう一度お試しください。",
+    "createEvent": "イベントを作成"
   },
   "feed": {
     "title": "フィード",

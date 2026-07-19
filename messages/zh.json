@@ -515,7 +515,15 @@
     "secretAddressPublicLabelPlaceholder": "例如:夜市附近的一栋房子",
     "secretAddressPublicLabelHelp": "代替地址显示的大致区域提示。",
     "secretAddressArrivalNotes": "到达须知(仅宾客可见)",
-    "secretAddressArrivalNotesPlaceholder": "门禁密码、停车提示、Zalo/WhatsApp 群链接…"
+    "secretAddressArrivalNotesPlaceholder": "门禁密码、停车提示、Zalo/WhatsApp 群链接…",
+    "hostingAs": "主办身份",
+    "hostingPersonal": "个人",
+    "hostingAsHelp": "以部落名义主办活动——活动将显示在部落页面上。",
+    "tribeVisibility": "谁可以看到",
+    "tribeVisibilityPublic": "所有人(公开)",
+    "tribeVisibilityMembers": "仅部落成员",
+    "tribeVisibilityHelp": "仅成员可见的活动对部落以外的人隐藏。",
+    "tribesLoadFailed": "无法加载你的部落——此活动将以个人活动的形式创建。"
   },
   "eventActions": {
     "eventOptions": "活动选项",
@@ -1685,7 +1693,14 @@
       "showInSearch": "在搜索中显示"
     },
     "invalidCodeTitle": "邀请码无效",
-    "invalidCodeDescription": "此邀请码无效或已过期。"
+    "invalidCodeDescription": "此邀请码无效或已过期。",
+    "avatar": "主图",
+    "uploadAvatar": "添加图片",
+    "replaceAvatar": "更换图片",
+    "removeAvatar": "移除",
+    "avatarHint": "方形图片效果最佳——约 400×400。",
+    "avatarUploadFailed": "上传失败,请重试。",
+    "createEvent": "创建活动"
   },
   "feed": {
     "title": "动态",

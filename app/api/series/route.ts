@@ -32,6 +32,7 @@ interface CreateSeriesRequest {
   price_type?: "free" | "paid" | "donation" | null;
   ticket_tiers?: TicketTier[] | null;
   tribe_id?: string;
+  tribe_visibility?: "public" | "members_only";
   organizer_id?: string;
   venue_id?: string; // Link to venues table (WHERE the event happens)
   rrule: string;
@@ -97,6 +98,44 @@ export async function POST(request: Request) {
 
   if (!body.first_occurrence) {
     return NextResponse.json({ error: "First occurrence date is required" }, { status: 400 });
+  }
+
+  if (
+    body.tribe_visibility !== undefined &&
+    body.tribe_visibility !== "public" &&
+    body.tribe_visibility !== "members_only"
+  ) {
+    return NextResponse.json(
+      { error: "Invalid tribe_visibility — must be 'public' or 'members_only'" },
+      { status: 400 }
+    );
+  }
+
+  // Only tribe leaders/admins can create series on behalf of a tribe
+  if (body.tribe_id) {
+    const { data: tribeMembership, error: tribeMembershipError } = await supabase
+      .from("tribe_members")
+      .select("role")
+      .eq("tribe_id", body.tribe_id)
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .in("role", ["leader", "admin"])
+      .maybeSingle();
+
+    if (tribeMembershipError) {
+      console.error("Tribe membership check error:", tribeMembershipError);
+      return NextResponse.json(
+        { error: "Failed to verify tribe membership" },
+        { status: 500 }
+      );
+    }
+
+    if (!tribeMembership) {
+      return NextResponse.json(
+        { error: "Not authorized to create events for this tribe" },
+        { status: 403 }
+      );
+    }
   }
 
   // Normalize time to HH:MM:SS format
@@ -236,6 +275,8 @@ export async function POST(request: Request) {
         price_type: body.price_type || null,
         ticket_tiers: body.ticket_tiers || null,
         tribe_id: body.tribe_id || null,
+        // Only 'public' opens tribe events up; anything else keeps the members_only default
+        tribe_visibility: body.tribe_id && body.tribe_visibility === "public" ? "public" : "members_only",
         organizer_id: body.organizer_id || null,
         venue_id: body.venue_id || null, // Link to venue (WHERE)
         created_by: user.id,

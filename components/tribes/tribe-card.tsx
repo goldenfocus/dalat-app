@@ -37,6 +37,16 @@ export function TribeCard({ tribe }: { tribe: DiscoverTribe }) {
             sizes="(max-width: 768px) 50vw, 33vw"
             className="object-cover"
           />
+        ) : tribe.settings?.avatar_url ? (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <Image
+              src={tribe.settings.avatar_url}
+              alt={tribe.name}
+              width={64}
+              height={64}
+              className="w-16 h-16 rounded-xl object-cover ring-2 ring-white/60"
+            />
+          </span>
         ) : (
           <span className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-white/80">
             {tribe.name.charAt(0).toUpperCase()}
