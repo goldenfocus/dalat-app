@@ -543,7 +543,10 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
     }
 
     // Compress large images (>3MB) before upload - critical for iOS reliability
-    if (needsImageCompression(fileToUpload)) {
+    // Skip when the file is still HEIC awaiting server-side conversion — the
+    // conversion step above already proved this browser can't decode it, so
+    // canvas compression would fail too and just log a red error.
+    if (!needsServerHeicConversion && needsImageCompression(fileToUpload)) {
       dispatch({ type: "UPDATE_FILE", id, updates: { status: "converting" } });
 
       try {

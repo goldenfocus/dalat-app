@@ -250,7 +250,10 @@ export function useUploadQueue({
       }
 
       // Step 2: Compress images if needed (>3MB → ~2MB)
-      if (!isVideo && needsImageCompression(fileToUpload)) {
+      // Skip when the file is still HEIC awaiting server-side conversion — Step 1
+      // already proved this browser can't decode it (heic2any AND canvas both
+      // failed), so canvas compression would fail too and just log a red error.
+      if (!isVideo && !needsServerHeicConversion && needsImageCompression(fileToUpload)) {
         dispatch({ type: "UPDATE_ITEM", id, updates: { status: "compressing" } });
         const result = await compressImage(fileToUpload);
         if (result.wasCompressed) {
