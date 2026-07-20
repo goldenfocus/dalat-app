@@ -18,6 +18,8 @@ interface MomentsLightboxProviderProps {
   children: ReactNode;
   moments: LightboxMoment[];
   eventSlug?: string;
+  /** Called after a moment is deleted from inside the lightbox, so the grid can drop the tile */
+  onMomentDeleted?: (momentId: string) => void;
 }
 
 /**
@@ -85,6 +87,7 @@ export function MomentsLightboxProvider({
   children,
   moments,
   eventSlug,
+  onMomentDeleted,
 }: MomentsLightboxProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -139,6 +142,7 @@ export function MomentsLightboxProvider({
         onClose={closeLightbox}
         eventSlug={eventSlug}
         onIndexChange={handleIndexChange}
+        onMomentDeleted={onMomentDeleted}
       />
     </MomentsLightboxContext.Provider>
   );

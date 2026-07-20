@@ -639,6 +639,7 @@ export function MomentsViewContainer({
           currentUserId={currentUserId}
           canModerate={canModerate}
           onDeleteMoment={setPendingDeleteId}
+          onMomentDeleted={handleMomentDeleted}
         />
       </div>
 

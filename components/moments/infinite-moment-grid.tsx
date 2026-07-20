@@ -42,6 +42,8 @@ interface InfiniteMomentGridProps {
   canModerate?: boolean;
   /** Delete a single moment from its tile — parent owns confirmation + RPC */
   onDeleteMoment?: (momentId: string) => void;
+  /** A moment was already deleted elsewhere (e.g. the lightbox menu) — sync parent state */
+  onMomentDeleted?: (momentId: string) => void;
 }
 
 export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteMomentGridProps>(function InfiniteMomentGrid({
@@ -59,6 +61,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   currentUserId,
   canModerate,
   onDeleteMoment,
+  onMomentDeleted,
 }: InfiniteMomentGridProps, ref) {
   const t = useTranslations("moments");
   const [moments, setMoments] = useState<MomentWithProfile[]>(initialMoments);
@@ -115,6 +118,13 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
     const drop = new Set(ids);
     setMoments((prev) => prev.filter((m) => !drop.has(m.id)));
   }, []);
+
+  // Delete initiated from inside the lightbox: the RPC already ran, so just drop
+  // the tile here and let the container sync its own copy (immersive/cinema).
+  const handleLightboxDelete = useCallback((momentId: string) => {
+    removeMoments([momentId]);
+    onMomentDeleted?.(momentId);
+  }, [removeMoments, onMomentDeleted]);
 
   useImperativeHandle(ref, () => ({
     loadMore,
@@ -214,7 +224,11 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   // Wrap with provider for lightbox mode
   if (enableLightbox) {
     return (
-      <MomentsLightboxProvider moments={filteredMoments} eventSlug={eventSlug}>
+      <MomentsLightboxProvider
+        moments={filteredMoments}
+        eventSlug={eventSlug}
+        onMomentDeleted={handleLightboxDelete}
+      >
         {gridContent}
       </MomentsLightboxProvider>
     );
