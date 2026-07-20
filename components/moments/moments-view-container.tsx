@@ -53,6 +53,8 @@ interface MomentsViewContainerProps {
   eventMeta?: CinemaEventMeta;
   /** Pre-fetched playlist data (server-side) — skips the client-side RPC call */
   initialPlaylist?: { tracks: AudioTrack[]; playlistInfo: PlaylistInfo } | null;
+  /** Event creator id — event owners can moderate their own event's moments (matches remove_moment RPC) */
+  eventCreatedBy?: string | null;
 }
 
 /**
@@ -68,6 +70,7 @@ export function MomentsViewContainer({
   initialView,
   eventMeta,
   initialPlaylist,
+  eventCreatedBy,
 }: MomentsViewContainerProps) {
   const t = useTranslations("moments");
   const tCommon = useTranslations("common");
@@ -87,6 +90,7 @@ export function MomentsViewContainer({
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -100,6 +104,12 @@ export function MomentsViewContainer({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setCurrentUserId(user.id);
+      // The event's creator can moderate its moments — remove_moment() allows it,
+      // so the UI must offer it too (previously role-only, which locked owners out).
+      if (eventCreatedBy && user.id === eventCreatedBy) {
+        setCanModerate(true);
+        return;
+      }
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
@@ -110,7 +120,7 @@ export function MomentsViewContainer({
       }
     }
     fetchPermissions();
-  }, []);
+  }, [eventCreatedBy]);
 
   // Track moments loaded so far (for immersive view to access all loaded moments)
   const [allMoments, setAllMoments] = useState<MomentWithProfile[]>(initialMoments);
@@ -241,7 +251,41 @@ export function MomentsViewContainer({
   // Handle moment deletion from immersive view
   const handleMomentDeleted = useCallback((momentId: string) => {
     setAllMoments((prev) => prev.filter((m) => m.id !== momentId));
+    // The grid keeps its own moments state — drop it there too, or the tile lingers.
+    gridRef.current?.removeMoments([momentId]);
   }, []);
+
+  // --- Single-tile delete (the X on a moment card) ---
+  const pendingDeleteMoment = useMemo(
+    () => allMoments.find((m) => m.id === pendingDeleteId) ?? null,
+    [allMoments, pendingDeleteId]
+  );
+
+  const handleDeleteMoment = useCallback(async () => {
+    if (!pendingDeleteMoment) return;
+    setIsDeleting(true);
+
+    const supabase = createClient();
+    const isOwner = pendingDeleteMoment.user_id === currentUserId;
+    const { data, error } = await supabase.rpc(
+      isOwner ? "delete_own_moment" : "remove_moment",
+      isOwner
+        ? { p_moment_id: pendingDeleteMoment.id }
+        : { p_moment_id: pendingDeleteMoment.id, p_reason: "Removed by event owner or moderator" }
+    );
+
+    if (error || !data?.ok) {
+      triggerHaptic("error");
+      toast.error(t("deleteError"));
+    } else {
+      triggerHaptic("success");
+      toast.success(t("momentDeleted"));
+      handleMomentDeleted(pendingDeleteMoment.id);
+    }
+
+    setIsDeleting(false);
+    setPendingDeleteId(null);
+  }, [pendingDeleteMoment, currentUserId, handleMomentDeleted, t]);
 
   // --- Selection mode handlers ---
   const toggleSelection = useCallback((momentId: string) => {
@@ -298,8 +342,9 @@ export function MomentsViewContainer({
       }
     }
 
-    // Only remove successfully deleted moments from state
+    // Only remove successfully deleted moments from state (container + grid)
     setAllMoments(prev => prev.filter(m => !deletedIds.has(m.id)));
+    gridRef.current?.removeMoments([...deletedIds]);
 
     if (deleted > 0) {
       triggerHaptic("success");
@@ -593,6 +638,7 @@ export function MomentsViewContainer({
           onSelectionToggle={toggleSelection}
           currentUserId={currentUserId}
           canModerate={canModerate}
+          onDeleteMoment={setPendingDeleteId}
         />
       </div>
 
@@ -633,6 +679,44 @@ export function MomentsViewContainer({
           onClose={switchToGrid}
         />
       )}
+
+      {/* Single moment delete confirmation (X on a grid tile) */}
+      <Dialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">{t("deleteTitle")}</DialogTitle>
+            <DialogDescription>{t("deleteConfirm")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setPendingDeleteId(null)}
+              disabled={isDeleting}
+              className="px-3 py-2"
+            >
+              {tCommon("cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteMoment}
+              disabled={isDeleting}
+              className="px-3 py-2"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  {t("selection.deleting")}
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-1.5" />
+                  {t("delete")}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Bulk delete confirmation dialog */}
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>

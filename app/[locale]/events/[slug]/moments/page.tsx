@@ -272,6 +272,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             imageUrl: event.image_url,
           }}
           initialPlaylist={playlist}
+          eventCreatedBy={event.created_by}
         />
 
         {/* CTA for users who can post but haven't yet */}

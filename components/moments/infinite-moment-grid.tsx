@@ -15,6 +15,8 @@ const PAGE_SIZE = 20;
 export interface InfiniteMomentGridHandle {
   loadMore: () => Promise<void>;
   hasMore: boolean;
+  /** Drop moments from the grid's own state after a successful delete */
+  removeMoments: (ids: string[]) => void;
 }
 
 interface InfiniteMomentGridProps {
@@ -38,6 +40,8 @@ interface InfiniteMomentGridProps {
   currentUserId?: string;
   /** Whether user can moderate (select any moment) */
   canModerate?: boolean;
+  /** Delete a single moment from its tile — parent owns confirmation + RPC */
+  onDeleteMoment?: (momentId: string) => void;
 }
 
 export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteMomentGridProps>(function InfiniteMomentGrid({
@@ -54,6 +58,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   onSelectionToggle,
   currentUserId,
   canModerate,
+  onDeleteMoment,
 }: InfiniteMomentGridProps, ref) {
   const t = useTranslations("moments");
   const [moments, setMoments] = useState<MomentWithProfile[]>(initialMoments);
@@ -106,10 +111,16 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   }, [eventId, offset, isLoading, hasMore, onMomentsUpdate]);
 
   // Expose loadMore and hasMore to parent via ref
+  const removeMoments = useCallback((ids: string[]) => {
+    const drop = new Set(ids);
+    setMoments((prev) => prev.filter((m) => !drop.has(m.id)));
+  }, []);
+
   useImperativeHandle(ref, () => ({
     loadMore,
     hasMore,
-  }), [loadMore, hasMore]);
+    removeMoments,
+  }), [loadMore, hasMore, removeMoments]);
 
   // Notify parent of initial moments
   useEffect(() => {
@@ -168,6 +179,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
           onSelectionToggle={onSelectionToggle}
           currentUserId={currentUserId}
           canModerate={canModerate}
+          onDeleteMoment={onDeleteMoment}
         />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -183,6 +195,8 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
               isSelected={selectedIds?.has(moment.id)}
               isSelectable={canModerate || moment.user_id === currentUserId}
               onSelectionToggle={onSelectionToggle ? () => onSelectionToggle(moment.id) : undefined}
+              canDelete={canModerate || moment.user_id === currentUserId}
+              onDelete={onDeleteMoment ? () => onDeleteMoment(moment.id) : undefined}
             />
           ))}
         </div>
@@ -219,6 +233,7 @@ function InnerGridWithLightbox({
   onSelectionToggle,
   currentUserId,
   canModerate,
+  onDeleteMoment,
 }: {
   moments: MomentWithProfile[];
   eventSlug: string;
@@ -228,6 +243,7 @@ function InnerGridWithLightbox({
   onSelectionToggle?: (momentId: string) => void;
   currentUserId?: string;
   canModerate?: boolean;
+  onDeleteMoment?: (momentId: string) => void;
 }) {
   const { openLightbox } = useMomentsLightbox();
 
@@ -245,6 +261,8 @@ function InnerGridWithLightbox({
           isSelected={selectedIds?.has(moment.id)}
           isSelectable={canModerate || moment.user_id === currentUserId}
           onSelectionToggle={onSelectionToggle ? () => onSelectionToggle(moment.id) : undefined}
+          canDelete={canModerate || moment.user_id === currentUserId}
+          onDelete={onDeleteMoment ? () => onDeleteMoment(moment.id) : undefined}
         />
       ))}
     </div>

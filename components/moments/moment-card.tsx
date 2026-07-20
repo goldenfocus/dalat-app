@@ -4,7 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
-import { Play, MessageCircle, FileText, Music, File } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Play, MessageCircle, FileText, Music, File, X } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { getCfStreamThumbnailUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { getYouTubeThumbnail } from "@/components/shared/material-renderers";
@@ -48,6 +49,10 @@ interface MomentCardProps {
   isSelectable?: boolean;
   /** Toggle selection callback */
   onSelectionToggle?: () => void;
+  /** Whether the current user may delete this moment (own moment, event owner, or moderator) */
+  canDelete?: boolean;
+  /** Delete callback — parent owns the confirm dialog and the RPC */
+  onDelete?: () => void;
 }
 
 // Extract YouTube video ID from URL
@@ -65,7 +70,8 @@ function extractVideoId(url: string | null | undefined): string | null {
   return null;
 }
 
-export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOpen, selectMode, isSelected, isSelectable, onSelectionToggle }: MomentCardProps) {
+export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOpen, selectMode, isSelected, isSelectable, onSelectionToggle, canDelete, onDelete }: MomentCardProps) {
+  const t = useTranslations("moments");
   const [thumbnailError, setThumbnailError] = useState(false);
 
   // Use clean URL format when event slug is available
@@ -281,6 +287,34 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
       </article>
   );
 
+  // Delete affordance lives OUTSIDE the card wrapper — the wrapper is a <button> in
+  // lightbox/select mode, and nesting a button inside a button is invalid HTML.
+  const withDeleteOverlay = (child: React.ReactElement): React.ReactElement => {
+    if (!canDelete || !onDelete || selectMode) return child;
+    return (
+      <div className="relative group/tile">
+        {child}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            triggerHaptic("warning");
+            onDelete();
+          }}
+          aria-label={t("delete")}
+          // Always visible on touch (no hover there); hover-revealed on desktop.
+          // min-w/h-11 = 44px touch target, icon stays visually small.
+          className="absolute top-0 right-0 min-w-11 min-h-11 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover/tile:opacity-100 md:focus-visible:opacity-100 transition-opacity touch-manipulation"
+        >
+          <span className="p-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white active:scale-90 transition-transform">
+            <X className="w-3.5 h-3.5" />
+          </span>
+        </button>
+      </div>
+    );
+  };
+
   // Selection mode: clicking toggles selection
   if (selectMode) {
     return (
@@ -302,7 +336,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
 
   // YouTube moments: always open YouTube directly in new tab
   if (moment.content_type === "youtube" && youtubeDirectUrl) {
-    return (
+    return withDeleteOverlay(
       <a
         href={youtubeDirectUrl}
         target="_blank"
@@ -317,7 +351,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
 
   // Lightbox mode: use button
   if (onLightboxOpen) {
-    return (
+    return withDeleteOverlay(
       <button
         type="button"
         className="block w-full text-left touch-manipulation"
@@ -329,7 +363,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
   }
 
   // Default: use Link for SEO and direct navigation
-  return (
+  return withDeleteOverlay(
     <Link
       href={href}
       className="block touch-manipulation"
