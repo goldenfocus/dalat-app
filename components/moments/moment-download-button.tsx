@@ -62,6 +62,22 @@ export function MomentDownloadButton({
       // Safari also exposes navigator.canShare, so checking that alone would
       // (and did) drag desktop onto the slow path.
       const info = detectInAppBrowser();
+
+      // iOS in-app browsers are a dead end, not a slow path. A WKWebView can
+      // only save a file if the host app implements WKDownloadDelegate, and
+      // Zalo doesn't — it ignores Content-Disposition and renders the image
+      // inline, so navigating just strands the user on a bare image page with
+      // no save option and loses their place in the gallery. Nothing we send
+      // over the wire changes that. Keep them here and name the one action
+      // that works. (Android WebViews often do handle downloads, so they
+      // still fall through to the normal navigation below.)
+      if (info.isInApp && info.isIOS) {
+        e.preventDefault();
+        toast(t("download.inAppHint"), { duration: 6000 });
+        triggerHaptic("selection");
+        return;
+      }
+
       const isTouch =
         typeof window !== "undefined" &&
         window.matchMedia?.("(pointer: coarse)").matches;
