@@ -109,7 +109,7 @@ export async function GET(request: Request) {
       id, content_type, media_url, file_url, cf_video_uid, cf_playback_url,
       mime_type, original_filename, title, artist, album, genre,
       video_duration_seconds, audio_duration_seconds,
-      events!inner(has_private_details, tribe_id, tribe_visibility)
+      events!moments_event_id_fkey!inner(has_private_details, tribe_id, tribe_visibility)
     `
     )
     .eq("status", "published")
