@@ -19,6 +19,6 @@ export const config = {
      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp, .ico
      * - audio/video - .mp3, .wav, .ogg, .mp4, .webm
      */
-    "/((?!api/|auth/callback|auth/confirm|_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|wav|ogg|mp4|webm)$).*)",
+    "/((?!api/|auth/callback|auth/confirm|_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|wav|ogg|mp4|webm|txt)$).*)",
   ],
 };
