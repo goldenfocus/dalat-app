@@ -92,8 +92,17 @@ export async function PUT(request: Request, { params }: RouteParams) {
     .single();
 
   if (error) {
-    // Someone claimed the slug between our check and this write — the UNIQUE index caught it
-    if (error.code === '23505') return NextResponse.json({ error: 'Slug already taken', code: 'slug_taken' }, { status: 400 });
+    // Someone claimed the slug between our check and this write — the UNIQUE index caught it.
+    // Gate on intent: tribes.invite_code is UNIQUE too, and the tribes_set_invite_code
+    // trigger can raise 23505 on a field the leader never touched.
+    if (error.code === '23505' && 'slug' in slugUpdate) {
+      return NextResponse.json({ error: 'Slug already taken', code: 'slug_taken' }, { status: 400 });
+    }
+    // Zero rows updated: the route lets leaders/admins through, but the tribes_update_creator
+    // RLS policy only permits the creator. Retrying will never help, so don't suggest it.
+    if (error.code === 'PGRST116') {
+      return NextResponse.json({ error: 'Only the creator can edit this tribe', code: 'not_creator' }, { status: 403 });
+    }
     console.error("Tribe update error:", error);
     return NextResponse.json({ error: "Failed to update tribe" }, { status: 500 });
   }

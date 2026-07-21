@@ -1707,6 +1707,7 @@
       "descriptionPlaceholder": "Tribe นี้เกี่ยวกับอะไร?"
     },
     "requestMessagePlaceholder": "ทำไมคุณถึงอยากเข้าร่วม?",
+    "createFailed": "สร้างกลุ่มไม่สำเร็จ ลองอีกครั้งไหม?",
     "settingsForm": {
       "name": "ชื่อ",
       "description": "คำอธิบาย",
@@ -1716,6 +1717,7 @@
       "slug_taken": "URL นี้มีคนใช้แล้ว",
       "slug_reserved": "URL นี้ถูกสงวนไว้ — เลือกอันอื่นนะ",
       "slug_invalid": "ใช้ตัวอักษรหรือตัวเลขอย่างน้อย 2 ตัว",
+      "not_creator": "เฉพาะคนที่สร้างกลุ่มนี้เท่านั้นที่แก้ไขการตั้งค่าได้",
       "saveFailed": "บันทึกไม่สำเร็จ ลองอีกครั้งไหม?"
     },
     "invalidCodeTitle": "รหัสเชิญไม่ถูกต้อง",

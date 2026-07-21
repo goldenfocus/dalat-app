@@ -1707,6 +1707,7 @@
       "descriptionPlaceholder": "Worum geht's in dieser Tribe?"
     },
     "requestMessagePlaceholder": "Warum möchtest du beitreten?",
+    "createFailed": "Tribe konnte nicht erstellt werden. Nochmal versuchen?",
     "settingsForm": {
       "name": "Name",
       "description": "Beschreibung",
@@ -1716,6 +1717,7 @@
       "slug_taken": "Diese URL ist schon vergeben.",
       "slug_reserved": "Diese URL ist reserviert — nimm eine andere.",
       "slug_invalid": "Nutze mindestens 2 Buchstaben oder Zahlen.",
+      "not_creator": "Nur wer diesen Tribe erstellt hat, kann die Einstellungen ändern.",
       "saveFailed": "Konnte nicht gespeichert werden. Nochmal versuchen?"
     },
     "invalidCodeTitle": "Ungültiger Einladungscode",

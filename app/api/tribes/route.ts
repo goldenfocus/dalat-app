@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { findAvailableTribeSlug, isReservedTribeSlug, normalizeTribeSlug } from '@/lib/tribes/slug';
+import { findAvailableTribeSlug, isReservedTribeSlug, nextTribeSlugCandidate, normalizeTribeSlug } from '@/lib/tribes/slug';
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -55,21 +55,33 @@ export async function POST(request: Request) {
     finalSlug = await findAvailableTribeSlug(supabase, name);
   }
 
-  const { data: tribe, error } = await supabase
-    .from('tribes')
-    .insert({
-      name: name.trim(),
-      description: description?.trim() || null,
-      slug: finalSlug,
-      access_type: access_type || 'public',
-      created_by: user.id,
-    })
-    .select()
-    .single();
+  // The availability check above reads through RLS, which hides secret tribes from
+  // non-members — so it can hand back a slug the UNIQUE index will still reject.
+  // Treat the index as the authority and walk to the next candidate.
+  let tribe;
+  for (let attempt = 0; ; attempt++) {
+    const { data, error } = await supabase
+      .from('tribes')
+      .insert({
+        name: name.trim(),
+        description: description?.trim() || null,
+        slug: finalSlug,
+        access_type: access_type || 'public',
+        created_by: user.id,
+      })
+      .select()
+      .single();
 
-  if (error) {
-    console.error("Tribe create error:", error);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    if (!error) { tribe = data; break; }
+
+    if (error.code !== '23505' || attempt >= 4) {
+      console.error("Tribe create error:", error);
+      return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    }
+    // They asked for this exact slug — say it's taken instead of quietly renaming
+    if (slug) return NextResponse.json({ error: 'Slug already taken', code: 'slug_taken' }, { status: 400 });
+
+    finalSlug = nextTribeSlugCandidate(finalSlug);
   }
 
   await supabase.from('tribe_members').insert({ tribe_id: tribe.id, user_id: user.id, role: 'leader' });

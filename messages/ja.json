@@ -1707,6 +1707,7 @@
       "descriptionPlaceholder": "どんなトライブですか？"
     },
     "requestMessagePlaceholder": "参加したい理由は？",
+    "createFailed": "部族を作成できませんでした。もう一度試しますか？",
     "settingsForm": {
       "name": "名前",
       "description": "説明",
@@ -1716,6 +1717,7 @@
       "slug_taken": "このURLはすでに使われています。",
       "slug_reserved": "このURLは予約済みです。別のものを選んでください。",
       "slug_invalid": "英数字を2文字以上入力してください。",
+      "not_creator": "この部族の設定を変更できるのは、作成した人だけです。",
       "saveFailed": "保存できませんでした。もう一度試しますか？"
     },
     "invalidCodeTitle": "無効な招待コード",

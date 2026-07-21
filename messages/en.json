@@ -1823,6 +1823,7 @@
     "requestMessagePlaceholder": "Why would you like to join?",
     "invalidCodeTitle": "Invalid Invite Code",
     "invalidCodeDescription": "This invite code is invalid or has expired.",
+    "createFailed": "Couldn't create your tribe. Try again?",
     "settingsForm": {
       "name": "Name",
       "description": "Description",
@@ -1832,6 +1833,7 @@
       "slug_taken": "That URL is already taken.",
       "slug_reserved": "That URL is reserved — pick another.",
       "slug_invalid": "Use at least 2 letters or numbers.",
+      "not_creator": "Only the person who created this tribe can change its settings.",
       "saveFailed": "Couldn't save. Try again?"
     },
     "avatar": "Main Picture",

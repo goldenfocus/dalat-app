@@ -1707,6 +1707,7 @@
       "descriptionPlaceholder": "Tribe ini tentang apa?"
     },
     "requestMessagePlaceholder": "Kenapa kamu ingin bergabung?",
+    "createFailed": "Gagal membuat tribe kamu. Coba lagi?",
     "settingsForm": {
       "name": "Nama",
       "description": "Deskripsi",
@@ -1716,6 +1717,7 @@
       "slug_taken": "URL ini sudah dipakai.",
       "slug_reserved": "URL ini dicadangkan — pilih yang lain.",
       "slug_invalid": "Gunakan minimal 2 huruf atau angka.",
+      "not_creator": "Hanya orang yang membuat tribe ini yang bisa mengubah pengaturannya.",
       "saveFailed": "Gagal menyimpan. Coba lagi?"
     },
     "invalidCodeTitle": "Kode Undangan Tidak Valid",

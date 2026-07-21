@@ -20,8 +20,23 @@ export function isReservedTribeSlug(slug: string): boolean {
 }
 
 /**
+ * Bump to the next candidate: "run-club" -> "run-club-2" -> "run-club-3".
+ *
+ * findAvailableTribeSlug reads through RLS, which hides secret tribes from
+ * non-members — so a slug it calls free can still collide with the UNIQUE
+ * index. The insert retries with this rather than failing.
+ */
+export function nextTribeSlugCandidate(slug: string): string {
+  const numbered = slug.match(/^(.*)-(\d+)$/);
+  return numbered ? `${numbered[1]}-${Number(numbered[2]) + 1}` : `${slug}-2`;
+}
+
+/**
  * Clean slug first, numbered suffix only if something already has it.
  * "DaLat Cycling Group" -> "dalat-cycling-group", then -2, -3, ...
+ *
+ * Best-effort by design: RLS can hide conflicting rows, so callers must still
+ * handle a 23505 from the insert. The DB index is the authority, not this.
  */
 export async function findAvailableTribeSlug(
   supabase: SupabaseClient,

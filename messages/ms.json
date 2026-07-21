@@ -1707,6 +1707,7 @@
       "descriptionPlaceholder": "Tribe ini tentang apa?"
     },
     "requestMessagePlaceholder": "Kenapa anda ingin sertai?",
+    "createFailed": "Gagal mencipta tribe anda. Cuba lagi?",
     "settingsForm": {
       "name": "Nama",
       "description": "Penerangan",
@@ -1716,6 +1717,7 @@
       "slug_taken": "URL ini sudah diambil.",
       "slug_reserved": "URL ini dikhaskan — pilih yang lain.",
       "slug_invalid": "Guna sekurang-kurangnya 2 huruf atau nombor.",
+      "not_creator": "Hanya orang yang mencipta tribe ini boleh menukar tetapannya.",
       "saveFailed": "Gagal disimpan. Cuba lagi?"
     },
     "invalidCodeTitle": "Kod Jemputan Tidak Sah",

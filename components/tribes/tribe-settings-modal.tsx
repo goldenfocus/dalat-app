@@ -117,36 +117,42 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
     setSlug(nextSlug);
 
     startTransition(async () => {
-      const res = await fetch(`/api/tribes/${tribe.slug}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          slug: nextSlug,
-          description: description.trim() || null,
-          access_type: accessType,
-          is_listed: isListed,
-          cover_image_url: coverUrl,
-          avatar_url: avatarUrl,
-        }),
-      });
+      try {
+        const res = await fetch(`/api/tribes/${tribe.slug}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            slug: nextSlug,
+            description: description.trim() || null,
+            access_type: accessType,
+            is_listed: isListed,
+            cover_image_url: coverUrl,
+            avatar_url: avatarUrl,
+          }),
+        });
 
-      const data = await res.json();
+        // An edge layer can rewrite a response to non-JSON — don't let parsing hide the status
+        const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        setError(data.code ? t(`settingsForm.${data.code}`) : t("settingsForm.saveFailed"));
-        return;
+        if (!res.ok) {
+          setError(data.code ? t(`settingsForm.${data.code}`) : t("settingsForm.saveFailed"));
+          return;
+        }
+
+        onOpenChange(false);
+
+        // The URL moved — the current page no longer resolves, so navigate before refreshing
+        if (data.tribe?.slug && data.tribe.slug !== tribe.slug) {
+          router.replace(window.location.pathname.replace(/[^/]+$/, data.tribe.slug));
+          return;
+        }
+
+        router.refresh();
+      } catch (err) {
+        console.error("Tribe save error:", err);
+        setError(t("settingsForm.saveFailed"));
       }
-
-      onOpenChange(false);
-
-      // The URL moved — the current page no longer resolves, so navigate before refreshing
-      if (data.tribe?.slug && data.tribe.slug !== tribe.slug) {
-        router.replace(window.location.pathname.replace(/[^/]+$/, data.tribe.slug));
-        return;
-      }
-
-      router.refresh();
     });
   }
 

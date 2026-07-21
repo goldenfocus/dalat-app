@@ -1707,6 +1707,7 @@
       "descriptionPlaceholder": "¿De qué va esta tribu?"
     },
     "requestMessagePlaceholder": "¿Por qué te gustaría unirte?",
+    "createFailed": "No se pudo crear tu tribu. ¿Lo intentamos otra vez?",
     "settingsForm": {
       "name": "Nombre",
       "description": "Descripción",
@@ -1716,6 +1717,7 @@
       "slug_taken": "Esa URL ya está ocupada.",
       "slug_reserved": "Esa URL está reservada — elige otra.",
       "slug_invalid": "Usa al menos 2 letras o números.",
+      "not_creator": "Solo quien creó esta tribu puede cambiar su configuración.",
       "saveFailed": "No se pudo guardar. ¿Lo intentamos otra vez?"
     },
     "invalidCodeTitle": "Código de Invitación Inválido",

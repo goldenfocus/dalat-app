@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { findAvailableTribeSlug, isReservedTribeSlug, normalizeTribeSlug } from "./slug";
+import {
+  findAvailableTribeSlug,
+  isReservedTribeSlug,
+  nextTribeSlugCandidate,
+  normalizeTribeSlug,
+} from "./slug";
 
 /** Minimal stand-in for the one query findAvailableTribeSlug makes. */
 function fakeSupabase(existingSlugs: string[]) {
@@ -67,5 +72,32 @@ describe("findAvailableTribeSlug", () => {
 
   it("falls back to a usable base when the name romanizes to nothing", async () => {
     expect(await findAvailableTribeSlug(fakeSupabase([]), "동호회")).toBe("tribe");
+  });
+
+  it("surfaces query errors instead of inventing a slug", async () => {
+    const broken = {
+      from: () => ({
+        select: () => ({ or: () => Promise.resolve({ data: null, error: new Error("boom") }) }),
+      }),
+    } as unknown as SupabaseClient;
+
+    await expect(findAvailableTribeSlug(broken, "Run Club")).rejects.toThrow("boom");
+  });
+
+  it("can still return a taken slug when RLS hides the conflicting tribe", async () => {
+    // A secret tribe already owns "run-club" but RLS filters it out of our SELECT,
+    // so this returns the clean slug and the caller's 23505 retry has to save us.
+    expect(await findAvailableTribeSlug(fakeSupabase([]), "Run Club")).toBe("run-club");
+  });
+});
+
+describe("nextTribeSlugCandidate", () => {
+  it("starts numbering at 2", () => {
+    expect(nextTribeSlugCandidate("run-club")).toBe("run-club-2");
+  });
+
+  it("bumps an existing number rather than stacking suffixes", () => {
+    expect(nextTribeSlugCandidate("run-club-2")).toBe("run-club-3");
+    expect(nextTribeSlugCandidate("run-club-9")).toBe("run-club-10");
   });
 });

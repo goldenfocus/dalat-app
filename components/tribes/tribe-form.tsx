@@ -44,24 +44,30 @@ export function TribeForm({ locale }: TribeFormProps) {
     }
 
     startTransition(async () => {
-      const res = await fetch("/api/tribes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          description: description.trim() || null,
-          access_type: accessType,
-        }),
-      });
+      try {
+        const res = await fetch("/api/tribes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            description: description.trim() || null,
+            access_type: accessType,
+          }),
+        });
 
-      const data = await res.json();
+        // Parse after the status check is decided — a non-JSON 500 must not throw past setError
+        const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        setError(data.error || "Failed to create tribe");
-        return;
+        if (!res.ok) {
+          setError(data.code ? t(`settingsForm.${data.code}`) : t("createFailed"));
+          return;
+        }
+
+        router.push(`/${locale}/tribes/${data.tribe.slug}`);
+      } catch (err) {
+        console.error("Tribe create error:", err);
+        setError(t("createFailed"));
       }
-
-      router.push(`/${locale}/tribes/${data.tribe.slug}`);
     });
   }
 

@@ -1710,6 +1710,7 @@
       "descriptionPlaceholder": "这个部落是关于什么的？"
     },
     "requestMessagePlaceholder": "你为什么想加入？",
+    "createFailed": "创建部落失败，再试一次？",
     "settingsForm": {
       "name": "名称",
       "description": "描述",
@@ -1719,6 +1720,7 @@
       "slug_taken": "该网址已被占用。",
       "slug_reserved": "该网址已被保留，请换一个。",
       "slug_invalid": "请至少使用 2 个字母或数字。",
+      "not_creator": "只有创建这个部落的人才能修改设置。",
       "saveFailed": "保存失败，再试一次？"
     },
     "invalidCodeTitle": "邀请码无效",

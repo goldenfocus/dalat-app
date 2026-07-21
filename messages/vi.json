@@ -1712,6 +1712,7 @@
       "descriptionPlaceholder": "Hội này về điều gì?"
     },
     "requestMessagePlaceholder": "Vì sao bạn muốn tham gia?",
+    "createFailed": "Chưa tạo được nhóm. Thử lại nhé?",
     "settingsForm": {
       "name": "Tên",
       "description": "Mô tả",
@@ -1721,6 +1722,7 @@
       "slug_taken": "URL này đã có người dùng rồi.",
       "slug_reserved": "URL này được giữ riêng — chọn cái khác nhé.",
       "slug_invalid": "Dùng ít nhất 2 chữ cái hoặc số.",
+      "not_creator": "Chỉ người tạo nhóm mới đổi được cài đặt này.",
       "saveFailed": "Chưa lưu được. Thử lại nhé?"
     },
     "avatar": "Ảnh đại diện",
