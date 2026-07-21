@@ -4,18 +4,20 @@ import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { EventCardFramed } from "@/components/events/event-card-framed";
 import { ArchiveFilters } from "@/components/events/archive-filters";
-import type { Event, EventCounts } from "@/lib/types";
+import type { Event, EventCounts, EventSocial } from "@/lib/types";
 
 interface ArchiveEventsListProps {
   events: Event[];
   counts: Record<string, EventCounts>;
   momentsCounts: Record<string, number>;
+  socials?: Record<string, EventSocial>;
 }
 
 export function ArchiveEventsList({
   events,
   counts,
   momentsCounts,
+  socials,
 }: ArchiveEventsListProps) {
   const t = useTranslations("archive");
   const [filteredEvents, setFilteredEvents] = useState<Event[]>(events);
@@ -40,7 +42,12 @@ export function ArchiveEventsList({
       {filteredEvents.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {filteredEvents.map((event) => (
-            <EventCardFramed key={event.id} event={event} counts={counts[event.id]} />
+            <EventCardFramed
+              key={event.id}
+              event={event}
+              counts={counts[event.id]}
+              social={socials?.[event.id]}
+            />
           ))}
         </div>
       ) : (

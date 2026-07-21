@@ -5,6 +5,8 @@ import {
   getCardCoverUrl,
   getPastProof,
   type EventSocial,
+  pickMomentCover,
+  type CoverCandidateMoment,
 } from "./social-proof";
 
 const social = (o: Partial<EventSocial> = {}): EventSocial => ({
@@ -80,5 +82,80 @@ describe("getPastProof", () => {
     ).toBeNull();
     expect(getPastProof(social())).toBeNull();
     expect(getPastProof(undefined)).toBeNull();
+  });
+});
+
+describe("pickMomentCover", () => {
+  const moment = (o: Partial<CoverCandidateMoment> = {}): CoverCandidateMoment => ({
+    id: "m1",
+    media_url: "https://cdn.dalat.app/moments/e1/u1/a.jpg",
+    thumbnail_url: null,
+    featured_priority: 0,
+    captured_at: null,
+    created_at: "2026-07-12T10:00:00Z",
+    ...o,
+  });
+
+  it("returns null when there are no candidates", () => {
+    expect(pickMomentCover([], null)).toBeNull();
+  });
+
+  it("prefers the manually selected cover moment above everything", () => {
+    const moments = [
+      moment({ id: "m1", featured_priority: 9 }),
+      moment({ id: "m2", media_url: "https://cdn.dalat.app/moments/e1/u1/cover.jpg" }),
+    ];
+    expect(pickMomentCover(moments, "m2")).toBe(
+      "https://cdn.dalat.app/moments/e1/u1/cover.jpg"
+    );
+  });
+
+  it("then prefers higher featured_priority", () => {
+    const moments = [
+      moment({ id: "m1" }),
+      moment({
+        id: "m2",
+        featured_priority: 5,
+        media_url: "https://cdn.dalat.app/moments/e1/u1/featured.jpg",
+      }),
+    ];
+    expect(pickMomentCover(moments, null)).toBe(
+      "https://cdn.dalat.app/moments/e1/u1/featured.jpg"
+    );
+  });
+
+  it("ties break to the earliest shot (captured_at, else created_at)", () => {
+    const moments = [
+      moment({ id: "m1", created_at: "2026-07-12T18:00:00Z" }),
+      moment({
+        id: "m2",
+        created_at: "2026-07-12T19:00:00Z",
+        captured_at: "2026-07-12T09:00:00Z",
+        media_url: "https://cdn.dalat.app/moments/e1/u1/first.jpg",
+      }),
+    ];
+    expect(pickMomentCover(moments, null)).toBe(
+      "https://cdn.dalat.app/moments/e1/u1/first.jpg"
+    );
+  });
+
+  it("falls back to thumbnail_url when media_url is missing", () => {
+    const moments = [
+      moment({
+        media_url: null,
+        thumbnail_url: "https://cdn.dalat.app/moments/e1/u1/thumb.jpg",
+      }),
+    ];
+    expect(pickMomentCover(moments, null)).toBe(
+      "https://cdn.dalat.app/moments/e1/u1/thumb.jpg"
+    );
+  });
+
+  it("skips moments with no usable image at all", () => {
+    const moments = [
+      moment({ id: "m1", media_url: null, thumbnail_url: null, featured_priority: 9 }),
+      moment({ id: "m2", media_url: "https://cdn.dalat.app/moments/e1/u1/b.jpg" }),
+    ];
+    expect(pickMomentCover(moments, null)).toBe("https://cdn.dalat.app/moments/e1/u1/b.jpg");
   });
 });

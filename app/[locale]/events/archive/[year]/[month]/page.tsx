@@ -16,6 +16,12 @@ import {
   getMonthSlug,
   isPastMonth,
 } from "@/lib/events/archive-utils";
+import {
+  getCardCoverUrl,
+  pickMomentCover,
+  type CoverCandidateMoment,
+  type EventSocial,
+} from "@/lib/events/social-proof";
 import type { Event, EventCounts } from "@/lib/types";
 import type { Metadata } from "next";
 
@@ -149,6 +155,65 @@ async function getMomentsCounts(eventIds: string[]) {
   return counts;
 }
 
+// Past events often lost their cover (or never had one) but have a gallery of
+// moments — borrow the best moment photo so the card doesn't show default art.
+async function getMomentCoverSocials(events: Event[]) {
+  const needy = events.filter((e) => !getCardCoverUrl(e.image_url, undefined));
+  if (needy.length === 0) return {};
+
+  const supabase = createStaticClient();
+  if (!supabase) {
+    console.error("[archive] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering without moment covers");
+    return {};
+  }
+
+  const ids = needy.map((e) => e.id);
+  const [momentsRes, coversRes] = await Promise.all([
+    supabase
+      .from("moments")
+      .select("id, event_id, media_url, thumbnail_url, featured_priority, captured_at, created_at")
+      .in("event_id", ids)
+      .in("content_type", ["photo", "image"])
+      .eq("status", "published"),
+    supabase.from("events").select("id, cover_moment_id").in("id", ids),
+  ]);
+
+  if (momentsRes.error) {
+    console.error("Error fetching moment covers:", momentsRes.error);
+    return {};
+  }
+  if (coversRes.error) {
+    // Degrade to auto-picked covers, but keep the cover_moment_id loss visible
+    console.error("Error fetching cover_moment_ids:", coversRes.error);
+  }
+
+  const coverMomentIds = new Map<string, string | null>(
+    (coversRes.data ?? []).map((r) => [r.id, r.cover_moment_id])
+  );
+
+  const byEvent = new Map<string, CoverCandidateMoment[]>();
+  for (const m of momentsRes.data ?? []) {
+    const list = byEvent.get(m.event_id) ?? [];
+    list.push(m);
+    byEvent.set(m.event_id, list);
+  }
+
+  const socials: Record<string, EventSocial> = {};
+  for (const [eventId, candidates] of byEvent) {
+    const url = pickMomentCover(candidates, coverMomentIds.get(eventId));
+    if (url) {
+      socials[eventId] = {
+        event_id: eventId,
+        fallback_image_url: url,
+        fallback_photo_credit: null,
+        last_occurrence_went: null,
+        last_occurrence_photos: null,
+      };
+    }
+  }
+  return socials;
+}
+
 export default async function MonthlyArchivePage({ params }: PageProps) {
   const { locale, year, month } = await params;
   setRequestLocale(locale);
@@ -166,9 +231,10 @@ export default async function MonthlyArchivePage({ params }: PageProps) {
   const eventIds = events.map((e) => e.id);
 
   // Fetch counts in parallel for better performance
-  const [counts, momentsCounts] = await Promise.all([
+  const [counts, momentsCounts, socials] = await Promise.all([
     getEventCounts(eventIds),
     getMomentsCounts(eventIds),
+    getMomentCoverSocials(events),
   ]);
 
   // Breadcrumb structured data
@@ -236,6 +302,7 @@ export default async function MonthlyArchivePage({ params }: PageProps) {
               events={events}
               counts={counts}
               momentsCounts={momentsCounts}
+              socials={socials}
             />
           ) : (
             <div className="text-center py-12 text-muted-foreground">
