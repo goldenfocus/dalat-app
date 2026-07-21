@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Bell } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { Notification } from '@/lib/notifications/types';
+import { countUnread, isUnread } from '@/lib/notifications/staleness';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { NotificationItem } from './notification-item';
 import { Button } from '@/components/ui/button';
@@ -42,7 +43,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     }
 
     setNotifications(data as Notification[]);
-    setUnreadCount(data.filter((n: Notification) => !n.read).length);
+    setUnreadCount(countUnread(data as Notification[]));
     setIsLoading(false);
   }, [supabase, userId]);
 
@@ -66,7 +67,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           console.log('[notification-bell] Realtime INSERT received:', payload.new);
           const newNotification = payload.new as Notification;
           setNotifications((prev) => [newNotification, ...prev].slice(0, 20));
-          setUnreadCount((prev) => prev + 1);
+          // An invite that lands after its event already started arrives stale
+          if (isUnread(newNotification)) {
+            setUnreadCount((prev) => prev + 1);
+          }
         }
       )
       .on(
@@ -80,13 +84,10 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         (payload: RealtimePostgresChangesPayload<Notification>) => {
           console.log('[notification-bell] Realtime UPDATE received:', payload.new);
           const updated = payload.new as Notification;
-          setNotifications((prev) =>
-            prev.map((n) => (n.id === updated.id ? updated : n))
-          );
-          // Recalculate unread count
           setNotifications((prev) => {
-            setUnreadCount(prev.filter((n) => !n.read).length);
-            return prev;
+            const next = prev.map((n) => (n.id === updated.id ? updated : n));
+            setUnreadCount(countUnread(next));
+            return next;
           });
         }
       )

@@ -3,6 +3,7 @@
 import { formatDistanceToNow } from 'date-fns';
 import { Bell, Calendar, Users, CheckCircle2, XCircle } from 'lucide-react';
 import type { Notification, NotificationType } from '@/lib/notifications/types';
+import { isUnread } from '@/lib/notifications/staleness';
 import { cn } from '@/lib/utils';
 
 interface NotificationItemProps {
@@ -65,6 +66,8 @@ function markAsReadBeacon(notificationId: string) {
 
 export function NotificationItem({ notification, onRead }: NotificationItemProps) {
   const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
+  // Stale notifications stay in the list but present as read — see lib/notifications/staleness
+  const unread = isUnread(notification);
 
   const handleClick = () => {
     // Mark as read using beacon (guaranteed to complete during navigation)
@@ -86,7 +89,7 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
       className={cn(
         'w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-muted/50 transition-colors',
         'active:bg-muted active:scale-[0.99]',
-        !notification.read && 'bg-muted/30'
+        unread && 'bg-muted/30'
       )}
     >
       <div className="mt-0.5 shrink-0">
@@ -96,7 +99,7 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
       <div className="flex-1 min-w-0">
         <p className={cn(
           'text-sm leading-snug',
-          !notification.read && 'font-medium'
+          unread && 'font-medium'
         )}>
           {notification.title}
         </p>
@@ -113,7 +116,7 @@ export function NotificationItem({ notification, onRead }: NotificationItemProps
       </div>
 
       {/* Unread indicator - larger touch target on mobile */}
-      {!notification.read && (
+      {unread && (
         <div className="shrink-0 mt-1 p-1">
           <div className="w-2.5 h-2.5 rounded-full bg-primary" />
         </div>
