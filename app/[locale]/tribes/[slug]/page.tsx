@@ -77,6 +77,13 @@ export default async function TribePage({ params }: PageProps) {
 
   const isAdmin = membership?.role === "leader" || membership?.role === "admin" || tribe.created_by === user?.id;
 
+  // invite_code grants membership on its own — /api/tribes/[slug]/membership
+  // inserts the row for any valid code, with no approval step. RLS makes
+  // invite_only tribes readable by anonymous visitors, so passing the whole row
+  // to a client component published the code in the RSC payload to everyone who
+  // could load the page. Strip it for non-admins before it crosses that boundary.
+  const clientTribe = isAdmin ? tribe : { ...tribe, invite_code: null };
+
   // Mirrors the browse filter in app/api/tribes/route.ts and the gate inside
   // get_tribe_public_members(): only already-discoverable tribes expose a roster.
   const isDiscoverable =
@@ -105,14 +112,14 @@ export default async function TribePage({ params }: PageProps) {
   return (
     <main className="min-h-screen">
       <TribeHeader
-        tribe={tribe}
+        tribe={clientTribe}
         membership={membership}
         isAdmin={isAdmin}
         eventCount={events?.length ?? 0}
         momentCount={momentCount ?? 0}
       />
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-        {!membership && <JoinTribeButton tribe={tribe} pendingRequest={pendingRequest} isAuthenticated={!!user} />}
+        {!membership && <JoinTribeButton tribe={clientTribe} pendingRequest={pendingRequest} isAuthenticated={!!user} />}
         <TribeTabs
           // Omitting the slot hides the tab entirely, so a tribe with no gallery
           // keeps the original events-first page instead of showing an empty grid.
