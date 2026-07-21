@@ -8,6 +8,14 @@ import { TribeHeader } from "@/components/tribes/tribe-header";
 import { TribeMembersList } from "@/components/tribes/tribe-members-list";
 import { TribeEventsList } from "@/components/tribes/tribe-events-list";
 import { JoinTribeButton } from "@/components/tribes/join-tribe-button";
+import { TribeTabs } from "@/components/tribes/tribe-tabs";
+import { MomentsTimeline } from "@/components/moments/moments-timeline";
+import type { EventMomentsGroup } from "@/lib/types";
+
+// Keep in sync with the same constants in components/moments/moments-timeline.tsx,
+// which paginates from this initial page.
+const EVENTS_PER_PAGE = 5;
+const MOMENTS_PER_EVENT = 6;
 
 interface PageProps { params: Promise<{ slug: string; locale: string }>; }
 
@@ -51,33 +59,63 @@ export default async function TribePage({ params }: PageProps) {
 
   const eventsQuery = supabase.from("events").select("*, profiles:created_by(display_name, avatar_url)").eq("tribe_id", tribe.id).eq("status", "published").order("starts_at", { ascending: true });
   if (!membership) eventsQuery.eq("tribe_visibility", "public");
-  const { data: events } = await eventsQuery;
+
+  // Both RPCs gate on tribe/event visibility internally via auth.uid(), so this
+  // request-scoped client (not createStaticClient) is required for members to
+  // see members_only galleries.
+  const [{ data: events }, { data: momentGroups }, { data: momentCount }] = await Promise.all([
+    eventsQuery,
+    supabase.rpc("get_tribe_moments_grouped", {
+      p_tribe_id: tribe.id,
+      p_event_limit: EVENTS_PER_PAGE,
+      p_moments_per_event: MOMENTS_PER_EVENT,
+      p_event_offset: 0,
+      p_content_types: ["photo", "video", "text"],
+    }),
+    supabase.rpc("get_tribe_moment_count", { p_tribe_id: tribe.id }),
+  ]);
+
+  const groups = (momentGroups ?? []) as EventMomentsGroup[];
 
   return (
     <main className="min-h-screen">
-      <TribeHeader tribe={tribe} membership={membership} isAdmin={isAdmin} />
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
+      <TribeHeader
+        tribe={tribe}
+        membership={membership}
+        isAdmin={isAdmin}
+        eventCount={events?.length ?? 0}
+        momentCount={momentCount ?? 0}
+      />
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {!membership && <JoinTribeButton tribe={tribe} pendingRequest={pendingRequest} isAuthenticated={!!user} />}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">{t("events")}</h2>
-            {isAdmin && (
-              <Link href={`/events/new?tribe=${tribe.slug}`}>
-                <Button variant="outline" size="sm" className="gap-2 px-3 py-2 active:scale-95 transition-all">
-                  <Plus className="w-4 h-4" />
-                  {t("createEvent")}
-                </Button>
-              </Link>
-            )}
-          </div>
-          <TribeEventsList events={events || []} locale={locale} />
-        </section>
-        {membership && (
-          <section>
-            <h2 className="text-lg font-semibold mb-4">{t("members")}</h2>
-            <TribeMembersList tribeSlug={slug} isAdmin={isAdmin} />
-          </section>
-        )}
+        <TribeTabs
+          // Omitting the slot hides the tab entirely, so a tribe with no gallery
+          // keeps the original events-first page instead of showing an empty grid.
+          momentsSlot={groups.length > 0 ? (
+            <MomentsTimeline
+              source={{ type: "tribe", tribeId: tribe.id }}
+              initialGroups={groups}
+              initialHasMore={groups.length >= EVENTS_PER_PAGE}
+              showHeading={false}
+            />
+          ) : undefined}
+          eventsSlot={
+            <section className="space-y-4">
+              {isAdmin && (
+                <div className="flex justify-end">
+                  <Link href={`/events/new?tribe=${tribe.slug}`}>
+                    <Button variant="outline" size="sm" className="gap-2 px-3 py-2 active:scale-95 transition-all">
+                      <Plus className="w-4 h-4" />
+                      {t("createEvent")}
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              <TribeEventsList events={events || []} locale={locale} />
+            </section>
+          }
+          membersSlot={membership ? <TribeMembersList tribeSlug={slug} isAdmin={isAdmin} /> : undefined}
+        />
       </div>
     </main>
   );

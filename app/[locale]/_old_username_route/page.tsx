@@ -13,7 +13,7 @@ import type { Profile, Event, ContentLocale, Locale, EventMomentsGroup } from "@
 import { generateProfileMetadata } from "@/lib/metadata";
 import { JsonLd, generatePersonSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { ClaimProfileBanner, GhostProfileBadge } from "@/components/profile/claim-profile-banner";
-import { UserMomentsTimeline } from "@/components/moments/user-moments-timeline";
+import { MomentsTimeline } from "@/components/moments/moments-timeline";
 
 interface PageProps {
   params: Promise<{ username: string; locale: string }>;
@@ -345,8 +345,8 @@ export default async function ProfilePage({ params }: PageProps) {
         {/* User Moments Timeline */}
         {momentsData.groups.length > 0 && (
           <div className="mt-8">
-            <UserMomentsTimeline
-              userId={profile.id}
+            <MomentsTimeline
+              source={{ type: "user", userId: profile.id }}
               initialGroups={momentsData.groups}
               initialHasMore={momentsData.hasMore}
             />

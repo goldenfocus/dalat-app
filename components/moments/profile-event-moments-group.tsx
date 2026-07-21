@@ -10,9 +10,11 @@ interface ProfileEventMomentsGroupProps {
   group: EventMomentsGroupType;
   /** Map of moment ID to comment count */
   commentCounts?: Map<string, number>;
+  /** Surface this grid renders on, passed through to the moment link as ?from= */
+  from?: "profile" | "tribe";
 }
 
-export function ProfileEventMomentsGroup({ group, commentCounts }: ProfileEventMomentsGroupProps) {
+export function ProfileEventMomentsGroup({ group, commentCounts, from = "profile" }: ProfileEventMomentsGroupProps) {
   const eventDate = new Date(group.event_starts_at);
 
   return (
@@ -39,7 +41,7 @@ export function ProfileEventMomentsGroup({ group, commentCounts }: ProfileEventM
             key={moment.id}
             moment={moment}
             eventSlug={group.event_slug}
-            from="profile"
+            from={from}
             commentCount={commentCounts?.get(moment.id)}
           />
         ))}

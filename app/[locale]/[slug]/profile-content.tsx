@@ -9,7 +9,7 @@ import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import type { Profile, Event, ContentLocale, EventMomentsGroup, FollowStatus } from "@/lib/types";
 import { ClaimProfileBanner, GhostProfileBadge } from "@/components/profile/claim-profile-banner";
-import { UserMomentsTimeline } from "@/components/moments/user-moments-timeline";
+import { MomentsTimeline } from "@/components/moments/moments-timeline";
 import { FollowButton } from "@/components/profile/follow-button";
 import { TierBadge } from "@/components/loyalty/tier-badge";
 
@@ -338,8 +338,8 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
       {/* User Moments Timeline */}
       {momentsData.groups.length > 0 && (
         <div className="mt-8">
-          <UserMomentsTimeline
-            userId={profile.id}
+          <MomentsTimeline
+            source={{ type: "user", userId: profile.id }}
             initialGroups={momentsData.groups}
             initialHasMore={momentsData.hasMore}
           />

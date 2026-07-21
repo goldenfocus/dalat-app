@@ -13,17 +13,30 @@ const MOMENTS_PER_EVENT = 6;
 
 type ContentFilter = "all" | "photo" | "video";
 
-interface UserMomentsTimelineProps {
-  userId: string;
+/**
+ * Where the timeline pulls moments from. Each source maps to its own RPC, but
+ * both return the identical EventMomentsGroup shape, so the rendering below is
+ * shared. Tribe visibility is enforced inside get_tribe_moments_grouped via
+ * auth.uid() -- never pass membership from the client.
+ */
+export type MomentsTimelineSource =
+  | { type: "user"; userId: string }
+  | { type: "tribe"; tribeId: string };
+
+interface MomentsTimelineProps {
+  source: MomentsTimelineSource;
   initialGroups: EventMomentsGroup[];
   initialHasMore: boolean;
+  /** Hide the "Moments" heading when the surface already labels it (e.g. a tab). */
+  showHeading?: boolean;
 }
 
-export function UserMomentsTimeline({
-  userId,
+export function MomentsTimeline({
+  source,
   initialGroups,
   initialHasMore,
-}: UserMomentsTimelineProps) {
+  showHeading = true,
+}: MomentsTimelineProps) {
   const t = useTranslations("moments");
   const tProfile = useTranslations("profile");
 
@@ -52,25 +65,42 @@ export function UserMomentsTimeline({
     }
   };
 
+  // Reduce `source` to primitives: callers pass an object literal, which would
+  // get a fresh identity every render and re-fire the scroll observer effect.
+  const sourceType = source.type;
+  const sourceId = source.type === "tribe" ? source.tribeId : source.userId;
+
+  // Both RPCs share every argument except the owning id, so the call is shared.
+  const fetchGroups = useCallback(
+    async (eventOffset: number, contentFilter: ContentFilter) => {
+      const supabase = createClient();
+      const args = {
+        p_event_limit: EVENTS_PER_PAGE,
+        p_moments_per_event: MOMENTS_PER_EVENT,
+        p_event_offset: eventOffset,
+        p_content_types: getContentTypes(contentFilter),
+      };
+
+      return sourceType === "tribe"
+        ? supabase.rpc("get_tribe_moments_grouped", { p_tribe_id: sourceId, ...args })
+        : supabase.rpc("get_user_moments_grouped", { p_user_id: sourceId, ...args });
+    },
+    [sourceType, sourceId]
+  );
+
   const loadMore = useCallback(async () => {
     if (isLoading || !hasMore) return;
 
     setIsLoading(true);
 
-    const supabase = createClient();
-    const { data, error } = await supabase.rpc("get_user_moments_grouped", {
-      p_user_id: userId,
-      p_event_limit: EVENTS_PER_PAGE,
-      p_moments_per_event: MOMENTS_PER_EVENT,
-      p_event_offset: offset,
-      p_content_types: getContentTypes(filter),
-    });
+    const { data, error } = await fetchGroups(offset, filter);
 
     if (error) {
       console.error("Failed to load more moments:", error);
       setIsLoading(false);
       return;
     }
+
 
     const newGroups = (data ?? []) as EventMomentsGroup[];
 
@@ -81,7 +111,7 @@ export function UserMomentsTimeline({
     setGroups((prev) => [...prev, ...newGroups]);
     setOffset((prev) => prev + newGroups.length);
     setIsLoading(false);
-  }, [userId, offset, isLoading, hasMore, filter]);
+  }, [fetchGroups, offset, isLoading, hasMore, filter]);
 
   // Refetch when filter changes
   const refetchWithFilter = useCallback(async (newFilter: ContentFilter) => {
@@ -91,14 +121,7 @@ export function UserMomentsTimeline({
     setOffset(0);
     setHasMore(true);
 
-    const supabase = createClient();
-    const { data, error } = await supabase.rpc("get_user_moments_grouped", {
-      p_user_id: userId,
-      p_event_limit: EVENTS_PER_PAGE,
-      p_moments_per_event: MOMENTS_PER_EVENT,
-      p_event_offset: 0,
-      p_content_types: getContentTypes(newFilter),
-    });
+    const { data, error } = await fetchGroups(0, newFilter);
 
     if (error) {
       console.error("Failed to load moments:", error);
@@ -111,7 +134,7 @@ export function UserMomentsTimeline({
     setOffset(newGroups.length);
     setHasMore(newGroups.length >= EVENTS_PER_PAGE);
     setIsLoading(false);
-  }, [userId]);
+  }, [fetchGroups]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -140,8 +163,8 @@ export function UserMomentsTimeline({
   return (
     <section className="space-y-4">
       {/* Section header with filter */}
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold">{tProfile("moments")}</h2>
+      <div className={`flex items-center gap-4 ${showHeading ? "justify-between" : "justify-end"}`}>
+        {showHeading && <h2 className="text-lg font-semibold">{tProfile("moments")}</h2>}
 
         {/* Filter chips */}
         <div className="flex items-center gap-1">
@@ -179,6 +202,7 @@ export function UserMomentsTimeline({
               key={group.event_id}
               group={group}
               commentCounts={commentCounts}
+              from={sourceType === "tribe" ? "tribe" : "profile"}
             />
           ))}
         </div>

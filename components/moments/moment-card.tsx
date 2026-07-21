@@ -35,8 +35,8 @@ interface MomentCardProps {
   moment: MomentForCard;
   /** Event slug for clean URL generation (e.g., /events/[slug]/moments/[id]) */
   eventSlug?: string;
-  /** Navigation origin context: "moments" for feed, "event" for event-specific, "profile" for profile timeline, "discovery" for search results */
-  from?: "moments" | "event" | "profile" | "discovery";
+  /** Navigation origin context: "moments" for feed, "event" for event-specific, "profile" for profile timeline, "discovery" for search results, "tribe" for a tribe gallery */
+  from?: "moments" | "event" | "profile" | "discovery" | "tribe";
   /** Comment count to display as badge (only shown if > 0) */
   commentCount?: number;
   /** Click handler for lightbox mode. When provided, opens lightbox instead of navigating. */

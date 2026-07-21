@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Settings, Users, Lock, Globe, Eye, EyeOff } from "lucide-react";
+import { Settings, Lock, Globe, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,9 +15,12 @@ interface TribeHeaderProps {
   tribe: Tribe & { profiles?: { display_name: string | null; avatar_url: string | null; username: string | null } };
   membership: TribeMember | null;
   isAdmin: boolean;
+  /** Counts shown in the profile-style stat row. */
+  eventCount: number;
+  momentCount: number;
 }
 
-export function TribeHeader({ tribe, membership, isAdmin }: TribeHeaderProps) {
+export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCount }: TribeHeaderProps) {
   const t = useTranslations("tribes");
   const [showSettings, setShowSettings] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
@@ -70,11 +73,24 @@ export function TribeHeader({ tribe, membership, isAdmin }: TribeHeaderProps) {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold">{tribe.name}</h1>
-                  <div className="flex items-center gap-3 mt-2 text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      {memberCount} {t("members").toLowerCase()}
+                  {/* Profile-style stat row: members / events / moments */}
+                  <div className="flex items-center gap-4 mt-2 text-muted-foreground">
+                    <span className="flex items-baseline gap-1.5">
+                      <span className="font-semibold text-foreground">{memberCount}</span>
+                      {t("members").toLowerCase()}
                     </span>
+                    <span className="flex items-baseline gap-1.5">
+                      <span className="font-semibold text-foreground">{eventCount}</span>
+                      {t("events").toLowerCase()}
+                    </span>
+                    {momentCount > 0 && (
+                      <span className="flex items-baseline gap-1.5">
+                        <span className="font-semibold text-foreground">{momentCount}</span>
+                        {t("moments").toLowerCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 mt-2 text-muted-foreground">
                     <Badge variant="outline" className="gap-1">
                       {accessIcon[tribe.access_type]}
                       {t(tribe.access_type)}
