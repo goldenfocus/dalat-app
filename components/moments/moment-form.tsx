@@ -1161,9 +1161,19 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         return;
       }
 
-      // Publish all bulk queue drafts with one RPC call
+      // Publish all bulk queue drafts with one RPC call.
+      // bulkCaptions is keyed by queue item id; the RPC needs moment ids.
+      // Mirror the legacy path: per-item caption wins, shared caption is the fallback.
       if (completedBulkUploads.length > 0) {
-        const { count, error: publishError } = await bulkQueue.publishDrafts();
+        const bulkCaptionsByMomentId: Record<string, string> = {};
+        for (const u of completedBulkUploads) {
+          const text = (bulkCaptions[u.id]?.trim() || caption.trim());
+          if (u.momentId && text) {
+            bulkCaptionsByMomentId[u.momentId] = text;
+          }
+        }
+
+        const { count, error: publishError } = await bulkQueue.publishDrafts(bulkCaptionsByMomentId);
 
         if (publishError) {
           console.error("publishDrafts error:", publishError);
@@ -1172,6 +1182,14 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
         }
 
         console.log(`[MomentForm] Published ${count} drafts`);
+
+        // Fire-and-forget: translate the captions we just persisted, matching
+        // the non-bulk path. Without this, bulk captions render untranslated.
+        for (const [momentId, text] of Object.entries(bulkCaptionsByMomentId)) {
+          triggerTranslation("moment", momentId, [
+            { field_name: "text_content", text },
+          ]);
+        }
 
         // Fire-and-forget: Trigger AI processing for published moments (batched)
         const bulkMomentIds = completedBulkUploads

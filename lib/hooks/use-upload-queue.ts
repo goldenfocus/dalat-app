@@ -629,12 +629,19 @@ export function useUploadQueue({
   }, []);
 
   /**
-   * Publish all drafts for this event
+   * Publish all drafts for this event.
+   *
+   * @param captions - Map of moment ID -> caption. Captions are typed after the
+   *   upload completes, so they cannot be set at draft-creation time; they are
+   *   written here in the same transaction that publishes.
    */
-  const publishDrafts = useCallback(async (): Promise<{ count: number; error: string | null }> => {
+  const publishDrafts = useCallback(async (
+    captions: Record<string, string> = {}
+  ): Promise<{ count: number; error: string | null }> => {
     try {
       const { data, error } = await supabaseRef.current.rpc("publish_user_drafts", {
         p_event_id: eventId,
+        p_captions: captions,
       });
 
       if (error) throw error;
