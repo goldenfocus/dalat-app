@@ -13,6 +13,7 @@ import {
 } from "@/components/shared/material-renderers";
 import { useShare } from "@/lib/hooks/use-share";
 import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
+import { MomentDownloadButton } from "@/components/moments/moment-download-button";
 import { MomentWatermark } from "./moment-watermark";
 import type { MomentContentType, MomentVideoStatus } from "@/lib/types";
 
@@ -253,6 +254,9 @@ export function MomentLightbox({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Download — media only; text moments have nothing to save */}
+          <MomentDownloadButton moment={moment} variant="dark" />
+
           {/* Share button */}
           <button
             onClick={handleShare}

@@ -1617,7 +1617,16 @@
     "mute": "Bisukan",
     "shareThisMoment": "Bagikan momen ini",
     "unmuteVideo": "Suarakan video",
-    "muteVideo": "Bisukan video"
+    "muteVideo": "Bisukan video",
+    "download": {
+      "label": "Unduh",
+      "saved": "Tersimpan",
+      "failed": "Gagal menyimpan. Coba buka di peramban Anda.",
+      "album": "Unduh semua",
+      "albumWithCount": "Unduh semua {count}",
+      "albumStarted": "Menyiapkan unduhan…",
+      "inAppHint": "Sulit menyimpan? Ketuk ⋯ lalu Buka di peramban."
+    }
   },
   "tribes": {
     "findYourTribe": "Temukan tribe-mu",

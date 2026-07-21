@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { CheckSquare, Trash2, X, Loader2, Download, CheckCheck } from "lucide-react";
+import { AlbumDownloadButton } from "@/components/moments/moment-download-button";
 import { toast } from "sonner";
 import { useMomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 import { ViewModeSwitcher } from "./view-mode-switcher";
@@ -137,6 +138,19 @@ export function MomentsViewContainer({
     () => allMoments.some((m) => m.content_type === "video"),
     [allMoments]
   );
+
+  // Photos available to the album zip. Counted from loaded moments, so on a
+  // paginated album this undercounts — the server zips the full album either
+  // way, so the label is a floor, never an overpromise.
+  const photoCount = useMemo(
+    () =>
+      allMoments.filter(
+        (m) =>
+          (m.content_type === "photo" || m.content_type === "image") && m.media_url
+      ).length,
+    [allMoments]
+  );
+  const hasPhotos = photoCount > 0;
 
   // Filter moments for immersive view
   const filteredMoments = useMemo(() => {
@@ -593,6 +607,10 @@ export function MomentsViewContainer({
       ) : (
         /* Normal mode: view switcher + select button */
         <div className="flex items-center justify-end gap-2 mb-4">
+          {/* Public album download — no auth, one tap, always visible */}
+          {hasPhotos && (
+            <AlbumDownloadButton eventSlug={eventSlug} count={photoCount} />
+          )}
           {canSelect && (
             <button
               type="button"

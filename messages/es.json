@@ -1617,7 +1617,16 @@
     "mute": "Silenciar",
     "shareThisMoment": "Comparte este momento",
     "unmuteVideo": "Activar sonido del vídeo",
-    "muteVideo": "Silenciar vídeo"
+    "muteVideo": "Silenciar vídeo",
+    "download": {
+      "label": "Descargar",
+      "saved": "Guardado",
+      "failed": "No se pudo guardar. Prueba a abrirlo en tu navegador.",
+      "album": "Descargar todo",
+      "albumWithCount": "Descargar las {count} fotos",
+      "albumStarted": "Preparando la descarga…",
+      "inAppHint": "¿Problemas para guardar? Toca ⋯ y luego «Abrir en el navegador»."
+    }
   },
   "tribes": {
     "findYourTribe": "Encuentra tu tribu",

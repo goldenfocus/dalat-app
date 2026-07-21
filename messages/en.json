@@ -1731,7 +1731,16 @@
     "mute": "Mute",
     "shareThisMoment": "Share this moment",
     "unmuteVideo": "Unmute video",
-    "muteVideo": "Mute video"
+    "muteVideo": "Mute video",
+    "download": {
+      "label": "Download",
+      "saved": "Saved",
+      "failed": "Couldn't save. Try opening in your browser.",
+      "album": "Download all",
+      "albumWithCount": "Download all {count}",
+      "albumStarted": "Preparing your download…",
+      "inAppHint": "Trouble saving? Tap ⋯ then Open in browser."
+    }
   },
   "tribes": {
     "findYourTribe": "Find your tribe",

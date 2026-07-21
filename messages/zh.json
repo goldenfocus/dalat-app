@@ -1620,7 +1620,16 @@
     "mute": "静音",
     "shareThisMoment": "分享这一刻",
     "unmuteVideo": "取消视频静音",
-    "muteVideo": "视频静音"
+    "muteVideo": "视频静音",
+    "download": {
+      "label": "下载",
+      "saved": "已保存",
+      "failed": "无法保存。请尝试在浏览器中打开。",
+      "album": "下载全部",
+      "albumWithCount": "下载全部 {count} 张",
+      "albumStarted": "正在准备下载…",
+      "inAppHint": "无法保存？点按 ⋯ 然后选择在浏览器中打开。"
+    }
   },
   "tribes": {
     "findYourTribe": "找到你的部落",

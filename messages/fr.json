@@ -1631,7 +1631,16 @@
     "mute": "Muet",
     "shareThisMoment": "Partager ce moment",
     "unmuteVideo": "Activer le son de la vidéo",
-    "muteVideo": "Couper le son de la vidéo"
+    "muteVideo": "Couper le son de la vidéo",
+    "download": {
+      "label": "Télécharger",
+      "saved": "Enregistré",
+      "failed": "Échec de l'enregistrement. Essayez d'ouvrir dans votre navigateur.",
+      "album": "Tout télécharger",
+      "albumWithCount": "Télécharger les {count} photos",
+      "albumStarted": "Préparation du téléchargement…",
+      "inAppHint": "Problème d'enregistrement ? Appuyez sur ⋯ puis « Ouvrir dans le navigateur »."
+    }
   },
   "tribes": {
     "findYourTribe": "Trouvez votre tribu",

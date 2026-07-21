@@ -1617,7 +1617,16 @@
     "mute": "Stumm",
     "shareThisMoment": "Diesen Moment teilen",
     "unmuteVideo": "Video-Ton einschalten",
-    "muteVideo": "Video stummschalten"
+    "muteVideo": "Video stummschalten",
+    "download": {
+      "label": "Herunterladen",
+      "saved": "Gespeichert",
+      "failed": "Speichern fehlgeschlagen. Versuche es im Browser zu öffnen.",
+      "album": "Alle herunterladen",
+      "albumWithCount": "Alle {count} herunterladen",
+      "albumStarted": "Download wird vorbereitet…",
+      "inAppHint": "Probleme beim Speichern? Tippe auf ⋯ und dann „Im Browser öffnen“."
+    }
   },
   "tribes": {
     "findYourTribe": "Finde deine Tribe",

@@ -1620,7 +1620,16 @@
     "mute": "Tắt tiếng",
     "shareThisMoment": "Chia sẻ khoảnh khắc này",
     "unmuteVideo": "Bật tiếng video",
-    "muteVideo": "Tắt tiếng video"
+    "muteVideo": "Tắt tiếng video",
+    "download": {
+      "label": "Tải xuống",
+      "saved": "Đã lưu",
+      "failed": "Không lưu được. Hãy thử mở trong trình duyệt.",
+      "album": "Tải tất cả",
+      "albumWithCount": "Tải tất cả {count} ảnh",
+      "albumStarted": "Đang chuẩn bị tải xuống…",
+      "inAppHint": "Không lưu được? Nhấn ⋯ rồi chọn Mở trong trình duyệt."
+    }
   },
   "tribes": {
     "findYourTribe": "Tìm hội của bạn",

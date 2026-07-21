@@ -1617,7 +1617,16 @@
     "mute": "Senyap",
     "shareThisMoment": "Kongsi detik ini",
     "unmuteVideo": "Nyahsenyap video",
-    "muteVideo": "Senyapkan video"
+    "muteVideo": "Senyapkan video",
+    "download": {
+      "label": "Muat turun",
+      "saved": "Disimpan",
+      "failed": "Gagal menyimpan. Cuba buka dalam pelayar anda.",
+      "album": "Muat turun semua",
+      "albumWithCount": "Muat turun semua {count}",
+      "albumStarted": "Menyediakan muat turun…",
+      "inAppHint": "Sukar menyimpan? Ketik ⋯ kemudian Buka dalam pelayar."
+    }
   },
   "tribes": {
     "findYourTribe": "Cari tribe anda",
