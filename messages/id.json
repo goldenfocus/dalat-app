@@ -1626,7 +1626,9 @@
       "album": "Unduh semua",
       "albumWithCount": "Unduh semua {count}",
       "albumStarted": "Menyiapkan unduhan…",
-      "inAppHint": "Sulit menyimpan? Ketuk ⋯ lalu Buka di peramban."
+      "inAppHint": "Sulit menyimpan? Ketuk ⋯ lalu Buka di peramban.",
+      "inAppNoteIos": "Untuk menyimpan foto, ketuk ⋯ lalu pilih Buka di Safari.",
+      "inAppNote": "Untuk menyimpan foto, ketuk ⋯ lalu pilih Buka di peramban."
     }
   },
   "tribes": {

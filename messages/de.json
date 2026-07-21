@@ -1626,7 +1626,9 @@
       "album": "Alle herunterladen",
       "albumWithCount": "Alle {count} herunterladen",
       "albumStarted": "Download wird vorbereitet…",
-      "inAppHint": "Probleme beim Speichern? Tippe auf ⋯ und dann „Im Browser öffnen“."
+      "inAppHint": "Probleme beim Speichern? Tippe auf ⋯ und dann „Im Browser öffnen“.",
+      "inAppNoteIos": "Zum Speichern von Fotos auf ⋯ tippen und „In Safari öffnen“ wählen.",
+      "inAppNote": "Zum Speichern von Fotos auf ⋯ tippen und „Im Browser öffnen“ wählen."
     }
   },
   "tribes": {

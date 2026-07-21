@@ -1740,7 +1740,9 @@
       "album": "Download all",
       "albumWithCount": "Download all {count}",
       "albumStarted": "Preparing your download…",
-      "inAppHint": "Trouble saving? Tap ⋯ then Open in browser."
+      "inAppHint": "Trouble saving? Tap ⋯ then Open in browser.",
+      "inAppNoteIos": "To save photos, tap ⋯ and choose Open in Safari.",
+      "inAppNote": "To save photos, tap ⋯ and choose Open in browser."
     }
   },
   "tribes": {

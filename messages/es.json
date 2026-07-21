@@ -1626,7 +1626,9 @@
       "album": "Descargar todo",
       "albumWithCount": "Descargar las {count} fotos",
       "albumStarted": "Preparando la descarga…",
-      "inAppHint": "¿Problemas para guardar? Toca ⋯ y luego «Abrir en el navegador»."
+      "inAppHint": "¿Problemas para guardar? Toca ⋯ y luego «Abrir en el navegador».",
+      "inAppNoteIos": "Para guardar fotos, toca ⋯ y elige Abrir en Safari.",
+      "inAppNote": "Para guardar fotos, toca ⋯ y elige Abrir en el navegador."
     }
   },
   "tribes": {

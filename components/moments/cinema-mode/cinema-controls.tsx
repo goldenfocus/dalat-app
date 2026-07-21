@@ -5,7 +5,7 @@ import { Share2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { useShare } from "@/lib/hooks/use-share";
-import { MomentDownloadButton } from "@/components/moments/moment-download-button";
+import { MomentDownloadButton, InAppBrowserDownloadHint } from "@/components/moments/moment-download-button";
 import {
   useCinemaModeStore,
   useCinemaProgressValue,
@@ -99,6 +99,11 @@ export function CinemaControls({
             )}
           </button>
         </div>
+      </div>
+
+      {/* Standing note for in-app browsers — quiet, not an error */}
+      <div className="absolute top-16 left-0 right-0 px-4 pointer-events-none">
+        <InAppBrowserDownloadHint tone="overlay" className="text-center" />
       </div>
 
       {/* Bottom timeline — tall touch target, thin visual bar */}

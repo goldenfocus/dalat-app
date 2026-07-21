@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { CheckSquare, Trash2, X, Loader2, Download, CheckCheck } from "lucide-react";
-import { AlbumDownloadButton } from "@/components/moments/moment-download-button";
+import { AlbumDownloadButton, InAppBrowserDownloadHint } from "@/components/moments/moment-download-button";
 import { toast } from "sonner";
 import { useMomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 import { ViewModeSwitcher } from "./view-mode-switcher";
@@ -631,6 +631,11 @@ export function MomentsViewContainer({
             onViewModeChange={handleViewModeChange}
           />
         </div>
+      )}
+
+      {/* Standing note for in-app browsers. Renders nothing elsewhere. */}
+      {!selectMode && (
+        <InAppBrowserDownloadHint className="text-right -mt-2 mb-4" />
       )}
 
       {/* Grid view (always rendered to maintain scroll position and loaded data) */}

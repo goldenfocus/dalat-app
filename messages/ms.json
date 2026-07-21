@@ -1626,7 +1626,9 @@
       "album": "Muat turun semua",
       "albumWithCount": "Muat turun semua {count}",
       "albumStarted": "Menyediakan muat turun…",
-      "inAppHint": "Sukar menyimpan? Ketik ⋯ kemudian Buka dalam pelayar."
+      "inAppHint": "Sukar menyimpan? Ketik ⋯ kemudian Buka dalam pelayar.",
+      "inAppNoteIos": "Untuk menyimpan foto, ketik ⋯ dan pilih Buka dalam Safari.",
+      "inAppNote": "Untuk menyimpan foto, ketik ⋯ dan pilih Buka dalam pelayar."
     }
   },
   "tribes": {

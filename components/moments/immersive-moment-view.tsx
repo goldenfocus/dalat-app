@@ -18,7 +18,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { useShare } from "@/lib/hooks/use-share";
 import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
-import { MomentDownloadButton } from "@/components/moments/moment-download-button";
+import { MomentDownloadButton, InAppBrowserDownloadHint } from "@/components/moments/moment-download-button";
 import { ReactionBar } from "@/components/reactions/reaction-bar";
 import { MomentWatermark } from "./moment-watermark";
 import type { MomentWithProfile } from "@/lib/types";
@@ -297,11 +297,12 @@ export function ImmersiveMomentView({
       <div className="flex-1 relative flex flex-col min-w-0">
         {/* Top bar */}
         <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-0.5">
             {/* Progress indicator */}
             <span className="text-white/70 text-sm font-medium">
               {currentIndex + 1} / {totalCount ?? moments.length}
             </span>
+            <InAppBrowserDownloadHint tone="overlay" />
           </div>
 
           {/* Close/mode-switch handled by FloatingViewModeSwitcher */}

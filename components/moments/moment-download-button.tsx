@@ -73,8 +73,26 @@ export function MomentDownloadButton({
       // still fall through to the normal navigation below.)
       if (info.isInApp && info.isIOS) {
         e.preventDefault();
-        toast(t("download.inAppHint"), { duration: 6000 });
         triggerHaptic("selection");
+
+        const absolute = new URL(
+          momentDownloadHref(moment.id),
+          window.location.origin
+        ).toString();
+
+        // `x-safari-https://` is undocumented but widely honoured by iOS
+        // in-app browsers: it hands the URL to Safari, which HAS a download
+        // stack. That turns three taps into one. If Zalo doesn't handle the
+        // scheme, nothing happens at all — no error to catch — so we always
+        // queue the fallback below rather than trusting it.
+        window.location.href = `x-safari-${absolute}`;
+
+        // Fallback: the inline image page. Not a save, but it renders the
+        // photo and exposes Zalo's own "Open in Safari", which is where this
+        // was before. Never leave the tap doing nothing.
+        window.setTimeout(() => {
+          window.location.href = momentDownloadHref(moment.id);
+        }, 1500);
         return;
       }
 
@@ -196,23 +214,35 @@ export function AlbumDownloadButton({ eventSlug, count }: AlbumDownloadButtonPro
  * One-line nudge for WebViews. Shown proactively rather than after a failure,
  * because a WebView that can't save gives us no error to react to.
  */
-export function InAppBrowserDownloadHint({ className = "" }: { className?: string }) {
+export function InAppBrowserDownloadHint({
+  className = "",
+  tone = "muted",
+}: {
+  className?: string;
+  /** "muted" on light surfaces, "overlay" on fullscreen dark chrome. */
+  tone?: "muted" | "overlay";
+}) {
   const t = useTranslations("moments");
-  const [info, setInfo] = useState<{ isInApp: boolean; name: string | null }>({
+  const [info, setInfo] = useState<{ isInApp: boolean; isIOS: boolean }>({
     isInApp: false,
-    name: null,
+    isIOS: false,
   });
 
   useEffect(() => {
     const detected = detectInAppBrowser();
-    setInfo({ isInApp: detected.isInApp, name: detected.name });
+    setInfo({ isInApp: detected.isInApp, isIOS: detected.isIOS });
   }, []);
 
   if (!info.isInApp) return null;
 
   return (
-    <p className={`text-xs text-muted-foreground text-center ${className}`}>
-      {t("download.inAppHint")}
+    <p
+      className={`text-[11px] leading-snug ${
+        tone === "overlay" ? "text-white/50" : "text-muted-foreground/70"
+      } ${className}`}
+    >
+      <span aria-hidden="true">* </span>
+      {info.isIOS ? t("download.inAppNoteIos") : t("download.inAppNote")}
     </p>
   );
 }

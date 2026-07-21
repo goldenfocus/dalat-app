@@ -1640,7 +1640,9 @@
       "album": "Tout télécharger",
       "albumWithCount": "Télécharger les {count} photos",
       "albumStarted": "Préparation du téléchargement…",
-      "inAppHint": "Problème d'enregistrement ? Appuyez sur ⋯ puis « Ouvrir dans le navigateur »."
+      "inAppHint": "Problème d'enregistrement ? Appuyez sur ⋯ puis « Ouvrir dans le navigateur ».",
+      "inAppNoteIos": "Pour enregistrer les photos, appuyez sur ⋯ puis « Ouvrir dans Safari ».",
+      "inAppNote": "Pour enregistrer les photos, appuyez sur ⋯ puis « Ouvrir dans le navigateur »."
     }
   },
   "tribes": {
