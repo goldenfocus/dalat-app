@@ -1607,7 +1607,14 @@
         "title": "🙈 嗯，这有点尴尬...",
         "description": "出了点问题。再试一次？"
       }
-    }
+    },
+    "like": "赞",
+    "liked": "已赞",
+    "sound": "声音",
+    "mute": "静音",
+    "shareThisMoment": "分享这一刻",
+    "unmuteVideo": "取消视频静音",
+    "muteVideo": "视频静音"
   },
   "tribes": {
     "findYourTribe": "找到你的部落",

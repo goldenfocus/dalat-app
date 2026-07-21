@@ -1604,7 +1604,14 @@
         "title": "🙈 Na, das ist jetzt unangenehm...",
         "description": "Etwas ist schiefgelaufen. Noch ein Versuch?"
       }
-    }
+    },
+    "like": "Gefällt mir",
+    "liked": "Gefällt mir",
+    "sound": "Ton",
+    "mute": "Stumm",
+    "shareThisMoment": "Diesen Moment teilen",
+    "unmuteVideo": "Video-Ton einschalten",
+    "muteVideo": "Video stummschalten"
   },
   "tribes": {
     "findYourTribe": "Finde deine Tribe",

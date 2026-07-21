@@ -1607,7 +1607,14 @@
         "title": "🙈 Hơi quê xíu...",
         "description": "Có gì đó không ổn. Thử thêm lần nữa nhé?"
       }
-    }
+    },
+    "like": "Thích",
+    "liked": "Đã thích",
+    "sound": "Âm thanh",
+    "mute": "Tắt tiếng",
+    "shareThisMoment": "Chia sẻ khoảnh khắc này",
+    "unmuteVideo": "Bật tiếng video",
+    "muteVideo": "Tắt tiếng video"
   },
   "tribes": {
     "findYourTribe": "Tìm hội của bạn",

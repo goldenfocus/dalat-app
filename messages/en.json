@@ -1718,7 +1718,14 @@
         "title": "🙈 Well, that's awkward...",
         "description": "Something went wrong. One more try?"
       }
-    }
+    },
+    "like": "Like",
+    "liked": "Liked",
+    "sound": "Sound",
+    "mute": "Mute",
+    "shareThisMoment": "Share this moment",
+    "unmuteVideo": "Unmute video",
+    "muteVideo": "Mute video"
   },
   "tribes": {
     "findYourTribe": "Find your tribe",

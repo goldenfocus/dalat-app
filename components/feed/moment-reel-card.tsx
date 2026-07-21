@@ -16,6 +16,10 @@ interface MomentReelCardProps {
   moment: MomentWithEvent;
   isActive: boolean;
   index: number;
+  /** Whether the viewer is signed in (gates the like action) */
+  isAuthenticated?: boolean;
+  /** Hydrated like state for this moment */
+  likeState?: { liked: boolean; count: number };
 }
 
 /**
@@ -27,6 +31,8 @@ export function MomentReelCard({
   moment,
   isActive,
   index,
+  isAuthenticated,
+  likeState,
 }: MomentReelCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -86,6 +92,9 @@ export function MomentReelCard({
           isVideo={isVideo}
           isMuted={isMuted}
           onMuteToggle={handleMuteToggle}
+          isAuthenticated={isAuthenticated}
+          initialLiked={likeState?.liked}
+          likeCount={likeState?.count}
         />
       </div>
 

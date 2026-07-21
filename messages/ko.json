@@ -1607,7 +1607,14 @@
         "title": "🙈 이거 참 민망하네요...",
         "description": "문제가 생겼어요. 한 번 더 해볼까요?"
       }
-    }
+    },
+    "like": "좋아요",
+    "liked": "좋아요됨",
+    "sound": "소리",
+    "mute": "음소거",
+    "shareThisMoment": "이 순간 공유하기",
+    "unmuteVideo": "동영상 음소거 해제",
+    "muteVideo": "동영상 음소거"
   },
   "tribes": {
     "findYourTribe": "나의 트라이브 찾기",

@@ -1604,7 +1604,14 @@
         "title": "🙈 Wah, jadi canggung...",
         "description": "Ada yang salah. Coba sekali lagi?"
       }
-    }
+    },
+    "like": "Suka",
+    "liked": "Disukai",
+    "sound": "Suara",
+    "mute": "Bisukan",
+    "shareThisMoment": "Bagikan momen ini",
+    "unmuteVideo": "Suarakan video",
+    "muteVideo": "Bisukan video"
   },
   "tribes": {
     "findYourTribe": "Temukan tribe-mu",

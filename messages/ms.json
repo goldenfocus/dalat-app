@@ -1604,7 +1604,14 @@
         "title": "🙈 Eh, segan pula...",
         "description": "Ada sesuatu yang tidak kena. Sekali lagi?"
       }
-    }
+    },
+    "like": "Suka",
+    "liked": "Disukai",
+    "sound": "Bunyi",
+    "mute": "Senyap",
+    "shareThisMoment": "Kongsi detik ini",
+    "unmuteVideo": "Nyahsenyap video",
+    "muteVideo": "Senyapkan video"
   },
   "tribes": {
     "findYourTribe": "Cari tribe anda",

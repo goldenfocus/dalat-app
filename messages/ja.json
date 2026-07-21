@@ -1604,7 +1604,14 @@
         "title": "🙈 なんとも気まずい...",
         "description": "問題が発生しました。もう一回だけ？"
       }
-    }
+    },
+    "like": "いいね",
+    "liked": "いいね済み",
+    "sound": "音声",
+    "mute": "ミュート",
+    "shareThisMoment": "この瞬間をシェア",
+    "unmuteVideo": "動画の音声をオンにする",
+    "muteVideo": "動画をミュート"
   },
   "tribes": {
     "findYourTribe": "自分のトライブを見つけよう",

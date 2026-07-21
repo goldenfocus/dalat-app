@@ -1,9 +1,11 @@
 "use client";
 
 import { Share2, Volume2, VolumeX } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { triggerHaptic } from "@/lib/haptics";
 import { useShare } from "@/lib/hooks/use-share";
 import { CommentsButton } from "@/components/comments";
+import { LikeButton } from "@/components/moments/like-button";
 
 interface MomentEngagementBarProps {
   momentId: string;
@@ -19,6 +21,12 @@ interface MomentEngagementBarProps {
   onMuteToggle?: () => void;
   /** Initial comment count */
   commentCount?: number;
+  /** Whether the current user has liked this moment */
+  initialLiked?: boolean;
+  /** Initial like count */
+  likeCount?: number;
+  /** Whether the viewer is signed in (gates the like action) */
+  isAuthenticated?: boolean;
 }
 
 /**
@@ -36,7 +44,11 @@ export function MomentEngagementBar({
   isMuted = true,
   onMuteToggle,
   commentCount,
+  initialLiked,
+  likeCount,
+  isAuthenticated,
 }: MomentEngagementBarProps) {
+  const t = useTranslations("moments");
   const { share: nativeShare } = useShare();
 
   const handleShare = (e: React.MouseEvent) => {
@@ -60,6 +72,15 @@ export function MomentEngagementBar({
 
   return (
     <div className="flex flex-col items-center gap-3">
+      {/* Like button */}
+      <LikeButton
+        momentId={momentId}
+        initialLiked={initialLiked}
+        initialCount={likeCount}
+        isAuthenticated={isAuthenticated}
+        className={buttonBaseClass}
+      />
+
       {/* Comments button */}
       <CommentsButton
         targetType="moment"
@@ -76,10 +97,10 @@ export function MomentEngagementBar({
       <button
         onClick={handleShare}
         className={buttonBaseClass}
-        aria-label="Share this moment"
+        aria-label={t("shareThisMoment")}
       >
         <Share2 className="w-6 h-6" />
-        <span className="text-xs font-medium">Share</span>
+        <span className="text-xs font-medium">{t("share")}</span>
       </button>
 
       {/* Mute toggle - only for videos */}
@@ -87,14 +108,14 @@ export function MomentEngagementBar({
         <button
           onClick={handleMuteToggle}
           className={buttonBaseClass}
-          aria-label={isMuted ? "Unmute video" : "Mute video"}
+          aria-label={isMuted ? t("unmuteVideo") : t("muteVideo")}
         >
           {isMuted ? (
             <VolumeX className="w-6 h-6" />
           ) : (
             <Volume2 className="w-6 h-6" />
           )}
-          <span className="text-xs font-medium">{isMuted ? "Sound" : "Mute"}</span>
+          <span className="text-xs font-medium">{isMuted ? t("sound") : t("mute")}</span>
         </button>
       )}
     </div>

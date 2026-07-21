@@ -1618,7 +1618,14 @@
         "title": "🙈 Bon, c'est gênant...",
         "description": "Quelque chose a mal tourné. Encore un essai ?"
       }
-    }
+    },
+    "like": "J'aime",
+    "liked": "Aimé",
+    "sound": "Son",
+    "mute": "Muet",
+    "shareThisMoment": "Partager ce moment",
+    "unmuteVideo": "Activer le son de la vidéo",
+    "muteVideo": "Couper le son de la vidéo"
   },
   "tribes": {
     "findYourTribe": "Trouvez votre tribu",

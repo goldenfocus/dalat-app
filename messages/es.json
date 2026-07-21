@@ -1604,7 +1604,14 @@
         "title": "🙈 Vaya, qué incómodo...",
         "description": "Algo salió mal. ¿Un intento más?"
       }
-    }
+    },
+    "like": "Me gusta",
+    "liked": "Te gusta",
+    "sound": "Sonido",
+    "mute": "Silenciar",
+    "shareThisMoment": "Comparte este momento",
+    "unmuteVideo": "Activar sonido del vídeo",
+    "muteVideo": "Silenciar vídeo"
   },
   "tribes": {
     "findYourTribe": "Encuentra tu tribu",
