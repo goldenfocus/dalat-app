@@ -18,6 +18,32 @@ export class ImageJobError extends Error {
   }
 }
 
+// Queue error codes → "common" namespace translation keys
+const ERROR_CODE_KEYS: Record<string, string> = {
+  worker_offline: "aiWorkerOffline",
+  rate_limit_unavailable: "aiWorkerOffline",
+  context_unavailable: "aiWorkerOffline",
+  refine_unavailable: "aiRefineUnavailable",
+  too_many_pending: "aiTooManyPending",
+  timeout: "aiTimeout",
+  generation_failed: "aiGenerationFailed",
+};
+
+/**
+ * Map a queue failure to a user-facing message. Pass a "common" namespace
+ * translator; unknown codes fall back to the error's own message.
+ */
+export function describeImageJobError(
+  err: unknown,
+  tCommon: (key: string) => string,
+  fallback: string
+): string {
+  if (err instanceof ImageJobError && err.code && ERROR_CODE_KEYS[err.code]) {
+    return tCommon(ERROR_CODE_KEYS[err.code]);
+  }
+  return err instanceof Error ? err.message : fallback;
+}
+
 async function parseError(res: Response, fallback: string): Promise<ImageJobError> {
   const contentType = res.headers.get("content-type");
   if (contentType?.includes("application/json")) {
@@ -63,7 +89,12 @@ export async function generateImageViaQueue(
   while (Date.now() < deadline) {
     await sleep(POLL_INTERVAL_MS);
 
-    const statusRes = await fetch(`/api/ai/generate-image/status?jobId=${data.jobId}`);
+    let statusRes: Response;
+    try {
+      statusRes = await fetch(`/api/ai/generate-image/status?jobId=${data.jobId}`);
+    } catch {
+      continue; // transient network blip — the job is still running server-side
+    }
     if (!statusRes.ok) {
       // 4xx is permanent (expired session, bad job id) — bail with the real
       // error instead of quietly spinning to the deadline. 5xx/network: retry.
@@ -73,8 +104,13 @@ export async function generateImageViaQueue(
       continue;
     }
 
-    const job = await statusRes.json();
-    if (job.status === "done" && job.imageUrl) return job.imageUrl;
+    const job = await statusRes.json().catch(() => null);
+    if (!job) continue; // non-JSON interstitial (gateway/CF) — keep polling
+    if (job.status === "done") {
+      if (job.imageUrl) return job.imageUrl;
+      // Terminal state with no result — don't spin to the deadline.
+      throw new ImageJobError(job.error || "Generation failed", "generation_failed");
+    }
     if (job.status === "failed") {
       throw new ImageJobError(job.error || "Generation failed", "generation_failed");
     }

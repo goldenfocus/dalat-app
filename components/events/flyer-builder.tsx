@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { generateImageViaQueue, describeImageJobError } from "@/lib/ai/image-job-client";
 import { RotatingPhrase } from "@/components/ui/rotating-phrase";
 import { validateMediaFile, needsConversion, ALLOWED_MEDIA_TYPES } from "@/lib/media-utils";
 import { convertIfNeeded } from "@/lib/media-conversion";
@@ -150,6 +151,7 @@ export function FlyerBuilder({
   onFocalPointChange,
 }: FlyerBuilderProps) {
   const t = useTranslations("flyerBuilder");
+  const tCommon = useTranslations("common");
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [showPromptEditor, setShowPromptEditor] = useState(false);
   const [prompt, setPrompt] = useState("");
@@ -396,36 +398,15 @@ export function FlyerBuilder({
         requestBody.existingImageUrl = previewUrl;
       }
 
-      const response = await fetch("/api/ai/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
+      const imageUrl = await generateImageViaQueue(requestBody);
 
-      if (!response.ok) {
-        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
-        const contentType = response.headers.get("content-type");
-        if (contentType?.includes("application/json")) {
-          const data = await response.json();
-          throw new Error(data.error || t("generationFailed"));
-        } else {
-          // Non-JSON response (likely from API gateway)
-          const text = await response.text();
-          if (response.status === 413 || text.toLowerCase().includes("too large")) {
-            throw new Error("Image is too large to refine. Try uploading a smaller image or using the AI generation instead.");
-          }
-          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
-        }
-      }
-
-      const data = await response.json();
       revokeExistingBlobUrl();
-      setPreviewUrl(data.imageUrl);
-      onImageChange(data.imageUrl);
+      setPreviewUrl(imageUrl);
+      onImageChange(imageUrl);
       setRefinementPrompt("");
       setShowRefinement(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("generationFailed"));
+      setError(describeImageJobError(err, tCommon, t("generationFailed")));
     } finally {
       setIsGenerating(false);
     }

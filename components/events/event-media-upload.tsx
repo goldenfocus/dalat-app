@@ -38,6 +38,7 @@ import {
   generateSmartFilename,
 } from "@/lib/media-utils";
 import { convertIfNeeded, convertHeicOnR2 } from "@/lib/media-conversion";
+import { generateImageViaQueue, describeImageJobError } from "@/lib/ai/image-job-client";
 import { DisintegrationEffect } from "@/components/ui/disintegration-effect";
 import { ImageVersionHistory } from "@/components/ui/image-version-history";
 
@@ -146,8 +147,12 @@ export function EventMediaUpload({
   onFocalPointChange,
 }: EventMediaUploadProps) {
   const t = useTranslations("flyerBuilder");
+  const tCommon = useTranslations("common");
 
   const [showSaved, setShowSaved] = useState(false);
+
+  const describeError = (err: unknown, fallback: string) =>
+    describeImageJobError(err, tCommon, fallback);
 
   // Auto-save image_url to database
   const saveToDatabase = async (url: string | null) => {
@@ -449,37 +454,17 @@ export function EventMediaUpload({
     const previousUrl = previewUrl;
 
     try {
-      const response = await fetch("/api/ai/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          context: aiContext,
-          title: eventTitle?.trim() || "",
-          customPrompt: prompt.trim(),
-          entityId: eventId,
-        }),
+      // Enqueued on the local image worker; resolves when the job completes
+      const imageUrl = await generateImageViaQueue({
+        context: aiContext,
+        title: eventTitle?.trim() || "",
+        customPrompt: prompt.trim(),
+        entityId: eventId,
       });
 
-      if (!response.ok) {
-        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
-        const contentType = response.headers.get("content-type");
-        if (contentType?.includes("application/json")) {
-          const data = await response.json();
-          throw new Error(data.error || t("generationFailed"));
-        } else {
-          // Non-JSON response (likely from API gateway)
-          const text = await response.text();
-          if (response.status === 413 || text.toLowerCase().includes("too large")) {
-            throw new Error("Request too large. Try a shorter prompt.");
-          }
-          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
-        }
-      }
-
-      const data = await response.json();
-      setPreviewUrl(data.imageUrl);
+      setPreviewUrl(imageUrl);
       setPreviewIsVideo(false);
-      await handleMediaUpdate(data.imageUrl);
+      await handleMediaUpdate(imageUrl);
       setShowPromptEditor(false);
 
       // Show undo notification (only if there was a previous image)
@@ -487,7 +472,7 @@ export function EventMediaUpload({
         startUndoTimer(previousUrl);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("generationFailed"));
+      setError(describeError(err, t("generationFailed")));
     } finally {
       setIsGenerating(false);
     }
@@ -579,39 +564,18 @@ export function EventMediaUpload({
         requestBody.existingImageUrl = previewUrl;
       }
 
-      const response = await fetch("/api/ai/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
+      const imageUrl = await generateImageViaQueue(requestBody);
 
-      if (!response.ok) {
-        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
-        const contentType = response.headers.get("content-type");
-        if (contentType?.includes("application/json")) {
-          const data = await response.json();
-          throw new Error(data.error || t("generationFailed"));
-        } else {
-          // Non-JSON response (likely from API gateway)
-          const text = await response.text();
-          if (response.status === 413 || text.toLowerCase().includes("too large")) {
-            throw new Error("Image is too large to refine. Try uploading a smaller image or using the AI generation instead.");
-          }
-          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
-        }
-      }
-
-      const data = await response.json();
-      setPreviewUrl(data.imageUrl);
+      setPreviewUrl(imageUrl);
       setPreviewIsVideo(false);
-      await handleMediaUpdate(data.imageUrl);
+      await handleMediaUpdate(imageUrl);
       setRefinementPrompt("");
       setShowRefinement(false);
 
       // Show undo notification
       startUndoTimer(previousUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("generationFailed"));
+      setError(describeError(err, t("generationFailed")));
     } finally {
       setIsGenerating(false);
     }
@@ -961,6 +925,12 @@ export function EventMediaUpload({
               </p>
             </div>
 
+            {error && (
+              <div className="p-2 rounded-lg bg-destructive/10 text-destructive text-sm">
+                {error}
+              </div>
+            )}
+
             <div className="flex gap-2">
               <Button
                 type="button"
@@ -1161,7 +1131,9 @@ export function EventMediaUpload({
         className="hidden"
       />
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && !showPromptEditor && (
+        <div className="p-2 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>
+      )}
 
       {/* Remove confirmation dialog */}
       <Dialog open={showRemoveConfirm} onOpenChange={setShowRemoveConfirm}>

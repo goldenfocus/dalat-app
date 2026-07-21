@@ -14,7 +14,7 @@ import { useTranslations } from "next-intl";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { ImageVersionHistory } from "@/components/ui/image-version-history";
 import { cn } from "@/lib/utils";
-import { generateImageViaQueue, ImageJobError } from "@/lib/ai/image-job-client";
+import { generateImageViaQueue, describeImageJobError } from "@/lib/ai/image-job-client";
 import type { ImageVersionContentType, ImageVersionFieldName } from "@/lib/types";
 
 export type ImageContext = "event-cover" | "blog-cover" | "avatar" | "organizer-logo";
@@ -124,22 +124,8 @@ export function AIImageGenerator({
 
   const buildDefaultPrompt = () => DEFAULT_PROMPTS[context](title, content);
 
-  // Map queue error codes to translated messages
-  const describeError = (err: unknown, fallback: string) => {
-    const codeKeys: Record<string, string> = {
-      worker_offline: "aiWorkerOffline",
-      rate_limit_unavailable: "aiWorkerOffline",
-      context_unavailable: "aiWorkerOffline",
-      refine_unavailable: "aiRefineUnavailable",
-      too_many_pending: "aiTooManyPending",
-      timeout: "aiTimeout",
-      generation_failed: "aiGenerationFailed",
-    };
-    if (err instanceof ImageJobError && err.code && codeKeys[err.code]) {
-      return tCommon(codeKeys[err.code]);
-    }
-    return err instanceof Error ? err.message : fallback;
-  };
+  const describeError = (err: unknown, fallback: string) =>
+    describeImageJobError(err, tCommon, fallback);
 
   const handleGenerate = async () => {
     setIsGenerating(true);
