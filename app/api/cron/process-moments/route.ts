@@ -99,60 +99,79 @@ export async function GET(request: Request) {
 
   const supabase = getSupabase();
 
-  // Newest-first candidate window. PostgREST filters on embedded null rows
-  // are unreliable (the Inngest version's .or() never ran in prod), so
-  // settlement is resolved in a second, id-scoped query instead.
-  const { data: candidates, error: fetchError } = await supabase
-    .from("moments")
-    .select(
+  // Newest-first paginated scan for unsettled moments. PostgREST filters on
+  // embedded null rows are unreliable (the Inngest version's .or() never ran
+  // in prod), so settlement is resolved in a second, id-scoped query per page.
+  // Paginating (instead of one capped window) is what lets the backfill reach
+  // ALL moments — a single newest-1000 window would strand everything older
+  // once the newest rows settle.
+  const PAGE_SIZE = 500;
+  const MAX_SCAN = 5000; // safety valve; raise if the library ever outgrows it
+  const pending: PendingMoment[] = [];
+  let settledSeen = 0;
+  let scanned = 0;
+
+  for (let offset = 0; offset < MAX_SCAN && pending.length < limit * 2; offset += PAGE_SIZE) {
+    const { data: candidates, error: fetchError } = await supabase
+      .from("moments")
+      .select(
+        `
+        id, content_type, media_url, file_url, cf_video_uid, cf_playback_url,
+        mime_type, original_filename, title, artist, album, genre,
+        video_duration_seconds, audio_duration_seconds,
+        events!moments_event_id_fkey!inner(has_private_details, tribe_id, tribe_visibility)
       `
-      id, content_type, media_url, file_url, cf_video_uid, cf_playback_url,
-      mime_type, original_filename, title, artist, album, genre,
-      video_duration_seconds, audio_duration_seconds,
-      events!moments_event_id_fkey!inner(has_private_details, tribe_id, tribe_visibility)
-    `
-    )
-    .eq("status", "published")
-    .in("content_type", ["photo", "image", "video", "audio", "pdf", "document"])
-    .order("created_at", { ascending: false })
-    .limit(Math.min(limit * 10, 1000));
+      )
+      .eq("status", "published")
+      .in("content_type", ["photo", "image", "video", "audio", "pdf", "document"])
+      .order("created_at", { ascending: false })
+      .range(offset, offset + PAGE_SIZE - 1);
 
-  if (fetchError) {
-    console.error("[process-moments] fetch failed:", fetchError);
-    return NextResponse.json({ error: fetchError.message }, { status: 500 });
-  }
-
-  const window = (candidates || []) as unknown as PendingMoment[];
-
-  // Settlement lookup scoped to the candidate ids (chunked — an unscoped
-  // select silently caps at 1000 rows and would make settled moments look
-  // pending, re-running the model on them forever).
-  const settledIds = new Set<string>();
-  const windowIds = window.map((m) => m.id);
-  for (let i = 0; i < windowIds.length; i += IN_CHUNK) {
-    const chunk = windowIds.slice(i, i + IN_CHUNK);
-    const { data: settledRows, error: settledError } = await supabase
-      .from("moment_metadata")
-      .select("moment_id")
-      .in("moment_id", chunk)
-      .in("processing_status", ["completed", "skipped"]);
-    if (settledError) {
-      console.error("[process-moments] settled query failed:", settledError);
-      return NextResponse.json({ error: settledError.message }, { status: 500 });
+    if (fetchError) {
+      console.error("[process-moments] fetch failed:", fetchError);
+      return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
-    for (const row of settledRows || []) settledIds.add(row.moment_id);
+
+    const page = (candidates || []) as unknown as PendingMoment[];
+    scanned += page.length;
+
+    // Settlement lookup scoped to this page's ids (chunked — an unscoped
+    // select silently caps at 1000 rows and would make settled moments look
+    // pending, re-running the model on them forever).
+    const settledIds = new Set<string>();
+    const pageIds = page.map((m) => m.id);
+    for (let i = 0; i < pageIds.length; i += IN_CHUNK) {
+      const chunk = pageIds.slice(i, i + IN_CHUNK);
+      const { data: settledRows, error: settledError } = await supabase
+        .from("moment_metadata")
+        .select("moment_id")
+        .in("moment_id", chunk)
+        .in("processing_status", ["completed", "skipped"]);
+      if (settledError) {
+        console.error("[process-moments] settled query failed:", settledError);
+        return NextResponse.json({ error: settledError.message }, { status: 500 });
+      }
+      for (const row of settledRows || []) settledIds.add(row.moment_id);
+    }
+    settledSeen += settledIds.size;
+
+    // pending/failed/processing all get retried — 'processing' only survives
+    // a run that died mid-flight, and the upsert makes retries harmless.
+    for (const m of page) {
+      if (!settledIds.has(m.id)) pending.push(m);
+    }
+
+    if (page.length < PAGE_SIZE) break; // library exhausted
   }
 
-  // pending/failed/processing all get retried — 'processing' only survives a
-  // run that died mid-flight, and the upsert makes retries harmless.
-  const pending = window.filter((m) => !settledIds.has(m.id));
   const batch = pending.slice(0, limit);
 
   if (dryRun) {
     return NextResponse.json({
       dryRun: true,
-      settledInWindow: settledIds.size,
-      pendingInWindow: pending.length,
+      scanned,
+      settledSeen,
+      pendingFound: pending.length,
       wouldProcess: batch.length,
       wouldSkipPrivacy: batch.filter((m) => isPrivacyGated(m.events)).length,
     });
@@ -387,7 +406,8 @@ export async function GET(request: Request) {
     deferred,
     failed,
     translationFailed,
-    remainingInWindow: pending.length - batch.length,
+    remainingFound: pending.length - batch.length,
+    scanned,
     errorDetails: errors.length > 0 ? errors.slice(0, 10) : undefined,
   };
 
