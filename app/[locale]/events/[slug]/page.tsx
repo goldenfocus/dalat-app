@@ -491,7 +491,6 @@ type PastMoment = {
 async function getPastMoments(
   seriesId: string | null | undefined,
   currentEventId: string,
-  createdBy: string,
   pinnedIds?: string[] | null,
   linkedPastEventId?: string | null
 ): Promise<PastMoment[]> {
@@ -557,22 +556,10 @@ async function getPastMoments(
       }
     }
 
-    if (pastEventIds.length === 0) {
-      const { data: pastEvents } = await supabase
-        .from("events")
-        .select("id, slug, title, starts_at")
-        .eq("created_by", createdBy)
-        .neq("id", currentEventId)
-        .lt("starts_at", new Date().toISOString())
-        .eq("status", "published")
-        .order("starts_at", { ascending: false })
-        .limit(2);
-      if (pastEvents?.length) {
-        pastEventIds = pastEvents.map((e) => e.id);
-        pastEvents.forEach((e) => eventMap.set(e.id, e));
-      }
-    }
-
+    // No "same creator" fallback on purpose: an unrelated past event by the
+    // same host (a poker night under a cycling tour) reads as part of this
+    // event. Showing a previous edition is opt-in — pin moments, link a past
+    // event, or share a series.
     if (pastEventIds.length === 0) return [];
 
     const { data: moments } = await supabase
@@ -821,13 +808,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getPrivateDetails(event.id, event.has_private_details),
   ]);
 
-  // Fetch past moments for auto-display when no promo exists (series first, organizer fallback)
+  // Fetch past moments for auto-display when no promo exists (pinned, then admin-linked, then series)
   // If org has pinned specific moments via vibe_moment_ids, those take priority
   const vibeMomentIds = (event as { vibe_moment_ids?: string[] | null }).vibe_moment_ids ?? null;
   // Admin-linked past event only feeds the strip until this event has its own moments
   const linkedPastEventId = momentsPreview.length === 0 ? event.linked_past_event_id : null;
   const pastMoments = promoResult.promo.length === 0
-    ? await getPastMoments(event.series_id, event.id, event.created_by, vibeMomentIds, linkedPastEventId)
+    ? await getPastMoments(event.series_id, event.id, vibeMomentIds, linkedPastEventId)
     : [];
 
   // Destructure combined RSVP result
