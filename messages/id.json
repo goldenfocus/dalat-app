@@ -1729,7 +1729,15 @@
     "removeAvatar": "Hapus",
     "avatarHint": "Bentuk persegi paling cocok — sekitar 400×400.",
     "avatarUploadFailed": "Gagal mengunggah. Silakan coba lagi.",
-    "createEvent": "Buat acara"
+    "createEvent": "Buat acara",
+    "joining": "Bergabung...",
+    "sending": "Mengirim...",
+    "sendRequest": "Kirim permintaan",
+    "cancel": "Batal",
+    "cancelling": "Membatalkan...",
+    "requestMessageDesc": "Kirim pesan ke admin tribe (opsional)",
+    "joinFailed": "Gagal bergabung. Coba lagi?",
+    "andMore": "+{count} lagi"
   },
   "feed": {
     "title": "Feed",

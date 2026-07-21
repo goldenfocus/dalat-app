@@ -1729,7 +1729,15 @@
     "removeAvatar": "Buang",
     "avatarHint": "Bentuk segi empat sama paling sesuai — sekitar 400×400.",
     "avatarUploadFailed": "Muat naik gagal. Sila cuba lagi.",
-    "createEvent": "Cipta acara"
+    "createEvent": "Cipta acara",
+    "joining": "Menyertai...",
+    "sending": "Menghantar...",
+    "sendRequest": "Hantar permintaan",
+    "cancel": "Batal",
+    "cancelling": "Membatalkan...",
+    "requestMessageDesc": "Hantar mesej kepada admin puak (pilihan)",
+    "joinFailed": "Tak berjaya menyertai. Cuba lagi?",
+    "andMore": "+{count} lagi"
   },
   "feed": {
     "title": "Suapan",

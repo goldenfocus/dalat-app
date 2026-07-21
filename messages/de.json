@@ -1729,7 +1729,15 @@
     "removeAvatar": "Entfernen",
     "avatarHint": "Quadratisch eignet sich am besten — etwa 400×400.",
     "avatarUploadFailed": "Upload fehlgeschlagen. Bitte erneut versuchen.",
-    "createEvent": "Event erstellen"
+    "createEvent": "Event erstellen",
+    "joining": "Trete bei...",
+    "sending": "Senden...",
+    "sendRequest": "Anfrage senden",
+    "cancel": "Abbrechen",
+    "cancelling": "Wird abgebrochen...",
+    "requestMessageDesc": "Schreib den Tribe-Admins eine Nachricht (optional)",
+    "joinFailed": "Beitritt hat nicht geklappt. Nochmal versuchen?",
+    "andMore": "+{count} weitere"
   },
   "feed": {
     "title": "Feed",

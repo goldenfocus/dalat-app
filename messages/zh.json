@@ -1732,7 +1732,15 @@
     "removeAvatar": "移除",
     "avatarHint": "方形图片效果最佳——约 400×400。",
     "avatarUploadFailed": "上传失败,请重试。",
-    "createEvent": "创建活动"
+    "createEvent": "创建活动",
+    "joining": "加入中...",
+    "sending": "发送中...",
+    "sendRequest": "发送申请",
+    "cancel": "取消",
+    "cancelling": "取消中...",
+    "requestMessageDesc": "给部落管理员留言（可选）",
+    "joinFailed": "加入失败，再试一次？",
+    "andMore": "还有 {count} 位"
   },
   "feed": {
     "title": "动态",

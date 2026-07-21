@@ -1743,7 +1743,15 @@
     "removeAvatar": "Supprimer",
     "avatarHint": "Le format carré est idéal — environ 400×400.",
     "avatarUploadFailed": "Échec de l'envoi. Veuillez réessayer.",
-    "createEvent": "Créer un événement"
+    "createEvent": "Créer un événement",
+    "joining": "Adhésion en cours...",
+    "sending": "Envoi...",
+    "sendRequest": "Envoyer la demande",
+    "cancel": "Annuler",
+    "cancelling": "Annulation...",
+    "requestMessageDesc": "Envoyez un mot aux admins de la tribu (facultatif)",
+    "joinFailed": "Impossible de rejoindre. Réessayer ?",
+    "andMore": "+{count} autres"
   },
   "feed": {
     "title": "Fil",

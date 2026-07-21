@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Ban, Clock, UserPlus, Lock } from "lucide-react";
+import { Ban, Check, Clock, UserPlus, Lock } from "lucide-react";
 import type { Tribe, TribeRequest } from "@/lib/types";
 
 interface JoinTribeButtonProps {
@@ -18,7 +18,13 @@ interface JoinTribeButtonProps {
 export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: JoinTribeButtonProps) {
   const router = useRouter();
   const t = useTranslations("tribes");
-  const [isPending, startTransition] = useTransition();
+  // Deliberately NOT useTransition for the submit state. router.refresh()
+  // inside a transition keeps isPending true until the whole tribe page
+  // re-renders on the server (auth + tribe + membership + request + events),
+  // so the button sat on "Joining..." long after the POST had succeeded.
+  // We settle the button on the fetch response and let the refresh land after.
+  const [submitting, setSubmitting] = useState(false);
+  const [outcome, setOutcome] = useState<"joined" | "requested" | null>(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -54,8 +60,9 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
     }
 
     setError(null);
+    setSubmitting(true);
 
-    startTransition(async () => {
+    try {
       const res = await fetch(`/api/tribes/${tribe.slug}/membership`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,13 +72,41 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Failed to join");
+        setError(data.error || t("joinFailed"));
         return;
       }
 
       setShowRequestModal(false);
+      // Confirm to the user right now, then reconcile with the server in the
+      // background. The refresh swaps this component out for the real
+      // member-facing UI whenever it finishes.
+      setOutcome(data.status === "requested" ? "requested" : "joined");
       router.refresh();
-    });
+    } catch {
+      setError(t("joinFailed"));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  // Optimistic confirmation shown between a successful POST and the RSC
+  // refresh landing.
+  if (outcome === "joined") {
+    return (
+      <div className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg text-primary">
+        <Check className="w-5 h-5" />
+        <span>{t("joinSuccess")}</span>
+      </div>
+    );
+  }
+
+  if (outcome === "requested") {
+    return (
+      <div className="flex items-center gap-2 p-4 bg-muted rounded-lg text-muted-foreground">
+        <Clock className="w-5 h-5" />
+        <span>{t("pendingRequest")}</span>
+      </div>
+    );
   }
 
   // For invite-only or secret tribes without a code
@@ -91,7 +126,7 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
         <Button
           onClick={() => setShowRequestModal(true)}
           className="w-full px-4 py-3"
-          disabled={isPending}
+          disabled={submitting}
         >
           <UserPlus className="w-4 h-4 mr-2" />
           {t("requestToJoin")}
@@ -101,9 +136,7 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{t("requestToJoin")}</DialogTitle>
-              <DialogDescription>
-                Send a message to the tribe admins (optional)
-              </DialogDescription>
+              <DialogDescription>{t("requestMessageDesc")}</DialogDescription>
             </DialogHeader>
             <Textarea
               placeholder={t("requestMessagePlaceholder")}
@@ -114,10 +147,10 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
             {error && <p className="text-sm text-destructive">{error}</p>}
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowRequestModal(false)}>
-                Cancel
+                {t("cancel")}
               </Button>
-              <Button onClick={() => handleJoin()} disabled={isPending}>
-                {isPending ? "Sending..." : "Send Request"}
+              <Button onClick={() => handleJoin()} disabled={submitting}>
+                {submitting ? t("sending") : t("sendRequest")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -128,14 +161,20 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
 
   // For public tribes
   return (
-    <Button
-      onClick={() => handleJoin()}
-      className="w-full px-4 py-3"
-      disabled={isPending}
-    >
-      <UserPlus className="w-4 h-4 mr-2" />
-      {isPending ? "Joining..." : t("joinTribe")}
-    </Button>
+    <div className="space-y-2">
+      <Button
+        onClick={() => handleJoin()}
+        className="w-full px-4 py-3"
+        disabled={submitting}
+      >
+        <UserPlus className="w-4 h-4 mr-2" />
+        {submitting ? t("joining") : t("joinTribe")}
+      </Button>
+      {/* Without this the error was set but never rendered on the public path
+          (the only <p> for it lives inside the request modal), so a failed
+          join just bounced the button back to "Join tribe" and said nothing. */}
+      {error && <p className="text-sm text-destructive">{error}</p>}
+    </div>
   );
 }
 
@@ -159,7 +198,7 @@ function CancelRequestButton({ requestId }: { requestId: string }) {
       disabled={isPending}
       className="text-muted-foreground hover:text-destructive px-3 py-2"
     >
-      {isPending ? "Cancelling..." : t("cancelRequest")}
+      {isPending ? t("cancelling") : t("cancelRequest")}
     </Button>
   );
 }

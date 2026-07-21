@@ -1821,7 +1821,7 @@
       "descriptionOptional": "Description (optional)",
       "descriptionPlaceholder": "What's this tribe about?"
     },
-    "requestMessagePlaceholder": "Why would you like to join?",
+    "requestMessagePlaceholder": "Why do you want to join?",
     "invalidCodeTitle": "Invalid Invite Code",
     "invalidCodeDescription": "This invite code is invalid or has expired.",
     "createFailed": "Couldn't create your tribe. Try again?",
@@ -1843,7 +1843,15 @@
     "removeAvatar": "Remove",
     "avatarHint": "Square works best — around 400×400.",
     "avatarUploadFailed": "Upload failed. Please try again.",
-    "createEvent": "Create event"
+    "createEvent": "Create event",
+    "joining": "Joining...",
+    "sending": "Sending...",
+    "sendRequest": "Send request",
+    "cancel": "Cancel",
+    "cancelling": "Cancelling...",
+    "requestMessageDesc": "Send a note to the tribe admins (optional)",
+    "joinFailed": "Couldn't join. Try again?",
+    "andMore": "+{count} more"
   },
   "feed": {
     "title": "Feed",

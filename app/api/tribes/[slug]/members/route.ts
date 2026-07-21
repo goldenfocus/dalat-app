@@ -4,6 +4,11 @@ import { safeSingle, singleOrNull } from '@/lib/supabase/helpers';
 
 interface RouteParams { params: Promise<{ slug: string }>; }
 
+// How many faces a non-member sees. The response also carries the true total
+// so the UI can say "+N more" instead of silently disagreeing with the member
+// count in the header.
+const PUBLIC_ROSTER_LIMIT = 48;
+
 export async function GET(request: Request, { params }: RouteParams) {
   const supabase = await createClient();
   const { slug } = await params;
@@ -11,12 +16,65 @@ export async function GET(request: Request, { params }: RouteParams) {
   const includeBanned = searchParams.get('banned') === 'true';
 
   const tribeResult = await safeSingle(
-    supabase.from('tribes').select('id').eq('slug', slug).single()
+    supabase.from('tribes').select('id, created_by, member_count').eq('slug', slug).single()
   );
   if (!tribeResult.success) {
     return NextResponse.json({ error: tribeResult.error }, { status: tribeResult.status });
   }
   const tribe = tribeResult.data;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const viewerMembership = user
+    ? await singleOrNull(
+        supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single()
+      )
+    : null;
+  // The creator is treated as an insider even without a tribe_members row.
+  // tribe_members_select already grants them full visibility, and routing them
+  // down the public path would blind the owner of a secret tribe to their own
+  // roster if their membership row were ever missing.
+  const isInsider = !!viewerMembership || (!!user && tribe.created_by === user.id);
+
+  // Non-members get the public roster via a SECURITY DEFINER RPC. Going
+  // through tribe_members directly would hit tribe_members_select RLS, which
+  // silently returns zero rows for outsiders — the exact reason public tribes
+  // used to advertise "0 members". The RPC returns nothing for invite_only /
+  // secret tribes, so the gate still holds.
+  if (!isInsider) {
+    const { data: publicMembers, error: publicError } = await supabase.rpc('get_tribe_public_members', {
+      p_slug: slug,
+      p_limit: PUBLIC_ROSTER_LIMIT,
+    });
+
+    if (publicError) {
+      console.error("Public members fetch error:", publicError);
+      return NextResponse.json({ error: "Failed to fetch members" }, { status: 500 });
+    }
+
+    // Normalise to the same shape the member-facing query returns so the
+    // client component doesn't need to branch on viewer type.
+    const members = (publicMembers ?? []).map((m: {
+      user_id: string; role: string; joined_at: string;
+      display_name: string | null; username: string | null; avatar_url: string | null;
+    }) => ({
+      id: m.user_id,
+      user_id: m.user_id,
+      role: m.role,
+      status: 'active',
+      joined_at: m.joined_at,
+      profiles: {
+        id: m.user_id,
+        display_name: m.display_name,
+        username: m.username,
+        avatar_url: m.avatar_url,
+      },
+    }));
+
+    return NextResponse.json({
+      members,
+      total: tribe.member_count ?? members.length,
+    });
+  }
 
   let query = supabase
     .from('tribe_members')
@@ -35,7 +93,8 @@ export async function GET(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Failed to fetch members" }, { status: 500 });
   }
 
-  return NextResponse.json({ members });
+  // Insiders get the unlimited roster, so the list is always the total.
+  return NextResponse.json({ members, total: members?.length ?? 0 });
 }
 
 export async function PUT(request: Request, { params }: RouteParams) {

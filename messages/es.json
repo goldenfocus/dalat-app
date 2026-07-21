@@ -1729,7 +1729,15 @@
     "removeAvatar": "Quitar",
     "avatarHint": "El formato cuadrado funciona mejor — alrededor de 400×400.",
     "avatarUploadFailed": "Error al subir. Inténtalo de nuevo.",
-    "createEvent": "Crear evento"
+    "createEvent": "Crear evento",
+    "joining": "Uniéndote...",
+    "sending": "Enviando...",
+    "sendRequest": "Enviar solicitud",
+    "cancel": "Cancelar",
+    "cancelling": "Cancelando...",
+    "requestMessageDesc": "Envía un mensaje a los admins de la tribu (opcional)",
+    "joinFailed": "No se pudo unir. ¿Intentar de nuevo?",
+    "andMore": "+{count} más"
   },
   "feed": {
     "title": "Feed",

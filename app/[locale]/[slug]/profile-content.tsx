@@ -1,5 +1,6 @@
+import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
-import { Calendar } from "lucide-react";
+import { Calendar, Play } from "lucide-react";
 import { format } from "date-fns";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -12,6 +13,7 @@ import { ClaimProfileBanner, GhostProfileBadge } from "@/components/profile/clai
 import { MomentsTimeline } from "@/components/moments/moments-timeline";
 import { FollowButton } from "@/components/profile/follow-button";
 import { TierBadge } from "@/components/loyalty/tier-badge";
+import { ProfileTribes } from "@/components/tribes/profile-tribes";
 
 interface ProfileContentProps {
   profileId: string;
@@ -116,6 +118,45 @@ async function getUserMoments(userId: string): Promise<{
   };
 }
 
+interface EventMomentThumb {
+  id: string;
+  content_type: "photo" | "video";
+  media_url: string | null;
+  thumbnail_url: string | null;
+}
+
+const MOMENTS_PER_PAST_EVENT = 4;
+
+/**
+ * Top moments for a batch of events, keyed by event id.
+ *
+ * One RPC call for every event on the page rather than one per card — the
+ * profile renders up to 5 past events and an N+1 here would be 5 extra
+ * round-trips on a server-rendered page.
+ */
+async function getEventMomentThumbs(
+  eventIds: string[]
+): Promise<Record<string, EventMomentThumb[]>> {
+  if (eventIds.length === 0) return {};
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_events_top_moments", {
+    p_event_ids: eventIds,
+    p_per_event: MOMENTS_PER_PAST_EVENT,
+  });
+
+  if (error) {
+    console.error("get_events_top_moments failed:", error);
+    return {};
+  }
+
+  const byEvent: Record<string, EventMomentThumb[]> = {};
+  for (const row of (data ?? []) as { event_id: string; moments: EventMomentThumb[] }[]) {
+    byEvent[row.event_id] = row.moments ?? [];
+  }
+  return byEvent;
+}
+
 function isGhostProfile(profile: { is_ghost?: boolean; bio: string | null }): boolean {
   if (profile.is_ghost) return true;
   if (!profile.bio) return false;
@@ -204,6 +245,9 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
 
   const { upcoming: upcomingEvents, past: pastEvents } = events;
   const totalEventCount = upcomingEvents.length + pastEvents.length;
+
+  // Depends on the event ids, so it can't join the Promise.all above.
+  const momentThumbs = await getEventMomentThumbs(pastEvents.map((e) => e.id));
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
@@ -309,21 +353,71 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
               {t("pastEvents")}
             </h2>
             <div className="space-y-3">
-              {pastEvents.map((event) => (
-                <Link key={event.id} href={`/events/${event.slug}`}>
-                  <Card className="hover:border-foreground/20 transition-colors opacity-60">
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        <span className="text-sm">
-                          {format(new Date(event.starts_at), "MMM d")}
-                        </span>
-                      </div>
-                      <span className="font-medium">{event.title}</span>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+              {pastEvents.map((event) => {
+                const thumbs = momentThumbs[event.id] ?? [];
+                return (
+                  <Link key={event.id} href={`/events/${event.slug}`} className="block">
+                    {/* Past events used to be a bare date + title row. A cover
+                        plus a few moments from the night makes the profile read
+                        as a record of what someone actually showed up to. */}
+                    <Card className="hover:border-foreground/20 transition-colors overflow-hidden">
+                      <CardContent className="p-3 flex items-center gap-3">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-muted shrink-0">
+                          {event.image_url ? (
+                            <Image
+                              src={event.image_url}
+                              alt={event.title}
+                              fill
+                              sizes="64px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Calendar className="w-5 h-5 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {format(new Date(event.starts_at), "MMM d")}
+                          </p>
+                          <p className="font-medium truncate">{event.title}</p>
+                        </div>
+
+                        {thumbs.length > 0 && (
+                          <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+                            {thumbs.map((moment) => {
+                              const src = moment.thumbnail_url || moment.media_url;
+                              if (!src) return null;
+                              return (
+                                <div
+                                  key={moment.id}
+                                  className="relative w-12 h-12 rounded-md overflow-hidden bg-muted"
+                                >
+                                  <Image
+                                    src={src}
+                                    alt=""
+                                    fill
+                                    sizes="48px"
+                                    className="object-cover"
+                                  />
+                                  {moment.content_type === "video" && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                                      <Play className="w-3.5 h-3.5 text-white fill-white" />
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           </section>
         )}
@@ -334,6 +428,9 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
           </p>
         )}
       </div>
+
+      {/* Tribes this user belongs to (public/listed only) */}
+      <ProfileTribes userId={profile.id} />
 
       {/* User Moments Timeline */}
       {momentsData.groups.length > 0 && (

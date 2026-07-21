@@ -37,9 +37,19 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 
   switch (tribe.access_type) {
-    case 'public':
-      await supabase.from('tribe_members').insert({ tribe_id: tribe.id, user_id: user.id });
+    case 'public': {
+      // The insert result was previously discarded, so an RLS or constraint
+      // rejection still returned {success:true,status:'joined'} — a failed
+      // join was indistinguishable from a successful one.
+      const { error: joinError } = await supabase
+        .from('tribe_members')
+        .insert({ tribe_id: tribe.id, user_id: user.id });
+      if (joinError) {
+        console.error('Tribe join failed:', joinError);
+        return NextResponse.json({ error: joinError.message }, { status: 500 });
+      }
       return NextResponse.json({ success: true, status: 'joined' });
+    }
 
     case 'request':
       const { error: reqError } = await supabase.from('tribe_requests').insert({ tribe_id: tribe.id, user_id: user.id, message: message?.trim() || null });
@@ -56,10 +66,17 @@ export async function POST(request: Request, { params }: RouteParams) {
       return NextResponse.json({ success: true, status: 'requested' });
 
     case 'invite_only':
-    case 'secret':
+    case 'secret': {
       if (!invite_code) return NextResponse.json({ error: 'Invite code required' }, { status: 400 });
-      await supabase.from('tribe_members').insert({ tribe_id: tribe.id, user_id: user.id });
+      const { error: inviteJoinError } = await supabase
+        .from('tribe_members')
+        .insert({ tribe_id: tribe.id, user_id: user.id });
+      if (inviteJoinError) {
+        console.error('Tribe invite join failed:', inviteJoinError);
+        return NextResponse.json({ error: inviteJoinError.message }, { status: 500 });
+      }
       return NextResponse.json({ success: true, status: 'joined' });
+    }
 
     default:
       return NextResponse.json({ error: 'Invalid access type' }, { status: 400 });

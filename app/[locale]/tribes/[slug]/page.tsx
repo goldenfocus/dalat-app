@@ -38,7 +38,10 @@ export default async function TribePage({ params }: PageProps) {
   const t = await getTranslations("tribes");
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: tribe } = await supabase.from("tribes").select(`*, profiles:created_by(id, display_name, avatar_url, username), tribe_members(count)`).eq("slug", slug).single();
+  // NOTE: member count comes from tribes.member_count (trigger-maintained), not
+  // a tribe_members(count) aggregate. RLS is applied before aggregation, so the
+  // aggregate silently returned 0 for anyone who wasn't already a member.
+  const { data: tribe } = await supabase.from("tribes").select(`*, profiles:created_by(id, display_name, avatar_url, username)`).eq("slug", slug).single();
   if (!tribe) notFound();
 
   let membership = null;
@@ -56,6 +59,11 @@ export default async function TribePage({ params }: PageProps) {
   if (tribe.access_type === "secret" && !membership) notFound();
 
   const isAdmin = membership?.role === "leader" || membership?.role === "admin" || tribe.created_by === user?.id;
+
+  // Mirrors the browse filter in app/api/tribes/route.ts and the gate inside
+  // get_tribe_public_members(): only already-discoverable tribes expose a roster.
+  const isDiscoverable =
+    (tribe.access_type === "public" || tribe.access_type === "request") && tribe.is_listed;
 
   const eventsQuery = supabase.from("events").select("*, profiles:created_by(display_name, avatar_url)").eq("tribe_id", tribe.id).eq("status", "published").order("starts_at", { ascending: true });
   if (!membership) eventsQuery.eq("tribe_visibility", "public");
@@ -114,7 +122,10 @@ export default async function TribePage({ params }: PageProps) {
               <TribeEventsList events={events || []} locale={locale} />
             </section>
           }
-          membersSlot={membership ? <TribeMembersList tribeSlug={slug} isAdmin={isAdmin} /> : undefined}
+          // Discoverable tribes show their roster to everyone — seeing who runs
+          // a tribe and who's in it is the whole reason to join one. invite_only
+          // and secret tribes stay members-only.
+          membersSlot={(membership || isDiscoverable) ? <TribeMembersList tribeSlug={slug} isAdmin={isAdmin} /> : undefined}
         />
       </div>
     </main>

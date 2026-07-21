@@ -1732,7 +1732,15 @@
     "removeAvatar": "삭제",
     "avatarHint": "정사각형 이미지가 가장 좋아요 — 약 400×400.",
     "avatarUploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요.",
-    "createEvent": "이벤트 만들기"
+    "createEvent": "이벤트 만들기",
+    "joining": "참여 중...",
+    "sending": "보내는 중...",
+    "sendRequest": "요청 보내기",
+    "cancel": "취소",
+    "cancelling": "취소 중...",
+    "requestMessageDesc": "트라이브 관리자에게 메시지를 보내세요 (선택)",
+    "joinFailed": "참여하지 못했어요. 다시 시도할까요?",
+    "andMore": "+{count}명 더"
   },
   "feed": {
     "title": "피드",

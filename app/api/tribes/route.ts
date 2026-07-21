@@ -12,7 +12,10 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from('tribes')
-    .select(`*, profiles:created_by(id, display_name, avatar_url, username), tribe_members(count)`)
+    // Dropped the tribe_members(count) aggregate: RLS filtered it before
+    // aggregating, so it reported 0 to non-members. Callers should read
+    // tribes.member_count (trigger-maintained) instead.
+    .select(`*, profiles:created_by(id, display_name, avatar_url, username)`)
     .order('created_at', { ascending: false });
 
   // Admin users can see all tribes for moderation

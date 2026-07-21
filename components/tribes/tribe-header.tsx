@@ -32,7 +32,10 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
     secret: <EyeOff className="w-4 h-4" />,
   };
 
-  const memberCount = (tribe as Tribe & { tribe_members?: { count: number }[] }).tribe_members?.[0]?.count || 0;
+  // tribes.member_count is trigger-maintained and readable by everyone. The old
+  // tribe_members(count) aggregate was filtered by RLS before aggregating, so
+  // non-members always saw 0.
+  const memberCount = (tribe as Tribe & { member_count?: number }).member_count ?? 0;
 
   return (
     <>

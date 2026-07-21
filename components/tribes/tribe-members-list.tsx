@@ -22,6 +22,7 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
   const t = useTranslations("tribes");
   const router = useRouter();
   const [members, setMembers] = useState<MemberWithProfile[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
     if (res.ok) {
       const data = await res.json();
       setMembers(data.members || []);
+      setTotal(data.total ?? data.members?.length ?? 0);
     }
     setLoading(false);
   }
@@ -159,6 +161,14 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
           </div>
         ))}
       </div>
+
+      {/* Non-members get a capped roster. Without this the page would show 24
+          faces under a header reading "40 members" and explain nothing. */}
+      {total > members.length && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          {t("andMore", { count: total - members.length })}
+        </p>
+      )}
 
       {isAdmin && (
         <div className="mt-4">

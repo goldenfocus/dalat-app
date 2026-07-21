@@ -1729,7 +1729,15 @@
     "removeAvatar": "削除",
     "avatarHint": "正方形の画像がおすすめです — 約400×400。",
     "avatarUploadFailed": "アップロードに失敗しました。もう一度お試しください。",
-    "createEvent": "イベントを作成"
+    "createEvent": "イベントを作成",
+    "joining": "参加中...",
+    "sending": "送信中...",
+    "sendRequest": "リクエストを送る",
+    "cancel": "キャンセル",
+    "cancelling": "キャンセル中...",
+    "requestMessageDesc": "トライブの管理者にメッセージを送る（任意）",
+    "joinFailed": "参加できませんでした。もう一度試しますか？",
+    "andMore": "他 {count} 人"
   },
   "feed": {
     "title": "フィード",

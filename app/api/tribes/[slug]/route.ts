@@ -11,7 +11,9 @@ export async function GET(request: Request, { params }: RouteParams) {
 
   const { data: tribe, error } = await supabase
     .from('tribes')
-    .select(`*, profiles:created_by(id, display_name, avatar_url, username), tribe_members(count)`)
+    // Uses tribes.member_count; the tribe_members(count) aggregate was
+    // RLS-filtered and returned 0 for non-members.
+    .select(`*, profiles:created_by(id, display_name, avatar_url, username)`)
     .eq('slug', slug)
     .single();
 

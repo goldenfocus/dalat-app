@@ -1732,7 +1732,15 @@
     "removeAvatar": "Xóa",
     "avatarHint": "Ảnh vuông đẹp nhất — khoảng 400×400.",
     "avatarUploadFailed": "Tải lên thất bại. Vui lòng thử lại.",
-    "createEvent": "Tạo sự kiện"
+    "createEvent": "Tạo sự kiện",
+    "joining": "Đang tham gia...",
+    "sending": "Đang gửi...",
+    "sendRequest": "Gửi yêu cầu",
+    "cancel": "Hủy",
+    "cancelling": "Đang hủy...",
+    "requestMessageDesc": "Gửi lời nhắn cho quản trị viên bộ lạc (không bắt buộc)",
+    "joinFailed": "Chưa tham gia được. Thử lại nhé?",
+    "andMore": "+{count} thành viên nữa"
   },
   "feed": {
     "title": "Bảng tin",
