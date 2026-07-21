@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Copy, ImagePlus, Loader2, RefreshCw, Trash2, X } from "lucide-react";
 import { uploadFile } from "@/lib/storage/client";
+import { useShare } from "@/lib/hooks/use-share";
 import { finalizeSlug, sanitizeSlug } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
   const t = useTranslations("tribes");
   const [isPending, startTransition] = useTransition();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copyText, copied } = useShare();
 
   const [name, setName] = useState(tribe.name);
   // Deliberately not derived from `name` — renaming a live tribe shouldn't silently
@@ -167,14 +168,19 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
   }
 
   function handleCopyCode() {
-    if (inviteCode) {
-      navigator.clipboard.writeText(inviteCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    // Routed through useShare's copyText for its document.execCommand fallback:
+    // navigator.clipboard is unavailable in several in-app browsers (Zalo,
+    // Facebook), where the raw call silently rejected and nothing was copied.
+    if (inviteCode) copyText(inviteCode);
   }
 
-  const inviteUrl = inviteCode ? `${window.location.origin}/tribes/join/${inviteCode}` : null;
+  // Built lazily, not during render: this component is server-rendered as part
+  // of the tribe header, and `window` does not exist there.
+  const inviteUrl = inviteCode ? `/tribes/join/${inviteCode}` : null;
+
+  function handleCopyLink() {
+    if (inviteUrl) copyText(`${window.location.origin}${inviteUrl}`);
+  }
 
   return (
     <>
@@ -389,9 +395,17 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
                 </div>
                 {copied && <p className="text-sm text-green-600">{t("codeCopied")}</p>}
                 {inviteUrl && (
-                  <p className="text-xs text-muted-foreground break-all">
-                    {t("shareLink")}: {inviteUrl}
-                  </p>
+                  <div className="space-y-1">
+                    <Label className="text-xs">{t("shareLink")}</Label>
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className="w-full text-left text-xs text-muted-foreground break-all px-3 py-2 -mx-1 rounded-lg hover:text-foreground active:text-foreground active:scale-95 transition-all"
+                    >
+                      {inviteUrl}
+                    </button>
+                    <p className="text-xs text-muted-foreground">{t("copyLink")}</p>
+                  </div>
                 )}
               </div>
             )}

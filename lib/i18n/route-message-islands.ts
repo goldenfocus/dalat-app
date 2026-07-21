@@ -140,7 +140,14 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
   },
   {
     test: (p) => inSection(p, "tribes", "contacts"),
-    namespaces: ["tribes", "contacts"],
+    // "contacts" dropped: its only two consumers (components/tribe/contact-*)
+    // were deleted with the orphaned contacts stack, and no /contacts route
+    // exists. "invite" added: TribeInviteModal embeds the SHARED
+    // components/shared/invitee-input.tsx, which calls
+    // useTranslations("invite"). Without it registered here the chip input
+    // renders raw keys — and only once the modal is opened, which no prebuild
+    // guard can catch.
+    namespaces: ["tribes", "invite"],
   },
   {
     test: (p) => inSection(p, "profile"),

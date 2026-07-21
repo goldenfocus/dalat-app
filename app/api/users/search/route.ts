@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Escape a user-supplied term for use inside a PostgREST `.or()` filter string.
+ *
+ * `.or()` takes a comma-separated list of `column.op.value` clauses, so a raw
+ * comma or parenthesis in `query` does not merely fail to match — it changes
+ * the SHAPE of the filter (splitting a clause, closing a group). This term was
+ * previously spliced in unescaped. PostgREST allows a double-quoted value with
+ * `\` and `"` backslash-escaped inside, which neutralises every structural
+ * character in one step.
+ *
+ * `%` and `_` are stripped as well: they are ILIKE wildcards, and letting a
+ * searcher inject `%` turns a two-character search into "match everything" —
+ * the whole user directory in one request.
+ */
+function escapeOrFilterValue(value: string): { pattern: string; isEmpty: boolean } {
+  const escaped = value
+    .replace(/[%_]/g, "")
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"');
+  return { pattern: `"%${escaped}%"`, isEmpty: escaped.length === 0 };
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get("q")?.trim();
@@ -11,7 +33,6 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
 
-  // Check if user is admin
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -26,17 +47,50 @@ export async function GET(request: NextRequest) {
     .eq("id", user.id)
     .single();
 
-  if (!profile || !["superadmin", "admin", "moderator"].includes(profile.role)) {
+  const isStaff =
+    !!profile && ["superadmin", "admin", "moderator"].includes(profile.role);
+
+  // Tribe leaders need user search to invite by username — without it their
+  // dropdown was silently empty. Anyone can create a tribe and become its
+  // leader, so in practice this approaches "any signed-in user"; the
+  // `discoverable` filter below is the mitigation, and it is why escaping the
+  // term is a precondition of this widening rather than a separate cleanup.
+  let isTribeLeader = false;
+  if (!isStaff) {
+    const { data: leaderships } = await supabase
+      .from("tribe_members")
+      .select("id")
+      .eq("user_id", user.id)
+      .in("role", ["leader", "admin"])
+      .eq("status", "active")
+      .limit(1);
+    isTribeLeader = (leaderships?.length ?? 0) > 0;
+  }
+
+  if (!isStaff && !isTribeLeader) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Search users by username or display_name
-  const { data: users, error } = await supabase
+  const { pattern, isEmpty } = escapeOrFilterValue(query);
+  // Stripping wildcards can empty the term (e.g. q="%%"), and `%%` matches
+  // every profile — bail rather than dumping the directory.
+  if (isEmpty) {
+    return NextResponse.json({ users: [] });
+  }
+
+  let builder = supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url")
-    .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
-    .eq("is_ghost", false)
-    .limit(10);
+    .or(`username.ilike.${pattern},display_name.ilike.${pattern}`)
+    .eq("is_ghost", false);
+
+  // Profile opt-out, honoured for leaders only: moderation tools must still be
+  // able to find everyone, and staff already have unrestricted profile access.
+  if (!isStaff) {
+    builder = builder.eq("discoverable", true);
+  }
+
+  const { data: users, error } = await builder.limit(10);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

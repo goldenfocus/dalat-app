@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "เพิ่มได้เฉพาะคนที่มีบัญชี ĐàLạt.app — ค้นหาด้วยชื่อหรือ @ชื่อผู้ใช้",
     "markAttended": "เพิ่มผู้เข้าร่วม {count} คน",
     "attendedCelebrationTitle": "อัปเดตรายชื่อแล้ว!",
-    "attendedSuccess": "เพิ่ม {count} คนเข้ารายชื่อผู้ร่วมงานแล้ว"
+    "attendedSuccess": "เพิ่ม {count} คนเข้ารายชื่อผู้ร่วมงานแล้ว",
+    "searchFailed": "ตอนนี้ค้นหาผู้ใช้ไม่ได้"
   },
   "moments": {
     "moments": "โมเมนต์",
@@ -1755,7 +1756,32 @@
     "shareTribe": "แชร์ Tribe",
     "shareTribeText": "{name} บน dalat.app — มาเจอก๊วนของคุณกัน",
     "shareLink": "ลิงก์แชร์",
-    "copied": "คัดลอกแล้ว!"
+    "copied": "คัดลอกแล้ว!",
+    "inviteToTribe": "ชวนเข้าไทรบ์",
+    "inviteModalDescription": "ชวนเพื่อนด้วยอีเมลหรือ @ชื่อผู้ใช้",
+    "inviteePlaceholder": "email@example.com หรือ @ชื่อผู้ใช้",
+    "inviteNoteLabel": "เพิ่มข้อความ (ไม่บังคับ)",
+    "inviteNotePlaceholder": "มาแฮงก์เอาต์กับเราสิ…",
+    "sendInvites": "ส่งคำเชิญ",
+    "inviteSending": "กำลังส่งคำเชิญ…",
+    "inviteNeedsRecipient": "เพิ่มอีเมลหรือ @ชื่อผู้ใช้ก่อน",
+    "inviteSent": "ส่งไปแล้ว {count} รายการ!",
+    "inviteSomeFailed": "{count} รายการส่งไม่สำเร็จ",
+    "inviteFailed": "ส่งคำเชิญไม่สำเร็จ ลองอีกครั้งไหม",
+    "inviteNotAuthorized": "เฉพาะหัวหน้าไทรบ์เท่านั้นที่ชวนคนได้",
+    "inviteQuotaExceeded": "คุณส่งคำเชิญครบโควตาแล้ว ลองใหม่พรุ่งนี้",
+    "inviteQuotaRemaining": "วันนี้เหลืออีก {count} คำเชิญ",
+    "shareInstead": "หรือแค่แชร์ลิงก์",
+    "copyLink": "คัดลอกลิงก์",
+    "inviteHeading": "{inviter} ชวนคุณเข้าร่วม {name}",
+    "inviteLandingSubtitle": "แตะด้านล่างแล้วเข้าร่วมได้เลย",
+    "inviteNotFoundTitle": "ไม่พบคำเชิญนี้",
+    "inviteNotFoundDescription": "ลิงก์คำเชิญนี้ไม่ถูกต้องหรือถูกยกเลิกแล้ว",
+    "inviteSignInFirst": "เข้าสู่ระบบเพื่อเข้าร่วม",
+    "inviteAcceptFailed": "เข้าร่วมไม่สำเร็จ ลองอีกครั้งไหม",
+    "inviteAlreadyMemberNote": "คุณเป็นสมาชิกไทรบ์นี้อยู่แล้ว",
+    "memberCount": "สมาชิก {count} คน",
+    "viewTribe": "ดูไทรบ์"
   },
   "feed": {
     "title": "ฟีด",

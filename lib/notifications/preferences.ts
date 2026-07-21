@@ -48,6 +48,9 @@ const DEFAULT_CHANNELS: Record<NotificationType, NotificationChannel[]> = {
   tribe_request_approved: ['in_app', 'push'],
   tribe_request_rejected: ['in_app'],
   tribe_new_event: ['in_app', 'push'],
+  // Username invites go in-app + push only. The email path never calls notify()
+  // — it goes through sendEmailInvitation() directly, like event invitations.
+  tribe_invitation: ['in_app', 'push'],
 
   // Comment notifications - in-app + push for direct interactions
   comment_on_event: ['in_app', 'push'],

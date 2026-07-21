@@ -120,6 +120,8 @@ export interface Profile {
   role: UserRole;
   is_ghost?: boolean;
   can_blog?: boolean;
+  /** Opt-out of tribe-leader user search. Defaults true (migration 20261018). */
+  discoverable?: boolean;
   follower_count?: number;
   following_count?: number;
   created_at: string;
@@ -347,6 +349,51 @@ export interface TribeRequest {
   // Joined data
   profiles?: Profile;
   tribes?: Tribe;
+}
+
+export type TribeInvitationStatus = 'pending' | 'sent' | 'viewed' | 'accepted';
+
+export interface TribeInvitation {
+  id: string;
+  tribe_id: string;
+  invited_by: string;
+  /** Real address, or the synthetic `user-<uuid>@dalat.app` for username invites. */
+  email: string;
+  name: string | null;
+  token: string;
+  status: TribeInvitationStatus;
+  claimed_by: string | null;
+  personal_note: string | null;
+  sent_at: string | null;
+  viewed_at: string | null;
+  accepted_at: string | null;
+  created_at: string;
+}
+
+/** Shape returned by the `get_tribe_invitation_by_token` RPC. */
+export interface TribeInvitationByToken {
+  id: string;
+  email: string;
+  name: string | null;
+  status: TribeInvitationStatus;
+  claimed_by: string | null;
+  personal_note: string | null;
+  accepted_at: string | null;
+  tribe: {
+    id: string;
+    slug: string;
+    name: string;
+    description: string | null;
+    cover_image_url: string | null;
+    access_type: TribeAccessType;
+    settings: TribeSettings | null;
+    member_count: number | null;
+  };
+  inviter: {
+    display_name: string | null;
+    username: string | null;
+    avatar_url: string | null;
+  };
 }
 
 // ============================================

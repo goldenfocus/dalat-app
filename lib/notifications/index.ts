@@ -232,6 +232,7 @@ import type {
   UserInvitationPayload,
   TribeRequestApprovedPayload,
   TribeRequestRejectedPayload,
+  TribeInvitationPayload,
 } from './types';
 import type { Locale } from '@/lib/types';
 
@@ -408,18 +409,51 @@ export async function notifyUserInvitation(
   return notify(payload);
 }
 
+/**
+ * Look up recipients' own locales.
+ *
+ * The four tribe notifications below hardcoded `locale: 'en'` since they were
+ * written, so a Vietnamese member got English push notifications while the
+ * event path (which does look up profiles.locale) got it right. Missing rows
+ * fall back to 'en' — the same behaviour as before, just no longer the only
+ * behaviour.
+ */
+async function getUserLocales(userIds: string[]): Promise<Map<string, Locale>> {
+  const locales = new Map<string, Locale>();
+  if (userIds.length === 0) return locales;
+
+  const supabase = createServiceClient();
+  if (!supabase) return locales;
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, locale')
+    .in('id', userIds);
+
+  if (error) {
+    console.error('[notifications] locale lookup failed:', error.message);
+    return locales;
+  }
+
+  for (const row of data ?? []) {
+    if (row.locale) locales.set(row.id, row.locale as Locale);
+  }
+  return locales;
+}
+
 export async function notifyTribeJoinRequest(
   adminIds: string[],
   requesterName: string,
   tribeName: string,
   tribeSlug: string
 ) {
+  const locales = await getUserLocales(adminIds);
   return notifyMultiple(
     adminIds,
     (userId) => ({
       type: 'tribe_join_request',
       userId,
-      locale: 'en', // Default to English for admin notifications
+      locale: locales.get(userId) ?? 'en',
       requesterName,
       tribeName,
       tribeSlug,
@@ -432,10 +466,11 @@ export async function notifyTribeRequestApproved(
   tribeName: string,
   tribeSlug: string
 ) {
+  const locales = await getUserLocales([userId]);
   const payload: TribeRequestApprovedPayload = {
     type: 'tribe_request_approved',
     userId,
-    locale: 'en',
+    locale: locales.get(userId) ?? 'en',
     tribeName,
     tribeSlug,
   };
@@ -446,10 +481,11 @@ export async function notifyTribeRequestRejected(
   userId: string,
   tribeName: string
 ) {
+  const locales = await getUserLocales([userId]);
   const payload: TribeRequestRejectedPayload = {
     type: 'tribe_request_rejected',
     userId,
-    locale: 'en',
+    locale: locales.get(userId) ?? 'en',
     tribeName,
   };
   return notify(payload, { channels: ['in_app'] }); // Only in-app for rejections
@@ -461,15 +497,43 @@ export async function notifyTribeNewEvent(
   eventSlug: string,
   tribeName: string
 ) {
+  const locales = await getUserLocales(memberIds);
   return notifyMultiple(
     memberIds,
     (userId) => ({
       type: 'tribe_new_event',
       userId,
-      locale: 'en',
+      locale: locales.get(userId) ?? 'en',
       eventTitle,
       eventSlug,
       tribeName,
     })
   );
+}
+
+/**
+ * Invite an existing user to a tribe — in-app + push in THEIR locale, no email.
+ * The email path never comes through here; it calls sendEmailInvitation()
+ * directly, exactly like event invitations do.
+ */
+export async function notifyTribeInvitation(
+  userId: string,
+  locale: Locale,
+  tribeName: string,
+  tribeSlug: string,
+  inviterName: string,
+  token: string,
+  personalNote?: string | null
+) {
+  const payload: TribeInvitationPayload = {
+    type: 'tribe_invitation',
+    userId,
+    locale,
+    tribeName,
+    tribeSlug,
+    inviterName,
+    token,
+    personalNote: personalNote ?? null,
+  };
+  return notify(payload);
 }

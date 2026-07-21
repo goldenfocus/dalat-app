@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "只能添加拥有 ĐàLạt.app 账户的人 — 请按姓名或 @用户名搜索",
     "markAttended": "添加 {count} 位参加者",
     "attendedCelebrationTitle": "参加名单已更新！",
-    "attendedSuccess": "已将 {count} 人加入参加名单"
+    "attendedSuccess": "已将 {count} 人加入参加名单",
+    "searchFailed": "暂时无法搜索用户。"
   },
   "moments": {
     "moments": "瞬间",
@@ -1758,7 +1759,32 @@
     "shareTribe": "分享部落",
     "shareTribeText": "dalat.app 上的 {name} — 来找到你的同伴。",
     "shareLink": "分享链接",
-    "copied": "已复制！"
+    "copied": "已复制！",
+    "inviteToTribe": "邀请加入部落",
+    "inviteModalDescription": "用邮箱或 @用户名邀请伙伴。",
+    "inviteePlaceholder": "email@example.com 或 @用户名",
+    "inviteNoteLabel": "附上留言（可选）",
+    "inviteNotePlaceholder": "一起来玩吧……",
+    "sendInvites": "发送邀请",
+    "inviteSending": "正在发送邀请……",
+    "inviteNeedsRecipient": "请先添加邮箱或 @用户名。",
+    "inviteSent": "已发出 {count} 份邀请！",
+    "inviteSomeFailed": "有 {count} 份没能发出。",
+    "inviteFailed": "邀请没发出去，再试一次？",
+    "inviteNotAuthorized": "只有部落主理人可以邀请他人。",
+    "inviteQuotaExceeded": "邀请次数已达上限，明天再来吧。",
+    "inviteQuotaRemaining": "今天还剩 {count} 份邀请",
+    "shareInstead": "或者直接分享链接",
+    "copyLink": "复制链接",
+    "inviteHeading": "{inviter} 邀请你加入 {name}",
+    "inviteLandingSubtitle": "点一下就加入。",
+    "inviteNotFoundTitle": "找不到这份邀请",
+    "inviteNotFoundDescription": "该邀请链接无效或已被撤回。",
+    "inviteSignInFirst": "登录后加入",
+    "inviteAcceptFailed": "加入失败，再试一次？",
+    "inviteAlreadyMemberNote": "你已经是这个部落的成员了。",
+    "memberCount": "{count} 位成员",
+    "viewTribe": "查看部落"
   },
   "feed": {
     "title": "动态",

@@ -3,13 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Settings, Lock, Globe, Eye, EyeOff } from "lucide-react";
+import { Settings, Lock, Globe, Eye, EyeOff, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TribeSettingsModal } from "./tribe-settings-modal";
 import { TribeRequestsModal } from "./tribe-requests-modal";
 import { TribeShareButton } from "./tribe-share-button";
+import { TribeInviteModal } from "./tribe-invite-modal";
 import type { Tribe, TribeMember } from "@/lib/types";
 
 interface TribeHeaderProps {
@@ -25,6 +26,7 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
   const t = useTranslations("tribes");
   const [showSettings, setShowSettings] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
 
   const accessIcon = {
     public: <Globe className="w-4 h-4" />,
@@ -109,6 +111,16 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
                   <TribeShareButton tribe={tribe} inviteCode={isAdmin ? tribe.invite_code : null} />
                   {isAdmin && (
                     <>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setShowInvite(true)}
+                        className="h-11 w-11"
+                        title={t("inviteToTribe")}
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        <span className="sr-only">{t("inviteToTribe")}</span>
+                      </Button>
                       {tribe.access_type === "request" && (
                         <Button
                           variant="outline"
@@ -167,6 +179,12 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
             tribeSlug={tribe.slug}
             open={showRequests}
             onOpenChange={setShowRequests}
+          />
+          <TribeInviteModal
+            tribe={tribe}
+            inviteCode={tribe.invite_code}
+            open={showInvite}
+            onOpenChange={setShowInvite}
           />
         </>
       )}

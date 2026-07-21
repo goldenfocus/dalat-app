@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "ĐàLạt.app のアカウントをお持ちの方のみ追加できます — 名前または@ユーザー名で検索してください",
     "markAttended": "{count}人の参加者を追加",
     "attendedCelebrationTitle": "参加者リストを更新しました！",
-    "attendedSuccess": "{count}人を参加者に追加しました"
+    "attendedSuccess": "{count}人を参加者に追加しました",
+    "searchFailed": "現在ユーザーを検索できません。"
   },
   "moments": {
     "moments": "モーメント",
@@ -1755,7 +1756,32 @@
     "shareTribe": "トライブをシェア",
     "shareTribeText": "dalat.app の {name} — 仲間を見つけよう。",
     "shareLink": "共有リンク",
-    "copied": "コピーしました！"
+    "copied": "コピーしました！",
+    "inviteToTribe": "トライブに招待",
+    "inviteModalDescription": "メールまたは@ユーザー名で招待できます。",
+    "inviteePlaceholder": "email@example.com または @ユーザー名",
+    "inviteNoteLabel": "メッセージを添える（任意）",
+    "inviteNotePlaceholder": "一緒に遊びましょう…",
+    "sendInvites": "招待を送る",
+    "inviteSending": "招待を送信中…",
+    "inviteNeedsRecipient": "先にメールか@ユーザー名を追加してください。",
+    "inviteSent": "{count}件送信しました！",
+    "inviteSomeFailed": "{count}件は送信できませんでした。",
+    "inviteFailed": "招待を送れませんでした。もう一度試しますか？",
+    "inviteNotAuthorized": "トライブのリーダーだけが招待できます。",
+    "inviteQuotaExceeded": "招待の上限に達しました。明日また試してください。",
+    "inviteQuotaRemaining": "本日あと{count}件招待できます",
+    "shareInstead": "またはリンクを共有",
+    "copyLink": "リンクをコピー",
+    "inviteHeading": "{inviter}さんが{name}に招待しました",
+    "inviteLandingSubtitle": "下をタップすれば参加完了です。",
+    "inviteNotFoundTitle": "招待が見つかりません",
+    "inviteNotFoundDescription": "この招待リンクは無効か、取り消されています。",
+    "inviteSignInFirst": "ログインして参加",
+    "inviteAcceptFailed": "参加できませんでした。もう一度試しますか？",
+    "inviteAlreadyMemberNote": "すでにこのトライブのメンバーです。",
+    "memberCount": "メンバー{count}人",
+    "viewTribe": "トライブを見る"
   },
   "feed": {
     "title": "フィード",

@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "Chỉ có thể thêm người có tài khoản ĐàLạt.app — tìm theo tên hoặc @tên người dùng",
     "markAttended": "Thêm {count} người tham gia",
     "attendedCelebrationTitle": "Đã cập nhật danh sách!",
-    "attendedSuccess": "Đã thêm {count} người vào danh sách tham gia"
+    "attendedSuccess": "Đã thêm {count} người vào danh sách tham gia",
+    "searchFailed": "Hiện không tìm được người dùng."
   },
   "moments": {
     "moments": "Khoảnh khắc",
@@ -1758,7 +1759,32 @@
     "shareTribe": "Chia sẻ bộ tộc",
     "shareTribeText": "{name} trên dalat.app — vào tìm hội của bạn nhé.",
     "shareLink": "Liên kết chia sẻ",
-    "copied": "Đã sao chép!"
+    "copied": "Đã sao chép!",
+    "inviteToTribe": "Mời vào tribe",
+    "inviteModalDescription": "Mời mọi người bằng email hoặc @tên người dùng.",
+    "inviteePlaceholder": "email@vidu.com hoặc @tenNguoiDung",
+    "inviteNoteLabel": "Thêm lời nhắn (tuỳ chọn)",
+    "inviteNotePlaceholder": "Qua chơi với tụi mình nhé…",
+    "sendInvites": "Gửi lời mời",
+    "inviteSending": "Đang gửi lời mời…",
+    "inviteNeedsRecipient": "Hãy thêm email hoặc @tên người dùng trước.",
+    "inviteSent": "Đã gửi {count} lời mời!",
+    "inviteSomeFailed": "{count} lời mời không gửi được.",
+    "inviteFailed": "Không gửi được lời mời. Thử lại nhé?",
+    "inviteNotAuthorized": "Chỉ trưởng tribe mới mời được người khác.",
+    "inviteQuotaExceeded": "Bạn đã đạt giới hạn lời mời. Thử lại vào ngày mai nhé.",
+    "inviteQuotaRemaining": "Còn {count} lời mời hôm nay",
+    "shareInstead": "Hoặc chỉ cần chia sẻ link",
+    "copyLink": "Sao chép link",
+    "inviteHeading": "{inviter} đã mời bạn tham gia {name}",
+    "inviteLandingSubtitle": "Bấm bên dưới là bạn vào ngay.",
+    "inviteNotFoundTitle": "Không tìm thấy lời mời",
+    "inviteNotFoundDescription": "Link mời này không hợp lệ hoặc đã bị thu hồi.",
+    "inviteSignInFirst": "Đăng nhập để tham gia",
+    "inviteAcceptFailed": "Không tham gia được. Thử lại nhé?",
+    "inviteAlreadyMemberNote": "Bạn đã là thành viên của tribe này.",
+    "memberCount": "{count} thành viên",
+    "viewTribe": "Xem tribe"
   },
   "feed": {
     "title": "Bảng tin",

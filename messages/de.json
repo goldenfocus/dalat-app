@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "Es können nur Personen mit einem ĐàLạt.app-Konto hinzugefügt werden — suche nach Name oder @Benutzername",
     "markAttended": "{count} Teilnehmer hinzufügen",
     "attendedCelebrationTitle": "Gästeliste aktualisiert!",
-    "attendedSuccess": "{count} Person(en) zu den Teilnehmern hinzugefügt"
+    "attendedSuccess": "{count} Person(en) zu den Teilnehmern hinzugefügt",
+    "searchFailed": "Personensuche gerade nicht möglich."
   },
   "moments": {
     "moments": "Moments",
@@ -1755,7 +1756,32 @@
     "shareTribe": "Tribe teilen",
     "shareTribeText": "{name} auf dalat.app — komm, finde deine Leute.",
     "shareLink": "Link teilen",
-    "copied": "Kopiert!"
+    "copied": "Kopiert!",
+    "inviteToTribe": "Zum Tribe einladen",
+    "inviteModalDescription": "Lade Leute per E-Mail oder @Benutzername ein.",
+    "inviteePlaceholder": "email@beispiel.com oder @benutzername",
+    "inviteNoteLabel": "Notiz hinzufügen (optional)",
+    "inviteNotePlaceholder": "Komm doch dazu…",
+    "sendInvites": "Einladungen senden",
+    "inviteSending": "Einladungen werden gesendet…",
+    "inviteNeedsRecipient": "Füge zuerst eine E-Mail oder einen @Benutzernamen hinzu.",
+    "inviteSent": "{count} unterwegs!",
+    "inviteSomeFailed": "{count} konnten nicht gesendet werden.",
+    "inviteFailed": "Die Einladungen konnten nicht gesendet werden. Nochmal versuchen?",
+    "inviteNotAuthorized": "Nur Tribe-Leiter können Leute einladen.",
+    "inviteQuotaExceeded": "Du hast dein Einladungslimit erreicht. Versuch es morgen nochmal.",
+    "inviteQuotaRemaining": "Heute noch {count} Einladungen übrig",
+    "shareInstead": "Oder teile einfach den Link",
+    "copyLink": "Link kopieren",
+    "inviteHeading": "{inviter} lädt dich zu {name} ein",
+    "inviteLandingSubtitle": "Unten tippen und du bist dabei.",
+    "inviteNotFoundTitle": "Einladung nicht gefunden",
+    "inviteNotFoundDescription": "Dieser Einladungslink ist ungültig oder wurde zurückgezogen.",
+    "inviteSignInFirst": "Anmelden zum Beitreten",
+    "inviteAcceptFailed": "Beitritt fehlgeschlagen. Nochmal versuchen?",
+    "inviteAlreadyMemberNote": "Du bist schon Teil dieses Tribes.",
+    "memberCount": "{count} Mitglieder",
+    "viewTribe": "Tribe ansehen"
   },
   "feed": {
     "title": "Feed",

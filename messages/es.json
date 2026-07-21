@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "Solo se pueden añadir personas con cuenta de ĐàLạt.app — busca por nombre o @nombre de usuario",
     "markAttended": "Añadir {count} asistente(s)",
     "attendedCelebrationTitle": "¡Lista actualizada!",
-    "attendedSuccess": "{count} persona(s) añadida(s) a los asistentes"
+    "attendedSuccess": "{count} persona(s) añadida(s) a los asistentes",
+    "searchFailed": "Ahora mismo no se puede buscar personas."
   },
   "moments": {
     "moments": "Momentos",
@@ -1755,7 +1756,32 @@
     "shareTribe": "Compartir Tribe",
     "shareTribeText": "{name} en dalat.app — ven a encontrar a los tuyos.",
     "shareLink": "Enlace para compartir",
-    "copied": "¡Copiado!"
+    "copied": "¡Copiado!",
+    "inviteToTribe": "Invitar a la tribu",
+    "inviteModalDescription": "Invita por correo o @nombre de usuario.",
+    "inviteePlaceholder": "email@ejemplo.com o @usuario",
+    "inviteNoteLabel": "Añade una nota (opcional)",
+    "inviteNotePlaceholder": "Vente con nosotros…",
+    "sendInvites": "Enviar invitaciones",
+    "inviteSending": "Enviando invitaciones…",
+    "inviteNeedsRecipient": "Añade primero un correo o @usuario.",
+    "inviteSent": "¡{count} en camino!",
+    "inviteSomeFailed": "{count} no se pudieron enviar.",
+    "inviteFailed": "No se pudieron enviar las invitaciones. ¿Reintentar?",
+    "inviteNotAuthorized": "Solo los líderes de la tribu pueden invitar.",
+    "inviteQuotaExceeded": "Has alcanzado tu límite de invitaciones. Inténtalo mañana.",
+    "inviteQuotaRemaining": "Te quedan {count} invitaciones hoy",
+    "shareInstead": "O simplemente comparte el enlace",
+    "copyLink": "Copiar enlace",
+    "inviteHeading": "{inviter} te invita a unirte a {name}",
+    "inviteLandingSubtitle": "Toca abajo y ya estás dentro.",
+    "inviteNotFoundTitle": "Invitación no encontrada",
+    "inviteNotFoundDescription": "Este enlace de invitación no es válido o fue retirado.",
+    "inviteSignInFirst": "Inicia sesión para unirte",
+    "inviteAcceptFailed": "No se pudo unir. ¿Reintentar?",
+    "inviteAlreadyMemberNote": "Ya formas parte de esta tribu.",
+    "memberCount": "{count} miembros",
+    "viewTribe": "Ver la tribu"
   },
   "feed": {
     "title": "Feed",

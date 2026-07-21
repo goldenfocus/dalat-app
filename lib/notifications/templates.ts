@@ -19,6 +19,7 @@ import type {
   TribeRequestApprovedPayload,
   TribeRequestRejectedPayload,
   TribeNewEventPayload,
+  TribeInvitationPayload,
   CommentOnEventPayload,
   CommentOnMomentPayload,
   ReplyToCommentPayload,
@@ -774,6 +775,100 @@ function tribeRequestRejectedTemplate(payload: TribeRequestRejectedPayload): Tem
   };
 }
 
+// ============================================
+// Tribe invitation — ALL 12 locales
+//
+// Unlike the four older tribe notifications (en/fr/vi only), this one carries
+// every locale: the username path notifies a known account, so we always know
+// the recipient's real language and there is no excuse to fall back to English.
+// ============================================
+
+const tribeInviteStrings: {
+  title: Record<Locale, (inviter: string, tribe: string) => string>;
+  body: Record<Locale, (tribe: string) => string>;
+  cta: Record<Locale, string>;
+} = {
+  title: {
+    en: (inviter, tribe) => `${inviter} invited you to join ${tribe}`,
+    vi: (inviter, tribe) => `${inviter} đã mời bạn tham gia ${tribe}`,
+    ko: (inviter, tribe) => `${inviter}님이 ${tribe}에 초대했어요`,
+    zh: (inviter, tribe) => `${inviter} 邀请你加入 ${tribe}`,
+    ru: (inviter, tribe) => `${inviter} приглашает вас в ${tribe}`,
+    fr: (inviter, tribe) => `${inviter} vous invite à rejoindre ${tribe}`,
+    ja: (inviter, tribe) => `${inviter}さんが${tribe}に招待しました`,
+    ms: (inviter, tribe) => `${inviter} menjemput anda menyertai ${tribe}`,
+    th: (inviter, tribe) => `${inviter} ชวนคุณเข้าร่วม ${tribe}`,
+    de: (inviter, tribe) => `${inviter} lädt dich zu ${tribe} ein`,
+    es: (inviter, tribe) => `${inviter} te invita a unirte a ${tribe}`,
+    id: (inviter, tribe) => `${inviter} mengundangmu bergabung dengan ${tribe}`,
+  },
+  body: {
+    en: (tribe) => `${tribe} is waiting for you on dalat.app.`,
+    vi: (tribe) => `${tribe} đang chờ bạn trên dalat.app.`,
+    ko: (tribe) => `${tribe}이(가) dalat.app에서 기다리고 있어요.`,
+    zh: (tribe) => `${tribe} 正在 dalat.app 等你。`,
+    ru: (tribe) => `${tribe} ждёт вас на dalat.app.`,
+    fr: (tribe) => `${tribe} vous attend sur dalat.app.`,
+    ja: (tribe) => `${tribe}がdalat.appであなたを待っています。`,
+    ms: (tribe) => `${tribe} menunggu anda di dalat.app.`,
+    th: (tribe) => `${tribe} กำลังรอคุณอยู่ที่ dalat.app`,
+    de: (tribe) => `${tribe} wartet auf dich auf dalat.app.`,
+    es: (tribe) => `${tribe} te espera en dalat.app.`,
+    id: (tribe) => `${tribe} menunggumu di dalat.app.`,
+  },
+  cta: {
+    en: 'Join the tribe',
+    vi: 'Tham gia tribe',
+    ko: '트라이브 참여하기',
+    zh: '加入部落',
+    ru: 'Вступить в трайб',
+    fr: 'Rejoindre la tribu',
+    ja: 'トライブに参加',
+    ms: 'Sertai tribe',
+    th: 'เข้าร่วมไทรบ์',
+    de: 'Tribe beitreten',
+    es: 'Unirme a la tribu',
+    id: 'Gabung tribe',
+  },
+};
+
+function tribeInvitationTemplate(payload: TribeInvitationPayload): TemplateResult {
+  const locale = payload.locale;
+  // Token URL, not /tribes/{slug}: the token is what records the accept and
+  // populates tribe_members.invited_by, and it is the only thing that works
+  // for an invite_only or secret tribe.
+  const inviteUrl = `${getBaseUrl()}/tribes/invite/${payload.token}`;
+
+  const title = tribeInviteStrings.title[locale](payload.inviterName, payload.tribeName);
+  const note = payload.personalNote?.trim();
+  const body = note || tribeInviteStrings.body[locale](payload.tribeName);
+  const cta = tribeInviteStrings.cta[locale];
+
+  return {
+    inApp: {
+      title,
+      body,
+      primaryActionUrl: inviteUrl,
+      primaryActionLabel: cta,
+    },
+    push: {
+      title,
+      body,
+      primaryActionUrl: inviteUrl,
+      tag: `tribe-invite-${payload.tribeSlug}`,
+      requireInteraction: true,
+    },
+    email: {
+      title,
+      body,
+      subject: `${title} ${getRandomSubjectEmoji()}`,
+      primaryActionUrl: inviteUrl,
+      primaryActionLabel: cta,
+      text: [title, '', body, '', `${cta}: ${inviteUrl}`, '', getRandomInspiringFooter()].join('\n'),
+    },
+  };
+}
+
 function tribeNewEventTemplate(payload: TribeNewEventPayload): TemplateResult {
   const locale = getNotificationLocale(payload.locale);
   const eventUrl = `${getBaseUrl()}/events/${payload.eventSlug}`;
@@ -1282,6 +1377,8 @@ export function getNotificationTemplate(payload: NotificationPayload): TemplateR
       return tribeRequestRejectedTemplate(payload);
     case 'tribe_new_event':
       return tribeNewEventTemplate(payload);
+    case 'tribe_invitation':
+      return tribeInvitationTemplate(payload);
     // Comment notifications
     case 'comment_on_event':
       return commentOnEventTemplate(payload);

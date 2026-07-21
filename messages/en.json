@@ -1409,7 +1409,8 @@
     "attendedNeedsAccount": "Only people with a ĐàLạt.app account can be added — search by name or @username",
     "markAttended": "Add {count} attendee(s)",
     "attendedCelebrationTitle": "Guest list updated!",
-    "attendedSuccess": "{count} attendee(s) added"
+    "attendedSuccess": "{count} attendee(s) added",
+    "searchFailed": "Couldn't search people right now."
   },
   "celebration": {
     "title": "You just made Da Lat better!",
@@ -1869,7 +1870,32 @@
     "shareTribe": "Share tribe",
     "shareTribeText": "{name} on dalat.app — come find your people.",
     "shareLink": "Share link",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "inviteToTribe": "Invite to tribe",
+    "inviteModalDescription": "Bring people in by email or @username.",
+    "inviteePlaceholder": "email@example.com or @username",
+    "inviteNoteLabel": "Add a note (optional)",
+    "inviteNotePlaceholder": "Come hang out with us…",
+    "sendInvites": "Send invites",
+    "inviteSending": "Sending invites…",
+    "inviteNeedsRecipient": "Add an email or @username first.",
+    "inviteSent": "{count} on the way!",
+    "inviteSomeFailed": "{count} couldn't be sent.",
+    "inviteFailed": "Couldn't send those invites. Try again?",
+    "inviteNotAuthorized": "Only tribe leaders can invite people.",
+    "inviteQuotaExceeded": "You've hit your invite limit for now. Try again tomorrow.",
+    "inviteQuotaRemaining": "{count} invites left today",
+    "shareInstead": "Or just share the link",
+    "copyLink": "Copy link",
+    "inviteHeading": "{inviter} invited you to join {name}",
+    "inviteLandingSubtitle": "Tap below and you're in.",
+    "inviteNotFoundTitle": "Invitation not found",
+    "inviteNotFoundDescription": "This invite link is invalid or was withdrawn.",
+    "inviteSignInFirst": "Sign in to join",
+    "inviteAcceptFailed": "Couldn't join. Try again?",
+    "inviteAlreadyMemberNote": "You're already part of this tribe.",
+    "memberCount": "{count} members",
+    "viewTribe": "View tribe"
   },
   "feed": {
     "title": "Feed",

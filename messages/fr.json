@@ -1329,7 +1329,8 @@
     "attendedNeedsAccount": "Seules les personnes ayant un compte ĐàLạt.app peuvent être ajoutées — recherchez par nom ou @pseudo",
     "markAttended": "Ajouter {count} participant(s)",
     "attendedCelebrationTitle": "Liste mise à jour !",
-    "attendedSuccess": "{count} personne(s) ajoutée(s) aux participants"
+    "attendedSuccess": "{count} personne(s) ajoutée(s) aux participants",
+    "searchFailed": "Recherche de personnes indisponible pour l'instant."
   },
   "moments": {
     "moments": "Moments",
@@ -1769,7 +1770,32 @@
     "shareTribe": "Partager la tribu",
     "shareTribeText": "{name} sur dalat.app — viens trouver les tiens.",
     "shareLink": "Lien de partage",
-    "copied": "Copié !"
+    "copied": "Copié !",
+    "inviteToTribe": "Inviter dans la tribu",
+    "inviteModalDescription": "Invitez par e-mail ou @nom d'utilisateur.",
+    "inviteePlaceholder": "email@exemple.com ou @pseudo",
+    "inviteNoteLabel": "Ajouter un mot (facultatif)",
+    "inviteNotePlaceholder": "Viens traîner avec nous…",
+    "sendInvites": "Envoyer les invitations",
+    "inviteSending": "Envoi des invitations…",
+    "inviteNeedsRecipient": "Ajoutez d'abord un e-mail ou un @pseudo.",
+    "inviteSent": "{count} en route !",
+    "inviteSomeFailed": "{count} n'ont pas pu être envoyées.",
+    "inviteFailed": "Impossible d'envoyer ces invitations. On réessaie ?",
+    "inviteNotAuthorized": "Seuls les responsables de la tribu peuvent inviter.",
+    "inviteQuotaExceeded": "Vous avez atteint votre limite d'invitations. Réessayez demain.",
+    "inviteQuotaRemaining": "{count} invitations restantes aujourd'hui",
+    "shareInstead": "Ou partagez simplement le lien",
+    "copyLink": "Copier le lien",
+    "inviteHeading": "{inviter} vous invite à rejoindre {name}",
+    "inviteLandingSubtitle": "Un clic et vous y êtes.",
+    "inviteNotFoundTitle": "Invitation introuvable",
+    "inviteNotFoundDescription": "Ce lien d'invitation est invalide ou a été retiré.",
+    "inviteSignInFirst": "Connectez-vous pour rejoindre",
+    "inviteAcceptFailed": "Impossible de rejoindre. On réessaie ?",
+    "inviteAlreadyMemberNote": "Vous faites déjà partie de cette tribu.",
+    "memberCount": "{count} membres",
+    "viewTribe": "Voir la tribu"
   },
   "feed": {
     "title": "Fil",

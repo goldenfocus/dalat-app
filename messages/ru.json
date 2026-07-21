@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "Добавить можно только тех, у кого есть аккаунт ĐàLạt.app — ищите по имени или @имени пользователя",
     "markAttended": "Добавить участников: {count}",
     "attendedCelebrationTitle": "Список гостей обновлён!",
-    "attendedSuccess": "Добавлено участников: {count}"
+    "attendedSuccess": "Добавлено участников: {count}",
+    "searchFailed": "Сейчас не получается искать людей."
   },
   "moments": {
     "moments": "Моменты",
@@ -1755,7 +1756,32 @@
     "shareTribe": "Поделиться трайбом",
     "shareTribeText": "{name} на dalat.app — заходи, найди своих.",
     "shareLink": "Ссылка для обмена",
-    "copied": "Скопировано!"
+    "copied": "Скопировано!",
+    "inviteToTribe": "Пригласить в трайб",
+    "inviteModalDescription": "Приглашайте по email или @имени пользователя.",
+    "inviteePlaceholder": "email@example.com или @имя",
+    "inviteNoteLabel": "Добавить заметку (необязательно)",
+    "inviteNotePlaceholder": "Присоединяйся к нам…",
+    "sendInvites": "Отправить приглашения",
+    "inviteSending": "Отправляем приглашения…",
+    "inviteNeedsRecipient": "Сначала добавьте email или @имя.",
+    "inviteSent": "Отправлено: {count}!",
+    "inviteSomeFailed": "Не удалось отправить: {count}.",
+    "inviteFailed": "Не получилось отправить приглашения. Попробовать ещё раз?",
+    "inviteNotAuthorized": "Приглашать могут только лидеры трайба.",
+    "inviteQuotaExceeded": "Лимит приглашений исчерпан. Попробуйте завтра.",
+    "inviteQuotaRemaining": "Осталось приглашений сегодня: {count}",
+    "shareInstead": "Или просто поделитесь ссылкой",
+    "copyLink": "Скопировать ссылку",
+    "inviteHeading": "{inviter} приглашает вас в {name}",
+    "inviteLandingSubtitle": "Нажмите ниже — и вы внутри.",
+    "inviteNotFoundTitle": "Приглашение не найдено",
+    "inviteNotFoundDescription": "Эта ссылка недействительна или была отозвана.",
+    "inviteSignInFirst": "Войдите, чтобы вступить",
+    "inviteAcceptFailed": "Не удалось вступить. Попробовать ещё раз?",
+    "inviteAlreadyMemberNote": "Вы уже состоите в этом трайбе.",
+    "memberCount": "Участников: {count}",
+    "viewTribe": "Открыть трайб"
   },
   "feed": {
     "title": "Лента",

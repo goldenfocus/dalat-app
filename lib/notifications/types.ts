@@ -19,6 +19,7 @@ export type NotificationType =
   | 'tribe_request_approved'
   | 'tribe_request_rejected'
   | 'tribe_new_event'
+  | 'tribe_invitation'
   // Comment notifications
   | 'comment_on_event'
   | 'comment_on_moment'
@@ -240,6 +241,19 @@ export interface TribeNewEventPayload extends BaseNotificationPayload {
   tribeName: string;
 }
 
+export interface TribeInvitationPayload extends BaseNotificationPayload {
+  type: 'tribe_invitation';
+  tribeName: string;
+  tribeSlug: string;
+  inviterName: string;
+  /** tribe_invitations.token — the landing page that joins on accept. */
+  token: string;
+  /** Recipient's real address. Only set on the email path. */
+  inviteeEmail?: string;
+  inviteeName?: string | null;
+  personalNote?: string | null;
+}
+
 // ============================================
 // Comment Notification Payloads
 // ============================================
@@ -353,6 +367,7 @@ export type NotificationPayload =
   | TribeRequestApprovedPayload
   | TribeRequestRejectedPayload
   | TribeNewEventPayload
+  | TribeInvitationPayload
   // Comment notifications
   | CommentOnEventPayload
   | CommentOnMomentPayload

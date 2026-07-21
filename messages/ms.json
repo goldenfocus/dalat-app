@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "Hanya orang yang mempunyai akaun ĐàLạt.app boleh ditambah — cari mengikut nama atau @nama pengguna",
     "markAttended": "Tambah {count} hadirin",
     "attendedCelebrationTitle": "Senarai tetamu dikemas kini!",
-    "attendedSuccess": "{count} orang ditambah ke senarai hadir"
+    "attendedSuccess": "{count} orang ditambah ke senarai hadir",
+    "searchFailed": "Tidak dapat mencari orang buat masa ini."
   },
   "moments": {
     "moments": "Momen",
@@ -1755,7 +1756,32 @@
     "shareTribe": "Kongsi suku",
     "shareTribeText": "{name} di dalat.app — jom cari geng kamu.",
     "shareLink": "Pautan kongsi",
-    "copied": "Disalin!"
+    "copied": "Disalin!",
+    "inviteToTribe": "Jemput ke tribe",
+    "inviteModalDescription": "Jemput orang melalui e-mel atau @nama pengguna.",
+    "inviteePlaceholder": "email@contoh.com atau @namapengguna",
+    "inviteNoteLabel": "Tambah nota (pilihan)",
+    "inviteNotePlaceholder": "Jom lepak dengan kami…",
+    "sendInvites": "Hantar jemputan",
+    "inviteSending": "Menghantar jemputan…",
+    "inviteNeedsRecipient": "Tambah e-mel atau @nama pengguna dahulu.",
+    "inviteSent": "{count} dalam perjalanan!",
+    "inviteSomeFailed": "{count} gagal dihantar.",
+    "inviteFailed": "Jemputan gagal dihantar. Cuba lagi?",
+    "inviteNotAuthorized": "Hanya ketua tribe boleh menjemput orang.",
+    "inviteQuotaExceeded": "Anda telah mencapai had jemputan. Cuba lagi esok.",
+    "inviteQuotaRemaining": "{count} jemputan lagi hari ini",
+    "shareInstead": "Atau kongsi pautan sahaja",
+    "copyLink": "Salin pautan",
+    "inviteHeading": "{inviter} menjemput anda menyertai {name}",
+    "inviteLandingSubtitle": "Tekan di bawah dan anda masuk.",
+    "inviteNotFoundTitle": "Jemputan tidak dijumpai",
+    "inviteNotFoundDescription": "Pautan jemputan ini tidak sah atau telah ditarik balik.",
+    "inviteSignInFirst": "Log masuk untuk menyertai",
+    "inviteAcceptFailed": "Gagal menyertai. Cuba lagi?",
+    "inviteAlreadyMemberNote": "Anda sudah menjadi ahli tribe ini.",
+    "memberCount": "{count} ahli",
+    "viewTribe": "Lihat tribe"
   },
   "feed": {
     "title": "Suapan",

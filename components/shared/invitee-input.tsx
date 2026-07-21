@@ -35,6 +35,7 @@ export function InviteeInput({
   const [inputValue, setInputValue] = useState("");
   const [userResults, setUserResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -67,16 +68,29 @@ export function InviteeInput({
     }
 
     setIsSearching(true);
+    setSearchError(null);
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         const response = await fetch(`/api/users/search?q=${encodeURIComponent(inputValue.replace(/^@/, ""))}`);
+        // A non-OK response used to fall straight through to `data.users ||
+        // []`, so a 403 looked exactly like "nobody by that name" — which is
+        // how tribe leaders got a permanently empty dropdown and no clue why.
+        if (!response.ok) {
+          console.error("[invitee-input] user search failed:", response.status);
+          setUserResults([]);
+          setShowDropdown(false);
+          setSearchError(t("searchFailed"));
+          return;
+        }
         const data = await response.json();
         setUserResults(data.users || []);
         setShowDropdown(data.users?.length > 0);
         setSelectedIndex(0);
-      } catch {
+      } catch (err) {
+        console.error("[invitee-input] user search errored:", err);
         setUserResults([]);
         setShowDropdown(false);
+        setSearchError(t("searchFailed"));
       } finally {
         setIsSearching(false);
       }
@@ -87,7 +101,7 @@ export function InviteeInput({
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [inputValue, isUsernameSearch]);
+  }, [inputValue, isUsernameSearch, t]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -259,6 +273,10 @@ export function InviteeInput({
           </Button>
         )}
       </div>
+
+      {searchError && (
+        <p className="text-sm text-destructive">{searchError}</p>
+      )}
 
       {/* Invitee chips */}
       {invitees.length > 0 && (

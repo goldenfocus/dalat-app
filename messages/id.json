@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "Hanya orang dengan akun ĐàLạt.app yang bisa ditambahkan — cari berdasarkan nama atau @nama pengguna",
     "markAttended": "Tambah {count} peserta",
     "attendedCelebrationTitle": "Daftar tamu diperbarui!",
-    "attendedSuccess": "{count} orang ditambahkan ke daftar hadir"
+    "attendedSuccess": "{count} orang ditambahkan ke daftar hadir",
+    "searchFailed": "Sekarang tidak bisa mencari orang."
   },
   "moments": {
     "moments": "Momen",
@@ -1755,7 +1756,32 @@
     "shareTribe": "Bagikan Tribe",
     "shareTribeText": "{name} di dalat.app — yuk, temukan orang-orangmu.",
     "shareLink": "Tautan berbagi",
-    "copied": "Tersalin!"
+    "copied": "Tersalin!",
+    "inviteToTribe": "Undang ke tribe",
+    "inviteModalDescription": "Undang orang lewat email atau @nama pengguna.",
+    "inviteePlaceholder": "email@contoh.com atau @namapengguna",
+    "inviteNoteLabel": "Tambahkan catatan (opsional)",
+    "inviteNotePlaceholder": "Ayo nongkrong bareng kami…",
+    "sendInvites": "Kirim undangan",
+    "inviteSending": "Mengirim undangan…",
+    "inviteNeedsRecipient": "Tambahkan email atau @nama pengguna dulu.",
+    "inviteSent": "{count} sedang dikirim!",
+    "inviteSomeFailed": "{count} gagal dikirim.",
+    "inviteFailed": "Undangan gagal dikirim. Coba lagi?",
+    "inviteNotAuthorized": "Hanya pemimpin tribe yang bisa mengundang.",
+    "inviteQuotaExceeded": "Kuota undanganmu sudah habis. Coba lagi besok.",
+    "inviteQuotaRemaining": "Sisa {count} undangan hari ini",
+    "shareInstead": "Atau bagikan tautannya saja",
+    "copyLink": "Salin tautan",
+    "inviteHeading": "{inviter} mengundangmu bergabung dengan {name}",
+    "inviteLandingSubtitle": "Ketuk di bawah dan kamu langsung masuk.",
+    "inviteNotFoundTitle": "Undangan tidak ditemukan",
+    "inviteNotFoundDescription": "Tautan undangan ini tidak valid atau sudah ditarik.",
+    "inviteSignInFirst": "Masuk untuk bergabung",
+    "inviteAcceptFailed": "Gagal bergabung. Coba lagi?",
+    "inviteAlreadyMemberNote": "Kamu sudah jadi anggota tribe ini.",
+    "memberCount": "{count} anggota",
+    "viewTribe": "Lihat tribe"
   },
   "feed": {
     "title": "Feed",

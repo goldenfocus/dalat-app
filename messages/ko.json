@@ -1315,7 +1315,8 @@
     "attendedNeedsAccount": "ĐàLạt.app 계정이 있는 사람만 추가할 수 있어요 — 이름 또는 @사용자명으로 검색하세요",
     "markAttended": "참석자 {count}명 추가",
     "attendedCelebrationTitle": "참석자 명단 업데이트!",
-    "attendedSuccess": "{count}명을 참석자 명단에 추가했어요"
+    "attendedSuccess": "{count}명을 참석자 명단에 추가했어요",
+    "searchFailed": "지금은 사람을 검색할 수 없어요."
   },
   "moments": {
     "moments": "모먼트",
@@ -1758,7 +1759,32 @@
     "shareTribe": "트라이브 공유",
     "shareTribeText": "dalat.app의 {name} — 당신의 사람들을 만나보세요.",
     "shareLink": "공유 링크",
-    "copied": "복사됨!"
+    "copied": "복사됨!",
+    "inviteToTribe": "트라이브에 초대",
+    "inviteModalDescription": "이메일이나 @사용자명으로 초대하세요.",
+    "inviteePlaceholder": "email@example.com 또는 @사용자명",
+    "inviteNoteLabel": "메시지 추가 (선택)",
+    "inviteNotePlaceholder": "우리랑 같이 놀아요…",
+    "sendInvites": "초대 보내기",
+    "inviteSending": "초대 보내는 중…",
+    "inviteNeedsRecipient": "먼저 이메일이나 @사용자명을 추가하세요.",
+    "inviteSent": "{count}건 전송 완료!",
+    "inviteSomeFailed": "{count}건은 보내지 못했어요.",
+    "inviteFailed": "초대를 보내지 못했어요. 다시 시도할까요?",
+    "inviteNotAuthorized": "트라이브 리더만 초대할 수 있어요.",
+    "inviteQuotaExceeded": "지금은 초대 한도에 도달했어요. 내일 다시 시도해 주세요.",
+    "inviteQuotaRemaining": "오늘 {count}건 남았어요",
+    "shareInstead": "또는 링크만 공유하기",
+    "copyLink": "링크 복사",
+    "inviteHeading": "{inviter}님이 {name}에 초대했어요",
+    "inviteLandingSubtitle": "아래를 누르면 바로 참여돼요.",
+    "inviteNotFoundTitle": "초대를 찾을 수 없어요",
+    "inviteNotFoundDescription": "이 초대 링크는 유효하지 않거나 취소되었어요.",
+    "inviteSignInFirst": "로그인하고 참여하기",
+    "inviteAcceptFailed": "참여하지 못했어요. 다시 시도할까요?",
+    "inviteAlreadyMemberNote": "이미 이 트라이브의 멤버예요.",
+    "memberCount": "멤버 {count}명",
+    "viewTribe": "트라이브 보기"
   },
   "feed": {
     "title": "피드",
