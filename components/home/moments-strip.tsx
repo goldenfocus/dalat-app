@@ -184,7 +184,9 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                 <p className="text-[11px] font-medium leading-tight line-clamp-2 min-h-[1.75rem]">
                   {moment.event_title}
                 </p>
-                <p className="text-[10px] text-muted-foreground">
+                {/* suppressHydrationWarning: "x ago" is clock-derived and the
+                    edge-cached server HTML is minutes stale */}
+                <p className="text-[10px] text-muted-foreground" suppressHydrationWarning>
                   {sort === 'event_date' && moment.event_starts_at
                     ? format(new Date(moment.event_starts_at), 'MMM d')
                     : formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
@@ -270,7 +272,9 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                 <p className="text-sm font-semibold leading-tight line-clamp-2 min-h-[2.5rem]">
                   {moment.event_title}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                {/* suppressHydrationWarning: "x ago" is clock-derived and the
+                    edge-cached server HTML is minutes stale */}
+                <p className="text-xs text-muted-foreground" suppressHydrationWarning>
                   {sort === 'event_date' && moment.event_starts_at
                     ? format(new Date(moment.event_starts_at), 'MMM d')
                     : formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}

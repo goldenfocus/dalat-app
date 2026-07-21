@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { MapPin, Users, Clock, Radio } from "lucide-react";
@@ -42,13 +42,19 @@ export const EventHeroCard = memo(function EventHeroCard({
   const displayTitle = translatedTitle || event.title;
   const goingSpots = counts?.going_spots ?? 0;
 
-  // Calculate time info
+  // "now" stays null on the server and first client render: the homepage HTML
+  // is ISR + edge-cached (minutes stale), so clock-derived text would fail
+  // hydration (React #418). The absolute-time fallback renders until mount.
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => setNow(new Date()), []);
+
   const startTime = new Date(event.starts_at);
-  const now = new Date();
-  const minutesAgo = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
+  const minutesAgo = now
+    ? Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60))
+    : null;
 
   // Time display: "Started X min ago" or "Ends at X:XX PM"
-  const timeDisplay = minutesAgo < 60
+  const timeDisplay = minutesAgo !== null && minutesAgo < 60
     ? tHome("happeningNow.startedAgo", { minutes: minutesAgo })
     : event.ends_at
       ? tHome("happeningNow.endsAt", { time: formatInDaLat(event.ends_at, "h:mm a", locale) })
