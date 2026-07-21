@@ -1554,7 +1554,8 @@
       "previous": "上一个",
       "next": "下一个",
       "viewComments": "查看评论",
-      "backToLastMoment": "回到上一个瞬间"
+      "backToLastMoment": "回到上一个瞬间",
+      "swipeToNavigate": "滑动浏览"
     },
     "setCover": {
       "success1": {
@@ -3113,5 +3114,14 @@
         "vegan": "纯素"
       }
     }
+  },
+  "reactions": {
+    "heart": "喜欢",
+    "fire": "赞爆",
+    "laugh": "哈哈",
+    "wow": "哇",
+    "pray": "感谢",
+    "addReaction": "添加表情",
+    "reactions": "表情"
   }
 }

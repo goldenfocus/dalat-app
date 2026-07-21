@@ -1551,7 +1551,8 @@
       "previous": "Sebelum",
       "next": "Seterusnya",
       "viewComments": "Lihat komen",
-      "backToLastMoment": "Kembali ke momen terakhir"
+      "backToLastMoment": "Kembali ke momen terakhir",
+      "swipeToNavigate": "Leret untuk navigasi"
     },
     "setCover": {
       "success1": {
@@ -3110,5 +3111,14 @@
         "vegan": "Vegan"
       }
     }
+  },
+  "reactions": {
+    "heart": "Suka",
+    "fire": "Hebat",
+    "laugh": "Haha",
+    "wow": "Wah",
+    "pray": "Terima kasih",
+    "addReaction": "Tambah reaksi",
+    "reactions": "Reaksi"
   }
 }

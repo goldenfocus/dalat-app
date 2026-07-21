@@ -1554,7 +1554,8 @@
       "previous": "이전",
       "next": "다음",
       "viewComments": "댓글 보기",
-      "backToLastMoment": "마지막 모먼트로 돌아가기"
+      "backToLastMoment": "마지막 모먼트로 돌아가기",
+      "swipeToNavigate": "밀어서 이동"
     },
     "setCover": {
       "success1": {
@@ -3113,5 +3114,14 @@
         "vegan": "비건"
       }
     }
+  },
+  "reactions": {
+    "heart": "좋아요",
+    "fire": "최고",
+    "laugh": "웃음",
+    "wow": "놀람",
+    "pray": "감사",
+    "addReaction": "반응 추가",
+    "reactions": "반응"
   }
 }

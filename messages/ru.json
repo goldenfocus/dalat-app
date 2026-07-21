@@ -1551,7 +1551,8 @@
       "previous": "Предыдущий",
       "next": "Следующий",
       "viewComments": "Посмотреть комментарии",
-      "backToLastMoment": "Вернуться к последнему моменту"
+      "backToLastMoment": "Вернуться к последнему моменту",
+      "swipeToNavigate": "Свайп для навигации"
     },
     "setCover": {
       "success1": {
@@ -3110,5 +3111,14 @@
         "vegan": "Веганское"
       }
     }
+  },
+  "reactions": {
+    "heart": "Нравится",
+    "fire": "Огонь",
+    "laugh": "Смешно",
+    "wow": "Вау",
+    "pray": "Спасибо",
+    "addReaction": "Добавить реакцию",
+    "reactions": "Реакции"
   }
 }

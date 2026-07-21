@@ -5,6 +5,7 @@ import { Loader2, MessageCircle } from "lucide-react";
 import { CommentItem } from "./comment-item";
 import { Button } from "@/components/ui/button";
 import type { CommentWithProfile } from "@/lib/types";
+import { useReactions } from "@/lib/hooks/use-reactions";
 
 interface CommentListProps {
   /** Comments to display */
@@ -73,6 +74,13 @@ export function CommentList({
 }: CommentListProps) {
   const t = useTranslations("comments");
 
+  // One batch query for the whole thread rather than one per row. Optimistic
+  // rows (temp- ids) are excluded — they have no server-side reactions yet.
+  const { data: reactionsByComment } = useReactions(
+    "comment",
+    comments.filter((c) => !c.id.startsWith("temp-")).map((c) => c.id)
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -116,6 +124,7 @@ export function CommentList({
           onLoadReplies={() => handleLoadReplies(comment.id)}
           isPending={comment.id.startsWith("temp-")}
           userLocale={userLocale}
+          reactionCounts={reactionsByComment?.get(comment.id)}
         />
       ))}
 

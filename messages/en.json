@@ -1665,7 +1665,8 @@
       "previous": "Previous",
       "next": "Next",
       "viewComments": "View comments",
-      "backToLastMoment": "Back to last moment"
+      "backToLastMoment": "Back to last moment",
+      "swipeToNavigate": "Swipe to navigate"
     },
     "setCover": {
       "success1": {
@@ -3186,5 +3187,14 @@
         "vegan": "Vegan"
       }
     }
+  },
+  "reactions": {
+    "heart": "Love",
+    "fire": "Fire",
+    "laugh": "Haha",
+    "wow": "Wow",
+    "pray": "Thanks",
+    "addReaction": "Add reaction",
+    "reactions": "Reactions"
   }
 }

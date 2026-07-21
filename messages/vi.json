@@ -1554,7 +1554,8 @@
       "previous": "Trước",
       "next": "Tiếp",
       "viewComments": "Xem bình luận",
-      "backToLastMoment": "Quay lại khoảnh khắc trước"
+      "backToLastMoment": "Quay lại khoảnh khắc trước",
+      "swipeToNavigate": "Vuốt để xem tiếp"
     },
     "setCover": {
       "success1": {
@@ -3186,5 +3187,14 @@
         "vegan": "Thuần Chay"
       }
     }
+  },
+  "reactions": {
+    "heart": "Yêu thích",
+    "fire": "Tuyệt vời",
+    "laugh": "Haha",
+    "wow": "Ồ",
+    "pray": "Cảm ơn",
+    "addReaction": "Thêm cảm xúc",
+    "reactions": "Cảm xúc"
   }
 }

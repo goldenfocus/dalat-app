@@ -14,6 +14,8 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { triggerHaptic } from "@/lib/haptics";
 import type { CommentWithProfile } from "@/lib/types";
+import { ReactionBar } from "@/components/reactions/reaction-bar";
+import type { ReactionCounts } from "@/lib/reactions";
 
 interface TranslatedComment extends CommentWithProfile {
   translated_content?: string;
@@ -50,6 +52,12 @@ interface CommentItemProps {
   onLoadReplies?: () => void;
   /** Whether this is a reply (for indentation) */
   isReply?: boolean;
+  /**
+   * Pre-fetched reaction counts for this comment. Passed down by CommentList so
+   * a thread issues one batch query instead of one per row; when omitted the
+   * bar fetches its own (the path replies take).
+   */
+  reactionCounts?: ReactionCounts;
   /** Whether this is an optimistic (pending) comment */
   isPending?: boolean;
   /** User's locale for translation detection */
@@ -76,6 +84,7 @@ export function CommentItem({
   repliesLoading = false,
   onLoadReplies,
   isReply = false,
+  reactionCounts,
   isPending = false,
   userLocale = "en",
 }: CommentItemProps) {
@@ -262,6 +271,19 @@ export function CommentItem({
               </button>
             )}
           </div>
+
+          {/* Reactions — deliberately outside the !isReply gate below, so
+              replies are reactable too, not just top-level comments. */}
+          {!comment.is_deleted && !isPending && (
+            <ReactionBar
+              targetType="comment"
+              targetId={comment.id}
+              isAuthenticated={!!currentUserId}
+              counts={reactionCounts}
+              variant="inline"
+              className="mt-2"
+            />
+          )}
 
           {/* Reply button + thread toggle */}
           {!comment.is_deleted && !isReply && !isPending && (

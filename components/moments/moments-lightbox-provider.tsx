@@ -20,6 +20,12 @@ interface MomentsLightboxProviderProps {
   eventSlug?: string;
   /** Called after a moment is deleted from inside the lightbox, so the grid can drop the tile */
   onMomentDeleted?: (momentId: string) => void;
+  /**
+   * Viewer's user id — gates reacting/commenting inside the lightbox.
+   * Optional: when omitted the provider resolves it itself, so every grid that
+   * mounts a lightbox gets working engagement without threading the prop.
+   */
+  currentUserId?: string;
 }
 
 /**
@@ -88,10 +94,33 @@ export function MomentsLightboxProvider({
   moments,
   eventSlug,
   onMomentDeleted,
+  currentUserId,
 }: MomentsLightboxProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const hasTriggeredAutoPlay = useRef(false);
+
+  // Resolve the viewer once the lightbox is actually opened. Most callers don't
+  // have a user id to pass, and doing it here means the lightbox behaves the
+  // same wherever it's mounted (event gallery, discovery, search results).
+  const [resolvedUserId, setResolvedUserId] = useState<string | undefined>(currentUserId);
+
+  useEffect(() => {
+    if (currentUserId || !isOpen || resolvedUserId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await createClient().auth.getUser();
+        if (!cancelled) setResolvedUserId(data.user?.id);
+      } catch (err) {
+        // Non-fatal: the bar just renders in signed-out mode and routes to login.
+        console.error("[MomentsLightbox] failed to resolve viewer:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId, isOpen, resolvedUserId]);
 
   // Audio player store
   const setPlaylist = useAudioPlayerStore((state) => state.setPlaylist);
@@ -143,6 +172,7 @@ export function MomentsLightboxProvider({
         eventSlug={eventSlug}
         onIndexChange={handleIndexChange}
         onMomentDeleted={onMomentDeleted}
+        currentUserId={currentUserId ?? resolvedUserId}
       />
     </MomentsLightboxContext.Provider>
   );

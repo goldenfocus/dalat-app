@@ -1551,7 +1551,8 @@
       "previous": "ก่อนหน้า",
       "next": "ถัดไป",
       "viewComments": "ดูความคิดเห็น",
-      "backToLastMoment": "กลับไปโมเมนต์ล่าสุด"
+      "backToLastMoment": "กลับไปโมเมนต์ล่าสุด",
+      "swipeToNavigate": "ปัดเพื่อเลื่อนดู"
     },
     "setCover": {
       "success1": {
@@ -3110,5 +3111,14 @@
         "vegan": "วีแกน"
       }
     }
+  },
+  "reactions": {
+    "heart": "รัก",
+    "fire": "สุดยอด",
+    "laugh": "ฮ่าๆ",
+    "wow": "ว้าว",
+    "pray": "ขอบคุณ",
+    "addReaction": "เพิ่มรีแอคชัน",
+    "reactions": "รีแอคชัน"
   }
 }

@@ -14,6 +14,10 @@ export const CORE_CLIENT_NAMESPACES = [
   "nav",
   "notifications",
   "playlist",
+  // CORE, not lazy: the reaction bar renders inside the moments lightbox, which
+  // is the default destination from an event gallery. Loading it after first
+  // paint would flash raw keys on the highest-traffic viewing surface.
+  "reactions",
   "rsvp",
   "series",
   "translations",
@@ -64,6 +68,7 @@ export const CLIENT_NAMESPACES = [
   "promo",
   "questionnaire",
   "questionnaireBuilder",
+  "reactions",
   "reconfirmation",
   "recurrence",
   "responseDashboard",

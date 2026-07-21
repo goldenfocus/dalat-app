@@ -19,6 +19,7 @@ import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
 import { SetCoverButton } from "@/components/moments/set-cover-button";
 import { MomentDetailHeader } from "@/components/moments/moment-detail-header";
 import { CommentsSection } from "@/components/comments";
+import { ReactionBar } from "@/components/reactions/reaction-bar";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { ExpandableMomentImage } from "@/components/moments/expandable-moment-image";
 import { MomentImagePreloader } from "@/components/moments/moment-image-preloader";
@@ -464,6 +465,15 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                   contentType={moment.content_type}
                 />
               )}
+
+              {/* Reactions */}
+              <ReactionBar
+                targetType="moment"
+                targetId={moment.id}
+                isAuthenticated={!!user?.id}
+                variant="inline"
+                returnTo={`/events/${event.slug}/moments/${moment.id}`}
+              />
 
               {/* Comments */}
               <Suspense fallback={<div className="h-32 animate-pulse bg-muted rounded-lg" />}>

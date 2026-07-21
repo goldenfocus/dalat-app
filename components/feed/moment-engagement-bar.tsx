@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { triggerHaptic } from "@/lib/haptics";
 import { useShare } from "@/lib/hooks/use-share";
 import { CommentsButton } from "@/components/comments";
-import { LikeButton } from "@/components/moments/like-button";
+import { ReactionBar } from "@/components/reactions/reaction-bar";
+import type { ReactionCounts } from "@/lib/reactions";
 
 interface MomentEngagementBarProps {
   momentId: string;
@@ -21,11 +22,9 @@ interface MomentEngagementBarProps {
   onMuteToggle?: () => void;
   /** Initial comment count */
   commentCount?: number;
-  /** Whether the current user has liked this moment */
-  initialLiked?: boolean;
-  /** Initial like count */
-  likeCount?: number;
-  /** Whether the viewer is signed in (gates the like action) */
+  /** Pre-fetched reaction counts, batch-loaded by the feed */
+  reactionCounts?: ReactionCounts;
+  /** Whether the viewer is signed in (gates reacting) */
   isAuthenticated?: boolean;
 }
 
@@ -44,8 +43,7 @@ export function MomentEngagementBar({
   isMuted = true,
   onMuteToggle,
   commentCount,
-  initialLiked,
-  likeCount,
+  reactionCounts,
   isAuthenticated,
 }: MomentEngagementBarProps) {
   const t = useTranslations("moments");
@@ -72,13 +70,15 @@ export function MomentEngagementBar({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      {/* Like button */}
-      <LikeButton
-        momentId={momentId}
-        initialLiked={initialLiked}
-        initialCount={likeCount}
+      {/* Reactions */}
+      <ReactionBar
+        targetType="moment"
+        targetId={momentId}
         isAuthenticated={isAuthenticated}
-        className={buttonBaseClass}
+        counts={reactionCounts}
+        variant="overlay"
+        orientation="vertical"
+        returnTo={`/moments/${momentId}`}
       />
 
       {/* Comments button */}

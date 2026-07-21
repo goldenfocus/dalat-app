@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { MomentReelCard } from "./moment-reel-card";
 import { MomentJoinCard } from "./moment-join-card";
 import { useMomentsFeed } from "@/lib/hooks/use-supabase-query";
-import { useMomentLikes } from "@/lib/hooks/use-moment-likes";
+import { useReactions } from "@/lib/hooks/use-reactions";
 import { GATING_CONFIG } from "@/lib/config/gating";
 import type { MomentContentType, MomentWithEvent } from "@/lib/types";
 
@@ -49,10 +49,10 @@ export function MomentsFeed({
     [data?.pages, initialMoments]
   );
 
-  // Hydrate like counts client-side — these change far more often than the
+  // Hydrate reaction counts client-side — these change far more often than the
   // ISR window on the pages that render this feed.
   const momentIds = useMemo(() => moments.map((m) => m.id), [moments]);
-  const { data: likeStates } = useMomentLikes(momentIds);
+  const { data: reactionsByMoment } = useReactions("moment", momentIds);
 
   // Build feed items with interstitial join cards for anonymous users
   const feedItems = useMemo<FeedItem[]>(() => {
@@ -161,7 +161,7 @@ export function MomentsFeed({
               isActive={activeIndex === item.index}
               index={item.index}
               isAuthenticated={isAuthenticated}
-              likeState={likeStates?.get(item.moment.id)}
+              reactionCounts={reactionsByMoment?.get(item.moment.id)}
             />
           ) : (
             <MomentJoinCard

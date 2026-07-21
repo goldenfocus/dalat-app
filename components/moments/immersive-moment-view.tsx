@@ -18,6 +18,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { useShare } from "@/lib/hooks/use-share";
 import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
+import { ReactionBar } from "@/components/reactions/reaction-bar";
 import { MomentWatermark } from "./moment-watermark";
 import type { MomentWithProfile } from "@/lib/types";
 
@@ -401,6 +402,16 @@ export function ImmersiveMomentView({
 
           {/* Mobile: Right side action buttons (hidden on desktop where we have panel) */}
           <div className="lg:hidden absolute right-4 bottom-32 flex flex-col items-center gap-4">
+            {/* Reactions */}
+            <ReactionBar
+              targetType="moment"
+              targetId={moment.id}
+              isAuthenticated={!!currentUserId}
+              variant="overlay"
+              orientation="vertical"
+              returnTo={`/moments/${moment.id}`}
+            />
+
             {/* Comments - opens sheet overlay */}
             <button
               onClick={() => {
@@ -476,12 +487,19 @@ export function ImmersiveMomentView({
 
             {/* Desktop: Action bar with prominent buttons */}
             <div className="hidden lg:flex items-center gap-3 mt-4 pt-3 border-t border-white/10">
+              <ReactionBar
+                targetType="moment"
+                targetId={moment.id}
+                isAuthenticated={!!currentUserId}
+                variant="overlay"
+                returnTo={`/moments/${moment.id}`}
+              />
               <button
                 onClick={handleShare}
                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium hover:bg-white/20 active:scale-95 transition-all"
               >
                 <Share2 className="w-4 h-4" />
-                Share
+                {t("share")}
               </button>
               <button
                 onClick={openFullPage}

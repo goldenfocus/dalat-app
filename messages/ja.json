@@ -1551,7 +1551,8 @@
       "previous": "前へ",
       "next": "次へ",
       "viewComments": "コメントを見る",
-      "backToLastMoment": "最後のモーメントに戻る"
+      "backToLastMoment": "最後のモーメントに戻る",
+      "swipeToNavigate": "スワイプで移動"
     },
     "setCover": {
       "success1": {
@@ -3110,5 +3111,14 @@
         "vegan": "ヴィーガン"
       }
     }
+  },
+  "reactions": {
+    "heart": "大好き",
+    "fire": "最高",
+    "laugh": "笑",
+    "wow": "すごい",
+    "pray": "ありがとう",
+    "addReaction": "リアクションを追加",
+    "reactions": "リアクション"
   }
 }

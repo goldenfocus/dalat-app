@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { X, ChevronLeft, ChevronRight, ExternalLink, Play, Share2, Check } from "lucide-react";
+import { ReactionBar } from "@/components/reactions/reaction-bar";
+import { CommentsButton } from "@/components/comments";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
@@ -71,6 +73,8 @@ interface MomentLightboxProps {
   totalCount?: number;
   /** Called when a moment is deleted from the lightbox */
   onMomentDeleted?: (momentId: string) => void;
+  /** Viewer's user id — gates reacting/commenting; absent means signed out */
+  currentUserId?: string;
 }
 
 export function MomentLightbox({
@@ -82,6 +86,7 @@ export function MomentLightbox({
   onIndexChange,
   totalCount,
   onMomentDeleted,
+  currentUserId,
 }: MomentLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLandscape, setIsLandscape] = useState(false);
@@ -94,6 +99,15 @@ export function MomentLightbox({
 
   const moment = moments[currentIndex];
   const hasPrev = currentIndex > 0;
+
+  // Mixed-event lightboxes (search results) carry the slug per moment; a single
+  // event's gallery passes it once via props.
+  const momentEventSlug = moment?.event_slug || eventSlug || "";
+  const momentPermalink = moment
+    ? momentEventSlug
+      ? `/events/${momentEventSlug}/moments/${moment.id}`
+      : `/moments/${moment.id}`
+    : "/moments";
   const hasNext = currentIndex < moments.length - 1;
 
   // Reset index when modal opens with new initialIndex
@@ -461,21 +475,43 @@ export function MomentLightbox({
         )}
       </div>
 
-      {/* Caption (if exists) */}
-      {moment.text_content && moment.content_type !== "text" && (
-        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/80 to-transparent">
-          <p className="text-white text-center max-w-2xl mx-auto line-clamp-3">
+      {/* Caption + engagement */}
+      <div className="absolute bottom-0 left-0 right-0 z-30 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-black/85 via-black/50 to-transparent">
+        {moment.text_content && moment.content_type !== "text" && (
+          <p className="text-white text-center max-w-2xl mx-auto line-clamp-3 mb-3">
             {moment.text_content}
           </p>
-        </div>
-      )}
+        )}
 
-      {/* Swipe hint (mobile only) */}
-      {moments.length > 1 && (
-        <p className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 text-white/40 text-xs sm:hidden">
-          Swipe to navigate
-        </p>
-      )}
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <ReactionBar
+            targetType="moment"
+            targetId={moment.id}
+            isAuthenticated={!!currentUserId}
+            variant="overlay"
+            returnTo={momentPermalink}
+          />
+
+          {momentEventSlug && (
+            <CommentsButton
+              targetType="moment"
+              targetId={moment.id}
+              eventSlug={momentEventSlug}
+              contentTitle={moment.text_content || moment.title || ""}
+              contentOwnerId={moment.user_id || ""}
+              currentUserId={currentUserId}
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 min-h-[36px] text-sm bg-black/40 backdrop-blur-sm text-white hover:bg-black/55 active:scale-95 transition-all"
+            />
+          )}
+        </div>
+
+        {/* Swipe hint (mobile only) */}
+        {moments.length > 1 && (
+          <p className="mt-2 text-center text-white/40 text-xs sm:hidden">
+            {t("swipeToNavigate")}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { MomentEngagementBar } from "./moment-engagement-bar";
 import { EventAttributionPill } from "./event-attribution-pill";
 import { EventDetailSheet } from "./event-detail-sheet";
 import type { MomentWithEvent } from "@/lib/types";
+import type { ReactionCounts } from "@/lib/reactions";
 
 interface MomentReelCardProps {
   moment: MomentWithEvent;
@@ -18,8 +19,8 @@ interface MomentReelCardProps {
   index: number;
   /** Whether the viewer is signed in (gates the like action) */
   isAuthenticated?: boolean;
-  /** Hydrated like state for this moment */
-  likeState?: { liked: boolean; count: number };
+  /** Hydrated reaction counts for this moment */
+  reactionCounts?: ReactionCounts;
 }
 
 /**
@@ -32,7 +33,7 @@ export function MomentReelCard({
   isActive,
   index,
   isAuthenticated,
-  likeState,
+  reactionCounts,
 }: MomentReelCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -93,8 +94,7 @@ export function MomentReelCard({
           isMuted={isMuted}
           onMuteToggle={handleMuteToggle}
           isAuthenticated={isAuthenticated}
-          initialLiked={likeState?.liked}
-          likeCount={likeState?.count}
+          reactionCounts={reactionCounts}
         />
       </div>
 
