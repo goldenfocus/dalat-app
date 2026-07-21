@@ -41,6 +41,7 @@ import {
   needsImageCompression,
   compressImage,
 } from "@/lib/image-compression";
+import { extractCaptureTime } from "@/lib/exif-capture-time";
 import { triggerHaptic } from "@/lib/haptics";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { triggerTranslation } from "@/lib/translations-client";
@@ -131,6 +132,7 @@ interface UploadItem {
   uploadProgress?: number; // 0-100 for TUS upload progress
   error?: string;
   caption?: string; // Individual caption for this upload
+  capturedAt?: string | null; // Real capture time from EXIF, read before compression
   // Cloudflare Stream fields (for video adaptive streaming)
   cfVideoUid?: string;
   cfPlaybackUrl?: string;
@@ -384,6 +386,14 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
     try {
       let fileToUpload = file;
       let needsServerHeicConversion = false;
+
+      // Read the capture time FIRST — the conversion and compression steps below
+      // both destroy EXIF, and compression also overwrites lastModified. Stash it
+      // on the item so the create_moment call at submit time can still see it.
+      const capturedAt = await extractCaptureTime(file);
+      setUploads(prev => prev.map(item =>
+        item.id === itemId ? { ...item, capturedAt } : item
+      ));
 
       // Convert if needed (HEIC → JPEG, MOV → MP4)
       const conversionNeeded = needsConversion(file);
@@ -1237,6 +1247,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           p_cf_video_uid: upload.cfVideoUid || null,
           p_cf_playback_url: upload.cfPlaybackUrl || null,
           p_video_status: isCloudflareVideo ? "processing" : "ready", // CF videos start as "processing"
+          p_captured_at: upload.capturedAt ?? null, // Real shutter time, read before compression stripped EXIF
         });
 
         if (postError) {

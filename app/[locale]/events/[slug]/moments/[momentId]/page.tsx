@@ -102,70 +102,41 @@ interface AdjacentMoments {
   nextMediaUrl: string | null;
 }
 
+// Shape returned by the get_adjacent_moments RPC (see migration 20261012).
+interface AdjacentMomentRow {
+  prev_id: string | null;
+  prev_media_url: string | null;
+  next_id: string | null;
+  next_media_url: string | null;
+}
+
 async function getAdjacentMoments(
   momentId: string,
-  eventId: string,
-  createdAt: string
+  eventId: string
 ): Promise<AdjacentMoments> {
   const supabase = await createClient();
 
-  // Get previous moment (older) in same event - with media_url for preloading
-  const { data: prevInEvent } = await supabase
-    .from("moments")
-    .select("id, media_url")
-    .eq("event_id", eventId)
-    .eq("status", "published")
-    .lt("created_at", createdAt)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+  // Navigation must use the SAME sort key the gallery grid uses —
+  // COALESCE(captured_at, created_at) — or prev/next jumps to unrelated photos
+  // once real EXIF capture times land. That key can't be expressed as a
+  // PostgREST .lt()/.gt() cursor, so it lives in an RPC (LAG/LEAD over the same
+  // ORDER BY as get_event_moments), which also handles the wrap-around.
+  const { data } = await supabase.rpc("get_adjacent_moments", {
+    p_moment_id: momentId,
+    p_event_id: eventId,
+  });
 
-  // Get next moment (newer) in same event - with media_url for preloading
-  const { data: nextInEvent } = await supabase
-    .from("moments")
-    .select("id, media_url")
-    .eq("event_id", eventId)
-    .eq("status", "published")
-    .gt("created_at", createdAt)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
+  // Array form rather than .single(): a moment whose siblings are all filtered
+  // out by RLS legitimately returns zero rows, and .single() would turn that
+  // into an error instead of "no neighbours".
+  const row = ((data ?? []) as AdjacentMomentRow[])[0];
 
-  // Wrap around if at boundary - get last/first in event
-  let prevId = prevInEvent?.id ?? null;
-  let nextId = nextInEvent?.id ?? null;
-  let prevMediaUrl = prevInEvent?.media_url ?? null;
-  let nextMediaUrl = nextInEvent?.media_url ?? null;
-
-  if (!prevId) {
-    const { data: lastMoment } = await supabase
-      .from("moments")
-      .select("id, media_url")
-      .eq("event_id", eventId)
-      .eq("status", "published")
-      .neq("id", momentId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-    prevId = lastMoment?.id ?? null;
-    prevMediaUrl = lastMoment?.media_url ?? null;
-  }
-
-  if (!nextId) {
-    const { data: firstMoment } = await supabase
-      .from("moments")
-      .select("id, media_url")
-      .eq("event_id", eventId)
-      .eq("status", "published")
-      .neq("id", momentId)
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .single();
-    nextId = firstMoment?.id ?? null;
-    nextMediaUrl = firstMoment?.media_url ?? null;
-  }
-
-  return { prevId, nextId, prevMediaUrl, nextMediaUrl };
+  return {
+    prevId: row?.prev_id ?? null,
+    nextId: row?.next_id ?? null,
+    prevMediaUrl: row?.prev_media_url ?? null,
+    nextMediaUrl: row?.next_media_url ?? null,
+  };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -224,8 +195,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
   // Get adjacent moments for navigation
   const adjacentMoments = await getAdjacentMoments(
     moment.id,
-    moment.event_id,
-    moment.created_at
+    moment.event_id
   );
 
   // Get current user and check permissions

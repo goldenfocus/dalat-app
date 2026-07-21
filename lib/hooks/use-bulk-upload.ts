@@ -13,6 +13,7 @@ import {
   needsImageCompression,
   compressImage,
 } from "@/lib/image-compression";
+import { extractCaptureTime } from "@/lib/exif-capture-time";
 import {
   computeFileHash,
   checkDuplicateHashes,
@@ -442,7 +443,8 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
     cfVideoUid: string | null,
     isVideo: boolean,
     caption: string | null,
-    fileHash: string | null
+    fileHash: string | null,
+    capturedAt: string | null
   ) => {
     dispatch({ type: "UPDATE_FILE", id, updates: { status: "saving" } });
 
@@ -453,6 +455,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         p_media_type: isVideo ? "video" : "image",
         p_thumbnail_url: thumbnailUrl,
         p_text_content: caption,
+        p_taken_at: capturedAt,
         p_cf_video_uid: cfVideoUid,
         p_file_hash: fileHash,
       });
@@ -503,6 +506,11 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
 
     let fileToUpload = file;
     let needsServerHeicConversion = false;
+
+    // Read the capture time FIRST — the conversion and compression steps below
+    // both destroy EXIF, and compression also overwrites lastModified. This is
+    // the only moment the original file still knows when it was taken.
+    const capturedAt = await extractCaptureTime(file);
 
     // Convert if needed (HEIC → JPEG, MOV → MP4)
     const conversionNeeded = needsConversion(file);
@@ -657,7 +665,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
             });
 
             // Immediately save as draft
-            await saveAsDraft(id, null, thumbnailUrl, videoUid, true, fileState.caption, fileState.fileHash);
+            await saveAsDraft(id, null, thumbnailUrl, videoUid, true, fileState.caption, fileState.fileHash, capturedAt);
             usedCloudflare = true;
           } else {
             // Cloudflare Stream unavailable — fall through to R2
@@ -686,7 +694,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
           });
 
           // Immediately save as draft
-          await saveAsDraft(id, publicUrl, thumbnailUrl, null, true, fileState.caption, fileState.fileHash);
+          await saveAsDraft(id, publicUrl, thumbnailUrl, null, true, fileState.caption, fileState.fileHash, capturedAt);
         }
       } else {
         // ========================================
@@ -722,7 +730,7 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         });
 
         // Immediately save as draft
-        await saveAsDraft(id, publicUrl, null, null, false, fileState.caption, fileState.fileHash);
+        await saveAsDraft(id, publicUrl, null, null, false, fileState.caption, fileState.fileHash, capturedAt);
       }
     } catch (err) {
       const retryCount = fileState.retryCount;

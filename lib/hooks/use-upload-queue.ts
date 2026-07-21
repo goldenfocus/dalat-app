@@ -17,6 +17,7 @@ import {
 } from "@/lib/media-utils";
 import { convertIfNeeded, convertHeicOnR2 } from "@/lib/media-conversion";
 import { needsImageCompression, compressImage } from "@/lib/image-compression";
+import { extractCaptureTime } from "@/lib/exif-capture-time";
 import type { CompressionProgress } from "@/lib/video-compression";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { triggerHaptic } from "@/lib/haptics";
@@ -163,7 +164,8 @@ export function useUploadQueue({
     mediaUrl: string | null,
     thumbnailUrl: string | null,
     cfVideoUid: string | null,
-    isVideo: boolean
+    isVideo: boolean,
+    capturedAt: string | null
   ): Promise<string | null> => {
     if (!mountedRef.current) return null;
 
@@ -176,6 +178,7 @@ export function useUploadQueue({
         p_media_type: isVideo ? "video" : "image",
         p_thumbnail_url: thumbnailUrl,
         p_text_content: null,
+        p_taken_at: capturedAt,
         p_cf_video_uid: cfVideoUid,
       });
 
@@ -231,6 +234,12 @@ export function useUploadQueue({
     activeUploadsRef.current.add(id);
 
     try {
+      // Read the capture time FIRST — HEIC conversion and compression below both
+      // destroy EXIF, and compression also overwrites lastModified. This is the
+      // only moment the original file still knows when it was taken. Inside the
+      // try so a surprise here can't strand the item in activeUploadsRef.
+      const capturedAt = await extractCaptureTime(file);
+
       // Step 1: Convert HEIC images (skip video conversion - let Cloudflare handle it)
       if (needsConversion(file) && !isVideo) {
         dispatch({ type: "UPDATE_ITEM", id, updates: { status: "converting" } });
@@ -347,7 +356,7 @@ export function useUploadQueue({
           });
 
           // Immediately save as draft to database
-          await saveAsDraft(id, null, null, videoUid, true);
+          await saveAsDraft(id, null, null, videoUid, true, capturedAt);
 
           triggerHaptic("light");
 
@@ -405,7 +414,7 @@ export function useUploadQueue({
           });
 
           // Immediately save as draft to database
-          await saveAsDraft(id, publicUrl, null, null, false);
+          await saveAsDraft(id, publicUrl, null, null, false, capturedAt);
 
           triggerHaptic("light");
 
