@@ -47,6 +47,9 @@ export async function GET(request: Request) {
   const supabase = getSupabase();
   const startedAt = Date.now();
   let localesDone = 0;
+  // Copy-through (locale === source) inserts are free and always succeed —
+  // only model-produced translations prove the provider chain is alive.
+  let modelLocalesDone = 0;
   let errors = 0;
 
   try {
@@ -71,10 +74,10 @@ export async function GET(request: Request) {
         if (Date.now() - startedAt > TIME_BUDGET_MS) break outer;
 
         try {
-          const translated =
-            locale === sourceLocale
-              ? Object.fromEntries(item.fields.map((f) => [f.field_name, f.text]))
-              : await translateFieldsToLocale(item.fields, locale);
+          const isCopyThrough = locale === sourceLocale;
+          const translated = isCopyThrough
+            ? Object.fromEntries(item.fields.map((f) => [f.field_name, f.text]))
+            : await translateFieldsToLocale(item.fields, locale);
 
           const inserts = item.fields
             .filter((f) => translated[f.field_name])
@@ -96,6 +99,7 @@ export async function GET(request: Request) {
               });
             if (error) throw error;
             localesDone++;
+            if (!isCopyThrough) modelLocalesDone++;
           }
         } catch (err) {
           errors++;
@@ -109,10 +113,12 @@ export async function GET(request: Request) {
 
     // Cron transports swallow HTTP statuses, so total failure must alert
     // itself — otherwise a dead provider chain leaves captions English-only
-    // in 11 locales with every signal green.
-    if (errors > 0 && localesDone === 0) {
+    // in 11 locales with every signal green. Judged on MODEL translations:
+    // copy-through rows always succeed and masked exactly this failure on
+    // Jul 21 (301 errors, "25 translated", all of them English copies).
+    if (errors > 0 && modelLocalesDone === 0) {
       await sendTelegram(
-        `🚨 <b>translate-pending</b>: all ${errors} translation attempt(s) failed this run (${work.length} items pending) — provider chain down?`
+        `🚨 <b>translate-pending</b>: all ${errors} model translation attempt(s) failed this run (${work.length} items pending) — provider chain down?`
       );
     }
 
@@ -120,6 +126,7 @@ export async function GET(request: Request) {
       success: true,
       pending_items: work.length,
       locales_translated: localesDone,
+      model_locales_translated: modelLocalesDone,
       errors,
       elapsed_s: Math.round((Date.now() - startedAt) / 1000),
     });
