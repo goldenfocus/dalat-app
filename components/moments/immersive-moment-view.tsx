@@ -18,6 +18,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { useShare } from "@/lib/hooks/use-share";
 import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
+import { MomentDownloadButton } from "@/components/moments/moment-download-button";
 import { ReactionBar } from "@/components/reactions/reaction-bar";
 import { MomentWatermark } from "./moment-watermark";
 import type { MomentWithProfile } from "@/lib/types";
@@ -428,6 +429,16 @@ export function ImmersiveMomentView({
                 </span>
               )}
             </button>
+
+            {/* Download — sits beside Share; this is the surface people land
+                on from a shared link, so it's the one that matters most for
+                Zalo users who couldn't save at all before. */}
+            <MomentDownloadButton
+              moment={moment}
+              variant="dark"
+              className="w-12 h-12 backdrop-blur-sm flex items-center justify-center"
+              iconClassName="w-6 h-6"
+            />
 
             {/* Share */}
             <button

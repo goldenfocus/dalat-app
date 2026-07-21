@@ -18,6 +18,8 @@ interface MomentDownloadButtonProps {
   /** Dark chrome (lightbox/immersive) vs light surfaces. */
   variant?: "dark" | "light";
   className?: string;
+  /** Icon sizing — the immersive rail runs larger than the lightbox bar. */
+  iconClassName?: string;
 }
 
 /**
@@ -32,6 +34,7 @@ export function MomentDownloadButton({
   moment,
   variant = "dark",
   className = "",
+  iconClassName = "w-5 h-5",
 }: MomentDownloadButtonProps) {
   const t = useTranslations("moments");
   const [busy, setBusy] = useState(false);
@@ -97,11 +100,11 @@ export function MomentDownloadButton({
       title={inApp ? t("download.inAppHint") : t("download.label")}
     >
       {busy ? (
-        <Loader2 className="w-5 h-5 animate-spin" />
+        <Loader2 className={`${iconClassName} animate-spin`} />
       ) : done ? (
-        <Check className="w-5 h-5 text-green-400" />
+        <Check className={`${iconClassName} text-green-400`} />
       ) : (
-        <Download className="w-5 h-5" />
+        <Download className={iconClassName} />
       )}
     </a>
   );
