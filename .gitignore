@@ -34,6 +34,10 @@ yarn-error.log*
 .env*.local
 .env
 scripts/macmini-cover-worker/worker.env
+# ".env*.local" only matches names ENDING in .local, so timestamped backups
+# like .env.local.bak-20260720 slipped through unignored
+.env*.bak*
+.env.local.*
 
 # vercel
 .vercel
@@ -48,6 +52,10 @@ supabase/.temp/
 
 # per-session git worktrees (multi-AI workflow)
 .worktrees/
+
+# playwright-mcp snapshots — page dumps capture whatever was on screen,
+# including auth tokens visible in dashboards
+.playwright-mcp/
 
 # Playwright MCP snapshots — can capture dashboard pages showing live secrets
 .playwright-mcp/
