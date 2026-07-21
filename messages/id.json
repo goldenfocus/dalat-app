@@ -1628,7 +1628,9 @@
       "albumStarted": "Menyiapkan unduhan…",
       "inAppHint": "Sulit menyimpan? Ketuk ⋯ lalu Buka di peramban.",
       "inAppNoteIos": "Untuk menyimpan foto, ketuk ⋯ lalu pilih Buka di Safari.",
-      "inAppNote": "Untuk menyimpan foto, ketuk ⋯ lalu pilih Buka di peramban."
+      "inAppNote": "Untuk menyimpan foto, ketuk ⋯ lalu pilih Buka di peramban.",
+      "linkCopiedIos": "Tautan disalin. Buka Safari lalu tempel untuk menyimpan foto ini.",
+      "linkCopied": "Tautan disalin. Buka peramban lalu tempel untuk menyimpan foto ini."
     }
   },
   "tribes": {

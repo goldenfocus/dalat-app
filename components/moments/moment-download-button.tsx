@@ -71,7 +71,7 @@ export function MomentDownloadButton({
       // over the wire changes that. Keep them here and name the one action
       // that works. (Android WebViews often do handle downloads, so they
       // still fall through to the normal navigation below.)
-      if (info.isInApp && info.isIOS) {
+      if (info.isInApp) {
         e.preventDefault();
         triggerHaptic("selection");
 
@@ -80,19 +80,33 @@ export function MomentDownloadButton({
           window.location.origin
         ).toString();
 
-        // `x-safari-https://` is undocumented but widely honoured by iOS
-        // in-app browsers: it hands the URL to Safari, which HAS a download
-        // stack. That turns three taps into one. If Zalo doesn't handle the
-        // scheme, nothing happens at all — no error to catch — so we always
-        // queue the fallback below rather than trusting it.
-        window.location.href = `x-safari-${absolute}`;
+        // Hand over the link and let the user finish in a real browser.
+        //
+        // We previously tried the undocumented `x-safari-https://` scheme to
+        // jump straight to Safari. Zalo does honour it, but iOS routes it to
+        // whichever browser it feels like — in testing it opened an unrelated
+        // app's restored tab — so where the user lands depends on what they
+        // happen to have installed. Not shippable. Copying is boring and
+        // completely predictable, which is the point.
+        try {
+          await navigator.clipboard.writeText(absolute);
+        } catch {
+          // Older WebViews reject the async clipboard API; the deprecated
+          // path still works there.
+          const ta = document.createElement("textarea");
+          ta.value = absolute;
+          ta.setAttribute("readonly", "");
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        }
 
-        // Fallback: the inline image page. Not a save, but it renders the
-        // photo and exposes Zalo's own "Open in Safari", which is where this
-        // was before. Never leave the tap doing nothing.
-        window.setTimeout(() => {
-          window.location.href = momentDownloadHref(moment.id);
-        }, 1500);
+        toast(info.isIOS ? t("download.linkCopiedIos") : t("download.linkCopied"), {
+          duration: 7000,
+        });
         return;
       }
 

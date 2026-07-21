@@ -1642,7 +1642,9 @@
       "albumStarted": "Préparation du téléchargement…",
       "inAppHint": "Problème d'enregistrement ? Appuyez sur ⋯ puis « Ouvrir dans le navigateur ».",
       "inAppNoteIos": "Pour enregistrer les photos, appuyez sur ⋯ puis « Ouvrir dans Safari ».",
-      "inAppNote": "Pour enregistrer les photos, appuyez sur ⋯ puis « Ouvrir dans le navigateur »."
+      "inAppNote": "Pour enregistrer les photos, appuyez sur ⋯ puis « Ouvrir dans le navigateur ».",
+      "linkCopiedIos": "Lien copié. Ouvrez Safari et collez-le pour enregistrer cette photo.",
+      "linkCopied": "Lien copié. Ouvrez votre navigateur et collez-le pour enregistrer cette photo."
     }
   },
   "tribes": {

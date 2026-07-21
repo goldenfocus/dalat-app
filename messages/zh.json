@@ -1631,7 +1631,9 @@
       "albumStarted": "正在准备下载…",
       "inAppHint": "无法保存？点按 ⋯ 然后选择在浏览器中打开。",
       "inAppNoteIos": "如需保存照片，请点按 ⋯ 并选择在 Safari 中打开。",
-      "inAppNote": "如需保存照片，请点按 ⋯ 并选择在浏览器中打开。"
+      "inAppNote": "如需保存照片，请点按 ⋯ 并选择在浏览器中打开。",
+      "linkCopiedIos": "已复制链接。请打开 Safari 并粘贴以保存这张照片。",
+      "linkCopied": "已复制链接。请打开浏览器并粘贴以保存这张照片。"
     }
   },
   "tribes": {

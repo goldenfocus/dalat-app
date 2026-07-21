@@ -1628,7 +1628,9 @@
       "albumStarted": "Download wird vorbereitet…",
       "inAppHint": "Probleme beim Speichern? Tippe auf ⋯ und dann „Im Browser öffnen“.",
       "inAppNoteIos": "Zum Speichern von Fotos auf ⋯ tippen und „In Safari öffnen“ wählen.",
-      "inAppNote": "Zum Speichern von Fotos auf ⋯ tippen und „Im Browser öffnen“ wählen."
+      "inAppNote": "Zum Speichern von Fotos auf ⋯ tippen und „Im Browser öffnen“ wählen.",
+      "linkCopiedIos": "Link kopiert. Öffne Safari und füge ihn ein, um das Foto zu speichern.",
+      "linkCopied": "Link kopiert. Öffne deinen Browser und füge ihn ein, um das Foto zu speichern."
     }
   },
   "tribes": {

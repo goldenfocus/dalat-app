@@ -1631,7 +1631,9 @@
       "albumStarted": "Đang chuẩn bị tải xuống…",
       "inAppHint": "Không lưu được? Nhấn ⋯ rồi chọn Mở trong trình duyệt.",
       "inAppNoteIos": "Để lưu ảnh, nhấn ⋯ rồi chọn Mở trong Safari.",
-      "inAppNote": "Để lưu ảnh, nhấn ⋯ rồi chọn Mở trong trình duyệt."
+      "inAppNote": "Để lưu ảnh, nhấn ⋯ rồi chọn Mở trong trình duyệt.",
+      "linkCopiedIos": "Đã sao chép liên kết. Mở Safari và dán vào để lưu ảnh này.",
+      "linkCopied": "Đã sao chép liên kết. Mở trình duyệt và dán vào để lưu ảnh này."
     }
   },
   "tribes": {

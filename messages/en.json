@@ -1742,7 +1742,9 @@
       "albumStarted": "Preparing your download…",
       "inAppHint": "Trouble saving? Tap ⋯ then Open in browser.",
       "inAppNoteIos": "To save photos, tap ⋯ and choose Open in Safari.",
-      "inAppNote": "To save photos, tap ⋯ and choose Open in browser."
+      "inAppNote": "To save photos, tap ⋯ and choose Open in browser.",
+      "linkCopiedIos": "Link copied. Open Safari and paste it to save this photo.",
+      "linkCopied": "Link copied. Open your browser and paste it to save this photo."
     }
   },
   "tribes": {
