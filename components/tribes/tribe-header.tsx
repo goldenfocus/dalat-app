@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TribeSettingsModal } from "./tribe-settings-modal";
 import { TribeRequestsModal } from "./tribe-requests-modal";
+import { TribeShareButton } from "./tribe-share-button";
 import type { Tribe, TribeMember } from "@/lib/types";
 
 interface TribeHeaderProps {
@@ -101,28 +102,34 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
                   </div>
                 </div>
 
-                {isAdmin && (
-                  <div className="flex gap-2">
-                    {tribe.access_type === "request" && (
+                {/* Share is for everyone — it's how a tribe grows. Admin-only
+                    actions stay gated behind isAdmin alongside it. */}
+                <div className="flex gap-2">
+                  {/* Join code goes to admins only — it grants instant membership. */}
+                  <TribeShareButton tribe={tribe} inviteCode={isAdmin ? tribe.invite_code : null} />
+                  {isAdmin && (
+                    <>
+                      {tribe.access_type === "request" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowRequests(true)}
+                          className="px-3 py-2"
+                        >
+                          {t("joinRequests")}
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
-                        size="sm"
-                        onClick={() => setShowRequests(true)}
-                        className="px-3 py-2"
+                        size="icon"
+                        onClick={() => setShowSettings(true)}
+                        className="p-2"
                       >
-                        {t("joinRequests")}
+                        <Settings className="w-4 h-4" />
                       </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setShowSettings(true)}
-                      className="p-2"
-                    >
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
 
               {tribe.description && (

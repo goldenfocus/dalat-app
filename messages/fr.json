@@ -1765,7 +1765,11 @@
     "cancelling": "Annulation...",
     "requestMessageDesc": "Envoyez un mot aux admins de la tribu (facultatif)",
     "joinFailed": "Impossible de rejoindre. Réessayer ?",
-    "andMore": "+{count} autres"
+    "andMore": "+{count} autres",
+    "shareTribe": "Partager la tribu",
+    "shareTribeText": "{name} sur dalat.app — viens trouver les tiens.",
+    "shareLink": "Lien de partage",
+    "copied": "Copié !"
   },
   "feed": {
     "title": "Fil",

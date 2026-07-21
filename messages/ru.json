@@ -1751,7 +1751,11 @@
     "cancelling": "Отменяем...",
     "requestMessageDesc": "Напишите админам племени (необязательно)",
     "joinFailed": "Не удалось присоединиться. Попробовать ещё раз?",
-    "andMore": "+{count} ещё"
+    "andMore": "+{count} ещё",
+    "shareTribe": "Поделиться трайбом",
+    "shareTribeText": "{name} на dalat.app — заходи, найди своих.",
+    "shareLink": "Ссылка для обмена",
+    "copied": "Скопировано!"
   },
   "feed": {
     "title": "Лента",

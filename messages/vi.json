@@ -1754,7 +1754,11 @@
     "cancelling": "Đang hủy...",
     "requestMessageDesc": "Gửi lời nhắn cho quản trị viên bộ lạc (không bắt buộc)",
     "joinFailed": "Chưa tham gia được. Thử lại nhé?",
-    "andMore": "+{count} thành viên nữa"
+    "andMore": "+{count} thành viên nữa",
+    "shareTribe": "Chia sẻ bộ tộc",
+    "shareTribeText": "{name} trên dalat.app — vào tìm hội của bạn nhé.",
+    "shareLink": "Liên kết chia sẻ",
+    "copied": "Đã sao chép!"
   },
   "feed": {
     "title": "Bảng tin",

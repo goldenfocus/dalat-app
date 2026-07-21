@@ -1751,7 +1751,11 @@
     "cancelling": "Membatalkan...",
     "requestMessageDesc": "Kirim pesan ke admin tribe (opsional)",
     "joinFailed": "Gagal bergabung. Coba lagi?",
-    "andMore": "+{count} lagi"
+    "andMore": "+{count} lagi",
+    "shareTribe": "Bagikan Tribe",
+    "shareTribeText": "{name} di dalat.app — yuk, temukan orang-orangmu.",
+    "shareLink": "Tautan berbagi",
+    "copied": "Tersalin!"
   },
   "feed": {
     "title": "Feed",

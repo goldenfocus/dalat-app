@@ -1754,7 +1754,11 @@
     "cancelling": "취소 중...",
     "requestMessageDesc": "트라이브 관리자에게 메시지를 보내세요 (선택)",
     "joinFailed": "참여하지 못했어요. 다시 시도할까요?",
-    "andMore": "+{count}명 더"
+    "andMore": "+{count}명 더",
+    "shareTribe": "트라이브 공유",
+    "shareTribeText": "dalat.app의 {name} — 당신의 사람들을 만나보세요.",
+    "shareLink": "공유 링크",
+    "copied": "복사됨!"
   },
   "feed": {
     "title": "피드",

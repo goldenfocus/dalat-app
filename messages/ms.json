@@ -1751,7 +1751,11 @@
     "cancelling": "Membatalkan...",
     "requestMessageDesc": "Hantar mesej kepada admin puak (pilihan)",
     "joinFailed": "Tak berjaya menyertai. Cuba lagi?",
-    "andMore": "+{count} lagi"
+    "andMore": "+{count} lagi",
+    "shareTribe": "Kongsi suku",
+    "shareTribeText": "{name} di dalat.app — jom cari geng kamu.",
+    "shareLink": "Pautan kongsi",
+    "copied": "Disalin!"
   },
   "feed": {
     "title": "Suapan",

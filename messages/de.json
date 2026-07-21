@@ -1751,7 +1751,11 @@
     "cancelling": "Wird abgebrochen...",
     "requestMessageDesc": "Schreib den Tribe-Admins eine Nachricht (optional)",
     "joinFailed": "Beitritt hat nicht geklappt. Nochmal versuchen?",
-    "andMore": "+{count} weitere"
+    "andMore": "+{count} weitere",
+    "shareTribe": "Tribe teilen",
+    "shareTribeText": "{name} auf dalat.app — komm, finde deine Leute.",
+    "shareLink": "Link teilen",
+    "copied": "Kopiert!"
   },
   "feed": {
     "title": "Feed",

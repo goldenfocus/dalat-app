@@ -1751,7 +1751,11 @@
     "cancelling": "กำลังยกเลิก...",
     "requestMessageDesc": "ส่งข้อความถึงแอดมินไทรบ์ (ไม่บังคับ)",
     "joinFailed": "เข้าร่วมไม่สำเร็จ ลองอีกครั้งไหม?",
-    "andMore": "และอีก {count} คน"
+    "andMore": "และอีก {count} คน",
+    "shareTribe": "แชร์ Tribe",
+    "shareTribeText": "{name} บน dalat.app — มาเจอก๊วนของคุณกัน",
+    "shareLink": "ลิงก์แชร์",
+    "copied": "คัดลอกแล้ว!"
   },
   "feed": {
     "title": "ฟีด",

@@ -1865,7 +1865,11 @@
     "cancelling": "Cancelling...",
     "requestMessageDesc": "Send a note to the tribe admins (optional)",
     "joinFailed": "Couldn't join. Try again?",
-    "andMore": "+{count} more"
+    "andMore": "+{count} more",
+    "shareTribe": "Share tribe",
+    "shareTribeText": "{name} on dalat.app — come find your people.",
+    "shareLink": "Share link",
+    "copied": "Copied!"
   },
   "feed": {
     "title": "Feed",

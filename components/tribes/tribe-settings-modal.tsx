@@ -390,7 +390,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
                 {copied && <p className="text-sm text-green-600">{t("codeCopied")}</p>}
                 {inviteUrl && (
                   <p className="text-xs text-muted-foreground break-all">
-                    Share link: {inviteUrl}
+                    {t("shareLink")}: {inviteUrl}
                   </p>
                 )}
               </div>

@@ -1751,7 +1751,11 @@
     "cancelling": "キャンセル中...",
     "requestMessageDesc": "トライブの管理者にメッセージを送る（任意）",
     "joinFailed": "参加できませんでした。もう一度試しますか？",
-    "andMore": "他 {count} 人"
+    "andMore": "他 {count} 人",
+    "shareTribe": "トライブをシェア",
+    "shareTribeText": "dalat.app の {name} — 仲間を見つけよう。",
+    "shareLink": "共有リンク",
+    "copied": "コピーしました！"
   },
   "feed": {
     "title": "フィード",
