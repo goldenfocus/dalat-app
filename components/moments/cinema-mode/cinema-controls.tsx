@@ -5,6 +5,7 @@ import { Share2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { useShare } from "@/lib/hooks/use-share";
+import { MomentDownloadButton } from "@/components/moments/moment-download-button";
 import {
   useCinemaModeStore,
   useCinemaProgressValue,
@@ -73,18 +74,31 @@ export function CinemaControls({
           {currentIndex + 1} / {total}
         </div>
 
-        {/* Share button */}
-        <button
-          onClick={handleShare}
-          className="p-2.5 rounded-full bg-black/30 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/50 active:scale-95 transition-all mr-[180px]"
-          aria-label="Share cinema"
-        >
-          {shared ? (
-            <Check className="w-5 h-5 text-green-400" />
-          ) : (
-            <Share2 className="w-5 h-5" />
+        {/* Download + share. The right margin clears the persistent view-mode
+            switcher, so both buttons share one wrapper rather than each
+            carrying their own offset. */}
+        <div className="flex items-center gap-2 mr-[180px]">
+          {currentMoment && (
+            <MomentDownloadButton
+              moment={currentMoment}
+              variant="dark"
+              className="!p-2.5 !bg-black/30 backdrop-blur-sm !text-white/80 hover:!bg-black/50"
+            />
           )}
-        </button>
+
+          {/* Share button */}
+          <button
+            onClick={handleShare}
+            className="p-2.5 rounded-full bg-black/30 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/50 active:scale-95 transition-all"
+            aria-label="Share cinema"
+          >
+            {shared ? (
+              <Check className="w-5 h-5 text-green-400" />
+            ) : (
+              <Share2 className="w-5 h-5" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Bottom timeline — tall touch target, thin visual bar */}

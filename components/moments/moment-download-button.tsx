@@ -50,6 +50,30 @@ export function MomentDownloadButton({
   const handleClick = useCallback(
     async (e: React.MouseEvent) => {
       e.stopPropagation();
+
+      // Default to doing nothing at all: the anchor points at a
+      // Content-Disposition route, so the browser downloads it natively —
+      // instant, streamed, with real progress. Buffering it into a blob first
+      // is strictly slower and shows a spinner for no gain.
+      //
+      // The single exception is iOS on a touch device, where a plain download
+      // lands in Files and the share sheet is the only route into Photos —
+      // which is where someone saving a photo expects to find it. macOS
+      // Safari also exposes navigator.canShare, so checking that alone would
+      // (and did) drag desktop onto the slow path.
+      const info = detectInAppBrowser();
+      const isTouch =
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(pointer: coarse)").matches;
+      const shareIsBetter =
+        isTouch &&
+        info.isIOS &&
+        !info.isInApp &&
+        typeof navigator !== "undefined" &&
+        !!navigator.canShare;
+
+      if (!shareIsBetter) return; // let the browser have it
+
       // preventDefault must come before the busy guard. Returning early
       // without it lets a second tap follow the href and navigate away
       // mid-flight, killing the save already in progress.
@@ -59,9 +83,7 @@ export function MomentDownloadButton({
       triggerHaptic("selection");
 
       try {
-        const outcome = await downloadMoment(moment, {
-          preferShare: typeof navigator !== "undefined" && !!navigator.canShare,
-        });
+        const outcome = await downloadMoment(moment, { preferShare: true });
 
         if (outcome === "saved") {
           setDone(true);

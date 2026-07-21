@@ -4,12 +4,18 @@ import { Link } from "@/lib/i18n/routing";
 import { ArrowLeft, Grid3X3, Smartphone, Share2, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useShare } from "@/lib/hooks/use-share";
+import { MomentDownloadButton } from "@/components/moments/moment-download-button";
 
 interface MomentDetailHeaderProps {
   eventSlug: string;
   eventTitle: string;
   momentId: string;
   from?: string;
+  /** Media fields for the download control; omit for text-only moments. */
+  mediaUrl?: string | null;
+  contentType?: string;
+  originalFilename?: string | null;
+  mimeType?: string | null;
 }
 
 function getBackUrl(eventSlug: string, from?: string): string {
@@ -25,6 +31,10 @@ export function MomentDetailHeader({
   eventTitle,
   momentId,
   from,
+  mediaUrl,
+  contentType,
+  originalFilename,
+  mimeType,
 }: MomentDetailHeaderProps) {
   const t = useTranslations("moments");
   const tc = useTranslations("common");
@@ -55,6 +65,19 @@ export function MomentDetailHeader({
           </Link>
 
           <div className="flex items-center gap-2">
+            {mediaUrl && (
+              <MomentDownloadButton
+                moment={{
+                  id: momentId,
+                  media_url: mediaUrl,
+                  content_type: contentType ?? "photo",
+                  original_filename: originalFilename,
+                  mime_type: mimeType,
+                }}
+                variant="light"
+              />
+            )}
+
             <button
               onClick={handleShare}
               className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 active:scale-95 transition-all touch-manipulation"

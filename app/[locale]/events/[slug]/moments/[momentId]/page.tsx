@@ -275,6 +275,10 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
           eventTitle={event.title}
           momentId={moment.id}
           from={from}
+          mediaUrl={moment.media_url}
+          contentType={moment.content_type}
+          originalFilename={moment.original_filename}
+          mimeType={moment.mime_type}
         />
         <main className="container max-w-4xl mx-auto px-4 py-6">
           <div className="grid lg:grid-cols-[1fr,320px] gap-6">
