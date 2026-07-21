@@ -197,6 +197,9 @@ export function FlyerBuilder({
 
   const handleFile = useCallback(
     async (file: File) => {
+      // A generation/refinement may be mid-flight for minutes — a drop here
+      // would be silently overwritten when the queue result lands.
+      if (isGenerating || isLoadingUrl || isConverting) return;
       setError(null);
       const validationError = validateMediaFile(file);
       if (validationError) {
@@ -229,7 +232,7 @@ export function FlyerBuilder({
       setPreviewUrl(objectUrl);
       onImageChange(objectUrl, fileToUse);
     },
-    [onImageChange, revokeExistingBlobUrl, t]
+    [onImageChange, revokeExistingBlobUrl, t, isGenerating, isLoadingUrl, isConverting]
   );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -305,35 +308,19 @@ export function FlyerBuilder({
     setIsGenerating(true);
 
     try {
-      const response = await fetch("/api/generate-flyer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), customPrompt: prompt.trim() }),
+      // Enqueued on the local image worker; resolves with a CDN URL
+      const imageUrl = await generateImageViaQueue({
+        context: "event-cover",
+        title: title.trim(),
+        customPrompt: prompt.trim(),
       });
 
-      if (!response.ok) {
-        // Try to parse JSON response, but handle non-JSON responses (e.g., from API gateway)
-        const contentType = response.headers.get("content-type");
-        if (contentType?.includes("application/json")) {
-          const data = await response.json();
-          throw new Error(data.error || t("generationFailed"));
-        } else {
-          // Non-JSON response (likely from API gateway)
-          const text = await response.text();
-          if (response.status === 413 || text.toLowerCase().includes("too large")) {
-            throw new Error("Request too large. Try a shorter prompt.");
-          }
-          throw new Error(`Server error (${response.status}): ${text.slice(0, 100)}`);
-        }
-      }
-
-      const data = await response.json();
       revokeExistingBlobUrl();
-      setPreviewUrl(data.imageUrl);
-      onImageChange(data.imageUrl);
+      setPreviewUrl(imageUrl);
+      onImageChange(imageUrl);
       setShowPromptEditor(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("generationFailed"));
+      setError(describeImageJobError(err, tCommon, t("generationFailed")));
     } finally {
       setIsGenerating(false);
     }

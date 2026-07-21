@@ -337,12 +337,16 @@ export function EventMediaUpload({
       e.preventDefault();
       setIsDragOver(false);
 
+      // Drops bubble through the loading overlay — ignore them while an
+      // upload/generation is mid-flight or the late result overwrites this.
+      if (isUploading || isLoadingUrl || isGenerating || isConverting) return;
+
       const file = e.dataTransfer.files?.[0];
       if (file) {
         uploadMedia(file);
       }
     },
-    [eventId, currentMediaUrl, bucket]
+    [eventId, currentMediaUrl, bucket, isUploading, isLoadingUrl, isGenerating, isConverting]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
