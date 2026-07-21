@@ -1,7 +1,5 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { aiChatJson } from "@/lib/ai/provider";
 import { reviewLyricsWithAI } from "@/lib/karaoke/review-lyrics";
-
-const anthropic = new Anthropic();
 
 export interface AudioAnalysis {
   ai_description: string;
@@ -168,36 +166,28 @@ Return JSON:
 If there's no transcript, base description on available metadata.
 Output ONLY the JSON object.`;
 
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 512,
-      messages: [{ role: "user", content: prompt }],
-    });
+  // No metadata-string fallback on failure: a fake "success" here would get
+  // upserted as completed and fanned out to 12 locales as SEO copy. Let the
+  // error propagate so the moment settles as failed and the cron alerts.
+  const result = await aiChatJson<{
+    ai_description?: string;
+    ai_title?: string;
+    audio_summary?: string;
+    ai_tags?: string[];
+    mood?: string;
+  }>({ prompt, maxTokens: 512 });
 
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
-      throw new Error("Could not parse audio summary response");
-    }
-
-    return JSON.parse(jsonMatch[0]);
-  } catch (error) {
-    console.error("Error summarizing audio:", error);
-    return {
-      ai_description: existingMetadata.title
-        ? `${existingMetadata.title}${existingMetadata.artist ? ` by ${existingMetadata.artist}` : ""}`
-        : "Audio from event",
-      ai_title: existingMetadata.title || "Event audio",
-      audio_summary: existingMetadata.genre
-        ? `${existingMetadata.genre} audio`
-        : "Audio recording",
-      ai_tags: [existingMetadata.genre, existingMetadata.artist, "audio", "music"]
-        .filter(Boolean) as string[],
-      mood: "neutral",
-    };
+  const description = String(result.ai_description || "").trim();
+  if (!description) {
+    throw new Error("Audio summary output missing ai_description");
   }
+  return {
+    ai_description: description,
+    ai_title: String(result.ai_title || existingMetadata.title || "").trim(),
+    audio_summary: String(result.audio_summary || "").trim(),
+    ai_tags: Array.isArray(result.ai_tags) ? result.ai_tags.slice(0, 10).map(String) : [],
+    mood: String(result.mood || "neutral"),
+  };
 }
 
 /**

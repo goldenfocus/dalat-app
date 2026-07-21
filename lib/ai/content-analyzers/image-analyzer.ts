@@ -1,6 +1,17 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-const anthropic = new Anthropic();
+/**
+ * Image caption contract for the keyless captioning pipeline.
+ *
+ * Inference no longer happens on this server: the cron enqueues caption_jobs
+ * (prompt included in the row), the Mac mini worker runs the vision model
+ * (subscription `claude -p` or local VLM — no pay-per-token API keys), and the
+ * /api/admin/caption-jobs/complete route validates the model's raw JSON with
+ * normalizeImageAnalysis() before anything reaches moment_metadata.
+ *
+ * The schema is deliberately slim: only fields with real consumers (SEO alt
+ * text, keywords, the AI-insights panel). quality_score is intentionally NOT
+ * produced — machine-written scores would reshuffle the homepage moments-strip
+ * ORDER BY (COALESCE(quality_score, 0.5) handles absent values).
+ */
 
 export interface ImageAnalysis {
   ai_description: string;
@@ -8,16 +19,14 @@ export interface ImageAnalysis {
   ai_tags: string[];
   scene_description: string;
   mood: string;
-  quality_score: number;
   detected_objects: string[];
-  detected_text: string[];
-  detected_faces_count: number;
-  dominant_colors: string[];
-  location_hints: string[];
   content_language: string;
 }
 
-const IMAGE_ANALYSIS_PROMPT = `Analyze this image from an event in Đà Lạt, Vietnam. Extract detailed metadata for SEO and search.
+/** Bump when the prompt changes — jobs carry it, so re-runs are a WHERE clause. */
+export const IMAGE_PROMPT_VERSION = "v2-slim";
+
+export const IMAGE_ANALYSIS_PROMPT = `Analyze this image from an event in Đà Lạt, Vietnam. Extract metadata for SEO and search.
 
 PRIVACY RULES (mandatory):
 - Describe the SCENE only. Never identify, name, or describe individual people's appearance, clothing, or distinguishing features. "A group of friends laughing over board games" is fine; "a woman in a red dress" is not.
@@ -31,112 +40,34 @@ Return a JSON object with these exact fields:
   "ai_tags": ["array", "of", "relevant", "keywords", "max 10"],
   "scene_description": "Detailed description of the scene, setting, and what's happening",
   "mood": "one word: festive, calm, energetic, intimate, joyful, dramatic, peaceful, vibrant, cozy, or nostalgic",
-  "quality_score": 0.0-1.0 (how visually appealing/shareable the image is),
   "detected_objects": ["array of objects visible: stage, crowd, lights, etc."],
-  "detected_text": ["public text visible in the image (venue signs, banners, etc.) — never personal info"],
-  "detected_faces_count": number of faces visible (0 if none),
-  "dominant_colors": ["#hex", "#colors", "up to 5"],
-  "location_hints": ["scene-level clues only: outdoor, cafe, street, etc. — never specific addresses"],
-  "content_language": "detected language of any text, or 'en' if none"
+  "content_language": "detected language of any public text, or 'en' if none"
 }
 
-Be specific and descriptive. Focus on Đà Lạt/Vietnamese cultural context when relevant.
+Be specific and descriptive — generic captions ("people at an event") are useless for search. Focus on Đà Lạt/Vietnamese cultural context when relevant.
 Output ONLY the JSON object, no other text.`;
 
 /**
- * Analyze an image using Claude Vision to extract metadata for SEO.
+ * Turn untrusted model output into a safe, typed analysis.
+ * Throws when the load-bearing field (ai_description) is missing.
  */
-export async function analyzeImage(imageUrl: string): Promise<ImageAnalysis> {
-  const startTime = Date.now();
-
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 1024,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: {
-                type: "url",
-                url: imageUrl,
-              },
-            },
-            {
-              type: "text",
-              text: IMAGE_ANALYSIS_PROMPT,
-            },
-          ],
-        },
-      ],
-    });
-
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
-
-    // Parse JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      console.error("Failed to parse image analysis response:", text);
-      throw new Error("Could not parse AI response");
-    }
-
-    const result = JSON.parse(jsonMatch[0]);
-
-    // Validate and normalize the result
-    return {
-      ai_description: String(result.ai_description || ""),
-      ai_title: String(result.ai_title || ""),
-      ai_tags: Array.isArray(result.ai_tags)
-        ? result.ai_tags.slice(0, 10).map(String)
-        : [],
-      scene_description: String(result.scene_description || ""),
-      mood: String(result.mood || "neutral"),
-      quality_score: typeof result.quality_score === "number"
-        ? Math.min(1, Math.max(0, result.quality_score))
-        : 0.5,
-      detected_objects: Array.isArray(result.detected_objects)
-        ? result.detected_objects.map(String)
-        : [],
-      detected_text: Array.isArray(result.detected_text)
-        ? result.detected_text.map(String)
-        : [],
-      detected_faces_count: typeof result.detected_faces_count === "number"
-        ? Math.max(0, Math.floor(result.detected_faces_count))
-        : 0,
-      dominant_colors: Array.isArray(result.dominant_colors)
-        ? result.dominant_colors.slice(0, 5).map(String)
-        : [],
-      location_hints: Array.isArray(result.location_hints)
-        ? result.location_hints.map(String)
-        : [],
-      content_language: String(result.content_language || "en"),
-    };
-  } catch (error) {
-    console.error("Error analyzing image:", error);
-    throw error;
+export function normalizeImageAnalysis(raw: unknown): ImageAnalysis {
+  const result = (raw ?? {}) as Record<string, unknown>;
+  const description = String(result.ai_description || "").trim();
+  if (!description) {
+    throw new Error("Model output missing ai_description");
   }
-}
-
-/**
- * Analyze multiple images in batch (sequential to avoid rate limits).
- */
-export async function analyzeImagesBatch(
-  imageUrls: string[]
-): Promise<Map<string, ImageAnalysis | Error>> {
-  const results = new Map<string, ImageAnalysis | Error>();
-
-  for (const url of imageUrls) {
-    try {
-      const analysis = await analyzeImage(url);
-      results.set(url, analysis);
-      // Small delay between requests to respect rate limits
-      await new Promise((resolve) => setTimeout(resolve, 200));
-    } catch (error) {
-      results.set(url, error instanceof Error ? error : new Error(String(error)));
-    }
-  }
-
-  return results;
+  return {
+    ai_description: description,
+    ai_title: String(result.ai_title || "").trim(),
+    ai_tags: Array.isArray(result.ai_tags)
+      ? result.ai_tags.slice(0, 10).map(String)
+      : [],
+    scene_description: String(result.scene_description || "").trim(),
+    mood: String(result.mood || "neutral"),
+    detected_objects: Array.isArray(result.detected_objects)
+      ? result.detected_objects.slice(0, 20).map(String)
+      : [],
+    content_language: String(result.content_language || "en"),
+  };
 }

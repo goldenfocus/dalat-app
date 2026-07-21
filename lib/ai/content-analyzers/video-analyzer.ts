@@ -1,7 +1,11 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { analyzeImage, type ImageAnalysis } from "./image-analyzer";
-
-const anthropic = new Anthropic();
+/**
+ * Video caption contract for the keyless captioning pipeline.
+ *
+ * The cron extracts key-frame URLs + the Cloudflare Stream transcript at
+ * enqueue time and writes them into the caption_jobs row along with the
+ * prompt built here. The Mac mini worker runs the vision model over the
+ * frames; normalizeVideoAnalysis() validates the raw JSON on completion.
+ */
 
 export interface VideoAnalysis {
   ai_description: string;
@@ -9,12 +13,12 @@ export interface VideoAnalysis {
   ai_tags: string[];
   scene_description: string;
   mood: string;
-  quality_score: number;
-  video_transcript: string | null;
-  video_summary: string | null;
-  key_frame_urls: string[];
+  video_summary: string;
   content_language: string;
 }
+
+/** Bump when the prompt changes — jobs carry it, so re-runs are a WHERE clause. */
+export const VIDEO_PROMPT_VERSION = "v2-slim";
 
 /**
  * Extract key frame URLs from Cloudflare Stream video.
@@ -43,9 +47,26 @@ export function getKeyFrameUrls(
   );
 }
 
+/** Key-frame timestamps for a video of known (or unknown) duration. */
+export function keyFrameTimestamps(durationSeconds?: number | null): number[] {
+  return durationSeconds
+    ? [
+        0,
+        Math.floor(durationSeconds * 0.25),
+        Math.floor(durationSeconds * 0.5),
+        Math.floor(durationSeconds * 0.75),
+      ]
+    : [0, 10, 20, 30];
+}
+
 /**
- * Fetch transcript from Cloudflare Stream captions if available.
- * Falls back to null if no captions are available.
+ * Fetch transcript from Cloudflare Stream captions.
+ *
+ * Returns null only when captions legitimately don't exist (none generated,
+ * or no video-captions resource). Request failures THROW: the transcript is
+ * resolved once at enqueue and baked into the job row permanently, so a
+ * transient CF error swallowed here would silently strip transcripts from
+ * captions with no way to tell it apart from "video has no speech".
  */
 export async function getCloudflareTranscript(
   videoUid: string
@@ -58,57 +79,55 @@ export async function getCloudflareTranscript(
     return null;
   }
 
-  try {
-    // First, check if captions exist
-    const captionsResponse = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${videoUid}/captions`,
-      {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      }
-    );
-
-    if (!captionsResponse.ok) {
-      return null;
+  // First, check if captions exist
+  const captionsResponse = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${videoUid}/captions`,
+    {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
     }
+  );
 
-    const captionsData = await captionsResponse.json();
-    const captions = captionsData.result || [];
+  if (captionsResponse.status === 404) {
+    return null; // no captions resource for this video
+  }
+  if (!captionsResponse.ok) {
+    throw new Error(`CF captions list failed (${captionsResponse.status}) for ${videoUid}`);
+  }
 
-    if (captions.length === 0) {
-      return null;
-    }
+  const captionsData = await captionsResponse.json();
+  const captions = captionsData.result || [];
 
-    // Get the first available caption track
-    const caption = captions[0];
-    const language = caption.label || caption.language || "en";
-
-    // Fetch the VTT content
-    const vttResponse = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${videoUid}/captions/${caption.language}`,
-      {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-        },
-      }
-    );
-
-    if (!vttResponse.ok) {
-      return null;
-    }
-
-    const vttData = await vttResponse.json();
-    const vttContent = vttData.result?.vtt || "";
-
-    // Parse VTT to extract text
-    const text = parseVTTToText(vttContent);
-
-    return { text, language };
-  } catch (error) {
-    console.error("Error fetching Cloudflare transcript:", error);
+  if (captions.length === 0) {
     return null;
   }
+
+  // Get the first available caption track
+  const caption = captions[0];
+  const language = caption.label || caption.language || "en";
+
+  // Fetch the VTT content
+  const vttResponse = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/${videoUid}/captions/${caption.language}`,
+    {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+    }
+  );
+
+  if (!vttResponse.ok) {
+    throw new Error(`CF captions fetch failed (${vttResponse.status}) for ${videoUid}`);
+  }
+
+  const vttData = await vttResponse.json();
+  const vttContent = vttData.result?.vtt || "";
+
+  // Parse VTT to extract text
+  const text = parseVTTToText(vttContent);
+
+  return { text, language };
 }
 
 /**
@@ -148,126 +167,53 @@ function parseVTTToText(vtt: string): string {
 }
 
 /**
- * Summarize video content using Claude based on frame analysis and transcript.
+ * Build the worker prompt for a video job: the model sees the key frames as
+ * images and this text alongside them.
  */
-async function summarizeVideo(
-  frameAnalyses: ImageAnalysis[],
-  transcript: string | null
-): Promise<{
-  ai_description: string;
-  ai_title: string;
-  video_summary: string;
-  ai_tags: string[];
-  mood: string;
-}> {
-  const frameDescriptions = frameAnalyses
-    .map((f, i) => `Frame ${i + 1}: ${f.scene_description}`)
-    .join("\n");
+export function buildVideoAnalysisPrompt(transcript: string | null): string {
+  return `The attached images are key frames (in chronological order) from one video recorded at an event in Đà Lạt, Vietnam. Analyze the VIDEO they represent and extract metadata for SEO and search.
 
-  const prompt = `Summarize this video from an event in Đà Lạt, Vietnam.
-
-PRIVACY RULES (mandatory): describe the scene only — never identify, name, or describe individual people; keep location references at neighborhood level or broader; never guess a specific address or whose home a place might be.
-
-Frame descriptions:
-${frameDescriptions}
+PRIVACY RULES (mandatory):
+- Describe the SCENE only. Never identify, name, or describe individual people's appearance, clothing, or distinguishing features.
+- Location references stay at neighborhood level or broader. Never guess a specific address, street number, or whose home a place might be.
+- Do not transcribe text that reveals personal information (names, phone numbers, addresses).
 
 ${transcript ? `Transcript:\n${transcript.slice(0, 2000)}` : "No transcript available."}
 
-Return JSON:
+Return a JSON object with these exact fields:
 {
   "ai_description": "2-3 sentence SEO description of the video content",
   "ai_title": "Short catchy title (5-10 words)",
+  "ai_tags": ["array", "of", "relevant", "keywords", "max 10"],
+  "scene_description": "Detailed description of the setting and what happens across the video",
+  "mood": "one word: festive, calm, energetic, intimate, joyful, dramatic, peaceful, vibrant, cozy, or nostalgic",
   "video_summary": "Detailed summary of what happens in the video (2-4 sentences)",
-  "ai_tags": ["array", "of", "relevant", "keywords"],
-  "mood": "one word mood: festive, calm, energetic, intimate, joyful, dramatic, peaceful, vibrant"
+  "content_language": "language of the transcript or visible public text, or 'en' if none"
 }
 
-Output ONLY the JSON object.`;
-
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 512,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
-      throw new Error("Could not parse video summary response");
-    }
-
-    return JSON.parse(jsonMatch[0]);
-  } catch (error) {
-    console.error("Error summarizing video:", error);
-    // Return aggregated data from frames as fallback
-    return {
-      ai_description: frameAnalyses[0]?.ai_description || "Video from event",
-      ai_title: frameAnalyses[0]?.ai_title || "Event video",
-      video_summary: frameDescriptions,
-      ai_tags: [...new Set(frameAnalyses.flatMap((f) => f.ai_tags))].slice(0, 10),
-      mood: frameAnalyses[0]?.mood || "neutral",
-    };
-  }
+Be specific and descriptive — generic captions are useless for search. Focus on Đà Lạt/Vietnamese cultural context when relevant.
+Output ONLY the JSON object, no other text.`;
 }
 
 /**
- * Analyze a video using frame extraction and optional transcript.
+ * Turn untrusted model output into a safe, typed analysis.
+ * Throws when the load-bearing field (ai_description) is missing.
  */
-export async function analyzeVideo(
-  playbackUrl: string,
-  videoUid: string,
-  durationSeconds?: number
-): Promise<VideoAnalysis> {
-  // Get key frame URLs
-  const timestamps = durationSeconds
-    ? [0, Math.floor(durationSeconds * 0.25), Math.floor(durationSeconds * 0.5), Math.floor(durationSeconds * 0.75)]
-    : [0, 10, 20, 30];
-
-  const keyFrameUrls = getKeyFrameUrls(playbackUrl, timestamps);
-
-  // Analyze key frames (use first 2-3 to save costs)
-  const framesToAnalyze = keyFrameUrls.slice(0, 3);
-  const frameAnalyses: ImageAnalysis[] = [];
-
-  for (const url of framesToAnalyze) {
-    try {
-      const analysis = await analyzeImage(url);
-      frameAnalyses.push(analysis);
-    } catch (error) {
-      console.error("Error analyzing frame:", url, error);
-    }
+export function normalizeVideoAnalysis(raw: unknown): VideoAnalysis {
+  const result = (raw ?? {}) as Record<string, unknown>;
+  const description = String(result.ai_description || "").trim();
+  if (!description) {
+    throw new Error("Model output missing ai_description");
   }
-
-  if (frameAnalyses.length === 0) {
-    throw new Error("Could not analyze any video frames");
-  }
-
-  // Get transcript from Cloudflare
-  const transcriptResult = await getCloudflareTranscript(videoUid);
-
-  // Generate summary
-  const summary = await summarizeVideo(
-    frameAnalyses,
-    transcriptResult?.text || null
-  );
-
-  // Aggregate quality score from frames
-  const avgQuality =
-    frameAnalyses.reduce((sum, f) => sum + f.quality_score, 0) /
-    frameAnalyses.length;
-
   return {
-    ai_description: summary.ai_description,
-    ai_title: summary.ai_title,
-    ai_tags: summary.ai_tags,
-    scene_description: frameAnalyses[0]?.scene_description || "",
-    mood: summary.mood,
-    quality_score: avgQuality,
-    video_transcript: transcriptResult?.text || null,
-    video_summary: summary.video_summary,
-    key_frame_urls: keyFrameUrls,
-    content_language: transcriptResult?.language || frameAnalyses[0]?.content_language || "en",
+    ai_description: description,
+    ai_title: String(result.ai_title || "").trim(),
+    ai_tags: Array.isArray(result.ai_tags)
+      ? result.ai_tags.slice(0, 10).map(String)
+      : [],
+    scene_description: String(result.scene_description || "").trim(),
+    mood: String(result.mood || "neutral"),
+    video_summary: String(result.video_summary || "").trim(),
+    content_language: String(result.content_language || "en"),
   };
 }

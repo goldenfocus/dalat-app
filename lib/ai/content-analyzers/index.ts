@@ -1,7 +1,21 @@
-// Content Analyzers for Moment AI Metadata Extraction
-// These analyzers extract rich metadata from user-generated content for SEO
+// Content analyzers for moment AI metadata (SEO captions).
+// Vision inference runs on the Mac mini caption worker via caption_jobs —
+// these modules provide the prompts, types, and output validation. Audio
+// analysis (text-only) still runs inline through the free provider chain.
 
-export { analyzeImage, analyzeImagesBatch, type ImageAnalysis } from "./image-analyzer";
-export { analyzeVideo, getKeyFrameUrls, getCloudflareTranscript, type VideoAnalysis } from "./video-analyzer";
+export {
+  IMAGE_ANALYSIS_PROMPT,
+  IMAGE_PROMPT_VERSION,
+  normalizeImageAnalysis,
+  type ImageAnalysis,
+} from "./image-analyzer";
+export {
+  getKeyFrameUrls,
+  keyFrameTimestamps,
+  getCloudflareTranscript,
+  buildVideoAnalysisPrompt,
+  normalizeVideoAnalysis,
+  VIDEO_PROMPT_VERSION,
+  type VideoAnalysis,
+} from "./video-analyzer";
 export { analyzeAudio, type AudioAnalysis } from "./audio-analyzer";
-export { analyzeDocument, type DocumentAnalysis } from "./document-analyzer";

@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { analyzeAudio } from "@/lib/ai/content-analyzers";
 import {
-  analyzeImage,
-  analyzeVideo,
-  analyzeAudio,
-  analyzeDocument,
-} from "@/lib/ai/content-analyzers";
-import { triggerTranslationServer } from "@/lib/translations";
+  enqueueCaptionJob,
+  isCaptionWorkerAlive,
+} from "@/lib/ai/caption-jobs";
 import { sendTelegram } from "@/lib/alerts/telegram";
-import type { TranslationFieldName } from "@/lib/types";
 
 export const maxDuration = 300;
 
-const DEFAULT_BATCH = 12;
-const MAX_BATCH = 50;
+const DEFAULT_BATCH = 50;
+const MAX_BATCH = 200;
 // PostgREST .in() filters ride in the GET URL — keep chunks well under limits.
 const IN_CHUNK = 200;
+// A video with no playback URL after this long will never transcode
+// (transcoding happens at upload) — settle it instead of rescanning forever.
+const VIDEO_NEVER_TRANSCODED_MS = 7 * 24 * 60 * 60 * 1000;
 
 function getSupabase() {
   return createClient(
@@ -39,6 +39,7 @@ interface PendingMoment {
   genre: string | null;
   video_duration_seconds: number | null;
   audio_duration_seconds: number | null;
+  created_at: string;
   events: {
     has_private_details: boolean;
     tribe_id: string | null;
@@ -60,22 +61,27 @@ function isPrivacyGated(event: PendingMoment["events"]): boolean {
 }
 
 /**
- * AI captioning pipeline — ported from the never-deployed Inngest
- * processPendingMoments (lib/inngest/functions/moment-processing.ts) into a
- * plain Vercel cron route. Picks up published moments without settled
- * metadata, runs the content-type-appropriate analyzer, upserts
- * moment_metadata, and fans the caption text out to 12-locale translation.
+ * AI captioning pipeline, keyless edition (vault rule: no pay-per-token
+ * API keys). This route is the ONLY caption_jobs enqueuer — the privacy
+ * gate runs here, before any media URL leaves our tables — and the Mac
+ * mini worker does the actual vision inference (subscription `claude -p`
+ * or local VLM) via /api/admin/caption-jobs/*.
+ *
+ * Photos + videos: gate -> enqueue caption job (worker settles the moment).
+ * Audio: analyzed inline through the free text-provider chain (rare).
+ * PDF/documents: settled 'skipped' — no keyless analyzer exists for them.
+ * Translation fan-out lives in translate-pending, NOT here — inline
+ * 12-locale fan-out capped the old pipeline at ~15 moments/day.
  *
  * Failure posture (aggregator-v1 lesson — never a quiet green):
  * - query errors return 500
- * - zero successes with any failures return 500
- * - ANY failure (analysis or translation) fires a Telegram alert directly —
- *   the Cloudflare cron wrapper and Vercel cron both swallow HTTP statuses.
+ * - failures with zero successes return 500
+ * - failures and a dark worker with queued jobs fire a Telegram alert
  *
  * Query params:
- * - limit: max moments to analyze this run (default 12, cap 50)
- * - delay: ms between AI calls (default 1000)
- * - dryRun: report counts without calling any AI
+ * - limit: max moments to handle this run (default 50, cap 200)
+ * - delay: ms between inline (audio) AI calls (default 1000)
+ * - dryRun: report counts without enqueueing or calling any AI
  */
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
@@ -110,6 +116,9 @@ export async function GET(request: Request) {
   const pending: PendingMoment[] = [];
   let settledSeen = 0;
   let scanned = 0;
+  // Videos still transcoding are excluded BEFORE the batch is sliced — 448
+  // untranscoded videos must not eat batch slots and stall the backfill.
+  let awaitingTranscode = 0;
 
   for (let offset = 0; offset < MAX_SCAN && pending.length < limit * 2; offset += PAGE_SIZE) {
     const { data: candidates, error: fetchError } = await supabase
@@ -118,7 +127,7 @@ export async function GET(request: Request) {
         `
         id, content_type, media_url, file_url, cf_video_uid, cf_playback_url,
         mime_type, original_filename, title, artist, album, genre,
-        video_duration_seconds, audio_duration_seconds,
+        video_duration_seconds, audio_duration_seconds, created_at,
         events!moments_event_id_fkey!inner(has_private_details, tribe_id, tribe_visibility)
       `
       )
@@ -155,10 +164,20 @@ export async function GET(request: Request) {
     }
     settledSeen += settledIds.size;
 
-    // pending/failed/processing all get retried — 'processing' only survives
-    // a run that died mid-flight, and the upsert makes retries harmless.
+    // pending/failed/processing all get retried — the caption_jobs UNIQUE
+    // row + retry_rounds cap make re-enqueues harmless and bounded.
     for (const m of page) {
-      if (!settledIds.has(m.id)) pending.push(m);
+      if (settledIds.has(m.id)) continue;
+      const videoNotReady =
+        m.content_type === "video" && (!m.cf_playback_url || !m.cf_video_uid);
+      if (
+        videoNotReady &&
+        Date.now() - new Date(m.created_at).getTime() < VIDEO_NEVER_TRANSCODED_MS
+      ) {
+        awaitingTranscode++;
+        continue;
+      }
+      pending.push(m);
     }
 
     if (page.length < PAGE_SIZE) break; // library exhausted
@@ -171,121 +190,81 @@ export async function GET(request: Request) {
       dryRun: true,
       scanned,
       settledSeen,
+      awaitingTranscode,
       pendingFound: pending.length,
       wouldProcess: batch.length,
       wouldSkipPrivacy: batch.filter((m) => isPrivacyGated(m.events)).length,
     });
   }
 
-  let completed = 0;
+  let enqueued = 0;
+  let retryReset = 0;
+  let queuedBefore = 0;
+  let audioCompleted = 0;
   let skippedPrivacy = 0;
-  let deferred = 0; // videos not yet transcoded — retried next run
+  let skippedUnsupported = 0;
+  let gaveUp = 0;
   let failed = 0;
-  let translationFailed = 0;
-  let attempted = 0;
+  let audioAttempted = 0;
   const errors: { id: string; error: string }[] = [];
+
+  const settleSkipped = async (momentId: string, reason: string) => {
+    const { error } = await supabase.rpc("upsert_moment_metadata", {
+      p_moment_id: momentId,
+      p_processing_status: "skipped",
+      p_processing_error: reason,
+    });
+    if (error) {
+      console.error(`[process-moments] skip upsert failed for ${momentId}:`, error);
+      failed++;
+      errors.push({ id: momentId, error: `skip upsert: ${error.message}` });
+      return false;
+    }
+    return true;
+  };
 
   for (const moment of batch) {
     // Privacy gate first — before any URL leaves our infrastructure.
     if (isPrivacyGated(moment.events)) {
-      const { error } = await supabase.rpc("upsert_moment_metadata", {
-        p_moment_id: moment.id,
-        p_processing_status: "skipped",
-        p_processing_error: "privacy_gate",
-      });
-      if (error) {
-        console.error(`[process-moments] gate upsert failed for ${moment.id}:`, error);
-        failed++;
-        errors.push({ id: moment.id, error: `gate upsert: ${error.message}` });
-      } else {
-        skippedPrivacy++;
-      }
+      if (await settleSkipped(moment.id, "privacy_gate")) skippedPrivacy++;
       continue;
     }
-
-    // Video not transcoded yet — defer without burning an AI attempt, so a
-    // batch of not-ready videos can't mask a dead analyzer in the failure math.
-    if (
-      moment.content_type === "video" &&
-      (!moment.cf_playback_url || !moment.cf_video_uid)
-    ) {
-      const { error } = await supabase.rpc("upsert_moment_metadata", {
-        p_moment_id: moment.id,
-        p_processing_status: "pending",
-        p_processing_error: "Video not ready for processing",
-      });
-      if (error) {
-        console.error(`[process-moments] defer upsert failed for ${moment.id}:`, error);
-      }
-      deferred++;
-      continue;
-    }
-
-    if (attempted > 0 && delay > 0) {
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-    attempted++;
-    const startTime = Date.now();
 
     try {
-      const { error: statusError } = await supabase.rpc("upsert_moment_metadata", {
-        p_moment_id: moment.id,
-        p_processing_status: "processing",
-      });
-      if (statusError) {
-        console.error(`[process-moments] processing upsert failed for ${moment.id}:`, statusError);
-      }
-
-      let metadata: Record<string, unknown> = {};
-
       switch (moment.content_type) {
         case "photo":
-        case "image": {
-          const imageUrl = moment.media_url || moment.file_url;
-          if (!imageUrl) throw new Error("No image URL provided");
-
-          const analysis = await analyzeImage(imageUrl);
-          metadata = {
-            p_ai_description: analysis.ai_description,
-            p_ai_title: analysis.ai_title,
-            p_ai_tags: analysis.ai_tags,
-            p_scene_description: analysis.scene_description,
-            p_mood: analysis.mood,
-            p_quality_score: analysis.quality_score,
-            p_detected_objects: analysis.detected_objects,
-            p_detected_text: analysis.detected_text,
-            p_detected_faces_count: analysis.detected_faces_count,
-            p_dominant_colors: analysis.dominant_colors,
-            p_location_hints: analysis.location_hints,
-            p_content_language: analysis.content_language,
-          };
-          break;
-        }
-
+        case "image":
         case "video": {
-          const analysis = await analyzeVideo(
-            moment.cf_playback_url!,
-            moment.cf_video_uid!,
-            moment.video_duration_seconds || undefined
-          );
-          metadata = {
-            p_ai_description: analysis.ai_description,
-            p_ai_title: analysis.ai_title,
-            p_ai_tags: analysis.ai_tags,
-            p_scene_description: analysis.scene_description,
-            p_mood: analysis.mood,
-            p_quality_score: analysis.quality_score,
-            p_video_transcript: analysis.video_transcript,
-            p_video_summary: analysis.video_summary,
-            p_key_frame_urls: analysis.key_frame_urls,
-            p_content_language: analysis.content_language,
-          };
+          // Only never-transcoded stragglers reach here without a playback
+          // URL (young ones were excluded during the scan).
+          if (
+            moment.content_type === "video" &&
+            (!moment.cf_playback_url || !moment.cf_video_uid)
+          ) {
+            if (await settleSkipped(moment.id, "never_transcoded")) skippedUnsupported++;
+            break;
+          }
+          const { outcome } = await enqueueCaptionJob(moment);
+          if (outcome === "enqueued") enqueued++;
+          else if (outcome === "retry_reset") retryReset++;
+          else if (outcome === "queued_before") queuedBefore++;
+          else if (outcome === "gave_up") {
+            // Giving up on a moment is an incident, not bookkeeping — it gets
+            // its own counter and its own alert below.
+            if (await settleSkipped(moment.id, "caption_gave_up")) gaveUp++;
+          }
           break;
         }
 
         case "audio": {
           const audioUrl = moment.file_url || moment.media_url;
           if (!audioUrl) throw new Error("No audio URL provided");
+
+          if (audioAttempted > 0 && delay > 0) {
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+          audioAttempted++;
+          const startTime = Date.now();
 
           const analysis = await analyzeAudio(audioUrl, {
             title: moment.title,
@@ -294,7 +273,8 @@ export async function GET(request: Request) {
             genre: moment.genre,
             duration_seconds: moment.audio_duration_seconds,
           });
-          metadata = {
+          const { error: upsertError } = await supabase.rpc("upsert_moment_metadata", {
+            p_moment_id: moment.id,
             p_ai_description: analysis.ai_description,
             p_ai_title: analysis.ai_title,
             p_ai_tags: analysis.ai_tags,
@@ -303,84 +283,25 @@ export async function GET(request: Request) {
             p_audio_transcript: analysis.audio_transcript,
             p_audio_summary: analysis.audio_summary,
             p_audio_language: analysis.audio_language,
-          };
+            p_processing_status: "completed",
+            p_processing_duration_ms: Date.now() - startTime,
+          });
+          if (upsertError) throw new Error(`metadata upsert failed: ${upsertError.message}`);
+          audioCompleted++;
           break;
         }
 
         case "pdf":
         case "document": {
-          const docUrl = moment.file_url || moment.media_url;
-          if (!docUrl) throw new Error("No document URL provided");
-
-          const analysis = await analyzeDocument(
-            docUrl,
-            moment.mime_type,
-            moment.original_filename
-          );
-          metadata = {
-            p_ai_description: analysis.ai_description,
-            p_ai_title: analysis.ai_title,
-            p_ai_tags: analysis.ai_tags,
-            p_quality_score: analysis.quality_score,
-            p_pdf_summary: analysis.pdf_summary,
-            p_pdf_extracted_text: analysis.pdf_extracted_text,
-            p_pdf_page_count: analysis.pdf_page_count,
-            p_pdf_key_topics: analysis.pdf_key_topics,
-            p_content_language: analysis.content_language,
-          };
+          // No keyless analyzer for documents — settle instead of failing
+          // forever. Revisit if document moments ever matter for SEO.
+          if (await settleSkipped(moment.id, "analyzer_unavailable")) skippedUnsupported++;
           break;
         }
 
         default:
           throw new Error(`Unknown content type: ${moment.content_type}`);
       }
-
-      const { error: upsertError } = await supabase.rpc("upsert_moment_metadata", {
-        p_moment_id: moment.id,
-        ...metadata,
-        p_processing_status: "completed",
-        p_processing_duration_ms: Date.now() - startTime,
-      });
-      if (upsertError) throw new Error(`metadata upsert failed: ${upsertError.message}`);
-
-      // Fan every AI-generated text out to the 12-locale translation table —
-      // this is what makes the captions discoverable in all languages.
-      // updateSourceLocale: false — these are machine captions; the moment's
-      // source_locale records the language the USER wrote in.
-      const fieldsToTranslate: { field_name: TranslationFieldName; text: string }[] = [];
-      const translationCandidates: [TranslationFieldName, unknown][] = [
-        ["ai_description", metadata.p_ai_description],
-        ["scene_description", metadata.p_scene_description],
-        ["video_summary", metadata.p_video_summary],
-        ["audio_summary", metadata.p_audio_summary],
-        ["pdf_summary", metadata.p_pdf_summary],
-        ["ai_title", metadata.p_ai_title],
-        ["video_transcript", metadata.p_video_transcript],
-        ["audio_transcript", metadata.p_audio_transcript],
-        ["pdf_extracted_text", metadata.p_pdf_extracted_text],
-      ];
-      for (const [fieldName, value] of translationCandidates) {
-        if (typeof value === "string" && value.length > 0) {
-          fieldsToTranslate.push({
-            field_name: fieldName,
-            text: value.length > 5000 ? value.slice(0, 5000) : value,
-          });
-        }
-      }
-      if (fieldsToTranslate.length > 0) {
-        const { ok } = await triggerTranslationServer(
-          "moment",
-          moment.id,
-          fieldsToTranslate,
-          { updateSourceLocale: false }
-        );
-        if (!ok) {
-          translationFailed++;
-          console.error(`[process-moments] translation fan-out failed for ${moment.id}`);
-        }
-      }
-
-      completed++;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[process-moments] failed for ${moment.id}:`, message);
@@ -391,7 +312,6 @@ export async function GET(request: Request) {
         p_moment_id: moment.id,
         p_processing_status: "failed",
         p_processing_error: message,
-        p_processing_duration_ms: Date.now() - startTime,
       });
       if (failUpsertError) {
         console.error(`[process-moments] failed-status upsert also failed for ${moment.id}:`, failUpsertError);
@@ -399,13 +319,37 @@ export async function GET(request: Request) {
     }
   }
 
+  // Queue depth + failed-job count + worker liveness — enqueueing into a
+  // dark or dying queue must be loud, not a quiet backlog. (counts via GET,
+  // not HEAD: workerd hangs on head:true count queries.) An unreadable
+  // queue must not read as depth zero — that would suppress the dark-worker
+  // alert exactly when it matters.
+  const { count: queueDepth, error: depthError } = await supabase
+    .from("caption_jobs")
+    .select("id", { count: "exact" })
+    .in("status", ["pending", "processing"])
+    .limit(1);
+  const { count: failedJobs, error: failedJobsError } = await supabase
+    .from("caption_jobs")
+    .select("id", { count: "exact" })
+    .eq("status", "failed")
+    .limit(1);
+  const workerAlive = await isCaptionWorkerAlive();
+
   const result = {
     processed: batch.length,
-    completed,
+    enqueued,
+    retryReset,
+    queuedBefore,
+    audioCompleted,
     skippedPrivacy,
-    deferred,
+    skippedUnsupported,
+    gaveUp,
+    awaitingTranscode,
     failed,
-    translationFailed,
+    queueDepth: queueDepth ?? null,
+    failedJobs: failedJobs ?? null,
+    workerAlive,
     remainingFound: pending.length - batch.length,
     scanned,
     errorDetails: errors.length > 0 ? errors.slice(0, 10) : undefined,
@@ -414,16 +358,36 @@ export async function GET(request: Request) {
   console.log("[process-moments]", JSON.stringify(result));
 
   // Both cron transports swallow HTTP statuses, so the route alerts itself.
-  if (failed > 0 || translationFailed > 0) {
+  if (failed > 0 || gaveUp > 0) {
     await sendTelegram(
-      `🚨 <b>process-moments</b>: ${failed} failed, ${translationFailed} translation fan-outs failed (${completed} ok, ${skippedPrivacy} privacy-skipped)` +
+      `🚨 <b>process-moments</b>: ${failed} failed, ${gaveUp} gave up permanently (${enqueued} enqueued, ${audioCompleted} audio ok, ${skippedPrivacy} privacy-skipped)` +
         (errors.length > 0 ? `\nfirst error: ${errors[0].error.slice(0, 200)}` : "")
+    );
+  } else if (depthError || failedJobsError) {
+    await sendTelegram(
+      `⚠️ <b>process-moments</b>: caption queue unreadable (${(depthError || failedJobsError)!.message.slice(0, 200)})`
+    );
+  } else if ((failedJobs ?? 0) > 0) {
+    // Worker-side failure storms (CLI drift, CDN refusals, RPC drift) show
+    // up here within one cron tick instead of after 3 silent retry days.
+    await sendTelegram(
+      `⚠️ <b>process-moments</b>: ${failedJobs} caption job(s) in failed state awaiting daily retry — check the worker log on the mini`
+    );
+  } else if ((queueDepth ?? 0) > 0 && !workerAlive) {
+    await sendTelegram(
+      `⚠️ <b>process-moments</b>: ${queueDepth} caption job(s) queued but the Mac mini caption worker is dark (no heartbeat in 15 min)`
     );
   }
 
-  // Failures with zero successes mean the pipeline itself is broken (dead
-  // API key, bad model id, broken RPC) — surface as a cron failure.
-  if (failed > 0 && completed === 0) {
+  // Failures with zero progress of any kind mean the pipeline itself is
+  // broken (broken RPC, dead queue) — surface as a cron failure.
+  if (
+    failed > 0 &&
+    enqueued === 0 &&
+    audioCompleted === 0 &&
+    skippedPrivacy === 0 &&
+    skippedUnsupported === 0
+  ) {
     return NextResponse.json(result, { status: 500 });
   }
 
