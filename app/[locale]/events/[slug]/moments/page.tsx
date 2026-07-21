@@ -9,6 +9,8 @@ import { MomentsViewContainer } from "@/components/moments/moments-view-containe
 import { MusicPlayButton } from "@/components/audio/music-play-button";
 import { JsonLd, generateCinemaAlbumSchema } from "@/lib/structured-data";
 import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
+import { buildAlternates } from "@/lib/metadata";
+import type { Locale } from "@/lib/i18n/routing";
 import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
 import type { AudioTrack, PlaylistInfo } from "@/lib/stores/audio-player-store";
 
@@ -20,7 +22,7 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const supabase = createStaticClient();
   if (!supabase) return { title: "Moments" };
 
@@ -47,6 +49,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    // Without this, the page inherits the locale layout's homepage canonical
+    alternates: buildAlternates(locale as Locale, `/events/${slug}/moments`),
     openGraph: {
       title,
       description,

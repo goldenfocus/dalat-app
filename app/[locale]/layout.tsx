@@ -55,7 +55,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     alternates: {
-      canonical: `${siteUrl}/${locale}`,
+      // en lives at the root (localePrefix 'as-needed') — /en 307-redirects
+      canonical: locale === 'en' ? siteUrl : `${siteUrl}/${locale}`,
       languages: {
         // The Global Twelve — 'en' is the default locale and lives at the
         // root (localePrefix: 'as-needed'); /en 307-redirects, which Google

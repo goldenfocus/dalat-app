@@ -11,6 +11,7 @@ import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
 import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
 import { JsonLd, generateEventSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
+import { buildAlternates, localeUrl } from "@/lib/metadata";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { RsvpButton, CelebrationProvider, RsvpCardObserver } from "@/components/events/rsvp-button";
@@ -108,7 +109,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 
   // Use absolute URL with locale for proper link previews on messaging apps
-  const canonicalUrl = `https://dalat.app/${locale}/events/${slug}`;
+  // (en lives at the root — /en/... 307-redirects, which breaks canonicals)
+  const canonicalUrl = localeUrl(locale as Locale, `/events/${slug}`);
 
   // For OG image: use the event's actual image if available (instant, already on CDN)
   // Only fall back to generated og-image route for events without images
@@ -127,6 +129,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${title} | ĐàLạt.app`,
     description,
     keywords,
+    // Without this, the page inherits the locale layout's homepage canonical
+    alternates: buildAlternates(locale as Locale, `/events/${slug}`),
     openGraph: {
       title,
       description,

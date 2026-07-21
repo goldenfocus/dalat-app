@@ -2,6 +2,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { CACHE_TAGS } from "@/lib/cache/server-cache";
+import { pingIndexNow } from "@/lib/seo/indexnow";
 
 /**
  * Cache invalidation API endpoint.
@@ -66,6 +67,10 @@ export async function POST(request: Request) {
     // Revalidate by path
     if (path) {
       revalidatePath(path);
+      // Content at this path changed — tell Bing/Naver/etc. immediately
+      if (typeof path === "string" && path.startsWith("/")) {
+        await pingIndexNow([path]);
+      }
       return NextResponse.json({
         revalidated: true,
         path,

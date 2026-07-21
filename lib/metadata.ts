@@ -20,6 +20,37 @@ import {
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "ĐàLạt.app";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png?v=2`;
+const DEFAULT_LOCALE: Locale = "en";
+
+/**
+ * Absolute URL for a path in a given locale, honoring localePrefix: 'as-needed'.
+ * The default locale lives at the root — `/en/...` 307-redirects, and a canonical
+ * or hreflang alternate that points at a redirect is treated as broken by Google.
+ */
+export function localeUrl(locale: Locale, path: string): string {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const cleanPath = normalizedPath === "/" ? "" : normalizedPath;
+  return locale === DEFAULT_LOCALE
+    ? `${SITE_URL}${cleanPath}` || SITE_URL
+    : `${SITE_URL}/${locale}${cleanPath}`;
+}
+
+/**
+ * Canonical + hreflang alternates for a localized page. Use this in any
+ * generateMetadata that doesn't go through generateLocalizedMetadata —
+ * without it, the page inherits the locale layout's homepage canonical.
+ */
+export function buildAlternates(locale: Locale, path: string): NonNullable<Metadata["alternates"]> {
+  const languages: Record<string, string> = {};
+  for (const loc of locales) {
+    languages[loc] = localeUrl(loc, path);
+  }
+  languages["x-default"] = localeUrl(DEFAULT_LOCALE, path);
+  return {
+    canonical: localeUrl(locale, path),
+    languages,
+  };
+}
 
 interface LocalizedMetadataOptions {
   /** Current locale */
@@ -62,19 +93,9 @@ export function generateLocalizedMetadata({
   publishedTime,
   modifiedTime,
 }: LocalizedMetadataOptions): Metadata {
-  // Normalize path (ensure it starts with / but doesn't include locale)
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  const cleanPath = normalizedPath === "/" ? "" : normalizedPath;
-
-  // Generate canonical URL
-  const canonicalUrl = `${SITE_URL}/${locale}${cleanPath}`;
-
-  // Generate hreflang alternates for all locales
-  const languages: Record<string, string> = {};
-  for (const loc of locales) {
-    languages[loc] = `${SITE_URL}/${loc}${cleanPath}`;
-  }
-  languages["x-default"] = `${SITE_URL}/en${cleanPath}`;
+  // Canonical + hreflang honoring 'as-needed' locale prefixes (en = root)
+  const canonicalUrl = localeUrl(locale, path);
+  const alternates = buildAlternates(locale, path);
 
   // Format title
   const formattedTitle = noTitleSuffix ? title : `${title} | ${SITE_NAME}`;
@@ -92,10 +113,7 @@ export function generateLocalizedMetadata({
     }),
 
     // Canonical and alternates
-    alternates: {
-      canonical: canonicalUrl,
-      languages,
-    },
+    alternates,
 
     // OpenGraph
     openGraph: {
@@ -345,7 +363,7 @@ export function generateMomentMetadata(
     content_type: string;
     user_id: string;
     profiles?: { display_name: string | null; username: string | null };
-    events?: { title: string | null; location_name?: string | null };
+    events?: { title: string | null; location_name?: string | null; slug?: string | null };
     // AI metadata (optional, from moment_metadata join)
     ai_description?: string | null;
     ai_tags?: string[] | null;
@@ -374,9 +392,14 @@ export function generateMomentMetadata(
   const fallbackOg = `${SITE_URL}/${locale}/moments/${moment.id}/opengraph-image`;
   const image = moment.media_url && !isVideoUrl(moment.media_url) ? moment.media_url : fallbackOg;
 
+  // Canonical is the event-scoped URL — /moments/[id] 301s to it
+  const momentPath = moment.events?.slug
+    ? `/events/${moment.events.slug}/moments/${moment.id}`
+    : `/moments/${moment.id}`;
+
   return generateLocalizedMetadata({
     locale,
-    path: `/moments/${moment.id}`,
+    path: momentPath,
     title,
     description,
     image,

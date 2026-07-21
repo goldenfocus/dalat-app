@@ -11,6 +11,8 @@ import { JoinTribeButton } from "@/components/tribes/join-tribe-button";
 import { TribeTabs } from "@/components/tribes/tribe-tabs";
 import { MomentsTimeline } from "@/components/moments/moments-timeline";
 import type { EventMomentsGroup } from "@/lib/types";
+import { generateLocalizedMetadata } from "@/lib/metadata";
+import type { Locale } from "@/lib/i18n/routing";
 
 // Keep in sync with the same constants in components/moments/moments-timeline.tsx,
 // which paginates from this initial page.
@@ -20,16 +22,31 @@ const MOMENTS_PER_EVENT = 6;
 interface PageProps { params: Promise<{ slug: string; locale: string }>; }
 
 export async function generateMetadata({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const supabase = createStaticClient();
   if (!supabase) return { title: "Tribe" };
-  const { data: tribe } = await supabase.from("tribes").select("name, description, cover_image_url").eq("slug", slug).single();
+  const { data: tribe } = await supabase.from("tribes").select("name, description, cover_image_url, access_type, is_listed").eq("slug", slug).single();
   if (!tribe) return { title: "Tribe not found" };
-  return {
-    title: `${tribe.name} | ĐàLạt.app`,
-    description: tribe.description,
-    openGraph: { title: tribe.name, description: tribe.description || undefined, images: tribe.cover_image_url ? [tribe.cover_image_url] : undefined },
-  };
+
+  // Same discoverability gate as the browse filter: only public/request +
+  // listed tribes should be indexed; the rest stay reachable but noindex.
+  const isDiscoverable =
+    (tribe.access_type === "public" || tribe.access_type === "request") && tribe.is_listed;
+
+  const metadata = generateLocalizedMetadata({
+    locale: locale as Locale,
+    path: `/tribes/${slug}`,
+    title: tribe.name,
+    description: tribe.description || `${tribe.name} — a community on ĐàLạt.app in Đà Lạt, Vietnam`,
+    image: tribe.cover_image_url || undefined,
+    keywords: [tribe.name, "tribe", "community", "Đà Lạt"],
+  });
+
+  if (!isDiscoverable) {
+    metadata.robots = { index: false, follow: false };
+  }
+
+  return metadata;
 }
 
 export default async function TribePage({ params }: PageProps) {

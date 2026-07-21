@@ -58,6 +58,7 @@ import type { Event, EventPrivateDetails, RecurrenceFormData, Sponsor, EventSpon
 import { hasRoleLevel } from "@/lib/types";
 import { finalizeSlug } from "@/lib/utils";
 import { EVENT_TAGS, TAG_CONFIG, type EventTag } from "@/lib/constants/event-tags";
+import { pingSearchEngines } from "@/lib/seo/indexnow-client";
 
 /**
  * Trigger translation for an event (fire-and-forget)
@@ -599,6 +600,7 @@ export function EventForm({
 
           // Retranslate after series edit (fire-and-forget)
           triggerEventTranslation(event.id, title.trim(), description || null);
+          pingSearchEngines([`/events/${event.slug}`]);
 
           router.push(`/events/${event.slug}`);
           router.refresh();
@@ -672,6 +674,7 @@ export function EventForm({
 
           // Navigate to new slug if changed, otherwise original
           const finalSlug = slugEditable && slug ? slug : event.slug;
+          pingSearchEngines([`/events/${finalSlug}`]);
           router.push(`/events/${finalSlug}`);
           router.refresh();
         }
@@ -823,6 +826,7 @@ export function EventForm({
           // (creator auto-RSVP happens in the DB via on_event_created_auto_rsvp)
           triggerEventTranslation(data.id, title.trim(), description || null);
           triggerAIProcessing(data.id);
+          pingSearchEngines([`/events/${data.slug}`, "/events/upcoming", "/"]);
 
           // Show celebration modal instead of immediate redirect
           setCreatedEvent({
