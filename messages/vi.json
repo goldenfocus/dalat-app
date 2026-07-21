@@ -1309,7 +1309,13 @@
     "audiencePeople": "{count} người",
     "personalNoteLabel": "Thêm lời nhắn cá nhân",
     "personalNotePlaceholder": "Vì sao họ nên tham gia? (không bắt buộc)",
-    "audienceNoRecipients": "Mọi người ở đây đã được mời hoặc đã nhận thông báo gần đây"
+    "audienceNoRecipients": "Mọi người ở đây đã được mời hoặc đã nhận thông báo gần đây",
+    "addWhoWasThere": "Thêm người đã tham gia",
+    "attendedPlaceholder": "Tìm theo tên hoặc @tên người dùng",
+    "attendedNeedsAccount": "Chỉ có thể thêm người có tài khoản ĐàLạt.app — tìm theo tên hoặc @tên người dùng",
+    "markAttended": "Thêm {count} người tham gia",
+    "attendedCelebrationTitle": "Đã cập nhật danh sách!",
+    "attendedSuccess": "Đã thêm {count} người vào danh sách tham gia"
   },
   "moments": {
     "moments": "Khoảnh khắc",

@@ -1403,7 +1403,13 @@
     "audiencePeople": "{count} people",
     "personalNoteLabel": "Add a personal note",
     "personalNotePlaceholder": "Why should they come? (optional)",
-    "audienceNoRecipients": "Everyone here was already invited or reached recently"
+    "audienceNoRecipients": "Everyone here was already invited or reached recently",
+    "addWhoWasThere": "Add who was there",
+    "attendedPlaceholder": "Search by name or @username",
+    "attendedNeedsAccount": "Only people with a ĐàLạt.app account can be added — search by name or @username",
+    "markAttended": "Add {count} attendee(s)",
+    "attendedCelebrationTitle": "Guest list updated!",
+    "attendedSuccess": "{count} attendee(s) added"
   },
   "celebration": {
     "title": "You just made Da Lat better!",

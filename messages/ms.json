@@ -1309,7 +1309,13 @@
     "audiencePeople": "{count} orang",
     "personalNoteLabel": "Tambah nota peribadi",
     "personalNotePlaceholder": "Kenapa mereka patut datang? (pilihan)",
-    "audienceNoRecipients": "Semua orang di sini sudah dijemput atau dihubungi baru-baru ini"
+    "audienceNoRecipients": "Semua orang di sini sudah dijemput atau dihubungi baru-baru ini",
+    "addWhoWasThere": "Tambah siapa yang hadir",
+    "attendedPlaceholder": "Cari mengikut nama atau @nama pengguna",
+    "attendedNeedsAccount": "Hanya orang yang mempunyai akaun ĐàLạt.app boleh ditambah — cari mengikut nama atau @nama pengguna",
+    "markAttended": "Tambah {count} hadirin",
+    "attendedCelebrationTitle": "Senarai tetamu dikemas kini!",
+    "attendedSuccess": "{count} orang ditambah ke senarai hadir"
   },
   "moments": {
     "moments": "Momen",

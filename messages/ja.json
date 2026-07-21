@@ -1309,7 +1309,13 @@
     "audiencePeople": "{count}人",
     "personalNoteLabel": "メッセージを追加",
     "personalNotePlaceholder": "参加すべき理由は？（任意）",
-    "audienceNoRecipients": "全員がすでに招待済みか、最近通知を受け取っています"
+    "audienceNoRecipients": "全員がすでに招待済みか、最近通知を受け取っています",
+    "addWhoWasThere": "参加した人を追加",
+    "attendedPlaceholder": "名前または@ユーザー名で検索",
+    "attendedNeedsAccount": "ĐàLạt.app のアカウントをお持ちの方のみ追加できます — 名前または@ユーザー名で検索してください",
+    "markAttended": "{count}人の参加者を追加",
+    "attendedCelebrationTitle": "参加者リストを更新しました！",
+    "attendedSuccess": "{count}人を参加者に追加しました"
   },
   "moments": {
     "moments": "モーメント",

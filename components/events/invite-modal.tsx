@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Send, Loader2, Check, X, UserPlus, Megaphone } from "lucide-react";
+import { Send, Loader2, Check, X, UserPlus, UserCheck, Megaphone } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,11 @@ interface InviteModalProps {
   startsAt: string;
   /** Viewer has admin/superadmin role — unlocks @all / @tag audience mentions */
   isAdmin?: boolean;
+  /**
+   * Event already happened — the modal flips from "invite" to "record who was there".
+   * Computed on the server so the label can't disagree with the rest of the page.
+   */
+  isPast?: boolean;
 }
 
 interface InviteResult {
@@ -54,8 +60,9 @@ type Invitee =
   | { type: "user"; user: UserSearchResult }
   | { type: "audience"; key: string; count: number };
 
-export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt, isAdmin = false }: InviteModalProps) {
+export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt, isAdmin = false, isPast = false }: InviteModalProps) {
   const t = useTranslations("invite");
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [invitees, setInvitees] = useState<Invitee[]>([]);
@@ -91,10 +98,13 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
   // Username search is active when not typing an email and has 2+ chars
   const isUsernameSearch = !isEmailInput(inputValue) && inputValue.length >= 2;
 
-  // Audience mentions (@all / @games) — admin only. "@" lists all, "@ga" filters.
+  // Audience mentions (@all / @games) — admin only, and never on a past event:
+  // blasting the whole community about something that already happened is spam.
+  const canBlast = isAdmin && !isPast;
+
   const audienceQuery = inputValue.startsWith("@") ? inputValue.slice(1).toLowerCase() : null;
   const audienceMatches =
-    isAdmin && audienceQuery !== null
+    canBlast && audienceQuery !== null
       ? audienceOptions.filter(
           (a) =>
             a.key.startsWith(audienceQuery) &&
@@ -104,7 +114,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
 
   // Load audience options once per open (admins only)
   useEffect(() => {
-    if (!open || !isAdmin) return;
+    if (!open || !canBlast) return;
     let cancelled = false;
     fetch("/api/audiences")
       .then((r) => (r.ok ? r.json() : { audiences: [] }))
@@ -115,7 +125,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
     return () => {
       cancelled = true;
     };
-  }, [open, isAdmin]);
+  }, [open, canBlast]);
 
   // Debounced user search
   useEffect(() => {
@@ -290,6 +300,13 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
       return;
     }
 
+    // Attendance is recorded against a real account — a bare email address has
+    // nothing to attach an RSVP to, so reject it here rather than half-succeeding.
+    if (isPast && finalInvitees.some((inv) => inv.type === "email")) {
+      setError(t("attendedNeedsAccount"));
+      return;
+    }
+
     setSending(true);
     setError(null);
     setResults([]);
@@ -314,6 +331,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
           users: userInvitees,
           audiences: audienceKeys,
           personalNote: personalNote.trim() || undefined,
+          mode: isPast ? "attended" : undefined,
         }),
       });
 
@@ -394,6 +412,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
   const handleCelebrationComplete = () => {
     setShowCelebration(false);
     setOpen(false);
+    // Attendance changes the visible page — the "N went" count and the attendee
+    // list. Invites don't, which is why the normal path never needed this.
+    if (isPast) router.refresh();
   };
 
   const successCount = results.filter(r => r.success).length;
@@ -404,13 +425,15 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <UserPlus className="w-4 h-4" />
-          <span className="hidden sm:inline">{t("inviteGuests")}</span>
+          {isPast ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+          <span className="hidden sm:inline">
+            {isPast ? t("addWhoWasThere") : t("inviteGuests")}
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("inviteGuests")}</DialogTitle>
+          <DialogTitle>{isPast ? t("addWhoWasThere") : t("inviteGuests")}</DialogTitle>
         </DialogHeader>
 
         {/* Show animation when sending, otherwise show form */}
@@ -441,7 +464,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
                   ref={inputRef}
                   id="invite-input"
                   type="text"
-                  placeholder={t("smartPlaceholder")}
+                  placeholder={isPast ? t("attendedPlaceholder") : t("smartPlaceholder")}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -614,7 +637,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
               {successCount > 0 && (
                 <p className="text-sm text-green-600 flex items-center gap-2">
                   <Check className="w-4 h-4" />
-                  {t("sentSuccess", { count: successCount })}
+                  {t(isPast ? "attendedSuccess" : "sentSuccess", { count: successCount })}
                 </p>
               )}
               {results.filter(r => !r.success).map((r, idx) => (
@@ -632,8 +655,8 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
             disabled={invitees.length === 0 || sending}
             className="w-full gap-2"
           >
-            <Send className="w-4 h-4" />
-            {t("sendInvites", {
+            {isPast ? <UserCheck className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+            {t(isPast ? "markAttended" : "sendInvites", {
               count: invitees.reduce((sum, inv) => sum + (inv.type === "audience" ? inv.count : 1), 0),
             })}
           </Button>
@@ -647,6 +670,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
       <InviteCelebration
         successCount={celebrationCount}
         onComplete={handleCelebrationComplete}
+        isPast={isPast}
       />
     )}
   </>

@@ -1309,7 +1309,13 @@
     "audiencePeople": "{count} чел.",
     "personalNoteLabel": "Добавить личное сообщение",
     "personalNotePlaceholder": "Почему стоит прийти? (необязательно)",
-    "audienceNoRecipients": "Все здесь уже приглашены или недавно получали уведомление"
+    "audienceNoRecipients": "Все здесь уже приглашены или недавно получали уведомление",
+    "addWhoWasThere": "Добавить тех, кто был",
+    "attendedPlaceholder": "Поиск по имени или @имени пользователя",
+    "attendedNeedsAccount": "Добавить можно только тех, у кого есть аккаунт ĐàLạt.app — ищите по имени или @имени пользователя",
+    "markAttended": "Добавить участников: {count}",
+    "attendedCelebrationTitle": "Список гостей обновлён!",
+    "attendedSuccess": "Добавлено участников: {count}"
   },
   "moments": {
     "moments": "Моменты",

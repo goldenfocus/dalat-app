@@ -11,12 +11,15 @@ interface InviteCelebrationProps {
   successCount: number;
   onComplete: () => void;
   autoCloseDelay?: number; // ms, default 4000
+  /** Past event — people were added to the guest list, nothing was sent */
+  isPast?: boolean;
 }
 
 export function InviteCelebration({
   successCount,
   onComplete,
   autoCloseDelay = 4000,
+  isPast = false,
 }: InviteCelebrationProps) {
   const t = useTranslations("invite");
   const [phrase, setPhrase] = useState("");
@@ -152,17 +155,21 @@ export function InviteCelebration({
           {/* Title with count */}
           <div className="space-y-1">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-clip-text text-transparent">
-              {t("celebrationTitle")}
+              {t(isPast ? "attendedCelebrationTitle" : "celebrationTitle")}
             </h2>
             <p className="text-base text-gray-800 dark:text-white/90 font-medium">
-              {t("sentSuccess", { count: successCount })}
+              {t(isPast ? "attendedSuccess" : "sentSuccess", { count: successCount })}
             </p>
           </div>
 
-          {/* Motivational phrase */}
-          <p className="text-base text-gray-600 dark:text-white/80 italic px-2 leading-relaxed">
-            &ldquo;{phrase}&rdquo;
-          </p>
+          {/* Motivational phrase — every phrase is written for a future event
+              ("someone's about to have a great time"), so it's wrong once the
+              event has happened. Past events get the title and count only. */}
+          {!isPast && (
+            <p className="text-base text-gray-600 dark:text-white/80 italic px-2 leading-relaxed">
+              &ldquo;{phrase}&rdquo;
+            </p>
+          )}
 
         </div>
 

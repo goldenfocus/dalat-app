@@ -1309,7 +1309,13 @@
     "audiencePeople": "{count}명",
     "personalNoteLabel": "개인 메시지 추가",
     "personalNotePlaceholder": "왜 와야 할까요? (선택 사항)",
-    "audienceNoRecipients": "모두 이미 초대되었거나 최근에 알림을 받았어요"
+    "audienceNoRecipients": "모두 이미 초대되었거나 최근에 알림을 받았어요",
+    "addWhoWasThere": "참석한 사람 추가",
+    "attendedPlaceholder": "이름 또는 @사용자명으로 검색",
+    "attendedNeedsAccount": "ĐàLạt.app 계정이 있는 사람만 추가할 수 있어요 — 이름 또는 @사용자명으로 검색하세요",
+    "markAttended": "참석자 {count}명 추가",
+    "attendedCelebrationTitle": "참석자 명단 업데이트!",
+    "attendedSuccess": "{count}명을 참석자 명단에 추가했어요"
   },
   "moments": {
     "moments": "모먼트",

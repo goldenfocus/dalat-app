@@ -1323,7 +1323,13 @@
     "audiencePeople": "{count} personnes",
     "personalNoteLabel": "Ajouter un mot personnel",
     "personalNotePlaceholder": "Pourquoi venir ? (facultatif)",
-    "audienceNoRecipients": "Tout le monde ici a déjà été invité ou contacté récemment"
+    "audienceNoRecipients": "Tout le monde ici a déjà été invité ou contacté récemment",
+    "addWhoWasThere": "Ajouter les personnes présentes",
+    "attendedPlaceholder": "Rechercher par nom ou @pseudo",
+    "attendedNeedsAccount": "Seules les personnes ayant un compte ĐàLạt.app peuvent être ajoutées — recherchez par nom ou @pseudo",
+    "markAttended": "Ajouter {count} participant(s)",
+    "attendedCelebrationTitle": "Liste mise à jour !",
+    "attendedSuccess": "{count} personne(s) ajoutée(s) aux participants"
   },
   "moments": {
     "moments": "Moments",

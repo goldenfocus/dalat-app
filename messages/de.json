@@ -1309,7 +1309,13 @@
     "audiencePeople": "{count} Personen",
     "personalNoteLabel": "Persönliche Nachricht hinzufügen",
     "personalNotePlaceholder": "Warum sollten sie kommen? (optional)",
-    "audienceNoRecipients": "Alle hier wurden bereits eingeladen oder kürzlich benachrichtigt"
+    "audienceNoRecipients": "Alle hier wurden bereits eingeladen oder kürzlich benachrichtigt",
+    "addWhoWasThere": "Teilnehmer hinzufügen",
+    "attendedPlaceholder": "Nach Name oder @Benutzername suchen",
+    "attendedNeedsAccount": "Es können nur Personen mit einem ĐàLạt.app-Konto hinzugefügt werden — suche nach Name oder @Benutzername",
+    "markAttended": "{count} Teilnehmer hinzufügen",
+    "attendedCelebrationTitle": "Gästeliste aktualisiert!",
+    "attendedSuccess": "{count} Person(en) zu den Teilnehmern hinzugefügt"
   },
   "moments": {
     "moments": "Moments",

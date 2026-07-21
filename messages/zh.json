@@ -1309,7 +1309,13 @@
     "audiencePeople": "{count} 人",
     "personalNoteLabel": "添加个人留言",
     "personalNotePlaceholder": "为什么值得参加？（可选）",
-    "audienceNoRecipients": "这里的所有人都已被邀请或最近已收到通知"
+    "audienceNoRecipients": "这里的所有人都已被邀请或最近已收到通知",
+    "addWhoWasThere": "添加到场的人",
+    "attendedPlaceholder": "按姓名或 @用户名搜索",
+    "attendedNeedsAccount": "只能添加拥有 ĐàLạt.app 账户的人 — 请按姓名或 @用户名搜索",
+    "markAttended": "添加 {count} 位参加者",
+    "attendedCelebrationTitle": "参加名单已更新！",
+    "attendedSuccess": "已将 {count} 人加入参加名单"
   },
   "moments": {
     "moments": "瞬间",

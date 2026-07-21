@@ -22,6 +22,85 @@ interface InviteRequest {
   audiences?: string[];
   /** Optional human note rendered in the blast email (untranslated on purpose). */
   personalNote?: string;
+  /**
+   * 'attended' records who was actually at a past event: RSVPs only, no
+   * invitation rows and no email. Anything else follows the normal invite path.
+   */
+  mode?: 'attended';
+}
+
+type AttendedEvent = { id: string; created_by: string; starts_at: string; ends_at: string | null };
+
+/**
+ * Mark users as having attended a past event.
+ *
+ * Writes go through the service-role client on purpose: `rsvps_insert_owner` is
+ * `auth.uid() = user_id`, so an organizer physically cannot record an RSVP for
+ * anyone but themselves under RLS. Authorization is therefore enforced here —
+ * event creator or site admin only — before RLS is bypassed.
+ */
+async function recordAttendance(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  event: AttendedEvent,
+  actorId: string,
+  users: Array<{ userId: string; username: string }>
+) {
+  // Never trust the client's notion of "past" — it decides whether email is skipped
+  const endedAt = event.ends_at
+    ? new Date(event.ends_at)
+    : new Date(new Date(event.starts_at).getTime() + 4 * 60 * 60 * 1000);
+  if (endedAt >= new Date()) {
+    return NextResponse.json({ error: 'Event has not happened yet' }, { status: 400 });
+  }
+
+  const { data: actor } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', actorId)
+    .single();
+
+  const canRecord =
+    event.created_by === actorId || actor?.role === 'admin' || actor?.role === 'superadmin';
+  if (!canRecord) {
+    return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+  }
+
+  if (users.length === 0) {
+    return NextResponse.json({ error: 'users array required' }, { status: 400 });
+  }
+
+  const serviceUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceUrl || !serviceKey) {
+    return NextResponse.json({ error: 'Server not configured to record attendance' }, { status: 500 });
+  }
+  const admin = createServiceRoleClient(serviceUrl, serviceKey);
+
+  const results: Array<{ userId: string; username: string; success: boolean; error?: string }> = [];
+
+  for (const { userId, username } of users) {
+    // plus_ones is deliberately omitted: on conflict this is an UPDATE, and
+    // someone who RSVP'd "going +2" and showed up must keep their +2 —
+    // writing 0 here would silently drop the headcount. New rows take the
+    // column default of 0.
+    const { error } = await admin.from('rsvps').upsert(
+      { event_id: event.id, user_id: userId, status: 'going' },
+      { onConflict: 'event_id,user_id' }
+    );
+
+    if (error) {
+      console.error('[POST /invitations] attendance upsert failed:', {
+        eventId: event.id,
+        userId,
+        error: error.message,
+      });
+      results.push({ userId, username, success: false, error: 'Failed to record attendance' });
+    } else {
+      results.push({ userId, username, success: true });
+    }
+  }
+
+  return NextResponse.json({ results });
 }
 
 // POST /api/events/[slug]/invitations - Send invitations
@@ -50,6 +129,13 @@ export async function POST(
 
   const body: InviteRequest = await request.json();
   const { emails = [], users = [], audiences = [], personalNote } = body;
+
+  // ---- Past event: record who was there ----
+  // Deliberately short-circuits before quota/invitation/email work — nothing is
+  // sent, we're only correcting the guest list after the fact.
+  if (body.mode === 'attended') {
+    return recordAttendance(supabase, event, user.id, users);
+  }
 
   const totalInvites = emails.length + users.length;
   if (totalInvites === 0 && audiences.length === 0) {
