@@ -1713,7 +1713,13 @@
     "settingsForm": {
       "name": "이름",
       "description": "설명",
-      "showInSearch": "검색에 표시"
+      "showInSearch": "검색에 표시",
+      "url": "URL",
+      "urlHint": "이 주소를 바꾸면 이미 공유된 링크가 작동하지 않아요.",
+      "slug_taken": "이미 사용 중인 주소예요.",
+      "slug_reserved": "예약된 주소예요 — 다른 걸 골라주세요.",
+      "slug_invalid": "글자나 숫자를 2자 이상 써주세요.",
+      "saveFailed": "저장하지 못했어요. 다시 시도해볼까요?"
     },
     "invalidCodeTitle": "유효하지 않은 초대 코드",
     "invalidCodeDescription": "이 초대 코드는 유효하지 않거나 만료되었어요.",

@@ -1713,7 +1713,13 @@
     "settingsForm": {
       "name": "名称",
       "description": "描述",
-      "showInSearch": "在搜索中显示"
+      "showInSearch": "在搜索中显示",
+      "url": "网址",
+      "urlHint": "更改后，已分享的部落链接将失效。",
+      "slug_taken": "该网址已被占用。",
+      "slug_reserved": "该网址已被保留，请换一个。",
+      "slug_invalid": "请至少使用 2 个字母或数字。",
+      "saveFailed": "保存失败，再试一次？"
     },
     "invalidCodeTitle": "邀请码无效",
     "invalidCodeDescription": "此邀请码无效或已过期。",

@@ -1710,7 +1710,13 @@
     "settingsForm": {
       "name": "Nama",
       "description": "Penerangan",
-      "showInSearch": "Tunjuk dalam carian"
+      "showInSearch": "Tunjuk dalam carian",
+      "url": "URL",
+      "urlHint": "Menukar ini akan merosakkan pautan yang sudah dikongsi ke tribe ini.",
+      "slug_taken": "URL ini sudah diambil.",
+      "slug_reserved": "URL ini dikhaskan — pilih yang lain.",
+      "slug_invalid": "Guna sekurang-kurangnya 2 huruf atau nombor.",
+      "saveFailed": "Gagal disimpan. Cuba lagi?"
     },
     "invalidCodeTitle": "Kod Jemputan Tidak Sah",
     "invalidCodeDescription": "Kod jemputan ini tidak sah atau telah tamat tempoh.",

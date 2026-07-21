@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { isReservedTribeSlug, normalizeTribeSlug } from '@/lib/tribes/slug';
 
 interface RouteParams { params: Promise<{ slug: string }>; }
 
@@ -67,14 +68,32 @@ export async function PUT(request: Request, { params }: RouteParams) {
     ? { settings: { ...(tribe.settings ?? {}), avatar_url: body.avatar_url || null } }
     : {};
 
+  // Leaders may rename the URL. Unlike creation there's no auto-suffix — they asked
+  // for this exact slug, so a clash is an error they need to see, not a silent rename.
+  let slugUpdate = {};
+  if (typeof body.slug === 'string') {
+    const nextSlug = normalizeTribeSlug(body.slug);
+    if (nextSlug !== slug) {
+      if (nextSlug.length < 2) return NextResponse.json({ error: 'Invalid slug', code: 'slug_invalid' }, { status: 400 });
+      if (isReservedTribeSlug(nextSlug)) return NextResponse.json({ error: 'Slug reserved', code: 'slug_reserved' }, { status: 400 });
+
+      const { data: clash } = await supabase.from('tribes').select('id').eq('slug', nextSlug).maybeSingle();
+      if (clash) return NextResponse.json({ error: 'Slug already taken', code: 'slug_taken' }, { status: 400 });
+
+      slugUpdate = { slug: nextSlug };
+    }
+  }
+
   const { data: updated, error } = await supabase
     .from('tribes')
-    .update({ name: name?.trim(), description: description?.trim(), access_type, cover_image_url, is_listed, ...settingsUpdate, updated_at: new Date().toISOString() })
+    .update({ name: name?.trim(), description: description?.trim(), access_type, cover_image_url, is_listed, ...settingsUpdate, ...slugUpdate, updated_at: new Date().toISOString() })
     .eq('id', tribe.id)
     .select()
     .single();
 
   if (error) {
+    // Someone claimed the slug between our check and this write — the UNIQUE index caught it
+    if (error.code === '23505') return NextResponse.json({ error: 'Slug already taken', code: 'slug_taken' }, { status: 400 });
     console.error("Tribe update error:", error);
     return NextResponse.json({ error: "Failed to update tribe" }, { status: 500 });
   }

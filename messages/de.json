@@ -1710,7 +1710,13 @@
     "settingsForm": {
       "name": "Name",
       "description": "Beschreibung",
-      "showInSearch": "In der Suche anzeigen"
+      "showInSearch": "In der Suche anzeigen",
+      "url": "URL",
+      "urlHint": "Wenn du das änderst, funktionieren bereits geteilte Links nicht mehr.",
+      "slug_taken": "Diese URL ist schon vergeben.",
+      "slug_reserved": "Diese URL ist reserviert — nimm eine andere.",
+      "slug_invalid": "Nutze mindestens 2 Buchstaben oder Zahlen.",
+      "saveFailed": "Konnte nicht gespeichert werden. Nochmal versuchen?"
     },
     "invalidCodeTitle": "Ungültiger Einladungscode",
     "invalidCodeDescription": "Dieser Einladungscode ist ungültig oder abgelaufen.",

@@ -1710,7 +1710,13 @@
     "settingsForm": {
       "name": "Nombre",
       "description": "Descripción",
-      "showInSearch": "Mostrar en búsqueda"
+      "showInSearch": "Mostrar en búsqueda",
+      "url": "URL",
+      "urlHint": "Si la cambias, los enlaces que ya compartiste dejarán de funcionar.",
+      "slug_taken": "Esa URL ya está ocupada.",
+      "slug_reserved": "Esa URL está reservada — elige otra.",
+      "slug_invalid": "Usa al menos 2 letras o números.",
+      "saveFailed": "No se pudo guardar. ¿Lo intentamos otra vez?"
     },
     "invalidCodeTitle": "Código de Invitación Inválido",
     "invalidCodeDescription": "Este código de invitación no es válido o ha caducado.",

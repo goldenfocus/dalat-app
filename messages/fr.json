@@ -1724,7 +1724,13 @@
     "settingsForm": {
       "name": "Nom",
       "description": "Description",
-      "showInSearch": "Afficher dans la recherche"
+      "showInSearch": "Afficher dans la recherche",
+      "url": "URL",
+      "urlHint": "Modifier ceci cassera les liens déjà partagés vers cette tribu.",
+      "slug_taken": "Cette URL est déjà prise.",
+      "slug_reserved": "Cette URL est réservée — choisissez-en une autre.",
+      "slug_invalid": "Utilisez au moins 2 lettres ou chiffres.",
+      "saveFailed": "Enregistrement impossible. On réessaie ?"
     },
     "invalidCodeTitle": "Code d'invitation invalide",
     "invalidCodeDescription": "Ce code d'invitation est invalide ou a expiré.",

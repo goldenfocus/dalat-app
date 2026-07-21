@@ -1710,7 +1710,13 @@
     "settingsForm": {
       "name": "名前",
       "description": "説明",
-      "showInSearch": "検索に表示"
+      "showInSearch": "検索に表示",
+      "url": "URL",
+      "urlHint": "変更すると、すでに共有したリンクが使えなくなります。",
+      "slug_taken": "このURLはすでに使われています。",
+      "slug_reserved": "このURLは予約済みです。別のものを選んでください。",
+      "slug_invalid": "英数字を2文字以上入力してください。",
+      "saveFailed": "保存できませんでした。もう一度試しますか？"
     },
     "invalidCodeTitle": "無効な招待コード",
     "invalidCodeDescription": "この招待コードは無効か、期限切れです。",

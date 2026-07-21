@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Copy, ImagePlus, Loader2, RefreshCw, Trash2, X } from "lucide-react";
 import { uploadFile } from "@/lib/storage/client";
+import { finalizeSlug, sanitizeSlug } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +30,9 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
   const [copied, setCopied] = useState(false);
 
   const [name, setName] = useState(tribe.name);
+  // Deliberately not derived from `name` — renaming a live tribe shouldn't silently
+  // break every link already shared to it. Changing the URL stays an explicit act.
+  const [slug, setSlug] = useState(tribe.slug);
   const [description, setDescription] = useState(tribe.description || "");
   const [accessType, setAccessType] = useState<TribeAccessType>(tribe.access_type);
   const [isListed, setIsListed] = useState(tribe.is_listed);
@@ -109,6 +113,8 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
 
   async function handleSave() {
     setError(null);
+    const nextSlug = finalizeSlug(slug);
+    setSlug(nextSlug);
 
     startTransition(async () => {
       const res = await fetch(`/api/tribes/${tribe.slug}`, {
@@ -116,6 +122,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
+          slug: nextSlug,
           description: description.trim() || null,
           access_type: accessType,
           is_listed: isListed,
@@ -124,14 +131,22 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Failed to save");
+        setError(data.code ? t(`settingsForm.${data.code}`) : t("settingsForm.saveFailed"));
+        return;
+      }
+
+      onOpenChange(false);
+
+      // The URL moved — the current page no longer resolves, so navigate before refreshing
+      if (data.tribe?.slug && data.tribe.slug !== tribe.slug) {
+        router.replace(window.location.pathname.replace(/[^/]+$/, data.tribe.slug));
         return;
       }
 
       router.refresh();
-      onOpenChange(false);
     });
   }
 
@@ -285,6 +300,26 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
                 onChange={(e) => setName(e.target.value)}
                 maxLength={100}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tribe-slug">{t("settingsForm.url")}</Label>
+              <div className="flex items-center">
+                <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input whitespace-nowrap">
+                  dalat.app/tribes/
+                </span>
+                <Input
+                  id="tribe-slug"
+                  value={slug}
+                  onChange={(e) => setSlug(sanitizeSlug(e.target.value))}
+                  onBlur={() => setSlug(finalizeSlug(slug))}
+                  maxLength={60}
+                  className="rounded-l-none"
+                />
+              </div>
+              {slug !== tribe.slug && (
+                <p className="text-xs text-muted-foreground">{t("settingsForm.urlHint")}</p>
+              )}
             </div>
 
             <div className="space-y-2">

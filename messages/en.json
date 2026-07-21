@@ -1826,7 +1826,13 @@
     "settingsForm": {
       "name": "Name",
       "description": "Description",
-      "showInSearch": "Show in search"
+      "showInSearch": "Show in search",
+      "url": "URL",
+      "urlHint": "Changing this breaks any links already shared to this tribe.",
+      "slug_taken": "That URL is already taken.",
+      "slug_reserved": "That URL is reserved — pick another.",
+      "slug_invalid": "Use at least 2 letters or numbers.",
+      "saveFailed": "Couldn't save. Try again?"
     },
     "avatar": "Main Picture",
     "uploadAvatar": "Add picture",

@@ -1710,7 +1710,13 @@
     "settingsForm": {
       "name": "Nama",
       "description": "Deskripsi",
-      "showInSearch": "Tampilkan di pencarian"
+      "showInSearch": "Tampilkan di pencarian",
+      "url": "URL",
+      "urlHint": "Mengubah ini akan merusak tautan yang sudah dibagikan ke tribe ini.",
+      "slug_taken": "URL ini sudah dipakai.",
+      "slug_reserved": "URL ini dicadangkan — pilih yang lain.",
+      "slug_invalid": "Gunakan minimal 2 huruf atau angka.",
+      "saveFailed": "Gagal menyimpan. Coba lagi?"
     },
     "invalidCodeTitle": "Kode Undangan Tidak Valid",
     "invalidCodeDescription": "Kode undangan ini tidak valid atau sudah kedaluwarsa.",

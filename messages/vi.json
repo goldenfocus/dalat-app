@@ -1715,7 +1715,13 @@
     "settingsForm": {
       "name": "Tên",
       "description": "Mô tả",
-      "showInSearch": "Hiện trong tìm kiếm"
+      "showInSearch": "Hiện trong tìm kiếm",
+      "url": "URL",
+      "urlHint": "Đổi cái này sẽ làm hỏng các liên kết đã chia sẻ về nhóm.",
+      "slug_taken": "URL này đã có người dùng rồi.",
+      "slug_reserved": "URL này được giữ riêng — chọn cái khác nhé.",
+      "slug_invalid": "Dùng ít nhất 2 chữ cái hoặc số.",
+      "saveFailed": "Chưa lưu được. Thử lại nhé?"
     },
     "avatar": "Ảnh đại diện",
     "uploadAvatar": "Thêm ảnh",

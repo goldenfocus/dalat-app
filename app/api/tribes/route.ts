@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { findAvailableTribeSlug, isReservedTribeSlug, normalizeTribeSlug } from '@/lib/tribes/slug';
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -41,10 +42,18 @@ export async function POST(request: Request) {
 
   if (!name?.trim()) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
 
-  const finalSlug = slug || generateSlug(name);
+  let finalSlug: string;
+  if (slug) {
+    // Explicit slug from the caller must be exactly what they asked for, or an error
+    finalSlug = normalizeTribeSlug(slug);
+    if (finalSlug.length < 2) return NextResponse.json({ error: 'Invalid slug', code: 'slug_invalid' }, { status: 400 });
+    if (isReservedTribeSlug(finalSlug)) return NextResponse.json({ error: 'Slug reserved', code: 'slug_reserved' }, { status: 400 });
 
-  const { data: existing } = await supabase.from('tribes').select('id').eq('slug', finalSlug).maybeSingle();
-  if (existing) return NextResponse.json({ error: 'Slug already taken' }, { status: 400 });
+    const { data: existing } = await supabase.from('tribes').select('id').eq('slug', finalSlug).maybeSingle();
+    if (existing) return NextResponse.json({ error: 'Slug already taken', code: 'slug_taken' }, { status: 400 });
+  } else {
+    finalSlug = await findAvailableTribeSlug(supabase, name);
+  }
 
   const { data: tribe, error } = await supabase
     .from('tribes')
@@ -66,9 +75,4 @@ export async function POST(request: Request) {
   await supabase.from('tribe_members').insert({ tribe_id: tribe.id, user_id: user.id, role: 'leader' });
 
   return NextResponse.json({ tribe });
-}
-
-function generateSlug(name: string): string {
-  const base = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  return `${base}-${Math.random().toString(36).slice(2, 6)}`;
 }
