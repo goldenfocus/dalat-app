@@ -1630,6 +1630,16 @@
     }
   },
   "tribes": {
+    "tribeLabel": "Tribe",
+    "hostedByTribe": "Diselenggarakan oleh Tribe",
+    "addToTribe": "Tambahkan ke Tribe",
+    "changeTribe": "Ganti Tribe",
+    "pickTribe": "Pilih Tribe",
+    "loadingTribes": "Memuat Tribe kamu…",
+    "noTribesToAttach": "Kamu belum mengelola Tribe apa pun.",
+    "attachFailed": "Gagal memperbarui Tribe. Coba lagi?",
+    "joiningChip": "Bergabung…",
+    "joinFailedChip": "Coba lagi",
     "findYourTribe": "Temukan tribe-mu",
     "discoverTitle": "Tribe Đà Lạt",
     "discoverSubtitle": "Komunitas kecil, keseruan besar — gabung dengan kru yang membuat kota ini terasa seperti rumah.",

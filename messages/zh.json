@@ -1633,6 +1633,16 @@
     }
   },
   "tribes": {
+    "tribeLabel": "部落",
+    "hostedByTribe": "由部落主办",
+    "addToTribe": "添加到部落",
+    "changeTribe": "更换部落",
+    "pickTribe": "选择部落",
+    "loadingTribes": "正在加载你的部落…",
+    "noTribesToAttach": "你还没有管理任何部落。",
+    "attachFailed": "部落更新失败，再试一次？",
+    "joiningChip": "加入中…",
+    "joinFailedChip": "重试",
     "findYourTribe": "找到你的部落",
     "discoverTitle": "大叻部落",
     "discoverSubtitle": "小小社群，大大乐趣——加入让这座城市如家般温暖的圈子。",

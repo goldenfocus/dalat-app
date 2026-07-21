@@ -1,7 +1,13 @@
 # Tribes Visibility — Design
 
 **Date:** 2026-07-20
-**Status:** Approved by Yan (inline attach chip, counts migration included, no mass blast)
+**Status:** Approved by Yan — **scope reduced 2026-07-20 after collision discovery** (see "Descoped" below)
+
+> **Descoped to a parallel session.** A concurrent worktree (`worktree-tribes-visibility`, commit `ce2b3b3`, unpushed) already implements §1 (`tribes.member_count` + trigger + backfill, migration `20261015_001_tribe_public_visibility.sql`), §7 (discovery ordering by `member_count DESC`, via a `SECURITY DEFINER` reader rather than `lib/tribes.ts`), and a rewrite of `join-tribe-button.tsx` including 12-locale fixes for its hardcoded English. Those sections are **not built here** and are retained below only as a record of intent.
+>
+> Their root-cause analysis corrects this spec: the "0 members" problem is not that RLS *hides* rows, it is that **RLS is applied before the aggregate**, so `tribe_members(count)` returns a clean `0` with no error — a public tribe with 3 members advertised "0 members" to every prospective joiner.
+>
+> **This branch builds only:** §2 `TribeChip`, §3 event page, §4 inline attach, §5 `PATCH /api/events/[slug]/tribe`, §6 moments, and the §8 i18n keys those require.
 **Scope:** Phase 1 of promoting tribes — make an event's tribe visible everywhere it matters, and make attaching a tribe a one-tap action. Tribe invite/share flow is Phase 2 and specced separately.
 
 ## Context
@@ -52,7 +58,7 @@ One component, three consumers (event page, moments, album). Props: `tribe` (slu
 
 - Renders tribe avatar (same `cover_image_url` → `settings.avatar_url` → gradient-initial fallback chain as `TribeCard`, extracted to a shared helper rather than duplicated) + name + `t("tribeLabel")`.
 - Whole chip is a `Link` to `/tribes/[slug]`, ≥44px touch target, `active:scale-95` per the touch-target conventions in CLAUDE.md.
-- **Join affordance** (`showJoin`), shown to signed-in non-members on the event page: reuses the existing `components/tribes/join-tribe-button.tsx` in a compact variant rather than reimplementing the `public` (instant join) / `request` (approval) / `invite_only` (no button) branching. If that component cannot be made compact without distorting it, the chip falls back to linking to the tribe page — it never renders its own copy of the access-type logic.
+- **Join affordance** (`showJoin`), shown to signed-in non-members on the event page. `join-tribe-button.tsx` is being rewritten by the parallel session, so this branch must not import or edit it. Instead the chip renders a compact join **only for `access_type === 'public'`** — a single POST to the existing `/api/tribes/[slug]/membership`, no modal, no new branching. `request` / `invite_only` / `secret` chips simply link to the tribe page, where the full access-type flow already lives.
 - Hidden for signed-out visitors and existing members.
 
 ### 3. Event page — `app/[locale]/events/[slug]/page.tsx`

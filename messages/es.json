@@ -1630,6 +1630,16 @@
     }
   },
   "tribes": {
+    "tribeLabel": "Tribe",
+    "hostedByTribe": "Organizado por el Tribe",
+    "addToTribe": "Añadir a un Tribe",
+    "changeTribe": "Cambiar de Tribe",
+    "pickTribe": "Elige un Tribe",
+    "loadingTribes": "Cargando tus Tribes…",
+    "noTribesToAttach": "Todavía no lideras ningún Tribe.",
+    "attachFailed": "No se pudo actualizar el Tribe. ¿Reintentar?",
+    "joiningChip": "Uniéndote…",
+    "joinFailedChip": "Reintentar",
     "findYourTribe": "Encuentra tu tribu",
     "discoverTitle": "Tribus de Đà Lạt",
     "discoverSubtitle": "Comunidades pequeñas, gran ambiente — únete a los grupos que hacen de esta ciudad un hogar.",

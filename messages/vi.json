@@ -1633,6 +1633,16 @@
     }
   },
   "tribes": {
+    "tribeLabel": "Bộ tộc",
+    "hostedByTribe": "Được tổ chức bởi bộ tộc",
+    "addToTribe": "Thêm vào bộ tộc",
+    "changeTribe": "Đổi bộ tộc",
+    "pickTribe": "Chọn bộ tộc",
+    "loadingTribes": "Đang tải bộ tộc của bạn…",
+    "noTribesToAttach": "Bạn chưa dẫn dắt bộ tộc nào.",
+    "attachFailed": "Không cập nhật được bộ tộc. Thử lại nhé?",
+    "joiningChip": "Đang tham gia…",
+    "joinFailedChip": "Thử lại",
     "findYourTribe": "Tìm hội của bạn",
     "discoverTitle": "Các hội nhóm Đà Lạt",
     "discoverSubtitle": "Cộng đồng nhỏ, niềm vui lớn — tham gia những hội nhóm khiến thành phố này thân thương như nhà.",

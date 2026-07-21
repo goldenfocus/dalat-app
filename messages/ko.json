@@ -1633,6 +1633,16 @@
     }
   },
   "tribes": {
+    "tribeLabel": "트라이브",
+    "hostedByTribe": "트라이브 주최",
+    "addToTribe": "트라이브에 추가",
+    "changeTribe": "트라이브 변경",
+    "pickTribe": "트라이브 선택",
+    "loadingTribes": "트라이브를 불러오는 중…",
+    "noTribesToAttach": "아직 운영하는 트라이브가 없어요.",
+    "attachFailed": "트라이브를 업데이트하지 못했어요. 다시 해볼까요?",
+    "joiningChip": "참여 중…",
+    "joinFailedChip": "다시 시도",
     "findYourTribe": "나의 트라이브 찾기",
     "discoverTitle": "달랏의 트라이브",
     "discoverSubtitle": "작은 커뮤니티, 큰 즐거움 — 이 도시를 집처럼 느끼게 해주는 모임에 함께하세요.",

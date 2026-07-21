@@ -1630,6 +1630,16 @@
     }
   },
   "tribes": {
+    "tribeLabel": "Suku",
+    "hostedByTribe": "Dianjurkan oleh suku",
+    "addToTribe": "Tambah ke suku",
+    "changeTribe": "Tukar suku",
+    "pickTribe": "Pilih suku",
+    "loadingTribes": "Memuatkan suku anda…",
+    "noTribesToAttach": "Anda belum menguruskan sebarang suku.",
+    "attachFailed": "Gagal mengemas kini suku. Cuba lagi?",
+    "joiningChip": "Menyertai…",
+    "joinFailedChip": "Cuba lagi",
     "findYourTribe": "Cari tribe anda",
     "discoverTitle": "Tribe Đà Lạt",
     "discoverSubtitle": "Komuniti kecil, keseronokan besar — sertai kumpulan yang menjadikan bandar ini terasa seperti rumah.",

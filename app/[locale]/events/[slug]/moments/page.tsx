@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MomentsViewContainer } from "@/components/moments/moments-view-container";
 import { MusicPlayButton } from "@/components/audio/music-play-button";
 import { JsonLd, generateCinemaAlbumSchema } from "@/lib/structured-data";
+import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
 import type { AudioTrack, PlaylistInfo } from "@/lib/stores/audio-player-store";
 
@@ -61,16 +62,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-async function getEvent(slug: string): Promise<Event | null> {
+type EventWithTribe = Event & { tribes: ChipTribe | null };
+
+async function getEvent(slug: string): Promise<EventWithTribe | null> {
   const supabase = await createClient();
 
   const { data } = await supabase
     .from("events")
-    .select("*")
+    .select("*, tribes(slug, name, cover_image_url, access_type, settings)")
     .eq("slug", slug)
     .single();
 
-  return data as Event | null;
+  return data as EventWithTribe | null;
 }
 
 async function getEventSettings(eventId: string): Promise<EventSettings | null> {
@@ -251,6 +254,12 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
           >
             {event.title} &rarr;
           </Link>
+          {/* Moments inherit their tribe from the event — no moments.tribe_id */}
+          {event.tribes && (
+            <div className="mt-3">
+              <TribeChip tribe={event.tribes} />
+            </div>
+          )}
         </div>
 
         {/* Moments view with grid/immersive toggle */}

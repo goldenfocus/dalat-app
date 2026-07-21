@@ -1630,6 +1630,16 @@
     }
   },
   "tribes": {
+    "tribeLabel": "Tribe",
+    "hostedByTribe": "จัดโดย Tribe",
+    "addToTribe": "เพิ่มเข้า Tribe",
+    "changeTribe": "เปลี่ยน Tribe",
+    "pickTribe": "เลือก Tribe",
+    "loadingTribes": "กำลังโหลด Tribe ของคุณ…",
+    "noTribesToAttach": "คุณยังไม่ได้ดูแล Tribe ใด",
+    "attachFailed": "อัปเดต Tribe ไม่สำเร็จ ลองอีกครั้งไหม?",
+    "joiningChip": "กำลังเข้าร่วม…",
+    "joinFailedChip": "ลองอีกครั้ง",
     "findYourTribe": "ค้นหาไทรบ์ของคุณ",
     "discoverTitle": "ไทรบ์แห่งดาลัด",
     "discoverSubtitle": "คอมมูนิตี้เล็ก ๆ ที่อบอุ่น — เข้าร่วมแก๊งที่ทำให้เมืองนี้เหมือนบ้าน",

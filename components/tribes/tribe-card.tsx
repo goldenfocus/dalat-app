@@ -2,22 +2,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Users, UserCheck } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
-import type { DiscoverTribe } from "@/lib/tribes";
-
-const GRADIENTS = [
-  "from-orange-400 to-rose-500",
-  "from-emerald-400 to-teal-600",
-  "from-sky-400 to-indigo-600",
-  "from-purple-400 to-fuchsia-600",
-  "from-amber-400 to-orange-600",
-  "from-rose-400 to-purple-500",
-];
-
-function gradientFor(name: string): string {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return GRADIENTS[h % GRADIENTS.length];
-}
+import { gradientFor, type DiscoverTribe } from "@/lib/tribes";
 
 export function TribeCard({ tribe }: { tribe: DiscoverTribe }) {
   const t = useTranslations("tribes");

@@ -30,6 +30,8 @@ import { EventMediaDisplay } from "@/components/events/event-media-display";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat, formatInDaLatAsync } from "@/lib/timezone";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
+import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
+import { EventTribeAttach } from "@/components/events/event-tribe-attach";
 import { MoreAtVenue } from "@/components/events/more-at-venue";
 import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
@@ -159,6 +161,7 @@ type EventWithJoins = Event & {
   organizers: OrganizerWithOwner | null;
   event_series: Pick<EventSeries, "slug" | "title" | "rrule"> | null;
   venues: VenueInfo | null;
+  tribes: ChipTribe & { id: string } | null;
 };
 
 type GetEventResult =
@@ -173,7 +176,7 @@ async function getEvent(slug: string): Promise<GetEventResult> {
   // Include organizer's owner profile for avatar fallback when organizer has no logo
   const { data: event, error } = await supabase
     .from("events")
-    .select("*, profiles(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule), venues(id, slug, name)")
+    .select("*, profiles(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule), venues(id, slug, name), tribes(id, slug, name, cover_image_url, access_type, settings)")
     .eq("slug", slug)
     .single();
 
@@ -371,6 +374,23 @@ async function getCurrentUserId(): Promise<string | null> {
     data: { user },
   } = await supabase.auth.getUser();
   return user?.id ?? null;
+}
+
+/**
+ * Is the viewer already in this event's hosting tribe? Drives whether the tribe
+ * chip offers a join button. Skipped entirely for signed-out visitors.
+ */
+async function isInTribe(tribeId: string | null, userId: string | null): Promise<boolean> {
+  if (!tribeId || !userId) return false;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("tribe_members")
+    .select("id")
+    .eq("tribe_id", tribeId)
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .maybeSingle();
+  return !!data;
 }
 
 async function getCurrentUserRole(userId: string | null): Promise<UserRole | null> {
@@ -769,10 +789,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   }
 
   const event = result.event;
-  const [t, tCommon, tPlaylist] = await Promise.all([
+  const [t, tCommon, tPlaylist, tTribes] = await Promise.all([
     getTranslations("events"),
     getTranslations("common"),
     getTranslations("playlist"),
+    getTranslations("tribes"),
   ]);
 
   const currentUserId = await getCurrentUserId();
@@ -816,6 +837,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const pastMoments = promoResult.promo.length === 0
     ? await getPastMoments(event.series_id, event.id, vibeMomentIds, linkedPastEventId)
     : [];
+
+  const viewerInTribe = await isInTribe(event.tribe_id ?? null, currentUserId);
 
   // Destructure combined RSVP result
   const { attendees, waitlist, interested } = allRsvps;
@@ -1367,6 +1390,33 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 </Link>
               </CardContent>
             </Card>
+
+            {/* Hosting tribe — the read side of events.tribe_id. Safe to show
+                whenever set: members_only events are already hidden from
+                non-members by RLS. */}
+            {(event.tribes || canManageEvent) && (
+              <Card>
+                <CardContent className="p-4">
+                  {event.tribes ? (
+                    <>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {tTribes("hostedByTribe")}
+                      </p>
+                      <TribeChip
+                        tribe={event.tribes}
+                        showJoin={isLoggedIn && !viewerInTribe}
+                      />
+                    </>
+                  ) : null}
+                  {canManageEvent && (
+                    <EventTribeAttach
+                      eventSlug={event.slug}
+                      currentTribeId={event.tribe_id ?? null}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Moments preview - Only show in sidebar for upcoming events */}
             {!isPast && (
