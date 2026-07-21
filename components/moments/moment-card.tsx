@@ -18,6 +18,8 @@ export interface MomentForCard {
   media_url: string | null;
   thumbnail_url?: string | null;
   text_content: string | null;
+  // AI caption (used as alt text)
+  ai_description?: string | null;
   // Material type fields
   youtube_video_id?: string | null;
   file_url?: string | null;
@@ -191,7 +193,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
         {moment.content_type === "image" && moment.file_url && (
           <Image
             src={moment.file_url}
-            alt={moment.text_content || moment.title || "Image"}
+            alt={moment.ai_description || moment.text_content || moment.title || "Image"}
             fill
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, 200px"
@@ -207,7 +209,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
                 // CF Stream thumbnails should not use cloudflareLoader
                 <Image
                   src={derivedThumbnailUrl}
-                  alt={moment.text_content || "Video thumbnail"}
+                  alt={moment.ai_description || moment.text_content || "Video thumbnail"}
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
                   sizes="(max-width: 640px) 50vw, 200px"
@@ -218,7 +220,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
                 <Image
                   loader={cloudflareLoader}
                   src={derivedThumbnailUrl}
-                  alt={moment.text_content || "Video thumbnail"}
+                  alt={moment.ai_description || moment.text_content || "Video thumbnail"}
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
                   sizes="(max-width: 640px) 50vw, 200px"
@@ -242,7 +244,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
           <Image
             loader={cloudflareLoader}
             src={moment.media_url}
-            alt={moment.text_content || "Moment photo"}
+            alt={moment.ai_description || moment.text_content || "Moment photo"}
             fill
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, 200px"

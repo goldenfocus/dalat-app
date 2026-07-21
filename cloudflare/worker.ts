@@ -25,6 +25,7 @@ const CRON_ROUTES: Record<string, string[]> = {
   "30 20 * * *": ["/api/cron/refresh-fallback-covers"],
   "7 * * * *": ["/api/cron/ghost-boost"],
   "30 2 * * *": ["/api/cron/health-check"],
+  "15 */4 * * *": ["/api/cron/process-moments?limit=12&delay=1500"],
 };
 
 interface Env {

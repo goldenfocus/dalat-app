@@ -806,6 +806,8 @@ export interface MomentWithProfile {
   track_number: string | null;
   release_year: number | null;
   genre: string | null;
+  // AI caption from moment_metadata (used as alt text)
+  ai_description?: string | null;
 }
 
 export interface MomentCounts {

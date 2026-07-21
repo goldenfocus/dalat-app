@@ -166,6 +166,8 @@ async function summarizeVideo(
 
   const prompt = `Summarize this video from an event in Đà Lạt, Vietnam.
 
+PRIVACY RULES (mandatory): describe the scene only — never identify, name, or describe individual people; keep location references at neighborhood level or broader; never guess a specific address or whose home a place might be.
+
 Frame descriptions:
 ${frameDescriptions}
 
@@ -184,7 +186,7 @@ Output ONLY the JSON object.`;
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-haiku-4-20250514",
+      model: "claude-opus-4-8",
       max_tokens: 512,
       messages: [{ role: "user", content: prompt }],
     });

@@ -170,7 +170,7 @@ Output ONLY the JSON object.`;
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-haiku-4-20250514",
+      model: "claude-opus-4-8",
       max_tokens: 512,
       messages: [{ role: "user", content: prompt }],
     });

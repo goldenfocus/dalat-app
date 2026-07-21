@@ -27,6 +27,8 @@ export interface LightboxMoment {
   media_url: string | null;
   thumbnail_url?: string | null;
   text_content: string | null;
+  // AI caption (used as alt text)
+  ai_description?: string | null;
   // Video fields
   cf_video_uid?: string | null;
   cf_playback_url?: string | null;
@@ -363,7 +365,7 @@ export function MomentLightbox({
           <div className="relative">
             <img
               src={imageUrl}
-              alt={moment.text_content || "Photo"}
+              alt={moment.ai_description || moment.text_content || "Photo"}
               onLoad={handleImageLoad}
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
@@ -457,7 +459,7 @@ export function MomentLightbox({
           <div className="relative">
             <img
               src={moment.file_url}
-              alt={moment.text_content || moment.title || "Image"}
+              alt={moment.ai_description || moment.text_content || moment.title || "Image"}
               onLoad={handleImageLoad}
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />

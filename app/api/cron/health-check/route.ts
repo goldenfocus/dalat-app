@@ -138,6 +138,11 @@ export async function GET(request: Request) {
   // 6. Content health: /news freshness, backlog, dead-cluster retry, pipeline errors.
   const content = await checkContentHealth(supabase, problems);
 
+  // 7. Caption coverage: % of recent moments with settled AI metadata
+  // (completed or privacy-skipped). A dead pipeline shows up here within
+  // days instead of silently rotting like Inngest did (0 rows for months).
+  const captionCoverage = await checkCaptionCoverage(supabase, problems);
+
   if (problems.length > 0) {
     await sendTelegram(
       `🚨 <b>dalat.app event health</b>\n${problems.map((p) => `• ${p}`).join("\n")}`
@@ -151,10 +156,69 @@ export async function GET(request: Request) {
       seriesToppedUp: toppedUp,
       problems,
       contentHealth: content,
+      captionCoverage,
     },
     // Stale /news even after a promotion attempt = cron run failed.
     { status: content.newsStale ? 500 : 200 }
   );
+}
+
+// Caption pipeline promise: recent moments get AI metadata. Floor is the
+// post-backfill high-water mark — do not lower it to silence an alert; fix
+// the pipeline (/api/cron/process-moments) instead.
+const MIN_CAPTION_COVERAGE_PCT = 80;
+
+/**
+ * % of last-30d eligible published moments whose moment_metadata is settled
+ * ('completed', or 'skipped' by the privacy gate). Query errors THROW into
+ * problems — a failed check must never read as healthy (aggregator-v1 lesson).
+ */
+async function checkCaptionCoverage(
+  supabase: SupabaseClient,
+  problems: string[]
+): Promise<{ eligible: number; settled: number; pct: number | null }> {
+  const since = new Date(Date.now() - 30 * 86400_000).toISOString();
+  const { data: recent, error: recentError } = await supabase
+    .from("moments")
+    .select("id")
+    .eq("status", "published")
+    .in("content_type", ["photo", "image", "video", "audio", "pdf", "document"])
+    .gte("created_at", since)
+    .limit(1000);
+
+  if (recentError) {
+    problems.push(`caption coverage: moments query failed: ${recentError.message}`);
+    return { eligible: 0, settled: 0, pct: null };
+  }
+
+  const ids = (recent ?? []).map((m) => m.id);
+  if (ids.length < 10) {
+    // Too few recent moments to make a percentage meaningful.
+    return { eligible: ids.length, settled: 0, pct: null };
+  }
+
+  // Chunked — 1000 UUIDs in one .in() blows past URL length limits.
+  let settled = 0;
+  for (let i = 0; i < ids.length; i += 200) {
+    const { data: settledRows, error: settledError } = await supabase
+      .from("moment_metadata")
+      .select("moment_id")
+      .in("moment_id", ids.slice(i, i + 200))
+      .in("processing_status", ["completed", "skipped"]);
+
+    if (settledError) {
+      problems.push(`caption coverage: metadata query failed: ${settledError.message}`);
+      return { eligible: ids.length, settled: 0, pct: null };
+    }
+    settled += settledRows?.length ?? 0;
+  }
+  const pct = Math.round((settled / ids.length) * 100);
+  if (pct < MIN_CAPTION_COVERAGE_PCT) {
+    problems.push(
+      `caption coverage: ${pct}% of last-30d moments have AI metadata (${settled}/${ids.length}, floor ${MIN_CAPTION_COVERAGE_PCT}%) — is /api/cron/process-moments running?`
+    );
+  }
+  return { eligible: ids.length, settled, pct };
 }
 
 interface ContentHealth {

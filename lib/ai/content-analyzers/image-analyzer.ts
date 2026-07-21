@@ -19,6 +19,11 @@ export interface ImageAnalysis {
 
 const IMAGE_ANALYSIS_PROMPT = `Analyze this image from an event in Đà Lạt, Vietnam. Extract detailed metadata for SEO and search.
 
+PRIVACY RULES (mandatory):
+- Describe the SCENE only. Never identify, name, or describe individual people's appearance, clothing, or distinguishing features. "A group of friends laughing over board games" is fine; "a woman in a red dress" is not.
+- Location references stay at neighborhood level or broader (e.g. "a cozy cafe in Đà Lạt", "a pine-forested hillside"). Never guess a specific address, street number, or whose home a place might be.
+- Do not transcribe text that reveals personal information (names, phone numbers, addresses).
+
 Return a JSON object with these exact fields:
 {
   "ai_description": "2-3 sentence SEO description of what's in the image, suitable for meta description",
@@ -28,10 +33,10 @@ Return a JSON object with these exact fields:
   "mood": "one word: festive, calm, energetic, intimate, joyful, dramatic, peaceful, vibrant, cozy, or nostalgic",
   "quality_score": 0.0-1.0 (how visually appealing/shareable the image is),
   "detected_objects": ["array of objects visible: stage, crowd, lights, etc."],
-  "detected_text": ["any text visible in the image (signs, banners, etc.)"],
+  "detected_text": ["public text visible in the image (venue signs, banners, etc.) — never personal info"],
   "detected_faces_count": number of faces visible (0 if none),
   "dominant_colors": ["#hex", "#colors", "up to 5"],
-  "location_hints": ["clues about location: outdoor, cafe, street, etc."],
+  "location_hints": ["scene-level clues only: outdoor, cafe, street, etc. — never specific addresses"],
   "content_language": "detected language of any text, or 'en' if none"
 }
 
@@ -40,14 +45,13 @@ Output ONLY the JSON object, no other text.`;
 
 /**
  * Analyze an image using Claude Vision to extract metadata for SEO.
- * Uses claude-sonnet-4 for vision capabilities.
  */
 export async function analyzeImage(imageUrl: string): Promise<ImageAnalysis> {
   const startTime = Date.now();
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-opus-4-8",
       max_tokens: 1024,
       messages: [
         {
