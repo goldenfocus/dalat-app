@@ -43,13 +43,16 @@ export function MomentActionsMenu({
   const router = useRouter();
   const t = useTranslations("moments");
   const tCommon = useTranslations("common");
-  const { isOwner, canModerate, isLoading } = useMomentPermissions(momentUserId);
+  const { isOwner, canModerate, isEventCreator, isLoading } = useMomentPermissions(
+    momentUserId,
+    eventSlug
+  );
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [isSettingCover, setIsSettingCover] = useState(false);
 
   // Don't render if loading or user has no permissions
-  if (isLoading || (!isOwner && !canModerate)) {
+  if (isLoading || (!isOwner && !canModerate && !isEventCreator)) {
     return null;
   }
 
@@ -131,8 +134,8 @@ export function MomentActionsMenu({
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-          {/* Set as cover - moderators only */}
-          {canModerate && (
+          {/* Set as cover - moderators and event creators */}
+          {(canModerate || isEventCreator) && (
             <DropdownMenuItem
               onClick={handleSetCover}
               disabled={isSettingCover}
