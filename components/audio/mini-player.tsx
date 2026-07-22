@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Play,
@@ -97,6 +97,33 @@ export function MiniPlayer() {
   const [showRemaining, setShowRemaining] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const barRef = useRef<HTMLDivElement>(null);
+
+  // Publish the player's real clearance (viewport bottom → bar top) as a CSS
+  // variable so overlays (e.g. cinema captions) can position above it. The
+  // bar's height varies with the karaoke lyric line, so measure — don't guess.
+  useEffect(() => {
+    const el = barRef.current;
+    const root = document.documentElement;
+    if (!isVisible || !currentTrack || !el) {
+      root.style.removeProperty("--docked-player-clearance");
+      return;
+    }
+    const update = () => {
+      const clearance = Math.max(0, window.innerHeight - el.getBoundingClientRect().top);
+      root.style.setProperty("--docked-player-clearance", `${Math.round(clearance)}px`);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+      root.style.removeProperty("--docked-player-clearance");
+    };
+  }, [isVisible, currentTrack, karaokeLevel]);
 
   // Initialize audio element ONCE and store in Zustand
   useEffect(() => {
@@ -259,7 +286,7 @@ export function MiniPlayer() {
   return (
     <>
       {/* Mini player bar - positioned above mobile bottom nav */}
-      <div className="fixed left-0 right-0 z-[60] bg-background/95 backdrop-blur-lg border-t bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0">
+      <div ref={barRef} className="fixed left-0 right-0 z-[60] bg-background/95 backdrop-blur-lg border-t bottom-[calc(4rem+env(safe-area-inset-bottom))] lg:bottom-0">
         {/* Progress bar (thin line at top) */}
         <div className="h-1 bg-muted">
           <div
