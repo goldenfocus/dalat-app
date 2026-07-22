@@ -20,7 +20,7 @@ export interface TranslationWorkItem {
 }
 
 /** Machine captions fan out from these moment_metadata columns. */
-const CAPTION_FIELDS = [
+export const CAPTION_FIELDS = [
   "ai_description",
   "ai_title",
   "scene_description",

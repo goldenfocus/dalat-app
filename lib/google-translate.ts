@@ -7,7 +7,7 @@
 import { ContentLocale, CONTENT_LOCALES } from '@/lib/types';
 import { aiChatJson } from '@/lib/ai/provider';
 
-const LOCALE_NAMES: Record<ContentLocale, string> = {
+export const LOCALE_NAMES: Record<ContentLocale, string> = {
   en: 'English',
   vi: 'Vietnamese',
   ko: 'Korean',
@@ -26,11 +26,12 @@ const LOCALE_NAMES: Record<ContentLocale, string> = {
  * requests, so higher concurrency only causes timeouts, not speedups. */
 const LOCALE_CONCURRENCY = 3;
 
-const TRANSLATE_SYSTEM =
+export const TRANSLATE_SYSTEM =
   'You are a professional translator for dalat.app, a friendly guide to Da Lat, Vietnam. ' +
   'Translate faithfully and naturally. Keep the original tone (warm, casual). ' +
   'Preserve markdown formatting, links, HTML tags, and emoji. ' +
   'Proper nouns (place names, business names, people): use the well-known form in the target language if one exists (e.g. 달랏 for Da Lat in Korean); otherwise KEEP them in their original Latin script — never invent a transliteration or mix scripts inside one name. ' +
+  'Write as a native speaker would, not word-for-word: use established local terms or loanwords for sports/equipment (e.g. Korean 그래블 바이크 for gravel bike, Japanese タンデム自転車 for tandem bike, Malay kayuhan — never pemanduan — for a bike ride), prefer natural collocations (French en bonne compagnie, not avec de bonne compagnie), and double-check grammatical agreement — gender, case, measure words (Russian "своё воскресное утро", never "свой воскресный утро"). ' +
   'Never add commentary. Never translate URLs or code.';
 
 /**
