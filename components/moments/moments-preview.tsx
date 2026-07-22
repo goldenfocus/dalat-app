@@ -94,7 +94,7 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                           <Image
                             loader={displayUrl.includes('cloudflarestream.com') ? undefined : cloudflareLoader}
                             src={displayUrl}
-                            alt={moment.text_content || "Video thumbnail"}
+                            alt={moment.ai_description || moment.text_content || "Video thumbnail"}
                             fill
                             className="object-cover"
                             sizes="64px"
@@ -119,7 +119,7 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                       <Image
                         loader={cloudflareLoader}
                         src={moment.media_url!}
-                        alt={moment.text_content || "Moment thumbnail"}
+                        alt={moment.ai_description || moment.text_content || "Moment thumbnail"}
                         fill
                         className="object-cover"
                         sizes="64px"

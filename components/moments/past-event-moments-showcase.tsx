@@ -78,7 +78,7 @@ export function PastEventMomentsShowcase({
               <Image
                 loader={useCfLoader ? cloudflareLoader : undefined}
                 src={displayUrl}
-                alt={moment.text_content || "Moment"}
+                alt={moment.ai_description || moment.text_content || "Moment"}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes={sizes}

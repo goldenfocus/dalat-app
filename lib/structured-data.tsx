@@ -655,10 +655,18 @@ export function generateCinemaAlbumSchema(
     created_at: string;
     display_name: string | null;
     username: string | null;
+    ai_description?: string | null;
   }>,
   totalCount: number,
   locale: string
 ) {
+  // AI caption → JSON-LD description: keep it human-length, no keyword tails.
+  // NEVER feed detected_text here — it's OCR exhaust (name tags, phone numbers).
+  const truncateDescription = (text: string, max = 125): string => {
+    const clean = text.trim();
+    if (clean.length <= max) return clean;
+    return clean.slice(0, max - 1).replace(/\s+\S*$/, "") + "…";
+  };
   const albumUrl = `${SITE_URL}/${locale}/events/${event.slug}/moments?view=cinema`;
   const eventUrl = `${SITE_URL}/${locale}/events/${event.slug}`;
 
@@ -708,6 +716,7 @@ export function generateCinemaAlbumSchema(
         "@type": "ImageObject",
         contentUrl: p.media_url,
         uploadDate: p.created_at,
+        ...(p.ai_description && { description: truncateDescription(p.ai_description) }),
         ...(p.display_name && { author: { "@type": "Person", name: p.display_name } }),
       })),
     }),
