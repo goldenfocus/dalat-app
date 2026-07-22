@@ -4,6 +4,8 @@ import {
   normalizeImageAnalysis,
   normalizeVideoAnalysis,
 } from "@/lib/ai/content-analyzers";
+import { parseRecapOutput } from "@/lib/blog/recap-input";
+import { triggerTranslationServer } from "@/lib/translations";
 
 /**
  * Complete a caption job with the model's raw output.
@@ -69,7 +71,7 @@ export async function POST(request: Request) {
   const admin = getImageJobsAdmin();
   const { data: job, error: fetchError } = await admin
     .from("caption_jobs")
-    .select("id, moment_id, content_type, status, claimed_at, transcript, transcript_language, media_urls")
+    .select("id, moment_id, event_id, content_type, status, claimed_at, transcript, transcript_language, media_urls")
     .eq("id", jobId)
     .single();
 
@@ -78,6 +80,91 @@ export async function POST(request: Request) {
   }
   if (job.status === "done") {
     return NextResponse.json({ ok: true }); // idempotent
+  }
+
+  // Recap jobs: parse the recap JSON, write the storage-only blog_posts
+  // draft (status stays 'draft' forever — every public blog surface filters
+  // status='published'; recap_published_at gates the event-page card), and
+  // fan out 12-locale translation. NO technical_content — deliberately dead.
+  if (job.content_type === "recap") {
+    let recap;
+    try {
+      recap = parseRecapOutput(output);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return NextResponse.json({ error: message }, { status: 422 });
+    }
+
+    const { data: event } = await admin
+      .from("events")
+      .select("id, title, slug, image_url, created_by")
+      .eq("id", job.event_id)
+      .single();
+    if (!event) {
+      return NextResponse.json({ error: "Recap job's event not found" }, { status: 422 });
+    }
+
+    const { data: category } = await admin
+      .from("blog_categories")
+      .select("id")
+      .eq("slug", "stories")
+      .single();
+
+    const { data: post, error: postError } = await admin
+      .from("blog_posts")
+      .upsert(
+        {
+          event_id: event.id,
+          title: `${event.title} — Event Recap`,
+          slug: `recap-${event.slug}`,
+          story_content: recap.story_content,
+          meta_description: recap.meta_description,
+          seo_keywords: recap.seo_keywords,
+          social_share_text: recap.social_share_text,
+          suggested_cta_url: `/events/${event.slug}/moments`,
+          suggested_cta_text: recap.suggested_cta_text,
+          cover_image_url: event.image_url,
+          source: "manual",
+          status: "draft",
+          category_id: category?.id || null,
+          author_id: event.created_by,
+          recap_published_at: null,
+        },
+        { onConflict: "event_id" }
+      )
+      .select("id")
+      .single();
+
+    if (postError || !post) {
+      console.error(`[caption-jobs] recap post upsert failed for event ${event.id}:`, postError);
+      return NextResponse.json(
+        { error: postError?.message || "post upsert failed" },
+        { status: 500 }
+      );
+    }
+
+    await triggerTranslationServer("blog", post.id, [
+      { field_name: "title", text: `${event.title} — Event Recap` },
+      { field_name: "story_content", text: recap.story_content },
+      { field_name: "meta_description", text: recap.meta_description },
+    ]);
+
+    const { error: jobUpdateError } = await admin
+      .from("caption_jobs")
+      .update({
+        status: "done",
+        result: recap as unknown as Record<string, unknown>,
+        provider: provider ? String(provider).slice(0, 50) : null,
+        model: model ? String(model).slice(0, 100) : null,
+        completed_at: new Date().toISOString(),
+        error: null,
+      })
+      .eq("id", jobId);
+    if (jobUpdateError) {
+      console.error(`[caption-jobs] recap job-row update failed for ${jobId}:`, jobUpdateError);
+    }
+
+    return NextResponse.json({ ok: true, blogPostId: post.id });
   }
 
   // Parse + validate BEFORE touching moment_metadata. Invalid output is a
