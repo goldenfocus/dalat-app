@@ -1029,7 +1029,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 />
 
                 {/* "How it went" — AI recap card (secret-address events never get one) */}
-                {!event.has_private_details && (recap || isModerator) && (
+                {!event.has_private_details && (!!recap?.recapPublishedAt || isModerator) && (
                   <EventRecapCard
                     eventId={event.id}
                     story={recap?.story ?? null}
@@ -1157,7 +1157,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 )}
 
                 {/* "How it went" — AI recap card (secret-address events never get one) */}
-                {isPast && !event.has_private_details && (recap || isModerator) && (
+                {isPast && !event.has_private_details && (!!recap?.recapPublishedAt || isModerator) && (
                   <EventRecapCard
                     eventId={event.id}
                     story={recap?.story ?? null}
