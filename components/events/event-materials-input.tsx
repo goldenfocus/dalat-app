@@ -978,12 +978,14 @@ export function EventMaterialsInput({
 export async function createMaterialsForEvent(
   eventId: string,
   draftMaterials: DraftMaterial[]
-): Promise<void> {
-  if (draftMaterials.length === 0) return;
+): Promise<string | null> {
+  if (draftMaterials.length === 0) return null;
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return null;
+
+  let firstImageUrl: string | null = null;
 
   for (let i = 0; i < draftMaterials.length; i++) {
     const draft = draftMaterials[i];
@@ -1053,5 +1055,11 @@ export async function createMaterialsForEvent(
       sort_order: i,
       created_by: user.id,
     });
+
+    if (!firstImageUrl && draft.material_type === "image" && fileUrl) {
+      firstImageUrl = fileUrl;
+    }
   }
+
+  return firstImageUrl;
 }

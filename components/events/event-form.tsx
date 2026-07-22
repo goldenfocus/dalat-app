@@ -734,9 +734,33 @@ export function EventForm({
             await createSponsorsForEvent(seriesData.first_event_id, draftSponsors);
           }
 
+          // Upload the picked cover — the series API only accepts URLs, not files
+          let seriesCoverUrl: string | null = null;
+          if (seriesData.first_event_id) {
+            try {
+              seriesCoverUrl = await uploadImage(seriesData.first_event_id);
+            } catch {
+              console.error("Failed to upload series cover image");
+            }
+          }
+
           // Create materials for the first event in the series
+          let firstMaterialImageUrl: string | null = null;
           if (draftMaterials.length > 0 && seriesData.first_event_id) {
-            await createMaterialsForEvent(seriesData.first_event_id, draftMaterials);
+            firstMaterialImageUrl = await createMaterialsForEvent(
+              seriesData.first_event_id,
+              draftMaterials
+            );
+          }
+
+          // Series cover: picked image, else first image material (flyer)
+          const seriesCover = seriesCoverUrl ?? firstMaterialImageUrl;
+          if (seriesCover) {
+            await fetch(`/api/series/${seriesData.slug}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ image_url: seriesCover, update_scope: "all" }),
+            });
           }
 
           // Trigger AI processing for the first event (fire-and-forget)
@@ -819,7 +843,18 @@ export function EventForm({
 
           // Create materials for the new event
           if (draftMaterials.length > 0) {
-            await createMaterialsForEvent(data.id, draftMaterials);
+            const firstMaterialImageUrl = await createMaterialsForEvent(
+              data.id,
+              draftMaterials
+            );
+            // No cover picked? Default to the first image material (flyer)
+            if (!eventImageUrl && firstMaterialImageUrl) {
+              await supabase
+                .from("events")
+                .update({ image_url: firstMaterialImageUrl })
+                .eq("id", data.id);
+              eventImageUrl = firstMaterialImageUrl;
+            }
           }
 
           // Trigger AI processing in background (fire-and-forget)
