@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { CACHE_TAGS } from "@/lib/cache/server-cache";
 import { addMonths, format } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
 import { generateSeriesInstances, isValidRRule } from "@/lib/recurrence";
@@ -322,6 +324,10 @@ export async function POST(request: Request) {
         .update({ instances_generated_until: generateUntil.toISOString() })
         .eq("id", series.id);
     }
+
+    // Revalidate homepage and event caches so the new series appears immediately
+    revalidateTag(CACHE_TAGS.events, "max");
+    revalidatePath("/");
 
     return NextResponse.json({
       success: true,
