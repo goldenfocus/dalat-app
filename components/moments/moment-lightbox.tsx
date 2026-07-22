@@ -17,6 +17,7 @@ import { useShare } from "@/lib/hooks/use-share";
 import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
 import { MomentDownloadButton } from "@/components/moments/moment-download-button";
 import { MomentWatermark } from "./moment-watermark";
+import { MomentCaptionOverlay } from "./moment-caption-overlay";
 import type { MomentContentType, MomentVideoStatus } from "@/lib/types";
 
 // Minimal moment data needed for lightbox display
@@ -369,7 +370,16 @@ export function MomentLightbox({
               onLoad={handleImageLoad}
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
-            <MomentWatermark displayName={moment.display_name || moment.username} />
+            {moment.text_content && (
+              <MomentCaptionOverlay
+                key={moment.id}
+                variant="scrim"
+                text={moment.text_content}
+                className="rounded-b-lg"
+              />
+            )}
+            {/* z-30 keeps the watermark above the caption scrim */}
+            <MomentWatermark displayName={moment.display_name || moment.username} className="z-30" />
           </div>
         )}
 
@@ -463,7 +473,16 @@ export function MomentLightbox({
               onLoad={handleImageLoad}
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
-            <MomentWatermark displayName={moment.display_name || moment.username} />
+            {moment.text_content && (
+              <MomentCaptionOverlay
+                key={moment.id}
+                variant="scrim"
+                text={moment.text_content}
+                className="rounded-b-lg"
+              />
+            )}
+            {/* z-30 keeps the watermark above the caption scrim */}
+            <MomentWatermark displayName={moment.display_name || moment.username} className="z-30" />
           </div>
         )}
 
@@ -479,7 +498,9 @@ export function MomentLightbox({
 
       {/* Caption + engagement */}
       <div className="absolute bottom-0 left-0 right-0 z-30 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-black/85 via-black/50 to-transparent">
-        {moment.text_content && moment.content_type !== "text" && (
+        {/* Photo/image captions render as an overlay on the media itself */}
+        {moment.text_content &&
+          !["text", "photo", "image"].includes(moment.content_type) && (
           <p className="text-white text-center max-w-2xl mx-auto line-clamp-3 mb-3">
             {moment.text_content}
           </p>

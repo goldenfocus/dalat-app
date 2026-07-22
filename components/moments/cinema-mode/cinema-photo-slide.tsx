@@ -11,6 +11,7 @@ import {
   getStaticEffect,
 } from "@/lib/cinema/ken-burns-effects";
 import { MomentWatermark } from "@/components/moments/moment-watermark";
+import { MomentCaptionOverlay } from "@/components/moments/moment-caption-overlay";
 import type { MomentWithProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -155,6 +156,11 @@ export function CinemaPhotoSlide({
           </div>
         )}
       </div>
+
+      {/* Caption — film-subtitle style, crossfades with the slide */}
+      {imageReady && moment.text_content && (
+        <MomentCaptionOverlay variant="subtitle" text={moment.text_content} />
+      )}
     </div>
   );
 }

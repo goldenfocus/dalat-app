@@ -6,6 +6,7 @@ import { MomentVideoPlayer } from "../moment-video-player";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { useCinemaSoundOn } from "@/lib/stores/cinema-mode-store";
 import { MomentWatermark } from "@/components/moments/moment-watermark";
+import { MomentCaptionOverlay } from "@/components/moments/moment-caption-overlay";
 import type { MomentWithProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -144,6 +145,11 @@ export function CinemaVideoSlide({
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
           <Loader2 className="w-8 h-8 text-white/70 animate-spin" />
         </div>
+      )}
+
+      {/* Caption — film-subtitle style */}
+      {moment.text_content && (
+        <MomentCaptionOverlay variant="subtitle" text={moment.text_content} />
       )}
     </div>
   );
