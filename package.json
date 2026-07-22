@@ -3,7 +3,7 @@
   "scripts": {
     "import:worker": "tsx scripts/import-worker/worker.ts",
     "dev": "next dev",
-    "prebuild": "node -e \"const fs=require('fs'); if(fs.existsSync('middleware.ts')&&fs.existsSync('proxy.ts')){console.error('\\x1b[31mERROR: middleware.ts AND proxy.ts both exist! Having both crashes the app.\\nCloudflare/OpenNext requires edge middleware: keep middleware.ts, delete proxy.ts.\\x1b[0m');process.exit(1)}\" && node scripts/check-client-namespaces.mjs && node scripts/check-canonicals.mjs && node scripts/check-robots-ai.mjs",
+    "prebuild": "node -e \"const fs=require('fs'); if(fs.existsSync('middleware.ts')&&fs.existsSync('proxy.ts')){console.error('\\x1b[31mERROR: middleware.ts AND proxy.ts both exist! Having both crashes the app.\\nCloudflare/OpenNext requires edge middleware: keep middleware.ts, delete proxy.ts.\\x1b[0m');process.exit(1)}\" && node scripts/check-client-namespaces.mjs && node scripts/check-canonicals.mjs && node scripts/check-robots-ai.mjs && node scripts/check-recap-keyless.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . && npm run check:no-middleware",
