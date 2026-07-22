@@ -9,11 +9,14 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-$HOME/dalat-app}"
 cd "$APP_DIR"
 
-# Export .env.local, stripping the literal trailing \n some values carry
+# Export .env.local (Vercel CLI format: values are double-quoted and some
+# carry a literal trailing \n inside the quotes — strip both)
 while IFS= read -r line; do
   case "$line" in \#*|"") continue ;; esac
   key="${line%%=*}"
   val="${line#*=}"
+  val="${val#\"}"
+  val="${val%\"}"
   val="${val%\\n}"
   export "$key=$val"
 done < <(cat .env.local; echo) # trailing echo: read a final line lacking \n
