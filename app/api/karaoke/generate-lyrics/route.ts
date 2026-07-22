@@ -2,6 +2,36 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { triggerTranslationServer } from "@/lib/translations";
 import { reviewLyricsWithAI } from "@/lib/karaoke/review-lyrics";
+import {
+  alignSheetToSegments,
+  alignedToLrc,
+} from "@/lib/karaoke/align-sheet";
+
+// Whisper returns full language names ("english"), the app stores ISO codes
+const WHISPER_LANG_TO_CODE: Record<string, string> = {
+  english: "en",
+  vietnamese: "vi",
+  korean: "ko",
+  chinese: "zh",
+  russian: "ru",
+  french: "fr",
+  japanese: "ja",
+  malay: "ms",
+  thai: "th",
+  german: "de",
+  spanish: "es",
+  indonesian: "id",
+};
+
+function whisperLangCode(lang: string | undefined | null): string {
+  if (!lang) return "en";
+  const lower = lang.toLowerCase();
+  if (WHISPER_LANG_TO_CODE[lower]) return WHISPER_LANG_TO_CODE[lower];
+  if (lower.length <= 3) return lower; // already a code
+  // Don't fabricate codes ("portuguese" → "po" is wrong, "tagalog" → "ta" is Tamil)
+  console.warn(`[generate-lyrics] Unmapped Whisper language "${lang}" — storing "en"`);
+  return "en";
+}
 
 export const maxDuration = 120;
 
@@ -153,58 +183,96 @@ export async function POST(request: NextRequest) {
     }
 
     const whisperResult = await whisperResponse.json();
+    const language = whisperLangCode(whisperResult.language);
 
-    // Convert to LRC format
-    const lrcLines: string[] = [];
-    lrcLines.push(`[la:${whisperResult.language || "en"}]`);
-    lrcLines.push("");
+    // Sheet-first: when the MP3 embeds its lyric sheet, the sheet is ground
+    // truth for WHAT is sung — Whisper only provides the timing. Whisper's
+    // own words are unreliable on music (it mishears sung hooks entirely).
+    let lrc: string | null = null;
+    let generatedFrom: "sheet" | "whisper" = "whisper";
+    let review: Awaited<ReturnType<typeof reviewLyricsWithAI>> | null = null;
+    let loopDetected = false;
 
-    for (const segment of whisperResult.segments || []) {
-      const min = Math.floor(segment.start / 60);
-      const sec = Math.floor(segment.start % 60);
-      const cs = Math.round((segment.start % 1) * 100);
-      const timestamp = `${min.toString().padStart(2, "0")}:${sec
-        .toString()
-        .padStart(2, "0")}.${cs.toString().padStart(2, "0")}`;
-      const text = segment.text?.trim();
-      if (text) {
-        lrcLines.push(`[${timestamp}]${text}`);
+    if (embeddedLyrics.trim()) {
+      const alignment = alignSheetToSegments(
+        embeddedLyrics,
+        whisperResult.segments || []
+      );
+      // Gate on ANCHOR coverage, not output length — interpolated lines are
+      // fabricated timings, and with 2 anchors the whole sheet "aligns".
+      const coverage =
+        alignment.sheetLineCount > 0
+          ? alignment.anchoredLines / alignment.sheetLineCount
+          : 0;
+      if (alignment.lines.length >= 4 && coverage >= 0.5) {
+        lrc = alignedToLrc(alignment.lines, language);
+        generatedFrom = "sheet";
+        console.log(
+          `[generate-lyrics] Sheet-aligned track ${trackId}: ${alignment.anchoredLines}/${alignment.sheetLineCount} anchored, ${alignment.lines.length - alignment.anchoredLines} interpolated`
+        );
+      } else if (alignment.sheetLineCount > 0) {
+        console.warn(
+          `[generate-lyrics] Sheet-align coverage too low for track ${trackId} (${alignment.anchoredLines}/${alignment.sheetLineCount} anchored) — falling back to Whisper transcript`
+        );
       }
     }
 
-    const rawLrc = lrcLines.join("\n");
+    if (generatedFrom === "whisper") {
+      // No usable sheet — trust Whisper's transcript, then review it
+      const lrcLines: string[] = [];
+      lrcLines.push(`[la:${language}]`);
+      lrcLines.push("");
 
-    // Review lyrics with AI to remove Whisper hallucinations
-    const review = await reviewLyricsWithAI(
-      rawLrc,
-      track.title || "",
-      track.artist || ""
-    );
+      for (const segment of whisperResult.segments || []) {
+        // Round in total centiseconds so the carry propagates into seconds
+        // (fraction-only rounding can emit ".100" — parsed as milliseconds)
+        const total = Math.round(segment.start * 100);
+        const min = Math.floor(total / 6000);
+        const sec = Math.floor((total % 6000) / 100);
+        const cs = total % 100;
+        const timestamp = `${min.toString().padStart(2, "0")}:${sec
+          .toString()
+          .padStart(2, "0")}.${cs.toString().padStart(2, "0")}`;
+        const text = segment.text?.trim();
+        if (text) {
+          lrcLines.push(`[${timestamp}]${text}`);
+        }
+      }
 
-    console.log(
-      `[generate-lyrics] Review: ${review.verdict} (removed=${review.removedCount}, fixed=${review.fixedCount})`
-    );
+      const rawLrc = lrcLines.join("\n");
 
-    // If mostly hallucinated, don't save garbage lyrics.
-    // The deterministic loop check backstops the AI review — the review
-    // silently no-ops when ANTHROPIC_API_KEY is missing.
-    const loopDetected = isHallucinationLoop(review.cleanedLrc);
-    if (loopDetected && review.verdict !== "mostly_hallucinated") {
-      console.warn(
-        `[generate-lyrics] Loop guard discarded transcript for track ${trackId} despite review verdict=${review.verdict}`
+      // Review lyrics with AI to remove Whisper hallucinations
+      review = await reviewLyricsWithAI(
+        rawLrc,
+        track.title || "",
+        track.artist || ""
       );
+
+      console.log(
+        `[generate-lyrics] Review: ${review.verdict} (removed=${review.removedCount}, fixed=${review.fixedCount})`
+      );
+
+      // If mostly hallucinated, don't save garbage lyrics.
+      // The deterministic loop check backstops the AI review — the review
+      // silently no-ops when ANTHROPIC_API_KEY is missing.
+      loopDetected = isHallucinationLoop(review.cleanedLrc);
+      if (loopDetected && review.verdict !== "mostly_hallucinated") {
+        console.warn(
+          `[generate-lyrics] Loop guard discarded transcript for track ${trackId} despite review verdict=${review.verdict}`
+        );
+      }
+      lrc =
+        review.verdict === "mostly_hallucinated" || loopDetected
+          ? null
+          : review.cleanedLrc;
     }
-    const lrc =
-      review.verdict === "mostly_hallucinated" || loopDetected
-        ? null
-        : review.cleanedLrc;
 
     // Save to database
     const { error: updateError } = await supabase
       .from("playlist_tracks")
       .update({
         lyrics_lrc: lrc,
-        source_locale: whisperResult.language || "vi",
+        source_locale: language,
       })
       .eq("id", trackId);
 
@@ -237,16 +305,19 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      language: whisperResult.language,
+      language,
+      generatedFrom,
       lineCount: lrc ? lrc.split("\n").length : 0,
       transcript: whisperResult.text,
       translationTriggered: !!plainLyrics,
-      review: {
-        verdict: review.verdict,
-        removedCount: review.removedCount,
-        fixedCount: review.fixedCount,
-        loopDetected,
-      },
+      review: review
+        ? {
+            verdict: review.verdict,
+            removedCount: review.removedCount,
+            fixedCount: review.fixedCount,
+            loopDetected,
+          }
+        : null,
     });
   } catch (error) {
     console.error("Generate lyrics error:", error);
