@@ -638,7 +638,9 @@ export function MomentsViewContainer({
         <InAppBrowserDownloadHint className="text-right -mt-2 mb-4" />
       )}
 
-      {/* Grid view (always rendered to maintain scroll position and loaded data) */}
+      {/* Grid view (always rendered to maintain scroll position and loaded data).
+          Grid clicks navigate to the moment detail page (SEO surface) — cinematic
+          playback lives in the immersive/cinema view modes, not the grid. */}
       <div className={(viewMode === "immersive" && showImmersive) || (viewMode === "cinema" && showCinema) ? "hidden" : ""}>
         <InfiniteMomentGrid
           ref={gridRef}
@@ -646,7 +648,7 @@ export function MomentsViewContainer({
           eventSlug={eventSlug}
           initialMoments={initialMoments}
           initialHasMore={initialHasMore}
-          enableLightbox={viewMode === "grid" && !selectMode}
+          enableLightbox={false}
           onMomentClick={viewMode === "immersive" && !selectMode ? openImmersive : undefined}
           onMomentsUpdate={(moments) => {
             setAllMoments(moments);
