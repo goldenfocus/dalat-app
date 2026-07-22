@@ -481,6 +481,7 @@ export function PlaylistInput({
               </div>
               {upload.status !== "done" && (
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
@@ -510,6 +511,7 @@ export function PlaylistInput({
               <div className="flex items-center gap-1">
                 <span className="text-xs mr-1">{t("sortBy")}</span>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   className="h-7 px-2 text-xs"
@@ -520,6 +522,7 @@ export function PlaylistInput({
                   {t("sortTitle")}
                 </Button>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   className="h-7 px-2 text-xs"
@@ -530,6 +533,7 @@ export function PlaylistInput({
                   {t("sortArtistLabel")}
                 </Button>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   className="h-7 px-2 text-xs"
@@ -583,6 +587,7 @@ export function PlaylistInput({
                   </span>
                 )}
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-muted-foreground hover:text-destructive"
