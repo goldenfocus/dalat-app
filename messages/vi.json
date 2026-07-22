@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "Buổi hôm ấy thế nào",
+    "aiNote": "AI tóm tắt từ những khoảnh khắc mọi người chia sẻ",
+    "wentCount": "{count} người tham gia",
+    "momentsCount": "{count} khoảnh khắc",
+    "positiveFeedback": "{percent}% yêu thích",
+    "generate": "Tạo recap",
+    "enqueued": "AI đang viết recap — quay lại sau vài phút nhé",
+    "publish": "Đăng recap",
+    "draftNotice": "Bản nháp — chỉ moderator nhìn thấy"
+  },
   "notFound": {
     "title": "Lạc giữa sương mù?",
     "description": "Như lạc vào một góc chưa ai khám phá của Đà Lạt, trang này không tồn tại. Nhưng đường về nhà chỉ cách một cú nhấp.",

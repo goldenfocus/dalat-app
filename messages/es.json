@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "Cómo estuvo",
+    "aiNote": "Resumido por IA a partir de los momentos compartidos",
+    "wentCount": "{count} asistieron",
+    "momentsCount": "{count} momentos",
+    "positiveFeedback": "Al {percent}% le encantó",
+    "generate": "Generar resumen",
+    "enqueued": "La IA está escribiendo el resumen — vuelve en unos minutos",
+    "publish": "Publicar resumen",
+    "draftNotice": "Borrador — solo visible para moderadores"
+  },
   "notFound": {
     "title": "¿Perdido en la niebla?",
     "description": "Como adentrarse en un rincón inexplorado de Đà Lạt, esta página no existe. Pero el camino a casa está a un solo clic.",

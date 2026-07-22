@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "그날의 이야기",
+    "aiNote": "참석자들이 공유한 순간을 AI가 요약했어요",
+    "wentCount": "{count}명 참여",
+    "momentsCount": "순간 {count}개",
+    "positiveFeedback": "{percent}%가 좋아했어요",
+    "generate": "리캡 생성",
+    "enqueued": "AI가 리캡을 작성 중이에요 — 잠시 후 다시 확인해 주세요",
+    "publish": "리캡 게시",
+    "draftNotice": "초안 — 운영자만 볼 수 있어요"
+  },
   "notFound": {
     "title": "안개 속에서 길을 잃으셨나요?",
     "description": "달랏의 미지의 골목에 들어선 것처럼, 이 페이지는 존재하지 않아요. 하지만 집으로 가는 길은 클릭 한 번이면 충분해요.",

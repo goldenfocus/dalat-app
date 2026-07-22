@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "So war's",
+    "aiNote": "Von KI zusammengefasst aus den geteilten Momenten",
+    "wentCount": "{count} waren da",
+    "momentsCount": "{count} Momente",
+    "positiveFeedback": "{percent}% fanden es toll",
+    "generate": "Recap erstellen",
+    "enqueued": "Die KI schreibt das Recap — schau in ein paar Minuten wieder vorbei",
+    "publish": "Recap veröffentlichen",
+    "draftNotice": "Entwurf — nur für Moderatoren sichtbar"
+  },
   "notFound": {
     "title": "Im Nebel verirrt?",
     "description": "Wie in einer unentdeckten Ecke von Đà Lạt — diese Seite existiert nicht. Aber der Weg nach Hause ist nur einen Klick entfernt.",

@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "Bagaimana acaranya",
+    "aiNote": "Dirangkum AI dari momen yang dibagikan",
+    "wentCount": "{count} hadir",
+    "momentsCount": "{count} momen",
+    "positiveFeedback": "{percent}% menyukainya",
+    "generate": "Buat rangkuman",
+    "enqueued": "AI sedang menulis rangkuman — cek lagi beberapa menit lagi",
+    "publish": "Terbitkan rangkuman",
+    "draftNotice": "Draf — hanya terlihat oleh moderator"
+  },
   "notFound": {
     "title": "Tersesat dalam kabut?",
     "description": "Seperti tersasar ke sudut Đà Lạt yang belum terjamah, halaman ini tidak ada. Tapi jalan pulang hanya satu klik saja.",

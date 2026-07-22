@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "あの日のようす",
+    "aiNote": "参加者のモーメントからAIがまとめました",
+    "wentCount": "{count}人が参加",
+    "momentsCount": "モーメント{count}件",
+    "positiveFeedback": "{percent}%が高評価",
+    "generate": "リキャップを生成",
+    "enqueued": "AIがリキャップを作成中です — 数分後にご確認ください",
+    "publish": "リキャップを公開",
+    "draftNotice": "下書き — モデレーターのみ表示"
+  },
   "notFound": {
     "title": "霧の中で迷子ですか？",
     "description": "ダラットの未踏の一角に迷い込んだように、このページは存在しません。でも、おうちへの帰り道はクリックひとつです。",

@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "Comment c'était",
+    "aiNote": "Résumé par IA à partir des moments partagés",
+    "wentCount": "{count} présents",
+    "momentsCount": "{count} moments",
+    "positiveFeedback": "{percent}% ont adoré",
+    "generate": "Générer le récap",
+    "enqueued": "L'IA rédige le récap — revenez dans quelques minutes",
+    "publish": "Publier le récap",
+    "draftNotice": "Brouillon — visible uniquement par les modérateurs"
+  },
   "notFound": {
     "title": "Perdu dans la brume ?",
     "description": "Comme un détour dans un coin inexploré de Đà Lạt, cette page n'existe pas. Mais le chemin du retour est à un clic.",

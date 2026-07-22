@@ -69,6 +69,7 @@ export const CLIENT_NAMESPACES = [
   "questionnaire",
   "questionnaireBuilder",
   "reactions",
+  "recap",
   "reconfirmation",
   "recurrence",
   "responseDashboard",

@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "How it went",
+    "aiNote": "Summarized by AI from the moments people shared",
+    "wentCount": "{count} went",
+    "momentsCount": "{count} moments",
+    "positiveFeedback": "{percent}% loved it",
+    "generate": "Generate recap",
+    "enqueued": "The recap is being written — check back in a few minutes",
+    "publish": "Publish recap",
+    "draftNotice": "Draft — only moderators can see this"
+  },
   "notFound": {
     "title": "Lost in the mist?",
     "description": "Like wandering into an undiscovered corner of Đà Lạt, this page doesn't exist. But the journey home is just a click away.",

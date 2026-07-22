@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "活动回顾",
+    "aiNote": "由 AI 根据大家分享的瞬间整理",
+    "wentCount": "{count} 人参加",
+    "momentsCount": "{count} 个瞬间",
+    "positiveFeedback": "{percent}% 的人喜欢",
+    "generate": "生成回顾",
+    "enqueued": "AI 正在撰写回顾 — 请稍后再来看看",
+    "publish": "发布回顾",
+    "draftNotice": "草稿 — 仅管理员可见"
+  },
   "notFound": {
     "title": "在雾中迷路了？",
     "description": "就像走进大叻一个未被发现的角落，这个页面并不存在。不过回家的路，只需轻轻一点。",

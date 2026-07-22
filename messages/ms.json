@@ -1,4 +1,15 @@
 {
+  "recap": {
+    "howItWent": "Bagaimana ia berlangsung",
+    "aiNote": "Diringkaskan oleh AI daripada detik yang dikongsi",
+    "wentCount": "{count} hadir",
+    "momentsCount": "{count} detik",
+    "positiveFeedback": "{percent}% menyukainya",
+    "generate": "Jana imbasan",
+    "enqueued": "AI sedang menulis imbasan — semak semula sebentar lagi",
+    "publish": "Terbitkan imbasan",
+    "draftNotice": "Draf — hanya moderator boleh lihat"
+  },
   "notFound": {
     "title": "Sesat dalam kabus?",
     "description": "Seperti tersasar ke sudut Đà Lạt yang belum diterokai, halaman ini tidak wujud. Tetapi jalan pulang hanya satu klik sahaja.",
