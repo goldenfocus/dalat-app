@@ -97,7 +97,7 @@ export async function POST(request: Request) {
 
     const { data: event } = await admin
       .from("events")
-      .select("id, title, slug, image_url, created_by")
+      .select("id, title, slug, image_url")
       .eq("id", job.event_id)
       .single();
     if (!event) {
@@ -118,6 +118,8 @@ export async function POST(request: Request) {
           title: `${event.title} — Event Recap`,
           slug: `recap-${event.slug}`,
           story_content: recap.story_content,
+          // NOT NULL in prod; deliberately empty — keyword ballast is dead
+          technical_content: "",
           meta_description: recap.meta_description,
           seo_keywords: recap.seo_keywords,
           social_share_text: recap.social_share_text,
@@ -127,7 +129,6 @@ export async function POST(request: Request) {
           source: "manual",
           status: "draft",
           category_id: category?.id || null,
-          author_id: event.created_by,
           recap_published_at: null,
         },
         { onConflict: "event_id" }
