@@ -17,7 +17,7 @@ import {
 } from "@/lib/media-utils";
 import { convertIfNeeded, convertHeicOnR2 } from "@/lib/media-conversion";
 import { needsImageCompression, compressImage } from "@/lib/image-compression";
-import { extractCaptureTime } from "@/lib/exif-capture-time";
+import { extractCaptureTime, primeBatchCaptureTimes } from "@/lib/exif-capture-time";
 import type { CompressionProgress } from "@/lib/video-compression";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { triggerHaptic } from "@/lib/haptics";
@@ -540,6 +540,9 @@ export function useUploadQueue({
 
     if (newItems.length > 0) {
       console.log(`[UploadQueue] Adding ${newItems.length} files to queue`);
+      // Batch-level capture-time inference must see the ORIGINAL File
+      // objects together, before conversion/compression touches them.
+      primeBatchCaptureTimes(newItems.map((item) => item.file));
       dispatch({ type: "ADD_FILES", files: newItems });
     }
 

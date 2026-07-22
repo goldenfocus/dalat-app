@@ -41,7 +41,7 @@ import {
   needsImageCompression,
   compressImage,
 } from "@/lib/image-compression";
-import { extractCaptureTime } from "@/lib/exif-capture-time";
+import { extractCaptureTime, primeBatchCaptureTimes } from "@/lib/exif-capture-time";
 import { triggerHaptic } from "@/lib/haptics";
 import { uploadFile as uploadToStorage } from "@/lib/storage/client";
 import { triggerTranslation } from "@/lib/translations-client";
@@ -627,6 +627,11 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
   const addFiles = (files: FileList | File[]) => {
     setError(null);
     const fileArray = Array.from(files);
+
+    // Batch-level capture-time inference (filename-sequence fallback for
+    // transferred files) — must run on the whole selection at once, before
+    // any per-file processing. Safe to double-prime along the bulk path.
+    primeBatchCaptureTimes(fileArray);
 
     // Check if we should use bulk mode
     // - Already have bulk queue items, or

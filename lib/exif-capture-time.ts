@@ -80,20 +80,13 @@ function lastModifiedToISO(file: File): string | null {
 }
 
 /**
- * Best-effort capture time for a file, as an ISO string suitable for a
- * `timestamptz` column. Returns null when nothing trustworthy is available —
- * never a synthesised "now", which would be indistinguishable from upload time
- * and would defeat the whole point.
- *
- * @param file - the ORIGINAL File, straight from the picker
+ * EXIF-only capture time — the trustworthy signal. Null for videos (their
+ * capture time lives in a QuickTime atom exifr doesn't read) and for photos
+ * whose metadata was stripped in transit (Zalo removes it entirely).
  */
-export async function extractCaptureTime(file: File): Promise<string | null> {
-  // Video: capture time lives in the QuickTime `com.apple.quicktime.creationdate`
-  // atom, which exifr doesn't read. `lastModified` is the safe signal here —
-  // notably safer than the MOV `CreateDate` atom, which is UTC and would land
-  // every video 7 hours early.
+async function extractExifISO(file: File): Promise<string | null> {
   if (file.type.startsWith("video/")) {
-    return lastModifiedToISO(file);
+    return null;
   }
 
   try {
@@ -133,5 +126,193 @@ export async function extractCaptureTime(file: File): Promise<string | null> {
     // can't read. Not an error worth surfacing — we just fall through.
   }
 
-  return lastModifiedToISO(file);
+  return null;
+}
+
+/**
+ * Best-effort capture time for a file, as an ISO string suitable for a
+ * `timestamptz` column. Returns null when nothing trustworthy is available —
+ * never a synthesised "now", which would be indistinguishable from upload time
+ * and would defeat the whole point.
+ *
+ * If the file was part of a batch registered via `primeBatchCaptureTimes`,
+ * the batch-inferred time is returned instead — it can see signals a single
+ * file can't (filename sequence, timestamp clusters across the batch).
+ *
+ * @param file - the ORIGINAL File, straight from the picker
+ */
+export async function extractCaptureTime(file: File): Promise<string | null> {
+  const primed = primedBatches.get(file);
+  if (primed) return primed;
+
+  // Solo path, same behaviour as ever: EXIF first, lastModified fallback.
+  // `lastModified` is genuinely useful for camera-roll picks (phones set it to
+  // the asset's creation date) — and for video it's the only signal, notably
+  // safer than the MOV `CreateDate` atom, which is UTC and would land every
+  // video 7 hours early.
+  return (await extractExifISO(file)) ?? lastModifiedToISO(file);
+}
+
+// ---------------------------------------------------------------------------
+// Batch inference — the AI Round Table fix (Jul 22 2026)
+//
+// Media that reaches the uploader through a transfer hop (AirDrop, Zalo,
+// Google Photos) arrives with EXIF stripped from videos (always) and some
+// photos, and lastModified rewritten to the *transfer* moment. A whole batch
+// then claims to be "captured" inside one sub-minute window and piles up at
+// the start of the gallery in random order.
+//
+// iPhone filenames (IMG_8306…) are a monotonic shoot-order sequence that
+// survives every transfer. So: photos that kept EXIF act as anchors, and
+// files with untrustworthy timestamps are slotted between their filename
+// neighbours. IMG_8312.MOV lands between IMG_8311.JPG and IMG_8313.JPG.
+// ---------------------------------------------------------------------------
+
+export interface CaptureSignal {
+  name: string;
+  /** Trusted EXIF capture time, or null (videos, stripped photos). */
+  exifISO: string | null;
+  /** File mtime in epoch ms — real creation date OR transfer time, unknowable per-file. */
+  lastModified: number | null;
+}
+
+/** ≥3 EXIF-less files whose mtimes sit this close = a transfer batch, not reality. */
+const CLUSTER_WINDOW_MS = 60_000;
+/** mtime within this of "now" = the picker re-exported the file at selection time. */
+const NEAR_NOW_MS = 10 * 60_000;
+
+/**
+ * Filename → (family, sequence). Family is the text before the sequence run,
+ * so `IMG_8306` can never interpolate against `Shot 2026-07-22 at 08.08.35`.
+ */
+function parseNameSeq(name: string): { family: string; seq: number } | null {
+  const base = name.replace(/\.[^.]+$/, "");
+  const m = base.match(/(\d{2,})(?!.*\d)/);
+  if (!m || m.index === undefined) return null;
+  return { family: base.slice(0, m.index), seq: parseInt(m[1], 10) };
+}
+
+/**
+ * Pure inference core (exported for tests). Returns one ISO string or null
+ * per input, same order. Trusted times pass through untouched; untrusted ones
+ * are interpolated from same-family filename anchors, or — when a family has
+ * no anchors at all — sequenced from the cluster's earliest mtime so filename
+ * order is at least preserved.
+ */
+export function inferBatchCaptureTimes(
+  signals: CaptureSignal[],
+  nowMs: number = Date.now()
+): (string | null)[] {
+  const toISO = (ms: number) => {
+    const d = new Date(ms);
+    return isPlausibleCaptureTime(d) ? d.toISOString() : null;
+  };
+
+  const parsed = signals.map((s) => ({
+    ...s,
+    nameSeq: parseNameSeq(s.name),
+    trustedMs: null as number | null,
+  }));
+
+  // Trust pass. EXIF always wins. lastModified survives only if it's neither
+  // clustered with other fallback-only files nor stamped moments ago.
+  const fallbackOnly = parsed.filter(
+    (p) => !p.exifISO && p.lastModified && toISO(p.lastModified)
+  );
+  for (const p of parsed) {
+    if (p.exifISO) {
+      p.trustedMs = Date.parse(p.exifISO);
+      continue;
+    }
+    if (!p.lastModified || !toISO(p.lastModified)) continue;
+    const lm = p.lastModified;
+    if (nowMs - lm < NEAR_NOW_MS) continue; // picker re-export
+    const neighbours = fallbackOnly.filter(
+      (o) => o !== p && Math.abs((o.lastModified as number) - lm) <= CLUSTER_WINDOW_MS
+    ).length;
+    if (neighbours >= 2) continue; // transfer cluster
+    p.trustedMs = lm;
+  }
+
+  // Anchor map: family → trusted files with a sequence, sorted by sequence.
+  const anchors = new Map<string, { seq: number; ms: number }[]>();
+  for (const p of parsed) {
+    if (p.trustedMs === null || !p.nameSeq) continue;
+    const list = anchors.get(p.nameSeq.family) ?? [];
+    list.push({ seq: p.nameSeq.seq, ms: p.trustedMs });
+    anchors.set(p.nameSeq.family, list);
+  }
+  for (const list of anchors.values()) list.sort((a, b) => a.seq - b.seq);
+
+  // Anchor-less families still deserve filename order: sequence them one
+  // second apart from the earliest mtime the cluster carries.
+  const orphanBase = new Map<string, { seqs: number[]; baseMs: number }>();
+  for (const p of parsed) {
+    if (p.trustedMs !== null || !p.nameSeq || anchors.has(p.nameSeq.family)) continue;
+    if (!p.lastModified) continue;
+    const entry = orphanBase.get(p.nameSeq.family) ?? { seqs: [], baseMs: Infinity };
+    entry.seqs.push(p.nameSeq.seq);
+    entry.baseMs = Math.min(entry.baseMs, p.lastModified);
+    orphanBase.set(p.nameSeq.family, entry);
+  }
+  for (const entry of orphanBase.values()) entry.seqs.sort((a, b) => a - b);
+
+  return parsed.map((p) => {
+    if (p.trustedMs !== null) return toISO(p.trustedMs);
+    if (!p.nameSeq) return null;
+    const { family, seq } = p.nameSeq;
+
+    const list = anchors.get(family);
+    if (list?.length) {
+      const below = [...list].reverse().find((a) => a.seq <= seq);
+      const above = list.find((a) => a.seq >= seq);
+      if (below && above) {
+        if (above.seq === below.seq) return toISO(below.ms); // Live Photo pair
+        const fraction = (seq - below.seq) / (above.seq - below.seq);
+        // Clocks can disagree across 7 devices; never interpolate backwards.
+        const ms = above.ms >= below.ms
+          ? below.ms + (above.ms - below.ms) * fraction
+          : below.ms;
+        return toISO(ms);
+      }
+      // Outside the anchor range: extrapolate one second per shot.
+      if (below) return toISO(below.ms + (seq - below.seq) * 1000);
+      if (above) return toISO(above.ms - (above.seq - seq) * 1000);
+    }
+
+    const orphan = orphanBase.get(family);
+    if (orphan && orphan.seqs.length >= 2) {
+      return toISO(orphan.baseMs + orphan.seqs.indexOf(seq) * 1000);
+    }
+    return null;
+  });
+}
+
+const primedBatches = new WeakMap<File, Promise<string | null>>();
+
+/**
+ * Register a freshly selected batch so `extractCaptureTime` can use
+ * batch-level inference. Call this with the ORIGINAL File objects at the
+ * moment they're added — before conversion/compression touches them.
+ * Files already primed (e.g. a form delegating to a bulk queue) are skipped,
+ * so double-priming along a delegation chain is harmless.
+ */
+export function primeBatchCaptureTimes(files: File[]): void {
+  const fresh = files.filter((f) => !primedBatches.has(f));
+  if (fresh.length < 2) return; // solo files take the direct path
+
+  const batch = Promise.all(
+    fresh.map(async (file) => ({
+      name: file.name,
+      exifISO: await extractExifISO(file),
+      lastModified: file.lastModified || null,
+    }))
+  ).then((signals) => inferBatchCaptureTimes(signals));
+
+  fresh.forEach((file, i) => {
+    primedBatches.set(
+      file,
+      batch.then((times) => times[i])
+    );
+  });
 }

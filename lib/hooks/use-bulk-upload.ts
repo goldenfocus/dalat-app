@@ -13,7 +13,7 @@ import {
   needsImageCompression,
   compressImage,
 } from "@/lib/image-compression";
-import { extractCaptureTime } from "@/lib/exif-capture-time";
+import { extractCaptureTime, primeBatchCaptureTimes } from "@/lib/exif-capture-time";
 import {
   computeFileHash,
   checkDuplicateHashes,
@@ -830,6 +830,9 @@ export function useBulkUpload(eventId: string, userId: string, godModeUserId?: s
         return ext === "heic" || ext === "heif" || ext === "mov";
       });
       if (validFiles.length > 0) {
+        // Batch-level capture-time inference must see the ORIGINAL File
+        // objects together, before conversion/compression touches them.
+        primeBatchCaptureTimes(validFiles);
         dispatch({ type: "ADD_FILES", files: validFiles });
 
         // Generate data URL thumbnails in the background (non-blocking).
