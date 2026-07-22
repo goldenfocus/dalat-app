@@ -66,6 +66,10 @@ const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Supabase errors are plain objects — String() prints "[object Object]". */
+const errStr = (err: unknown): string =>
+  (err instanceof Error ? `${err.name}: ${err.message}` : JSON.stringify(err) ?? String(err)).slice(0, 300);
+
 /** Rows written this process — used to detect zero-progress rounds so a
  * dead provider chain can't hot-loop the sweep (the Jul 9–21 wedge mode). */
 let rowsWritten = 0;
@@ -186,7 +190,7 @@ function claudeTranslateItem(
     try {
       parsed = runChunk(chunk);
     } catch (err) {
-      console.error(`  ✗ claude chunk [${chunk.join(",")}]: ${String(err).slice(0, 200)}`);
+      console.error(`  ✗ claude chunk [${chunk.join(",")}]: ${errStr(err)}`);
       if (err instanceof ClaudeUnavailable) break; // remaining chunks would fail the same way
       // A malformed multi-locale JSON (one unescaped quote kills 11 locales)
       // almost always parses fine one locale at a time — retry split before
@@ -275,9 +279,14 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
       const translated = claudeTranslateItem(item.fields, pending, src);
       const done: ContentLocale[] = [];
       for (const locale of pending) {
-        if (translated[locale]) {
+        if (!translated[locale]) continue;
+        try {
           await upsertLocale(item, src, locale, translated[locale]!);
           done.push(locale);
+        } catch (err) {
+          // One locale's failed write must not discard the other locales'
+          // completed Haiku translations.
+          console.error(`  ✗ ${tag} ${locale} upsert: ${errStr(err)}`);
         }
       }
       pending = pending.filter((l) => !done.includes(l));
@@ -288,7 +297,7 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
         console.error(`  ✗ ${tag} claude produced 0 of ${pending.length} locales (${Math.round((Date.now() - t0) / 1000)}s)`);
       }
     } catch (err) {
-      console.error(`  ✗ ${tag} claude: ${String(err).slice(0, 200)}`);
+      console.error(`  ✗ ${tag} claude: ${errStr(err)}`);
     }
   }
 
@@ -300,7 +309,7 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
         await upsertLocale(item, src, locale, translated);
         console.log(`  ✓ ${tag} ${locale} (fallback-chain, ${Math.round((Date.now() - t0) / 1000)}s)`);
       } catch (err) {
-        console.error(`  ✗ ${tag} ${locale}: ${String(err).slice(0, 150)}`);
+        console.error(`  ✗ ${tag} ${locale}: ${errStr(err)}`);
       }
     }
   }
