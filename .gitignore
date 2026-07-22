@@ -50,6 +50,9 @@ next-env.d.ts
 .claude/
 supabase/.temp/
 
+# playwright MCP page snapshots — can capture on-screen secrets (dashboards), never commit
+.playwright-mcp/
+
 # per-session git worktrees (multi-AI workflow)
 .worktrees/
 
