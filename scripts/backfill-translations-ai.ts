@@ -164,27 +164,44 @@ function claudeTranslateItem(
   for (const f of fields) input[f.field_name] = f.text;
   const totalChars = fields.reduce((n, f) => n + f.text.length, 0);
 
-  const out: Partial<Record<ContentLocale, Record<string, string>>> = {};
-  const size = localeChunkSize(totalChars);
-  for (let i = 0; i < locales.length; i += size) {
-    const chunk = locales.slice(i, i + size);
+  const runChunk = (chunk: ContentLocale[]): Record<string, Record<string, string>> => {
     const names = chunk.map((l) => `${l} (${LOCALE_NAMES[l]})`).join(", ");
     const prompt =
       `${TRANSLATE_SYSTEM}\n\n` +
       `Translate every value of INPUT from ${LOCALE_NAMES[sourceLocale] ?? sourceLocale} into each of these languages: ${names}.\n` +
       `Respond with ONLY a JSON object — no prose, no markdown fences — of the shape ` +
-      `{"<locale code>": {<the same keys as INPUT, with translated values>}} covering exactly these locale codes: ${chunk.join(", ")}.\n\n` +
+      `{"<locale code>": {<the same keys as INPUT, with translated values>}} covering exactly these locale codes: ${chunk.join(", ")}. ` +
+      `The output must be strictly valid JSON: escape every double quote and newline inside translated strings.\n\n` +
       `INPUT:\n${JSON.stringify(input)}`;
+    return parseJsonLoose<Record<string, Record<string, string>>>(runClaude(prompt));
+  };
 
+  const out: Partial<Record<ContentLocale, Record<string, string>>> = {};
+  const size = localeChunkSize(totalChars);
+  outer: for (let i = 0; i < locales.length; i += size) {
+    const chunk = locales.slice(i, i + size);
     // One bad chunk must not throw away the chunks that already succeeded —
     // a long item is many claude calls, and completed Haiku work is paid for.
-    let parsed: Record<string, Record<string, string>>;
+    let parsed: Record<string, Record<string, string>> = {};
     try {
-      parsed = parseJsonLoose<Record<string, Record<string, string>>>(runClaude(prompt));
+      parsed = runChunk(chunk);
     } catch (err) {
       console.error(`  ✗ claude chunk [${chunk.join(",")}]: ${String(err).slice(0, 200)}`);
       if (err instanceof ClaudeUnavailable) break; // remaining chunks would fail the same way
-      continue;
+      // A malformed multi-locale JSON (one unescaped quote kills 11 locales)
+      // almost always parses fine one locale at a time — retry split before
+      // conceding these locales to the lower-quality fallback chain.
+      if (chunk.length > 1) {
+        console.log(`  ↻ retrying [${chunk.join(",")}] one locale per call`);
+        for (const locale of chunk) {
+          try {
+            Object.assign(parsed, runChunk([locale]));
+          } catch (retryErr) {
+            console.error(`  ✗ claude retry ${locale}: ${String(retryErr).slice(0, 150)}`);
+            if (retryErr instanceof ClaudeUnavailable) break outer;
+          }
+        }
+      }
     }
     const unexpected = Object.keys(parsed).filter((k) => !(chunk as string[]).includes(k));
     if (unexpected.length > 0) {
