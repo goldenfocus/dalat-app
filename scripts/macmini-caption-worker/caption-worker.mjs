@@ -251,6 +251,27 @@ async function ollamaCaption(prompt, imagePaths) {
   return text;
 }
 
+/** Text-only ollama chat (recap fallback — no images). */
+async function ollamaText(prompt) {
+  const res = await fetch(`${OLLAMA_URL}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: OLLAMA_FALLBACK_MODEL,
+      stream: false,
+      format: 'json',
+      options: { temperature: 0.4, num_predict: 1200 },
+      messages: [{ role: 'user', content: prompt }],
+    }),
+    signal: AbortSignal.timeout(5 * 60 * 1000),
+  });
+  if (!res.ok) throw new Error(`ollama ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`);
+  const data = await res.json();
+  const text = data?.message?.content?.trim();
+  if (!text) throw new Error('ollama produced no output');
+  return text;
+}
+
 // ── job processing ─────────────────────────────────────────────────────
 
 async function completeJob(job, output, provider, model) {
@@ -311,10 +332,16 @@ async function processBatch(jobs) {
   try {
     const imageJobs = [];
     const videoJobs = [];
+    const recapJobs = [];
     const files = new Map(); // jobId -> first media path (images)
     const frames = new Map(); // jobId -> all media paths (videos)
 
     for (const job of jobs) {
+      if (job.content_type === 'recap') {
+        // Recap jobs are text-only — no media to fetch.
+        recapJobs.push(job);
+        continue;
+      }
       const paths = await fetchJobMedia(job, batchDir);
       if (!paths) continue;
       if (job.content_type === 'video') {
@@ -424,6 +451,36 @@ async function processBatch(jobs) {
     // Video jobs, one session each.
     for (const job of videoJobs) {
       await captionOne(job, frames.get(job.id));
+    }
+
+    // Recap jobs: text-only, one claude session each. The prompt is fully
+    // server-built; the worker just runs it and posts the raw output.
+    for (const job of recapJobs) {
+      if (!claudeUnavailable) {
+        try {
+          const output = runClaude(job.prompt);
+          if (await completeJob(job, output, 'claude-code', CLAUDE_MODEL)) anyCompleted = true;
+          continue;
+        } catch (err) {
+          log(`[caption-worker] claude recap failed id=${job.id}:`, err.message);
+          if (err.unavailable) claudeUnavailable = true;
+          else {
+            await reportFailure(job.id, `claude recap: ${err.message}`);
+            continue;
+          }
+        }
+      }
+      if (OLLAMA_FALLBACK_MODEL) {
+        try {
+          const output = await ollamaText(job.prompt);
+          if (await completeJob(job, output, 'ollama', OLLAMA_FALLBACK_MODEL)) anyCompleted = true;
+        } catch (err) {
+          log(`[caption-worker] ollama recap failed id=${job.id}:`, err.message);
+          await releaseJob(job.id, `claude unavailable; ollama recap: ${err.message}`);
+        }
+      } else {
+        await releaseJob(job.id, 'claude unavailable, no fallback configured');
+      }
     }
 
     return claudeUnavailable && !anyCompleted ? 'backoff' : 'ok';
