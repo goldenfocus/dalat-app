@@ -11,8 +11,35 @@ export const maxDuration = 120;
  * Auto-generate LRC lyrics for a track using Whisper.
  * Called after track upload to enable karaoke.
  *
- * Body: { trackId: string }
+ * Body: { trackId: string, embeddedLyrics?: string }
+ *
+ * embeddedLyrics is the MP3's ID3 lyric sheet (Suno embeds one). Passed to
+ * Whisper as a decoding prompt — without it, Whisper hallucinates repeated
+ * junk lines on music-heavy tracks instead of hearing the vocals.
  */
+
+/**
+ * Detect Whisper's hallucination-loop failure mode: the transcript is
+ * mostly one phrase repeated with plausible timestamps.
+ */
+function isHallucinationLoop(lrc: string): boolean {
+  const texts = lrc
+    .split("\n")
+    .filter((l) => /^\[\d{2}:\d{2}\.\d{2,3}\]/.test(l))
+    .map((l) => l.replace(/^\[\d{2}:\d{2}\.\d{2,3}\]/, "").trim().toLowerCase())
+    .filter(Boolean);
+  if (texts.length === 0) return true;
+  if (texts.length < 4) return false;
+  // Whisper loops repeat a line consecutively; real choruses are distributed.
+  let maxRun = 1;
+  let run = 1;
+  for (let i = 1; i < texts.length; i++) {
+    run = texts[i] === texts[i - 1] ? run + 1 : 1;
+    if (run > maxRun) maxRun = run;
+  }
+  const uniqueRatio = new Set(texts).size / texts.length;
+  return maxRun >= 5 || (uniqueRatio < 0.4 && maxRun >= 3);
+}
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -82,10 +109,27 @@ export async function POST(request: NextRequest) {
     formData.append("response_format", "verbose_json");
     formData.append("timestamp_granularities[]", "segment");
     formData.append("timestamp_granularities[]", "word");
+
+    // Whisper accepts a single "prompt" field — duplicates are silently
+    // dropped by the API, so vocabulary bias and the embedded lyric sheet
+    // must be ONE string. Lyrics go last: Whisper conditions on the tail
+    // of the prompt (~224-token window).
     // Vocabulary bias — without this Whisper mishears "DaLat" as "the lab"
+    const vocabPrompt = `Song: "${track.title || ""}"${track.artist ? ` by ${track.artist}` : ""} — sung in and about DaLat (Đà Lạt), Vietnam, from the dalat.app community. Vocabulary: DaLat, Da Lat, Đà Lạt, dalat.app, Langbiang, Xuân Hương, Vietnam.`;
+    // Embedded ID3 lyric sheet anchors Whisper to the real words — without
+    // it, Whisper echoes the prompt itself as looping junk on music-heavy
+    // tracks. Strip "(Chorus)" / "[Verse 1]"-style stage directions.
+    const embeddedLyrics =
+      typeof body.embeddedLyrics === "string" ? body.embeddedLyrics : "";
+    const lyricsPrompt = embeddedLyrics
+      .split("\n")
+      .map((l: string) => l.trim())
+      .filter((l: string) => l && !l.startsWith("(") && !l.startsWith("["))
+      .join(" ")
+      .slice(0, 800);
     formData.append(
       "prompt",
-      `Song: "${track.title || ""}"${track.artist ? ` by ${track.artist}` : ""} — sung in and about DaLat (Đà Lạt), Vietnam, from the dalat.app community. Vocabulary: DaLat, Da Lat, Đà Lạt, dalat.app, Langbiang, Xuân Hương, Vietnam.`
+      lyricsPrompt ? `${vocabPrompt} Lyrics: ${lyricsPrompt}` : vocabPrompt
     );
 
     const whisperResponse = await fetch(
@@ -141,8 +185,19 @@ export async function POST(request: NextRequest) {
       `[generate-lyrics] Review: ${review.verdict} (removed=${review.removedCount}, fixed=${review.fixedCount})`
     );
 
-    // If mostly hallucinated, don't save garbage lyrics
-    const lrc = review.verdict === "mostly_hallucinated" ? null : review.cleanedLrc;
+    // If mostly hallucinated, don't save garbage lyrics.
+    // The deterministic loop check backstops the AI review — the review
+    // silently no-ops when ANTHROPIC_API_KEY is missing.
+    const loopDetected = isHallucinationLoop(review.cleanedLrc);
+    if (loopDetected && review.verdict !== "mostly_hallucinated") {
+      console.warn(
+        `[generate-lyrics] Loop guard discarded transcript for track ${trackId} despite review verdict=${review.verdict}`
+      );
+    }
+    const lrc =
+      review.verdict === "mostly_hallucinated" || loopDetected
+        ? null
+        : review.cleanedLrc;
 
     // Save to database
     const { error: updateError } = await supabase
@@ -190,6 +245,7 @@ export async function POST(request: NextRequest) {
         verdict: review.verdict,
         removedCount: review.removedCount,
         fixedCount: review.fixedCount,
+        loopDetected,
       },
     });
   } catch (error) {

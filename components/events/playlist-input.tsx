@@ -296,11 +296,15 @@ export function PlaylistInput({
         prev.map((u) => (u.id === upload.id ? { ...u, status: "done", progress: 100 } : u))
       );
 
-      // Trigger background lyrics generation (fire-and-forget)
+      // Trigger background lyrics generation (fire-and-forget).
+      // Embedded ID3 lyrics anchor Whisper — without them it hallucinates on music-heavy tracks.
       fetch("/api/karaoke/generate-lyrics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackId: track.id }),
+        body: JSON.stringify({
+          trackId: track.id,
+          embeddedLyrics: metadata.lyrics || undefined,
+        }),
       }).catch((err) => console.log("Lyrics generation queued:", err));
 
       // Remove from uploading list after a delay

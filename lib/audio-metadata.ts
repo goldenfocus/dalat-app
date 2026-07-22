@@ -20,6 +20,8 @@ export interface AudioMetadata {
   trackNumber: string | null;
   releaseYear: number | null;
   genre: string | null;
+  /** Embedded lyric sheet (USLT tag) — Suno and other generators include the real lyrics */
+  lyrics: string | null;
   albumArt: {
     data: Uint8Array;
     format: string;
@@ -67,6 +69,19 @@ export async function extractAudioMetadata(file: File): Promise<AudioMetadata> {
     // Get genre (may be array, take first)
     const genre = common.genre?.[0] || null;
 
+    // Get embedded lyrics (ILyricsTag[] in music-metadata v11, plain strings
+    // in older versions). USLT tags carry .text; SYLT (synchronized) tags
+    // carry .syncText entries instead.
+    const lyrics =
+      common.lyrics
+        ?.map((tag) =>
+          typeof tag === "string"
+            ? tag
+            : tag.text ?? tag.syncText?.map((s) => s.text).join("\n")
+        )
+        .find((text) => text?.trim())
+        ?.trim() || null;
+
     // Get album art (first picture)
     let albumArt: AudioMetadata["albumArt"] = null;
     if (common.picture && common.picture.length > 0) {
@@ -85,6 +100,7 @@ export async function extractAudioMetadata(file: File): Promise<AudioMetadata> {
       trackNumber,
       releaseYear,
       genre,
+      lyrics,
       albumArt,
     };
   } catch (error) {
@@ -98,6 +114,7 @@ export async function extractAudioMetadata(file: File): Promise<AudioMetadata> {
       trackNumber: null,
       releaseYear: null,
       genre: null,
+      lyrics: null,
       albumArt: null,
     };
   }
