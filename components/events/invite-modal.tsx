@@ -87,6 +87,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
   // User search state
   const [userResults, setUserResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -140,17 +141,30 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
     }
 
     setIsSearching(true);
+    setSearchError(null);
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         // Don't need @ prefix - just pass the search query directly
         const response = await fetch(`/api/users/search?q=${encodeURIComponent(inputValue.replace(/^@/, ""))}`);
+        // A non-OK response used to fall through to `data.users || []`, so a
+        // 403 looked exactly like "nobody by that name" — the user's only move
+        // was typing an email, which past events then reject.
+        if (!response.ok) {
+          console.error("[invite-modal] user search failed:", response.status);
+          setUserResults([]);
+          setShowDropdown(false);
+          setSearchError(t("searchFailed"));
+          return;
+        }
         const data = await response.json();
         setUserResults(data.users || []);
         setShowDropdown(data.users?.length > 0);
         setSelectedIndex(0);
-      } catch {
+      } catch (err) {
+        console.error("[invite-modal] user search errored:", err);
         setUserResults([]);
         setShowDropdown(false);
+        setSearchError(t("searchFailed"));
       } finally {
         setIsSearching(false);
       }
@@ -161,7 +175,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [inputValue, isUsernameSearch]);
+  }, [inputValue, isUsernameSearch, t]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -402,6 +416,7 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
       setError(null);
       setUserResults([]);
       setShowDropdown(false);
+      setSearchError(null);
       setShowCelebration(false);
       setCelebrationCount(0);
       setPersonalNote("");
@@ -556,6 +571,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
                 </Button>
               )}
             </div>
+            {searchError && (
+              <p className="text-sm text-destructive">{searchError}</p>
+            )}
           </div>
 
           {/* Invitee chips */}

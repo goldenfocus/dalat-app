@@ -67,7 +67,21 @@ export async function GET(request: NextRequest) {
     isTribeLeader = (leaderships?.length ?? 0) > 0;
   }
 
+  // Event creators get the same access, for the same reason: the event page
+  // hands every creator the invite / "add who was there" modal, whose username
+  // search hits this route — gating them out produced a silent 403 and a
+  // permanently empty dropdown. Same `discoverable` mitigation applies.
+  let isEventCreator = false;
   if (!isStaff && !isTribeLeader) {
+    const { data: ownedEvents } = await supabase
+      .from("events")
+      .select("id")
+      .eq("created_by", user.id)
+      .limit(1);
+    isEventCreator = (ownedEvents?.length ?? 0) > 0;
+  }
+
+  if (!isStaff && !isTribeLeader && !isEventCreator) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
