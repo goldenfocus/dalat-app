@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
+import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
 
 export interface MomentVideoPlayerProps {
   /** Original video URL (Supabase Storage) - fallback */
@@ -59,24 +60,56 @@ export function MomentVideoPlayer({
   const isHlsUrl = hlsSrc?.includes(".m3u8");
 
   // Toggle mute state
-  const handleToggleMute = () => {
+  const handleToggleMute = (e: React.MouseEvent) => {
+    // Surfaces that wrap the player in tap targets (cinema play/pause,
+    // lightbox close) must not react to the mute tap
+    e.stopPropagation();
     const video = videoRef.current;
     if (!video) return;
     video.muted = !video.muted;
     setIsMuted(video.muted);
   };
 
-  // Sync muted state when video changes
+  // Sync muted state when video changes + duck the event playlist while the
+  // video's real audio is audible (resume it when muted again or unmounted).
+  // volumechange fires for every mute path: our button, native controls,
+  // and external video.muted writes (cinema mode).
+  const musicPausedByUsRef = useRef(false);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+    const syncMusic = () => {
+      const audio = useAudioPlayerStore.getState();
+      if (!video.muted && !video.paused) {
+        if (audio.isPlaying) {
+          audio.pause();
+          musicPausedByUsRef.current = true;
+        }
+      } else if (musicPausedByUsRef.current) {
+        audio.play();
+        musicPausedByUsRef.current = false;
+      }
+    };
+
     const handleVolumeChange = () => {
       setIsMuted(video.muted);
+      syncMusic();
     };
 
     video.addEventListener("volumechange", handleVolumeChange);
-    return () => video.removeEventListener("volumechange", handleVolumeChange);
+    video.addEventListener("play", syncMusic);
+    video.addEventListener("pause", syncMusic);
+    return () => {
+      video.removeEventListener("volumechange", handleVolumeChange);
+      video.removeEventListener("play", syncMusic);
+      video.removeEventListener("pause", syncMusic);
+      if (musicPausedByUsRef.current) {
+        useAudioPlayerStore.getState().play();
+        musicPausedByUsRef.current = false;
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -118,11 +151,17 @@ export function MomentVideoPlayer({
         // HLS.js needs manifest parsed before video can play
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           setIsReady(true);
-          // Autoplay - muted to comply with browser autoplay policies
-          video.muted = true;
+          // Autoplay — respect the requested mute state; if the browser
+          // blocks unmuted autoplay, fall back to muted playback
           video.play().catch(() => {
-            // Autoplay blocked - user will need to click play
-            console.log("[MomentVideoPlayer] Autoplay blocked");
+            if (!video.muted) {
+              video.muted = true;
+              video.play().catch(() => {
+                console.log("[MomentVideoPlayer] Autoplay blocked");
+              });
+            } else {
+              console.log("[MomentVideoPlayer] Autoplay blocked");
+            }
           });
         });
 
@@ -179,15 +218,19 @@ export function MomentVideoPlayer({
         autoPlay={shouldAutoPlay}
         onEnded={onEnded}
       />
-      {/* Prominent unmute button */}
-      {!hideMuteButton && isMuted && (
+      {/* Prominent mute/unmute toggle — persistent so sound can be turned back off */}
+      {!hideMuteButton && (
         <button
           type="button"
           onClick={handleToggleMute}
           className="absolute top-4 right-4 p-3 rounded-full bg-black/70 text-white hover:bg-black/90 active:scale-95 transition-all z-10"
-          aria-label="Unmute"
+          aria-label={isMuted ? "Unmute" : "Mute"}
         >
-          <VolumeX className="w-5 h-5" />
+          {isMuted ? (
+            <VolumeX className="w-5 h-5" />
+          ) : (
+            <Volume2 className="w-5 h-5" />
+          )}
         </button>
       )}
     </div>

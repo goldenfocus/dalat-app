@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { Share2, Check } from "lucide-react";
+import { Share2, Check, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { useShare } from "@/lib/hooks/use-share";
@@ -14,6 +14,7 @@ import {
   useCinemaPlaybackState,
   useCinemaShowControls,
   useCurrentCinemaMoment,
+  useCinemaSoundOn,
 } from "@/lib/stores/cinema-mode-store";
 
 interface CinemaControlsProps {
@@ -33,6 +34,10 @@ export function CinemaControls({
   const playbackState = useCinemaPlaybackState();
   const showControls = useCinemaShowControls();
   const currentMoment = useCurrentCinemaMoment();
+  const soundOn = useCinemaSoundOn();
+  const hasVideo = useCinemaModeStore((state) =>
+    state.moments.some((m) => m.content_type === "video")
+  );
   const { share: nativeShare, copied: shared } = useShare();
 
   const goTo = useCinemaModeStore.getState().goTo;
@@ -78,6 +83,25 @@ export function CinemaControls({
             switcher, so both buttons share one wrapper rather than each
             carrying their own offset. */}
         <div className="flex items-center gap-2 mr-[180px]">
+          {/* Video sound toggle — only when the slideshow contains videos */}
+          {hasVideo && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic("selection");
+                useCinemaModeStore.getState().toggleSound();
+              }}
+              className="p-2.5 rounded-full bg-black/30 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/50 active:scale-95 transition-all"
+              aria-label={soundOn ? "Mute videos" : "Unmute videos"}
+            >
+              {soundOn ? (
+                <Volume2 className="w-5 h-5" />
+              ) : (
+                <VolumeX className="w-5 h-5" />
+              )}
+            </button>
+          )}
+
           {currentMoment && (
             <MomentDownloadButton
               moment={currentMoment}

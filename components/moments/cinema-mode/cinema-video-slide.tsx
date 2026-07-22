@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { MomentVideoPlayer } from "../moment-video-player";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
+import { useCinemaSoundOn } from "@/lib/stores/cinema-mode-store";
 import { MomentWatermark } from "@/components/moments/moment-watermark";
 import type { MomentWithProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export function CinemaVideoSlide({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isBuffering, setIsBuffering] = useState(false);
   const hasStartedRef = useRef(false);
+  const soundOn = useCinemaSoundOn();
 
   // Track time updates and control playback in a single effect.
   // Including moment.id in deps ensures we re-run when transitioning between videos
@@ -46,8 +48,14 @@ export function CinemaVideoSlide({
     const handleCanPlay = () => {
       setIsBuffering(false);
       if (!isPaused) {
-        video.muted = true;
-        video.play().catch(() => {});
+        video.muted = !soundOn;
+        video.play().catch(() => {
+          // Unmuted autoplay blocked — fall back to muted so the slideshow keeps moving
+          if (!video.muted) {
+            video.muted = true;
+            video.play().catch(() => {});
+          }
+        });
       }
     };
 
@@ -63,8 +71,14 @@ export function CinemaVideoSlide({
         hasStartedRef.current = true;
         video.currentTime = 0;
       }
-      video.muted = true;
-      video.play().catch(() => {});
+      video.muted = !soundOn;
+      video.play().catch(() => {
+        // Unmuted autoplay blocked — fall back to muted so the slideshow keeps moving
+        if (!video.muted) {
+          video.muted = true;
+          video.play().catch(() => {});
+        }
+      });
     } else {
       video.pause();
     }
@@ -75,7 +89,7 @@ export function CinemaVideoSlide({
       video.removeEventListener("playing", handlePlaying);
       video.removeEventListener("canplay", handleCanPlay);
     };
-  }, [isActive, isPaused, moment.id, onTimeUpdate]);
+  }, [isActive, isPaused, moment.id, onTimeUpdate, soundOn]);
 
   // Reset on moment change
   useEffect(() => {
@@ -111,11 +125,12 @@ export function CinemaVideoSlide({
         hlsSrc={hlsSrc}
         poster={moment.thumbnail_url || undefined}
         autoPlay={isActive && !isPaused}
-        muted={true}
+        muted={!soundOn}
         loop={false}
         className="w-full h-full"
         onEnded={onEnded}
         hideControls
+        hideMuteButton
       />
 
       {/* Watermark */}

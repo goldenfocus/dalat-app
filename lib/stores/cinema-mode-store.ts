@@ -35,6 +35,9 @@ interface CinemaModeState {
   showControls: boolean;
   controlsTimeoutId: ReturnType<typeof setTimeout> | null;
 
+  // Sound preference for video slides (sticky across cinema sessions)
+  soundOn: boolean;
+
   // Actions
   start: (
     moments: MomentWithProfile[],
@@ -58,6 +61,7 @@ interface CinemaModeState {
   setHasMore: (hasMore: boolean) => void;
   showControlsTemporarily: () => void;
   hideControls: () => void;
+  toggleSound: () => void;
 }
 
 // Timer refs stored outside Zustand to avoid serialization issues
@@ -91,6 +95,7 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
   eventSlug: null,
   showControls: true,
   controlsTimeoutId: null,
+  soundOn: false,
 
   // Start cinema mode
   start: (moments, eventSlug, startIndex = 0, totalCount, hasMore = false) => {
@@ -417,6 +422,12 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
     set({ showControls: true, controlsTimeoutId: newTimeoutId });
   },
 
+  // Toggle video sound (intentionally NOT reset by exit() — the preference
+  // sticks for the rest of the browsing session)
+  toggleSound: () => {
+    set({ soundOn: !get().soundOn });
+  },
+
   // Hide controls
   hideControls: () => {
     const { controlsTimeoutId } = get();
@@ -474,3 +485,6 @@ export const useCinemaMoments = () =>
 
 export const useCinemaTimerDuration = () =>
   useCinemaModeStore((state) => state.timerDuration);
+
+export const useCinemaSoundOn = () =>
+  useCinemaModeStore((state) => state.soundOn);
