@@ -9,6 +9,7 @@ import { formatInDaLat } from "@/lib/timezone";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import { triggerHaptic } from "@/lib/haptics";
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
+import { fetchLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations-client";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import type { Event, EventCounts, FriendsAttending, Locale } from "@/lib/types";
 
@@ -306,6 +307,15 @@ function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents
         }));
 
       if (tracks.length === 0) return;
+
+      // Attach user-locale lyric translations for the karaoke dual-line display
+      const lyricsTranslations = await fetchLyricsTranslationsMap(
+        tracks.map((tr) => tr.id),
+        locale
+      );
+      for (const tr of tracks) {
+        tr.lyrics_translated = lyricsTranslations[tr.id] ?? null;
+      }
 
       const playlistInfo: PlaylistInfo = {
         eventSlug: event.slug,

@@ -14,6 +14,8 @@ export interface AudioTrack {
   duration_seconds: number | null;
   // Karaoke data (optional)
   lyrics_lrc?: string | null;
+  // User-locale lyrics translation, one plain line per LRC line ("\n"-joined)
+  lyrics_translated?: string | null;
   timing_offset?: number | null;  // Saved timing offset in ms (admin-set baseline)
 }
 
@@ -492,6 +494,12 @@ export const useCurrentTrackLyrics = () =>
   useAudioPlayerStore((state) => {
     const track = state.tracks.length > 0 ? state.tracks[state.currentIndex] : null;
     return track?.lyrics_lrc ?? null;
+  });
+
+export const useCurrentTrackTranslatedLyrics = () =>
+  useAudioPlayerStore((state) => {
+    const track = state.tracks.length > 0 ? state.tracks[state.currentIndex] : null;
+    return track?.lyrics_translated ?? null;
   });
 
 export const useAutoplayBlocked = () =>

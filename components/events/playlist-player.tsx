@@ -52,6 +52,7 @@ export interface PlaylistTrack {
   duration_seconds: number | null;
   sort_order: number;
   lyrics_lrc?: string | null;  // LRC format for karaoke display
+  lyrics_translated?: string | null;  // User-locale translation, one line per LRC line
   timing_offset?: number | null;  // Saved timing offset in ms (admin-set baseline)
 }
 
@@ -142,6 +143,7 @@ export function PlaylistPlayer({
         thumbnail_url: t.thumbnail_url,
         duration_seconds: t.duration_seconds,
         lyrics_lrc: t.lyrics_lrc,  // Pass LRC for karaoke display
+        lyrics_translated: t.lyrics_translated,
         timing_offset: t.timing_offset,  // Saved timing offset (admin-set baseline)
       }));
 

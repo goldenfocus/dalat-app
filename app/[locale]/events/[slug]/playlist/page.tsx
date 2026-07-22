@@ -7,6 +7,7 @@ import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { PlaylistPlayer } from "@/components/events/playlist-player";
 import { PlaylistShareButton } from "@/components/events/playlist-share-button";
 import { formatInDaLat } from "@/lib/timezone";
+import { getLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations";
 import type { PlaylistTrack } from "@/components/events/playlist-player";
 import { JsonLd, generateMusicPlaylistSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 
@@ -223,7 +224,17 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
     notFound();
   }
 
-  const { event, tracks } = data;
+  const { event } = data;
+
+  // Attach user-locale lyric translations for the karaoke dual-line display
+  const lyricsTranslations = await getLyricsTranslationsMap(
+    data.tracks.map((tr) => tr.id),
+    locale
+  );
+  const tracks = data.tracks.map((tr) => ({
+    ...tr,
+    lyrics_translated: lyricsTranslations[tr.id] ?? null,
+  }));
   const eventDate = formatInDaLat(event.starts_at, "EEE, MMM d, yyyy");
 
   // Parse karaoke mode from URL (theater=2, hero=3)

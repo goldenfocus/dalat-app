@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef, useState, useCallback } from "react";
+import { memo, useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   ChevronDown,
@@ -27,11 +27,14 @@ import {
 } from "./KaraokeVisuals";
 import { cn } from "@/lib/utils";
 import { useCurrentLyricWithContext } from "@/lib/hooks/use-current-lyric";
+import { getTranslatedLine } from "@/lib/karaoke/translated-line";
 import {
   useAudioPlayerStore,
   useKaraokeLevel,
   useCurrentTrackLyrics,
+  useCurrentTrackTranslatedLyrics,
   useLyricsOffset,
+  useShowTranslation,
   useCurrentTrack,
 } from "@/lib/stores/audio-player-store";
 import { formatDuration } from "@/lib/format-duration";
@@ -179,10 +182,27 @@ export const KaraokeHero = memo(function KaraokeHero() {
   const {
     surroundingLines,
     lineIndex,
+    line: currentLyricLine,
     hasLyrics,
     totalLines,
     parsed,
   } = useCurrentLyricWithContext(lyricsLrc, 2, 3, lyricsOffset);
+
+  // User-locale translation of the current line
+  const translatedLyrics = useCurrentTrackTranslatedLyrics();
+  const showTranslation = useShowTranslation();
+  const translatedText = useMemo(
+    () =>
+      showTranslation
+        ? getTranslatedLine(
+            translatedLyrics,
+            lineIndex,
+            totalLines,
+            currentLyricLine?.text
+          )
+        : null,
+    [showTranslation, translatedLyrics, lineIndex, totalLines, currentLyricLine]
+  );
 
   const {
     tracks,
@@ -343,6 +363,11 @@ export const KaraokeHero = memo(function KaraokeHero() {
                     )}
                   >
                     {line.text}
+                    {isCurrent && translatedText && (
+                      <div className="text-lg sm:text-xl md:text-2xl font-normal text-white/60 italic mt-2">
+                        {translatedText}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

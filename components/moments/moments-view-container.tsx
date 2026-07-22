@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { CheckSquare, Trash2, X, Loader2, Download, CheckCheck } from "lucide-react";
 import { AlbumDownloadButton, InAppBrowserDownloadHint } from "@/components/moments/moment-download-button";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ const CinemaSlideshow = dynamic(
 );
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
 import { createClient } from "@/lib/supabase/client";
+import { fetchLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations-client";
 import { triggerHaptic } from "@/lib/haptics";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
 import type { MomentWithProfile } from "@/lib/types";
@@ -75,6 +76,7 @@ export function MomentsViewContainer({
 }: MomentsViewContainerProps) {
   const t = useTranslations("moments");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const { viewMode, setViewMode, isLoaded } = useMomentsViewMode("grid");
   const [showImmersive, setShowImmersive] = useState(false);
   const [showCinema, setShowCinema] = useState(false);
@@ -223,6 +225,15 @@ export function MomentsViewContainer({
 
       if (tracks.length === 0) return;
 
+      // Attach user-locale lyric translations for the karaoke dual-line display
+      const lyricsTranslations = await fetchLyricsTranslationsMap(
+        tracks.map((tr) => tr.id),
+        locale
+      );
+      for (const tr of tracks) {
+        tr.lyrics_translated = lyricsTranslations[tr.id] ?? null;
+      }
+
       setPlaylist(tracks, {
         eventSlug,
         eventTitle: firstRow.event_title,
@@ -231,7 +242,7 @@ export function MomentsViewContainer({
     }
 
     fetchAndPlayPlaylist();
-  }, [eventSlug, setPlaylist, currentPlaylist?.eventSlug, initialPlaylist]);
+  }, [eventSlug, setPlaylist, currentPlaylist?.eventSlug, initialPlaylist, locale]);
 
   // Open immersive view starting from a specific moment
   const openImmersive = (index: number = 0) => {

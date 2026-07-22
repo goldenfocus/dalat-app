@@ -13,6 +13,7 @@ interface Track {
   thumbnail_url: string | null;
   duration_seconds: number | null;
   lyrics_lrc: string | null;
+  lyrics_translated?: string | null;
 }
 
 interface KaraokePageClientProps {
@@ -57,6 +58,7 @@ export function KaraokePageClient({
       thumbnail_url: t.thumbnail_url,
       duration_seconds: t.duration_seconds,
       lyrics_lrc: t.lyrics_lrc,
+      lyrics_translated: t.lyrics_translated ?? null,
     }));
 
     // Set up playlist

@@ -1,16 +1,19 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronUp, Mic2, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentLyric } from "@/lib/hooks/use-current-lyric";
+import { getTranslatedLine } from "@/lib/karaoke/translated-line";
 import {
   useAudioPlayerStore,
   useKaraokeEnabled,
   useKaraokeLevel,
   useCurrentTrackLyrics,
+  useCurrentTrackTranslatedLyrics,
   useLyricsOffset,
+  useShowTranslation,
 } from "@/lib/stores/audio-player-store";
 
 
@@ -34,6 +37,23 @@ export const KaraokeFooterLine = memo(function KaraokeFooterLine() {
 
   const currentText = line?.text ?? null;
   const nextText = parsed?.lines[lineIndex + 1]?.text ?? null;
+
+  // User-locale translation of the current line (shown instead of next-line
+  // preview when the song isn't in the user's language)
+  const translatedLyrics = useCurrentTrackTranslatedLyrics();
+  const showTranslation = useShowTranslation();
+  const translatedText = useMemo(
+    () =>
+      showTranslation
+        ? getTranslatedLine(
+            translatedLyrics,
+            lineIndex,
+            parsed?.lines.length ?? 0,
+            currentText
+          )
+        : null,
+    [showTranslation, translatedLyrics, lineIndex, parsed, currentText]
+  );
 
   const { setKaraokeLevel, toggleKaraoke } = useAudioPlayerStore();
 
@@ -102,11 +122,17 @@ export const KaraokeFooterLine = memo(function KaraokeFooterLine() {
               ...
             </p>
           )}
-          {/* Next line preview (dimmed) */}
-          {nextText && (
-            <p className="text-xs text-muted-foreground/60 truncate mt-0.5">
-              {nextText}
+          {/* Translated current line, or next-line preview (dimmed) */}
+          {translatedText ? (
+            <p className="text-xs text-muted-foreground/80 italic truncate mt-0.5">
+              {translatedText}
             </p>
+          ) : (
+            nextText && (
+              <p className="text-xs text-muted-foreground/60 truncate mt-0.5">
+                {nextText}
+              </p>
+            )
           )}
         </div>
 

@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { KaraokePageClient } from "./karaoke-page-client";
 import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
+import { getLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
@@ -210,7 +211,20 @@ export default async function KaraokePage({ params }: PageProps) {
     notFound();
   }
 
-  const { track, event, playlist, trackIndex } = data;
+  const { track, event, trackIndex } = data;
+
+  // Attach user-locale lyric translations for the karaoke dual-line display
+  const lyricsTranslations = await getLyricsTranslationsMap(
+    data.playlist.tracks.map((tr) => tr.id),
+    locale
+  );
+  const playlist = {
+    ...data.playlist,
+    tracks: data.playlist.tracks.map((tr) => ({
+      ...tr,
+      lyrics_translated: lyricsTranslations[tr.id] ?? null,
+    })),
+  };
 
   // Generate structured data for SEO
   const musicSchema = generateMusicRecordingSchema(track, event, locale);

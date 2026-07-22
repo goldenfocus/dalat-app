@@ -1,16 +1,19 @@
 "use client";
 
-import { memo, useEffect, useRef, useCallback } from "react";
+import { memo, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, RotateCcw, RotateCw } from "lucide-react";
 import { KaraokeShareButton } from "./KaraokeShareButton";
 import { cn } from "@/lib/utils";
 import { useCurrentLyricWithContext } from "@/lib/hooks/use-current-lyric";
+import { getTranslatedLine } from "@/lib/karaoke/translated-line";
 import {
   useAudioPlayerStore,
   useKaraokeLevel,
   useCurrentTrackLyrics,
+  useCurrentTrackTranslatedLyrics,
   useLyricsOffset,
+  useShowTranslation,
 } from "@/lib/stores/audio-player-store";
 import { formatDuration } from "@/lib/format-duration";
 
@@ -32,9 +35,21 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
   const {
     surroundingLines,
     lineIndex,
+    line,
     hasLyrics,
     totalLines,
   } = useCurrentLyricWithContext(lyricsLrc, 3, 3, lyricsOffset);
+
+  // User-locale translation of the current line
+  const translatedLyrics = useCurrentTrackTranslatedLyrics();
+  const showTranslation = useShowTranslation();
+  const translatedText = useMemo(
+    () =>
+      showTranslation
+        ? getTranslatedLine(translatedLyrics, lineIndex, totalLines, line?.text)
+        : null,
+    [showTranslation, translatedLyrics, lineIndex, totalLines, line]
+  );
 
   const {
     setKaraokeLevel,
@@ -135,6 +150,11 @@ export const KaraokeTheater = memo(function KaraokeTheater() {
                 )}
               >
                 {line.text}
+                {isCurrent && translatedText && (
+                  <div className="text-base text-white/60 italic mt-1">
+                    {translatedText}
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -1,9 +1,11 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
+import { useLocale } from "next-intl";
 import { MomentLightbox, type LightboxMoment } from "./moment-lightbox";
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
 import { createClient } from "@/lib/supabase/client";
+import { fetchLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations-client";
 
 interface MomentsLightboxContextValue {
   openLightbox: (index: number) => void;
@@ -34,7 +36,8 @@ interface MomentsLightboxProviderProps {
 async function fetchAndPlayEventPlaylist(
   eventSlug: string,
   setPlaylist: (tracks: AudioTrack[], playlist: PlaylistInfo, startIndex?: number) => void,
-  currentPlaylistSlug: string | undefined
+  currentPlaylistSlug: string | undefined,
+  locale: string
 ): Promise<void> {
   // Same event playlist already loaded — resume if paused instead of restarting
   if (currentPlaylistSlug === eventSlug) {
@@ -77,6 +80,15 @@ async function fetchAndPlayEventPlaylist(
   // No tracks means no playlist to play
   if (tracks.length === 0) {
     return;
+  }
+
+  // Attach user-locale lyric translations for the karaoke dual-line display
+  const lyricsTranslations = await fetchLyricsTranslationsMap(
+    tracks.map((t) => t.id),
+    locale
+  );
+  for (const t of tracks) {
+    t.lyrics_translated = lyricsTranslations[t.id] ?? null;
   }
 
   const playlistInfo: PlaylistInfo = {
@@ -125,6 +137,7 @@ export function MomentsLightboxProvider({
   // Audio player store
   const setPlaylist = useAudioPlayerStore((state) => state.setPlaylist);
   const currentPlaylist = useAudioPlayerStore((state) => state.playlist);
+  const locale = useLocale();
 
   const openLightbox = useCallback((index: number) => {
     setCurrentIndex(index);
@@ -145,8 +158,8 @@ export function MomentsLightboxProvider({
     hasTriggeredAutoPlay.current = true;
 
     // Fetch and play the event's playlist
-    fetchAndPlayEventPlaylist(eventSlug, setPlaylist, currentPlaylist?.eventSlug);
-  }, [isOpen, eventSlug, setPlaylist, currentPlaylist?.eventSlug]);
+    fetchAndPlayEventPlaylist(eventSlug, setPlaylist, currentPlaylist?.eventSlug, locale);
+  }, [isOpen, eventSlug, setPlaylist, currentPlaylist?.eventSlug, locale]);
 
   // Reset auto-play flag when lightbox closes (so it can trigger again next time)
   useEffect(() => {
