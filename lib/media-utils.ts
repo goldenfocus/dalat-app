@@ -291,6 +291,16 @@ export function getCfStreamPlaybackUrl(videoUid: string | null | undefined): str
 }
 
 /**
+ * Construct the downloadable MP4 URL for a Cloudflare Stream video.
+ * Only serves bytes after downloads are enabled for the video
+ * (see enableVideoDownloads in lib/cloudflare-stream.ts).
+ */
+export function getCfStreamDownloadUrl(videoUid: string | null | undefined): string | null {
+  if (!videoUid) return null;
+  return `https://customer-${CF_STREAM_CUSTOMER_CODE}.cloudflarestream.com/${videoUid}/downloads/default.mp4`;
+}
+
+/**
  * Derive a thumbnail URL from a Cloudflare Stream playback URL.
  * Cloudflare Stream URLs follow the pattern:
  *   https://customer-{subdomain}.cloudflarestream.com/{videoUid}/manifest/video.m3u8

@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import {
   verifyWebhookSignature,
   getVideoDetails,
+  enableVideoDownloads,
   type CloudflareWebhookEvent,
 } from '@/lib/cloudflare-stream';
 import { notify } from '@/lib/notifications';
@@ -77,6 +78,15 @@ export async function POST(request: Request) {
           console.log('VOD video ready:', videoUid);
 
           try {
+            // Kick off MP4 rendition generation so the download button works
+            // as soon as (or shortly after) the video is watchable. Non-fatal:
+            // the download route also enables lazily as a fallback.
+            try {
+              await enableVideoDownloads(videoUid);
+            } catch (err) {
+              console.error('[video.ready] enableVideoDownloads failed:', err);
+            }
+
             // Get video details - includes correct playback URLs from Cloudflare
             const videoDetails = await getVideoDetails(videoUid);
 

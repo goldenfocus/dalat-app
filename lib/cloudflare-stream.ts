@@ -475,6 +475,29 @@ export async function getVideoDetails(
   return cloudflareRequest<CloudflareVideoDetails>(`/stream/${videoUid}`);
 }
 
+export interface VideoDownloadStatus {
+  status: 'inprogress' | 'ready' | 'error';
+  url: string;
+  percentComplete: number;
+}
+
+/**
+ * Enable (or fetch the status of) the downloadable MP4 rendition for a video.
+ *
+ * Cloudflare generates the MP4 asynchronously the first time this is called;
+ * subsequent calls are idempotent and return the current status. The file is
+ * served from /{uid}/downloads/default.mp4 on the customer subdomain.
+ */
+export async function enableVideoDownloads(
+  videoUid: string
+): Promise<VideoDownloadStatus> {
+  const result = await cloudflareRequest<{ default: VideoDownloadStatus }>(
+    `/stream/${videoUid}/downloads`,
+    { method: 'POST' }
+  );
+  return result.default;
+}
+
 /**
  * Delete a video from Cloudflare Stream
  */

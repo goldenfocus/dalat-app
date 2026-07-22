@@ -8,6 +8,7 @@ import {
   downloadMoment,
   momentDownloadHref,
   albumDownloadHref,
+  isMomentDownloadable,
   type DownloadableMoment,
 } from "@/lib/moments/download";
 import { detectInAppBrowser } from "@/lib/utils/in-app-browser";
@@ -153,7 +154,7 @@ export function MomentDownloadButton({
     [moment, busy, t]
   );
 
-  if (!moment.media_url) return null;
+  if (!isMomentDownloadable(moment)) return null;
 
   const base =
     variant === "dark"
