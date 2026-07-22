@@ -74,6 +74,48 @@ const errStr = (err: unknown): string =>
  * dead provider chain can't hot-loop the sweep (the Jul 9–21 wedge mode). */
 let rowsWritten = 0;
 
+// ── Telegram progress reports (via the CRON_SECRET relay) ───────────────
+
+const DALAT_BASE_URL = (process.env.DALAT_BASE_URL || "https://dalat.app").replace(/\/$/, "");
+const CRON_SECRET = process.env.CRON_SECRET || "";
+const REPORT_HOURS = Number(process.env.REPORT_HOURS) || 6;
+
+/** Fire-and-forget: a broken relay must never take down the worker. */
+function notify(message: string): void {
+  if (!CRON_SECRET) return;
+  fetch(`${DALAT_BASE_URL}/api/cron/notify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${CRON_SECRET}` },
+    body: JSON.stringify({ message }),
+  })
+    .then((res) => {
+      if (!res.ok) console.warn(`[notify] relay ${res.status}`);
+    })
+    .catch((err) => console.warn(`[notify] ${errStr(err)}`));
+}
+
+let claudeUnits = 0; // locale-units written by claude this process
+let fallbackUnits = 0; // locale-units written by the free chain
+let sweepDrainNotified = false; // once per process, and only after a real backlog
+let lastSweepUnits = -1; // remaining, from the latest collect
+let lastRedoRemaining = -1; // remaining groups, from the latest redoChunk
+let lastReportAt = Date.now();
+let lastReportUnits = 0;
+
+function maybeReport(): void {
+  if (Date.now() - lastReportAt < REPORT_HOURS * 3600_000) return;
+  const total = claudeUnits + fallbackUnits;
+  const delta = total - lastReportUnits;
+  lastReportAt = Date.now();
+  lastReportUnits = total;
+  const sweep = lastSweepUnits >= 0 ? `${lastSweepUnits} to go` : "?";
+  const redo = lastRedoRemaining >= 0 ? `${lastRedoRemaining} items` : "not started";
+  notify(
+    `🌐 Translations: ${delta} locale-units in the last ${REPORT_HOURS}h ` +
+      `(claude ${claudeUnits} / fallback ${fallbackUnits} total) · sweep: ${sweep} · redo queue: ${redo}`
+  );
+}
+
 // ── claude -p translator ────────────────────────────────────────────────
 
 /** "claude is temporarily unusable" — quota window, expired login, network. */
@@ -105,6 +147,12 @@ function markClaudeDown(detail: string): ClaudeUnavailable {
       `fallback rows written after ${since} will NOT be auto-redone; ` +
       `after recovery, re-pin REDO_BEFORE past the recovery time and restart. Detail: ${detail}`
   );
+  if (claudeConsecutiveDown === 1) {
+    notify(
+      `⚠️ Translation worker: claude unavailable since ${since} — translating via the free chain (lower quality). ` +
+        `If this lasts, those rows need a REDO_BEFORE re-pin after recovery. Detail: ${detail.slice(0, 150)}`
+    );
+  }
   return new ClaudeUnavailable(`claude unavailable: ${detail}`);
 }
 
@@ -134,6 +182,10 @@ function runClaude(prompt: string): string {
     const detail = `${stderr} ${stdout}`.trim().slice(0, 400);
     if (looksUnavailable(detail)) throw markClaudeDown(detail);
     throw new Error(`claude failed (status ${result.status}): ${detail}`);
+  }
+  if (claudeDownSince) {
+    const hours = Math.round((Date.now() - claudeDownSince) / 360_000) / 10;
+    notify(`✅ Translation worker: claude is back after ~${hours}h. Rows translated by the fallback chain in that window need a REDO_BEFORE re-pin.`);
   }
   claudeDownSince = 0;
   claudeConsecutiveDown = 0;
@@ -290,6 +342,7 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
         }
       }
       pending = pending.filter((l) => !done.includes(l));
+      claudeUnits += done.length;
       if (done.length > 0) {
         console.log(`  ✓ ${tag} [${done.join(",")}] (claude, ${Math.round((Date.now() - t0) / 1000)}s)`);
       } else {
@@ -307,6 +360,7 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
       try {
         const translated = await translateFieldsToLocale(item.fields, locale);
         await upsertLocale(item, src, locale, translated);
+        fallbackUnits++;
         console.log(`  ✓ ${tag} ${locale} (fallback-chain, ${Math.round((Date.now() - t0) / 1000)}s)`);
       } catch (err) {
         console.error(`  ✗ ${tag} ${locale}: ${errStr(err)}`);
@@ -521,9 +575,14 @@ async function main() {
     if (work.length > 0) {
       round++;
       const units = work.reduce((n, w) => n + w.missingLocales.length, 0);
+      lastSweepUnits = units;
       console.log(`Round ${round}: ${work.length} items, ${units} locale-units pending`);
       const before = rowsWritten;
-      for (const item of work) await processItem(item, true);
+      for (const item of work) {
+        await processItem(item, true);
+        maybeReport();
+      }
+      lastSweepUnits = Math.max(0, units - (rowsWritten - before));
       if (rowsWritten === before) {
         // Every translator failed for every item — back off instead of
         // hammering the same dead providers in a tight loop. Run a redo
@@ -536,8 +595,21 @@ async function main() {
       continue; // re-check coverage before touching redo
     }
 
+    // Once per process, and only after draining a real backlog — otherwise
+    // every routine new-content translation would re-announce "complete".
+    if (!sweepDrainNotified && claudeUnits + fallbackUnits > 200) {
+      sweepDrainNotified = true;
+      notify("🌐 Translation sweep complete — every event, moment and blog is covered in all 12 locales. Now upgrading the old low-quality rows.");
+    }
+    lastSweepUnits = 0;
     const redoRemaining = redoConfigured ? await redoChunk() : 0;
+    const hadRedo = lastRedoRemaining > 0;
+    lastRedoRemaining = redoRemaining;
+    maybeReport();
     if (redoRemaining > 0) continue;
+    if (hadRedo) {
+      notify("🎉 Translation upgrade complete — the qwen3-era backlog is fully re-translated. All 12 locales are at claude quality.");
+    }
 
     if (!RUN_FOREVER) {
       console.log("Backfill complete — no pending items.");
