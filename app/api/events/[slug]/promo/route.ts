@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { EventPromoMedia, PromoUpdateScope } from "@/lib/types";
+import { hasRoleLevel, type EventPromoMedia, type PromoUpdateScope, type UserRole } from "@/lib/types";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
+}
+
+// Creator or admin+ can manage promo (mirrors the edit page's access check)
+async function canManageEvent(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  createdBy: string | null
+): Promise<boolean> {
+  if (userId === createdBy) return true;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+  return profile?.role ? hasRoleLevel(profile.role as UserRole, "admin") : false;
 }
 
 // GET /api/events/[slug]/promo - Get promo media with inheritance
@@ -33,9 +48,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Failed to fetch promo" }, { status: 500 });
   }
 
-  // Check if current user is owner
+  // Check if current user can manage promo (creator or admin+)
   const { data: { user } } = await supabase.auth.getUser();
-  const isOwner = user?.id === event.created_by;
+  const isOwner = user
+    ? await canManageEvent(supabase, user.id, event.created_by)
+    : false;
 
   return NextResponse.json({
     promo: promo as EventPromoMedia[],
@@ -67,8 +84,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
-  // Check ownership
-  if (event.created_by !== user.id) {
+  // Check ownership (creator or admin+)
+  if (!(await canManageEvent(supabase, user.id, event.created_by))) {
     return NextResponse.json({ error: "Not event owner" }, { status: 403 });
   }
 
@@ -163,8 +180,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
-  // Check ownership
-  if (event.created_by !== user.id) {
+  // Check ownership (creator or admin+)
+  if (!(await canManageEvent(supabase, user.id, event.created_by))) {
     return NextResponse.json({ error: "Not event owner" }, { status: 403 });
   }
 
