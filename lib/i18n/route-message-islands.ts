@@ -128,6 +128,8 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
       "questionnaire",
       "eventSettings",
       "streaming",
+      // "How it went" recap card on past events
+      "recap",
     ],
   },
   {
