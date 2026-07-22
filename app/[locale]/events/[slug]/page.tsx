@@ -8,7 +8,9 @@ export const maxDuration = 60;
 import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat, Video, Music, Play, Lock } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
-import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
+import { getTranslationsWithFallback, isValidContentLocale, getBlogTranslations } from "@/lib/translations";
+import { getImageJobsAdmin } from "@/lib/ai/image-jobs";
+import { EventRecapCard } from "@/components/events/event-recap-card";
 import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
 import { JsonLd, generateEventSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { buildAlternates, localeUrl } from "@/lib/metadata";
@@ -420,6 +422,49 @@ async function getMomentsPreview(eventId: string): Promise<MomentWithProfile[]> 
   return (data ?? []) as MomentWithProfile[];
 }
 
+type EventRecap = {
+  blogPostId: string;
+  story: string;
+  recapPublishedAt: string | null;
+};
+
+/**
+ * Recap posts are storage-only drafts (status='draft'), invisible through
+ * RLS to everyone but admins — so this read uses the service-role client.
+ * Visibility is enforced in render: public sees the card only when
+ * recap_published_at is set; moderators see drafts in place.
+ */
+async function getEventRecap(eventId: string, locale: string): Promise<EventRecap | null> {
+  try {
+    const admin = getImageJobsAdmin();
+    const { data: post } = await admin
+      .from("blog_posts")
+      .select("id, title, story_content, meta_description, source_locale, recap_published_at")
+      .eq("event_id", eventId)
+      .maybeSingle();
+    if (!post?.story_content) return null;
+
+    let story = post.story_content as string;
+    if (isValidContentLocale(locale)) {
+      const translated = await getBlogTranslations(post.id, locale, {
+        title: post.title,
+        story_content: post.story_content,
+        technical_content: "",
+        meta_description: post.meta_description,
+        source_locale: post.source_locale,
+      });
+      story = translated.translated_story_content || story;
+    }
+    return {
+      blogPostId: post.id,
+      story,
+      recapPublishedAt: post.recap_published_at,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function getMomentCounts(eventId: string): Promise<MomentCounts | null> {
   const supabase = await createClient();
 
@@ -804,7 +849,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
-  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult, questionnaire, privateDetails] = await Promise.all([
+  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult, questionnaire, privateDetails, recap] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
@@ -831,6 +876,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getEventPromo(event.id),
     getEventQuestionnaireServer(event.id),
     getPrivateDetails(event.id, event.has_private_details),
+    getEventRecap(event.id, locale),
   ]);
 
   // Fetch past moments for auto-display when no promo exists (pinned, then admin-linked, then series)
@@ -850,6 +896,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const isLoggedIn = !!currentUserId;
   const isCreator = currentUserId === event.created_by;
   const isAdmin = currentUserRole ? hasRoleLevel(currentUserRole, "admin") : false;
+  const isModerator = currentUserRole ? hasRoleLevel(currentUserRole, "moderator") : false;
   const canManageEvent = isCreator || isAdmin;
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
 
@@ -981,6 +1028,24 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   canPost={canPostMoment}
                 />
 
+                {/* "How it went" — AI recap card (secret-address events never get one) */}
+                {!event.has_private_details && (recap || isModerator) && (
+                  <EventRecapCard
+                    eventId={event.id}
+                    story={recap?.story ?? null}
+                    blogPostId={recap?.blogPostId ?? null}
+                    isPublished={!!recap?.recapPublishedAt}
+                    isModerator={isModerator}
+                    wentCount={counts?.going_spots ?? 0}
+                    momentsCount={momentCounts?.published_count ?? 0}
+                    positivePercent={
+                      feedbackStats && feedbackStats.total >= 10 && feedbackStats.positive_percentage !== null
+                        ? Math.round(feedbackStats.positive_percentage)
+                        : null
+                    }
+                  />
+                )}
+
                 {/* Playlist link - right after moments for past events */}
                 {playlistSummary && (
                   <Link
@@ -1088,6 +1153,24 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     moments={momentsPreview}
                     counts={momentCounts}
                     canPost={canPostMoment}
+                  />
+                )}
+
+                {/* "How it went" — AI recap card (secret-address events never get one) */}
+                {isPast && !event.has_private_details && (recap || isModerator) && (
+                  <EventRecapCard
+                    eventId={event.id}
+                    story={recap?.story ?? null}
+                    blogPostId={recap?.blogPostId ?? null}
+                    isPublished={!!recap?.recapPublishedAt}
+                    isModerator={isModerator}
+                    wentCount={counts?.going_spots ?? 0}
+                    momentsCount={momentCounts?.published_count ?? 0}
+                    positivePercent={
+                      feedbackStats && feedbackStats.total >= 10 && feedbackStats.positive_percentage !== null
+                        ? Math.round(feedbackStats.positive_percentage)
+                        : null
+                    }
                   />
                 )}
 
