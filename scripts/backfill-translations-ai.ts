@@ -104,12 +104,21 @@ function markClaudeDown(detail: string): ClaudeUnavailable {
   return new ClaudeUnavailable(`claude unavailable: ${detail}`);
 }
 
+// The mini's .env.local carries a stale ANTHROPIC_API_KEY; the claude CLI
+// prefers any API-key auth source over the keychain subscription login and
+// dies on it. The subprocess must see none of them.
+const CLAUDE_ENV = { ...process.env };
+delete CLAUDE_ENV.ANTHROPIC_API_KEY;
+delete CLAUDE_ENV.ANTHROPIC_AUTH_TOKEN;
+delete CLAUDE_ENV.ANTHROPIC_BASE_URL;
+
 function runClaude(prompt: string): string {
   const result = spawnSync(CLAUDE_BIN, ["-p", "--model", CLAUDE_MODEL], {
     input: prompt,
     encoding: "utf8",
     timeout: CLAUDE_TIMEOUT_MS,
     cwd: CLAUDE_CWD,
+    env: CLAUDE_ENV,
     maxBuffer: 32 * 1024 * 1024,
   });
   const stdout = (result.stdout || "").trim();
