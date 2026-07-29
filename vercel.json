@@ -46,7 +46,7 @@
       "schedule": "30 2 * * *"
     },
     {
-      "path": "/api/cron/process-moments?limit=12&delay=1500",
+      "path": "/api/cron/process-moments?limit=50&delay=1500",
       "schedule": "15 */4 * * *"
     },
     {

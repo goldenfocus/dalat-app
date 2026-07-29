@@ -49,14 +49,20 @@ export function getKeyFrameUrls(
 
 /** Key-frame timestamps for a video of known (or unknown) duration. */
 export function keyFrameTimestamps(durationSeconds?: number | null): number[] {
-  return durationSeconds
-    ? [
-        0,
-        Math.floor(durationSeconds * 0.25),
-        Math.floor(durationSeconds * 0.5),
-        Math.floor(durationSeconds * 0.75),
-      ]
-    : [0, 10, 20, 30];
+  if (!durationSeconds || durationSeconds <= 0) {
+    // Unknown duration: only frame 0 is guaranteed to exist — a guessed
+    // timestamp past the clip's end 400s and fails the whole caption job.
+    return [0];
+  }
+  // Dedupe: for clips under ~4s the floored quarter-points collapse to 0.
+  return [
+    ...new Set([
+      0,
+      Math.floor(durationSeconds * 0.25),
+      Math.floor(durationSeconds * 0.5),
+      Math.floor(durationSeconds * 0.75),
+    ]),
+  ];
 }
 
 /**

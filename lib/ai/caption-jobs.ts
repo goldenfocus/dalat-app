@@ -1,4 +1,5 @@
 import { getImageJobsAdmin } from "@/lib/ai/image-jobs";
+import { getVideoDetails } from "@/lib/cloudflare-stream";
 import {
   IMAGE_ANALYSIS_PROMPT,
   IMAGE_PROMPT_VERSION,
@@ -132,12 +133,35 @@ export async function enqueueCaptionJob(
   let transcriptLanguage: string | null = null;
 
   if (moment.content_type === "video") {
+    // video_duration_seconds is NULL for most uploads — the CF webhook reads
+    // it once at video.ready, before Stream has computed it. Resolve it here
+    // (Stream knows it by caption time), or the fallback key frames overshoot
+    // short clips, 400, and fail the job with the bad URLs baked into the row.
+    let durationSeconds = moment.video_duration_seconds;
+    if (!durationSeconds || durationSeconds <= 0) {
+      const details = await getVideoDetails(moment.cf_video_uid!);
+      durationSeconds =
+        details.duration && details.duration > 0 ? details.duration : null;
+      if (durationSeconds) {
+        const { error: durationError } = await admin
+          .from("moments")
+          .update({ video_duration_seconds: durationSeconds })
+          .eq("id", moment.id);
+        if (durationError) {
+          console.error(
+            `[caption-jobs] duration persist failed for ${moment.id}:`,
+            durationError.message
+          );
+        }
+      }
+    }
+
     const transcriptResult = await getCloudflareTranscript(moment.cf_video_uid!);
     transcript = transcriptResult?.text || null;
     transcriptLanguage = transcriptResult?.language || null;
     mediaUrls = getKeyFrameUrls(
       moment.cf_playback_url!,
-      keyFrameTimestamps(moment.video_duration_seconds)
+      keyFrameTimestamps(durationSeconds)
     ).slice(0, 3);
     if (mediaUrls.length === 0) {
       throw new Error("Could not derive key frame URLs from playback URL");
