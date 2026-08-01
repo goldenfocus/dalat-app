@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { batchTranslateFields } from "@/lib/google-translate";
 import {
-  CONTENT_LOCALES,
   TranslationContentType,
   TranslationFieldName,
 } from "@/lib/types";
-import { CACHE_TAGS } from "@/lib/cache/server-cache";
 
 const RATE_LIMIT = 50; // requests per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -22,12 +18,11 @@ interface TranslateRequest {
   detect_language?: boolean;
 }
 
-// LLM translation is much slower than the old Google Translate API
-export const maxDuration = 180;
-
 /**
  * POST /api/translate
- * Translates content to all 12 supported languages via the free AI provider chain
+ * Acknowledges translation work for the Mac mini worker. Source content has
+ * already been saved before clients call this route; that database row is the
+ * durable queue, and the worker discovers any missing locale/field coverage.
  */
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -91,114 +86,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Call Google Translate API
-    const { detectedLocale, translations } = await batchTranslateFields(
-      fieldsToTranslate
-    );
-
-    // Update source_locale on the content
-    if (body.content_type === "event") {
-      await supabase
-        .from("events")
-        .update({ source_locale: detectedLocale })
-        .eq("id", body.content_id);
-    } else if (body.content_type === "moment") {
-      await supabase
-        .from("moments")
-        .update({ source_locale: detectedLocale })
-        .eq("id", body.content_id);
-    } else if (body.content_type === "profile") {
-      await supabase
-        .from("profiles")
-        .update({ bio_source_locale: detectedLocale })
-        .eq("id", body.content_id);
-    } else if (body.content_type === "venue") {
-      await supabase
-        .from("venues")
-        .update({ source_locale: detectedLocale })
-        .eq("id", body.content_id);
-    } else if (body.content_type === "comment") {
-      await supabase
-        .from("comments")
-        .update({ source_locale: detectedLocale })
-        .eq("id", body.content_id);
-    }
-
-    // Prepare translation inserts
-    const translationInserts: {
-      content_type: string;
-      content_id: string;
-      source_locale: string;
-      target_locale: string;
-      field_name: string;
-      translated_text: string;
-      translation_status: string;
-    }[] = [];
-
-    for (const locale of CONTENT_LOCALES) {
-      // Don't skip based on detectedLocale — detection is unreliable.
-      const localeTranslations = translations[locale];
-      if (!localeTranslations) continue;
-
-      for (const field of fieldsToTranslate) {
-        const translatedText = localeTranslations[field.field_name];
-        if (!translatedText) continue;
-
-        translationInserts.push({
-          content_type: body.content_type,
-          content_id: body.content_id,
-          source_locale: detectedLocale,
-          target_locale: locale,
-          field_name: field.field_name,
-          translated_text: translatedText,
-          translation_status: "auto",
-        });
-      }
-    }
-
-    // Upsert translations (update if exists, insert if not)
-    if (translationInserts.length > 0) {
-      const { error: insertError } = await supabase
-        .from("content_translations")
-        .upsert(translationInserts, {
-          onConflict: "content_type,content_id,target_locale,field_name",
-        });
-
-      if (insertError) {
-        console.error("Translation insert error:", insertError);
-        // Don't fail the request - translations might still be useful to return
-      } else {
-        // Invalidate the translations cache so new translations appear immediately
-        revalidateTag(CACHE_TAGS.translations, "max");
-      }
-    }
-
     return NextResponse.json({
       success: true,
-      source_locale: detectedLocale,
-      translations_count: translationInserts.length,
-      translations,
-    });
+      queued: true,
+      translations_count: 0,
+    }, { status: 202 });
   } catch (error) {
     console.error("Translation error:", error);
 
-    if (error instanceof Error) {
-      if (error.message.includes("API key") || error.message.includes("GOOGLE_CLOUD")) {
-        return NextResponse.json(
-          { error: "Translation service not configured. Check GOOGLE_CLOUD_TRANSLATION_API_KEY." },
-          { status: 503 }
-        );
-      }
-      if (error.message.includes("rate") || error.message.includes("limit") || error.message.includes("quota")) {
-        return NextResponse.json(
-          { error: "Translation service busy. Try again in a moment." },
-          { status: 429 }
-        );
-      }
-    }
-
     return NextResponse.json(
-      { error: "Failed to translate content" },
+      { error: "Failed to queue translation" },
       { status: 500 }
     );
   }

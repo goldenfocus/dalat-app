@@ -30,10 +30,6 @@
       "schedule": "0 3,15 * * *"
     },
     {
-      "path": "/api/cron/translate-pending",
-      "schedule": "30 */2 * * *"
-    },
-    {
       "path": "/api/cron/refresh-fallback-covers",
       "schedule": "30 20 * * *"
     },

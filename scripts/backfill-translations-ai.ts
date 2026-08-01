@@ -13,8 +13,7 @@
  *
  * Modes (all idempotent — upserts per (content, locale, field)):
  *   - Sweep: fills missing 12-locale coverage via lib/translation-sweep.ts
- *     (shared with the translate-pending cron). SCAN_LIMIT bounds how many
- *     newest items per content type are considered.
+ *     SCAN_LIMIT bounds how many newest items per content type are considered.
  *   - Redo: re-translates existing 'auto' rows whose updated_at falls in
  *     [REDO_SINCE, REDO_BEFORE) — the window of low-quality qwen3/Llama
  *     output — by upserting better text over them. Claude-only: redoing
@@ -22,8 +21,7 @@
  *     the window (updated_at moves past REDO_BEFORE), so restarts resume
  *     where they left off with no local state.
  *   - RUN_FOREVER=1: after draining both, keep polling every POLL_MINUTES
- *     so new content gets claude-quality translations before the 2-hourly
- *     cron falls back to qwen3.
+ *     so new content gets claude-quality translations continuously.
  *
  * Laptop usage (unchanged, provider chain only):
  *   LOCAL_AI_URL=http://127.0.0.1:11501 LOCAL_AI_TOKEN=$(cat ~/dalat-ai-proxy/secret.txt) \
@@ -599,7 +597,7 @@ async function main() {
     // every routine new-content translation would re-announce "complete".
     if (!sweepDrainNotified && claudeUnits + fallbackUnits > 200) {
       sweepDrainNotified = true;
-      notify("🌐 Translation sweep complete — every event, moment and blog is covered in all 12 locales. Now upgrading the old low-quality rows.");
+      notify("🌐 Translation sweep complete — all supported DALAT content is covered in all 12 locales. Now upgrading the old low-quality rows.");
     }
     lastSweepUnits = 0;
     const redoRemaining = redoConfigured ? await redoChunk() : 0;

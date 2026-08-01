@@ -587,8 +587,7 @@ async function main() {
     console.log(`
 💡 Next steps:
    1. Check the events on your site
-   2. Run translation backfill:
-      bun run scripts/backfill-translations.ts --type=event --limit=${imported}
+   2. The Mac mini translation worker will pick them up automatically
 `);
   }
 

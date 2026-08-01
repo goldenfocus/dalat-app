@@ -69,7 +69,7 @@ export async function translateText(
 /**
  * Translate a set of named fields to one target locale in a single AI call.
  * Returns { field_name: translated_text }.
- * Exported for incremental per-locale workflows (translate-pending cron).
+ * Exported for the Mac mini's incremental per-locale fallback workflow.
  */
 export async function translateFieldsToLocale(
   fields: { field_name: string; text: string }[],

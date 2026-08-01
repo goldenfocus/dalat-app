@@ -18,7 +18,7 @@ import { triggerTranslationServer } from "@/lib/translations";
  * server-side, so a hallucinating model can never write garbage columns.
  * A 422 tells the worker to report the attempt via /fail.
  *
- * Translation fan-out deliberately does NOT happen here: translate-pending
+ * Translation fan-out deliberately does NOT happen here: the Mac mini worker
  * sweeps caption fields on its own cadence (the inline 12-locale fan-out was
  * what capped the old pipeline at ~15 moments/day).
  */

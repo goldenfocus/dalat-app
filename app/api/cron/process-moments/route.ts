@@ -70,7 +70,7 @@ function isPrivacyGated(event: PendingMoment["events"]): boolean {
  * Photos + videos: gate -> enqueue caption job (worker settles the moment).
  * Audio: analyzed inline through the free text-provider chain (rare).
  * PDF/documents: settled 'skipped' — no keyless analyzer exists for them.
- * Translation fan-out lives in translate-pending, NOT here — inline
+ * Translation fan-out lives on the Mac mini worker, NOT here — inline
  * 12-locale fan-out capped the old pipeline at ~15 moments/day.
  *
  * Failure posture (aggregator-v1 lesson — never a quiet green):

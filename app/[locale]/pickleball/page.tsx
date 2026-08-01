@@ -134,7 +134,7 @@ async function getPickleballEvents() {
     return [];
   }
 
-  return events as Event[];
+  return (events ?? []) as Event[];
 }
 
 async function getEventCounts(eventIds: string[]) {

@@ -95,7 +95,7 @@ async function getEventsByMonth(year: number, month: number) {
     return [];
   }
 
-  return events as Event[];
+  return (events ?? []) as Event[];
 }
 
 async function getEventCounts(eventIds: string[]) {

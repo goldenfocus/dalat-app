@@ -1,5 +1,4 @@
 import { createClient, createStaticClient } from '@/lib/supabase/server';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type {
   ContentLocale,
   TranslationContentType,
@@ -8,7 +7,6 @@ import type {
   Moment,
 } from '@/lib/types';
 import { CONTENT_LOCALES } from '@/lib/types';
-import { batchTranslateFields } from '@/lib/google-translate';
 
 // Fallback chain: requested locale -> English -> original
 const FALLBACK_LOCALE: ContentLocale = 'en';
@@ -258,127 +256,23 @@ export async function triggerTranslation(
 }
 
 /**
- * Server-side translation trigger - use this in API routes
- * Directly calls the translation API without HTTP, so it works in server context.
+ * Server-side translation trigger.
  *
- * Pass `updateSourceLocale: false` when translating machine-generated fields
- * (AI captions) — source_locale records the language the USER wrote in, and
- * must not be overwritten by the detected language of an English AI caption.
- *
- * Returns { ok, localesWritten } so callers can surface a dead translation
- * dependency instead of it dying silently (lapsed-GCP-billing lesson).
+ * Translation is intentionally deferred to the Mac mini worker. The worker
+ * discovers untranslated database rows, so saving the source content is the
+ * queue operation; this function remains as a compatibility boundary for API
+ * routes and importers that used to translate inline.
  */
 export async function triggerTranslationServer(
   contentType: TranslationContentType,
   contentId: string,
   fields: { field_name: TranslationFieldName; text: string }[],
-  options: { updateSourceLocale?: boolean } = {}
+  _options: { updateSourceLocale?: boolean } = {}
 ): Promise<{ ok: boolean; localesWritten: number }> {
-  const updateSourceLocale = options.updateSourceLocale !== false;
-  // Filter out empty fields
   const fieldsToTranslate = fields.filter(f => f.text && f.text.trim().length > 0);
   if (fieldsToTranslate.length === 0) return { ok: true, localesWritten: 0 };
-
-  try {
-    // Use service role client for server-side operations
-    const supabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    // Call Google Translate API
-    const { detectedLocale, translations } = await batchTranslateFields(fieldsToTranslate);
-
-    // Update source_locale on the content
-    if (!updateSourceLocale) {
-      // Machine-generated fields: leave the user's source_locale untouched.
-    } else if (contentType === 'event') {
-      await supabase
-        .from('events')
-        .update({ source_locale: detectedLocale })
-        .eq('id', contentId);
-    } else if (contentType === 'moment') {
-      await supabase
-        .from('moments')
-        .update({ source_locale: detectedLocale })
-        .eq('id', contentId);
-    } else if (contentType === 'profile') {
-      await supabase
-        .from('profiles')
-        .update({ bio_source_locale: detectedLocale })
-        .eq('id', contentId);
-    } else if (contentType === 'venue') {
-      await supabase
-        .from('venues')
-        .update({ source_locale: detectedLocale })
-        .eq('id', contentId);
-    } else if (contentType === 'comment') {
-      await supabase
-        .from('comments')
-        .update({ source_locale: detectedLocale })
-        .eq('id', contentId);
-    } else if (contentType === 'blog') {
-      await supabase
-        .from('blog_posts')
-        .update({ source_locale: detectedLocale })
-        .eq('id', contentId);
-    }
-
-    // Prepare translation inserts
-    const translationInserts: {
-      content_type: string;
-      content_id: string;
-      source_locale: string;
-      target_locale: string;
-      field_name: string;
-      translated_text: string;
-      translation_status: string;
-    }[] = [];
-
-    for (const locale of CONTENT_LOCALES) {
-      // Don't skip based on detectedLocale — detection is unreliable
-      // (e.g. Vietnamese often misdetected as French/English).
-      // Storing a "translation" to the same language is harmless.
-      const localeTranslations = translations[locale];
-      if (!localeTranslations) continue;
-
-      for (const field of fieldsToTranslate) {
-        const translatedText = localeTranslations[field.field_name];
-        if (!translatedText) continue;
-
-        translationInserts.push({
-          content_type: contentType,
-          content_id: contentId,
-          source_locale: detectedLocale,
-          target_locale: locale,
-          field_name: field.field_name,
-          translated_text: translatedText,
-          translation_status: 'auto',
-        });
-      }
-    }
-
-    // Upsert translations
-    if (translationInserts.length > 0) {
-      const { error } = await supabase
-        .from('content_translations')
-        .upsert(translationInserts, {
-          onConflict: 'content_type,content_id,target_locale,field_name',
-        });
-
-      if (error) {
-        console.error('[triggerTranslationServer] Insert error:', error);
-        return { ok: false, localesWritten: 0 };
-      }
-      console.log(`[triggerTranslationServer] Translated ${contentType}:${contentId} to ${CONTENT_LOCALES.length} locales`);
-      return { ok: true, localesWritten: CONTENT_LOCALES.length };
-    }
-    // Non-empty fields but zero translations produced = translation API dead.
-    return { ok: false, localesWritten: 0 };
-  } catch (error) {
-    console.error('[triggerTranslationServer] Translation failed:', error);
-    return { ok: false, localesWritten: 0 };
-  }
+  console.log(`[triggerTranslationServer] Queued ${contentType}:${contentId} for the Mac mini worker`);
+  return { ok: true, localesWritten: 0 };
 }
 
 /**

@@ -318,9 +318,7 @@ export async function GET(request: Request) {
           });
         }
 
-        // Translation is handled by the translate-pending cron — translating
-        // 4 fields x 12 locales via the LLM chain would blow this cron's
-        // time budget.
+        // Translation is discovered and handled by the Mac mini worker.
 
         console.log(`[news-process] Created post: ${post.id} (${content.title})`);
       } catch (clusterError) {

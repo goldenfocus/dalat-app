@@ -1,10 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { CONTENT_LOCALES, ContentLocale } from "@/lib/types";
+import { CONTENT_LOCALES, ContentLocale, TranslationContentType } from "@/lib/types";
 
 /**
  * Shared work collector for the self-healing translation sweep — used by
- * both /api/cron/translate-pending and scripts/backfill-translations-ai.ts
- * so the two can never disagree about what "untranslated" means.
+ * the Mac mini translation worker. The application only saves source content;
+ * this collector turns incomplete locale coverage into worker tasks.
  *
  * Coverage is counted per (locale, field_name). Counting rows per locale
  * (the old way) broke the moment a moment had BOTH text_content and caption
@@ -12,7 +12,7 @@ import { CONTENT_LOCALES, ContentLocale } from "@/lib/types";
  */
 
 export interface TranslationWorkItem {
-  contentType: "blog" | "event" | "moment";
+  contentType: TranslationContentType;
   contentId: string;
   sourceLocale: ContentLocale | null;
   fields: { field_name: string; text: string }[];
@@ -39,11 +39,18 @@ function cap(text: string): string {
   return text.length > MAX_FIELD_LENGTH ? text.slice(0, MAX_FIELD_LENGTH) : text;
 }
 
+function plainLyrics(lrc: string): string {
+  return lrc
+    .split("\n")
+    .map((line) => line.replace(/^\[\d{2}:\d{2}\.\d{2,3}\]/, "").trim())
+    .filter((line) => line && !/^\[[a-z]+:.+\]$/i.test(line))
+    .join("\n");
+}
+
 /**
  * Collect content whose 12-locale translation coverage is incomplete,
- * newest first. Short user-facing content (events, moments, captions)
- * comes before blogs — a single long post can eat minutes per locale and
- * would starve everything queued behind it.
+ * newest first. Short user-facing content comes before blogs — a single long
+ * post can eat minutes per locale and would starve everything behind it.
  */
 export async function collectTranslationWork(
   supabase: SupabaseClient,
@@ -117,6 +124,87 @@ export async function collectTranslationWork(
       contentId: row.moment_id,
       sourceLocale: "en",
       fields,
+    });
+  }
+
+  // --- Comments ---
+  const { data: comments, error: commentsError } = await supabase
+    .from("comments")
+    .select("id, content, source_locale")
+    .eq("is_deleted", false)
+    .eq("is_hidden", false)
+    .order("created_at", { ascending: false })
+    .limit(scanLimit);
+  if (commentsError) throw new Error(`[translation-sweep] comments query failed: ${commentsError.message}`);
+
+  for (const comment of comments ?? []) {
+    if (!comment.content?.trim()) continue;
+    candidates.push({
+      contentType: "comment",
+      contentId: comment.id,
+      sourceLocale: comment.source_locale,
+      fields: [{ field_name: "content", text: comment.content }],
+    });
+  }
+
+  // --- Profiles ---
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, bio, bio_source_locale")
+    .not("bio", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(scanLimit);
+  if (profilesError) throw new Error(`[translation-sweep] profiles query failed: ${profilesError.message}`);
+
+  for (const profile of profiles ?? []) {
+    if (!profile.bio?.trim()) continue;
+    candidates.push({
+      contentType: "profile",
+      contentId: profile.id,
+      sourceLocale: profile.bio_source_locale,
+      fields: [{ field_name: "bio", text: profile.bio }],
+    });
+  }
+
+  // --- Venues ---
+  const { data: venues, error: venuesError } = await supabase
+    .from("venues")
+    .select("id, name, description, source_locale")
+    .order("created_at", { ascending: false })
+    .limit(scanLimit);
+  if (venuesError) throw new Error(`[translation-sweep] venues query failed: ${venuesError.message}`);
+
+  for (const venue of venues ?? []) {
+    const fields = [
+      { field_name: "title", text: venue.name },
+      { field_name: "description", text: venue.description },
+    ].filter((field) => field.text?.trim());
+    if (fields.length === 0) continue;
+    candidates.push({
+      contentType: "venue",
+      contentId: venue.id,
+      sourceLocale: venue.source_locale,
+      fields: fields as { field_name: string; text: string }[],
+    });
+  }
+
+  // --- Karaoke lyrics ---
+  const { data: tracks, error: tracksError } = await supabase
+    .from("playlist_tracks")
+    .select("id, lyrics_lrc, source_locale")
+    .not("lyrics_lrc", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(scanLimit);
+  if (tracksError) throw new Error(`[translation-sweep] tracks query failed: ${tracksError.message}`);
+
+  for (const track of tracks ?? []) {
+    const lyrics = plainLyrics(track.lyrics_lrc ?? "");
+    if (!lyrics) continue;
+    candidates.push({
+      contentType: "track",
+      contentId: track.id,
+      sourceLocale: track.source_locale,
+      fields: [{ field_name: "lyrics", text: cap(lyrics) }],
     });
   }
 
