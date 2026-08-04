@@ -13,13 +13,12 @@
   },
   // Required: unminified the bundle exceeds the 10MB Workers gzip cap
   "minify": true,
-  // Production traffic: dalat.app DNS stays pointed at Vercel but is proxied
-  // through Cloudflare, so these routes intercept at the edge. Rollback =
-  // remove the routes (traffic falls through to Vercel again).
-  "routes": [
-    { "pattern": "dalat.app/*", "zone_id": "5daec682767ecc839e693fbdab17eab4" },
-    { "pattern": "www.dalat.app/*", "zone_id": "5daec682767ecc839e693fbdab17eab4" }
-  ],
+  // ⛔ NO "routes" HERE — dalat.app is served by VERCEL (git push auto-deploys).
+  // Worker routes were re-added by `wrangler deploy` and broke prod THREE times
+  // (Jul 17, Jul 22, Aug 1 2026): the worker bundle bakes in stale env keys and
+  // its @aws-sdk presign path cannot run in workerd, killing all uploads.
+  // Do not re-add routes until r2.ts is workerd-compatible (aws4fetch) AND an
+  // authenticated presign probe returns 200 through a routeless worker preview.
   // Cloudflare Images binding — lets the OpenNext image handler actually
   // resize/compress next/image requests (otherwise originals pass through)
   "images": {

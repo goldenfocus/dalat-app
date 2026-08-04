@@ -70,20 +70,18 @@ Stale worktrees confuse the next session — don't leave them behind.
 | Tool | Examples |
 |------|----------|
 | **Supabase** | `npx supabase db push`, `npx supabase migration list` |
-| **Wrangler** (Cloudflare) | `npx opennextjs-cloudflare build && npx wrangler deploy` |
 | **GitHub** | `gh pr create`, `gh issue list`, `gh pr merge` |
 
-## 🚀 Hosting: Cloudflare Workers (migrated from Vercel, July 2026)
+## 🚀 Hosting: VERCEL serves dalat.app — ⛔ NEVER `wrangler deploy`
 
-dalat.app runs on **Cloudflare Workers** via `@opennextjs/cloudflare`:
+**THIS SECTION PREVIOUSLY CLAIMED A CLOUDFLARE WORKERS MIGRATION. THAT WAS FALSE/ASPIRATIONAL, AND AGENTS FOLLOWING IT BROKE PRODUCTION THREE TIMES (Jul 17, Jul 22, Aug 1 2026).**
 
-- **Deploy:** `npx opennextjs-cloudflare build && npx wrangler deploy` (needs `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` env)
-- **Config:** `wrangler.jsonc` (routes, crons, R2/D1/DO bindings), `open-next.config.ts`, `cloudflare/worker.ts` (custom entry: cron dispatch + www redirect)
-- **Crons:** Cloudflare cron triggers in `wrangler.jsonc`, mapped to `/api/cron/*` routes in `cloudflare/worker.ts`. Keep both files in sync when adding a cron. `vercel.json` is legacy — do not add crons there.
-- **Secrets:** `npx wrangler secret bulk <file.json>` (NOT Vercel env)
-- **Runtime constraints:** no native binaries (sharp is banned — use `heic-convert`), edge middleware only, `optimizeCss` must stay off
-- **workerd gotcha:** Supabase `head: true` count queries hang from Workers — use GET queries and count in JS
-- The old Vercel project (`vibeyangs-projects/dalat-app`) still exists but no longer serves traffic; its DNS records pass through Cloudflare where worker routes intercept. Rollback = remove `routes` from wrangler.jsonc and redeploy.
+- **Deploy = `git push origin HEAD:main`.** Vercel's GitHub integration auto-deploys every push. Verify with `gh api "repos/goldenfocus/dalat-app/commits/<sha>/status" --jq .state` until `success`.
+- **⛔ NEVER run `npx wrangler deploy`.** It re-adds `dalat.app/*` worker routes and instantly breaks prod: the worker bundle bakes in stale env keys, and its `@aws-sdk` presign path cannot run in workerd, killing ALL uploads site-wide. Recovery each time = delete the routes via the Cloudflare API (zone `5daec682767ecc839e693fbdab17eab4`, `GET/DELETE /workers/routes`) so traffic falls through to Vercel.
+- **Crons live in `vercel.json`** (Vercel cron). The `dalat-app` CF worker's own cron triggers may also exist — they are NOT the source of truth.
+- **Secrets/env:** Vercel project env (`vibeyangs-projects/dalat-app`). Changing an env var requires a full rebuild deploy — instant-redeploys reuse the old build's env.
+- dalat.app DNS is proxied through Cloudflare (edge cache), so `server: cloudflare` headers are normal; `x-vercel-id` present on responses = Vercel serving (healthy). Its absence on `dalat.app/*` means a shadow worker route is intercepting — remove it.
+- The Workers migration remains an aspiration blocked on `lib/storage/r2.ts` (needs a workerd-compatible signer like `aws4fetch`) plus a verified authenticated presign probe. Until then, `wrangler.jsonc` must have NO `routes` entry.
 
 Run these commands yourself using bash. Don't say "please run this command" - just run it.
 
