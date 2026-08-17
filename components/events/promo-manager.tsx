@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -22,6 +21,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadFile } from "@/lib/storage/client";
+import {
+  fetchPublishedSeriesMoments,
+  type PublishedSeriesMoment as SeriesMoment,
+} from "@/lib/events/published-series-moments";
 import type { EventPromoMedia, PromoUpdateScope } from "@/lib/types";
 
 interface PromoManagerProps {
@@ -29,30 +32,6 @@ interface PromoManagerProps {
   eventSlug: string;
   seriesId?: string | null;
   isSeriesEvent: boolean;
-}
-
-interface SeriesMoment {
-  id: string;
-  media_url: string | null;
-  media_type: "image" | "video" | "youtube" | "pdf" | null;
-  thumbnail_url: string | null;
-  youtube_video_id: string | null;
-  text_content: string | null;
-  event_slug: string;
-  event_title: string;
-  event_date: string;
-  quality_score: number | null;
-}
-
-interface MomentRow {
-  id: string;
-  media_url: string | null;
-  media_type: string | null;
-  thumbnail_url: string | null;
-  youtube_video_id: string | null;
-  text_content: string | null;
-  event_id: string;
-  moment_metadata: { quality_score: number | null }[] | { quality_score: number | null } | null;
 }
 
 export function PromoManager({
@@ -71,6 +50,7 @@ export function PromoManager({
   const [seriesMoments, setSeriesMoments] = useState<SeriesMoment[]>([]);
   const [selectedMomentIds, setSelectedMomentIds] = useState<Set<string>>(new Set());
   const [isLoadingMoments, setIsLoadingMoments] = useState(false);
+  const [momentsLoadError, setMomentsLoadError] = useState(false);
   const [updateScope, setUpdateScope] = useState<PromoUpdateScope>("this_event");
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -97,56 +77,20 @@ export function PromoManager({
   const fetchSeriesMoments = useCallback(async () => {
     if (!seriesId) return;
     setIsLoadingMoments(true);
+    setMomentsLoadError(false);
     try {
-      const supabase = createClient();
-      const { data: events } = await supabase
-        .from("events")
-        .select("id, slug, title, starts_at")
-        .eq("series_id", seriesId)
-        .order("starts_at", { ascending: false });
-
-      if (!events?.length) { setSeriesMoments([]); return; }
-
-      type SeriesEvent = { id: string; slug: string; title: string; starts_at: string };
-      const typedEvents = events as SeriesEvent[];
-      const eventIds = typedEvents.map((e) => e.id);
-      const eventMap = new Map<string, SeriesEvent>(typedEvents.map((e) => [e.id, e]));
-
-      const { data: moments } = await supabase
-        .from("moments")
-        .select("id, media_url, media_type, thumbnail_url, youtube_video_id, text_content, event_id, moment_metadata(quality_score)")
-        .in("event_id", eventIds)
-        .eq("status", "approved")
-        .not("media_url", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (!moments) { setSeriesMoments([]); return; }
-
-      const typedMoments = moments as MomentRow[];
-      const mapped: SeriesMoment[] = typedMoments.map((m) => {
-        const event = eventMap.get(m.event_id);
-        const metadata = Array.isArray(m.moment_metadata) ? m.moment_metadata[0] : m.moment_metadata;
-        return {
-          id: m.id,
-          media_url: m.media_url,
-          media_type: m.media_type as SeriesMoment["media_type"],
-          thumbnail_url: m.thumbnail_url,
-          youtube_video_id: m.youtube_video_id,
-          text_content: m.text_content,
-          event_slug: event?.slug || "",
-          event_title: event?.title || "",
-          event_date: event?.starts_at || "",
-          quality_score: metadata?.quality_score ?? null,
-        };
-      });
-      setSeriesMoments(mapped);
+      setSeriesMoments(await fetchPublishedSeriesMoments({
+        seriesId,
+        currentEventId: eventId,
+      }));
     } catch (error) {
+      setSeriesMoments([]);
+      setMomentsLoadError(true);
       console.error("Failed to fetch series moments:", error);
     } finally {
       setIsLoadingMoments(false);
     }
-  }, [seriesId]);
+  }, [eventId, seriesId]);
 
   const handleOpenPicker = () => {
     setShowPicker(true);
@@ -311,6 +255,8 @@ export function PromoManager({
           <div className="flex-1 overflow-y-auto">
             {isLoadingMoments ? (
               <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+            ) : momentsLoadError ? (
+              <div className="text-center py-12 text-destructive" role="alert"><p>{t("loadMomentsError")}</p></div>
             ) : Object.keys(momentsByEvent).length === 0 ? (
               <div className="text-center py-12 text-muted-foreground"><p>{t("noMomentsInSeries")}</p></div>
             ) : (

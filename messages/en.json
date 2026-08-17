@@ -2643,6 +2643,7 @@
     "scopeFuture": "This and future events",
     "scopeAll": "All events in series",
     "noMomentsInSeries": "No media found in past events",
+    "loadMomentsError": "Couldn’t load past moments. Try again.",
     "selected": "selected",
     "cancel": "Cancel",
     "import": "Import Selected",
