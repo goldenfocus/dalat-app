@@ -11,8 +11,9 @@ No scraped event has landed since 2026-02-19. Goal: rebuild the pipeline at
 
 ## Decisions (from brainstorm)
 
-1. **AI = Yan's Claude subscription**, not the metered API. An always-on Mac
-   mini runs headless `claude -p` for extraction *and* 12-locale translation.
+1. **AI = Yan's existing Codex, Grok, and Kimi subscriptions**, not metered
+   APIs. An always-on Mac mini runs their headless CLIs with purpose-specific
+   fallback orders for extraction and 12-locale translation.
 2. **Architecture = queue split.** Vercel keeps scraping (it works); a Supabase
    `import_queue` decouples fetch from extract; the mini drains the queue.
 3. **Facebook = phase 2.** Both review passes flagged Apify's free tier as the
@@ -28,7 +29,7 @@ Vercel cron (daily 01:00 UTC) ──scrape gov.vn──> import_queue (Supabase)
 Community submits (phase 2) ────────────────────> import_queue
                                                       │
 Mac mini (launchd, nightly) <────pull pending─────────┘
-  ├─ claude -p (NO tools, no creds in env): extract + translate ×12
+  ├─ Codex/Grok/Kimi CLIs (NO tools, no creds in env): extract + translate ×12
   ├─ Zod validate — fail → status=failed + alert (garbage never inserts)
   └─ writer (service key): idempotent upserts → events + content_translations
        └─ heartbeat → import_runs (source: macmini-extract) + Telegram digest
@@ -37,7 +38,7 @@ Health-check cron (02:30 UTC): backlog age · canary hatched · heartbeats · fl
 
 ## Red-team hardening (baked in, non-negotiable)
 
-- **Brain/hands split:** `claude -p` reads untrusted scraped text with all
+- **Brain/hands split:** subscription CLIs read untrusted scraped text with all
   tools disabled and a stripped environment (no Supabase/R2/Telegram keys).
   A deterministic writer holds the keys and only writes Zod-validated data.
 - **Schema contract:** ISO dates, explicit Asia/Ho_Chi_Minh handling, all 12
@@ -55,7 +56,7 @@ Health-check cron (02:30 UTC): backlog age · canary hatched · heartbeats · fl
 | `import_queue` table | migration `20261005_001` | new; RLS on, no policies (service-role only) |
 | Enqueue | `app/api/cron/sync-dalat-gov/route.ts` | scrape → upsert queue rows + daily canary row; heartbeat stays |
 | Import logic | `lib/import/import-events.ts` | extracted from `processGovArticles` (Next-free, shared) |
-| Worker | `scripts/import-worker/worker.ts` (tsx) | claim → claude -p extract (chunks of 5) → validate → import → claude -p translate ×12 → upsert translations → heartbeat |
+| Worker | `scripts/import-worker/worker.ts` (tsx) | claim → subscription CLI extract (chunks of 5) → validate → import → subscription CLI translate ×12 → upsert translations → heartbeat |
 | Scheduling | `scripts/import-worker/com.dalat.import-worker.plist` | launchd nightly on the mini |
 | Watchdog | `app/api/cron/health-check/route.ts` | + backlog age, + canary check, + watch `macmini-extract` |
 
@@ -69,10 +70,10 @@ proving fetch→queue→extract→insert end to end — then deletes canary even
 
 ## Costs
 
-$0 marginal. Extraction ≈ 6–8 batched `claude -p` calls + ~1 translation call
-per imported event per night, on the existing subscription. The honest cost is
-subscription quota; if a night is rate-limited the run fails loudly and the
-queue self-heals next night.
+$0 marginal. Extraction uses batched calls and translation uses roughly one
+call per imported event, on existing subscriptions. The honest cost is
+subscription quota; unavailable or rate-limited providers fall through to the
+next configured CLI, and total failure remains loud and retryable.
 
 ## Out of scope (phase 2)
 

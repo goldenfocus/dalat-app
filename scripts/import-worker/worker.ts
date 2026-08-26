@@ -2,19 +2,18 @@
  * Import worker — runs on the always-on Mac mini, NOT on Vercel.
  *
  * Drains import_queue: AI-extracts events from raw scraped articles and
- * translates them into the 12 locales using headless `claude -p` on the
- * owner's Claude subscription (zero marginal cost — the metered Anthropic
- * API is not used). Design + threat model:
+ * translates them into the 12 locales using the owner's already-paid Codex,
+ * Grok, and Kimi CLI sessions (zero marginal cost — metered APIs are not
+ * used). Design + threat model:
  * docs/superpowers/specs/2026-07-09-zero-cost-scraping-design.md
  *
- * Security invariant (do not weaken): `claude -p` reads UNTRUSTED scraped
- * text, so it runs with all tools disabled and a stripped environment —
+ * Security invariant (do not weaken): model CLIs read UNTRUSTED scraped text,
+ * so they run with all tools disabled and a stripped environment —
  * no Supabase/R2/Telegram secrets. Only this process (deterministic code,
  * no LLM autonomy) holds credentials, and it only writes Zod-validated data.
  *
  * Run: npm run import:worker   (see scripts/import-worker/README.md)
  */
-import { spawnSync } from "node:child_process";
 import path from "node:path";
 import dotenv from "dotenv";
 import { z } from "zod";
@@ -40,19 +39,16 @@ import {
 import { reportImportRun } from "../../lib/import/report-run";
 import { sendTelegram } from "../../lib/alerts/telegram";
 import { getQueueImportOptions } from "../../lib/import/queue-policy";
+import {
+  parseJsonCandidates,
+  SubscriptionModelRunner,
+} from "./subscription-providers";
 
 const SOURCE = "macmini-extract";
 const MAX_ROWS_PER_RUN = 40;
-const ARTICLES_PER_CLAUDE_CALL = 5;
+const ARTICLES_PER_MODEL_CALL = 5;
 const MAX_ATTEMPTS = 3;
-const CLAUDE_BIN = process.env.CLAUDE_BIN || "claude";
-const CLAUDE_MODEL = process.env.WORKER_MODEL || "haiku";
-const CLAUDE_TIMEOUT_MS = 10 * 60_000;
-
-// Belt and braces on top of -p mode's deny-by-default permissions: the
-// extraction session must not be able to act on anything it reads.
-const DISALLOWED_TOOLS =
-  "Bash,Read,Write,Edit,NotebookEdit,Glob,Grep,WebFetch,WebSearch,Task,TodoWrite,KillShell,BashOutput";
+const modelRunner = new SubscriptionModelRunner();
 
 const LOCALES = ["en", "vi", "ko", "zh", "ru", "fr", "ja", "ms", "th", "de", "es", "id"] as const;
 
@@ -95,52 +91,15 @@ interface QueueRow {
   attempts: number;
 }
 
-// ---------- claude -p (tool-less, stripped env) ----------
-
-function askClaude(prompt: string): string {
-  // Minimal env: enough for the CLI to find its auth (~/.claude), nothing else.
-  const cleanEnv: Record<string, string> = {};
-  for (const k of ["HOME", "PATH", "USER", "SHELL", "TERM", "LANG"]) {
-    if (process.env[k]) cleanEnv[k] = process.env[k]!;
+function parseSchemaOutput<T>(text: string, schema: z.ZodType<T>): T {
+  const candidates = parseJsonCandidates(text);
+  let lastError = "No JSON found in model output";
+  for (const candidate of candidates.reverse()) {
+    const parsed = schema.safeParse(candidate);
+    if (parsed.success) return parsed.data;
+    lastError = parsed.error.message;
   }
-
-  const res = spawnSync(
-    CLAUDE_BIN,
-    [
-      "-p",
-      "--output-format", "json",
-      "--model", CLAUDE_MODEL,
-      "--disallowedTools", DISALLOWED_TOOLS,
-    ],
-    {
-      input: prompt,
-      encoding: "utf8",
-      env: cleanEnv,
-      timeout: CLAUDE_TIMEOUT_MS,
-      maxBuffer: 32 * 1024 * 1024,
-    }
-  );
-
-  if (res.error) throw new Error(`claude spawn failed: ${res.error.message}`);
-  if (res.status !== 0) {
-    throw new Error(
-      `claude exited ${res.status}: ${(res.stderr || res.stdout || "").slice(0, 500)}`
-    );
-  }
-
-  const wrapper = JSON.parse(res.stdout);
-  if (wrapper.is_error) throw new Error(`claude returned error: ${String(wrapper.result).slice(0, 500)}`);
-  return String(wrapper.result ?? "");
-}
-
-/** Extract the first JSON array/object from a model answer. */
-function parseJsonBlock(text: string): unknown {
-  const start = Math.min(
-    ...[text.indexOf("["), text.indexOf("{")].filter((i) => i !== -1)
-  );
-  if (!Number.isFinite(start)) throw new Error("No JSON found in model output");
-  const end = Math.max(text.lastIndexOf("]"), text.lastIndexOf("}"));
-  return JSON.parse(text.slice(start, end + 1));
+  throw new Error(lastError);
 }
 
 // ---------- prompts ----------
@@ -245,8 +204,11 @@ async function translateAndStore(
   title: string,
   description: string
 ) {
-  const answer = askClaude(translationPrompt(title, description));
-  const translations = TranslationSchema.parse(parseJsonBlock(answer));
+  const translations = modelRunner.askStructured(
+    "translation",
+    translationPrompt(title, description),
+    (answer) => parseSchemaOutput(answer, TranslationSchema)
+  );
 
   const inserts = LOCALES.flatMap((locale) => [
     {
@@ -318,12 +280,15 @@ async function main() {
     return;
   }
 
-  for (let i = 0; i < rows.length; i += ARTICLES_PER_CLAUDE_CALL) {
-    const chunk = rows.slice(i, i + ARTICLES_PER_CLAUDE_CALL);
+  for (let i = 0; i < rows.length; i += ARTICLES_PER_MODEL_CALL) {
+    const chunk = rows.slice(i, i + ARTICLES_PER_MODEL_CALL);
     let extractions: z.infer<typeof ExtractionResultSchema>;
     try {
-      const answer = askClaude(extractionPrompt(chunk));
-      extractions = ExtractionResultSchema.parse(parseJsonBlock(answer));
+      extractions = modelRunner.askStructured(
+        "extraction",
+        extractionPrompt(chunk),
+        (answer) => parseSchemaOutput(answer, ExtractionResultSchema)
+      );
     } catch (err) {
       const detail = `Extraction failed: ${err instanceof Error ? err.message : String(err)}`;
       console.error(`[worker] ${detail}`);

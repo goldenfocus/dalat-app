@@ -56,7 +56,7 @@ export interface ImportOptions {
  * Đà Lạt-local timestamps, cover image, row insert. Mutates `result` and
  * returns the successfully inserted events so the CALLER decides how to
  * translate (Vercel path uses the translate API; the Mac mini worker
- * generates translations itself via claude -p).
+ * generates translations itself through tool-less subscription CLIs).
  *
  * Deliberately Next-free: imported by both server routes and the
  * standalone import worker (scripts/import-worker/worker.ts under tsx).
