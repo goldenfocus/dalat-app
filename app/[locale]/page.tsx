@@ -26,6 +26,7 @@ import { ForYouSection } from "@/components/home/for-you-section";
 import { TribesStrip } from "@/components/home/tribes-strip";
 import { RecommendedEventsProvider } from "@/components/home/recommended-events-context";
 import { JsonLd, generateWebSiteSchema } from "@/lib/structured-data";
+import { CityPulseNav } from "@/components/home/city-pulse-nav";
 
 type PageProps = {
   params: Promise<{ locale: Locale }>;
@@ -92,7 +93,10 @@ export default async function Home({ params }: PageProps) {
         <HeroSection />
       )}
 
-      {/* Recent Moments Strip - Instagram Stories style */}
+      {/* Time-first city pulse: only shows "live" when real events are underway */}
+      <CityPulseNav hasHappening={lifecycleCounts.happening > 0} />
+
+      {/* Recent Moments Strip - real community activity keeps thin weeks alive */}
       <Suspense fallback={null}>
         <MomentsStripServer />
       </Suspense>

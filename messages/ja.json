@@ -145,6 +145,15 @@
     },
     "browseArchive": "過去のイベント",
     "seeAllUpcoming": "今後のイベントをすべて見る",
+    "cityPulse": {
+      "eyebrow": "今の街の様子",
+      "title": "次の予定を見つけよう",
+      "subtitle": "空いている時間から選んでみてください。",
+      "live": { "title": "現在開催中", "description": "すでに始まっているイベントに参加" },
+      "tonight": { "title": "今夜", "description": "霧が降りる頃に始まることをチェック" },
+      "weekend": { "title": "今週末", "description": "土曜か日曜の予定を立てる" },
+      "allDates": { "title": "今後のすべて", "description": "イベントカレンダーをすべて見る" }
+    },
     "happeningNow": {
       "title": "開催中",
       "live": "LIVE",
@@ -153,7 +162,12 @@
       "tapToJoin": "タップして参加"
     },
     "comingUp": {
-      "title": "今後のイベント"
+      "title": "次のĐà Lạt予定",
+      "subtitle": "繰り返しシリーズは一度だけ表示し、実際の選択肢を伝えます。",
+      "thinSupply": "現在、異なる予定が{count}件掲載されています。",
+      "emptyTitle": "今はカレンダーが静かです",
+      "emptyDescription": "今後の予定はまだ掲載されていません。最近のモーメントから街の集まる場所を見てみましょう。",
+      "emptyCta": "最近のモーメントを見る"
     },
     "yourEvents": {
       "title": "あなたのイベント",

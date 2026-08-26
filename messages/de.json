@@ -145,6 +145,15 @@
     },
     "browseArchive": "Vergangene Events",
     "seeAllUpcoming": "Alle kommenden Events anzeigen",
+    "cityPulse": {
+      "eyebrow": "Die Stadt, genau jetzt",
+      "title": "Finde deinen nächsten Plan",
+      "subtitle": "Beginne mit der Zeit, zu der du frei bist.",
+      "live": { "title": "Findet gerade statt", "description": "Komm zu etwas, das bereits läuft" },
+      "tonight": { "title": "Heute Abend", "description": "Sieh, was beginnt, wenn der Nebel aufzieht" },
+      "weekend": { "title": "Dieses Wochenende", "description": "Plane etwas für Samstag oder Sonntag" },
+      "allDates": { "title": "Alle kommenden", "description": "Durchsuche den vollständigen Eventkalender" }
+    },
     "happeningNow": {
       "title": "Findet jetzt statt",
       "live": "LIVE",
@@ -153,7 +162,12 @@
       "tapToJoin": "Tippen zum Beitreten"
     },
     "comingUp": {
-      "title": "Demnächst"
+      "title": "Als Nächstes in Đà Lạt",
+      "subtitle": "Wiederkehrende Reihen erscheinen einmal, damit die Liste echte Auswahl zeigt.",
+      "thinSupply": "Derzeit sind {count} unterschiedliche Pläne gelistet.",
+      "emptyTitle": "Der Kalender ist ruhig—vorerst",
+      "emptyDescription": "Noch sind keine kommenden Pläne gelistet. Aktuelle Momente zeigen trotzdem, wo die Stadt zusammenkommt.",
+      "emptyCta": "Aktuelle Momente ansehen"
     },
     "yourEvents": {
       "title": "Deine Veranstaltungen",

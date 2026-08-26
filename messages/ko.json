@@ -145,6 +145,15 @@
     },
     "browseArchive": "지난 이벤트 보기",
     "seeAllUpcoming": "예정된 모든 이벤트 보기",
+    "cityPulse": {
+      "eyebrow": "지금, 도시의 흐름",
+      "title": "다음 계획을 찾아보세요",
+      "subtitle": "시간이 비는 때부터 골라보세요.",
+      "live": { "title": "지금 진행 중", "description": "이미 시작된 모임에 지금 합류해 보세요" },
+      "tonight": { "title": "오늘 밤", "description": "안개가 내려앉을 무렵 시작되는 일들" },
+      "weekend": { "title": "이번 주말", "description": "토요일이나 일요일 계획을 세워보세요" },
+      "allDates": { "title": "전체 예정", "description": "전체 이벤트 달력 둘러보기" }
+    },
     "happeningNow": {
       "title": "지금 진행 중",
       "live": "실시간",
@@ -153,7 +162,12 @@
       "tapToJoin": "탭하여 참여하기"
     },
     "comingUp": {
-      "title": "다가오는 이벤트"
+      "title": "다음 Đà Lạt 일정",
+      "subtitle": "반복 시리즈는 한 번만 표시해 실제 선택지를 보여드려요.",
+      "thinSupply": "현재 서로 다른 계획 {count}개가 등록되어 있어요.",
+      "emptyTitle": "지금은 달력이 조용해요",
+      "emptyDescription": "아직 예정된 계획이 없어요. 최근 모먼트에서 사람들이 모이는 곳을 둘러보세요.",
+      "emptyCta": "최근 모먼트 보기"
     },
     "yourEvents": {
       "title": "내 이벤트",

@@ -145,6 +145,15 @@
     },
     "browseArchive": "Xem sự kiện đã qua",
     "seeAllUpcoming": "Xem tất cả sự kiện sắp tới",
+    "cityPulse": {
+      "eyebrow": "Nhịp phố lúc này",
+      "title": "Tìm kế hoạch tiếp theo",
+      "subtitle": "Bắt đầu từ lúc bạn rảnh.",
+      "live": { "title": "Đang diễn ra", "description": "Ghé một hoạt động đang diễn ra ngay lúc này" },
+      "tonight": { "title": "Tối nay", "description": "Xem điều gì bắt đầu khi sương xuống" },
+      "weekend": { "title": "Cuối tuần này", "description": "Lên kế hoạch cho thứ Bảy hoặc Chủ nhật" },
+      "allDates": { "title": "Tất cả sắp tới", "description": "Xem toàn bộ lịch sự kiện" }
+    },
     "happeningNow": {
       "title": "Đang Diễn Ra",
       "live": "TRỰC TIẾP",
@@ -153,7 +162,12 @@
       "tapToJoin": "Nhấn để tham gia"
     },
     "comingUp": {
-      "title": "Sắp Tới"
+      "title": "Sắp tới ở Đà Lạt",
+      "subtitle": "Mỗi chuỗi lặp lại chỉ hiện một lần để phản ánh đúng lựa chọn thực tế.",
+      "thinSupply": "Hiện có {count} kế hoạch riêng biệt được đăng.",
+      "emptyTitle": "Lịch đang yên ắng—chỉ là lúc này",
+      "emptyDescription": "Chưa có kế hoạch sắp tới nào được đăng. Những khoảnh khắc gần đây vẫn có thể dẫn bạn đến nơi thành phố gặp gỡ.",
+      "emptyCta": "Xem khoảnh khắc gần đây"
     },
     "yourEvents": {
       "title": "Sự kiện của bạn",

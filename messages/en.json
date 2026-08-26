@@ -145,6 +145,15 @@
     },
     "browseArchive": "Browse past events",
     "seeAllUpcoming": "See all upcoming events",
+    "cityPulse": {
+      "eyebrow": "The city, right now",
+      "title": "Find your next plan",
+      "subtitle": "Start with when you’re free.",
+      "live": { "title": "Happening now", "description": "Drop into something already underway" },
+      "tonight": { "title": "Tonight", "description": "See what starts after the fog rolls in" },
+      "weekend": { "title": "This weekend", "description": "Make a Saturday or Sunday plan" },
+      "allDates": { "title": "All upcoming", "description": "Browse the full event calendar" }
+    },
     "happeningNow": {
       "title": "Happening Now",
       "live": "LIVE",
@@ -153,7 +162,12 @@
       "tapToJoin": "Tap to join"
     },
     "comingUp": {
-      "title": "Coming Up"
+      "title": "Next in Đà Lạt",
+      "subtitle": "Repeating series appear once, so the list reflects real choice.",
+      "thinSupply": "{count} distinct plans are listed right now.",
+      "emptyTitle": "The calendar is quiet—for now",
+      "emptyDescription": "No upcoming plans are listed yet. Recent moments can still show you where the city gathers.",
+      "emptyCta": "See recent moments"
     },
     "yourEvents": {
       "title": "Your Events",

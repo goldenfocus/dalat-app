@@ -145,6 +145,15 @@
     },
     "browseArchive": "Acara lepas",
     "seeAllUpcoming": "Lihat semua acara akan datang",
+    "cityPulse": {
+      "eyebrow": "Bandar, saat ini",
+      "title": "Cari rancangan seterusnya",
+      "subtitle": "Mulakan dengan waktu anda lapang.",
+      "live": { "title": "Sedang berlangsung", "description": "Sertai sesuatu yang sudah bermula" },
+      "tonight": { "title": "Malam ini", "description": "Lihat apa yang bermula apabila kabus turun" },
+      "weekend": { "title": "Hujung minggu ini", "description": "Rancang sesuatu untuk Sabtu atau Ahad" },
+      "allDates": { "title": "Semua akan datang", "description": "Lihat kalendar acara penuh" }
+    },
     "happeningNow": {
       "title": "Sedang Berlangsung",
       "live": "LIVE",
@@ -153,7 +162,12 @@
       "tapToJoin": "Ketik untuk sertai"
     },
     "comingUp": {
-      "title": "Akan Datang"
+      "title": "Seterusnya di Đà Lạt",
+      "subtitle": "Siri berulang dipaparkan sekali agar senarai menunjukkan pilihan sebenar.",
+      "thinSupply": "{count} rancangan berbeza disenaraikan sekarang.",
+      "emptyTitle": "Kalendar masih tenang buat masa ini",
+      "emptyDescription": "Belum ada rancangan akan datang. Momen terkini masih boleh menunjukkan tempat warga kota berkumpul.",
+      "emptyCta": "Lihat momen terkini"
     },
     "yourEvents": {
       "title": "Acara Anda",

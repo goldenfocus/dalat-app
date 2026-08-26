@@ -106,7 +106,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
             <button
               onClick={() => handleSortChange('event_date')}
               className={cn(
-                "transition-colors hover:text-foreground",
+                "inline-flex min-h-11 items-center rounded-lg px-2 transition-all hover:text-foreground active:scale-95",
                 sort === 'event_date' ? "text-foreground font-medium" : "text-muted-foreground/70"
               )}
               disabled={isLoading}
@@ -117,7 +117,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
             <button
               onClick={() => handleSortChange('recent')}
               className={cn(
-                "transition-colors hover:text-foreground",
+                "inline-flex min-h-11 items-center rounded-lg px-2 transition-all hover:text-foreground active:scale-95",
                 sort === 'recent' ? "text-foreground font-medium" : "text-muted-foreground/70"
               )}
               disabled={isLoading}
@@ -128,7 +128,7 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
         </div>
         <Link
           href="/moments"
-          className="text-xs lg:text-sm text-muted-foreground hover:text-foreground flex items-center gap-0.5 transition-colors"
+          className="-mr-2 flex min-h-11 items-center gap-0.5 rounded-lg px-2 text-xs text-muted-foreground transition-all hover:text-foreground active:scale-95 lg:text-sm"
         >
           {t("strip.seeAll")}
           <ChevronRight className="w-3.5 h-3.5 lg:w-4 lg:h-4" />

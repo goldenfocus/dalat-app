@@ -145,6 +145,15 @@
     },
     "browseArchive": "浏览过去的活动",
     "seeAllUpcoming": "查看所有即将举行的活动",
+    "cityPulse": {
+      "eyebrow": "此刻的城市",
+      "title": "找到你的下一个安排",
+      "subtitle": "从你有空的时间开始。",
+      "live": { "title": "正在进行", "description": "加入一个已经开始的现场活动" },
+      "tonight": { "title": "今晚", "description": "看看雾起之后有什么开始" },
+      "weekend": { "title": "本周末", "description": "安排一个周六或周日的计划" },
+      "allDates": { "title": "所有即将举行", "description": "浏览完整活动日历" }
+    },
     "happeningNow": {
       "title": "正在进行",
       "live": "直播中",
@@ -153,7 +162,12 @@
       "tapToJoin": "点击参与"
     },
     "comingUp": {
-      "title": "即将到来"
+      "title": "大叻接下来有什么",
+      "subtitle": "重复系列只显示一次，让清单反映真实选择。",
+      "thinSupply": "目前列出了 {count} 个不同的计划。",
+      "emptyTitle": "活动日历暂时很安静",
+      "emptyDescription": "目前还没有即将举行的计划。你仍可以从最近的瞬间看看大家都在哪里相聚。",
+      "emptyCta": "查看最近瞬间"
     },
     "yourEvents": {
       "title": "我的活动",

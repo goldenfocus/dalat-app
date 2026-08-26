@@ -145,6 +145,15 @@
     },
     "browseArchive": "Acara sebelumnya",
     "seeAllUpcoming": "Lihat semua acara mendatang",
+    "cityPulse": {
+      "eyebrow": "Kota saat ini",
+      "title": "Temukan rencana berikutnya",
+      "subtitle": "Mulai dari waktu luangmu.",
+      "live": { "title": "Sedang berlangsung", "description": "Ikuti sesuatu yang sudah dimulai" },
+      "tonight": { "title": "Malam ini", "description": "Lihat apa yang dimulai saat kabut turun" },
+      "weekend": { "title": "Akhir pekan ini", "description": "Buat rencana untuk Sabtu atau Minggu" },
+      "allDates": { "title": "Semua mendatang", "description": "Jelajahi kalender acara lengkap" }
+    },
     "happeningNow": {
       "title": "Sedang Berlangsung",
       "live": "LIVE",
@@ -153,7 +162,12 @@
       "tapToJoin": "Ketuk untuk bergabung"
     },
     "comingUp": {
-      "title": "Segera Hadir"
+      "title": "Berikutnya di Đà Lạt",
+      "subtitle": "Seri berulang ditampilkan sekali agar daftar mencerminkan pilihan nyata.",
+      "thinSupply": "Saat ini ada {count} rencana berbeda yang terdaftar.",
+      "emptyTitle": "Kalender sedang tenang—untuk sekarang",
+      "emptyDescription": "Belum ada rencana mendatang. Momen terbaru tetap bisa menunjukkan tempat warga kota berkumpul.",
+      "emptyCta": "Lihat momen terbaru"
     },
     "yourEvents": {
       "title": "Acara Anda",
