@@ -113,7 +113,36 @@
     "footer": {
       "love": "사랑",
       "rssFeed": "RSS 피드",
-      "discover": "둘러보기"
+      "discover": "둘러보기",
+      "suggestEvent": "이벤트 제안"
+    }
+  },
+  "eventSuggestion": {
+    "title": "달랏의 이벤트를 알고 계신가요?",
+    "subtitle": "공개 이벤트 페이지를 붙여 넣어 주세요. 게시 전에 내용을 확인할게요.",
+    "urlLabel": "이벤트 링크",
+    "urlPlaceholder": "https://...",
+    "privacyNote": "제안은 검토 대기열로 전송되며 자동으로 게시되지 않습니다.",
+    "submit": "이 이벤트 제안하기",
+    "submitting": "링크 확인 중...",
+    "success": "감사합니다! 검토 대기열에 추가했어요.",
+    "successDelayed": "감사합니다! 대기열에 추가했지만 지금은 검토가 조금 더 오래 걸릴 수 있어요.",
+    "duplicate": "이 링크는 이미 검토 대기열에 있어요.",
+    "suggestAnother": "다른 이벤트 제안하기",
+    "errors": {
+      "authentication_required": "이벤트를 제안하려면 로그인해 주세요.",
+      "invalid_request": "요청을 보내지 못했어요. 다시 시도할까요?",
+      "invalid_url": "완전한 http 또는 https 링크를 붙여 넣어 주세요.",
+      "unsafe_url": "안전하게 열 수 없는 링크예요.",
+      "source_unavailable": "페이지를 열 수 없어요. 링크를 확인하거나 나중에 다시 시도해 주세요.",
+      "unsupported_source": "이 페이지에서 이벤트 정보를 읽을 수 없어요.",
+      "source_too_large": "확인하기에 페이지가 너무 커요.",
+      "rate_limit_exceeded": "오늘은 충분히 공유해 주셨어요. 내일 다시 시도해 주세요.",
+      "rate_limit_unavailable": "이벤트 제안 기능이 잠시 쉬고 있어요. 곧 다시 시도해 주세요.",
+      "review_queue_full": "현재 검토 대기열이 가득 찼어요. 나중에 다시 시도해 주세요.",
+      "service_unavailable": "지금은 대기열에 추가할 수 없어요. 곧 다시 시도해 주세요.",
+      "network": "연결이 끊겼어요. 인터넷 연결을 확인하고 다시 시도해 주세요.",
+      "unknown": "문제가 생겼어요. 다시 시도할까요?"
     }
   },
   "home": {

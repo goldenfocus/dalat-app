@@ -49,7 +49,7 @@ export function GlobalFooter() {
         </p>
 
         {/* Links */}
-        <p className="text-center text-xs text-muted-foreground/60 flex items-center justify-center gap-3">
+        <p className="flex flex-wrap items-center justify-center gap-x-3 text-center text-xs text-muted-foreground/60">
           <Link
             href="/about"
             className="hover:text-muted-foreground transition-colors"
@@ -76,6 +76,13 @@ export function GlobalFooter() {
             className="hover:text-muted-foreground transition-colors"
           >
             {t("footer.discover")}
+          </Link>
+          <span>·</span>
+          <Link
+            href="/events/suggest"
+            className="inline-flex min-h-11 items-center rounded-lg px-2 hover:text-muted-foreground active:scale-[0.98] transition-all"
+          >
+            {t("footer.suggestEvent")}
           </Link>
           <span>·</span>
           <a

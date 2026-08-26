@@ -113,7 +113,36 @@
     "footer": {
       "love": "amor",
       "rssFeed": "Feed RSS",
-      "discover": "Descubrir"
+      "discover": "Descubrir",
+      "suggestEvent": "Sugerir un evento"
+    }
+  },
+  "eventSuggestion": {
+    "title": "¿Conoces un evento en Đà Lạt?",
+    "subtitle": "Pega su página pública. Comprobaremos los detalles antes de mostrarlo.",
+    "urlLabel": "Enlace del evento",
+    "urlPlaceholder": "https://...",
+    "privacyNote": "Tu sugerencia pasa a nuestra cola de revisión y nunca se publica automáticamente.",
+    "submit": "Sugerir este evento",
+    "submitting": "Comprobando el enlace...",
+    "success": "¡Gracias! Ya está en la cola de revisión.",
+    "successDelayed": "¡Gracias! Ya está en la cola, pero las revisiones están tardando un poco más ahora.",
+    "duplicate": "Este enlace ya está en la cola de revisión.",
+    "suggestAnother": "Sugerir otro evento",
+    "errors": {
+      "authentication_required": "Inicia sesión para sugerir un evento.",
+      "invalid_request": "La solicitud no llegó. ¿Lo intentamos de nuevo?",
+      "invalid_url": "Pega un enlace http o https completo.",
+      "unsafe_url": "Ese enlace apunta a un lugar que no podemos abrir de forma segura.",
+      "source_unavailable": "No pudimos abrir esa página. Comprueba el enlace o inténtalo más tarde.",
+      "unsupported_source": "No pudimos leer los detalles del evento en esa página.",
+      "source_too_large": "Esa página es demasiado grande para revisarla.",
+      "rate_limit_exceeded": "Ya has compartido bastante por hoy. Inténtalo mañana.",
+      "rate_limit_unavailable": "Las sugerencias se toman un breve descanso. Inténtalo de nuevo pronto.",
+      "review_queue_full": "La cola de revisión está llena ahora mismo. Inténtalo más tarde.",
+      "service_unavailable": "No pudimos añadir este evento a la cola ahora mismo. Inténtalo pronto.",
+      "network": "Se perdió la conexión. Comprueba tu internet e inténtalo de nuevo.",
+      "unknown": "Algo se interpuso. ¿Lo intentamos de nuevo?"
     }
   },
   "home": {

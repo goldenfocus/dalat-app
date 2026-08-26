@@ -113,7 +113,36 @@
     "footer": {
       "love": "sayang",
       "rssFeed": "Suapan RSS",
-      "discover": "Terokai"
+      "discover": "Terokai",
+      "suggestEvent": "Cadangkan acara"
+    }
+  },
+  "eventSuggestion": {
+    "title": "Tahu tentang acara di Đà Lạt?",
+    "subtitle": "Tampal halaman acara awamnya. Kami akan semak butiran sebelum ia dipaparkan.",
+    "urlLabel": "Pautan acara",
+    "urlPlaceholder": "https://...",
+    "privacyNote": "Cadangan anda masuk ke barisan semakan kami dan tidak akan diterbitkan secara automatik.",
+    "submit": "Cadangkan acara ini",
+    "submitting": "Menyemak pautan...",
+    "success": "Terima kasih! Ia sudah masuk ke barisan semakan.",
+    "successDelayed": "Terima kasih! Ia sudah dalam barisan, tetapi semakan mengambil masa sedikit lebih lama sekarang.",
+    "duplicate": "Pautan ini sudah ada dalam barisan semakan.",
+    "suggestAnother": "Cadangkan acara lain",
+    "errors": {
+      "authentication_required": "Log masuk untuk mencadangkan acara.",
+      "invalid_request": "Permintaan itu tidak berjaya dihantar. Cuba lagi?",
+      "invalid_url": "Tampal pautan http atau https yang lengkap.",
+      "unsafe_url": "Pautan itu menuju ke tempat yang tidak dapat kami buka dengan selamat.",
+      "source_unavailable": "Kami tidak dapat membuka halaman itu. Semak pautan atau cuba lagi kemudian.",
+      "unsupported_source": "Kami tidak dapat membaca butiran acara daripada halaman itu.",
+      "source_too_large": "Halaman itu terlalu besar untuk kami semak.",
+      "rate_limit_exceeded": "Anda sudah banyak berkongsi hari ini. Cuba lagi esok.",
+      "rate_limit_unavailable": "Cadangan sedang berehat sebentar. Cuba lagi tidak lama lagi.",
+      "review_queue_full": "Barisan semakan penuh buat masa ini. Sila cuba lagi kemudian.",
+      "service_unavailable": "Kami tidak dapat memasukkan acara ini ke dalam barisan sekarang. Cuba lagi sebentar lagi.",
+      "network": "Sambungan terputus. Semak internet anda dan cuba lagi.",
+      "unknown": "Ada sesuatu yang menghalang. Cuba lagi?"
     }
   },
   "home": {

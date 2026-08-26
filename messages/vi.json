@@ -113,7 +113,36 @@
     "footer": {
       "love": "tình yêu",
       "rssFeed": "Nguồn RSS",
-      "discover": "Khám phá"
+      "discover": "Khám phá",
+      "suggestEvent": "Gợi ý sự kiện"
+    }
+  },
+  "eventSuggestion": {
+    "title": "Bạn biết sự kiện nào ở Đà Lạt?",
+    "subtitle": "Dán trang công khai của sự kiện. Chúng tôi sẽ kiểm tra thông tin trước khi hiển thị.",
+    "urlLabel": "Liên kết sự kiện",
+    "urlPlaceholder": "https://...",
+    "privacyNote": "Gợi ý của bạn sẽ vào hàng chờ duyệt và không bao giờ được tự động đăng.",
+    "submit": "Gợi ý sự kiện này",
+    "submitting": "Đang kiểm tra liên kết...",
+    "success": "Cảm ơn bạn! Sự kiện đang chờ duyệt.",
+    "successDelayed": "Cảm ơn bạn! Sự kiện đã vào hàng chờ, nhưng hiện việc duyệt có thể lâu hơn một chút.",
+    "duplicate": "Liên kết này đã có trong hàng chờ duyệt.",
+    "suggestAnother": "Gợi ý sự kiện khác",
+    "errors": {
+      "authentication_required": "Đăng nhập để gợi ý sự kiện.",
+      "invalid_request": "Yêu cầu chưa gửi được. Thử lại nhé?",
+      "invalid_url": "Dán liên kết http hoặc https đầy đủ.",
+      "unsafe_url": "Liên kết này trỏ đến nơi chúng tôi không thể mở an toàn.",
+      "source_unavailable": "Chúng tôi không mở được trang này. Hãy kiểm tra liên kết hoặc thử lại sau.",
+      "unsupported_source": "Chúng tôi không đọc được thông tin sự kiện từ trang này.",
+      "source_too_large": "Trang này quá lớn để chúng tôi kiểm tra.",
+      "rate_limit_exceeded": "Hôm nay bạn đã chia sẻ khá nhiều rồi. Hãy thử lại vào ngày mai.",
+      "rate_limit_unavailable": "Tính năng gợi ý đang nghỉ một chút. Vui lòng thử lại sớm.",
+      "review_queue_full": "Hàng chờ duyệt hiện đã đầy. Vui lòng thử lại sau.",
+      "service_unavailable": "Hiện chúng tôi chưa thể đưa sự kiện này vào hàng chờ. Vui lòng thử lại sớm.",
+      "network": "Mất kết nối. Hãy kiểm tra mạng và thử lại.",
+      "unknown": "Có gì đó cản đường. Thử lại nhé?"
     }
   },
   "home": {

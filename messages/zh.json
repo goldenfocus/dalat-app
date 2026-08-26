@@ -113,7 +113,36 @@
     "footer": {
       "love": "爱",
       "rssFeed": "RSS 订阅",
-      "discover": "发现"
+      "discover": "发现",
+      "suggestEvent": "推荐活动"
+    }
+  },
+  "eventSuggestion": {
+    "title": "知道大叻有什么活动吗？",
+    "subtitle": "粘贴活动的公开页面。显示之前我们会核对详情。",
+    "urlLabel": "活动链接",
+    "urlPlaceholder": "https://...",
+    "privacyNote": "你的推荐会进入审核队列，绝不会自动发布。",
+    "submit": "推荐此活动",
+    "submitting": "正在检查链接...",
+    "success": "谢谢！已进入审核队列。",
+    "successDelayed": "谢谢！已进入队列，但目前审核可能需要更长时间。",
+    "duplicate": "此链接已在审核队列中。",
+    "suggestAnother": "推荐另一个活动",
+    "errors": {
+      "authentication_required": "请登录后推荐活动。",
+      "invalid_request": "请求未能送达。再试一次？",
+      "invalid_url": "请粘贴完整的 http 或 https 链接。",
+      "unsafe_url": "该链接指向我们无法安全打开的位置。",
+      "source_unavailable": "无法打开该页面。请检查链接或稍后再试。",
+      "unsupported_source": "无法从该页面读取活动详情。",
+      "source_too_large": "该页面太大，无法检查。",
+      "rate_limit_exceeded": "你今天已经分享了很多。请明天再试。",
+      "rate_limit_unavailable": "推荐功能正在短暂休息。请稍后再试。",
+      "review_queue_full": "审核队列目前已满。请稍后再试。",
+      "service_unavailable": "目前无法将此活动加入队列。请稍后再试。",
+      "network": "连接已断开。请检查网络后重试。",
+      "unknown": "遇到了一点问题。再试一次？"
     }
   },
   "home": {

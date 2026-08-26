@@ -3,13 +3,18 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { sendTelegram } from "@/lib/alerts/telegram";
 import { materializeSeriesOccurrences } from "@/lib/series/materialize";
 import { logPipelineEvent } from "@/lib/news/pipeline-log";
+import {
+  buildVitalityFloorProblem,
+  summarizeEventVitality,
+  type EventVitalityRow,
+} from "@/lib/events/vitality";
 import type { EventSeries } from "@/lib/types";
 
 export const maxDuration = 60;
 
 // The customer promise: the homepage must never look dead.
 // Watches what visitors see, not the plumbing.
-const MIN_UPCOMING_14D = 8;
+const MIN_DISTINCT_UPCOMING_14D = 8;
 
 // A watched source with no run in this window is presumed dead.
 const MAX_HEARTBEAT_AGE_H = 48;
@@ -46,7 +51,8 @@ export async function GET(request: Request) {
   );
   const problems: string[] = [];
 
-  // 1. Top up recurring series BEFORE counting — the floor should count.
+  // 1. Top up recurring series before evaluation so inventory is current.
+  // The vitality check below still collapses all occurrences to one choice.
   let toppedUp = 0;
   const { data: seriesList, error: seriesError } = await supabase
     .from("event_series")
@@ -63,17 +69,32 @@ export async function GET(request: Request) {
     }
   }
 
-  // 2. Customer promise: enough visible upcoming events?
-  const { count: upcoming } = await supabase
+  // 2. Customer promise: enough distinct visible choices? Materialized
+  // recurring occurrences are useful inventory, but one weekly meetup still
+  // gives a visitor only one kind of thing to choose.
+  const vitalityStart = new Date().toISOString();
+  const vitalityEnd = new Date(Date.now() + 14 * 86400_000).toISOString();
+  const { data: upcomingRows, error: upcomingError } = await supabase
     .from("events")
-    .select("*", { count: "exact", head: true })
+    .select(
+      "id, starts_at, series_id, organizer_id, source_platform, organizers(name)"
+    )
     .eq("status", "published")
-    .gt("starts_at", new Date().toISOString())
-    .lt("starts_at", new Date(Date.now() + 14 * 86400_000).toISOString());
-  if ((upcoming ?? 0) < MIN_UPCOMING_14D) {
-    problems.push(
-      `Only ${upcoming ?? 0} published events in the next 14 days (floor: ${MIN_UPCOMING_14D})`
+    .gt("starts_at", vitalityStart)
+    .lt("starts_at", vitalityEnd)
+    .order("starts_at", { ascending: true })
+    .limit(1000);
+  const eventVitality = summarizeEventVitality(
+    (upcomingRows ?? []) as EventVitalityRow[]
+  );
+  if (upcomingError) {
+    problems.push(`Upcoming event vitality query failed: ${upcomingError.message}`);
+  } else {
+    const vitalityProblem = buildVitalityFloorProblem(
+      eventVitality,
+      MIN_DISTINCT_UPCOMING_14D
     );
+    if (vitalityProblem) problems.push(vitalityProblem);
   }
 
   // 3. Heartbeats: any watched import source silent too long?
@@ -152,7 +173,9 @@ export async function GET(request: Request) {
   return NextResponse.json(
     {
       ok: problems.length === 0,
-      upcoming: upcoming ?? 0,
+      upcoming: eventVitality.distinctChoices,
+      upcomingOccurrences: eventVitality.occurrences,
+      eventVitality,
       seriesToppedUp: toppedUp,
       problems,
       contentHealth: content,

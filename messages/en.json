@@ -113,7 +113,36 @@
     "footer": {
       "love": "love",
       "rssFeed": "RSS Feed",
-      "discover": "Discover"
+      "discover": "Discover",
+      "suggestEvent": "Suggest an event"
+    }
+  },
+  "eventSuggestion": {
+    "title": "Know an event in Đà Lạt?",
+    "subtitle": "Paste its public event page. We’ll check the details before it appears.",
+    "urlLabel": "Event link",
+    "urlPlaceholder": "https://...",
+    "privacyNote": "Your suggestion goes to our review queue—it is never published automatically.",
+    "submit": "Suggest this event",
+    "submitting": "Checking the link...",
+    "success": "Thanks! It’s queued for review.",
+    "successDelayed": "Thanks! It’s queued, but reviews are taking a little longer right now.",
+    "duplicate": "We already have this link in the review queue.",
+    "suggestAnother": "Suggest another",
+    "errors": {
+      "authentication_required": "Sign in to suggest an event.",
+      "invalid_request": "That request didn’t come through. Try again?",
+      "invalid_url": "Paste a complete http or https link.",
+      "unsafe_url": "That link points somewhere we can’t safely open.",
+      "source_unavailable": "We couldn’t open that page. Check the link or try again later.",
+      "unsupported_source": "We couldn’t read event details from that page.",
+      "source_too_large": "That page is too large for us to check.",
+      "rate_limit_exceeded": "You’ve shared plenty for today. Try again tomorrow.",
+      "rate_limit_unavailable": "Suggestions are taking a quick break. Try again soon.",
+      "review_queue_full": "The review queue is full right now. Please try again later.",
+      "service_unavailable": "We couldn’t queue this one right now. Try again soon.",
+      "network": "Connection lost. Check your internet and try again.",
+      "unknown": "Something got in the way. Try again?"
     }
   },
   "home": {

@@ -33,6 +33,8 @@ export interface ImportableArticle {
   title: string;
   publishDate?: string;
   imageUrls: string[];
+  submittedBy?: string;
+  submittedAt?: string;
 }
 
 export interface ImportedEvent {
@@ -46,6 +48,7 @@ export interface ImportOptions {
   /** Override the draft gate — canary events must always stay drafts. */
   status?: "draft" | "published";
   sourcePlatform?: string;
+  sourceMetadata?: Record<string, string | null>;
 }
 
 /**
@@ -147,6 +150,7 @@ export async function importExtractedEvents(
             article_title: article.title,
             publish_date: article.publishDate,
             imported_at: new Date().toISOString(),
+            ...opts.sourceMetadata,
           },
         })
         .select("id")

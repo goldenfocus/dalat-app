@@ -113,7 +113,36 @@
     "footer": {
       "love": "Liebe",
       "rssFeed": "RSS-Feed",
-      "discover": "Entdecken"
+      "discover": "Entdecken",
+      "suggestEvent": "Veranstaltung vorschlagen"
+    }
+  },
+  "eventSuggestion": {
+    "title": "Kennst du eine Veranstaltung in Đà Lạt?",
+    "subtitle": "Füge die öffentliche Veranstaltungsseite ein. Wir prüfen die Details, bevor sie erscheint.",
+    "urlLabel": "Veranstaltungslink",
+    "urlPlaceholder": "https://...",
+    "privacyNote": "Dein Vorschlag landet in unserer Prüfwarteschlange und wird nie automatisch veröffentlicht.",
+    "submit": "Veranstaltung vorschlagen",
+    "submitting": "Link wird geprüft...",
+    "success": "Danke! Die Veranstaltung wartet jetzt auf Prüfung.",
+    "successDelayed": "Danke! Sie ist in der Warteschlange, aber die Prüfung dauert momentan etwas länger.",
+    "duplicate": "Dieser Link ist bereits in der Prüfwarteschlange.",
+    "suggestAnother": "Weitere Veranstaltung vorschlagen",
+    "errors": {
+      "authentication_required": "Melde dich an, um eine Veranstaltung vorzuschlagen.",
+      "invalid_request": "Die Anfrage ist nicht angekommen. Noch einmal versuchen?",
+      "invalid_url": "Füge einen vollständigen http- oder https-Link ein.",
+      "unsafe_url": "Dieser Link führt zu einem Ziel, das wir nicht sicher öffnen können.",
+      "source_unavailable": "Wir konnten die Seite nicht öffnen. Prüfe den Link oder versuche es später erneut.",
+      "unsupported_source": "Wir konnten auf dieser Seite keine Veranstaltungsdetails lesen.",
+      "source_too_large": "Diese Seite ist zu groß für unsere Prüfung.",
+      "rate_limit_exceeded": "Du hast heute schon viel geteilt. Versuche es morgen wieder.",
+      "rate_limit_unavailable": "Die Vorschlagsfunktion macht kurz Pause. Versuche es gleich noch einmal.",
+      "review_queue_full": "Die Prüfwarteschlange ist gerade voll. Bitte versuche es später erneut.",
+      "service_unavailable": "Wir konnten diese Veranstaltung gerade nicht einreihen. Versuche es gleich noch einmal.",
+      "network": "Verbindung verloren. Prüfe dein Internet und versuche es erneut.",
+      "unknown": "Etwas ist dazwischengekommen. Noch einmal versuchen?"
     }
   },
   "home": {

@@ -113,7 +113,36 @@
     "footer": {
       "love": "amour",
       "rssFeed": "Flux RSS",
-      "discover": "Découvrir"
+      "discover": "Découvrir",
+      "suggestEvent": "Suggérer un événement"
+    }
+  },
+  "eventSuggestion": {
+    "title": "Vous connaissez un événement à Đà Lạt ?",
+    "subtitle": "Collez sa page publique. Nous vérifierons les détails avant sa mise en ligne.",
+    "urlLabel": "Lien de l’événement",
+    "urlPlaceholder": "https://...",
+    "privacyNote": "Votre suggestion rejoint notre file de vérification et n’est jamais publiée automatiquement.",
+    "submit": "Suggérer cet événement",
+    "submitting": "Vérification du lien...",
+    "success": "Merci ! L’événement est en attente de vérification.",
+    "successDelayed": "Merci ! Il est dans la file, mais la vérification prend un peu plus de temps en ce moment.",
+    "duplicate": "Ce lien est déjà dans la file de vérification.",
+    "suggestAnother": "Suggérer un autre événement",
+    "errors": {
+      "authentication_required": "Connectez-vous pour suggérer un événement.",
+      "invalid_request": "La demande n’est pas passée. On réessaie ?",
+      "invalid_url": "Collez un lien http ou https complet.",
+      "unsafe_url": "Ce lien mène vers une adresse que nous ne pouvons pas ouvrir en toute sécurité.",
+      "source_unavailable": "Impossible d’ouvrir cette page. Vérifiez le lien ou réessayez plus tard.",
+      "unsupported_source": "Impossible de lire les détails de l’événement sur cette page.",
+      "source_too_large": "Cette page est trop volumineuse pour être vérifiée.",
+      "rate_limit_exceeded": "Vous avez déjà beaucoup partagé aujourd’hui. Réessayez demain.",
+      "rate_limit_unavailable": "Les suggestions font une petite pause. Réessayez bientôt.",
+      "review_queue_full": "La file de vérification est pleine pour le moment. Réessayez plus tard.",
+      "service_unavailable": "Impossible d’ajouter cet événement à la file pour le moment. Réessayez bientôt.",
+      "network": "Connexion perdue. Vérifiez votre accès à Internet et réessayez.",
+      "unknown": "Un petit obstacle est survenu. On réessaie ?"
     }
   },
   "home": {

@@ -136,8 +136,8 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
       </div>
 
       {/* Mobile: Compact horizontal scroll with framed cards */}
-      <div className="lg:hidden">
-        <div className="flex gap-2.5 overflow-x-auto px-4 pb-2 scrollbar-hide">
+      <div className="max-w-full overflow-hidden lg:hidden">
+        <div className="flex max-w-full gap-2.5 overflow-x-auto px-4 pb-2 scrollbar-hide">
           {moments.map((moment) => (
             <button
               key={moment.id}
