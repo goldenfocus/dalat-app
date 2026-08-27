@@ -70,14 +70,12 @@ export function MiniPlayer() {
     tracks,
     playlist,
     currentIndex,
-    audioElement,
     isPlaying,
     isLoading,
     currentTime,
     duration,
     repeatMode,
     shuffle,
-    setAudioElement,
     togglePlay,
     next,
     previous,
@@ -123,67 +121,6 @@ export function MiniPlayer() {
       root.style.removeProperty("--docked-player-clearance");
     };
   }, [isVisible, currentTrack, karaokeLevel]);
-
-  // Initialize audio element ONCE and store in Zustand
-  useEffect(() => {
-    if (audioElement) return; // Already initialized
-
-    const audio = new Audio();
-    audio.preload = "metadata";
-
-    // Set up event listeners ONCE
-    audio.addEventListener("loadedmetadata", () => {
-      const dur = audio.duration;
-      if (dur && !isNaN(dur) && isFinite(dur) && dur > 0) {
-        useAudioPlayerStore.getState().setDuration(dur);
-      }
-    });
-
-    audio.addEventListener("durationchange", () => {
-      const dur = audio.duration;
-      if (dur && !isNaN(dur) && isFinite(dur) && dur > 0) {
-        useAudioPlayerStore.getState().setDuration(dur);
-      }
-    });
-
-    audio.addEventListener("timeupdate", () => {
-      useAudioPlayerStore.getState().setCurrentTime(audio.currentTime);
-    });
-
-    audio.addEventListener("ended", () => {
-      const state = useAudioPlayerStore.getState();
-
-      if (state.repeatMode === "one") {
-        // Repeat single track
-        audio.currentTime = 0;
-        audio.play().catch(console.error);
-      } else {
-        // Go to next track (store's next() handles looping logic)
-        state.next();
-      }
-    });
-
-    audio.addEventListener("play", () => {
-      useAudioPlayerStore.getState().setIsPlaying(true);
-    });
-
-    audio.addEventListener("pause", () => {
-      useAudioPlayerStore.getState().setIsPlaying(false);
-    });
-
-    audio.addEventListener("error", (e) => {
-      console.error("Audio error:", e);
-      useAudioPlayerStore.getState().setIsPlaying(false);
-      useAudioPlayerStore.getState().setIsLoading(false);
-    });
-
-    // Store the audio element
-    setAudioElement(audio);
-
-    return () => {
-      // Don't clean up - audio element persists
-    };
-  }, [audioElement, setAudioElement]);
 
   // Media Session API for lock screen controls
   useEffect(() => {

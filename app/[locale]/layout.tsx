@@ -13,6 +13,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ProgressiveIntlProvider } from "@/components/progressive-intl-provider";
+import { AudioSession } from "@/components/audio/audio-session";
 import {
   DeferredBadgeClearer,
   DeferredGodModeIndicator,
@@ -131,6 +132,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               }}
             />
             <LocalePreloader />
+            <AudioSession />
             <div className="min-h-screen flex flex-col">
               <DeferredPerformanceMonitor />
               <DeferredHeartbeat />
