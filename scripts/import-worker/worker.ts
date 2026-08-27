@@ -31,6 +31,7 @@ for (const [k, v] of Object.entries(process.env)) {
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { createEmptyResult } from "../../lib/import/utils";
+import { AUTO_IMPORT_QUEUE_TYPES } from "../../lib/import/queue-lanes";
 import {
   importExtractedEvents,
   type ExtractedEvent,
@@ -155,6 +156,9 @@ async function claimRows(supabase: SupabaseClient): Promise<QueueRow[]> {
     .from("import_queue")
     .select("id")
     .eq("status", "pending")
+    // URL articles and synthetic text canaries are automatic lanes. Image
+    // flyers stay in the separate manual-review lane.
+    .in("type", [...AUTO_IMPORT_QUEUE_TYPES])
     .order("created_at", { ascending: true })
     .limit(MAX_ROWS_PER_RUN);
   if (selErr) throw new Error(`Queue select failed: ${selErr.message}`);

@@ -5,6 +5,12 @@ import { SuggestEventForm, type SuggestEventCopy } from "./suggest-event-form";
 const copy: SuggestEventCopy = {
   urlLabel: "urlLabel",
   urlPlaceholder: "urlPlaceholder",
+  or: "or",
+  flyerLabel: "flyerLabel",
+  flyerHint: "flyerHint",
+  chooseFlyer: "chooseFlyer",
+  replaceFlyer: "replaceFlyer",
+  removeFlyer: "removeFlyer",
   privacyNote: "privacyNote",
   submit: "submit",
   submitting: "submitting",
@@ -61,5 +67,26 @@ describe("SuggestEventForm", () => {
     fireEvent.submit(screen.getByRole("button", { name: "submit" }).closest("form")!);
 
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("unsafeUrl"));
+  });
+
+  it("submits a flyer as multipart data without setting a content-type header", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ code: "queued_for_review" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<SuggestEventForm copy={copy} />);
+
+    const flyer = new File([new Uint8Array([0xff, 0xd8, 0xff])], "flower-night.jpg", {
+      type: "image/jpeg",
+    });
+    fireEvent.change(screen.getByLabelText("chooseFlyer"), { target: { files: [flyer] } });
+    fireEvent.click(screen.getByRole("button", { name: "submit" }));
+
+    await screen.findByText("success");
+    const [, options] = fetchMock.mock.calls[0];
+    expect(options.headers).toBeUndefined();
+    expect(options.body).toBeInstanceOf(FormData);
+    expect(options.body.get("flyer")).toBe(flyer);
   });
 });

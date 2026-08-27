@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { createStaticClient } from "@/lib/supabase/server";
+import { getTonightBounds, getWeekendBounds } from "@/lib/events/discovery-windows";
 import type {
   Event,
   EventWithSeriesData,
@@ -411,6 +412,58 @@ export const getCachedLifecycleCounts = unstable_cache(
   ["lifecycle-counts-v1"],
   {
     revalidate: 60, // 1 minute
+    tags: [CACHE_TAGS.events],
+  }
+);
+
+/**
+ * Truthful inventory for homepage time links. A discovery shortcut is only
+ * rendered when its destination has at least one published event.
+ */
+export const getCachedDiscoveryWindowCounts = unstable_cache(
+  async (): Promise<{
+    tonight: number | null;
+    weekend: number | null;
+    upcoming: number | null;
+  }> => {
+    const supabase = createStaticClient();
+    if (!supabase) return { tonight: null, weekend: null, upcoming: null };
+
+    const now = new Date();
+    const tonight = getTonightBounds(now);
+    const weekend = getWeekendBounds(now);
+    const tonightStart = now > tonight.start ? now : tonight.start;
+    const weekendStart = now > weekend.start ? now : weekend.start;
+
+    const [tonightResult, weekendResult, upcomingResult] = await Promise.all([
+      supabase
+        .from("events")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "published")
+        .gte("starts_at", tonightStart.toISOString())
+        .lte("starts_at", tonight.end.toISOString()),
+      supabase
+        .from("events")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "published")
+        .gte("starts_at", weekendStart.toISOString())
+        .lte("starts_at", weekend.end.toISOString()),
+      supabase
+        .from("events")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "published")
+        .gt("starts_at", now.toISOString()),
+    ]);
+
+    return {
+      tonight: tonightResult.error ? null : (tonightResult.count ?? 0),
+      weekend: weekendResult.error ? null : (weekendResult.count ?? 0),
+      upcoming: upcomingResult.error ? null : (upcomingResult.count ?? 0),
+    };
+  },
+  ["discovery-window-counts-v1"],
+  {
+    revalidate: 60,
     tags: [CACHE_TAGS.events],
   }
 );

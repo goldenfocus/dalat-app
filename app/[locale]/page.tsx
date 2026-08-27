@@ -17,6 +17,7 @@ import { isVideoUrl } from "@/lib/media-utils";
 import type { Locale } from "@/lib/i18n/routing";
 import {
   getCachedEventsByLifecycle,
+  getCachedDiscoveryWindowCounts,
   getCachedLifecycleCounts,
   getCachedHomepageConfig,
 } from "@/lib/cache/server-cache";
@@ -47,8 +48,9 @@ export default async function Home({ params }: PageProps) {
   // Enable static rendering with correct locale for translations
   setRequestLocale(locale);
 
-  const [lifecycleCounts, homepageConfig] = await Promise.all([
+  const [lifecycleCounts, discoveryCounts, homepageConfig] = await Promise.all([
     getCachedLifecycleCounts(),
+    getCachedDiscoveryWindowCounts(),
     getCachedHomepageConfig(),
   ]);
 
@@ -94,7 +96,12 @@ export default async function Home({ params }: PageProps) {
       )}
 
       {/* Time-first city pulse: only shows "live" when real events are underway */}
-      <CityPulseNav hasHappening={lifecycleCounts.happening > 0} />
+      <CityPulseNav
+        hasHappening={lifecycleCounts.happening > 0}
+        hasTonight={(discoveryCounts.tonight ?? 0) > 0}
+        hasWeekend={(discoveryCounts.weekend ?? 0) > 0}
+        hasUpcoming={(discoveryCounts.upcoming ?? 0) > 0}
+      />
 
       {/* Recent Moments Strip - real community activity keeps thin weeks alive */}
       <Suspense fallback={null}>

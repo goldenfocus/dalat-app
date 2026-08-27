@@ -1,12 +1,33 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
+import { hasRoleLevel, type UserRole } from "@/lib/types";
 
 /**
  * Get import history - events that were imported from external platforms
  */
 export async function GET() {
   try {
-    const supabase = createClient(
+    const authClient = await createClient();
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: profile, error: profileError } = await authClient
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    const canReviewImports =
+      !profileError &&
+      profile?.role &&
+      hasRoleLevel(profile.role as UserRole, "moderator");
+    if (!canReviewImports) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const supabase = createServiceClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );

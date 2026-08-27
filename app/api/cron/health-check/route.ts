@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { sendTelegram } from "@/lib/alerts/telegram";
+import {
+  AUTO_IMPORT_QUEUE_TYPES,
+  MANUAL_REVIEW_QUEUE_TYPE,
+} from "@/lib/import/queue-lanes";
 import { materializeSeriesOccurrences } from "@/lib/series/materialize";
 import { logPipelineEvent } from "@/lib/news/pipeline-log";
 import {
@@ -119,10 +123,25 @@ export async function GET(request: Request) {
     .from("import_queue")
     .select("*", { count: "exact", head: true })
     .in("status", ["pending", "processing"])
+    // Match the worker's explicit automatic allowlist: URL articles and text
+    // canaries should drain; image flyers belong to manual review.
+    .in("type", [...AUTO_IMPORT_QUEUE_TYPES])
     .lt("created_at", backlogCutoff);
   if ((backlog ?? 0) > 0) {
     problems.push(
       `import_queue: ${backlog} rows older than ${MAX_QUEUE_AGE_H}h still unprocessed — is the Mac mini worker running?`
+    );
+  }
+
+  const { count: manualReviewBacklog } = await supabase
+    .from("import_queue")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "pending")
+    .eq("type", MANUAL_REVIEW_QUEUE_TYPE)
+    .lt("created_at", backlogCutoff);
+  if ((manualReviewBacklog ?? 0) > 0) {
+    problems.push(
+      `manual event review: ${manualReviewBacklog} flyer suggestion(s) older than ${MAX_QUEUE_AGE_H}h need human review`
     );
   }
 

@@ -10,8 +10,8 @@ import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { buildLocales } from "@/lib/i18n/routing";
 import { DALAT_TIMEZONE } from "@/lib/timezone";
-import { toZonedTime } from "date-fns-tz";
-import { endOfDay, setHours, startOfDay, addDays } from "date-fns";
+import { getTonightBounds } from "@/lib/events/discovery-windows";
+import { takeDistinctEventChoices } from "@/lib/events/distinct-choices";
 
 const SITE_URL = "https://dalat.app";
 
@@ -28,8 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "tonight" });
 
-  const now = toZonedTime(new Date(), DALAT_TIMEZONE);
-  const todayStr = now.toLocaleDateString(locale, {
+  const todayStr = new Date().toLocaleDateString(locale, {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -53,32 +52,58 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 // Get tonight's events (from 5 PM today to 4 AM next day in Da Lat timezone)
-async function getTonightEvents(): Promise<{ happening: Event[]; upcoming: Event[] }> {
+async function getTonightEvents(): Promise<{
+  happening: Event[];
+  upcoming: Event[];
+  nextUp: Event[];
+  unavailable: boolean;
+}> {
   const supabase = await createClient();
-  const now = toZonedTime(new Date(), DALAT_TIMEZONE);
-
-  // Evening starts at 5 PM (17:00), ends at 4 AM next day
-  const eveningStart = setHours(startOfDay(now), 17);
-  const eveningEnd = setHours(startOfDay(addDays(now, 1)), 4);
+  const now = new Date();
+  const { start, end } = getTonightBounds(now);
+  const upcomingStart = now > start ? now : start;
 
   // Fetch events happening now (currently running)
-  const { data: happeningData } = await supabase.rpc("get_events_by_lifecycle", {
+  const { data: happeningData, error: happeningError } = await supabase.rpc("get_events_by_lifecycle", {
     p_lifecycle: "happening",
     p_limit: 20,
   });
 
   // Fetch events starting tonight
-  const { data: tonightData } = await supabase
+  const { data: tonightData, error: tonightError } = await supabase
     .from("events")
     .select("*")
-    .gte("starts_at", eveningStart.toISOString())
-    .lte("starts_at", eveningEnd.toISOString())
+    .eq("status", "published")
+    .gte("starts_at", upcomingStart.toISOString())
+    .lte("starts_at", end.toISOString())
     .order("starts_at", { ascending: true })
     .limit(30);
 
+  const { data: nextUpData, error: nextUpError } = await supabase
+    .from("events")
+    .select("*")
+    .eq("status", "published")
+    .gt("starts_at", end.toISOString())
+    .order("starts_at", { ascending: true })
+    .limit(24);
+
+  const happensDuringTonight = now >= start && now <= end;
+  const happening = happensDuringTonight ? ((happeningData || []) as Event[]) : [];
+  const happeningIds = new Set(happening.map((event) => event.id));
+
+  if (happeningError || tonightError || nextUpError) {
+    console.error("Error loading tonight discovery inventory:", {
+      happening: happeningError?.message,
+      tonight: tonightError?.message,
+      nextUp: nextUpError?.message,
+    });
+  }
+
   return {
-    happening: (happeningData || []) as Event[],
-    upcoming: (tonightData || []) as Event[],
+    happening,
+    upcoming: ((tonightData || []) as Event[]).filter((event) => !happeningIds.has(event.id)),
+    nextUp: takeDistinctEventChoices((nextUpData || []) as Event[], 3),
+    unavailable: Boolean(happeningError || tonightError),
   };
 }
 
@@ -93,10 +118,11 @@ function EventsLoading() {
 }
 
 async function TonightContent({ locale }: { locale: Locale }) {
-  const { happening, upcoming } = await getTonightEvents();
+  const { happening, upcoming, nextUp, unavailable } = await getTonightEvents();
   const t = await getTranslations({ locale, namespace: "tonight" });
-  const now = toZonedTime(new Date(), DALAT_TIMEZONE);
-  const todayStr = now.toLocaleDateString(locale, {
+  const home = await getTranslations({ locale, namespace: "home" });
+  const footer = await getTranslations({ locale, namespace: "nav.footer" });
+  const todayStr = new Date().toLocaleDateString(locale, {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -172,6 +198,29 @@ async function TonightContent({ locale }: { locale: Locale }) {
         ]
   );
 
+  if (unavailable) {
+    return (
+      <>
+        <JsonLd data={breadcrumbSchema} />
+        <div className="py-16 text-center">
+          <Moon className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+          <p className="mb-1 text-lg font-medium text-muted-foreground">
+            {t("unavailableTitle")}
+          </p>
+          <p className="mb-6 text-sm text-muted-foreground/70">
+            {t("unavailableDescription")}
+          </p>
+          <Link
+            href="/events/suggest"
+            className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
+          >
+            {footer("suggestEvent")}
+          </Link>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <JsonLd data={[breadcrumbSchema, eventListSchema, faqSchema]} />
@@ -194,19 +243,31 @@ async function TonightContent({ locale }: { locale: Locale }) {
           <p className="text-sm text-muted-foreground/70 mb-4">
             {t("emptyDescription")}
           </p>
-          <div className="flex justify-center gap-3">
+          {nextUp.length > 0 && (
+            <section className="mx-auto mt-8 max-w-2xl text-left">
+              <h2 className="mb-4 text-lg font-semibold">{home("comingUp.title")}</h2>
+              <div className="space-y-4">
+                {nextUp.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            </section>
+          )}
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
-              href="/this-weekend"
-              className="text-sm px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
+              href="/events/suggest"
+              className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
             >
-              {t("ctaThisWeekend")}
+              {footer("suggestEvent")}
             </Link>
-            <Link
-              href="/bars"
-              className="text-sm px-4 py-2 rounded-lg border hover:bg-muted"
-            >
-              {t("ctaBars")}
-            </Link>
+            {nextUp.length > 0 && (
+              <Link
+                href="/events/upcoming"
+                className="inline-flex min-h-11 items-center rounded-lg border px-4 py-2 text-sm hover:bg-muted active:scale-[0.98]"
+              >
+                {home("seeAllUpcoming")}
+              </Link>
+            )}
           </div>
         </div>
       ) : (
@@ -243,21 +304,18 @@ async function TonightContent({ locale }: { locale: Locale }) {
       )}
 
       {/* Cross-links */}
-      <nav className="mt-12 pt-8 border-t" aria-label="Explore more">
+      <nav className="mt-12 pt-8 border-t" aria-label={t("exploreMore")}>
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
           {t("exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Link href="/this-weekend" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {t("chipThisWeekend")}
-          </Link>
-          <Link href="/bars" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/bars" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
             {t("chipBars")}
           </Link>
-          <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/cafes" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
             {t("chipCafes")}
           </Link>
-          <Link href="/calendar" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/calendar" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
             {t("chipCalendar")}
           </Link>
         </div>

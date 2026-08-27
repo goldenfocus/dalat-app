@@ -4,6 +4,9 @@ import { Link } from "@/lib/i18n/routing";
 
 interface CityPulseNavProps {
   hasHappening: boolean;
+  hasTonight: boolean;
+  hasWeekend: boolean;
+  hasUpcoming: boolean;
 }
 
 /**
@@ -11,8 +14,15 @@ interface CityPulseNavProps {
  * It links to existing discovery routes and never invents activity when the
  * lifecycle query says nothing is live.
  */
-export async function CityPulseNav({ hasHappening }: CityPulseNavProps) {
+export async function CityPulseNav({
+  hasHappening,
+  hasTonight,
+  hasWeekend,
+  hasUpcoming,
+}: CityPulseNavProps) {
   const t = await getTranslations("home.cityPulse");
+  const comingUp = await getTranslations("home.comingUp");
+  const footer = await getTranslations("nav.footer");
 
   const horizons = [
     ...(hasHappening
@@ -25,25 +35,39 @@ export async function CityPulseNav({ hasHappening }: CityPulseNavProps) {
           },
         ]
       : []),
-    {
-      key: "tonight" as const,
-      href: "/tonight" as const,
-      icon: MoonStar,
-      accent: "text-indigo-500 bg-indigo-500/10",
-    },
-    {
-      key: "weekend" as const,
-      href: "/this-weekend" as const,
-      icon: CalendarDays,
-      accent: "text-emerald-600 bg-emerald-500/10",
-    },
-    {
-      key: "allDates" as const,
-      href: "/events/upcoming" as const,
-      icon: Clock3,
-      accent: "text-amber-600 bg-amber-500/10",
-    },
+    ...(hasTonight
+      ? [{
+          key: "tonight" as const,
+          href: "/tonight" as const,
+          icon: MoonStar,
+          accent: "text-indigo-500 bg-indigo-500/10",
+        }]
+      : []),
+    ...(hasWeekend
+      ? [{
+          key: "weekend" as const,
+          href: "/this-weekend" as const,
+          icon: CalendarDays,
+          accent: "text-emerald-600 bg-emerald-500/10",
+        }]
+      : []),
+    ...(hasUpcoming
+      ? [{
+          key: "allDates" as const,
+          href: "/events/upcoming" as const,
+          icon: Clock3,
+          accent: "text-amber-600 bg-amber-500/10",
+        }]
+      : []),
   ];
+
+  const gridColumns = horizons.length >= 4
+    ? "grid-cols-2 lg:grid-cols-4"
+    : horizons.length === 3
+      ? "grid-cols-1 sm:grid-cols-3"
+      : horizons.length === 2
+        ? "grid-cols-1 sm:grid-cols-2"
+        : "grid-cols-1";
 
   return (
     <section
@@ -64,12 +88,9 @@ export async function CityPulseNav({ hasHappening }: CityPulseNavProps) {
         </div>
       </div>
 
-      <div
-        className={`grid gap-2.5 ${
-          horizons.length === 4 ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"
-        }`}
-      >
-        {horizons.map(({ key, href, icon: Icon, accent }) => (
+      {horizons.length > 0 ? (
+        <div className={`grid gap-2.5 ${gridColumns}`}>
+          {horizons.map(({ key, href, icon: Icon, accent }) => (
           <Link
             key={key}
             href={href}
@@ -85,8 +106,19 @@ export async function CityPulseNav({ hasHappening }: CityPulseNavProps) {
               </span>
             </span>
           </Link>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-border bg-card px-4 py-5 text-center">
+          <p className="text-sm text-muted-foreground">{comingUp("emptyDescription")}</p>
+          <Link
+            href="/events/suggest"
+            className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:scale-[0.98]"
+          >
+            {footer("suggestEvent")}
+          </Link>
+        </div>
+      )}
     </section>
   );
 }

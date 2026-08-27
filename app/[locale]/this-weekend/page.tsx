@@ -9,9 +9,13 @@ import type { Event, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { buildLocales } from "@/lib/i18n/routing";
-import { formatInDaLat, DALAT_TIMEZONE } from "@/lib/timezone";
-import { toZonedTime } from "date-fns-tz";
-import { nextSaturday, nextSunday, isSaturday, isSunday, isAfter, startOfDay, endOfDay } from "date-fns";
+import { DALAT_TIMEZONE } from "@/lib/timezone";
+import {
+  getDaLatIsoWeekday,
+  getWeekendBounds,
+  isEventCurrentOrFuture,
+} from "@/lib/events/discovery-windows";
+import { takeDistinctEventChoices } from "@/lib/events/distinct-choices";
 
 const SITE_URL = "https://dalat.app";
 
@@ -28,10 +32,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "thisWeekend" });
 
-  // Get weekend date range for dynamic title
-  const now = toZonedTime(new Date(), DALAT_TIMEZONE);
-  const saturday = isSaturday(now) ? now : isSunday(now) ? now : nextSaturday(now);
-  const weekendDate = saturday.toLocaleDateString(locale, {
+  const { start } = getWeekendBounds();
+  const weekendDate = start.toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
     timeZone: DALAT_TIMEZONE,
@@ -53,38 +55,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-// Get weekend date boundaries in Da Lat timezone
-function getWeekendBounds(): { start: Date; end: Date } {
-  const now = toZonedTime(new Date(), DALAT_TIMEZONE);
-
-  let saturday: Date;
-  let sunday: Date;
-
-  if (isSaturday(now)) {
-    saturday = startOfDay(now);
-    sunday = nextSunday(now);
-  } else if (isSunday(now)) {
-    saturday = startOfDay(now); // Show today's events even on Sunday
-    sunday = now;
-  } else {
-    saturday = nextSaturday(now);
-    sunday = nextSunday(saturday);
-  }
-
-  return {
-    start: startOfDay(saturday),
-    end: endOfDay(sunday),
-  };
-}
-
-async function getWeekendEvents(): Promise<Event[]> {
+async function getWeekendEvents(): Promise<{
+  events: Event[];
+  nextUp: Event[];
+  unavailable: boolean;
+}> {
   const supabase = await createClient();
-  const { start, end } = getWeekendBounds();
+  const now = new Date();
+  const { start, end } = getWeekendBounds(now);
 
   // Fetch events happening during the weekend
   const { data, error } = await supabase
     .from("events")
     .select("*")
+    .eq("status", "published")
     .gte("starts_at", start.toISOString())
     .lte("starts_at", end.toISOString())
     .order("starts_at", { ascending: true })
@@ -92,10 +76,26 @@ async function getWeekendEvents(): Promise<Event[]> {
 
   if (error) {
     console.error("Error fetching weekend events:", error);
-    return [];
+    return { events: [], nextUp: [], unavailable: true };
   }
 
-  return (data || []) as Event[];
+  const { data: nextUpData } = await supabase
+    .from("events")
+    .select("*")
+    .eq("status", "published")
+    .gt("starts_at", end.toISOString())
+    .order("starts_at", { ascending: true })
+    .limit(24);
+
+  const visibleEvents = ((data || []) as Event[]).filter((event) =>
+    isEventCurrentOrFuture(event, now)
+  );
+
+  return {
+    events: visibleEvents,
+    nextUp: takeDistinctEventChoices((nextUpData || []) as Event[], 3),
+    unavailable: false,
+  };
 }
 
 function EventsLoading() {
@@ -109,8 +109,10 @@ function EventsLoading() {
 }
 
 async function WeekendContent({ locale }: { locale: Locale }) {
-  const events = await getWeekendEvents();
+  const { events, nextUp, unavailable } = await getWeekendEvents();
   const t = await getTranslations({ locale, namespace: "thisWeekend" });
+  const home = await getTranslations({ locale, namespace: "home" });
+  const footer = await getTranslations({ locale, namespace: "nav.footer" });
   const { start, end } = getWeekendBounds();
 
   const longDate: Intl.DateTimeFormatOptions = {
@@ -119,7 +121,8 @@ async function WeekendContent({ locale }: { locale: Locale }) {
     day: "numeric",
     timeZone: DALAT_TIMEZONE,
   };
-  const shortDate: Intl.DateTimeFormatOptions = {
+  const dayHeading: Intl.DateTimeFormatOptions = {
+    weekday: "long",
     month: "short",
     day: "numeric",
     timeZone: DALAT_TIMEZONE,
@@ -128,14 +131,9 @@ async function WeekendContent({ locale }: { locale: Locale }) {
   const sundayStr = end.toLocaleDateString(locale, longDate);
 
   // Group events by day
-  const saturdayEvents = events.filter((e) => {
-    const eventDate = toZonedTime(new Date(e.starts_at), DALAT_TIMEZONE);
-    return isSaturday(eventDate);
-  });
-  const sundayEvents = events.filter((e) => {
-    const eventDate = toZonedTime(new Date(e.starts_at), DALAT_TIMEZONE);
-    return isSunday(eventDate);
-  });
+  const fridayEvents = events.filter((event) => getDaLatIsoWeekday(new Date(event.starts_at)) === 5);
+  const saturdayEvents = events.filter((event) => getDaLatIsoWeekday(new Date(event.starts_at)) === 6);
+  const sundayEvents = events.filter((event) => getDaLatIsoWeekday(new Date(event.starts_at)) === 7);
 
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
@@ -204,6 +202,29 @@ async function WeekendContent({ locale }: { locale: Locale }) {
         ]
   );
 
+  if (unavailable) {
+    return (
+      <>
+        <JsonLd data={breadcrumbSchema} />
+        <div className="py-16 text-center">
+          <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+          <p className="mb-1 text-lg font-medium text-muted-foreground">
+            {t("unavailableTitle")}
+          </p>
+          <p className="mb-6 text-sm text-muted-foreground/70">
+            {t("unavailableDescription")}
+          </p>
+          <Link
+            href="/events/suggest"
+            className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
+          >
+            {footer("suggestEvent")}
+          </Link>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <JsonLd data={[breadcrumbSchema, eventListSchema, faqSchema]} />
@@ -227,22 +248,54 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           <p className="text-sm text-muted-foreground/70 mb-4">
             {t("emptyDescription")}
           </p>
-          <div className="flex justify-center gap-3">
+          {nextUp.length > 0 && (
+            <section className="mx-auto mt-8 max-w-2xl text-left">
+              <h2 className="mb-4 text-lg font-semibold">{home("comingUp.title")}</h2>
+              <div className="space-y-4">
+                {nextUp.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            </section>
+          )}
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            {nextUp.length > 0 && (
+              <Link
+                href="/events/upcoming"
+                className="inline-flex min-h-11 items-center rounded-lg border px-4 py-2 text-sm hover:bg-muted active:scale-[0.98]"
+              >
+                {t("ctaUpcomingEvents")}
+              </Link>
+            )}
             <Link
-              href="/events/upcoming"
-              className="text-sm px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
+              href="/events/suggest"
+              className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
             >
-              {t("ctaUpcomingEvents")}
+              {footer("suggestEvent")}
             </Link>
           </div>
         </div>
       ) : (
         <div className="space-y-8">
+          {/* Friday Events — the weekend starts Friday in Da Lat */}
+          {fridayEvents.length > 0 && (
+            <section>
+              <h2 className="text-lg font-semibold mb-4">
+                {new Date(fridayEvents[0].starts_at).toLocaleDateString(locale, dayHeading)}
+              </h2>
+              <div className="space-y-4">
+                {fridayEvents.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Saturday Events */}
           {saturdayEvents.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold mb-4">
-                {t("saturday", { date: start.toLocaleDateString(locale, shortDate) })}
+                {new Date(saturdayEvents[0].starts_at).toLocaleDateString(locale, dayHeading)}
               </h2>
               <div className="space-y-4">
                 {saturdayEvents.map((event) => (
@@ -256,7 +309,7 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           {sundayEvents.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold mb-4">
-                {t("sunday", { date: end.toLocaleDateString(locale, shortDate) })}
+                {new Date(sundayEvents[0].starts_at).toLocaleDateString(locale, dayHeading)}
               </h2>
               <div className="space-y-4">
                 {sundayEvents.map((event) => (
@@ -269,21 +322,20 @@ async function WeekendContent({ locale }: { locale: Locale }) {
       )}
 
       {/* Cross-links */}
-      <nav className="mt-12 pt-8 border-t" aria-label="Explore more">
+      <nav className="mt-12 pt-8 border-t" aria-label={t("exploreMore")}>
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
           {t("exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Link href="/tonight" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {t("chipTonight")}
-          </Link>
-          <Link href="/events/upcoming" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
-            {t("chipUpcoming")}
-          </Link>
-          <Link href="/calendar" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          {(events.length > 0 || nextUp.length > 0) && (
+            <Link href="/events/upcoming" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
+              {t("chipUpcoming")}
+            </Link>
+          )}
+          <Link href="/calendar" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
             {t("chipCalendar")}
           </Link>
-          <Link href="/festivals" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/festivals" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
             {t("chipFestivals")}
           </Link>
         </div>

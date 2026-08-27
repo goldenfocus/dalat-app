@@ -30,9 +30,9 @@ import {
   ChevronUp,
   HelpCircle,
   Copy,
-  Facebook,
   Globe,
 } from "lucide-react";
+import { CommunityFlyerReview } from "./community-flyer-review";
 
 interface ImportResult {
   success: boolean;
@@ -482,6 +482,8 @@ export function AdminImportPage() {
           </CardContent>
         </Card>
       </div>
+
+      <CommunityFlyerReview />
 
       <Tabs defaultValue="import" className="space-y-6">
         <TabsList className="grid grid-cols-4 w-full max-w-xl">

@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LocationPicker, type SelectedLocation } from "@/components/events/location-picker";
+import { LocationPicker } from "@/components/events/location-picker";
 import { VenueLinker } from "@/components/events/venue-linker";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
 import dynamic from "next/dynamic";
@@ -38,7 +38,7 @@ import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/compon
 import { EventMaterialsInput, createMaterialsForEvent } from "@/components/events/event-materials-input";
 import { PlaylistInput } from "@/components/events/playlist-input";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
-import { TicketTierInput, type TicketTier, type PriceType } from "@/components/events/ticket-tier-input";
+import { TicketTierInput } from "@/components/events/ticket-tier-input";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { PostCreationCelebration } from "@/components/events/post-creation-celebration";
 import {
@@ -127,6 +127,12 @@ interface PlaylistTrack {
   sort_order: number;
 }
 
+export interface CommunityFlyerSeed {
+  queueId: string;
+  title: string;
+  imageUrl: string;
+}
+
 interface EventFormProps {
   userId: string;
   userRole?: UserRole;
@@ -146,6 +152,8 @@ interface EventFormProps {
   initialPrivateDetails?: EventPrivateDetails | null;
   // Preselect a tribe in "Hosting as" (from /events/new?tribe=<slug>)
   initialTribeSlug?: string;
+  // Moderator-only community flyer review handoff.
+  communityFlyer?: CommunityFlyerSeed;
 }
 
 type HostableTribe = Pick<Tribe, "id" | "slug" | "name" | "access_type">;
@@ -181,6 +189,7 @@ export function EventForm({
   initialPlaylistTracks = [],
   initialPrivateDetails = null,
   initialTribeSlug,
+  communityFlyer,
 }: EventFormProps) {
   const router = useRouter();
   // Only moderators and above can select organizers
@@ -264,13 +273,15 @@ export function EventForm({
     handleImageChange,
     uploadImage,
   } = useImageUpload({
-    initialImageUrl: event?.image_url ?? copyDefaults?.imageUrl ?? null,
+    initialImageUrl: event?.image_url ?? copyDefaults?.imageUrl ?? communityFlyer?.imageUrl ?? null,
     initialImageFit: event?.image_fit ?? "cover",
     initialFocalPoint: event?.focal_point ?? null,
   });
 
   // Title state (controlled for FlyerBuilder integration)
-  const [title, setTitle] = useState(event?.title ?? copyDefaults?.title ?? "");
+  const [title, setTitle] = useState(
+    event?.title ?? copyDefaults?.title ?? communityFlyer?.title ?? ""
+  );
 
   // Online event state
   const [isOnline, setIsOnline] = useState(event?.is_online ?? false);
@@ -473,6 +484,24 @@ export function EventForm({
     : copyDefaults
       ? { date: copyDefaults.date, time: copyDefaults.time }
       : { date: "", time: "" };
+
+  async function completeCommunityFlyerReview(eventId: string) {
+    if (!communityFlyer) return;
+    const response = await fetch("/api/admin/import/community-flyers", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: communityFlyer.queueId,
+        action: "complete",
+        eventId,
+      }),
+    });
+    if (!response.ok) {
+      // The event is already created. Leave the queue item pending so a
+      // moderator can safely retry rather than hiding unfinished review state.
+      console.error("Failed to complete community flyer review");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -693,6 +722,7 @@ export function EventForm({
               slug: finalSlug,
               title,
               description: description || null,
+              image_url: communityFlyer?.imageUrl ?? null,
               location_name: locationName || null,
               address: address || null,
               google_maps_url: googleMapsUrl || null,
@@ -768,6 +798,7 @@ export function EventForm({
           if (seriesData.first_event_id) {
             triggerEventTranslation(seriesData.first_event_id, title.trim(), description || null);
             triggerAIProcessing(seriesData.first_event_id);
+            await completeCommunityFlyerReview(seriesData.first_event_id);
           }
 
           router.push(`/series/${seriesData.slug}`);
@@ -779,6 +810,7 @@ export function EventForm({
               slug: finalSlug,
               title: title.trim(),
               description: description || null,
+              image_url: communityFlyer?.imageUrl ?? null,
               starts_at: startsAt,
               location_name: isSecret ? (publicLabel.trim() || null) : (locationName || null),
               address: isSecret ? null : (address || null),
@@ -862,6 +894,7 @@ export function EventForm({
           triggerEventTranslation(data.id, title.trim(), description || null);
           triggerAIProcessing(data.id);
           pingSearchEngines([`/events/${data.slug}`, "/events/upcoming", "/"]);
+          await completeCommunityFlyerReview(data.id);
 
           // Show celebration modal instead of immediate redirect
           setCreatedEvent({
