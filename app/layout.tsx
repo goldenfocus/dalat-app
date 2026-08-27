@@ -2,6 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 const siteUrl = "https://dalat.app";
+const localeBootstrapScript = `
+  (() => {
+    const supported = new Set(['en','vi','ko','zh','ru','fr','ja','ms','th','de','es','id']);
+    const locale = location.pathname.split('/').filter(Boolean)[0]?.toLowerCase();
+    document.documentElement.lang = supported.has(locale) ? locale : 'en';
+  })();
+`;
 
 // Viewport configuration for optimal mobile rendering and PageSpeed
 export const viewport: Viewport = {
@@ -72,6 +79,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Keep static rendering while declaring the URL locale before body content parses. */}
+        <script dangerouslySetInnerHTML={{ __html: localeBootstrapScript }} />
         {/* Critical resource hints for faster connections */}
         <link
           rel="preconnect"
