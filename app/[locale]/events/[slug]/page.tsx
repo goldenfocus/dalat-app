@@ -14,6 +14,7 @@ import { EventRecapCard } from "@/components/events/event-recap-card";
 import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
 import { JsonLd, generateEventSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { buildAlternates, localeUrl } from "@/lib/metadata";
+import { buildSocialCardImageUrl } from "@/lib/events/share-preview";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { RsvpButton, CelebrationProvider, RsvpCardObserver } from "@/components/events/rsvp-button";
@@ -64,7 +65,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: event } = await supabase
     .from("events")
-    .select("id, title, description, image_url, location_name, starts_at, source_locale")
+    .select("id, title, description, location_name, starts_at, source_locale, updated_at")
     .eq("slug", slug)
     .single();
 
@@ -114,11 +115,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // (en lives at the root — /en/... 307-redirects, which breaks canonicals)
   const canonicalUrl = localeUrl(locale as Locale, `/events/${slug}`);
 
-  // For OG image: use the event's actual image if available (instant, already on CDN)
-  // Only fall back to generated og-image route for events without images
-  const ogImageUrl = event.image_url
-    ? event.image_url
-    : `https://dalat.app/${locale}/events/${slug}/og-image`;
+  // Always share a correctly cropped 1200x630 card. Cloudflare converts the
+  // generated PNG to a compact JPEG so chat crawlers never fetch a raw upload.
+  const ogImageSourceUrl = `${localeUrl(locale as Locale, `/events/${slug}/og-image`)}?v=${Date.parse(event.updated_at) || 0}`;
+  const ogImageUrl = buildSocialCardImageUrl(ogImageSourceUrl);
 
   // Generate keyword-enriched metadata
   const { getEventSeoKeywords } = await import("@/lib/seo/dalat-keywords");
@@ -142,8 +142,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: [
         {
           url: ogImageUrl,
-          // Only specify dimensions for generated images
-          ...(event.image_url ? {} : { width: 1200, height: 630, type: "image/png" }),
+          width: 1200,
+          height: 630,
+          type: "image/jpeg",
+          alt: title,
         },
       ],
     },

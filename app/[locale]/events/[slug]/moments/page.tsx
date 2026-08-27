@@ -9,7 +9,8 @@ import { MomentsViewContainer } from "@/components/moments/moments-view-containe
 import { MusicPlayButton } from "@/components/audio/music-play-button";
 import { JsonLd, generateCinemaAlbumSchema } from "@/lib/structured-data";
 import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
-import { buildAlternates } from "@/lib/metadata";
+import { buildAlternates, localeUrl } from "@/lib/metadata";
+import { buildSocialCardImageUrl } from "@/lib/events/share-preview";
 import type { Locale } from "@/lib/i18n/routing";
 import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
 import type { AudioTrack, PlaylistInfo } from "@/lib/stores/audio-player-store";
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: event } = await supabase
     .from("events")
-    .select("id, title, image_url, location_name, starts_at")
+    .select("id, title, location_name, starts_at, updated_at")
     .eq("slug", slug)
     .single();
 
@@ -45,6 +46,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const momentCount = count ?? 0;
   const title = `${event.title} — ${momentCount} Moments | ĐàLạt.app`;
   const description = `Watch ${momentCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""} in cinema mode. A collaborative photo album powered by ĐàLạt.app.`;
+  const canonicalUrl = localeUrl(locale as Locale, `/events/${slug}/moments`);
+  const previewVersion = `${momentCount}-${Date.parse(event.updated_at) || 0}`;
+  const previewSourceUrl = `${canonicalUrl}/og-image?v=${previewVersion}`;
+  const previewImageUrl = buildSocialCardImageUrl(previewSourceUrl);
 
   return {
     title,
@@ -55,13 +60,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: "website",
-      ...(event.image_url && { images: [{ url: event.image_url, width: 1200, height: 630 }] }),
+      url: canonicalUrl,
+      siteName: "ĐàLạt.app",
+      images: [{
+        url: previewImageUrl,
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: event.title,
+      }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      ...(event.image_url && { images: [event.image_url] }),
+      images: [previewImageUrl],
     },
   };
 }

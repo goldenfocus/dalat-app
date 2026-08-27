@@ -1,6 +1,12 @@
+/* eslint-disable @next/next/no-img-element -- ImageResponse requires raw image elements. */
 import { ImageResponse } from "next/og";
 import { createStaticClient } from "@/lib/supabase/server";
 import { formatInDaLat } from "@/lib/timezone";
+import {
+  buildCollageSourceUrl,
+  selectEventPreviewImages,
+  type SocialPreviewMoment,
+} from "@/lib/events/share-preview";
 
 // Use Node.js runtime for image processing
 export const runtime = "nodejs";
@@ -14,7 +20,7 @@ interface RouteParams {
 
 const size = { width: 1200, height: 630 };
 
-export async function GET(request: Request, { params }: RouteParams) {
+export async function GET(_request: Request, { params }: RouteParams) {
   const { slug } = await params;
   const supabase = createStaticClient();
 
@@ -22,6 +28,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     id: string;
     title: string;
     image_url: string | null;
+    cover_moment_id: string | null;
     location_name: string | null;
     starts_at: string;
   } | null = null;
@@ -29,18 +36,47 @@ export async function GET(request: Request, { params }: RouteParams) {
   if (supabase) {
     const { data } = await supabase
       .from("events")
-      .select("id, title, image_url, location_name, starts_at")
+      .select("id, title, image_url, cover_moment_id, location_name, starts_at")
       .eq("slug", slug)
       .single();
     event = data;
   }
 
-  const title = event?.title || "Event";
+  const title = event?.title || "ĐàLạt.app";
+  let heroImageUrl = event?.image_url ?? null;
+
+  if (event && !heroImageUrl && supabase) {
+    const { data: galleryMoments } = await supabase.rpc("get_event_moments", {
+      p_event_id: event.id,
+      p_limit: 20,
+      p_offset: 0,
+    });
+
+    let moments = (galleryMoments ?? []) as SocialPreviewMoment[];
+
+    if (event.cover_moment_id && !moments.some(({ id }) => id === event.cover_moment_id)) {
+      const { data: coverMoment } = await supabase
+        .from("moments")
+        .select("id, content_type, media_url, thumbnail_url, cf_video_uid, cf_playback_url")
+        .eq("id", event.cover_moment_id)
+        .eq("status", "published")
+        .single();
+
+      if (coverMoment) moments = [coverMoment, ...moments] as SocialPreviewMoment[];
+    }
+
+    heroImageUrl = selectEventPreviewImages(
+      null,
+      event.cover_moment_id,
+      moments,
+      1
+    )[0] ?? null;
+  }
 
   let imageResponse: ImageResponse;
 
-  // If event has its own image, use that directly
-  if (event?.image_url) {
+  // Use the event artwork, or its manually selected moment when artwork is absent.
+  if (event && heroImageUrl) {
     imageResponse = new ImageResponse(
       (
         <div
@@ -52,7 +88,7 @@ export async function GET(request: Request, { params }: RouteParams) {
           }}
         >
           <img
-            src={event.image_url}
+            src={buildCollageSourceUrl(heroImageUrl, size.width, size.height)}
             alt=""
             style={{
               width: "100%",
@@ -230,20 +266,7 @@ export async function GET(request: Request, { params }: RouteParams) {
                 </div>
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <div
-                style={{
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  padding: "16px 32px",
-                  borderRadius: 12,
-                  fontSize: 24,
-                  fontWeight: 600,
-                  color: "white",
-                }}
-              >
-                View Event
-              </div>
-            </div>
+            <div style={{ display: "flex" }} />
           </div>
         </div>
       ),
