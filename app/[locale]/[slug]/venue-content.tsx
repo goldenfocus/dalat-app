@@ -34,6 +34,7 @@ import { VenueShareButton } from "@/components/venues/venue-share-button";
 import { VenueCopyAddress } from "@/components/venues/venue-copy-address";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
 import { JsonLd } from "@/lib/structured-data";
+import { getVenuePastEventsPath } from "@/lib/venues/routes";
 
 interface VenueContentProps {
   venueId: string;
@@ -748,7 +749,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
           <section className="mb-8">
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
               <Link
-                href={`/${venue.slug}/events`}
+                href={getVenuePastEventsPath(venue.slug)}
                 className="hover:text-foreground hover:underline transition-colors"
               >
                 {past_events_count} {t("pastEvents").toLowerCase()}

@@ -32,6 +32,7 @@ import { VenueMap } from "@/components/venues/venue-map";
 import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
 import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
+import { getVenuePastEventsPath } from "@/lib/venues/routes";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -732,7 +733,7 @@ export default async function VenuePage({ params }: PageProps) {
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
               {past_events_count > 0 && (
                 <Link
-                  href={`/venues/${venue.slug}/events`}
+                  href={getVenuePastEventsPath(venue.slug)}
                   className="hover:text-foreground hover:underline transition-colors"
                 >
                   {past_events_count} {t("pastEvents").toLowerCase()}

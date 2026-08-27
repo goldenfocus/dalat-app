@@ -7,6 +7,7 @@ import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import type { Event, EventCounts, Venue } from "@/lib/types";
+import { getVenuePastEventsPath } from "@/lib/venues/routes";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -120,7 +121,7 @@ export default async function VenuePastEventsPage({ params }: PageProps) {
       { name: "Home", url: "/" },
       { name: t("title"), url: "/venues" },
       { name: venue.name, url: `/venues/${venue.slug}` },
-      { name: t("pastEvents"), url: `/venues/${venue.slug}/events` },
+      { name: t("pastEvents"), url: getVenuePastEventsPath(venue.slug) },
     ],
     locale
   );
