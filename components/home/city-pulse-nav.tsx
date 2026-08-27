@@ -1,4 +1,4 @@
-import { CalendarDays, Clock3, MoonStar, Radio } from "lucide-react";
+import { CalendarDays, MoonStar, Radio } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 
@@ -6,7 +6,6 @@ interface CityPulseNavProps {
   hasHappening: boolean;
   hasTonight: boolean;
   hasWeekend: boolean;
-  hasUpcoming: boolean;
 }
 
 /**
@@ -18,7 +17,6 @@ export async function CityPulseNav({
   hasHappening,
   hasTonight,
   hasWeekend,
-  hasUpcoming,
 }: CityPulseNavProps) {
   const t = await getTranslations("home.cityPulse");
   const comingUp = await getTranslations("home.comingUp");
@@ -51,14 +49,6 @@ export async function CityPulseNav({
           accent: "text-emerald-600 bg-emerald-500/10",
         }]
       : []),
-    ...(hasUpcoming
-      ? [{
-          key: "allDates" as const,
-          href: "/events/upcoming" as const,
-          icon: Clock3,
-          accent: "text-amber-600 bg-amber-500/10",
-        }]
-      : []),
   ];
 
   const gridColumns = horizons.length >= 4
@@ -71,23 +61,9 @@ export async function CityPulseNav({
 
   return (
     <section
-      aria-labelledby="city-pulse-title"
+      aria-label={t("title")}
       className="container max-w-6xl mx-auto px-4 pt-4 lg:pt-6"
     >
-      <div className="mb-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          {t("eyebrow")}
-        </p>
-        <div className="mt-1 sm:flex sm:items-end sm:justify-between sm:gap-6">
-          <h2 id="city-pulse-title" className="text-xl font-bold tracking-tight sm:text-2xl">
-            {t("title")}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground sm:mt-0">
-            {t("subtitle")}
-          </p>
-        </div>
-      </div>
-
       {horizons.length > 0 ? (
         <div className={`grid gap-2.5 ${gridColumns}`}>
           {horizons.map(({ key, href, icon: Icon, accent }) => (

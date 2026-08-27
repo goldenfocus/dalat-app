@@ -152,86 +152,75 @@ export async function EventFeedScrollable({
               <h2 className="text-lg font-bold tracking-tight">
                 {t("comingUp.title")}
               </h2>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                {t("comingUp.subtitle")}
-              </p>
             </div>
           </div>
           {upcomingCardEvents.length > 0 && <EventViewToggle />}
         </div>
 
         {upcomingCardEvents.length > 0 ? (
-          <>
-            {upcomingCardEvents.length <= 4 && (
-              <p className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3.5 py-3 text-sm text-muted-foreground">
-                {t("comingUp.thinSupply", { count: upcomingCardEvents.length })}
-              </p>
-            )}
+          <EventGridWithViews
+            events={upcomingCardEvents}
+            counts={counts}
+            social={social}
+            eventTranslations={translationsRecord}
+            seriesRrules={seriesRrules}
+          >
+            {/* Default view: server-rendered framed cards — no hydration */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+              {upcomingCardEvents.map((event, index) => {
+                const translation =
+                  event.source_locale === locale
+                    ? undefined
+                    : eventTranslations.get(event.id);
+                const goingSpots = counts[event.id]?.going_spots ?? 0;
+                const pastProof = getPastProof(social[event.id]);
 
-            <EventGridWithViews
-              events={upcomingCardEvents}
-              counts={counts}
-              social={social}
-              eventTranslations={translationsRecord}
-              seriesRrules={seriesRrules}
-            >
-              {/* Default view: server-rendered framed cards — no hydration */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
-                {upcomingCardEvents.map((event, index) => {
-                  const translation =
-                    event.source_locale === locale
-                      ? undefined
-                      : eventTranslations.get(event.id);
-                  const goingSpots = counts[event.id]?.going_spots ?? 0;
-                  const pastProof = getPastProof(social[event.id]);
-
-                  return (
-                    <EventCardFramedServer
-                      key={event.id}
-                      event={event}
-                      counts={counts[event.id]}
-                      social={social[event.id]}
-                      seriesRrule={seriesRrules[event.id]}
-                      translatedTitle={translation?.title}
-                      priority={index === 0}
-                      locale={locale}
-                      labels={{
-                        popular: popularLabel,
-                        spotsAvailable:
-                          event.capacity && !shouldShowGoingCount(goingSpots)
-                            ? tEvents("spotsAvailable", {
-                                count: event.capacity - goingSpots,
-                              })
-                            : "",
-                        photoBy: social[event.id]?.fallback_photo_credit
-                          ? tEvents("photoBy", {
-                              name: social[event.id]!.fallback_photo_credit!,
+                return (
+                  <EventCardFramedServer
+                    key={event.id}
+                    event={event}
+                    counts={counts[event.id]}
+                    social={social[event.id]}
+                    seriesRrule={seriesRrules[event.id]}
+                    translatedTitle={translation?.title}
+                    priority={index === 0}
+                    locale={locale}
+                    labels={{
+                      popular: popularLabel,
+                      spotsAvailable:
+                        event.capacity && !shouldShowGoingCount(goingSpots)
+                          ? tEvents("spotsAvailable", {
+                              count: event.capacity - goingSpots,
                             })
                           : "",
-                        pastProofBoth:
-                          pastProof?.kind === "both"
-                            ? tEvents("pastProofBoth", {
-                                went: pastProof.went,
-                                photos: pastProof.photos,
-                              })
-                            : "",
-                        pastProofPhotos:
-                          pastProof?.kind === "photos"
-                            ? tEvents("pastProofPhotos", {
-                                photos: pastProof.photos,
-                              })
-                            : "",
-                        pastProofWent:
-                          pastProof?.kind === "went"
-                            ? tEvents("pastProofWent", { went: pastProof.went })
-                            : "",
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            </EventGridWithViews>
-          </>
+                      photoBy: social[event.id]?.fallback_photo_credit
+                        ? tEvents("photoBy", {
+                            name: social[event.id]!.fallback_photo_credit!,
+                          })
+                        : "",
+                      pastProofBoth:
+                        pastProof?.kind === "both"
+                          ? tEvents("pastProofBoth", {
+                              went: pastProof.went,
+                              photos: pastProof.photos,
+                            })
+                          : "",
+                      pastProofPhotos:
+                        pastProof?.kind === "photos"
+                          ? tEvents("pastProofPhotos", {
+                              photos: pastProof.photos,
+                            })
+                          : "",
+                      pastProofWent:
+                        pastProof?.kind === "went"
+                          ? tEvents("pastProofWent", { went: pastProof.went })
+                          : "",
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </EventGridWithViews>
         ) : (
           <div className="rounded-2xl border border-border/70 bg-muted/30 px-5 py-8 text-center sm:px-8 sm:py-10">
             <Calendar className="mx-auto h-8 w-8 text-muted-foreground/60" aria-hidden="true" />

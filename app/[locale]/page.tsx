@@ -23,9 +23,7 @@ import {
 } from "@/lib/cache/server-cache";
 import { HeroImageSection } from "@/components/home/hero-image-section";
 import { MomentsStripServer } from "@/components/home/moments-strip-server";
-import { ForYouSection } from "@/components/home/for-you-section";
 import { TribesStrip } from "@/components/home/tribes-strip";
-import { RecommendedEventsProvider } from "@/components/home/recommended-events-context";
 import { JsonLd, generateWebSiteSchema } from "@/lib/structured-data";
 import { CityPulseNav } from "@/components/home/city-pulse-nav";
 
@@ -100,7 +98,6 @@ export default async function Home({ params }: PageProps) {
         hasHappening={lifecycleCounts.happening > 0}
         hasTonight={(discoveryCounts.tonight ?? 0) > 0}
         hasWeekend={(discoveryCounts.weekend ?? 0) > 0}
-        hasUpcoming={(discoveryCounts.upcoming ?? 0) > 0}
       />
 
       {/* Recent Moments Strip - real community activity keeps thin weeks alive */}
@@ -115,21 +112,13 @@ export default async function Home({ params }: PageProps) {
           <YourEventsSection locale={locale} />
         </Suspense>
 
-        {/* Provider shares recommended IDs so Coming Up can dedup */}
-        <RecommendedEventsProvider>
-          {/* For You - personalized recommendations */}
-          <Suspense fallback={null}>
-            <ForYouSection />
-          </Suspense>
-
-          {/* Scrollable event feed with "Happening Now" and "Coming Up" sections */}
-          <Suspense fallback={<EventFeedScrollableSkeleton />}>
-            <EventFeedScrollable
-              locale={locale}
-              happeningCount={lifecycleCounts.happening}
-            />
-          </Suspense>
-        </RecommendedEventsProvider>
+        {/* Scrollable event feed with "Happening Now" and "Coming Up" sections */}
+        <Suspense fallback={<EventFeedScrollableSkeleton />}>
+          <EventFeedScrollable
+            locale={locale}
+            happeningCount={lifecycleCounts.happening}
+          />
+        </Suspense>
 
         {/* Tribes discovery strip */}
         <Suspense fallback={null}>

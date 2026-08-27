@@ -424,10 +424,9 @@ export const getCachedDiscoveryWindowCounts = unstable_cache(
   async (): Promise<{
     tonight: number | null;
     weekend: number | null;
-    upcoming: number | null;
   }> => {
     const supabase = createStaticClient();
-    if (!supabase) return { tonight: null, weekend: null, upcoming: null };
+    if (!supabase) return { tonight: null, weekend: null };
 
     const now = new Date();
     const tonight = getTonightBounds(now);
@@ -435,7 +434,7 @@ export const getCachedDiscoveryWindowCounts = unstable_cache(
     const tonightStart = now > tonight.start ? now : tonight.start;
     const weekendStart = now > weekend.start ? now : weekend.start;
 
-    const [tonightResult, weekendResult, upcomingResult] = await Promise.all([
+    const [tonightResult, weekendResult] = await Promise.all([
       supabase
         .from("events")
         .select("id", { count: "exact", head: true })
@@ -448,17 +447,11 @@ export const getCachedDiscoveryWindowCounts = unstable_cache(
         .eq("status", "published")
         .gte("starts_at", weekendStart.toISOString())
         .lte("starts_at", weekend.end.toISOString()),
-      supabase
-        .from("events")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "published")
-        .gt("starts_at", now.toISOString()),
     ]);
 
     return {
       tonight: tonightResult.error ? null : (tonightResult.count ?? 0),
       weekend: weekendResult.error ? null : (weekendResult.count ?? 0),
-      upcoming: upcomingResult.error ? null : (upcomingResult.count ?? 0),
     };
   },
   ["discovery-window-counts-v1"],
