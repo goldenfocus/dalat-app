@@ -3,6 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { hasEnvVars } from "../utils";
 import { routing } from "../i18n/routing";
+import {
+  normalizeLocale,
+  resolvePreferredLocale,
+} from "../i18n/locale-detection";
 
 // Create next-intl middleware for locale handling
 const intlMiddleware = createIntlMiddleware(routing);
@@ -21,33 +25,6 @@ function isLocale(segment: string): boolean {
   return routing.locales.includes(segment as typeof routing.locales[number]);
 }
 
-// Detect browser's preferred locale from Accept-Language header
-function detectBrowserLocale(request: NextRequest): string | null {
-  const acceptLanguage = request.headers.get('accept-language');
-  if (!acceptLanguage) return null;
-
-  // Parse Accept-Language header (e.g., "en-US,en;q=0.9,vi;q=0.8,fr;q=0.7")
-  const languages = acceptLanguage
-    .split(',')
-    .map(lang => {
-      const [code, qValue] = lang.trim().split(';q=');
-      return {
-        code: code.split('-')[0].toLowerCase(), // Get base language code
-        q: qValue ? parseFloat(qValue) : 1.0
-      };
-    })
-    .sort((a, b) => b.q - a.q);
-
-  // Find first matching supported locale
-  for (const lang of languages) {
-    if (isLocale(lang.code)) {
-      return lang.code;
-    }
-  }
-
-  return null;
-}
-
 // Check if path looks like a username (3+ chars, alphanumeric + underscore)
 function looksLikeUsername(segment: string): boolean {
   const username = segment.replace(/^@/, '');
@@ -61,6 +38,48 @@ function getLocaleFromPath(pathname: string): string | null {
     return segments[0];
   }
   return null;
+}
+
+function hasSupabaseSessionCookie(request: NextRequest): boolean {
+  return request.cookies.getAll().some(({ name }) =>
+    name.startsWith('sb-') && name.includes('-auth-token'),
+  );
+}
+
+async function getProfileLocale(request: NextRequest): Promise<string | null> {
+  if (!hasEnvVars || !hasSupabaseSessionCookie(request)) return null;
+
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          // Locale detection is read-only. Session refresh remains in the
+          // protected-route auth flow below, where response cookies are merged.
+          setAll() {},
+        },
+      },
+    );
+
+    const { data } = await supabase.auth.getClaims();
+    const userId = data?.claims?.sub;
+    if (!userId) return null;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('locale')
+      .eq('id', userId)
+      .maybeSingle();
+
+    return normalizeLocale(profile?.locale);
+  } catch {
+    // A stale session or transient profile read must not block navigation.
+    return null;
+  }
 }
 
 export async function updateSession(request: NextRequest) {
@@ -186,28 +205,21 @@ export async function updateSession(request: NextRequest) {
     const pathnameLocale = getLocaleFromPath(pathname);
     const defaultLocale = routing.defaultLocale;
 
-    // CRITICAL FOR ISR: Homepage (/) must NOT read cookies or redirect based on user preference
-    // This allows Vercel to cache the homepage response for all users
-    // Users can switch language via the LocaleMismatchBanner after page loads
-    if (pathname === '/') {
-      // Fast path: Always rewrite homepage to /en for ISR caching
-      const rewriteUrl = request.nextUrl.clone();
-      rewriteUrl.pathname = `/${defaultLocale}`;
-      return spoofBotUA(NextResponse.rewrite(rewriteUrl));
-    }
-
-    // For non-homepage routes, we can personalize (but try to minimize cookie reads)
-    // Only read cookies for pages without locale prefix that need personalization
+    // Only resolve preferences for unprefixed pages. Explicit locale URLs remain
+    // stable and avoid all cookie/profile/browser detection work.
     const needsCookieRead = !pathnameLocale;
     const cookieLocale = needsCookieRead
       ? request.cookies.get('NEXT_LOCALE')?.value
       : undefined;
-    const browserLocale = detectBrowserLocale(request);
-
-    // Priority: cookie > browser detection > default
-    const preferredLocale = (cookieLocale && isLocale(cookieLocale))
-      ? cookieLocale
-      : (browserLocale || defaultLocale);
+    const profileLocale = needsCookieRead && !normalizeLocale(cookieLocale)
+      ? await getProfileLocale(request)
+      : null;
+    const preferredLocale = resolvePreferredLocale({
+      cookieLocale,
+      profileLocale,
+      acceptLanguage: request.headers.get('accept-language'),
+      fallbackLocale: defaultLocale,
+    });
 
     // If no locale in path, handle based on localePrefix: 'as-needed' setting
     // Only redirect if user prefers non-default locale; default locale uses rewrite (no redirect)
