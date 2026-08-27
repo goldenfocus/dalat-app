@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Share2, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useShare } from "@/lib/hooks/use-share";

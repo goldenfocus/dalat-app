@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { AISuggestedPromoMoment } from "@/lib/types";
+
 
 interface RouteContext {
   params: Promise<{ slug: string }>;

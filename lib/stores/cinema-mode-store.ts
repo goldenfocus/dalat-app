@@ -222,7 +222,7 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
 
   // Next moment
   next: () => {
-    const { moments, currentIndex, hasMore, clearTimer, totalCount } = get();
+    const { moments, currentIndex, hasMore, clearTimer, totalCount: _totalCount } = get();
 
     clearTimer();
 

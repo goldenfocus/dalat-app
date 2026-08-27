@@ -31,7 +31,7 @@ interface ReconfirmationDashboardProps {
 }
 
 export function ReconfirmationDashboard({
-  eventId,
+  eventId: _eventId,
   eventSlug,
   totalGoing,
   confirmed,

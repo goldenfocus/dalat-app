@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+
 import { Sparkles, Camera, Video, Play, Images } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cloudflareLoader } from "@/lib/image-cdn";

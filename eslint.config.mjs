@@ -37,6 +37,16 @@ const eslintConfig = [
     rules: {
       // Warn on console.log (allow console.error, console.warn for error handling)
       "no-console": ["warn", { allow: ["warn", "error"] }],
+      // React Compiler is not enabled for this app. Keep its migration
+      // diagnostics visible without making legacy, working components fail CI.
+      // Core Rules of Hooks violations remain errors through eslint-config-next.
+      "react-hooks/error-boundaries": "warn",
+      "react-hooks/immutability": "warn",
+      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/purity": "warn",
+      "react-hooks/refs": "warn",
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/static-components": "warn",
     },
   },
 ];

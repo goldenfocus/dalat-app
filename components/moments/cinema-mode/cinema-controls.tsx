@@ -26,7 +26,7 @@ interface CinemaControlsProps {
 export function CinemaControls({
   eventSlug,
   eventTitle,
-  onExit,
+  onExit: _onExit,
 }: CinemaControlsProps) {
   const progress = useCinemaProgressValue();
   const currentIndex = useCinemaCurrentIndex();

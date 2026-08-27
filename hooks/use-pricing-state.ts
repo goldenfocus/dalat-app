@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import type { TicketTier, PriceType } from "@/components/events/ticket-tier-input";
 
 interface UsePricingStateOptions {

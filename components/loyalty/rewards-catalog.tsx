@@ -18,7 +18,6 @@ import { LoyaltyProgress } from "@/components/loyalty/loyalty-progress";
 import {
   Loader2,
   Gift,
-  Filter,
   Check,
   Sparkles,
 } from "lucide-react";
@@ -69,7 +68,7 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
   const [status, setStatus] = useState<LoyaltyStatus | null>(null);
   const [activeCategory, setActiveCategory] = useState<FilterCategory>("all");
   const [loading, setLoading] = useState(true);
-  const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [_claimingId, setClaimingId] = useState<string | null>(null);
   const [claimedReward, setClaimedReward] = useState<Reward | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingClaim, setPendingClaim] = useState<string | null>(null);

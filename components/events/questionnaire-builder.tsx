@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, GripVertical, Trash2, Check, Loader2, Save, Eye, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, Check, Loader2, Save, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -67,7 +67,7 @@ const categoryLabels: Record<QuestionCategory | string, string> = {
 export function QuestionnaireBuilder({
   eventId,
   eventTitle,
-  eventSlug,
+  eventSlug: _eventSlug,
   questionnaireId,
   isEnabled: initialIsEnabled,
   introText: initialIntroText,

@@ -38,7 +38,7 @@ export function FloatingRsvpBar({
   eventSlug,
   eventTitle,
   eventDescription,
-  eventImageUrl,
+  eventImageUrl: _eventImageUrl,
   locationName,
   address,
   googleMapsUrl,

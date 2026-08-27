@@ -95,7 +95,7 @@ export function extractOgImage(html: string): string | null {
  * Extract all images from article content HTML
  * Handles both src and data-src/data-original (lazy-loading common on Vietnamese sites)
  */
-export function extractImages(html: string, contentSelector?: string): string[] {
+export function extractImages(html: string, _contentSelector?: string): string[] {
   const images: string[] = [];
 
   // Extract og:image

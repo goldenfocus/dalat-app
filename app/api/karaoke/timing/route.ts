@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call RPC to update timing (handles admin check)
-    const { data, error } = await supabase.rpc("update_track_timing_offset", {
+    const { data: _data, error } = await supabase.rpc("update_track_timing_offset", {
       p_track_id: trackId,
       p_timing_offset: timingOffset,
     });

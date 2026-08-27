@@ -4,7 +4,7 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 import { processFacebookEvents } from "@/lib/import/processors/facebook";
 import { processLumaEvents, type LumaEvent } from "@/lib/import/processors/luma";
 import { fetchFlipEvent, processFlipEvents, type FlipEvent } from "@/lib/import/processors/flip";
-import { fetchArticle, extractEventsFromArticle, type GovArticle } from "@/lib/import/processors/dalat-gov";
+import { fetchArticle, extractEventsFromArticle } from "@/lib/import/processors/dalat-gov";
 import type { FacebookEvent } from "@/lib/import/types";
 
 // Extend timeout for Vercel Pro (scrapers can be slow)

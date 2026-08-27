@@ -7,7 +7,7 @@ import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { createClient } from "@/lib/supabase/client";
 import { triggerTranslation } from "@/lib/translations-client";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
-import type { BlogCategory, BlogPostStatus, BlogPostSource } from "@/lib/types/blog";
+import type { BlogCategory, BlogPostStatus } from "@/lib/types/blog";
 import Image from "next/image";
 
 interface BlogPostData {

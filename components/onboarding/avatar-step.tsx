@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Upload, Sparkles, Loader2, Camera, User, UserCircle, Wand2 } from "lucide-react";
+import { Upload, Sparkles, Loader2, User, UserCircle, Wand2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";

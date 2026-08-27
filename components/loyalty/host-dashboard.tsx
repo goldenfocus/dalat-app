@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TierBadge, TIER_CONFIG, type TierKey } from "@/components/loyalty/tier-badge";
-import { HostRewardBadge } from "@/components/loyalty/host-reward-badge";
+import { TIER_CONFIG, type TierKey } from "@/components/loyalty/tier-badge";
+
 import { LoyaltyProgress } from "@/components/loyalty/loyalty-progress";
 import {
   BarChart3,

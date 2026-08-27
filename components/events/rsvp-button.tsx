@@ -276,7 +276,7 @@ export function RsvpButton({
   eventSlug,
   eventTitle = "",
   eventDescription = null,
-  eventImageUrl = null,
+  eventImageUrl: _eventImageUrl = null,
   locationName = null,
   address = null,
   googleMapsUrl = null,

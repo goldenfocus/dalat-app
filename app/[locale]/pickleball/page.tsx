@@ -1,11 +1,10 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link, buildLocales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
-import { CircleDot, Plus, Users, MapPin, Calendar } from "lucide-react";
+import { CircleDot, Plus, MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Event, EventCounts } from "@/lib/types";
 

@@ -38,7 +38,7 @@ export async function GET() {
       });
     }
 
-    const data = await response.json();
+    const _data = await response.json();
 
     // Test 2: List all actors available to this account
     const actorsResponse = await fetch(

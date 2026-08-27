@@ -11,7 +11,6 @@ import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n/routing";
 import { isVideoUrl } from "@/lib/media-utils";
 import {
-  getEventSeoKeywords,
   getVenueSeoKeywords,
   getMomentSeoKeywords,
   buildSeoDescription,
@@ -214,7 +213,7 @@ export function generateVenueMetadata(
     cuisine_types?: string[] | null;
   },
   locale: Locale,
-  eventCount?: number
+  _eventCount?: number
 ): Metadata {
   const description = buildSeoDescription(venue.description, {
     contentType: "venue",

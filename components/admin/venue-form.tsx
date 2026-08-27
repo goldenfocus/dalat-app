@@ -18,7 +18,7 @@ import { VENUE_TYPES, VENUE_TYPE_CONFIG } from "@/lib/constants/venue-types";
 import { triggerTranslation } from "@/lib/translations-client";
 import type { Venue, VenueType, OperatingHours, Organizer } from "@/lib/types";
 import { sanitizeSlug, suggestSlug, finalizeSlug } from "@/lib/utils";
-import { useUnifiedSlugCheck, type SlugStatus } from "@/lib/hooks/use-unified-slug-check";
+import { useUnifiedSlugCheck } from "@/lib/hooks/use-unified-slug-check";
 
 interface VenueFormProps {
   venue?: Venue;

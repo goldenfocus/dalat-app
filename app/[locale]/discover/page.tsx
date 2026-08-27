@@ -4,7 +4,7 @@ import { Link } from "@/lib/i18n/routing";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createStaticClient } from "@/lib/supabase/server";
 import { generateLocalizedMetadata } from "@/lib/metadata";
-import { JsonLd, generateBreadcrumbSchema, generateFAQSchema, generateWebSiteSchema } from "@/lib/structured-data";
+import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
 import { buildLocales } from "@/lib/i18n/routing";
 import {
   Coffee, Wine, UtensilsCrossed, Palette, TreePine, Building2,

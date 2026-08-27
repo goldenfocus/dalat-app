@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
-import { ShieldCheck, CheckCircle2, Clock, XCircle, HelpCircle, ArrowLeft } from "lucide-react";
+import { ShieldCheck, CheckCircle2, Clock, XCircle, HelpCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { VerificationRequestForm } from "@/components/settings/verification-request-form";
 import type { VerificationRequest } from "@/lib/types";

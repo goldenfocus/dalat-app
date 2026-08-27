@@ -124,7 +124,7 @@ export function ResponseDashboard({
     });
 
     // Convert to CSV rows
-    const rows = Array.from(userResponses.entries()).map(([userId, data]) => {
+    const rows = Array.from(userResponses.entries()).map(([_userId, data]) => {
       const row = [
         data.userName,
         "", // Email not available in this context

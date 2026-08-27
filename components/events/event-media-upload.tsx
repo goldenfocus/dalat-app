@@ -35,7 +35,6 @@ import {
   isVideoUrl,
   ALL_ALLOWED_TYPES,
   needsConversion,
-  generateSmartFilename,
 } from "@/lib/media-utils";
 import { convertIfNeeded, convertHeicOnR2 } from "@/lib/media-conversion";
 import { generateImageViaQueue, describeImageJobError } from "@/lib/ai/image-job-client";

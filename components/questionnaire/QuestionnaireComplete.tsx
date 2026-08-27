@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Calendar, Users } from "lucide-react";
+import { Check, Calendar } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useTranslations } from "next-intl";
 

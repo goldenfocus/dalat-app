@@ -502,7 +502,7 @@ export function MomentsViewContainer({
   };
 
   // Switch to immersive view from cinema
-  const switchToImmersive = () => {
+  const _switchToImmersive = () => {
     setViewMode("immersive");
     setShowCinema(false);
     setShowImmersive(true);
@@ -510,7 +510,7 @@ export function MomentsViewContainer({
   };
 
   // Switch to cinema view from immersive
-  const switchToCinema = () => {
+  const _switchToCinema = () => {
     setViewMode("cinema");
     setShowImmersive(false);
     setShowCinema(true);

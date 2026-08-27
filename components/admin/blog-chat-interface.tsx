@@ -190,7 +190,7 @@ export function BlogChatInterface({ categories }: BlogChatInterfaceProps) {
           <div className="text-center">
             <h2 className="text-2xl font-semibold mb-2">Hey - what do you want to blog about?</h2>
             <p className="text-muted-foreground">
-              Speak your thoughts or type them out. I'll help shape them into a post.
+              Speak your thoughts or type them out. I&apos;ll help shape them into a post.
             </p>
           </div>
 

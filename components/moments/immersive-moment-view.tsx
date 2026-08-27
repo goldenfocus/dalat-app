@@ -65,7 +65,7 @@ export function ImmersiveMomentView({
   eventId,
   eventSlug,
   onClose,
-  onSwitchToGrid,
+  onSwitchToGrid: _onSwitchToGrid,
   onLoadMore,
   hasMore = false,
   totalCount,

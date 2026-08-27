@@ -16,7 +16,7 @@ interface VenueCommunityPhotosProps {
 
 export function VenueCommunityPhotos({
   venueId,
-  locale,
+  locale: _locale,
   initialLimit = 12,
 }: VenueCommunityPhotosProps) {
   const t = useTranslations("venues");

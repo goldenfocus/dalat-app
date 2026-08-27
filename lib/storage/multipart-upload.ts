@@ -259,7 +259,7 @@ export async function multipartUpload(
 
   // Step 1: Create multipart upload
   checkAborted(signal);
-  const { uploadId, key } = await apiCall<{ uploadId: string; key: string; publicUrl: string }>(
+  const { uploadId, key: _key } = await apiCall<{ uploadId: string; key: string; publicUrl: string }>(
     "/api/storage/multipart/create",
     { bucket, path, contentType },
     signal

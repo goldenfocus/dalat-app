@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
-import { Music, Download, Mic2, Clock, User, Disc, ArrowLeft } from "lucide-react";
+import { Music, Mic2, Clock, User, Disc, ArrowLeft } from "lucide-react";
 import { formatDuration } from "@/lib/format-duration";
 import { DownloadButton } from "./download-button";
 import { getMixedKeywords } from "@/lib/seo/dalat-keywords";

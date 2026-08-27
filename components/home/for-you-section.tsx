@@ -22,7 +22,7 @@ export function ForYouSection() {
   const [counts, setCounts] = useState<Record<string, EventCounts>>({});
   const [friendsData, setFriendsData] = useState<Record<string, FriendsAttending>>({});
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [_userId, setUserId] = useState<string | null>(null);
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [dismissed, setDismissed] = useState(false);

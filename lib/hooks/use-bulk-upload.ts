@@ -374,7 +374,7 @@ function bulkUploadReducer(
   }
 }
 
-export function useBulkUpload(eventId: string, userId: string, godModeUserId?: string) {
+export function useBulkUpload(eventId: string, userId: string, _godModeUserId?: string) {
   const [state, dispatch] = useReducer(bulkUploadReducer, {
     batchId: crypto.randomUUID(),
     eventId,

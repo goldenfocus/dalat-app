@@ -28,7 +28,7 @@ const RATINGS = [
 
 export function EventFeedback({
   eventId,
-  eventTitle,
+  eventTitle: _eventTitle,
   currentRsvpStatus,
   existingFeedback,
 }: EventFeedbackProps) {

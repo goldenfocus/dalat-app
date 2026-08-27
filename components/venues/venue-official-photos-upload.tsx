@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, X, Loader2, Upload, GripVertical } from "lucide-react";
+import { Plus, X, Loader2, Upload } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { VenuePhoto } from "@/lib/types";
 import { uploadFile } from "@/lib/storage/client";

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { BUCKET_CONFIG, validateBucketAndContentType } from "@/lib/storage/bucket-config";
+import { validateBucketAndContentType } from "@/lib/storage/bucket-config";
 import { R2StorageProvider } from "@/lib/storage/r2";
 import { isR2Configured } from "@/lib/storage";
 

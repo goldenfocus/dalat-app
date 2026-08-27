@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { TIER_CONFIG, type TierKey } from "./tier-badge";
+import { type TierKey } from "./tier-badge";
 import {
   Gift,
   Lock,

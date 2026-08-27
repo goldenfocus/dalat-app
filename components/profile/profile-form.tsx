@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { detectBrowserLocale, SUPPORTED_LOCALES } from "@/lib/locale";
-import type { Locale, ContentLocale } from "@/lib/types";
+import type { Locale } from "@/lib/types";
 
 interface ProfileFormProps {
   userId: string;

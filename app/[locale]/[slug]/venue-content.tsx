@@ -1,6 +1,5 @@
 import { Link } from "@/lib/i18n/routing";
 import {
-  ArrowLeft,
   Calendar,
   MapPin,
   BadgeCheck,
@@ -15,11 +14,10 @@ import {
   Camera,
   Tag,
   BookOpen,
-  Share2,
   ExternalLink,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { createClient, createStaticClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
 import type { Venue, Locale } from "@/lib/types";
@@ -213,7 +211,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     return null;
   }
 
-  const { venue, organizer, upcoming_events, happening_now, past_events_count, recent_activity } = venueData;
+  const { venue, organizer, upcoming_events, happening_now, past_events_count, recent_activity: _recent_activity } = venueData;
   const [isLoggedIn, pastEvents, canManageVenue] = await Promise.all([
     isUserLoggedIn(),
     getPastEvents(venue.id),

@@ -12,7 +12,6 @@ import {
   ExternalLink,
   Play,
   ChevronDown,
-  ChevronUp,
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";

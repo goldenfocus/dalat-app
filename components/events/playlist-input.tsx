@@ -4,13 +4,11 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import {
   Music,
   X,
-  Plus,
   Loader2,
   GripVertical,
   Upload,
   Trash2,
   ArrowDownAZ,
-  ArrowUpAZ,
   Clock,
   User,
 } from "lucide-react";
@@ -74,14 +72,14 @@ export function PlaylistInput({
   initialTracks = [],
 }: PlaylistInputProps) {
   const t = useTranslations("playlist");
-  const tCommon = useTranslations("common");
+  const _tCommon = useTranslations("common");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [playlistId, setPlaylistId] = useState<string | null>(initialPlaylistId ?? null);
   const [tracks, setTracks] = useState<PlaylistTrack[]>(initialTracks);
   const [uploading, setUploading] = useState<UploadingTrack[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
+  const [_isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
 
   // Use ref to track playlist ID synchronously (state updates are async)
   const playlistIdRef = useRef<string | null>(initialPlaylistId ?? null);

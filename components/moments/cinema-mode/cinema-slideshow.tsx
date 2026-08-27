@@ -10,7 +10,7 @@ import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { createEffectScheduler, type EffectSchedulerState } from "@/lib/cinema/ken-burns-effects";
 import { triggerHaptic } from "@/lib/haptics";
-import { cn } from "@/lib/utils";
+
 import {
   useCinemaModeStore,
   useCurrentCinemaMoment,

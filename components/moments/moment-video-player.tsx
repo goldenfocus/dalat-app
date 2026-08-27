@@ -54,7 +54,7 @@ export function MomentVideoPlayer({
   const videoRef = (ref as React.RefObject<HTMLVideoElement | null>) || internalRef;
   const hlsRef = useRef<InstanceType<typeof import("hls.js").default> | null>(null);
   const [useNativeHls, setUseNativeHls] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [_isReady, setIsReady] = useState(false);
   const [isMuted, setIsMuted] = useState(mutedProp);
 
   const isHlsUrl = hlsSrc?.includes(".m3u8");
