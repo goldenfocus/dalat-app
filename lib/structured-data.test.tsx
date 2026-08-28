@@ -75,6 +75,57 @@ describe("generateEventSchema", () => {
     expect(schema).not.toHaveProperty("offers");
   });
 
+  it("uses the localized content rendered on the event page", () => {
+    const schema = generateEventSchema(
+      makeEvent(),
+      "vi",
+      undefined,
+      undefined,
+      {
+        title: "Hoạt động chân thực",
+        description: "Mô tả đã được bản địa hóa.",
+      },
+    );
+
+    expect(schema.name).toBe("Hoạt động chân thực");
+    expect(schema.description).toBe("Mô tả đã được bản địa hóa.");
+  });
+
+  it("uses the official Activity Graph URL for offers without inventing validFrom", () => {
+    const schema = generateEventSchema(
+      makeEvent({
+        price_type: "free",
+        source_platform: "activity-graph",
+        external_chat_url: "https://official.example/events/truthful-event",
+      }),
+      "en",
+    );
+
+    expect(schema.offers).toMatchObject({
+      url: "https://official.example/events/truthful-event",
+      price: 0,
+    });
+    expect(schema.offers).not.toHaveProperty("validFrom");
+  });
+
+  it("links a generated occurrence to its recurring EventSeries", () => {
+    const schema = generateEventSchema(
+      makeEvent({
+        event_series: makeSeries({
+          slug: "nightly-acoustic",
+          title: "Nightly acoustic",
+        }),
+      }),
+      "vi",
+    );
+
+    expect(schema.superEvent).toEqual({
+      "@type": "EventSeries",
+      name: "Nightly acoustic",
+      url: "https://dalat.app/vi/series/nightly-acoustic",
+    });
+  });
+
   it("emits actual coordinates and omits geo when coordinates are unknown", () => {
     const located = generateEventSchema(
       makeEvent({ latitude: 11.9551, longitude: 108.4512 }),
@@ -188,5 +239,101 @@ describe("generateEventSeriesSchema", () => {
       }),
     ]);
     expect(schema.isAccessibleForFree).toBe(false);
+  });
+
+  it("links Activity Graph series offers to the official source", () => {
+    const schema = generateEventSeriesSchema(
+      makeSeries({
+        source_platform: "activity-graph",
+        external_chat_url: "https://official.example/nightly-acoustic",
+        price_type: "free",
+      }),
+      "en",
+    );
+
+    expect(schema.offers).toMatchObject({
+      url: "https://official.example/nightly-acoustic",
+      price: 0,
+    });
+  });
+
+  it("describes the RRULE as an EventSchedule without inventing dates", () => {
+    const schema = generateEventSeriesSchema(
+      makeSeries({
+        rrule: "FREQ=WEEKLY;INTERVAL=2;BYDAY=WE,FR;COUNT=8",
+        starts_at_time: "19:30:00",
+        duration_minutes: 120,
+        first_occurrence: "2026-08-28",
+        rrule_until: "2026-12-31",
+      }),
+      "en",
+    );
+
+    expect(schema.eventSchedule).toEqual({
+      "@type": "Schedule",
+      startDate: "2026-08-28",
+      startTime: "19:30:00",
+      duration: "PT120M",
+      scheduleTimezone: "Asia/Ho_Chi_Minh",
+      repeatFrequency: "P2W",
+      repeatCount: 8,
+      endDate: "2026-12-31",
+      byDay: ["https://schema.org/Wednesday", "https://schema.org/Friday"],
+    });
+    expect(schema).not.toHaveProperty("startDate");
+    expect(schema).not.toHaveProperty("endDate");
+  });
+
+  it("preserves positional monthly weekdays in Schema.org's iCal form", () => {
+    const schema = generateEventSeriesSchema(
+      makeSeries({ rrule: "FREQ=MONTHLY;BYDAY=2TU" }),
+      "en",
+    );
+
+    expect(schema.eventSchedule).toMatchObject({
+      repeatFrequency: "P1M",
+      byDay: ["2TU"],
+    });
+  });
+
+  it("embeds real localized upcoming occurrence nodes", () => {
+    const schema = generateEventSeriesSchema(makeSeries(), "vi", [
+      {
+        slug: "nightly-acoustic-2026-08-29",
+        starts_at: "2026-08-29T12:30:00.000Z",
+        ends_at: "2026-08-29T14:30:00.000Z",
+        status: "published",
+        image_url: "https://official.example/acoustic.webp",
+      },
+      {
+        slug: "nightly-acoustic-2026-08-30",
+        starts_at: "2026-08-30T12:30:00.000Z",
+        ends_at: null,
+        status: "cancelled",
+        image_url: null,
+      },
+    ]);
+
+    expect(schema["@id"]).toBe(
+      "https://dalat.app/vi/series/nightly-acoustic#series",
+    );
+    expect(schema.subEvent).toEqual([
+      expect.objectContaining({
+        "@type": "Event",
+        "@id": "https://dalat.app/vi/events/nightly-acoustic-2026-08-29#event",
+        url: "https://dalat.app/vi/events/nightly-acoustic-2026-08-29",
+        startDate: "2026-08-29T12:30:00.000Z",
+        endDate: "2026-08-29T14:30:00.000Z",
+        eventStatus: "https://schema.org/EventScheduled",
+        image: ["https://official.example/acoustic.webp"],
+        superEvent: {
+          "@id": "https://dalat.app/vi/series/nightly-acoustic#series",
+        },
+      }),
+      expect.objectContaining({
+        url: "https://dalat.app/vi/events/nightly-acoustic-2026-08-30",
+        eventStatus: "https://schema.org/EventCancelled",
+      }),
+    ]);
   });
 });

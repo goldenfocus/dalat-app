@@ -401,7 +401,7 @@ describe("linked Activity Graph series refresh", () => {
     expect(mocks.upsertTranslations).toHaveBeenCalledWith(
       db.client,
       [KEEP_ID],
-      activity.title,
+      activity,
       source.name,
     );
   });

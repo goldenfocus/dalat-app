@@ -5,19 +5,42 @@ import type { Metadata } from "next";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
-import { Calendar, MapPin, Users, ExternalLink, Link2, Repeat, Video, Music, Play, Lock } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  ExternalLink,
+  Link2,
+  Repeat,
+  Video,
+  Music,
+  Play,
+  Lock,
+} from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
-import { getTranslationsWithFallback, isValidContentLocale, getBlogTranslations } from "@/lib/translations";
+import {
+  getTranslationsWithFallback,
+  isValidContentLocale,
+  getBlogTranslations,
+} from "@/lib/translations";
 import { getImageJobsAdmin } from "@/lib/ai/image-jobs";
 import { EventRecapCard } from "@/components/events/event-recap-card";
 import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
-import { JsonLd, generateEventSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
+import {
+  JsonLd,
+  generateEventSchema,
+  generateBreadcrumbSchema,
+} from "@/lib/structured-data";
 import { buildAlternates, localeUrl } from "@/lib/metadata";
 import { buildSocialCardImageUrl } from "@/lib/events/share-preview";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { RsvpButton, CelebrationProvider, RsvpCardObserver } from "@/components/events/rsvp-button";
+import {
+  RsvpButton,
+  CelebrationProvider,
+  RsvpCardObserver,
+} from "@/components/events/rsvp-button";
 import { FloatingRsvpBar } from "@/components/events/floating-rsvp-bar";
 import { FeedbackBadge } from "@/components/events/event-feedback";
 import { SeriesBadge } from "@/components/events/series-badge";
@@ -48,7 +71,25 @@ import { EventMaterialsSummary } from "@/components/events/event-materials";
 import { EventMaterialsStructuredData } from "@/components/events/event-materials-structured-data";
 import { EventCommentsSection } from "@/components/comments";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
-import type { Event, EventCounts, EventPrivateDetails, Rsvp, Profile, Organizer, MomentWithProfile, MomentCounts, EventSettings, Sponsor, EventSponsor, UserRole, EventSeries, EventMaterial, EventPromoMedia, PromoSource } from "@/lib/types";
+import { ActivityGraphQuickFacts } from "@/components/events/activity-graph-quick-facts";
+import type {
+  Event,
+  EventCounts,
+  EventPrivateDetails,
+  Rsvp,
+  Profile,
+  Organizer,
+  MomentWithProfile,
+  MomentCounts,
+  EventSettings,
+  Sponsor,
+  EventSponsor,
+  UserRole,
+  EventSeries,
+  EventMaterial,
+  EventPromoMedia,
+  PromoSource,
+} from "@/lib/types";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -56,7 +97,9 @@ interface PageProps {
 }
 
 // Generate dynamic OG metadata for social sharing
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
   // Use static client (no cookies) so metadata resolves before <head> flush.
   // This ensures OG tags are visible to all social media crawlers (Zalo, Line, etc.)
@@ -65,7 +108,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: event } = await supabase
     .from("events")
-    .select("id, title, description, location_name, starts_at, source_locale, updated_at")
+    .select(
+      "id, title, description, location_name, starts_at, source_locale, updated_at",
+    )
     .eq("slug", slug)
     .single();
 
@@ -78,24 +123,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Get translated content for the current locale
   // Skip translation lookup if viewing in the original language
   const sourceLocale = event.source_locale;
-  const shouldSkipTranslation = sourceLocale && isValidContentLocale(sourceLocale) && locale === sourceLocale;
+  const shouldSkipTranslation =
+    sourceLocale &&
+    isValidContentLocale(sourceLocale) &&
+    locale === sourceLocale;
 
-  const translations = !shouldSkipTranslation && isValidContentLocale(locale)
-    ? await getTranslationsWithFallback(
-        "event",
-        event.id,
-        locale as ContentLocale,
-        {
-          title: event.title,
-          description: event.description,
-          text_content: null,
-          bio: null,
-          story_content: null,
-          technical_content: null,
-          meta_description: null,
-        }
-      )
-    : { title: event.title, description: event.description };
+  const translations =
+    !shouldSkipTranslation && isValidContentLocale(locale)
+      ? await getTranslationsWithFallback(
+          "event",
+          event.id,
+          locale as ContentLocale,
+          {
+            title: event.title,
+            description: event.description,
+            text_content: null,
+            bio: null,
+            story_content: null,
+            technical_content: null,
+            meta_description: null,
+          },
+        )
+      : { title: event.title, description: event.description };
 
   const title = translations.title || event.title;
   const eventDescription = translations.description ?? event.description;
@@ -124,7 +173,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { getEventSeoKeywords } = await import("@/lib/seo/dalat-keywords");
   const keywords = getEventSeoKeywords(
     { title, location_name: event.location_name },
-    locale
+    locale,
   );
 
   return {
@@ -169,7 +218,7 @@ type EventWithJoins = Event & {
   organizers: OrganizerWithOwner | null;
   event_series: Pick<EventSeries, "slug" | "title" | "rrule"> | null;
   venues: VenueInfo | null;
-  tribes: ChipTribe & { id: string } | null;
+  tribes: (ChipTribe & { id: string }) | null;
 };
 
 type GetEventResult =
@@ -184,7 +233,9 @@ async function getEvent(slug: string): Promise<GetEventResult> {
   // Include organizer's owner profile for avatar fallback when organizer has no logo
   const { data: event, error } = await supabase
     .from("events")
-    .select("*, profiles(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule), venues(id, slug, name), tribes(id, slug, name, cover_image_url, access_type, settings)")
+    .select(
+      "*, profiles(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule), venues(id, slug, name), tribes(id, slug, name, cover_image_url, access_type, settings)",
+    )
     .eq("slug", slug)
     .single();
 
@@ -206,7 +257,20 @@ async function getEvent(slug: string): Promise<GetEventResult> {
   return { type: "not_found" };
 }
 
-async function getOrganizerEvents(organizerId: string): Promise<Pick<Event, "id" | "slug" | "title" | "image_url" | "starts_at" | "location_name" | "status">[]> {
+async function getOrganizerEvents(
+  organizerId: string,
+): Promise<
+  Pick<
+    Event,
+    | "id"
+    | "slug"
+    | "title"
+    | "image_url"
+    | "starts_at"
+    | "location_name"
+    | "status"
+  >[]
+> {
   const supabase = await createClient();
 
   // Only fetch fields needed for MoreFromOrganizer component
@@ -219,7 +283,16 @@ async function getOrganizerEvents(organizerId: string): Promise<Pick<Event, "id"
     .order("starts_at", { ascending: true })
     .limit(10);
 
-  return (data ?? []) as Pick<Event, "id" | "slug" | "title" | "image_url" | "starts_at" | "location_name" | "status">[];
+  return (data ?? []) as Pick<
+    Event,
+    | "id"
+    | "slug"
+    | "title"
+    | "image_url"
+    | "starts_at"
+    | "location_name"
+    | "status"
+  >[];
 }
 
 async function getEventCounts(eventId: string): Promise<EventCounts | null> {
@@ -241,7 +314,9 @@ interface FeedbackStats {
   not_great: number;
 }
 
-async function getFeedbackStats(eventId: string): Promise<FeedbackStats | null> {
+async function getFeedbackStats(
+  eventId: string,
+): Promise<FeedbackStats | null> {
   const supabase = await createClient();
 
   const { data } = await supabase.rpc("get_event_feedback_stats", {
@@ -253,7 +328,7 @@ async function getFeedbackStats(eventId: string): Promise<FeedbackStats | null> 
 
 async function getPrivateDetails(
   eventId: string,
-  hasPrivateDetails: boolean
+  hasPrivateDetails: boolean,
 ): Promise<EventPrivateDetails | null> {
   if (!hasPrivateDetails) return null;
 
@@ -289,7 +364,10 @@ async function getCurrentUserRsvp(eventId: string): Promise<Rsvp | null> {
   return data as Rsvp | null;
 }
 
-async function getWaitlistPosition(eventId: string, userId: string | null): Promise<number | null> {
+async function getWaitlistPosition(
+  eventId: string,
+  userId: string | null,
+): Promise<number | null> {
   if (!userId) return null;
 
   const supabase = await createClient();
@@ -388,7 +466,10 @@ async function getCurrentUserId(): Promise<string | null> {
  * Is the viewer already in this event's hosting tribe? Drives whether the tribe
  * chip offers a join button. Skipped entirely for signed-out visitors.
  */
-async function isInTribe(tribeId: string | null, userId: string | null): Promise<boolean> {
+async function isInTribe(
+  tribeId: string | null,
+  userId: string | null,
+): Promise<boolean> {
   if (!tribeId || !userId) return false;
   const supabase = await createClient();
   const { data } = await supabase
@@ -401,7 +482,9 @@ async function isInTribe(tribeId: string | null, userId: string | null): Promise
   return !!data;
 }
 
-async function getCurrentUserRole(userId: string | null): Promise<UserRole | null> {
+async function getCurrentUserRole(
+  userId: string | null,
+): Promise<UserRole | null> {
   if (!userId) return null;
   const supabase = await createClient();
   const { data } = await supabase
@@ -412,7 +495,9 @@ async function getCurrentUserRole(userId: string | null): Promise<UserRole | nul
   return (data?.role as UserRole) ?? null;
 }
 
-async function getMomentsPreview(eventId: string): Promise<MomentWithProfile[]> {
+async function getMomentsPreview(
+  eventId: string,
+): Promise<MomentWithProfile[]> {
   const supabase = await createClient();
 
   const { data } = await supabase.rpc("get_event_moments", {
@@ -436,12 +521,17 @@ type EventRecap = {
  * Visibility is enforced in render: public sees the card only when
  * recap_published_at is set; moderators see drafts in place.
  */
-async function getEventRecap(eventId: string, locale: string): Promise<EventRecap | null> {
+async function getEventRecap(
+  eventId: string,
+  locale: string,
+): Promise<EventRecap | null> {
   try {
     const admin = getImageJobsAdmin();
     const { data: post } = await admin
       .from("blog_posts")
-      .select("id, title, story_content, meta_description, source_locale, recap_published_at")
+      .select(
+        "id, title, story_content, meta_description, source_locale, recap_published_at",
+      )
       .eq("event_id", eventId)
       .maybeSingle();
     if (!post?.story_content) return null;
@@ -477,7 +567,9 @@ async function getMomentCounts(eventId: string): Promise<MomentCounts | null> {
   return data as MomentCounts | null;
 }
 
-async function getEventSettings(eventId: string): Promise<EventSettings | null> {
+async function getEventSettings(
+  eventId: string,
+): Promise<EventSettings | null> {
   const supabase = await createClient();
 
   const { data } = await supabase
@@ -489,7 +581,9 @@ async function getEventSettings(eventId: string): Promise<EventSettings | null> 
   return data as EventSettings | null;
 }
 
-async function getEventSponsors(eventId: string): Promise<(EventSponsor & { sponsors: Sponsor })[]> {
+async function getEventSponsors(
+  eventId: string,
+): Promise<(EventSponsor & { sponsors: Sponsor })[]> {
   const supabase = await createClient();
 
   const { data } = await supabase
@@ -518,7 +612,9 @@ interface PlaylistSummary {
   totalDuration: number;
 }
 
-async function getEventPlaylistSummary(eventId: string): Promise<PlaylistSummary | null> {
+async function getEventPlaylistSummary(
+  eventId: string,
+): Promise<PlaylistSummary | null> {
   const supabase = await createClient();
 
   // Check if event has a playlist with tracks
@@ -540,7 +636,10 @@ async function getEventPlaylistSummary(eventId: string): Promise<PlaylistSummary
 
   return {
     trackCount: tracks.length,
-    totalDuration: tracks.reduce((acc, t) => acc + (t.duration_seconds || 0), 0),
+    totalDuration: tracks.reduce(
+      (acc, t) => acc + (t.duration_seconds || 0),
+      0,
+    ),
   };
 }
 
@@ -563,7 +662,7 @@ async function getPastMoments(
   seriesId: string | null | undefined,
   currentEventId: string,
   pinnedIds?: string[] | null,
-  linkedPastEventId?: string | null
+  linkedPastEventId?: string | null,
 ): Promise<PastMoment[]> {
   try {
     const supabase = await createClient();
@@ -572,7 +671,9 @@ async function getPastMoments(
     if (pinnedIds?.length) {
       const { data: moments } = await supabase
         .from("moments")
-        .select("id, media_url, thumbnail_url, event_id, events(slug, title, starts_at)")
+        .select(
+          "id, media_url, thumbnail_url, event_id, events(slug, title, starts_at)",
+        )
         .in("id", pinnedIds)
         .eq("status", "published")
         .not("media_url", "is", null);
@@ -596,7 +697,10 @@ async function getPastMoments(
     }
 
     let pastEventIds: string[] = [];
-    const eventMap = new Map<string, { slug: string; title: string; starts_at: string }>();
+    const eventMap = new Map<
+      string,
+      { slug: string; title: string; starts_at: string }
+    >();
 
     // Admin-linked past event takes priority over series/creator heuristics
     if (linkedPastEventId) {
@@ -691,7 +795,11 @@ async function getEventPromo(eventId: string): Promise<EventPromoResult> {
   };
 }
 
-async function canUserPostMoment(eventId: string, userId: string | null, creatorId: string): Promise<boolean> {
+async function canUserPostMoment(
+  eventId: string,
+  userId: string | null,
+  creatorId: string,
+): Promise<boolean> {
   if (!userId) return false;
 
   // Creator can always post
@@ -716,7 +824,10 @@ async function canUserPostMoment(eventId: string, userId: string | null, creator
         .eq("event_id", eventId)
         .eq("user_id", userId)
         .single();
-      return rsvp?.status && ["going", "waitlist", "interested"].includes(rsvp.status);
+      return (
+        rsvp?.status &&
+        ["going", "waitlist", "interested"].includes(rsvp.status)
+      );
     case "confirmed":
       const { data: confirmedRsvp } = await supabase
         .from("rsvps")
@@ -748,7 +859,7 @@ async function getEventTranslations(
   originalImageAlt: string | null,
   originalImageDescription: string | null,
   sourceLocale: string | null,
-  locale: string
+  locale: string,
 ): Promise<EventTranslations> {
   // Validate locale
   if (!isValidContentLocale(locale)) {
@@ -764,9 +875,10 @@ async function getEventTranslations(
     };
   }
 
-  const validSourceLocale = sourceLocale && isValidContentLocale(sourceLocale)
-    ? sourceLocale as ContentLocale
-    : null;
+  const validSourceLocale =
+    sourceLocale && isValidContentLocale(sourceLocale)
+      ? (sourceLocale as ContentLocale)
+      : null;
 
   // If viewing in the same language as the original content, return original (no translation needed)
   if (validSourceLocale && locale === validSourceLocale) {
@@ -783,7 +895,7 @@ async function getEventTranslations(
   }
 
   const translations = await getTranslationsWithFallback(
-    'event',
+    "event",
     eventId,
     locale as ContentLocale,
     {
@@ -796,13 +908,14 @@ async function getEventTranslations(
       meta_description: null,
       image_alt: originalImageAlt,
       image_description: originalImageDescription,
-    }
+    },
   );
 
   const translatedTitle = translations.title || originalTitle;
   const translatedDescription = translations.description ?? originalDescription;
   const translatedImageAlt = translations.image_alt ?? originalImageAlt;
-  const translatedImageDescription = translations.image_description ?? originalImageDescription;
+  const translatedImageDescription =
+    translations.image_description ?? originalImageDescription;
 
   return {
     title: translatedTitle,
@@ -811,7 +924,9 @@ async function getEventTranslations(
     imageDescription: translatedImageDescription,
     originalTitle,
     originalDescription,
-    isTranslated: translatedTitle !== originalTitle || translatedDescription !== originalDescription,
+    isTranslated:
+      translatedTitle !== originalTitle ||
+      translatedDescription !== originalDescription,
     sourceLocale: validSourceLocale,
   };
 }
@@ -831,12 +946,14 @@ export default async function EventPage({ params, searchParams }: PageProps) {
       .filter(([, value]) => value !== undefined)
       .map(([key, value]) => {
         if (Array.isArray(value)) {
-          return value.map(v => `${key}=${encodeURIComponent(v)}`).join("&");
+          return value.map((v) => `${key}=${encodeURIComponent(v)}`).join("&");
         }
         return `${key}=${encodeURIComponent(value as string)}`;
       })
       .join("&");
-    redirect(`/events/${result.newSlug}${queryString ? `?${queryString}` : ""}`);
+    redirect(
+      `/events/${result.newSlug}${queryString ? `?${queryString}` : ""}`,
+    );
   }
 
   const event = result.event;
@@ -851,14 +968,36 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
-  const [counts, currentRsvp, allRsvps, waitlistPosition, userFeedback, feedbackStats, organizerEvents, momentsPreview, momentCounts, canPostMoment, sponsors, eventTranslations, eventSettings, materials, playlistSummary, promoResult, questionnaire, privateDetails, recap] = await Promise.all([
+  const [
+    counts,
+    currentRsvp,
+    allRsvps,
+    waitlistPosition,
+    userFeedback,
+    feedbackStats,
+    organizerEvents,
+    momentsPreview,
+    momentCounts,
+    canPostMoment,
+    sponsors,
+    eventTranslations,
+    eventSettings,
+    materials,
+    playlistSummary,
+    promoResult,
+    questionnaire,
+    privateDetails,
+    recap,
+  ] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
     getAllRsvps(event.id), // Combined fetch for attendees, waitlist, interested
     getWaitlistPosition(event.id, currentUserId),
     getUserFeedback(event.id),
     getFeedbackStats(event.id),
-    event.organizer_id ? getOrganizerEvents(event.organizer_id) : Promise.resolve([]),
+    event.organizer_id
+      ? getOrganizerEvents(event.organizer_id)
+      : Promise.resolve([]),
     getMomentsPreview(event.id),
     getMomentCounts(event.id),
     canUserPostMoment(event.id, currentUserId, event.created_by),
@@ -868,9 +1007,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
       event.title,
       event.description,
       (event as Event & { image_alt?: string }).image_alt ?? null,
-      (event as Event & { image_description?: string }).image_description ?? null,
+      (event as Event & { image_description?: string }).image_description ??
+        null,
       event.source_locale,
-      locale
+      locale,
     ),
     getEventSettings(event.id),
     getEventMaterials(event.id),
@@ -883,12 +1023,20 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   // Fetch past moments for auto-display when no promo exists (pinned, then admin-linked, then series)
   // If org has pinned specific moments via vibe_moment_ids, those take priority
-  const vibeMomentIds = (event as { vibe_moment_ids?: string[] | null }).vibe_moment_ids ?? null;
+  const vibeMomentIds =
+    (event as { vibe_moment_ids?: string[] | null }).vibe_moment_ids ?? null;
   // Admin-linked past event only feeds the strip until this event has its own moments
-  const linkedPastEventId = momentsPreview.length === 0 ? event.linked_past_event_id : null;
-  const pastMoments = promoResult.promo.length === 0
-    ? await getPastMoments(event.series_id, event.id, vibeMomentIds, linkedPastEventId)
-    : [];
+  const linkedPastEventId =
+    momentsPreview.length === 0 ? event.linked_past_event_id : null;
+  const pastMoments =
+    promoResult.promo.length === 0
+      ? await getPastMoments(
+          event.series_id,
+          event.id,
+          vibeMomentIds,
+          linkedPastEventId,
+        )
+      : [];
 
   const viewerInTribe = await isInTribe(event.tribe_id ?? null, currentUserId);
 
@@ -897,8 +1045,12 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   const isLoggedIn = !!currentUserId;
   const isCreator = currentUserId === event.created_by;
-  const isAdmin = currentUserRole ? hasRoleLevel(currentUserRole, "admin") : false;
-  const isModerator = currentUserRole ? hasRoleLevel(currentUserRole, "moderator") : false;
+  const isAdmin = currentUserRole
+    ? hasRoleLevel(currentUserRole, "admin")
+    : false;
+  const isModerator = currentUserRole
+    ? hasRoleLevel(currentUserRole, "moderator")
+    : false;
   const canManageEvent = isCreator || isAdmin;
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
 
@@ -918,221 +1070,212 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   })();
 
   // Generate structured data for SEO and AEO (with translated image metadata)
-  const eventSchema = generateEventSchema(event, locale, counts?.going_spots, {
-    alt: eventTranslations.imageAlt,
-    description: eventTranslations.imageDescription,
-  });
+  const eventSchema = generateEventSchema(
+    event,
+    locale,
+    counts?.going_spots,
+    {
+      alt: eventTranslations.imageAlt,
+      description: eventTranslations.imageDescription,
+    },
+    {
+      title: eventTranslations.title,
+      description: eventTranslations.description,
+    },
+  );
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
-      { name: "Events", url: "/" },
-      { name: event.title, url: `/events/${event.slug}` },
+      { name: "Events", url: "/events/upcoming" },
+      { name: eventTranslations.title, url: `/events/${event.slug}` },
     ],
-    locale
+    locale,
   );
 
   // Pre-compute localized date strings (async to ensure correct locale loading)
-  const [formattedDate, formattedStartTime, formattedEndTime] = await Promise.all([
-    formatInDaLatAsync(event.starts_at, "EEEE, MMMM d", locale as Locale),
-    formatInDaLatAsync(event.starts_at, "h:mm a", locale as Locale),
-    event.ends_at ? formatInDaLatAsync(event.ends_at, "h:mm a", locale as Locale) : Promise.resolve(null),
-  ]);
+  const [formattedDate, formattedStartTime, formattedEndTime] =
+    await Promise.all([
+      formatInDaLatAsync(event.starts_at, "EEEE, MMMM d", locale as Locale),
+      formatInDaLatAsync(event.starts_at, "h:mm a", locale as Locale),
+      event.ends_at
+        ? formatInDaLatAsync(event.ends_at, "h:mm a", locale as Locale)
+        : Promise.resolve(null),
+    ]);
 
   return (
     <CelebrationProvider>
-    <main className="min-h-screen">
-      {/* JSON-LD Structured Data for SEO/AEO */}
-      <JsonLd data={[eventSchema, breadcrumbSchema]} />
+      <main className="min-h-screen">
+        {/* JSON-LD Structured Data for SEO/AEO */}
+        <JsonLd data={[eventSchema, breadcrumbSchema]} />
 
-      {/* Structured data for event materials (audio, video, etc.) */}
-      <EventMaterialsStructuredData
-        materials={materials}
-        eventName={event.title}
-        eventUrl={`https://dalat.app/${locale}/events/${event.slug}`}
-      />
+        {/* Structured data for event materials (audio, video, etc.) */}
+        <EventMaterialsStructuredData
+          materials={materials}
+          eventName={event.title}
+          eventUrl={`https://dalat.app/${locale}/events/${event.slug}`}
+        />
 
-      <Suspense fallback={null}>
-        <ConfirmAttendanceHandler eventId={event.id} />
-      </Suspense>
+        <Suspense fallback={null}>
+          <ConfirmAttendanceHandler eventId={event.id} />
+        </Suspense>
 
-      <div className="container max-w-4xl mx-auto px-4 py-8 pb-24 lg:pb-8">
-        {/* Event actions bar */}
-        <div className="flex items-center justify-end gap-1 mb-4 -mt-2">
-          <EventShareButton
-            eventSlug={event.slug}
-            eventTitle={event.title}
-            eventDescription={event.description}
-            startsAt={event.starts_at}
-          />
-          {canManageEvent && (
-            <>
-              <InviteModal
-                eventSlug={event.slug}
-                eventTitle={event.title}
-                eventDescription={event.description}
-                startsAt={event.starts_at}
-                isAdmin={isAdmin}
-                isPast={isPast}
-              />
-              <EventSettingsSheet
-                eventId={event.id}
-                eventSlug={event.slug}
-                eventTitle={event.title}
-                eventDescription={event.description}
-                startsAt={event.starts_at}
-                endsAt={event.ends_at}
-                initialSettings={eventSettings}
-                pendingCount={momentCounts?.pending_count ?? 0}
-              />
-              <EventActions eventId={event.id} eventSlug={event.slug} seriesSlug={event.event_series?.slug} />
-            </>
-          )}
-        </div>
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Main content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Past events: Moments first as hero content */}
-            {isPast && momentsPreview.length > 0 ? (
+        <div className="container max-w-4xl mx-auto px-4 py-8 pb-24 lg:pb-8">
+          {/* Event actions bar */}
+          <div className="flex items-center justify-end gap-1 mb-4 -mt-2">
+            <EventShareButton
+              eventSlug={event.slug}
+              eventTitle={event.title}
+              eventDescription={event.description}
+              startsAt={event.starts_at}
+            />
+            {canManageEvent && (
               <>
-                {/* Title first so users know what event this is */}
-                <div>
-                  <h1 className="text-3xl font-bold mb-2">{eventTranslations.title}</h1>
-                  {/* Series context */}
-                  {event.event_series && (
-                    <Link
-                      href={`/series/${event.event_series.slug}`}
-                      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
-                    >
-                      <Repeat className="w-3.5 h-3.5" />
-                      <span>
-                        {t("partOfSeries", { seriesName: event.event_series.title })}
-                      </span>
-                      {event.event_series.rrule && (
-                        <SeriesBadge rrule={event.event_series.rrule} className="ml-1" />
-                      )}
-                    </Link>
-                  )}
-                  {/* Translation indicator */}
-                  {eventTranslations.isTranslated && eventTranslations.sourceLocale && (
-                    <TranslatedFrom
-                      sourceLocale={eventTranslations.sourceLocale}
-                      originalText={eventTranslations.title !== eventTranslations.originalTitle ? eventTranslations.originalTitle : undefined}
-                      className="mb-4"
-                    />
-                  )}
-                </div>
-
-                {/* Moments Gallery - HERO position for past events */}
-                <PastEventMomentsShowcase
+                <InviteModal
                   eventSlug={event.slug}
-                  moments={momentsPreview}
-                  counts={momentCounts}
-                  canPost={canPostMoment}
+                  eventTitle={event.title}
+                  eventDescription={event.description}
+                  startsAt={event.starts_at}
+                  isAdmin={isAdmin}
+                  isPast={isPast}
                 />
-
-                {/* "How it went" — AI recap card (secret-address events never get one) */}
-                {!event.has_private_details && (!!recap?.recapPublishedAt || isModerator) && (
-                  <EventRecapCard
-                    eventId={event.id}
-                    story={recap?.story ?? null}
-                    blogPostId={recap?.blogPostId ?? null}
-                    isPublished={!!recap?.recapPublishedAt}
-                    isModerator={isModerator}
-                    wentCount={counts?.going_spots ?? 0}
-                    momentsCount={momentCounts?.published_count ?? 0}
-                    positivePercent={
-                      feedbackStats && feedbackStats.total >= 10 && feedbackStats.positive_percentage !== null
-                        ? Math.round(feedbackStats.positive_percentage)
-                        : null
-                    }
-                  />
-                )}
-
-                {/* Playlist link - right after moments for past events */}
-                {playlistSummary && (
-                  <Link
-                    href={`/events/${event.slug}/playlist`}
-                    className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
-                  >
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                      <Music className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium">{tPlaylist("listenAsPlaylist")}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {tPlaylist("tracks", { count: playlistSummary.trackCount })}
-                        {playlistSummary.totalDuration > 0 && ` · ${Math.round(playlistSummary.totalDuration / 60)} min`}
-                      </p>
-                    </div>
-                    <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  </Link>
-                )}
-
-                {/* Event flyer - shown after moments for past events */}
-                {event.image_url && (
-                  <div className={isSponsored ? "rounded-xl ring-2 ring-amber-400/80 shadow-[0_0_24px_rgba(251,191,36,0.25)] overflow-hidden" : undefined}>
-                    <EventMediaDisplay
-                      src={event.image_url}
-                      alt={eventTranslations.imageAlt || eventTranslations.title}
-                    />
-                  </div>
-                )}
-
-                {/* Description */}
-                {eventTranslations.description && (
-                  <ExpandableText
-                    text={eventTranslations.description}
-                    maxLines={4}
-                  />
-                )}
-
-                {/* Tags */}
-                {event.ai_tags && event.ai_tags.length > 0 && (
-                  <ClickableTagList tags={event.ai_tags} />
-                )}
+                <EventSettingsSheet
+                  eventId={event.id}
+                  eventSlug={event.slug}
+                  eventTitle={event.title}
+                  eventDescription={event.description}
+                  startsAt={event.starts_at}
+                  endsAt={event.ends_at}
+                  initialSettings={eventSettings}
+                  pendingCount={momentCounts?.pending_count ?? 0}
+                />
+                <EventActions
+                  eventId={event.id}
+                  eventSlug={event.slug}
+                  seriesSlug={event.event_series?.slug}
+                />
               </>
-            ) : (
-              <>
-                {/* Upcoming events or past events without moments: Original layout */}
-                {/* Event image/video - clickable to view full */}
-                {event.image_url ? (
-                  <div className={isSponsored ? "rounded-xl ring-2 ring-amber-400/80 shadow-[0_0_24px_rgba(251,191,36,0.25)] overflow-hidden" : undefined}>
-                    <EventMediaDisplay
-                      src={event.image_url}
-                      alt={eventTranslations.imageAlt || eventTranslations.title}
-                      priority
-                    />
-                  </div>
-                ) : (
-                  <EventDefaultImage title={eventTranslations.title} priority />
-                )}
-
-                {/* Title and description */}
-                <div>
-                  <h1 className="text-3xl font-bold mb-2">{eventTranslations.title}</h1>
-                  {/* Series context - show if this event is part of a recurring series */}
-                  {event.event_series && (
-                    <Link
-                      href={`/series/${event.event_series.slug}`}
-                      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
-                    >
-                      <Repeat className="w-3.5 h-3.5" />
-                      <span>
-                        {t("partOfSeries", { seriesName: event.event_series.title })}
-                      </span>
-                      {event.event_series.rrule && (
-                        <SeriesBadge rrule={event.event_series.rrule} className="ml-1" />
+            )}
+          </div>
+          <div className="grid gap-8 lg:grid-cols-3">
+            {/* Main content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Past events: Moments first as hero content */}
+              {isPast && momentsPreview.length > 0 ? (
+                <>
+                  {/* Title first so users know what event this is */}
+                  <div>
+                    <h1 className="text-3xl font-bold mb-2">
+                      {eventTranslations.title}
+                    </h1>
+                    {/* Series context */}
+                    {event.event_series && (
+                      <Link
+                        href={`/series/${event.event_series.slug}`}
+                        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
+                      >
+                        <Repeat className="w-3.5 h-3.5" />
+                        <span>
+                          {t("partOfSeries", {
+                            seriesName: event.event_series.title,
+                          })}
+                        </span>
+                        {event.event_series.rrule && (
+                          <SeriesBadge
+                            rrule={event.event_series.rrule}
+                            className="ml-1"
+                          />
+                        )}
+                      </Link>
+                    )}
+                    {/* Translation indicator */}
+                    {eventTranslations.isTranslated &&
+                      eventTranslations.sourceLocale && (
+                        <TranslatedFrom
+                          sourceLocale={eventTranslations.sourceLocale}
+                          originalText={
+                            eventTranslations.title !==
+                            eventTranslations.originalTitle
+                              ? eventTranslations.originalTitle
+                              : undefined
+                          }
+                          className="mb-4"
+                        />
                       )}
+                  </div>
+
+                  {/* Moments Gallery - HERO position for past events */}
+                  <PastEventMomentsShowcase
+                    eventSlug={event.slug}
+                    moments={momentsPreview}
+                    counts={momentCounts}
+                    canPost={canPostMoment}
+                  />
+
+                  {/* "How it went" — AI recap card (secret-address events never get one) */}
+                  {!event.has_private_details &&
+                    (!!recap?.recapPublishedAt || isModerator) && (
+                      <EventRecapCard
+                        eventId={event.id}
+                        story={recap?.story ?? null}
+                        blogPostId={recap?.blogPostId ?? null}
+                        isPublished={!!recap?.recapPublishedAt}
+                        isModerator={isModerator}
+                        wentCount={counts?.going_spots ?? 0}
+                        momentsCount={momentCounts?.published_count ?? 0}
+                        positivePercent={
+                          feedbackStats &&
+                          feedbackStats.total >= 10 &&
+                          feedbackStats.positive_percentage !== null
+                            ? Math.round(feedbackStats.positive_percentage)
+                            : null
+                        }
+                      />
+                    )}
+
+                  {/* Playlist link - right after moments for past events */}
+                  {playlistSummary && (
+                    <Link
+                      href={`/events/${event.slug}/playlist`}
+                      className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <Music className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium">
+                          {tPlaylist("listenAsPlaylist")}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {tPlaylist("tracks", {
+                            count: playlistSummary.trackCount,
+                          })}
+                          {playlistSummary.totalDuration > 0 &&
+                            ` · ${Math.round(playlistSummary.totalDuration / 60)} min`}
+                        </p>
+                      </div>
+                      <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </Link>
                   )}
-                  {/* Show translation indicator with original */}
-                  {eventTranslations.isTranslated && eventTranslations.sourceLocale && (
-                    <TranslatedFrom
-                      sourceLocale={eventTranslations.sourceLocale}
-                      originalText={eventTranslations.title !== eventTranslations.originalTitle ? eventTranslations.originalTitle : undefined}
-                      className="mb-4"
-                    />
+
+                  {/* Event flyer - shown after moments for past events */}
+                  {event.image_url && (
+                    <div
+                      className={
+                        isSponsored
+                          ? "rounded-xl ring-2 ring-amber-400/80 shadow-[0_0_24px_rgba(251,191,36,0.25)] overflow-hidden"
+                          : undefined
+                      }
+                    >
+                      <EventMediaDisplay
+                        src={event.image_url}
+                        alt={
+                          eventTranslations.imageAlt || eventTranslations.title
+                        }
+                      />
+                    </div>
                   )}
+
+                  {/* Description */}
                   {eventTranslations.description && (
                     <ExpandableText
                       text={eventTranslations.description}
@@ -1140,429 +1283,558 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     />
                   )}
 
-                  {/* Clickable tags for category discovery */}
+                  {/* Tags */}
                   {event.ai_tags && event.ai_tags.length > 0 && (
-                    <div className="mt-4">
-                      <ClickableTagList tags={event.ai_tags} />
-                    </div>
+                    <ClickableTagList tags={event.ai_tags} />
                   )}
-                </div>
-
-                {/* Moments for past events without moments yet (empty state) */}
-                {isPast && (
-                  <PastEventMomentsShowcase
-                    eventSlug={event.slug}
-                    moments={momentsPreview}
-                    counts={momentCounts}
-                    canPost={canPostMoment}
-                  />
-                )}
-
-                {/* "How it went" — AI recap card (secret-address events never get one) */}
-                {isPast && !event.has_private_details && (!!recap?.recapPublishedAt || isModerator) && (
-                  <EventRecapCard
-                    eventId={event.id}
-                    story={recap?.story ?? null}
-                    blogPostId={recap?.blogPostId ?? null}
-                    isPublished={!!recap?.recapPublishedAt}
-                    isModerator={isModerator}
-                    wentCount={counts?.going_spots ?? 0}
-                    momentsCount={momentCounts?.published_count ?? 0}
-                    positivePercent={
-                      feedbackStats && feedbackStats.total >= 10 && feedbackStats.positive_percentage !== null
-                        ? Math.round(feedbackStats.positive_percentage)
-                        : null
-                    }
-                  />
-                )}
-
-                {/* Playlist link - right after moments */}
-                {playlistSummary && (
-                  <Link
-                    href={`/events/${event.slug}/playlist`}
-                    className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
-                  >
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                      <Music className="w-6 h-6 text-primary" />
+                </>
+              ) : (
+                <>
+                  {/* Upcoming events or past events without moments: Original layout */}
+                  {/* Event image/video - clickable to view full */}
+                  {event.image_url ? (
+                    <div
+                      className={
+                        isSponsored
+                          ? "rounded-xl ring-2 ring-amber-400/80 shadow-[0_0_24px_rgba(251,191,36,0.25)] overflow-hidden"
+                          : undefined
+                      }
+                    >
+                      <EventMediaDisplay
+                        src={event.image_url}
+                        alt={
+                          eventTranslations.imageAlt || eventTranslations.title
+                        }
+                        priority
+                      />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium">{tPlaylist("listenAsPlaylist")}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {tPlaylist("tracks", { count: playlistSummary.trackCount })}
-                        {playlistSummary.totalDuration > 0 && ` · ${Math.round(playlistSummary.totalDuration / 60)} min`}
-                      </p>
-                    </div>
-                    <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  </Link>
-                )}
-              </>
-            )}
+                  ) : (
+                    <EventDefaultImage
+                      title={eventTranslations.title}
+                      priority
+                    />
+                  )}
 
-            {/* Sponsors */}
-            {sponsors.length > 0 && (
-              <SponsorDisplay sponsors={sponsors} />
-            )}
+                  {/* Title and description */}
+                  <div>
+                    <h1 className="text-3xl font-bold mb-2">
+                      {eventTranslations.title}
+                    </h1>
+                    {/* Series context - show if this event is part of a recurring series */}
+                    {event.event_series && (
+                      <Link
+                        href={`/series/${event.event_series.slug}`}
+                        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
+                      >
+                        <Repeat className="w-3.5 h-3.5" />
+                        <span>
+                          {t("partOfSeries", {
+                            seriesName: event.event_series.title,
+                          })}
+                        </span>
+                        {event.event_series.rrule && (
+                          <SeriesBadge
+                            rrule={event.event_series.rrule}
+                            className="ml-1"
+                          />
+                        )}
+                      </Link>
+                    )}
+                    {/* Show translation indicator with original */}
+                    {eventTranslations.isTranslated &&
+                      eventTranslations.sourceLocale && (
+                        <TranslatedFrom
+                          sourceLocale={eventTranslations.sourceLocale}
+                          originalText={
+                            eventTranslations.title !==
+                            eventTranslations.originalTitle
+                              ? eventTranslations.originalTitle
+                              : undefined
+                          }
+                          className="mb-4"
+                        />
+                      )}
+                    {eventTranslations.description && (
+                      <ExpandableText
+                        text={eventTranslations.description}
+                        maxLines={4}
+                      />
+                    )}
 
-            {/* Promo Media - promotional content for this event */}
-            <PromoMediaSection
-              promo={promoResult.promo}
-              isOwner={canManageEvent}
-              promoSource={promoResult.promoSource}
-              eventId={event.id}
-              eventSlug={event.slug}
-              seriesId={event.series_id}
-              isSeriesEvent={!!event.series_id}
-              pastMoments={pastMoments}
-              vibeMomentIds={vibeMomentIds}
-            />
+                    {/* Clickable tags for category discovery */}
+                    {event.ai_tags && event.ai_tags.length > 0 && (
+                      <div className="mt-4">
+                        <ClickableTagList tags={event.ai_tags} />
+                      </div>
+                    )}
+                  </div>
 
-            {/* Materials (PDFs, videos, etc.) */}
-            {materials.length > 0 && (
-              <EventMaterialsSummary materials={materials} />
-            )}
+                  {/* Moments for past events without moments yet (empty state) */}
+                  {isPast && (
+                    <PastEventMomentsShowcase
+                      eventSlug={event.slug}
+                      moments={momentsPreview}
+                      counts={momentCounts}
+                      canPost={canPostMoment}
+                    />
+                  )}
 
-            {/* Reconfirmation badge for organizers */}
-            {canManageEvent && !isPast && (
-              <ReconfirmationBadge
+                  {/* "How it went" — AI recap card (secret-address events never get one) */}
+                  {isPast &&
+                    !event.has_private_details &&
+                    (!!recap?.recapPublishedAt || isModerator) && (
+                      <EventRecapCard
+                        eventId={event.id}
+                        story={recap?.story ?? null}
+                        blogPostId={recap?.blogPostId ?? null}
+                        isPublished={!!recap?.recapPublishedAt}
+                        isModerator={isModerator}
+                        wentCount={counts?.going_spots ?? 0}
+                        momentsCount={momentCounts?.published_count ?? 0}
+                        positivePercent={
+                          feedbackStats &&
+                          feedbackStats.total >= 10 &&
+                          feedbackStats.positive_percentage !== null
+                            ? Math.round(feedbackStats.positive_percentage)
+                            : null
+                        }
+                      />
+                    )}
+
+                  {/* Playlist link - right after moments */}
+                  {playlistSummary && (
+                    <Link
+                      href={`/events/${event.slug}/playlist`}
+                      className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <Music className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium">
+                          {tPlaylist("listenAsPlaylist")}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {tPlaylist("tracks", {
+                            count: playlistSummary.trackCount,
+                          })}
+                          {playlistSummary.totalDuration > 0 &&
+                            ` · ${Math.round(playlistSummary.totalDuration / 60)} min`}
+                        </p>
+                      </div>
+                      <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    </Link>
+                  )}
+                </>
+              )}
+
+              {event.source_platform === "activity-graph" && (
+                <ActivityGraphQuickFacts
+                  locale={locale as Locale}
+                  startsAt={event.starts_at}
+                  endsAt={event.ends_at}
+                  timeZone={event.timezone}
+                  locationName={event.location_name}
+                  address={event.address}
+                  reservationRequirement={event.reservation_requirement ?? null}
+                  publicAccess={event.public_access ?? null}
+                  lastConfirmedAt={event.last_confirmed_at ?? null}
+                  sourceMetadata={event.source_metadata ?? null}
+                />
+              )}
+
+              {/* Sponsors */}
+              {sponsors.length > 0 && <SponsorDisplay sponsors={sponsors} />}
+
+              {/* Promo Media - promotional content for this event */}
+              <PromoMediaSection
+                promo={promoResult.promo}
+                isOwner={canManageEvent}
+                promoSource={promoResult.promoSource}
                 eventId={event.id}
                 eventSlug={event.slug}
-                totalGoing={counts?.going_spots ?? 0}
+                seriesId={event.series_id}
+                isSeriesEvent={!!event.series_id}
+                pastMoments={pastMoments}
+                vibeMomentIds={vibeMomentIds}
               />
-            )}
 
-            {/* Attendees */}
-            <AttendeeList attendees={attendees} waitlist={waitlist} interested={interested} isPast={isPast} />
+              {/* Materials (PDFs, videos, etc.) */}
+              {materials.length > 0 && (
+                <EventMaterialsSummary materials={materials} />
+              )}
 
-            {/* Comments Section */}
-            <EventCommentsSection
-              eventId={event.id}
-              eventSlug={event.slug}
-              contentOwnerId={event.created_by}
-              currentUserId={currentUserId ?? undefined}
-              rsvpStatus={currentRsvp?.status}
-              canManageEvent={canManageEvent}
-            />
-          </div>
+              {/* Reconfirmation badge for organizers */}
+              {canManageEvent && !isPast && (
+                <ReconfirmationBadge
+                  eventId={event.id}
+                  eventSlug={event.slug}
+                  totalGoing={counts?.going_spots ?? 0}
+                />
+              )}
 
-          {/* Sidebar */}
-          <div className="space-y-4">
-            {/* RSVP card */}
-            <Card>
-              <CardContent className="p-4 space-y-4">
-                {/* Date/time */}
-                <div className="flex items-start gap-3">
-                  <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="font-medium">
-                      {formattedDate}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {formattedStartTime}
-                      {formattedEndTime && ` - ${formattedEndTime}`}
-                    </p>
-                  </div>
-                </div>
+              {/* Attendees */}
+              <AttendeeList
+                attendees={attendees}
+                waitlist={waitlist}
+                interested={interested}
+                isPast={isPast}
+              />
 
-                {/* Online event indicator */}
-                {event.is_online && (
-                  <div className="flex items-start gap-3">
-                    <Video className="w-5 h-5 text-muted-foreground mt-0.5" />
-                    <div className="space-y-1">
-                      <p className="font-medium">{t("onlineEvent")}</p>
-                      {/* Only show meeting link to RSVPed users */}
-                      {event.online_link && currentRsvp?.status === "going" ? (
-                        <a
-                          href={event.online_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline flex items-center gap-1"
-                        >
-                          {t("joinMeeting")}
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      ) : event.online_link ? (
-                        <p className="text-sm text-muted-foreground">
-                          {t("rsvpToSeeMeetingLink")}
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                )}
+              {/* Comments Section */}
+              <EventCommentsSection
+                eventId={event.id}
+                eventSlug={event.slug}
+                contentOwnerId={event.created_by}
+                currentUserId={currentUserId ?? undefined}
+                rsvpStatus={currentRsvp?.status}
+                canManageEvent={canManageEvent}
+              />
+            </div>
 
-                {/* Location */}
-                {(event.location_name || event.address || event.has_private_details) && (
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
-                    <div className="space-y-1">
-                      {event.location_name && (
-                        <p className="font-medium">{decodeUnicodeEscapes(event.location_name)}</p>
-                      )}
-                      {(event.address || privateDetails?.address) && (
-                        <CopyAddress address={(event.address || privateDetails?.address) as string} />
-                      )}
-                      {(event.google_maps_url || privateDetails?.google_maps_url) && (
-                        <a
-                          href={(event.google_maps_url || privateDetails?.google_maps_url) as string}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline flex items-center gap-1"
-                        >
-                          {t("viewOnMap")}
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                      {/* Secret address: guests-only extras or the lock hint */}
-                      {privateDetails?.arrival_notes && (
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                          <Linkify text={privateDetails.arrival_notes} />
-                        </p>
-                      )}
-                      {event.has_private_details && privateDetails && (
-                        <p className="text-xs text-muted-foreground">
-                          {t("secretAddressRevealedHint")}
-                        </p>
-                      )}
-                      {event.has_private_details && !privateDetails && (
-                        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                          <Lock className="w-3.5 h-3.5 shrink-0" />
-                          {t("secretAddressLockHint")}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Spots - only show counts to logged-in users */}
-                {isLoggedIn ? (
-                  <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">
-                        {spotsText} {isPast ? t("went") : t("going")}
-                        {(counts?.interested_count ?? 0) > 0 && (
-                          <span className="text-muted-foreground font-normal">
-                            {" "}· {counts?.interested_count} {t("interested")}
-                          </span>
-                        )}
-                      </p>
-                      {(counts?.waitlist_count ?? 0) > 0 && (
-                        <p className="text-sm text-muted-foreground">
-                          {counts?.waitlist_count} {t("onWaitlist")}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <Users className="w-5 h-5 text-muted-foreground" />
-                    <p className="text-muted-foreground text-sm">
-                      {t("signInToSeeAttendees")}
-                    </p>
-                  </div>
-                )}
-
-                {/* External link */}
-                {event.external_chat_url && (
-                  <a
-                    href={event.external_chat_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-primary hover:underline"
-                  >
-                    <Link2 className="w-4 h-4" />
-                    {t("moreInfo")}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-
-                <hr />
-
-                {/* RSVP button - wrapped in observer to show/hide floating bar */}
-                <RsvpCardObserver>
-                  <RsvpButton
-                    eventId={event.id}
-                    eventSlug={event.slug}
-                    eventTitle={event.title}
-                    eventDescription={event.description}
-                    eventImageUrl={event.image_url}
-                    locationName={event.location_name}
-                    address={event.address ?? privateDetails?.address ?? null}
-                    googleMapsUrl={event.google_maps_url ?? privateDetails?.google_maps_url ?? null}
-                    capacity={event.capacity}
-                    goingSpots={counts?.going_spots ?? 0}
-                    currentRsvp={currentRsvp}
-                    isLoggedIn={isLoggedIn}
-                    waitlistPosition={waitlistPosition}
-                    startsAt={event.starts_at}
-                    endsAt={event.ends_at}
-                    existingFeedback={userFeedback}
-                    questionnaire={questionnaire}
-                  />
-                </RsvpCardObserver>
-
-                {/* Feedback stats for past events */}
-                {feedbackStats && feedbackStats.total > 0 && (
-                  <div className="flex justify-center">
-                    <FeedbackBadge
-                      positivePercentage={feedbackStats.positive_percentage}
-                      totalFeedback={feedbackStats.total}
-                    />
-                  </div>
-                )}
-
-                {/* Add to calendar - only for upcoming events */}
-                {!isPast && (
-                  <AddToCalendar
-                    title={event.title}
-                    description={event.description}
-                    locationName={event.location_name}
-                    address={event.address ?? privateDetails?.address ?? null}
-                    googleMapsUrl={event.google_maps_url ?? privateDetails?.google_maps_url ?? null}
-                    startsAt={event.starts_at}
-                    endsAt={event.ends_at}
-                    url={`https://dalat.app/events/${event.slug}`}
-                  />
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Organizer */}
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground mb-2">
-                  {t("organizedBy")}
-                </p>
-                <Link
-                  href={
-                    event.organizers?.slug
-                      ? `/organizers/${event.organizers.slug}`
-                      : event.organizers?.owner?.username
-                        ? `/${event.organizers.owner.username}`
-                        : `/${event.profiles?.username || event.created_by}`
-                  }
-                  className="flex items-center gap-3 hover:bg-muted p-2 -m-2 rounded-lg transition-colors"
-                >
-                  {event.organizers ? (
-                    event.organizers.logo_url ? (
-                      <img
-                        src={event.organizers.logo_url}
-                        alt=""
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : event.organizers.owner?.avatar_url ? (
-                      <img
-                        src={event.organizers.owner.avatar_url}
-                        alt=""
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
-                        {event.organizers.name?.charAt(0).toUpperCase() || "O"}
-                      </div>
-                    )
-                  ) : event.profiles?.avatar_url ? (
-                    <img
-                      src={event.profiles.avatar_url}
-                      alt=""
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/20" />
-                  )}
-                  <span className="font-medium">
-                    {event.organizers?.name ||
-                      event.organizers?.owner?.display_name ||
-                      event.profiles?.display_name ||
-                      event.profiles?.username ||
-                      tCommon("anonymous")}
-                  </span>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Hosting tribe — the read side of events.tribe_id. Safe to show
-                whenever set: members_only events are already hidden from
-                non-members by RLS. */}
-            {(event.tribes || canManageEvent) && (
+            {/* Sidebar */}
+            <div className="space-y-4">
+              {/* RSVP card */}
               <Card>
-                <CardContent className="p-4">
-                  {event.tribes ? (
-                    <>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {tTribes("hostedByTribe")}
+                <CardContent className="p-4 space-y-4">
+                  {/* Date/time */}
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="font-medium">{formattedDate}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formattedStartTime}
+                        {formattedEndTime && ` - ${formattedEndTime}`}
                       </p>
-                      <TribeChip
-                        tribe={event.tribes}
-                        showJoin={isLoggedIn && !viewerInTribe}
-                      />
-                    </>
-                  ) : null}
-                  {canManageEvent && (
-                    <EventTribeAttach
+                    </div>
+                  </div>
+
+                  {/* Online event indicator */}
+                  {event.is_online && (
+                    <div className="flex items-start gap-3">
+                      <Video className="w-5 h-5 text-muted-foreground mt-0.5" />
+                      <div className="space-y-1">
+                        <p className="font-medium">{t("onlineEvent")}</p>
+                        {/* Only show meeting link to RSVPed users */}
+                        {event.online_link &&
+                        currentRsvp?.status === "going" ? (
+                          <a
+                            href={event.online_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline flex items-center gap-1"
+                          >
+                            {t("joinMeeting")}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : event.online_link ? (
+                          <p className="text-sm text-muted-foreground">
+                            {t("rsvpToSeeMeetingLink")}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Location */}
+                  {(event.location_name ||
+                    event.address ||
+                    event.has_private_details) && (
+                    <div className="flex items-start gap-3">
+                      <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
+                      <div className="space-y-1">
+                        {event.location_name && (
+                          <p className="font-medium">
+                            {decodeUnicodeEscapes(event.location_name)}
+                          </p>
+                        )}
+                        {(event.address || privateDetails?.address) && (
+                          <CopyAddress
+                            address={
+                              (event.address ||
+                                privateDetails?.address) as string
+                            }
+                          />
+                        )}
+                        {(event.google_maps_url ||
+                          privateDetails?.google_maps_url) && (
+                          <a
+                            href={
+                              (event.google_maps_url ||
+                                privateDetails?.google_maps_url) as string
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline flex items-center gap-1"
+                          >
+                            {t("viewOnMap")}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                        {/* Secret address: guests-only extras or the lock hint */}
+                        {privateDetails?.arrival_notes && (
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            <Linkify text={privateDetails.arrival_notes} />
+                          </p>
+                        )}
+                        {event.has_private_details && privateDetails && (
+                          <p className="text-xs text-muted-foreground">
+                            {t("secretAddressRevealedHint")}
+                          </p>
+                        )}
+                        {event.has_private_details && !privateDetails && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                            <Lock className="w-3.5 h-3.5 shrink-0" />
+                            {t("secretAddressLockHint")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Spots - only show counts to logged-in users */}
+                  {isLoggedIn ? (
+                    <div className="flex items-center gap-3">
+                      <Users className="w-5 h-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">
+                          {spotsText} {isPast ? t("went") : t("going")}
+                          {(counts?.interested_count ?? 0) > 0 && (
+                            <span className="text-muted-foreground font-normal">
+                              {" "}
+                              · {counts?.interested_count} {t("interested")}
+                            </span>
+                          )}
+                        </p>
+                        {(counts?.waitlist_count ?? 0) > 0 && (
+                          <p className="text-sm text-muted-foreground">
+                            {counts?.waitlist_count} {t("onWaitlist")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <Users className="w-5 h-5 text-muted-foreground" />
+                      <p className="text-muted-foreground text-sm">
+                        {t("signInToSeeAttendees")}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* External link */}
+                  {event.external_chat_url && (
+                    <a
+                      href={event.external_chat_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-primary hover:underline"
+                    >
+                      <Link2 className="w-4 h-4" />
+                      {t("moreInfo")}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+
+                  <hr />
+
+                  {/* RSVP button - wrapped in observer to show/hide floating bar */}
+                  <RsvpCardObserver>
+                    <RsvpButton
+                      eventId={event.id}
                       eventSlug={event.slug}
-                      currentTribeId={event.tribe_id ?? null}
+                      eventTitle={event.title}
+                      eventDescription={event.description}
+                      eventImageUrl={event.image_url}
+                      locationName={event.location_name}
+                      address={event.address ?? privateDetails?.address ?? null}
+                      googleMapsUrl={
+                        event.google_maps_url ??
+                        privateDetails?.google_maps_url ??
+                        null
+                      }
+                      capacity={event.capacity}
+                      goingSpots={counts?.going_spots ?? 0}
+                      currentRsvp={currentRsvp}
+                      isLoggedIn={isLoggedIn}
+                      waitlistPosition={waitlistPosition}
+                      startsAt={event.starts_at}
+                      endsAt={event.ends_at}
+                      existingFeedback={userFeedback}
+                      questionnaire={questionnaire}
+                    />
+                  </RsvpCardObserver>
+
+                  {/* Feedback stats for past events */}
+                  {feedbackStats && feedbackStats.total > 0 && (
+                    <div className="flex justify-center">
+                      <FeedbackBadge
+                        positivePercentage={feedbackStats.positive_percentage}
+                        totalFeedback={feedbackStats.total}
+                      />
+                    </div>
+                  )}
+
+                  {/* Add to calendar - only for upcoming events */}
+                  {!isPast && (
+                    <AddToCalendar
+                      title={event.title}
+                      description={event.description}
+                      locationName={event.location_name}
+                      address={event.address ?? privateDetails?.address ?? null}
+                      googleMapsUrl={
+                        event.google_maps_url ??
+                        privateDetails?.google_maps_url ??
+                        null
+                      }
+                      startsAt={event.starts_at}
+                      endsAt={event.ends_at}
+                      url={`https://dalat.app/events/${event.slug}`}
                     />
                   )}
                 </CardContent>
               </Card>
-            )}
 
-            {/* Moments preview - Only show in sidebar for upcoming events */}
-            {!isPast && (
-              <MomentsPreview
-                eventSlug={event.slug}
-                moments={momentsPreview}
-                counts={momentCounts}
-                canPost={canPostMoment}
-              />
-            )}
+              {/* Organizer */}
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {t("organizedBy")}
+                  </p>
+                  <Link
+                    href={
+                      event.organizers?.slug
+                        ? `/organizers/${event.organizers.slug}`
+                        : event.organizers?.owner?.username
+                          ? `/${event.organizers.owner.username}`
+                          : `/${event.profiles?.username || event.created_by}`
+                    }
+                    className="flex items-center gap-3 hover:bg-muted p-2 -m-2 rounded-lg transition-colors"
+                  >
+                    {event.organizers ? (
+                      event.organizers.logo_url ? (
+                        <img
+                          src={event.organizers.logo_url}
+                          alt=""
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : event.organizers.owner?.avatar_url ? (
+                        <img
+                          src={event.organizers.owner.avatar_url}
+                          alt=""
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                          {event.organizers.name?.charAt(0).toUpperCase() ||
+                            "O"}
+                        </div>
+                      )
+                    ) : event.profiles?.avatar_url ? (
+                      <img
+                        src={event.profiles.avatar_url}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/20" />
+                    )}
+                    <span className="font-medium">
+                      {event.organizers?.name ||
+                        event.organizers?.owner?.display_name ||
+                        event.profiles?.display_name ||
+                        event.profiles?.username ||
+                        tCommon("anonymous")}
+                    </span>
+                  </Link>
+                </CardContent>
+              </Card>
 
-            {/* More from organizer */}
-            {event.organizers && organizerEvents.length > 1 && (
-              <MoreFromOrganizer
-                organizer={event.organizers}
-                events={organizerEvents}
-                currentEventId={event.id}
-                locale={locale as Locale}
-              />
-            )}
+              {/* Hosting tribe — the read side of events.tribe_id. Safe to show
+                whenever set: members_only events are already hidden from
+                non-members by RLS. */}
+              {(event.tribes || canManageEvent) && (
+                <Card>
+                  <CardContent className="p-4">
+                    {event.tribes ? (
+                      <>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {tTribes("hostedByTribe")}
+                        </p>
+                        <TribeChip
+                          tribe={event.tribes}
+                          showJoin={isLoggedIn && !viewerInTribe}
+                        />
+                      </>
+                    ) : null}
+                    {canManageEvent && (
+                      <EventTribeAttach
+                        eventSlug={event.slug}
+                        currentTribeId={event.tribe_id ?? null}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* More events at this venue — internal linking for SEO */}
-            {event.venues && (
-              <Suspense fallback={null}>
-                <MoreAtVenue
-                  venueId={event.venues.id}
-                  venueName={event.venues.name}
-                  venueSlug={event.venues.slug}
+              {/* Moments preview - Only show in sidebar for upcoming events */}
+              {!isPast && (
+                <MomentsPreview
+                  eventSlug={event.slug}
+                  moments={momentsPreview}
+                  counts={momentCounts}
+                  canPost={canPostMoment}
+                />
+              )}
+
+              {/* More from organizer */}
+              {event.organizers && organizerEvents.length > 1 && (
+                <MoreFromOrganizer
+                  organizer={event.organizers}
+                  events={organizerEvents}
                   currentEventId={event.id}
                   locale={locale as Locale}
                 />
-              </Suspense>
-            )}
+              )}
+
+              {/* More events at this venue — internal linking for SEO */}
+              {event.venues && (
+                <Suspense fallback={null}>
+                  <MoreAtVenue
+                    venueId={event.venues.id}
+                    venueName={event.venues.name}
+                    venueSlug={event.venues.slug}
+                    currentEventId={event.id}
+                    locale={locale as Locale}
+                  />
+                </Suspense>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Floating RSVP bar for mobile */}
-      <FloatingRsvpBar
-        eventId={event.id}
-        eventSlug={event.slug}
-        eventTitle={event.title}
-        eventDescription={event.description}
-        eventImageUrl={event.image_url}
-        locationName={event.location_name}
-        address={event.address ?? privateDetails?.address ?? null}
-        googleMapsUrl={event.google_maps_url ?? privateDetails?.google_maps_url ?? null}
-        capacity={event.capacity}
-        goingSpots={counts?.going_spots ?? 0}
-        currentRsvp={currentRsvp}
-        isLoggedIn={isLoggedIn}
-        waitlistPosition={waitlistPosition}
-        startsAt={event.starts_at}
-        endsAt={event.ends_at}
-        questionnaire={questionnaire}
-      />
-    </main>
+        {/* Floating RSVP bar for mobile */}
+        <FloatingRsvpBar
+          eventId={event.id}
+          eventSlug={event.slug}
+          eventTitle={event.title}
+          eventDescription={event.description}
+          eventImageUrl={event.image_url}
+          locationName={event.location_name}
+          address={event.address ?? privateDetails?.address ?? null}
+          googleMapsUrl={
+            event.google_maps_url ?? privateDetails?.google_maps_url ?? null
+          }
+          capacity={event.capacity}
+          goingSpots={counts?.going_spots ?? 0}
+          currentRsvp={currentRsvp}
+          isLoggedIn={isLoggedIn}
+          waitlistPosition={waitlistPosition}
+          startsAt={event.starts_at}
+          endsAt={event.ends_at}
+          questionnaire={questionnaire}
+        />
+      </main>
     </CelebrationProvider>
   );
 }

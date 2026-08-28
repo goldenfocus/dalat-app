@@ -12,6 +12,7 @@ describe("Activity Graph deterministic parsers", () => {
       {"@context":"https://schema.org","@type":"Event","name":"Đêm nhạc Đà Lạt",
        "startDate":"2026-09-02T19:30:00+07:00","endDate":"2026-09-02T21:30:00+07:00",
        "eventStatus":"https://schema.org/EventScheduled",
+       "image":"/_astro/official-poster.webp",
        "location":{"@type":"Place","name":"Mây Lang Thang - Đà Lạt","address":"Đà Lạt, Lâm Đồng"},
        "organizer":{"@type":"Organization","name":"Mây Lang Thang","url":"/"},
        "url":"/shows/dem-nhac","offers":[{"@type":"Offer","price":"250000","priceCurrency":"VND","url":"/shows/dem-nhac"}]}
@@ -45,7 +46,15 @@ describe("Activity Graph deterministic parsers", () => {
       "starts_at",
     );
     expect(activity.structuredPayload).not.toHaveProperty("description");
-    expect(activity.structuredPayload).not.toHaveProperty("image");
+    expect(activity.mediaCandidates).toEqual([
+      {
+        url: "https://maylangthang.com.vn/_astro/official-poster.webp",
+        role: "primary",
+        sourceUrl: "https://maylangthang.com.vn/shows/dem-nhac",
+        locator: "jsonld:Event[0].image[0]",
+      },
+    ]);
+    expect(activity.structuredPayload).toHaveProperty("mediaCandidates");
   });
 
   it("interprets offset-less schema.org datetimes in Asia/Ho_Chi_Minh", () => {
@@ -145,6 +154,24 @@ describe("Activity Graph deterministic parsers", () => {
     expect(activity.publicAccess).toBe("unknown");
   });
 
+  it("does not mislabel Mây Lang Thang's 25,000 VND shuttle as a ticket", () => {
+    const [activity] = extractSchemaOrgEvents(
+      `<script type="application/ld+json">{"@type":"Event","name":"HÀ NHI - ĐÀ LẠT","startDate":"2026-08-30T17:00:00+07:00","eventStatus":"https://schema.org/EventScheduled","location":{"name":"MÂY LANG THANG - ĐÀ LẠT"},"url":"/shows/hanhi3008","offers":[{"@type":"Offer","price":"25000","priceCurrency":"VND","url":"/shows/hanhi3008"},{"@type":"Offer","price":"2500000","priceCurrency":"VND","url":"/shows/hanhi3008"}]}</script>`,
+      "https://maylangthang.com.vn/shows/hanhi3008",
+    );
+
+    expect(activity.ticketTiers).toEqual([
+      {
+        name: "Official ticket 1",
+        price: 2_500_000,
+        currency: "VND",
+      },
+    ]);
+    expect(activity.ticketTiers?.some((tier) => tier.price === 25_000)).toBe(
+      false,
+    );
+  });
+
   it("does not turn null prices or coordinates into factual zeroes", () => {
     const [activity] = extractSchemaOrgEvents(
       `<script type="application/ld+json">{"@type":"Event","name":"Unknown Details","startDate":"2026-09-02T19:30:00+07:00","eventStatus":"https://schema.org/EventScheduled","location":{"name":"Đà Lạt","geo":{"latitude":null,"longitude":""}},"url":"/unknown","offers":{"price":null,"priceCurrency":"VND","url":"/unknown"}}</script>`,
@@ -190,6 +217,9 @@ describe("Activity Graph deterministic parsers", () => {
       {"@type":"Restaurant","name":"Dưới Tán Anh Đào","url":"https://duoitananhdao.com/en/",
        "address":{"streetAddress":"29B Hùng Vương, Xuân Trường","addressLocality":"Đà Lạt","addressRegion":"Lâm Đồng","addressCountry":"VN"}}
       </script>
+      <img src="/images/dishes/acoustic.webp" alt="Acoustic night photo" />
+      <img data-full="/images/dishes/dtad-07.webp" alt="Valley-facing stage" />
+      <img src="/images/unrelated-food.webp" alt="Food" />
       <script type="application/ld+json">
       {"@type":"FAQPage","mainEntity":[
         {"@type":"Question","name":"When is the live acoustic set?","acceptedAnswer":{"@type":"Answer","text":"Live acoustic runs every evening from 7:30pm to 9:30pm. There is no ticket and no cover charge."}},
@@ -218,6 +248,11 @@ describe("Activity Graph deterministic parsers", () => {
       rain_suitable: true,
       no_cover_charge: true,
     });
+    expect(activity.mediaCandidates).toHaveLength(2);
+    expect(activity.mediaCandidates?.map(({ url }) => url)).toEqual([
+      "https://duoitananhdao.com/images/dishes/acoustic.webp",
+      "https://duoitananhdao.com/images/dishes/dtad-07.webp",
+    ]);
   });
 
   it("fails closed when recurring schedule wording no longer contains explicit times", () => {

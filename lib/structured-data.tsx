@@ -73,12 +73,21 @@ function getSchemaEventStatus(status: string) {
  * https://schema.org/Event
  */
 export function generateEventSchema(
-  event: Event & { profiles?: Profile; organizers?: Organizer | null },
+  event: Omit<Event, "event_series"> & {
+    profiles?: Profile;
+    organizers?: Organizer | null;
+    event_series?: Pick<EventSeries, "slug" | "title"> | null;
+  },
   locale: string,
   attendeeCount?: number,
   imageMetadata?: { alt?: string | null; description?: string | null },
+  localizedContent?: { title: string; description: string | null },
 ) {
   const eventUrl = localizedSiteUrl(locale, `/events/${event.slug}`);
+  const offerUrl =
+    event.source_platform === "activity-graph" && event.external_chat_url
+      ? event.external_chat_url
+      : eventUrl;
 
   const eventStatus = getSchemaEventStatus(event.status);
   const hasCoordinates =
@@ -106,8 +115,7 @@ export function generateEventSchema(
   const offerBase = {
     "@type": "Offer",
     availability: offerAvailability,
-    url: eventUrl,
-    validFrom: event.created_at,
+    url: offerUrl,
   };
   const offers =
     event.price_type === "free"
@@ -129,8 +137,14 @@ export function generateEventSchema(
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Event",
-    name: event.title,
-    description: event.description || `Event in Đà Lạt, Vietnam`,
+    name: localizedContent?.title ?? event.title,
+    ...(localizedContent
+      ? localizedContent.description && {
+          description: localizedContent.description,
+        }
+      : {
+          description: event.description || `Event in Đà Lạt, Vietnam`,
+        }),
     url: eventUrl,
     startDate: event.starts_at,
     ...(event.ends_at && { endDate: event.ends_at }),
@@ -201,6 +215,15 @@ export function generateEventSchema(
         : undefined,
 
     ...(offers && { offers }),
+
+    // Link generated occurrences back to their recurring activity page.
+    ...(event.event_series && {
+      superEvent: {
+        "@type": "EventSeries",
+        name: event.event_series.title,
+        url: localizedSiteUrl(locale, `/series/${event.event_series.slug}`),
+      },
+    }),
 
     // Attendance info
     ...(attendeeCount !== undefined && {
@@ -540,9 +563,12 @@ export function generatePersonSchema(
 export function generateEventSeriesSchema(
   series: EventSeries & { organizers?: Organizer | null },
   locale: string,
-  upcomingCount?: number,
+  upcomingEvents: Array<
+    Pick<Event, "slug" | "starts_at" | "ends_at" | "status" | "image_url">
+  > = [],
 ) {
   const seriesUrl = localizedSiteUrl(locale, `/series/${series.slug}`);
+  const seriesId = `${seriesUrl}#series`;
   const hasCoordinates =
     typeof series.latitude === "number" &&
     Number.isFinite(series.latitude) &&
@@ -559,9 +585,13 @@ export function generateEventSeriesSchema(
       ? "https://schema.org/MixedEventAttendanceMode"
       : "https://schema.org/OnlineEventAttendanceMode"
     : "https://schema.org/OfflineEventAttendanceMode";
+  const offerUrl =
+    series.source_platform === "activity-graph" && series.external_chat_url
+      ? series.external_chat_url
+      : seriesUrl;
   const offerBase = {
     "@type": "Offer",
-    url: seriesUrl,
+    url: offerUrl,
     availability: "https://schema.org/InStock",
   };
   const offers =
@@ -576,25 +606,8 @@ export function generateEventSeriesSchema(
             ...(tier.description && { description: tier.description }),
           }))
         : undefined;
-
-  const schema: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": "EventSeries",
-    name: series.title,
-    description:
-      series.description || `Recurring event series in Đà Lạt, Vietnam`,
-    url: seriesUrl,
-    startDate: series.first_occurrence,
-    ...(series.rrule_until && { endDate: series.rrule_until }),
-    eventStatus:
-      series.status === "cancelled"
-        ? "https://schema.org/EventCancelled"
-        : "https://schema.org/EventScheduled",
-    eventAttendanceMode,
-
-    // Location
-    ...(hasPhysicalLocation && {
-      location: {
+  const location = hasPhysicalLocation
+    ? {
         "@type": "Place",
         name: series.location_name || "Đà Lạt, Vietnam",
         ...(series.address && {
@@ -614,8 +627,101 @@ export function generateEventSeriesSchema(
           },
         }),
         ...(series.google_maps_url && { hasMap: series.google_maps_url }),
-      },
+      }
+    : undefined;
+  const rruleParts: Record<string, string> = Object.fromEntries(
+    series.rrule
+      .split(";")
+      .map((part) => part.split("=", 2))
+      .filter(([key, value]) => Boolean(key && value)),
+  );
+  const interval = Math.max(1, Number.parseInt(rruleParts.INTERVAL || "1", 10));
+  const repeatFrequencyUnit: Record<string, string> = {
+    DAILY: "D",
+    WEEKLY: "W",
+    MONTHLY: "M",
+    YEARLY: "Y",
+  };
+  const repeatUnit = repeatFrequencyUnit[rruleParts.FREQ];
+  const weekdayNames: Record<string, string> = {
+    MO: "Monday",
+    TU: "Tuesday",
+    WE: "Wednesday",
+    TH: "Thursday",
+    FR: "Friday",
+    SA: "Saturday",
+    SU: "Sunday",
+  };
+  const byDayValues = (rruleParts.BYDAY || "")
+    .split(",")
+    .map((value) => {
+      const match = value.match(/^(-?\d+)?([A-Z]{2})$/);
+      if (!match || !weekdayNames[match[2]]) return null;
+      return match[1] ? value : `https://schema.org/${weekdayNames[match[2]]}`;
+    })
+    .filter((value): value is string => Boolean(value));
+  const repeatCount = Number.parseInt(
+    String(series.rrule_count ?? rruleParts.COUNT ?? ""),
+    10,
+  );
+  const byMonthDay = Number.parseInt(rruleParts.BYMONTHDAY || "", 10);
+  const eventSchedule = repeatUnit
+    ? {
+        "@type": "Schedule",
+        startDate: series.first_occurrence,
+        startTime: series.starts_at_time,
+        duration: `PT${series.duration_minutes}M`,
+        scheduleTimezone: series.timezone,
+        repeatFrequency: `P${Number.isFinite(interval) ? interval : 1}${repeatUnit}`,
+        ...(series.rrule_until && { endDate: series.rrule_until }),
+        ...(Number.isFinite(repeatCount) && repeatCount > 0
+          ? { repeatCount }
+          : {}),
+        ...(byDayValues.length > 0 && { byDay: byDayValues }),
+        ...(Number.isFinite(byMonthDay) && { byMonthDay }),
+      }
+    : undefined;
+  const subEvents = upcomingEvents.map((event) => {
+    const eventUrl = localizedSiteUrl(locale, `/events/${event.slug}`);
+    return {
+      "@type": "Event",
+      "@id": `${eventUrl}#event`,
+      name: series.title,
+      url: eventUrl,
+      startDate: event.starts_at,
+      ...(event.ends_at && { endDate: event.ends_at }),
+      eventStatus: getSchemaEventStatus(event.status),
+      eventAttendanceMode,
+      ...(location && { location }),
+      ...((event.image_url || series.image_url) && {
+        image: [event.image_url || series.image_url],
+      }),
+      superEvent: { "@id": seriesId },
+    };
+  });
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "EventSeries",
+    "@id": seriesId,
+    name: series.title,
+    description:
+      series.description || `Recurring event series in Đà Lạt, Vietnam`,
+    url: seriesUrl,
+    ...(!eventSchedule && {
+      startDate: series.first_occurrence,
+      ...(series.rrule_until && { endDate: series.rrule_until }),
     }),
+    eventStatus:
+      series.status === "cancelled"
+        ? "https://schema.org/EventCancelled"
+        : "https://schema.org/EventScheduled",
+    eventAttendanceMode,
+
+    // Location
+    ...(location && { location }),
+
+    ...(eventSchedule && { eventSchedule }),
 
     // Image
     ...(series.image_url && { image: [series.image_url] }),
@@ -630,13 +736,7 @@ export function generateEventSeriesSchema(
     }),
 
     // Sub-events
-    ...(upcomingCount !== undefined &&
-      upcomingCount > 0 && {
-        subEvent: {
-          "@type": "ItemList",
-          numberOfItems: upcomingCount,
-        },
-      }),
+    ...(subEvents.length > 0 && { subEvent: subEvents }),
 
     ...(series.price_type === "free" && { isAccessibleForFree: true }),
     ...(series.price_type === "paid" && { isAccessibleForFree: false }),

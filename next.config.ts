@@ -23,6 +23,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cdn.dalat.app",
       },
+      {
+        protocol: "https",
+        hostname: "dalat.app",
+        pathname: "/activity-art/**",
+      },
     ],
     // Enable modern image formats for better compression
     formats: ["image/avif", "image/webp"],
@@ -39,7 +44,10 @@ const nextConfig: NextConfig = {
   // Optimize production builds
   compiler: {
     // Remove console.log in production (except errors)
-    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["error", "warn"] }
+        : false,
   },
 
   // Enable experimental features for better performance
@@ -121,6 +129,19 @@ const nextConfig: NextConfig = {
           {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        // These extension-bearing PNGs are rendered from live Activity Graph
+        // facts. Keep them crawlable without incorrectly marking them immutable.
+        // This specific rule follows the broad asset rule so its cache policy wins.
+        source: "/activity-art/:kind/:file.png",
+        headers: [
+          {
+            key: "Cache-Control",
+            value:
+              "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
           },
         ],
       },

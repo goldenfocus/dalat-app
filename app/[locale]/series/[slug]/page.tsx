@@ -20,8 +20,9 @@ import { describeRRule, getShortRRuleLabel } from "@/lib/recurrence";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
 import { JsonLd, generateEventSeriesSchema } from "@/lib/structured-data";
-import { buildAlternates, localeUrl } from "@/lib/metadata";
-import { sourceDescriptionForLocale } from "@/lib/activity-graph/translations";
+import { buildEventSeriesMetadata } from "@/lib/series/seo";
+import { buildAlternates } from "@/lib/metadata";
+import { activitySeriesDescriptionForLocale } from "@/lib/activity-graph/translations";
 import type {
   EventSeries,
   Event,
@@ -71,7 +72,7 @@ export async function generateMetadata({
   const { data: series } = await supabase
     .from("event_series")
     .select(
-      "title, description, image_url, location_name, rrule, source_platform, organizers:organizer_id(name)",
+      "slug, title, description, image_url, location_name, address, rrule, starts_at_time, duration_minutes, reservation_requirement, source_metadata, source_platform, organizers:organizer_id(name)",
     )
     .eq("slug", slug)
     .single();
@@ -90,37 +91,25 @@ export async function generateMetadata({
     : organizerRelation?.name;
   const localizedDescription =
     series.source_platform === "activity-graph"
-      ? sourceDescriptionForLocale(
+      ? activitySeriesDescriptionForLocale(
           locale,
+          series,
           sourceName || series.location_name || series.title,
         )
       : series.description;
   const description = localizedDescription
     ? `${localizedDescription.slice(0, 150)}${localizedDescription.length > 150 ? "..." : ""}`
     : `${recurrenceLabel}${series.location_name ? ` · ${series.location_name}` : ""} · ĐàLạt.app`;
-  const canonicalUrl = localeUrl(locale as Locale, `/series/${slug}`);
-
-  return {
-    title: `${series.title} | ĐàLạt.app`,
+  const metadata = buildEventSeriesMetadata({
+    series,
+    locale: locale as Locale,
     description,
+  });
+  return {
+    ...metadata,
+    // Keep this explicit at the route boundary so the canonical safety gate
+    // can prove that dynamic series pages never inherit the homepage canonical.
     alternates: buildAlternates(locale as Locale, `/series/${slug}`),
-    openGraph: {
-      title: series.title,
-      description,
-      type: "website",
-      url: canonicalUrl,
-      siteName: "ĐàLạt.app",
-      ...(series.image_url && {
-        images: [
-          {
-            url: series.image_url,
-            width: 1200,
-            height: 630,
-            alt: series.title,
-          },
-        ],
-      }),
-    },
   };
 }
 
@@ -218,15 +207,16 @@ export default async function SeriesPage({ params }: PageProps) {
     : recurrenceDescription;
   const localizedDescription =
     series.source_platform === "activity-graph"
-      ? sourceDescriptionForLocale(
+      ? activitySeriesDescriptionForLocale(
           locale,
+          series,
           series.organizers?.name || series.location_name || series.title,
         )
       : series.description;
   const seriesSchema = generateEventSeriesSchema(
     { ...series, description: localizedDescription },
     locale,
-    upcomingEvents.length,
+    upcomingEvents,
   );
 
   // Use series image, or fall back to first event's image
@@ -256,7 +246,7 @@ export default async function SeriesPage({ params }: PageProps) {
                 <img
                   src={coverImage}
                   alt={series.title}
-                  className="w-full h-full object-cover rounded-t-lg"
+                  className={`w-full h-full rounded-t-lg ${series.source_platform === "activity-graph" ? "object-contain bg-gradient-to-br from-muted to-background" : "object-cover"}`}
                 />
               </div>
             ) : (

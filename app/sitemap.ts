@@ -21,6 +21,7 @@ type EntryOptions = {
   lastModified?: Date;
   changeFrequency?: MetadataRoute.Sitemap[number]["changeFrequency"];
   priority?: number;
+  images?: string[];
 };
 
 /**
@@ -30,7 +31,7 @@ type EntryOptions = {
  */
 function entry(
   path: string,
-  { lastModified, changeFrequency, priority }: EntryOptions,
+  { lastModified, changeFrequency, priority, images }: EntryOptions,
 ): MetadataRoute.Sitemap[number] {
   const languages: Record<string, string> = {};
   for (const locale of allLocales) {
@@ -43,8 +44,30 @@ function entry(
     ...(lastModified ? { lastModified } : {}),
     ...(changeFrequency ? { changeFrequency } : {}),
     ...(priority !== undefined ? { priority } : {}),
+    ...(images?.length ? { images } : {}),
     alternates: { languages },
   };
+}
+
+/**
+ * Image sitemap locations must be absolute, crawlable URLs. Invalid or
+ * credential-bearing values are omitted instead of risking a malformed
+ * sitemap. One image belongs to the canonical page entry; hreflang alternates
+ * do not need duplicate image declarations.
+ */
+function sitemapImages(imageUrl: string | null): string[] | undefined {
+  if (!imageUrl?.trim()) return undefined;
+
+  try {
+    const url = new URL(imageUrl.trim());
+    if (!["http:", "https:"].includes(url.protocol)) return undefined;
+    if (url.username || url.password) return undefined;
+
+    url.hash = "";
+    return [url.toString()];
+  } catch {
+    return undefined;
+  }
 }
 
 /** A failed query MUST fail the sitemap — `?? []` silently shipped a sitemap
@@ -142,12 +165,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // client, i.e. the sitemap sees exactly what a crawler can see.
     supabase
       .from("events")
-      .select("slug, updated_at")
+      .select("slug, updated_at, image_url")
       .eq("status", "published")
       .order("starts_at", { ascending: false }),
     supabase
       .from("event_series")
-      .select("slug, updated_at")
+      .select("slug, updated_at, image_url")
       .eq("status", "active")
       .order("updated_at", { ascending: false }),
     supabase.from("festivals").select("slug, updated_at"),
@@ -273,6 +296,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(event.updated_at),
         changeFrequency: "weekly",
         priority: 0.8,
+        images: sitemapImages(event.image_url),
       }),
     );
   }
@@ -285,6 +309,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: new Date(item.updated_at),
         changeFrequency: "weekly",
         priority: 0.75,
+        images: sitemapImages(item.image_url),
       }),
     );
   }

@@ -1,4 +1,5 @@
 import type {
+  ActivityMediaCandidate,
   ExtractedActivity,
   FieldEvidence,
   SitemapItem,
@@ -86,6 +87,106 @@ function absoluteUrl(value: unknown, pageUrl: string): string | null {
   } catch {
     return null;
   }
+}
+
+function mediaUrl(value: unknown, pageUrl: string): string | null {
+  if (isObject(value)) {
+    return (
+      absoluteUrl(value.contentUrl, pageUrl) ??
+      absoluteUrl(value.url, pageUrl) ??
+      absoluteUrl(value["@id"], pageUrl)
+    );
+  }
+  return absoluteUrl(value, pageUrl);
+}
+
+function metaImageUrl(html: string, pageUrl: string): string | null {
+  const metaTags = html.match(/<meta\b[^>]*>/gi) ?? [];
+  for (const tag of metaTags) {
+    const property =
+      tag.match(/\bproperty\s*=\s*["']([^"']+)["']/i)?.[1] ??
+      tag.match(/\bname\s*=\s*["']([^"']+)["']/i)?.[1];
+    if (
+      !property ||
+      !["og:image", "twitter:image"].includes(property.toLowerCase())
+    ) {
+      continue;
+    }
+    const content = tag.match(/\bcontent\s*=\s*["']([^"']+)["']/i)?.[1];
+    const url = absoluteUrl(content, pageUrl);
+    if (url) return url;
+  }
+  return null;
+}
+
+function eventMediaCandidates(
+  item: JsonObject,
+  html: string,
+  pageUrl: string,
+  sourceUrl: string,
+  index: number,
+): ActivityMediaCandidate[] {
+  const advertised = Array.isArray(item.image) ? item.image : [item.image];
+  const candidates = advertised
+    .map((value) => mediaUrl(value, pageUrl))
+    .filter((url): url is string => Boolean(url))
+    .map((url, imageIndex) => ({
+      url,
+      role: "primary" as const,
+      sourceUrl,
+      locator: `jsonld:Event[${index}].image[${imageIndex}]`,
+    }));
+  if (candidates.length === 0) {
+    const url = metaImageUrl(html, pageUrl);
+    if (url) {
+      candidates.push({
+        url,
+        role: "primary",
+        sourceUrl,
+        locator: "meta:og:image-or-twitter:image",
+      });
+    }
+  }
+  return [
+    ...new Map(
+      candidates.map((candidate) => [candidate.url, candidate]),
+    ).values(),
+  ].slice(0, 3);
+}
+
+function duoiTanGalleryCandidates(
+  html: string,
+  pageUrl: string,
+): ActivityMediaCandidate[] {
+  const allowedNames = new Set([
+    "acoustic.webp",
+    "dtad-07.webp",
+    "dtad-05.webp",
+    "cold-cut-2.webp",
+  ]);
+  const candidates: ActivityMediaCandidate[] = [];
+  for (const tag of html.match(/<img\b[^>]*>/gi) ?? []) {
+    const rawUrl =
+      tag.match(/\bdata-full\s*=\s*["']([^"']+)["']/i)?.[1] ??
+      tag.match(/\bsrc\s*=\s*["']([^"']+)["']/i)?.[1];
+    const url = absoluteUrl(rawUrl, pageUrl);
+    if (!url) continue;
+    const name = new URL(url).pathname.split("/").pop()?.toLowerCase();
+    if (!name || !allowedNames.has(name)) continue;
+    const title = tag.match(/\balt\s*=\s*["']([^"']+)["']/i)?.[1]?.trim();
+    candidates.push({
+      url,
+      role: candidates.length === 0 ? "primary" : "gallery",
+      sourceUrl: pageUrl,
+      locator: `html:img[data-full*="${name}"]`,
+      ...(title ? { title } : {}),
+    });
+  }
+  return [
+    ...new Map(
+      candidates.map((candidate) => [candidate.url, candidate]),
+    ).values(),
+  ].slice(0, 4);
 }
 
 function validCalendarDate(year: number, month: number, day: number): boolean {
@@ -243,12 +344,22 @@ function parseOffers(
   const tiers: TicketTier[] = [];
   let ticketUrl: string | null = null;
 
-  offers.forEach((offer, index) => {
+  offers.forEach((offer) => {
     const price = numberValue(offer.price);
     const currency = textValue(offer.priceCurrency) ?? "VND";
-    if (price !== null && price >= 0) {
+    let isMayShuttle = false;
+    try {
+      isMayShuttle =
+        new URL(pageUrl).hostname === "maylangthang.com.vn" &&
+        currency.toUpperCase() === "VND" &&
+        price === 25_000;
+    } catch {
+      // pageUrl has already passed the canonical URL parser; fail closed here.
+      isMayShuttle = true;
+    }
+    if (price !== null && price >= 0 && !isMayShuttle) {
       tiers.push({
-        name: textValue(offer.name) ?? `Official ticket ${index + 1}`,
+        name: textValue(offer.name) ?? `Official ticket ${tiers.length + 1}`,
         price,
         currency,
       });
@@ -310,6 +421,13 @@ export function extractSchemaOrgEvents(
         : null;
       const offers = parseOffers(item.offers, pageUrl);
       const status = eventStatus(item.eventStatus);
+      const mediaCandidates = eventMediaCandidates(
+        item,
+        html,
+        pageUrl,
+        sourceUrl,
+        index,
+      );
       const evidenceRows: FieldEvidence[] = [
         evidence("title", item.name, `jsonld:Event[${index}].name`),
         evidence(
@@ -372,6 +490,16 @@ export function extractSchemaOrgEvents(
           ),
         );
       }
+      if (mediaCandidates.length > 0) {
+        evidenceRows.push(
+          evidence(
+            "media_candidates",
+            mediaCandidates.map(({ url, role }) => ({ url, role })),
+            mediaCandidates[0].locator,
+            100,
+          ),
+        );
+      }
 
       const timePrecision = /^\d{4}-\d{2}-\d{2}$/.test(startRaw)
         ? "date_only"
@@ -421,8 +549,9 @@ export function extractSchemaOrgEvents(
           sourceUpdatedAt,
           eventStatus: status,
           evidence: evidenceRows,
-          // Retain the factual fields needed for change detection and audit, not
-          // the publisher's full description, images, or unrelated JSON-LD.
+          // Retain the factual fields and advertised media references needed
+          // for change detection and audit. Media remains non-public until the
+          // source-level rights policy explicitly permits reuse.
           structuredPayload: {
             "@type": item["@type"],
             "@id": item["@id"],
@@ -434,8 +563,10 @@ export function extractSchemaOrgEvents(
             location: item.location,
             organizer: item.organizer,
             offers: item.offers,
+            mediaCandidates,
           },
           attributes: {},
+          mediaCandidates,
         },
       ];
     });
@@ -579,13 +710,18 @@ export function extractDuoiTanAcoustic(
   const address = addressValue(business.address);
   if (!businessName || !address) return [];
   const noCover = /no (ticket|cover charge)/i.test(schedule.answer);
-  const rainAnswer = answers.find(({ question, answer }) =>
+  const rainAnswers = answers.filter(({ question, answer }) =>
     /rain/i.test(`${question ?? ""} ${answer}`),
   );
+  const rainAnswer =
+    rainAnswers.find(({ answer }) =>
+      /do not cancel|as usual|goes ahead|move into/i.test(answer),
+    ) ?? rainAnswers[0];
   const reservationText = answers.find(({ answer }) =>
     /booking is advisable/i.test(answer),
   );
   const sourceUrl = absoluteUrl(business.url, pageUrl) ?? pageUrl;
+  const mediaCandidates = duoiTanGalleryCandidates(html, pageUrl);
   const evidenceRows: FieldEvidence[] = [
     evidence("title", businessName, "jsonld:LocalBusiness.name"),
     evidence(
@@ -649,6 +785,16 @@ export function extractDuoiTanAcoustic(
       ),
     );
   }
+  if (mediaCandidates.length > 0) {
+    evidenceRows.push(
+      evidence(
+        "media_candidates",
+        mediaCandidates.map(({ url, role }) => ({ url, role })),
+        mediaCandidates[0].locator,
+        100,
+      ),
+    );
+  }
 
   return [
     {
@@ -699,6 +845,7 @@ export function extractDuoiTanAcoustic(
             /acoustic|booking is advisable|rain/i.test(answer),
           )
           .slice(0, 4),
+        mediaCandidates,
       },
       attributes: {
         rain_suitable: Boolean(
@@ -707,6 +854,7 @@ export function extractDuoiTanAcoustic(
         ),
         no_cover_charge: noCover,
       },
+      mediaCandidates,
     },
   ];
 }

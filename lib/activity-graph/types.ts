@@ -1,4 +1,4 @@
-export const ACTIVITY_GRAPH_VERSION = "activity-graph-v0.1";
+export const ACTIVITY_GRAPH_VERSION = "activity-graph-v0.2";
 
 export type ActivityKind =
   | "event"
@@ -54,6 +54,19 @@ export interface TicketTier {
   description?: string;
 }
 
+/**
+ * A promotional image advertised by the canonical source. Discovery is not a
+ * reuse grant: candidates stay in the private observation record unless the
+ * source-level media policy is explicitly changed from `reference_only`.
+ */
+export interface ActivityMediaCandidate {
+  url: string;
+  role: "primary" | "gallery";
+  sourceUrl: string;
+  locator: string;
+  title?: string;
+}
+
 export interface ExtractedActivity {
   sourceUid: string;
   sourceUrl: string;
@@ -96,6 +109,7 @@ export interface ExtractedActivity {
   evidence: FieldEvidence[];
   structuredPayload: Record<string, unknown>;
   attributes: Record<string, boolean | string | number | null>;
+  mediaCandidates?: ActivityMediaCandidate[];
 }
 
 export interface LocalityResult {

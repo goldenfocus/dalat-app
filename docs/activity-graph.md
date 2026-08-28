@@ -21,6 +21,12 @@ An event is only one graph shape. The graph must also represent:
 
 Core graph edges include organizer → runs → series, series → has → occurrence, occurrence → happens_at → place, observation → supports → field, source → published_by → organization, and occurrence → supersedes/cancels → occurrence.
 
+Promotional media is also source-scoped, not event-approved. Parsers may retain
+officially advertised image URLs as private `reference_only` evidence, but the
+public projection must use ĐàLạt.app fact-art until the source registry records
+a media reuse grant. A single licensed source policy can then unlock future
+posters automatically; no event-by-event human approval step is introduced.
+
 **Decision:** persist recurring series separately from occurrences. Never generate an indefinite set of future events from “every Friday.” Materialize only the current planning horizon, retain the recurrence rule, and reverify the canonical source before extending it.
 
 **Decision:** every published field that can change — time, place, price, booking URL, cancellation, public access — must be traceable to a current observation.

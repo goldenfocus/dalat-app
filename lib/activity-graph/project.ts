@@ -12,6 +12,7 @@ import {
 } from "@/lib/series/materialize";
 import { pingIndexNow } from "@/lib/seo/indexnow";
 import { locales } from "@/lib/i18n/routing";
+import { activityFactArtUrl } from "./fact-art";
 import {
   freshnessScore,
   scoreEventDuplicate,
@@ -378,6 +379,12 @@ type LinkedOccurrence = {
   starts_at: string;
 };
 
+function isActivityFactArt(url: unknown): url is string {
+  return (
+    typeof url === "string" && url.startsWith("https://dalat.app/activity-art/")
+  );
+}
+
 function refreshedSourceMetadata(
   input: ProjectInput,
   existing: Record<string, unknown> | null | undefined,
@@ -390,6 +397,13 @@ function refreshedSourceMetadata(
     activity_candidate_id: input.candidateId,
     activity_observation_id: input.observationId,
     source_url: input.activity.sourceUrl,
+    activity_attributes: input.activity.attributes,
+    time_precision: input.activity.timePrecision,
+    media_candidate_count: input.activity.mediaCandidates?.length ?? 0,
+    media_policy:
+      typeof input.source.metadata?.media_policy === "string"
+        ? input.source.metadata.media_policy
+        : "reference_only",
     confidence: input.confidence.score,
     locality: input.locality,
     published_automatically: true,
@@ -459,6 +473,7 @@ async function reconcileActivityGraphSeries(
       .update({
         title: refreshedSeries.title,
         description: refreshedSeries.description,
+        image_url: refreshedSeries.image_url,
         location_name: refreshedSeries.location_name,
         address: refreshedSeries.address,
         google_maps_url: refreshedSeries.google_maps_url,
@@ -539,7 +554,7 @@ async function refreshLinkedActivity(
   if (link.event_id) {
     const { data: event, error: eventLookupError } = await input.supabase
       .from("events")
-      .select("id,source_platform,source_metadata,slug")
+      .select("id,source_platform,source_metadata,slug,image_url")
       .eq("id", link.event_id)
       .maybeSingle();
     if (eventLookupError || !event) {
@@ -555,7 +570,7 @@ async function refreshLinkedActivity(
           now,
         ),
         title: input.activity.title,
-        description: sourceDescription(input.source.name),
+        description: sourceDescription(input.activity, input.source.name),
         starts_at: input.activity.startsAt,
         ends_at: input.activity.endsAt,
         location_name: input.activity.locationName,
@@ -579,6 +594,9 @@ async function refreshLinkedActivity(
         source_updated_at: input.activity.sourceUpdatedAt,
         freshness_score: fresh,
       };
+      if (!event.image_url || isActivityFactArt(event.image_url)) {
+        update.image_url = activityFactArtUrl("event", event.slug);
+      }
       const { error } = await input.supabase
         .from("events")
         .update(update)
@@ -588,7 +606,7 @@ async function refreshLinkedActivity(
       await upsertActivityEventTranslations(
         input.supabase,
         [link.event_id],
-        input.activity.title,
+        input.activity,
         input.source.name,
       );
       if (event.slug) indexTarget = { kind: "event", slug: event.slug };
@@ -614,7 +632,7 @@ async function refreshLinkedActivity(
       );
       const seriesUpdate: Partial<EventSeries> = {
         title: input.activity.title,
-        description: sourceDescription(input.source.name),
+        description: sourceDescription(input.activity, input.source.name),
         location_name: input.activity.locationName,
         address: input.activity.address,
         google_maps_url: generateMapsUrl(
@@ -648,6 +666,9 @@ async function refreshLinkedActivity(
         source_updated_at: input.activity.sourceUpdatedAt,
         freshness_score: fresh,
       };
+      if (!series.image_url || isActivityFactArt(series.image_url)) {
+        seriesUpdate.image_url = activityFactArtUrl("series", series.slug);
+      }
       const { error: pauseError } = await input.supabase
         .from("event_series")
         .update(seriesUpdate)
@@ -668,7 +689,7 @@ async function refreshLinkedActivity(
       await upsertActivityEventTranslations(
         input.supabase,
         reconciliation.occurrenceIds,
-        input.activity.title,
+        input.activity,
         input.source.name,
       );
       if (series.slug) indexTarget = { kind: "series", slug: series.slug };
@@ -716,7 +737,7 @@ async function createEvent(
     throw new Error("Cannot project an event without startsAt");
   const { data: existing, error: existingError } = await input.supabase
     .from("events")
-    .select("id,slug")
+    .select("id,slug,image_url")
     .eq("activity_graph_candidate_id", input.candidateId)
     .maybeSingle();
   if (existingError)
@@ -730,7 +751,8 @@ async function createEvent(
   const values = {
     slug,
     title: input.activity.title,
-    description: sourceDescription(input.source.name),
+    description: sourceDescription(input.activity, input.source.name),
+    image_url: existing?.image_url || activityFactArtUrl("event", slug),
     starts_at: input.activity.startsAt,
     ends_at: input.activity.endsAt,
     timezone: input.activity.timezone,
@@ -761,6 +783,13 @@ async function createEvent(
       activity_candidate_id: input.candidateId,
       activity_observation_id: input.observationId,
       source_url: input.activity.sourceUrl,
+      activity_attributes: input.activity.attributes,
+      time_precision: input.activity.timePrecision,
+      media_candidate_count: input.activity.mediaCandidates?.length ?? 0,
+      media_policy:
+        typeof input.source.metadata?.media_policy === "string"
+          ? input.source.metadata.media_policy
+          : "reference_only",
       confidence: input.confidence.score,
       locality: input.locality,
       published_automatically: true,
@@ -827,7 +856,11 @@ async function createSeries(
   const values = {
     slug,
     title: input.activity.title,
-    description: sourceDescription(input.source.name),
+    description: sourceDescription(input.activity, input.source.name),
+    image_url:
+      existing?.image_url && !isActivityFactArt(existing.image_url)
+        ? existing.image_url
+        : activityFactArtUrl("series", slug),
     location_name: input.activity.locationName,
     address: input.activity.address,
     google_maps_url: generateMapsUrl(
@@ -866,6 +899,13 @@ async function createSeries(
       activity_candidate_id: input.candidateId,
       activity_observation_id: input.observationId,
       source_url: input.activity.sourceUrl,
+      activity_attributes: input.activity.attributes,
+      time_precision: input.activity.timePrecision,
+      media_candidate_count: input.activity.mediaCandidates?.length ?? 0,
+      media_policy:
+        typeof input.source.metadata?.media_policy === "string"
+          ? input.source.metadata.media_policy
+          : "reference_only",
       confidence: input.confidence.score,
       locality: input.locality,
       published_automatically: true,
@@ -1053,7 +1093,7 @@ export async function projectActivity(
     await upsertActivityEventTranslations(
       input.supabase,
       occurrenceIds,
-      input.activity.title,
+      input.activity,
       input.source.name,
     );
     const result: ProjectionResult = {
@@ -1087,7 +1127,7 @@ export async function projectActivity(
   await upsertActivityEventTranslations(
     input.supabase,
     [event.id],
-    input.activity.title,
+    input.activity,
     input.source.name,
   );
   const result: ProjectionResult = {

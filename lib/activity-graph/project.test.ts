@@ -582,7 +582,11 @@ describe("Activity Graph projection crash recovery", () => {
         expect.objectContaining({
           table: "events",
           method: "update",
-          values: expect.objectContaining({ status: "draft" }),
+          values: expect.objectContaining({
+            status: "draft",
+            image_url:
+              "https://dalat.app/activity-art/events/official-acoustic-night.png",
+          }),
         }),
         expect.objectContaining({
           table: "activity_canonical_links",
@@ -593,7 +597,7 @@ describe("Activity Graph projection crash recovery", () => {
     expect(mocks.upsertTranslations).toHaveBeenCalledWith(
       db.client,
       [db.eventId],
-      activity.title,
+      activity,
       source.name,
     );
   });

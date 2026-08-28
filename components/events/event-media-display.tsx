@@ -21,6 +21,7 @@ export function EventMediaDisplay({
 }: EventMediaDisplayProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const isVideo = isVideoUrl(src);
+  const isActivityFactArt = src.includes("/activity-art/");
 
   if (isVideo) {
     return (
@@ -53,7 +54,7 @@ export function EventMediaDisplay({
           alt={alt}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 960px"
-          className="object-contain md:object-cover transition-transform group-hover:scale-[1.02]"
+          className={`${isActivityFactArt ? "object-contain bg-gradient-to-br from-muted to-background" : "object-contain md:object-cover"} transition-transform group-hover:scale-[1.02]`}
           priority={priority}
           fetchPriority={priority ? "high" : "auto"}
         />
