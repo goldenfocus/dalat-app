@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -51,6 +52,13 @@ const ICONS = {
 
 const DEFAULT_DALAT_HERO =
   "https://cdn.dalat.app/promo-media/homepage-hero/dalat-app-home-img-2.png";
+
+const MOOD_IMAGES = [
+  "/images/things-to-do/dalat-coffee.jpg",
+  "/images/things-to-do/dalat-pine-trails.jpg",
+  "/images/things-to-do/dalat-food.jpg",
+  "/images/things-to-do/dalat-after-dark.jpg",
+] as const;
 
 function absoluteImageUrl(url: string | null): string | null {
   return url?.startsWith("/") ? `https://dalat.app${url}` : url;
@@ -269,10 +277,17 @@ export default async function ThingsToDoInDalatPage({ params }: PageProps) {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="group relative flex min-h-40 flex-col justify-between overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-700 p-4 text-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:min-h-48 sm:p-6"
+                    className="group relative flex min-h-40 flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-muted p-4 text-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:min-h-48 sm:p-6"
                   >
-                    <span className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+                    <Image
+                      src={MOOD_IMAGES[index]}
+                      alt=""
+                      fill
+                      sizes="(max-width: 639px) 50vw, (max-width: 1023px) 50vw, 25vw"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-black/10" />
+                    <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-black/30 shadow-sm backdrop-blur-md">
                       <Icon className="h-6 w-6" aria-hidden="true" />
                     </span>
                     <span className="relative mt-6 flex items-end justify-between gap-2">
