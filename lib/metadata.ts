@@ -39,16 +39,46 @@ export function localeUrl(locale: Locale, path: string): string {
  * generateMetadata that doesn't go through generateLocalizedMetadata —
  * without it, the page inherits the locale layout's homepage canonical.
  */
-export function buildAlternates(locale: Locale, path: string): NonNullable<Metadata["alternates"]> {
+export function buildAlternates(
+  locale: Locale,
+  path: string,
+  availableLocales: readonly Locale[] = locales
+): NonNullable<Metadata["alternates"]> {
+  const canonical = localeUrl(locale, path);
+  if (availableLocales.length === 0) {
+    return { canonical };
+  }
+
   const languages: Record<string, string> = {};
-  for (const loc of locales) {
+  for (const loc of availableLocales) {
     languages[loc] = localeUrl(loc, path);
   }
-  languages["x-default"] = localeUrl(DEFAULT_LOCALE, path);
+  const fallbackLocale = availableLocales.includes(DEFAULT_LOCALE)
+    ? DEFAULT_LOCALE
+    : availableLocales[0] ?? locale;
+  languages["x-default"] = localeUrl(fallbackLocale, path);
   return {
-    canonical: localeUrl(locale, path),
+    canonical,
     languages,
   };
+}
+
+/**
+ * A successful readiness check is authoritative even when no locale passes.
+ * Only an infrastructure/query failure may conservatively retain the source
+ * locale so a transient database error does not deindex the original page.
+ */
+export function resolveEventIndexableLocales(
+  readyLocales: readonly Locale[] | null | undefined,
+  sourceLocale: string | null | undefined,
+  readinessQueryFailed: boolean
+): Locale[] {
+  if (!readinessQueryFailed) return [...(readyLocales ?? [])];
+
+  const safeSourceLocale = locales.includes(sourceLocale as Locale)
+    ? sourceLocale as Locale
+    : DEFAULT_LOCALE;
+  return [safeSourceLocale];
 }
 
 interface LocalizedMetadataOptions {

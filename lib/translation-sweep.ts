@@ -35,6 +35,28 @@ export const CAPTION_FIELDS = [
 /** Long transcripts are capped like the old inline fan-out capped them. */
 const MAX_FIELD_LENGTH = 5000;
 
+/**
+ * A null event source locale is a durable "source changed" marker. Force a
+ * full 12-locale rewrite even if stale translation rows still exist (for
+ * example when a browser saved the event but its invalidation callback was
+ * interrupted). Other content types retain the ordinary missing-field sweep.
+ */
+export function getMissingTranslationLocales(
+  contentType: TranslationContentType,
+  sourceLocale: ContentLocale | null,
+  fields: Array<{ field_name: string }>,
+  coveredFieldsByLocale?: ReadonlyMap<string, ReadonlySet<string>>
+): ContentLocale[] {
+  if (contentType === "event" && sourceLocale === null) {
+    return [...CONTENT_LOCALES];
+  }
+
+  return CONTENT_LOCALES.filter((locale) => {
+    const fieldSet = coveredFieldsByLocale?.get(locale);
+    return fields.some((field) => !fieldSet?.has(field.field_name));
+  });
+}
+
 function cap(text: string): string {
   return text.length > MAX_FIELD_LENGTH ? text.slice(0, MAX_FIELD_LENGTH) : text;
 }
@@ -268,10 +290,12 @@ export async function collectTranslationWork(
   const work: TranslationWorkItem[] = [];
   for (const c of candidates) {
     const perLocale = covered.get(`${c.contentType}:${c.contentId}`);
-    const missingLocales = CONTENT_LOCALES.filter((locale) => {
-      const fieldSet = perLocale?.get(locale);
-      return c.fields.some((f) => !fieldSet?.has(f.field_name));
-    });
+    const missingLocales = getMissingTranslationLocales(
+      c.contentType,
+      c.sourceLocale,
+      c.fields,
+      perLocale
+    );
     if (missingLocales.length > 0) {
       work.push({ ...c, missingLocales });
     }

@@ -42,6 +42,7 @@ import {
   TranslationWorkItem,
 } from "@/lib/translation-sweep";
 import { CONTENT_LOCALES, ContentLocale } from "@/lib/types";
+import { notifyEventTranslationCompletion } from "@/lib/seo/indexnow-events";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://aljcmodwjqlznzcydyor.supabase.co";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -310,9 +311,22 @@ async function upsertLocale(
  * one session); provider-chain fallback per locale when allowed.
  */
 async function processItem(item: TranslationWorkItem, allowFallback: boolean): Promise<void> {
+  const rowsBefore = rowsWritten;
   const src = item.sourceLocale ?? (await detectLanguage(item.fields[0].text));
   const tag = `${item.contentType}:${item.contentId.slice(0, 8)}`;
   let pending = item.missingLocales.slice();
+
+  if (item.contentType === "event" && item.sourceLocale !== src) {
+    const { error } = await supabase
+      .from("events")
+      .update({ source_locale: src })
+      .eq("id", item.contentId);
+    if (error) {
+      // Persist before writing translations. Otherwise a fully covered event
+      // with source_locale=NULL would leave the sweep and remain noindex.
+      throw new Error(`[translation-source] ${tag}: ${error.message}`);
+    }
+  }
 
   // Source language needs no model round-trip
   if (pending.includes(src)) {
@@ -321,7 +335,16 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
     pending = pending.filter((l) => l !== src);
     console.log(`  ✓ ${tag} ${src} (copy-through)`);
   }
-  if (pending.length === 0) return;
+  if (pending.length === 0) {
+    if (item.contentType === "event" && rowsWritten > rowsBefore) {
+      try {
+        await notifyEventTranslationCompletion(supabase, [item.contentId]);
+      } catch (error) {
+        console.warn(`[translation-complete] ${tag}: ${errStr(error)}`);
+      }
+    }
+    return;
+  }
 
   if (claudeAvailable()) {
     const t0 = Date.now();
@@ -363,6 +386,16 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
       } catch (err) {
         console.error(`  ✗ ${tag} ${locale}: ${errStr(err)}`);
       }
+    }
+  }
+
+  if (item.contentType === "event" && rowsWritten > rowsBefore) {
+    try {
+      await notifyEventTranslationCompletion(supabase, [item.contentId]);
+    } catch (error) {
+      // Discovery is retriable on the next sweep/redo and must not turn a
+      // successfully translated row into a worker failure.
+      console.warn(`[translation-complete] ${tag}: ${errStr(error)}`);
     }
   }
 }

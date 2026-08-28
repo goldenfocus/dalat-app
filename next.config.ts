@@ -81,6 +81,24 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        // The Flower Festival editorial article historically linked this short,
+        // non-existent event URL. Preserve that accumulated signal by sending it
+        // to the authoritative 2026 edition instead of serving a soft 404.
+        source: "/events/festival-hoa-da-lat",
+        destination: "/festivals/da-lat-flower-festival/2026",
+        permanent: true,
+      },
+      {
+        source: "/en/events/festival-hoa-da-lat",
+        destination: "/festivals/da-lat-flower-festival/2026",
+        permanent: true,
+      },
+      {
+        source: "/:locale(vi|ko|zh|ru|fr|ja|ms|th|de|es|id)/events/festival-hoa-da-lat",
+        destination: "/:locale/festivals/da-lat-flower-festival/2026",
+        permanent: true,
+      },
+      {
         // /create → /events/new (CTA from blog posts)
         source: "/create",
         destination: "/events/new",

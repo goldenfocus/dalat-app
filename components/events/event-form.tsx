@@ -96,36 +96,110 @@ import {
   type EventTag,
 } from "@/lib/constants/event-tags";
 import { pingSearchEngines } from "@/lib/seo/indexnow-client";
+import {
+  MIN_EVENT_DESCRIPTION_LENGTH,
+  MIN_EVENT_TITLE_LENGTH,
+} from "@/lib/translations-readiness";
+
+function normalizedContentLength(value: string): number {
+  return Array.from(value.replace(/\s+/g, " ").trim()).length;
+}
+
+function isPublicHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return false;
+    const hostname = url.hostname.toLowerCase();
+    return !(
+      url.username ||
+      url.password ||
+      hostname === "localhost" ||
+      hostname.endsWith(".local") ||
+      hostname === "127.0.0.1" ||
+      hostname === "0.0.0.0" ||
+      hostname === "::1" ||
+      hostname.startsWith("10.") ||
+      hostname.startsWith("192.168.") ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname) ||
+      /^169\.254\./.test(hostname) ||
+      /^(fc|fd|fe8|fe9|fea|feb)/.test(hostname)
+    );
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Trigger translation for an event (fire-and-forget)
  */
-async function triggerEventTranslation(
-  eventId: string,
+function chunkEventIds(eventIds: string[], size = 100): string[][] {
+  const chunks: string[][] = [];
+  for (let index = 0; index < eventIds.length; index += size) {
+    chunks.push(eventIds.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function postEventTranslationOperation(
+  eventIds: string[],
+  operation: "queue" | "discover",
   title: string,
   description: string | null,
-) {
-  const fields: { field_name: TranslationFieldName; text: string }[] = [
-    { field_name: "title", text: title },
-  ];
+  changedFields: Array<"title" | "description"> = ["title", "description"],
+): void {
+  const uniqueIds = [...new Set(eventIds)].filter(Boolean);
+  if (uniqueIds.length === 0) return;
 
-  if (description?.trim()) {
-    fields.push({ field_name: "description", text: description });
+  const fields: { field_name: TranslationFieldName; text: string }[] = [];
+  if (changedFields.includes("title")) {
+    fields.push({ field_name: "title", text: title });
   }
 
-  // Fire and forget - don't block the user
-  fetch("/api/translate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      content_type: "event",
-      content_id: eventId,
-      fields,
-      detect_language: true,
-    }),
-  }).catch((error) => {
-    console.error("Translation trigger failed:", error);
-  });
+  if (changedFields.includes("description")) {
+    fields.push({ field_name: "description", text: description ?? "" });
+  }
+
+  for (const ids of chunkEventIds(uniqueIds)) {
+    fetch("/api/translate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        operation,
+        content_type: "event",
+        content_id: ids[0],
+        content_ids: ids,
+        ...(operation === "queue" ? { fields, detect_language: true } : {}),
+      }),
+    }).catch((error) => {
+      console.error(`Event translation ${operation} failed:`, error);
+    });
+  }
+}
+
+function triggerEventTranslation(
+  eventIds: string | string[],
+  title: string,
+  description: string | null,
+  changedFields?: Array<"title" | "description">,
+): void {
+  postEventTranslationOperation(
+    Array.isArray(eventIds) ? eventIds : [eventIds],
+    "queue",
+    title,
+    description,
+    changedFields,
+  );
+}
+
+function notifyEventIndexing(eventIds: string | string[]): void {
+  postEventTranslationOperation(
+    Array.isArray(eventIds) ? eventIds : [eventIds],
+    "discover",
+    "",
+    null,
+    [],
+  );
 }
 
 /**
@@ -565,6 +639,8 @@ export function EventForm({
     const capacityStr = formData.get("capacity") as string;
     // Use state-managed venueId (set by LocationPicker or VenueLinker)
     const venueIdToSave = venueId;
+    const normalizedDescription = description?.trim() || null;
+    const normalizedOnlineLink = normalizeUrl(onlineLink.trim());
 
     // Secret address only applies to non-venue, non-recurring, single events
     const isSecret =
@@ -578,9 +654,42 @@ export function EventForm({
     if (!title.trim()) missingFields.push(tErrors("fieldTitle"));
     if (!date) missingFields.push(tErrors("fieldDate"));
     if (!time) missingFields.push(tErrors("fieldTime"));
+    if (!normalizedDescription) missingFields.push(tErrors("fieldDescription"));
+
+    if (isOnline) {
+      if (!normalizedOnlineLink) missingFields.push(tErrors("fieldOnlineLink"));
+    } else if (!isSecret && !venueIdToSave) {
+      if (normalizedContentLength(locationName ?? "") < 3) {
+        missingFields.push(tErrors("fieldLocation"));
+      }
+      if (normalizedContentLength(address ?? "") < 8) {
+        missingFields.push(tErrors("fieldAddress"));
+      }
+    }
 
     if (missingFields.length > 0) {
       setError(tErrors("fieldsRequired", { fields: missingFields.join(", ") }));
+      return;
+    }
+
+    if (normalizedContentLength(title) < MIN_EVENT_TITLE_LENGTH) {
+      setError(tErrors("titleTooShort", { minimum: MIN_EVENT_TITLE_LENGTH }));
+      return;
+    }
+    if (
+      !normalizedDescription ||
+      normalizedContentLength(normalizedDescription) <
+        MIN_EVENT_DESCRIPTION_LENGTH
+    ) {
+      setError(
+        tErrors("descriptionTooShort", {
+          minimum: MIN_EVENT_DESCRIPTION_LENGTH,
+        }),
+      );
+      return;
+    }
+    if (isOnline && !isPublicHttpUrl(normalizedOnlineLink)) {
+      setError(tErrors("invalidOnlineLink"));
       return;
     }
 
@@ -612,6 +721,40 @@ export function EventForm({
       : null;
 
     const supabase = createClient();
+    const originalDescription = event?.description?.trim() || null;
+    const titleContentChanged = !event || title.trim() !== event.title.trim();
+    const descriptionContentChanged =
+      !event || normalizedDescription !== originalDescription;
+    const changedTranslationFields: Array<"title" | "description"> = [
+      ...(titleContentChanged ? (["title"] as const) : []),
+      ...(descriptionContentChanged ? (["description"] as const) : []),
+    ];
+    const translatableContentChanged = changedTranslationFields.length > 0;
+
+    const getSeriesEventIds = async (
+      seriesId: string,
+      scope: "future" | "all",
+    ): Promise<string[]> => {
+      let query = supabase
+        .from("events")
+        .select("id")
+        .eq("series_id", seriesId)
+        .eq("is_exception", false);
+      if (scope === "future") {
+        query = query.gt("starts_at", new Date().toISOString());
+      }
+      const { data: seriesEvents, error: seriesEventsError } = await query;
+      if (seriesEventsError) {
+        console.error(
+          "Failed to resolve affected series events:",
+          seriesEventsError,
+        );
+        return event ? [event.id] : [];
+      }
+      return (seriesEvents ?? []).map(
+        (seriesEvent: { id: string }) => seriesEvent.id,
+      );
+    };
 
     // Save the real location into the RLS-gated private table (secret events).
     // The events row itself only ever carries the public area label.
@@ -660,7 +803,7 @@ export function EventForm({
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 title,
-                description: description || null,
+                description: normalizedDescription,
                 image_url: imageUrl,
                 location_name: locationName || null,
                 address: address || null,
@@ -677,13 +820,20 @@ export function EventForm({
               return;
             }
 
-            // Retranslate after series edit (fire-and-forget)
-            triggerEventTranslation(
-              event.id,
-              title.trim(),
-              description || null,
+            const affectedEventIds = await getSeriesEventIds(
+              event.series_id,
+              seriesEditScope,
             );
-            pingSearchEngines([`/events/${event.slug}`]);
+            if (translatableContentChanged) {
+              triggerEventTranslation(
+                affectedEventIds,
+                title.trim(),
+                normalizedDescription,
+                changedTranslationFields,
+              );
+            } else {
+              notifyEventIndexing(affectedEventIds);
+            }
 
             router.push(`/events/${event.slug}`);
             router.refresh();
@@ -691,7 +841,7 @@ export function EventForm({
             // Update just this event (current behavior)
             const updateData: Record<string, unknown> = {
               title,
-              description: description || null,
+              description: normalizedDescription,
               image_url: imageUrl,
               starts_at: startsAt,
               location_name: isSecret
@@ -704,7 +854,7 @@ export function EventForm({
               has_private_details: isSecret,
               external_chat_url: externalChatUrl || null,
               is_online: isOnline,
-              online_link: isOnline ? onlineLink || null : null,
+              online_link: isOnline ? normalizedOnlineLink : null,
               title_position: "bottom",
               image_fit: imageFit,
               focal_point: focalPoint,
@@ -714,6 +864,7 @@ export function EventForm({
               organizer_id: organizerId,
               venue_id: venueIdToSave || null,
               ai_tags: selectedTags,
+              ...(translatableContentChanged && { source_locale: null }),
               ...(canSetSponsorTier && { sponsor_tier: sponsorTier }),
               // Mark as exception if editing just this event in a series
               ...(isSeriesEvent && { is_exception: true }),
@@ -757,16 +908,19 @@ export function EventForm({
                 .eq("event_id", event.id);
             }
 
-            // Retranslate after edit (fire-and-forget)
-            triggerEventTranslation(
-              event.id,
-              title.trim(),
-              description || null,
-            );
+            if (translatableContentChanged) {
+              triggerEventTranslation(
+                event.id,
+                title.trim(),
+                normalizedDescription,
+                changedTranslationFields,
+              );
+            } else {
+              notifyEventIndexing(event.id);
+            }
 
             // Navigate to new slug if changed, otherwise original
             const finalSlug = slugEditable && slug ? slug : event.slug;
-            pingSearchEngines([`/events/${finalSlug}`]);
             router.push(`/events/${finalSlug}`);
             router.refresh();
           }
@@ -784,7 +938,7 @@ export function EventForm({
               body: JSON.stringify({
                 slug: finalSlug,
                 title,
-                description: description || null,
+                description: normalizedDescription,
                 image_url: null,
                 location_name: locationName || null,
                 address: address || null,
@@ -793,7 +947,7 @@ export function EventForm({
                 longitude,
                 external_chat_url: externalChatUrl || null,
                 is_online: isOnline,
-                online_link: isOnline ? onlineLink || null : null,
+                online_link: isOnline ? normalizedOnlineLink : null,
                 title_position: "bottom",
                 image_fit: imageFit,
                 focal_point: focalPoint,
@@ -867,10 +1021,13 @@ export function EventForm({
             // Trigger AI processing for the first event (fire-and-forget)
             // (creator auto-RSVP happens in the DB via on_event_created_auto_rsvp)
             if (seriesData.first_event_id) {
+              const seriesEventIds = seriesData.series?.id
+                ? await getSeriesEventIds(seriesData.series.id, "all")
+                : [seriesData.first_event_id];
               triggerEventTranslation(
-                seriesData.first_event_id,
+                seriesEventIds,
                 title.trim(),
-                description || null,
+                normalizedDescription,
               );
               triggerAIProcessing(seriesData.first_event_id);
             }
@@ -883,7 +1040,7 @@ export function EventForm({
               .insert({
                 slug: finalSlug,
                 title: title.trim(),
-                description: description || null,
+                description: normalizedDescription,
                 image_url: null,
                 starts_at: startsAt,
                 location_name: isSecret
@@ -896,7 +1053,7 @@ export function EventForm({
                 has_private_details: isSecret,
                 external_chat_url: externalChatUrl || null,
                 is_online: isOnline,
-                online_link: isOnline ? onlineLink || null : null,
+                online_link: isOnline ? normalizedOnlineLink : null,
                 title_position: "bottom",
                 image_fit: imageFit,
                 focal_point: focalPoint,
@@ -905,6 +1062,7 @@ export function EventForm({
                 ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
                 created_by: userId,
                 status: "published",
+                source_locale: null,
                 organizer_id: organizerId,
                 venue_id: venueIdToSave || null,
                 ai_tags: selectedTags.length > 0 ? selectedTags : [],
@@ -967,13 +1125,13 @@ export function EventForm({
 
             // Trigger AI processing in background (fire-and-forget)
             // (creator auto-RSVP happens in the DB via on_event_created_auto_rsvp)
-            triggerEventTranslation(data.id, title.trim(), description || null);
+            triggerEventTranslation(
+              data.id,
+              title.trim(),
+              normalizedDescription,
+            );
             triggerAIProcessing(data.id);
-            pingSearchEngines([
-              `/events/${data.slug}`,
-              "/events/upcoming",
-              "/",
-            ]);
+            pingSearchEngines(["/events/upcoming", "/"]);
 
             // Show celebration modal instead of immediate redirect
             setCreatedEvent({
@@ -1151,7 +1309,7 @@ export function EventForm({
 
           {/* Info */}
           <div className="space-y-2">
-            <Label htmlFor="description">{t("info")}</Label>
+            <Label htmlFor="description">{t("info")} *</Label>
             <AIEnhanceTextarea
               id="description"
               name="description"
@@ -1159,6 +1317,8 @@ export function EventForm({
                 event?.description ?? copyDefaults?.description ?? ""
               }
               rows={3}
+              required
+              minLength={MIN_EVENT_DESCRIPTION_LENGTH}
               context="an event description for a local community event in Đà Lạt, Vietnam"
             />
             <p className="text-xs text-muted-foreground">

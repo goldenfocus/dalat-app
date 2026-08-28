@@ -40,6 +40,7 @@ import {
 import { reportImportRun } from "../../lib/import/report-run";
 import { sendTelegram } from "../../lib/alerts/telegram";
 import { getQueueImportOptions } from "../../lib/import/queue-policy";
+import { notifyEventTranslationCompletion } from "../../lib/seo/indexnow-events";
 import {
   parseJsonCandidates,
   SubscriptionModelRunner,
@@ -284,6 +285,18 @@ async function translateAndStore(
     .from("events")
     .update({ source_locale: "vi" })
     .eq("id", eventId);
+
+  try {
+    await notifyEventTranslationCompletion(supabase, [eventId]);
+  } catch (error) {
+    // Translation rows are durable; discovery can retry independently and
+    // must not cause the import queue to duplicate an otherwise finished row.
+    console.warn(
+      `[translation-complete] ${eventId}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
 }
 
 // ---------- main ----------

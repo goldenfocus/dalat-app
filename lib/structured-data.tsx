@@ -40,10 +40,19 @@ const DA_LAT_GEO = {
 /**
  * React component to render JSON-LD script tag
  *
- * Escape `<` after serialization so user-controlled strings cannot terminate the
- * script element. This is the standard pattern for JSON-LD in Next.js.
+ * Escape HTML-significant characters after JSON serialization. JSON.stringify
+ * alone leaves `</script>` intact, and event fields contain user-authored text.
+ * Unicode escapes preserve the parsed JSON value while preventing the HTML
+ * parser from terminating the script element.
  * See: https://nextjs.org/docs/app/building-your-application/optimizing/metadata#json-ld
  */
+export function serializeJsonLd(data: object): string {
+  return JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+}
+
 export function JsonLd({ data }: { data: object | object[] }) {
   const jsonLdArray = Array.isArray(data) ? data : [data];
 
@@ -53,16 +62,14 @@ export function JsonLd({ data }: { data: object | object[] }) {
         <script
           key={index}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(item).replace(/</g, "\\u003c"),
-          }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(item) }}
         />
       ))}
     </>
   );
 }
 
-function getSchemaEventStatus(status: string) {
+function getSchemaEventStatus(status: string): string {
   if (status === "cancelled") return "https://schema.org/EventCancelled";
   if (status === "postponed") return "https://schema.org/EventPostponed";
   return "https://schema.org/EventScheduled";
@@ -81,87 +88,93 @@ export function generateEventSchema(
   locale: string,
   attendeeCount?: number,
   imageMetadata?: { alt?: string | null; description?: string | null },
-  localizedContent?: { title: string; description: string | null },
+  localizedContent?: { title?: string | null; description?: string | null },
 ) {
   const eventUrl = localizedSiteUrl(locale, `/events/${event.slug}`);
   const offerUrl =
     event.source_platform === "activity-graph" && event.external_chat_url
       ? event.external_chat_url
       : eventUrl;
+  const localizedTitle = localizedContent?.title?.trim() || event.title;
+  const localizedDescription =
+    localizedContent?.description?.trim() ||
+    (localizedContent === undefined ? event.description?.trim() : undefined);
 
-  const eventStatus = getSchemaEventStatus(event.status);
+  // A date in the past does not mean an event was postponed. Only explicit
+  // lifecycle/exception state may change schema status; completed event pages
+  // otherwise remain scheduled evergreen archives.
+  const storedStatus = event.status as string;
+  const eventStatus =
+    storedStatus === "cancelled" || event.exception_type === "cancelled"
+      ? "https://schema.org/EventCancelled"
+      : event.exception_type === "rescheduled"
+        ? "https://schema.org/EventRescheduled"
+        : storedStatus === "postponed"
+          ? "https://schema.org/EventPostponed"
+          : "https://schema.org/EventScheduled";
+
   const hasCoordinates =
-    typeof event.latitude === "number" &&
-    Number.isFinite(event.latitude) &&
-    typeof event.longitude === "number" &&
-    Number.isFinite(event.longitude);
-  const hasPhysicalLocation = Boolean(
-    event.location_name ||
-    event.address ||
-    event.google_maps_url ||
-    hasCoordinates,
-  );
-  const eventAttendanceMode = event.is_online
-    ? hasPhysicalLocation
-      ? "https://schema.org/MixedEventAttendanceMode"
-      : "https://schema.org/OnlineEventAttendanceMode"
-    : "https://schema.org/OfflineEventAttendanceMode";
+    Number.isFinite(event.latitude) && Number.isFinite(event.longitude);
   const offerAvailability =
-    event.capacity &&
-    attendeeCount !== undefined &&
-    attendeeCount >= event.capacity
-      ? "https://schema.org/SoldOut"
-      : "https://schema.org/InStock";
-  const offerBase = {
-    "@type": "Offer",
-    availability: offerAvailability,
-    url: offerUrl,
-  };
-  const offers =
-    event.price_type === "free"
-      ? {
-          ...offerBase,
-          price: 0,
-          priceCurrency: "VND",
-        }
-      : event.ticket_tiers?.length
-        ? event.ticket_tiers.map((tier) => ({
-            ...offerBase,
-            name: tier.name,
-            price: tier.price,
-            priceCurrency: tier.currency,
-            ...(tier.description && { description: tier.description }),
-          }))
-        : undefined;
+    event.capacity && attendeeCount !== undefined
+      ? attendeeCount >= event.capacity
+        ? "https://schema.org/SoldOut"
+        : "https://schema.org/InStock"
+      : undefined;
 
-  const schema: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": "Event",
-    name: localizedContent?.title ?? event.title,
-    ...(localizedContent
-      ? localizedContent.description && {
-          description: localizedContent.description,
-        }
-      : {
-          description: event.description || `Event in Đà Lạt, Vietnam`,
-        }),
-    url: eventUrl,
-    startDate: event.starts_at,
-    ...(event.ends_at && { endDate: event.ends_at }),
-    eventStatus,
-    eventAttendanceMode,
+  let offers: Record<string, unknown> | Record<string, unknown>[] | undefined;
+  if (eventStatus !== "https://schema.org/EventCancelled") {
+    if (event.price_type === "free") {
+      offers = {
+        "@type": "Offer",
+        price: 0,
+        priceCurrency: "VND",
+        ...(offerAvailability && { availability: offerAvailability }),
+        url: offerUrl,
+      };
+    } else if (
+      (event.price_type === "paid" || event.price_type === "donation") &&
+      event.ticket_tiers?.length
+    ) {
+      const truthfulTiers = event.ticket_tiers.filter(
+        (tier) =>
+          tier.name.trim().length > 0 &&
+          Number.isFinite(tier.price) &&
+          tier.price >= 0 &&
+          tier.currency.trim().length > 0,
+      );
+      if (truthfulTiers.length > 0) {
+        offers = truthfulTiers.map((tier) => ({
+          "@type": "Offer",
+          name: tier.name,
+          price: tier.price,
+          priceCurrency: tier.currency.toUpperCase(),
+          ...(offerAvailability && { availability: offerAvailability }),
+          url: offerUrl,
+          ...(tier.description?.trim() && {
+            description: tier.description.trim(),
+          }),
+        }));
+      }
+    }
+  }
 
-    // Location
-    ...(hasPhysicalLocation && {
-      location: {
+  // `online_link` is RSVP-gated in the visible page. Never leak a private
+  // meeting URL through public JSON-LD. A real physical venue still makes an
+  // online-capable event mixed; do not suppress truthful public place data.
+  const hasPhysicalLocation = Boolean(
+    event.location_name || event.address || hasCoordinates,
+  );
+  const location = hasPhysicalLocation
+    ? {
         "@type": "Place",
-        name: event.location_name || "Đà Lạt, Vietnam",
+        ...(event.location_name && { name: event.location_name }),
         ...(event.address && {
           address: {
             "@type": "PostalAddress",
             streetAddress: event.address,
             addressLocality: "Đà Lạt",
-            addressRegion: "Lam Dong",
+            addressRegion: "Lâm Đồng",
             addressCountry: "VN",
           },
         }),
@@ -173,8 +186,24 @@ export function generateEventSchema(
           },
         }),
         ...(event.google_maps_url && { hasMap: event.google_maps_url }),
-      },
-    }),
+      }
+    : undefined;
+
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: localizedTitle,
+    ...(localizedDescription && { description: localizedDescription }),
+    url: eventUrl,
+    startDate: event.starts_at,
+    ...(event.ends_at && { endDate: event.ends_at }),
+    eventStatus,
+    eventAttendanceMode: event.is_online
+      ? hasPhysicalLocation
+        ? "https://schema.org/MixedEventAttendanceMode"
+        : "https://schema.org/OnlineEventAttendanceMode"
+      : "https://schema.org/OfflineEventAttendanceMode",
+    ...(location && { location }),
 
     // Image - with structured metadata for AI search engines
     ...(event.image_url && {
@@ -196,7 +225,7 @@ export function generateEventSchema(
       ? {
           "@type": "Organization",
           name: event.organizers.name,
-          url: localizedSiteUrl(locale, `/organizers/${event.organizers.slug}`),
+          url: localizedSiteUrl(locale, `/${event.organizers.slug}`),
           ...(event.organizers.logo_url && { logo: event.organizers.logo_url }),
         }
       : event.profiles
@@ -226,9 +255,11 @@ export function generateEventSchema(
     }),
 
     // Attendance info
-    ...(attendeeCount !== undefined && {
-      maximumAttendeeCapacity: event.capacity || undefined,
-    }),
+    ...(event.capacity && { maximumAttendeeCapacity: event.capacity }),
+    ...(event.capacity &&
+      attendeeCount !== undefined && {
+        remainingAttendeeCapacity: Math.max(0, event.capacity - attendeeCount),
+      }),
 
     // In language
     inLanguage: locale,

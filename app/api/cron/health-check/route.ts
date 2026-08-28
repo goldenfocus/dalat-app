@@ -11,6 +11,12 @@ import {
   summarizeEventVitality,
   type EventVitalityRow,
 } from "@/lib/events/vitality";
+import {
+  buildEventIndexingHealthProblem,
+  summarizeEventIndexingHealth,
+  type EventIndexingHealthSummary,
+} from "@/lib/events/indexing-health";
+import { getEventsIndexingReadiness } from "@/lib/translations-readiness";
 import type { EventSeries } from "@/lib/types";
 
 export const maxDuration = 60;
@@ -142,6 +148,12 @@ export async function GET(request: Request) {
   // days instead of silently rotting like Inngest did (0 rows for months).
   const captionCoverage = await checkCaptionCoverage(supabase, problems);
 
+  // 8. Search promise: every upcoming published event must have strong source
+  // content and complete title/description translations in all 12 languages.
+  // This detects a dead translation worker or a low-quality event within one
+  // daily watchdog cycle instead of waiting for a ranking drop.
+  const eventIndexingHealth = await checkEventIndexingHealth(supabase, problems);
+
   if (problems.length > 0) {
     await sendTelegram(
       `🚨 <b>dalat.app event health</b>\n${problems.map((p) => `• ${p}`).join("\n")}`,
@@ -159,10 +171,56 @@ export async function GET(request: Request) {
       problems,
       contentHealth: content,
       captionCoverage,
+      eventIndexingHealth,
     },
     // Stale /news even after a promotion attempt = cron run failed.
     { status: content.newsStale ? 500 : 200 },
   );
+}
+
+async function checkEventIndexingHealth(
+  supabase: SupabaseClient,
+  problems: string[]
+): Promise<EventIndexingHealthSummary> {
+  const { data: upcoming, error, count } = await supabase
+    .from("events")
+    .select("id", { count: "exact" })
+    .eq("status", "published")
+    .gte("starts_at", new Date().toISOString())
+    .order("starts_at", { ascending: true })
+    .limit(1000);
+
+  if (error) {
+    problems.push(`event indexing: upcoming query failed: ${error.message}`);
+    return { total: 0, allLocalesReady: 0, incomplete: 0, issues: [] };
+  }
+
+  const ids = (upcoming ?? []).map((event) => event.id);
+  if ((count ?? ids.length) > ids.length) {
+    problems.push(`event indexing: audit truncated at ${ids.length}/${count} upcoming events`);
+  }
+
+  try {
+    const readiness = [];
+    for (let index = 0; index < ids.length; index += 100) {
+      const chunk = await getEventsIndexingReadiness(
+        supabase,
+        ids.slice(index, index + 100)
+      );
+      readiness.push(...chunk.values());
+    }
+
+    const summary = summarizeEventIndexingHealth(readiness);
+    const problem = buildEventIndexingHealthProblem(summary);
+    if (problem) problems.push(problem);
+    return summary;
+  } catch (readinessError) {
+    const message = readinessError instanceof Error
+      ? readinessError.message
+      : String(readinessError);
+    problems.push(`event indexing: readiness audit failed: ${message}`);
+    return { total: ids.length, allLocalesReady: 0, incomplete: ids.length, issues: [] };
+  }
 }
 
 // Caption pipeline promise: recent moments get AI metadata. Floor is the

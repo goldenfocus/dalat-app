@@ -77,7 +77,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="und" suppressHydrationWarning>
       <head>
         {/* Keep static rendering while declaring the URL locale before body content parses. */}
         <script dangerouslySetInnerHTML={{ __html: localeBootstrapScript }} />

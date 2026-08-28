@@ -19,6 +19,19 @@ const localeStripRegex = new RegExp(`^\\/(${localePattern})`);
 // Social media crawlers that Next.js doesn't recognize as bots.
 // These need metadata in the initial <head> for link previews to work.
 const socialCrawlerPattern = /Zalo|Line\/|Telegram|Viber|KakaoTalk|Slackbot|Discordbot|PinterestBot|LinkedInBot|Whatsapp|Snapchat|Twitterbot|vkShare/i;
+const indexingCrawlerPattern = /Googlebot|bingbot|BingPreview|DuckDuckBot|YandexBot|Baiduspider|Slurp|Applebot|GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-SearchBot|PerplexityBot|cohere-ai|Bytespider|meta-externalagent|Amazonbot|FacebookBot/i;
+const eventDetailPathRegex = new RegExp(
+  `^(?:\/(${localePattern}))?\/events\/([a-zA-Z0-9_-]+)$`,
+);
+const eventCollectionSegments = new Set([
+  'new',
+  'suggest',
+  'upcoming',
+  'this-week',
+  'this-month',
+  'archive',
+  'tags',
+]);
 
 // Check if a string is a valid locale
 function isLocale(segment: string): boolean {
@@ -82,6 +95,41 @@ async function getProfileLocale(request: NextRequest): Promise<string | null> {
   }
 }
 
+/**
+ * Next's streamed `notFound()` responses carry `noindex` but can retain HTTP
+ * 200 behind the locale rewrite. Search/answer crawlers need a real 404. A
+ * small anon preflight is limited to leaf event URLs and fails open on any
+ * infrastructure error so a transient database issue never hides a real page.
+ */
+async function publishedEventSlugExists(slug: string): Promise<boolean> {
+  if (!hasEnvVars) return true;
+
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
+      },
+    );
+    const { data, error } = await supabase
+      .from('events')
+      .select('id')
+      .or(`slug.eq.${slug},previous_slugs.cs.{${slug}}`)
+      .eq('status', 'published')
+      .limit(1);
+
+    return error ? true : Boolean(data?.length);
+  } catch {
+    return true;
+  }
+}
+
 export async function updateSession(request: NextRequest) {
   // Normalize pathname by removing trailing slash (except for root "/")
   // This prevents redirect loops with Next.js default trailingSlash: false
@@ -105,10 +153,39 @@ export async function updateSession(request: NextRequest) {
   // for metadata/Suspense to resolve before streaming <head>. This ensures OG tags
   // appear inside <head> for proper link preview rendering on Zalo, Line, Telegram, etc.
   const isSocialCrawler = socialCrawlerPattern.test(request.headers.get('user-agent') || '');
+  const isIndexingCrawler = indexingCrawlerPattern.test(request.headers.get('user-agent') || '');
+
+  // Search/answer crawlers get a true 404 for missing event leaves instead of
+  // Next's streamed soft-404 status. Collection routes never enter this path.
+  if (isIndexingCrawler) {
+    const eventMatch = pathname.match(eventDetailPathRegex);
+    const eventSlug = eventMatch?.[2];
+    if (
+      eventSlug &&
+      !eventCollectionSegments.has(eventSlug) &&
+      !(await publishedEventSlugExists(eventSlug))
+    ) {
+      return new NextResponse(null, {
+        status: 404,
+        headers: {
+          'Content-Language': eventMatch?.[1] || routing.defaultLocale,
+          'X-Robots-Tag': 'noindex, nofollow',
+        },
+      });
+    }
+  }
 
   // Helper: tell Next.js renderer to treat this request as a bot.
   // Uses x-middleware-override-headers to replace User-Agent for the rendering pipeline.
   function spoofBotUA(response: NextResponse): NextResponse {
+    // Keep the HTTP representation language aligned with the locale route.
+    // The root layout stays statically renderable and updates <html lang> before
+    // body parsing; Content-Language gives non-JavaScript parsers the same signal.
+    response.headers.set(
+      'Content-Language',
+      getLocaleFromPath(pathname) || routing.defaultLocale,
+    );
+
     if (isSocialCrawler) {
       response.headers.set('x-middleware-override-headers', 'user-agent');
       response.headers.set('x-middleware-request-user-agent', 'facebookexternalhit/1.1');

@@ -1,22 +1,29 @@
 import { MetadataRoute } from "next";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { allLocales } from "@/lib/i18n/config";
 import { getMonthSlug, isPastMonth } from "@/lib/events/archive-utils";
+import {
+  FLOWER_FESTIVAL_2026_PATH,
+  FLOWER_FESTIVAL_LAST_CHECKED,
+  FLOWER_FESTIVAL_PATH,
+} from "@/lib/festivals/da-lat-flower-festival";
+import {
+  EVENT_INDEXABLE_TRANSLATION_FIELDS,
+  evaluateEventIndexingReadinessBatch,
+  type EventIndexingSource,
+  type EventIndexingTranslationRow,
+} from "@/lib/translations-readiness";
 
-const baseUrl = "https://dalat.app";
-const defaultLocale = "en";
+const MAX_SITEMAP_URLS = 50_000;
+const MAX_SITEMAP_BYTES = 50 * 1024 * 1024;
 
 /**
- * Absolute URL honoring localePrefix 'as-needed': the default locale lives at
- * the root — /en/... 307-redirects, and search engines treat sitemap URLs and
- * hreflang alternates that redirect as broken.
+ * Emit every localized canonical as its own <loc>. Reciprocal hreflang remains
+ * in page HTML; duplicating the same 12-link hreflang cluster on all 12 sitemap
+ * entries would exceed Google's 50 MB uncompressed sitemap limit, and Google
+ * recommends choosing one hreflang implementation rather than maintaining all.
  */
-function localeUrl(locale: string, path: string): string {
-  return locale === defaultLocale
-    ? `${baseUrl}${path}` || baseUrl
-    : `${baseUrl}/${locale}${path}`;
-}
-
 type EntryOptions = {
   lastModified?: Date;
   changeFrequency?: MetadataRoute.Sitemap[number]["changeFrequency"];
@@ -24,36 +31,51 @@ type EntryOptions = {
   images?: string[];
 };
 
-/**
- * ONE sitemap entry per page (the spec'd shape): canonical URL + hreflang
- * alternates for all 12 locales + x-default. Emitting a separate entry per
- * locale (the old behavior) inflated the sitemap 12x toward the 50k cap.
- */
-function entry(
-  path: string,
-  { lastModified, changeFrequency, priority, images }: EntryOptions,
-): MetadataRoute.Sitemap[number] {
-  const languages: Record<string, string> = {};
-  for (const locale of allLocales) {
-    languages[locale] = localeUrl(locale, path);
-  }
-  languages["x-default"] = localeUrl(defaultLocale, path);
+function localeUrl(locale: string, path: string): string {
+  const normalizedPath = path && !path.startsWith("/") ? `/${path}` : path;
+  const cleanPath = normalizedPath === "/" ? "" : normalizedPath;
+  return locale === "en"
+    ? `https://dalat.app${cleanPath}`
+    : `https://dalat.app/${locale}${cleanPath}`;
+}
 
+/**
+ * The default locale is unprefixed (`/en/...` redirects), while every other
+ * locale uses its canonical prefix.
+ */
+export function localizedEntries(
+  path: string,
+  { lastModified, changeFrequency, priority, images }: EntryOptions = {},
+): MetadataRoute.Sitemap {
+  return allLocales.map((locale) =>
+    localeEntry(locale, path, {
+      lastModified,
+      changeFrequency,
+      priority,
+      images,
+    }),
+  );
+}
+
+function localeEntry(
+  locale: string,
+  path: string,
+  { lastModified, changeFrequency, priority, images }: EntryOptions = {},
+): MetadataRoute.Sitemap[number] {
   return {
-    url: localeUrl(defaultLocale, path),
+    url: localeUrl(locale, path),
     ...(lastModified ? { lastModified } : {}),
     ...(changeFrequency ? { changeFrequency } : {}),
     ...(priority !== undefined ? { priority } : {}),
     ...(images?.length ? { images } : {}),
-    alternates: { languages },
   };
 }
 
 /**
  * Image sitemap locations must be absolute, crawlable URLs. Invalid or
  * credential-bearing values are omitted instead of risking a malformed
- * sitemap. One image belongs to the canonical page entry; hreflang alternates
- * do not need duplicate image declarations.
+ * sitemap. Each localized canonical can declare the same source image without
+ * introducing redirecting or credential-bearing image URLs.
  */
 function sitemapImages(imageUrl: string | null): string[] | undefined {
   if (!imageUrl?.trim()) return undefined;
@@ -70,6 +92,58 @@ function sitemapImages(imageUrl: string | null): string[] | undefined {
   }
 }
 
+/**
+ * Fail closed before Next serializes an invalid sitemap. The byte calculation
+ * deliberately overestimates the compact XML representation, leaving ample
+ * room for the XML header and escaping.
+ */
+export function assertSitemapLimits(entries: MetadataRoute.Sitemap): void {
+  if (entries.length > MAX_SITEMAP_URLS) {
+    throw new Error(
+      `sitemap: ${entries.length} URLs exceed the ${MAX_SITEMAP_URLS} URL limit`,
+    );
+  }
+
+  const estimatedBytes = estimateSitemapBytes(entries);
+  if (estimatedBytes > MAX_SITEMAP_BYTES) {
+    throw new Error(
+      `sitemap: estimated ${estimatedBytes} bytes exceed the ${MAX_SITEMAP_BYTES} byte limit`,
+    );
+  }
+}
+
+export function estimateSitemapBytes(entries: MetadataRoute.Sitemap): number {
+  const encoder = new TextEncoder();
+  return entries.reduce(
+    (total, item) =>
+      total +
+      encoder.encode(item.url).byteLength +
+      (item.images ?? []).reduce(
+        (imageTotal, imageUrl) =>
+          imageTotal + encoder.encode(imageUrl).byteLength + 64,
+        0,
+      ) +
+      256,
+    512,
+  );
+}
+
+export function latestSitemapLastModified(
+  sourceUpdatedAt: string,
+  localeTranslationUpdatedAt: string | null,
+): Date {
+  const sourceDate = new Date(sourceUpdatedAt);
+  const translationDate = localeTranslationUpdatedAt
+    ? new Date(localeTranslationUpdatedAt)
+    : null;
+
+  return translationDate &&
+    Number.isFinite(translationDate.getTime()) &&
+    translationDate > sourceDate
+    ? translationDate
+    : sourceDate;
+}
+
 /** A failed query MUST fail the sitemap — `?? []` silently shipped a sitemap
  * with ZERO event pages for months (the query referenced a dropped column). */
 function unwrap<T>(
@@ -80,6 +154,48 @@ function unwrap<T>(
     throw new Error(`sitemap: ${name} query failed: ${result.error.message}`);
   }
   return (result.data ?? []) as T;
+}
+
+/**
+ * PostgREST caps responses at 1,000 rows by default. Page deterministically so
+ * an event locale is never omitted merely because its translation rows landed
+ * beyond the first response page.
+ */
+export async function fetchAllEventIndexingTranslations(
+  supabase: SupabaseClient,
+  eventIds: string[],
+): Promise<EventIndexingTranslationRow[]> {
+  const rows: EventIndexingTranslationRow[] = [];
+  const pageSize = 1_000;
+  const uniqueIds = [...new Set(eventIds)].filter(Boolean);
+
+  for (let chunkStart = 0; chunkStart < uniqueIds.length; chunkStart += 50) {
+    const idChunk = uniqueIds.slice(chunkStart, chunkStart + 50);
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabase
+        .from("content_translations")
+        .select(
+          "content_id, target_locale, field_name, translated_text, updated_at",
+        )
+        .eq("content_type", "event")
+        .in("content_id", idChunk)
+        .in("field_name", [...EVENT_INDEXABLE_TRANSLATION_FIELDS])
+        .order("id", { ascending: true })
+        .range(offset, offset + pageSize - 1);
+
+      if (error) {
+        throw new Error(
+          `sitemap: event translations query failed: ${error.message}`,
+        );
+      }
+
+      const page = (data ?? []) as EventIndexingTranslationRow[];
+      rows.push(...page);
+      if (page.length < pageSize) break;
+    }
+  }
+
+  return rows;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -165,7 +281,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // client, i.e. the sitemap sees exactly what a crawler can see.
     supabase
       .from("events")
-      .select("slug, updated_at, image_url")
+      .select(
+        "id, slug, title, description, starts_at, ends_at, location_name, address, venue_id, is_online, online_link, image_url, tribe_id, tribe_visibility, source_locale, status, updated_at",
+      )
       .eq("status", "published")
       .order("starts_at", { ascending: false }),
     supabase
@@ -209,6 +327,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const events = unwrap("events", eventsResult);
+  const eventTranslationRows = await fetchAllEventIndexingTranslations(
+    supabase,
+    events.map((event) => event.id),
+  );
+  const eventReadiness = evaluateEventIndexingReadinessBatch(
+    events as EventIndexingSource[],
+    eventTranslationRows,
+  );
   const series = unwrap("series", seriesResult);
   const festivals = unwrap("festivals", festivalsResult);
   const organizers = unwrap("organizers", organizersResult);
@@ -282,30 +408,52 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Add static pages
   for (const page of staticPages) {
     sitemapEntries.push(
-      entry(page.path, {
+      ...localizedEntries(page.path, {
         changeFrequency: page.changeFrequency,
         priority: page.priority,
       }),
     );
   }
 
-  // Add events
-  for (const event of events) {
+  const flowerFestivalLastModified = new Date(
+    `${FLOWER_FESTIVAL_LAST_CHECKED}T00:00:00+07:00`,
+  );
+  for (const path of [FLOWER_FESTIVAL_PATH, FLOWER_FESTIVAL_2026_PATH]) {
     sitemapEntries.push(
-      entry(`/events/${event.slug}`, {
-        lastModified: new Date(event.updated_at),
+      ...localizedEntries(path, {
+        lastModified: flowerFestivalLastModified,
         changeFrequency: "weekly",
-        priority: 0.8,
-        images: sitemapImages(event.image_url),
+        priority: 0.9,
       }),
     );
+  }
+
+  // Add events
+  for (const event of events) {
+    const readiness = eventReadiness.get(event.id);
+    if (!readiness) continue;
+
+    for (const locale of readiness.locales) {
+      if (!locale.ready) continue;
+      sitemapEntries.push(
+        localeEntry(locale.locale, `/events/${event.slug}`, {
+          lastModified: latestSitemapLastModified(
+            event.updated_at,
+            locale.translationUpdatedAt,
+          ),
+          changeFrequency: "weekly",
+          priority: 0.8,
+          images: sitemapImages(event.image_url),
+        }),
+      );
+    }
   }
 
   // Add active recurring activity series. Paused and cancelled series remain
   // reachable by direct link but should not be advertised as current supply.
   for (const item of series) {
     sitemapEntries.push(
-      entry(`/series/${item.slug}`, {
+      ...localizedEntries(`/series/${item.slug}`, {
         lastModified: new Date(item.updated_at),
         changeFrequency: "weekly",
         priority: 0.75,
@@ -317,7 +465,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Add festivals
   for (const festival of festivals) {
     sitemapEntries.push(
-      entry(`/festivals/${festival.slug}`, {
+      ...localizedEntries(`/festivals/${festival.slug}`, {
         lastModified: new Date(festival.updated_at),
         changeFrequency: "weekly",
         priority: 0.7,
@@ -328,7 +476,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Add organizers (unified vanity URLs — /organizers/[slug] 301s to /[slug])
   for (const organizer of organizers) {
     sitemapEntries.push(
-      entry(`/${organizer.slug}`, {
+      ...localizedEntries(`/${organizer.slug}`, {
         lastModified: new Date(organizer.updated_at),
         changeFrequency: "weekly",
         priority: 0.6,
@@ -339,7 +487,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Add venues (unified vanity URLs — /venues/[slug] 301s to /[slug])
   for (const venue of venues) {
     sitemapEntries.push(
-      entry(`/${venue.slug}`, {
+      ...localizedEntries(`/${venue.slug}`, {
         lastModified: new Date(venue.updated_at),
         changeFrequency: "weekly",
         priority: 0.7,
@@ -350,7 +498,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Add tribes (discoverable only; secret/unlisted tribes are noindex'd)
   for (const tribe of tribes) {
     sitemapEntries.push(
-      entry(`/tribes/${tribe.slug}`, {
+      ...localizedEntries(`/tribes/${tribe.slug}`, {
         lastModified: new Date(tribe.updated_at),
         changeFrequency: "weekly",
         priority: 0.7,
@@ -363,7 +511,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const monthSlug = getMonthSlug(month);
     const past = isPastMonth(year, month);
     sitemapEntries.push(
-      entry(`/events/${year}/${monthSlug}`, {
+      ...localizedEntries(`/events/${year}/${monthSlug}`, {
         changeFrequency: past ? "monthly" : "daily",
         priority: past ? 0.5 : 0.7,
       }),
@@ -375,11 +523,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const moment of moments) {
     if (!moment.events?.slug) continue;
     sitemapEntries.push(
-      entry(`/events/${moment.events.slug}/moments/${moment.id}`, {
-        lastModified: new Date(moment.updated_at || moment.created_at),
-        changeFrequency: "weekly",
-        priority: 0.6,
-      }),
+      ...localizedEntries(
+        `/events/${moment.events.slug}/moments/${moment.id}`,
+        {
+          lastModified: new Date(moment.updated_at || moment.created_at),
+          changeFrequency: "weekly",
+          priority: 0.6,
+        },
+      ),
     );
   }
 
@@ -396,7 +547,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const [slug, updatedAt] of eventMomentSlugs.entries()) {
     sitemapEntries.push(
-      entry(`/events/${slug}/moments`, {
+      ...localizedEntries(`/events/${slug}/moments`, {
         lastModified: new Date(updatedAt),
         changeFrequency: "weekly",
         priority: 0.55,
@@ -406,7 +557,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Add blog list page
   sitemapEntries.push(
-    entry("/blog", {
+    ...localizedEntries("/blog", {
       changeFrequency: "daily",
       priority: 0.7,
     }),
@@ -415,7 +566,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Add blog posts
   for (const post of blogPosts) {
     sitemapEntries.push(
-      entry(`/blog/${post.category_slug}/${post.slug}`, {
+      ...localizedEntries(`/blog/${post.category_slug}/${post.slug}`, {
         lastModified: new Date(post.updated_at || post.published_at),
         changeFrequency: "monthly",
         priority: 0.65,
@@ -432,7 +583,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const playlist of playlists) {
     sitemapEntries.push(
-      entry(`/events/${playlist.eventSlug}/playlist`, {
+      ...localizedEntries(`/events/${playlist.eventSlug}/playlist`, {
         lastModified: new Date(
           playlist.playlistUpdatedAt || playlist.eventUpdatedAt,
         ),
@@ -446,22 +597,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (!track.hasLyrics) continue;
 
       sitemapEntries.push(
-        entry(`/events/${playlist.eventSlug}/lyrics/${track.id}`, {
-          lastModified: new Date(track.updatedAt),
-          changeFrequency: "monthly",
-          priority: 0.75,
-        }),
+        ...localizedEntries(
+          `/events/${playlist.eventSlug}/lyrics/${track.id}`,
+          {
+            lastModified: new Date(track.updatedAt),
+            changeFrequency: "monthly",
+            priority: 0.75,
+          },
+        ),
       );
 
       sitemapEntries.push(
-        entry(`/events/${playlist.eventSlug}/karaoke/${track.id}`, {
-          lastModified: new Date(track.updatedAt),
-          changeFrequency: "monthly",
-          priority: 0.7,
-        }),
+        ...localizedEntries(
+          `/events/${playlist.eventSlug}/karaoke/${track.id}`,
+          {
+            lastModified: new Date(track.updatedAt),
+            changeFrequency: "monthly",
+            priority: 0.7,
+          },
+        ),
       );
     }
   }
 
+  assertSitemapLimits(sitemapEntries);
   return sitemapEntries;
 }

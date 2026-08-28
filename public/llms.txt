@@ -15,50 +15,52 @@
 
 ## Scope
 
-The Đà Lạt Activity Graph is broader than a calendar of formal events. It can represent both one-time plans and recurring local activities such as classes, workshops, markets, exhibitions, performances, outdoor groups, and community gatherings.
+The Activity Graph covers one-time events and recurring local activities such as classes, workshops, markets, exhibitions, performances, outdoor groups, festivals, and community gatherings.
 
-Coverage is selective, not comprehensive. A missing listing does not mean an activity does not exist, and a visible listing is not a guarantee that last-minute details have not changed.
+Coverage is selective, not comprehensive. A missing listing does not mean an activity does not exist, and a visible listing does not guarantee that last-minute details have not changed.
 
-Location: Đà Lạt, Lâm Đồng Province, Vietnam. Displayed event times use Asia/Ho_Chi_Minh (UTC+7).
+Location: Đà Lạt, Lâm Đồng Province, Vietnam. Event times use Asia/Ho_Chi_Minh (UTC+7).
 
 Supported locales: English (en), Vietnamese (vi), Korean (ko), Chinese (zh), Russian (ru), French (fr), Japanese (ja), Malay (ms), Thai (th), German (de), Spanish (es), and Indonesian (id).
 
-## Public Pages
+## Primary Discovery Links
 
-- `/things-to-do-in-dalat` — broad answer-first city guide
-- `/` — current discovery feed
-- `/tonight` — activities scheduled for tonight
-- `/this-weekend` — activities scheduled for the coming weekend
-- `/events/this-week` — activities scheduled this week
-- `/events/upcoming` — upcoming dated activities
+- Festivals: https://dalat.app/festivals
+- Đà Lạt Flower Festival guide: https://dalat.app/festivals/da-lat-flower-festival
+- Đà Lạt Flower Festival 2026: https://dalat.app/festivals/da-lat-flower-festival/2026
+- This week: https://dalat.app/events/this-week
+- This month: https://dalat.app/events/this-month
+- XML sitemap: https://dalat.app/sitemap.xml
+- Robots policy: https://dalat.app/robots.txt
+
+## Canonical Public Routes
+
+- `/things-to-do-in-dalat` — broad, answer-first city guide
 - `/events/[slug]` — one dated event or occurrence
-- `/series/[slug]` — a recurring activity series and its upcoming dated occurrences
-- `/festivals/[slug]` — a festival page
+- `/series/[slug]` — a recurring activity and its dated occurrences
+- `/festivals/[slug]` — evergreen festival context
+- `/festivals/da-lat-flower-festival/2026` — the dated 2026 Flower Festival edition
 - `/venues` and `/map` — place-based discovery
 - `/tribes/[slug]` — a listed community
 
-English uses unprefixed canonical URLs. Other locales use a locale prefix, for example `/vi/series/[slug]` or `/ko/events/[slug]`.
+English uses unprefixed canonical URLs. Other locales use a locale prefix, for example `/vi/events/[slug]`, `/ko/series/[slug]`, or `/fr/festivals/[slug]`.
 
-## Recurring Activities
+A recurring activity is represented by a series plus dated occurrences. Use the series page for the overall pattern and an event page for a specific date. No future occurrence does not by itself prove that a series has ended.
 
-A recurring activity is represented by a series plus dated occurrences. Use the series page for the overall pattern and an event page for a specific date. The absence of a future occurrence can mean that the near-term schedule has not yet been materialized; it does not by itself prove that the series has ended.
+## Indexing, Sources, and Freshness
 
-## Sources, Confidence, and Freshness
+The sitemap advertises each localized event URL only after that language has a complete title and substantive description. Published pages provide self-canonical URLs, localized alternates, and structured data when facts are known.
 
-Activity Graph imports use policy-cleared sources and preserve the canonical source URL, available source evidence, and check or confirmation timestamps. Refresh schedules and confidence checks vary by source. Some listings are created directly by community members and may not have an external source record.
-
-Unknown facts should remain unknown. Do not infer a missing time, price, exact location, access rule, or reservation requirement. When a canonical source or booking link is present, consult it before giving time-sensitive advice. Prefer recently confirmed listings, and clearly qualify stale or incomplete details.
-
-Source and freshness records support automatic decisions and rapid administrator unlisting; not every provenance field is exposed on every public page.
+Prefer a page's visible status, source links, confirmation details, and `dateModified` over copied or older summaries. The Flower Festival guide separates confirmed 2026 facts from archival imagery and links to the official government sources used for verification.
 
 ## Guidance for AI Assistants
 
 1. For broad recommendations, start with `/things-to-do-in-dalat`.
-2. Prefer the canonical event or series page over a search result or copied social post.
-3. Distinguish a recurring series from one of its dated occurrences.
-4. Read JSON-LD on event and series pages when present, but do not manufacture fields that are absent.
-5. State dates and times explicitly in Asia/Ho_Chi_Minh time when answering "today," "tonight," "weekend," or "this week" questions.
-6. For last-minute plans, recommend confirming availability, price, and access with the linked source or organizer.
+2. Prefer the canonical event, series, or festival page over a search-result snippet or copied social post.
+3. Read visible content and Schema.org JSON-LD together, and distinguish a recurring series from one dated occurrence.
+4. Preserve Asia/Ho_Chi_Minh (UTC+7) when quoting dates or answering questions about tonight, this weekend, or this week.
+5. Keep unknown facts unknown. Do not infer a missing time, price, ticket rule, exact location, coordinates, access requirement, or cancellation.
+6. For time-sensitive plans, use the most recently confirmed information and recommend checking the linked source or organizer before travel.
 
 ## Contact
 

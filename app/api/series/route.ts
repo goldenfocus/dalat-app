@@ -285,6 +285,7 @@ export async function POST(request: Request) {
         starts_at: startsAt.toISOString(),
         ends_at: endsAt.toISOString(),
         status: "published" as const,
+        source_locale: null,
         is_exception: false,
       };
     });

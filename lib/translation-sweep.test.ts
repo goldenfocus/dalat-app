@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
+import { CONTENT_LOCALES } from "@/lib/types";
 import {
   collectTranslationWork,
+  getMissingTranslationLocales,
   getVenueTranslatableFields,
 } from "./translation-sweep";
 
@@ -16,7 +18,7 @@ function makeBuilder(result: QueryResult) {
   }
   builder.then = (
     resolve: (value: QueryResult) => unknown,
-    reject?: (reason: unknown) => unknown
+    reject?: (reason: unknown) => unknown,
   ) => Promise.resolve(result).then(resolve, reject);
   return builder;
 }
@@ -26,7 +28,7 @@ type TestClient = Parameters<typeof collectTranslationWork>[0];
 function makeClient(venues: unknown[]) {
   return {
     from: vi.fn((table: string) =>
-      makeBuilder({ data: table === "venues" ? venues : [], error: null })
+      makeBuilder({ data: table === "venues" ? venues : [], error: null }),
     ),
   } as unknown as TestClient;
 }
@@ -66,10 +68,10 @@ describe("venue translation fields", () => {
             text: "Không gian nghệ thuật cộng đồng.",
           },
         ],
-      })
+      }),
     );
     expect(work.find((item) => item.contentId === "venue-1")?.fields).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ field_name: "title" })])
+      expect.arrayContaining([expect.objectContaining({ field_name: "title" })]),
     );
   });
 
@@ -82,7 +84,39 @@ describe("venue translation fields", () => {
         source_locale: "vi",
       },
     ]);
-
     await expect(collectTranslationWork(client, 20)).resolves.toEqual([]);
+  });
+});
+
+function completeCoverage() {
+  return new Map(
+    CONTENT_LOCALES.map((locale) => [
+      locale,
+      new Set(["title", "description"]),
+    ]),
+  );
+}
+
+describe("translation sweep durability", () => {
+  it("rewrites every event locale while source-language detection is pending", () => {
+    expect(
+      getMissingTranslationLocales(
+        "event",
+        null,
+        [{ field_name: "title" }, { field_name: "description" }],
+        completeCoverage(),
+      ),
+    ).toEqual(CONTENT_LOCALES);
+  });
+
+  it("does not rewrite complete coverage after the event source locale is known", () => {
+    expect(
+      getMissingTranslationLocales(
+        "event",
+        "vi",
+        [{ field_name: "title" }, { field_name: "description" }],
+        completeCoverage(),
+      ),
+    ).toEqual([]);
   });
 });

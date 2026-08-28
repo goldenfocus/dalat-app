@@ -9,7 +9,18 @@ import {
   downloadAndUploadImage,
   parseEventDate,
   canonicalizeFacebookEventUrl,
+  slugify,
 } from "./utils";
+
+describe("slugify", () => {
+  it.each([
+    ["Đà Lạt Flower Festival", "da-lat-flower-festival"],
+    ["Festival Hoa đà lạt", "festival-hoa-da-lat"],
+    ["Phố Bên Đồi", "pho-ben-doi"],
+  ])("transliterates Vietnamese text in %s", (input, expected) => {
+    expect(slugify(input)).toBe(expected);
+  });
+});
 
 describe("canonicalizeFacebookEventUrl", () => {
   it.each([

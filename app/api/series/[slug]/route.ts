@@ -114,7 +114,7 @@ export async function PATCH(request: Request, { params }: Params) {
   // Get series and check ownership
   const { data: series, error: fetchError } = await supabase
     .from("event_series")
-    .select("id, created_by, rrule, first_occurrence, starts_at_time, duration_minutes")
+    .select("id, created_by, title, description, rrule, first_occurrence, starts_at_time, duration_minutes")
     .eq(isUUID ? "id" : "slug", slug)
     .single();
 
@@ -140,6 +140,11 @@ export async function PATCH(request: Request, { params }: Params) {
 
   const body = await request.json();
   const { update_scope, ...updateData } = body;
+  const textContentChanged =
+    ("title" in updateData && String(updateData.title ?? "").trim() !== series.title.trim()) ||
+    ("description" in updateData &&
+      (String(updateData.description ?? "").trim() || null) !==
+        (series.description?.trim() || null));
 
   // Validate RRULE if being updated
   if (updateData.rrule && !isValidRRule(updateData.rrule)) {
@@ -203,6 +208,9 @@ export async function PATCH(request: Request, { params }: Params) {
       if (field in updateData) {
         eventUpdate[field] = updateData[field];
       }
+    }
+    if (textContentChanged) {
+      eventUpdate.source_locale = null;
     }
 
     if (Object.keys(eventUpdate).length > 0) {

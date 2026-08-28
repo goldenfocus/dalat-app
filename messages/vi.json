@@ -337,6 +337,13 @@
     "fieldTitle": "tiêu đề",
     "fieldDate": "ngày",
     "fieldTime": "giờ",
+    "fieldDescription": "mô tả",
+    "fieldLocation": "địa điểm",
+    "fieldAddress": "địa chỉ đường phố",
+    "fieldOnlineLink": "liên kết trực tuyến công khai",
+    "titleTooShort": "Tiêu đề phải có ít nhất {minimum} ký tự",
+    "descriptionTooShort": "Mô tả phải có ít nhất {minimum} ký tự",
+    "invalidOnlineLink": "Hãy thêm liên kết http(s) công khai cho sự kiện trực tuyến này",
     "fieldsRequired": "{fields} là bắt buộc",
     "pastDateNotAllowed": "Không thể tạo sự kiện trong quá khứ",
     "invalidUsernameFormat": "Định dạng tên người dùng không hợp lệ",
@@ -352,6 +359,8 @@
     "refreshPage": "Tải lại trang"
   },
   "events": {
+    "starts": "Bắt đầu",
+    "ends": "Kết thúc",
     "popular": "Phổ biến",
     "sponsored": "Nổi bật",
     "going": "tham gia",
@@ -1124,7 +1133,159 @@
     "noUpdatesYet": "Chưa có cập nhật. Hãy theo dõi!",
     "moreDetailsSoon": "Thêm chi tiết sẽ sớm có.",
     "activeUpcoming": "Đang diễn ra & Sắp tới",
-    "pastFestivals": "Lễ hội đã qua"
+    "pastFestivals": "Lễ hội đã qua",
+    "listingSeoTitle": "Lễ hội ở Đà Lạt",
+    "listingSeoDescription": "Khám phá các lễ hội hoa, âm nhạc, văn hóa và theo mùa ở Đà Lạt với ngày, địa điểm đã xác minh và hướng dẫn chương trình mới nhất.",
+    "listingSchemaName": "Các lễ hội ở Đà Lạt",
+    "listingSchemaDescription": "Các lễ hội hoa, âm nhạc, văn hóa và theo mùa đang diễn ra hoặc đã lưu trữ tại Đà Lạt.",
+    "emptyTitle": "Chưa có lễ hội",
+    "emptyDescription": "Hãy quay lại sớm để xem các lễ hội sắp tới ở Đà Lạt.",
+    "happeningNow": "Đang diễn ra"
+  },
+  "flowerFestivalGuide": {
+    "common": {
+      "home": "Trang chủ",
+      "festivals": "Lễ hội",
+      "name": "Festival Hoa Đà Lạt",
+      "nativeName": "Festival Hoa Đà Lạt",
+      "backToFestivals": "Tất cả lễ hội",
+      "officialSources": "Nguồn chính thức",
+      "sourcesNote": "Chúng tôi tách rõ kế hoạch đã công bố và thông tin vẫn chờ xác nhận. Kế hoạch có thể thay đổi, vì vậy hãy kiểm tra lại các thông báo chính thức này trước chuyến đi.",
+      "sourceMinistry": "Bộ Văn hóa, Thể thao và Du lịch: kế hoạch năm 2026",
+      "sourceTourism": "Trung tâm Xúc tiến Du lịch Lâm Đồng: kế hoạch năm 2026",
+      "sourceProvince": "Cập nhật của tỉnh Lâm Đồng: công tác chuẩn bị năm 2026",
+      "sourceNational": "Cục Du lịch Quốc gia Việt Nam: tổng quan năm 2026",
+      "lastChecked": "Kiểm tra lần cuối ngày 27/8/2026",
+      "eventListing": "Mở trang sự kiện trên Dalat.app",
+      "imageAlt": "Ảnh tư liệu lễ khai mạc Festival Hoa Đà Lạt lần thứ X năm 2024",
+      "imageCaption": "Ảnh tư liệu: lễ khai mạc Festival Hoa Đà Lạt lần thứ X, năm 2024"
+    },
+    "overview": {
+      "seoTitle": "Festival Hoa Đà Lạt: Lịch sử, các kỳ tổ chức và cẩm nang",
+      "seoDescription": "Cẩm nang thiết thực về Festival Hoa Đà Lạt: lịch sử, ý nghĩa, kỳ mới nhất, nguồn chính thức và những trải nghiệm dành cho du khách.",
+      "badge": "Cẩm nang lễ hội lâu dài",
+      "lead": "Khám phá ngày hội khắp thành phố, nơi tôn vinh người trồng hoa, văn hóa cao nguyên và sức sáng tạo của Đà Lạt.",
+      "introTitle": "Lễ hội mang dấu ấn Đà Lạt",
+      "introBody": "Được tổ chức lần đầu vào năm 2005, Festival Hoa Đà Lạt là sự kiện văn hóa - du lịch định kỳ của Lâm Đồng nhằm tôn vinh hoa, người trồng hoa, cảnh quan và sức sáng tạo địa phương. Những chương trình trọng tâm hội tụ tại Đà Lạt, còn không gian mỗi kỳ có thể lan tỏa khắp tỉnh.",
+      "facts": {
+        "firstLabel": "Kỳ đầu tiên",
+        "firstValue": "Năm 2005",
+        "rhythmLabel": "Nhịp tổ chức thường lệ",
+        "rhythmValue": "Hai năm một lần; ngày cụ thể có thể thay đổi",
+        "reachLabel": "Không gian lễ hội",
+        "reachValue": "Đà Lạt và nhiều địa điểm trên toàn Lâm Đồng"
+      },
+      "latestEyebrow": "Kỳ mới nhất đã công bố",
+      "latestTitle": "Festival Hoa Đà Lạt lần thứ XI · 2026",
+      "latestBody": "Tỉnh đã công bố kỳ lễ hội trọng tâm vào cuối tháng 12 với chủ đề “Đà Lạt – Bản giao hòa của sắc hoa và âm nhạc”. Lịch chi tiết từng ngày vẫn đang được hoàn thiện.",
+      "explore2026": "Lên kế hoạch cho kỳ 2026",
+      "exploreGuide": "Khám phá cẩm nang lễ hội",
+      "whyTitle": "Vì sao lễ hội có ý nghĩa",
+      "why": {
+        "growersTitle": "Hoa và những người làm nên hoa",
+        "growersBody": "Lễ hội tôn vinh nghề trồng hoa Đà Lạt, người trồng hoa và chuỗi giá trị kết nối các nhà vườn với thành phố.",
+        "cultureTitle": "Sân khấu của cao nguyên",
+        "cultureBody": "Mỗi kỳ kết nối bản sắc địa phương với triển lãm, âm nhạc, trình diễn và sức sáng tạo đương đại.",
+        "cityTitle": "Ngày hội không gói trong một địa điểm",
+        "cityBody": "Không gian hoa và các hoạt động hưởng ứng có thể lan đến khu dân cư và điểm đến khắp Lâm Đồng, không chỉ ở một quảng trường."
+      },
+      "expectTitle": "Bạn có thể mong đợi gì",
+      "expect": {
+        "flowers": "Không gian hoa khắp thành phố và các phong trào cộng đồng cùng trồng hoa.",
+        "music": "Chương trình khai mạc, bế mạc, văn hóa và âm nhạc quy mô lớn thay đổi theo từng kỳ.",
+        "local": "Câu chuyện của người trồng hoa, văn hóa cao nguyên và sản vật Lâm Đồng.",
+        "beyond": "Hoạt động vượt ra ngoài trung tâm Đà Lạt; luôn xem bản đồ của kỳ hiện tại."
+      },
+      "planBody": "Hãy xem mỗi kỳ là một chuyến đi mới. Xác nhận thời gian và địa điểm, dành thêm thời gian cho đường phố đông quanh các chương trình trung tâm và mang áo khoác mỏng cho buổi tối se lạnh. Vé và khả năng tiếp cận tùy từng chương trình.",
+      "faqTitle": "Thông tin nên biết",
+      "faq": {
+        "whatQuestion": "Festival Hoa Đà Lạt là gì?",
+        "whatAnswer": "Đây là lễ hội văn hóa - du lịch định kỳ của Lâm Đồng, tôn vinh hoa, người trồng hoa, cảnh quan Đà Lạt và sức sáng tạo địa phương.",
+        "annualQuestion": "Festival Hoa Đà Lạt có diễn ra hằng năm không?",
+        "annualAnswer": "Từ kỳ chính thức đầu tiên năm 2005, lễ hội thường trở lại hai năm một lần, nhưng thời gian và hình thức có thể thay đổi. Hãy dùng trang của kỳ hiện tại để lên kế hoạch.",
+        "whereQuestion": "Festival diễn ra ở đâu?",
+        "whereAnswer": "Các chương trình lớn thường diễn ra tại Đà Lạt, nhiều hoạt động ở không gian công cộng trung tâm, đồng thời mỗi kỳ có thể mở rộng đến những nơi khác trong tỉnh Lâm Đồng.",
+        "ticketsQuestion": "Tôi có cần mua vé không?",
+        "ticketsAnswer": "Tùy từng chương trình. Không gian hoa công cộng có thể khác với chương trình sân khấu hoặc giới hạn sức chứa, vì vậy hãy kiểm tra từng lịch sự kiện trước khi đi."
+      }
+    },
+    "edition2026": {
+      "seoTitle": "Festival Hoa Đà Lạt 2026: Ngày, chương trình và cẩm nang",
+      "seoDescription": "Ngày tổ chức, điểm nhấn chương trình dự kiến và hướng dẫn trung thực từ nguồn chính thức cho Festival Hoa Đà Lạt lần thứ XI vào tháng 12/2026.",
+      "badge": "Cẩm nang kỳ 2026",
+      "title": "Festival Hoa Đà Lạt 2026",
+      "shortTitle": "Kỳ 2026",
+      "lead": "Kỳ thứ XI hòa quyện sắc hoa và âm nhạc trên toàn Lâm Đồng, với chuỗi chương trình trọng tâm vào cuối tháng 12.",
+      "backToGuide": "Cẩm nang lễ hội",
+      "statusTitle": "Thông tin chính thức đến hiện tại",
+      "statusBody": "Lâm Đồng công bố kế hoạch tổ chức ngày 15/6/2026. Ngày và điểm nhấn dưới đây là kế hoạch đã công bố; lịch chi tiết đến từng phút chưa được phát hành.",
+      "detailsTitle": "Thông tin chính",
+      "details": {
+        "themeLabel": "Chủ đề chính thức",
+        "themeValue": "Đà Lạt – Bản giao hòa của sắc hoa và âm nhạc",
+        "themeNote": "Chủ đề kết nối cảnh quan hoa Đà Lạt với bản sắc Thành phố sáng tạo âm nhạc của UNESCO.",
+        "openingLabel": "Chương trình khai mạc",
+        "openingValue": "20:00 · 19/12/2026",
+        "openingNote": "Quảng trường Lâm Viên, phường Xuân Hương – Đà Lạt; dự kiến truyền hình trực tiếp trên VTV.",
+        "closingLabel": "Bế mạc và chào năm mới",
+        "closingValue": "20:00 · 31/12/2026",
+        "closingNote": "Quảng trường Lâm Viên, kết hợp chương trình nghệ thuật chào năm mới 2027.",
+        "scopeLabel": "Quy mô lễ hội",
+        "scopeValue": "11 chương trình chính + 25 hoạt động hưởng ứng",
+        "scopeNote": "Hoạt động diễn ra trên toàn Lâm Đồng, trong đó chuỗi trọng tâm tập trung vào cuối tháng 12."
+      },
+      "programTitle": "Điểm nhấn đã công bố",
+      "programIntro": "Những nội dung này có trong kế hoạch của cơ quan nhà nước. Nhãn thời gian nghĩa là khung ngày đã được công bố; các chi tiết khác vẫn đang hoàn thiện.",
+      "publishedTiming": "Đã có khung ngày",
+      "detailsPending": "Chờ lịch cụ thể",
+      "programs": {
+        "flower": "Không gian hoa Festival dự kiến từ 18/12/2026 đến 3/1/2027 quanh hồ Xuân Hương, Công viên Trần Quốc Toản, Công viên Yersin, bán đảo Bích Câu và các tuyến đường trung tâm.",
+        "exhibitions": "Các trưng bày hoa và cây cảnh quốc tế, gồm lan và nghệ thuật hoa, dự kiến tổ chức tại Vườn hoa Đà Lạt cùng những địa điểm khác.",
+        "science": "Hội thảo về khoa học, công nghệ và đổi mới sáng tạo cho chuỗi giá trị hoa Đà Lạt bền vững nằm trong kế hoạch.",
+        "flavors": "Phố Trà, Cà phê, Rượu vang, sản phẩm OCOP và đặc trưng địa phương, cùng Phiên chợ Rau - Hoa, nằm trong kế hoạch.",
+        "brocade": "Lễ hội Văn hóa Thổ cẩm Việt Nam lần thứ III nằm trong chương trình chính.",
+        "jazz": "Lễ hội nhạc Jazz Việt Nam 2026 dự kiến diễn ra trên mặt hồ Xuân Hương từ ngày 25 đến 27/12.",
+        "carnival": "Carnival Ban nhạc và nhóm nhảy hiện đại dự kiến diễn ra ngày 31/12."
+      },
+      "pendingTitle": "Vẫn đang chờ xác nhận",
+      "pendingIntro": "Tài liệu chính thức chúng tôi theo dõi chưa xác nhận:",
+      "pending": {
+        "schedule": "Lịch đầy đủ theo từng ngày và giờ bắt đầu chính xác của mọi chương trình",
+        "venues": "Địa điểm cuối cùng và điểm bản đồ của từng hoạt động chính và hưởng ứng",
+        "tickets": "Chương trình nào cần vé, đặt chỗ hoặc có giới hạn sức chứa",
+        "access": "Khả năng tiếp cận, bãi đỗ xe và phương án giao thông công cộng của từng chương trình"
+      },
+      "planTitle": "Để chuyến đi nhẹ nhàng hơn",
+      "plan": {
+        "stayTitle": "Lấy khu vực hồ làm điểm định hướng",
+        "stayBody": "Quảng trường Lâm Viên và hồ Xuân Hương là tâm điểm của nhiều chương trình đã công bố, nhưng một số hoạt động sẽ ở nơi khác tại Đà Lạt và Lâm Đồng.",
+        "bookTitle": "Ưu tiên đặt chỗ linh hoạt",
+        "bookBody": "Nếu Festival là mục đích chính của chuyến đi, hãy đặt sớm phương tiện và chỗ ở với điều kiện dễ thay đổi trong khi lịch chi tiết đang hoàn thiện.",
+        "weatherTitle": "Chuẩn bị cho tối cao nguyên",
+        "weatherBody": "Buổi tối tháng 12 ở Đà Lạt có thể se lạnh. Mang theo áo ấm mỏng và kiểm tra dự báo sát ngày đi.",
+        "checkTitle": "Kiểm tra trước khi xuất phát",
+        "checkBody": "Xác nhận lại giờ, địa điểm và quy định vào cửa trong ngày trên kênh chính thức; giao thông và lối vào trung tâm có thể thay đổi quanh chương trình lớn."
+      },
+      "accessTitle": "Thông tin vé và khả năng tiếp cận chưa được công bố đầy đủ",
+      "accessBody": "Chúng tôi sẽ không gắn nhãn miễn phí, dễ tiếp cận hoặc không cần đặt chỗ khi chưa có nguồn. Hãy xem thông báo cuối cùng của từng chương trình hoặc liên hệ địa điểm trước khi đi.",
+      "listingTitle": "Theo dõi sự kiện trên Dalat.app",
+      "listingBody": "Dùng trang sự kiện để xem thẻ sự kiện hiện tại và các tính năng cộng đồng. Cẩm nang này là phần tổng quan lập kế hoạch dựa trên nguồn chính thức.",
+      "faqTitle": "Câu hỏi về kỳ 2026",
+      "faq": {
+        "datesQuestion": "Festival Hoa Đà Lạt 2026 diễn ra ngày nào?",
+        "datesAnswer": "Khai mạc dự kiến lúc 20:00 ngày 19/12 và bế mạc kết hợp chào năm mới lúc 20:00 ngày 31/12. Không gian hoa dự kiến từ 18/12 đến 3/1; các hoạt động hưởng ứng kéo dài rộng hơn.",
+        "freeQuestion": "Festival năm 2026 có miễn phí không?",
+        "freeAnswer": "Nguồn chính thức chưa công bố một quy định vào cửa chung cho tất cả chương trình. Hãy kiểm tra từng chương trình trước khi cho rằng miễn phí hoặc cần vé.",
+        "whereQuestion": "Festival năm 2026 tổ chức ở đâu?",
+        "whereAnswer": "Khai mạc và bế mạc dự kiến tại Quảng trường Lâm Viên. Không gian hoa tập trung quanh hồ Xuân Hương và các công viên lân cận, còn những hoạt động khác diễn ra khắp Đà Lạt và Lâm Đồng."
+      },
+      "schema": {
+        "openingName": "Khai mạc Festival Hoa Đà Lạt lần thứ XI",
+        "flowerSpacesName": "Không gian hoa Festival Hoa Đà Lạt 2026",
+        "jazzName": "Lễ hội nhạc Jazz Việt Nam 2026",
+        "closingName": "Bế mạc Festival Hoa Đà Lạt và chào năm mới 2027"
+      }
+    }
   },
   "analytics": {
     "created": "Đã tạo",

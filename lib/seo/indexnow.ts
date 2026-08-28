@@ -22,7 +22,9 @@ const KEY = "afb32311eef4622de4d11c2587784c63";
 export async function pingIndexNow(paths: string[]): Promise<void> {
   const urlList = [...new Set(paths)]
     .filter((p) => p.startsWith("/"))
-    .slice(0, 100)
+    // IndexNow accepts up to 10,000 URLs in one request. A 100-event series
+    // can legitimately fan out to 1,200 ready locale URLs.
+    .slice(0, 10_000)
     .map((p) => `https://${HOST}${p}`);
 
   if (urlList.length === 0) return;

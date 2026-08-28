@@ -39,7 +39,7 @@ describe("JsonLd", () => {
     );
 
     expect(script?.textContent).not.toContain("</script>");
-    expect(script?.textContent).toContain("\\u003c/script>");
+    expect(script?.textContent).toContain("\\u003c/script\\u003e");
     expect(JSON.parse(script?.textContent ?? "{}").name).toBe(attack);
   });
 });

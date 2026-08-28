@@ -337,6 +337,13 @@
     "fieldTitle": "judul",
     "fieldDate": "tanggal",
     "fieldTime": "waktu",
+    "fieldDescription": "deskripsi",
+    "fieldLocation": "lokasi",
+    "fieldAddress": "alamat jalan",
+    "fieldOnlineLink": "tautan online publik",
+    "titleTooShort": "Judul harus terdiri dari minimal {minimum} karakter",
+    "descriptionTooShort": "Deskripsi harus terdiri dari minimal {minimum} karakter",
+    "invalidOnlineLink": "Tambahkan tautan http(s) publik untuk acara online ini",
     "fieldsRequired": "{fields} diperlukan",
     "pastDateNotAllowed": "Tidak dapat membuat acara di masa lalu",
     "invalidUsernameFormat": "Format nama pengguna tidak valid",
@@ -352,6 +359,8 @@
     "refreshPage": "Muat ulang halaman"
   },
   "events": {
+    "starts": "Mulai",
+    "ends": "Selesai",
     "popular": "Populer",
     "sponsored": "Unggulan",
     "going": "hadir",
@@ -1124,7 +1133,159 @@
     "noUpdatesYet": "Belum ada pembaruan. Pantau terus!",
     "moreDetailsSoon": "Detail lebih lanjut segera hadir.",
     "activeUpcoming": "Aktif & Mendatang",
-    "pastFestivals": "Festival Sebelumnya"
+    "pastFestivals": "Festival Sebelumnya",
+    "listingSeoTitle": "Festival di Da Lat",
+    "listingSeoDescription": "Temukan festival bunga, musik, budaya, dan musiman di Da Lat dengan tanggal, lokasi, dan panduan program terkini yang terverifikasi.",
+    "listingSchemaName": "Festival di Da Lat",
+    "listingSchemaDescription": "Festival bunga, musik, budaya, dan musiman terkini serta terdahulu di Da Lat.",
+    "emptyTitle": "Belum ada festival",
+    "emptyDescription": "Periksa kembali segera untuk festival mendatang di Da Lat.",
+    "happeningNow": "Sedang berlangsung"
+  },
+  "flowerFestivalGuide": {
+    "common": {
+      "home": "Beranda",
+      "festivals": "Festival",
+      "name": "Festival Bunga Da Lat",
+      "nativeName": "Festival Hoa Đà Lạt",
+      "backToFestivals": "Semua festival",
+      "officialSources": "Sumber resmi",
+      "sourcesNote": "Kami membedakan rencana yang sudah diterbitkan dari detail yang masih menunggu konfirmasi. Rencana dapat berubah, jadi periksa lagi pengumuman resmi ini sebelum berangkat.",
+      "sourceMinistry": "Kementerian Kebudayaan, Olahraga, dan Pariwisata: rencana 2026",
+      "sourceTourism": "Pusat promosi pariwisata Lâm Đồng: rencana 2026",
+      "sourceProvince": "Pembaruan Provinsi Lâm Đồng: persiapan 2026",
+      "sourceNational": "Otoritas Pariwisata Nasional Vietnam: ikhtisar 2026",
+      "lastChecked": "Terakhir diperiksa 27 Agustus 2026",
+      "eventListing": "Buka halaman acara di Dalat.app",
+      "imageAlt": "Foto arsip pembukaan Festival Bunga Da Lat ke-10 pada 2024",
+      "imageCaption": "Foto arsip: pembukaan Festival Bunga Da Lat ke-10, 2024"
+    },
+    "overview": {
+      "seoTitle": "Festival Bunga Da Lat: Sejarah, Edisi & Panduan Pengunjung",
+      "seoDescription": "Panduan praktis Festival Bunga Da Lat: sejarah, makna, edisi terbaru, sumber resmi, dan hal yang dapat dinikmati pengunjung.",
+      "badge": "Panduan festival sepanjang waktu",
+      "lead": "Kenali perayaan seisi kota yang menampilkan petani bunga, budaya dataran tinggi, dan semangat kreatif Da Lat.",
+      "introTitle": "Perayaan khas Da Lat",
+      "introBody": "Pertama kali digelar pada 2005, Festival Bunga Da Lat adalah perayaan budaya dan pariwisata berkala Lâm Đồng untuk bunga, petani, lanskap, dan kreativitas lokal. Acara utama berkumpul di Da Lat, sementara tiap edisi dapat meluas ke seluruh provinsi.",
+      "facts": {
+        "firstLabel": "Edisi pertama",
+        "firstValue": "2005",
+        "rhythmLabel": "Pola biasanya",
+        "rhythmValue": "Setiap dua tahun; tanggal pasti berubah",
+        "reachLabel": "Wilayah festival",
+        "reachValue": "Da Lat dan berbagai lokasi di Lâm Đồng"
+      },
+      "latestEyebrow": "Edisi terbaru yang diumumkan",
+      "latestTitle": "Festival Bunga Da Lat ke-11 · 2026",
+      "latestBody": "Provinsi telah mengumumkan edisi akhir Desember bertema “Da Lat – Harmoni bunga dan musik.” Jadwal harian terperinci masih disusun.",
+      "explore2026": "Rencanakan edisi 2026",
+      "exploreGuide": "Jelajahi panduan festival",
+      "whyTitle": "Mengapa festival ini penting",
+      "why": {
+        "growersTitle": "Bunga dan orang-orang di baliknya",
+        "growersBody": "Festival menghormati keterampilan budidaya bunga Da Lat, para petani, serta rantai nilai yang menghubungkan kebun dengan kota.",
+        "cultureTitle": "Panggung dataran tinggi",
+        "cultureBody": "Setiap edisi mempertemukan identitas lokal dengan pameran, musik, pertunjukan, dan kreativitas masa kini.",
+        "cityTitle": "Perayaan yang melampaui satu lokasi",
+        "cityBody": "Ruang bunga dan kegiatan pendukung dapat menjangkau lingkungan serta destinasi di seluruh Lâm Đồng, bukan hanya satu alun-alun."
+      },
+      "expectTitle": "Yang dapat kamu temukan",
+      "expect": {
+        "flowers": "Ruang bunga di sekeliling kota dan kampanye menanam bersama warga.",
+        "music": "Pembukaan, penutupan, serta program budaya atau musik besar yang berubah di tiap edisi.",
+        "local": "Kisah petani bunga, budaya dataran tinggi, dan produk Lâm Đồng.",
+        "beyond": "Kegiatan di luar pusat Da Lat; selalu periksa peta edisi saat ini."
+      },
+      "planBody": "Anggap tiap edisi sebagai perjalanan baru. Konfirmasikan waktu dan lokasi, sisihkan waktu untuk jalan yang ramai di sekitar acara utama, dan bawa lapisan ringan untuk malam yang sejuk. Tiket serta aksesibilitas berbeda di tiap program.",
+      "faqTitle": "Baik untuk diketahui",
+      "faq": {
+        "whatQuestion": "Apa itu Festival Bunga Da Lat?",
+        "whatAnswer": "Festival budaya dan pariwisata berkala Lâm Đồng yang merayakan bunga, petani, lanskap Da Lat, dan kreativitas lokal.",
+        "annualQuestion": "Apakah Festival Bunga Da Lat digelar setiap tahun?",
+        "annualAnswer": "Festival biasanya kembali setiap dua tahun sejak edisi resmi pertama pada 2005, tetapi tanggal dan format dapat berubah. Gunakan halaman edisi saat ini untuk merencanakan perjalanan.",
+        "whereQuestion": "Di mana festival berlangsung?",
+        "whereAnswer": "Acara besar biasanya berlangsung di Da Lat, sering di ruang publik pusat, sementara tiap edisi dapat menghadirkan kegiatan di daerah lain di Lâm Đồng.",
+        "ticketsQuestion": "Apakah saya memerlukan tiket?",
+        "ticketsAnswer": "Tergantung program. Ruang bunga publik dapat memiliki aturan berbeda dari acara panggung atau acara berkapasitas terbatas, jadi periksa tiap daftar sebelum datang."
+      }
+    },
+    "edition2026": {
+      "seoTitle": "Festival Bunga Da Lat 2026: Tanggal, Program & Panduan",
+      "seoDescription": "Tanggal resmi, sorotan program yang direncanakan, dan panduan jujur untuk Festival Bunga Da Lat ke-11 pada Desember 2026.",
+      "badge": "Panduan perencanaan 2026",
+      "title": "Festival Bunga Da Lat 2026",
+      "shortTitle": "Edisi 2026",
+      "lead": "Edisi ke-11 mempertemukan bunga dan musik di seluruh Lâm Đồng, dengan momen utama festival direncanakan pada akhir Desember.",
+      "backToGuide": "Panduan festival",
+      "statusTitle": "Hal yang sudah resmi sejauh ini",
+      "statusBody": "Lâm Đồng mengumumkan rencana penyelenggaraan pada 15 Juni 2026. Tanggal dan sorotan di bawah adalah rencana yang telah diterbitkan; jadwal lengkap menit demi menit belum tersedia.",
+      "detailsTitle": "Detail utama",
+      "details": {
+        "themeLabel": "Tema resmi",
+        "themeValue": "Da Lat – Harmoni bunga dan musik",
+        "themeNote": "Tema ini menghubungkan lanskap bunga Da Lat dengan identitasnya sebagai Kota Kreatif Musik UNESCO.",
+        "openingLabel": "Program pembukaan",
+        "openingValue": "20.00 · 19 Desember 2026",
+        "openingNote": "Alun-alun Lâm Viên, Kelurahan Xuân Hương–Da Lat; direncanakan disiarkan langsung oleh VTV.",
+        "closingLabel": "Penutupan & Tahun Baru",
+        "closingValue": "20.00 · 31 Desember 2026",
+        "closingNote": "Alun-alun Lâm Viên, bersama pertunjukan seni menyambut 2027.",
+        "scopeLabel": "Cakupan festival",
+        "scopeValue": "11 program utama + 25 kegiatan pendukung",
+        "scopeNote": "Kegiatan berlangsung di seluruh Lâm Đồng, dengan periode utama festival terpusat pada akhir Desember."
+      },
+      "programTitle": "Sorotan program yang diterbitkan",
+      "programIntro": "Bagian ini tercantum dalam pembaruan pemerintah. Label tanggal berarti rentang waktu telah diterbitkan; detail lain masih dikembangkan.",
+      "publishedTiming": "Waktu diterbitkan",
+      "detailsPending": "Waktu menyusul",
+      "programs": {
+        "flower": "Ruang bunga festival direncanakan dari 18 Desember 2026 hingga 3 Januari 2027 di sekitar Danau Xuan Huong, Taman Trần Quốc Toản, Taman Yersin, semenanjung Bích Câu, dan jalan-jalan pusat.",
+        "exhibitions": "Pameran bunga dan tanaman hias internasional, termasuk anggrek dan seni bunga, direncanakan di Taman Bunga Da Lat dan lokasi lain.",
+        "science": "Forum sains, teknologi, dan inovasi untuk rantai nilai bunga Da Lat yang berkelanjutan direncanakan.",
+        "flavors": "Jalan teh, kopi, anggur, produk OCOP dan khas daerah, serta pasar sayur dan bunga, termasuk dalam rencana.",
+        "brocade": "Festival Budaya Brokat Vietnam ketiga termasuk dalam program utama.",
+        "jazz": "Festival Jazz Vietnam 2026 direncanakan di Danau Xuan Huong pada 25–27 Desember.",
+        "carnival": "Karnaval band dan kelompok tari modern direncanakan pada 31 Desember."
+      },
+      "pendingTitle": "Masih menunggu konfirmasi",
+      "pendingIntro": "Materi resmi yang kami pantau belum mengonfirmasi:",
+      "pending": {
+        "schedule": "Jadwal lengkap harian dan waktu mulai pasti untuk setiap program",
+        "venues": "Lokasi akhir dan titik peta untuk setiap kegiatan utama dan pendukung",
+        "tickets": "Program yang memerlukan tiket, reservasi, atau memiliki batas kapasitas",
+        "access": "Aksesibilitas, parkir, dan transportasi umum untuk setiap program"
+      },
+      "planTitle": "Rencanakan kunjungan yang lebih nyaman",
+      "plan": {
+        "stayTitle": "Gunakan danau sebagai penunjuk arah",
+        "stayBody": "Alun-alun Lâm Viên dan Danau Xuan Huong menjadi pusat beberapa sorotan, tetapi sebagian kegiatan berlangsung di tempat lain di Da Lat dan Lâm Đồng.",
+        "bookTitle": "Pilih pemesanan yang fleksibel",
+        "bookBody": "Jika festival adalah tujuan utama perjalanan, pesan transportasi dan penginapan lebih awal dengan ketentuan yang mudah diubah selagi jadwal terperinci disusun.",
+        "weatherTitle": "Bersiap untuk malam dataran tinggi",
+        "weatherBody": "Malam Desember di Da Lat dapat terasa sejuk. Bawa pakaian hangat ringan dan periksa prakiraan cuaca mendekati waktu kunjungan.",
+        "checkTitle": "Periksa sebelum berangkat",
+        "checkBody": "Konfirmasikan kembali waktu, lokasi, dan aturan masuk hari itu melalui kanal resmi; lalu lintas dan akses pusat kota dapat berubah saat acara besar."
+      },
+      "accessTitle": "Tiket dan aksesibilitas belum diterbitkan sepenuhnya",
+      "accessBody": "Kami tidak akan menyebut kegiatan gratis, mudah diakses, atau tanpa reservasi tanpa sumber. Periksa pengumuman akhir tiap program atau hubungi lokasi sebelum berangkat.",
+      "listingTitle": "Ikuti acara di Dalat.app",
+      "listingBody": "Gunakan halaman acara untuk melihat kartu terkini dan fitur komunitas. Panduan ini tetap menjadi gambaran perencanaan berbasis sumber resmi.",
+      "faqTitle": "Pertanyaan tentang 2026",
+      "faq": {
+        "datesQuestion": "Kapan Festival Bunga Da Lat 2026 berlangsung?",
+        "datesAnswer": "Pembukaan direncanakan pukul 20.00 pada 19 Desember dan penutupan bersama Tahun Baru pukul 20.00 pada 31 Desember. Ruang bunga direncanakan dari 18 Desember sampai 3 Januari; kegiatan pendukung mencakup periode yang lebih luas.",
+        "freeQuestion": "Apakah festival 2026 gratis?",
+        "freeAnswer": "Sumber resmi belum menerbitkan satu aturan masuk untuk semua program. Periksa tiap program sebelum menganggapnya gratis atau bertiket.",
+        "whereQuestion": "Di mana festival 2026 diadakan?",
+        "whereAnswer": "Pembukaan dan penutupan direncanakan di Alun-alun Lâm Viên. Ruang bunga berpusat di Danau Xuan Huong dan taman sekitar, sementara kegiatan lain berlangsung di Da Lat dan seluruh Lâm Đồng."
+      },
+      "schema": {
+        "openingName": "Pembukaan Festival Bunga Da Lat ke-11",
+        "flowerSpacesName": "Ruang bunga Festival Bunga Da Lat 2026",
+        "jazzName": "Festival Jazz Vietnam 2026",
+        "closingName": "Penutupan Festival Bunga Da Lat dan program Tahun Baru 2027"
+      }
+    }
   },
   "analytics": {
     "created": "Dibuat",

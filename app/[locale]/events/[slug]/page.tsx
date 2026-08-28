@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -32,7 +32,8 @@ import {
   generateEventSchema,
   generateBreadcrumbSchema,
 } from "@/lib/structured-data";
-import { buildAlternates, localeUrl } from "@/lib/metadata";
+import { buildAlternates, localeUrl, resolveEventIndexableLocales } from "@/lib/metadata";
+import { getEventIndexingReadiness } from "@/lib/translations-readiness";
 import { buildSocialCardImageUrl } from "@/lib/events/share-preview";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -55,7 +56,8 @@ import { AttendeeList } from "@/components/events/attendee-list";
 import { ReconfirmationBadge } from "@/components/events/reconfirmation-badge";
 import { EventMediaDisplay } from "@/components/events/event-media-display";
 import { EventDefaultImage } from "@/components/events/event-default-image";
-import { formatInDaLat, formatInDaLatAsync } from "@/lib/timezone";
+import { formatInDaLat } from "@/lib/timezone";
+import { getEventDateDisplay } from "@/lib/events/event-date-range";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import { EventTribeAttach } from "@/components/events/event-tribe-attach";
@@ -149,6 +151,25 @@ export async function generateMetadata({
   const title = translations.title || event.title;
   const eventDescription = translations.description ?? event.description;
 
+  // Only advertise locale variants whose source-backed title and description
+  // are actually present. If the readiness query fails, keep the source locale
+  // indexable and fail closed for fallback-language variants.
+  let readinessLocales: ContentLocale[] = [];
+  let readinessQueryFailed = false;
+  try {
+    const readiness = await getEventIndexingReadiness(supabase, event.id);
+    readinessLocales = readiness?.readyLocales ?? [];
+  } catch (error) {
+    console.error("[event metadata] translation readiness failed", error);
+    readinessQueryFailed = true;
+  }
+  const readyLocales = resolveEventIndexableLocales(
+    readinessLocales,
+    sourceLocale,
+    readinessQueryFailed
+  );
+  const localeIsReady = isValidContentLocale(locale) && readyLocales.includes(locale);
+
   const eventDate = formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a");
 
   // Use keyword-enriched description that ensures Đà Lạt context
@@ -181,7 +202,24 @@ export async function generateMetadata({
     description,
     keywords,
     // Without this, the page inherits the locale layout's homepage canonical
-    alternates: buildAlternates(locale as Locale, `/events/${slug}`),
+    alternates: buildAlternates(locale as Locale, `/events/${slug}`, readyLocales),
+    robots: localeIsReady
+      ? {
+          index: true,
+          follow: true,
+          googleBot: {
+            index: true,
+            follow: true,
+            "max-video-preview": -1,
+            "max-image-preview": "large",
+            "max-snippet": -1,
+          },
+        }
+      : {
+          index: false,
+          follow: true,
+          googleBot: { index: false, follow: true },
+        },
     openGraph: {
       title,
       description,
@@ -942,26 +980,28 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   if (result.type === "redirect") {
     // Preserve any query params (like ?confirm=yes from notifications)
     const queryParams = await searchParams;
-    const queryString = Object.entries(queryParams)
-      .filter(([, value]) => value !== undefined)
-      .map(([key, value]) => {
-        if (Array.isArray(value)) {
-          return value.map((v) => `${key}=${encodeURIComponent(v)}`).join("&");
-        }
-        return `${key}=${encodeURIComponent(value as string)}`;
-      })
-      .join("&");
-    redirect(
-      `/events/${result.newSlug}${queryString ? `?${queryString}` : ""}`,
+    const preservedQuery = new URLSearchParams();
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (Array.isArray(value)) {
+        value.forEach((item) => preservedQuery.append(key, item));
+      } else if (value !== undefined) {
+        preservedQuery.set(key, value);
+      }
+    }
+    const localePrefix = locale === "en" ? "" : `/${locale}`;
+    const queryString = preservedQuery.toString();
+    permanentRedirect(
+      `${localePrefix}/events/${result.newSlug}${queryString ? `?${queryString}` : ""}`
     );
   }
 
   const event = result.event;
-  const [t, tCommon, tPlaylist, tTribes] = await Promise.all([
+  const [t, tCommon, tPlaylist, tTribes, tNavigation] = await Promise.all([
     getTranslations("events"),
     getTranslations("common"),
     getTranslations("playlist"),
     getTranslations("tribes"),
+    getTranslations("nav"),
   ]);
 
   const currentUserId = await getCurrentUserId();
@@ -1085,22 +1125,21 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   );
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
-      { name: "Home", url: "/" },
-      { name: "Events", url: "/events/upcoming" },
+      { name: "ĐàLạt.app", url: "/" },
+      { name: tNavigation("events"), url: "/events/upcoming" },
       { name: eventTranslations.title, url: `/events/${event.slug}` },
     ],
     locale,
   );
 
   // Pre-compute localized date strings (async to ensure correct locale loading)
-  const [formattedDate, formattedStartTime, formattedEndTime] =
-    await Promise.all([
-      formatInDaLatAsync(event.starts_at, "EEEE, MMMM d", locale as Locale),
-      formatInDaLatAsync(event.starts_at, "h:mm a", locale as Locale),
-      event.ends_at
-        ? formatInDaLatAsync(event.ends_at, "h:mm a", locale as Locale)
-        : Promise.resolve(null),
-    ]);
+  const {
+    spansMultipleDays,
+    startDate: formattedStartDate,
+    startTime: formattedStartTime,
+    endDate: formattedEndDate,
+    endTime: formattedEndTime,
+  } = await getEventDateDisplay(event.starts_at, event.ends_at, locale as Locale);
 
   return (
     <CelebrationProvider>
@@ -1111,8 +1150,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         {/* Structured data for event materials (audio, video, etc.) */}
         <EventMaterialsStructuredData
           materials={materials}
-          eventName={event.title}
-          eventUrl={`https://dalat.app/${locale}/events/${event.slug}`}
+          eventName={eventTranslations.title}
+          eventUrl={localeUrl(locale as Locale, `/events/${event.slug}`)}
         />
 
         <Suspense fallback={null}>
@@ -1500,12 +1539,38 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   {/* Date/time */}
                   <div className="flex items-start gap-3">
                     <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="font-medium">{formattedDate}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formattedStartTime}
-                        {formattedEndTime && ` - ${formattedEndTime}`}
-                      </p>
+                    <div className="space-y-2">
+                      <div>
+                        {spansMultipleDays && (
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            {t("starts")}
+                          </p>
+                        )}
+                        <time dateTime={event.starts_at} className="font-medium">
+                          {formattedStartDate}
+                        </time>
+                        <p className="text-sm text-muted-foreground">
+                          {formattedStartTime}
+                          {!spansMultipleDays &&
+                            formattedEndTime &&
+                            ` - ${formattedEndTime}`}
+                        </p>
+                      </div>
+                      {spansMultipleDays && event.ends_at && formattedEndDate && (
+                        <div className="border-l-2 border-border pl-3">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            {t("ends")}
+                          </p>
+                          <time dateTime={event.ends_at} className="font-medium">
+                            {formattedEndDate}
+                          </time>
+                          {formattedEndTime && (
+                            <p className="text-sm text-muted-foreground">
+                              {formattedEndTime}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 

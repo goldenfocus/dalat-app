@@ -331,6 +331,13 @@
     "fieldTitle": "标题",
     "fieldDate": "日期",
     "fieldTime": "时间",
+    "fieldDescription": "描述",
+    "fieldLocation": "地点",
+    "fieldAddress": "街道地址",
+    "fieldOnlineLink": "公开在线链接",
+    "titleTooShort": "标题至少需要 {minimum} 个字符",
+    "descriptionTooShort": "描述至少需要 {minimum} 个字符",
+    "invalidOnlineLink": "请为此在线活动添加公开的 http(s) 链接",
     "fieldsRequired": "需要{fields}",
     "pastDateNotAllowed": "无法创建过去的活动",
     "invalidUsernameFormat": "用户名格式无效",
@@ -346,6 +353,8 @@
     "refreshPage": "刷新页面"
   },
   "events": {
+    "starts": "开始",
+    "ends": "结束",
     "popular": "热门",
     "sponsored": "精选",
     "going": "参加",
@@ -1118,7 +1127,159 @@
     "noUpdatesYet": "暂无更新。敬请期待！",
     "moreDetailsSoon": "更多详情即将公布。",
     "activeUpcoming": "进行中和即将举行",
-    "pastFestivals": "往期节日"
+    "pastFestivals": "往期节日",
+    "listingSeoTitle": "大叻节庆活动",
+    "listingSeoDescription": "探索越南大叻的花卉、音乐、文化和季节性节庆，查看经核实的日期、地点与最新活动指南。",
+    "listingSchemaName": "大叻节庆活动",
+    "listingSchemaDescription": "大叻当前及往期的花卉、音乐、文化和季节性节庆。",
+    "emptyTitle": "暂无节庆活动",
+    "emptyDescription": "请稍后回来查看大叻即将举行的节庆活动。",
+    "happeningNow": "正在进行"
+  },
+  "flowerFestivalGuide": {
+    "common": {
+      "home": "首页",
+      "festivals": "节庆活动",
+      "name": "大叻花卉节",
+      "nativeName": "Festival Hoa Đà Lạt",
+      "backToFestivals": "全部节庆",
+      "officialSources": "官方来源",
+      "sourcesNote": "我们会明确区分已发布的计划与仍待确认的细节。计划可能调整，出发前请再次查看这些官方公告。",
+      "sourceMinistry": "越南文化体育与旅游部：2026 年计划",
+      "sourceTourism": "林同省旅游推广中心：2026 年计划",
+      "sourceProvince": "林同省更新：2026 年筹备情况",
+      "sourceNational": "越南国家旅游局：2026 年概览",
+      "lastChecked": "最后核实：2026 年 8 月 27 日",
+      "eventListing": "打开 Dalat.app 活动页面",
+      "imageAlt": "2024 年第十届大叻花卉节开幕式资料照片",
+      "imageCaption": "资料照片：2024 年第十届大叻花卉节开幕式"
+    },
+    "overview": {
+      "seoTitle": "大叻花卉节：历史、历届活动与游客指南",
+      "seoDescription": "大叻花卉节实用指南：了解历史、意义、最新一届、官方来源与游客须知。",
+      "badge": "长期更新的花卉节指南",
+      "lead": "认识这场遍布城市的盛会，让花农技艺、高原文化与大叻的创意精神一起绽放。",
+      "introTitle": "大叻的代表性庆典",
+      "introBody": "大叻花卉节于 2005 年首次举办，是林同省定期举行的文化旅游盛会，礼赞花卉、花农、自然景观与本地创意。主要活动汇聚在大叻，而每届活动也可能延伸至全省各地。",
+      "facts": {
+        "firstLabel": "首届举办",
+        "firstValue": "2005 年",
+        "rhythmLabel": "通常频率",
+        "rhythmValue": "每两年一届；具体日期会变化",
+        "reachLabel": "活动范围",
+        "reachValue": "大叻及林同省各地"
+      },
+      "latestEyebrow": "最新公布的一届",
+      "latestTitle": "第十一届大叻花卉节 · 2026",
+      "latestBody": "林同省已宣布于 12 月下旬举办本届活动，主题为“大叻——花与音乐的和谐交响”。每日详细日程仍在完善中。",
+      "explore2026": "规划 2026 年行程",
+      "exploreGuide": "查看花卉节指南",
+      "whyTitle": "花卉节为何重要",
+      "why": {
+        "growersTitle": "花卉，以及培育它们的人",
+        "growersBody": "花卉节向大叻花卉种植技艺、花农以及连接农场与城市的产业链致敬。",
+        "cultureTitle": "高原文化的舞台",
+        "cultureBody": "每一届都将本地文化与展览、音乐、表演和当代创意融为一体。",
+        "cityTitle": "不止一个场地的全城盛会",
+        "cityBody": "花卉空间和配套活动会走进林同省各地的社区与目的地，而不仅限于一座广场。"
+      },
+      "expectTitle": "你可以期待什么",
+      "expect": {
+        "flowers": "遍布城市的花卉空间与社区种花活动。",
+        "music": "每届不同的开幕、闭幕及大型文化或音乐节目。",
+        "local": "花农故事、高原文化与林同省特色产品。",
+        "beyond": "大叻市中心以外也有活动；请查看当届活动地图。"
+      },
+      "planBody": "把每一届都当作一次全新的旅行来规划。确认时间与地点，为中心活动周边的繁忙交通预留时间，并为凉爽夜晚带一件薄外套。门票和无障碍安排因节目而异。",
+      "faqTitle": "实用须知",
+      "faq": {
+        "whatQuestion": "什么是大叻花卉节？",
+        "whatAnswer": "这是林同省定期举办的文化旅游节庆，礼赞花卉、花农、大叻景观与本地创意。",
+        "annualQuestion": "大叻花卉节每年举办吗？",
+        "annualAnswer": "自 2005 年首届正式活动以来，通常每两年举办一次，但日期与形式可能变化。请以当前一届页面规划行程。",
+        "whereQuestion": "花卉节在哪里举行？",
+        "whereAnswer": "主要活动通常在大叻举行，多集中于市中心公共空间；每届也可能在林同省其他地方安排活动。",
+        "ticketsQuestion": "需要门票吗？",
+        "ticketsAnswer": "视具体节目而定。公共花卉空间与舞台活动或限流活动的入场规则可能不同，出发前请查看每项活动信息。"
+      }
+    },
+    "edition2026": {
+      "seoTitle": "2026 大叻花卉节：日期、节目与游客指南",
+      "seoDescription": "第十一届大叻花卉节 2026 年 12 月官方日期、计划亮点与如实更新的游客指南。",
+      "badge": "2026 年行程指南",
+      "title": "2026 大叻花卉节",
+      "shortTitle": "2026 届",
+      "lead": "第十一届活动将在林同省各地交融花卉与音乐，主要节庆时段计划集中在 12 月下旬。",
+      "backToGuide": "花卉节指南",
+      "statusTitle": "目前已正式公布的信息",
+      "statusBody": "林同省于 2026 年 6 月 15 日公布组织计划。以下日期和亮点均来自已发布计划；完整的逐项时间表尚未公布。",
+      "detailsTitle": "关键信息",
+      "details": {
+        "themeLabel": "官方主题",
+        "themeValue": "大叻——花与音乐的和谐交响",
+        "themeNote": "主题将大叻的花卉景观与其“联合国教科文组织音乐创意城市”身份相连。",
+        "openingLabel": "开幕活动",
+        "openingValue": "20:00 · 2026 年 12 月 19 日",
+        "openingNote": "大叻春香坊林园广场；计划由 VTV 现场直播。",
+        "closingLabel": "闭幕及新年活动",
+        "closingValue": "20:00 · 2026 年 12 月 31 日",
+        "closingNote": "林园广场，与迎接 2027 年的新年文艺节目同步举行。",
+        "scopeLabel": "活动规模",
+        "scopeValue": "11 项主要节目 + 25 项配套活动",
+        "scopeNote": "活动遍及林同省，核心节庆时段集中在 12 月下旬。"
+      },
+      "programTitle": "已公布的活动亮点",
+      "programIntro": "以下内容均出现在政府计划更新中。标有日期表示已公布时间范围；其余细节仍在完善。",
+      "publishedTiming": "日期已公布",
+      "detailsPending": "日期待公布",
+      "programs": {
+        "flower": "节庆花卉空间计划于 2026 年 12 月 18 日至 2027 年 1 月 3 日在春香湖、陈国瓒公园、耶尔森公园、碧句半岛及市中心街道周边展出。",
+        "exhibitions": "大叻花卉公园等场地计划举办国际花卉与观赏植物展，包括兰花与花艺展示。",
+        "science": "计划举办以科学、技术和创新推动大叻花卉价值链可持续发展的论坛。",
+        "flavors": "计划包括茶、咖啡、葡萄酒、OCOP 与本地特色产品街，以及蔬菜花卉市集。",
+        "brocade": "第三届越南织锦文化节列入主要活动。",
+        "jazz": "2026 越南爵士音乐节计划于 12 月 25 日至 27 日在春香湖举办。",
+        "carnival": "现代乐队与舞团嘉年华计划于 12 月 31 日举办。"
+      },
+      "pendingTitle": "仍待确认",
+      "pendingIntro": "我们追踪的官方资料尚未确认：",
+      "pending": {
+        "schedule": "完整逐日安排及每项节目的确切开始时间",
+        "venues": "每项主要与配套活动的最终场地和地图位置",
+        "tickets": "哪些节目需要门票、预约或设有人数限制",
+        "access": "各节目的无障碍、停车和公共交通安排"
+      },
+      "planTitle": "让参观更从容",
+      "plan": {
+        "stayTitle": "以湖区作为定位中心",
+        "stayBody": "林园广场与春香湖是多项已公布亮点的核心，但部分活动会在大叻及林同省其他地区举行。",
+        "bookTitle": "选择可灵活变更的预订",
+        "bookBody": "如果花卉节是旅行重点，可提前预订交通与住宿，并优先选择在详细日程完善期间可灵活更改的条款。",
+        "weatherTitle": "为高原夜晚做好准备",
+        "weatherBody": "大叻 12 月夜晚可能较凉。带一件轻便保暖衣物，并在临近出行时查看天气预报。",
+        "checkTitle": "出发前再次确认",
+        "checkBody": "通过官方渠道重新确认当天时间、地点和入场规则；大型活动期间市中心交通和通行安排可能变化。"
+      },
+      "accessTitle": "门票与无障碍信息尚未完整公布",
+      "accessBody": "没有可靠来源时，我们不会把活动标为免费、无障碍或无需预约。出发前请查看每项活动的最终公告或联系场地。",
+      "listingTitle": "在 Dalat.app 关注活动",
+      "listingBody": "活动页面提供当前活动卡片与社区功能；本指南则持续提供基于官方来源的行程概览。",
+      "faqTitle": "2026 年常见问题",
+      "faq": {
+        "datesQuestion": "2026 大叻花卉节日期是什么时候？",
+        "datesAnswer": "开幕计划于 12 月 19 日 20:00 举行，闭幕及新年活动计划于 12 月 31 日 20:00 举行。花卉空间计划从 12 月 18 日持续至 1 月 3 日，配套活动覆盖更长时段。",
+        "freeQuestion": "2026 年花卉节免费吗？",
+        "freeAnswer": "官方尚未为所有节目公布统一入场规则。请逐项确认，不要预先假定免费或收费。",
+        "whereQuestion": "2026 年花卉节在哪里举行？",
+        "whereAnswer": "开幕与闭幕计划在林园广场举行。花卉空间集中于春香湖和周边公园，其他活动则分布在大叻及林同省各地。"
+      },
+      "schema": {
+        "openingName": "第十一届大叻花卉节开幕式",
+        "flowerSpacesName": "2026 大叻花卉节花卉空间",
+        "jazzName": "2026 越南爵士音乐节",
+        "closingName": "大叻花卉节闭幕及迎接 2027 新年活动"
+      }
+    }
   },
   "analytics": {
     "created": "已创建",

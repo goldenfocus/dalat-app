@@ -12,6 +12,9 @@ const DALAT_TIMEZONE = "Asia/Ho_Chi_Minh";
 export function slugify(text: string): string {
   return text
     .toLowerCase()
+    // Vietnamese đ/Đ is a distinct letter and is not decomposed by NFD.
+    // Transliterate it before the ASCII allow-list or "Đà Lạt" becomes "a-lat".
+    .replace(/đ/g, "d")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
     .replace(/[^a-z0-9\s-]/g, "")

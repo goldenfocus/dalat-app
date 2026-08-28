@@ -337,6 +337,13 @@
     "fieldTitle": "Titel",
     "fieldDate": "Datum",
     "fieldTime": "Zeit",
+    "fieldDescription": "Beschreibung",
+    "fieldLocation": "Ort",
+    "fieldAddress": "Straßenadresse",
+    "fieldOnlineLink": "öffentlicher Online-Link",
+    "titleTooShort": "Der Titel muss mindestens {minimum} Zeichen lang sein",
+    "descriptionTooShort": "Die Beschreibung muss mindestens {minimum} Zeichen lang sein",
+    "invalidOnlineLink": "Füge einen öffentlichen http(s)-Link für diese Online-Veranstaltung hinzu",
     "fieldsRequired": "{fields} erforderlich",
     "pastDateNotAllowed": "Ereignisse in der Vergangenheit können nicht erstellt werden",
     "invalidUsernameFormat": "Ungültiges Benutzernamenformat",
@@ -352,6 +359,8 @@
     "refreshPage": "Seite neu laden"
   },
   "events": {
+    "starts": "Beginn",
+    "ends": "Ende",
     "popular": "Beliebt",
     "sponsored": "Empfohlen",
     "going": "dabei",
@@ -1124,7 +1133,159 @@
     "noUpdatesYet": "Noch keine Updates. Bleib dran!",
     "moreDetailsSoon": "Mehr Details folgen bald.",
     "activeUpcoming": "Aktiv & Kommend",
-    "pastFestivals": "Vergangene Festivals"
+    "pastFestivals": "Vergangene Festivals",
+    "listingSeoTitle": "Festivals in Da Lat",
+    "listingSeoDescription": "Entdecke Blumen-, Musik-, Kultur- und Saisonfestivals in Da Lat mit geprüften Terminen, Orten und aktuellen Programmführern.",
+    "listingSchemaName": "Festivals in Da Lat",
+    "listingSchemaDescription": "Aktuelle und vergangene Blumen-, Musik-, Kultur- und Saisonfestivals in Da Lat.",
+    "emptyTitle": "Noch keine Festivals",
+    "emptyDescription": "Schau bald wieder nach kommenden Festivals in Da Lat.",
+    "happeningNow": "Findet jetzt statt"
+  },
+  "flowerFestivalGuide": {
+    "common": {
+      "home": "Startseite",
+      "festivals": "Festivals",
+      "name": "Da Lat Blumenfestival",
+      "nativeName": "Festival Hoa Đà Lạt",
+      "backToFestivals": "Alle Festivals",
+      "officialSources": "Offizielle Quellen",
+      "sourcesNote": "Wir trennen veröffentlichte Planungen klar von noch unbestätigten Details. Pläne können sich ändern – prüfe diese offiziellen Hinweise vor deiner Reise erneut.",
+      "sourceMinistry": "Ministerium für Kultur, Sport und Tourismus: Planung 2026",
+      "sourceTourism": "Tourismusförderzentrum Lâm Đồng: Planung 2026",
+      "sourceProvince": "Provinz Lâm Đồng: Vorbereitungen für 2026",
+      "sourceNational": "Nationale Tourismusbehörde Vietnams: Überblick 2026",
+      "lastChecked": "Zuletzt geprüft am 27. August 2026",
+      "eventListing": "Event-Eintrag auf Dalat.app öffnen",
+      "imageAlt": "Archivfoto der Eröffnung des 10. Da Lat Blumenfestivals im Jahr 2024",
+      "imageCaption": "Archivfoto: Eröffnung des 10. Da Lat Blumenfestivals, 2024"
+    },
+    "overview": {
+      "seoTitle": "Da Lat Blumenfestival: Geschichte, Ausgaben & Reiseführer",
+      "seoDescription": "Praktischer Führer zum Da Lat Blumenfestival: Geschichte, Bedeutung, aktuelle Ausgabe, offizielle Quellen und Besuchstipps.",
+      "badge": "Dauerhafter Festivalführer",
+      "lead": "Lerne das stadtweite Fest kennen, bei dem Blumengärtner, Hochlandkultur und Da Lats kreative Seele aufblühen.",
+      "introTitle": "Da Lats großes Markenzeichen",
+      "introBody": "Das 2005 erstmals veranstaltete Da Lat Blumenfestival ist Lâm Đồngs wiederkehrendes Kultur- und Tourismusfest für Blumen, Gärtner, Landschaft und lokale Kreativität. Die Höhepunkte finden in Da Lat statt, einzelne Ausgaben reichen jedoch durch die ganze Provinz.",
+      "facts": {
+        "firstLabel": "Erste Ausgabe",
+        "firstValue": "2005",
+        "rhythmLabel": "Üblicher Rhythmus",
+        "rhythmValue": "Alle zwei Jahre; genaue Daten variieren",
+        "reachLabel": "Festivalgebiet",
+        "reachValue": "Da Lat und Orte in ganz Lâm Đồng"
+      },
+      "latestEyebrow": "Neueste angekündigte Ausgabe",
+      "latestTitle": "11. Da Lat Blumenfestival · 2026",
+      "latestBody": "Die Provinz hat für Ende Dezember eine Ausgabe unter dem Motto „Da Lat – Eine Harmonie aus Blumen und Musik“ angekündigt. Der genaue Tagesplan entsteht noch.",
+      "explore2026": "Die Ausgabe 2026 planen",
+      "exploreGuide": "Festivalführer entdecken",
+      "whyTitle": "Warum das Festival wichtig ist",
+      "why": {
+        "growersTitle": "Blumen und die Menschen dahinter",
+        "growersBody": "Das Festival würdigt Da Lats Blumenhandwerk, die Gärtner und die Wertschöpfungskette zwischen Farmen und Stadt.",
+        "cultureTitle": "Eine Bühne des Hochlands",
+        "cultureBody": "Jede Ausgabe verbindet lokale Identität mit Ausstellungen, Musik, Aufführungen und zeitgenössischer Kreativität.",
+        "cityTitle": "Ein Fest weit über einen Ort hinaus",
+        "cityBody": "Blumenräume und Begleitangebote können Viertel und Reiseziele in ganz Lâm Đồng erreichen – nicht nur einen einzigen Platz."
+      },
+      "expectTitle": "Was dich erwartet",
+      "expect": {
+        "flowers": "Blumenräume in der Stadt und gemeinschaftliche Pflanzaktionen.",
+        "music": "Eröffnungen, Abschlüsse sowie große Kultur- und Musikprogramme, die jede Ausgabe neu gestaltet.",
+        "local": "Geschichten von Blumengärtnern, Hochlandkultur und Produkten aus Lâm Đồng.",
+        "beyond": "Aktivitäten außerhalb des Zentrums von Da Lat; prüfe immer die Karte der aktuellen Ausgabe."
+      },
+      "planBody": "Behandle jede Ausgabe wie eine neue Reise. Bestätige Zeiten und Orte, plane rund um große Innenstadtprogramme mehr Zeit ein und bring für kühle Abende eine leichte warme Schicht mit. Tickets und Barrierefreiheit unterscheiden sich je nach Programm.",
+      "faqTitle": "Gut zu wissen",
+      "faq": {
+        "whatQuestion": "Was ist das Da Lat Blumenfestival?",
+        "whatAnswer": "Es ist Lâm Đồngs wiederkehrendes Kultur- und Tourismusfestival für Blumen, Blumengärtner, Da Lats Landschaft und lokale Kreativität.",
+        "annualQuestion": "Findet das Da Lat Blumenfestival jedes Jahr statt?",
+        "annualAnswer": "Seit der ersten offiziellen Ausgabe 2005 kehrt es meist alle zwei Jahre zurück, doch Termine und Format können sich ändern. Plane mit der Seite der aktuellen Ausgabe.",
+        "whereQuestion": "Wo findet das Festival statt?",
+        "whereAnswer": "Die großen Höhepunkte liegen meist in Da Lat, oft in zentralen öffentlichen Räumen. Je nach Ausgabe gibt es auch Aktivitäten in anderen Teilen von Lâm Đồng.",
+        "ticketsQuestion": "Brauche ich Tickets?",
+        "ticketsAnswer": "Das hängt vom Programm ab. Für öffentliche Blumenräume können andere Regeln gelten als für Bühnenprogramme oder Veranstaltungen mit begrenzter Kapazität. Prüfe jeden Eintrag vorab."
+      }
+    },
+    "edition2026": {
+      "seoTitle": "Da Lat Blumenfestival 2026: Termine, Programm & Reiseführer",
+      "seoDescription": "Offizielle Termine, geplante Höhepunkte und ehrliche Besuchstipps für das 11. Da Lat Blumenfestival im Dezember 2026.",
+      "badge": "Planungsführer 2026",
+      "title": "Da Lat Blumenfestival 2026",
+      "shortTitle": "Ausgabe 2026",
+      "lead": "Die 11. Ausgabe bringt in ganz Lâm Đồng Blumen und Musik zusammen; die wichtigsten Momente sind für Ende Dezember geplant.",
+      "backToGuide": "Festivalführer",
+      "statusTitle": "Was bisher offiziell ist",
+      "statusBody": "Lâm Đồng veröffentlichte den Organisationsplan am 15. Juni 2026. Die folgenden Termine und Höhepunkte sind veröffentlichte Planungen; ein vollständiger Ablaufplan liegt noch nicht vor.",
+      "detailsTitle": "Wichtige Details",
+      "details": {
+        "themeLabel": "Offizielles Motto",
+        "themeValue": "Da Lat – Eine Harmonie aus Blumen und Musik",
+        "themeNote": "Das Motto verbindet Da Lats Blumenlandschaft mit seiner Identität als UNESCO Creative City of Music.",
+        "openingLabel": "Eröffnungsprogramm",
+        "openingValue": "20:00 Uhr · 19. Dezember 2026",
+        "openingNote": "Lâm-Viên-Platz, Bezirk Xuân Hương–Da Lat; Liveübertragung auf VTV geplant.",
+        "closingLabel": "Abschluss & Neujahr",
+        "closingValue": "20:00 Uhr · 31. Dezember 2026",
+        "closingNote": "Lâm-Viên-Platz, gemeinsam mit dem künstlerischen Willkommensprogramm für 2027.",
+        "scopeLabel": "Umfang des Festivals",
+        "scopeValue": "11 Hauptprogramme + 25 Begleitaktivitäten",
+        "scopeNote": "Aktivitäten finden in ganz Lâm Đồng statt; die Kernzeit konzentriert sich auf Ende Dezember."
+      },
+      "programTitle": "Veröffentlichte Höhepunkte",
+      "programIntro": "Diese Programmbereiche stehen in Regierungsmitteilungen. Ein Datums-Hinweis bedeutet, dass ein Zeitraum veröffentlicht wurde; andere Details sind noch in Arbeit.",
+      "publishedTiming": "Termin veröffentlicht",
+      "detailsPending": "Termin folgt",
+      "programs": {
+        "flower": "Festival-Blumenräume sind vom 18. Dezember 2026 bis 3. Januar 2027 rund um den Xuan-Huong-See, die Parks Trần Quốc Toản und Yersin, die Halbinsel Bích Câu und zentrale Straßen geplant.",
+        "exhibitions": "Internationale Blumen- und Zierpflanzenausstellungen, darunter Orchideen und Blumenkunst, sind im Da Lat Flower Park und an weiteren Orten geplant.",
+        "science": "Geplant ist ein Forum über Wissenschaft, Technologie und Innovation für eine nachhaltige Blumen-Wertschöpfungskette in Da Lat.",
+        "flavors": "Vorgesehen sind eine Straße für Tee, Kaffee, Wein, OCOP- und lokale Spezialitäten sowie ein Gemüse- und Blumenmarkt.",
+        "brocade": "Das dritte vietnamesische Brokat-Kulturfestival gehört zum Hauptprogramm.",
+        "jazz": "Das Vietnam Jazz Festival 2026 ist vom 25. bis 27. Dezember auf dem Xuan-Huong-See geplant.",
+        "carnival": "Der Karneval moderner Bands und Tanzgruppen ist für den 31. Dezember geplant."
+      },
+      "pendingTitle": "Noch nicht bestätigt",
+      "pendingIntro": "Die von uns verfolgten offiziellen Unterlagen bestätigen noch nicht:",
+      "pending": {
+        "schedule": "Den vollständigen Tagesplan und die genaue Startzeit jedes Programms",
+        "venues": "Den endgültigen Ort und Kartenpunkt jeder Haupt- und Begleitaktivität",
+        "tickets": "Welche Programme Ticket, Reservierung oder Kapazitätslimit haben",
+        "access": "Barrierefreiheit, Parkplätze und öffentliche Verkehrsmittel für jedes Programm"
+      },
+      "planTitle": "So wird der Besuch entspannter",
+      "plan": {
+        "stayTitle": "Nutze den See als Orientierung",
+        "stayBody": "Lâm-Viên-Platz und Xuan-Huong-See sind Anker mehrerer bekannter Höhepunkte, einige Aktivitäten liegen aber anderswo in Da Lat und Lâm Đồng.",
+        "bookTitle": "Buche flexibel",
+        "bookBody": "Wenn das Festival der Mittelpunkt deiner Reise ist, buche Transport und Unterkunft früh mit änderungsfreundlichen Bedingungen, solange der Detailplan entsteht.",
+        "weatherTitle": "Packe für einen Hochlandabend",
+        "weatherBody": "Dezemberabende in Da Lat können kühl wirken. Nimm eine leichte warme Schicht mit und prüfe kurz vor dem Besuch die Wettervorhersage.",
+        "checkTitle": "Prüfe alles vor dem Aufbruch",
+        "checkBody": "Bestätige Tageszeit, Ort und Einlassregeln über offizielle Kanäle; Verkehr und Zugang im Zentrum können sich rund um große Programme ändern."
+      },
+      "accessTitle": "Tickets und Barrierefreiheit sind noch nicht vollständig veröffentlicht",
+      "accessBody": "Wir kennzeichnen keine Aktivität ohne Quelle als kostenlos, barrierefrei oder reservierungsfrei. Prüfe den endgültigen Hinweis jedes Programms oder kontaktiere den Veranstaltungsort vor der Reise.",
+      "listingTitle": "Event auf Dalat.app verfolgen",
+      "listingBody": "Der Event-Eintrag bietet die aktuelle Karte und Community-Funktionen. Dieser Führer bleibt der quellenbasierte Planungsüberblick.",
+      "faqTitle": "Fragen zu 2026",
+      "faq": {
+        "datesQuestion": "Wann findet das Da Lat Blumenfestival 2026 statt?",
+        "datesAnswer": "Die Eröffnung ist für den 19. Dezember um 20:00 Uhr geplant, der Abschluss mit Neujahr für den 31. Dezember um 20:00 Uhr. Blumenräume sind vom 18. Dezember bis 3. Januar vorgesehen; Begleitaktivitäten laufen breiter.",
+        "freeQuestion": "Ist das Festival 2026 kostenlos?",
+        "freeAnswer": "Offizielle Quellen haben keine einheitliche Einlassregel für alle Programme veröffentlicht. Prüfe jedes Programm, bevor du von freiem oder kostenpflichtigem Eintritt ausgehst.",
+        "whereQuestion": "Wo findet die Ausgabe 2026 statt?",
+        "whereAnswer": "Eröffnung und Abschluss sind auf dem Lâm-Viên-Platz geplant. Blumenräume liegen rund um den Xuan-Huong-See und benachbarte Parks; weitere Aktivitäten finden in Da Lat und Lâm Đồng statt."
+      },
+      "schema": {
+        "openingName": "Eröffnung des 11. Da Lat Blumenfestivals",
+        "flowerSpacesName": "Blumenräume des Da Lat Blumenfestivals 2026",
+        "jazzName": "Vietnam Jazz Festival 2026",
+        "closingName": "Abschluss des Da Lat Blumenfestivals und Neujahr 2027"
+      }
+    }
   },
   "analytics": {
     "created": "Erstellt",
