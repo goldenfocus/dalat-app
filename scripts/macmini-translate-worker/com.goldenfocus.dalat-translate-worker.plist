@@ -7,10 +7,16 @@
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>/Users/theoutsider/dalat-app/scripts/macmini-translate-worker/run.sh</string>
+    <string>/Users/theoutsider/dalat-app-seo-worker/scripts/macmini-translate-worker/run.sh</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
+    <key>APP_DIR</key>
+    <string>/Users/theoutsider/dalat-app-seo-worker</string>
+    <key>CLAUDE_ENABLED</key>
+    <string>0</string>
+    <key>LOCAL_AI_ENABLED</key>
+    <string>0</string>
     <!-- Pinned at deploy time to the moment the last qwen3 writer was
          killed. REDO_BEFORE-REPLACED-AT-DEPLOY -->
     <key>REDO_BEFORE</key>
