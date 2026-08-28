@@ -1,6 +1,8 @@
 import { preload } from "react-dom";
 import { getTranslations } from "next-intl/server";
+import { ArrowRight } from "lucide-react";
 import { generateSrcSet, optimizedImageUrl } from "@/lib/image-cdn";
+import { Link } from "@/lib/i18n/routing";
 
 const HERO_WIDTHS = [640, 750, 1080, 1440, 1920];
 const HERO_SIZES = "100vw";
@@ -101,6 +103,16 @@ export async function HeroImageSection({ imageUrl, focalPoint }: HeroImageSectio
             >
               {t("subtitle")}
             </p>
+            <Link
+              href="/things-to-do-in-dalat"
+              className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-white underline-offset-4 hover:underline"
+              style={{
+                textShadow: '0 1px 4px rgba(217, 119, 6, 0.3), 0 2px 8px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              {t("thingsToDo")}
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
         </div>
       </div>
