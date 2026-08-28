@@ -650,6 +650,8 @@
   },
   "series": {
     "recurringSeries": "반복 시리즈",
+    "everyDay": "매일",
+    "recurrenceAtTime": "{pattern} {time}",
     "upcomingDates": "예정된 날짜",
     "noUpcomingDates": "예정된 날짜가 없습니다",
     "moreDates": "더 많은 날짜가 곧 추가됩니다...",

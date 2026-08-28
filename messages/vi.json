@@ -650,6 +650,8 @@
   },
   "series": {
     "recurringSeries": "Chuỗi sự kiện lặp lại",
+    "everyDay": "Hàng ngày",
+    "recurrenceAtTime": "{pattern} lúc {time}",
     "upcomingDates": "Các ngày sắp tới",
     "noUpcomingDates": "Chưa có ngày nào được lên lịch",
     "moreDates": "Các ngày khác sắp tới...",

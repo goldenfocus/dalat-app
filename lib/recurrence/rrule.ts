@@ -6,7 +6,11 @@
  */
 
 import { getDay } from "date-fns";
-import type { RecurrenceFrequency, RecurrenceFormData, RecurrencePreset } from "@/lib/types";
+import type {
+  RecurrenceFrequency,
+  RecurrenceFormData,
+  RecurrencePreset,
+} from "@/lib/types";
 
 // Day abbreviations in RRULE format
 const WEEKDAY_MAP: Record<number, string> = {
@@ -101,7 +105,7 @@ export function parseRRule(rrule: string): RecurrenceFormData {
     rrule.split(";").map((p) => {
       const [key, value] = p.split("=");
       return [key, value];
-    })
+    }),
   );
 
   const frequency = (parts.FREQ as RecurrenceFrequency) || "WEEKLY";
@@ -166,9 +170,14 @@ export function describeRRule(rrule: string): string {
   let description = "";
 
   // Frequency and interval
-  const freqName = data.frequency.toLowerCase();
   if (data.interval === 1) {
-    description = `Every ${freqName.replace("ly", "")}`;
+    const unitMap: Record<string, string> = {
+      DAILY: "day",
+      WEEKLY: "week",
+      MONTHLY: "month",
+      YEARLY: "year",
+    };
+    description = `Every ${unitMap[data.frequency]}`;
   } else {
     const unitMap: Record<string, string> = {
       DAILY: "days",
@@ -185,7 +194,8 @@ export function describeRRule(rrule: string): string {
     description += ` on ${dayNames}`;
   } else if (data.frequency === "MONTHLY") {
     if (data.monthWeekDay) {
-      const ordinal = ORDINAL_NAMES[data.monthWeekDay.week] || `${data.monthWeekDay.week}th`;
+      const ordinal =
+        ORDINAL_NAMES[data.monthWeekDay.week] || `${data.monthWeekDay.week}th`;
       const dayName = WEEKDAY_NAMES[data.monthWeekDay.day];
       description += ` on the ${ordinal} ${dayName}`;
     } else if (data.monthDay) {
@@ -262,7 +272,8 @@ export function areRRulesEqual(rrule1: string, rrule2: string): boolean {
   return (
     data1.frequency === data2.frequency &&
     data1.interval === data2.interval &&
-    JSON.stringify(data1.weekDays.sort()) === JSON.stringify(data2.weekDays.sort()) &&
+    JSON.stringify(data1.weekDays.sort()) ===
+      JSON.stringify(data2.weekDays.sort()) &&
     data1.monthDay === data2.monthDay &&
     JSON.stringify(data1.monthWeekDay) === JSON.stringify(data2.monthWeekDay)
   );
@@ -350,7 +361,8 @@ export function getShortRRuleLabel(rrule: string): string {
 
   if (data.frequency === "MONTHLY") {
     if (data.monthWeekDay) {
-      const ordinal = ORDINAL_NAMES[data.monthWeekDay.week] || `${data.monthWeekDay.week}th`;
+      const ordinal =
+        ORDINAL_NAMES[data.monthWeekDay.week] || `${data.monthWeekDay.week}th`;
       return `${ordinal} ${WEEKDAY_NAMES[data.monthWeekDay.day]}`;
     }
     if (data.monthDay) {

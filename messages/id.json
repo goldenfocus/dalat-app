@@ -650,6 +650,8 @@
   },
   "series": {
     "recurringSeries": "Seri Berulang",
+    "everyDay": "Setiap hari",
+    "recurrenceAtTime": "{pattern} pukul {time}",
     "upcomingDates": "Tanggal Mendatang",
     "noUpcomingDates": "Tidak ada tanggal yang dijadwalkan",
     "moreDates": "Tanggal lainnya segera...",

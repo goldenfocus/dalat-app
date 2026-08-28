@@ -650,6 +650,8 @@
   },
   "series": {
     "recurringSeries": "ซีรีส์ที่เกิดซ้ำ",
+    "everyDay": "ทุกวัน",
+    "recurrenceAtTime": "{pattern} เวลา {time}",
     "upcomingDates": "วันที่กำลังจะมา",
     "noUpcomingDates": "ไม่มีวันที่กำหนด",
     "moreDates": "วันที่เพิ่มเติมเร็วๆ นี้...",

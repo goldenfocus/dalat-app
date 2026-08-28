@@ -744,6 +744,8 @@
   },
   "series": {
     "recurringSeries": "Recurring Series",
+    "everyDay": "Every day",
+    "recurrenceAtTime": "{pattern} at {time}",
     "upcomingDates": "Upcoming Dates",
     "noUpcomingDates": "No upcoming dates scheduled",
     "moreDates": "More dates coming soon...",

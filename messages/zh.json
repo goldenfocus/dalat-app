@@ -644,6 +644,8 @@
   },
   "series": {
     "recurringSeries": "系列活动",
+    "everyDay": "每天",
+    "recurrenceAtTime": "{pattern} {time}",
     "upcomingDates": "即将到来的日期",
     "noUpcomingDates": "暂无预定日期",
     "moreDates": "更多日期即将公布...",

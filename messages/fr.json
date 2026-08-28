@@ -664,6 +664,8 @@
   },
   "series": {
     "recurringSeries": "Série récurrente",
+    "everyDay": "Tous les jours",
+    "recurrenceAtTime": "{pattern} à {time}",
     "upcomingDates": "Prochaines dates",
     "noUpcomingDates": "Aucune date prévue",
     "moreDates": "D'autres dates à venir...",

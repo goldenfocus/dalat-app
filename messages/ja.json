@@ -650,6 +650,8 @@
   },
   "series": {
     "recurringSeries": "定期シリーズ",
+    "everyDay": "毎日",
+    "recurrenceAtTime": "{pattern} {time}",
     "upcomingDates": "予定日",
     "noUpcomingDates": "予定日がありません",
     "moreDates": "もうすぐ日程が追加されます...",

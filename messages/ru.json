@@ -650,6 +650,8 @@
   },
   "series": {
     "recurringSeries": "Повторяющаяся серия",
+    "everyDay": "Каждый день",
+    "recurrenceAtTime": "{pattern} в {time}",
     "upcomingDates": "Предстоящие даты",
     "noUpcomingDates": "Нет запланированных дат",
     "moreDates": "Больше дат скоро...",

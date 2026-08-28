@@ -36,6 +36,16 @@ function officialDescription(
   return descriptions[locale];
 }
 
+export function sourceDescriptionForLocale(
+  locale: string,
+  sourceName: string,
+): string {
+  const supportedLocale = LOCALES.includes(locale as (typeof LOCALES)[number])
+    ? (locale as (typeof LOCALES)[number])
+    : "en";
+  return officialDescription(supportedLocale, sourceName);
+}
+
 /**
  * Proper names remain verbatim; the small factual wrapper is localized without
  * an LLM. This keeps a deterministic auto-publish from exposing untranslated
@@ -70,11 +80,9 @@ export async function upsertActivityEventTranslations(
       },
     ]),
   );
-  const { error } = await supabase
-    .from("content_translations")
-    .upsert(rows, {
-      onConflict: "content_type,content_id,target_locale,field_name",
-    });
+  const { error } = await supabase.from("content_translations").upsert(rows, {
+    onConflict: "content_type,content_id,target_locale,field_name",
+  });
   if (error)
     throw new Error(`Activity translation upsert failed: ${error.message}`);
 }

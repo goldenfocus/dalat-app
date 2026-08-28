@@ -21,6 +21,7 @@ import { decodeUnicodeEscapes } from "@/lib/utils";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
 import { JsonLd, generateEventSeriesSchema } from "@/lib/structured-data";
 import { buildAlternates, localeUrl } from "@/lib/metadata";
+import { sourceDescriptionForLocale } from "@/lib/activity-graph/translations";
 import type {
   EventSeries,
   Event,
@@ -69,7 +70,9 @@ export async function generateMetadata({
 
   const { data: series } = await supabase
     .from("event_series")
-    .select("title, description, image_url, location_name, rrule")
+    .select(
+      "title, description, image_url, location_name, rrule, source_platform, organizers:organizer_id(name)",
+    )
     .eq("slug", slug)
     .single();
 
@@ -78,8 +81,22 @@ export async function generateMetadata({
   }
 
   const recurrenceLabel = getShortRRuleLabel(series.rrule);
-  const description = series.description
-    ? `${series.description.slice(0, 150)}${series.description.length > 150 ? "..." : ""}`
+  const organizerRelation = series.organizers as
+    | { name: string }
+    | Array<{ name: string }>
+    | null;
+  const sourceName = Array.isArray(organizerRelation)
+    ? organizerRelation[0]?.name
+    : organizerRelation?.name;
+  const localizedDescription =
+    series.source_platform === "activity-graph"
+      ? sourceDescriptionForLocale(
+          locale,
+          sourceName || series.location_name || series.title,
+        )
+      : series.description;
+  const description = localizedDescription
+    ? `${localizedDescription.slice(0, 150)}${localizedDescription.length > 150 ? "..." : ""}`
     : `${recurrenceLabel}${series.location_name ? ` · ${series.location_name}` : ""} · ĐàLạt.app`;
   const canonicalUrl = localeUrl(locale as Locale, `/series/${slug}`);
 
@@ -188,9 +205,26 @@ export default async function SeriesPage({ params }: PageProps) {
     promo,
   } = data;
 
-  const recurrenceDescription = describeRRule(series.rrule);
+  const recurrenceDescription =
+    series.source_platform === "activity-graph" &&
+    series.rrule.split(";").includes("FREQ=DAILY")
+      ? t("series.everyDay")
+      : describeRRule(series.rrule);
+  const recurrenceWithTime = series.starts_at_time
+    ? t("series.recurrenceAtTime", {
+        pattern: recurrenceDescription,
+        time: series.starts_at_time.slice(0, 5),
+      })
+    : recurrenceDescription;
+  const localizedDescription =
+    series.source_platform === "activity-graph"
+      ? sourceDescriptionForLocale(
+          locale,
+          series.organizers?.name || series.location_name || series.title,
+        )
+      : series.description;
   const seriesSchema = generateEventSeriesSchema(
-    series,
+    { ...series, description: localizedDescription },
     locale,
     upcomingEvents.length,
   );
@@ -244,12 +278,9 @@ export default async function SeriesPage({ params }: PageProps) {
               {/* Recurrence Pattern */}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="w-4 h-4" />
-                <span>{recurrenceDescription}</span>
-                {series.starts_at_time && (
-                  <span className="text-foreground font-medium">
-                    at {series.starts_at_time.slice(0, 5)}
-                  </span>
-                )}
+                <span className="text-foreground font-medium">
+                  {recurrenceWithTime}
+                </span>
               </div>
 
               {/* Location */}
@@ -274,9 +305,9 @@ export default async function SeriesPage({ params }: PageProps) {
               </div>
 
               {/* Description */}
-              {series.description && (
+              {localizedDescription && (
                 <p className="text-muted-foreground whitespace-pre-wrap">
-                  {series.description}
+                  {localizedDescription}
                 </p>
               )}
 
