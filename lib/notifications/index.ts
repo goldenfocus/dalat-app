@@ -56,9 +56,26 @@ function createServiceClient() {
 /**
  * Get user's email address.
  */
+export function isInternalAccountEmail(email: string): boolean {
+  const normalized = email.trim().toLowerCase();
+  return /@(?:[^@.]+\.)*dalat\.app$/.test(normalized);
+}
+
 async function getUserEmail(userId: string): Promise<string | null> {
   const supabase = createServiceClient();
   if (!supabase) return null;
+
+  // Synthetic profiles exist only to attribute imported events or provide
+  // explicitly-labelled seed activity. They must never enter a real email
+  // channel, even if a caller bypasses notification preferences.
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('is_ghost')
+    .eq('id', userId)
+    .maybeSingle();
+
+  // Fail closed for email when profile classification cannot be checked.
+  if (profileError || profile?.is_ghost) return null;
 
   const { data, error } = await supabase.auth.admin.getUserById(userId);
 
@@ -66,7 +83,7 @@ async function getUserEmail(userId: string): Promise<string | null> {
     return null;
   }
 
-  return data.user.email;
+  return isInternalAccountEmail(data.user.email) ? null : data.user.email;
 }
 
 /**

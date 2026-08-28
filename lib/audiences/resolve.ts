@@ -1,7 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { EVENT_TAGS, type EventTag } from '@/lib/constants/event-tags';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabaseClient = SupabaseClient<any, any, any>;
 
 /** Tag audiences look at RSVPs within this window — "actually plays games", not "clicked interested once in January" */
@@ -24,6 +23,23 @@ export function isValidAudienceKey(key: string): key is AudienceKey {
 
 export function subtractExclusions(memberIds: string[], excluded: Set<string>): string[] {
   return [...new Set(memberIds)].filter((id) => !excluded.has(id));
+}
+
+async function excludeGhostProfiles(
+  admin: AnySupabaseClient,
+  memberIds: string[]
+): Promise<string[]> {
+  const uniqueIds = [...new Set(memberIds)];
+  if (uniqueIds.length === 0) return [];
+
+  const { data, error } = await admin
+    .from('profiles')
+    .select('id')
+    .in('id', uniqueIds)
+    .eq('is_ghost', false)
+    .limit(ROW_CEILING);
+  if (error) throw new Error(`excludeGhostProfiles: ${error.message}`);
+  return (data ?? []).map((r: { id: string }) => r.id);
 }
 
 function daysAgoIso(days: number): string {
@@ -57,7 +73,10 @@ export async function resolveAudienceMembers(
     .contains('events.ai_tags', [key])
     .limit(ROW_CEILING);
   if (error) throw new Error(`resolveAudienceMembers(${key}): ${error.message}`);
-  return [...new Set((data ?? []).map((r: { user_id: string }) => r.user_id))];
+  return excludeGhostProfiles(
+    admin,
+    (data ?? []).map((r: { user_id: string }) => r.user_id)
+  );
 }
 
 /**
@@ -131,7 +150,9 @@ export async function getAudienceCounts(
   if (tagRows.error) throw new Error(`getAudienceCounts: ${tagRows.error.message}`);
 
   const perTag = new Map<string, Set<string>>();
+  const realMemberIds = new Set(allMembers);
   for (const row of (tagRows.data ?? []) as Array<{ user_id: string; events: unknown }>) {
+    if (!realMemberIds.has(row.user_id)) continue;
     const tags = (row.events as { ai_tags: string[] | null } | null)?.ai_tags ?? [];
     for (const tag of tags) {
       if (!(EVENT_TAGS as readonly string[]).includes(tag)) continue;

@@ -390,6 +390,7 @@ async function main() {
           role: "organizer_pending",
           bio: "This profile was auto-created from Facebook Events. Are you the organizer? Contact us to claim it!",
           locale: "vi",
+          is_ghost: true,
         })
         .eq("id", userId);
 
@@ -458,6 +459,7 @@ async function main() {
           role: "organizer_pending",
           bio: "Events discovered in Đà Lạt. Want to claim an event? Contact us!",
           locale: "vi",
+          is_ghost: true,
         })
         .eq("id", fallbackAuth.user.id);
 

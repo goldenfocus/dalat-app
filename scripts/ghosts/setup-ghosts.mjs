@@ -33,11 +33,12 @@ const ROSTER = [
 
 let ok = 0;
 for (const ghost of ROSTER) {
-  const email = `ghost.${ghost.username.replace(/[^a-z0-9]/g, "")}@dalat.app`;
+  const email = `ghost.${ghost.username.replace(/[^a-z0-9]/g, "")}@placeholder.dalat.app`;
   const { data: user, error } = await supabase.auth.admin.createUser({
     email,
-    email_confirm: true,
+    email_confirm: false,
     password: crypto.randomUUID(),
+    user_metadata: { is_ghost: true },
   });
   if (error) {
     console.error(`skip ${ghost.username}: ${error.message}`);
@@ -49,6 +50,7 @@ for (const ghost of ROSTER) {
     username: ghost.username,
     display_name: ghost.display_name,
     bio: ghost.bio,
+    is_ghost: true,
   });
   if (profErr) {
     console.error(`profile ${ghost.username}: ${profErr.message}`);
