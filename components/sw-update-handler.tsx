@@ -51,7 +51,8 @@ export function SwUpdateHandler() {
 
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
-    // Check for updates periodically (every 5 minutes)
+    // Check for updates periodically and immediately after a suspended PWA
+    // becomes visible again (iOS pauses intervals while backgrounded).
     const checkForUpdates = () => {
       navigator.serviceWorker.getRegistration().then((registration) => {
         if (registration) {
@@ -62,11 +63,19 @@ export function SwUpdateHandler() {
       });
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkForUpdates();
+      }
+    };
+
     const updateInterval = setInterval(checkForUpdates, 5 * 60 * 1000);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       navigator.serviceWorker.removeEventListener('message', handleMessage);
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(updateInterval);
     };
   }, []);

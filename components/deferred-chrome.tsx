@@ -30,6 +30,14 @@ export const DeferredSwUpdateHandler = dynamic(
   { ssr: false }
 );
 
+export const DeferredAppFreshnessHandler = dynamic(
+  () =>
+    import("@/components/app-freshness-handler").then(
+      (m) => m.AppFreshnessHandler
+    ),
+  { ssr: false }
+);
+
 export const DeferredInstallAppBanner = dynamic(
   () => import("@/components/pwa").then((m) => m.InstallAppBanner),
   { ssr: false }

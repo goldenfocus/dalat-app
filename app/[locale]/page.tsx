@@ -4,9 +4,9 @@ import { preload } from "react-dom";
 // Increase serverless function timeout (Vercel Pro required for >10s)
 export const maxDuration = 60;
 
-// ISR: Cache homepage for 5 minutes for better PageSpeed scores
-// Longer cache = fewer cache misses = faster TTFB
-export const revalidate = 300;
+// Lifecycle sections can change purely because the clock moved. Keep the
+// server payload within the same one-minute freshness window as the event RPCs.
+export const revalidate = 60;
 
 import { setRequestLocale } from "next-intl/server";
 import { HeroSection } from "@/components/home/hero-section";

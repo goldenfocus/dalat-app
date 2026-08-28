@@ -16,6 +16,7 @@ import { ProgressiveIntlProvider } from "@/components/progressive-intl-provider"
 import { AudioSession } from "@/components/audio/audio-session";
 import {
   DeferredBadgeClearer,
+  DeferredAppFreshnessHandler,
   DeferredGodModeIndicator,
   DeferredHeartbeat,
   DeferredInstallAppBanner,
@@ -139,6 +140,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <DeferredBadgeClearer />
               <DeferredNotificationPrompt />
               <DeferredSwUpdateHandler />
+              <DeferredAppFreshnessHandler />
               <DeferredLocaleMismatchBanner />
               <DeferredInstallAppBanner />
               <DeferredIosViewportAnchor />
