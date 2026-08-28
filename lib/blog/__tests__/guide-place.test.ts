@@ -17,7 +17,7 @@ const card = {
   imageUrl: "https://cdn.dalat.app/example.webp",
   imageAlt: "A work table at Daily Log Coffee",
   imageCredit: "Daily Log Coffee",
-  amenities: ["WiFi", "Power"],
+  categoryLinks: [{ label: "Da Lat cafés", href: "/cafes" }],
   caveat: "A public café, so noise can vary.",
   sourceUrl: "https://example.com/source",
   sourceLabel: "Daily Log Coffee",
@@ -33,8 +33,21 @@ describe("guide place cards", () => {
       parseGuidePlaceCard(JSON.stringify({ ...card, mapUrl: "javascript:alert(1)" }))
     ).toBeNull();
     expect(
-      parseGuidePlaceCard(JSON.stringify({ ...card, amenities: [] }))
+      parseGuidePlaceCard(
+        JSON.stringify({
+          ...card,
+          categoryLinks: [{ label: "WiFi", href: "https://example.com" }],
+        })
+      )
     ).toBeNull();
+  });
+
+  it("maps older card types to real internal category pages", () => {
+    const { categoryLinks: _categoryLinks, ...legacyCard } = card;
+
+    expect(parseGuidePlaceCard(JSON.stringify(legacyCard))?.categoryLinks).toEqual([
+      { label: "Da Lat cafés", href: "/cafes" },
+    ]);
   });
 
   it("extracts both tilde and backtick guide-place fences", () => {

@@ -15,14 +15,14 @@ const place = {
   imageUrl: "https://cdn.dalat.app/example.webp",
   imageAlt: "A work table at Daily Log Coffee",
   imageCredit: "Daily Log Coffee",
-  amenities: ["WiFi", "Power"],
+  categoryLinks: [{ label: "Da Lat cafés", href: "/cafes" }],
   caveat: "A public café, so noise can vary.",
   sourceUrl: "https://example.com/source",
   sourceLabel: "Daily Log Coffee",
 };
 
 describe("GuidePlaceCard", () => {
-  it("renders useful facts and working detail, source, and map actions", () => {
+  it("renders useful facts, a category link, and single-line actions", () => {
     render(<GuidePlaceCard place={place} />);
 
     expect(screen.getByText(place.hours)).toBeInTheDocument();
@@ -39,8 +39,16 @@ describe("GuidePlaceCard", () => {
       "href",
       place.mapUrl
     );
-    expect(
-      screen.getByRole("link", { name: `Source: ${place.sourceLabel}` })
-    ).toHaveAttribute("href", place.sourceUrl);
+    expect(screen.getByRole("link", { name: "Da Lat cafés" })).toHaveAttribute(
+      "href",
+      "/cafes"
+    );
+    expect(screen.queryByText(/Source:/u)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Official site" })).toHaveClass(
+      "whitespace-nowrap"
+    );
+    expect(screen.getByRole("link", { name: "Directions" })).toHaveClass(
+      "whitespace-nowrap"
+    );
   });
 });

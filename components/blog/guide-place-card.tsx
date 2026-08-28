@@ -5,7 +5,6 @@ import {
   AlertCircle,
   Clock3,
   ExternalLink,
-  Info,
   MapPin,
   Phone,
 } from "lucide-react";
@@ -49,9 +48,6 @@ export function GuidePlaceCard({ place }: GuidePlaceCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-black/10" />
           <span className="absolute left-4 top-4 flex h-10 min-w-10 items-center justify-center rounded-full border border-white/30 bg-black/45 px-3 text-sm font-bold text-white shadow-lg backdrop-blur-md">
             {place.position}
-          </span>
-          <span className="absolute right-4 top-4 rounded-full border border-white/25 bg-black/45 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
-            {place.type}
           </span>
           <span className="absolute bottom-3 left-4 right-4 text-xs text-white/75">
             Image: {place.imageCredit}
@@ -100,38 +96,35 @@ export function GuidePlaceCard({ place }: GuidePlaceCardProps) {
             )}
           </dl>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            {place.amenities.map((amenity) => (
-              <span
-                key={amenity}
-                className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-foreground/80"
-              >
-                {amenity}
+          <nav
+            aria-label={`Explore categories related to ${place.name}`}
+            className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground/75"
+          >
+            {place.categoryLinks.map((category, index) => (
+              <span key={category.href} className="inline-flex items-center gap-2">
+                {index > 0 && <span aria-hidden="true">·</span>}
+                <a
+                  href={category.href}
+                  className="inline-flex min-h-11 items-center underline decoration-border underline-offset-4 transition-colors hover:text-foreground hover:decoration-primary active:text-foreground"
+                >
+                  {category.label}
+                </a>
               </span>
             ))}
-          </div>
+          </nav>
 
-          <div className="mt-4 flex gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-sm leading-5 text-muted-foreground">
+          <div className="mt-2 flex gap-2 text-sm leading-5 text-muted-foreground/80">
             <AlertCircle className="mt-0.5 h-4 w-4 flex-none text-amber-600 dark:text-amber-400" />
             <p>{place.caveat}</p>
           </div>
 
-          <div className="mt-5 flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <a
-              href={place.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg px-1 text-sm text-muted-foreground transition-colors hover:text-foreground active:scale-[0.98]"
-            >
-              <Info className="h-4 w-4" />
-              Source: {place.sourceLabel}
-            </a>
-            <div className="grid grid-cols-2 gap-2 sm:flex">
+          <div className="mt-5 flex justify-end">
+            <div className="flex w-full flex-nowrap justify-end gap-2 sm:w-auto">
               <a
                 href={place.detailsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-all hover:border-primary/40 hover:bg-muted active:scale-[0.97]"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-border bg-background px-3 py-2 text-[13px] font-semibold text-foreground transition-all hover:border-primary/40 hover:bg-muted active:scale-[0.97] sm:flex-none sm:px-4 sm:text-sm"
               >
                 {place.detailsLabel}
                 <ExternalLink className="h-4 w-4" />
@@ -140,7 +133,7 @@ export function GuidePlaceCard({ place }: GuidePlaceCardProps) {
                 href={place.mapUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.97]"
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary px-3 py-2 text-[13px] font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.97] sm:flex-none sm:px-4 sm:text-sm"
               >
                 Directions
                 <MapPin className="h-4 w-4" />

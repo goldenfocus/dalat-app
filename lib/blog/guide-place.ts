@@ -1,3 +1,8 @@
+export interface GuidePlaceCategoryLink {
+  label: string;
+  href: string;
+}
+
 export interface GuidePlaceCardData {
   position: number;
   name: string;
@@ -11,11 +16,15 @@ export interface GuidePlaceCardData {
   imageUrl: string;
   imageAlt: string;
   imageCredit: string;
-  amenities: string[];
+  categoryLinks: GuidePlaceCategoryLink[];
   caveat: string;
   sourceUrl: string;
   sourceLabel: string;
   phone?: string;
+}
+
+interface RawGuidePlaceCardData extends Partial<GuidePlaceCardData> {
+  amenities?: string[];
 }
 
 const GUIDE_PLACE_FENCE =
@@ -31,9 +40,33 @@ function isHttpUrl(value: unknown): value is string {
   }
 }
 
+function isInternalCategoryPath(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^\/[a-z0-9-]+$/u.test(value) &&
+    !value.startsWith("//")
+  );
+}
+
+function inferCategoryLinks(type: unknown): GuidePlaceCategoryLink[] {
+  if (typeof type !== "string") return [];
+
+  const normalized = type.toLocaleLowerCase("en");
+  const links: GuidePlaceCategoryLink[] = [];
+
+  if (/cowork|workspace|work room/u.test(normalized)) {
+    links.push({ label: "Da Lat coworking", href: "/coworking" });
+  }
+  if (/café|cafe|coffee/u.test(normalized)) {
+    links.push({ label: "Da Lat cafés", href: "/cafes" });
+  }
+
+  return links;
+}
+
 export function parseGuidePlaceCard(value: string): GuidePlaceCardData | null {
   try {
-    const candidate = JSON.parse(value) as Partial<GuidePlaceCardData>;
+    const candidate = JSON.parse(value) as RawGuidePlaceCardData;
     const requiredText = [
       candidate.name,
       candidate.type,
@@ -47,6 +80,8 @@ export function parseGuidePlaceCard(value: string): GuidePlaceCardData | null {
       candidate.sourceLabel,
     ];
 
+    const categoryLinks = candidate.categoryLinks ?? inferCategoryLinks(candidate.type);
+
     if (
       !Number.isInteger(candidate.position) ||
       (candidate.position || 0) < 1 ||
@@ -55,16 +90,19 @@ export function parseGuidePlaceCard(value: string): GuidePlaceCardData | null {
       !isHttpUrl(candidate.mapUrl) ||
       !isHttpUrl(candidate.imageUrl) ||
       !isHttpUrl(candidate.sourceUrl) ||
-      !Array.isArray(candidate.amenities) ||
-      candidate.amenities.length === 0 ||
-      candidate.amenities.some(
-        (amenity) => typeof amenity !== "string" || !amenity.trim()
+      !Array.isArray(categoryLinks) ||
+      categoryLinks.length === 0 ||
+      categoryLinks.some(
+        (link) =>
+          typeof link?.label !== "string" ||
+          !link.label.trim() ||
+          !isInternalCategoryPath(link.href)
       )
     ) {
       return null;
     }
 
-    return candidate as GuidePlaceCardData;
+    return { ...candidate, categoryLinks } as GuidePlaceCardData;
   } catch {
     return null;
   }

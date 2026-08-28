@@ -10,7 +10,7 @@ const verifiedEntry = (number: number, name: string) => `## ${number}. ${name}
 This place has a concrete address, an honest caveat, and enough practical detail for someone deciding where to work today. [Official source](https://example.com/${number})`;
 
 const verifiedCard = (position: number, name: string) => `~~~guide-place
-{"position":${position},"name":"${name}","type":"Work café","description":"A useful, sourced place to work.","address":"${position} Example Street","hours":"Daily 08:00–22:00","detailsUrl":"https://example.com/${position}","detailsLabel":"Official site","mapUrl":"https://www.google.com/maps/search/?api=1&query=${position}","imageUrl":"https://cdn.example.com/${position}.jpg","imageAlt":"${name} workspace","imageCredit":"${name}","amenities":["WiFi","Power"],"caveat":"Confirm before an important call.","sourceUrl":"https://example.com/${position}","sourceLabel":"Official site"}
+{"position":${position},"name":"${name}","type":"Work café","description":"A useful, sourced place to work.","address":"${position} Example Street","hours":"Daily 08:00–22:00","detailsUrl":"https://example.com/${position}","detailsLabel":"Official site","mapUrl":"https://www.google.com/maps/search/?api=1&query=${position}","imageUrl":"https://cdn.example.com/${position}.jpg","imageAlt":"${name} workspace","imageCredit":"${name}","categoryLinks":[{"label":"Da Lat cafés","href":"/cafes"}],"caveat":"Confirm before an important call.","sourceUrl":"https://example.com/${position}","sourceLabel":"Official site"}
 ~~~`;
 
 describe("guide publishing quality", () => {
