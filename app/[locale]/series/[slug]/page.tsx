@@ -404,14 +404,14 @@ export default async function SeriesPage({ params }: PageProps) {
                           <p className="font-medium">
                             {formatInDaLat(
                               event.starts_at,
-                              "EEEE, MMMM d",
+                              "PPPP",
                               locale as Locale,
                             )}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {formatInDaLat(
                               event.starts_at,
-                              "h:mm a",
+                              "p",
                               locale as Locale,
                             )}
                           </p>
