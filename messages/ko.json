@@ -114,46 +114,12 @@
     "footer": {
       "love": "사랑",
       "rssFeed": "RSS 피드",
-      "discover": "둘러보기",
-      "suggestEvent": "이벤트 제안"
+      "discover": "둘러보기"
     }
   },
   "eventSuggestion": {
-    "title": "달랏의 이벤트를 알고 계신가요?",
-    "subtitle": "이벤트 링크를 붙여 넣거나 전단지를 올려 주세요. 게시 전에 내용을 확인할게요.",
-    "urlLabel": "이벤트 링크",
-    "urlPlaceholder": "https://...",
-    "or": "또는",
-    "flyerLabel": "전단지 업로드",
-    "flyerHint": "JPG, PNG 또는 WebP · 최대 4MB",
-    "chooseFlyer": "전단지 선택",
-    "replaceFlyer": "전단지 교체",
-    "removeFlyer": "전단지 삭제",
-    "privacyNote": "제안은 검토 대기열로 전송되며 자동으로 게시되지 않습니다.",
-    "submit": "검토 요청 보내기",
-    "submitting": "검토 요청 보내는 중...",
-    "success": "감사합니다! 검토 대기열에 추가했어요.",
-    "successDelayed": "감사합니다! 대기열에 추가했지만 지금은 검토가 조금 더 오래 걸릴 수 있어요.",
-    "duplicate": "이 링크는 이미 검토 대기열에 있어요.",
-    "suggestAnother": "다른 이벤트 제안하기",
-    "errors": {
-      "authentication_required": "이벤트를 제안하려면 로그인해 주세요.",
-      "invalid_request": "요청을 보내지 못했어요. 다시 시도할까요?",
-      "invalid_url": "완전한 http 또는 https 링크를 붙여 넣어 주세요.",
-      "unsafe_url": "안전하게 열 수 없는 링크예요.",
-      "source_unavailable": "페이지를 열 수 없어요. 링크를 확인하거나 나중에 다시 시도해 주세요.",
-      "unsupported_source": "이 페이지에서 이벤트 정보를 읽을 수 없어요.",
-      "source_too_large": "확인하기에 페이지가 너무 커요.",
-      "invalid_flyer": "JPG, PNG 또는 WebP 전단지를 선택해 주세요.",
-      "flyer_too_large": "전단지가 4MB를 넘어요. 더 작은 이미지를 선택해 주세요.",
-      "storage_unavailable": "전단지 업로드가 잠시 쉬고 있어요. 곧 다시 시도해 주세요.",
-      "rate_limit_exceeded": "오늘은 충분히 공유해 주셨어요. 내일 다시 시도해 주세요.",
-      "rate_limit_unavailable": "이벤트 제안 기능이 잠시 쉬고 있어요. 곧 다시 시도해 주세요.",
-      "review_queue_full": "현재 검토 대기열이 가득 찼어요. 나중에 다시 시도해 주세요.",
-      "service_unavailable": "지금은 대기열에 추가할 수 없어요. 곧 다시 시도해 주세요.",
-      "network": "연결이 끊겼어요. 인터넷 연결을 확인하고 다시 시도해 주세요.",
-      "unknown": "문제가 생겼어요. 다시 시도할까요?"
-    }
+    "title": "활동 탐색이 이제 자동으로 이루어집니다",
+    "subtitle": "ĐàLạt.app은 검증된 공식 1차 출처에서 활동을 찾아 결정론적 안전 기준을 통과한 경우에만 자동 게시합니다. 승인 대기열은 없습니다."
   },
   "home": {
     "title": "달랏의 이벤트",
@@ -188,10 +154,22 @@
       "eyebrow": "지금, 도시의 흐름",
       "title": "다음 계획을 찾아보세요",
       "subtitle": "시간이 비는 때부터 골라보세요.",
-      "live": { "title": "지금 진행 중", "description": "이미 시작된 모임에 지금 합류해 보세요" },
-      "tonight": { "title": "오늘 밤", "description": "안개가 내려앉을 무렵 시작되는 일들" },
-      "weekend": { "title": "이번 주말", "description": "금요일, 토요일 또는 일요일 계획을 찾아보세요" },
-      "allDates": { "title": "전체 예정", "description": "전체 이벤트 달력 둘러보기" }
+      "live": {
+        "title": "지금 진행 중",
+        "description": "이미 시작된 모임에 지금 합류해 보세요"
+      },
+      "tonight": {
+        "title": "오늘 밤",
+        "description": "안개가 내려앉을 무렵 시작되는 일들"
+      },
+      "weekend": {
+        "title": "이번 주말",
+        "description": "금요일, 토요일 또는 일요일 계획을 찾아보세요"
+      },
+      "allDates": {
+        "title": "전체 예정",
+        "description": "전체 이벤트 달력 둘러보기"
+      }
     },
     "happeningNow": {
       "title": "지금 진행 중",
@@ -3246,6 +3224,38 @@
         "vegan": "비건"
       }
     }
+  },
+  "adminActivityGraph": {
+    "title": "달랏 활동 그래프",
+    "description": "결정론적 증거 기준을 통과한 활동은 승인 대기 없이 자동 게시됩니다. 모든 결정을 확인하거나 즉시 게시를 중단할 수 있습니다.",
+    "refresh": "새로고침",
+    "loadError": "활동 그래프를 불러올 수 없습니다.",
+    "actionError": "활동 그래프 작업에 실패했습니다.",
+    "loading": "출처 결정을 불러오는 중…",
+    "stats": {
+      "total": "관측",
+      "published": "게시",
+      "withheld": "보류",
+      "unlisted": "게시 중단",
+      "errors": "출처 오류"
+    },
+    "sources": "모니터링 출처",
+    "threshold": "자동 ≥ {score}",
+    "lastSuccess": "최근 성공: {date}",
+    "notRun": "아직 확인 안 됨",
+    "pause": "일시 중지",
+    "resume": "재개",
+    "decisions": "최근 자동 결정",
+    "empty": "아직 활동 관측이 없습니다.",
+    "unknownSource": "알 수 없는 출처",
+    "confidence": "신뢰도 {score}%",
+    "freshness": "최신성 {score}%",
+    "openSource": "공식 출처 열기",
+    "unlistConfirm": "“{title}” 게시를 중단하고 자동 재게시를 막을까요?",
+    "unlist": "게시 중단",
+    "recheck": "다시 확인",
+    "evidence": "필드별 근거 ({count})",
+    "duplicate": "가장 가까운 중복: {title} · {score}%"
   },
   "reactions": {
     "heart": "좋아요",

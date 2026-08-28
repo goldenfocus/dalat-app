@@ -114,46 +114,12 @@
     "footer": {
       "love": "愛",
       "rssFeed": "RSSフィード",
-      "discover": "探索",
-      "suggestEvent": "イベントを提案"
+      "discover": "探索"
     }
   },
   "eventSuggestion": {
-    "title": "ダラットのイベントをご存じですか？",
-    "subtitle": "イベントのリンクを貼り付けるか、チラシをアップロードしてください。掲載前に内容を確認します。",
-    "urlLabel": "イベントのリンク",
-    "urlPlaceholder": "https://...",
-    "or": "または",
-    "flyerLabel": "チラシをアップロード",
-    "flyerHint": "JPG、PNG、WebP · 最大4 MB",
-    "chooseFlyer": "チラシを選択",
-    "replaceFlyer": "チラシを変更",
-    "removeFlyer": "チラシを削除",
-    "privacyNote": "提案は確認待ちに追加され、自動で公開されることはありません。",
-    "submit": "確認待ちに送る",
-    "submitting": "確認待ちに送信中...",
-    "success": "ありがとうございます！確認待ちに追加しました。",
-    "successDelayed": "ありがとうございます！確認待ちに追加しましたが、現在は確認に少し時間がかかっています。",
-    "duplicate": "このリンクはすでに確認待ちにあります。",
-    "suggestAnother": "別のイベントを提案",
-    "errors": {
-      "authentication_required": "イベントを提案するにはログインしてください。",
-      "invalid_request": "リクエストを送信できませんでした。もう一度試しますか？",
-      "invalid_url": "完全な http または https リンクを貼り付けてください。",
-      "unsafe_url": "安全に開けないリンクです。",
-      "source_unavailable": "ページを開けませんでした。リンクを確認するか、後でもう一度お試しください。",
-      "unsupported_source": "このページからイベント情報を読み取れませんでした。",
-      "source_too_large": "このページは確認するには大きすぎます。",
-      "invalid_flyer": "JPG、PNG、WebPのチラシを選択してください。",
-      "flyer_too_large": "チラシが4 MBを超えています。小さい画像を選択してください。",
-      "storage_unavailable": "チラシのアップロードは少し休憩中です。しばらくしてからお試しください。",
-      "rate_limit_exceeded": "今日はたくさん共有していただきました。明日もう一度お試しください。",
-      "rate_limit_unavailable": "提案機能は少し休憩中です。しばらくしてからお試しください。",
-      "review_queue_full": "現在、確認待ちがいっぱいです。後でもう一度お試しください。",
-      "service_unavailable": "現在このイベントを確認待ちに追加できません。しばらくしてからお試しください。",
-      "network": "接続が切れました。インターネット接続を確認してもう一度お試しください。",
-      "unknown": "問題が発生しました。もう一度試しますか？"
-    }
+    "title": "アクティビティの発見は自動化されました",
+    "subtitle": "ĐàLạt.app は確認済みの公式一次情報からアクティビティを見つけ、決定論的な安全基準を通過したものだけを自動掲載します。承認待ちのキューはありません。"
   },
   "home": {
     "title": "ダラットのイベント",
@@ -188,10 +154,22 @@
       "eyebrow": "今の街の様子",
       "title": "次の予定を見つけよう",
       "subtitle": "空いている時間から選んでみてください。",
-      "live": { "title": "現在開催中", "description": "すでに始まっているイベントに参加" },
-      "tonight": { "title": "今夜", "description": "霧が降りる頃に始まることをチェック" },
-      "weekend": { "title": "今週末", "description": "金曜、土曜、日曜の予定を見つける" },
-      "allDates": { "title": "今後のすべて", "description": "イベントカレンダーをすべて見る" }
+      "live": {
+        "title": "現在開催中",
+        "description": "すでに始まっているイベントに参加"
+      },
+      "tonight": {
+        "title": "今夜",
+        "description": "霧が降りる頃に始まることをチェック"
+      },
+      "weekend": {
+        "title": "今週末",
+        "description": "金曜、土曜、日曜の予定を見つける"
+      },
+      "allDates": {
+        "title": "今後のすべて",
+        "description": "イベントカレンダーをすべて見る"
+      }
     },
     "happeningNow": {
       "title": "開催中",
@@ -3243,6 +3221,38 @@
         "vegan": "ヴィーガン"
       }
     }
+  },
+  "adminActivityGraph": {
+    "title": "ダラット・アクティビティグラフ",
+    "description": "決定論的な証拠基準を満たしたアクティビティは、承認待ちなしで自動公開されます。すべての判断を確認し、必要なら即座に掲載を停止できます。",
+    "refresh": "更新",
+    "loadError": "アクティビティグラフを読み込めませんでした。",
+    "actionError": "アクティビティグラフの操作に失敗しました。",
+    "loading": "判断履歴を読み込み中…",
+    "stats": {
+      "total": "観測済み",
+      "published": "公開中",
+      "withheld": "保留",
+      "unlisted": "掲載停止",
+      "errors": "情報源エラー"
+    },
+    "sources": "監視中の情報源",
+    "threshold": "自動 ≥ {score}",
+    "lastSuccess": "最終成功：{date}",
+    "notRun": "未確認",
+    "pause": "一時停止",
+    "resume": "再開",
+    "decisions": "最新の自動判断",
+    "empty": "アクティビティの観測はまだありません。",
+    "unknownSource": "不明な情報源",
+    "confidence": "信頼度 {score}%",
+    "freshness": "鮮度 {score}%",
+    "openSource": "公式情報源を開く",
+    "unlistConfirm": "「{title}」の掲載を停止し、自動再公開も無効にしますか？",
+    "unlist": "掲載停止",
+    "recheck": "再確認",
+    "evidence": "項目別の根拠（{count}）",
+    "duplicate": "最も近い重複候補：{title} · {score}%"
   },
   "reactions": {
     "heart": "大好き",

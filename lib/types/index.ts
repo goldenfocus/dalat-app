@@ -1,55 +1,121 @@
 // The Global Twelve - unified locale system for UI and content
-export type Locale = 'en' | 'vi' | 'ko' | 'zh' | 'ru' | 'fr' | 'ja' | 'ms' | 'th' | 'de' | 'es' | 'id';
+export type Locale =
+  | "en"
+  | "vi"
+  | "ko"
+  | "zh"
+  | "ru"
+  | "fr"
+  | "ja"
+  | "ms"
+  | "th"
+  | "de"
+  | "es"
+  | "id";
 
 // Notification mode preferences
-export type NotificationMode = 'sound_and_vibration' | 'sound_only' | 'vibration_only' | 'silent';
+export type NotificationMode =
+  | "sound_and_vibration"
+  | "sound_only"
+  | "vibration_only"
+  | "silent";
 
 export const NOTIFICATION_MODES: NotificationMode[] = [
-  'sound_and_vibration',
-  'sound_only',
-  'vibration_only',
-  'silent',
+  "sound_and_vibration",
+  "sound_only",
+  "vibration_only",
+  "silent",
 ];
 
 // ContentLocale is now an alias for backwards compatibility
 export type ContentLocale = Locale;
 
-export const LOCALES: Locale[] = ['en', 'vi', 'ko', 'zh', 'ru', 'fr', 'ja', 'ms', 'th', 'de', 'es', 'id'];
+export const LOCALES: Locale[] = [
+  "en",
+  "vi",
+  "ko",
+  "zh",
+  "ru",
+  "fr",
+  "ja",
+  "ms",
+  "th",
+  "de",
+  "es",
+  "id",
+];
 
 // Backwards compatibility alias
 export const CONTENT_LOCALES: ContentLocale[] = LOCALES;
 
 export const LOCALE_FLAGS: Record<ContentLocale, string> = {
-  en: '🇬🇧', vi: '🇻🇳', ko: '🇰🇷', zh: '🇨🇳',
-  ru: '🇷🇺', fr: '🇫🇷', ja: '🇯🇵', ms: '🇲🇾',
-  th: '🇹🇭', de: '🇩🇪', es: '🇪🇸', id: '🇮🇩'
+  en: "🇬🇧",
+  vi: "🇻🇳",
+  ko: "🇰🇷",
+  zh: "🇨🇳",
+  ru: "🇷🇺",
+  fr: "🇫🇷",
+  ja: "🇯🇵",
+  ms: "🇲🇾",
+  th: "🇹🇭",
+  de: "🇩🇪",
+  es: "🇪🇸",
+  id: "🇮🇩",
 };
 
 export const LOCALE_NAMES: Record<ContentLocale, string> = {
-  en: 'English', vi: 'Tiếng Việt', ko: '한국어', zh: '中文',
-  ru: 'Русский', fr: 'Français', ja: '日本語', ms: 'Melayu',
-  th: 'ไทย', de: 'Deutsch', es: 'Español', id: 'Indonesian'
+  en: "English",
+  vi: "Tiếng Việt",
+  ko: "한국어",
+  zh: "中文",
+  ru: "Русский",
+  fr: "Français",
+  ja: "日本語",
+  ms: "Melayu",
+  th: "ไทย",
+  de: "Deutsch",
+  es: "Español",
+  id: "Indonesian",
 };
 
 // Translation types
-export type TranslationStatus = 'auto' | 'reviewed' | 'edited';
-export type TranslationContentType = 'event' | 'moment' | 'profile' | 'blog' | 'venue' | 'comment' | 'organizer' | 'track';
+export type TranslationStatus = "auto" | "reviewed" | "edited";
+export type TranslationContentType =
+  | "event"
+  | "moment"
+  | "profile"
+  | "blog"
+  | "venue"
+  | "comment"
+  | "organizer"
+  | "track";
 export type TranslationFieldName =
-  | 'title' | 'description' | 'text_content' | 'bio'
-  | 'story_content' | 'technical_content' | 'meta_description'
-  | 'image_alt' | 'image_description'
+  | "title"
+  | "description"
+  | "text_content"
+  | "bio"
+  | "story_content"
+  | "technical_content"
+  | "meta_description"
+  | "image_alt"
+  | "image_description"
   // AI metadata fields for translation
-  | 'ai_description' | 'ai_title' | 'scene_description'
-  | 'video_summary' | 'video_transcript'
-  | 'audio_summary' | 'audio_transcript'
-  | 'pdf_summary' | 'pdf_extracted_text'
+  | "ai_description"
+  | "ai_title"
+  | "scene_description"
+  | "video_summary"
+  | "video_transcript"
+  | "audio_summary"
+  | "audio_transcript"
+  | "pdf_summary"
+  | "pdf_extracted_text"
   // Comment content
-  | 'content'
+  | "content"
   // Track/lyrics content
-  | 'lyrics';
+  | "lyrics";
 
 // Event pricing types
-export type PriceType = 'free' | 'paid' | 'donation';
+export type PriceType = "free" | "paid" | "donation";
 
 export interface TicketTier {
   name: string;
@@ -75,13 +141,13 @@ export interface ContentTranslation {
 
 // Extended role hierarchy
 export type UserRole =
-  | 'user'
-  | 'superadmin'
-  | 'admin'
-  | 'moderator'
-  | 'organizer_verified'
-  | 'organizer_pending'
-  | 'contributor';
+  | "user"
+  | "superadmin"
+  | "admin"
+  | "moderator"
+  | "organizer_verified"
+  | "organizer_pending"
+  | "contributor";
 
 // Role hierarchy levels (higher = more permissions)
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
@@ -95,19 +161,22 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
 };
 
 // Check if a user role has at least the required level
-export function hasRoleLevel(userRole: UserRole, requiredRole: UserRole): boolean {
+export function hasRoleLevel(
+  userRole: UserRole,
+  requiredRole: UserRole,
+): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole];
 }
 
 // Organizer types
 export type OrganizerType =
-  | 'ward'           // Phường
-  | 'city'           // Thành phố
-  | 'venue'          // Venue/location
-  | 'cultural_org'   // Cultural organization
-  | 'committee'      // Festival committee
-  | 'business'       // Business
-  | 'other';
+  | "ward" // Phường
+  | "city" // Thành phố
+  | "venue" // Venue/location
+  | "cultural_org" // Cultural organization
+  | "committee" // Festival committee
+  | "business" // Business
+  | "other";
 
 export interface Profile {
   id: string;
@@ -155,29 +224,29 @@ export interface Organizer {
 // ============================================
 
 export type VenueType =
-  | 'cafe'
-  | 'bar'
-  | 'restaurant'
-  | 'gallery'
-  | 'park'
-  | 'hotel'
-  | 'coworking'
-  | 'community_center'
-  | 'outdoor'
-  | 'homestay'
-  | 'hiking'
-  | 'vegetarian'
-  | 'vegan'
-  | 'other';
+  | "cafe"
+  | "bar"
+  | "restaurant"
+  | "gallery"
+  | "park"
+  | "hotel"
+  | "coworking"
+  | "community_center"
+  | "outdoor"
+  | "homestay"
+  | "hiking"
+  | "vegetarian"
+  | "vegan"
+  | "other";
 
 export interface OperatingHours {
-  monday?: { open: string; close: string } | 'closed';
-  tuesday?: { open: string; close: string } | 'closed';
-  wednesday?: { open: string; close: string } | 'closed';
-  thursday?: { open: string; close: string } | 'closed';
-  friday?: { open: string; close: string } | 'closed';
-  saturday?: { open: string; close: string } | 'closed';
-  sunday?: { open: string; close: string } | 'closed';
+  monday?: { open: string; close: string } | "closed";
+  tuesday?: { open: string; close: string } | "closed";
+  wednesday?: { open: string; close: string } | "closed";
+  thursday?: { open: string; close: string } | "closed";
+  friday?: { open: string; close: string } | "closed";
+  saturday?: { open: string; close: string } | "closed";
+  sunday?: { open: string; close: string } | "closed";
 }
 
 export interface VenuePhoto {
@@ -218,7 +287,7 @@ export interface Venue {
 
   // Enhanced
   capacity: number | null;
-  price_range: '$' | '$$' | '$$$' | '$$$$' | null;
+  price_range: "$" | "$$" | "$$$" | "$$$$" | null;
   tags: string[];
   cuisine_types: string[];
   photos: VenuePhoto[];
@@ -290,11 +359,15 @@ export interface Persona {
 // Tribe Types (V2 - Enhanced Membership System)
 // ============================================
 
-export type TribeAccessType = 'public' | 'request' | 'invite_only' | 'secret';
-export type TribeMemberRole = 'member' | 'admin' | 'leader';
-export type TribeMemberStatus = 'active' | 'banned';
-export type TribeRequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
-export type TribeEventVisibility = 'public' | 'members_only';
+export type TribeAccessType = "public" | "request" | "invite_only" | "secret";
+export type TribeMemberRole = "member" | "admin" | "leader";
+export type TribeMemberStatus = "active" | "banned";
+export type TribeRequestStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "cancelled";
+export type TribeEventVisibility = "public" | "members_only";
 
 export interface TribeSettings {
   avatar_url?: string | null;
@@ -351,7 +424,7 @@ export interface TribeRequest {
   tribes?: Tribe;
 }
 
-export type TribeInvitationStatus = 'pending' | 'sent' | 'viewed' | 'accepted';
+export type TribeInvitationStatus = "pending" | "sent" | "viewed" | "accepted";
 
 export interface TribeInvitation {
   id: string;
@@ -400,7 +473,7 @@ export interface TribeInvitationByToken {
 // Invitation Channel Types (Future-proof)
 // ============================================
 
-export type InviteChannel = 'email' | 'sms' | 'whatsapp' | 'zalo' | 'in_app';
+export type InviteChannel = "email" | "sms" | "whatsapp" | "zalo" | "in_app";
 
 export interface InviteRecipient {
   identifier: string; // email, phone, or user_id depending on channel
@@ -427,7 +500,7 @@ export interface Event {
   tribe_id: string | null;
   tribe_visibility: TribeEventVisibility;
   organizer_id: string | null;
-  venue_id: string | null;  // WHERE the event happens (physical location)
+  venue_id: string | null; // WHERE the event happens (physical location)
   title: string;
   description: string | null;
   image_url: string | null;
@@ -460,6 +533,24 @@ export interface Event {
   updated_at: string;
   // Translation tracking
   source_locale: string | null;
+  // Activity Graph provenance/freshness (null for legacy events)
+  source_platform?: string | null;
+  source_metadata?: Record<string, unknown> | null;
+  activity_kind?: string | null;
+  public_access?: "confirmed" | "restricted" | "unknown" | null;
+  reservation_requirement?:
+    | "not_required"
+    | "recommended"
+    | "required"
+    | "unknown"
+    | null;
+  last_checked_at?: string | null;
+  last_confirmed_at?: string | null;
+  source_updated_at?: string | null;
+  freshness_score?: number | null;
+  activity_graph_candidate_id?: string | null;
+  activity_admin_suppressed_at?: string | null;
+  activity_admin_suppressed_by?: string | null;
   // AI features
   ai_tags: string[];
   ai_tags_updated_at: string | null;
@@ -479,7 +570,7 @@ export interface Event {
   profiles?: Profile;
   tribes?: Tribe;
   organizers?: Organizer;
-  venues?: Venue;  // WHERE the event happens
+  venues?: Venue; // WHERE the event happens
   event_series?: EventSeries;
 }
 
@@ -572,7 +663,11 @@ export interface EventWithSeriesData extends Event {
 // Verification Request Types
 // ============================================
 
-export type VerificationStatus = 'pending' | 'approved' | 'rejected' | 'more_info_needed';
+export type VerificationStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "more_info_needed";
 
 export interface VerificationRequest {
   id: string;
@@ -602,7 +697,7 @@ export interface VerificationRequest {
 // Festival Types
 // ============================================
 
-export type FestivalStatus = 'draft' | 'published' | 'cancelled' | 'completed';
+export type FestivalStatus = "draft" | "published" | "cancelled" | "completed";
 
 export interface Festival {
   id: string;
@@ -631,7 +726,12 @@ export interface Festival {
   festival_events?: FestivalEvent[];
 }
 
-export type FestivalOrganizerRole = 'lead' | 'organizer' | 'sponsor' | 'partner' | 'supporter';
+export type FestivalOrganizerRole =
+  | "lead"
+  | "organizer"
+  | "sponsor"
+  | "partner"
+  | "supporter";
 
 export interface FestivalOrganizer {
   festival_id: string;
@@ -642,7 +742,10 @@ export interface FestivalOrganizer {
   organizers?: Organizer;
 }
 
-export type FestivalEventType = 'official_program' | 'community_side_event' | 'announcement_only';
+export type FestivalEventType =
+  | "official_program"
+  | "community_side_event"
+  | "announcement_only";
 
 export interface FestivalEvent {
   festival_id: string;
@@ -657,7 +760,11 @@ export interface FestivalEvent {
   festivals?: Festival;
 }
 
-export type FestivalUpdateType = 'announcement' | 'schedule_change' | 'highlight' | 'reminder';
+export type FestivalUpdateType =
+  | "announcement"
+  | "schedule_change"
+  | "highlight"
+  | "reminder";
 
 export interface FestivalUpdate {
   id: string;
@@ -769,10 +876,23 @@ export interface DashboardOverview {
 // Moments UGC Types
 // ============================================
 
-export type MomentContentType = 'photo' | 'video' | 'text' | 'youtube' | 'pdf' | 'audio' | 'image' | 'document';
-export type MomentStatus = 'draft' | 'pending' | 'published' | 'rejected' | 'removed';
-export type MomentVideoStatus = 'uploading' | 'processing' | 'ready' | 'error';
-export type MomentsWhoCanPost = 'anyone' | 'rsvp' | 'confirmed';
+export type MomentContentType =
+  | "photo"
+  | "video"
+  | "text"
+  | "youtube"
+  | "pdf"
+  | "audio"
+  | "image"
+  | "document";
+export type MomentStatus =
+  | "draft"
+  | "pending"
+  | "published"
+  | "rejected"
+  | "removed";
+export type MomentVideoStatus = "uploading" | "processing" | "ready" | "error";
+export type MomentsWhoCanPost = "anyone" | "rsvp" | "confirmed";
 
 export interface EventSettings {
   event_id: string;
@@ -919,7 +1039,12 @@ export interface MomentLikeStatus {
 // Moment AI Metadata Types
 // ============================================
 
-export type MomentProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'skipped';
+export type MomentProcessingStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed"
+  | "skipped";
 
 export interface MomentMetadata {
   moment_id: string;
@@ -983,7 +1108,7 @@ export interface MomentStripItem {
   event_audio_count: number;
 }
 
-export type MomentStripSort = 'event_date' | 'recent';
+export type MomentStripSort = "event_date" | "recent";
 
 // For FAB quick upload
 export interface RecentEventForUpload {
@@ -1005,9 +1130,14 @@ export interface MomentWithMetadata extends Moment {
 // PROMO MEDIA TYPES
 // ============================================
 
-export type PromoMediaType = 'image' | 'video' | 'youtube' | 'pdf' | 'soundcloud';
-export type PromoUpdateScope = 'this_event' | 'future' | 'all';
-export type PromoSource = 'event' | 'series';
+export type PromoMediaType =
+  | "image"
+  | "video"
+  | "youtube"
+  | "pdf"
+  | "soundcloud";
+export type PromoUpdateScope = "this_event" | "future" | "all";
+export type PromoSource = "event" | "series";
 
 export interface PromoMedia {
   id: string;
@@ -1132,8 +1262,8 @@ export interface DiscoveryEventMomentsGroup {
 // Event Invitation Types
 // ============================================
 
-export type InvitationStatus = 'pending' | 'sent' | 'viewed' | 'responded';
-export type InvitationRsvpStatus = 'going' | 'cancelled' | 'interested';
+export type InvitationStatus = "pending" | "sent" | "viewed" | "responded";
+export type InvitationRsvpStatus = "going" | "cancelled" | "interested";
 
 export interface EventInvitation {
   id: string;
@@ -1176,7 +1306,7 @@ export interface InviteQuota {
 
 export interface InviteQuotaCheck {
   allowed: boolean;
-  reason?: 'unauthorized' | 'daily_limit_exceeded' | 'weekly_limit_exceeded';
+  reason?: "unauthorized" | "daily_limit_exceeded" | "weekly_limit_exceeded";
   remaining_daily: number;
   remaining_weekly: number;
 }
@@ -1196,9 +1326,9 @@ export interface InvitationCounts {
 // Recurring Events Types
 // ============================================
 
-export type RecurrenceFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-export type SeriesStatus = 'active' | 'paused' | 'cancelled';
-export type ExceptionType = 'modified' | 'cancelled' | 'rescheduled';
+export type RecurrenceFrequency = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+export type SeriesStatus = "active" | "paused" | "cancelled";
+export type ExceptionType = "modified" | "cancelled" | "rescheduled";
 
 export interface EventSeries {
   id: string;
@@ -1226,6 +1356,7 @@ export interface EventSeries {
   ticket_tiers: TicketTier[] | null;
   tribe_id: string | null;
   organizer_id: string | null;
+  venue_id?: string | null;
   created_by: string;
   rrule: string;
   starts_at_time: string;
@@ -1237,6 +1368,24 @@ export interface EventSeries {
   instances_generated_until: string | null;
   created_at: string;
   updated_at: string;
+  // Activity Graph provenance/freshness (null for legacy series)
+  source_platform?: string | null;
+  source_metadata?: Record<string, unknown> | null;
+  activity_kind?: string | null;
+  public_access?: "confirmed" | "restricted" | "unknown" | null;
+  reservation_requirement?:
+    | "not_required"
+    | "recommended"
+    | "required"
+    | "unknown"
+    | null;
+  last_checked_at?: string | null;
+  last_confirmed_at?: string | null;
+  source_updated_at?: string | null;
+  freshness_score?: number | null;
+  activity_graph_candidate_id?: string | null;
+  activity_admin_suppressed_at?: string | null;
+  activity_admin_suppressed_by?: string | null;
   // Joined data
   profiles?: Profile;
   organizers?: Organizer;
@@ -1268,15 +1417,15 @@ export interface RecurrenceFormData {
   isRecurring: boolean;
   frequency: RecurrenceFrequency;
   interval: number;
-  weekDays: string[];  // ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
-  monthDay: number | null;  // 1-31 for specific day
+  weekDays: string[]; // ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
+  monthDay: number | null; // 1-31 for specific day
   monthWeekDay: {
-    week: number;  // 1-5 (-1 for last)
-    day: string;   // "MO", "TU", etc.
+    week: number; // 1-5 (-1 for last)
+    day: string; // "MO", "TU", etc.
   } | null;
-  endType: 'never' | 'count' | 'date';
+  endType: "never" | "count" | "date";
   endCount?: number;
-  endDate?: string;  // ISO date string
+  endDate?: string; // ISO date string
 }
 
 // Preset recurrence patterns for quick selection
@@ -1291,8 +1440,13 @@ export interface RecurrencePreset {
 // Live Streaming Types
 // ============================================
 
-export type LiveStreamStatus = 'idle' | 'connecting' | 'live' | 'reconnecting' | 'ended';
-export type StreamChatMessageType = 'text' | 'system' | 'highlight';
+export type LiveStreamStatus =
+  | "idle"
+  | "connecting"
+  | "live"
+  | "reconnecting"
+  | "ended";
+export type StreamChatMessageType = "text" | "system" | "highlight";
 
 export interface LiveStream {
   id: string;
@@ -1368,7 +1522,7 @@ export interface CloudflareStreamInput {
   };
   status: {
     current: {
-      state: 'connected' | 'disconnected';
+      state: "connected" | "disconnected";
     } | null;
   } | null;
   created: string;
@@ -1379,7 +1533,7 @@ export interface CloudflareStreamInput {
 // Comment Types
 // ============================================
 
-export type CommentTargetType = 'event' | 'moment';
+export type CommentTargetType = "event" | "moment";
 
 export interface Comment {
   id: string;
@@ -1439,8 +1593,13 @@ export interface MutedThread {
 // Image Version Types (AI-generated image history)
 // ============================================
 
-export type ImageVersionContentType = 'event' | 'blog' | 'profile' | 'venue' | 'organizer';
-export type ImageVersionFieldName = 'cover_image' | 'avatar' | 'logo';
+export type ImageVersionContentType =
+  | "event"
+  | "blog"
+  | "profile"
+  | "venue"
+  | "organizer";
+export type ImageVersionFieldName = "cover_image" | "avatar" | "logo";
 
 export interface ImageVersion {
   id: string;
@@ -1461,7 +1620,13 @@ export interface ImageVersion {
 // Event Materials Types
 // ============================================
 
-export type MaterialType = 'youtube' | 'pdf' | 'audio' | 'video' | 'image' | 'document';
+export type MaterialType =
+  | "youtube"
+  | "pdf"
+  | "audio"
+  | "video"
+  | "image"
+  | "document";
 
 export interface EventMaterial {
   id: string;
@@ -1520,8 +1685,13 @@ export interface DraftMaterial {
 // RSVP Questionnaire Types
 // ============================================
 
-export type QuestionType = 'single_choice' | 'multi_choice' | 'text';
-export type QuestionCategory = 'logistics' | 'dietary' | 'contribution' | 'personal' | 'custom';
+export type QuestionType = "single_choice" | "multi_choice" | "text";
+export type QuestionCategory =
+  | "logistics"
+  | "dietary"
+  | "contribution"
+  | "personal"
+  | "custom";
 
 // Multilingual text - keyed by locale
 export type MultilingualText = Partial<Record<Locale, string>>;
@@ -1676,7 +1846,7 @@ export interface FriendsAttending {
 // Activity Feed Types
 // ============================================
 
-export type ActivityType = 'rsvp' | 'moment' | 'follow';
+export type ActivityType = "rsvp" | "moment" | "follow";
 
 export interface ActivityItem {
   activity_type: ActivityType;
@@ -1705,41 +1875,53 @@ export interface ActivityItem {
 // Loyalty & Rewards Types
 // ============================================
 
-export type LoyaltyTier = 'explorer' | 'regular' | 'insider' | 'ambassador' | 'legend';
+export type LoyaltyTier =
+  | "explorer"
+  | "regular"
+  | "insider"
+  | "ambassador"
+  | "legend";
 
 export type PointAction =
-  | 'rsvp_going'
-  | 'rsvp_attended'
-  | 'moment_photo'
-  | 'moment_video'
-  | 'moment_audio'
-  | 'moment_liked'
-  | 'moment_like_give'
-  | 'comment_create'
-  | 'comment_received'
-  | 'event_create'
-  | 'event_hosted'
-  | 'invite_sent'
-  | 'invite_accepted'
-  | 'profile_complete'
-  | 'follow_give'
-  | 'follow_received'
-  | 'tribe_create'
-  | 'tribe_join'
-  | 'blog_publish'
-  | 'organizer_verify'
-  | 'venue_create'
-  | 'series_create'
-  | 'livestream_broadcast'
-  | 'feedback_submit'
-  | 'admin_bonus'
-  | 'penalty';
+  | "rsvp_going"
+  | "rsvp_attended"
+  | "moment_photo"
+  | "moment_video"
+  | "moment_audio"
+  | "moment_liked"
+  | "moment_like_give"
+  | "comment_create"
+  | "comment_received"
+  | "event_create"
+  | "event_hosted"
+  | "invite_sent"
+  | "invite_accepted"
+  | "profile_complete"
+  | "follow_give"
+  | "follow_received"
+  | "tribe_create"
+  | "tribe_join"
+  | "blog_publish"
+  | "organizer_verify"
+  | "venue_create"
+  | "series_create"
+  | "livestream_broadcast"
+  | "feedback_submit"
+  | "admin_bonus"
+  | "penalty";
 
-export type RewardType = 'badge' | 'feature' | 'discount' | 'early_access' | 'priority_support' | 'profile_badge' | 'custom_perk';
+export type RewardType =
+  | "badge"
+  | "feature"
+  | "discount"
+  | "early_access"
+  | "priority_support"
+  | "profile_badge"
+  | "custom_perk";
 
-export type RewardStatus = 'active' | 'seasonal' | 'retired';
+export type RewardStatus = "active" | "seasonal" | "retired";
 
-export type LoyaltyCycleType = 'lifetime' | 'annual' | 'monthly';
+export type LoyaltyCycleType = "lifetime" | "annual" | "monthly";
 
 export interface UserPoint {
   id: string;
@@ -1854,42 +2036,45 @@ export interface AvailableReward extends LoyaltyReward {
 }
 
 // Tier display metadata
-export const LOYALTY_TIER_INFO: Record<LoyaltyTier, {
-  label: string;
-  color: string;
-  icon: string;
-  minPoints: number;
-}> = {
+export const LOYALTY_TIER_INFO: Record<
+  LoyaltyTier,
+  {
+    label: string;
+    color: string;
+    icon: string;
+    minPoints: number;
+  }
+> = {
   explorer: {
-    label: 'Explorer',
-    color: '#10B981',
-    icon: '👋',
-    minPoints: 0
+    label: "Explorer",
+    color: "#10B981",
+    icon: "👋",
+    minPoints: 0,
   },
   regular: {
-    label: 'Regular',
-    color: '#3B82F6',
-    icon: '🎯',
-    minPoints: 100
+    label: "Regular",
+    color: "#3B82F6",
+    icon: "🎯",
+    minPoints: 100,
   },
   insider: {
-    label: 'Insider',
-    color: '#F59E0B',
-    icon: '⭐',
-    minPoints: 500
+    label: "Insider",
+    color: "#F59E0B",
+    icon: "⭐",
+    minPoints: 500,
   },
   ambassador: {
-    label: 'Ambassador',
-    color: '#8B5CF6',
-    icon: '🏆',
-    minPoints: 1500
+    label: "Ambassador",
+    color: "#8B5CF6",
+    icon: "🏆",
+    minPoints: 1500,
   },
   legend: {
-    label: 'Legend',
-    color: '#EC4899',
-    icon: '👑',
-    minPoints: 3000
-  }
+    label: "Legend",
+    color: "#EC4899",
+    icon: "👑",
+    minPoints: 3000,
+  },
 };
 
 // Point values for each action (reference for client-side display)
@@ -1919,11 +2104,11 @@ export const POINT_VALUES: Record<PointAction, number> = {
   livestream_broadcast: 25,
   feedback_submit: 5,
   admin_bonus: 0, // Variable
-  penalty: 0 // Variable (negative)
+  penalty: 0, // Variable (negative)
 };
 
 // ============================================
 // Blog Types (re-export from blog.ts)
 // ============================================
 
-export * from './blog';
+export * from "./blog";

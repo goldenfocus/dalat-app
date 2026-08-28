@@ -114,46 +114,12 @@
     "footer": {
       "love": "sayang",
       "rssFeed": "Suapan RSS",
-      "discover": "Terokai",
-      "suggestEvent": "Cadangkan acara"
+      "discover": "Terokai"
     }
   },
   "eventSuggestion": {
-    "title": "Tahu tentang acara di Đà Lạt?",
-    "subtitle": "Tampal pautan acara atau muat naik risalah. Kami akan semak butiran sebelum ia dipaparkan.",
-    "urlLabel": "Pautan acara",
-    "urlPlaceholder": "https://...",
-    "or": "atau",
-    "flyerLabel": "Muat naik risalah",
-    "flyerHint": "JPG, PNG atau WebP · sehingga 4 MB",
-    "chooseFlyer": "Pilih risalah",
-    "replaceFlyer": "Ganti risalah",
-    "removeFlyer": "Buang risalah",
-    "privacyNote": "Cadangan anda masuk ke barisan semakan kami dan tidak akan diterbitkan secara automatik.",
-    "submit": "Hantar untuk semakan",
-    "submitting": "Menghantar untuk semakan...",
-    "success": "Terima kasih! Ia sudah masuk ke barisan semakan.",
-    "successDelayed": "Terima kasih! Ia sudah dalam barisan, tetapi semakan mengambil masa sedikit lebih lama sekarang.",
-    "duplicate": "Pautan ini sudah ada dalam barisan semakan.",
-    "suggestAnother": "Cadangkan acara lain",
-    "errors": {
-      "authentication_required": "Log masuk untuk mencadangkan acara.",
-      "invalid_request": "Permintaan itu tidak berjaya dihantar. Cuba lagi?",
-      "invalid_url": "Tampal pautan http atau https yang lengkap.",
-      "unsafe_url": "Pautan itu menuju ke tempat yang tidak dapat kami buka dengan selamat.",
-      "source_unavailable": "Kami tidak dapat membuka halaman itu. Semak pautan atau cuba lagi kemudian.",
-      "unsupported_source": "Kami tidak dapat membaca butiran acara daripada halaman itu.",
-      "source_too_large": "Halaman itu terlalu besar untuk kami semak.",
-      "invalid_flyer": "Pilih risalah JPG, PNG atau WebP.",
-      "flyer_too_large": "Risalah itu melebihi 4 MB. Pilih imej yang lebih kecil.",
-      "storage_unavailable": "Muat naik risalah sedang berehat sebentar. Cuba lagi tidak lama lagi.",
-      "rate_limit_exceeded": "Anda sudah banyak berkongsi hari ini. Cuba lagi esok.",
-      "rate_limit_unavailable": "Cadangan sedang berehat sebentar. Cuba lagi tidak lama lagi.",
-      "review_queue_full": "Barisan semakan penuh buat masa ini. Sila cuba lagi kemudian.",
-      "service_unavailable": "Kami tidak dapat memasukkan acara ini ke dalam barisan sekarang. Cuba lagi sebentar lagi.",
-      "network": "Sambungan terputus. Semak internet anda dan cuba lagi.",
-      "unknown": "Ada sesuatu yang menghalang. Cuba lagi?"
-    }
+    "title": "Penemuan aktiviti kini automatik",
+    "subtitle": "ĐàLạt.app menemui aktiviti daripada sumber rasmi pihak pertama yang disahkan dan hanya menerbitkannya secara automatik selepas lulus semakan keselamatan deterministik. Tiada baris gilir kelulusan."
   },
   "home": {
     "title": "Acara di Đà Lạt",
@@ -188,10 +154,22 @@
       "eyebrow": "Bandar, saat ini",
       "title": "Cari rancangan seterusnya",
       "subtitle": "Mulakan dengan waktu anda lapang.",
-      "live": { "title": "Sedang berlangsung", "description": "Sertai sesuatu yang sudah bermula" },
-      "tonight": { "title": "Malam ini", "description": "Lihat apa yang bermula apabila kabus turun" },
-      "weekend": { "title": "Hujung minggu ini", "description": "Cari rancangan untuk Jumaat, Sabtu atau Ahad" },
-      "allDates": { "title": "Semua akan datang", "description": "Lihat kalendar acara penuh" }
+      "live": {
+        "title": "Sedang berlangsung",
+        "description": "Sertai sesuatu yang sudah bermula"
+      },
+      "tonight": {
+        "title": "Malam ini",
+        "description": "Lihat apa yang bermula apabila kabus turun"
+      },
+      "weekend": {
+        "title": "Hujung minggu ini",
+        "description": "Cari rancangan untuk Jumaat, Sabtu atau Ahad"
+      },
+      "allDates": {
+        "title": "Semua akan datang",
+        "description": "Lihat kalendar acara penuh"
+      }
     },
     "happeningNow": {
       "title": "Sedang Berlangsung",
@@ -3243,6 +3221,38 @@
         "vegan": "Vegan"
       }
     }
+  },
+  "adminActivityGraph": {
+    "title": "Graf Aktiviti Đà Lạt",
+    "description": "Aktiviti diterbitkan secara automatik apabila melepasi semakan bukti deterministik—tiada baris gilir kelulusan. Semak setiap keputusan atau nyahsenarai aktiviti serta-merta.",
+    "refresh": "Muat semula",
+    "loadError": "Graf Aktiviti tidak dapat dimuatkan.",
+    "actionError": "Tindakan Graf Aktiviti gagal.",
+    "loading": "Memuatkan keputusan sumber…",
+    "stats": {
+      "total": "Diperhati",
+      "published": "Diterbitkan",
+      "withheld": "Ditahan",
+      "unlisted": "Dinyahsenarai",
+      "errors": "Ralat sumber"
+    },
+    "sources": "Sumber dipantau",
+    "threshold": "Auto ≥ {score}",
+    "lastSuccess": "Kejayaan terakhir: {date}",
+    "notRun": "Belum diperiksa",
+    "pause": "Jeda",
+    "resume": "Sambung",
+    "decisions": "Keputusan automatik terkini",
+    "empty": "Belum ada pemerhatian aktiviti.",
+    "unknownSource": "Sumber tidak diketahui",
+    "confidence": "Keyakinan {score}%",
+    "freshness": "Kesegaran {score}%",
+    "openSource": "Buka sumber rasmi",
+    "unlistConfirm": "Nyahsenarai “{title}” dan halang penerbitan semula automatik?",
+    "unlist": "Nyahsenarai",
+    "recheck": "Semak semula",
+    "evidence": "Bukti medan ({count})",
+    "duplicate": "Pendua terdekat: {title} · {score}%"
   },
   "reactions": {
     "heart": "Suka",

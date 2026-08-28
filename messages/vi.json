@@ -114,46 +114,12 @@
     "footer": {
       "love": "tình yêu",
       "rssFeed": "Nguồn RSS",
-      "discover": "Khám phá",
-      "suggestEvent": "Gợi ý sự kiện"
+      "discover": "Khám phá"
     }
   },
   "eventSuggestion": {
-    "title": "Bạn biết sự kiện nào ở Đà Lạt?",
-    "subtitle": "Dán liên kết sự kiện hoặc tải lên tờ rơi. Chúng tôi sẽ kiểm tra thông tin trước khi hiển thị.",
-    "urlLabel": "Liên kết sự kiện",
-    "urlPlaceholder": "https://...",
-    "or": "hoặc",
-    "flyerLabel": "Tải lên tờ rơi",
-    "flyerHint": "JPG, PNG hoặc WebP · tối đa 4 MB",
-    "chooseFlyer": "Chọn tờ rơi",
-    "replaceFlyer": "Thay tờ rơi",
-    "removeFlyer": "Xóa tờ rơi",
-    "privacyNote": "Gợi ý của bạn sẽ vào hàng chờ duyệt và không bao giờ được tự động đăng.",
-    "submit": "Gửi để xét duyệt",
-    "submitting": "Đang gửi để xét duyệt...",
-    "success": "Cảm ơn bạn! Sự kiện đang chờ duyệt.",
-    "successDelayed": "Cảm ơn bạn! Sự kiện đã vào hàng chờ, nhưng hiện việc duyệt có thể lâu hơn một chút.",
-    "duplicate": "Liên kết này đã có trong hàng chờ duyệt.",
-    "suggestAnother": "Gợi ý sự kiện khác",
-    "errors": {
-      "authentication_required": "Đăng nhập để gợi ý sự kiện.",
-      "invalid_request": "Yêu cầu chưa gửi được. Thử lại nhé?",
-      "invalid_url": "Dán liên kết http hoặc https đầy đủ.",
-      "unsafe_url": "Liên kết này trỏ đến nơi chúng tôi không thể mở an toàn.",
-      "source_unavailable": "Chúng tôi không mở được trang này. Hãy kiểm tra liên kết hoặc thử lại sau.",
-      "unsupported_source": "Chúng tôi không đọc được thông tin sự kiện từ trang này.",
-      "source_too_large": "Trang này quá lớn để chúng tôi kiểm tra.",
-      "invalid_flyer": "Hãy chọn tờ rơi JPG, PNG hoặc WebP.",
-      "flyer_too_large": "Tờ rơi vượt quá 4 MB. Hãy chọn ảnh nhỏ hơn.",
-      "storage_unavailable": "Tính năng tải tờ rơi đang nghỉ một chút. Vui lòng thử lại sớm.",
-      "rate_limit_exceeded": "Hôm nay bạn đã chia sẻ khá nhiều rồi. Hãy thử lại vào ngày mai.",
-      "rate_limit_unavailable": "Tính năng gợi ý đang nghỉ một chút. Vui lòng thử lại sớm.",
-      "review_queue_full": "Hàng chờ duyệt hiện đã đầy. Vui lòng thử lại sau.",
-      "service_unavailable": "Hiện chúng tôi chưa thể đưa sự kiện này vào hàng chờ. Vui lòng thử lại sớm.",
-      "network": "Mất kết nối. Hãy kiểm tra mạng và thử lại.",
-      "unknown": "Có gì đó cản đường. Thử lại nhé?"
-    }
+    "title": "Khám phá hoạt động giờ đã tự động",
+    "subtitle": "ĐàLạt.app tìm hoạt động từ các nguồn chính thức đã xác minh và chỉ tự động đăng khi vượt qua các cổng an toàn xác định. Không có hàng chờ phê duyệt."
   },
   "home": {
     "title": "Sự kiện tại Đà Lạt",
@@ -188,10 +154,22 @@
       "eyebrow": "Nhịp phố lúc này",
       "title": "Tìm kế hoạch tiếp theo",
       "subtitle": "Bắt đầu từ lúc bạn rảnh.",
-      "live": { "title": "Đang diễn ra", "description": "Ghé một hoạt động đang diễn ra ngay lúc này" },
-      "tonight": { "title": "Tối nay", "description": "Xem điều gì bắt đầu khi sương xuống" },
-      "weekend": { "title": "Cuối tuần này", "description": "Tìm kế hoạch cho thứ Sáu, thứ Bảy hoặc Chủ nhật" },
-      "allDates": { "title": "Tất cả sắp tới", "description": "Xem toàn bộ lịch sự kiện" }
+      "live": {
+        "title": "Đang diễn ra",
+        "description": "Ghé một hoạt động đang diễn ra ngay lúc này"
+      },
+      "tonight": {
+        "title": "Tối nay",
+        "description": "Xem điều gì bắt đầu khi sương xuống"
+      },
+      "weekend": {
+        "title": "Cuối tuần này",
+        "description": "Tìm kế hoạch cho thứ Sáu, thứ Bảy hoặc Chủ nhật"
+      },
+      "allDates": {
+        "title": "Tất cả sắp tới",
+        "description": "Xem toàn bộ lịch sự kiện"
+      }
     },
     "happeningNow": {
       "title": "Đang Diễn Ra",
@@ -3319,6 +3297,38 @@
         "vegan": "Thuần Chay"
       }
     }
+  },
+  "adminActivityGraph": {
+    "title": "Đồ thị Hoạt động Đà Lạt",
+    "description": "Hoạt động được đăng tự động khi vượt qua các cổng bằng chứng xác định—không có hàng chờ phê duyệt. Xem mọi quyết định hoặc gỡ ngay tại đây.",
+    "refresh": "Làm mới",
+    "loadError": "Không thể tải Đồ thị Hoạt động.",
+    "actionError": "Thao tác trên Đồ thị Hoạt động thất bại.",
+    "loading": "Đang tải quyết định nguồn…",
+    "stats": {
+      "total": "Đã quan sát",
+      "published": "Đã đăng",
+      "withheld": "Tạm giữ",
+      "unlisted": "Đã gỡ",
+      "errors": "Lỗi nguồn"
+    },
+    "sources": "Nguồn đang theo dõi",
+    "threshold": "Tự động ≥ {score}",
+    "lastSuccess": "Thành công gần nhất: {date}",
+    "notRun": "Chưa kiểm tra",
+    "pause": "Tạm dừng",
+    "resume": "Tiếp tục",
+    "decisions": "Quyết định tự động mới nhất",
+    "empty": "Chưa có quan sát hoạt động.",
+    "unknownSource": "Nguồn không xác định",
+    "confidence": "Độ tin cậy {score}%",
+    "freshness": "Độ mới {score}%",
+    "openSource": "Mở nguồn chính thức",
+    "unlistConfirm": "Gỡ “{title}” và ngăn hệ thống tự đăng lại?",
+    "unlist": "Gỡ xuống",
+    "recheck": "Kiểm tra lại",
+    "evidence": "Bằng chứng theo trường ({count})",
+    "duplicate": "Trùng gần nhất: {title} · {score}%"
   },
   "reactions": {
     "heart": "Yêu thích",

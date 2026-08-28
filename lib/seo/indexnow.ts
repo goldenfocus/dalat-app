@@ -27,6 +27,8 @@ export async function pingIndexNow(paths: string[]): Promise<void> {
 
   if (urlList.length === 0) return;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5_000);
   try {
     const res = await fetch(INDEXNOW_ENDPOINT, {
       method: "POST",
@@ -37,13 +39,18 @@ export async function pingIndexNow(paths: string[]): Promise<void> {
         keyLocation: `https://${HOST}/${KEY}.txt`,
         urlList,
       }),
+      signal: controller.signal,
     });
 
     // 200 = submitted, 202 = accepted (key validation pending)
     if (res.status !== 200 && res.status !== 202) {
-      console.error(`[indexnow] ping failed: HTTP ${res.status} for ${urlList.length} URLs`);
+      console.error(
+        `[indexnow] ping failed: HTTP ${res.status} for ${urlList.length} URLs`,
+      );
     }
   } catch (error) {
     console.error("[indexnow] ping failed:", error);
+  } finally {
+    clearTimeout(timeout);
   }
 }

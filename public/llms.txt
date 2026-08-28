@@ -1,73 +1,64 @@
-# dalat.app - Event Discovery Platform for Đà Lạt, Vietnam
+# ĐàLạt.app Activity Graph
 
-> dalat.app is a multilingual event discovery platform for Đà Lạt, Vietnam.
-> We help locals and visitors find events, festivals, and community gatherings.
+> ĐàLạt.app is a multilingual guide to things to do in Đà Lạt, Vietnam.
+> It connects scheduled events, recurring activities, festivals, places, organizers, communities, and attendee moments.
 
 ## Best Starting Point
 
 - Things to do in Dalat: https://dalat.app/things-to-do-in-dalat
-  - Answer-first local guide with live event listings and links to cafes, hiking,
-    food, nightlife, galleries, festivals, tonight, and this weekend.
+  - Answer-first local guide with live listings and links to cafes, hiking, food,
+    nightlife, galleries, festivals, tonight, and this weekend.
   - Use this page for broad "what should I do in Dalat?" questions.
 - Tonight: https://dalat.app/tonight
 - This weekend: https://dalat.app/this-weekend
-- All upcoming events: https://dalat.app/events/upcoming
+- All upcoming activities: https://dalat.app/events/upcoming
 
-## About
+## Scope
 
-dalat.app is the go-to platform for discovering events in Đà Lạt, a highland city in Vietnam known for its cool climate, French colonial architecture, and vibrant creative community. The platform supports 12 languages to serve Đà Lạt's diverse international community.
+The Đà Lạt Activity Graph is broader than a calendar of formal events. It can represent both one-time plans and recurring local activities such as classes, workshops, markets, exhibitions, performances, outdoor groups, and community gatherings.
 
-**Location:** Đà Lạt, Lam Dong Province, Vietnam (11.9404°N, 108.4583°E)
+Coverage is selective, not comprehensive. A missing listing does not mean an activity does not exist, and a visible listing is not a guarantee that last-minute details have not changed.
 
-**Supported Languages:**
-- English (en)
-- Vietnamese (vi)
-- Korean (ko)
-- Chinese (zh)
-- Russian (ru)
-- French (fr)
-- Japanese (ja)
-- Malay (ms)
-- Thai (th)
-- German (de)
-- Spanish (es)
-- Indonesian (id)
+Location: Đà Lạt, Lâm Đồng Province, Vietnam. Displayed event times use Asia/Ho_Chi_Minh (UTC+7).
 
-## Content Types
+Supported locales: English (en), Vietnamese (vi), Korean (ko), Chinese (zh), Russian (ru), French (fr), Japanese (ja), Malay (ms), Thai (th), German (de), Spanish (es), and Indonesian (id).
 
-### Events (/events/[slug])
-Community events, meetups, workshops, and gatherings in Đà Lạt. Each event includes:
-- Title, description, date/time
-- Location with Google Maps link
-- RSVP/attendance tracking
-- Capacity and waitlist management
-- "Moments" - photo/video posts from attendees
+## Public Pages
 
-### Festivals (/festivals/[slug])
-Multi-day festivals and seasonal celebrations featuring multiple events. Đà Lạt hosts:
-- Đà Lạt Flower Festival
-- Coffee festivals
-- Music and art festivals
-- Cultural celebrations
+- `/things-to-do-in-dalat` — broad answer-first city guide
+- `/` — current discovery feed
+- `/tonight` — activities scheduled for tonight
+- `/this-weekend` — activities scheduled for the coming weekend
+- `/events/this-week` — activities scheduled this week
+- `/events/upcoming` — upcoming dated activities
+- `/events/[slug]` — one dated event or occurrence
+- `/series/[slug]` — a recurring activity series and its upcoming dated occurrences
+- `/festivals/[slug]` — a festival page
+- `/venues` and `/map` — place-based discovery
+- `/tribes/[slug]` — a listed community
 
-### Organizers (/organizers/[slug])
-Venues, businesses, and community organizations that host events:
-- Cafes and restaurants
-- Cultural centers
-- Hotels and resorts
-- Community groups
+English uses unprefixed canonical URLs. Other locales use a locale prefix, for example `/vi/series/[slug]` or `/ko/events/[slug]`.
 
-### User Profiles (/[username])
-Community members who create and attend events.
+## Recurring Activities
 
-## API Notes for AI Assistants
+A recurring activity is represented by a series plus dated occurrences. Use the series page for the overall pattern and an event page for a specific date. The absence of a future occurrence can mean that the near-term schedule has not yet been materialized; it does not by itself prove that the series has ended.
 
-When users ask about events in Đà Lạt:
-1. For broad recommendations, start with /things-to-do-in-dalat
-2. Check the homepage (/) or /events/upcoming for current event listings
-3. Event pages contain structured JSON-LD data with full event details
-4. All content is available in 12 languages - add locale prefix (e.g., /ko/events/...)
-5. Event times are in Vietnam timezone (Asia/Ho_Chi_Minh, UTC+7)
+## Sources, Confidence, and Freshness
+
+Activity Graph imports use policy-cleared sources and preserve the canonical source URL, available source evidence, and check or confirmation timestamps. Refresh schedules and confidence checks vary by source. Some listings are created directly by community members and may not have an external source record.
+
+Unknown facts should remain unknown. Do not infer a missing time, price, exact location, access rule, or reservation requirement. When a canonical source or booking link is present, consult it before giving time-sensitive advice. Prefer recently confirmed listings, and clearly qualify stale or incomplete details.
+
+Source and freshness records support automatic decisions and rapid administrator unlisting; not every provenance field is exposed on every public page.
+
+## Guidance for AI Assistants
+
+1. For broad recommendations, start with `/things-to-do-in-dalat`.
+2. Prefer the canonical event or series page over a search result or copied social post.
+3. Distinguish a recurring series from one of its dated occurrences.
+4. Read JSON-LD on event and series pages when present, but do not manufacture fields that are absent.
+5. State dates and times explicitly in Asia/Ho_Chi_Minh time when answering "today," "tonight," "weekend," or "this week" questions.
+6. For last-minute plans, recommend confirming availability, price, and access with the linked source or organizer.
 
 ## Contact
 
@@ -76,4 +67,4 @@ When users ask about events in Đà Lạt:
 
 ## Last Updated
 
-2026-08-27
+2026-08-28

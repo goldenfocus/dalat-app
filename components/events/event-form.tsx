@@ -4,7 +4,12 @@ import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import { useSlugValidation, useLocationState, useImageUpload, usePricingState } from "@/hooks";
+import {
+  useSlugValidation,
+  useLocationState,
+  useImageUpload,
+  usePricingState,
+} from "@/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,18 +29,24 @@ import dynamic from "next/dynamic";
 
 // FlyerBuilder pulls canvas/image tooling — keep it out of the initial event-form chunk
 const FlyerBuilder = dynamic(
-  () =>
-    import("@/components/events/flyer-builder").then((m) => m.FlyerBuilder),
+  () => import("@/components/events/flyer-builder").then((m) => m.FlyerBuilder),
   {
     ssr: false,
     loading: () => (
       <div className="h-40 rounded-lg bg-muted animate-pulse" aria-hidden />
     ),
-  }
+  },
 );
 import { RecurrencePicker } from "@/components/events/recurrence-picker";
-import { SponsorForm, createSponsorsForEvent, type DraftSponsor } from "@/components/events/sponsor-form";
-import { EventMaterialsInput, createMaterialsForEvent } from "@/components/events/event-materials-input";
+import {
+  SponsorForm,
+  createSponsorsForEvent,
+  type DraftSponsor,
+} from "@/components/events/sponsor-form";
+import {
+  EventMaterialsInput,
+  createMaterialsForEvent,
+} from "@/components/events/event-materials-input";
 import { PlaylistInput } from "@/components/events/playlist-input";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
 import { TicketTierInput } from "@/components/events/ticket-tier-input";
@@ -47,17 +58,43 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ChevronDown, Settings, Repeat, Sparkles, Tag, Lock } from "lucide-react";
+import {
+  ChevronDown,
+  Settings,
+  Repeat,
+  Sparkles,
+  Tag,
+  Lock,
+} from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { PromoManager } from "@/components/events/promo-manager";
 import { LinkedPastEventPicker } from "@/components/events/linked-past-event-picker";
 import { toUTCFromDaLat, getDateTimeInDaLat } from "@/lib/timezone";
 import { canEditSlug } from "@/lib/config";
 import { getDefaultRecurrenceData, buildRRule } from "@/lib/recurrence";
-import type { Event, EventPrivateDetails, RecurrenceFormData, Sponsor, EventSponsor, EventSettings, TranslationFieldName, Organizer, UserRole, DraftMaterial, EventMaterial, Tribe, TribeEventVisibility, TribeMemberRole } from "@/lib/types";
+import type {
+  Event,
+  EventPrivateDetails,
+  RecurrenceFormData,
+  Sponsor,
+  EventSponsor,
+  EventSettings,
+  TranslationFieldName,
+  Organizer,
+  UserRole,
+  DraftMaterial,
+  EventMaterial,
+  Tribe,
+  TribeEventVisibility,
+  TribeMemberRole,
+} from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
 import { finalizeSlug } from "@/lib/utils";
-import { EVENT_TAGS, TAG_CONFIG, type EventTag } from "@/lib/constants/event-tags";
+import {
+  EVENT_TAGS,
+  TAG_CONFIG,
+  type EventTag,
+} from "@/lib/constants/event-tags";
 import { pingSearchEngines } from "@/lib/seo/indexnow-client";
 
 /**
@@ -66,28 +103,28 @@ import { pingSearchEngines } from "@/lib/seo/indexnow-client";
 async function triggerEventTranslation(
   eventId: string,
   title: string,
-  description: string | null
+  description: string | null,
 ) {
   const fields: { field_name: TranslationFieldName; text: string }[] = [
-    { field_name: 'title', text: title },
+    { field_name: "title", text: title },
   ];
 
   if (description?.trim()) {
-    fields.push({ field_name: 'description', text: description });
+    fields.push({ field_name: "description", text: description });
   }
 
   // Fire and forget - don't block the user
-  fetch('/api/translate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  fetch("/api/translate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      content_type: 'event',
+      content_type: "event",
       content_id: eventId,
       fields,
       detect_language: true,
     }),
   }).catch((error) => {
-    console.error('Translation trigger failed:', error);
+    console.error("Translation trigger failed:", error);
   });
 }
 
@@ -100,19 +137,19 @@ async function triggerAIProcessing(eventId: string) {
   // Fire and forget - don't block the user
   Promise.all([
     // Auto-tag the event
-    fetch('/api/admin/tag-event', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/admin/tag-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ eventId }),
     }),
     // Check for spam
-    fetch('/api/admin/spam-check', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/admin/spam-check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ eventId, autoHide: true }),
     }),
   ]).catch((error) => {
-    console.error('AI processing trigger failed:', error);
+    console.error("AI processing trigger failed:", error);
   });
 }
 
@@ -125,12 +162,6 @@ interface PlaylistTrack {
   thumbnail_url: string | null;
   duration_seconds: number | null;
   sort_order: number;
-}
-
-export interface CommunityFlyerSeed {
-  queueId: string;
-  title: string;
-  imageUrl: string;
 }
 
 interface EventFormProps {
@@ -152,8 +183,6 @@ interface EventFormProps {
   initialPrivateDetails?: EventPrivateDetails | null;
   // Preselect a tribe in "Hosting as" (from /events/new?tribe=<slug>)
   initialTribeSlug?: string;
-  // Moderator-only community flyer review handoff.
-  communityFlyer?: CommunityFlyerSeed;
 }
 
 type HostableTribe = Pick<Tribe, "id" | "slug" | "name" | "access_type">;
@@ -189,7 +218,6 @@ export function EventForm({
   initialPlaylistTracks = [],
   initialPrivateDetails = null,
   initialTribeSlug,
-  communityFlyer,
 }: EventFormProps) {
   const router = useRouter();
   // Only moderators and above can select organizers
@@ -204,7 +232,9 @@ export function EventForm({
 
   // Check if editing a series event
   const isSeriesEvent = !!event?.series_id;
-  const [seriesEditScope, setSeriesEditScope] = useState<"this" | "future" | "all">("this");
+  const [seriesEditScope, setSeriesEditScope] = useState<
+    "this" | "future" | "all"
+  >("this");
 
   // Celebration modal state (for new events)
   const [showCelebration, setShowCelebration] = useState(false);
@@ -273,27 +303,29 @@ export function EventForm({
     handleImageChange,
     uploadImage,
   } = useImageUpload({
-    initialImageUrl: event?.image_url ?? copyDefaults?.imageUrl ?? communityFlyer?.imageUrl ?? null,
+    initialImageUrl: event?.image_url ?? copyDefaults?.imageUrl ?? null,
     initialImageFit: event?.image_fit ?? "cover",
     initialFocalPoint: event?.focal_point ?? null,
   });
 
   // Title state (controlled for FlyerBuilder integration)
-  const [title, setTitle] = useState(
-    event?.title ?? copyDefaults?.title ?? communityFlyer?.title ?? ""
-  );
+  const [title, setTitle] = useState(event?.title ?? copyDefaults?.title ?? "");
 
   // Online event state
   const [isOnline, setIsOnline] = useState(event?.is_online ?? false);
   const [onlineLink, setOnlineLink] = useState(event?.online_link ?? "");
 
   // Secret address state (guests-only location details)
-  const [secretAddress, setSecretAddress] = useState(event?.has_private_details ?? false);
+  const [secretAddress, setSecretAddress] = useState(
+    event?.has_private_details ?? false,
+  );
   // For secret events, location_name already holds the public area label
   const [publicLabel, setPublicLabel] = useState(
-    event?.has_private_details ? (event.location_name ?? "") : ""
+    event?.has_private_details ? (event.location_name ?? "") : "",
   );
-  const [arrivalNotes, setArrivalNotes] = useState(initialPrivateDetails?.arrival_notes ?? "");
+  const [arrivalNotes, setArrivalNotes] = useState(
+    initialPrivateDetails?.arrival_notes ?? "",
+  );
 
   // Slug validation state (consolidated hook)
   const {
@@ -311,14 +343,20 @@ export function EventForm({
   });
 
   // Recurrence state (only for new events)
-  const [recurrence, setRecurrence] = useState<RecurrenceFormData>(getDefaultRecurrenceData());
+  const [recurrence, setRecurrence] = useState<RecurrenceFormData>(
+    getDefaultRecurrenceData(),
+  );
   const [selectedDate, setSelectedDate] = useState<Date | null>(
-    event?.starts_at ? new Date(event.starts_at) : copyDefaults?.date ? new Date(copyDefaults.date) : null
+    event?.starts_at
+      ? new Date(event.starts_at)
+      : copyDefaults?.date
+        ? new Date(copyDefaults.date)
+        : null,
   );
 
   // Draft sponsors state (for new events) - initialize with copied sponsors
   const [draftSponsors, setDraftSponsors] = useState<DraftSponsor[]>(
-    copyDefaults?.sponsors ?? []
+    copyDefaults?.sponsors ?? [],
   );
 
   // Draft materials state (for new events)
@@ -326,7 +364,9 @@ export function EventForm({
 
   // Manual tags state (user-selected activity tags)
   const [selectedTags, setSelectedTags] = useState<EventTag[]>(
-    (event?.ai_tags as EventTag[])?.filter((tag) => EVENT_TAGS.includes(tag as EventTag)) ?? []
+    (event?.ai_tags as EventTag[])?.filter((tag) =>
+      EVENT_TAGS.includes(tag as EventTag),
+    ) ?? [],
   );
 
   // Pricing state (consolidated hook)
@@ -346,20 +386,25 @@ export function EventForm({
 
   // Organizer picker state
   const [organizerId, setOrganizerId] = useState<string | null>(
-    event?.organizer_id ?? null
+    event?.organizer_id ?? null,
   );
-  const [organizers, setOrganizers] = useState<Pick<Organizer, 'id' | 'name' | 'slug' | 'logo_url'>[]>([]);
+  const [organizers, setOrganizers] = useState<
+    Pick<Organizer, "id" | "name" | "slug" | "logo_url">[]
+  >([]);
 
   // "Hosting as" tribe state (new events only — tribes where user is leader/admin)
   const [hostableTribes, setHostableTribes] = useState<HostableTribe[]>([]);
-  const [tribesLoadState, setTribesLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [tribesLoadState, setTribesLoadState] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
   const [tribeId, setTribeId] = useState<string | null>(null);
-  const [tribeVisibility, setTribeVisibility] = useState<TribeEventVisibility>("members_only");
+  const [tribeVisibility, setTribeVisibility] =
+    useState<TribeEventVisibility>("members_only");
 
   // Sponsor tier state (admin only)
   const canSetSponsorTier = hasRoleLevel(userRole, "admin");
   const [sponsorTier, setSponsorTier] = useState<number | null>(
-    event?.sponsor_tier ?? null
+    event?.sponsor_tier ?? null,
   );
 
   // Location/venue state (consolidated hook)
@@ -408,15 +453,22 @@ export function EventForm({
         }
         const data = await res.json();
         const leadTribes: HostableTribe[] = (data.tribes || [])
-          .filter((m: { role: TribeMemberRole }) => m.role === "leader" || m.role === "admin")
+          .filter(
+            (m: { role: TribeMemberRole }) =>
+              m.role === "leader" || m.role === "admin",
+          )
           .map((m: { tribes: HostableTribe | null }) => m.tribes)
           .filter(Boolean);
         setHostableTribes(leadTribes);
         if (initialTribeSlug) {
-          const preselected = leadTribes.find((tr) => tr.slug === initialTribeSlug);
+          const preselected = leadTribes.find(
+            (tr) => tr.slug === initialTribeSlug,
+          );
           if (preselected) {
             setTribeId(preselected.id);
-            setTribeVisibility(preselected.access_type === "public" ? "public" : "members_only");
+            setTribeVisibility(
+              preselected.access_type === "public" ? "public" : "members_only",
+            );
           }
         }
         setTribesLoadState("ready");
@@ -438,7 +490,9 @@ export function EventForm({
     // Default visibility from the tribe's access type — creator can override below
     const selected = hostableTribes.find((tr) => tr.id === value);
     if (selected) {
-      setTribeVisibility(selected.access_type === "public" ? "public" : "members_only");
+      setTribeVisibility(
+        selected.access_type === "public" ? "public" : "members_only",
+      );
     }
   }
 
@@ -448,13 +502,13 @@ export function EventForm({
       setTitle(newTitle);
       updateSlugFromTitle(newTitle);
     },
-    [updateSlugFromTitle]
+    [updateSlugFromTitle],
   );
 
   // Get today's date in local timezone (for min date validation)
   const getTodayDateString = useCallback(() => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   }, []);
 
   // Track selected date for recurrence picker
@@ -485,24 +539,6 @@ export function EventForm({
       ? { date: copyDefaults.date, time: copyDefaults.time }
       : { date: "", time: "" };
 
-  async function completeCommunityFlyerReview(eventId: string) {
-    if (!communityFlyer) return;
-    const response = await fetch("/api/admin/import/community-flyers", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: communityFlyer.queueId,
-        action: "complete",
-        eventId,
-      }),
-    });
-    if (!response.ok) {
-      // The event is already created. Leave the queue item pending so a
-      // moderator can safely retry rather than hiding unfinished review state.
-      console.error("Failed to complete community flyer review");
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -513,7 +549,11 @@ export function EventForm({
     const time = formData.get("time") as string;
 
     // Debug: Log form values to help diagnose validation issues
-    console.log("[EventForm] Submit values:", { title: title.trim(), date, time });
+    console.log("[EventForm] Submit values:", {
+      title: title.trim(),
+      date,
+      time,
+    });
     const locationName = formData.get("location_name") as string;
     const address = formData.get("address") as string;
     const googleMapsUrl = formData.get("google_maps_url") as string;
@@ -528,7 +568,10 @@ export function EventForm({
 
     // Secret address only applies to non-venue, non-recurring, single events
     const isSecret =
-      secretAddress && !venueIdToSave && !recurrence.isRecurring && !isSeriesEvent;
+      secretAddress &&
+      !venueIdToSave &&
+      !recurrence.isRecurring &&
+      !isSeriesEvent;
 
     // Validate required fields with specific error messages
     const missingFields: string[] = [];
@@ -545,7 +588,9 @@ export function EventForm({
     if (!isEditing) {
       const today = getTodayDateString();
       if (date < today) {
-        setError(tErrors("pastDateNotAllowed") || "Cannot create events in the past");
+        setError(
+          tErrors("pastDateNotAllowed") || "Cannot create events in the past",
+        );
         return;
       }
     }
@@ -562,7 +607,9 @@ export function EventForm({
 
     // Convert Đà Lạt time to UTC for storage
     const startsAt = toUTCFromDaLat(date, time);
-    const capacity = capacityStr ? parseInt(capacityStr.replace(/\D/g, ""), 10) || null : null;
+    const capacity = capacityStr
+      ? parseInt(capacityStr.replace(/\D/g, ""), 10) || null
+      : null;
 
     const supabase = createClient();
 
@@ -584,332 +631,366 @@ export function EventForm({
 
     startTransition(async () => {
       try {
-      if (isEditing) {
-        // Check if we should update via series API (for "future" or "all" scope)
-        if (isSeriesEvent && seriesEditScope !== "this" && event.series_id) {
-          // Use series API to update template + events
-          const seriesResponse = await fetch(`/api/series/${event.series_id}`, {
-            method: "GET",
-          });
+        if (isEditing) {
+          // Check if we should update via series API (for "future" or "all" scope)
+          if (isSeriesEvent && seriesEditScope !== "this" && event.series_id) {
+            // Use series API to update template + events
+            const seriesResponse = await fetch(
+              `/api/series/${event.series_id}`,
+              {
+                method: "GET",
+              },
+            );
 
-          if (!seriesResponse.ok) {
-            setError("Failed to fetch series information");
-            return;
-          }
+            if (!seriesResponse.ok) {
+              setError("Failed to fetch series information");
+              return;
+            }
 
-          const seriesData = await seriesResponse.json();
-          const seriesSlug = seriesData.series?.slug;
+            const seriesData = await seriesResponse.json();
+            const seriesSlug = seriesData.series?.slug;
 
-          if (!seriesSlug) {
-            setError("Series not found");
-            return;
-          }
+            if (!seriesSlug) {
+              setError("Series not found");
+              return;
+            }
 
-          const response = await fetch(`/api/series/${seriesSlug}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+            const response = await fetch(`/api/series/${seriesSlug}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                title,
+                description: description || null,
+                image_url: imageUrl,
+                location_name: locationName || null,
+                address: address || null,
+                google_maps_url: googleMapsUrl || null,
+                external_chat_url: externalChatUrl || null,
+                capacity,
+                update_scope: seriesEditScope, // "future" or "all"
+              }),
+            });
+
+            if (!response.ok) {
+              const data = await response.json();
+              setError(data.error || "Failed to update series");
+              return;
+            }
+
+            // Retranslate after series edit (fire-and-forget)
+            triggerEventTranslation(
+              event.id,
+              title.trim(),
+              description || null,
+            );
+            pingSearchEngines([`/events/${event.slug}`]);
+
+            router.push(`/events/${event.slug}`);
+            router.refresh();
+          } else {
+            // Update just this event (current behavior)
+            const updateData: Record<string, unknown> = {
               title,
               description: description || null,
               image_url: imageUrl,
-              location_name: locationName || null,
-              address: address || null,
-              google_maps_url: googleMapsUrl || null,
-              external_chat_url: externalChatUrl || null,
-              capacity,
-              update_scope: seriesEditScope, // "future" or "all"
-            }),
-          });
-
-          if (!response.ok) {
-            const data = await response.json();
-            setError(data.error || "Failed to update series");
-            return;
-          }
-
-          // Retranslate after series edit (fire-and-forget)
-          triggerEventTranslation(event.id, title.trim(), description || null);
-          pingSearchEngines([`/events/${event.slug}`]);
-
-          router.push(`/events/${event.slug}`);
-          router.refresh();
-        } else {
-          // Update just this event (current behavior)
-          const updateData: Record<string, unknown> = {
-            title,
-            description: description || null,
-            image_url: imageUrl,
-            starts_at: startsAt,
-            location_name: isSecret ? (publicLabel.trim() || null) : (locationName || null),
-            address: isSecret ? null : (address || null),
-            google_maps_url: isSecret ? null : (googleMapsUrl || null),
-            latitude: isSecret ? null : latitude,
-            longitude: isSecret ? null : longitude,
-            has_private_details: isSecret,
-            external_chat_url: externalChatUrl || null,
-            is_online: isOnline,
-            online_link: isOnline ? (onlineLink || null) : null,
-            title_position: "bottom",
-            image_fit: imageFit,
-            focal_point: focalPoint,
-            capacity,
-            price_type: priceType,
-            ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
-            organizer_id: organizerId,
-            venue_id: venueIdToSave || null,
-            ai_tags: selectedTags,
-            ...(canSetSponsorTier && { sponsor_tier: sponsorTier }),
-            // Mark as exception if editing just this event in a series
-            ...(isSeriesEvent && { is_exception: true }),
-          };
-
-          // Include slug if editable and changed
-          const cleanSlug = finalizeSlug(slug);
-          if (slugEditable && cleanSlug && cleanSlug !== event.slug) {
-            updateData.slug = cleanSlug;
-            // Append old slug to previous_slugs for redirects
-            const currentPreviousSlugs = event.previous_slugs ?? [];
-            if (!currentPreviousSlugs.includes(event.slug)) {
-              updateData.previous_slugs = [...currentPreviousSlugs, event.slug];
-            }
-          }
-
-          const { error: updateError } = await supabase
-            .from("events")
-            .update(updateData)
-            .eq("id", event.id);
-
-          if (updateError) {
-            setError(updateError.message);
-            return;
-          }
-
-          // Sync the private details table with the secret toggle
-          if (isSecret) {
-            const privateError = await upsertPrivateDetails(event.id);
-            if (privateError) {
-              setError(privateError.message);
-              return;
-            }
-          } else if (event.has_private_details) {
-            await supabase
-              .from("event_private_details")
-              .delete()
-              .eq("event_id", event.id);
-          }
-
-          // Retranslate after edit (fire-and-forget)
-          triggerEventTranslation(event.id, title.trim(), description || null);
-
-          // Navigate to new slug if changed, otherwise original
-          const finalSlug = slugEditable && slug ? slug : event.slug;
-          pingSearchEngines([`/events/${finalSlug}`]);
-          router.push(`/events/${finalSlug}`);
-          router.refresh();
-        }
-      } else {
-        // Create new event or series
-        const finalSlug = getFinalSlug(title);
-
-        // If recurring, create a series via API
-        if (recurrence.isRecurring) {
-          const rrule = buildRRule(recurrence);
-
-          const response = await fetch("/api/series", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              slug: finalSlug,
-              title,
-              description: description || null,
-              image_url: communityFlyer?.imageUrl ?? null,
-              location_name: locationName || null,
-              address: address || null,
-              google_maps_url: googleMapsUrl || null,
-              latitude,
-              longitude,
-              external_chat_url: externalChatUrl || null,
-              is_online: isOnline,
-              online_link: isOnline ? (onlineLink || null) : null,
-              title_position: "bottom",
-              image_fit: imageFit,
-              focal_point: focalPoint,
-              capacity,
-              price_type: priceType,
-              ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
-              rrule,
-              starts_at_time: time + ":00", // Convert "19:00" to "19:00:00"
-              first_occurrence: date,
-              rrule_until: recurrence.endType === "date" && recurrence.endDate
-                ? new Date(recurrence.endDate).toISOString()
-                : null,
-              rrule_count: recurrence.endType === "count" ? recurrence.endCount : null,
-              organizer_id: organizerId,
-              venue_id: venueIdToSave || null,
-              tribe_id: tribeId,
-              ...(tribeId ? { tribe_visibility: tribeVisibility } : {}),
-            }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            setError(errorData.error || "Failed to create recurring event");
-            return;
-          }
-
-          const seriesData = await response.json();
-
-          // Create sponsors for the first event in the series
-          if (draftSponsors.length > 0 && seriesData.first_event_id) {
-            await createSponsorsForEvent(seriesData.first_event_id, draftSponsors);
-          }
-
-          // Upload the picked cover — the series API only accepts URLs, not files
-          let seriesCoverUrl: string | null = null;
-          if (seriesData.first_event_id) {
-            try {
-              seriesCoverUrl = await uploadImage(seriesData.first_event_id);
-            } catch {
-              console.error("Failed to upload series cover image");
-            }
-          }
-
-          // Create materials for the first event in the series
-          let firstMaterialImageUrl: string | null = null;
-          if (draftMaterials.length > 0 && seriesData.first_event_id) {
-            firstMaterialImageUrl = await createMaterialsForEvent(
-              seriesData.first_event_id,
-              draftMaterials
-            );
-          }
-
-          // Series cover: picked image, else first image material (flyer)
-          const seriesCover = seriesCoverUrl ?? firstMaterialImageUrl;
-          if (seriesCover) {
-            await fetch(`/api/series/${seriesData.slug}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ image_url: seriesCover, update_scope: "all" }),
-            });
-          }
-
-          // Trigger AI processing for the first event (fire-and-forget)
-          // (creator auto-RSVP happens in the DB via on_event_created_auto_rsvp)
-          if (seriesData.first_event_id) {
-            triggerEventTranslation(seriesData.first_event_id, title.trim(), description || null);
-            triggerAIProcessing(seriesData.first_event_id);
-            await completeCommunityFlyerReview(seriesData.first_event_id);
-          }
-
-          router.push(`/series/${seriesData.slug}`);
-        } else {
-          // Single event - direct insert
-          const { data, error: insertError } = await supabase
-            .from("events")
-            .insert({
-              slug: finalSlug,
-              title: title.trim(),
-              description: description || null,
-              image_url: communityFlyer?.imageUrl ?? null,
               starts_at: startsAt,
-              location_name: isSecret ? (publicLabel.trim() || null) : (locationName || null),
-              address: isSecret ? null : (address || null),
-              google_maps_url: isSecret ? null : (googleMapsUrl || null),
+              location_name: isSecret
+                ? publicLabel.trim() || null
+                : locationName || null,
+              address: isSecret ? null : address || null,
+              google_maps_url: isSecret ? null : googleMapsUrl || null,
               latitude: isSecret ? null : latitude,
               longitude: isSecret ? null : longitude,
               has_private_details: isSecret,
               external_chat_url: externalChatUrl || null,
               is_online: isOnline,
-              online_link: isOnline ? (onlineLink || null) : null,
+              online_link: isOnline ? onlineLink || null : null,
               title_position: "bottom",
               image_fit: imageFit,
               focal_point: focalPoint,
               capacity,
               price_type: priceType,
               ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
-              created_by: userId,
-              status: "published",
               organizer_id: organizerId,
               venue_id: venueIdToSave || null,
-              ai_tags: selectedTags.length > 0 ? selectedTags : [],
-              tribe_id: tribeId,
-              ...(tribeId ? { tribe_visibility: tribeVisibility } : {}),
-            })
-            .select()
-            .single();
+              ai_tags: selectedTags,
+              ...(canSetSponsorTier && { sponsor_tier: sponsorTier }),
+              // Mark as exception if editing just this event in a series
+              ...(isSeriesEvent && { is_exception: true }),
+            };
 
-          if (insertError) {
-            setError(insertError.message);
-            return;
-          }
+            // Include slug if editable and changed
+            const cleanSlug = finalizeSlug(slug);
+            if (slugEditable && cleanSlug && cleanSlug !== event.slug) {
+              updateData.slug = cleanSlug;
+              // Append old slug to previous_slugs for redirects
+              const currentPreviousSlugs = event.previous_slugs ?? [];
+              if (!currentPreviousSlugs.includes(event.slug)) {
+                updateData.previous_slugs = [
+                  ...currentPreviousSlugs,
+                  event.slug,
+                ];
+              }
+            }
 
-          // Save the real location for secret events (RLS-gated table)
-          if (isSecret) {
-            const privateError = await upsertPrivateDetails(data.id);
-            if (privateError) {
-              setError(privateError.message);
+            const { error: updateError } = await supabase
+              .from("events")
+              .update(updateData)
+              .eq("id", event.id);
+
+            if (updateError) {
+              setError(updateError.message);
               return;
             }
-          }
 
-          // Upload image if we have one (file, base64, or URL)
-          let eventImageUrl: string | null = null;
-          try {
-            const finalImageUrl = await uploadImage(data.id);
-            if (finalImageUrl) {
+            // Sync the private details table with the secret toggle
+            if (isSecret) {
+              const privateError = await upsertPrivateDetails(event.id);
+              if (privateError) {
+                setError(privateError.message);
+                return;
+              }
+            } else if (event.has_private_details) {
               await supabase
-                .from("events")
-                .update({ image_url: finalImageUrl })
-                .eq("id", data.id);
-              eventImageUrl = finalImageUrl;
+                .from("event_private_details")
+                .delete()
+                .eq("event_id", event.id);
             }
-          } catch {
-            // Image upload failed but event was created - continue
-            console.error("Failed to upload event image");
-          }
 
-          // Create sponsors for the new event
-          if (draftSponsors.length > 0) {
-            await createSponsorsForEvent(data.id, draftSponsors);
-          }
-
-          // Create materials for the new event
-          if (draftMaterials.length > 0) {
-            const firstMaterialImageUrl = await createMaterialsForEvent(
-              data.id,
-              draftMaterials
+            // Retranslate after edit (fire-and-forget)
+            triggerEventTranslation(
+              event.id,
+              title.trim(),
+              description || null,
             );
-            // No cover picked? Default to the first image material (flyer)
-            if (!eventImageUrl && firstMaterialImageUrl) {
-              await supabase
-                .from("events")
-                .update({ image_url: firstMaterialImageUrl })
-                .eq("id", data.id);
-              eventImageUrl = firstMaterialImageUrl;
-            }
+
+            // Navigate to new slug if changed, otherwise original
+            const finalSlug = slugEditable && slug ? slug : event.slug;
+            pingSearchEngines([`/events/${finalSlug}`]);
+            router.push(`/events/${finalSlug}`);
+            router.refresh();
           }
+        } else {
+          // Create new event or series
+          const finalSlug = getFinalSlug(title);
 
-          // Trigger AI processing in background (fire-and-forget)
-          // (creator auto-RSVP happens in the DB via on_event_created_auto_rsvp)
-          triggerEventTranslation(data.id, title.trim(), description || null);
-          triggerAIProcessing(data.id);
-          pingSearchEngines([`/events/${data.slug}`, "/events/upcoming", "/"]);
-          await completeCommunityFlyerReview(data.id);
+          // If recurring, create a series via API
+          if (recurrence.isRecurring) {
+            const rrule = buildRRule(recurrence);
 
-          // Show celebration modal instead of immediate redirect
-          setCreatedEvent({
-            slug: data.slug,
-            title: title.trim(),
-            description: description || null,
-            startsAt: startsAt,
-            imageUrl: eventImageUrl,
-          });
-          setShowCelebration(true);
+            const response = await fetch("/api/series", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                slug: finalSlug,
+                title,
+                description: description || null,
+                image_url: null,
+                location_name: locationName || null,
+                address: address || null,
+                google_maps_url: googleMapsUrl || null,
+                latitude,
+                longitude,
+                external_chat_url: externalChatUrl || null,
+                is_online: isOnline,
+                online_link: isOnline ? onlineLink || null : null,
+                title_position: "bottom",
+                image_fit: imageFit,
+                focal_point: focalPoint,
+                capacity,
+                price_type: priceType,
+                ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
+                rrule,
+                starts_at_time: time + ":00", // Convert "19:00" to "19:00:00"
+                first_occurrence: date,
+                rrule_until:
+                  recurrence.endType === "date" && recurrence.endDate
+                    ? new Date(recurrence.endDate).toISOString()
+                    : null,
+                rrule_count:
+                  recurrence.endType === "count" ? recurrence.endCount : null,
+                organizer_id: organizerId,
+                venue_id: venueIdToSave || null,
+                tribe_id: tribeId,
+                ...(tribeId ? { tribe_visibility: tribeVisibility } : {}),
+              }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              setError(errorData.error || "Failed to create recurring event");
+              return;
+            }
+
+            const seriesData = await response.json();
+
+            // Create sponsors for the first event in the series
+            if (draftSponsors.length > 0 && seriesData.first_event_id) {
+              await createSponsorsForEvent(
+                seriesData.first_event_id,
+                draftSponsors,
+              );
+            }
+
+            // Upload the picked cover — the series API only accepts URLs, not files
+            let seriesCoverUrl: string | null = null;
+            if (seriesData.first_event_id) {
+              try {
+                seriesCoverUrl = await uploadImage(seriesData.first_event_id);
+              } catch {
+                console.error("Failed to upload series cover image");
+              }
+            }
+
+            // Create materials for the first event in the series
+            let firstMaterialImageUrl: string | null = null;
+            if (draftMaterials.length > 0 && seriesData.first_event_id) {
+              firstMaterialImageUrl = await createMaterialsForEvent(
+                seriesData.first_event_id,
+                draftMaterials,
+              );
+            }
+
+            // Series cover: picked image, else first image material (flyer)
+            const seriesCover = seriesCoverUrl ?? firstMaterialImageUrl;
+            if (seriesCover) {
+              await fetch(`/api/series/${seriesData.slug}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  image_url: seriesCover,
+                  update_scope: "all",
+                }),
+              });
+            }
+
+            // Trigger AI processing for the first event (fire-and-forget)
+            // (creator auto-RSVP happens in the DB via on_event_created_auto_rsvp)
+            if (seriesData.first_event_id) {
+              triggerEventTranslation(
+                seriesData.first_event_id,
+                title.trim(),
+                description || null,
+              );
+              triggerAIProcessing(seriesData.first_event_id);
+            }
+
+            router.push(`/series/${seriesData.slug}`);
+          } else {
+            // Single event - direct insert
+            const { data, error: insertError } = await supabase
+              .from("events")
+              .insert({
+                slug: finalSlug,
+                title: title.trim(),
+                description: description || null,
+                image_url: null,
+                starts_at: startsAt,
+                location_name: isSecret
+                  ? publicLabel.trim() || null
+                  : locationName || null,
+                address: isSecret ? null : address || null,
+                google_maps_url: isSecret ? null : googleMapsUrl || null,
+                latitude: isSecret ? null : latitude,
+                longitude: isSecret ? null : longitude,
+                has_private_details: isSecret,
+                external_chat_url: externalChatUrl || null,
+                is_online: isOnline,
+                online_link: isOnline ? onlineLink || null : null,
+                title_position: "bottom",
+                image_fit: imageFit,
+                focal_point: focalPoint,
+                capacity,
+                price_type: priceType,
+                ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
+                created_by: userId,
+                status: "published",
+                organizer_id: organizerId,
+                venue_id: venueIdToSave || null,
+                ai_tags: selectedTags.length > 0 ? selectedTags : [],
+                tribe_id: tribeId,
+                ...(tribeId ? { tribe_visibility: tribeVisibility } : {}),
+              })
+              .select()
+              .single();
+
+            if (insertError) {
+              setError(insertError.message);
+              return;
+            }
+
+            // Save the real location for secret events (RLS-gated table)
+            if (isSecret) {
+              const privateError = await upsertPrivateDetails(data.id);
+              if (privateError) {
+                setError(privateError.message);
+                return;
+              }
+            }
+
+            // Upload image if we have one (file, base64, or URL)
+            let eventImageUrl: string | null = null;
+            try {
+              const finalImageUrl = await uploadImage(data.id);
+              if (finalImageUrl) {
+                await supabase
+                  .from("events")
+                  .update({ image_url: finalImageUrl })
+                  .eq("id", data.id);
+                eventImageUrl = finalImageUrl;
+              }
+            } catch {
+              // Image upload failed but event was created - continue
+              console.error("Failed to upload event image");
+            }
+
+            // Create sponsors for the new event
+            if (draftSponsors.length > 0) {
+              await createSponsorsForEvent(data.id, draftSponsors);
+            }
+
+            // Create materials for the new event
+            if (draftMaterials.length > 0) {
+              const firstMaterialImageUrl = await createMaterialsForEvent(
+                data.id,
+                draftMaterials,
+              );
+              // No cover picked? Default to the first image material (flyer)
+              if (!eventImageUrl && firstMaterialImageUrl) {
+                await supabase
+                  .from("events")
+                  .update({ image_url: firstMaterialImageUrl })
+                  .eq("id", data.id);
+                eventImageUrl = firstMaterialImageUrl;
+              }
+            }
+
+            // Trigger AI processing in background (fire-and-forget)
+            // (creator auto-RSVP happens in the DB via on_event_created_auto_rsvp)
+            triggerEventTranslation(data.id, title.trim(), description || null);
+            triggerAIProcessing(data.id);
+            pingSearchEngines([
+              `/events/${data.slug}`,
+              "/events/upcoming",
+              "/",
+            ]);
+
+            // Show celebration modal instead of immediate redirect
+            setCreatedEvent({
+              slug: data.slug,
+              title: title.trim(),
+              description: description || null,
+              startsAt: startsAt,
+              imageUrl: eventImageUrl,
+            });
+            setShowCelebration(true);
+          }
         }
-      }
       } catch (err) {
         console.error("Form submission error:", err);
-        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+        setError(
+          err instanceof Error ? err.message : "An unexpected error occurred",
+        );
       }
     });
   }
@@ -927,12 +1008,21 @@ export function EventForm({
               </div>
               <RadioGroup
                 value={seriesEditScope}
-                onValueChange={(value) => setSeriesEditScope(value as "this" | "future" | "all")}
+                onValueChange={(value) =>
+                  setSeriesEditScope(value as "this" | "future" | "all")
+                }
               >
                 <div className="flex items-start gap-3">
-                  <RadioGroupItem value="this" id="scope-this" className="mt-1" />
+                  <RadioGroupItem
+                    value="this"
+                    id="scope-this"
+                    className="mt-1"
+                  />
                   <div>
-                    <Label htmlFor="scope-this" className="cursor-pointer font-medium">
+                    <Label
+                      htmlFor="scope-this"
+                      className="cursor-pointer font-medium"
+                    >
                       {tSeries("editThisEventOnly")}
                     </Label>
                     <p className="text-sm text-muted-foreground">
@@ -941,9 +1031,16 @@ export function EventForm({
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <RadioGroupItem value="future" id="scope-future-events" className="mt-1" />
+                  <RadioGroupItem
+                    value="future"
+                    id="scope-future-events"
+                    className="mt-1"
+                  />
                   <div>
-                    <Label htmlFor="scope-future-events" className="cursor-pointer font-medium">
+                    <Label
+                      htmlFor="scope-future-events"
+                      className="cursor-pointer font-medium"
+                    >
                       {tSeries("editThisAndFutureEvents")}
                     </Label>
                     <p className="text-sm text-muted-foreground">
@@ -952,9 +1049,16 @@ export function EventForm({
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <RadioGroupItem value="all" id="scope-all-events" className="mt-1" />
+                  <RadioGroupItem
+                    value="all"
+                    id="scope-all-events"
+                    className="mt-1"
+                  />
                   <div>
-                    <Label htmlFor="scope-all-events" className="cursor-pointer font-medium">
+                    <Label
+                      htmlFor="scope-all-events"
+                      className="cursor-pointer font-medium"
+                    >
                       {tSeries("editAllEventsInSeries")}
                     </Label>
                     <p className="text-sm text-muted-foreground">
@@ -1018,13 +1122,19 @@ export function EventForm({
                 />
               </div>
               {slugTouched && (
-                <p className={`text-xs ${
-                  slugStatus === "available" ? "text-green-600" :
-                  slugStatus === "taken" ? "text-red-500" :
-                  slugStatus === "invalid" ? "text-red-500" :
-                  slugStatus === "checking" ? "text-muted-foreground" :
-                  "text-muted-foreground"
-                }`}>
+                <p
+                  className={`text-xs ${
+                    slugStatus === "available"
+                      ? "text-green-600"
+                      : slugStatus === "taken"
+                        ? "text-red-500"
+                        : slugStatus === "invalid"
+                          ? "text-red-500"
+                          : slugStatus === "checking"
+                            ? "text-muted-foreground"
+                            : "text-muted-foreground"
+                  }`}
+                >
                   {slugStatus === "checking" && t("checkingAvailability")}
                   {slugStatus === "available" && `✓ ${t("urlAvailable")}`}
                   {slugStatus === "taken" && `✗ ${t("urlTaken")}`}
@@ -1045,7 +1155,9 @@ export function EventForm({
             <AIEnhanceTextarea
               id="description"
               name="description"
-              defaultValue={event?.description ?? copyDefaults?.description ?? ""}
+              defaultValue={
+                event?.description ?? copyDefaults?.description ?? ""
+              }
               rows={3}
               context="an event description for a local community event in Đà Lạt, Vietnam"
             />
@@ -1126,108 +1238,123 @@ export function EventForm({
 
           {/* Location - unified venue + address picker (hidden for online events) */}
           {!isOnline && (
-          <>
-            <LocationPicker
-              defaultValue={
-                event?.location_name || initialPrivateDetails
-                  ? {
-                      type: event?.venue_id ? "venue" : "place",
-                      venueId: event?.venue_id ?? undefined,
-                      // Secret events: location_name is the public label; the
-                      // real location comes from the private details row
-                      name: event?.has_private_details
-                        ? (initialPrivateDetails?.address || event?.location_name || "")
-                        : (event?.location_name || ""),
-                      address: event?.address || initialPrivateDetails?.address || "",
-                      googleMapsUrl:
-                        event?.google_maps_url || initialPrivateDetails?.google_maps_url || "",
-                      latitude: event?.latitude ?? initialPrivateDetails?.latitude ?? null,
-                      longitude: event?.longitude ?? initialPrivateDetails?.longitude ?? null,
-                    }
-                  : copyDefaults?.locationName
+            <>
+              <LocationPicker
+                defaultValue={
+                  event?.location_name || initialPrivateDetails
                     ? {
-                        type: "place",
-                        name: copyDefaults.locationName,
-                        address: copyDefaults.address,
-                        googleMapsUrl: copyDefaults.googleMapsUrl,
-                        latitude: null,
-                        longitude: null,
+                        type: event?.venue_id ? "venue" : "place",
+                        venueId: event?.venue_id ?? undefined,
+                        // Secret events: location_name is the public label; the
+                        // real location comes from the private details row
+                        name: event?.has_private_details
+                          ? initialPrivateDetails?.address ||
+                            event?.location_name ||
+                            ""
+                          : event?.location_name || "",
+                        address:
+                          event?.address ||
+                          initialPrivateDetails?.address ||
+                          "",
+                        googleMapsUrl:
+                          event?.google_maps_url ||
+                          initialPrivateDetails?.google_maps_url ||
+                          "",
+                        latitude:
+                          event?.latitude ??
+                          initialPrivateDetails?.latitude ??
+                          null,
+                        longitude:
+                          event?.longitude ??
+                          initialPrivateDetails?.longitude ??
+                          null,
                       }
-                    : null
-              }
-              defaultVenueId={event?.venue_id}
-              onLocationSelect={handleLocationSelect}
-              onVenueIdChange={(id) => {
-                if (!id) {
-                  clearVenue();
+                    : copyDefaults?.locationName
+                      ? {
+                          type: "place",
+                          name: copyDefaults.locationName,
+                          address: copyDefaults.address,
+                          googleMapsUrl: copyDefaults.googleMapsUrl,
+                          latitude: null,
+                          longitude: null,
+                        }
+                      : null
                 }
-              }}
-            />
+                defaultVenueId={event?.venue_id}
+                onLocationSelect={handleLocationSelect}
+                onVenueIdChange={(id) => {
+                  if (!id) {
+                    clearVenue();
+                  }
+                }}
+              />
 
-            {/* Venue Linker - shows auto-suggestions and manual link option */}
-            <VenueLinker
-              venueId={venueId}
-              venueName={venueName}
-              latitude={locationLat}
-              longitude={locationLng}
-              onVenueChange={handleVenueLink}
-              disabled={isPending}
-            />
+              {/* Venue Linker - shows auto-suggestions and manual link option */}
+              <VenueLinker
+                venueId={venueId}
+                venueName={venueName}
+                latitude={locationLat}
+                longitude={locationLng}
+                onVenueChange={handleVenueLink}
+                disabled={isPending}
+              />
 
-            {/* Secret address (not for venues or recurring events) */}
-            {!venueId && !recurrence.isRecurring && !isSeriesEvent && (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="secretAddress"
-                    checked={secretAddress}
-                    onCheckedChange={(checked) => setSecretAddress(!!checked)}
-                  />
-                  <Label
-                    htmlFor="secretAddress"
-                    className="cursor-pointer flex items-center gap-1.5"
-                  >
-                    <Lock className="w-3.5 h-3.5" />
-                    {t("secretAddress")}
-                  </Label>
+              {/* Secret address (not for venues or recurring events) */}
+              {!venueId && !recurrence.isRecurring && !isSeriesEvent && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      id="secretAddress"
+                      checked={secretAddress}
+                      onCheckedChange={(checked) => setSecretAddress(!!checked)}
+                    />
+                    <Label
+                      htmlFor="secretAddress"
+                      className="cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Lock className="w-3.5 h-3.5" />
+                      {t("secretAddress")}
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("secretAddressHelp")}
+                  </p>
+                  {secretAddress && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="secret_public_label">
+                          {t("secretAddressPublicLabel")}
+                        </Label>
+                        <Input
+                          id="secret_public_label"
+                          type="text"
+                          value={publicLabel}
+                          onChange={(e) => setPublicLabel(e.target.value)}
+                          placeholder={t("secretAddressPublicLabelPlaceholder")}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {t("secretAddressPublicLabelHelp")}
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="arrival_notes">
+                          {t("secretAddressArrivalNotes")}
+                        </Label>
+                        <Textarea
+                          id="arrival_notes"
+                          value={arrivalNotes}
+                          onChange={(e) => setArrivalNotes(e.target.value)}
+                          placeholder={t(
+                            "secretAddressArrivalNotesPlaceholder",
+                          )}
+                          rows={2}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {t("secretAddressHelp")}
-                </p>
-                {secretAddress && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="secret_public_label">
-                        {t("secretAddressPublicLabel")}
-                      </Label>
-                      <Input
-                        id="secret_public_label"
-                        type="text"
-                        value={publicLabel}
-                        onChange={(e) => setPublicLabel(e.target.value)}
-                        placeholder={t("secretAddressPublicLabelPlaceholder")}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        {t("secretAddressPublicLabelHelp")}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="arrival_notes">
-                        {t("secretAddressArrivalNotes")}
-                      </Label>
-                      <Textarea
-                        id="arrival_notes"
-                        value={arrivalNotes}
-                        onChange={(e) => setArrivalNotes(e.target.value)}
-                        placeholder={t("secretAddressArrivalNotesPlaceholder")}
-                        rows={2}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </>
+              )}
+            </>
           )}
 
           {/* External link */}
@@ -1252,7 +1379,9 @@ export function EventForm({
             initialTribeSlug &&
             (tribesLoadState === "error" ||
               (tribesLoadState === "ready" &&
-                !hostableTribes.some((tr) => tr.slug === initialTribeSlug))) && (
+                !hostableTribes.some(
+                  (tr) => tr.slug === initialTribeSlug,
+                ))) && (
               <p className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm text-amber-600">
                 {t("tribesLoadFailed")}
               </p>
@@ -1262,12 +1391,17 @@ export function EventForm({
           {!isEditing && hostableTribes.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="hostingAs">{t("hostingAs")}</Label>
-              <Select value={tribeId ?? "personal"} onValueChange={handleHostingTribeChange}>
+              <Select
+                value={tribeId ?? "personal"}
+                onValueChange={handleHostingTribeChange}
+              >
                 <SelectTrigger id="hostingAs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="personal">{t("hostingPersonal")}</SelectItem>
+                  <SelectItem value="personal">
+                    {t("hostingPersonal")}
+                  </SelectItem>
                   {hostableTribes.map((tr) => (
                     <SelectItem key={tr.id} value={tr.id}>
                       {tr.name}
@@ -1275,23 +1409,35 @@ export function EventForm({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">{t("hostingAsHelp")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("hostingAsHelp")}
+              </p>
               {tribeId && (
                 <div className="space-y-2 pt-2">
-                  <Label htmlFor="tribeVisibility">{t("tribeVisibility")}</Label>
+                  <Label htmlFor="tribeVisibility">
+                    {t("tribeVisibility")}
+                  </Label>
                   <Select
                     value={tribeVisibility}
-                    onValueChange={(v) => setTribeVisibility(v as TribeEventVisibility)}
+                    onValueChange={(v) =>
+                      setTribeVisibility(v as TribeEventVisibility)
+                    }
                   >
                     <SelectTrigger id="tribeVisibility">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="public">{t("tribeVisibilityPublic")}</SelectItem>
-                      <SelectItem value="members_only">{t("tribeVisibilityMembers")}</SelectItem>
+                      <SelectItem value="public">
+                        {t("tribeVisibilityPublic")}
+                      </SelectItem>
+                      <SelectItem value="members_only">
+                        {t("tribeVisibilityMembers")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">{t("tribeVisibilityHelp")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("tribeVisibilityHelp")}
+                  </p>
                 </div>
               )}
             </div>
@@ -1303,7 +1449,9 @@ export function EventForm({
               <Label htmlFor="organizer">{t("organizer")}</Label>
               <Select
                 value={organizerId ?? "none"}
-                onValueChange={(value) => setOrganizerId(value === "none" ? null : value)}
+                onValueChange={(value) =>
+                  setOrganizerId(value === "none" ? null : value)
+                }
               >
                 <SelectTrigger id="organizer">
                   <SelectValue placeholder={t("selectOrganizer")} />
@@ -1326,23 +1474,38 @@ export function EventForm({
           {/* Sponsor Tier (admin only) */}
           {canSetSponsorTier && (
             <div className="space-y-2">
-              <Label htmlFor="sponsorTier">{t("sponsorTier") || "Featured/Sponsored"}</Label>
+              <Label htmlFor="sponsorTier">
+                {t("sponsorTier") || "Featured/Sponsored"}
+              </Label>
               <Select
                 value={sponsorTier?.toString() ?? "none"}
-                onValueChange={(value) => setSponsorTier(value === "none" ? null : parseInt(value, 10))}
+                onValueChange={(value) =>
+                  setSponsorTier(value === "none" ? null : parseInt(value, 10))
+                }
               >
                 <SelectTrigger id="sponsorTier">
-                  <SelectValue placeholder={t("selectSponsorTier") || "Select tier..."} />
+                  <SelectValue
+                    placeholder={t("selectSponsorTier") || "Select tier..."}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">{t("notSponsored") || "Not featured"}</SelectItem>
-                  <SelectItem value="1">{t("sponsorTier1") || "Basic (Tier 1)"}</SelectItem>
-                  <SelectItem value="2">{t("sponsorTier2") || "Premium (Tier 2)"}</SelectItem>
-                  <SelectItem value="3">{t("sponsorTier3") || "Gold (Tier 3)"}</SelectItem>
+                  <SelectItem value="none">
+                    {t("notSponsored") || "Not featured"}
+                  </SelectItem>
+                  <SelectItem value="1">
+                    {t("sponsorTier1") || "Basic (Tier 1)"}
+                  </SelectItem>
+                  <SelectItem value="2">
+                    {t("sponsorTier2") || "Premium (Tier 2)"}
+                  </SelectItem>
+                  <SelectItem value="3">
+                    {t("sponsorTier3") || "Gold (Tier 3)"}
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {t("sponsorTierHelp") || "Featured events appear first in feeds with a gold badge."}
+                {t("sponsorTierHelp") ||
+                  "Featured events appear first in feeds with a gold badge."}
               </p>
             </div>
           )}
@@ -1404,10 +1567,23 @@ export function EventForm({
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-4">
               <p className="text-sm text-muted-foreground mb-3">
-                {t("activityTagsHelp") || "Select tags to help people find your event. AI will also auto-tag based on content."}
+                {t("activityTagsHelp") ||
+                  "Select tags to help people find your event. AI will also auto-tag based on content."}
               </p>
               <div className="flex flex-wrap gap-2">
-                {(['sports', 'fitness', 'music', 'art', 'food', 'games', 'workshop', 'meetup', 'outdoor'] as EventTag[]).map((tag) => {
+                {(
+                  [
+                    "sports",
+                    "fitness",
+                    "music",
+                    "art",
+                    "food",
+                    "games",
+                    "workshop",
+                    "meetup",
+                    "outdoor",
+                  ] as EventTag[]
+                ).map((tag) => {
                   const config = TAG_CONFIG[tag];
                   const isSelected = selectedTags.includes(tag);
                   return (
@@ -1416,7 +1592,9 @@ export function EventForm({
                       type="button"
                       onClick={() => {
                         if (isSelected) {
-                          setSelectedTags(selectedTags.filter((t) => t !== tag));
+                          setSelectedTags(
+                            selectedTags.filter((t) => t !== tag),
+                          );
                         } else {
                           setSelectedTags([...selectedTags, tag]);
                         }
@@ -1542,14 +1720,17 @@ export function EventForm({
             </Collapsible>
           )}
 
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
           <Button
             type="submit"
             // Preselected tribe still loading — don't let a personal event slip out before it lands
-            disabled={isPending || (!isEditing && !!initialTribeSlug && tribesLoadState === "loading")}
+            disabled={
+              isPending ||
+              (!isEditing &&
+                !!initialTribeSlug &&
+                tribesLoadState === "loading")
+            }
             className="w-full"
           >
             {isPending

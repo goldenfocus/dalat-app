@@ -1,109 +1,16 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { processApifyPayload } from "@/lib/import/apify-processor";
-import { reportImportRun } from "@/lib/import/report-run";
-import type { ApifyWebhookPayload } from "@/lib/import/types";
 
 /**
- * Apify webhook endpoint
- *
- * Receives POST requests from Apify when scraping completes.
- * Fetches the dataset and processes events based on the actor type.
+ * The legacy Apify event webhook is intentionally retired. Machine-discovered
+ * activities may publish only through Activity Graph evidence and freshness
+ * gates; this endpoint must never create review drafts or bypass those gates.
  */
-export async function POST(request: Request) {
-  try {
-    // Verify webhook secret (MANDATORY - reject if not configured)
-    const authHeader = request.headers.get("authorization");
-    const expectedSecret = process.env.APIFY_WEBHOOK_SECRET;
-
-    if (!expectedSecret) {
-      console.error("Apify webhook: APIFY_WEBHOOK_SECRET not configured");
-      return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
-    }
-
-    if (authHeader !== `Bearer ${expectedSecret}`) {
-      console.error("Apify webhook: Invalid authorization header");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const payload: ApifyWebhookPayload = await request.json();
-    const { actorId, actorRunId, datasetId, eventType } = payload;
-
-    // Only process successful runs
-    if (eventType !== "ACTOR.RUN.SUCCEEDED") {
-      return NextResponse.json({
-        message: `Ignored event type: ${eventType}`,
-      });
-    }
-
-    // Validate required fields
-    if (!datasetId) {
-      return NextResponse.json(
-        { error: "Missing datasetId in payload" },
-        { status: 400 }
-      );
-    }
-
-    // Fetch results from Apify dataset
-    const apiToken = process.env.APIFY_API_TOKEN;
-    if (!apiToken) {
-      console.error("Apify webhook: Missing APIFY_API_TOKEN");
-      return NextResponse.json(
-        { error: "Apify integration not configured" },
-        { status: 503 }
-      );
-    }
-
-    const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`;
-    const datasetResponse = await fetch(datasetUrl);
-
-    if (!datasetResponse.ok) {
-      console.error(
-        `Apify webhook: Failed to fetch dataset: ${datasetResponse.status} ${datasetResponse.statusText}`
-      );
-      return NextResponse.json(
-        { error: `Failed to fetch dataset: ${datasetResponse.statusText}` },
-        { status: 502 }
-      );
-    }
-
-    const items = await datasetResponse.json();
-
-    console.log(
-      `Apify webhook: Processing ${items.length} items from actor ${actorId}, run ${actorRunId}`
-    );
-
-    const startedAt = new Date();
-
-    // Process based on actor type
-    const result = await processApifyPayload({
-      actorId,
-      actorRunId,
-      items,
-    });
-
-    console.log(
-      `Apify webhook: Processed ${result.processed}, skipped ${result.skipped}, errors ${result.errors}`
-    );
-
-    // Heartbeat + Telegram digest
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-    await reportImportRun(supabase, "facebook", startedAt, items.length, result);
-
-    return NextResponse.json({
-      success: true,
-      processed: result.processed,
-      skipped: result.skipped,
-      errors: result.errors,
-    });
-  } catch (error) {
-    console.error("Apify webhook error:", error);
-    return NextResponse.json(
-      { error: "Internal error" },
-      { status: 500 }
-    );
-  }
+export async function POST() {
+  return NextResponse.json(
+    {
+      code: "legacy_event_import_retired",
+      message: "Automatic event discovery now runs through the Activity Graph.",
+    },
+    { status: 410 },
+  );
 }

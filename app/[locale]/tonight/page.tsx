@@ -7,7 +7,11 @@ import { EventCard } from "@/components/events/event-card";
 import { Link } from "@/lib/i18n/routing";
 import type { Event, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
-import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
+import {
+  JsonLd,
+  generateBreadcrumbSchema,
+  generateFAQSchema,
+} from "@/lib/structured-data";
 import { buildLocales } from "@/lib/i18n/routing";
 import { DALAT_TIMEZONE } from "@/lib/timezone";
 import { getTonightBounds } from "@/lib/events/discovery-windows";
@@ -24,7 +28,9 @@ export function generateStaticParams() {
 }
 
 // SEO-optimized for "dalat tonight" and "things to do tonight in dalat" searches
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "tonight" });
 
@@ -64,10 +70,13 @@ async function getTonightEvents(): Promise<{
   const upcomingStart = now > start ? now : start;
 
   // Fetch events happening now (currently running)
-  const { data: happeningData, error: happeningError } = await supabase.rpc("get_events_by_lifecycle", {
-    p_lifecycle: "happening",
-    p_limit: 20,
-  });
+  const { data: happeningData, error: happeningError } = await supabase.rpc(
+    "get_events_by_lifecycle",
+    {
+      p_lifecycle: "happening",
+      p_limit: 20,
+    },
+  );
 
   // Fetch events starting tonight
   const { data: tonightData, error: tonightError } = await supabase
@@ -88,7 +97,9 @@ async function getTonightEvents(): Promise<{
     .limit(24);
 
   const happensDuringTonight = now >= start && now <= end;
-  const happening = happensDuringTonight ? ((happeningData || []) as Event[]) : [];
+  const happening = happensDuringTonight
+    ? ((happeningData || []) as Event[])
+    : [];
   const happeningIds = new Set(happening.map((event) => event.id));
 
   if (happeningError || tonightError || nextUpError) {
@@ -101,7 +112,9 @@ async function getTonightEvents(): Promise<{
 
   return {
     happening,
-    upcoming: ((tonightData || []) as Event[]).filter((event) => !happeningIds.has(event.id)),
+    upcoming: ((tonightData || []) as Event[]).filter(
+      (event) => !happeningIds.has(event.id),
+    ),
     nextUp: takeDistinctEventChoices((nextUpData || []) as Event[], 3),
     unavailable: Boolean(happeningError || tonightError),
   };
@@ -136,37 +149,40 @@ async function TonightContent({ locale }: { locale: Locale }) {
       { name: "Home", url: "/" },
       { name: "Tonight", url: "/tonight" },
     ],
-    locale
+    locale,
   );
 
   const eventListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: locale === "vi" ? "Sự Kiện Tối Nay Đà Lạt" : "Da Lat Events Tonight",
-    description: locale === "vi"
-      ? `Các sự kiện diễn ra tối nay tại Đà Lạt (${todayStr})`
-      : `Events happening tonight in Da Lat (${todayStr})`,
+    description:
+      locale === "vi"
+        ? `Các sự kiện diễn ra tối nay tại Đà Lạt (${todayStr})`
+        : `Events happening tonight in Da Lat (${todayStr})`,
     numberOfItems: totalEvents,
-    itemListElement: [...happening, ...upcoming].slice(0, 30).map((event, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      url: `${SITE_URL}/${locale}/events/${event.slug}`,
-      item: {
-        "@type": "Event",
-        name: event.title,
-        startDate: event.starts_at,
-        ...(event.ends_at && { endDate: event.ends_at }),
-        location: {
-          "@type": "Place",
-          name: event.location_name || "Da Lat",
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: "Da Lat",
-            addressCountry: "VN",
+    itemListElement: [...happening, ...upcoming]
+      .slice(0, 30)
+      .map((event, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `${SITE_URL}/${locale}/events/${event.slug}`,
+        item: {
+          "@type": "Event",
+          name: event.title,
+          startDate: event.starts_at,
+          ...(event.ends_at && { endDate: event.ends_at }),
+          location: {
+            "@type": "Place",
+            name: event.location_name || "Da Lat",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: "Da Lat",
+              addressCountry: "VN",
+            },
           },
         },
-      },
-    })),
+      })),
   };
 
   // FAQ schema for AEO - answers "what to do tonight" queries
@@ -175,27 +191,45 @@ async function TonightContent({ locale }: { locale: Locale }) {
       ? [
           {
             question: "Tối nay ở Đà Lạt có gì hay?",
-            answer: totalEvents > 0
-              ? `Có ${totalEvents} sự kiện tối nay tại Đà Lạt${happening.length > 0 ? ` (${happening.length} đang diễn ra)` : ""}${upcoming.length > 0 ? `. Bao gồm: ${upcoming.slice(0, 2).map(e => e.title).join(", ")}` : ""}. Xem danh sách đầy đủ trên trang này.`
-              : "Hiện chưa có sự kiện tối nay. Hãy kiểm tra lại sau hoặc xem các sự kiện cuối tuần.",
+            answer:
+              totalEvents > 0
+                ? `Có ${totalEvents} sự kiện tối nay tại Đà Lạt${happening.length > 0 ? ` (${happening.length} đang diễn ra)` : ""}${
+                    upcoming.length > 0
+                      ? `. Bao gồm: ${upcoming
+                          .slice(0, 2)
+                          .map((e) => e.title)
+                          .join(", ")}`
+                      : ""
+                  }. Xem danh sách đầy đủ trên trang này.`
+                : "Hiện chưa có sự kiện tối nay. Hãy kiểm tra lại sau hoặc xem các sự kiện cuối tuần.",
           },
           {
             question: "Nightlife Đà Lạt có gì đặc biệt?",
-            answer: "Đà Lạt có nightlife độc đáo với nhiều quán bar, cà phê acoustic và rooftop có view đẹp. Không khí se lạnh về đêm tạo nên trải nghiệm khác biệt so với các thành phố khác.",
+            answer:
+              "Đà Lạt có nightlife độc đáo với nhiều quán bar, cà phê acoustic và rooftop có view đẹp. Không khí se lạnh về đêm tạo nên trải nghiệm khác biệt so với các thành phố khác.",
           },
         ]
       : [
           {
             question: "What's happening in Da Lat tonight?",
-            answer: totalEvents > 0
-              ? `There are ${totalEvents} events tonight in Da Lat${happening.length > 0 ? ` (${happening.length} happening now)` : ""}${upcoming.length > 0 ? `. Including: ${upcoming.slice(0, 2).map(e => e.title).join(", ")}` : ""}. See the full list on this page.`
-              : "No events are listed for tonight. Check back later or browse weekend events.",
+            answer:
+              totalEvents > 0
+                ? `There are ${totalEvents} events tonight in Da Lat${happening.length > 0 ? ` (${happening.length} happening now)` : ""}${
+                    upcoming.length > 0
+                      ? `. Including: ${upcoming
+                          .slice(0, 2)
+                          .map((e) => e.title)
+                          .join(", ")}`
+                      : ""
+                  }. See the full list on this page.`
+                : "No events are listed for tonight. Check back later or browse weekend events.",
           },
           {
             question: "What makes Da Lat's nightlife special?",
-            answer: "Da Lat has unique nightlife with many bars, acoustic cafes, and rooftops with beautiful views. The cool evening air creates a different experience compared to other Vietnamese cities.",
+            answer:
+              "Da Lat has unique nightlife with many bars, acoustic cafes, and rooftops with beautiful views. The cool evening air creates a different experience compared to other Vietnamese cities.",
           },
-        ]
+        ],
   );
 
   if (unavailable) {
@@ -211,10 +245,10 @@ async function TonightContent({ locale }: { locale: Locale }) {
             {t("unavailableDescription")}
           </p>
           <Link
-            href="/events/suggest"
+            href="/discover"
             className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
           >
-            {footer("suggestEvent")}
+            {footer("discover")}
           </Link>
         </div>
       </>
@@ -245,7 +279,9 @@ async function TonightContent({ locale }: { locale: Locale }) {
           </p>
           {nextUp.length > 0 && (
             <section className="mx-auto mt-8 max-w-2xl text-left">
-              <h2 className="mb-4 text-lg font-semibold">{home("comingUp.title")}</h2>
+              <h2 className="mb-4 text-lg font-semibold">
+                {home("comingUp.title")}
+              </h2>
               <div className="space-y-4">
                 {nextUp.map((event) => (
                   <EventCard key={event.id} event={event} />
@@ -255,10 +291,10 @@ async function TonightContent({ locale }: { locale: Locale }) {
           )}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
-              href="/events/suggest"
+              href="/discover"
               className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
             >
-              {footer("suggestEvent")}
+              {footer("discover")}
             </Link>
             {nextUp.length > 0 && (
               <Link
@@ -309,13 +345,22 @@ async function TonightContent({ locale }: { locale: Locale }) {
           {t("exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Link href="/bars" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
+          <Link
+            href="/bars"
+            className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
             {t("chipBars")}
           </Link>
-          <Link href="/cafes" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
+          <Link
+            href="/cafes"
+            className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
             {t("chipCafes")}
           </Link>
-          <Link href="/calendar" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
+          <Link
+            href="/calendar"
+            className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
             {t("chipCalendar")}
           </Link>
         </div>
@@ -332,9 +377,7 @@ export default async function TonightPage({ params }: PageProps) {
   return (
     <main className="min-h-screen pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-2">
-          {t("title")}
-        </h1>
+        <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
 
         <Suspense fallback={<EventsLoading />}>
           <TonightContent locale={locale} />

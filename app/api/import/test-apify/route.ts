@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { authorizeImportModerator } from "@/lib/import/moderator-authorization";
 
 // Apify Actor type from their API
 interface ApifyActor {
@@ -12,6 +13,9 @@ interface ApifyActor {
  * Test endpoint to verify Apify API access
  */
 export async function GET() {
+  const authorization = await authorizeImportModerator();
+  if (!authorization.ok) return authorization.response;
+
   const apiToken = process.env.APIFY_API_TOKEN;
 
   if (!apiToken) {
@@ -24,7 +28,7 @@ export async function GET() {
   // Test 1: Check if token is valid by listing actors
   try {
     const response = await fetch(
-      `https://api.apify.com/v2/acts?token=${apiToken}&limit=1`
+      `https://api.apify.com/v2/acts?token=${apiToken}&limit=1`,
     );
 
     if (!response.ok) {
@@ -42,7 +46,7 @@ export async function GET() {
 
     // Test 2: List all actors available to this account
     const actorsResponse = await fetch(
-      `https://api.apify.com/v2/acts?token=${apiToken}&limit=100`
+      `https://api.apify.com/v2/acts?token=${apiToken}&limit=100`,
     );
 
     if (!actorsResponse.ok) {

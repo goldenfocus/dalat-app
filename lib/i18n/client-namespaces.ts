@@ -28,6 +28,7 @@ export const CORE_CLIENT_NAMESPACES = [
 
 export const CLIENT_NAMESPACES = [
   "activity",
+  "adminActivityGraph",
   "archive",
   "attendees",
   "auth",

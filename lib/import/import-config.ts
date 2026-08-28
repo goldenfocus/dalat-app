@@ -2,9 +2,9 @@
  * Shared configuration for automated event imports.
  */
 
-// Draft gate: scraped events land as drafts for review (Telegram digest links
-// to the admin). Flip IMPORT_AUTO_PUBLISH=true in Vercel env once scrape
-// quality is proven — no redeploy needed.
+// Legacy import safety gate. Background callers are retired; any remaining
+// explicit admin import defaults to a non-public draft unless deliberately
+// configured otherwise. Machine discovery publishes only via Activity Graph.
 export const IMPORT_STATUS: "draft" | "published" =
   process.env.IMPORT_AUTO_PUBLISH === "true" ? "published" : "draft";
 

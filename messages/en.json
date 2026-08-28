@@ -114,46 +114,12 @@
     "footer": {
       "love": "love",
       "rssFeed": "RSS Feed",
-      "discover": "Discover",
-      "suggestEvent": "Suggest an event"
+      "discover": "Discover"
     }
   },
   "eventSuggestion": {
-    "title": "Know an event in Đà Lạt?",
-    "subtitle": "Paste an event link or upload a flyer. We’ll check the details before it appears.",
-    "urlLabel": "Event link",
-    "urlPlaceholder": "https://...",
-    "or": "or",
-    "flyerLabel": "Upload a flyer",
-    "flyerHint": "JPG, PNG, or WebP · up to 4 MB",
-    "chooseFlyer": "Choose flyer",
-    "replaceFlyer": "Replace flyer",
-    "removeFlyer": "Remove flyer",
-    "privacyNote": "Your suggestion goes to our review queue—it is never published automatically.",
-    "submit": "Send for review",
-    "submitting": "Sending for review...",
-    "success": "Thanks! It’s queued for review.",
-    "successDelayed": "Thanks! It’s queued, but reviews are taking a little longer right now.",
-    "duplicate": "We already have this link in the review queue.",
-    "suggestAnother": "Suggest another",
-    "errors": {
-      "authentication_required": "Sign in to suggest an event.",
-      "invalid_request": "That request didn’t come through. Try again?",
-      "invalid_url": "Paste a complete http or https link.",
-      "unsafe_url": "That link points somewhere we can’t safely open.",
-      "source_unavailable": "We couldn’t open that page. Check the link or try again later.",
-      "unsupported_source": "We couldn’t read event details from that page.",
-      "source_too_large": "That page is too large for us to check.",
-      "invalid_flyer": "Choose a JPG, PNG, or WebP flyer.",
-      "flyer_too_large": "That flyer is over 4 MB. Choose a smaller image.",
-      "storage_unavailable": "Flyer uploads are taking a quick break. Try again soon.",
-      "rate_limit_exceeded": "You’ve shared plenty for today. Try again tomorrow.",
-      "rate_limit_unavailable": "Suggestions are taking a quick break. Try again soon.",
-      "review_queue_full": "The review queue is full right now. Please try again later.",
-      "service_unavailable": "We couldn’t queue this one right now. Try again soon.",
-      "network": "Connection lost. Check your internet and try again.",
-      "unknown": "Something got in the way. Try again?"
-    }
+    "title": "Activity discovery is now automatic",
+    "subtitle": "ĐàLạt.app discovers activities from verified first-party sources and publishes them automatically only when deterministic safety gates pass. There is no approval queue."
   },
   "home": {
     "title": "Events in Đà Lạt",
@@ -188,10 +154,22 @@
       "eyebrow": "The city, right now",
       "title": "Find your next plan",
       "subtitle": "Start with when you’re free.",
-      "live": { "title": "Happening now", "description": "Drop into something already underway" },
-      "tonight": { "title": "Tonight", "description": "See what starts after the fog rolls in" },
-      "weekend": { "title": "This weekend", "description": "Find a Friday, Saturday, or Sunday plan" },
-      "allDates": { "title": "All upcoming", "description": "Browse the full event calendar" }
+      "live": {
+        "title": "Happening now",
+        "description": "Drop into something already underway"
+      },
+      "tonight": {
+        "title": "Tonight",
+        "description": "See what starts after the fog rolls in"
+      },
+      "weekend": {
+        "title": "This weekend",
+        "description": "Find a Friday, Saturday, or Sunday plan"
+      },
+      "allDates": {
+        "title": "All upcoming",
+        "description": "Browse the full event calendar"
+      }
     },
     "happeningNow": {
       "title": "Happening Now",
@@ -3319,6 +3297,38 @@
         "vegan": "Vegan"
       }
     }
+  },
+  "adminActivityGraph": {
+    "title": "Đà Lạt Activity Graph",
+    "description": "Activities publish automatically when deterministic evidence gates pass—there is no approval queue. Inspect any decision here or unlist it immediately.",
+    "refresh": "Refresh",
+    "loadError": "Could not load the Activity Graph.",
+    "actionError": "The Activity Graph action failed.",
+    "loading": "Loading source decisions…",
+    "stats": {
+      "total": "Observed",
+      "published": "Published",
+      "withheld": "Withheld",
+      "unlisted": "Unlisted",
+      "errors": "Source errors"
+    },
+    "sources": "Monitored sources",
+    "threshold": "Auto ≥ {score}",
+    "lastSuccess": "Last success: {date}",
+    "notRun": "Not checked yet",
+    "pause": "Pause",
+    "resume": "Resume",
+    "decisions": "Latest automatic decisions",
+    "empty": "No activity observations yet.",
+    "unknownSource": "Unknown source",
+    "confidence": "Confidence {score}%",
+    "freshness": "Freshness {score}%",
+    "openSource": "Open official source",
+    "unlistConfirm": "Unlist “{title}” and suppress automatic republishing?",
+    "unlist": "Unlist",
+    "recheck": "Recheck",
+    "evidence": "Field evidence ({count})",
+    "duplicate": "Closest duplicate: {title} · {score}%"
   },
   "reactions": {
     "heart": "Love",

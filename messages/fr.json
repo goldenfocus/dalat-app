@@ -114,46 +114,12 @@
     "footer": {
       "love": "amour",
       "rssFeed": "Flux RSS",
-      "discover": "Découvrir",
-      "suggestEvent": "Suggérer un événement"
+      "discover": "Découvrir"
     }
   },
   "eventSuggestion": {
-    "title": "Vous connaissez un événement à Đà Lạt ?",
-    "subtitle": "Collez un lien d’événement ou téléversez une affiche. Nous vérifierons les détails avant sa mise en ligne.",
-    "urlLabel": "Lien de l’événement",
-    "urlPlaceholder": "https://...",
-    "or": "ou",
-    "flyerLabel": "Téléverser une affiche",
-    "flyerHint": "JPG, PNG ou WebP · 4 Mo maximum",
-    "chooseFlyer": "Choisir une affiche",
-    "replaceFlyer": "Remplacer l’affiche",
-    "removeFlyer": "Retirer l’affiche",
-    "privacyNote": "Votre suggestion rejoint notre file de vérification et n’est jamais publiée automatiquement.",
-    "submit": "Envoyer pour vérification",
-    "submitting": "Envoi pour vérification...",
-    "success": "Merci ! L’événement est en attente de vérification.",
-    "successDelayed": "Merci ! Il est dans la file, mais la vérification prend un peu plus de temps en ce moment.",
-    "duplicate": "Ce lien est déjà dans la file de vérification.",
-    "suggestAnother": "Suggérer un autre événement",
-    "errors": {
-      "authentication_required": "Connectez-vous pour suggérer un événement.",
-      "invalid_request": "La demande n’est pas passée. On réessaie ?",
-      "invalid_url": "Collez un lien http ou https complet.",
-      "unsafe_url": "Ce lien mène vers une adresse que nous ne pouvons pas ouvrir en toute sécurité.",
-      "source_unavailable": "Impossible d’ouvrir cette page. Vérifiez le lien ou réessayez plus tard.",
-      "unsupported_source": "Impossible de lire les détails de l’événement sur cette page.",
-      "source_too_large": "Cette page est trop volumineuse pour être vérifiée.",
-      "invalid_flyer": "Choisissez une affiche JPG, PNG ou WebP.",
-      "flyer_too_large": "Cette affiche dépasse 4 Mo. Choisissez une image plus petite.",
-      "storage_unavailable": "Le téléversement d’affiches fait une courte pause. Réessayez bientôt.",
-      "rate_limit_exceeded": "Vous avez déjà beaucoup partagé aujourd’hui. Réessayez demain.",
-      "rate_limit_unavailable": "Les suggestions font une petite pause. Réessayez bientôt.",
-      "review_queue_full": "La file de vérification est pleine pour le moment. Réessayez plus tard.",
-      "service_unavailable": "Impossible d’ajouter cet événement à la file pour le moment. Réessayez bientôt.",
-      "network": "Connexion perdue. Vérifiez votre accès à Internet et réessayez.",
-      "unknown": "Un petit obstacle est survenu. On réessaie ?"
-    }
+    "title": "La découverte d’activités est désormais automatique",
+    "subtitle": "ĐàLạt.app découvre les activités auprès de sources officielles vérifiées et ne les publie automatiquement qu’après le passage de contrôles de sécurité déterministes. Il n’y a aucune file d’approbation."
   },
   "home": {
     "title": "Événements à Đà Lạt",
@@ -188,10 +154,22 @@
       "eyebrow": "La ville, maintenant",
       "title": "Trouvez votre prochaine sortie",
       "subtitle": "Commencez par le moment où vous êtes libre.",
-      "live": { "title": "En ce moment", "description": "Rejoignez une activité déjà commencée" },
-      "tonight": { "title": "Ce soir", "description": "Voyez ce qui commence quand la brume tombe" },
-      "weekend": { "title": "Ce week-end", "description": "Trouvez une sortie vendredi, samedi ou dimanche" },
-      "allDates": { "title": "Toutes les dates", "description": "Parcourez le calendrier complet" }
+      "live": {
+        "title": "En ce moment",
+        "description": "Rejoignez une activité déjà commencée"
+      },
+      "tonight": {
+        "title": "Ce soir",
+        "description": "Voyez ce qui commence quand la brume tombe"
+      },
+      "weekend": {
+        "title": "Ce week-end",
+        "description": "Trouvez une sortie vendredi, samedi ou dimanche"
+      },
+      "allDates": {
+        "title": "Toutes les dates",
+        "description": "Parcourez le calendrier complet"
+      }
     },
     "happeningNow": {
       "title": "En ce moment",
@@ -3243,6 +3221,38 @@
         "vegan": "Végan"
       }
     }
+  },
+  "adminActivityGraph": {
+    "title": "Graphe d’activités de Đà Lạt",
+    "description": "Les activités sont publiées automatiquement après des contrôles de preuve déterministes, sans file d’approbation. Consultez chaque décision ou retirez une activité immédiatement.",
+    "refresh": "Actualiser",
+    "loadError": "Impossible de charger le graphe d’activités.",
+    "actionError": "L’action sur le graphe d’activités a échoué.",
+    "loading": "Chargement des décisions…",
+    "stats": {
+      "total": "Observées",
+      "published": "Publiées",
+      "withheld": "Retenues",
+      "unlisted": "Retirées",
+      "errors": "Erreurs source"
+    },
+    "sources": "Sources surveillées",
+    "threshold": "Auto ≥ {score}",
+    "lastSuccess": "Dernier succès : {date}",
+    "notRun": "Pas encore vérifiée",
+    "pause": "Suspendre",
+    "resume": "Reprendre",
+    "decisions": "Dernières décisions automatiques",
+    "empty": "Aucune activité observée.",
+    "unknownSource": "Source inconnue",
+    "confidence": "Confiance {score}%",
+    "freshness": "Fraîcheur {score}%",
+    "openSource": "Ouvrir la source officielle",
+    "unlistConfirm": "Retirer « {title} » et empêcher sa republication automatique ?",
+    "unlist": "Retirer",
+    "recheck": "Revérifier",
+    "evidence": "Preuves par champ ({count})",
+    "duplicate": "Doublon le plus proche : {title} · {score}%"
   },
   "reactions": {
     "heart": "J'adore",

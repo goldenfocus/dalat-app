@@ -40,9 +40,8 @@ const DA_LAT_GEO = {
 /**
  * React component to render JSON-LD script tag
  *
- * Security note: JSON.stringify escapes special characters (<, >, &, etc.)
- * making XSS injection impossible. The data is server-controlled schema objects,
- * not user-provided HTML. This is the standard pattern for JSON-LD in Next.js.
+ * Escape `<` after serialization so user-controlled strings cannot terminate the
+ * script element. This is the standard pattern for JSON-LD in Next.js.
  * See: https://nextjs.org/docs/app/building-your-application/optimizing/metadata#json-ld
  */
 export function JsonLd({ data }: { data: object | object[] }) {
@@ -54,13 +53,19 @@ export function JsonLd({ data }: { data: object | object[] }) {
         <script
           key={index}
           type="application/ld+json"
-          // Safe: JSON.stringify escapes special characters, preventing XSS
-          // Data is server-controlled schema objects, not user HTML
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(item).replace(/</g, "\\u003c"),
+          }}
         />
       ))}
     </>
   );
+}
+
+function getSchemaEventStatus(status: string) {
+  if (status === "cancelled") return "https://schema.org/EventCancelled";
+  if (status === "postponed") return "https://schema.org/EventPostponed";
+  return "https://schema.org/EventScheduled";
 }
 
 /**
@@ -75,13 +80,51 @@ export function generateEventSchema(
 ) {
   const eventUrl = localizedSiteUrl(locale, `/events/${event.slug}`);
 
-  // Determine event status
-  const eventStatus =
-    event.status === "cancelled"
-      ? "https://schema.org/EventCancelled"
-      : new Date(event.starts_at) < new Date()
-        ? "https://schema.org/EventPostponed" // Past events
-        : "https://schema.org/EventScheduled";
+  const eventStatus = getSchemaEventStatus(event.status);
+  const hasCoordinates =
+    typeof event.latitude === "number" &&
+    Number.isFinite(event.latitude) &&
+    typeof event.longitude === "number" &&
+    Number.isFinite(event.longitude);
+  const hasPhysicalLocation = Boolean(
+    event.location_name ||
+    event.address ||
+    event.google_maps_url ||
+    hasCoordinates,
+  );
+  const eventAttendanceMode = event.is_online
+    ? hasPhysicalLocation
+      ? "https://schema.org/MixedEventAttendanceMode"
+      : "https://schema.org/OnlineEventAttendanceMode"
+    : "https://schema.org/OfflineEventAttendanceMode";
+  const offerAvailability =
+    event.capacity &&
+    attendeeCount !== undefined &&
+    attendeeCount >= event.capacity
+      ? "https://schema.org/SoldOut"
+      : "https://schema.org/InStock";
+  const offerBase = {
+    "@type": "Offer",
+    availability: offerAvailability,
+    url: eventUrl,
+    validFrom: event.created_at,
+  };
+  const offers =
+    event.price_type === "free"
+      ? {
+          ...offerBase,
+          price: 0,
+          priceCurrency: "VND",
+        }
+      : event.ticket_tiers?.length
+        ? event.ticket_tiers.map((tier) => ({
+            ...offerBase,
+            name: tier.name,
+            price: tier.price,
+            priceCurrency: tier.currency,
+            ...(tier.description && { description: tier.description }),
+          }))
+        : undefined;
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -92,39 +135,32 @@ export function generateEventSchema(
     startDate: event.starts_at,
     ...(event.ends_at && { endDate: event.ends_at }),
     eventStatus,
-    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    eventAttendanceMode,
 
     // Location
-    location:
-      event.location_name || event.address
-        ? {
-            "@type": "Place",
-            name: event.location_name || "Đà Lạt, Vietnam",
-            ...(event.address && {
-              address: {
-                "@type": "PostalAddress",
-                streetAddress: event.address,
-                addressLocality: "Đà Lạt",
-                addressRegion: "Lam Dong",
-                addressCountry: "VN",
-              },
-            }),
-            geo: {
-              "@type": "GeoCoordinates",
-              latitude: DA_LAT_GEO.latitude,
-              longitude: DA_LAT_GEO.longitude,
-            },
-            ...(event.google_maps_url && { hasMap: event.google_maps_url }),
-          }
-        : {
-            "@type": "Place",
-            name: "Đà Lạt, Vietnam",
-            geo: {
-              "@type": "GeoCoordinates",
-              latitude: DA_LAT_GEO.latitude,
-              longitude: DA_LAT_GEO.longitude,
-            },
+    ...(hasPhysicalLocation && {
+      location: {
+        "@type": "Place",
+        name: event.location_name || "Đà Lạt, Vietnam",
+        ...(event.address && {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: event.address,
+            addressLocality: "Đà Lạt",
+            addressRegion: "Lam Dong",
+            addressCountry: "VN",
           },
+        }),
+        ...(hasCoordinates && {
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: event.latitude,
+            longitude: event.longitude,
+          },
+        }),
+        ...(event.google_maps_url && { hasMap: event.google_maps_url }),
+      },
+    }),
 
     // Image - with structured metadata for AI search engines
     ...(event.image_url && {
@@ -164,19 +200,7 @@ export function generateEventSchema(
           }
         : undefined,
 
-    // Offers (Free event - price: 0 shows "Free" in Rich Results)
-    offers: {
-      "@type": "Offer",
-      price: 0,
-      priceCurrency: "VND",
-      availability: event.capacity
-        ? attendeeCount && attendeeCount >= event.capacity
-          ? "https://schema.org/SoldOut"
-          : "https://schema.org/InStock"
-        : "https://schema.org/InStock",
-      url: eventUrl,
-      validFrom: event.created_at,
-    },
+    ...(offers && { offers }),
 
     // Attendance info
     ...(attendeeCount !== undefined && {
@@ -519,6 +543,39 @@ export function generateEventSeriesSchema(
   upcomingCount?: number,
 ) {
   const seriesUrl = localizedSiteUrl(locale, `/series/${series.slug}`);
+  const hasCoordinates =
+    typeof series.latitude === "number" &&
+    Number.isFinite(series.latitude) &&
+    typeof series.longitude === "number" &&
+    Number.isFinite(series.longitude);
+  const hasPhysicalLocation = Boolean(
+    series.location_name ||
+    series.address ||
+    series.google_maps_url ||
+    hasCoordinates,
+  );
+  const eventAttendanceMode = series.is_online
+    ? hasPhysicalLocation
+      ? "https://schema.org/MixedEventAttendanceMode"
+      : "https://schema.org/OnlineEventAttendanceMode"
+    : "https://schema.org/OfflineEventAttendanceMode";
+  const offerBase = {
+    "@type": "Offer",
+    url: seriesUrl,
+    availability: "https://schema.org/InStock",
+  };
+  const offers =
+    series.price_type === "free"
+      ? { ...offerBase, price: 0, priceCurrency: "VND" }
+      : series.ticket_tiers?.length
+        ? series.ticket_tiers.map((tier) => ({
+            ...offerBase,
+            name: tier.name,
+            price: tier.price,
+            priceCurrency: tier.currency,
+            ...(tier.description && { description: tier.description }),
+          }))
+        : undefined;
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -529,36 +586,36 @@ export function generateEventSeriesSchema(
     url: seriesUrl,
     startDate: series.first_occurrence,
     ...(series.rrule_until && { endDate: series.rrule_until }),
+    eventStatus:
+      series.status === "cancelled"
+        ? "https://schema.org/EventCancelled"
+        : "https://schema.org/EventScheduled",
+    eventAttendanceMode,
 
     // Location
-    location: series.location_name
-      ? {
-          "@type": "Place",
-          name: series.location_name,
-          ...(series.address && {
-            address: {
-              "@type": "PostalAddress",
-              streetAddress: series.address,
-              addressLocality: "Đà Lạt",
-              addressRegion: "Lam Dong",
-              addressCountry: "VN",
-            },
-          }),
+    ...(hasPhysicalLocation && {
+      location: {
+        "@type": "Place",
+        name: series.location_name || "Đà Lạt, Vietnam",
+        ...(series.address && {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: series.address,
+            addressLocality: "Đà Lạt",
+            addressRegion: "Lam Dong",
+            addressCountry: "VN",
+          },
+        }),
+        ...(hasCoordinates && {
           geo: {
             "@type": "GeoCoordinates",
-            latitude: DA_LAT_GEO.latitude,
-            longitude: DA_LAT_GEO.longitude,
+            latitude: series.latitude,
+            longitude: series.longitude,
           },
-        }
-      : {
-          "@type": "Place",
-          name: "Đà Lạt, Vietnam",
-          geo: {
-            "@type": "GeoCoordinates",
-            latitude: DA_LAT_GEO.latitude,
-            longitude: DA_LAT_GEO.longitude,
-          },
-        },
+        }),
+        ...(series.google_maps_url && { hasMap: series.google_maps_url }),
+      },
+    }),
 
     // Image
     ...(series.image_url && { image: [series.image_url] }),
@@ -581,14 +638,9 @@ export function generateEventSeriesSchema(
         },
       }),
 
-    // Free
-    isAccessibleForFree: true,
-    offers: {
-      "@type": "Offer",
-      price: 0,
-      priceCurrency: "VND",
-      availability: "https://schema.org/InStock",
-    },
+    ...(series.price_type === "free" && { isAccessibleForFree: true }),
+    ...(series.price_type === "paid" && { isAccessibleForFree: false }),
+    ...(offers && { offers }),
 
     inLanguage: locale,
   };

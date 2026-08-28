@@ -2,10 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { sendTelegram } from "@/lib/alerts/telegram";
 import {
-  AUTO_IMPORT_QUEUE_TYPES,
-  MANUAL_REVIEW_QUEUE_TYPE,
-} from "@/lib/import/queue-lanes";
-import { materializeSeriesOccurrences } from "@/lib/series/materialize";
+  pauseStaleActivityGraphSeries,
+  topUpSeriesOccurrences,
+} from "@/lib/series/materialize";
 import { logPipelineEvent } from "@/lib/news/pipeline-log";
 import {
   buildVitalityFloorProblem,
@@ -23,13 +22,9 @@ const MIN_DISTINCT_UPCOMING_14D = 8;
 // A watched source with no run in this window is presumed dead.
 const MAX_HEARTBEAT_AGE_H = 48;
 
-// Add "facebook" once a Facebook leg ships (phase 2 of the zero-cost design).
-// macmini-extract = the Mac mini worker draining import_queue.
-const WATCHED_SOURCES = ["dalat-gov", "macmini-extract"];
-
-// Queue rows stuck pending/processing longer than this mean the worker
-// is dead, auth-expired, or wedged — raw articles are piling up.
-const MAX_QUEUE_AGE_H = 48;
+// Legacy draft/review importers are retired. Activity Graph is the sole
+// machine-discovery heartbeat for public activities.
+const WATCHED_SOURCES = ["activity-graph"];
 
 // Content promise: /news must never look dead either.
 const MAX_NEWS_AGE_H = 26;
@@ -51,13 +46,15 @@ export async function GET(request: Request) {
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
   );
   const problems: string[] = [];
 
   // 1. Top up recurring series before evaluation so inventory is current.
   // The vitality check below still collapses all occurrences to one choice.
   let toppedUp = 0;
+  let staleSeriesPaused = 0;
+  const seriesNow = new Date();
   const { data: seriesList, error: seriesError } = await supabase
     .from("event_series")
     .select("*")
@@ -66,7 +63,25 @@ export async function GET(request: Request) {
     problems.push(`Series top-up query failed: ${seriesError.message}`);
   } else {
     for (const series of (seriesList ?? []) as EventSeries[]) {
-      toppedUp += await materializeSeriesOccurrences(supabase, series, 2);
+      try {
+        if (await pauseStaleActivityGraphSeries(supabase, series, seriesNow)) {
+          staleSeriesPaused++;
+          problems.push(
+            `activity-graph series ${series.slug}: source confirmation is absent or older than 14 days; paused and future occurrences drafted`,
+          );
+          continue;
+        }
+        toppedUp += await topUpSeriesOccurrences(
+          supabase,
+          series,
+          2,
+          seriesNow,
+        );
+      } catch (error) {
+        problems.push(
+          `Series ${series.slug} freshness/top-up failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     }
     if (toppedUp > 0) {
       console.log(`[health-check] Topped up ${toppedUp} series occurrences`);
@@ -81,7 +96,7 @@ export async function GET(request: Request) {
   const { data: upcomingRows, error: upcomingError } = await supabase
     .from("events")
     .select(
-      "id, starts_at, series_id, organizer_id, source_platform, organizers(name)"
+      "id, starts_at, series_id, organizer_id, source_platform, organizers(name)",
     )
     .eq("status", "published")
     .gt("starts_at", vitalityStart)
@@ -89,14 +104,16 @@ export async function GET(request: Request) {
     .order("starts_at", { ascending: true })
     .limit(1000);
   const eventVitality = summarizeEventVitality(
-    (upcomingRows ?? []) as EventVitalityRow[]
+    (upcomingRows ?? []) as EventVitalityRow[],
   );
   if (upcomingError) {
-    problems.push(`Upcoming event vitality query failed: ${upcomingError.message}`);
+    problems.push(
+      `Upcoming event vitality query failed: ${upcomingError.message}`,
+    );
   } else {
     const vitalityProblem = buildVitalityFloorProblem(
       eventVitality,
-      MIN_DISTINCT_UPCOMING_14D
+      MIN_DISTINCT_UPCOMING_14D,
     );
     if (vitalityProblem) problems.push(vitalityProblem);
   }
@@ -112,80 +129,22 @@ export async function GET(request: Request) {
     const last = data?.[0]?.started_at ? new Date(data[0].started_at) : null;
     if (!last || Date.now() - last.getTime() > MAX_HEARTBEAT_AGE_H * 3600_000) {
       problems.push(
-        `${source}: no import run in ${MAX_HEARTBEAT_AGE_H}h (last: ${last?.toISOString() ?? "never"})`
+        `${source}: no import run in ${MAX_HEARTBEAT_AGE_H}h (last: ${last?.toISOString() ?? "never"})`,
       );
     }
   }
 
-  // 4. Import queue backlog: rows the Mac mini worker should have drained
-  const backlogCutoff = new Date(Date.now() - MAX_QUEUE_AGE_H * 3600_000).toISOString();
-  const { count: backlog } = await supabase
-    .from("import_queue")
-    .select("*", { count: "exact", head: true })
-    .in("status", ["pending", "processing"])
-    // Match the worker's explicit automatic allowlist: URL articles and text
-    // canaries should drain; image flyers belong to manual review.
-    .in("type", [...AUTO_IMPORT_QUEUE_TYPES])
-    .lt("created_at", backlogCutoff);
-  if ((backlog ?? 0) > 0) {
-    problems.push(
-      `import_queue: ${backlog} rows older than ${MAX_QUEUE_AGE_H}h still unprocessed — is the Mac mini worker running?`
-    );
-  }
-
-  const { count: manualReviewBacklog } = await supabase
-    .from("import_queue")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "pending")
-    .eq("type", MANUAL_REVIEW_QUEUE_TYPE)
-    .lt("created_at", backlogCutoff);
-  if ((manualReviewBacklog ?? 0) > 0) {
-    problems.push(
-      `manual event review: ${manualReviewBacklog} flyer suggestion(s) older than ${MAX_QUEUE_AGE_H}h need human review`
-    );
-  }
-
-  // 5. Canary: the daily synthetic article must have hatched into a draft
-  // event — proves scrape → queue → extract → insert end to end, which
-  // heartbeats alone cannot (they only prove "a job ran").
-  const { data: canaries } = await supabase
-    .from("events")
-    .select("id, created_at")
-    .eq("source_platform", "canary");
-  const freshCanary = (canaries ?? []).some(
-    (c) => Date.now() - new Date(c.created_at).getTime() < 26 * 3600_000
-  );
-  // Only demand a canary once the pipeline has hatched one before —
-  // otherwise this would alert daily during initial Mac mini setup.
-  const { count: canaryRuns } = await supabase
-    .from("import_queue")
-    .select("*", { count: "exact", head: true })
-    .eq("source", "canary")
-    .eq("status", "done");
-  if ((canaryRuns ?? 0) > 0 && !freshCanary) {
-    problems.push(
-      "canary: no synthetic event hatched in 26h — extraction chain broken end to end"
-    );
-  }
-  // Canaries are checked, then culled — they must never accumulate.
-  if (canaries && canaries.length > 0) {
-    await supabase
-      .from("events")
-      .delete()
-      .in("id", canaries.map((c) => c.id));
-  }
-
-  // 6. Content health: /news freshness, backlog, dead-cluster retry, pipeline errors.
+  // 4. Content health: /news freshness, backlog, dead-cluster retry, pipeline errors.
   const content = await checkContentHealth(supabase, problems);
 
-  // 7. Caption coverage: % of recent moments with settled AI metadata
+  // 5. Caption coverage: % of recent moments with settled AI metadata
   // (completed or privacy-skipped). A dead pipeline shows up here within
   // days instead of silently rotting like Inngest did (0 rows for months).
   const captionCoverage = await checkCaptionCoverage(supabase, problems);
 
   if (problems.length > 0) {
     await sendTelegram(
-      `🚨 <b>dalat.app event health</b>\n${problems.map((p) => `• ${p}`).join("\n")}`
+      `🚨 <b>dalat.app event health</b>\n${problems.map((p) => `• ${p}`).join("\n")}`,
     );
   }
 
@@ -196,12 +155,13 @@ export async function GET(request: Request) {
       upcomingOccurrences: eventVitality.occurrences,
       eventVitality,
       seriesToppedUp: toppedUp,
+      staleSeriesPaused,
       problems,
       contentHealth: content,
       captionCoverage,
     },
     // Stale /news even after a promotion attempt = cron run failed.
-    { status: content.newsStale ? 500 : 200 }
+    { status: content.newsStale ? 500 : 200 },
   );
 }
 
@@ -217,7 +177,7 @@ const MIN_CAPTION_COVERAGE_PCT = 80;
  */
 async function checkCaptionCoverage(
   supabase: SupabaseClient,
-  problems: string[]
+  problems: string[],
 ): Promise<{ eligible: number; settled: number; pct: number | null }> {
   const since = new Date(Date.now() - 30 * 86400_000).toISOString();
   const { data: recent, error: recentError } = await supabase
@@ -229,7 +189,9 @@ async function checkCaptionCoverage(
     .limit(1000);
 
   if (recentError) {
-    problems.push(`caption coverage: moments query failed: ${recentError.message}`);
+    problems.push(
+      `caption coverage: moments query failed: ${recentError.message}`,
+    );
     return { eligible: 0, settled: 0, pct: null };
   }
 
@@ -249,7 +211,9 @@ async function checkCaptionCoverage(
       .in("processing_status", ["completed", "skipped"]);
 
     if (settledError) {
-      problems.push(`caption coverage: metadata query failed: ${settledError.message}`);
+      problems.push(
+        `caption coverage: metadata query failed: ${settledError.message}`,
+      );
       return { eligible: ids.length, settled: 0, pct: null };
     }
     settled += settledRows?.length ?? 0;
@@ -257,7 +221,7 @@ async function checkCaptionCoverage(
   const pct = Math.round((settled / ids.length) * 100);
   if (pct < MIN_CAPTION_COVERAGE_PCT) {
     problems.push(
-      `caption coverage: ${pct}% of last-30d moments have AI metadata (${settled}/${ids.length}, floor ${MIN_CAPTION_COVERAGE_PCT}%) — is /api/cron/process-moments running?`
+      `caption coverage: ${pct}% of last-30d moments have AI metadata (${settled}/${ids.length}, floor ${MIN_CAPTION_COVERAGE_PCT}%) — is /api/cron/process-moments running?`,
     );
   }
   return { eligible: ids.length, settled, pct };
@@ -282,7 +246,7 @@ interface ContentHealth {
  */
 async function checkContentHealth(
   supabase: SupabaseClient,
-  problems: string[]
+  problems: string[],
 ): Promise<ContentHealth> {
   const health: ContentHealth = {
     newestNewsAgeHours: null,
@@ -301,7 +265,7 @@ async function checkContentHealth(
 
   if (categoryError || !newsCategory) {
     problems.push(
-      `content health: could not resolve news category: ${categoryError?.message ?? "no row"}`
+      `content health: could not resolve news category: ${categoryError?.message ?? "no row"}`,
     );
   }
 
@@ -344,7 +308,10 @@ async function checkContentHealth(
         // clears the staleness check (its backlog date may be weeks old).
         const { error: promoteError } = await supabase
           .from("blog_posts")
-          .update({ status: "published", published_at: new Date().toISOString() })
+          .update({
+            status: "published",
+            published_at: new Date().toISOString(),
+          })
           .eq("id", candidate.id);
 
         if (!promoteError) {
@@ -383,7 +350,7 @@ async function checkContentHealth(
               : promotionFailed
                 ? "attempted but failed"
                 : "found no candidate"
-          }`
+          }`,
         );
       }
     }
@@ -398,7 +365,7 @@ async function checkContentHealth(
 
     if (health.newsBacklog < MIN_NEWS_BACKLOG) {
       problems.push(
-        `content health: news backlog ${health.newsBacklog} below floor ${MIN_NEWS_BACKLOG}`
+        `content health: news backlog ${health.newsBacklog} below floor ${MIN_NEWS_BACKLOG}`,
       );
       await logPipelineEvent(supabase, {
         stage: "health-check",
@@ -419,7 +386,7 @@ async function checkContentHealth(
     .select("id");
   if (stuckError) {
     problems.push(
-      `content health: stuck-article sweep failed: ${stuckError.message}`
+      `content health: stuck-article sweep failed: ${stuckError.message}`,
     );
   } else if ((stuckArticles?.length ?? 0) > 0) {
     await logPipelineEvent(supabase, {
@@ -438,11 +405,11 @@ async function checkContentHealth(
     .limit(100);
   if (deadError) {
     problems.push(
-      `content health: dead-article query failed: ${deadError.message}`
+      `content health: dead-article query failed: ${deadError.message}`,
     );
   }
   const toRetry = (deadArticles ?? []).filter(
-    (a) => !a.error_message || !a.error_message.startsWith("[retried]")
+    (a) => !a.error_message || !a.error_message.startsWith("[retried]"),
   );
   for (const article of toRetry) {
     const { error: retryError } = await supabase
@@ -463,13 +430,13 @@ async function checkContentHealth(
     .gte("created_at", new Date(Date.now() - 24 * 3600_000).toISOString());
   if (errorCountError) {
     problems.push(
-      `content health: pipeline error-count query failed: ${errorCountError.message}`
+      `content health: pipeline error-count query failed: ${errorCountError.message}`,
     );
   }
   health.pipelineErrors24h = errorCount ?? 0;
   if (health.pipelineErrors24h > 5) {
     problems.push(
-      `content health: ${health.pipelineErrors24h} pipeline errors in the last 24h`
+      `content health: ${health.pipelineErrors24h} pipeline errors in the last 24h`,
     );
   }
 

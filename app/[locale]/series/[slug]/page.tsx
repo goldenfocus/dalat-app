@@ -19,10 +19,19 @@ import { formatInDaLat } from "@/lib/timezone";
 import { describeRRule, getShortRRuleLabel } from "@/lib/recurrence";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
-import type { EventSeries, Event, Profile, Organizer, Locale, EventPromoMedia } from "@/lib/types";
+import { JsonLd, generateEventSeriesSchema } from "@/lib/structured-data";
+import { buildAlternates, localeUrl } from "@/lib/metadata";
+import type {
+  EventSeries,
+  Event,
+  Profile,
+  Organizer,
+  Locale,
+  EventPromoMedia,
+} from "@/lib/types";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }
 
 type SeriesWithRelations = EventSeries & {
@@ -30,7 +39,16 @@ type SeriesWithRelations = EventSeries & {
   organizers: Organizer | null;
 };
 
-type EventInstance = Pick<Event, "id" | "slug" | "starts_at" | "ends_at" | "series_instance_date" | "status" | "image_url">;
+type EventInstance = Pick<
+  Event,
+  | "id"
+  | "slug"
+  | "starts_at"
+  | "ends_at"
+  | "series_instance_date"
+  | "status"
+  | "image_url"
+>;
 
 interface SeriesData {
   series: SeriesWithRelations;
@@ -42,8 +60,10 @@ interface SeriesData {
 }
 
 // Generate dynamic OG metadata
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug, locale } = await params;
   const supabase = createStaticClient();
   if (!supabase) return { title: "Series" };
 
@@ -61,18 +81,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = series.description
     ? `${series.description.slice(0, 150)}${series.description.length > 150 ? "..." : ""}`
     : `${recurrenceLabel}${series.location_name ? ` · ${series.location_name}` : ""} · ĐàLạt.app`;
+  const canonicalUrl = localeUrl(locale as Locale, `/series/${slug}`);
 
   return {
     title: `${series.title} | ĐàLạt.app`,
     description,
+    alternates: buildAlternates(locale as Locale, `/series/${slug}`),
     openGraph: {
       title: series.title,
       description,
       type: "website",
-      url: `/series/${slug}`,
+      url: canonicalUrl,
       siteName: "ĐàLạt.app",
       ...(series.image_url && {
-        images: [{ url: series.image_url, width: 1200, height: 630, alt: series.title }],
+        images: [
+          {
+            url: series.image_url,
+            width: 1200,
+            height: 630,
+            alt: series.title,
+          },
+        ],
       }),
     },
   };
@@ -93,7 +122,9 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
   // Get upcoming events (include image_url and ends_at for calendar/display)
   const { data: upcomingEvents } = await supabase
     .from("events")
-    .select("id, slug, starts_at, ends_at, series_instance_date, status, image_url")
+    .select(
+      "id, slug, starts_at, ends_at, series_instance_date, status, image_url",
+    )
     .eq("series_id", series.id)
     .eq("status", "published")
     .gt("starts_at", new Date().toISOString())
@@ -140,10 +171,7 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
 
 export default async function SeriesPage({ params }: PageProps) {
   const { slug } = await params;
-  const [t, locale] = await Promise.all([
-    getTranslations(),
-    getLocale(),
-  ]);
+  const [t, locale] = await Promise.all([getTranslations(), getLocale()]);
 
   const data = await getSeriesData(slug);
 
@@ -151,9 +179,21 @@ export default async function SeriesPage({ params }: PageProps) {
     notFound();
   }
 
-  const { series, upcomingEvents, subscriberCount, isSubscribed: _isSubscribed, isOwner, promo } = data;
+  const {
+    series,
+    upcomingEvents,
+    subscriberCount,
+    isSubscribed: _isSubscribed,
+    isOwner,
+    promo,
+  } = data;
 
   const recurrenceDescription = describeRRule(series.rrule);
+  const seriesSchema = generateEventSeriesSchema(
+    series,
+    locale,
+    upcomingEvents.length,
+  );
 
   // Use series image, or fall back to first event's image
   const coverImage = series.image_url || upcomingEvents[0]?.image_url;
@@ -161,6 +201,8 @@ export default async function SeriesPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-background">
+      <JsonLd data={seriesSchema} />
+
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Back Navigation */}
         <Link
@@ -226,7 +268,9 @@ export default async function SeriesPage({ params }: PageProps) {
               {/* Subscribers */}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Users className="w-4 h-4" />
-                <span>{t("series.subscribers", { count: subscriberCount })}</span>
+                <span>
+                  {t("series.subscribers", { count: subscriberCount })}
+                </span>
               </div>
 
               {/* Description */}
@@ -283,7 +327,9 @@ export default async function SeriesPage({ params }: PageProps) {
 
           {isOwner && (
             <Button asChild variant="outline">
-              <Link href={`/series/${series.slug}/edit`}>{t("series.editSeries")}</Link>
+              <Link href={`/series/${series.slug}/edit`}>
+                {t("series.editSeries")}
+              </Link>
             </Button>
           )}
         </div>
@@ -314,18 +360,34 @@ export default async function SeriesPage({ params }: PageProps) {
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
                           <span className="text-xs text-muted-foreground uppercase">
-                            {formatInDaLat(event.starts_at, "EEE", locale as Locale)}
+                            {formatInDaLat(
+                              event.starts_at,
+                              "EEE",
+                              locale as Locale,
+                            )}
                           </span>
                           <span className="text-lg font-bold text-primary">
-                            {formatInDaLat(event.starts_at, "d", locale as Locale)}
+                            {formatInDaLat(
+                              event.starts_at,
+                              "d",
+                              locale as Locale,
+                            )}
                           </span>
                         </div>
                         <div>
                           <p className="font-medium">
-                            {formatInDaLat(event.starts_at, "EEEE, MMMM d", locale as Locale)}
+                            {formatInDaLat(
+                              event.starts_at,
+                              "EEEE, MMMM d",
+                              locale as Locale,
+                            )}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {formatInDaLat(event.starts_at, "h:mm a", locale as Locale)}
+                            {formatInDaLat(
+                              event.starts_at,
+                              "h:mm a",
+                              locale as Locale,
+                            )}
                           </p>
                         </div>
                       </div>
@@ -364,7 +426,9 @@ export default async function SeriesPage({ params }: PageProps) {
                   )}
                   <div>
                     <p className="font-medium">{series.organizers.name}</p>
-                    <p className="text-sm text-muted-foreground">{t("series.viewProfile")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("series.viewProfile")}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -391,7 +455,9 @@ export default async function SeriesPage({ params }: PageProps) {
                 )}
                 <div>
                   <p className="font-medium">
-                    {series.profiles.display_name || series.profiles.username || "Anonymous"}
+                    {series.profiles.display_name ||
+                      series.profiles.username ||
+                      "Anonymous"}
                   </p>
                 </div>
               </CardContent>

@@ -1,11 +1,24 @@
 import { NextResponse } from "next/server";
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 import { createClient } from "@supabase/supabase-js";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { authorizeImportModerator } from "@/lib/import/moderator-authorization";
 import { processFacebookEvents } from "@/lib/import/processors/facebook";
-import { processLumaEvents, type LumaEvent } from "@/lib/import/processors/luma";
-import { fetchFlipEvent, processFlipEvents, type FlipEvent } from "@/lib/import/processors/flip";
-import { fetchArticle, extractEventsFromArticle } from "@/lib/import/processors/dalat-gov";
+import {
+  processLumaEvents,
+  type LumaEvent,
+} from "@/lib/import/processors/luma";
+import {
+  fetchFlipEvent,
+  processFlipEvents,
+  type FlipEvent,
+} from "@/lib/import/processors/flip";
+import {
+  fetchArticle,
+  extractEventsFromArticle,
+} from "@/lib/import/processors/dalat-gov";
 import type { FacebookEvent } from "@/lib/import/types";
+import { isPublicNetworkAddress } from "@/lib/events/event-suggestion";
 
 // Extend timeout for Vercel Pro (scrapers can be slow)
 // Facebook scraping can take 1-3 minutes depending on the event
@@ -15,42 +28,43 @@ export const maxDuration = 300;
  * Validate URL to prevent SSRF attacks
  * Blocks internal networks, localhost, and metadata endpoints
  */
-function isUrlSafe(urlString: string): boolean {
+async function isUrlSafe(urlString: string): Promise<boolean> {
   try {
     const url = new URL(urlString);
 
-    // Only allow http/https protocols
-    if (!["http:", "https:"].includes(url.protocol)) {
+    // Only allow public HTTP(S) destinations without embedded credentials.
+    if (
+      !["http:", "https:"].includes(url.protocol) ||
+      url.username ||
+      url.password
+    ) {
       return false;
     }
 
-    const hostname = url.hostname.toLowerCase();
-
-    // Block localhost and loopback
-    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1") {
+    const hostname = url.hostname
+      .toLowerCase()
+      .replace(/^\[|\]$/g, "")
+      .replace(/\.$/, "");
+    if (
+      !hostname ||
+      hostname === "localhost" ||
+      hostname.endsWith(".localhost") ||
+      hostname.endsWith(".local") ||
+      hostname.endsWith(".internal") ||
+      hostname.endsWith(".lan")
+    ) {
       return false;
     }
 
-    // Block private/internal IP ranges
-    const ipv4Match = hostname.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
-    if (ipv4Match) {
-      const [, a, b] = ipv4Match.map(Number);
-      // 10.x.x.x
-      if (a === 10) return false;
-      // 172.16.x.x - 172.31.x.x
-      if (a === 172 && b >= 16 && b <= 31) return false;
-      // 192.168.x.x
-      if (a === 192 && b === 168) return false;
-      // 169.254.x.x (link-local, includes AWS metadata)
-      if (a === 169 && b === 254) return false;
+    if (isIP(hostname)) {
+      return isPublicNetworkAddress(hostname);
     }
 
-    // Block cloud metadata endpoints
-    if (hostname === "metadata.google.internal" || hostname.endsWith(".internal")) {
-      return false;
-    }
-
-    return true;
+    const addresses = await lookup(hostname, { all: true, verbatim: true });
+    return (
+      addresses.length > 0 &&
+      addresses.every(({ address }) => isPublicNetworkAddress(address))
+    );
   } catch {
     return false;
   }
@@ -62,17 +76,12 @@ function isUrlSafe(urlString: string): boolean {
  */
 export async function POST(request: Request) {
   console.log("URL Import: Starting POST handler");
-  try {
-    // Get authenticated user (import requires login)
-    console.log("URL Import: Creating server client...");
-    const serverSupabase = await createServerClient();
-    console.log("URL Import: Getting user...");
-    const { data: { user } } = await serverSupabase.auth.getUser();
-    console.log("URL Import: User check complete, authenticated:", !!user);
 
-    if (!user) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
+  const authorization = await authorizeImportModerator();
+  if (!authorization.ok) return authorization.response;
+
+  try {
+    const { user } = authorization;
 
     const { url, date, time } = await request.json();
 
@@ -81,8 +90,11 @@ export async function POST(request: Request) {
     }
 
     // Validate URL to prevent SSRF attacks
-    if (!isUrlSafe(url)) {
-      return NextResponse.json({ error: "Invalid or unsafe URL" }, { status: 400 });
+    if (!(await isUrlSafe(url))) {
+      return NextResponse.json(
+        { error: "Invalid or unsafe URL" },
+        { status: 400 },
+      );
     }
 
     // Determine platform from URL
@@ -93,7 +105,10 @@ export async function POST(request: Request) {
     if (url.includes("facebook.com")) {
       platform = "facebook";
       // Check if this is a Facebook search URL
-      if (url.includes("/search/events/") || url.includes("facebook.com/events/search/")) {
+      if (
+        url.includes("/search/events/") ||
+        url.includes("facebook.com/events/search/")
+      ) {
         // Use data-slayer scraper - works without login for search
         actorId = "data-slayer~facebook-search-events";
         isFacebookSearch = true;
@@ -115,7 +130,9 @@ export async function POST(request: Request) {
       actorId = "";
     }
 
-    console.log(`URL Import: Starting ${platform} scrape for ${url}${isFacebookSearch ? " (search results)" : ""}`);
+    console.log(
+      `URL Import: Starting ${platform} scrape for ${url}${isFacebookSearch ? " (search results)" : ""}`,
+    );
 
     let items: unknown[];
 
@@ -131,14 +148,18 @@ export async function POST(request: Request) {
         if (!date) {
           return NextResponse.json(
             {
-              error: "Could not import Flip.vn event. This may be a multi-showtime event. Try adding a 'date' parameter (e.g., '2026-03-15' or '15/03/2026') and optionally 'time' (e.g., '19:00').",
+              error:
+                "Could not import Flip.vn event. This may be a multi-showtime event. Try adding a 'date' parameter (e.g., '2026-03-15' or '15/03/2026') and optionally 'time' (e.g., '19:00').",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
         return NextResponse.json(
-          { error: "Could not fetch Flip.vn event. Make sure the URL is valid and the date format is correct (YYYY-MM-DD or DD/MM/YYYY)." },
-          { status: 400 }
+          {
+            error:
+              "Could not fetch Flip.vn event. Make sure the URL is valid and the date format is correct (YYYY-MM-DD or DD/MM/YYYY).",
+          },
+          { status: 400 },
         );
       }
       items = [flipData];
@@ -148,8 +169,11 @@ export async function POST(request: Request) {
       const lumaData = await fetchLumaEvent(url);
       if (!lumaData) {
         return NextResponse.json(
-          { error: "Could not fetch Lu.ma event. Make sure the URL is a direct event link (e.g., lu.ma/abc123)" },
-          { status: 404 }
+          {
+            error:
+              "Could not fetch Lu.ma event. Make sure the URL is a direct event link (e.g., lu.ma/abc123)",
+          },
+          { status: 404 },
         );
       }
       items = [lumaData];
@@ -159,8 +183,11 @@ export async function POST(request: Request) {
       const article = await fetchArticle(url);
       if (!article) {
         return NextResponse.json(
-          { error: "Could not fetch article from dalat-info.gov.vn. Make sure the URL is a valid article page (/bai-viet/...)" },
-          { status: 404 }
+          {
+            error:
+              "Could not fetch article from dalat-info.gov.vn. Make sure the URL is a valid article page (/bai-viet/...)",
+          },
+          { status: 404 },
         );
       }
 
@@ -170,21 +197,27 @@ export async function POST(request: Request) {
       const extractedEvents = await extractEventsFromArticle(article);
       if (extractedEvents.length === 0) {
         return NextResponse.json(
-          { error: "No events found in this article. The AI could not identify any specific events with dates." },
-          { status: 404 }
+          {
+            error:
+              "No events found in this article. The AI could not identify any specific events with dates.",
+          },
+          { status: 404 },
         );
       }
 
-      console.log(`URL Import: AI extracted ${extractedEvents.length} events from article`);
+      console.log(
+        `URL Import: AI extracted ${extractedEvents.length} events from article`,
+      );
 
       // Convert extracted events to a format processable by processGovArticles
       // We'll process them directly here instead
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
       );
 
-      const { processGovArticles } = await import("@/lib/import/processors/dalat-gov");
+      const { processGovArticles } =
+        await import("@/lib/import/processors/dalat-gov");
       const result = await processGovArticles(supabase, [article], user.id);
 
       if (result.processed > 0) {
@@ -198,12 +231,16 @@ export async function POST(request: Request) {
       } else if (result.skipped > 0) {
         return NextResponse.json(
           { error: `${result.skipped} events already exist or are duplicates` },
-          { status: 409 }
+          { status: 409 },
         );
       } else {
         return NextResponse.json(
-          { error: result.details?.[0] || "No events could be imported from this article" },
-          { status: 500 }
+          {
+            error:
+              result.details?.[0] ||
+              "No events could be imported from this article",
+          },
+          { status: 500 },
         );
       }
     } else if (platform === "generic") {
@@ -211,8 +248,11 @@ export async function POST(request: Request) {
       const genericData = await fetchGenericEvent(url);
       if (!genericData) {
         return NextResponse.json(
-          { error: "Could not fetch event. Supported platforms: Facebook, Flip.vn, Lu.ma, dalat-info.gov.vn, or sites with /events/ API" },
-          { status: 400 }
+          {
+            error:
+              "Could not fetch event. Supported platforms: Facebook, Flip.vn, Lu.ma, dalat-info.gov.vn, or sites with /events/ API",
+          },
+          { status: 400 },
         );
       }
       items = [genericData];
@@ -223,7 +263,7 @@ export async function POST(request: Request) {
       if (!apiToken) {
         return NextResponse.json(
           { error: "Apify not configured" },
-          { status: 503 }
+          { status: 503 },
         );
       }
 
@@ -243,7 +283,10 @@ export async function POST(request: Request) {
 
       console.log(`URL Import: Calling Apify actor "${actorId}"`);
       console.log(`URL Import: Input:`, JSON.stringify(apifyInput, null, 2));
-      console.log(`URL Import: API URL (token masked):`, apifyUrl.replace(apiToken, "***"));
+      console.log(
+        `URL Import: API URL (token masked):`,
+        apifyUrl.replace(apiToken, "***"),
+      );
 
       // Use AbortController to enforce our own timeout (280s to leave buffer before Vercel's 300s limit)
       const controller = new AbortController();
@@ -263,10 +306,12 @@ export async function POST(request: Request) {
           console.error("URL Import: Apify request timed out after 50s");
           return NextResponse.json(
             {
-              error: "Facebook scraping timed out. This can happen with complex event pages.",
-              details: "Try again, or if this persists, the Facebook event page may be inaccessible to scrapers."
+              error:
+                "Facebook scraping timed out. This can happen with complex event pages.",
+              details:
+                "Try again, or if this persists, the Facebook event page may be inaccessible to scrapers.",
             },
-            { status: 504 }
+            { status: 504 },
           );
         }
         throw fetchError;
@@ -286,19 +331,23 @@ export async function POST(request: Request) {
         });
 
         // Detect common error patterns
-        if (responseText.includes("<!DOCTYPE") || responseText.includes("<html")) {
+        if (
+          responseText.includes("<!DOCTYPE") ||
+          responseText.includes("<html")
+        ) {
           return NextResponse.json(
             {
               error: "Facebook scraper returned an error page instead of data.",
-              details: "The scraper may be rate-limited or the event page requires login. Try again later."
+              details:
+                "The scraper may be rate-limited or the event page requires login. Try again later.",
             },
-            { status: 502 }
+            { status: 502 },
           );
         }
 
         return NextResponse.json(
           { error: "Unexpected response from scraper. Please try again." },
-          { status: 502 }
+          { status: 502 },
         );
       }
 
@@ -311,15 +360,19 @@ export async function POST(request: Request) {
         });
 
         // Extract meaningful error message from Apify response
-        const errorMessage = errorData?.error?.message || errorData?.message || "Failed to scrape event";
+        const errorMessage =
+          errorData?.error?.message ||
+          errorData?.message ||
+          "Failed to scrape event";
         return NextResponse.json(
           {
             error: errorMessage,
-            details: runResponse.status === 402
-              ? "Apify credits may be exhausted."
-              : "Please try again or check the URL."
+            details:
+              runResponse.status === 402
+                ? "Apify credits may be exhausted."
+                : "Please try again or check the URL.",
           },
-          { status: 502 }
+          { status: 502 },
         );
       }
 
@@ -328,7 +381,7 @@ export async function POST(request: Request) {
       if (!items || items.length === 0) {
         return NextResponse.json(
           { error: "No event data found at URL" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -338,21 +391,30 @@ export async function POST(request: Request) {
     // Process the scraped event
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
     );
 
     let result;
     if (platform === "facebook") {
-      result = await processFacebookEvents(supabase, items as FacebookEvent[], user.id);
+      result = await processFacebookEvents(
+        supabase,
+        items as FacebookEvent[],
+        user.id,
+      );
     } else if (platform === "flip") {
       result = await processFlipEvents(supabase, items as FlipEvent[], user.id);
     } else {
       // Lu.ma and generic imports use similar API-based data structure
-      result = await processLumaEvents(supabase, items as LumaEvent[], user.id, platform);
+      result = await processLumaEvents(
+        supabase,
+        items as LumaEvent[],
+        user.id,
+        platform,
+      );
     }
 
     console.log(
-      `URL Import: Processed ${result.processed}, skipped ${result.skipped}, errors ${result.errors}`
+      `URL Import: Processed ${result.processed}, skipped ${result.skipped}, errors ${result.errors}`,
     );
 
     if (result.processed > 0) {
@@ -381,21 +443,31 @@ export async function POST(request: Request) {
       });
     } else if (result.skipped > 0) {
       return NextResponse.json(
-        { error: isFacebookSearch ? `${result.skipped} events already exist or missing data` : "Event already exists or is missing required data" },
-        { status: 409 }
+        {
+          error: isFacebookSearch
+            ? `${result.skipped} events already exist or missing data`
+            : "Event already exists or is missing required data",
+        },
+        { status: 409 },
       );
     } else {
       return NextResponse.json(
         { error: result.details?.[0] || "Failed to process event" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   } catch (error) {
     console.error("URL Import error:", error);
-    console.error("URL Import error stack:", error instanceof Error ? error.stack : "No stack");
+    console.error(
+      "URL Import error stack:",
+      error instanceof Error ? error.stack : "No stack",
+    );
     return NextResponse.json(
-      { error: "Failed to import event", details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
+      {
+        error: "Failed to import event",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
     );
   }
 }
@@ -409,7 +481,7 @@ async function fetchLumaEvent(eventUrl: string) {
     // Fetch the Lu.ma page directly
     const response = await fetch(eventUrl, {
       headers: {
-        "Accept": "text/html",
+        Accept: "text/html",
         "User-Agent": "Mozilla/5.0 (compatible; DalatApp/1.0)",
       },
     });
@@ -454,7 +526,9 @@ async function fetchLumaEvent(eventUrl: string) {
 
     // Get description - might be in description_md or description
     const descMatch = html.match(/"description(?:_md)?":"((?:[^"\\]|\\.)*)"/);
-    const description = descMatch?.[1]?.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+    const description = descMatch?.[1]
+      ?.replace(/\\n/g, "\n")
+      .replace(/\\"/g, '"');
 
     // Get location info
     const locationMatch = html.match(/"geo_address_info":\s*\{([^}]+)\}/);
@@ -465,7 +539,8 @@ async function fetchLumaEvent(eventUrl: string) {
       city = locationMatch[1].match(/"city":"([^"]+)"/)?.[1];
     }
 
-    const venueName = getField(html, "location_name") || getField(eventJson, "venue");
+    const venueName =
+      getField(html, "location_name") || getField(eventJson, "venue");
 
     return {
       url: eventUrl,
@@ -501,10 +576,10 @@ async function fetchLumaEvent(eventUrl: string) {
  * Handles nested nodes recursively and preserves paragraph breaks
  */
 function parseRichTextDescription(content: unknown): string {
-  if (!content) return '';
+  if (!content) return "";
 
   // If it's already a string, return it
-  if (typeof content === 'string') {
+  if (typeof content === "string") {
     return content;
   }
 
@@ -514,11 +589,11 @@ function parseRichTextDescription(content: unknown): string {
   }
 
   // If it's a single node object
-  if (typeof content === 'object' && content !== null) {
+  if (typeof content === "object" && content !== null) {
     return extractTextFromSlateNodes([content]);
   }
 
-  return '';
+  return "";
 }
 
 /**
@@ -528,18 +603,18 @@ function extractTextFromSlateNodes(nodes: unknown[]): string {
   const blocks: string[] = [];
 
   for (const node of nodes) {
-    if (!node || typeof node !== 'object') continue;
+    if (!node || typeof node !== "object") continue;
 
     const nodeObj = node as Record<string, unknown>;
 
     // If this node has direct text content
-    if ('text' in nodeObj && typeof nodeObj.text === 'string') {
+    if ("text" in nodeObj && typeof nodeObj.text === "string") {
       blocks.push(nodeObj.text);
       continue;
     }
 
     // If this node has children, recursively extract
-    if ('children' in nodeObj && Array.isArray(nodeObj.children)) {
+    if ("children" in nodeObj && Array.isArray(nodeObj.children)) {
       const childText = extractTextFromSlateNodes(nodeObj.children);
       if (childText) {
         blocks.push(childText);
@@ -548,7 +623,7 @@ function extractTextFromSlateNodes(nodes: unknown[]): string {
   }
 
   // Join with newlines for block-level elements, spaces for inline
-  return blocks.join('\n').trim();
+  return blocks.join("\n").trim();
 }
 
 /**
@@ -572,7 +647,7 @@ async function fetchGenericEvent(eventUrl: string) {
 
     const response = await fetch(apiUrl, {
       headers: {
-        "Accept": "application/json",
+        Accept: "application/json",
         "User-Agent": "Mozilla/5.0 (compatible; DalatApp/1.0)",
       },
     });
@@ -595,48 +670,62 @@ async function fetchGenericEvent(eventUrl: string) {
 
     // Parse date - API may return various formats
     // eventDate: "2026-01-25T00:00:00.000Z", eventTime: "17:00"
-    let startDate = event.startAt || event.start_at || event.startDate || event.eventDate || event.date;
-    let endDate = event.endAt || event.end_at || event.endDate || event.eventEndDate;
+    let startDate =
+      event.startAt ||
+      event.start_at ||
+      event.startDate ||
+      event.eventDate ||
+      event.date;
+    let endDate =
+      event.endAt || event.end_at || event.endDate || event.eventEndDate;
     const startTime = event.startTime || event.eventTime;
     const endTime = event.endTime || event.eventEndTime;
 
     // If we have separate time, combine with date
     if (startTime && startDate) {
       // Extract just the date part if it's a full ISO string
-      const dateOnly = startDate.split('T')[0];
+      const dateOnly = startDate.split("T")[0];
       // Combine with time (assume local timezone)
       startDate = `${dateOnly}T${startTime}:00`;
     }
     if (endTime && endDate) {
-      const dateOnly = endDate.split('T')[0];
+      const dateOnly = endDate.split("T")[0];
       endDate = `${dateOnly}T${endTime}:00`;
     }
 
     // Get location info
     const location = event.location || event.venue || event.place;
-    const locationName = typeof location === 'object'
-      ? (location.name || location.title)
-      : location;
-    const address = typeof location === 'object'
-      ? (location.address || location.fullAddress)
-      : null;
-    const mapsUrl = event.mapsUrl || event.googleMapsUrl || event.mapUrl ||
-      (typeof location === 'object' ? location.mapsUrl : null);
+    const locationName =
+      typeof location === "object" ? location.name || location.title : location;
+    const address =
+      typeof location === "object"
+        ? location.address || location.fullAddress
+        : null;
+    const mapsUrl =
+      event.mapsUrl ||
+      event.googleMapsUrl ||
+      event.mapUrl ||
+      (typeof location === "object" ? location.mapsUrl : null);
 
     // Get organizer info
     const organizer = event.organizer || event.host || event.creator;
-    const organizerName = typeof organizer === 'object'
-      ? (organizer.name || organizer.displayName || organizer.username)
-      : organizer;
+    const organizerName =
+      typeof organizer === "object"
+        ? organizer.name || organizer.displayName || organizer.username
+        : organizer;
 
     // Get description - may be plain text or rich text (Slate.js JSON)
     let description = event.description || event.body || event.content;
     // If description is an object (e.g., Slate.js JSON), parse it to plain text
-    if (description && typeof description === 'object') {
+    if (description && typeof description === "object") {
       description = parseRichTextDescription(description);
     }
     // Also handle JSON string format (some APIs return Slate.js as serialized JSON string)
-    if (description && typeof description === 'string' && description.startsWith('[{')) {
+    if (
+      description &&
+      typeof description === "string" &&
+      description.startsWith("[{")
+    ) {
       try {
         const parsed = JSON.parse(description);
         if (Array.isArray(parsed)) {
@@ -647,7 +736,9 @@ async function fetchGenericEvent(eventUrl: string) {
       }
     }
 
-    console.log(`Generic import: Got "${title}" - date: ${startDate}, location: ${locationName}`);
+    console.log(
+      `Generic import: Got "${title}" - date: ${startDate}, location: ${locationName}`,
+    );
 
     return {
       url: eventUrl,
@@ -662,11 +753,14 @@ async function fetchGenericEvent(eventUrl: string) {
       venue: locationName,
       address: address,
       city: event.city,
-      latitude: event.latitude || (typeof location === 'object' ? location.lat : null),
-      longitude: event.longitude || (typeof location === 'object' ? location.lng : null),
+      latitude:
+        event.latitude || (typeof location === "object" ? location.lat : null),
+      longitude:
+        event.longitude || (typeof location === "object" ? location.lng : null),
       organizer: organizerName,
       hostName: organizerName,
-      imageUrl: event.image || event.coverImage || event.cover || event.imageUrl,
+      imageUrl:
+        event.image || event.coverImage || event.cover || event.imageUrl,
       coverImage: event.image || event.coverImage || event.cover,
       attendeeCount: event.attendeeCount || event.goingCount,
       isFree: event.isFree ?? (event.price === 0 || event.price === null),

@@ -1,19 +1,11 @@
 /**
  * Event Import Module
  *
- * Handles importing events from various platforms via Apify webhooks.
+ * Legacy explicit-admin import utilities. Background discovery and automatic
+ * publication live in Activity Graph.
  */
 
-export { processApifyPayload } from "./apify-processor";
-export type {
-  ApifyWebhookPayload,
-  ApifyProcessorPayload,
-  FacebookEvent,
-  InstagramPost,
-  TikTokPost,
-  EventbriteEvent,
-  ExtractedEvent,
-} from "./types";
+export type { FacebookEvent, EventbriteEvent, ExtractedEvent } from "./types";
 export type { ProcessResult } from "./utils";
 
 // Flip.vn scraper
@@ -24,4 +16,3 @@ export {
   type FlipEvent,
   type FlipFetchOptions,
 } from "./processors/flip";
-

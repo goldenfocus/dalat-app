@@ -21,8 +21,6 @@ import {
   Calendar,
   MapPin,
   Clock,
-  Play,
-  RefreshCw,
   ExternalLink,
   Lightbulb,
   Zap,
@@ -30,9 +28,8 @@ import {
   ChevronUp,
   HelpCircle,
   Copy,
-  Globe,
 } from "lucide-react";
-import { CommunityFlyerReview } from "./community-flyer-review";
+import { ActivityGraphDebug } from "./activity-graph-debug";
 
 interface ImportResult {
   success: boolean;
@@ -62,13 +59,6 @@ interface DiscoveredVenue {
   facebookUrl?: string;
   website?: string;
   address?: string;
-}
-
-interface ScheduleStatus {
-  enabled: boolean;
-  lastRun?: string;
-  nextRun?: string;
-  venueCount: number;
 }
 
 // Collapsible help section component
@@ -118,22 +108,6 @@ function Tip({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Event source types - defined outside component to avoid hydration issues
-type EventSource = "dalat-gov" | "wellhoods";
-
-const EVENT_SOURCES: Record<EventSource, { name: string; description: string; endpoint: string }> = {
-  "dalat-gov": {
-    name: "Đà Lạt Gov.vn",
-    description: "Scrapes dalat-info.gov.vn (tourism & culture) - AI extracts events from Vietnamese articles",
-    endpoint: "/api/import/dalat-gov",
-  },
-  "wellhoods": {
-    name: "Wellhoods",
-    description: "Wellness events from wellhoods.com",
-    endpoint: "/api/import/wellhoods",
-  },
-};
-
 export function AdminImportPage() {
   // Single URL import
   const [url, setUrl] = useState("");
@@ -152,30 +126,13 @@ export function AdminImportPage() {
   // Venue discovery
   const [discovering, setDiscovering] = useState(false);
   const [discoveredVenues, setDiscoveredVenues] = useState<DiscoveredVenue[]>(
-    []
+    [],
   );
   const [searchQuery, setSearchQuery] = useState("Đà Lạt Vietnam");
-
-  // Schedule status
-  const [schedule, setSchedule] = useState<ScheduleStatus | null>(null);
-  const [scheduleLoading, setScheduleLoading] = useState(false);
-
-  // Event source sync
-  const [selectedSource, setSelectedSource] = useState<EventSource>("dalat-gov");
-  const [sourceSyncing, setSourceSyncing] = useState(false);
-  const [sourceResult, setSourceResult] = useState<{
-    success: boolean;
-    articlesScraped?: number;
-    processed: number;
-    skipped: number;
-    errors: number;
-    details?: string[];
-  } | null>(null);
 
   // Load import history on mount
   useEffect(() => {
     loadHistory();
-    loadScheduleStatus();
   }, []);
 
   async function loadHistory() {
@@ -190,18 +147,6 @@ export function AdminImportPage() {
       console.error("Failed to load history");
     } finally {
       setHistoryLoading(false);
-    }
-  }
-
-  async function loadScheduleStatus() {
-    try {
-      const response = await fetch("/api/import/schedule");
-      if (response.ok) {
-        const data = await response.json();
-        setSchedule(data);
-      }
-    } catch {
-      console.error("Failed to load schedule");
     }
   }
 
@@ -223,7 +168,8 @@ export function AdminImportPage() {
       if (!contentType.includes("application/json")) {
         setResult({
           success: false,
-          message: "Request timed out. Facebook scraping can take a while. Please try again.",
+          message:
+            "Request timed out. Facebook scraping can take a while. Please try again.",
         });
         return;
       }
@@ -342,87 +288,6 @@ export function AdminImportPage() {
     }
   }
 
-  async function handleToggleSchedule() {
-    setScheduleLoading(true);
-    try {
-      const response = await fetch("/api/import/schedule", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enabled: !schedule?.enabled }),
-      });
-
-      if (response.ok) {
-        await loadScheduleStatus();
-      }
-    } catch {
-      console.error("Failed to toggle schedule");
-    } finally {
-      setScheduleLoading(false);
-    }
-  }
-
-  async function handleRunNow() {
-    setScheduleLoading(true);
-    try {
-      const response = await fetch("/api/import/schedule/run", {
-        method: "POST",
-      });
-
-      if (response.ok) {
-        await loadScheduleStatus();
-      }
-    } catch {
-      console.error("Failed to trigger run");
-    } finally {
-      setScheduleLoading(false);
-    }
-  }
-
-  async function handleSyncSource() {
-    setSourceSyncing(true);
-    setSourceResult(null);
-
-    const source = EVENT_SOURCES[selectedSource];
-
-    try {
-      const response = await fetch(source.endpoint, {
-        method: "POST",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSourceResult({
-          success: true,
-          articlesScraped: data.articlesScraped,
-          processed: data.processed || 0,
-          skipped: data.skipped || 0,
-          errors: data.errors || 0,
-          details: data.details,
-        });
-        loadHistory();
-      } else {
-        setSourceResult({
-          success: false,
-          processed: 0,
-          skipped: 0,
-          errors: 1,
-          details: [data.error || "Sync failed"],
-        });
-      }
-    } catch (err) {
-      setSourceResult({
-        success: false,
-        processed: 0,
-        skipped: 0,
-        errors: 1,
-        details: [`Network error: ${err instanceof Error ? err.message : "Unknown"}`],
-      });
-    } finally {
-      setSourceSyncing(false);
-    }
-  }
-
   return (
     <div className="space-y-6">
       {/* Header with quick start guide */}
@@ -483,7 +348,7 @@ export function AdminImportPage() {
         </Card>
       </div>
 
-      <CommunityFlyerReview />
+      <ActivityGraphDebug />
 
       <Tabs defaultValue="import" className="space-y-6">
         <TabsList className="grid grid-cols-4 w-full max-w-xl">
@@ -497,7 +362,7 @@ export function AdminImportPage() {
           </TabsTrigger>
           <TabsTrigger value="schedule" className="gap-1.5">
             <Calendar className="w-4 h-4" />
-            <span className="hidden sm:inline">Auto</span>
+            <span className="hidden sm:inline">Legacy</span>
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-1.5">
             <Clock className="w-4 h-4" />
@@ -571,7 +436,6 @@ export function AdminImportPage() {
                   )}
                 </div>
               )}
-
             </CardContent>
           </Card>
 
@@ -657,7 +521,9 @@ https://eventbrite.com/e/some-event-tickets-123`}
                   <li>
                     Go to the event page on Facebook, Eventbrite, or Lu.ma
                   </li>
-                  <li>Copy the full URL from your browser&apos;s address bar</li>
+                  <li>
+                    Copy the full URL from your browser&apos;s address bar
+                  </li>
                   <li>Paste it here — the system extracts all event details</li>
                 </ol>
                 <p className="mt-3 text-xs opacity-75">
@@ -739,16 +605,17 @@ https://eventbrite.com/e/some-event-tickets-123`}
                               Facebook
                             </a>
                           )}
-                          {venue.website && !venue.website.includes("facebook") && (
-                            <a
-                              href={venue.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs px-2 py-1 bg-gray-500/10 text-gray-600 rounded hover:bg-gray-500/20 transition-colors"
-                            >
-                              Website
-                            </a>
-                          )}
+                          {venue.website &&
+                            !venue.website.includes("facebook") && (
+                              <a
+                                href={venue.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs px-2 py-1 bg-gray-500/10 text-gray-600 rounded hover:bg-gray-500/20 transition-colors"
+                              >
+                                Website
+                              </a>
+                            )}
                         </div>
                       </div>
                     ))}
@@ -782,277 +649,19 @@ https://eventbrite.com/e/some-event-tickets-123`}
           </Card>
         </TabsContent>
 
-        {/* ==================== AUTO-SCRAPING TAB ==================== */}
         <TabsContent value="schedule" className="space-y-6">
-          {/* Event Sources Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="w-5 h-5" />
-                Event Sources
-              </CardTitle>
+              <CardTitle>Legacy automatic importer retired</CardTitle>
               <CardDescription>
-                Scrape events from external websites - runs daily at 8 AM Vietnam time
+                Machine-discovered activities now run only through the Activity
+                Graph above.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <select
-                  value={selectedSource}
-                  onChange={(e) => {
-                    setSelectedSource(e.target.value as EventSource);
-                    setSourceResult(null);
-                  }}
-                  className="flex-1 px-3 py-2 rounded-lg border bg-background text-sm"
-                >
-                  {Object.entries(EVENT_SOURCES).map(([key, source]) => (
-                    <option key={key} value={key}>
-                      {source.name}
-                    </option>
-                  ))}
-                </select>
-                <Button
-                  onClick={handleSyncSource}
-                  disabled={sourceSyncing}
-                  className="min-w-[120px]"
-                >
-                  {sourceSyncing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Syncing...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Sync Now
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                {EVENT_SOURCES[selectedSource].description}
-              </p>
-
-              {sourceResult && (
-                <div
-                  className={`p-4 rounded-lg ${
-                    sourceResult.success
-                      ? "bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800"
-                      : "bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    {sourceResult.success ? (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                    )}
-                    <span className="font-medium">
-                      {sourceResult.success ? "Sync Complete" : "Sync Failed"}
-                    </span>
-                  </div>
-                  <div className={`grid gap-4 text-sm ${sourceResult.articlesScraped !== undefined ? "grid-cols-4" : "grid-cols-3"}`}>
-                    {sourceResult.articlesScraped !== undefined && (
-                      <div>
-                        <p className="text-muted-foreground">Articles</p>
-                        <p className="text-lg font-bold text-blue-600">
-                          {sourceResult.articlesScraped}
-                        </p>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-muted-foreground">Imported</p>
-                      <p className="text-lg font-bold text-green-600">
-                        {sourceResult.processed}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Skipped</p>
-                      <p className="text-lg font-bold text-gray-500">
-                        {sourceResult.skipped}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Errors</p>
-                      <p className="text-lg font-bold text-red-600">
-                        {sourceResult.errors}
-                      </p>
-                    </div>
-                  </div>
-                  {sourceResult.details && sourceResult.details.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-current/10">
-                      <p className="text-xs text-muted-foreground mb-1">Details:</p>
-                      <div className="max-h-32 overflow-y-auto text-xs space-y-1">
-                        {sourceResult.details.slice(0, 15).map((detail, i) => (
-                          <p key={i} className="truncate">{detail}</p>
-                        ))}
-                        {sourceResult.details.length > 15 && (
-                          <p className="text-muted-foreground">
-                            ...and {sourceResult.details.length - 15} more
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Facebook Auto-Scraping Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Facebook Auto-Scraping
-              </CardTitle>
-              <CardDescription>
-                Set it and forget it — automatically import new events every day
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {schedule ? (
-                <>
-                  {/* Status cards */}
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div
-                      className={`p-4 rounded-lg border-2 ${
-                        schedule.enabled
-                          ? "border-green-500/50 bg-green-50/50 dark:bg-green-950/20"
-                          : "border-gray-300 dark:border-gray-700"
-                      }`}
-                    >
-                      <p className="text-sm text-muted-foreground">Status</p>
-                      <p
-                        className={`text-xl font-bold ${
-                          schedule.enabled
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {schedule.enabled ? "Active" : "Disabled"}
-                      </p>
-                      {schedule.enabled && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Runs daily at 6:00 AM UTC
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="p-4 rounded-lg border">
-                      <p className="text-sm text-muted-foreground">
-                        Imported Events
-                      </p>
-                      <p className="text-xl font-bold">{schedule.venueCount}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Total events from external sources
-                      </p>
-                    </div>
-
-                    {schedule.lastRun && (
-                      <div className="p-4 rounded-lg border">
-                        <p className="text-sm text-muted-foreground">
-                          Last Run
-                        </p>
-                        <p className="font-medium flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {new Date(schedule.lastRun).toLocaleString()}
-                        </p>
-                      </div>
-                    )}
-
-                    {schedule.nextRun && schedule.enabled && (
-                      <div className="p-4 rounded-lg border">
-                        <p className="text-sm text-muted-foreground">
-                          Next Run
-                        </p>
-                        <p className="font-medium flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {new Date(schedule.nextRun).toLocaleString()}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex flex-wrap gap-3 pt-2">
-                    <Button
-                      variant={schedule.enabled ? "destructive" : "default"}
-                      onClick={handleToggleSchedule}
-                      disabled={scheduleLoading}
-                      className="min-w-[180px]"
-                    >
-                      {scheduleLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : schedule.enabled ? (
-                        "Disable Auto-Scraping"
-                      ) : (
-                        "Enable Auto-Scraping"
-                      )}
-                    </Button>
-
-                    {schedule.enabled && (
-                      <Button
-                        variant="outline"
-                        onClick={handleRunNow}
-                        disabled={scheduleLoading}
-                      >
-                        {scheduleLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Play className="w-4 h-4 mr-2" />
-                            Run Now
-                          </>
-                        )}
-                      </Button>
-                    )}
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={loadScheduleStatus}
-                      disabled={scheduleLoading}
-                    >
-                      <RefreshCw
-                        className={`w-4 h-4 ${scheduleLoading ? "animate-spin" : ""}`}
-                      />
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Loading schedule status...
-                  </p>
-                </div>
-              )}
-
-              <HelpSection title="How auto-scraping works" defaultOpen>
-                <div className="space-y-3 mt-2">
-                  <p>
-                    When enabled, the system automatically scrapes events from
-                    tracked venues every day at 6 AM UTC.
-                  </p>
-                  <div className="space-y-2">
-                    <p className="font-medium">What happens:</p>
-                    <ol className="list-decimal list-inside space-y-1 text-sm">
-                      <li>
-                        Apify runs daily and scrapes configured Facebook pages
-                      </li>
-                      <li>New events are sent to our webhook automatically</li>
-                      <li>Events are created with all details (no duplicates)</li>
-                      <li>You can see all imports in the History tab</li>
-                    </ol>
-                  </div>
-                  <Tip>
-                    Click &quot;Run Now&quot; to trigger an immediate scrape
-                    instead of waiting for the scheduled time.
-                  </Tip>
-                </div>
-              </HelpSection>
+            <CardContent className="text-sm text-muted-foreground">
+              There is no event approval queue. Deterministic evidence gates
+              publish qualifying activities automatically; uncertain results
+              stay invisible, and administrators can unlist any live result.
             </CardContent>
           </Card>
         </TabsContent>
@@ -1089,7 +698,7 @@ https://eventbrite.com/e/some-event-tickets-123`}
                     variant="outline"
                     onClick={() => {
                       const tabTrigger = document.querySelector(
-                        '[data-state="inactive"][value="import"]'
+                        '[data-state="inactive"][value="import"]',
                       ) as HTMLButtonElement;
                       tabTrigger?.click();
                     }}

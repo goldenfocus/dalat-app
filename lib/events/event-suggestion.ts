@@ -11,9 +11,8 @@ const MAX_REDIRECTS = 3;
 const MAX_HTML_BYTES = 1_000_000;
 const MAX_EXTRACTED_TEXT = 14_000;
 
-export const COMMUNITY_SUGGESTION_SOURCE = "community-suggestion";
-
-// V1 deliberately uses a reviewed source allowlist. Preflight DNS validation
+// The explicit-admin URL importer deliberately uses a fixed source allowlist.
+// Preflight DNS validation
 // followed by a normal hostname fetch is vulnerable to DNS rebinding, so an
 // arbitrary-domain fetch is not an acceptable public boundary.
 const ALLOWED_SOURCE_HOSTS = [
@@ -54,8 +53,8 @@ export interface EventSourcePreview {
 }
 
 /**
- * Canonical form used for queue idempotency. Tracking parameters and fragments
- * should not let the same event consume the review queue more than once.
+ * Canonical form used for import idempotency. Tracking parameters and fragments
+ * should not make one source look like multiple activities.
  */
 export function normalizeSuggestionUrl(input: string): string {
   const url = new URL(input.trim());
@@ -80,7 +79,9 @@ function parseIpv4(address: string): number[] | null {
 
 /** Reject addresses that are local, private, link-local, reserved, or multicast. */
 export function isPublicNetworkAddress(address: string): boolean {
-  const mappedIpv4 = address.toLowerCase().match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)?.[1];
+  const mappedIpv4 = address
+    .toLowerCase()
+    .match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)?.[1];
   const ipv4 = parseIpv4(mappedIpv4 ?? address);
 
   if (ipv4) {
@@ -116,7 +117,11 @@ function parseSuggestionUrl(input: string): URL {
     throw new SuggestionSourceError("invalid_url");
   }
 
-  if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) {
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username ||
+    url.password
+  ) {
     throw new SuggestionSourceError("invalid_url");
   }
 
@@ -135,7 +140,11 @@ function parseSuggestionUrl(input: string): URL {
   if (isIP(hostname) && !isPublicNetworkAddress(hostname)) {
     throw new SuggestionSourceError("unsafe_url");
   }
-  if (!ALLOWED_SOURCE_HOSTS.some((host) => hostname === host || hostname.endsWith(`.${host}`))) {
+  if (
+    !ALLOWED_SOURCE_HOSTS.some(
+      (host) => hostname === host || hostname.endsWith(`.${host}`),
+    )
+  ) {
     throw new SuggestionSourceError("unsupported_source");
   }
   return url;
@@ -149,7 +158,10 @@ async function assertPublicDestination(url: URL): Promise<void> {
   } catch {
     throw new SuggestionSourceError("source_unavailable");
   }
-  if (!addresses.length || addresses.some(({ address }) => !isPublicNetworkAddress(address))) {
+  if (
+    !addresses.length ||
+    addresses.some(({ address }) => !isPublicNetworkAddress(address))
+  ) {
     throw new SuggestionSourceError("unsafe_url");
   }
 }
@@ -189,7 +201,9 @@ async function readBoundedText(response: Response): Promise<string> {
  * the existing review worker. Redirects are followed manually so each target
  * is revalidated before any request is made.
  */
-export async function fetchEventSourcePreview(input: string): Promise<EventSourcePreview> {
+export async function fetchEventSourcePreview(
+  input: string,
+): Promise<EventSourcePreview> {
   let current = parseSuggestionUrl(input);
 
   for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects++) {
@@ -203,7 +217,8 @@ export async function fetchEventSourcePreview(input: string): Promise<EventSourc
         headers: {
           Accept: "text/html,application/xhtml+xml,text/plain;q=0.9",
           "Accept-Language": "vi,en;q=0.7",
-          "User-Agent": "Mozilla/5.0 (compatible; DalatApp/1.0; +https://dalat.app)",
+          "User-Agent":
+            "Mozilla/5.0 (compatible; DalatApp/1.0; +https://dalat.app)",
         },
         redirect: "manual",
         cache: "no-store",
@@ -225,7 +240,8 @@ export async function fetchEventSourcePreview(input: string): Promise<EventSourc
     }
 
     if (!response.ok) throw new SuggestionSourceError("source_unavailable");
-    const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+    const contentType =
+      response.headers.get("content-type")?.toLowerCase() ?? "";
     if (
       contentType &&
       !contentType.includes("text/html") &&
@@ -237,7 +253,10 @@ export async function fetchEventSourcePreview(input: string): Promise<EventSourc
 
     const html = await readBoundedText(response);
     const title = extractTitle(html)?.slice(0, 300).trim();
-    const body = html.match(/<(?:main|article|body)\b[^>]*>([\s\S]*?)<\/(?:main|article|body)>/i)?.[1] ?? html;
+    const body =
+      html.match(
+        /<(?:main|article|body)\b[^>]*>([\s\S]*?)<\/(?:main|article|body)>/i,
+      )?.[1] ?? html;
     const content = stripHtml(body).slice(0, MAX_EXTRACTED_TEXT).trim();
     if (!title || content.length < 40) {
       throw new SuggestionSourceError("unsupported_source");

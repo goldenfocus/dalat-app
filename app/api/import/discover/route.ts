@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { authorizeImportModerator } from "@/lib/import/moderator-authorization";
 
 interface DiscoveredVenue {
   name: string;
@@ -17,34 +17,35 @@ const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
  * This is more automated than the manual script
  */
 export async function POST(request: Request) {
-  // Auth check
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json(
-      { error: "Authentication required" },
-      { status: 401 }
-    );
-  }
+  const authorization = await authorizeImportModerator();
+  if (!authorization.ok) return authorization.response;
+  const { supabase } = authorization;
 
   // Database-backed rate limiting
-  const { data: rateCheck, error: rateError } = await supabase.rpc('check_rate_limit', {
-    p_action: 'import_discover',
-    p_limit: RATE_LIMIT,
-    p_window_ms: RATE_WINDOW_MS,
-  });
+  const { data: rateCheck, error: rateError } = await supabase.rpc(
+    "check_rate_limit",
+    {
+      p_action: "import_discover",
+      p_limit: RATE_LIMIT,
+      p_window_ms: RATE_WINDOW_MS,
+    },
+  );
 
   if (rateError) {
     console.error("[import/discover] Rate limit check failed:", rateError);
-  } else if (!rateCheck?.allowed) {
+    return NextResponse.json(
+      { error: "Rate limiting unavailable" },
+      { status: 503 },
+    );
+  }
+  if (!rateCheck?.allowed) {
     return NextResponse.json(
       {
         error: "Rate limit exceeded. Try again later.",
         remaining: 0,
         reset_at: rateCheck?.reset_at,
       },
-      { status: 429 }
+      { status: 429 },
     );
   }
 
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
     if (!apiToken) {
       return NextResponse.json(
         { error: "Apify not configured" },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
           maxCrawledPlacesPerSearch: 15,
           language: "en",
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
       console.error("Apify discovery error:", errorText);
       return NextResponse.json(
         { error: `Discovery failed (${response.status})` },
-        { status: 502 }
+        { status: 502 },
       );
     }
 
@@ -132,9 +133,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Discovery error:", error);
-    return NextResponse.json(
-      { error: "Internal error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

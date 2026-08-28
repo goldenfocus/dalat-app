@@ -15,7 +15,6 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const FROZEN_OFFENDERS = new Set([
-  "app/[locale]/series/[slug]/page.tsx",
   "app/[locale]/activity/page.tsx",
   "app/[locale]/invite/[token]/page.tsx",
   "app/[locale]/venues/[slug]/events/page.tsx",
@@ -54,7 +53,7 @@ for (const file of walk("app/[locale]")) {
 
 if (fixedFrozen.length > 0) {
   console.log(
-    `check-canonicals: 🎉 frozen offender(s) now fixed — remove from FROZEN_OFFENDERS in scripts/check-canonicals.mjs:\n  ${fixedFrozen.join("\n  ")}`
+    `check-canonicals: 🎉 frozen offender(s) now fixed — remove from FROZEN_OFFENDERS in scripts/check-canonicals.mjs:\n  ${fixedFrozen.join("\n  ")}`,
   );
 }
 
@@ -62,9 +61,11 @@ if (offenders.length > 0) {
   console.error(
     `\x1b[31mcheck-canonicals: ${offenders.length} page(s) export generateMetadata WITHOUT canonical/hreflang alternates.\n` +
       `Without alternates, the page inherits the locale layout's HOMEPAGE canonical and Google suppresses it.\n` +
-      `Fix: add \`alternates: buildAlternates(locale, path)\` (lib/metadata.ts) or use generateLocalizedMetadata.\n  ${offenders.join("\n  ")}\x1b[0m`
+      `Fix: add \`alternates: buildAlternates(locale, path)\` (lib/metadata.ts) or use generateLocalizedMetadata.\n  ${offenders.join("\n  ")}\x1b[0m`,
   );
   process.exit(1);
 }
 
-console.log("✓ check-canonicals: all generateMetadata pages emit alternates (8 frozen legacy offenders)");
+console.log(
+  `✓ check-canonicals: all generateMetadata pages emit alternates (${FROZEN_OFFENDERS.size} frozen legacy offenders)`,
+);

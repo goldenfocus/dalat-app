@@ -1,22 +1,15 @@
 import { redirect } from "next/navigation";
 import { Copy } from "lucide-react";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslations } from "next-intl/server";
 
 // Increase serverless function timeout
 export const maxDuration = 60;
-import { EventForm, type CommunityFlyerSeed } from "@/components/events/event-form";
+import { EventForm } from "@/components/events/event-form";
 import type { Event, Sponsor, EventSponsor, UserRole } from "@/lib/types";
-import { hasRoleLevel } from "@/lib/types";
-import {
-  COMMUNITY_FLYER_SOURCE,
-  COMMUNITY_FLYER_TYPE,
-  sanitizeCommunityFlyerRow,
-} from "@/lib/import/community-flyer-review";
 
 interface PageProps {
-  searchParams: Promise<{ copyFrom?: string; tribe?: string; reviewFlyer?: string }>;
+  searchParams: Promise<{ copyFrom?: string; tribe?: string }>;
 }
 
 // Data to copy from source event
@@ -52,7 +45,7 @@ async function getCopyFromData(eventId: string): Promise<CopyFromData | null> {
 
 export default async function NewEventPage({ searchParams }: PageProps) {
   const supabase = await createClient();
-  const { copyFrom, tribe, reviewFlyer } = await searchParams;
+  const { copyFrom, tribe } = await searchParams;
   const t = await getTranslations("eventForm");
 
   const {
@@ -70,39 +63,6 @@ export default async function NewEventPage({ searchParams }: PageProps) {
     .eq("id", user.id)
     .single();
 
-  let communityFlyer: CommunityFlyerSeed | undefined;
-  if (reviewFlyer) {
-    const canModerate = profile?.role && hasRoleLevel(profile.role as UserRole, "moderator");
-    if (!canModerate) redirect("/events/new");
-
-    // Never construct a service-role client until the normal session's role
-    // has been verified above.
-    const serviceUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (serviceUrl && serviceKey) {
-      const admin = createAdminClient(serviceUrl, serviceKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
-      });
-      const { data: row } = await admin
-        .from("import_queue")
-        .select("id, status, payload, created_at, error_detail")
-        .eq("id", reviewFlyer)
-        .eq("source", COMMUNITY_FLYER_SOURCE)
-        .eq("type", COMMUNITY_FLYER_TYPE)
-        .in("status", ["pending", "failed"])
-        .maybeSingle();
-      const safeFlyer = row ? sanitizeCommunityFlyerRow(row) : null;
-      if (safeFlyer) {
-        communityFlyer = {
-          queueId: safeFlyer.id,
-          title: safeFlyer.title,
-          imageUrl: safeFlyer.flyerUrl,
-        };
-      }
-    }
-    if (!communityFlyer) redirect("/admin/import");
-  }
-
   // If copying from another event, fetch its data
   let copyFromData: CopyFromData | null = null;
   if (copyFrom) {
@@ -117,16 +77,19 @@ export default async function NewEventPage({ searchParams }: PageProps) {
         {copyFromData && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4 p-3 bg-muted/50 rounded-lg">
             <Copy className="w-4 h-4" />
-            <span>Creating from: <strong className="text-foreground">{copyFromData.event.title}</strong></span>
+            <span>
+              Creating from:{" "}
+              <strong className="text-foreground">
+                {copyFromData.event.title}
+              </strong>
+            </span>
           </div>
         )}
         <div className="mb-8">
           <h1 className="text-2xl font-bold">
             {isCopying ? t("pageTitleCopy") : t("pageTitle")}
           </h1>
-          <p className="text-muted-foreground mt-2">
-            {t("pageSubtitle")}
-          </p>
+          <p className="text-muted-foreground mt-2">{t("pageSubtitle")}</p>
         </div>
         <EventForm
           userId={user.id}
@@ -134,7 +97,6 @@ export default async function NewEventPage({ searchParams }: PageProps) {
           copyFromEvent={copyFromData?.event}
           copyFromSponsors={copyFromData?.sponsors}
           initialTribeSlug={tribe}
-          communityFlyer={communityFlyer}
         />
       </div>
     </main>

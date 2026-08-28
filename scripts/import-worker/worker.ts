@@ -51,7 +51,20 @@ const ARTICLES_PER_MODEL_CALL = 5;
 const MAX_ATTEMPTS = 3;
 const modelRunner = new SubscriptionModelRunner();
 
-const LOCALES = ["en", "vi", "ko", "zh", "ru", "fr", "ja", "ms", "th", "de", "es", "id"] as const;
+const LOCALES = [
+  "en",
+  "vi",
+  "ko",
+  "zh",
+  "ru",
+  "fr",
+  "ja",
+  "ms",
+  "th",
+  "de",
+  "es",
+  "id",
+] as const;
 
 // ---------- Zod contracts (garbage never inserts) ----------
 
@@ -59,8 +72,16 @@ const ExtractedEventSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
-  startTime: z.string().regex(/^\d{1,2}:\d{2}$/).optional().nullable(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .nullable(),
+  startTime: z
+    .string()
+    .regex(/^\d{1,2}:\d{2}$/)
+    .optional()
+    .nullable(),
   locationName: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
   organizerName: z.string().optional().nullable(),
@@ -70,7 +91,7 @@ const ExtractionResultSchema = z.array(
   z.object({
     source_uid: z.string(),
     events: z.array(ExtractedEventSchema),
-  })
+  }),
 );
 
 const LocaleFieldsSchema = z.object({
@@ -80,8 +101,10 @@ const LocaleFieldsSchema = z.object({
 // ALL 12 locales required — a partial answer is a validation failure,
 // not a partial success (red-team fix #2).
 const TranslationSchema = z.object(
-  Object.fromEntries(LOCALES.map((l) => [l, LocaleFieldsSchema]))
-) as z.ZodType<Record<(typeof LOCALES)[number], { title: string; description: string }>>;
+  Object.fromEntries(LOCALES.map((l) => [l, LocaleFieldsSchema])),
+) as z.ZodType<
+  Record<(typeof LOCALES)[number], { title: string; description: string }>
+>;
 
 interface QueueRow {
   id: string;
@@ -106,7 +129,9 @@ function parseSchemaOutput<T>(text: string, schema: z.ZodType<T>): T {
 // ---------- prompts ----------
 
 function extractionPrompt(rows: QueueRow[]): string {
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(new Date());
   const articles = rows.map((r) => ({
     source_uid: r.source_uid,
     title: r.payload.title,
@@ -156,9 +181,11 @@ async function claimRows(supabase: SupabaseClient): Promise<QueueRow[]> {
     .from("import_queue")
     .select("id")
     .eq("status", "pending")
-    // URL articles and synthetic text canaries are automatic lanes. Image
-    // flyers stay in the separate manual-review lane.
+    // The legacy article importer is retired because it produced drafts that
+    // depended on human review. Keep only the inert synthetic lane available
+    // for old installations; real activities now flow through Activity Graph.
     .in("type", [...AUTO_IMPORT_QUEUE_TYPES])
+    .eq("source", "canary")
     .order("created_at", { ascending: true })
     .limit(MAX_ROWS_PER_RUN);
   if (selErr) throw new Error(`Queue select failed: ${selErr.message}`);
@@ -168,7 +195,10 @@ async function claimRows(supabase: SupabaseClient): Promise<QueueRow[]> {
   const { data: claimed, error: updErr } = await supabase
     .from("import_queue")
     .update({ status: "processing" })
-    .in("id", candidates.map((c) => c.id))
+    .in(
+      "id",
+      candidates.map((c) => c.id),
+    )
     .eq("status", "pending")
     .select("id, source, type, source_uid, payload, attempts");
   if (updErr) throw new Error(`Queue claim failed: ${updErr.message}`);
@@ -179,11 +209,19 @@ async function markDone(supabase: SupabaseClient, ids: string[]) {
   if (!ids.length) return;
   await supabase
     .from("import_queue")
-    .update({ status: "done", processed_at: new Date().toISOString(), error_detail: null })
+    .update({
+      status: "done",
+      processed_at: new Date().toISOString(),
+      error_detail: null,
+    })
     .in("id", ids);
 }
 
-async function markFailed(supabase: SupabaseClient, rows: QueueRow[], detail: string) {
+async function markFailed(
+  supabase: SupabaseClient,
+  rows: QueueRow[],
+  detail: string,
+) {
   for (const row of rows) {
     const attempts = row.attempts + 1;
     await supabase
@@ -206,12 +244,12 @@ async function translateAndStore(
   supabase: SupabaseClient,
   eventId: string,
   title: string,
-  description: string
+  description: string,
 ) {
   const translations = modelRunner.askStructured(
     "translation",
     translationPrompt(title, description),
-    (answer) => parseSchemaOutput(answer, TranslationSchema)
+    (answer) => parseSchemaOutput(answer, TranslationSchema),
   );
 
   const inserts = LOCALES.flatMap((locale) => [
@@ -237,10 +275,15 @@ async function translateAndStore(
 
   const { error } = await supabase
     .from("content_translations")
-    .upsert(inserts, { onConflict: "content_type,content_id,target_locale,field_name" });
+    .upsert(inserts, {
+      onConflict: "content_type,content_id,target_locale,field_name",
+    });
   if (error) throw new Error(`Translation upsert failed: ${error.message}`);
 
-  await supabase.from("events").update({ source_locale: "vi" }).eq("id", eventId);
+  await supabase
+    .from("events")
+    .update({ source_locale: "vi" })
+    .eq("id", eventId);
 }
 
 // ---------- main ----------
@@ -267,7 +310,9 @@ async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing — see README");
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing — see README",
+    );
   }
   const supabase = createClient(url, key);
   const createdBy = await resolveCreatedBy(supabase);
@@ -291,7 +336,7 @@ async function main() {
       extractions = modelRunner.askStructured(
         "extraction",
         extractionPrompt(chunk),
-        (answer) => parseSchemaOutput(answer, ExtractionResultSchema)
+        (answer) => parseSchemaOutput(answer, ExtractionResultSchema),
       );
     } catch (err) {
       const detail = `Extraction failed: ${err instanceof Error ? err.message : String(err)}`;
@@ -327,9 +372,8 @@ async function main() {
           row.payload,
           events,
           result,
-          // Queue provenance is the publication boundary. Community rows and
-          // canaries remain drafts regardless of IMPORT_AUTO_PUBLISH.
-          getQueueImportOptions(row, createdBy)
+          // Synthetic canaries remain drafts and are never public.
+          getQueueImportOptions(row, createdBy),
         );
 
         if (!isCanary) {
@@ -344,7 +388,7 @@ async function main() {
           await markFailed(
             supabase,
             [row],
-            result.details.slice(-3).join("\n")
+            result.details.slice(-3).join("\n"),
           );
         } else {
           await markDone(supabase, [row.id]);
@@ -362,7 +406,7 @@ async function main() {
   // Heartbeat + Telegram digest (🚨 on errors, 📥 on imports)
   await reportImportRun(supabase, SOURCE, startedAt, rows.length, result);
   console.log(
-    `[worker] Done: ${result.processed} imported, ${result.skipped} skipped, ${result.errors} errors`
+    `[worker] Done: ${result.processed} imported, ${result.skipped} skipped, ${result.errors} errors`,
   );
 
   // Errors already Telegrammed via reportImportRun; nonzero exit makes

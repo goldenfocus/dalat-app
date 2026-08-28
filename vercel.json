@@ -10,8 +10,8 @@
       "schedule": "0 20 * * *"
     },
     {
-      "path": "/api/cron/sync-dalat-gov",
-      "schedule": "0 1 * * *"
+      "path": "/api/cron/sync-activity-graph",
+      "schedule": "5 * * * *"
     },
     {
       "path": "/api/cron/backfill-embeddings?limit=20&delay=5000",

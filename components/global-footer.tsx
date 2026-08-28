@@ -31,7 +31,8 @@ export function GlobalFooter() {
   const tHome = useTranslations("home");
 
   // Remove locale prefix for language links
-  const pathWithoutLocale = (pathname ?? "/").replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
+  const pathWithoutLocale =
+    (pathname ?? "/").replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
 
   return (
     <footer className="border-t py-4 lg:py-6 mt-auto mb-20 lg:mb-0">
@@ -76,13 +77,6 @@ export function GlobalFooter() {
             className="hover:text-muted-foreground transition-colors"
           >
             {t("footer.discover")}
-          </Link>
-          <span>·</span>
-          <Link
-            href="/events/suggest"
-            className="inline-flex min-h-11 items-center rounded-lg px-2 hover:text-muted-foreground active:scale-[0.98] transition-all"
-          >
-            {t("footer.suggestEvent")}
           </Link>
           <span>·</span>
           <a

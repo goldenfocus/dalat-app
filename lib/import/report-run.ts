@@ -15,7 +15,7 @@ export async function reportImportRun(
   source: string,
   startedAt: Date,
   rawSeen: number,
-  result: ProcessResult
+  result: ProcessResult,
 ): Promise<void> {
   const repeatZero = await isRepeatZero(supabase, source, rawSeen);
   await recordImportRun(supabase, source, startedAt, rawSeen, result);
@@ -30,11 +30,9 @@ export async function reportImportRun(
           : "") +
         (result.details.length > 0
           ? `\n${result.details.slice(0, 3).join("\n")}`
-          : "")
+          : ""),
     );
   } else if (result.processed > 0) {
-    await sendTelegram(
-      `📥 ${line}\nReview: https://dalat.app/admin/import`
-    );
+    await sendTelegram(`📥 ${line}`);
   }
 }

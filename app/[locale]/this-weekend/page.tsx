@@ -7,7 +7,11 @@ import { EventCard } from "@/components/events/event-card";
 import { Link } from "@/lib/i18n/routing";
 import type { Event, Locale } from "@/lib/types";
 import { generateLocalizedMetadata } from "@/lib/metadata";
-import { JsonLd, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/structured-data";
+import {
+  JsonLd,
+  generateBreadcrumbSchema,
+  generateFAQSchema,
+} from "@/lib/structured-data";
 import { buildLocales } from "@/lib/i18n/routing";
 import { DALAT_TIMEZONE } from "@/lib/timezone";
 import {
@@ -28,7 +32,9 @@ export function generateStaticParams() {
 }
 
 // SEO-optimized for "dalat this weekend" searches
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "thisWeekend" });
 
@@ -88,7 +94,7 @@ async function getWeekendEvents(): Promise<{
     .limit(24);
 
   const visibleEvents = ((data || []) as Event[]).filter((event) =>
-    isEventCurrentOrFuture(event, now)
+    isEventCurrentOrFuture(event, now),
   );
 
   return {
@@ -131,25 +137,33 @@ async function WeekendContent({ locale }: { locale: Locale }) {
   const sundayStr = end.toLocaleDateString(locale, longDate);
 
   // Group events by day
-  const fridayEvents = events.filter((event) => getDaLatIsoWeekday(new Date(event.starts_at)) === 5);
-  const saturdayEvents = events.filter((event) => getDaLatIsoWeekday(new Date(event.starts_at)) === 6);
-  const sundayEvents = events.filter((event) => getDaLatIsoWeekday(new Date(event.starts_at)) === 7);
+  const fridayEvents = events.filter(
+    (event) => getDaLatIsoWeekday(new Date(event.starts_at)) === 5,
+  );
+  const saturdayEvents = events.filter(
+    (event) => getDaLatIsoWeekday(new Date(event.starts_at)) === 6,
+  );
+  const sundayEvents = events.filter(
+    (event) => getDaLatIsoWeekday(new Date(event.starts_at)) === 7,
+  );
 
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
       { name: "This Weekend", url: "/this-weekend" },
     ],
-    locale
+    locale,
   );
 
   const eventListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: locale === "vi" ? "Sự Kiện Cuối Tuần Đà Lạt" : "Da Lat Weekend Events",
-    description: locale === "vi"
-      ? `Các sự kiện diễn ra cuối tuần này tại Đà Lạt (${saturdayStr} - ${sundayStr})`
-      : `Events happening this weekend in Da Lat (${saturdayStr} - ${sundayStr})`,
+    name:
+      locale === "vi" ? "Sự Kiện Cuối Tuần Đà Lạt" : "Da Lat Weekend Events",
+    description:
+      locale === "vi"
+        ? `Các sự kiện diễn ra cuối tuần này tại Đà Lạt (${saturdayStr} - ${sundayStr})`
+        : `Events happening this weekend in Da Lat (${saturdayStr} - ${sundayStr})`,
     numberOfItems: events.length,
     itemListElement: events.slice(0, 50).map((event, index) => ({
       "@type": "ListItem",
@@ -179,27 +193,45 @@ async function WeekendContent({ locale }: { locale: Locale }) {
       ? [
           {
             question: "Cuối tuần này ở Đà Lạt có gì hay?",
-            answer: events.length > 0
-              ? `Có ${events.length} sự kiện diễn ra cuối tuần này tại Đà Lạt${saturdayEvents.length > 0 ? `, bao gồm ${saturdayEvents.slice(0, 2).map(e => e.title).join(", ")}` : ""}. Xem danh sách đầy đủ trên trang này.`
-              : "Hiện chưa có sự kiện nào được đăng cho cuối tuần này. Hãy kiểm tra lại sau hoặc xem các sự kiện sắp tới.",
+            answer:
+              events.length > 0
+                ? `Có ${events.length} sự kiện diễn ra cuối tuần này tại Đà Lạt${
+                    saturdayEvents.length > 0
+                      ? `, bao gồm ${saturdayEvents
+                          .slice(0, 2)
+                          .map((e) => e.title)
+                          .join(", ")}`
+                      : ""
+                  }. Xem danh sách đầy đủ trên trang này.`
+                : "Hiện chưa có sự kiện nào được đăng cho cuối tuần này. Hãy kiểm tra lại sau hoặc xem các sự kiện sắp tới.",
           },
           {
             question: "Làm gì ở Đà Lạt vào cuối tuần?",
-            answer: "Đà Lạt có nhiều hoạt động cuối tuần như: nhạc sống tại các quán cà phê và bar, chợ phiên, triển lãm nghệ thuật, hiking và tham quan các điểm thiên nhiên. Xem lịch sự kiện cập nhật hàng ngày trên ĐàLạt.app.",
+            answer:
+              "Đà Lạt có nhiều hoạt động cuối tuần như: nhạc sống tại các quán cà phê và bar, chợ phiên, triển lãm nghệ thuật, hiking và tham quan các điểm thiên nhiên. Xem lịch sự kiện cập nhật hàng ngày trên ĐàLạt.app.",
           },
         ]
       : [
           {
             question: "What's happening in Da Lat this weekend?",
-            answer: events.length > 0
-              ? `There are ${events.length} events happening this weekend in Da Lat${saturdayEvents.length > 0 ? `, including ${saturdayEvents.slice(0, 2).map(e => e.title).join(", ")}` : ""}. See the full list on this page.`
-              : "No events are currently listed for this weekend. Check back later or browse upcoming events.",
+            answer:
+              events.length > 0
+                ? `There are ${events.length} events happening this weekend in Da Lat${
+                    saturdayEvents.length > 0
+                      ? `, including ${saturdayEvents
+                          .slice(0, 2)
+                          .map((e) => e.title)
+                          .join(", ")}`
+                      : ""
+                  }. See the full list on this page.`
+                : "No events are currently listed for this weekend. Check back later or browse upcoming events.",
           },
           {
             question: "What to do in Da Lat on weekends?",
-            answer: "Da Lat offers many weekend activities: live music at cafes and bars, weekend markets, art exhibitions, hiking, and exploring natural attractions. Check the daily updated event calendar on ĐàLạt.app.",
+            answer:
+              "Da Lat offers many weekend activities: live music at cafes and bars, weekend markets, art exhibitions, hiking, and exploring natural attractions. Check the daily updated event calendar on ĐàLạt.app.",
           },
-        ]
+        ],
   );
 
   if (unavailable) {
@@ -215,10 +247,10 @@ async function WeekendContent({ locale }: { locale: Locale }) {
             {t("unavailableDescription")}
           </p>
           <Link
-            href="/events/suggest"
+            href="/discover"
             className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
           >
-            {footer("suggestEvent")}
+            {footer("discover")}
           </Link>
         </div>
       </>
@@ -250,7 +282,9 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           </p>
           {nextUp.length > 0 && (
             <section className="mx-auto mt-8 max-w-2xl text-left">
-              <h2 className="mb-4 text-lg font-semibold">{home("comingUp.title")}</h2>
+              <h2 className="mb-4 text-lg font-semibold">
+                {home("comingUp.title")}
+              </h2>
               <div className="space-y-4">
                 {nextUp.map((event) => (
                   <EventCard key={event.id} event={event} />
@@ -268,10 +302,10 @@ async function WeekendContent({ locale }: { locale: Locale }) {
               </Link>
             )}
             <Link
-              href="/events/suggest"
+              href="/discover"
               className="inline-flex min-h-11 items-center rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90 active:scale-[0.98]"
             >
-              {footer("suggestEvent")}
+              {footer("discover")}
             </Link>
           </div>
         </div>
@@ -281,7 +315,10 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           {fridayEvents.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold mb-4">
-                {new Date(fridayEvents[0].starts_at).toLocaleDateString(locale, dayHeading)}
+                {new Date(fridayEvents[0].starts_at).toLocaleDateString(
+                  locale,
+                  dayHeading,
+                )}
               </h2>
               <div className="space-y-4">
                 {fridayEvents.map((event) => (
@@ -295,7 +332,10 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           {saturdayEvents.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold mb-4">
-                {new Date(saturdayEvents[0].starts_at).toLocaleDateString(locale, dayHeading)}
+                {new Date(saturdayEvents[0].starts_at).toLocaleDateString(
+                  locale,
+                  dayHeading,
+                )}
               </h2>
               <div className="space-y-4">
                 {saturdayEvents.map((event) => (
@@ -309,7 +349,10 @@ async function WeekendContent({ locale }: { locale: Locale }) {
           {sundayEvents.length > 0 && (
             <section>
               <h2 className="text-lg font-semibold mb-4">
-                {new Date(sundayEvents[0].starts_at).toLocaleDateString(locale, dayHeading)}
+                {new Date(sundayEvents[0].starts_at).toLocaleDateString(
+                  locale,
+                  dayHeading,
+                )}
               </h2>
               <div className="space-y-4">
                 {sundayEvents.map((event) => (
@@ -328,14 +371,23 @@ async function WeekendContent({ locale }: { locale: Locale }) {
         </h3>
         <div className="flex flex-wrap gap-2">
           {(events.length > 0 || nextUp.length > 0) && (
-            <Link href="/events/upcoming" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
+            <Link
+              href="/events/upcoming"
+              className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted"
+            >
               {t("chipUpcoming")}
             </Link>
           )}
-          <Link href="/calendar" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
+          <Link
+            href="/calendar"
+            className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
             {t("chipCalendar")}
           </Link>
-          <Link href="/festivals" className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted">
+          <Link
+            href="/festivals"
+            className="inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-sm transition-colors hover:bg-muted"
+          >
             {t("chipFestivals")}
           </Link>
         </div>
@@ -352,9 +404,7 @@ export default async function ThisWeekendPage({ params }: PageProps) {
   return (
     <main className="min-h-screen pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-2">
-          {t("title")}
-        </h1>
+        <h1 className="text-2xl font-bold mb-2">{t("title")}</h1>
 
         <Suspense fallback={<EventsLoading />}>
           <WeekendContent locale={locale} />
