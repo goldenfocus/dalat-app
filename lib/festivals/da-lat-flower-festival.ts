@@ -9,6 +9,36 @@ export const FLOWER_FESTIVAL_EVENT_PATH =
 export const FLOWER_FESTIVAL_IMAGE =
   "https://cdn.dalat.app/event-media/festival-hoa-a-lat-lan-thu-xi-nam-2026/1783661630144.jpg";
 
+export const FLOWER_FESTIVAL_PAST_PHOTOS = [
+  {
+    src: "https://cdn.dalat.app/festival-media/da-lat-flower-festival/past-editions/2010-flower-festival-entrance.jpg",
+    year: "2010",
+    captionKey: "photo2010",
+    photographer: "Dongson.vmvn",
+    license: "CC BY-SA 3.0",
+    sourceUrl:
+      "https://commons.wikimedia.org/wiki/File:L%E1%BB%85_h%E1%BB%99i_Hoa_%C4%90%C3%A0_L%E1%BA%A1t,_2010.jpg",
+  },
+  {
+    src: "https://cdn.dalat.app/festival-media/da-lat-flower-festival/past-editions/2012-flower-park-crowd.jpg",
+    year: "2012",
+    captionKey: "photo2012Crowd",
+    photographer: "Diane Selwyn",
+    license: "CC BY-SA 3.0",
+    sourceUrl:
+      "https://commons.wikimedia.org/wiki/File:1-1-2012_Flower_Park_2.JPG",
+  },
+  {
+    src: "https://cdn.dalat.app/festival-media/da-lat-flower-festival/past-editions/2012-holland-flower-float.jpg",
+    year: "2012",
+    captionKey: "photo2012Float",
+    photographer: "Violetbonmua",
+    license: "CC BY-SA 3.0",
+    sourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Da_Lat_Flower_Festival_2012_-_26.JPG",
+  },
+] as const;
+
 export const FLOWER_FESTIVAL_LAST_CHECKED = "2026-08-27";
 
 export const FLOWER_FESTIVAL_SOURCES = {

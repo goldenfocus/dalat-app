@@ -1213,6 +1213,16 @@
       "backToGuide": "花卉节指南",
       "statusTitle": "目前已正式公布的信息",
       "statusBody": "林同省于 2026 年 6 月 15 日公布组织计划。以下日期和亮点均来自已发布计划；完整的逐项时间表尚未公布。",
+      "pastGallery": {
+        "title": "往届花开时",
+        "intro": "2010 年和 2012 年的真实照片记录了人群、花卉景观和开幕夜游行。这些照片仅用于呈现历史氛围，并非仍在筹备中的 2026 年现场预览。",
+        "archiveLabel": "往届 · {year}",
+        "photo2010": "游客聚集在 2010 年花卉节的鲜花拱门下。",
+        "photo2012Crowd": "2012 年，游客来到大叻花卉公园的鲜花入口。",
+        "photo2012Float": "2012 年开幕夜，一辆铺满鲜花的荷兰花车从观众面前经过。",
+        "credit": "摄影：{photographer} · {license}",
+        "viewOriginal": "查看原图"
+      },
       "detailsTitle": "关键信息",
       "details": {
         "themeLabel": "官方主题",

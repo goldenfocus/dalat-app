@@ -1233,6 +1233,16 @@
       "backToGuide": "Guide du festival",
       "statusTitle": "Ce qui est officiel à ce jour",
       "statusBody": "Lâm Đồng a annoncé le plan d'organisation le 15 juin 2026. Les dates et temps forts ci-dessous sont publiés, mais le programme complet minute par minute n'est pas encore disponible.",
+      "pastGallery": {
+        "title": "Les festivals passés, en fleurs",
+        "intro": "Des photos authentiques des éditions 2010 et 2012 montrent la foule, les décors floraux et le défilé de la soirée d'ouverture. Elles apportent un contexte historique et ne préfigurent pas l'aménagement 2026, encore en préparation.",
+        "archiveLabel": "Édition passée · {year}",
+        "photo2010": "Les visiteurs se rassemblent sous l'entrée fleurie du festival 2010.",
+        "photo2012Crowd": "Le public arrive à l'entrée fleurie du parc floral de Đà Lạt en 2012.",
+        "photo2012Float": "Un char néerlandais couvert de fleurs défile devant le public lors de l'ouverture de 2012.",
+        "credit": "Photo : {photographer} · {license}",
+        "viewOriginal": "Voir l'original"
+      },
       "detailsTitle": "Informations clés",
       "details": {
         "themeLabel": "Thème officiel",

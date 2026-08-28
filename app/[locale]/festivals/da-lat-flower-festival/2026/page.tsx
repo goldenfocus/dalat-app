@@ -27,6 +27,7 @@ import {
   FLOWER_FESTIVAL_EVENT_PATH,
   FLOWER_FESTIVAL_IMAGE,
   FLOWER_FESTIVAL_LAST_CHECKED,
+  FLOWER_FESTIVAL_PAST_PHOTOS,
   FLOWER_FESTIVAL_PATH,
   FLOWER_FESTIVAL_SOURCES,
 } from "@/lib/festivals/da-lat-flower-festival";
@@ -263,6 +264,71 @@ export default async function DaLatFlowerFestival2026Page({ params }: PageProps)
                     {t("common.lastChecked")}
                   </p>
                 </div>
+              </div>
+            </section>
+
+            <section aria-labelledby="past-editions-gallery">
+              <div className="max-w-3xl">
+                <h2
+                  id="past-editions-gallery"
+                  className="text-2xl font-bold sm:text-3xl"
+                >
+                  {t("edition2026.pastGallery.title")}
+                </h2>
+                <p className="mt-3 text-pretty leading-relaxed text-muted-foreground">
+                  {t("edition2026.pastGallery.intro")}
+                </p>
+              </div>
+
+              <div className="mt-7 grid gap-5 md:grid-cols-3">
+                {FLOWER_FESTIVAL_PAST_PHOTOS.map((photo) => {
+                  const caption = t(
+                    `edition2026.pastGallery.${photo.captionKey}`
+                  );
+
+                  return (
+                    <figure
+                      key={photo.src}
+                      className="group overflow-hidden rounded-2xl border bg-card shadow-sm"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                        <Image
+                          src={photo.src}
+                          alt={caption}
+                          fill
+                          sizes="(min-width: 768px) 30vw, 100vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                        />
+                        <span className="absolute left-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                          {t("edition2026.pastGallery.archiveLabel", {
+                            year: photo.year,
+                          })}
+                        </span>
+                      </div>
+                      <figcaption className="p-4">
+                        <p className="text-sm font-medium leading-relaxed">
+                          {caption}
+                        </p>
+                        <a
+                          href={photo.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer license"
+                          className="mt-3 inline-flex min-h-11 items-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-primary hover:underline"
+                          aria-label={`${t("edition2026.pastGallery.viewOriginal")}: ${caption}`}
+                        >
+                          {t("edition2026.pastGallery.credit", {
+                            photographer: photo.photographer,
+                            license: photo.license,
+                          })}
+                          <ExternalLink
+                            className="h-3.5 w-3.5 shrink-0"
+                            aria-hidden="true"
+                          />
+                        </a>
+                      </figcaption>
+                    </figure>
+                  );
+                })}
               </div>
             </section>
 

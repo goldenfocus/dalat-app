@@ -6,6 +6,7 @@ import {
   FLOWER_FESTIVAL_2026_PATH,
   FLOWER_FESTIVAL_EVENT_PATH,
   FLOWER_FESTIVAL_LAST_CHECKED,
+  FLOWER_FESTIVAL_PAST_PHOTOS,
   FLOWER_FESTIVAL_PATH,
   FLOWER_FESTIVAL_SOURCES,
 } from "./da-lat-flower-festival";
@@ -80,6 +81,18 @@ describe("Da Lat Flower Festival guide", () => {
           source.hostname === "vietnamtourism.gov.vn"
       )
     ).toBe(true);
+  });
+
+  it("labels every historical photo with a year, creator, license and original source", () => {
+    expect(FLOWER_FESTIVAL_PAST_PHOTOS).toHaveLength(3);
+
+    for (const photo of FLOWER_FESTIVAL_PAST_PHOTOS) {
+      expect(photo.src).toMatch(/^https:\/\/cdn\.dalat\.app\//);
+      expect(photo.year).toMatch(/^20\d{2}$/);
+      expect(photo.photographer).toBeTruthy();
+      expect(photo.license).toBe("CC BY-SA 3.0");
+      expect(new URL(photo.sourceUrl).hostname).toBe("commons.wikimedia.org");
+    }
   });
 
   it("ships the complete guide, archival disclosure and date labels in all 12 locales", () => {

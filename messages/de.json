@@ -1219,6 +1219,16 @@
       "backToGuide": "Festivalführer",
       "statusTitle": "Was bisher offiziell ist",
       "statusBody": "Lâm Đồng veröffentlichte den Organisationsplan am 15. Juni 2026. Die folgenden Termine und Höhepunkte sind veröffentlichte Planungen; ein vollständiger Ablaufplan liegt noch nicht vor.",
+      "pastGallery": {
+        "title": "Vergangene Festivals in voller Blüte",
+        "intro": "Echte Aufnahmen der Ausgaben 2010 und 2012 zeigen Menschenmengen, Blumenkulissen und die Parade am Eröffnungsabend. Sie dienen als historischer Kontext und sind keine Vorschau auf die noch entstehende Gestaltung für 2026.",
+        "archiveLabel": "Frühere Ausgabe · {year}",
+        "photo2010": "Besucher versammeln sich unter dem blumengeschmückten Eingang des Festivals 2010.",
+        "photo2012Crowd": "Festivalgäste kommen 2012 am blumengeschmückten Eingang des Đà-Lạt-Blumenparks an.",
+        "photo2012Float": "Ein niederländischer, mit Blumen geschmückter Festwagen zieht am Eröffnungsabend 2012 am Publikum vorbei.",
+        "credit": "Foto: {photographer} · {license}",
+        "viewOriginal": "Original ansehen"
+      },
       "detailsTitle": "Wichtige Details",
       "details": {
         "themeLabel": "Offizielles Motto",

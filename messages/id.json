@@ -1219,6 +1219,16 @@
       "backToGuide": "Panduan festival",
       "statusTitle": "Hal yang sudah resmi sejauh ini",
       "statusBody": "Lâm Đồng mengumumkan rencana penyelenggaraan pada 15 Juni 2026. Tanggal dan sorotan di bawah adalah rencana yang telah diterbitkan; jadwal lengkap menit demi menit belum tersedia.",
+      "pastGallery": {
+        "title": "Festival terdahulu yang bermekaran",
+        "intro": "Foto asli dari edisi 2010 dan 2012 memperlihatkan keramaian, instalasi bunga, dan parade malam pembukaan. Foto-foto ini adalah konteks sejarah, bukan pratinjau penataan 2026 yang masih dikembangkan.",
+        "archiveLabel": "Edisi sebelumnya · {year}",
+        "photo2010": "Pengunjung berkumpul di bawah gerbang berhiaskan bunga pada festival 2010.",
+        "photo2012Crowd": "Pengunjung tiba di gerbang berhiaskan bunga Taman Bunga Đà Lạt pada 2012.",
+        "photo2012Float": "Kendaraan hias Belanda berlapis bunga melintas di depan penonton pada malam pembukaan 2012.",
+        "credit": "Foto: {photographer} · {license}",
+        "viewOriginal": "Lihat foto asli"
+      },
       "detailsTitle": "Detail utama",
       "details": {
         "themeLabel": "Tema resmi",

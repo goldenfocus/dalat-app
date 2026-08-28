@@ -1219,6 +1219,16 @@
       "backToGuide": "Cẩm nang lễ hội",
       "statusTitle": "Thông tin chính thức đến hiện tại",
       "statusBody": "Lâm Đồng công bố kế hoạch tổ chức ngày 15/6/2026. Ngày và điểm nhấn dưới đây là kế hoạch đã công bố; lịch chi tiết đến từng phút chưa được phát hành.",
+      "pastGallery": {
+        "title": "Những mùa lễ hội đã nở rộ",
+        "intro": "Ảnh thật từ các kỳ năm 2010 và 2012 ghi lại dòng người, các công trình hoa và đoàn diễu hành đêm khai mạc. Đây là tư liệu lịch sử, không phải hình ảnh xem trước cho không gian năm 2026 vẫn đang được hoàn thiện.",
+        "archiveLabel": "Kỳ trước · {year}",
+        "photo2010": "Du khách tập trung dưới cổng hoa của Festival Hoa Đà Lạt 2010.",
+        "photo2012Crowd": "Dòng người đến cổng hoa tại Vườn hoa thành phố Đà Lạt năm 2012.",
+        "photo2012Float": "Xe hoa Hà Lan phủ đầy hoa đi qua khán giả trong đêm khai mạc năm 2012.",
+        "credit": "Ảnh: {photographer} · {license}",
+        "viewOriginal": "Xem ảnh gốc"
+      },
       "detailsTitle": "Thông tin chính",
       "details": {
         "themeLabel": "Chủ đề chính thức",

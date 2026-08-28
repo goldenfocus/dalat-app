@@ -1313,6 +1313,16 @@
       "backToGuide": "Festival guide",
       "statusTitle": "What is official so far",
       "statusBody": "Lâm Đồng announced the organizing plan on 15 June 2026. The dates and highlights below are published plans; the full minute-by-minute program is not available yet.",
+      "pastGallery": {
+        "title": "Past festivals, in bloom",
+        "intro": "Real photographs from the 2010 and 2012 editions show the crowds, floral landmarks and opening-night parade. They are historical context—not a preview of the still-developing 2026 setup.",
+        "archiveLabel": "Past edition · {year}",
+        "photo2010": "Visitors gather beneath the flower-covered entrance to the 2010 festival.",
+        "photo2012Crowd": "Festival-goers arrive at the flower-covered entrance to Da Lat Flower Park in 2012.",
+        "photo2012Float": "A flower-covered Dutch parade float passes the crowd on opening night in 2012.",
+        "credit": "Photo: {photographer} · {license}",
+        "viewOriginal": "View original"
+      },
       "detailsTitle": "Key details",
       "details": {
         "themeLabel": "Official theme",
