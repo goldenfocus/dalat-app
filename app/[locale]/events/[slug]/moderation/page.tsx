@@ -2,15 +2,16 @@ import { notFound, redirect } from "next/navigation";
 import { Shield } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 import { ModerationQueue } from "@/components/moments/moderation-queue";
 import type { MomentWithProfile } from "@/lib/types";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }
 
 export default async function ModerationPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const supabase = await createClient();
   const t = await getTranslations("moments.moderation");
 
@@ -22,11 +23,17 @@ export default async function ModerationPage({ params }: PageProps) {
     redirect("/auth/login");
   }
 
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
+  if (canonicalSlug !== slug) redirect(`/${locale}/events/${canonicalSlug}`);
+
   // Fetch the event
   const { data: event, error } = await supabase
     .from("events")
     .select("id, slug, title, created_by")
-    .eq("slug", slug)
+    .eq("slug", canonicalSlug)
     .single();
 
   if (error || !event) {
@@ -35,7 +42,7 @@ export default async function ModerationPage({ params }: PageProps) {
 
   // Check if user is the creator
   if (event.created_by !== user.id) {
-    redirect(`/events/${slug}`);
+    redirect(`/${locale}/events/${canonicalSlug}`);
   }
 
   // Fetch pending moments using RPC

@@ -10,6 +10,7 @@ import { formatInDaLat } from "@/lib/timezone";
 import { getLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations";
 import type { PlaylistTrack } from "@/components/events/playlist-player";
 import { JsonLd, generateMusicPlaylistSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -42,6 +43,7 @@ interface PlaylistData {
   event: {
     id: string;
     title: string;
+    slug: string;
     image_url: string | null;
     starts_at: string;
     location_name: string | null;
@@ -56,10 +58,13 @@ interface PlaylistData {
 
 async function getEventPlaylist(slug: string, staticClient?: ReturnType<typeof createStaticClient>): Promise<PlaylistData | null> {
   const supabase = staticClient ?? await createClient();
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+
+  if (!canonicalSlug) return null;
 
   // Use the database function that joins playlist + tracks
   const { data, error } = await supabase.rpc("get_event_playlist", {
-    p_event_slug: slug,
+    p_event_slug: canonicalSlug,
   });
 
   if (error || !data || data.length === 0) {
@@ -87,6 +92,7 @@ async function getEventPlaylist(slug: string, staticClient?: ReturnType<typeof c
 
   return {
     event: {
+      slug: canonicalSlug,
       id: firstRow.event_id,
       title: firstRow.event_title,
       image_url: firstRow.event_image_url,
@@ -147,12 +153,12 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     });
   }
 
-  const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/playlist`;
+  const canonicalUrl = `https://dalat.app/${locale}/events/${event.slug}/playlist`;
 
   // Use first track's thumbnail, or event image, or generated OG
   const ogImageUrl = currentTrack?.thumbnail_url
     || event.image_url
-    || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;
+    || `https://dalat.app/${locale}/events/${event.slug}/playlist/opengraph-image`;
 
   // SEO keywords for karaoke + Dalat
   const keywords = [
@@ -201,8 +207,8 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        vi: `https://dalat.app/vi/events/${slug}/playlist${karaoke ? `?karaoke=${karaoke}` : ""}`,
-        en: `https://dalat.app/en/events/${slug}/playlist${karaoke ? `?karaoke=${karaoke}` : ""}`,
+        vi: `https://dalat.app/vi/events/${event.slug}/playlist${karaoke ? `?karaoke=${karaoke}` : ""}`,
+        en: `https://dalat.app/en/events/${event.slug}/playlist${karaoke ? `?karaoke=${karaoke}` : ""}`,
       },
     },
     robots: {
@@ -242,7 +248,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
   const startTrack = track ? parseInt(track, 10) : undefined;
 
   // Build playlist URL for sharing
-  const playlistUrl = `https://dalat.app/${locale}/events/${slug}/playlist`;
+  const playlistUrl = `https://dalat.app/${locale}/events/${event.slug}/playlist`;
   const isKaraokeMode = karaoke === "theater" || karaoke === "hero";
 
   // Generate structured data for SEO
@@ -250,8 +256,8 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
     [
       { name: "Home", url: "/" },
       { name: "Events", url: "/events/upcoming" },
-      { name: event.title, url: `/events/${slug}` },
-      { name: "Playlist", url: `/events/${slug}/playlist` },
+      { name: event.title, url: `/events/${event.slug}` },
+      { name: "Playlist", url: `/events/${event.slug}/playlist` },
     ],
     locale
   );
@@ -280,7 +286,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
         {/* Header with back button */}
         <div className="flex items-center justify-between mb-6">
           <Link
-            href={`/events/${slug}`}
+            href={`/events/${event.slug}`}
             className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -334,7 +340,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
         {/* Playlist Player */}
         <PlaylistPlayer
           tracks={tracks}
-          eventSlug={slug}
+          eventSlug={event.slug}
           eventTitle={event.title}
           eventImageUrl={event.image_url}
           eventId={event.id}
@@ -346,7 +352,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
         {/* Back to event link */}
         <div className="mt-8 text-center">
           <Link
-            href={`/events/${slug}`}
+            href={`/events/${event.slug}`}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             {t("viewFullEvent")} &rarr;

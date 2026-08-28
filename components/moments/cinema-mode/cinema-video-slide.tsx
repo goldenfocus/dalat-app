@@ -98,7 +98,7 @@ export function CinemaVideoSlide({
   }, [moment.id]);
 
   // Show video processing state
-  if (moment.video_status === "processing") {
+  if (moment.video_status === "processing" || moment.video_status === "uploading") {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-3">

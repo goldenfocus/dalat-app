@@ -1,10 +1,11 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { KaraokePageClient } from "./karaoke-page-client";
 import { JsonLd, generateMusicRecordingSchema } from "@/lib/structured-data";
 import { getLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
@@ -118,7 +119,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const trackId = uuidMatch ? uuidMatch[1] : rawTrackId;
   const supabase = createStaticClient();
   if (!supabase) return { title: "Karaoke" };
-  const data = await getKaraokeTrack(slug, trackId, supabase);
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    return { title: "Karaoke not found" };
+  }
+  const data = await getKaraokeTrack(canonicalSlug, trackId, supabase);
 
   if (!data) {
     return { title: "Karaoke not found" };
@@ -134,8 +139,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const description = t("metaDescription", { trackTitle, eventTitle: event.title });
 
-  const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/karaoke/${trackId}`;
-  const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;
+  const canonicalUrl = `https://dalat.app/${locale}/events/${canonicalSlug}/karaoke/${trackId}`;
+  const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${canonicalSlug}/playlist/opengraph-image`;
 
   // Rich keywords
   const keywords = [
@@ -184,8 +189,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        vi: `https://dalat.app/vi/events/${slug}/karaoke/${trackId}`,
-        en: `https://dalat.app/en/events/${slug}/karaoke/${trackId}`,
+        vi: `https://dalat.app/vi/events/${canonicalSlug}/karaoke/${trackId}`,
+        en: `https://dalat.app/en/events/${canonicalSlug}/karaoke/${trackId}`,
       },
     },
     robots: {
@@ -204,8 +209,16 @@ export default async function KaraokePage({ params }: PageProps) {
     /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
   );
   const trackId = uuidMatch ? uuidMatch[1] : rawTrackId;
+  const supabase = await createClient();
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
+  if (canonicalSlug !== slug) {
+    redirect(`/${locale}/events/${canonicalSlug}/karaoke/${trackId}`);
+  }
 
-  const data = await getKaraokeTrack(slug, trackId);
+  const data = await getKaraokeTrack(canonicalSlug, trackId, supabase);
 
   if (!data) {
     notFound();

@@ -6,6 +6,7 @@ import {
   selectEventPreviewImages,
   type SocialPreviewMoment,
 } from "@/lib/events/share-preview";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,10 +30,13 @@ export async function GET(_request: Request, { params }: RouteParams) {
   let moments: SocialPreviewMoment[] = [];
 
   if (supabase) {
+    const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+    const effectiveSlug = canonicalSlug || slug;
+
     const { data: eventData } = await supabase
       .from("events")
       .select("id, title, image_url, cover_moment_id")
-      .eq("slug", slug)
+      .eq("slug", effectiveSlug)
       .single();
 
     event = eventData;

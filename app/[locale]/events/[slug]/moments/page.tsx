@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
@@ -12,14 +12,161 @@ import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import { buildAlternates, localeUrl } from "@/lib/metadata";
 import { buildSocialCardImageUrl } from "@/lib/events/share-preview";
 import type { Locale } from "@/lib/i18n/routing";
-import type { Event, MomentWithProfile, EventSettings } from "@/lib/types";
+import type { Event, MomentContentType, MomentWithProfile, EventSettings } from "@/lib/types";
 import type { AudioTrack, PlaylistInfo } from "@/lib/stores/audio-player-store";
 
 const INITIAL_PAGE_SIZE = 20;
+const VIDEO_PENDING_STATUSES = ["uploading", "processing", "error"] as const;
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
   searchParams: Promise<{ view?: string }>;
+}
+
+type MomentQueryRow = MomentWithProfile & { captured_at: string | null };
+type ProfileQueryRow = {
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+type PendingMomentQueryRow = {
+  id: string;
+  event_id: string;
+  user_id: string;
+  content_type: MomentContentType;
+  media_url: string | null;
+  thumbnail_url: string | null;
+  cf_video_uid: string | null;
+  cf_playback_url: string | null;
+  video_status: string | null;
+  video_duration_seconds: number | null;
+  text_content: string | null;
+  created_at: string;
+  captured_at: string | null;
+  youtube_url: string | null;
+  youtube_video_id: string | null;
+  file_url: string | null;
+  original_filename: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  title: string | null;
+  artist: string | null;
+  album: string | null;
+  audio_duration_seconds: number | null;
+  audio_thumbnail_url: string | null;
+  track_number: string | null;
+  release_year: number | null;
+  genre: string | null;
+  profiles: ProfileQueryRow | ProfileQueryRow[];
+};
+
+function getTimelineStamp(moment: { captured_at: string | null; created_at: string }): number {
+  return new Date(moment.captured_at || moment.created_at).getTime();
+}
+
+function pickProfile(profiles: ProfileQueryRow | ProfileQueryRow[]): ProfileQueryRow {
+  return Array.isArray(profiles) ? profiles[0] ?? { username: null, display_name: null, avatar_url: null } : profiles;
+}
+
+function normalizeMomentWithProfile<
+  T extends {
+    profiles: ProfileQueryRow | ProfileQueryRow[];
+  }
+>(
+  moment: T
+): MomentQueryRow {
+  const profile = pickProfile(moment.profiles);
+  return {
+    ...(moment as unknown as MomentQueryRow),
+    username: (moment as { username?: string | null }).username ?? profile.username,
+    display_name: (moment as { display_name?: string | null }).display_name ?? profile.display_name,
+    avatar_url: (moment as { avatar_url?: string | null }).avatar_url ?? profile.avatar_url,
+  };
+}
+
+async function getMomentsWithPendingVideos(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  eventId: string
+): Promise<{ moments: MomentWithProfile[]; hasMore: boolean; totalCount: number }> {
+  const pageLimit = INITIAL_PAGE_SIZE;
+  const [readyResult, pendingResult, countResult] = await Promise.all([
+    supabase.rpc("get_event_moments", {
+      p_event_id: eventId,
+      p_limit: pageLimit,
+      p_offset: 0,
+    }),
+    supabase
+      .from("moments")
+      .select(`
+        id,
+        event_id,
+        user_id,
+        content_type,
+        media_url,
+        thumbnail_url,
+        cf_video_uid,
+        cf_playback_url,
+        video_status,
+        video_duration_seconds,
+        text_content,
+        created_at,
+        captured_at,
+        youtube_url,
+        youtube_video_id,
+        file_url,
+        original_filename,
+        file_size,
+        mime_type,
+        title,
+        artist,
+        album,
+        audio_duration_seconds,
+        audio_thumbnail_url,
+        track_number,
+        release_year,
+        genre,
+        profiles!inner (
+          username,
+          display_name,
+          avatar_url
+        )
+      `)
+      .eq("event_id", eventId)
+      .eq("status", "published")
+      .eq("content_type", "video")
+      .in("video_status", VIDEO_PENDING_STATUSES)
+      .order("captured_at", { ascending: true, nullsFirst: true })
+      .order("created_at", { ascending: true })
+      .limit(pageLimit),
+    supabase
+      .from("moments")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId)
+      .eq("status", "published"),
+  ]);
+
+  const readyMoments = (readyResult.data ?? []) as MomentQueryRow[];
+  const pendingMoments = (pendingResult.data ?? []) as PendingMomentQueryRow[];
+
+  const mergedMap = new Map<string, MomentQueryRow>();
+  for (const moment of readyMoments) {
+    mergedMap.set(moment.id, moment);
+  }
+  for (const moment of pendingMoments) {
+    mergedMap.set(moment.id, normalizeMomentWithProfile(moment));
+  }
+
+  const moments = Array.from(mergedMap.values()).sort((a, b) => {
+    const stampA = getTimelineStamp(a);
+    const stampB = getTimelineStamp(b);
+    if (stampA === stampB) return a.id.localeCompare(b.id);
+    return stampA - stampB;
+  });
+
+  const totalCount = countResult.count ?? moments.length;
+  const hasMore = totalCount > moments.length;
+
+  return { moments: moments.slice(0, pageLimit), hasMore, totalCount };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -27,11 +174,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = createStaticClient();
   if (!supabase) return { title: "Moments" };
 
-  const { data: event } = await supabase
+  const { data: eventBySlug } = await supabase
     .from("events")
-    .select("id, title, location_name, starts_at, updated_at")
+    .select("id, slug, title, location_name, starts_at, updated_at")
     .eq("slug", slug)
     .single();
+
+  let event = eventBySlug;
+
+  if (!event) {
+    const { data: redirectEvent } = await supabase
+      .from("events")
+      .select("slug")
+      .contains("previous_slugs", [slug])
+      .single();
+
+    if (redirectEvent?.slug) {
+      const { data: canonicalEvent } = await supabase
+        .from("events")
+        .select("id, slug, title, location_name, starts_at, updated_at")
+        .eq("slug", redirectEvent.slug)
+        .single();
+
+      event = canonicalEvent ?? null;
+    }
+  }
 
   if (!event) {
     return { title: "Moments" };
@@ -46,7 +213,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const momentCount = count ?? 0;
   const title = `${event.title} — ${momentCount} Moments | ĐàLạt.app`;
   const description = `Watch ${momentCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""} in cinema mode. A collaborative photo album powered by ĐàLạt.app.`;
-  const canonicalUrl = localeUrl(locale as Locale, `/events/${slug}/moments`);
+  const canonicalUrl = localeUrl(locale as Locale, `/events/${event.slug}/moments`);
   const previewVersion = `${momentCount}-${Date.parse(event.updated_at) || 0}`;
   const previewSourceUrl = `${canonicalUrl}/og-image?v=${previewVersion}`;
   const previewImageUrl = buildSocialCardImageUrl(previewSourceUrl);
@@ -55,7 +222,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     // Without this, the page inherits the locale layout's homepage canonical
-    alternates: buildAlternates(locale as Locale, `/events/${slug}/moments`),
+    alternates: buildAlternates(locale as Locale, `/events/${event.slug}/moments`),
     openGraph: {
       title,
       description,
@@ -81,16 +248,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 type EventWithTribe = Event & { tribes: ChipTribe | null };
 
-async function getEvent(slug: string): Promise<EventWithTribe | null> {
+type GetEventResult =
+  | { type: "found"; event: EventWithTribe }
+  | { type: "redirect"; newSlug: string }
+  | { type: "not_found" };
+
+async function getEvent(slug: string): Promise<GetEventResult> {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  const { data: event, error } = await supabase
     .from("events")
     .select("*, tribes(slug, name, cover_image_url, access_type, settings)")
     .eq("slug", slug)
     .single();
 
-  return data as EventWithTribe | null;
+  if (!error && event) {
+    return { type: "found", event: event as EventWithTribe };
+  }
+
+  const { data: redirectEvent } = await supabase
+    .from("events")
+    .select("slug")
+    .contains("previous_slugs", [slug])
+    .single();
+
+  if (redirectEvent?.slug) {
+    return { type: "redirect", newSlug: redirectEvent.slug };
+  }
+
+  return { type: "not_found" };
 }
 
 async function getEventSettings(eventId: string): Promise<EventSettings | null> {
@@ -107,27 +293,7 @@ async function getEventSettings(eventId: string): Promise<EventSettings | null> 
 
 async function getMoments(eventId: string): Promise<{ moments: MomentWithProfile[]; hasMore: boolean; totalCount: number }> {
   const supabase = await createClient();
-
-  // Fetch moments and total count in parallel
-  const [momentsResult, countResult] = await Promise.all([
-    supabase.rpc("get_event_moments", {
-      p_event_id: eventId,
-      p_limit: INITIAL_PAGE_SIZE,
-      p_offset: 0,
-    }),
-    supabase
-      .from("moments")
-      .select("*", { count: "exact", head: true })
-      .eq("event_id", eventId)
-      .eq("status", "published"),
-  ]);
-
-  const moments = (momentsResult.data ?? []) as MomentWithProfile[];
-  const totalCount = countResult.count ?? moments.length;
-  // If we got exactly PAGE_SIZE, there might be more
-  const hasMore = moments.length === INITIAL_PAGE_SIZE;
-
-  return { moments, hasMore, totalCount };
+  return getMomentsWithPendingVideos(supabase, eventId);
 }
 
 async function getEventPlaylist(
@@ -220,11 +386,18 @@ async function canUserPost(eventId: string): Promise<boolean> {
 export default async function EventMomentsPage({ params, searchParams }: PageProps) {
   const { slug, locale } = await params;
   const { view } = await searchParams;
-  const event = await getEvent(slug);
+  const result = await getEvent(slug);
 
-  if (!event) {
+  if (result.type === "not_found") {
     notFound();
   }
+
+  if (result.type === "redirect") {
+    const queryString = view ? `?view=${encodeURIComponent(view)}` : "";
+    redirect(`/${locale}/events/${result.newSlug}/moments${queryString}`);
+  }
+
+  const event = result.event;
 
   const t = await getTranslations("moments");
 
@@ -257,7 +430,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             <h1 className="text-2xl font-bold">{t("moments")}</h1>
             <MusicPlayButton />
             {canPost && (
-              <Link href={`/events/${slug}/moments/new`} className="ml-auto">
+              <Link href={`/${locale}/events/${event.slug}/moments/new`} className="ml-auto">
                 <Button size="sm" variant="outline" className="active:scale-95 transition-transform">
                   <Plus className="w-4 h-4 mr-1" />
                   {t("addMoment")}
@@ -266,7 +439,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             )}
           </div>
           <Link
-            href={`/events/${slug}`}
+            href={`/${locale}/events/${event.slug}`}
             className="text-muted-foreground hover:text-foreground hover:underline transition-colors"
           >
             {event.title} &rarr;
@@ -304,7 +477,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
         {/* CTA for users who can post but haven't yet */}
         {moments.length === 0 && canPost && (
           <div className="mt-6 text-center">
-            <Link href={`/events/${slug}/moments/new`}>
+            <Link href={`/${locale}/events/${event.slug}/moments/new`}>
               <Button size="lg" className="active:scale-95 transition-transform">
                 <Plus className="w-5 h-5 mr-2" />
                 {t("shareYourMoment")}

@@ -1,5 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 import { hasRoleLevel, type Rsvp, type Profile, type UserRole, type PlusOneGuest } from "@/lib/types";
 import { CheckinInterface } from "@/components/events/checkin/checkin-interface";
 
@@ -14,7 +15,7 @@ export type CheckinAttendee = Rsvp & {
 };
 
 export default async function CheckinPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const supabase = await createClient();
 
   // Get current user
@@ -24,11 +25,15 @@ export default async function CheckinPage({ params }: PageProps) {
 
   if (!user) return notFound();
 
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) return notFound();
+  if (canonicalSlug !== slug) redirect(`/${locale}/events/${canonicalSlug}/checkin`);
+
   // Get event
   const { data: event } = await supabase
     .from("events")
     .select("id, slug, title, created_by, capacity, starts_at, ends_at")
-    .eq("slug", slug)
+    .eq("slug", canonicalSlug)
     .single();
 
   if (!event) return notFound();

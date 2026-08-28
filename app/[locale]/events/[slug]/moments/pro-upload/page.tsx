@@ -1,7 +1,9 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }
 
 /**
@@ -9,6 +11,11 @@ interface PageProps {
  * Redirect to the regular upload page which now supports all features.
  */
 export default async function ProUploadRedirect({ params }: PageProps) {
-  const { slug } = await params;
-  redirect(`/events/${slug}/moments/new`);
+  const { slug, locale } = await params;
+  const supabase = await createClient();
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
+  redirect(`/${locale}/events/${canonicalSlug}/moments/new`);
 }

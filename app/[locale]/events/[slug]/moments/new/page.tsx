@@ -7,7 +7,7 @@ import { getEffectiveUser } from "@/lib/god-mode";
 import type { Event, EventSettings } from "@/lib/types";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -15,11 +15,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = createStaticClient();
   if (!supabase) return { title: "Share a Moment" };
 
-  const { data: event } = await supabase
+  const { data: eventBySlug } = await supabase
     .from("events")
     .select("title")
     .eq("slug", slug)
     .single();
+
+  let event = eventBySlug;
+
+  if (!event) {
+    const { data: redirectedEvent } = await supabase
+      .from("events")
+      .select("slug")
+      .contains("previous_slugs", [slug])
+      .single();
+
+    if (redirectedEvent?.slug) {
+      const { data: canonicalEvent } = await supabase
+        .from("events")
+        .select("title")
+        .eq("slug", redirectedEvent.slug)
+        .single();
+
+      event = canonicalEvent ?? null;
+    }
+  }
 
   if (!event) {
     return { title: "Share a Moment" };
@@ -30,16 +50,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-async function getEvent(slug: string): Promise<Event | null> {
+type GetEventResult =
+  | { type: "found"; event: Event }
+  | { type: "redirect"; newSlug: string }
+  | { type: "not_found" };
+
+async function getEvent(slug: string): Promise<GetEventResult> {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  const { data: event, error } = await supabase
     .from("events")
     .select("*")
     .eq("slug", slug)
     .single();
 
-  return data as Event | null;
+  if (!error && event) {
+    return { type: "found", event: event as Event };
+  }
+
+  const { data: redirectedEvent } = await supabase
+    .from("events")
+    .select("slug")
+    .contains("previous_slugs", [slug])
+    .single();
+
+  if (redirectedEvent?.slug) {
+    return { type: "redirect", newSlug: redirectedEvent.slug };
+  }
+
+  return { type: "not_found" };
 }
 
 async function getEventSettings(eventId: string): Promise<EventSettings | null> {
@@ -99,19 +138,25 @@ async function canUserPost(eventId: string, userId: string): Promise<boolean> {
 }
 
 export default async function NewMomentPage({ params }: PageProps) {
-  const { slug } = await params;
-  const event = await getEvent(slug);
+  const { slug, locale } = await params;
+  const result = await getEvent(slug);
 
-  if (!event) {
+  if (result.type === "not_found") {
     notFound();
   }
+
+  if (result.type === "redirect") {
+    redirect(`/${locale}/events/${result.newSlug}/moments/new`);
+  }
+
+  const event = result.event;
 
   // Use getEffectiveUser to support God Mode impersonation
   const { user, godMode } = await getEffectiveUser();
 
   // Redirect to login if not authenticated
   if (!user) {
-    redirect(`/login?redirect=/events/${slug}/moments/new`);
+    redirect(`/${locale}/login?redirect=/${locale}/events/${slug}/moments/new`);
   }
 
   // Use real admin for permission check
@@ -119,7 +164,7 @@ export default async function NewMomentPage({ params }: PageProps) {
 
   // Redirect if user can't post
   if (!canPost) {
-    redirect(`/events/${slug}/moments`);
+    redirect(`/${locale}/events/${event.slug}/moments`);
   }
 
   const t = await getTranslations("moments");
@@ -136,7 +181,7 @@ export default async function NewMomentPage({ params }: PageProps) {
         {/* Form - unified upload experience for all users */}
         <MomentForm
           eventId={event.id}
-          eventSlug={slug}
+          eventSlug={event.slug}
           userId={user.id}
           godModeUserId={godMode.isActive ? godMode.targetUserId! : undefined}
         />

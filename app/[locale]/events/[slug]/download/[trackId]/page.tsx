@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -8,6 +8,7 @@ import { Music, Mic2, Clock, User, Disc, ArrowLeft } from "lucide-react";
 import { formatDuration } from "@/lib/format-duration";
 import { DownloadButton } from "./download-button";
 import { getMixedKeywords } from "@/lib/seo/dalat-keywords";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string; trackId: string }>;
@@ -83,7 +84,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug, locale, trackId } = await params;
   const supabase = createStaticClient();
   if (!supabase) return { title: "Track" };
-  const data = await getDownloadTrack(slug, trackId, supabase);
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) return { title: "Track not found" };
+
+  const data = await getDownloadTrack(canonicalSlug, trackId, supabase);
 
   if (!data) {
     return { title: "Track not found" };
@@ -99,8 +103,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const description = t("metaDescription", { trackTitle, artist, eventTitle: event.title });
 
-  const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/download/${trackId}`;
-  const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;
+  const canonicalUrl = `https://dalat.app/${locale}/events/${canonicalSlug}/download/${trackId}`;
+  const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${canonicalSlug}/playlist/opengraph-image`;
 
   // Download-focused keywords with Dalat SEO boost
   const keywords = [
@@ -143,8 +147,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        vi: `https://dalat.app/vi/events/${slug}/download/${trackId}`,
-        en: `https://dalat.app/en/events/${slug}/download/${trackId}`,
+        vi: `https://dalat.app/vi/events/${canonicalSlug}/download/${trackId}`,
+        en: `https://dalat.app/en/events/${canonicalSlug}/download/${trackId}`,
       },
     },
     robots: {
@@ -156,8 +160,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function DownloadPage({ params }: PageProps) {
   const { slug, locale, trackId } = await params;
+  const supabase = await createClient();
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
 
-  const data = await getDownloadTrack(slug, trackId);
+  if (canonicalSlug !== slug) {
+    redirect(`/${locale}/events/${canonicalSlug}/download/${trackId}`);
+  }
+
+  const data = await getDownloadTrack(canonicalSlug, trackId);
 
   if (!data) {
     notFound();
@@ -190,7 +203,7 @@ export default async function DownloadPage({ params }: PageProps) {
         <div className="container mx-auto px-4 py-8 max-w-2xl">
           {/* Back link */}
           <Link
-            href={`/${locale}/events/${slug}/playlist`}
+            href={`/${locale}/events/${canonicalSlug}/playlist`}
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8 -ml-1 px-2 py-1 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -238,15 +251,15 @@ export default async function DownloadPage({ params }: PageProps) {
 
               {/* Alternative actions */}
               <div className="mt-6 pt-6 border-t flex flex-col sm:flex-row gap-3">
-                <Link
-                  href={`/${locale}/events/${slug}/karaoke/${trackId}`}
+            <Link
+                href={`/${locale}/events/${canonicalSlug}/karaoke/${trackId}`}
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-secondary text-secondary-foreground rounded-xl font-medium hover:bg-secondary/80 transition-colors"
                 >
                   <Mic2 className="w-5 h-5" />
                   <span>{t("singKaraoke")}</span>
                 </Link>
                 <Link
-                  href={`/${locale}/events/${slug}/lyrics/${trackId}`}
+                  href={`/${locale}/events/${canonicalSlug}/lyrics/${trackId}`}
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-secondary text-secondary-foreground rounded-xl font-medium hover:bg-secondary/80 transition-colors"
                 >
                   <Music className="w-5 h-5" />

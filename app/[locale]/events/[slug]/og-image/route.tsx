@@ -7,6 +7,7 @@ import {
   selectEventPreviewImages,
   type SocialPreviewMoment,
 } from "@/lib/events/share-preview";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 // Use Node.js runtime for image processing
 export const runtime = "nodejs";
@@ -34,10 +35,13 @@ export async function GET(_request: Request, { params }: RouteParams) {
   } | null = null;
 
   if (supabase) {
+    const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+    const effectiveSlug = canonicalSlug || slug;
+
     const { data } = await supabase
       .from("events")
       .select("id, title, image_url, cover_moment_id, location_name, starts_at")
-      .eq("slug", slug)
+      .eq("slug", effectiveSlug)
       .single();
     event = data;
   }

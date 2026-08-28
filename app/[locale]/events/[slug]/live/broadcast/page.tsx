@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { createClient, createStaticClient } from '@/lib/supabase/server';
 import { BroadcasterInterface } from './broadcaster-interface';
 import type { Metadata } from 'next';
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 export const maxDuration = 60;
 
@@ -13,7 +14,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const supabase = createStaticClient();
   if (!supabase) return { title: 'Go Live' };
-  const { data: event } = await supabase.from('events').select('title').eq('slug', slug).single();
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) return { title: 'Go Live' };
+  const { data: event } = await supabase.from('events').select('title').eq('slug', canonicalSlug).single();
   return { title: event ? `Go Live - ${event.title}` : 'Go Live' };
 }
 
@@ -23,13 +26,21 @@ export default async function BroadcastPage({ params }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/${locale}/login?redirectTo=/events/${slug}/live/broadcast`);
+    redirect(`/${locale}/login?redirectTo=/${locale}/events/${slug}/live/broadcast`);
+  }
+
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
+  if (canonicalSlug !== slug) {
+    redirect(`/${locale}/events/${canonicalSlug}/live/broadcast`);
   }
 
   const { data: event, error: eventError } = await supabase
     .from('events')
     .select(`id, slug, title, description, image_url, starts_at, ends_at, status, created_by`)
-    .eq('slug', slug)
+    .eq('slug', canonicalSlug)
     .single();
 
   if (eventError || !event) notFound();
@@ -37,7 +48,7 @@ export default async function BroadcastPage({ params }: PageProps) {
 
   // Only event creator can broadcast
   if (event.created_by !== user.id) {
-    redirect(`/${locale}/events/${slug}/live`);
+    redirect(`/${locale}/events/${canonicalSlug}/live`);
   }
 
   // Check for existing stream

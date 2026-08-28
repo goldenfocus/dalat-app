@@ -3,11 +3,12 @@ import { BarChart3, ArrowLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 import { ResponseDashboard } from "@/components/events/response-dashboard";
 import type { MultilingualText, QuestionOption } from "@/lib/types";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }
 
 interface QuestionResponse {
@@ -25,7 +26,7 @@ interface QuestionResponse {
 }
 
 export default async function ResponsesPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const supabase = await createClient();
   const t = await getTranslations("responseDashboard");
 
@@ -37,11 +38,19 @@ export default async function ResponsesPage({ params }: PageProps) {
     redirect("/auth/login");
   }
 
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
+  if (canonicalSlug !== slug) {
+    redirect(`/${locale}/events/${canonicalSlug}`);
+  }
+
   // Fetch the event
   const { data: event, error } = await supabase
     .from("events")
     .select("id, slug, title, created_by")
-    .eq("slug", slug)
+    .eq("slug", canonicalSlug)
     .single();
 
   if (error || !event) {
@@ -50,7 +59,7 @@ export default async function ResponsesPage({ params }: PageProps) {
 
   // Check if user is the creator
   if (event.created_by !== user.id) {
-    redirect(`/events/${slug}`);
+    redirect(`/${locale}/events/${canonicalSlug}`);
   }
 
   // Fetch questionnaire
@@ -61,7 +70,7 @@ export default async function ResponsesPage({ params }: PageProps) {
     .single();
 
   if (!questionnaire) {
-    redirect(`/events/${slug}/questionnaire`);
+    redirect(`/${locale}/events/${canonicalSlug}/questionnaire`);
   }
 
   // Get total RSVP count (going status)
@@ -144,7 +153,7 @@ export default async function ResponsesPage({ params }: PageProps) {
       <div className="container max-w-2xl mx-auto px-4 py-8">
         {/* Back link */}
         <Link
-          href={`/events/${slug}/questionnaire`}
+          href={`/events/${canonicalSlug}/questionnaire`}
           className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg mb-4"
         >
           <ArrowLeft className="w-4 h-4" />

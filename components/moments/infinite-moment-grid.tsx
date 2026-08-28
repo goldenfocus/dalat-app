@@ -7,10 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { MomentCard } from "./moment-card";
 import { MomentsLightboxProvider, useMomentsLightbox } from "./moments-lightbox-provider";
 import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
-import type { MomentWithProfile } from "@/lib/types";
+import type { MomentContentType, MomentVideoStatus, MomentWithProfile } from "@/lib/types";
 import type { MediaTypeFilter } from "./media-type-filter";
 
 const PAGE_SIZE = 20;
+const VIDEO_PENDING_STATUSES = ["uploading", "processing", "error"] as const;
 
 export interface InfiniteMomentGridHandle {
   loadMore: () => Promise<void>;
@@ -44,6 +45,63 @@ interface InfiniteMomentGridProps {
   onDeleteMoment?: (momentId: string) => void;
   /** A moment was already deleted elsewhere (e.g. the lightbox menu) — sync parent state */
   onMomentDeleted?: (momentId: string) => void;
+}
+
+type MomentQueryRow = MomentWithProfile & { captured_at: string | null };
+type ProfileQueryRow = {
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+type PendingMomentQueryRow = {
+  id: string;
+  event_id: string;
+  user_id: string;
+  content_type: MomentContentType;
+  media_url: string | null;
+  thumbnail_url: string | null;
+  cf_video_uid: string | null;
+  cf_playback_url: string | null;
+  video_status: MomentVideoStatus | null;
+  video_duration_seconds: number | null;
+  text_content: string | null;
+  created_at: string;
+  captured_at: string | null;
+  youtube_url: string | null;
+  youtube_video_id: string | null;
+  file_url: string | null;
+  original_filename: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  title: string | null;
+  artist: string | null;
+  album: string | null;
+  audio_duration_seconds: number | null;
+  audio_thumbnail_url: string | null;
+  track_number: string | null;
+  release_year: number | null;
+  genre: string | null;
+  profiles: ProfileQueryRow | ProfileQueryRow[];
+};
+
+function getTimelineStamp(moment: { captured_at: string | null; created_at: string }): number {
+  return new Date(moment.captured_at || moment.created_at).getTime();
+}
+
+function pickProfile(profiles: ProfileQueryRow | ProfileQueryRow[]): ProfileQueryRow {
+  return Array.isArray(profiles) ? profiles[0] ?? { username: null, display_name: null, avatar_url: null } : profiles;
+}
+
+function normalizePendingMoment(
+  row: PendingMomentQueryRow
+): MomentQueryRow {
+  const profile = pickProfile(row.profiles);
+  return {
+    ...row,
+    username: profile.username,
+    display_name: profile.display_name,
+    avatar_url: profile.avatar_url,
+  };
 }
 
 export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteMomentGridProps>(function InfiniteMomentGrid({
@@ -84,24 +142,102 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
     if (isLoading || !hasMore) return;
 
     setIsLoading(true);
+    const nextOffset = offset;
 
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("get_event_moments", {
-      p_event_id: eventId,
-      p_limit: PAGE_SIZE,
-      p_offset: offset,
-    });
+    const nextWindow = nextOffset + PAGE_SIZE;
+    const [readyResult, pendingResult, countResult] = await Promise.all([
+      supabase.rpc("get_event_moments", {
+        p_event_id: eventId,
+        p_limit: nextWindow,
+        p_offset: 0,
+      }),
+      supabase
+        .from("moments")
+        .select(`
+          id,
+          event_id,
+          user_id,
+          content_type,
+          media_url,
+          thumbnail_url,
+          cf_video_uid,
+          cf_playback_url,
+          video_status,
+          video_duration_seconds,
+          text_content,
+          created_at,
+          captured_at,
+          youtube_url,
+          youtube_video_id,
+          file_url,
+          original_filename,
+          file_size,
+          mime_type,
+          title,
+          artist,
+          album,
+          audio_duration_seconds,
+          audio_thumbnail_url,
+          track_number,
+          release_year,
+          genre,
+          profiles!inner (
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq("event_id", eventId)
+        .eq("status", "published")
+        .eq("content_type", "video")
+        .in("video_status", VIDEO_PENDING_STATUSES)
+        .order("captured_at", { ascending: true, nullsFirst: true })
+        .order("created_at", { ascending: true })
+        .limit(nextWindow),
+      supabase
+        .from("moments")
+        .select("*", { count: "exact", head: true })
+        .eq("event_id", eventId)
+        .eq("status", "published"),
+    ]);
 
-    if (error) {
-      console.error("Failed to load more moments:", error);
+    if (readyResult.error) {
+      console.error("Failed to load more moments:", readyResult.error);
+      setIsLoading(false);
+      return;
+    }
+    if (pendingResult.error) {
+      console.error("Failed to load pending videos:", pendingResult.error);
       setIsLoading(false);
       return;
     }
 
-    const newMoments = (data ?? []) as MomentWithProfile[];
+    const readyMoments = (readyResult.data ?? []) as MomentQueryRow[];
+    const pendingMoments = (pendingResult.data ?? []) as PendingMomentQueryRow[];
 
-    if (newMoments.length < PAGE_SIZE) {
+    const mergedMap = new Map<string, MomentQueryRow>();
+    for (const moment of readyMoments) {
+      mergedMap.set(moment.id, moment);
+    }
+    for (const moment of pendingMoments) {
+      mergedMap.set(moment.id, normalizePendingMoment(moment));
+    }
+
+    const allMoments = Array.from(mergedMap.values()).sort((a, b) => {
+      const stampA = getTimelineStamp(a);
+      const stampB = getTimelineStamp(b);
+      if (stampA === stampB) return a.id.localeCompare(b.id);
+      return stampA - stampB;
+    });
+
+    const newMoments = allMoments.slice(nextOffset, nextOffset + PAGE_SIZE);
+    const totalCount = countResult.count ?? allMoments.length;
+
+    if (newMoments.length === 0) {
+      setIsLoading(false);
       setHasMore(false);
+      return;
     }
 
     setMoments((prev) => {
@@ -110,6 +246,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
       return updated;
     });
     setOffset((prev) => prev + newMoments.length);
+    setHasMore(totalCount > nextOffset + newMoments.length);
     setIsLoading(false);
   }, [eventId, offset, isLoading, hasMore, onMomentsUpdate]);
 

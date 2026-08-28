@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 // Increase serverless function timeout
 export const maxDuration = 60;
@@ -21,11 +22,11 @@ interface PlaylistData {
 }
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }
 
 export default async function EditEventPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const supabase = await createClient();
 
   const {
@@ -36,11 +37,19 @@ export default async function EditEventPage({ params }: PageProps) {
     redirect("/auth/login");
   }
 
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
+  if (canonicalSlug !== slug) {
+    redirect(`/${locale}/events/${canonicalSlug}/edit`);
+  }
+
   // Fetch the event
   const { data: event, error } = await supabase
     .from("events")
     .select("*")
-    .eq("slug", slug)
+    .eq("slug", canonicalSlug)
     .single();
 
   if (error || !event) {
@@ -58,7 +67,7 @@ export default async function EditEventPage({ params }: PageProps) {
   const isAdmin = profile?.role ? hasRoleLevel(profile.role as UserRole, "admin") : false;
 
   if (!isCreator && !isAdmin) {
-    redirect(`/events/${slug}`);
+    redirect(`/${locale}/events/${canonicalSlug}`);
   }
 
   // Fetch the real location for secret events (RLS: host/admin only)

@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { createStaticClient } from "@/lib/supabase/server";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 export const runtime = "edge";
 export const alt = "Playlist on ĐàLạt.app";
@@ -28,10 +29,13 @@ export default async function OGImage({ params }: Props) {
   }[] = [];
 
   if (supabase) {
+    const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+    const effectiveSlug = canonicalSlug || slug;
+
     const { data: eventData } = await supabase
       .from("events")
       .select("id, title, image_url")
-      .eq("slug", slug)
+      .eq("slug", effectiveSlug)
       .single();
 
     event = eventData;

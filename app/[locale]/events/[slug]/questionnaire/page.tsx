@@ -3,11 +3,12 @@ import { ClipboardList, ArrowLeft, BarChart3 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 import { QuestionnaireBuilder } from "@/components/events/questionnaire-builder";
 import type { QuestionType, QuestionCategory, MultilingualText, QuestionOption } from "@/lib/types";
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }
 
 interface QuestionTemplate {
@@ -32,7 +33,7 @@ interface EventQuestion {
 }
 
 export default async function QuestionnairePage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const supabase = await createClient();
   const t = await getTranslations("questionnaireBuilder");
 
@@ -44,11 +45,19 @@ export default async function QuestionnairePage({ params }: PageProps) {
     redirect("/auth/login");
   }
 
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
+  if (canonicalSlug !== slug) {
+    redirect(`/${locale}/events/${canonicalSlug}`);
+  }
+
   // Fetch the event
   const { data: event, error } = await supabase
     .from("events")
     .select("id, slug, title, created_by")
-    .eq("slug", slug)
+    .eq("slug", canonicalSlug)
     .single();
 
   if (error || !event) {
@@ -57,7 +66,7 @@ export default async function QuestionnairePage({ params }: PageProps) {
 
   // Check if user is the creator (or admin - could add later)
   if (event.created_by !== user.id) {
-    redirect(`/events/${slug}`);
+    redirect(`/${locale}/events/${canonicalSlug}`);
   }
 
   // Fetch questionnaire for this event (if exists)
@@ -143,7 +152,7 @@ export default async function QuestionnairePage({ params }: PageProps) {
       <div className="container max-w-2xl mx-auto px-4 py-8">
         {/* Back link */}
         <Link
-          href={`/events/${slug}`}
+          href={`/events/${canonicalSlug}`}
           className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -158,7 +167,7 @@ export default async function QuestionnairePage({ params }: PageProps) {
           </div>
           {questionnaire && responseCount > 0 && (
             <Link
-              href={`/events/${slug}/responses`}
+            href={`/${locale}/events/${canonicalSlug}/responses`}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5 rounded-lg transition-colors"
             >
               <BarChart3 className="w-4 h-4" />

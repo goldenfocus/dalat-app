@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -12,6 +12,7 @@ import {
 import { Music, Mic2, ExternalLink, Clock, User, Disc, Globe } from "lucide-react";
 import { formatDuration } from "@/lib/format-duration";
 import { getTrackLyricsTranslation } from "@/lib/translations";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 import type { ContentLocale } from "@/lib/types";
 import { LOCALE_FLAGS, LOCALE_NAMES } from "@/lib/types";
 import { getTrackSeoKeywords } from "@/lib/seo/dalat-keywords";
@@ -111,7 +112,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug, locale, trackId } = await params;
   const supabase = createStaticClient();
   if (!supabase) return { title: "Lyrics" };
-  const data = await getLyricsTrack(slug, trackId, supabase);
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) return { title: "Lyrics not found" };
+
+  const data = await getLyricsTrack(canonicalSlug, trackId, supabase);
 
   if (!data) {
     return { title: "Lyrics not found" };
@@ -133,8 +137,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const description = t("metaDescription", { trackTitle, artist, preview: lyricsPreview });
 
-  const canonicalUrl = `https://dalat.app/${locale}/events/${slug}/lyrics/${trackId}`;
-  const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${slug}/playlist/opengraph-image`;
+  const canonicalUrl = `https://dalat.app/${locale}/events/${canonicalSlug}/lyrics/${trackId}`;
+  const ogImageUrl = track.thumbnail_url || event.image_url || `https://dalat.app/${locale}/events/${canonicalSlug}/playlist/opengraph-image`;
 
   // Rich keywords for lyrics search with Dalat SEO boost
   const keywords = [
@@ -175,18 +179,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       canonical: canonicalUrl,
       // All 12 languages for maximum SEO coverage
       languages: {
-        en: `https://dalat.app/en/events/${slug}/lyrics/${trackId}`,
-        vi: `https://dalat.app/vi/events/${slug}/lyrics/${trackId}`,
-        ko: `https://dalat.app/ko/events/${slug}/lyrics/${trackId}`,
-        zh: `https://dalat.app/zh/events/${slug}/lyrics/${trackId}`,
-        ru: `https://dalat.app/ru/events/${slug}/lyrics/${trackId}`,
-        fr: `https://dalat.app/fr/events/${slug}/lyrics/${trackId}`,
-        ja: `https://dalat.app/ja/events/${slug}/lyrics/${trackId}`,
-        ms: `https://dalat.app/ms/events/${slug}/lyrics/${trackId}`,
-        th: `https://dalat.app/th/events/${slug}/lyrics/${trackId}`,
-        de: `https://dalat.app/de/events/${slug}/lyrics/${trackId}`,
-        es: `https://dalat.app/es/events/${slug}/lyrics/${trackId}`,
-        id: `https://dalat.app/id/events/${slug}/lyrics/${trackId}`,
+        en: `https://dalat.app/en/events/${canonicalSlug}/lyrics/${trackId}`,
+        vi: `https://dalat.app/vi/events/${canonicalSlug}/lyrics/${trackId}`,
+        ko: `https://dalat.app/ko/events/${canonicalSlug}/lyrics/${trackId}`,
+        zh: `https://dalat.app/zh/events/${canonicalSlug}/lyrics/${trackId}`,
+        ru: `https://dalat.app/ru/events/${canonicalSlug}/lyrics/${trackId}`,
+        fr: `https://dalat.app/fr/events/${canonicalSlug}/lyrics/${trackId}`,
+        ja: `https://dalat.app/ja/events/${canonicalSlug}/lyrics/${trackId}`,
+        ms: `https://dalat.app/ms/events/${canonicalSlug}/lyrics/${trackId}`,
+        th: `https://dalat.app/th/events/${canonicalSlug}/lyrics/${trackId}`,
+        de: `https://dalat.app/de/events/${canonicalSlug}/lyrics/${trackId}`,
+        es: `https://dalat.app/es/events/${canonicalSlug}/lyrics/${trackId}`,
+        id: `https://dalat.app/id/events/${canonicalSlug}/lyrics/${trackId}`,
       },
     },
     robots: {
@@ -198,8 +202,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function LyricsPage({ params }: PageProps) {
   const { slug, locale, trackId } = await params;
+  const supabase = await createClient();
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
+  if (canonicalSlug !== slug) {
+    redirect(`/${locale}/events/${canonicalSlug}/lyrics/${trackId}`);
+  }
 
-  const data = await getLyricsTrack(slug, trackId);
+  const data = await getLyricsTrack(canonicalSlug, trackId, supabase);
 
   if (!data) {
     notFound();
@@ -229,7 +241,7 @@ export default async function LyricsPage({ params }: PageProps) {
   // Generate structured data for SEO/AEO
   const musicSchema = generateMusicRecordingSchema(track, event, locale);
   const faqSchema = generateLyricsFAQSchema(track, event, lyricsText, locale);
-  const pageUrl = `https://dalat.app/${locale}/events/${slug}/lyrics/${trackId}`;
+  const pageUrl = `https://dalat.app/${locale}/events/${canonicalSlug}/lyrics/${trackId}`;
   const speakableSchema = generateSpeakableSchema(pageUrl, [
     "h1",           // Song title
     "article h2",   // "Lyrics" heading
@@ -244,7 +256,7 @@ export default async function LyricsPage({ params }: PageProps) {
         <div className="container mx-auto px-4 py-8 max-w-3xl">
           {/* Back link */}
           <Link
-            href={`/${locale}/events/${slug}/playlist`}
+            href={`/${locale}/events/${canonicalSlug}/playlist`}
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 -ml-1 px-2 py-1 rounded-lg transition-colors"
           >
             <Music className="w-4 h-4" />
@@ -274,7 +286,7 @@ export default async function LyricsPage({ params }: PageProps) {
 
           {/* CTA to karaoke */}
           <Link
-            href={`/${locale}/events/${slug}/karaoke/${trackId}`}
+            href={`/${locale}/events/${canonicalSlug}/karaoke/${trackId}`}
             className="flex items-center justify-center gap-2 w-full py-4 px-6 mb-8 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors"
           >
             <Mic2 className="w-5 h-5" />
@@ -316,7 +328,7 @@ export default async function LyricsPage({ params }: PageProps) {
           {/* Bottom CTA */}
           <div className="mt-8 text-center">
             <Link
-              href={`/${locale}/events/${slug}/karaoke/${trackId}`}
+            href={`/${locale}/events/${canonicalSlug}/karaoke/${trackId}`}
               className="inline-flex items-center gap-2 text-primary hover:underline font-medium"
             >
               <Mic2 className="w-4 h-4" />

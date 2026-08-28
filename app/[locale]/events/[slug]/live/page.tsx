@@ -1,7 +1,8 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from "next/navigation";
 import { createClient, createStaticClient } from '@/lib/supabase/server';
 import { ViewerInterface } from './viewer-interface';
 import type { Metadata } from 'next';
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 export const maxDuration = 60;
 
@@ -13,7 +14,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const supabase = createStaticClient();
   if (!supabase) return { title: 'Watch Live' };
-  const { data: event } = await supabase.from('events').select('title').eq('slug', slug).single();
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) return { title: 'Watch Live' };
+  const { data: event } = await supabase.from('events').select('title').eq('slug', canonicalSlug).single();
   return { title: event ? `Watch Live - ${event.title}` : 'Watch Live' };
 }
 
@@ -22,11 +25,19 @@ export default async function LiveViewerPage({ params }: PageProps) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    notFound();
+  }
+  if (canonicalSlug !== slug) {
+    redirect(`/${locale}/events/${canonicalSlug}/live`);
+  }
+
   const { data: event, error: eventError } = await supabase
     .from('events')
     .select(`id, slug, title, description, image_url, starts_at, ends_at, status, created_by,
       profiles!created_by (id, username, display_name, avatar_url)`)
-    .eq('slug', slug)
+    .eq('slug', canonicalSlug)
     .single();
 
   if (eventError || !event) notFound();
