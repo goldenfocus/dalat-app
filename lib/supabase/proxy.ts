@@ -101,8 +101,10 @@ async function getProfileLocale(request: NextRequest): Promise<string | null> {
  * small anon preflight is limited to leaf event URLs and fails open on any
  * infrastructure error so a transient database issue never hides a real page.
  */
-async function publishedEventSlugExists(slug: string): Promise<boolean> {
-  if (!hasEnvVars) return true;
+async function resolvePublishedEventSlug(
+  slug: string,
+): Promise<string | null> {
+  if (!hasEnvVars) return slug;
 
   try {
     const supabase = createServerClient(
@@ -119,14 +121,20 @@ async function publishedEventSlugExists(slug: string): Promise<boolean> {
     );
     const { data, error } = await supabase
       .from('events')
-      .select('id')
+      .select('slug')
       .or(`slug.eq.${slug},previous_slugs.cs.{${slug}}`)
-      .eq('status', 'published')
-      .limit(1);
+      .eq('status', 'published');
 
-    return error ? true : Boolean(data?.length);
+    // Fail open on infrastructure errors so a transient database issue never
+    // hides a real page. A null result is the only authoritative miss.
+    if (error) return slug;
+    // A retired slug can later be reused as a current slug. Match the event
+    // page's exact-first resolution so historical aliases never shadow it.
+    return data?.find((event) => event.slug === slug)?.slug
+      ?? data?.[0]?.slug
+      ?? null;
   } catch {
-    return true;
+    return slug;
   }
 }
 
@@ -162,16 +170,27 @@ export async function updateSession(request: NextRequest) {
     const eventSlug = eventMatch?.[2];
     if (
       eventSlug &&
-      !eventCollectionSegments.has(eventSlug) &&
-      !(await publishedEventSlugExists(eventSlug))
+      !eventCollectionSegments.has(eventSlug)
     ) {
-      return new NextResponse(null, {
-        status: 404,
-        headers: {
-          'Content-Language': eventMatch?.[1] || routing.defaultLocale,
-          'X-Robots-Tag': 'noindex, nofollow',
-        },
-      });
+      const canonicalSlug = await resolvePublishedEventSlug(eventSlug);
+      if (canonicalSlug === null) {
+        return new NextResponse(null, {
+          status: 404,
+          headers: {
+            'Content-Language': eventMatch?.[1] || routing.defaultLocale,
+            'X-Robots-Tag': 'noindex, nofollow',
+          },
+        });
+      }
+      if (canonicalSlug !== eventSlug) {
+        const locale = eventMatch?.[1];
+        const prefix = locale && locale !== routing.defaultLocale
+          ? `/${locale}`
+          : '';
+        const canonicalUrl = request.nextUrl.clone();
+        canonicalUrl.pathname = `${prefix}/events/${canonicalSlug}`;
+        return NextResponse.redirect(canonicalUrl, { status: 308 });
+      }
     }
   }
 

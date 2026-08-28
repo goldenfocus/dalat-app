@@ -98,8 +98,7 @@ describe('locale routing', () => {
   });
 
   it('returns a true localized 404 to indexing crawlers for a missing event leaf', async () => {
-    const limit = vi.fn().mockResolvedValue({ data: [], error: null });
-    const eq = vi.fn(() => ({ limit }));
+    const eq = vi.fn().mockResolvedValue({ data: [], error: null });
     const or = vi.fn(() => ({ eq }));
     const select = vi.fn(() => ({ or }));
     vi.mocked(createServerClient).mockReturnValue({
@@ -119,8 +118,10 @@ describe('locale routing', () => {
   });
 
   it('fails open for a real event and never preflights collection routes', async () => {
-    const limit = vi.fn().mockResolvedValue({ data: [{ id: 'event-1' }], error: null });
-    const eq = vi.fn(() => ({ limit }));
+    const eq = vi.fn().mockResolvedValue({
+      data: [{ slug: 'real-event' }],
+      error: null,
+    });
     const or = vi.fn(() => ({ eq }));
     const select = vi.fn(() => ({ or }));
     const from = vi.fn(() => ({ select }));
@@ -140,6 +141,79 @@ describe('locale routing', () => {
       userAgent: 'Googlebot/2.1',
     }));
     expect(collection.status).toBe(200);
+    expect(createServerClient).not.toHaveBeenCalled();
+  });
+
+  it('gives indexing crawlers a permanent locale-preserving redirect for a previous slug', async () => {
+    const eq = vi.fn().mockResolvedValue({
+      data: [{ slug: 'canonical-event' }],
+      error: null,
+    });
+    const or = vi.fn(() => ({ eq }));
+    const select = vi.fn(() => ({ or }));
+    vi.mocked(createServerClient).mockReturnValue({
+      from: vi.fn(() => ({ select })),
+    } as never);
+
+    const locales = ['en', 'vi', 'ko', 'zh', 'ru', 'fr', 'ja', 'ms', 'th', 'de', 'es', 'id'];
+    for (const locale of locales) {
+      const response = await updateSession(request(
+        `/${locale}/events/old-event?utm_source=legacy`,
+        { userAgent: locale === 'en' ? 'OAI-SearchBot/1.0' : 'Googlebot/2.1' },
+      ));
+      const prefix = locale === 'en' ? '' : `/${locale}`;
+      expect(response.status).toBe(308);
+      expect(response.headers.get('location')).toBe(
+        `https://dalat.app${prefix}/events/canonical-event?utm_source=legacy`,
+      );
+    }
+
+    const unprefixed = await updateSession(request(
+      '/events/old-event?utm_source=legacy',
+      { userAgent: 'OAI-SearchBot/1.0' },
+    ));
+    expect(unprefixed.status).toBe(308);
+    expect(unprefixed.headers.get('location')).toBe(
+      'https://dalat.app/events/canonical-event?utm_source=legacy',
+    );
+  });
+
+  it('prefers an exact current slug over a matching historical alias', async () => {
+    const eq = vi.fn().mockResolvedValue({
+      data: [{ slug: 'historical-owner' }, { slug: 'reused-slug' }],
+      error: null,
+    });
+    const or = vi.fn(() => ({ eq }));
+    const select = vi.fn(() => ({ or }));
+    vi.mocked(createServerClient).mockReturnValue({
+      from: vi.fn(() => ({ select })),
+    } as never);
+
+    const response = await updateSession(request('/events/reused-slug', {
+      userAgent: 'Googlebot/2.1',
+    }));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('location')).toBeNull();
+  });
+
+  it('fails open on slug lookup errors and bypasses lookup for non-crawlers', async () => {
+    const eq = vi.fn().mockResolvedValue({ data: null, error: new Error('offline') });
+    const or = vi.fn(() => ({ eq }));
+    const select = vi.fn(() => ({ or }));
+    const from = vi.fn(() => ({ select }));
+    vi.mocked(createServerClient).mockReturnValue({ from } as never);
+
+    const crawler = await updateSession(request('/events/old-event', {
+      userAgent: 'Googlebot/2.1',
+    }));
+    expect(crawler.status).toBe(200);
+    expect(crawler.headers.get('location')).toBeNull();
+
+    vi.mocked(createServerClient).mockClear();
+    const browser = await updateSession(request('/events/old-event', {
+      userAgent: 'Mozilla/5.0',
+    }));
+    expect(browser.status).toBe(200);
     expect(createServerClient).not.toHaveBeenCalled();
   });
 });
