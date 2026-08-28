@@ -59,7 +59,6 @@ AS $$
       m.video_status,
       m.video_duration_seconds,
       m.text_content,
-      m.ai_description,
       m.created_at,
       e.slug AS event_slug,
       e.title AS event_title,
@@ -114,7 +113,6 @@ AS $$
           'video_status', tem.video_status,
           'video_duration_seconds', tem.video_duration_seconds,
           'text_content', tem.text_content,
-          'ai_description', tem.ai_description,
           'created_at', tem.created_at
         )
         ORDER BY tem.created_at DESC
