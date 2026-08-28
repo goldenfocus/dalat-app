@@ -2315,6 +2315,8 @@
     "filterByType": "Filtrer par type",
     "allTypes": "Tous",
     "showOpenNow": "Ouvert maintenant",
+    "searchPlaceholder": "Rechercher des lieux...",
+    "searchResults": "{count} lieux trouvés",
     "recentActivity": "{count} personnes ont participé à des événements ici récemment",
     "totalEventsHosted": "{count} événements organisés",
     "types": {

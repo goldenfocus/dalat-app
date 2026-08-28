@@ -47,6 +47,13 @@ function plainLyrics(lrc: string): string {
     .join("\n");
 }
 
+/** Venue names are proper names. Only descriptive venue copy is translatable. */
+export function getVenueTranslatableFields(description: string | null | undefined) {
+  return description?.trim()
+    ? [{ field_name: "description", text: description }]
+    : [];
+}
+
 /**
  * Collect content whose 12-locale translation coverage is incomplete,
  * newest first. Short user-facing content comes before blogs — a single long
@@ -169,16 +176,13 @@ export async function collectTranslationWork(
   // --- Venues ---
   const { data: venues, error: venuesError } = await supabase
     .from("venues")
-    .select("id, name, description, source_locale")
+    .select("id, description, source_locale")
     .order("created_at", { ascending: false })
     .limit(scanLimit);
   if (venuesError) throw new Error(`[translation-sweep] venues query failed: ${venuesError.message}`);
 
   for (const venue of venues ?? []) {
-    const fields = [
-      { field_name: "title", text: venue.name },
-      { field_name: "description", text: venue.description },
-    ].filter((field) => field.text?.trim());
+    const fields = getVenueTranslatableFields(venue.description);
     if (fields.length === 0) continue;
     candidates.push({
       contentType: "venue",

@@ -2360,6 +2360,8 @@
     "filterByType": "Filter berdasarkan tipe",
     "allTypes": "Semua",
     "showOpenNow": "Buka Sekarang",
+    "searchPlaceholder": "Cari tempat...",
+    "searchResults": "{count} tempat ditemukan",
     "recentActivity": "{count} orang menghadiri acara di sini baru-baru ini",
     "totalEventsHosted": "{count} acara diselenggarakan",
     "types": {

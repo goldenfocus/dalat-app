@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createStaticClient } from "@/lib/supabase/server";
-import { getVenueTranslationsBatch } from "@/lib/translations";
 import { VenueCardSkeleton } from "@/components/venues/venue-card-skeleton";
 import { VenuesDirectory } from "@/components/venues/venues-directory";
 import type { VenueListItem, VenueType, Locale } from "@/lib/types";
@@ -72,16 +71,6 @@ function VenuesLoading() {
 async function VenuesContent({ locale }: { locale: Locale }) {
   const allVenues = await getAllVenues();
 
-  // Fetch venue translations for current locale
-  const venueIds = allVenues.map((v) => v.id);
-  const venueTranslations = await getVenueTranslationsBatch(venueIds, locale);
-
-  // Serialize translations for the client boundary (Maps aren't serializable)
-  const translatedNames: Record<string, string> = {};
-  venueTranslations.forEach((translation, id) => {
-    if (translation.title) translatedNames[id] = translation.title;
-  });
-
   // Compute type counts from all venues
   const typeCounts = computeTypeCounts(allVenues);
 
@@ -125,7 +114,6 @@ async function VenuesContent({ locale }: { locale: Locale }) {
       <Suspense fallback={<VenuesLoading />}>
         <VenuesDirectory
           venues={allVenues}
-          translatedNames={translatedNames}
           typeCounts={typeCounts}
         />
       </Suspense>

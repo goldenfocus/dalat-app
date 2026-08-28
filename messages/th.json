@@ -2301,6 +2301,8 @@
     "filterByType": "กรองตามประเภท",
     "allTypes": "ทั้งหมด",
     "showOpenNow": "เปิดอยู่ตอนนี้",
+    "searchPlaceholder": "ค้นหาสถานที่...",
+    "searchResults": "พบสถานที่ {count} แห่ง",
     "recentActivity": "{count} คนเข้าร่วมกิจกรรมที่นี่เมื่อเร็วๆ นี้",
     "totalEventsHosted": "จัดกิจกรรมไปแล้ว {count} ครั้ง",
     "types": {

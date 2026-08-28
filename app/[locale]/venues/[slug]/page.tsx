@@ -174,20 +174,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     .eq("status", "published")
     .gte("starts_at", new Date().toISOString());
 
-  // Fetch translations for metadata
+  // Translate descriptive copy only; venue names remain canonical.
   const venueTranslations = await getTranslationsWithFallback(
     "venue",
     venue.id,
     locale as Locale,
-    {
-      title: venue.name,
-      description: venue.description,
-      text_content: null,
-      bio: null,
-      story_content: null,
-      technical_content: null,
-      meta_description: null,
-    }
+    { description: venue.description }
   );
 
   return generateVenueMetadata(
@@ -224,15 +216,7 @@ export default async function VenuePage({ params }: PageProps) {
     "venue",
     venue.id,
     locale as Locale,
-    {
-      title: venue.name,
-      description: venue.description,
-      text_content: null,
-      bio: null,
-      story_content: null,
-      technical_content: null,
-      meta_description: null,
-    }
+    { description: venue.description }
   );
   const translatedDescription = venueTranslations.description ?? venue.description;
 

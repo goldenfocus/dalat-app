@@ -2301,6 +2301,8 @@
     "filterByType": "タイプで絞り込む",
     "allTypes": "すべて",
     "showOpenNow": "営業中",
+    "searchPlaceholder": "会場を検索...",
+    "searchResults": "{count}件の会場が見つかりました",
     "recentActivity": "最近{count}人がここのイベントに参加しました",
     "totalEventsHosted": "{count}件のイベントを開催",
     "types": {

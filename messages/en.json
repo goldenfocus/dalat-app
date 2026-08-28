@@ -2335,6 +2335,8 @@
     "filterByType": "Filter by type",
     "allTypes": "All Types",
     "showOpenNow": "Open Now",
+    "searchPlaceholder": "Search venues...",
+    "searchResults": "{count} venues found",
     "recentActivity": "{count} people visited events here recently",
     "totalEventsHosted": "{count} events hosted",
     "types": {

@@ -2301,6 +2301,8 @@
     "filterByType": "Nach Typ filtern",
     "allTypes": "Alle",
     "showOpenNow": "Jetzt geöffnet",
+    "searchPlaceholder": "Orte suchen...",
+    "searchResults": "{count} Orte gefunden",
     "recentActivity": "{count} Personen haben kürzlich an Veranstaltungen hier teilgenommen",
     "totalEventsHosted": "{count} Veranstaltungen ausgerichtet",
     "types": {

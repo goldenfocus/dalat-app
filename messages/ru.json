@@ -2301,6 +2301,8 @@
     "filterByType": "Фильтр по типу",
     "allTypes": "Все",
     "showOpenNow": "Открыто сейчас",
+    "searchPlaceholder": "Поиск места...",
+    "searchResults": "Найдено мест: {count}",
     "recentActivity": "{count} человек недавно посетили события здесь",
     "totalEventsHosted": "Проведено {count} событий",
     "types": {

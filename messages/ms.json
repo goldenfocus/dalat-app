@@ -2301,6 +2301,8 @@
     "filterByType": "Tapis mengikut jenis",
     "allTypes": "Semua",
     "showOpenNow": "Buka Sekarang",
+    "searchPlaceholder": "Cari tempat...",
+    "searchResults": "{count} tempat dijumpai",
     "recentActivity": "{count} orang menghadiri acara di sini baru-baru ini",
     "totalEventsHosted": "{count} acara dianjurkan",
     "types": {

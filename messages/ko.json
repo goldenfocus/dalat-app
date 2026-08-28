@@ -2304,6 +2304,8 @@
     "filterByType": "유형별 필터",
     "allTypes": "전체",
     "showOpenNow": "영업 중",
+    "searchPlaceholder": "장소 검색...",
+    "searchResults": "{count}개의 장소를 찾았습니다",
     "recentActivity": "최근 {count}명이 여기서 이벤트에 참석했습니다",
     "totalEventsHosted": "{count}개 이벤트 개최",
     "types": {

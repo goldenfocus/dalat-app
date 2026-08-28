@@ -2304,6 +2304,8 @@
     "filterByType": "按类型筛选",
     "allTypes": "全部",
     "showOpenNow": "营业中",
+    "searchPlaceholder": "搜索场地...",
+    "searchResults": "找到 {count} 个场馆",
     "recentActivity": "最近有{count}人参加了这里的活动",
     "totalEventsHosted": "已举办{count}个活动",
     "types": {

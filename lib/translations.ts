@@ -326,48 +326,6 @@ export async function getEventTranslationsBatch(
 }
 
 /**
- * Batch fetch translations for multiple venues (efficient for list pages)
- * Uses static client for ISR compatibility - translations are public data
- */
-export async function getVenueTranslationsBatch(
-  venueIds: string[],
-  targetLocale: ContentLocale
-): Promise<Map<string, { title?: string }>> {
-  if (venueIds.length === 0) {
-    return new Map();
-  }
-
-  try {
-    const supabase = createStaticClient();
-    if (!supabase) {
-      console.error("Failed to create Supabase client for venue translations");
-      return new Map();
-    }
-
-    const { data: translations } = await supabase
-      .from('content_translations')
-      .select('content_id, translated_text')
-      .eq('content_type', 'venue')
-      .in('content_id', venueIds)
-      .eq('target_locale', targetLocale)
-      .eq('field_name', 'title');
-
-    const result = new Map<string, { title?: string }>();
-
-    if (translations) {
-      for (const t of translations) {
-        result.set(t.content_id, { title: t.translated_text });
-      }
-    }
-
-    return result;
-  } catch (err) {
-    console.error("Exception in getVenueTranslationsBatch:", err);
-    return new Map();
-  }
-}
-
-/**
  * Batch fetch translations for multiple blog posts (efficient for list pages)
  */
 export async function getBlogTranslationsBatch(

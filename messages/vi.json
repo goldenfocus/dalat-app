@@ -2304,6 +2304,8 @@
     "filterByType": "Lọc theo loại",
     "allTypes": "Tất cả",
     "showOpenNow": "Đang mở",
+    "searchPlaceholder": "Tìm địa điểm...",
+    "searchResults": "Tìm thấy {count} địa điểm",
     "recentActivity": "{count} người đã tham gia sự kiện tại đây gần đây",
     "totalEventsHosted": "Đã tổ chức {count} sự kiện",
     "types": {

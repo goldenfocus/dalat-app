@@ -190,20 +190,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
       if (!venue) return { title: "Venue not found" };
 
-      // Fetch translations for metadata
+      // Translate descriptive copy only; venue names remain canonical.
       const venueTranslations = await getTranslationsWithFallback(
         "venue",
         venue.id,
         locale as Locale,
-        {
-          title: venue.name,
-          description: venue.description,
-          text_content: null,
-          bio: null,
-          story_content: null,
-          technical_content: null,
-          meta_description: null,
-        }
+        { description: venue.description }
       );
 
       const { data: events } = await supabase

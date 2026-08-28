@@ -219,23 +219,14 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     canUserManageVenue(venue.owner_id),
   ]);
 
-  // Fetch translations for venue description
+  // Fetch translations for venue description only. The official name is canonical.
   const venueTranslations = await getTranslationsWithFallback(
     "venue",
     venue.id,
     locale as Locale,
-    {
-      title: venue.name,
-      description: venue.description,
-      text_content: null,
-      bio: null,
-      story_content: null,
-      technical_content: null,
-      meta_description: null,
-    }
+    { description: venue.description }
   );
   const translatedDescription = venueTranslations.description ?? venue.description;
-  const translatedName = venueTranslations.title ?? venue.name;
   const translatedAddress = venue.address?.replace(/\bWard\b/g, t("ward")) ?? null;
 
   const isUnclaimed = !venue.owner_id;
@@ -345,7 +336,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                   )}
 
                   <h1 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg">
-                    {translatedName}
+                    {venue.name}
                   </h1>
 
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -404,7 +395,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               )}
 
               <h1 className="text-2xl sm:text-3xl font-bold">
-                {translatedName}
+                {venue.name}
               </h1>
 
               <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -763,7 +754,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
           <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
             <CardContent className="p-6 text-center">
               <h2 className="text-lg font-semibold mb-2">
-                {t("visitVenue", { name: translatedName })}
+                {t("visitVenue", { name: venue.name })}
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
                 {venue.address && (
@@ -776,9 +767,9 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 <VenueShareButton
-                  name={translatedName}
+                  name={venue.name}
                   shareText={t("shareVenueText", {
-                    name: translatedName,
+                    name: venue.name,
                     address: translatedAddress || venue.address || "",
                   })}
                   url={`https://dalat.app/${venue.slug}`}
