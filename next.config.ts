@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "customer-9g4uycudmu3mklbc.cloudflarestream.com",
+        pathname: "/*/thumbnails/**",
+      },
+      {
+        protocol: "https",
         hostname: "dalat.app",
         pathname: "/activity-art/**",
       },
