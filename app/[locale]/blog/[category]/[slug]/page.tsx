@@ -269,8 +269,10 @@ export default async function BlogPostPage({ params }: PageProps) {
             />
           </div>
 
-          {/* Technical Details Accordion */}
-          <TechnicalAccordion content={translations.translated_technical_content} />
+          {/* Optional supporting detail. The complete guide belongs above. */}
+          {translations.translated_technical_content.trim() && (
+            <TechnicalAccordion content={translations.translated_technical_content} />
+          )}
 
           {/* News Sources */}
           {post.category_slug === 'news' && (post.source_urls?.length ?? 0) > 0 && (

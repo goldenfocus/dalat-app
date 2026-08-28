@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { triggerTranslation } from "@/lib/translations-client";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import type { BlogCategory, BlogPostStatus } from "@/lib/types/blog";
+import { validateGuideForPublishing } from "@/lib/blog/guide-quality";
 import Image from "next/image";
 
 interface BlogPostData {
@@ -156,9 +157,61 @@ Style guidelines:
       let finalDescription = coverImageDescription;
       let finalKeywords = coverImageKeywords;
       let finalColors = coverImageColors;
+      const changedTranslationFields = [
+        { field_name: "title" as const, text: title, previous: post.title },
+        {
+          field_name: "story_content" as const,
+          text: storyContent,
+          previous: post.story_content,
+        },
+        {
+          field_name: "technical_content" as const,
+          text: technicalContent,
+          previous: post.technical_content,
+        },
+        {
+          field_name: "meta_description" as const,
+          text: metaDescription,
+          previous: post.meta_description || "",
+        },
+      ].filter((field) => field.text !== field.previous);
 
       // Auto-generate cover if publishing without one
       const isPublishing = status === "published" || status === "experimental";
+      const categorySlug = categories.find((category) => category.id === categoryId)?.slug;
+
+      if (isPublishing && categorySlug === "guides") {
+        const guideIssues = validateGuideForPublishing({ title, storyContent });
+        if (guideIssues.length > 0) {
+          throw new Error(
+            `This guide is not ready to publish:\n${guideIssues
+              .map((issue) => `• ${issue.message}`)
+              .join("\n")}`
+          );
+        }
+      }
+
+      if (changedTranslationFields.length > 0) {
+        const translationPreflight = await fetch("/api/blog/refresh-translations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postId: post.id,
+            fields: changedTranslationFields.map((field) => field.field_name),
+            validateOnly: true,
+          }),
+        });
+        const preflightResult = (await translationPreflight.json()) as {
+          error?: string;
+        };
+
+        if (!translationPreflight.ok) {
+          throw new Error(
+            preflightResult.error || "Could not validate existing translations"
+          );
+        }
+      }
+
       if (isPublishing && !coverImageUrl && storyContent.trim()) {
         setIsGeneratingCover(true);
         try {
@@ -200,13 +253,35 @@ Style guidelines:
 
       if (updateError) throw updateError;
 
-      // Re-trigger translation when content changes (fire-and-forget)
-      triggerTranslation("blog", post.id, [
-        { field_name: "title", text: title },
-        { field_name: "story_content", text: storyContent },
-        { field_name: "technical_content", text: technicalContent },
-        { field_name: "meta_description", text: metaDescription },
-      ]);
+      if (changedTranslationFields.length > 0) {
+        // Existing translations describe the old source text. Remove only the
+        // changed fields so the translation worker can rebuild truthful copies.
+        const translationResponse = await fetch("/api/blog/refresh-translations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postId: post.id,
+            fields: changedTranslationFields.map((field) => field.field_name),
+          }),
+        });
+        const translationResult = (await translationResponse.json()) as {
+          error?: string;
+        };
+
+        if (!translationResponse.ok) {
+          throw new Error(
+            `Post saved, but stale translations could not be cleared: ${
+              translationResult.error || "unknown error"
+            }`
+          );
+        }
+
+        triggerTranslation(
+          "blog",
+          post.id,
+          changedTranslationFields.map(({ field_name, text }) => ({ field_name, text }))
+        );
+      }
 
       router.refresh();
       router.push("/admin/blog");
@@ -266,11 +341,15 @@ Style guidelines:
   };
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
+  const guideQualityIssues =
+    selectedCategory?.slug === "guides"
+      ? validateGuideForPublishing({ title, storyContent })
+      : [];
 
   return (
     <div className="space-y-8">
       {error && (
-        <div className="p-4 rounded-lg bg-destructive/10 text-destructive border border-destructive/20">
+        <div className="p-4 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 whitespace-pre-line">
           {error}
         </div>
       )}
@@ -303,28 +382,66 @@ Style guidelines:
           {/* Story Content */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Story Content
-              <span className="text-muted-foreground font-normal ml-2">(Human-readable)</span>
+              {selectedCategory?.slug === "guides" ? "Guide Content" : "Story Content"}
+              <span className="text-muted-foreground font-normal ml-2">
+                {selectedCategory?.slug === "guides"
+                  ? "(the complete public guide)"
+                  : "(Human-readable)"}
+              </span>
             </label>
             <AIEnhanceTextarea
               value={storyContent}
               onChange={setStoryContent}
-              context="a blog post story for dalat.app"
+              context={
+                selectedCategory?.slug === "guides"
+                  ? "a sourced, current public guide for dalat.app with real named entries and honest caveats"
+                  : "a blog post story for dalat.app"
+              }
               rows={12}
               className="font-sans"
             />
+            {selectedCategory?.slug === "guides" && (
+              <div
+                className={`mt-3 rounded-lg border p-3 text-sm ${
+                  guideQualityIssues.length === 0
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                    : "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200"
+                }`}
+              >
+                {guideQualityIssues.length === 0 ? (
+                  <p>Guide publishing checks pass.</p>
+                ) : (
+                  <>
+                    <p className="font-medium mb-2">Before publishing:</p>
+                    <ul className="space-y-1 list-disc pl-5">
+                      {guideQualityIssues.map((issue) => (
+                        <li key={issue.code}>{issue.message}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Technical Content */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Technical Content
-              <span className="text-muted-foreground font-normal ml-2">(Machine-readable)</span>
+              {selectedCategory?.slug === "guides" ? "Optional Extra Details" : "Technical Content"}
+              <span className="text-muted-foreground font-normal ml-2">
+                {selectedCategory?.slug === "guides"
+                  ? "(collapsed; never put the actual list only here)"
+                  : "(Machine-readable)"}
+              </span>
             </label>
             <AIEnhanceTextarea
               value={technicalContent}
               onChange={setTechnicalContent}
-              context="technical documentation for a changelog"
+              context={
+                selectedCategory?.slug === "guides"
+                  ? "optional supporting notes for a public guide; the complete list must stay in Guide Content"
+                  : "technical documentation for a changelog"
+              }
               rows={12}
               className="font-mono text-sm"
             />

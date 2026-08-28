@@ -14,8 +14,8 @@
  *   writes comprehensive posts targeting untapped search queries
  *   about Da Lat tourism, events, and culture.
  *
- * Posts are inserted directly into Supabase blog_posts table.
- * Translations handled by existing content_translations pipeline.
+ * Drafts are inserted into Supabase for human research and review. This job
+ * must never publish directly: it has no live venue, event, or source feed.
  *
  * Usage:
  *   ANTHROPIC_API_KEY=... SUPABASE_URL=... SUPABASE_SERVICE_KEY=... node scripts/blog-autopilot.mjs
@@ -24,7 +24,6 @@
  *   ANTHROPIC_API_KEY    (required)
  *   SUPABASE_URL         (required) — e.g. https://xxx.supabase.co
  *   SUPABASE_SERVICE_KEY (required) — service role key
- *   GOOGLE_AI_API_KEY    (optional) — Gemini for cover image generation
  *   BLOG_MODE            'both' | 'news' | 'seo'  (default: 'both')
  *   BLOG_COUNT           posts per stream           (default: 1)
  */
@@ -34,17 +33,14 @@
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const GEMINI_KEY = process.env.GOOGLE_AI_API_KEY;
 const MODE = process.env.BLOG_MODE || 'both';
 const COUNT = Math.min(parseInt(process.env.BLOG_COUNT || '1', 10), 3);
 const MODEL = 'claude-sonnet-4-20250514';
 const MAX_TOKENS = 8192;
-const GEMINI_MODEL = 'gemini-2.0-flash-exp-image-generation';
 
 if (!API_KEY) { console.error('ANTHROPIC_API_KEY is required'); process.exit(1); }
 if (!SUPABASE_URL) { console.error('SUPABASE_URL is required'); process.exit(1); }
 if (!SUPABASE_KEY) { console.error('SUPABASE_SERVICE_KEY is required'); process.exit(1); }
-if (!GEMINI_KEY) console.warn('  GOOGLE_AI_API_KEY not set — skipping cover images');
 
 // ─── Brand Context ──────────────────────────────────────────────────────────
 
@@ -153,12 +149,33 @@ async function fetchCategories() {
 }
 
 async function fetchRecentPosts(limit = 50) {
-  const url = `${SUPABASE_URL}/rest/v1/blog_posts?select=id,title,slug,story_content,seo_keywords,status,category_id,published_at&order=published_at.desc&limit=${limit}&status=eq.published`;
+  const url = `${SUPABASE_URL}/rest/v1/blog_posts?select=id,title,slug,story_content,seo_keywords,status,category_id,published_at,created_at&order=created_at.desc&limit=${limit}`;
   const res = await fetch(url, {
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
   });
   if (!res.ok) throw new Error(`Failed to fetch posts: ${res.status}`);
   return res.json();
+}
+
+async function fetchAllSlugs() {
+  const slugs = [];
+  const pageSize = 1000;
+
+  for (let offset = 0; ; offset += pageSize) {
+    const url = `${SUPABASE_URL}/rest/v1/blog_posts?select=slug&order=created_at.asc`;
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Range': `${offset}-${offset + pageSize - 1}`,
+      },
+    });
+    if (!res.ok) throw new Error(`Failed to fetch existing slugs: ${res.status}`);
+
+    const page = await res.json();
+    slugs.push(...page.map((post) => post.slug));
+    if (page.length < pageSize) return slugs;
+  }
 }
 
 async function insertPost(post) {
@@ -228,10 +245,14 @@ function slugify(title) {
 // ─── Content Format Instructions ────────────────────────────────────────────
 
 const FORMAT_RULES = `CONTENT FORMAT:
-- story_content: 200-400 words, warm and engaging, written for humans. Use markdown.
-- technical_content: 800-2000 words, comprehensive and SEO-optimized. Use ## headings, ### subheadings, **bold**, - bullet lists, | tables |.
-- End technical_content with ## Frequently Asked Questions (3-5 Q&As as ### Question + paragraph)
-- Write in English (translations handled automatically for 12 languages)`;
+- story_content is the complete public article, not a teaser. Use readable markdown.
+- For a guide, put every promised entry, address, caveat, and source in story_content. Never hide the actual list in technical_content.
+- A numbered title must match the exact number of explicit numbered ## entry headings in story_content.
+- technical_content is optional supporting material only.
+- Never write invented first-person visits, tests, conversations, prices, opening hours, internet speeds, rankings, or superlatives.
+- Never recommend a named business or claim that a place is open unless the input includes a current source URL. This job receives no live research, so such drafts must clearly leave named recommendations for human research.
+- Every factual guide needs a visible checked date and a ## Sources section with direct links before publication.
+- Write in English (translations are handled after human approval).`;
 
 // ─── Stream 1: Local Intelligence (News) ────────────────────────────────────
 
@@ -268,8 +289,8 @@ Output JSON:
 {
   "title": "Engaging Title Under 70 Characters",
   "slug": "kebab-case-max-80-chars",
-  "story_content": "200-400 word human story in markdown",
-  "technical_content": "800-2000 word SEO content with ## headings, **bold**, - lists, | tables |, ### FAQ",
+  "story_content": "Complete public article in markdown; guides keep every entry and source here",
+  "technical_content": "Optional supporting detail only; never the sole location of a promised list",
   "meta_description": "Under 155 chars with primary keyword",
   "seo_keywords": ["5-8 relevant keywords"],
   "category_slug": "stories|guides|news",
@@ -335,8 +356,8 @@ Output JSON:
 {
   "title": "SEO-Optimized Title Under 70 Characters",
   "slug": "kebab-case-max-80-chars",
-  "story_content": "200-400 word human story in markdown",
-  "technical_content": "800-2000 word SEO content with ## headings, **bold**, - lists, | tables |, ### FAQ",
+  "story_content": "Complete public article in markdown; guides keep every entry and source here",
+  "technical_content": "Optional supporting detail only; never the sole location of a promised list",
   "meta_description": "Under 155 chars with primary keyword",
   "seo_keywords": ["primary keyword", "secondary", "long-tail 1", "long-tail 2", "more"],
   "category_slug": "guides|stories|news",
@@ -345,106 +366,6 @@ Output JSON:
 
   const raw = await callClaude(system, user);
   return parseJsonResponse(raw);
-}
-
-// ─── Cover Image Generation (Gemini) ────────────────────────────────────────
-
-async function generateCoverImage(title, slug) {
-  if (!GEMINI_KEY) return null;
-
-  console.log(`    Generating cover image...`);
-
-  const prompt = `Create an abstract, artistic cover image for a blog post about: ${title}
-
-Style guidelines:
-- Modern, clean, atmospheric aesthetic
-- Purple and blue gradient background inspired by dalat.app branding
-- Abstract geometric shapes or flowing lines relevant to the topic
-- Subtle visual elements hinting at Da Lat: misty mountains, pine forests, flowers
-- Atmospheric depth with soft glow effects
-- NO text, NO lettering, NO words
-- Landscape orientation (16:9 aspect ratio)
-- Professional and polished feel`;
-
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
-        }),
-      }
-    );
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Gemini ${res.status}: ${err.slice(0, 200)}`);
-    }
-
-    const data = await res.json();
-    const parts = data.candidates?.[0]?.content?.parts || [];
-    const imagePart = parts.find((p) => p.inlineData?.mimeType?.startsWith('image/'));
-
-    if (!imagePart) {
-      console.warn('    No image in Gemini response');
-      return null;
-    }
-
-    // Upload to Supabase Storage
-    const base64 = imagePart.inlineData.data;
-    const mimeType = imagePart.inlineData.mimeType;
-    const ext = mimeType === 'image/png' ? 'png' : 'jpg';
-    const filename = `covers/autopilot-${slug}.${ext}`;
-    const imageBuffer = Buffer.from(base64, 'base64');
-
-    const uploadRes = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/blog-media/${filename}`,
-      {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': mimeType,
-          'x-upsert': 'true',
-        },
-        body: imageBuffer,
-      }
-    );
-
-    if (!uploadRes.ok) {
-      const err = await uploadRes.text();
-      throw new Error(`Upload ${uploadRes.status}: ${err.slice(0, 200)}`);
-    }
-
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/blog-media/${filename}`;
-    console.log(`    Cover image uploaded`);
-    return publicUrl;
-  } catch (err) {
-    console.warn(`    Cover image failed: ${err.message}`);
-    return null;
-  }
-}
-
-async function updatePostImage(postId, imageUrl) {
-  const url = `${SUPABASE_URL}/rest/v1/blog_posts?id=eq.${postId}`;
-  const res = await fetch(url, {
-    method: 'PATCH',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      cover_image_url: imageUrl,
-      cover_image_alt: 'AI-generated cover image for blog post',
-    }),
-  });
-  if (!res.ok) {
-    console.warn(`    Failed to update post image: ${res.status}`);
-  }
 }
 
 // ─── Post Builder ───────────────────────────────────────────────────────────
@@ -469,8 +390,8 @@ function buildPost(generated, categoryMap, existingSlugs, stream) {
     category_id: categoryId,
     source: stream === 'news' ? 'news_scrape' : 'manual',
     source_locale: 'en',
-    status: 'published',
-    published_at: new Date().toISOString(),
+    status: 'draft',
+    published_at: null,
   };
 }
 
@@ -481,9 +402,10 @@ async function main() {
   console.log(`  Mode: ${MODE} | Count: ${COUNT}/stream | Date: ${today()}\n`);
 
   // Fetch categories and existing posts in parallel
-  const [categories, posts] = await Promise.all([
+  const [categories, posts, allSlugs] = await Promise.all([
     fetchCategories(),
     fetchRecentPosts(50),
+    fetchAllSlugs(),
   ]);
 
   const categoryMap = {};
@@ -491,7 +413,7 @@ async function main() {
     categoryMap[cat.slug] = cat.id;
   }
 
-  const existingSlugs = new Set(posts.map((p) => p.slug));
+  const existingSlugs = new Set(allSlugs);
   const newPosts = [];
 
   console.log(`  Categories: ${categories.map((c) => c.slug).join(', ')}`);
@@ -507,18 +429,11 @@ async function main() {
         const inserted = await insertPost(post);
         existingSlugs.add(post.slug);
 
-        // Generate cover image
-        const imageUrl = await generateCoverImage(post.title, post.slug);
-        if (imageUrl && inserted.id) {
-          await updatePostImage(inserted.id, imageUrl);
-          inserted.cover_image_url = imageUrl;
-        }
-
         newPosts.push(inserted);
 
-        console.log(`  + NEWS: "${post.title}"`);
+        console.log(`  + NEWS DRAFT: "${post.title}"`);
         console.log(`    Slug: /${post.slug}`);
-        console.log(`    Image: ${imageUrl ? 'yes' : 'skipped'}`);
+        console.log('    Review: research, sources, and cover required before publishing');
         console.log(`    Keywords: ${(post.seo_keywords || []).join(', ')}\n`);
       } catch (err) {
         console.error(`  ! News post ${i + 1} failed: ${err.message}\n`);
@@ -535,18 +450,11 @@ async function main() {
         const inserted = await insertPost(post);
         existingSlugs.add(post.slug);
 
-        // Generate cover image
-        const imageUrl = await generateCoverImage(post.title, post.slug);
-        if (imageUrl && inserted.id) {
-          await updatePostImage(inserted.id, imageUrl);
-          inserted.cover_image_url = imageUrl;
-        }
-
         newPosts.push(inserted);
 
-        console.log(`  + SEO: "${post.title}"`);
+        console.log(`  + SEO DRAFT: "${post.title}"`);
         console.log(`    Slug: /${post.slug}`);
-        console.log(`    Image: ${imageUrl ? 'yes' : 'skipped'}`);
+        console.log('    Review: research, sources, and cover required before publishing');
         console.log(`    Keywords: ${(post.seo_keywords || []).join(', ')}\n`);
       } catch (err) {
         console.error(`  ! SEO post ${i + 1} failed: ${err.message}\n`);
@@ -555,10 +463,10 @@ async function main() {
   }
 
   if (newPosts.length > 0) {
-    console.log(`Done: ${newPosts.length} post(s) published to Supabase.\n`);
+    console.log(`Done: ${newPosts.length} draft(s) saved to Supabase.\n`);
     console.log('--- Summary ---');
     for (const p of newPosts) {
-      console.log(`  ${p.title} → dalat.app/blog/${p.slug}`);
+      console.log(`  ${p.title} → draft ${p.slug}`);
     }
   } else {
     console.log('No posts generated.');

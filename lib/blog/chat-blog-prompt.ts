@@ -21,8 +21,8 @@ They shared raw thoughts (voice transcript or typed notes). Transform into polis
 {
   "needs_clarification": false,
   "clarifying_question": null,
-  "story_content": "...",           // 150-300 words, warm, human, markdown
-  "technical_content": "...",       // Structured markdown, if applicable
+  "story_content": "...",           // Complete public article in markdown
+  "technical_content": "...",       // Optional supporting details only
   "title": "...",
   "suggested_slug": "...",
   "meta_description": "...",        // 150 chars
@@ -53,8 +53,16 @@ They shared raw thoughts (voice transcript or typed notes). Transform into polis
 - No jargon unless audience expects it
 - Be concise but complete
 - Include emotion and outcomes, not just features
-- Story content should be in paragraphs, not bullet lists
-- Technical content can use bullet lists for clarity`;
+- For stories and changelogs, story content should favor paragraphs over bullet lists
+- Technical content can use bullet lists for clarity
+
+## Guide Integrity Rules
+- story_content must contain the complete public guide, including every place or item promised by the title. Never put the real list only in technical_content.
+- If the title promises a number, use that exact number of explicit numbered ## entry headings in story_content.
+- Guides about real businesses, venues, schedules, prices, or amenities need current source URLs supplied by the user. If sources are missing, ask for them instead of inventing facts.
+- Never invent first-person visits, conversations, measurements, rankings, opening hours, prices, or WiFi speeds.
+- A factual guide needs a visible checked date and a ## Sources section before it can be published.
+- Honest caveats are part of the guide: distinguish operator claims, current listings, and facts personally verified by the author.`;
 
 export interface ChatBlogInput {
   userInput: string;

@@ -8,6 +8,7 @@ import { triggerTranslation } from "@/lib/translations-client";
 import { VoiceRecorder } from "./voice-recorder";
 import type { BlogCategory } from "@/lib/types/blog";
 import type { ChatBlogOutput } from "@/lib/blog/chat-blog-prompt";
+import { validateGuideForPublishing } from "@/lib/blog/guide-quality";
 
 interface BlogChatInterfaceProps {
   categories: BlogCategory[];
@@ -45,6 +46,13 @@ export function BlogChatInterface({ categories }: BlogChatInterfaceProps) {
   const [editedSlug, setEditedSlug] = useState("");
   const [editedStory, setEditedStory] = useState("");
   const [editedTechnical, setEditedTechnical] = useState("");
+  const resolvedCategorySlug =
+    categories.find((category) => category.id === selectedCategory)?.slug ||
+    generatedContent?.suggested_category;
+  const guideQualityIssues =
+    resolvedCategorySlug === "guides"
+      ? validateGuideForPublishing({ title: editedTitle, storyContent: editedStory })
+      : [];
 
   const handleVoiceTranscript = (text: string) => {
     setUserInput((prev) => (prev ? `${prev} ${text}` : text));
@@ -126,6 +134,23 @@ export function BlogChatInterface({ categories }: BlogChatInterfaceProps) {
 
       // Get category ID
       const categoryId = selectedCategory || categories.find((c) => c.slug === generatedContent.suggested_category)?.id;
+      const categorySlug =
+        categories.find((category) => category.id === categoryId)?.slug ||
+        generatedContent.suggested_category;
+
+      if (!asDraft && categorySlug === "guides") {
+        const guideIssues = validateGuideForPublishing({
+          title: editedTitle,
+          storyContent: editedStory,
+        });
+        if (guideIssues.length > 0) {
+          throw new Error(
+            `This guide is not ready to publish:\n${guideIssues
+              .map((issue) => `• ${issue.message}`)
+              .join("\n")}`
+          );
+        }
+      }
 
       const { data, error: createError } = await supabase.rpc("admin_create_blog_post", {
         p_title: editedTitle,
@@ -178,7 +203,7 @@ export function BlogChatInterface({ categories }: BlogChatInterfaceProps) {
   return (
     <div className="max-w-3xl mx-auto">
       {error && (
-        <div className="mb-6 p-4 rounded-lg bg-destructive/10 text-destructive border border-destructive/20">
+        <div className="mb-6 p-4 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 whitespace-pre-line">
           {error}
         </div>
       )}
@@ -326,13 +351,37 @@ export function BlogChatInterface({ categories }: BlogChatInterfaceProps) {
 
           {/* Story Content */}
           <div>
-            <label className="block text-sm font-medium mb-2">Story Content</label>
+            <label className="block text-sm font-medium mb-2">
+              {resolvedCategorySlug === "guides" ? "Guide Content" : "Story Content"}
+            </label>
             <textarea
               value={editedStory}
               onChange={(e) => setEditedStory(e.target.value)}
               rows={8}
               className="w-full px-4 py-3 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
             />
+            {resolvedCategorySlug === "guides" && (
+              <div
+                className={`mt-3 rounded-lg border p-3 text-sm ${
+                  guideQualityIssues.length === 0
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                    : "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200"
+                }`}
+              >
+                {guideQualityIssues.length === 0 ? (
+                  <p>Guide publishing checks pass.</p>
+                ) : (
+                  <>
+                    <p className="font-medium mb-2">Before publishing:</p>
+                    <ul className="space-y-1 list-disc pl-5">
+                      {guideQualityIssues.map((issue) => (
+                        <li key={issue.code}>{issue.message}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Technical Content (toggleable) */}
@@ -342,7 +391,8 @@ export function BlogChatInterface({ categories }: BlogChatInterfaceProps) {
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-2"
             >
               {showTechnical ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              {showTechnical ? "Hide" : "Show"} Technical Content
+              {showTechnical ? "Hide" : "Show"}{" "}
+              {resolvedCategorySlug === "guides" ? "Optional Extra Details" : "Technical Content"}
             </button>
             {showTechnical && (
               <textarea
@@ -381,7 +431,8 @@ export function BlogChatInterface({ categories }: BlogChatInterfaceProps) {
             </button>
             <button
               onClick={() => handlePublish(false)}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
+              disabled={resolvedCategorySlug === "guides" && guideQualityIssues.length > 0}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowRight className="w-5 h-5" />
               Publish Now
