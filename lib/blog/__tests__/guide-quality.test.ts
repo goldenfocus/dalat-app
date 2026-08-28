@@ -9,6 +9,10 @@ const verifiedEntry = (number: number, name: string) => `## ${number}. ${name}
 
 This place has a concrete address, an honest caveat, and enough practical detail for someone deciding where to work today. [Official source](https://example.com/${number})`;
 
+const verifiedCard = (position: number, name: string) => `~~~guide-place
+{"position":${position},"name":"${name}","type":"Work café","description":"A useful, sourced place to work.","address":"${position} Example Street","hours":"Daily 08:00–22:00","detailsUrl":"https://example.com/${position}","detailsLabel":"Official site","mapUrl":"https://www.google.com/maps/search/?api=1&query=${position}","imageUrl":"https://cdn.example.com/${position}.jpg","imageAlt":"${name} workspace","imageCredit":"${name}","amenities":["WiFi","Power"],"caveat":"Confirm before an important call.","sourceUrl":"https://example.com/${position}","sourceLabel":"Official site"}
+~~~`;
+
 describe("guide publishing quality", () => {
   it("recognizes a promised place count without mistaking a year for one", () => {
     expect(
@@ -104,6 +108,32 @@ ${entries}
     expect(
       validateGuideForPublishing({
         title: "8 Real Places to Work in Da Lat",
+        storyContent: content,
+      })
+    ).toEqual([]);
+  });
+
+  it("accepts structured visual place cards as explicit guide entries", () => {
+    const cards = Array.from({ length: 7 }, (_, index) =>
+      verifiedCard(index + 1, `Place ${index + 1}`)
+    ).join("\n\n");
+    const sources = Array.from(
+      { length: 7 },
+      (_, index) => `- [Place ${index + 1}](https://example.com/${index + 1})`
+    ).join("\n");
+    const content = `Information checked online August 28, 2026.
+
+${"This guide explains how each real place was selected and what remote workers should confirm before visiting. ".repeat(12)}
+
+${cards}
+
+## Sources
+
+${sources}`;
+
+    expect(
+      validateGuideForPublishing({
+        title: "7 Real Places to Work in Da Lat",
         storyContent: content,
       })
     ).toEqual([]);

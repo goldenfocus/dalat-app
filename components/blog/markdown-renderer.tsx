@@ -1,8 +1,10 @@
 "use client";
 
-import { Suspense, lazy, useMemo } from "react";
+import { Suspense, isValidElement, lazy, useMemo } from "react";
 import type { Components } from "react-markdown";
 import { normalizeStoryContent } from "@/lib/blog/normalize-content";
+import { GuidePlaceCard } from "@/components/blog/guide-place-card";
+import { parseGuidePlaceCard } from "@/lib/blog/guide-place";
 
 // Lazy-load react-markdown with remark-gfm bundled together
 const LazyMarkdownWithGfm = lazy(async () => {
@@ -162,6 +164,13 @@ const components: Components = {
   },
   // Code
   code: ({ className, children, ...props }) => {
+    if (className === "language-guide-place") {
+      const place = parseGuidePlaceCard(String(children).trim());
+      if (place) {
+        return <GuidePlaceCard place={place} />;
+      }
+    }
+
     const isInline = !className;
     if (isInline) {
       return (
@@ -182,11 +191,24 @@ const components: Components = {
       </code>
     );
   },
-  pre: ({ children, ...props }) => (
-    <pre className="rounded-lg bg-muted overflow-x-auto my-4" {...props}>
-      {children}
-    </pre>
-  ),
+  pre: ({ children, ...props }) => {
+    if (
+      isValidElement(children) &&
+      ((children.props as { "data-guide-place-card"?: boolean })[
+        "data-guide-place-card"
+      ] ||
+        (children.props as { className?: string }).className ===
+          "language-guide-place")
+    ) {
+      return children;
+    }
+
+    return (
+      <pre className="rounded-lg bg-muted overflow-x-auto my-4" {...props}>
+        {children}
+      </pre>
+    );
+  },
   // Images (title carries source attribution when present)
   img: ({ src, alt, title }) => (
     <figure className="my-6">

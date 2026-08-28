@@ -1,3 +1,5 @@
+import { extractGuidePlaceCards } from "@/lib/blog/guide-place";
+
 export interface GuideQualityInput {
   title: string;
   storyContent: string;
@@ -82,7 +84,15 @@ export function validateGuideForPublishing({
   const wordCount = storyContent.trim().split(/\s+/u).filter(Boolean).length;
   const promisedCount = extractPromisedGuideCount(title);
   const numberedEntries = extractNumberedGuideEntries(storyContent);
-  const numberedEntryCount = numberedEntries.length;
+  const guidePlaceCards = extractGuidePlaceCards(storyContent);
+  const guideEntries = [
+    ...numberedEntries,
+    ...guidePlaceCards.map((place) => ({
+      number: place.position,
+      label: place.name.trim().toLocaleLowerCase("en"),
+    })),
+  ];
+  const guideEntryCount = guideEntries.length;
   const evidenceLinks = countUniqueEvidenceLinks(storyContent);
 
   if (wordCount < 250) {
@@ -106,15 +116,16 @@ export function validateGuideForPublishing({
     });
   }
 
-  if (PLACE_GUIDE_TITLE.test(title) && numberedEntryCount === 0) {
+  if (PLACE_GUIDE_TITLE.test(title) && guideEntryCount === 0) {
     issues.push({
       code: "missing_entries",
-      message: "Place guides need explicit numbered place headings in the public article.",
+      message:
+        "Place guides need explicit visual place cards or numbered place headings in the public article.",
     });
   }
 
   if (
-    numberedEntries.some((entry, index) => entry.number !== index + 1)
+    guideEntries.some((entry, index) => entry.number !== index + 1)
   ) {
     issues.push({
       code: "invalid_numbering",
@@ -122,17 +133,17 @@ export function validateGuideForPublishing({
     });
   }
 
-  if (new Set(numberedEntries.map((entry) => entry.label)).size !== numberedEntryCount) {
+  if (new Set(guideEntries.map((entry) => entry.label)).size !== guideEntryCount) {
     issues.push({
       code: "duplicate_entries",
       message: "Every numbered guide entry needs a distinct place or item name.",
     });
   }
 
-  if (promisedCount !== null && numberedEntryCount !== promisedCount) {
+  if (promisedCount !== null && guideEntryCount !== promisedCount) {
     issues.push({
       code: "count_mismatch",
-      message: `The title promises ${promisedCount} entries, but the public article has ${numberedEntryCount} numbered place headings.`,
+      message: `The title promises ${promisedCount} entries, but the public article has ${guideEntryCount} explicit place entries.`,
     });
   }
 

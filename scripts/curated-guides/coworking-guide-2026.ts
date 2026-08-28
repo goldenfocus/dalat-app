@@ -1,106 +1,60 @@
 export const curatedGuide = {
   slug: "da-lat-coworking-cafes-wifi-work-spots-digital-nomads",
-  title: "Da Lat Coworking: 8 Real Places to Work (Checked August 2026)",
-  storyContent: `Da Lat does have good places to open a laptop. What it does **not** have is eighteen work spots that we can honestly recommend from current evidence. This guide lists eight places with a current official page, a recently checked local listing, or both. It tells you exactly what we verified and what you should still confirm yourself.
+  title: "Da Lat Coworking: 7 Real Places to Work (Checked August 2026)",
+  storyContent: `Da Lat has good places to open a laptop, but they are not interchangeable. Some are built around focused work; others are ordinary cafés that happen to document the WiFi, power, space, or hours a remote worker needs.
 
-> **Information checked online August 27, 2026.** Opening hours, prices, WiFi, and room availability can change. Follow the source link or call before making a special trip—especially for late-night work or an important video call.
+This guide keeps the list short and useful: seven current places, each with a direct details link, directions, opening-hour context, a real or official-brand thumbnail, and an honest reason you might choose somewhere else.
 
-## Quick comparison
+> **Information checked online August 28, 2026.** Opening hours, prices, WiFi, and room availability can change. Follow the source link or call before making a special trip—especially for late-night work or an important video call.
 
-| Place | Type | What is documented | Main caveat |
-| --- | --- | --- | --- |
-| ThomWork | Dedicated coworking | Quiet room, phone booth, WiFi, day passes | Confirm current capacity |
-| Daily Log Coffee | Work café | 5 GHz WiFi, outlets at every table | Café, not a silent office |
-| WorkSpace Coffee DALA247 | 24-hour work room | Around-the-clock access and free seat | WiFi and outlets are not documented |
-| The Married Beans Workspace | Specialty-coffee workspace | Current Yersin workspace address | Confirm hours and desk setup |
-| One More Cafe & Coworking | Café plus coworking floor | Shared room, broadband, meeting room | Ask whether the upstairs room is available |
-| Tiệm Cà Phê Nhà Của Thông | Scenic work café | WiFi and sockets at every table | Busier and more social near sunset |
-| Q Coffee Roastery | Quiet café | Laptop-friendly upstairs area and WiFi | No dependable outlet claim |
-| Là Việt Nguyễn Công Trứ | Large roastery café | Current location, long hours, spacious room | Better for a shorter session than a full workday |
+## Seven places worth opening your laptop at
 
-## 1. [ThomWork](https://dalatcoworking.com/)
+~~~guide-place
+{"position":1,"name":"Daily Log Coffee","type":"Work café","description":"A café that explicitly welcomes studying and remote work, with a newer second floor and seating designed for longer laptop sessions.","address":"15 Thông Thiên Học, near Da Lat University","hours":"Daily, 7:30 AM–10:30 PM (operator listing)","detailsUrl":"https://dailylogcoffee.io.vn/en/","detailsLabel":"Official site","mapUrl":"https://www.google.com/maps/search/?api=1&query=Daily%20Log%20Coffee%20Da%20Lat","imageUrl":"https://cdn.dalat.app/venue-media/guides/coworking/daily-log.webp","imageAlt":"A sunny work table surrounded by plants at Daily Log Coffee","imageCredit":"Daily Log Coffee","amenities":["5 GHz WiFi","Outlet at every table","Work-height seating"],"caveat":"This is still a public café, not a silent office. Bring headphones and expect the noise level to change during busy periods.","sourceUrl":"https://dailylogcoffee.io.vn/en/","sourceLabel":"Daily Log Coffee"}
+~~~
 
-**Address:** 2nd floor, 17 Trương Công Định, phường Xuân Hương. Enter through NGỰ at street level and go upstairs. [Directions](https://www.google.com/maps/search/?api=1&query=ThomWork%20Da%20Lat)
+~~~guide-place
+{"position":2,"name":"WorkSpace Coffee Dalat – DALA247","type":"24-hour work room","description":"The strongest documented lead for late-night or overseas-time-zone work: a local listing describes a free working room that stays open around the clock.","address":"09 Hoàng Hoa Thám, Xuân Hương, Da Lat","hours":"Listed 24/7; call before relying on overnight workroom access","detailsUrl":"https://dalat.place/place/workspace-coffee-dalat","detailsLabel":"Place details","mapUrl":"https://www.google.com/maps/dir/?api=1&destination=11.940188,108.463187","imageUrl":"https://cdn.dalat.app/venue-media/guides/coworking/dala247.webp","imageAlt":"DALA247 official brand mark","imageCredit":"DALA247","amenities":["24/7 listing","Free seat","Late-night option"],"caveat":"We could not find an operator page that guarantees WiFi, outlets, or overnight room access. Call before planning a 3:00 AM session.","sourceUrl":"https://dalat.place/place/workspace-coffee-dalat","sourceLabel":"dalat.place checked listing","phone":"0399 682 903"}
+~~~
 
-This is the clearest choice when you need a proper coworking setup instead of a café table. ThomWork's own site documents a quiet workspace, high-speed WiFi, a phone booth, lockers, and a barista drink with a pass. It currently lists daily access from 8:00 AM to midnight, 75,000₫ for four hours, and 120,000₫ for a full day.
+~~~guide-place
+{"position":3,"name":"The Married Beans Workspace","type":"Specialty-coffee workspace","description":"The coffee company’s current store page identifies this colourful Yersin location specifically as its Workspace.","address":"35-3 Yersin, Ward 10, Da Lat","hours":"Operator does not publish hours; current listings report 7:00 AM–6:00 PM","detailsUrl":"https://www.themarriedbeans.com/en/pages/stores","detailsLabel":"Official stores","mapUrl":"https://www.google.com/maps/search/?api=1&query=The%20Married%20Beans%20Workspace%2035-3%20Yersin%20Da%20Lat","imageUrl":"https://cdn.dalat.app/venue-media/guides/coworking/married-beans.png","imageAlt":"The colourful exterior of The Married Beans Workspace on Yersin Street","imageCredit":"The Married Beans","amenities":["Workspace venue","Specialty coffee","Current Yersin address"],"caveat":"The older 44 Hùng Vương workspace closed in 2024. Confirm today’s hours and desk setup before travelling.","sourceUrl":"https://www.themarriedbeans.com/en/pages/stores","sourceLabel":"The Married Beans"}
+~~~
 
-**Know before you go:** Those details come from the operator, not our own speed test. Check the live availability and pricing on the official site before an important workday.
+~~~guide-place
+{"position":4,"name":"One More Cafe & Coworking","type":"Café + coworking floor","description":"A long-running café with a separately described shared work area, wireless broadband, printing, and a private conference room.","address":"77 Hai Bà Trưng, Ward 6, Da Lat","hours":"Café listing: 8:00 AM–5:00 PM; closed Wednesday","detailsUrl":"https://included.co/join/onemorecoworking/","detailsLabel":"Coworking details","mapUrl":"https://www.google.com/maps/search/?api=1&query=One%20More%20Cafe%2077%20Hai%20Ba%20Trung%20Da%20Lat","imageUrl":"https://cdn.dalat.app/venue-media/venues/967d0a6e-d20e-4fa9-957b-084644170b1a/cover.jpg","imageAlt":"Window-side lounge seating at One More Cafe in Da Lat","imageCredit":"One More Cafe","amenities":["Shared work room","Broadband listing","Meeting room"],"caveat":"The coworking description has no recent update date. Ask staff whether the work floor or conference room is available that day.","sourceUrl":"https://included.co/join/onemorecoworking/","sourceLabel":"Included.co workspace listing"}
+~~~
 
-## 2. [Daily Log Coffee](https://dailylogcoffee.io.vn/en/)
+~~~guide-place
+{"position":5,"name":"Tiệm Cà Phê Nhà Của Thông","type":"Scenic work café","description":"A pine-side café whose own site documents free WiFi and a power socket at every table, with mornings recommended for reading or work.","address":"Hẻm 108 Hùng Vương, Ward 11, Da Lat","hours":"Operator does not publish hours; go in the morning and confirm before travelling","detailsUrl":"https://tiemcaphenhacuathong.com/en/","detailsLabel":"Official site","mapUrl":"https://www.google.com/maps/search/?api=1&query=Tiem%20Ca%20Phe%20Nha%20Cua%20Thong%20Da%20Lat","imageUrl":"https://cdn.dalat.app/venue-media/guides/coworking/nha-cua-thong.jpg","imageAlt":"Tiệm Cà Phê Nhà Của Thông official pine-house mark","imageCredit":"Tiệm Cà Phê Nhà Của Thông","amenities":["Free WiFi","Socket at every table","Morning focus"],"caveat":"Sunset is described as a more social, photo-oriented time. Choose the morning when concentration matters.","sourceUrl":"https://tiemcaphenhacuathong.com/en/","sourceLabel":"Nhà Của Thông","phone":"094 466 73 70"}
+~~~
 
-**Address:** 15 Thông Thiên Học, near Da Lat University. [Directions](https://www.google.com/maps/search/?api=1&query=Daily%20Log%20Coffee%20Da%20Lat)
+~~~guide-place
+{"position":6,"name":"Q Coffee Roastery Dalat","type":"Quiet café","description":"A compact roastery café with WiFi and an upstairs area that recent visitor notes describe as suitable for laptops.","address":"305 Tô Ngọc Vân, Da Lat","hours":"Daily, 6:30 AM–4:30 PM (current venue listing)","detailsUrl":"https://langthangdalat.com/en/places/q-coffee-roastery-dalat/","detailsLabel":"Place details","mapUrl":"https://www.google.com/maps/search/?api=1&query=Q%20Coffee%20Roastery%20Dalat","imageUrl":"https://cdn.dalat.app/venue-media/guides/coworking/q-coffee.jpg","imageAlt":"The coffee bar and seating inside Q Coffee Roastery Dalat","imageCredit":"Lang Thang Da Lat","amenities":["WiFi listing","Upstairs seating","Strong morning option"],"caveat":"We found no dependable claim about power outlets. Bring a charged laptop and treat this as a lighter work session.","sourceUrl":"https://langthangdalat.com/en/places/q-coffee-roastery-dalat/","sourceLabel":"Lang Thang Da Lat","phone":"0919 285 101"}
+~~~
 
-Daily Log explicitly presents itself as a café for studying and remote work. Its official site documents dedicated 5 GHz WiFi, an outlet at every table, work-height seating, quiet areas, and a newer second floor. It currently lists daily hours of 7:30 AM–10:30 PM and drinks from 20,000₫.
-
-**Know before you go:** This is still a public café. Headphones are sensible, and you should not assume every seat will be quiet during busy periods.
-
-## 3. [WorkSpace Coffee Dalat – DALA247](https://dalat.place/places?cat=eat&sub=coffee)
-
-**Address:** 09 Hoàng Hoa Thám. Phone: 0399 682 903. [Directions](https://www.google.com/maps/search/?api=1&query=Workspace%20Coffee%20Dalat%20DALA247)
-
-A recently checked local listing describes a free working room that is open around the clock. The [DALA247 complex's own site](https://dala247.com/) confirms the address and its 24/7 food-and-drink operation. That makes it the most useful documented lead for late-night or overseas-time-zone work.
-
-**Know before you go:** We could not find a direct operator page documenting WiFi, outlets, or guaranteed overnight room access. Call before planning a 3:00 AM session.
-
-## 4. [The Married Beans Workspace](https://www.themarriedbeans.com/en/pages/stores)
-
-**Address:** 35-3 Yersin, phường 10. [Directions](https://www.google.com/maps/search/?api=1&query=The%20Married%20Beans%20Workspace%2035-3%20Yersin%20Da%20Lat)
-
-The company's current store page identifies this Yersin address specifically as its Workspace. It is a sensible specialty-coffee option when you want a work-oriented setting without committing to a day pass.
-
-**Know before you go:** The brand's older 44 Hùng Vương workspace closed in 2024. Do not follow old articles or map pins to that address. Current third-party listings report 7:00 AM–6:00 PM, but confirm with the operator because the official store page does not publish workspace hours or detailed amenities.
-
-## 5. [One More Cafe & Coworking](https://included.co/join/onemorecoworking/)
-
-**Address:** 77 Hai Bà Trưng. [Directions](https://www.google.com/maps/search/?api=1&query=One%20More%20Cafe%2077%20Hai%20Ba%20Trung%20Da%20Lat)
-
-The coworking directory for One More describes a quiet shared area, wireless broadband, printing, and a private conference room for meetings or calls. The space is described as free when you support the café downstairs with a food or drink purchase. The café's [current claimed listing](https://www.tripadvisor.com/Restaurant_Review-g293922-d8091078-Reviews-One_More_Cafe-Da_Lat_Lam_Dong_Province.html) shows recent reviews and hours of 8:00 AM–5:00 PM, closed Wednesday.
-
-**Know before you go:** Ask staff whether the coworking floor or conference room is available that day; the coworking description does not show a recent update date.
-
-## 6. [Tiệm Cà Phê Nhà Của Thông](https://tiemcaphenhacuathong.com/en/)
-
-**Address:** Hẻm 108 Hùng Vương, Ward 11. Phone: 094 466 73 70. [Directions](https://www.google.com/maps/search/?api=1&query=Tiem%20Ca%20Phe%20Nha%20Cua%20Thong%20Da%20Lat)
-
-The café's own site documents free WiFi and a power socket at every table. It also describes mornings as the best time for working or reading. This is the scenic option on the list: useful when you want pine views and a gentler work session rather than office silence.
-
-**Know before you go:** Sunset hours are presented as more social and photo-oriented. Go earlier for focus, and confirm current hours through the venue before travelling out of the centre.
-
-## 7. [Q Coffee Roastery Dalat](https://langthangdalat.com/en/places/q-coffee-roastery-dalat/)
-
-**Address:** 305 Tô Ngọc Vân. Phone: 0919 285 101. [Directions](https://www.google.com/maps/search/?api=1&query=Q%20Coffee%20Roastery%20Dalat)
-
-Current venue directories describe Q Coffee as quiet, WiFi-equipped, and suitable for laptops, with recent visitor notes mentioning the upstairs work area. The current listed hours are 6:30 AM–4:30 PM daily, making it a stronger morning option than an evening office.
-
-**Know before you go:** We found no dependable claim about power outlets. Bring a charged laptop and treat this as a lighter work session, not a guaranteed all-day desk.
-
-## 8. [Là Việt Coffee – Nguyễn Công Trứ](https://laviet.coffee/en/from-out-place/)
-
-**Address:** 200 Nguyễn Công Trứ. Phone: 0263 398 1189. [Directions](https://www.google.com/maps/search/?api=1&query=La%20Viet%20Coffee%20200%20Nguyen%20Cong%20Tru%20Da%20Lat)
-
-Là Việt's official location page currently lists this large roastery café from 7:00 AM–10:00 PM daily. The open, high-ceiling room gives you more seating choice than a tiny coffee shop, and current directories list WiFi.
-
-**Know before you go:** We could not verify an outlet at every table or a quiet-work policy. It is a good fallback for an hour or two, especially early in the day, but not a substitute for a phone booth or reserved desk.
+~~~guide-place
+{"position":7,"name":"Là Việt Coffee – Nguyễn Công Trứ","type":"Large roastery café","description":"A spacious, high-ceiling roastery café with longer hours and more seating choice than a small neighbourhood coffee shop.","address":"200 Nguyễn Công Trứ, Da Lat","hours":"Daily, 7:00 AM–10:00 PM (operator listing)","detailsUrl":"https://laviet.coffee/en/from-out-place/","detailsLabel":"Official location","mapUrl":"https://www.google.com/maps/search/?api=1&query=La%20Viet%20Coffee%20200%20Nguyen%20Cong%20Tru%20Da%20Lat","imageUrl":"https://cdn.dalat.app/venue-media/guides/coworking/la-viet.jpg","imageAlt":"Là Việt Coffee brewing Vietnamese phin coffee","imageCredit":"Là Việt Coffee","amenities":["Large room","Long opening hours","WiFi listings"],"caveat":"We could not verify an outlet at every table or a quiet-work policy. It is a flexible café fallback, not a reserved office.","sourceUrl":"https://laviet.coffee/en/from-out-place/","sourceLabel":"Là Việt Coffee","phone":"0263 398 1189"}
+~~~
 
 ## How we chose these places
 
-We included a place only when we could find a current official page, a recently checked local listing, or multiple current listings that agree on the basics. We distinguish operator claims from independent listings, avoid made-up speed-test numbers, and call out conflicting or missing details. This is an online evidence check—not a claim that the ĐàLạt.app team personally worked a full day at every venue.
+We included a place only when we could find a current official page, a recently checked local listing, or multiple current listings that agree on the basics. Operator claims and third-party listings are labelled separately. We do not invent speed tests, personal visits, or guarantees that a room will be available.
 
-That is why this guide lists eight places instead of pretending there are eighteen. A shorter useful list beats a long imaginary one.
+This is an online evidence check—not a claim that the ĐàLạt.app team personally worked a full day at every venue. A shorter, honest list beats a long imaginary one.
 
 ## Before an important work session
 
-- Message or call the venue the same day if you need a phone booth, late-night access, or a guaranteed quiet room.
+- Message or call the venue the same day if you need late-night access, quiet calls, or a guaranteed room.
 - Keep mobile data ready as backup; café WiFi can change without notice.
 - Bring headphones and a charged laptop unless the venue explicitly documents outlets.
 - In a café, order regularly and give up larger tables when groups need them.
-- For confidential calls or an eight-hour deadline, choose dedicated coworking over a scenic café.
+- For confidential calls or an eight-hour deadline, confirm a private room rather than trusting a scenic café table.
 
 ## Sources
 
-- [ThomWork official site](https://dalatcoworking.com/)
 - [Daily Log Coffee official site](https://dailylogcoffee.io.vn/en/)
-- [DALA247 official complex](https://dala247.com/) and [recently checked workspace listing](https://dalat.place/places?cat=eat&sub=coffee)
+- [DALA247 official complex](https://dala247.com/) and [checked workspace listing](https://dalat.place/place/workspace-coffee-dalat)
 - [The Married Beans current stores](https://www.themarriedbeans.com/en/pages/stores)
 - [One More coworking description](https://included.co/join/onemorecoworking/) and [current claimed café listing](https://www.tripadvisor.com/Restaurant_Review-g293922-d8091078-Reviews-One_More_Cafe-Da_Lat_Lam_Dong_Province.html)
 - [Tiệm Cà Phê Nhà Của Thông official site](https://tiemcaphenhacuathong.com/en/)
@@ -108,9 +62,9 @@ That is why this guide lists eight places instead of pretending there are eighte
 - [Là Việt official locations](https://laviet.coffee/en/from-out-place/)
 `,
   technicalContent: "",
-  publishedAt: "2026-08-27T12:00:00.000Z",
+  publishedAt: "2026-08-28T04:00:00.000Z",
   metaDescription:
-    "Eight real Da Lat coworking and laptop-friendly cafes with current sources, addresses, verified amenities, and honest caveats.",
+    "Seven real Da Lat coworking and laptop-friendly cafés with photos, hours, directions, source links, and honest caveats.",
   seoKeywords: [
     "Da Lat coworking",
     "Da Lat work cafes",
@@ -122,12 +76,6 @@ That is why this guide lists eight places instead of pretending there are eighte
   suggestedCtaUrl: null,
   suggestedCtaText: null,
   sourceUrls: [
-    {
-      url: "https://dalatcoworking.com/",
-      title: "ThomWork official site",
-      publisher: "ThomWork",
-      published_at: null,
-    },
     {
       url: "https://dailylogcoffee.io.vn/en/",
       title: "Daily Log Coffee official site",
@@ -141,7 +89,7 @@ That is why this guide lists eight places instead of pretending there are eighte
       published_at: null,
     },
     {
-      url: "https://dalat.place/places?cat=eat&sub=coffee",
+      url: "https://dalat.place/place/workspace-coffee-dalat",
       title: "Da Lat work-cafe listing",
       publisher: "dalat.place",
       published_at: null,
