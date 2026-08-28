@@ -12,16 +12,36 @@ interface EventMediaDisplayProps {
   alt: string;
   /** Set to true for LCP images (hero images above the fold) */
   priority?: boolean;
+  /** Attribution for official Activity Graph promotional media. */
+  credit?: string;
+  creditUrl?: string;
 }
 
 export function EventMediaDisplay({
   src,
   alt,
   priority = false,
+  credit,
+  creditUrl,
 }: EventMediaDisplayProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const isVideo = isVideoUrl(src);
   const isActivityFactArt = src.includes("/activity-art/");
+  let safeCreditUrl: string | null = null;
+  if (creditUrl) {
+    try {
+      const parsed = new URL(creditUrl);
+      if (
+        parsed.protocol === "https:" &&
+        !parsed.username &&
+        !parsed.password
+      ) {
+        safeCreditUrl = parsed.toString();
+      }
+    } catch {
+      safeCreditUrl = null;
+    }
+  }
 
   if (isVideo) {
     return (
@@ -65,6 +85,23 @@ export function EventMediaDisplay({
           </div>
         </div>
       </button>
+
+      {credit && (
+        <p className="mt-2 text-xs text-muted-foreground text-right">
+          {safeCreditUrl ? (
+            <a
+              href={safeCreditUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground hover:underline"
+            >
+              © {credit}
+            </a>
+          ) : (
+            <>© {credit}</>
+          )}
+        </p>
+      )}
 
       <ImageLightbox
         src={src}

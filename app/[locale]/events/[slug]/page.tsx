@@ -996,6 +996,21 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   }
 
   const event = result.event;
+  const activityMediaMetadata = event.source_metadata as Record<
+    string,
+    unknown
+  > | null;
+  const activityMediaCredit =
+    event.source_platform === "activity-graph" &&
+    activityMediaMetadata?.activity_media_url === event.image_url &&
+    typeof activityMediaMetadata.activity_media_attribution === "string"
+      ? activityMediaMetadata.activity_media_attribution
+      : undefined;
+  const activityMediaCreditUrl =
+    activityMediaCredit &&
+    typeof activityMediaMetadata?.activity_media_source_url === "string"
+      ? activityMediaMetadata.activity_media_source_url
+      : undefined;
   const [t, tCommon, tPlaylist, tTribes, tNavigation] = await Promise.all([
     getTranslations("events"),
     getTranslations("common"),
@@ -1310,6 +1325,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                         alt={
                           eventTranslations.imageAlt || eventTranslations.title
                         }
+                        credit={activityMediaCredit}
+                        creditUrl={activityMediaCreditUrl}
                       />
                     </div>
                   )}
@@ -1345,6 +1362,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                           eventTranslations.imageAlt || eventTranslations.title
                         }
                         priority
+                        credit={activityMediaCredit}
+                        creditUrl={activityMediaCreditUrl}
                       />
                     </div>
                   ) : (

@@ -476,6 +476,51 @@ describe("linked Activity Graph safety gates", () => {
     );
   });
 
+  it("projects official source media without an event approval step", async () => {
+    const officialImage = "https://example.com/images/acoustic-poster.webp";
+    await projectActivity({
+      supabase: linkedClient(),
+      source: {
+        ...source,
+        metadata: {
+          media_policy: "official_source_embed",
+          media_reuse_allowed: true,
+          attribution_text: "Official Source",
+        },
+      },
+      candidateId: "33333333-3333-4333-8333-333333333333",
+      observationId: "44444444-4444-4444-8444-444444444444",
+      activity: {
+        ...activity,
+        mediaCandidates: [
+          {
+            url: officialImage,
+            role: "primary",
+            sourceUrl: activity.sourceUrl,
+            locator: "jsonld:Event.image",
+          },
+        ],
+      },
+      confidence: confidence(),
+      locality,
+      recordMergeDecision: true,
+      now: new Date("2026-08-28T02:00:00.000Z"),
+    });
+
+    const eventRefresh = mocks.writes.find(
+      ({ table, values }) =>
+        table === "events" && Object.hasOwn(values, "source_metadata"),
+    );
+    expect(eventRefresh?.values).toMatchObject({
+      image_url: officialImage,
+      source_metadata: {
+        activity_media_url: officialImage,
+        activity_media_attribution: "Official Source",
+        media_reuse_allowed: true,
+      },
+    });
+  });
+
   it("does not rewrite a creator-managed event linked as a duplicate", async () => {
     const result = await projectActivity({
       supabase: linkedClient(null),

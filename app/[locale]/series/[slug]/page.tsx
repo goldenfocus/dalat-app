@@ -227,6 +227,20 @@ export default async function SeriesPage({ params }: PageProps) {
   // Use series image, or fall back to first event's image
   const coverImage = series.image_url || upcomingEvents[0]?.image_url;
   const nextEvent = upcomingEvents[0];
+  const seriesSourceMetadata = series.source_metadata as Record<
+    string,
+    unknown
+  > | null;
+  const officialMediaCredit =
+    seriesSourceMetadata?.activity_media_url === coverImage &&
+    typeof seriesSourceMetadata.activity_media_attribution === "string"
+      ? seriesSourceMetadata.activity_media_attribution
+      : null;
+  const officialMediaSourceUrl =
+    officialMediaCredit &&
+    typeof seriesSourceMetadata?.activity_media_source_url === "string"
+      ? seriesSourceMetadata.activity_media_source_url
+      : null;
 
   return (
     <main className="min-h-screen bg-background">
@@ -251,8 +265,18 @@ export default async function SeriesPage({ params }: PageProps) {
                 <img
                   src={coverImage}
                   alt={series.title}
-                  className={`w-full h-full rounded-t-lg ${series.source_platform === "activity-graph" ? "object-contain bg-gradient-to-br from-muted to-background" : "object-cover"}`}
+                  className={`w-full h-full rounded-t-lg ${coverImage.includes("/activity-art/") ? "object-contain bg-gradient-to-br from-muted to-background" : "object-cover"}`}
                 />
+                {officialMediaCredit && officialMediaSourceUrl && (
+                  <a
+                    href={officialMediaSourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-1 text-xs text-white backdrop-blur-sm hover:bg-black/75"
+                  >
+                    © {officialMediaCredit}
+                  </a>
+                )}
               </div>
             ) : (
               <div className="aspect-[2/1] bg-gradient-to-br from-primary/20 to-primary/5 rounded-t-lg flex items-center justify-center">

@@ -14,6 +14,12 @@ import { pingIndexNow } from "@/lib/seo/indexnow";
 import { locales } from "@/lib/i18n/routing";
 import { activityFactArtUrl } from "./fact-art";
 import {
+  activityMediaMetadata,
+  activityProjectionImage,
+  projectedActivityMedia,
+  sourceAllowsOfficialMedia,
+} from "./media";
+import {
   freshnessScore,
   scoreEventDuplicate,
   scoreSeriesDuplicate,
@@ -379,18 +385,13 @@ type LinkedOccurrence = {
   starts_at: string;
 };
 
-function isActivityFactArt(url: unknown): url is string {
-  return (
-    typeof url === "string" && url.startsWith("https://dalat.app/activity-art/")
-  );
-}
-
 function refreshedSourceMetadata(
   input: ProjectInput,
   existing: Record<string, unknown> | null | undefined,
   now: string,
 ): Record<string, unknown> {
-  return {
+  const media = projectedActivityMedia(input.source, input.activity);
+  const metadata: Record<string, unknown> = {
     ...(existing ?? {}),
     activity_source_id: input.source.id,
     activity_source_slug: input.source.slug,
@@ -404,11 +405,22 @@ function refreshedSourceMetadata(
       typeof input.source.metadata?.media_policy === "string"
         ? input.source.metadata.media_policy
         : "reference_only",
+    media_reuse_allowed: sourceAllowsOfficialMedia(input.source),
+    ...activityMediaMetadata(media),
     confidence: input.confidence.score,
     locality: input.locality,
     published_automatically: true,
     verified_at: now,
   };
+  if (!sourceAllowsOfficialMedia(input.source)) {
+    delete metadata.activity_media_url;
+    delete metadata.activity_media_gallery;
+    delete metadata.activity_media_source_url;
+    delete metadata.activity_media_attribution;
+    delete metadata.activity_media_role;
+    delete metadata.activity_media_policy;
+  }
+  return metadata;
 }
 
 async function reconcileActivityGraphSeries(
@@ -563,12 +575,13 @@ async function refreshLinkedActivity(
       );
     }
     if (event?.source_platform === "activity-graph") {
+      const currentMetadata = event.source_metadata as Record<
+        string,
+        unknown
+      > | null;
+      const media = projectedActivityMedia(input.source, input.activity);
       const update: Record<string, unknown> = {
-        source_metadata: refreshedSourceMetadata(
-          input,
-          event.source_metadata as Record<string, unknown> | null,
-          now,
-        ),
+        source_metadata: refreshedSourceMetadata(input, currentMetadata, now),
         title: input.activity.title,
         description: sourceDescription(input.activity, input.source.name),
         starts_at: input.activity.startsAt,
@@ -593,10 +606,14 @@ async function refreshLinkedActivity(
         last_confirmed_at: now,
         source_updated_at: input.activity.sourceUpdatedAt,
         freshness_score: fresh,
+        image_url: activityProjectionImage({
+          currentUrl: event.image_url,
+          currentMetadata,
+          media,
+          mediaAllowed: sourceAllowsOfficialMedia(input.source),
+          fallbackUrl: activityFactArtUrl("event", event.slug),
+        }),
       };
-      if (!event.image_url || isActivityFactArt(event.image_url)) {
-        update.image_url = activityFactArtUrl("event", event.slug);
-      }
       const { error } = await input.supabase
         .from("events")
         .update(update)
@@ -625,9 +642,14 @@ async function refreshLinkedActivity(
     }
 
     if (series.source_platform === "activity-graph") {
+      const currentMetadata = series.source_metadata as Record<
+        string,
+        unknown
+      > | null;
+      const media = projectedActivityMedia(input.source, input.activity);
       const sourceMetadata = refreshedSourceMetadata(
         input,
-        series.source_metadata as Record<string, unknown> | null,
+        currentMetadata,
         now,
       );
       const seriesUpdate: Partial<EventSeries> = {
@@ -665,10 +687,14 @@ async function refreshLinkedActivity(
         last_confirmed_at: now,
         source_updated_at: input.activity.sourceUpdatedAt,
         freshness_score: fresh,
+        image_url: activityProjectionImage({
+          currentUrl: series.image_url,
+          currentMetadata,
+          media,
+          mediaAllowed: sourceAllowsOfficialMedia(input.source),
+          fallbackUrl: activityFactArtUrl("series", series.slug),
+        }),
       };
-      if (!series.image_url || isActivityFactArt(series.image_url)) {
-        seriesUpdate.image_url = activityFactArtUrl("series", series.slug);
-      }
       const { error: pauseError } = await input.supabase
         .from("event_series")
         .update(seriesUpdate)
@@ -737,7 +763,7 @@ async function createEvent(
     throw new Error("Cannot project an event without startsAt");
   const { data: existing, error: existingError } = await input.supabase
     .from("events")
-    .select("id,slug,image_url")
+    .select("id,slug,image_url,source_metadata")
     .eq("activity_graph_candidate_id", input.candidateId)
     .maybeSingle();
   if (existingError)
@@ -748,11 +774,23 @@ async function createEvent(
     existing?.slug ??
     (await generateUniqueSlug(input.supabase, slugify(input.activity.title)));
   const now = (input.now ?? new Date()).toISOString();
+  const currentMetadata = existing?.source_metadata as Record<
+    string,
+    unknown
+  > | null;
+  const media = projectedActivityMedia(input.source, input.activity);
+  const sourceMetadata = refreshedSourceMetadata(input, currentMetadata, now);
   const values = {
     slug,
     title: input.activity.title,
     description: sourceDescription(input.activity, input.source.name),
-    image_url: existing?.image_url || activityFactArtUrl("event", slug),
+    image_url: activityProjectionImage({
+      currentUrl: existing?.image_url,
+      currentMetadata,
+      media,
+      mediaAllowed: sourceAllowsOfficialMedia(input.source),
+      fallbackUrl: activityFactArtUrl("event", slug),
+    }),
     starts_at: input.activity.startsAt,
     ends_at: input.activity.endsAt,
     timezone: input.activity.timezone,
@@ -777,24 +815,7 @@ async function createEvent(
     created_by: createdBy,
     source_locale: "vi",
     source_platform: "activity-graph",
-    source_metadata: {
-      activity_source_id: input.source.id,
-      activity_source_slug: input.source.slug,
-      activity_candidate_id: input.candidateId,
-      activity_observation_id: input.observationId,
-      source_url: input.activity.sourceUrl,
-      activity_attributes: input.activity.attributes,
-      time_precision: input.activity.timePrecision,
-      media_candidate_count: input.activity.mediaCandidates?.length ?? 0,
-      media_policy:
-        typeof input.source.metadata?.media_policy === "string"
-          ? input.source.metadata.media_policy
-          : "reference_only",
-      confidence: input.confidence.score,
-      locality: input.locality,
-      published_automatically: true,
-      verified_at: now,
-    },
+    source_metadata: sourceMetadata,
     activity_graph_candidate_id: input.candidateId,
     activity_kind: input.activity.kind,
     public_access: input.activity.publicAccess,
@@ -853,14 +874,23 @@ async function createSeries(
   }
   const projectionNow = input.now ?? new Date();
   const now = projectionNow.toISOString();
+  const currentMetadata = existing?.source_metadata as Record<
+    string,
+    unknown
+  > | null;
+  const media = projectedActivityMedia(input.source, input.activity);
+  const sourceMetadata = refreshedSourceMetadata(input, currentMetadata, now);
   const values = {
     slug,
     title: input.activity.title,
     description: sourceDescription(input.activity, input.source.name),
-    image_url:
-      existing?.image_url && !isActivityFactArt(existing.image_url)
-        ? existing.image_url
-        : activityFactArtUrl("series", slug),
+    image_url: activityProjectionImage({
+      currentUrl: existing?.image_url,
+      currentMetadata,
+      media,
+      mediaAllowed: sourceAllowsOfficialMedia(input.source),
+      fallbackUrl: activityFactArtUrl("series", slug),
+    }),
     location_name: input.activity.locationName,
     address: input.activity.address,
     google_maps_url: generateMapsUrl(
@@ -893,24 +923,7 @@ async function createSeries(
     source_updated_at: input.activity.sourceUpdatedAt,
     freshness_score: freshnessScore(now, 7, 1, projectionNow),
     source_platform: "activity-graph",
-    source_metadata: {
-      activity_source_id: input.source.id,
-      activity_source_slug: input.source.slug,
-      activity_candidate_id: input.candidateId,
-      activity_observation_id: input.observationId,
-      source_url: input.activity.sourceUrl,
-      activity_attributes: input.activity.attributes,
-      time_precision: input.activity.timePrecision,
-      media_candidate_count: input.activity.mediaCandidates?.length ?? 0,
-      media_policy:
-        typeof input.source.metadata?.media_policy === "string"
-          ? input.source.metadata.media_policy
-          : "reference_only",
-      confidence: input.confidence.score,
-      locality: input.locality,
-      published_automatically: true,
-      verified_at: now,
-    },
+    source_metadata: sourceMetadata,
   };
   const query = existing
     ? input.supabase.from("event_series").update(values).eq("id", existing.id)
