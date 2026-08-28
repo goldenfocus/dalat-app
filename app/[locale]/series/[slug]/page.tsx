@@ -15,7 +15,7 @@ import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatInDaLat } from "@/lib/timezone";
+import { formatInDaLat, loadDateFnsLocale } from "@/lib/timezone";
 import { describeRRule, getShortRRuleLabel } from "@/lib/recurrence";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
@@ -178,6 +178,11 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
 export default async function SeriesPage({ params }: PageProps) {
   const { slug } = await params;
   const [t, locale] = await Promise.all([getTranslations(), getLocale()]);
+
+  // This server-rendered page formats occurrence labels synchronously below.
+  // Warm the requested date-fns locale first so Vietnamese and the other
+  // supported locales do not silently fall back to English.
+  await loadDateFnsLocale(locale as Locale);
 
   const data = await getSeriesData(slug);
 
