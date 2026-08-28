@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { CONTENT_LOCALES, ContentLocale, TranslationContentType } from "@/lib/types";
+import {
+  getBlogTranslationCutoff,
+  isTranslationAtOrAfterCutoff,
+} from "@/lib/news/article-policy";
 
 /**
  * Shared work collector for the self-healing translation sweep — used by
@@ -17,6 +21,54 @@ export interface TranslationWorkItem {
   sourceLocale: ContentLocale | null;
   fields: { field_name: string; text: string }[];
   missingLocales: ContentLocale[];
+  /** Source-row revision captured with the text; used to reject stale writes. */
+  sourceUpdatedAt?: string | null;
+}
+
+export interface CurrentTranslationSource {
+  source?: unknown;
+  source_urls?: unknown;
+  updated_at?: string | null;
+  [fieldName: string]: unknown;
+}
+
+/** Exact source revision/content guard shared by worker logic and tests. */
+export function translationSourceStillMatches(
+  item: Pick<TranslationWorkItem, "sourceUpdatedAt" | "fields">,
+  current: CurrentTranslationSource | null
+): boolean {
+  if (!current) return false;
+  if (item.sourceUpdatedAt && current.updated_at !== item.sourceUpdatedAt) return false;
+  return item.fields.every((field) => current[field.field_name] === field.text);
+}
+
+/** Compare blog work against the same content revision used by public readers. */
+export function blogTranslationSourceStillMatches(
+  item: Pick<TranslationWorkItem, "sourceUpdatedAt" | "fields">,
+  current: CurrentTranslationSource | null
+): boolean {
+  if (!current) return false;
+  return translationSourceStillMatches(item, {
+    ...current,
+    updated_at: getBlogTranslationCutoff(current),
+  });
+}
+
+/**
+ * Human-owned stale rows remain blocked coverage for the automated sweep; the
+ * public reader hides them until review. Only stale automatic rows are safe to
+ * requeue and replace.
+ */
+export function translationCoverageIsCurrent(
+  translationUpdatedAt: string | null | undefined,
+  sourceUpdatedAt: string | null | undefined,
+  translationStatus: string | null | undefined
+): boolean {
+  if (translationStatus !== "auto") return true;
+  return isTranslationAtOrAfterCutoff(
+    translationUpdatedAt,
+    sourceUpdatedAt ?? null
+  );
 }
 
 /** Machine captions fan out from these moment_metadata columns. */
@@ -237,13 +289,21 @@ export async function collectTranslationWork(
   // --- Blog posts (last — long content) ---
   const { data: posts, error: postsError } = await supabase
     .from("blog_posts")
-    .select("id, title, story_content, technical_content, meta_description, source_locale")
-    .eq("status", "published")
+    .select("id, title, story_content, technical_content, meta_description, source, source_urls, source_locale, status, updated_at")
+    .in("status", ["published", "experimental"])
+    // Corrections keep the established published_at (and URL). Prioritize the
+    // row revision so an old but newly corrected article enters the bounded
+    // sweep instead of being starved behind newer publication dates.
+    .order("updated_at", { ascending: false })
     .order("published_at", { ascending: false })
     .limit(scanLimit);
   if (postsError) throw new Error(`[translation-sweep] blog query failed: ${postsError.message}`);
 
   for (const post of posts ?? []) {
+    if (
+      post.status !== "published"
+      && !(post.status === "experimental" && post.source === "news_scrape")
+    ) continue;
     const fields = [
       { field_name: "title", text: post.title },
       { field_name: "story_content", text: post.story_content },
@@ -251,7 +311,13 @@ export async function collectTranslationWork(
       { field_name: "meta_description", text: post.meta_description },
     ].filter((f) => f.text && f.text.trim().length > 0);
     if (fields.length === 0) continue;
-    candidates.push({ contentType: "blog", contentId: post.id, sourceLocale: post.source_locale, fields });
+    candidates.push({
+      contentType: "blog",
+      contentId: post.id,
+      sourceLocale: post.source_locale,
+      fields,
+      sourceUpdatedAt: getBlogTranslationCutoff(post),
+    });
   }
 
   // One paged query pass for existing coverage of ALL candidates, keyed per
@@ -259,14 +325,17 @@ export async function collectTranslationWork(
   // and truncated rows read as "untranslated" — which made the cron
   // re-translate finished content forever. Page until done.
   const ids = [...new Set(candidates.map((c) => c.contentId))];
-  const covered = new Map<string, Map<string, Set<string>>>();
+  const covered = new Map<
+    string,
+    Map<string, Map<string, { updatedAt: string | null; status: string | null }>>
+  >();
   const PAGE_SIZE = 1000;
   for (let i = 0; i < ids.length; i += 50) {
     const chunk = ids.slice(i, i + 50);
     for (let offset = 0; ; offset += PAGE_SIZE) {
       const { data: rows, error } = await supabase
         .from("content_translations")
-        .select("content_type, content_id, target_locale, field_name")
+        .select("content_type, content_id, target_locale, field_name, updated_at, translation_status")
         .in("content_id", chunk)
         .order("id")
         .range(offset, offset + PAGE_SIZE - 1);
@@ -277,10 +346,15 @@ export async function collectTranslationWork(
       }
       for (const row of rows ?? []) {
         const key = `${row.content_type}:${row.content_id}`;
-        const perLocale = covered.get(key) ?? new Map<string, Set<string>>();
-        const fieldSet = perLocale.get(row.target_locale) ?? new Set<string>();
-        fieldSet.add(row.field_name);
-        perLocale.set(row.target_locale, fieldSet);
+        const perLocale = covered.get(key)
+          ?? new Map<string, Map<string, { updatedAt: string | null; status: string | null }>>();
+        const fields = perLocale.get(row.target_locale)
+          ?? new Map<string, { updatedAt: string | null; status: string | null }>();
+        fields.set(row.field_name, {
+          updatedAt: row.updated_at ?? null,
+          status: row.translation_status ?? null,
+        });
+        perLocale.set(row.target_locale, fields);
         covered.set(key, perLocale);
       }
       if (!rows || rows.length < PAGE_SIZE) break;
@@ -290,12 +364,20 @@ export async function collectTranslationWork(
   const work: TranslationWorkItem[] = [];
   for (const c of candidates) {
     const perLocale = covered.get(`${c.contentType}:${c.contentId}`);
-    const missingLocales = getMissingTranslationLocales(
-      c.contentType,
-      c.sourceLocale,
-      c.fields,
-      perLocale
-    );
+    const missingLocales = c.contentType === "event" && c.sourceLocale === null
+      ? [...CONTENT_LOCALES]
+      : CONTENT_LOCALES.filter((locale) => {
+        const translatedFields = perLocale?.get(locale);
+        return c.fields.some((field) => {
+          if (!translatedFields?.has(field.field_name)) return true;
+          const coverage = translatedFields.get(field.field_name);
+          return !translationCoverageIsCurrent(
+            coverage?.updatedAt,
+            c.sourceUpdatedAt,
+            coverage?.status
+          );
+        });
+      });
     if (missingLocales.length > 0) {
       work.push({ ...c, missingLocales });
     }

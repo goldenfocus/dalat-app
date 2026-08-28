@@ -7,20 +7,18 @@ import type { ScrapedArticle } from '../types';
 import { getSourceOrThrow } from '../sources';
 import {
   fetchWithDelay,
-  extractTitle,
-  extractContent,
-  extractImages,
-  extractPublishedDate,
   isDalatRelated,
+  scrapeKnownArticle,
 } from '../base-scraper';
 
 const source = getSourceOrThrow('tuoitre');
+const sourceOrigin = new URL(source.baseUrl).origin;
 
 /**
  * Extract article URLs from the Tuổi Trẻ Đà Lạt tag page
  */
 async function discoverArticles(): Promise<string[]> {
-  const html = await fetchWithDelay(source.discoveryUrl, source.requestDelay);
+  const html = await fetchWithDelay(source.discoveryUrl, source.requestDelay, sourceOrigin);
   if (!html) return [];
 
   const links: string[] = [];
@@ -43,31 +41,8 @@ async function discoverArticles(): Promise<string[]> {
  * Fetch and parse a single Tuổi Trẻ article
  */
 async function fetchArticle(url: string): Promise<ScrapedArticle | null> {
-  const html = await fetchWithDelay(url, source.requestDelay);
-  if (!html) return null;
-
-  const title = extractTitle(html);
-  if (!title) return null;
-
-  // Extract content from detail-content div
-  const content = extractContent(html, ['detail-content', 'detail__content', 'fck_detail']);
-  if (!content || content.length < 50) return null;
-
-  // Verify Dalat relevance
-  if (!isDalatRelated(title, content)) return null;
-
-  const images = extractImages(html);
-  const publishedAt = extractPublishedDate(html);
-
-  return {
-    sourceId: source.id,
-    sourceUrl: url,
-    sourceName: source.name,
-    title,
-    content,
-    imageUrls: images,
-    publishedAt,
-  };
+  const article = await scrapeKnownArticle(source.id, url);
+  return article && isDalatRelated(article.title, article.content) ? article : null;
 }
 
 /**

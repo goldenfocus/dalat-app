@@ -10,6 +10,9 @@ export const NEWS_SOURCES: NewsSource[] = [
     name: 'Tuổi Trẻ',
     baseUrl: 'https://tuoitre.vn',
     discoveryUrl: 'https://tuoitre.vn/da-lat.html',
+    tier: 'B',
+    sourceType: 'established-newsroom',
+    official: false,
     selectors: {
       articleList: '.box-category-item, .news-item',
       articleLink: 'a[href*="/"]',
@@ -26,6 +29,9 @@ export const NEWS_SOURCES: NewsSource[] = [
     name: 'VnExpress',
     baseUrl: 'https://vnexpress.net',
     discoveryUrl: 'https://vnexpress.net/tag/da-lat-1',
+    tier: 'B',
+    sourceType: 'established-newsroom',
+    official: false,
     selectors: {
       articleList: '.item-news, article.item-news',
       articleLink: 'a.title-news[href]',
@@ -42,6 +48,9 @@ export const NEWS_SOURCES: NewsSource[] = [
     name: 'Thanh Niên',
     baseUrl: 'https://thanhnien.vn',
     discoveryUrl: 'https://thanhnien.vn/da-lat.html',
+    tier: 'B',
+    sourceType: 'established-newsroom',
+    official: false,
     selectors: {
       articleList: '.story, .box-news-item',
       articleLink: 'a.story__title[href], a.box-news-link[href]',
@@ -58,6 +67,9 @@ export const NEWS_SOURCES: NewsSource[] = [
     name: 'Báo Pháp Luật',
     baseUrl: 'https://baophapluat.vn',
     discoveryUrl: 'https://baophapluat.vn/da-lat-tag285.html',
+    tier: 'B',
+    sourceType: 'established-newsroom',
+    official: false,
     selectors: {
       articleList: '.item-news, .news-item',
       articleLink: 'a[href*=".html"]',
@@ -74,6 +86,9 @@ export const NEWS_SOURCES: NewsSource[] = [
     name: 'Công An TP.HCM',
     baseUrl: 'https://congan.com.vn',
     discoveryUrl: 'https://congan.com.vn/tag/%C4%90%C3%A0+L%E1%BA%A1t.html',
+    tier: 'B',
+    sourceType: 'established-newsroom',
+    official: false,
     selectors: {
       articleList: '.item-news, .news-item',
       articleLink: 'a[href*=".html"]',
@@ -89,6 +104,17 @@ export const NEWS_SOURCES: NewsSource[] = [
 
 export function getSourceById(id: string): NewsSource | undefined {
   return NEWS_SOURCES.find(s => s.id === id);
+}
+
+/** Match a persisted article URL to one exact registered publisher origin. */
+export function getSourceByArticleUrl(sourceUrl: string): NewsSource | undefined {
+  try {
+    const candidate = new URL(sourceUrl);
+    if (candidate.username || candidate.password) return undefined;
+    return NEWS_SOURCES.find((source) => new URL(source.baseUrl).origin === candidate.origin);
+  } catch {
+    return undefined;
+  }
 }
 
 /**

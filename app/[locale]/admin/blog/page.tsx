@@ -157,6 +157,8 @@ export default async function AdminBlogPage({ searchParams }: PageProps) {
 }
 
 function BlogPostRow({ post }: { post: AdminBlogPost }) {
+  const isPublicPost = post.status === "published"
+    || (post.source === "news_scrape" && post.status === "experimental");
   const createdDate = new Date(post.created_at).toLocaleDateString("vi-VN", {
     day: "numeric",
     month: "short",
@@ -256,7 +258,7 @@ function BlogPostRow({ post }: { post: AdminBlogPost }) {
           <Pencil className="h-3 w-3" />
           Edit
         </Link>
-        {post.status === "published" && (
+        {isPublicPost && (
           <Link
             href={`/blog/${post.category_slug || "changelog"}/${post.slug}`}
             className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors text-sm"
@@ -265,7 +267,9 @@ function BlogPostRow({ post }: { post: AdminBlogPost }) {
             View
           </Link>
         )}
-        <DeletePostButton postId={post.id} postTitle={post.title} />
+        {!isPublicPost && post.published_at === null && (
+          <DeletePostButton postId={post.id} postTitle={post.title} />
+        )}
       </div>
     </div>
   );

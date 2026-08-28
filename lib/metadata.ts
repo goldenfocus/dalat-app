@@ -9,6 +9,7 @@
 
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n/routing";
+import { localeUrl } from "@/lib/i18n/locale-url";
 import { isVideoUrl } from "@/lib/media-utils";
 import {
   getVenueSeoKeywords,
@@ -21,18 +22,7 @@ const SITE_NAME = "ĐàLạt.app";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png?v=2`;
 const DEFAULT_LOCALE: Locale = "en";
 
-/**
- * Absolute URL for a path in a given locale, honoring localePrefix: 'as-needed'.
- * The default locale lives at the root — `/en/...` 307-redirects, and a canonical
- * or hreflang alternate that points at a redirect is treated as broken by Google.
- */
-export function localeUrl(locale: Locale, path: string): string {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  const cleanPath = normalizedPath === "/" ? "" : normalizedPath;
-  return locale === DEFAULT_LOCALE
-    ? `${SITE_URL}${cleanPath}` || SITE_URL
-    : `${SITE_URL}/${locale}${cleanPath}`;
-}
+export { localeUrl } from "@/lib/i18n/locale-url";
 
 /**
  * Canonical + hreflang alternates for a localized page. Use this in any

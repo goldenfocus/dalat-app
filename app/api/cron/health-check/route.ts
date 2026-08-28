@@ -34,7 +34,6 @@ const WATCHED_SOURCES = ["activity-graph"];
 
 // Content promise: /news must never look dead either.
 const MAX_NEWS_AGE_H = 26;
-const MIN_NEWS_BACKLOG = 7;
 
 /**
  * Daily event-health watchdog + recurring-series top-up.
@@ -173,7 +172,7 @@ export async function GET(request: Request) {
       captionCoverage,
       eventIndexingHealth,
     },
-    // Stale /news even after a promotion attempt = cron run failed.
+    // Stale /news means the content pipeline has not produced verified fresh reporting.
     { status: content.newsStale ? 500 : 200 },
   );
 }
@@ -288,7 +287,8 @@ async function checkCaptionCoverage(
 interface ContentHealth {
   newestNewsAgeHours: number | null;
   newsStale: boolean;
-  promotedPostId: string | null;
+  // Kept in the response for compatibility; automatic promotion is disabled.
+  promotedPostId: null;
   newsBacklog: number;
   retriedArticles: number;
   pipelineErrors24h: number;
@@ -296,9 +296,8 @@ interface ContentHealth {
 
 /**
  * News/blog pipeline watchdog:
- * - newest published news post must be < MAX_NEWS_AGE_H old; if not, promote
- *   the best experimental backlog candidate
- * - backlog (experimental news posts) should stay above MIN_NEWS_BACKLOG
+ * - newest published news post must be < MAX_NEWS_AGE_H old; otherwise alert
+ * - report pending/processing raw reporting as the work queue (zero is healthy)
  * - retry dead raw articles once
  * - surface content_pipeline_events error count for the last 24h
  */
@@ -345,92 +344,30 @@ async function checkContentHealth(
 
     health.newestNewsAgeHours = await newestNewsAgeHours();
 
-    if (
+    health.newsStale =
       health.newestNewsAgeHours === null ||
-      health.newestNewsAgeHours > MAX_NEWS_AGE_H
-    ) {
-      // Promote the best backlog candidate to keep /news alive.
-      const { data: candidates } = await supabase
-        .from("blog_posts")
-        .select("id, title, quality_score")
-        .eq("category_id", newsCategory.id)
-        .eq("status", "experimental")
-        .not("published_at", "is", null)
-        .order("quality_score", { ascending: false })
-        .limit(1);
-      const candidate = candidates?.[0];
-      let promotionFailed = false;
-
-      if (candidate) {
-        // Bump published_at so the promoted post reads as fresh and actually
-        // clears the staleness check (its backlog date may be weeks old).
-        const { error: promoteError } = await supabase
-          .from("blog_posts")
-          .update({
-            status: "published",
-            published_at: new Date().toISOString(),
-          })
-          .eq("id", candidate.id);
-
-        if (!promoteError) {
-          health.promotedPostId = candidate.id;
-          await logPipelineEvent(supabase, {
-            stage: "health-check",
-            postId: candidate.id,
-            level: "warn",
-            message: `Promoted backlog post to published: ${candidate.title}`,
-            meta: { qualityScore: candidate.quality_score },
-          });
-          health.newestNewsAgeHours = await newestNewsAgeHours();
-        } else {
-          promotionFailed = true;
-          await logPipelineEvent(supabase, {
-            stage: "health-check",
-            postId: candidate.id,
-            level: "error",
-            message: `Promotion failed: ${promoteError.message}`,
-          });
-        }
-      }
-
-      health.newsStale =
-        health.newestNewsAgeHours === null ||
-        health.newestNewsAgeHours > MAX_NEWS_AGE_H;
-      if (health.newsStale) {
-        problems.push(
-          `Newest news post is ${
-            health.newestNewsAgeHours === null
-              ? "missing"
-              : `${Math.round(health.newestNewsAgeHours)}h old`
-          } (max ${MAX_NEWS_AGE_H}h) — promotion ${
-            health.promotedPostId
-              ? "did not help"
-              : promotionFailed
-                ? "attempted but failed"
-                : "found no candidate"
-          }`,
-        );
-      }
+      health.newestNewsAgeHours > MAX_NEWS_AGE_H;
+    if (health.newsStale) {
+      problems.push(
+        `Newest news post is ${
+          health.newestNewsAgeHours === null
+            ? "missing"
+            : `${Math.round(health.newestNewsAgeHours)}h old`
+        } (max ${MAX_NEWS_AGE_H}h) — fresh verified reporting required`,
+      );
     }
 
-    // Backlog: enough experimental news posts queued up?
-    const { count: backlogCount } = await supabase
-      .from("blog_posts")
+    // Report actual pipeline work, not public "experimental" pages. A small or
+    // empty queue is healthy; freshness and pipeline errors are the safeguards.
+    const { count: backlogCount, error: backlogError } = await supabase
+      .from("news_raw_articles")
       .select("*", { count: "exact", head: true })
-      .eq("category_id", newsCategory.id)
-      .eq("status", "experimental");
+      .in("status", ["pending", "processing"]);
     health.newsBacklog = backlogCount ?? 0;
-
-    if (health.newsBacklog < MIN_NEWS_BACKLOG) {
+    if (backlogError) {
       problems.push(
-        `content health: news backlog ${health.newsBacklog} below floor ${MIN_NEWS_BACKLOG}`,
+        `content health: news work queue query failed: ${backlogError.message}`,
       );
-      await logPipelineEvent(supabase, {
-        stage: "health-check",
-        level: "warn",
-        message: `lowBacklog: ${health.newsBacklog} experimental news posts (floor ${MIN_NEWS_BACKLOG})`,
-        meta: { backlog: health.newsBacklog, floor: MIN_NEWS_BACKLOG },
-      });
     }
   }
 
@@ -438,9 +375,9 @@ async function checkContentHealth(
   // and they'd otherwise never be picked up again.
   const { data: stuckArticles, error: stuckError } = await supabase
     .from("news_raw_articles")
-    .update({ status: "pending" })
+    .update({ status: "pending", cluster_id: null, processed_at: null })
     .eq("status", "processing")
-    .lt("scraped_at", new Date(Date.now() - 2 * 3600_000).toISOString())
+    .lt("processed_at", new Date(Date.now() - 2 * 3600_000).toISOString())
     .select("id");
   if (stuckError) {
     problems.push(
@@ -466,18 +403,32 @@ async function checkContentHealth(
       `content health: dead-article query failed: ${deadError.message}`,
     );
   }
-  const toRetry = (deadArticles ?? []).filter(
-    (a) => !a.error_message || !a.error_message.startsWith("[retried]"),
-  );
+  const toRetry = (deadArticles ?? []).filter((article) => {
+    const message = article.error_message ?? "";
+    // A legacy-recovery claim is a private reservation, not scraped input.
+    // Only news-scrape may reclaim it after its 15-minute lease expires;
+    // promoting the placeholder row here would feed invented input to the
+    // processor after a crash between reservation and source fetch.
+    return (
+      !message.startsWith("[retried]") &&
+      !message.startsWith("[legacy-recovery:claim:")
+    );
+  });
   for (const article of toRetry) {
-    const { error: retryError } = await supabase
+    let retryQuery = supabase
       .from("news_raw_articles")
       .update({
         status: "pending",
         error_message: `[retried] ${article.error_message ?? ""}`,
       })
-      .eq("id", article.id);
-    if (!retryError) health.retriedArticles++;
+      .eq("id", article.id)
+      .eq("status", "error");
+    retryQuery = article.error_message
+      ? retryQuery.eq("error_message", article.error_message)
+      : retryQuery.is("error_message", null);
+    const { data: retriedRows, error: retryError } =
+      await retryQuery.select("id");
+    if (!retryError && retriedRows?.length === 1) health.retriedArticles++;
   }
 
   // Pipeline errors in the last 24h.

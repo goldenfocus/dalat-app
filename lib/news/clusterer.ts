@@ -34,17 +34,21 @@ function sleep(ms: number): Promise<void> {
  * falls back across providers; the retry loop here covers JSON parse hiccups.
  */
 async function extractTopicKeywords(
-  article: ScrapedArticle
+  article: ScrapedArticle,
+  deadlineAt?: number
 ): Promise<ClusteringResult | null> {
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    if (deadlineAt !== undefined && Date.now() >= deadlineAt) return null;
     try {
       const result = await aiChatJson<ClusteringResult>({
         system: NEWS_CLUSTERING_SYSTEM,
         prompt: buildClusteringPrompt(article.title, article.content),
         maxTokens: 256,
         temperature: 0.2,
+        timeoutMs: 30_000,
+        deadlineAt,
       });
 
       // Validate required fields
@@ -66,7 +70,9 @@ async function extractTopicKeywords(
       if (attempt < MAX_RETRIES - 1) {
         const delay = BASE_DELAY_MS * Math.pow(2, attempt);
         console.warn(`[clusterer] Retry ${attempt + 1}/${MAX_RETRIES} for "${article.title.slice(0, 40)}..." after ${delay}ms`);
-        await sleep(delay);
+        const remaining = deadlineAt === undefined ? delay : deadlineAt - Date.now();
+        if (remaining <= 0) break;
+        await sleep(Math.min(delay, remaining));
         continue;
       }
 
@@ -105,13 +111,18 @@ function fingerprintSimilarity(a: string, b: string): number {
  * Cluster articles by topic similarity
  */
 export async function clusterArticles(
-  articles: ScrapedArticle[]
+  articles: ScrapedArticle[],
+  deadlineAt?: number
 ): Promise<{
   clusters: ArticleCluster[];
   skipped: ScrapedArticle[];
+  deferred: ScrapedArticle[];
+  failed: ScrapedArticle[];
 }> {
   const clusters: ArticleCluster[] = [];
   const skipped: ScrapedArticle[] = [];
+  const deferred: ScrapedArticle[] = [];
+  const failed: ScrapedArticle[] = [];
 
   // Extract keywords for each article
   const articlesWithKeywords: Array<{
@@ -124,13 +135,18 @@ export async function clusterArticles(
   }> = [];
 
   for (const article of articles) {
-    const result = await extractTopicKeywords(article);
+    if (deadlineAt !== undefined && Date.now() >= deadlineAt) {
+      deferred.push(article);
+      continue;
+    }
+    const result = await extractTopicKeywords(article, deadlineAt);
 
     // Brief delay between API calls to respect rate limits
     await sleep(INTER_CALL_DELAY_MS);
 
     if (!result) {
-      skipped.push(article);
+      if (deadlineAt !== undefined && Date.now() >= deadlineAt) deferred.push(article);
+      else failed.push(article);
       continue;
     }
 
@@ -185,5 +201,5 @@ export async function clusterArticles(
   }
 
   console.log(`[clusterer] Created ${clusters.length} clusters from ${articles.length} articles (${skipped.length} skipped)`);
-  return { clusters, skipped };
+  return { clusters, skipped, deferred, failed };
 }

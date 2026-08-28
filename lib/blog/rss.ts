@@ -1,6 +1,7 @@
 import type { BlogPostWithCategory } from "@/lib/types/blog";
 import { normalizeStoryContent } from "@/lib/blog/normalize-content";
 import { markdownToPlainText } from "@/lib/blog/strip-markdown";
+import { localeUrl } from "@/lib/i18n/locale-url";
 
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "dalat.app";
@@ -9,7 +10,7 @@ const SITE_NAME = "dalat.app";
  * Generate RSS 2.0 feed XML for blog posts
  */
 export function generateRssFeed(
-  posts: BlogPostWithCategory[],
+  posts: Array<BlogPostWithCategory & { updated_at?: string | null }>,
   options: {
     title?: string;
     description?: string;
@@ -28,7 +29,10 @@ export function generateRssFeed(
 
   const items = posts
     .map((post) => {
-      const postUrl = `${SITE_URL}/en/blog/${post.category_slug || "changelog"}/${post.slug}`;
+      const postUrl = localeUrl(
+        "en",
+        `/blog/${post.category_slug || "changelog"}/${post.slug}`
+      );
       const pubDate = post.published_at
         ? new Date(post.published_at).toUTCString()
         : new Date().toUTCString();
@@ -52,9 +56,18 @@ export function generateRssFeed(
     })
     .join("");
 
-  const lastBuildDate = posts.length > 0 && posts[0].published_at
-    ? new Date(posts[0].published_at).toUTCString()
-    : new Date().toUTCString();
+  const latestFeedTimestamp = Math.max(
+    ...posts.flatMap((post) => {
+      const value = post.updated_at || post.published_at;
+      if (!value) return [];
+      const timestamp = Date.parse(value);
+      return Number.isFinite(timestamp) ? [timestamp] : [];
+    }),
+    0
+  );
+  const lastBuildDate = latestFeedTimestamp > 0
+    ? new Date(latestFeedTimestamp).toUTCString()
+    : null;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -63,10 +76,10 @@ export function generateRssFeed(
     <link>${SITE_URL}/blog</link>
     <description>${description}</description>
     <language>en-us</language>
-    <lastBuildDate>${lastBuildDate}</lastBuildDate>
+    ${lastBuildDate ? `<lastBuildDate>${lastBuildDate}</lastBuildDate>` : ""}
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <image>
-      <url>${SITE_URL}/icon-512.png</url>
+      <url>${SITE_URL}/android-chrome-512x512.png</url>
       <title>${title}</title>
       <link>${SITE_URL}/blog</link>
     </image>

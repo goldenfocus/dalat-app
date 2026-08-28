@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { allLocales } from "@/lib/i18n/config";
 import { getMonthSlug, isPastMonth } from "@/lib/events/archive-utils";
 import {
@@ -14,6 +15,7 @@ import {
   type EventIndexingSource,
   type EventIndexingTranslationRow,
 } from "@/lib/translations-readiness";
+import { getNewsPageModifiedAt } from "@/lib/news/article-policy";
 
 const MAX_SITEMAP_URLS = 50_000;
 const MAX_SITEMAP_BYTES = 50 * 1024 * 1024;
@@ -200,6 +202,14 @@ export async function fetchAllEventIndexingTranslations(
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createClient();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const sitemapServiceClient =
+    serviceRoleKey && supabaseUrl
+      ? createSupabaseClient(supabaseUrl, serviceRoleKey, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        })
+      : null;
 
   // Static pages that exist for all locales.
   // Deliberately absent: /settings and /auth/login (robots-disallowed private
@@ -240,6 +250,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
     },
     { path: "/discover", priority: 0.9, changeFrequency: "daily" as const },
+    { path: "/news", priority: 0.8, changeFrequency: "hourly" as const },
     { path: "/map", priority: 0.8, changeFrequency: "daily" as const },
     { path: "/calendar", priority: 0.8, changeFrequency: "daily" as const },
     { path: "/venues", priority: 0.8, changeFrequency: "daily" as const },
@@ -310,7 +321,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .eq("status", "published"),
     supabase
       .from("blog_posts")
-      .select("slug, published_at, updated_at, blog_categories(slug)")
+      .select(
+        "slug, source, published_at, updated_at, source_urls, blog_categories(slug)",
+      )
       .eq("status", "published")
       .order("published_at", { ascending: false }),
     // Audio content: Playlists and tracks with lyrics for SEO
@@ -325,6 +338,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       )
       .eq("events.status", "published"),
   ]);
+  // The current get_news_posts RPC runs with invoker RLS, so anon callers do
+  // not see experimental rows even though the SQL predicate names them. This
+  // narrowly scoped server-only read exposes only established experimental
+  // news_scrape URLs to the regular sitemap, including legacy pages whose old
+  // category must remain unchanged. Drafts and manual experiments stay private.
+  const publicAutomatedResult = sitemapServiceClient
+    ? await sitemapServiceClient
+        .from("blog_posts")
+        .select(
+          "slug, source, published_at, updated_at, source_urls, blog_categories(slug)",
+        )
+        .eq("source", "news_scrape")
+        .eq("status", "experimental")
+        .limit(1000)
+    : { data: [], error: null };
 
   const events = unwrap("events", eventsResult);
   const eventTranslationRows = await fetchAllEventIndexingTranslations(
@@ -353,10 +381,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return {
       slug: p.slug as string,
       published_at: p.published_at as string,
-      updated_at: p.updated_at as string,
+      updated_at: (p.source === "news_scrape"
+        ? getNewsPageModifiedAt(p)
+        : p.updated_at) as string,
       category_slug: (category as { slug: string } | null)?.slug ?? "changelog",
     };
   });
+  const blogPostKeys = new Set(
+    blogPosts.map((post) => `${post.category_slug}/${post.slug}`),
+  );
+  const publicAutomated = unwrap(
+    "public_automated",
+    publicAutomatedResult,
+  ) as Array<{
+    slug: string;
+    source: string;
+    published_at: string | null;
+    updated_at: string | null;
+    source_urls: unknown;
+    blog_categories: { slug: string } | Array<{ slug: string }> | null;
+  }>;
+  for (const post of publicAutomated) {
+    const categories = post.blog_categories;
+    const category = Array.isArray(categories) ? categories[0] : categories;
+    const categorySlug = category?.slug ?? "changelog";
+    const key = `${categorySlug}/${post.slug}`;
+    if (blogPostKeys.has(key)) continue;
+    blogPostKeys.add(key);
+    blogPosts.push({
+      slug: post.slug,
+      published_at: post.published_at as string,
+      updated_at: (getNewsPageModifiedAt(post) ?? post.published_at) as string,
+      category_slug: categorySlug,
+    });
+  }
 
   // Process playlists for audio sitemap entries
   const playlistsRaw = unwrap("playlists", playlistsResult);
@@ -567,7 +625,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const post of blogPosts) {
     sitemapEntries.push(
       ...localizedEntries(`/blog/${post.category_slug}/${post.slug}`, {
-        lastModified: new Date(post.updated_at || post.published_at),
+        ...(post.updated_at || post.published_at
+          ? { lastModified: new Date(post.updated_at || post.published_at) }
+          : {}),
         changeFrequency: "monthly",
         priority: 0.65,
       }),

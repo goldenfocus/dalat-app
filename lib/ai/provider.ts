@@ -18,6 +18,8 @@ export interface AIChatOptions {
   maxTokens?: number;
   /** Per-provider timeout; the chain moves on when it elapses */
   timeoutMs?: number;
+  /** Absolute wall-clock deadline shared by the whole fallback chain. */
+  deadlineAt?: number;
 }
 
 const DEFAULT_TIMEOUT_MS = 120_000;
@@ -34,6 +36,14 @@ class ProviderError extends Error {
   constructor(provider: string, cause: string) {
     super(`[ai-provider:${provider}] ${cause}`);
   }
+}
+
+function requestTimeoutMs(opts: AIChatOptions): number {
+  const perProvider = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  if (opts.deadlineAt === undefined) return perProvider;
+  const remaining = opts.deadlineAt - Date.now();
+  if (remaining <= 0) throw new ProviderError('deadline', 'overall deadline exhausted');
+  return Math.max(1, Math.min(perProvider, remaining));
 }
 
 /** JSON nudge appended when the provider has no native JSON mode */
@@ -60,7 +70,7 @@ async function localOllama(opts: AIChatOptions): Promise<string> {
       temperature: opts.temperature,
       max_tokens: opts.maxTokens,
     }),
-    signal: AbortSignal.timeout(opts.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+    signal: AbortSignal.timeout(requestTimeoutMs(opts)),
   });
 
   if (!res.ok) throw new ProviderError('local', `status ${res.status}`);
@@ -96,7 +106,7 @@ async function cloudflareAI(opts: AIChatOptions): Promise<string> {
         // ("story_content": ## Heading...) that no lenient parser survives
         ...(opts.json ? { response_format: { type: 'json_object' } } : {}),
       }),
-      signal: AbortSignal.timeout(opts.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+      signal: AbortSignal.timeout(requestTimeoutMs(opts)),
     }
   );
 
@@ -121,6 +131,7 @@ async function openRouter(opts: AIChatOptions): Promise<string> {
 
   let lastError: Error = new ProviderError('openrouter', 'no models attempted');
   for (const model of OPENROUTER_FREE_MODELS) {
+    if (opts.deadlineAt !== undefined && Date.now() >= opts.deadlineAt) break;
     try {
       const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -135,7 +146,7 @@ async function openRouter(opts: AIChatOptions): Promise<string> {
           max_tokens: opts.maxTokens ?? 2048,
           ...(opts.json ? { response_format: { type: 'json_object' } } : {}),
         }),
-        signal: AbortSignal.timeout(opts.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+        signal: AbortSignal.timeout(requestTimeoutMs(opts)),
       });
       const data = await res.json();
       if (data.error) throw new ProviderError('openrouter', `${model}: ${data.error.message ?? data.error}`.slice(0, 200));
@@ -163,6 +174,10 @@ const CHAIN: Array<{ name: string; run: (opts: AIChatOptions) => Promise<string>
 export async function aiChat(opts: AIChatOptions): Promise<string> {
   const errors: string[] = [];
   for (const provider of CHAIN) {
+    if (opts.deadlineAt !== undefined && Date.now() >= opts.deadlineAt) {
+      errors.push('[ai-provider:deadline] overall deadline exhausted');
+      break;
+    }
     try {
       const text = await provider.run(opts);
       if (provider.name !== 'local') {

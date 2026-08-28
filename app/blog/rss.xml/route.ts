@@ -1,6 +1,7 @@
 import { createStaticClient } from "@/lib/supabase/server";
 import { generateRssFeed } from "@/lib/blog/rss";
 import type { BlogPostWithCategory } from "@/lib/types/blog";
+import { getNewsPageModifiedAt } from "@/lib/news/article-policy";
 
 export const revalidate = 3600; // Revalidate every hour
 
@@ -29,7 +30,9 @@ export async function GET(request: Request) {
       version,
       source,
       published_at,
-      blog_categories (
+      updated_at,
+      source_urls,
+      blog_categories!inner (
         slug,
         name
       )
@@ -67,6 +70,9 @@ export async function GET(request: Request) {
       version: post.version,
       source: post.source,
       published_at: post.published_at,
+      updated_at: post.source === "news_scrape"
+        ? getNewsPageModifiedAt(post)
+        : post.updated_at,
       category_slug: (category as { slug: string } | null)?.slug ?? null,
       category_name: (category as { name: string } | null)?.name ?? null,
       like_count: 0, // Not needed for RSS

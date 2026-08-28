@@ -67,7 +67,8 @@ async function buildLinkDictionary(): Promise<Map<string, InternalLink>> {
         if (venue.name && venue.slug) {
           dictionary.set(venue.name.toLowerCase(), {
             text: venue.name,
-            url: `/venues/${venue.slug}`,
+            // Venue public pages use their canonical root slug.
+            url: `/${venue.slug}`,
             type: 'venue',
           });
         }
@@ -183,7 +184,9 @@ export async function applyInternalLinks(
   const linked = new Set<string>();
   let result = content;
 
-  // Apply AI-suggested links first (higher quality)
+  // Optional suggestions are accepted only from callers that have independently
+  // validated the canonical entity path. The News pipeline deliberately omits
+  // model-suggested URLs and relies on the database dictionary below.
   for (const link of aiSuggestedLinks) {
     const key = link.text.toLowerCase();
     if (linked.has(key)) continue;

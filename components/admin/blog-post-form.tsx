@@ -31,6 +31,7 @@ interface BlogPostData {
   seo_keywords: string[] | null;
   suggested_cta_url: string | null;
   suggested_cta_text: string | null;
+  published_at: string | null;
   category_id: string | null;
   category_slug: string | null;
   category_name: string | null;
@@ -51,6 +52,20 @@ const STATUS_OPTIONS: { value: BlogPostStatus; label: string; description: strin
 
 export function BlogPostForm({ post, categories }: BlogPostFormProps) {
   const router = useRouter();
+  const isPublicAutomationExperiment = post.source === "news_scrape"
+    && post.status === "experimental";
+  const isUrlLocked = post.published_at !== null
+    || isPublicAutomationExperiment;
+  const allowedStatusOptions = !isUrlLocked
+    ? STATUS_OPTIONS
+    : post.status === "published"
+      ? STATUS_OPTIONS.filter((option) => option.value === "published")
+      : isPublicAutomationExperiment
+        ? STATUS_OPTIONS.filter((option) => ["experimental", "published"].includes(option.value))
+        : STATUS_OPTIONS.filter((option) =>
+            option.value === post.status
+            || (post.published_at !== null && option.value === "published")
+          );
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingCover, setIsGeneratingCover] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -235,7 +250,9 @@ Style guidelines:
       const { error: updateError } = await supabase.rpc("update_blog_post", {
         p_post_id: post.id,
         p_title: title,
-        p_slug: slug,
+        // Once a post has been public, its URL is permanent. Sending the
+        // original values also protects against stale client state.
+        p_slug: isUrlLocked ? post.slug : slug,
         p_story_content: storyContent,
         p_technical_content: technicalContent,
         p_cover_image_url: finalCoverUrl || null,
@@ -243,8 +260,10 @@ Style guidelines:
         p_cover_image_description: finalDescription || null,
         p_cover_image_keywords: finalKeywords ? finalKeywords.split(",").map((k) => k.trim()) : null,
         p_cover_image_colors: finalColors.length > 0 ? finalColors : null,
-        p_status: status,
-        p_category_id: categoryId || null,
+        p_status: allowedStatusOptions.some((option) => option.value === status)
+          ? status
+          : post.status,
+        p_category_id: isUrlLocked ? post.category_id : categoryId || null,
         p_meta_description: metaDescription || null,
         p_seo_keywords: seoKeywords ? seoKeywords.split(",").map((k) => k.trim()) : null,
         p_suggested_cta_url: ctaUrl || null,
@@ -276,11 +295,19 @@ Style guidelines:
           );
         }
 
-        triggerTranslation(
+        // The translation endpoint also advances the factual revision for
+        // automated news. Await that durable step before navigating so a
+        // correction cannot leave stale localized copies publicly readable.
+        const translationQueued = await triggerTranslation(
           "blog",
           post.id,
           changedTranslationFields.map(({ field_name, text }) => ({ field_name, text }))
         );
+        if (!translationQueued) {
+          throw new Error(
+            "Post saved, but stale translations could not be invalidated. Please retry before publishing the correction."
+          );
+        }
       }
 
       router.refresh();
@@ -374,7 +401,9 @@ Style guidelines:
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-sm"
+                readOnly={isUrlLocked}
+                aria-readonly={isUrlLocked}
+                className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-sm read-only:cursor-not-allowed read-only:opacity-60"
               />
             </div>
           </div>
@@ -485,14 +514,14 @@ Style guidelines:
               onChange={(e) => setStatus(e.target.value as BlogPostStatus)}
               className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
             >
-              {STATUS_OPTIONS.map((opt) => (
+              {allowedStatusOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
             </select>
             <p className="text-xs text-muted-foreground">
-              {STATUS_OPTIONS.find((o) => o.value === status)?.description}
+              {allowedStatusOptions.find((o) => o.value === status)?.description}
             </p>
           </div>
 
@@ -502,7 +531,8 @@ Style guidelines:
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+              disabled={isUrlLocked}
+              className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <option value="">No category</option>
               {categories.map((cat) => (

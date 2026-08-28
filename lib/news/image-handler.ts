@@ -12,7 +12,7 @@ const USER_AGENT = 'Mozilla/5.0 (compatible; DalatApp/1.0; +https://dalat.app)';
 /** Timeout for image downloads (10 seconds) */
 const IMAGE_FETCH_TIMEOUT_MS = 10_000;
 
-interface NewsImage {
+export interface NewsImage {
   original_url: string;
   stored_url: string;
   attribution: string;
@@ -37,10 +37,14 @@ async function logRejectedImage(imageUrl: string, slug: string, reason: string):
 async function downloadAndStoreImage(
   imageUrl: string,
   slug: string,
-  attribution: string
+  attribution: string,
+  deadlineAt?: number
 ): Promise<NewsImage | null> {
+  const remaining = deadlineAt === undefined ? IMAGE_FETCH_TIMEOUT_MS : deadlineAt - Date.now();
+  if (remaining <= 0) return null;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUT_MS);
+  const timeoutMs = Math.min(IMAGE_FETCH_TIMEOUT_MS, remaining);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(imageUrl, {
@@ -129,7 +133,8 @@ export async function handleNewsImages(
   sourceName: string,
   slug: string,
   title: string,
-  imageDescriptions: string[] = []
+  imageDescriptions: string[] = [],
+  options: { deadlineAt?: number; generateFallback?: boolean } = {}
 ): Promise<{
   coverImageUrl: string | null;
   sourceImages: NewsImage[];
@@ -143,7 +148,8 @@ export async function handleNewsImages(
 
   // Try downloading source images (limit to first 3)
   for (const url of validUrls.slice(0, 3)) {
-    const stored = await downloadAndStoreImage(url, slug, sourceName);
+    if (options.deadlineAt !== undefined && Date.now() >= options.deadlineAt) break;
+    const stored = await downloadAndStoreImage(url, slug, sourceName, options.deadlineAt);
     if (stored) {
       storedImages.push(stored);
     }
@@ -152,7 +158,7 @@ export async function handleNewsImages(
   // Use first stored image as cover, or generate one via the tiered chain
   let coverImageUrl: string | null = storedImages[0]?.stored_url || null;
 
-  if (!coverImageUrl) {
+  if (!coverImageUrl && options.generateFallback !== false) {
     const generated = await generateCoverViaChain({
       slug,
       title,

@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { Event, Organizer } from "@/lib/types";
+import type { BlogPostFull } from "@/lib/types/blog";
 import {
   generateBreadcrumbSchema,
+  generateBlogArticleSchema,
   generateEventSchema,
+  generateNewsArticleSchema,
   generateWebSiteSchema,
   serializeJsonLd,
 } from "./structured-data";
@@ -280,5 +283,124 @@ describe("localized WebSite schema URLs", () => {
     expect(website.potentialAction.target.urlTemplate).toBe(
       "https://dalat.app/vi/search/{search_term_string}",
     );
+  });
+});
+
+const basePost: BlogPostFull = {
+  id: "post-1",
+  slug: "keep-this-url",
+  title: "A sourced guide",
+  story_content: "A factual article body.",
+  technical_content: "Technical details.",
+  cover_image_url: null,
+  cover_image_alt: null,
+  cover_image_description: null,
+  cover_image_keywords: null,
+  cover_image_colors: null,
+  suggested_cta_url: null,
+  suggested_cta_text: null,
+  meta_description: "A factual description.",
+  social_share_text: null,
+  seo_keywords: ["Da Lat"],
+  related_feature_slugs: [],
+  version: null,
+  source: "manual",
+  published_at: "2026-08-20T00:00:00.000Z",
+  created_at: "2026-08-19T00:00:00.000Z",
+  category_slug: "guides",
+  category_name: "Guides",
+  like_count: 0,
+};
+
+describe("article structured-data canonicals", () => {
+  it("keeps default-locale breadcrumb URLs off the redirecting /en prefix", () => {
+    const schema = generateBreadcrumbSchema(
+      [
+        { name: "Home", url: "/" },
+        { name: "News", url: "/news" },
+        { name: "Story", url: "/blog/news/keep-this-url" },
+      ],
+      "en",
+    );
+
+    expect(schema.itemListElement.map((item) => item.item)).toEqual([
+      "https://dalat.app/",
+      "https://dalat.app/news",
+      "https://dalat.app/blog/news/keep-this-url",
+    ]);
+  });
+
+  it("uses the redirect-free English URL and the real publisher icon", () => {
+    const schema = generateBlogArticleSchema(
+      { ...basePost, updated_at: "2026-08-21T00:00:00.000Z" },
+      "en",
+    );
+
+    expect(schema).toMatchObject({
+      url: "https://dalat.app/blog/guides/keep-this-url",
+      dateModified: "2026-08-21T00:00:00.000Z",
+      mainEntityOfPage: {
+        "@id": "https://dalat.app/blog/guides/keep-this-url",
+      },
+      publisher: {
+        logo: {
+          url: "https://dalat.app/android-chrome-512x512.png",
+        },
+      },
+    });
+  });
+
+  it("keeps locale prefixes for non-default NewsArticle URLs", () => {
+    const schema = generateNewsArticleSchema(
+      {
+        ...basePost,
+        category_slug: "news",
+        category_name: "DaLat News",
+        updated_at: "2026-08-22T00:00:00.000Z",
+        source_urls: [],
+      },
+      "vi",
+    );
+
+    expect(schema).toMatchObject({
+      url: "https://dalat.app/vi/blog/news/keep-this-url",
+      dateModified: "2026-08-22T00:00:00.000Z",
+      mainEntityOfPage: {
+        "@id": "https://dalat.app/vi/blog/news/keep-this-url",
+      },
+      publisher: {
+        logo: {
+          url: "https://dalat.app/android-chrome-512x512.png",
+        },
+      },
+    });
+  });
+
+  it("keeps sourced legacy automation on its established non-News URL", () => {
+    const schema = generateNewsArticleSchema(
+      {
+        ...basePost,
+        slug: "established-guide-url",
+        category_slug: "guides",
+        source: "news_scrape",
+        source_urls: [
+          {
+            url: "https://tuoitre.vn/story.htm",
+            title: "Source story",
+            publisher: "Tuổi Trẻ",
+            published_at: "2026-08-20T00:00:00.000Z",
+          },
+        ],
+      },
+      "en",
+    );
+
+    expect(schema).toMatchObject({
+      url: "https://dalat.app/blog/guides/established-guide-url",
+      articleSection: "Guides",
+      mainEntityOfPage: {
+        "@id": "https://dalat.app/blog/guides/established-guide-url",
+      },
+    });
   });
 });

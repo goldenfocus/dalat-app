@@ -40,9 +40,11 @@ import {
   collectTranslationWork,
   CAPTION_FIELDS,
   TranslationWorkItem,
+  blogTranslationSourceStillMatches,
 } from "@/lib/translation-sweep";
 import { CONTENT_LOCALES, ContentLocale } from "@/lib/types";
 import { notifyEventTranslationCompletion } from "@/lib/seo/indexnow-events";
+import { getBlogTranslationCutoff } from "@/lib/news/article-policy";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://aljcmodwjqlznzcydyor.supabase.co";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -280,30 +282,137 @@ function claudeTranslateItem(
 
 // ── shared upsert ───────────────────────────────────────────────────────
 
+async function blogSourceStillMatches(item: TranslationWorkItem): Promise<boolean> {
+  if (item.contentType !== "blog") return true;
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .select("title, story_content, technical_content, meta_description, source, source_urls, updated_at")
+    .eq("id", item.contentId)
+    .maybeSingle();
+  if (error) throw error;
+  return blogTranslationSourceStillMatches(item, data);
+}
+
+interface WrittenAutoRow {
+  field_name: string;
+  translated_text: string;
+  updated_at: string;
+}
+
+async function removeStaleAutoRows(
+  item: TranslationWorkItem,
+  locale: ContentLocale,
+  rows: WrittenAutoRow[]
+): Promise<void> {
+  for (const row of rows) {
+    const { error } = await supabase
+      .from("content_translations")
+      .delete()
+      .eq("content_type", item.contentType)
+      .eq("content_id", item.contentId)
+      .eq("target_locale", locale)
+      .eq("field_name", row.field_name)
+      .eq("translation_status", "auto")
+      .eq("translated_text", row.translated_text)
+      .eq("updated_at", row.updated_at);
+    if (error) throw error;
+  }
+}
+
 async function upsertLocale(
   item: TranslationWorkItem,
   src: ContentLocale,
   locale: ContentLocale,
   translated: Record<string, string>
-): Promise<void> {
-  const inserts = item.fields
-    .filter((f) => translated[f.field_name])
-    .map((f) => ({
+): Promise<boolean> {
+  // A translation job may run for minutes. Refuse text collected before a
+  // factual correction instead of making its late upsert look freshly valid.
+  if (!(await blogSourceStillMatches(item))) return false;
+
+  const candidateFields = item.fields.filter((field) => translated[field.field_name]);
+  if (candidateFields.length === 0) return true;
+
+  // Capture each row we are willing to replace. The subsequent write compares
+  // status, revision, and text, so a human edit that lands after this read wins.
+  const { data: existingRows, error: existingRowsError } = await supabase
+    .from("content_translations")
+    .select("field_name, translated_text, translation_status, updated_at")
+    .eq("content_type", item.contentType)
+    .eq("content_id", item.contentId)
+    .eq("target_locale", locale)
+    .in("field_name", candidateFields.map((field) => field.field_name));
+  if (existingRowsError) throw existingRowsError;
+  const existingByField = new Map(
+    (existingRows ?? []).map((row) => [row.field_name, row])
+  );
+
+  const writtenRows: WrittenAutoRow[] = [];
+  for (const field of candidateFields) {
+    const payload = {
       content_type: item.contentType,
       content_id: item.contentId,
       source_locale: src,
       target_locale: locale,
-      field_name: f.field_name,
-      translated_text: translated[f.field_name],
+      field_name: field.field_name,
+      translated_text: translated[field.field_name],
       translation_status: "auto",
-    }));
-  if (inserts.length) {
-    const { error } = await supabase.from("content_translations").upsert(inserts, {
-      onConflict: "content_type,content_id,target_locale,field_name",
-    });
+    };
+    const existing = existingByField.get(field.field_name);
+
+    if (!existing) {
+      // INSERT ... ON CONFLICT DO NOTHING: a concurrent human-created row is
+      // never converted back to automatic ownership.
+      const { data, error } = await supabase
+        .from("content_translations")
+        .upsert(payload, {
+          onConflict: "content_type,content_id,target_locale,field_name",
+          ignoreDuplicates: true,
+        })
+        .select("field_name, translated_text, updated_at");
+      if (error) throw error;
+      writtenRows.push(...((data ?? []) as WrittenAutoRow[]));
+      continue;
+    }
+
+    // Reviewed/edited (and any future non-auto state) is human-owned. Only an
+    // exact observed auto row can be replaced, and all filters form the CAS.
+    if (
+      existing.translation_status !== "auto"
+      || typeof existing.translated_text !== "string"
+      || typeof existing.updated_at !== "string"
+    ) continue;
+
+    const { data, error } = await supabase
+      .from("content_translations")
+      .update({
+        source_locale: src,
+        translated_text: translated[field.field_name],
+        translation_status: "auto",
+      })
+      .eq("content_type", item.contentType)
+      .eq("content_id", item.contentId)
+      .eq("target_locale", locale)
+      .eq("field_name", field.field_name)
+      .eq("translation_status", "auto")
+      .eq("translated_text", existing.translated_text)
+      .eq("updated_at", existing.updated_at)
+      .select("field_name, translated_text, updated_at");
     if (error) throw error;
-    rowsWritten += inserts.length;
+    writtenRows.push(...((data ?? []) as WrittenAutoRow[]));
   }
+
+  if (writtenRows.length > 0) {
+    // The article can change between the preflight read and the writes. A
+    // second exact check compensates by deleting only the precise auto rows
+    // written by this stale attempt. Corrections update first, then invalidate
+    // auto translations, covering the opposite interleaving as well.
+    if (!(await blogSourceStillMatches(item))) {
+      await removeStaleAutoRows(item, locale, writtenRows);
+      return false;
+    }
+    rowsWritten += writtenRows.length;
+  }
+  return true;
 }
 
 /**
@@ -331,7 +440,7 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
   // Source language needs no model round-trip
   if (pending.includes(src)) {
     const copy = Object.fromEntries(item.fields.map((f) => [f.field_name, f.text]));
-    await upsertLocale(item, src, src, copy);
+    if (!(await upsertLocale(item, src, src, copy))) return;
     pending = pending.filter((l) => l !== src);
     console.log(`  ✓ ${tag} ${src} (copy-through)`);
   }
@@ -354,7 +463,7 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
       for (const locale of pending) {
         if (!translated[locale]) continue;
         try {
-          await upsertLocale(item, src, locale, translated[locale]!);
+          if (!(await upsertLocale(item, src, locale, translated[locale]!))) return;
           done.push(locale);
         } catch (err) {
           // One locale's failed write must not discard the other locales'
@@ -380,7 +489,7 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
       const t0 = Date.now();
       try {
         const translated = await translateFieldsToLocale(item.fields, locale);
-        await upsertLocale(item, src, locale, translated);
+        if (!(await upsertLocale(item, src, locale, translated))) return;
         fallbackUnits++;
         console.log(`  ✓ ${tag} ${locale} (fallback-chain, ${Math.round((Date.now() - t0) / 1000)}s)`);
       } catch (err) {
@@ -512,7 +621,7 @@ async function buildRedoItems(groups: RedoGroup[]): Promise<TranslationWorkItem[
   for (const ids of chunk(byType("blog").map((g) => g.contentId), 50)) {
     const { data, error } = await supabase
       .from("blog_posts")
-      .select("id, title, story_content, technical_content, meta_description, source_locale")
+      .select("id, title, story_content, technical_content, meta_description, source, source_urls, source_locale, updated_at")
       .in("id", ids);
     if (error) throw new Error(`[redo] blog fetch failed: ${error.message}`);
     for (const p of data ?? []) {
@@ -524,7 +633,14 @@ async function buildRedoItems(groups: RedoGroup[]): Promise<TranslationWorkItem[
         { field_name: "meta_description", text: p.meta_description },
       ].filter((f) => f.text?.trim());
       if (fields.length)
-        items.push({ contentType: "blog", contentId: p.id, sourceLocale: p.source_locale, fields, missingLocales: [...g.locales] });
+        items.push({
+          contentType: "blog",
+          contentId: p.id,
+          sourceLocale: p.source_locale,
+          fields,
+          missingLocales: [...g.locales],
+          sourceUpdatedAt: getBlogTranslationCutoff(p),
+        });
     }
   }
 

@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { unstable_cache } from 'next/cache';
 import { createStaticClient } from '@/lib/supabase/server';
@@ -11,38 +11,29 @@ import { NewsSidebar } from '@/components/news/news-sidebar';
 import { NewsLoadMore } from '@/components/news/news-load-more';
 import { BreakingTicker } from '@/components/news/breaking-ticker';
 import { groupByRecency } from '@/lib/blog/date-groups';
+import { generateLocalizedMetadata } from '@/lib/metadata';
+import type { Locale } from '@/lib/i18n/routing';
 import { Newspaper } from 'lucide-react';
+import { loadBlogTranslationCutoffs } from '@/lib/news/translation-freshness';
 
-const SITE_URL = 'https://dalat.app';
 const PAGE_SIZE = 25;
 
 type Props = {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: Locale }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'news' });
 
-  return {
+  return generateLocalizedMetadata({
+    locale,
+    path: '/news',
     title: t('title'),
     description: t('subtitle'),
-    alternates: {
-      canonical: `${SITE_URL}/${locale}/news`,
-      languages: Object.fromEntries(
-        ['en', 'vi', 'ko', 'zh', 'ru', 'fr', 'ja', 'ms', 'th', 'de', 'es', 'id'].map(l => [
-          l,
-          `${SITE_URL}/${l}/news`,
-        ])
-      ),
-    },
-    openGraph: {
-      title: t('title'),
-      description: t('subtitle'),
-      type: 'website',
-      url: `${SITE_URL}/${locale}/news`,
-    },
-  };
+    keywords: ['Da Lat news', 'Đà Lạt news', 'Lam Dong news'],
+    type: 'website',
+  });
 }
 
 const getNewsPosts = unstable_cache(
@@ -91,10 +82,17 @@ export default async function NewsPage({ params }: Props) {
     ...trending.map((t: any) => t.id),
   ].filter(Boolean);
   const uniqueIds = [...new Set(allIds)];
+  const freshAfterByPostId = uniqueIds.length > 0 && locale !== 'en'
+    ? await loadBlogTranslationCutoffs(uniqueIds)
+    : new Map<string, string | null>();
 
   const translations =
-    uniqueIds.length > 0 && locale !== 'en'
-      ? await getBlogTranslationsBatchStatic(uniqueIds, locale as ContentLocale)
+    uniqueIds.length > 0 && locale !== 'en' && freshAfterByPostId !== null
+      ? await getBlogTranslationsBatchStatic(
+          uniqueIds,
+          locale as ContentLocale,
+          freshAfterByPostId
+        )
       : new Map<string, { title: string; story_content: string }>();
 
   // Apply translations to posts

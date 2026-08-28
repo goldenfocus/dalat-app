@@ -1,13 +1,54 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { clusterArticles } from '@/lib/news/clusterer';
-import { processNewsCluster } from '@/lib/news/content-processor';
-import { calculateQualityScore } from '@/lib/news/quality-scorer';
+import {
+  generateNewsContent,
+  verifyNewsCluster,
+} from '@/lib/news/content-processor';
+import { calculateVerificationQualityScore } from '@/lib/news/quality-scorer';
 import { applyInternalLinks } from '@/lib/news/internal-linker';
 import { handleNewsImages } from '@/lib/news/image-handler';
+import type { NewsImage } from '@/lib/news/image-handler';
 import { logPipelineEvent } from '@/lib/news/pipeline-log';
 import { normalizeStoryContent } from '@/lib/blog/normalize-content';
-import type { ScrapedArticle } from '@/lib/news/types';
+import {
+  acceptedFactsHaveChanged,
+  getNewsContentUpdatedAt,
+  mergeSourceRecords,
+  resolveNewsPublishedAt,
+  resolveNewsPublicationStatus,
+  stampNewsSourceEnvelope,
+} from '@/lib/news/article-policy';
+import { storedSourceUrls } from '@/lib/news/legacy-recovery';
+import type { NewsContentOutput, ScrapedArticle } from '@/lib/news/types';
+
+interface ExistingNewsPost {
+  id: string;
+  slug: string;
+  status: string;
+  published_at: string | null;
+  updated_at: string;
+  title: string;
+  story_content: string;
+  technical_content: string;
+  meta_description: string | null;
+  cover_image_url: string | null;
+  source_urls: unknown;
+  source_images: NewsImage[] | null;
+}
+
+function rawRowToArticle(row: Record<string, unknown>): ScrapedArticle {
+  return {
+    sourceId: String(row.source_id ?? ''),
+    sourceUrl: String(row.source_url ?? ''),
+    sourceName: String(row.source_name ?? ''),
+    title: String(row.title ?? ''),
+    content: String(row.content ?? ''),
+    imageUrls: Array.isArray(row.image_urls) ? row.image_urls.map(String) : [],
+    publishedAt: typeof row.published_at === 'string' ? row.published_at : null,
+    retrievedAt: typeof row.scraped_at === 'string' ? row.scraped_at : undefined,
+  };
+}
 
 function getSupabase() {
   return createClient(
@@ -31,17 +72,20 @@ export async function GET(request: Request) {
 
   const supabase = getSupabase();
   const startedAt = Date.now();
+  const routeDeadlineAt = startedAt + 240_000;
   const runId = crypto.randomUUID();
   let articleIds: string[] = [];
 
   try {
-    // 0a. Recover articles stranded in 'processing' by a killed run (client
-    // timeout / platform limit). Runs are 12h apart, so nothing legitimate
-    // is mid-flight when this fires.
+    // 0a. Recover only expired processing leases. processed_at is the lease
+    // timestamp while status=processing; resetting every processing row here
+    // allowed an overlapping manual/cron run to steal active work.
+    const staleLeaseBefore = new Date(Date.now() - 2 * 3600_000).toISOString();
     await supabase
       .from('news_raw_articles')
-      .update({ status: 'pending' })
-      .eq('status', 'processing');
+      .update({ status: 'pending', cluster_id: null, processed_at: null })
+      .eq('status', 'processing')
+      .or(`processed_at.is.null,processed_at.lt.${staleLeaseBefore}`);
 
     // 0b. Recover recent articles the LEGACY Vercel deployment poisoned:
     // its crons still run with dead AI keys and mark everything 'skipped'.
@@ -54,7 +98,7 @@ export async function GET(request: Request) {
       .gte('scraped_at', new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString());
 
     // 1. Load pending raw articles
-    const { data: rawArticles, error: fetchError } = await supabase
+    const { data: pendingArticles, error: fetchError } = await supabase
       .from('news_raw_articles')
       .select('*')
       .eq('status', 'pending')
@@ -62,18 +106,39 @@ export async function GET(request: Request) {
       // Small batches: keyword extraction runs ~8s/article on the local
       // model and deferred articles get re-clustered next run, so a big
       // batch spends the whole time budget clustering instead of writing.
-      .limit(12);
+      .limit(6);
 
     if (fetchError) {
       console.error('[news-process] Failed to fetch articles:', fetchError);
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
-    if (!rawArticles || rawArticles.length === 0) {
+    if (!pendingArticles || pendingArticles.length === 0) {
       return NextResponse.json({ message: 'No pending articles', skipped: true });
     }
 
-    console.log(`[news-process] Processing ${rawArticles.length} pending articles`);
+    // Atomically lease only rows that are still pending. Overlapping runs may
+    // read the same candidates, but exactly one receives each claimed row.
+    const leaseStartedAt = new Date().toISOString();
+    const pendingIds = pendingArticles.map((article) => article.id);
+    const { data: rawArticles, error: claimError } = await supabase
+      .from('news_raw_articles')
+      .update({
+        status: 'processing',
+        cluster_id: runId,
+        processed_at: leaseStartedAt,
+      })
+      .in('id', pendingIds)
+      .eq('status', 'pending')
+      .select('*');
+    if (claimError) {
+      throw new Error(`Failed to claim pending articles: ${claimError.message}`);
+    }
+    if (!rawArticles || rawArticles.length === 0) {
+      return NextResponse.json({ message: 'Pending articles claimed by another run', skipped: true });
+    }
+
+    console.log(`[news-process] Processing ${rawArticles.length} claimed articles`);
     await logPipelineEvent(supabase, {
       runId,
       stage: 'news-process',
@@ -82,35 +147,53 @@ export async function GET(request: Request) {
       meta: { rawArticles: rawArticles.length },
     });
 
-    // Mark as processing (track IDs for recovery on fatal error)
+    // Track only rows leased by this run for owner-filtered cleanup.
     articleIds = rawArticles.map(a => a.id);
-    await supabase
-      .from('news_raw_articles')
-      .update({ status: 'processing' })
-      .in('id', articleIds);
 
     // 2. Convert to ScrapedArticle format
-    const articles: ScrapedArticle[] = rawArticles.map(a => ({
-      sourceId: a.source_id,
-      sourceUrl: a.source_url,
-      sourceName: a.source_name,
-      title: a.title,
-      content: a.content,
-      imageUrls: a.image_urls || [],
-      publishedAt: a.published_at,
-    }));
+    const articles: ScrapedArticle[] = rawArticles.map(rawRowToArticle);
 
     // 3. Cluster by topic
-    const { clusters, skipped } = await clusterArticles(articles);
-    console.log(`[news-process] Created ${clusters.length} clusters, ${skipped.length} skipped`);
+    const {
+      clusters,
+      skipped,
+      deferred: clusteringDeferred,
+      failed: clusteringFailed,
+    } = await clusterArticles(articles, routeDeadlineAt);
+    console.log(`[news-process] Created ${clusters.length} clusters, ${skipped.length} skipped, ${clusteringDeferred.length} deferred, ${clusteringFailed.length} failed`);
+
+    if (clusteringDeferred.length > 0) {
+      await supabase
+        .from('news_raw_articles')
+        .update({ status: 'pending', cluster_id: null, processed_at: null })
+        .in('source_url', clusteringDeferred.map((article) => article.sourceUrl))
+        .eq('status', 'processing')
+        .eq('cluster_id', runId);
+    }
+
+    if (clusteringFailed.length > 0) {
+      await supabase
+        .from('news_raw_articles')
+        .update({
+          status: 'error',
+          cluster_id: null,
+          processed_at: new Date().toISOString(),
+          error_message: 'Clustering failed; retry required',
+        })
+        .in('source_url', clusteringFailed.map((article) => article.sourceUrl))
+        .eq('status', 'processing')
+        .eq('cluster_id', runId);
+    }
 
     // Mark skipped articles (batch by source URLs)
     if (skipped.length > 0) {
       const skippedUrls = skipped.map(a => a.sourceUrl);
       const { error: skipError } = await supabase
         .from('news_raw_articles')
-        .update({ status: 'skipped' })
-        .in('source_url', skippedUrls);
+        .update({ status: 'skipped', cluster_id: null, processed_at: new Date().toISOString() })
+        .in('source_url', skippedUrls)
+        .eq('status', 'processing')
+        .eq('cluster_id', runId);
       if (skipError) {
         await logPipelineEvent(supabase, {
           runId,
@@ -139,165 +222,346 @@ export async function GET(request: Request) {
       // Reset articles back to pending so they can be retried
       await supabase
         .from('news_raw_articles')
-        .update({ status: 'pending' })
-        .in('id', articleIds);
+        .update({ status: 'pending', cluster_id: null, processed_at: null })
+        .in('id', articleIds)
+        .eq('status', 'processing')
+        .eq('cluster_id', runId);
       return NextResponse.json({ error: 'News category not found' }, { status: 500 });
     }
 
+    // Build a source-URL identity index from every established automated page,
+    // including legacy rows that predate news_raw_articles.blog_post_id. This
+    // is the final duplicate guard: even if recovery attaches identity while a
+    // processor run is already in flight, the established public URL wins.
+    const establishedAutomatedPosts: ExistingNewsPost[] = [];
+    const legacyPageSize = 1000;
+    for (let from = 0; ; from += legacyPageSize) {
+      const { data: page, error: legacyPostsError } = await supabase
+        .from('blog_posts')
+        .select('id, slug, status, published_at, updated_at, title, story_content, technical_content, meta_description, cover_image_url, source_urls, source_images')
+        .eq('source', 'news_scrape')
+        // Removed pages still own their source identity. Excluding them would
+        // let rediscovery mint a replacement URL and bypass an editorial or
+        // legal archive/deprecation decision.
+        .in('status', ['draft', 'published', 'experimental', 'deprecated', 'archived'])
+        .order('id', { ascending: true })
+        .range(from, from + legacyPageSize - 1);
+      if (legacyPostsError) {
+        throw new Error(`Legacy source identity inventory failed: ${legacyPostsError.message}`);
+      }
+      establishedAutomatedPosts.push(...((page ?? []) as ExistingNewsPost[]));
+      if ((page?.length ?? 0) < legacyPageSize) break;
+    }
+    const legacyPostsById = new Map(establishedAutomatedPosts.map((post) => [post.id, post]));
+    const legacyPostIdsBySourceUrl = new Map<string, Set<string>>();
+    for (const post of establishedAutomatedPosts) {
+      for (const sourceUrl of storedSourceUrls(post.source_urls)) {
+        const postIds = legacyPostIdsBySourceUrl.get(sourceUrl) ?? new Set<string>();
+        postIds.add(post.id);
+        legacyPostIdsBySourceUrl.set(sourceUrl, postIds);
+      }
+    }
+
     // 5. Process each cluster (time-budgeted: content generation on the
-    // local model takes 1-2 min per cluster and Cloudflare cron invocations
-    // get ~15 min — leftovers go back to 'pending' for the next run)
-    const TIME_BUDGET_MS = 10 * 60 * 1000;
+    // local model takes 1-2 min per cluster. Leave enough time for database
+    // cleanup before the platform's five-minute hard limit.
+    const TIME_BUDGET_MS = 230_000;
+    const MIN_CLUSTER_PROCESSING_MS = 45_000;
     let postsCreated = 0;
-    let errors = 0;
+    let postsUpdated = 0;
+    let errors = clusteringFailed.length;
     let deferred = 0;
 
     for (const cluster of clusters) {
-      if (Date.now() - startedAt > TIME_BUDGET_MS) {
+      if (
+        Date.now() - startedAt > TIME_BUDGET_MS
+        || routeDeadlineAt - Date.now() < MIN_CLUSTER_PROCESSING_MS
+      ) {
         const leftoverUrls = cluster.articles.map(a => a.sourceUrl);
         await supabase
           .from('news_raw_articles')
-          .update({ status: 'pending' })
-          .in('source_url', leftoverUrls);
+          .update({ status: 'pending', cluster_id: null, processed_at: null })
+          .in('source_url', leftoverUrls)
+          .eq('status', 'processing')
+          .eq('cluster_id', runId);
         deferred++;
         continue;
       }
       try {
         const clusterSourceUrls = cluster.articles.map(a => a.sourceUrl);
 
-        // Dedup by source: if any article in this cluster already produced a
-        // post (a re-processed article gets nondeterministic keywords, so the
-        // fingerprint check below can miss), point to that post instead of
-        // writing a near-duplicate.
-        const { data: alreadyPosted } = await supabase
+        // Resolve an established article ID before generating. A matching
+        // source or fingerprint is a correction/reverification target, never
+        // a reason to mint another URL.
+        const { data: alreadyPostedRows, error: alreadyPostedError } = await supabase
           .from('news_raw_articles')
           .select('blog_post_id')
           .in('source_url', clusterSourceUrls)
-          .not('blog_post_id', 'is', null)
-          .limit(1)
-          .maybeSingle();
-
-        if (alreadyPosted?.blog_post_id) {
-          console.log(`[news-process] Cluster already has a post (${alreadyPosted.blog_post_id}), skipping: ${cluster.keywords.join(', ')}`);
-          await supabase
-            .from('news_raw_articles')
-            .update({ status: 'processed', blog_post_id: alreadyPosted.blog_post_id, processed_at: new Date().toISOString() })
-            .in('source_url', clusterSourceUrls);
-          continue;
+          .not('blog_post_id', 'is', null);
+        if (alreadyPostedError) {
+          throw new Error(`Source identity lookup failed: ${alreadyPostedError.message}`);
         }
 
-        // Check dedup by content fingerprint
-        const { data: existingPost } = await supabase
-          .from('blog_posts')
-          .select('id')
-          .eq('content_fingerprint', cluster.topicFingerprint)
-          .maybeSingle();
+        const establishedPostIds = [...new Set([
+          ...(alreadyPostedRows ?? [])
+            .map((row) => row.blog_post_id)
+            .filter((id): id is string => typeof id === 'string' && id.length > 0),
+          ...clusterSourceUrls.flatMap((sourceUrl) => [
+            ...(legacyPostIdsBySourceUrl.get(sourceUrl) ?? []),
+          ]),
+        ])];
+        if (establishedPostIds.length > 1) {
+          throw new Error(
+            `Cluster spans multiple established URLs (${establishedPostIds.join(', ')}); manual merge review required`
+          );
+        }
 
+        let existingPost: ExistingNewsPost | null = null;
+        if (establishedPostIds[0]) {
+          existingPost = legacyPostsById.get(establishedPostIds[0]) ?? null;
+          if (!existingPost) {
+            const { data, error: establishedPostError } = await supabase
+              .from('blog_posts')
+              .select('id, slug, status, published_at, updated_at, title, story_content, technical_content, meta_description, cover_image_url, source_urls, source_images')
+              .eq('id', establishedPostIds[0])
+              .maybeSingle();
+            if (establishedPostError) {
+              throw new Error(
+                `Established post lookup failed for ${establishedPostIds[0]}: ${establishedPostError.message}`
+              );
+            }
+            if (!data) {
+              throw new Error(
+                `Established post ${establishedPostIds[0]} is missing; refusing to mint a replacement URL`
+              );
+            }
+            existingPost = data as ExistingNewsPost | null;
+          }
+          if (existingPost?.status === 'archived' || existingPost?.status === 'deprecated') {
+            throw new Error(
+              `Established source belongs to ${existingPost.status} post ${existingPost.id}; manual review required`
+            );
+          }
+        }
+
+        if (!existingPost) {
+          // A topic fingerprint is made from AI-selected keywords, so it is a
+          // duplicate warning—not authority to overwrite an established URL.
+          const { data: fingerprintMatches, error: fingerprintError } = await supabase
+            .from('blog_posts')
+            .select('id, slug')
+            .eq('content_fingerprint', cluster.topicFingerprint)
+            .order('updated_at', { ascending: false })
+            .limit(3);
+          if (fingerprintError) {
+            throw new Error(`Fingerprint lookup failed: ${fingerprintError.message}`);
+          }
+          if ((fingerprintMatches?.length ?? 0) > 0) {
+            throw new Error(
+              `Possible duplicate of /${fingerprintMatches![0].slug}; source identity does not match, manual review required`
+            );
+          }
+        }
+
+        // Pull every stored source already attached to this canonical article
+        // into the verification pass. New corroboration strengthens the same
+        // URL; it is not discarded as a duplicate.
+        let processingCluster = cluster;
         if (existingPost) {
-          console.log(`[news-process] Duplicate cluster skipped: ${cluster.keywords.join(', ')}`);
-          // Mark articles as processed (batch)
-          await supabase
+          const { data: linkedRows, error: linkedRowsError } = await supabase
             .from('news_raw_articles')
-            .update({ status: 'processed', blog_post_id: existingPost.id, processed_at: new Date().toISOString() })
-            .in('source_url', clusterSourceUrls);
-          continue;
+            .select('source_id, source_url, source_name, title, content, image_urls, published_at, scraped_at')
+            .eq('blog_post_id', existingPost.id)
+            .limit(12);
+          if (linkedRowsError) {
+            throw new Error(`Linked source lookup failed: ${linkedRowsError.message}`);
+          }
+
+          const byUrl = new Map(cluster.articles.map(article => [article.sourceUrl, article]));
+          for (const row of linkedRows ?? []) {
+            const article = rawRowToArticle(row);
+            if (article.sourceUrl) byUrl.set(article.sourceUrl, article);
+          }
+          processingCluster = { ...cluster, articles: [...byUrl.values()] };
+          console.log(`[news-process] Re-verifying existing post ${existingPost.id} at /${existingPost.slug}`);
         }
 
-        // Generate content
-        const content = await processNewsCluster(cluster);
-
-        // Calculate quality score
-        const quality = calculateQualityScore(content);
+        // Verify before rewriting. Source order, retrieval time, and additional
+        // corroboration do not change the accepted-fact fingerprint, so an
+        // established article keeps its editorial copy unless the facts do.
+        const evidence = await verifyNewsCluster(processingCluster, routeDeadlineAt);
+        const factsChanged = !existingPost || acceptedFactsHaveChanged(
+          existingPost.source_urls,
+          evidence.acceptedFactFingerprint
+        );
+        const quality = calculateVerificationQualityScore(evidence.verification);
         console.log(`[news-process] Quality: ${quality.total.toFixed(2)} -> ${quality.suggestedStatus}`);
 
-        // Apply internal links + normalize markdown (belt-and-suspenders against
-        // single-line AI output)
-        const linkedStory = normalizeStoryContent(
-          await applyInternalLinks(content.storyContent, content.internalLinks)
-        );
-        const linkedTechnical = await applyInternalLinks(content.technicalContent);
+        let content: NewsContentOutput | null = null;
+        let linkedStory: string | null = null;
+        let linkedTechnical: string | null = null;
+        let slug = existingPost?.slug ?? null;
+        let coverImageUrl = existingPost?.cover_image_url ?? null;
+        let sourceImages = existingPost?.source_images ?? [];
 
-        // Handle images (pass AI-generated descriptions for fallback cover generation)
-        const allImages = cluster.articles.flatMap(a => a.imageUrls);
-        const { coverImageUrl, sourceImages } = await handleNewsImages(
-          allImages,
-          cluster.articles[0].sourceName,
-          content.suggestedSlug,
-          content.title,
-          content.imageDescriptions
-        );
+        if (factsChanged) {
+          content = await generateNewsContent(processingCluster, evidence, routeDeadlineAt);
 
-        // Generate unique slug
-        let slug = content.suggestedSlug || 'dalat-news';
-        // Ensure slug is unique
-        const { data: slugCheck } = await supabase
-          .from('blog_posts')
-          .select('id')
-          .eq('slug', slug)
-          .maybeSingle();
+          // Apply internal links + normalize markdown only to a real factual
+          // revision. Unchanged articles preserve human edits byte-for-byte.
+          linkedStory = normalizeStoryContent(
+            await applyInternalLinks(content.storyContent)
+          );
+          linkedTechnical = await applyInternalLinks(content.technicalContent);
 
-        if (slugCheck) {
-          slug = `${slug}-${Date.now().toString(36)}`;
+          // The canonical slug is immutable once a post exists. For a genuinely
+          // new story, an unexplained collision is held for investigation.
+          slug = existingPost?.slug || content.suggestedSlug || 'dalat-news';
+          if (!existingPost) {
+            const { data: slugCheck } = await supabase
+              .from('blog_posts')
+              .select('id')
+              .eq('slug', slug)
+              .maybeSingle();
+            if (slugCheck) {
+              throw new Error(`Slug collision for "${slug}"; refusing to create a duplicate URL`);
+            }
+          }
+
+          // Preserve an existing cover through corrections. New posts (or a
+          // corrected legacy post with no cover) may adopt a real source image.
+          if (!coverImageUrl) {
+            const allImages = processingCluster.articles.flatMap(a => a.imageUrls);
+            const imageResult = await handleNewsImages(
+              allImages,
+              processingCluster.articles[0].sourceName,
+              slug,
+              content.title,
+              content.imageDescriptions,
+              {
+                deadlineAt: routeDeadlineAt - 10_000,
+                generateFallback: false,
+              }
+            );
+            coverImageUrl = imageResult.coverImageUrl;
+            sourceImages = imageResult.sourceImages;
+          }
         }
 
-        // Insert blog post
-        const now = new Date().toISOString();
-        // published_at is ALWAYS set: earliest source article date, else now.
-        // Experimental posts are listed on /news too — NULL sorts them to the
-        // bottom and breaks the detail page.
-        const sourceTimestamps = cluster.articles
-          .map(a => (a.publishedAt ? new Date(a.publishedAt).getTime() : NaN))
-          .filter(t => !Number.isNaN(t));
-        const publishedAt = sourceTimestamps.length > 0
-          ? new Date(Math.min(...sourceTimestamps)).toISOString()
-          : now;
-        const { data: post, error: insertError } = await supabase
-          .from('blog_posts')
-          .insert({
-            title: content.title,
-            slug,
-            story_content: linkedStory,
-            technical_content: linkedTechnical,
-            source: 'news_scrape',
-            source_locale: 'vi',
-            status: quality.suggestedStatus,
-            published_at: publishedAt,
-            category_id: category.id,
-            meta_description: content.metaDescription,
-            seo_keywords: content.seoKeywords,
-            cover_image_url: coverImageUrl,
-            source_urls: content.sourceUrls,
-            source_images: sourceImages,
-            quality_score: quality.total,
-            news_tags: content.newsTags,
-            news_topic: content.newsTopic,
-            content_fingerprint: cluster.topicFingerprint,
-          })
-          .select('id')
-          .single();
+        if (!slug) throw new Error('Verified news article has no canonical slug');
 
-        if (insertError) {
-          console.error('[news-process] Insert error:', insertError);
+        const now = new Date().toISOString();
+        const contentUpdatedAt = factsChanged
+          ? now
+          : getNewsContentUpdatedAt(existingPost?.source_urls) ?? existingPost?.updated_at ?? now;
+        const mergedSources = stampNewsSourceEnvelope(
+          // Only currently accepted evidence is public. Historical/rejected
+          // provenance needs a revision table; re-stamping it here would make
+          // a source that no longer supports a claim look freshly verified.
+          mergeSourceRecords(null, evidence.sourceUrls),
+          evidence.acceptedFactFingerprint,
+          contentUpdatedAt
+        );
+        const nextStatus = resolveNewsPublicationStatus(
+          existingPost?.status ?? null,
+          quality.suggestedStatus
+        );
+
+        const postValues = {
+          source_urls: mergedSources,
+          // Corroboration can change while the accepted fact fingerprint stays
+          // stable. Persist the resulting confidence/status without rewriting
+          // the established article or changing its original publication time.
+          quality_score: quality.total,
+          status: nextStatus,
+          // A draft's first promotion is a real publication. Already-public
+          // experimental/published URLs preserve their historical timestamp
+          // exactly, including a legacy null, so corrections never look new.
+          published_at: resolveNewsPublishedAt(existingPost, nextStatus, now),
+          ...(factsChanged && content && linkedStory !== null && linkedTechnical !== null
+            ? {
+                title: content.title,
+                story_content: linkedStory,
+                technical_content: linkedTechnical,
+                source: 'news_scrape',
+                source_locale: 'en',
+                meta_description: content.metaDescription,
+                seo_keywords: content.seoKeywords,
+                cover_image_url: coverImageUrl,
+                source_images: sourceImages,
+                news_tags: content.newsTags,
+                news_topic: content.newsTopic,
+                content_fingerprint: cluster.topicFingerprint,
+              }
+            : {}),
+        };
+
+        const writeQuery = existingPost
+          ? supabase.from('blog_posts').update(postValues).eq('id', existingPost.id)
+          : supabase.from('blog_posts').insert({
+              ...postValues,
+              slug,
+              category_id: category.id,
+            });
+        const { data: postRows, error: writeError } = await writeQuery.select('id, updated_at');
+        const post = postRows?.[0];
+
+        if (writeError || !post) {
+          console.error('[news-process] Write error:', writeError);
           errors++;
           await logPipelineEvent(supabase, {
             runId,
             stage: 'news-process',
             level: 'error',
-            message: `Insert failed for cluster: ${insertError.message}`,
+            message: `Write failed for cluster: ${writeError?.message ?? 'no row returned'}`,
             meta: { topic: cluster.keywords.join(', '), slug },
           });
           // Mark articles as error (batch)
           await supabase
             .from('news_raw_articles')
-            .update({ status: 'error', error_message: insertError.message })
-            .in('source_url', clusterSourceUrls);
+            .update({
+              status: 'error',
+              cluster_id: null,
+              processed_at: now,
+              error_message: writeError?.message ?? 'no row returned',
+            })
+            .in('source_url', clusterSourceUrls)
+            .eq('status', 'processing')
+            .eq('cluster_id', runId);
           continue;
         }
 
-        postsCreated++;
+        // Store the corrected source revision first, then remove derivative
+        // automatic translations. The worker performs matching pre/post source
+        // checks, so either ordering of an in-flight job is fail-closed.
+        // Reviewed/edited translations remain human-owned and are never removed.
+        if (existingPost) {
+          let translationQuery = supabase
+            .from('content_translations')
+            .delete()
+            .eq('content_type', 'blog')
+            .eq('content_id', existingPost.id)
+            .eq('translation_status', 'auto');
+          if (!factsChanged) {
+            // Also finish cleanup after a prior post-write/delete failure.
+            // The generic row timestamp advances on provenance-only refreshes;
+            // translations are stale only relative to the factual body revision.
+            translationQuery = translationQuery.lt(
+              'updated_at',
+              contentUpdatedAt
+            );
+          }
+          const { error: translationError } = await translationQuery;
+          if (translationError) {
+            throw new Error(`Failed to invalidate stale translations: ${translationError.message}`);
+          }
+        }
+
+        if (existingPost) postsUpdated++;
+        else postsCreated++;
 
         // Mark raw articles as processed (batch)
-        const { error: markError } = await supabase
+        const { data: markedRows, error: markError } = await supabase
           .from('news_raw_articles')
           .update({
             status: 'processed',
@@ -307,21 +571,41 @@ export async function GET(request: Request) {
             topic_fingerprint: cluster.topicFingerprint,
             topic_keywords: cluster.keywords,
           })
-          .in('source_url', clusterSourceUrls);
-        if (markError) {
+          .in('source_url', clusterSourceUrls)
+          .eq('status', 'processing')
+          .eq('cluster_id', runId)
+          .select('id');
+        if (markError || markedRows?.length !== clusterSourceUrls.length) {
           await logPipelineEvent(supabase, {
             runId,
             stage: 'news-process',
             postId: post.id,
             level: 'error',
-            message: `Failed to mark articles processed: ${markError.message}`,
+            message: `Failed to mark every owned article processed: ${
+              markError?.message ?? `expected ${clusterSourceUrls.length}, updated ${markedRows?.length ?? 0}`
+            }`,
           });
         }
 
-        // Translation is discovered and handled by the Mac mini worker.
+        // Missing translations are discovered and rebuilt by the Mac mini worker.
 
-        console.log(`[news-process] Created post: ${post.id} (${content.title})`);
+        console.log(
+          `[news-process] ${existingPost ? 'Updated' : 'Created'} post: ${post.id} `
+          + `(${content?.title ?? existingPost?.title ?? slug}; ${factsChanged ? 'facts revised' : 'provenance refreshed'})`
+        );
       } catch (clusterError) {
+        const isDeadlineError = Date.now() >= routeDeadlineAt - 1_000
+          || (clusterError instanceof Error && /deadline|abort|timed?\s*out/iu.test(clusterError.message));
+        if (isDeadlineError) {
+          deferred++;
+          await supabase
+            .from('news_raw_articles')
+            .update({ status: 'pending', cluster_id: null, processed_at: null, error_message: null })
+            .in('source_url', cluster.articles.map((article) => article.sourceUrl))
+            .eq('status', 'processing')
+            .eq('cluster_id', runId);
+          continue;
+        }
         console.error(`[news-process] Cluster processing failed:`, clusterError);
         errors++;
         await logPipelineEvent(supabase, {
@@ -335,26 +619,38 @@ export async function GET(request: Request) {
         const clusterSourceUrls = cluster.articles.map(a => a.sourceUrl);
         await supabase
           .from('news_raw_articles')
-          .update({ status: 'error', error_message: String(clusterError) })
-          .in('source_url', clusterSourceUrls);
+          .update({
+            status: 'error',
+            cluster_id: null,
+            processed_at: new Date().toISOString(),
+            error_message: String(clusterError),
+          })
+          .in('source_url', clusterSourceUrls)
+          .eq('status', 'processing')
+          .eq('cluster_id', runId);
       }
     }
 
     // Zero clusters + every article skipped almost always means the
     // clusterer (or its upstream API) failed, not that nothing was newsworthy.
-    const allSkipped = clusters.length === 0 && skipped.length === rawArticles.length;
+    const allFailed = clusters.length === 0
+      && clusteringFailed.length > 0
+      && skipped.length + clusteringFailed.length + clusteringDeferred.length === rawArticles.length;
     await logPipelineEvent(supabase, {
       runId,
       stage: 'news-process',
-      level: allSkipped ? 'error' : errors > 0 ? 'warn' : 'info',
-      message: allSkipped
-        ? 'Run finished: zero clusters, all articles skipped — possible clusterer/API failure'
+      level: allFailed ? 'error' : errors > 0 ? 'warn' : 'info',
+      message: allFailed
+        ? 'Run finished: zero clusters, clustering failed before editorial relevance checks'
         : 'Run finished',
       meta: {
         rawArticles: rawArticles.length,
         clusters: clusters.length,
         created: postsCreated,
+        updated: postsUpdated,
         skipped: skipped.length,
+        clusteringFailed: clusteringFailed.length,
+        deferred: deferred + clusteringDeferred.length,
         errors,
       },
     });
@@ -364,7 +660,8 @@ export async function GET(request: Request) {
       raw_articles: rawArticles.length,
       clusters: clusters.length,
       posts_created: postsCreated,
-      clusters_deferred: deferred,
+      posts_updated: postsUpdated,
+      clusters_deferred: deferred + clusteringDeferred.length,
       errors,
       elapsed_s: Math.round((Date.now() - startedAt) / 1000),
     });
@@ -381,8 +678,10 @@ export async function GET(request: Request) {
       try {
         await supabase
           .from('news_raw_articles')
-          .update({ status: 'pending' })
-          .in('id', articleIds);
+          .update({ status: 'pending', cluster_id: null, processed_at: null })
+          .in('id', articleIds)
+          .eq('status', 'processing')
+          .eq('cluster_id', runId);
       } catch (resetErr) {
         console.error('[news-process] Failed to reset article status:', resetErr);
       }

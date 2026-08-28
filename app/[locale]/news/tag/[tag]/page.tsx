@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { unstable_cache } from 'next/cache';
 import { createStaticClient } from '@/lib/supabase/server';
@@ -7,11 +7,11 @@ import { NewsTagFilter } from '@/components/news/news-tag-filter';
 import { Link } from '@/lib/i18n/routing';
 import { ArrowLeft, Newspaper } from 'lucide-react';
 import { NEWS_TAGS } from '@/lib/types/blog';
-
-const SITE_URL = 'https://dalat.app';
+import { generateLocalizedMetadata } from '@/lib/metadata';
+import type { Locale } from '@/lib/i18n/routing';
 
 type Props = {
-  params: Promise<{ locale: string; tag: string }>;
+  params: Promise<{ locale: Locale; tag: string }>;
 };
 
 export async function generateStaticParams() {
@@ -34,13 +34,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const tagName = t(TAG_KEYS[tag] || tag);
 
-  return {
+  return generateLocalizedMetadata({
+    locale,
+    path: `/news/tag/${tag}`,
     title: `${tagName} — ${t('title')}`,
-    description: `${tagName} news from Da Lat`,
-    alternates: {
-      canonical: `${SITE_URL}/${locale}/news/tag/${tag}`,
-    },
-  };
+    description: `${tagName} — ${t('subtitle')}`,
+    keywords: [tagName, 'Da Lat news', 'Đà Lạt news'],
+    type: 'website',
+  });
 }
 
 export default async function NewsTagPage({ params }: Props) {

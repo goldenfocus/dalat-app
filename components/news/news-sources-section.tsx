@@ -5,6 +5,7 @@ interface Source {
   title: string;
   publisher: string;
   published_at: string | null;
+  checkedLabel?: string;
 }
 
 interface NewsSourcesSectionProps {
@@ -35,6 +36,11 @@ export function NewsSourcesSection({ label, sources }: NewsSourcesSectionProps) 
                   {source.title}
                 </span>
                 <span className="text-muted-foreground"> &mdash; {source.publisher}</span>
+                {source.checkedLabel && (
+                  <span className="block text-xs text-muted-foreground/80 mt-0.5">
+                    {source.checkedLabel}
+                  </span>
+                )}
               </div>
             </a>
           </li>

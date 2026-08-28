@@ -7,6 +7,7 @@ import type {
   Moment,
 } from '@/lib/types';
 import { CONTENT_LOCALES } from '@/lib/types';
+import { isCurrentBlogTranslationForBatch } from '@/lib/news/article-policy';
 
 // Fallback chain: requested locale -> English -> original
 const FALLBACK_LOCALE: ContentLocale = 'en';
@@ -18,7 +19,8 @@ const FALLBACK_LOCALE: ContentLocale = 'en';
 export async function getTranslations(
   contentType: TranslationContentType,
   contentId: string,
-  targetLocale: ContentLocale
+  targetLocale: ContentLocale,
+  freshAfter?: string | null
 ): Promise<Map<TranslationFieldName, string>> {
   const result = new Map<TranslationFieldName, string>();
 
@@ -28,12 +30,14 @@ export async function getTranslations(
     return result;
   }
 
-  const { data: translations } = await supabase
+  let query = supabase
     .from('content_translations')
-    .select('field_name, translated_text')
+    .select('field_name, translated_text, updated_at')
     .eq('content_type', contentType)
     .eq('content_id', contentId)
     .eq('target_locale', targetLocale);
+  if (freshAfter) query = query.gte('updated_at', freshAfter);
+  const { data: translations } = await query;
 
   if (translations) {
     for (const t of translations) {
@@ -52,10 +56,11 @@ export async function getTranslationsWithFallback(
   contentType: TranslationContentType,
   contentId: string,
   targetLocale: ContentLocale,
-  fallbackFields: Partial<Record<TranslationFieldName, string | null>>
+  fallbackFields: Partial<Record<TranslationFieldName, string | null>>,
+  freshAfter?: string | null
 ): Promise<Record<string, string | null>> {
   // Try requested locale first
-  const translations = await getTranslations(contentType, contentId, targetLocale);
+  const translations = await getTranslations(contentType, contentId, targetLocale, freshAfter);
 
   const result: Record<string, string | null> = {};
 
@@ -69,7 +74,7 @@ export async function getTranslationsWithFallback(
 
     // Try English fallback if not the requested locale
     if (targetLocale !== FALLBACK_LOCALE) {
-      const englishTranslations = await getTranslations(contentType, contentId, FALLBACK_LOCALE);
+      const englishTranslations = await getTranslations(contentType, contentId, FALLBACK_LOCALE, freshAfter);
       const englishTranslation = englishTranslations.get(fieldName as TranslationFieldName);
       if (englishTranslation) {
         result[fieldName] = englishTranslation;
@@ -330,13 +335,15 @@ export async function getEventTranslationsBatch(
  */
 export async function getBlogTranslationsBatch(
   postIds: string[],
-  targetLocale: ContentLocale
+  targetLocale: ContentLocale,
+  freshAfterByPostId?: ReadonlyMap<string, string | null>
 ): Promise<Map<string, { title: string; story_content: string }>> {
+  if (postIds.length === 0) return new Map();
   const supabase = await createClient();
 
-  const { data: translations } = await supabase
+  const { data: translations, error } = await supabase
     .from('content_translations')
-    .select('content_id, field_name, translated_text')
+    .select('content_id, field_name, translated_text, updated_at')
     .eq('content_type', 'blog')
     .in('content_id', postIds)
     .eq('target_locale', targetLocale)
@@ -344,8 +351,20 @@ export async function getBlogTranslationsBatch(
 
   const result = new Map<string, { title: string; story_content: string }>();
 
+  if (error) {
+    console.error('Failed to fetch blog translations:', error);
+    return result;
+  }
+
   if (translations) {
     for (const t of translations) {
+      if (freshAfterByPostId) {
+        if (!isCurrentBlogTranslationForBatch(
+          t.content_id,
+          t.updated_at,
+          freshAfterByPostId
+        )) continue;
+      }
       const existing = result.get(t.content_id) || { title: '', story_content: '' };
       if (t.field_name === 'title') {
         existing.title = t.translated_text;
@@ -366,14 +385,16 @@ export async function getBlogTranslationsBatch(
  */
 export async function getBlogTranslationsBatchStatic(
   postIds: string[],
-  targetLocale: ContentLocale
+  targetLocale: ContentLocale,
+  freshAfterByPostId?: ReadonlyMap<string, string | null>
 ): Promise<Map<string, { title: string; story_content: string }>> {
+  if (postIds.length === 0) return new Map();
   const supabase = createStaticClient();
   if (!supabase) return new Map();
 
-  const { data: translations } = await supabase
+  const { data: translations, error } = await supabase
     .from('content_translations')
-    .select('content_id, field_name, translated_text')
+    .select('content_id, field_name, translated_text, updated_at')
     .eq('content_type', 'blog')
     .in('content_id', postIds)
     .eq('target_locale', targetLocale)
@@ -381,8 +402,20 @@ export async function getBlogTranslationsBatchStatic(
 
   const result = new Map<string, { title: string; story_content: string }>();
 
+  if (error) {
+    console.error('Failed to fetch static blog translations:', error);
+    return result;
+  }
+
   if (translations) {
     for (const t of translations) {
+      if (freshAfterByPostId) {
+        if (!isCurrentBlogTranslationForBatch(
+          t.content_id,
+          t.updated_at,
+          freshAfterByPostId
+        )) continue;
+      }
       const existing = result.get(t.content_id) || { title: '', story_content: '' };
       if (t.field_name === 'title') {
         existing.title = t.translated_text;
@@ -419,6 +452,7 @@ export async function getBlogTranslations(
     technical_content: string;
     meta_description: string | null;
     source_locale?: string | null;
+    fresh_after?: string | null;
   }
 ): Promise<TranslatedBlogFields> {
   const sourceLocale = originalFields.source_locale || 'en';
@@ -446,7 +480,8 @@ export async function getBlogTranslations(
       story_content: originalFields.story_content,
       technical_content: originalFields.technical_content,
       meta_description: originalFields.meta_description,
-    }
+    },
+    originalFields.fresh_after
   );
 
   const hasTranslations =

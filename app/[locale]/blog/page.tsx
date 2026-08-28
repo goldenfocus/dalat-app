@@ -12,6 +12,7 @@ import { groupByRecency } from "@/lib/blog/date-groups";
 import type { Locale } from "@/lib/i18n/routing";
 import type { ContentLocale } from "@/lib/types";
 import type { BlogPostWithCategory, BlogCategory } from "@/lib/types/blog";
+import { loadBlogTranslationCutoffs } from "@/lib/news/translation-freshness";
 
 const PAGE_SIZE = 20;
 
@@ -95,8 +96,15 @@ export default async function BlogPage({ params, searchParams }: PageProps) {
 
   // Fetch translations for all posts in a single query
   const postIds = posts.map((p) => p.id);
-  const translations = postIds.length > 0
-    ? await getBlogTranslationsBatch(postIds, locale as ContentLocale)
+  const freshAfterByPostId = postIds.length > 0
+    ? await loadBlogTranslationCutoffs(postIds)
+    : new Map<string, string | null>();
+  const translations = postIds.length > 0 && freshAfterByPostId !== null
+    ? await getBlogTranslationsBatch(
+        postIds,
+        locale as ContentLocale,
+        freshAfterByPostId
+      )
     : new Map();
 
   // Apply translations to posts

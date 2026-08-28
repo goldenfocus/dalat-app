@@ -1,4 +1,5 @@
 import { createStaticClient } from '@/lib/supabase/server';
+import { getNewsPageModifiedAt } from '@/lib/news/article-policy';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,12 +18,17 @@ export async function GET() {
         slug,
         title,
         published_at,
+        updated_at,
+        source_urls,
         seo_keywords,
         news_tags,
         blog_categories!inner(slug)
       `)
       .eq('blog_categories.slug', 'news')
       .eq('status', 'published')
+      // Google News sitemaps are a two-day discovery window. Older URLs stay
+      // in the regular sitemap, where their corrected lastmod is preserved.
+      .gte('published_at', new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString())
       .order('published_at', { ascending: false })
       .limit(1000);
 
@@ -35,6 +41,10 @@ export async function GET() {
       const pubDate = post.published_at
         ? new Date(post.published_at).toISOString()
         : new Date().toISOString();
+      const pageModifiedAt = getNewsPageModifiedAt(post);
+      const lastModified = pageModifiedAt
+        ? new Date(pageModifiedAt).toISOString()
+        : pubDate;
 
       const keywords = [
         ...(post.news_tags || []),
@@ -44,7 +54,7 @@ export async function GET() {
       return `
     <url>
       <loc>${SITE_URL}/blog/news/${encodeURIComponent(post.slug)}</loc>
-      <lastmod>${pubDate}</lastmod>
+      <lastmod>${lastModified}</lastmod>
       <news:news>
         <news:publication>
           <news:name>DaLat.app</news:name>

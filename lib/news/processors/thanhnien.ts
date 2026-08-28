@@ -7,17 +7,15 @@ import type { ScrapedArticle } from '../types';
 import { getSourceOrThrow } from '../sources';
 import {
   fetchWithDelay,
-  extractTitle,
-  extractContent,
-  extractImages,
-  extractPublishedDate,
   isDalatRelated,
+  scrapeKnownArticle,
 } from '../base-scraper';
 
 const source = getSourceOrThrow('thanhnien');
+const sourceOrigin = new URL(source.baseUrl).origin;
 
 async function discoverArticles(): Promise<string[]> {
-  const html = await fetchWithDelay(source.discoveryUrl, source.requestDelay);
+  const html = await fetchWithDelay(source.discoveryUrl, source.requestDelay, sourceOrigin);
   if (!html) return [];
 
   const links: string[] = [];
@@ -45,26 +43,8 @@ async function discoverArticles(): Promise<string[]> {
 }
 
 async function fetchArticle(url: string): Promise<ScrapedArticle | null> {
-  const html = await fetchWithDelay(url, source.requestDelay);
-  if (!html) return null;
-
-  const title = extractTitle(html);
-  if (!title) return null;
-
-  const content = extractContent(html, ['detail__content', 'detail-content', 'article-content']);
-  if (!content || content.length < 50) return null;
-
-  if (!isDalatRelated(title, content)) return null;
-
-  return {
-    sourceId: source.id,
-    sourceUrl: url,
-    sourceName: source.name,
-    title,
-    content,
-    imageUrls: extractImages(html),
-    publishedAt: extractPublishedDate(html),
-  };
+  const article = await scrapeKnownArticle(source.id, url);
+  return article && isDalatRelated(article.title, article.content) ? article : null;
 }
 
 export async function scrapeThanhNien(): Promise<ScrapedArticle[]> {

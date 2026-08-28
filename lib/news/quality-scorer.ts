@@ -1,81 +1,65 @@
 /**
- * Quality scoring for news articles
- * Determines auto-publish threshold based on weighted criteria
+ * Verification scoring for news articles.
+ * Presentation polish is intentionally excluded from publication eligibility.
  */
 
-import type { NewsContentOutput, QualityScore } from './types';
+import type {
+  NewsContentOutput,
+  QualityScore,
+  VerifiedClaimLedger,
+  VerificationMetrics,
+} from './types';
 
-const WEIGHTS = {
-  sourceCount: 0.15,
-  dalatRelevance: 0.20,
-  newsworthiness: 0.15,
-  contentLength: 0.10,
-  hasDates: 0.10,
-  hasNamedSources: 0.10,
-  hasImages: 0.10,
-  originality: 0.10,
+export const NEWS_AUTO_PUBLISH_THRESHOLD = 0.85;
+
+const WEIGHTS: VerificationMetrics = {
+  sourceQuality: 0.25,
+  corroboration: 0.25,
+  extractionSupport: 0.2,
+  freshness: 0.15,
+  agreement: 0.15,
 };
 
-/**
- * Estimate originality based on content diversity signals.
- * Checks for quotes, attribution, local context, and structural variety.
- * Returns a score from 0.0 to 1.0.
- */
-function estimateOriginality(storyContent: string, sourceCount: number): number {
-  let score = 0;
+const ZERO_METRICS: VerificationMetrics = {
+  sourceQuality: 0,
+  corroboration: 0,
+  extractionSupport: 0,
+  freshness: 0,
+  agreement: 0,
+};
 
-  // Having multiple sources implies synthesis (not just paraphrasing one article)
-  if (sourceCount >= 3) score += 0.3;
-  else if (sourceCount >= 2) score += 0.15;
+function clamp01(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
+}
 
-  // Attributed quotes suggest original journalism framing
-  const attributionPatterns = /according to|said|told|reported|announced|stated/gi;
-  const attributionMatches = storyContent.match(attributionPatterns);
-  if (attributionMatches && attributionMatches.length >= 2) score += 0.25;
-  else if (attributionMatches && attributionMatches.length >= 1) score += 0.15;
+/** Score a verified ledger without requiring article generation first. */
+export function calculateVerificationQualityScore(
+  verification: Pick<VerifiedClaimLedger, 'metrics'> | null | undefined
+): QualityScore {
+  const metrics = verification?.metrics ?? ZERO_METRICS;
+  const breakdown: VerificationMetrics = {
+    sourceQuality: clamp01(metrics.sourceQuality) * WEIGHTS.sourceQuality,
+    corroboration: clamp01(metrics.corroboration) * WEIGHTS.corroboration,
+    extractionSupport: clamp01(metrics.extractionSupport) * WEIGHTS.extractionSupport,
+    freshness: clamp01(metrics.freshness) * WEIGHTS.freshness,
+    agreement: clamp01(metrics.agreement) * WEIGHTS.agreement,
+  };
+  const total = Object.values(breakdown).reduce((sum, value) => sum + value, 0);
 
-  // Markdown structure (headings, bold) suggests original composition
-  if (/^##\s/m.test(storyContent)) score += 0.15;
-  if (/\*\*[^*]+\*\*/.test(storyContent)) score += 0.1;
-
-  // Local context references suggest original perspective
-  const localContextPatterns = /locals|community|residents|neighborhood|visitors|tourists/gi;
-  const localMatches = storyContent.match(localContextPatterns);
-  if (localMatches && localMatches.length >= 1) score += 0.2;
-
-  return Math.min(score, 1.0);
+  return {
+    total,
+    breakdown,
+    suggestedStatus: total >= NEWS_AUTO_PUBLISH_THRESHOLD ? 'published' : 'draft',
+  };
 }
 
 /**
- * Calculate quality score for a news article
+ * The second parameter is retained so existing callers do not need a flag-day
+ * migration. AI-assessed newsworthiness no longer influences publication.
  */
 export function calculateQualityScore(
   content: NewsContentOutput,
-  newsworthiness: number = 0.5
+  _legacyNewsworthiness?: number
 ): QualityScore {
-  const factors = content.qualityFactors;
-
-  const breakdown = {
-    sourceCount: Math.min(factors.sourceCount / 3, 1.0) * WEIGHTS.sourceCount,
-    dalatRelevance: factors.dalatRelevance * WEIGHTS.dalatRelevance,
-    newsworthiness: newsworthiness * WEIGHTS.newsworthiness,
-    contentLength: Math.min(factors.contentLength / 400, 1.0) * WEIGHTS.contentLength,
-    hasDates: (factors.hasDates ? 1.0 : 0.0) * WEIGHTS.hasDates,
-    hasNamedSources: (factors.hasNamedSources ? 1.0 : 0.0) * WEIGHTS.hasNamedSources,
-    hasImages: (factors.hasImages ? 1.0 : 0.0) * WEIGHTS.hasImages,
-    originality: estimateOriginality(content.storyContent, factors.sourceCount) * WEIGHTS.originality,
-  };
-
-  const total = Object.values(breakdown).reduce((sum, v) => sum + v, 0);
-
-  let suggestedStatus: QualityScore['suggestedStatus'];
-  if (total >= 0.75) {
-    suggestedStatus = 'published';
-  } else if (total >= 0.50) {
-    suggestedStatus = 'experimental';
-  } else {
-    suggestedStatus = 'draft';
-  }
-
-  return { total, breakdown, suggestedStatus };
+  return calculateVerificationQualityScore(content.verification);
 }

@@ -1,9 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { CONTENT_LOCALES } from "@/lib/types";
 import {
+  blogTranslationSourceStillMatches,
   collectTranslationWork,
   getMissingTranslationLocales,
   getVenueTranslatableFields,
+  translationCoverageIsCurrent,
+  translationSourceStillMatches,
 } from "./translation-sweep";
 
 type QueryResult = {
@@ -118,5 +121,80 @@ describe("translation sweep durability", () => {
         completeCoverage(),
       ),
     ).toEqual([]);
+  });
+});
+
+const item = {
+  sourceUpdatedAt: "2026-08-28T04:00:00.000Z",
+  fields: [
+    { field_name: "title", text: "Corrected title" },
+    { field_name: "story_content", text: "Corrected facts" },
+  ],
+};
+
+describe("translation source revision guard", () => {
+  it("accepts only the exact source revision and field values collected for work", () => {
+    expect(translationSourceStillMatches(item, {
+      updated_at: item.sourceUpdatedAt,
+      title: "Corrected title",
+      story_content: "Corrected facts",
+    })).toBe(true);
+
+    expect(translationSourceStillMatches(item, {
+      updated_at: "2026-08-28T04:01:00.000Z",
+      title: "Corrected title",
+      story_content: "Corrected facts",
+    })).toBe(false);
+
+    expect(translationSourceStillMatches(item, {
+      updated_at: item.sourceUpdatedAt,
+      title: "Old title",
+      story_content: "Corrected facts",
+    })).toBe(false);
+  });
+
+  it("requeues translation coverage older than the source revision", () => {
+    expect(translationCoverageIsCurrent(
+      "2026-08-28T03:59:59.999Z",
+      item.sourceUpdatedAt,
+      "auto"
+    )).toBe(false);
+    expect(translationCoverageIsCurrent(
+      item.sourceUpdatedAt,
+      item.sourceUpdatedAt,
+      "auto"
+    )).toBe(true);
+    expect(translationCoverageIsCurrent(null, item.sourceUpdatedAt, "auto")).toBe(false);
+  });
+
+  it("keeps stale human-owned rows blocked from automatic replacement", () => {
+    expect(translationCoverageIsCurrent(
+      "2026-08-28T03:59:59.999Z",
+      item.sourceUpdatedAt,
+      "reviewed"
+    )).toBe(true);
+    expect(translationCoverageIsCurrent(null, item.sourceUpdatedAt, "edited")).toBe(true);
+  });
+
+  it("keeps legacy automatic coverage usable when no source revision exists", () => {
+    expect(translationCoverageIsCurrent("not-a-date", null, "auto")).toBe(true);
+  });
+
+  it("compares modern news preflight to its factual marker, not generic row churn", () => {
+    expect(blogTranslationSourceStillMatches(item, {
+      source: "news_scrape",
+      source_urls: [{ content_updated_at: item.sourceUpdatedAt }],
+      updated_at: "2026-08-28T05:00:00.000Z",
+      title: "Corrected title",
+      story_content: "Corrected facts",
+    })).toBe(true);
+
+    expect(blogTranslationSourceStillMatches(item, {
+      source: "news_scrape",
+      source_urls: [{ content_updated_at: "2026-08-28T05:00:00.000Z" }],
+      updated_at: "2026-08-28T05:00:00.000Z",
+      title: "Corrected title",
+      story_content: "Corrected facts",
+    })).toBe(false);
   });
 });

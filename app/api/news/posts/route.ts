@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createStaticClient } from "@/lib/supabase/server";
 import { getBlogTranslationsBatchStatic } from "@/lib/translations";
 import type { ContentLocale } from "@/lib/types";
+import { loadBlogTranslationCutoffs } from "@/lib/news/translation-freshness";
 
 const PAGE_SIZE = 25;
 
@@ -41,10 +42,15 @@ export async function GET(request: Request) {
 
     // Apply title translations for non-English locales
     if (posts.length > 0 && locale !== "en") {
-      const translations = await getBlogTranslationsBatchStatic(
-        posts.map((p: { id: string }) => p.id),
-        locale as ContentLocale
-      );
+      const postIds = posts.map((p: { id: string }) => p.id);
+      const freshAfterByPostId = await loadBlogTranslationCutoffs(postIds);
+      const translations = freshAfterByPostId === null
+        ? new Map<string, { title: string; story_content: string }>()
+        : await getBlogTranslationsBatchStatic(
+            postIds,
+            locale as ContentLocale,
+            freshAfterByPostId
+          );
       posts = posts.map((p: { id: string; title: string }) => {
         const tr = translations.get(p.id);
         return tr?.title ? { ...p, title: tr.title } : p;

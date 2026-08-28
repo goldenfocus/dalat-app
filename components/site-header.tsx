@@ -1,4 +1,4 @@
-import { Building2, Calendar, MapPin, Film } from "lucide-react";
+import { Building2, Calendar, MapPin, Film, Newspaper } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButtonClient } from "@/components/auth-button-client";
@@ -61,6 +61,13 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
             aria-label={t("moments")}
           >
             <Film className="w-5 h-5" aria-hidden="true" />
+          </Link>
+          <Link
+            href="/news"
+            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
+            aria-label={t("news")}
+          >
+            <Newspaper className="w-5 h-5" aria-hidden="true" />
           </Link>
           <DeferredHeaderSearch />
           <CreateEventLink />

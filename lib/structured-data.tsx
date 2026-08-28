@@ -22,6 +22,7 @@ import type { BlogPostFull } from "@/lib/types/blog";
 
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "ĐàLạt.app";
+const PUBLISHER_LOGO_URL = `${SITE_URL}/android-chrome-512x512.png`;
 
 /** Build schema URLs that match localePrefix: "as-needed" canonicals. */
 function localizedSiteUrl(locale: string, path = ""): string {
@@ -1035,7 +1036,7 @@ export function generateWebSiteSchema(locale: string) {
       url: SITE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/icon-512.png`,
+        url: PUBLISHER_LOGO_URL,
       },
     },
   };
@@ -1180,7 +1181,10 @@ export function generateMusicRecordingSchema(
  * Generate Article schema for blog posts
  * https://schema.org/Article
  */
-export function generateBlogArticleSchema(post: BlogPostFull, locale: string) {
+export function generateBlogArticleSchema(
+  post: BlogPostFull & { updated_at?: string },
+  locale: string,
+) {
   const articleUrl = localizedSiteUrl(
     locale,
     `/blog/${post.category_slug || "changelog"}/${post.slug}`,
@@ -1193,7 +1197,7 @@ export function generateBlogArticleSchema(post: BlogPostFull, locale: string) {
     description: post.meta_description || post.story_content.slice(0, 160),
     url: articleUrl,
     datePublished: post.published_at || post.created_at,
-    dateModified: post.published_at || post.created_at,
+    dateModified: post.updated_at || post.published_at || post.created_at,
 
     // Image
     ...(post.cover_image_url && {
@@ -1214,7 +1218,7 @@ export function generateBlogArticleSchema(post: BlogPostFull, locale: string) {
       url: SITE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/icon-512.png`,
+        url: PUBLISHER_LOGO_URL,
       },
     },
 
@@ -1264,7 +1268,10 @@ export function generateNewsArticleSchema(
   },
   locale: string,
 ) {
-  const articleUrl = localizedSiteUrl(locale, `/blog/news/${post.slug}`);
+  const articleUrl = localizedSiteUrl(
+    locale,
+    `/blog/${post.category_slug || "news"}/${post.slug}`,
+  );
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -1292,12 +1299,14 @@ export function generateNewsArticleSchema(
       url: SITE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/icon-512.png`,
+        url: PUBLISHER_LOGO_URL,
       },
     },
 
     // News-specific
-    articleSection: "DaLat News",
+    // Legacy automation keeps its established category URL. Reflect that real
+    // section instead of claiming every sourced page belongs to News.
+    articleSection: post.category_name || post.category_slug || "DaLat News",
     dateline: "Đà Lạt, Vietnam",
 
     // Keywords

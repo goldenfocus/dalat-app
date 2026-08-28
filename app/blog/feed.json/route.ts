@@ -1,4 +1,6 @@
 import { createStaticClient } from "@/lib/supabase/server";
+import { localeUrl } from "@/lib/i18n/locale-url";
+import { getNewsPageModifiedAt } from "@/lib/news/article-policy";
 
 export const revalidate = 3600; // 1 hour
 
@@ -28,9 +30,12 @@ export async function GET(request: Request) {
       seo_keywords,
       cover_image_url,
       cover_image_alt,
+      source,
       published_at,
+      updated_at,
+      source_urls,
       created_at,
-      blog_categories (
+      blog_categories!inner (
         slug,
         name
       )
@@ -56,7 +61,10 @@ export async function GET(request: Request) {
       : post.blog_categories;
     const categorySlug = (cat as { slug: string } | null)?.slug ?? "changelog";
     const categoryName = (cat as { name: string } | null)?.name;
-    const postUrl = `${SITE_URL}/en/blog/${categorySlug}/${post.slug}`;
+    const postUrl = localeUrl("en", `/blog/${categorySlug}/${post.slug}`);
+    const factualUpdatedAt = post.source === "news_scrape"
+      ? getNewsPageModifiedAt(post)
+      : post.updated_at;
 
     return {
       id: postUrl,
@@ -65,6 +73,7 @@ export async function GET(request: Request) {
       content_text: post.story_content,
       summary: post.meta_description || post.story_content.split("\n\n")[0].replace(/[#*_`]/g, "").slice(0, 300),
       date_published: post.published_at || post.created_at,
+      date_modified: factualUpdatedAt || post.published_at || post.created_at,
       image: post.cover_image_url || undefined,
       tags: [
         ...(categoryName ? [categoryName] : []),
@@ -87,8 +96,8 @@ export async function GET(request: Request) {
       ? `${SITE_URL}/blog/feed.json?category=${category}`
       : `${SITE_URL}/blog/feed.json`,
     description: "Guides, stories, and updates about Đà Lạt, Vietnam",
-    icon: `${SITE_URL}/icon-512.png`,
-    favicon: `${SITE_URL}/icon.png`,
+    icon: `${SITE_URL}/android-chrome-512x512.png`,
+    favicon: `${SITE_URL}/android-chrome-192x192.png`,
     language: "en",
     items,
   };

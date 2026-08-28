@@ -1,4 +1,6 @@
 import { createStaticClient } from '@/lib/supabase/server';
+import { localeUrl } from '@/lib/i18n/locale-url';
+import { getNewsPageModifiedAt } from '@/lib/news/article-policy';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +23,8 @@ export async function GET() {
         meta_description,
         cover_image_url,
         published_at,
+        updated_at,
+        source_urls,
         news_tags,
         blog_categories!inner(slug)
       `)
@@ -34,7 +38,13 @@ export async function GET() {
       return new Response('Error generating feed', { status: 500 });
     }
 
-    const items = (posts || []).map((post: any) => {
+    const feedPosts = (posts || []).map((post: any) => ({
+      ...post,
+      factualUpdatedAt: getNewsPageModifiedAt(post)
+        ?? post.published_at,
+    }));
+    const items = feedPosts.map((post: any) => {
+      const postUrl = localeUrl('en', `/blog/news/${encodeURIComponent(post.slug)}`);
       const description = post.meta_description || (post.story_content || '').slice(0, 300);
       const pubDate = post.published_at
         ? new Date(post.published_at).toUTCString()
@@ -44,14 +54,25 @@ export async function GET() {
       return `
     <item>
       <title>${escapeXml(post.title)}</title>
-      <link>${SITE_URL}/blog/news/${encodeURIComponent(post.slug)}</link>
+      <link>${postUrl}</link>
       <description>${escapeXml(description)}</description>
       <pubDate>${pubDate}</pubDate>
-      <guid isPermaLink="true">${SITE_URL}/blog/news/${encodeURIComponent(post.slug)}</guid>
+      <guid isPermaLink="true">${postUrl}</guid>
       ${tags.map(t => `<category>${escapeXml(t)}</category>`).join('\n      ')}
       ${post.cover_image_url ? `<enclosure url="${escapeXml(post.cover_image_url)}" length="0" type="image/jpeg" />` : ''}
     </item>`;
     });
+
+    const latestTimestamp = Math.max(
+      ...feedPosts.flatMap((post: any) => {
+        const timestamp = Date.parse(post.factualUpdatedAt ?? '');
+        return Number.isFinite(timestamp) ? [timestamp] : [];
+      }),
+      0
+    );
+    const lastBuildDate = latestTimestamp > 0
+      ? new Date(latestTimestamp).toUTCString()
+      : null;
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -60,10 +81,10 @@ export async function GET() {
     <link>${SITE_URL}/news</link>
     <description>Latest news and updates from Da Lat, Vietnam</description>
     <language>en</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    ${lastBuildDate ? `<lastBuildDate>${lastBuildDate}</lastBuildDate>` : ''}
     <atom:link href="${SITE_URL}/news/rss.xml" rel="self" type="application/rss+xml" />
     <image>
-      <url>${SITE_URL}/icon-512.png</url>
+      <url>${SITE_URL}/android-chrome-512x512.png</url>
       <title>${SITE_NAME}</title>
       <link>${SITE_URL}/news</link>
     </image>

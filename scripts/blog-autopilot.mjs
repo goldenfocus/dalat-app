@@ -14,8 +14,10 @@
  *   writes comprehensive posts targeting untapped search queries
  *   about Da Lat tourism, events, and culture.
  *
- * Drafts are inserted into Supabase for human research and review. This job
- * must never publish directly: it has no live venue, event, or source feed.
+ * This legacy generator has no source-discovery or claim-verification stage.
+ * It is paused by default and, when explicitly enabled for editorial ideation,
+ * can create drafts only. It must never publish news or claim to be scraped.
+ * Translations handled by existing content_translations pipeline.
  *
  * Usage:
  *   ANTHROPIC_API_KEY=... SUPABASE_URL=... SUPABASE_SERVICE_KEY=... node scripts/blog-autopilot.mjs
@@ -25,7 +27,8 @@
  *   SUPABASE_URL         (required) — e.g. https://xxx.supabase.co
  *   SUPABASE_SERVICE_KEY (required) — service role key
  *   BLOG_MODE            'both' | 'news' | 'seo'  (default: 'both')
- *   BLOG_COUNT           posts per stream           (default: 1)
+ *   BLOG_COUNT           drafts per stream          (default: 1)
+ *   BLOG_ALLOW_UNVERIFIED_DRAFTS  set to '1' for an intentional manual run
  */
 
 // ─── Config ─────────────────────────────────────────────────────────────────
@@ -37,6 +40,11 @@ const MODE = process.env.BLOG_MODE || 'both';
 const COUNT = Math.min(parseInt(process.env.BLOG_COUNT || '1', 10), 3);
 const MODEL = 'claude-sonnet-4-20250514';
 const MAX_TOKENS = 8192;
+if (process.env.BLOG_ALLOW_UNVERIFIED_DRAFTS !== '1') {
+  console.log('Blog Autopilot paused: source-free content cannot be published.');
+  console.log('Use the verified News pipeline, or explicitly enable draft-only ideation.');
+  process.exit(0);
+}
 
 if (!API_KEY) { console.error('ANTHROPIC_API_KEY is required'); process.exit(1); }
 if (!SUPABASE_URL) { console.error('SUPABASE_URL is required'); process.exit(1); }
@@ -370,10 +378,12 @@ Output JSON:
 
 // ─── Post Builder ───────────────────────────────────────────────────────────
 
-function buildPost(generated, categoryMap, existingSlugs, stream) {
+function buildPost(generated, categoryMap, existingSlugs) {
   let slug = generated.slug || slugify(generated.title);
   if (existingSlugs.has(slug)) {
-    slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+    throw new Error(
+      `Refusing to mint a duplicate URL for "${slug}"; correct the existing post in place`
+    );
   }
 
   const catSlug = generated.category_slug || 'stories';
@@ -388,7 +398,9 @@ function buildPost(generated, categoryMap, existingSlugs, stream) {
     seo_keywords: generated.seo_keywords || [],
     social_share_text: generated.social_share_text || null,
     category_id: categoryId,
-    source: stream === 'news' ? 'news_scrape' : 'manual',
+    // No source discovery happened here, so this must never masquerade as a
+    // scraped/verified news post.
+    source: 'manual',
     source_locale: 'en',
     status: 'draft',
     published_at: null,
@@ -425,7 +437,7 @@ async function main() {
     for (let i = 0; i < COUNT; i++) {
       try {
         const generated = await generateNewsPost([...posts, ...newPosts.map(p => ({ title: p.title, seo_keywords: p.seo_keywords }))]);
-        const post = buildPost(generated, categoryMap, existingSlugs, 'news');
+        const post = buildPost(generated, categoryMap, existingSlugs);
         const inserted = await insertPost(post);
         existingSlugs.add(post.slug);
 
@@ -446,7 +458,7 @@ async function main() {
     for (let i = 0; i < COUNT; i++) {
       try {
         const generated = await generateSeoPost([...posts, ...newPosts.map(p => ({ title: p.title, seo_keywords: p.seo_keywords }))]);
-        const post = buildPost(generated, categoryMap, existingSlugs, 'seo');
+        const post = buildPost(generated, categoryMap, existingSlugs);
         const inserted = await insertPost(post);
         existingSlugs.add(post.slug);
 
@@ -463,7 +475,7 @@ async function main() {
   }
 
   if (newPosts.length > 0) {
-    console.log(`Done: ${newPosts.length} draft(s) saved to Supabase.\n`);
+    console.log(`Done: ${newPosts.length} unverified draft(s) saved for review.\n`);
     console.log('--- Summary ---');
     for (const p of newPosts) {
       console.log(`  ${p.title} → draft ${p.slug}`);
