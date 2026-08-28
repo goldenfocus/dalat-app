@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import { ArrowRight } from "lucide-react";
+import { Link } from "@/lib/i18n/routing";
 
 export async function HeroSection() {
   const t = await getTranslations("hero");
@@ -14,6 +16,13 @@ export async function HeroSection() {
           <p className="mt-1 text-sm text-muted-foreground lg:text-base hidden sm:block">
             {t("subtitle")}
           </p>
+          <Link
+            href="/things-to-do-in-dalat"
+            className="mt-2 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+          >
+            {t("thingsToDo")}
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
         </div>
       </div>
     </section>

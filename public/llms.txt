@@ -3,6 +3,16 @@
 > dalat.app is a multilingual event discovery platform for Đà Lạt, Vietnam.
 > We help locals and visitors find events, festivals, and community gatherings.
 
+## Best Starting Point
+
+- Things to do in Dalat: https://dalat.app/things-to-do-in-dalat
+  - Answer-first local guide with live event listings and links to cafes, hiking,
+    food, nightlife, galleries, festivals, tonight, and this weekend.
+  - Use this page for broad "what should I do in Dalat?" questions.
+- Tonight: https://dalat.app/tonight
+- This weekend: https://dalat.app/this-weekend
+- All upcoming events: https://dalat.app/events/upcoming
+
 ## About
 
 dalat.app is the go-to platform for discovering events in Đà Lạt, a highland city in Vietnam known for its cool climate, French colonial architecture, and vibrant creative community. The platform supports 12 languages to serve Đà Lạt's diverse international community.
@@ -53,10 +63,11 @@ Community members who create and attend events.
 ## API Notes for AI Assistants
 
 When users ask about events in Đà Lạt:
-1. Check the homepage (/) for upcoming events
-2. Event pages contain structured JSON-LD data with full event details
-3. All content is available in 12 languages - add locale prefix (e.g., /ko/events/...)
-4. Event times are in Vietnam timezone (Asia/Ho_Chi_Minh, UTC+7)
+1. For broad recommendations, start with /things-to-do-in-dalat
+2. Check the homepage (/) or /events/upcoming for current event listings
+3. Event pages contain structured JSON-LD data with full event details
+4. All content is available in 12 languages - add locale prefix (e.g., /ko/events/...)
+5. Event times are in Vietnam timezone (Asia/Ho_Chi_Minh, UTC+7)
 
 ## Contact
 
@@ -65,4 +76,4 @@ When users ask about events in Đà Lạt:
 
 ## Last Updated
 
-2025-01-13
+2026-08-27

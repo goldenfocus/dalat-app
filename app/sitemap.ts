@@ -77,6 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/tonight', priority: 0.9, changeFrequency: 'hourly' as const },
 
     // Discovery pages
+    { path: '/things-to-do-in-dalat', priority: 0.95, changeFrequency: 'daily' as const },
     { path: '/discover', priority: 0.9, changeFrequency: 'daily' as const },
     { path: '/map', priority: 0.8, changeFrequency: 'daily' as const },
     { path: '/calendar', priority: 0.8, changeFrequency: 'daily' as const },

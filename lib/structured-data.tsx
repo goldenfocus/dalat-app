@@ -8,11 +8,28 @@
  * Reference: https://schema.org
  */
 
-import type { Event, Profile, Organizer, Festival, EventSeries, Moment, Venue, VenueType } from "@/lib/types";
+import type {
+  Event,
+  Profile,
+  Organizer,
+  Festival,
+  EventSeries,
+  Moment,
+  Venue,
+  VenueType,
+} from "@/lib/types";
 import type { BlogPostFull } from "@/lib/types/blog";
 
 const SITE_URL = "https://dalat.app";
 const SITE_NAME = "ĐàLạt.app";
+
+/** Build schema URLs that match localePrefix: "as-needed" canonicals. */
+function localizedSiteUrl(locale: string, path = ""): string {
+  const normalizedPath = path && !path.startsWith("/") ? `/${path}` : path;
+  return locale === "en"
+    ? `${SITE_URL}${normalizedPath}`
+    : `${SITE_URL}/${locale}${normalizedPath}`;
+}
 
 // Đà Lạt, Vietnam coordinates
 const DA_LAT_GEO = {
@@ -54,16 +71,17 @@ export function generateEventSchema(
   event: Event & { profiles?: Profile; organizers?: Organizer | null },
   locale: string,
   attendeeCount?: number,
-  imageMetadata?: { alt?: string | null; description?: string | null }
+  imageMetadata?: { alt?: string | null; description?: string | null },
 ) {
-  const eventUrl = `${SITE_URL}/${locale}/events/${event.slug}`;
+  const eventUrl = localizedSiteUrl(locale, `/events/${event.slug}`);
 
   // Determine event status
-  const eventStatus = event.status === "cancelled"
-    ? "https://schema.org/EventCancelled"
-    : new Date(event.starts_at) < new Date()
-    ? "https://schema.org/EventPostponed" // Past events
-    : "https://schema.org/EventScheduled";
+  const eventStatus =
+    event.status === "cancelled"
+      ? "https://schema.org/EventCancelled"
+      : new Date(event.starts_at) < new Date()
+        ? "https://schema.org/EventPostponed" // Past events
+        : "https://schema.org/EventScheduled";
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -77,46 +95,50 @@ export function generateEventSchema(
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
 
     // Location
-    location: event.location_name || event.address
-      ? {
-          "@type": "Place",
-          name: event.location_name || "Đà Lạt, Vietnam",
-          ...(event.address && {
-            address: {
-              "@type": "PostalAddress",
-              streetAddress: event.address,
-              addressLocality: "Đà Lạt",
-              addressRegion: "Lam Dong",
-              addressCountry: "VN",
+    location:
+      event.location_name || event.address
+        ? {
+            "@type": "Place",
+            name: event.location_name || "Đà Lạt, Vietnam",
+            ...(event.address && {
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: event.address,
+                addressLocality: "Đà Lạt",
+                addressRegion: "Lam Dong",
+                addressCountry: "VN",
+              },
+            }),
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: DA_LAT_GEO.latitude,
+              longitude: DA_LAT_GEO.longitude,
             },
-          }),
-          geo: {
-            "@type": "GeoCoordinates",
-            latitude: DA_LAT_GEO.latitude,
-            longitude: DA_LAT_GEO.longitude,
+            ...(event.google_maps_url && { hasMap: event.google_maps_url }),
+          }
+        : {
+            "@type": "Place",
+            name: "Đà Lạt, Vietnam",
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: DA_LAT_GEO.latitude,
+              longitude: DA_LAT_GEO.longitude,
+            },
           },
-          ...(event.google_maps_url && { hasMap: event.google_maps_url }),
-        }
-      : {
-          "@type": "Place",
-          name: "Đà Lạt, Vietnam",
-          geo: {
-            "@type": "GeoCoordinates",
-            latitude: DA_LAT_GEO.latitude,
-            longitude: DA_LAT_GEO.longitude,
-          },
-        },
 
     // Image - with structured metadata for AI search engines
     ...(event.image_url && {
-      image: imageMetadata?.alt || imageMetadata?.description
-        ? {
-            "@type": "ImageObject",
-            url: event.image_url,
-            ...(imageMetadata.alt && { name: imageMetadata.alt }),
-            ...(imageMetadata.description && { description: imageMetadata.description }),
-          }
-        : [event.image_url],
+      image:
+        imageMetadata?.alt || imageMetadata?.description
+          ? {
+              "@type": "ImageObject",
+              url: event.image_url,
+              ...(imageMetadata.alt && { name: imageMetadata.alt }),
+              ...(imageMetadata.description && {
+                description: imageMetadata.description,
+              }),
+            }
+          : [event.image_url],
     }),
 
     // Organizer - use Organizer if available, otherwise fall back to creator profile
@@ -124,17 +146,23 @@ export function generateEventSchema(
       ? {
           "@type": "Organization",
           name: event.organizers.name,
-          url: `${SITE_URL}/${locale}/organizers/${event.organizers.slug}`,
+          url: localizedSiteUrl(locale, `/organizers/${event.organizers.slug}`),
           ...(event.organizers.logo_url && { logo: event.organizers.logo_url }),
         }
       : event.profiles
-      ? {
-          "@type": "Person",
-          name: event.profiles.display_name || event.profiles.username || "Event Organizer",
-          // Use username if available, otherwise fall back to user ID for URL
-          url: `${SITE_URL}/${locale}/${event.profiles.username || event.profiles.id}`,
-        }
-      : undefined,
+        ? {
+            "@type": "Person",
+            name:
+              event.profiles.display_name ||
+              event.profiles.username ||
+              "Event Organizer",
+            // Use username if available, otherwise fall back to user ID for URL
+            url: localizedSiteUrl(
+              locale,
+              `/${event.profiles.username || event.profiles.id}`,
+            ),
+          }
+        : undefined,
 
     // Offers (Free event - price: 0 shows "Free" in Rich Results)
     offers: {
@@ -169,16 +197,20 @@ export function generateEventSchema(
 export function generateOrganizationSchema(
   organizer: Organizer,
   locale: string,
-  eventCount?: number
+  eventCount?: number,
 ) {
-  const organizerUrl = `${SITE_URL}/${locale}/organizers/${organizer.slug}`;
+  const organizerUrl = localizedSiteUrl(
+    locale,
+    `/organizers/${organizer.slug}`,
+  );
 
   // Map organizer types to Schema.org types
-  const schemaType = organizer.organizer_type === "venue"
-    ? "LocalBusiness"
-    : organizer.organizer_type === "business"
-    ? "LocalBusiness"
-    : "Organization";
+  const schemaType =
+    organizer.organizer_type === "venue"
+      ? "LocalBusiness"
+      : organizer.organizer_type === "business"
+        ? "LocalBusiness"
+        : "Organization";
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -214,13 +246,14 @@ export function generateOrganizationSchema(
     },
 
     // Events organized
-    ...(eventCount !== undefined && eventCount > 0 && {
-      event: {
-        "@type": "ItemList",
-        numberOfItems: eventCount,
-        itemListElement: `${organizerUrl}#events`,
-      },
-    }),
+    ...(eventCount !== undefined &&
+      eventCount > 0 && {
+        event: {
+          "@type": "ItemList",
+          numberOfItems: eventCount,
+          itemListElement: `${organizerUrl}#events`,
+        },
+      }),
   };
 
   return schema;
@@ -253,9 +286,9 @@ const VENUE_TYPE_SCHEMA_MAP: Record<VenueType, string> = {
 export function generateLocalBusinessSchema(
   venue: Venue,
   locale: string,
-  eventCount?: number
+  eventCount?: number,
 ) {
-  const venueUrl = `${SITE_URL}/${locale}/venues/${venue.slug}`;
+  const venueUrl = localizedSiteUrl(locale, `/venues/${venue.slug}`);
   const schemaType = venue.venue_type
     ? VENUE_TYPE_SCHEMA_MAP[venue.venue_type]
     : "LocalBusiness";
@@ -313,31 +346,37 @@ export function generateLocalBusinessSchema(
     ...(venue.phone && { telephone: venue.phone }),
 
     // Social links
-    sameAs: [
-      venue.website_url,
-      venue.facebook_url,
-      venue.instagram_url,
-    ].filter(Boolean),
+    sameAs: [venue.website_url, venue.facebook_url, venue.instagram_url].filter(
+      Boolean,
+    ),
 
     // Opening hours
-    ...(openingHoursSpec && openingHoursSpec.length > 0 && {
-      openingHoursSpecification: openingHoursSpec,
-    }),
+    ...(openingHoursSpec &&
+      openingHoursSpec.length > 0 && {
+        openingHoursSpecification: openingHoursSpec,
+      }),
 
     // Price range
     ...(venue.price_range && { priceRange: venue.price_range }),
 
     // Amenities as features
-    ...(venue.has_wifi && { amenityFeature: { "@type": "LocationFeatureSpecification", name: "WiFi", value: true } }),
-
-    // Events at this venue
-    ...(eventCount !== undefined && eventCount > 0 && {
-      event: {
-        "@type": "ItemList",
-        numberOfItems: eventCount,
-        itemListElement: `${venueUrl}#events`,
+    ...(venue.has_wifi && {
+      amenityFeature: {
+        "@type": "LocationFeatureSpecification",
+        name: "WiFi",
+        value: true,
       },
     }),
+
+    // Events at this venue
+    ...(eventCount !== undefined &&
+      eventCount > 0 && {
+        event: {
+          "@type": "ItemList",
+          numberOfItems: eventCount,
+          itemListElement: `${venueUrl}#events`,
+        },
+      }),
 
     // Google Maps
     ...(venue.google_maps_url && { hasMap: venue.google_maps_url }),
@@ -353,22 +392,24 @@ export function generateLocalBusinessSchema(
 export function generateFestivalSchema(
   festival: Festival,
   locale: string,
-  eventCount?: number
+  eventCount?: number,
 ) {
-  const festivalUrl = `${SITE_URL}/${locale}/festivals/${festival.slug}`;
+  const festivalUrl = localizedSiteUrl(locale, `/festivals/${festival.slug}`);
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Festival",
     name: festival.title,
     ...(festival.subtitle && { alternateName: festival.subtitle }),
-    description: festival.description || `${festival.title} - Festival in Đà Lạt, Vietnam`,
+    description:
+      festival.description || `${festival.title} - Festival in Đà Lạt, Vietnam`,
     url: festivalUrl,
     startDate: festival.start_date,
     endDate: festival.end_date,
-    eventStatus: festival.status === "cancelled"
-      ? "https://schema.org/EventCancelled"
-      : "https://schema.org/EventScheduled",
+    eventStatus:
+      festival.status === "cancelled"
+        ? "https://schema.org/EventCancelled"
+        : "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
 
     // Images
@@ -400,12 +441,13 @@ export function generateFestivalSchema(
     sameAs: [festival.website_url, festival.facebook_url].filter(Boolean),
 
     // Sub-events count
-    ...(eventCount !== undefined && eventCount > 0 && {
-      subEvent: {
-        "@type": "ItemList",
-        numberOfItems: eventCount,
-      },
-    }),
+    ...(eventCount !== undefined &&
+      eventCount > 0 && {
+        subEvent: {
+          "@type": "ItemList",
+          numberOfItems: eventCount,
+        },
+      }),
 
     // Free event
     isAccessibleForFree: true,
@@ -429,11 +471,11 @@ export function generateFestivalSchema(
 export function generatePersonSchema(
   profile: Profile,
   locale: string,
-  eventCount?: number
+  eventCount?: number,
 ) {
   // Use username if available, otherwise fall back to user ID for URL
   const profileIdentifier = profile.username || profile.id;
-  const profileUrl = `${SITE_URL}/${locale}/${profileIdentifier}`;
+  const profileUrl = localizedSiteUrl(locale, `/${profileIdentifier}`);
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -455,12 +497,13 @@ export function generatePersonSchema(
     },
 
     // Events
-    ...(eventCount !== undefined && eventCount > 0 && {
-      organizedEvent: {
-        "@type": "ItemList",
-        numberOfItems: eventCount,
-      },
-    }),
+    ...(eventCount !== undefined &&
+      eventCount > 0 && {
+        organizedEvent: {
+          "@type": "ItemList",
+          numberOfItems: eventCount,
+        },
+      }),
   };
 
   return schema;
@@ -473,15 +516,16 @@ export function generatePersonSchema(
 export function generateEventSeriesSchema(
   series: EventSeries & { organizers?: Organizer | null },
   locale: string,
-  upcomingCount?: number
+  upcomingCount?: number,
 ) {
-  const seriesUrl = `${SITE_URL}/${locale}/series/${series.slug}`;
+  const seriesUrl = localizedSiteUrl(locale, `/series/${series.slug}`);
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "EventSeries",
     name: series.title,
-    description: series.description || `Recurring event series in Đà Lạt, Vietnam`,
+    description:
+      series.description || `Recurring event series in Đà Lạt, Vietnam`,
     url: seriesUrl,
     startDate: series.first_occurrence,
     ...(series.rrule_until && { endDate: series.rrule_until }),
@@ -524,17 +568,18 @@ export function generateEventSeriesSchema(
       organizer: {
         "@type": "Organization",
         name: series.organizers.name,
-        url: `${SITE_URL}/${locale}/organizers/${series.organizers.slug}`,
+        url: localizedSiteUrl(locale, `/organizers/${series.organizers.slug}`),
       },
     }),
 
     // Sub-events
-    ...(upcomingCount !== undefined && upcomingCount > 0 && {
-      subEvent: {
-        "@type": "ItemList",
-        numberOfItems: upcomingCount,
-      },
-    }),
+    ...(upcomingCount !== undefined &&
+      upcomingCount > 0 && {
+        subEvent: {
+          "@type": "ItemList",
+          numberOfItems: upcomingCount,
+        },
+      }),
 
     // Free
     isAccessibleForFree: true,
@@ -557,10 +602,11 @@ export function generateEventSeriesSchema(
  */
 export function generateMomentSchema(
   moment: Moment & { profiles?: Profile; events?: Event },
-  locale: string
+  locale: string,
 ) {
-  const momentUrl = `${SITE_URL}/${locale}/moments/${moment.id}`;
-  const userName = moment.profiles?.display_name || moment.profiles?.username || "Someone";
+  const momentUrl = localizedSiteUrl(locale, `/moments/${moment.id}`);
+  const userName =
+    moment.profiles?.display_name || moment.profiles?.username || "Someone";
   const userIdentifier = moment.profiles?.username || moment.user_id;
   const eventTitle = moment.events?.title || "Event";
   const eventSlug = moment.events?.slug || "";
@@ -574,13 +620,13 @@ export function generateMomentSchema(
     author: {
       "@type": "Person",
       name: userName,
-      url: `${SITE_URL}/${locale}/${userIdentifier}`,
+      url: localizedSiteUrl(locale, `/${userIdentifier}`),
     },
     about: eventSlug
       ? {
           "@type": "Event",
           name: eventTitle,
-          url: `${SITE_URL}/${locale}/events/${eventSlug}`,
+          url: localizedSiteUrl(locale, `/events/${eventSlug}`),
         }
       : {
           "@type": "Event",
@@ -620,7 +666,7 @@ export function generateMomentSchema(
  */
 export function generateMomentsDiscoverySchema(
   moments: Array<Pick<Moment, "id">>,
-  locale: string
+  locale: string,
 ) {
   return {
     "@context": "https://schema.org",
@@ -629,7 +675,7 @@ export function generateMomentsDiscoverySchema(
     itemListElement: moments.map((moment, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `${SITE_URL}/${locale}/moments/${moment.id}`,
+      url: localizedSiteUrl(locale, `/moments/${moment.id}`),
     })),
   };
 }
@@ -658,7 +704,7 @@ export function generateCinemaAlbumSchema(
     ai_description?: string | null;
   }>,
   totalCount: number,
-  locale: string
+  locale: string,
 ) {
   // AI caption → JSON-LD description: keep it human-length, no keyword tails.
   // NEVER feed detected_text here — it's OCR exhaust (name tags, phone numbers).
@@ -667,11 +713,18 @@ export function generateCinemaAlbumSchema(
     if (clean.length <= max) return clean;
     return clean.slice(0, max - 1).replace(/\s+\S*$/, "") + "…";
   };
-  const albumUrl = `${SITE_URL}/${locale}/events/${event.slug}/moments?view=cinema`;
-  const eventUrl = `${SITE_URL}/${locale}/events/${event.slug}`;
+  const albumUrl = localizedSiteUrl(
+    locale,
+    `/events/${event.slug}/moments?view=cinema`,
+  );
+  const eventUrl = localizedSiteUrl(locale, `/events/${event.slug}`);
 
-  const photos = moments.filter((m) => m.content_type === "photo" && m.media_url);
-  const videos = moments.filter((m) => m.content_type === "video" && m.media_url);
+  const photos = moments.filter(
+    (m) => m.content_type === "photo" && m.media_url,
+  );
+  const videos = moments.filter(
+    (m) => m.content_type === "video" && m.media_url,
+  );
 
   // Unique contributors
   const seen = new Set<string>();
@@ -716,8 +769,12 @@ export function generateCinemaAlbumSchema(
         "@type": "ImageObject",
         contentUrl: p.media_url,
         uploadDate: p.created_at,
-        ...(p.ai_description && { description: truncateDescription(p.ai_description) }),
-        ...(p.display_name && { author: { "@type": "Person", name: p.display_name } }),
+        ...(p.ai_description && {
+          description: truncateDescription(p.ai_description),
+        }),
+        ...(p.display_name && {
+          author: { "@type": "Person", name: p.display_name },
+        }),
       })),
     }),
     ...(videos.length > 0 && {
@@ -726,7 +783,9 @@ export function generateCinemaAlbumSchema(
         contentUrl: v.media_url,
         uploadDate: v.created_at,
         name: `Video moment from ${event.title}`,
-        ...(v.display_name && { author: { "@type": "Person", name: v.display_name } }),
+        ...(v.display_name && {
+          author: { "@type": "Person", name: v.display_name },
+        }),
       })),
     }),
     potentialAction: {
@@ -743,7 +802,7 @@ export function generateCinemaAlbumSchema(
  */
 export function generateBreadcrumbSchema(
   items: Array<{ name: string; url: string }>,
-  locale: string
+  locale: string,
 ) {
   const schema = {
     "@context": "https://schema.org",
@@ -752,7 +811,9 @@ export function generateBreadcrumbSchema(
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: item.url.startsWith("http") ? item.url : `${SITE_URL}/${locale}${item.url}`,
+      item: item.url.startsWith("http")
+        ? item.url
+        : localizedSiteUrl(locale, item.url),
     })),
   };
 
@@ -769,8 +830,9 @@ export function generateWebSiteSchema(locale: string) {
     "@type": "WebSite",
     name: SITE_NAME,
     alternateName: "Đà Lạt App",
-    url: `${SITE_URL}/${locale}`,
-    description: "Discover events, festivals, and community gatherings in Đà Lạt, Vietnam",
+    url: localizedSiteUrl(locale),
+    description:
+      "Discover events, festivals, and community gatherings in Đà Lạt, Vietnam",
     inLanguage: locale,
 
     // Search action for sitelinks search box (SEO)
@@ -778,7 +840,7 @@ export function generateWebSiteSchema(locale: string) {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/${locale}/search/{search_term_string}`,
+        urlTemplate: localizedSiteUrl(locale, "/search/{search_term_string}"),
       },
       "query-input": "required name=search_term_string",
     },
@@ -803,7 +865,7 @@ export function generateWebSiteSchema(locale: string) {
  * https://schema.org/FAQPage
  */
 export function generateFAQSchema(
-  faqs: Array<{ question: string; answer: string }>
+  faqs: Array<{ question: string; answer: string }>,
 ) {
   const schema = {
     "@context": "https://schema.org",
@@ -839,10 +901,16 @@ export function generateMusicRecordingSchema(
     title: string;
     image_url: string | null;
   },
-  locale: string
+  locale: string,
 ) {
-  const trackUrl = `${SITE_URL}/${locale}/events/${event.slug}/karaoke/${track.id}`;
-  const lyricsUrl = `${SITE_URL}/${locale}/events/${event.slug}/lyrics/${track.id}`;
+  const trackUrl = localizedSiteUrl(
+    locale,
+    `/events/${event.slug}/karaoke/${track.id}`,
+  );
+  const lyricsUrl = localizedSiteUrl(
+    locale,
+    `/events/${event.slug}/lyrics/${track.id}`,
+  );
 
   // Extract plain text from LRC for lyrics
   const lyricsText = track.lyrics_lrc
@@ -877,13 +945,13 @@ export function generateMusicRecordingSchema(
     inAlbum: {
       "@type": "MusicAlbum",
       name: event.title,
-      url: `${SITE_URL}/${locale}/events/${event.slug}/playlist`,
+      url: localizedSiteUrl(locale, `/events/${event.slug}/playlist`),
     },
 
     // Image
-    ...(track.thumbnail_url || event.image_url) && {
+    ...((track.thumbnail_url || event.image_url) && {
       image: track.thumbnail_url || event.image_url,
-    },
+    }),
 
     // Lyrics (linked to dedicated lyrics page for SEO)
     ...(lyricsText && {
@@ -929,11 +997,11 @@ export function generateMusicRecordingSchema(
  * Generate Article schema for blog posts
  * https://schema.org/Article
  */
-export function generateBlogArticleSchema(
-  post: BlogPostFull,
-  locale: string
-) {
-  const articleUrl = `${SITE_URL}/${locale}/blog/${post.category_slug || "changelog"}/${post.slug}`;
+export function generateBlogArticleSchema(post: BlogPostFull, locale: string) {
+  const articleUrl = localizedSiteUrl(
+    locale,
+    `/blog/${post.category_slug || "changelog"}/${post.slug}`,
+  );
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -973,9 +1041,10 @@ export function generateBlogArticleSchema(
     }),
 
     // Keywords
-    ...(post.seo_keywords && post.seo_keywords.length > 0 && {
-      keywords: post.seo_keywords.join(", "),
-    }),
+    ...(post.seo_keywords &&
+      post.seo_keywords.length > 0 && {
+        keywords: post.seo_keywords.join(", "),
+      }),
 
     // Main content
     articleBody: post.story_content,
@@ -1001,13 +1070,18 @@ export function generateBlogArticleSchema(
  */
 export function generateNewsArticleSchema(
   post: BlogPostFull & {
-    source_urls?: Array<{ url: string; title: string; publisher: string; published_at: string | null }>;
+    source_urls?: Array<{
+      url: string;
+      title: string;
+      publisher: string;
+      published_at: string | null;
+    }>;
     news_tags?: string[];
     updated_at?: string;
   },
-  locale: string
+  locale: string,
 ) {
-  const articleUrl = `${SITE_URL}/${locale}/blog/news/${post.slug}`;
+  const articleUrl = localizedSiteUrl(locale, `/blog/news/${post.slug}`);
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -1044,9 +1118,10 @@ export function generateNewsArticleSchema(
     dateline: "Đà Lạt, Vietnam",
 
     // Keywords
-    ...(post.seo_keywords && post.seo_keywords.length > 0 && {
-      keywords: post.seo_keywords.join(", "),
-    }),
+    ...(post.seo_keywords &&
+      post.seo_keywords.length > 0 && {
+        keywords: post.seo_keywords.join(", "),
+      }),
 
     // Content
     articleBody: post.story_content,
@@ -1060,18 +1135,19 @@ export function generateNewsArticleSchema(
     },
 
     // Source attribution
-    ...(post.source_urls && post.source_urls.length > 0 && {
-      isBasedOn: post.source_urls.map(s => s.url),
-      citation: post.source_urls.map(s => ({
-        "@type": "CreativeWork",
-        name: s.title,
-        url: s.url,
-        publisher: {
-          "@type": "Organization",
-          name: s.publisher,
-        },
-      })),
-    }),
+    ...(post.source_urls &&
+      post.source_urls.length > 0 && {
+        isBasedOn: post.source_urls.map((s) => s.url),
+        citation: post.source_urls.map((s) => ({
+          "@type": "CreativeWork",
+          name: s.title,
+          url: s.url,
+          publisher: {
+            "@type": "Organization",
+            name: s.publisher,
+          },
+        })),
+      }),
   };
 
   return schema;
@@ -1094,18 +1170,22 @@ export function generateMusicPlaylistSchema(
     title: string;
     image_url: string | null;
   },
-  locale: string
+  locale: string,
 ) {
-  const playlistUrl = `${SITE_URL}/${locale}/events/${event.slug}/playlist`;
+  const playlistUrl = localizedSiteUrl(
+    locale,
+    `/events/${event.slug}/playlist`,
+  );
 
   // Calculate total duration
   const totalDurationSeconds = tracks.reduce(
     (sum, track) => sum + (track.duration_seconds || 0),
-    0
+    0,
   );
-  const totalDurationISO = totalDurationSeconds > 0
-    ? `PT${Math.floor(totalDurationSeconds / 60)}M${Math.floor(totalDurationSeconds % 60)}S`
-    : undefined;
+  const totalDurationISO =
+    totalDurationSeconds > 0
+      ? `PT${Math.floor(totalDurationSeconds / 60)}M${Math.floor(totalDurationSeconds % 60)}S`
+      : undefined;
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -1132,7 +1212,10 @@ export function generateMusicPlaylistSchema(
         duration: `PT${Math.floor(track.duration_seconds / 60)}M${Math.floor(track.duration_seconds % 60)}S`,
       }),
       ...(track.thumbnail_url && { image: track.thumbnail_url }),
-      url: `${SITE_URL}/${locale}/events/${event.slug}/karaoke/${track.id}`,
+      url: localizedSiteUrl(
+        locale,
+        `/events/${event.slug}/karaoke/${track.id}`,
+      ),
     })),
 
     // Provider
@@ -1178,7 +1261,7 @@ export function generateLyricsFAQSchema(
     slug: string;
   },
   lyricsText: string,
-  locale: string
+  locale: string,
 ) {
   const trackTitle = track.title || "Untitled";
   const artist = track.artist || event.title;
@@ -1187,53 +1270,55 @@ export function generateLyricsFAQSchema(
     : null;
 
   // Extract first verse (first ~200 chars) for lyrics preview
-  const lyricsPreview = lyricsText.slice(0, 300) + (lyricsText.length > 300 ? "..." : "");
+  const lyricsPreview =
+    lyricsText.slice(0, 300) + (lyricsText.length > 300 ? "..." : "");
 
-  const faqs = locale === "vi"
-    ? [
-        {
-          question: `Ai hát bài "${trackTitle}"?`,
-          answer: `"${trackTitle}" được hát bởi ${artist}. Bài hát có trong playlist của sự kiện "${event.title}" trên ĐàLạt.app.`,
-        },
-        {
-          question: `Lời bài hát "${trackTitle}" là gì?`,
-          answer: `Lời bài hát "${trackTitle}" của ${artist}: ${lyricsPreview}`,
-        },
-        {
-          question: `Tôi có thể hát karaoke "${trackTitle}" ở đâu?`,
-          answer: `Bạn có thể hát karaoke "${trackTitle}" online tại ĐàLạt.app với lời hiển thị theo nhạc. Truy cập trang karaoke để bắt đầu hát ngay!`,
-        },
-        ...(durationFormatted
-          ? [
-              {
-                question: `Bài hát "${trackTitle}" dài bao lâu?`,
-                answer: `"${trackTitle}" của ${artist} có thời lượng ${durationFormatted}.`,
-              },
-            ]
-          : []),
-      ]
-    : [
-        {
-          question: `Who sings "${trackTitle}"?`,
-          answer: `"${trackTitle}" is performed by ${artist}. This song is from the "${event.title}" event playlist on ĐàLạt.app.`,
-        },
-        {
-          question: `What are the lyrics to "${trackTitle}"?`,
-          answer: `Lyrics for "${trackTitle}" by ${artist}: ${lyricsPreview}`,
-        },
-        {
-          question: `Where can I sing "${trackTitle}" karaoke?`,
-          answer: `You can sing "${trackTitle}" karaoke online at ĐàLạt.app with synchronized lyrics display. Visit the karaoke page to start singing!`,
-        },
-        ...(durationFormatted
-          ? [
-              {
-                question: `How long is "${trackTitle}"?`,
-                answer: `"${trackTitle}" by ${artist} has a duration of ${durationFormatted}.`,
-              },
-            ]
-          : []),
-      ];
+  const faqs =
+    locale === "vi"
+      ? [
+          {
+            question: `Ai hát bài "${trackTitle}"?`,
+            answer: `"${trackTitle}" được hát bởi ${artist}. Bài hát có trong playlist của sự kiện "${event.title}" trên ĐàLạt.app.`,
+          },
+          {
+            question: `Lời bài hát "${trackTitle}" là gì?`,
+            answer: `Lời bài hát "${trackTitle}" của ${artist}: ${lyricsPreview}`,
+          },
+          {
+            question: `Tôi có thể hát karaoke "${trackTitle}" ở đâu?`,
+            answer: `Bạn có thể hát karaoke "${trackTitle}" online tại ĐàLạt.app với lời hiển thị theo nhạc. Truy cập trang karaoke để bắt đầu hát ngay!`,
+          },
+          ...(durationFormatted
+            ? [
+                {
+                  question: `Bài hát "${trackTitle}" dài bao lâu?`,
+                  answer: `"${trackTitle}" của ${artist} có thời lượng ${durationFormatted}.`,
+                },
+              ]
+            : []),
+        ]
+      : [
+          {
+            question: `Who sings "${trackTitle}"?`,
+            answer: `"${trackTitle}" is performed by ${artist}. This song is from the "${event.title}" event playlist on ĐàLạt.app.`,
+          },
+          {
+            question: `What are the lyrics to "${trackTitle}"?`,
+            answer: `Lyrics for "${trackTitle}" by ${artist}: ${lyricsPreview}`,
+          },
+          {
+            question: `Where can I sing "${trackTitle}" karaoke?`,
+            answer: `You can sing "${trackTitle}" karaoke online at ĐàLạt.app with synchronized lyrics display. Visit the karaoke page to start singing!`,
+          },
+          ...(durationFormatted
+            ? [
+                {
+                  question: `How long is "${trackTitle}"?`,
+                  answer: `"${trackTitle}" by ${artist} has a duration of ${durationFormatted}.`,
+                },
+              ]
+            : []),
+        ];
 
   return {
     "@context": "https://schema.org",
@@ -1257,7 +1342,7 @@ export function generateLyricsFAQSchema(
  */
 export function generateSpeakableSchema(
   pageUrl: string,
-  speakableCssSelectors: string[]
+  speakableCssSelectors: string[],
 ) {
   return {
     "@context": "https://schema.org",
