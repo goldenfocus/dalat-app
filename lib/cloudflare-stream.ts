@@ -286,8 +286,12 @@ export type CloudflareWebhookEventType =
 
 export interface CloudflareWebhookEvent {
   uid: string;
-  type: CloudflareWebhookEventType;
-  time: string; // ISO timestamp
+  // Live Input webhooks include `type`. Stream VOD webhooks instead send the
+  // completed video object with `status.state` and no event type.
+  type?: CloudflareWebhookEventType;
+  time?: string; // ISO timestamp
+  status?: CloudflareVideoDetails['status'];
+  readyToStream?: boolean;
   liveInput?: {
     uid: string;
   };
@@ -295,6 +299,15 @@ export interface CloudflareWebhookEvent {
     uid: string;
     status: string;
   };
+}
+
+export function getCloudflareWebhookEventType(
+  event: CloudflareWebhookEvent
+): CloudflareWebhookEventType | null {
+  if (event.type) return event.type;
+  if (event.status?.state === 'ready') return 'video.ready';
+  if (event.status?.state === 'error') return 'video.error';
+  return null;
 }
 
 // ============================================================================

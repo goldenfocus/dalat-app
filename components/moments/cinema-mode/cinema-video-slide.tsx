@@ -98,12 +98,20 @@ export function CinemaVideoSlide({
   }, [moment.id]);
 
   // Show video processing state
-  if (moment.video_status === "processing" || moment.video_status === "uploading") {
+  if (moment.video_status === "processing" || moment.video_status === "uploading" || moment.video_status === "error") {
+    const statusLabel = moment.video_status === "uploading"
+      ? "Uploading"
+      : moment.video_status === "error"
+        ? "Processing failed"
+        : "Processing";
+
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 text-white/50 animate-spin" />
-          <p className="text-white/50 text-sm">Processing video...</p>
+          <p className="text-white/50 text-sm">
+            {statusLabel} video...
+          </p>
         </div>
       </div>
     );

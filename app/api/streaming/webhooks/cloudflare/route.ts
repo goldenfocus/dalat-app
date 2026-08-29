@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import {
   verifyWebhookSignature,
+  getCloudflareWebhookEventType,
   getVideoDetails,
   enableVideoDownloads,
   type CloudflareWebhookEvent,
@@ -35,12 +36,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  console.log('Cloudflare webhook event:', event.type, event.uid);
+  const eventType = getCloudflareWebhookEventType(event);
+  console.log('Cloudflare webhook event:', eventType, event.uid);
 
   const supabase = getServiceClient();
 
   try {
-    switch (event.type) {
+    switch (eventType) {
       case 'live_input.connected': {
         const { error } = await supabase
           .from('live_streams')
@@ -109,8 +111,9 @@ export async function POST(request: Request) {
                 video_duration_seconds: videoDetails.duration ?? null,
               })
               .eq('cf_video_uid', videoUid)
+              .neq('video_status', 'ready')
               .select('id, user_id, event_id')
-              .single();
+              .maybeSingle();
 
             if (error) {
               console.error('Failed to update moment video status:', error);
@@ -138,8 +141,9 @@ export async function POST(request: Request) {
                 });
               }
             } else {
-              // No moment found with this video UID - might be a live recording
-              console.log('No moment found for video UID:', videoUid);
+              // Cloudflare retries webhooks, so an already-ready moment is a
+              // normal idempotent no-op.
+              console.log('No pending moment found for video UID:', videoUid);
             }
           } catch (err) {
             console.error('Error processing video.ready:', err);
@@ -167,7 +171,7 @@ export async function POST(request: Request) {
       }
 
       default:
-        console.log('Unhandled webhook event type:', event.type);
+        console.log('Unhandled webhook event:', event.uid, event.status?.state);
     }
 
     return NextResponse.json({ received: true });
