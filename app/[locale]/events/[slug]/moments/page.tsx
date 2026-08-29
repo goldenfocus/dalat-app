@@ -430,7 +430,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             <h1 className="text-2xl font-bold">{t("moments")}</h1>
             <MusicPlayButton />
             {canPost && (
-              <Link href={`/${locale}/events/${event.slug}/moments/new`} className="ml-auto">
+              <Link href={`/events/${event.slug}/moments/new`} className="ml-auto">
                 <Button size="sm" variant="outline" className="active:scale-95 transition-transform">
                   <Plus className="w-4 h-4 mr-1" />
                   {t("addMoment")}
@@ -439,7 +439,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             )}
           </div>
           <Link
-            href={`/${locale}/events/${event.slug}`}
+            href={`/events/${event.slug}`}
             className="text-muted-foreground hover:text-foreground hover:underline transition-colors"
           >
             {event.title} &rarr;
@@ -477,7 +477,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
         {/* CTA for users who can post but haven't yet */}
         {moments.length === 0 && canPost && (
           <div className="mt-6 text-center">
-            <Link href={`/${locale}/events/${event.slug}/moments/new`}>
+            <Link href={`/events/${event.slug}/moments/new`}>
               <Button size="lg" className="active:scale-95 transition-transform">
                 <Plus className="w-5 h-5 mr-2" />
                 {t("shareYourMoment")}
