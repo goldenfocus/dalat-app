@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import type { BlogPostSource, BlogPostStatus } from "@/lib/types/blog";
 import { DeletePostButton } from "@/components/admin/delete-post-button";
 import { BlogPostFilters } from "@/components/admin/blog-post-filters";
@@ -27,6 +28,36 @@ interface AdminBlogPost {
   category_slug: string | null;
   category_name: string | null;
   like_count: number;
+}
+
+interface NewsReviewCandidate {
+  id: string;
+  title: string;
+  source_name: string;
+  source_url: string;
+  published_at: string | null;
+  editorial_disposition: string | null;
+  editorial_review_reason: string | null;
+}
+
+async function getNewsReviewQueue(): Promise<NewsReviewCandidate[]> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return [];
+  const service = createServiceClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data, error } = await service
+    .from("news_raw_articles")
+    .select("id, title, source_name, source_url, published_at, editorial_disposition, editorial_review_reason")
+    .eq("status", "review")
+    .order("editorial_reviewed_at", { ascending: false })
+    .limit(25);
+  if (error) {
+    console.error("Error fetching news review queue:", error);
+    return [];
+  }
+  return data ?? [];
 }
 
 async function getProfile(userId: string) {
@@ -92,7 +123,10 @@ export default async function AdminBlogPage({ searchParams }: PageProps) {
   const statusFilter = params.status as BlogPostStatus | undefined;
   const sourceFilter = params.source as BlogPostSource | undefined;
 
-  const posts = await getBlogPosts(statusFilter || null, sourceFilter || null);
+  const [posts, newsReviewQueue] = await Promise.all([
+    getBlogPosts(statusFilter || null, sourceFilter || null),
+    getNewsReviewQueue(),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -128,6 +162,41 @@ export default async function AdminBlogPage({ searchParams }: PageProps) {
           currentSource={sourceFilter || null}
         />
       </Suspense>
+
+      {newsReviewQueue.length > 0 && (
+        <section className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+          <div className="mb-3">
+            <h2 className="font-semibold">News awaiting editorial review</h2>
+            <p className="text-sm text-muted-foreground">
+              These candidates cannot appear in Latest News unless an editor confirms a genuine current development.
+            </p>
+          </div>
+          <div className="space-y-2">
+            {newsReviewQueue.map((candidate) => (
+              <a
+                key={candidate.id}
+                href={candidate.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-md border bg-background px-3 py-2 transition-colors hover:border-amber-500/50"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-medium">{candidate.title}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {candidate.source_name}
+                    {candidate.published_at
+                      ? ` · ${new Date(candidate.published_at).toLocaleDateString("vi-VN")}`
+                      : " · source date missing"}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {candidate.editorial_review_reason || candidate.editorial_disposition || "Review required"}
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Post List */}
       {posts.length > 0 ? (

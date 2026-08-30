@@ -18,6 +18,7 @@ export async function GET() {
         slug,
         title,
         published_at,
+        source_published_at,
         updated_at,
         source_urls,
         seo_keywords,
@@ -28,8 +29,8 @@ export async function GET() {
       .eq('status', 'published')
       // Google News sitemaps are a two-day discovery window. Older URLs stay
       // in the regular sitemap, where their corrected lastmod is preserved.
-      .gte('published_at', new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString())
-      .order('published_at', { ascending: false })
+      .gte('source_published_at', new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString())
+      .order('source_published_at', { ascending: false })
       .limit(1000);
 
     if (error) {
@@ -38,8 +39,9 @@ export async function GET() {
     }
 
     const entries = (posts || []).map((post: any) => {
-      const pubDate = post.published_at
-        ? new Date(post.published_at).toISOString()
+      const publicationDate = post.source_published_at ?? post.published_at;
+      const pubDate = publicationDate
+        ? new Date(publicationDate).toISOString()
         : new Date().toISOString();
       const pageModifiedAt = getNewsPageModifiedAt(post);
       const lastModified = pageModifiedAt

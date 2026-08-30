@@ -15,6 +15,10 @@ import {
 } from '@/lib/news/legacy-recovery';
 import { getSourceById } from '@/lib/news/sources';
 import type { ScrapedArticle } from '@/lib/news/types';
+import {
+  evaluateNewsFreshness,
+  freshnessQueueStatus,
+} from '@/lib/news/freshness-policy';
 
 // Lazy init
 function getSupabase() {
@@ -447,6 +451,8 @@ export async function GET(request: Request) {
     scraped: number;
     new: number;
     refreshed: number;
+    heldForReview: number;
+    quarantinedHistorical: number;
     skipped: number;
     errors: number;
   }> = {};
@@ -482,7 +488,15 @@ export async function GET(request: Request) {
     // Run each scraper sequentially (be respectful to news sites)
     for (const { id, name, scrape } of ALL_SCRAPERS) {
       console.log(`[news-scrape] Starting ${name}...`);
-      const sourceResult = { scraped: 0, new: 0, refreshed: 0, skipped: 0, errors: 0 };
+      const sourceResult = {
+        scraped: 0,
+        new: 0,
+        refreshed: 0,
+        heldForReview: 0,
+        quarantinedHistorical: 0,
+        skipped: 0,
+        errors: 0,
+      };
 
       try {
         const articles: ScrapedArticle[] = await scrape();
@@ -494,11 +508,16 @@ export async function GET(request: Request) {
           // DaLat.app URL can be corrected in place.
           const { data: existing } = await supabase
             .from('news_raw_articles')
-            .select('id, title, content, image_urls, published_at, scraped_at, status, error_message')
+            .select('id, title, content, image_urls, published_at, scraped_at, status, error_message, blog_post_id')
             .eq('source_url', article.sourceUrl)
             .maybeSingle();
 
           if (existing) {
+            const sourcePublishedAt = article.publishedAt ?? existing.published_at ?? null;
+            const freshness = evaluateNewsFreshness(sourcePublishedAt);
+            const queueStatus = existing.blog_post_id
+              ? 'pending'
+              : freshnessQueueStatus(freshness);
             const changed =
               normalizeText(existing.title) !== normalizeText(article.title) ||
               normalizeText(existing.content) !== normalizeText(article.content) ||
@@ -529,11 +548,16 @@ export async function GET(request: Request) {
                 image_urls: article.imageUrls.length > 0
                   ? article.imageUrls
                   : (existing.image_urls ?? []),
-                published_at: article.publishedAt ?? existing.published_at ?? null,
+                published_at: sourcePublishedAt,
                 scraped_at: new Date().toISOString(),
-                processed_at: null,
-                status: 'pending',
+                processed_at: queueStatus === 'pending' ? null : new Date().toISOString(),
+                status: queueStatus,
                 error_message: null,
+                editorial_disposition: existing.blog_post_id ? 'update' : freshness.disposition,
+                editorial_review_reason: existing.blog_post_id
+                  ? 'Established URL queued for in-place reverification'
+                  : freshness.reason,
+                editorial_reviewed_at: new Date().toISOString(),
               })
               .eq('id', existing.id)
               .eq('status', existing.status);
@@ -550,11 +574,17 @@ export async function GET(request: Request) {
               sourceResult.skipped++;
             } else {
               sourceResult.refreshed++;
+              if (queueStatus === 'review') sourceResult.heldForReview++;
+              if (queueStatus === 'skipped') sourceResult.quarantinedHistorical++;
             }
             continue;
           }
 
-          // Insert new article
+          // Insert new article. Only genuinely fresh reporting enters the
+          // processor; ambiguous dates wait for an editor and historical pages
+          // are quarantined without spending generation capacity.
+          const freshness = evaluateNewsFreshness(article.publishedAt);
+          const queueStatus = freshnessQueueStatus(freshness);
           const { error: insertError } = await supabase
             .from('news_raw_articles')
             .insert({
@@ -565,7 +595,11 @@ export async function GET(request: Request) {
               content: article.content,
               image_urls: article.imageUrls,
               published_at: article.publishedAt,
-              status: 'pending',
+              status: queueStatus,
+              processed_at: queueStatus === 'pending' ? null : new Date().toISOString(),
+              editorial_disposition: freshness.disposition,
+              editorial_review_reason: freshness.reason,
+              editorial_reviewed_at: new Date().toISOString(),
             });
 
           if (insertError) {
@@ -577,8 +611,14 @@ export async function GET(request: Request) {
               sourceResult.errors++;
             }
           } else {
-            sourceResult.new++;
-            totalNew++;
+            if (queueStatus === 'pending') {
+              sourceResult.new++;
+              totalNew++;
+            } else if (queueStatus === 'review') {
+              sourceResult.heldForReview++;
+            } else {
+              sourceResult.quarantinedHistorical++;
+            }
           }
         }
       } catch (error) {
@@ -587,7 +627,7 @@ export async function GET(request: Request) {
       }
 
       results[id] = sourceResult;
-      console.log(`[news-scrape] ${name}: scraped=${sourceResult.scraped}, new=${sourceResult.new}, refreshed=${sourceResult.refreshed}, skipped=${sourceResult.skipped}, errors=${sourceResult.errors}`);
+      console.log(`[news-scrape] ${name}: scraped=${sourceResult.scraped}, fresh=${sourceResult.new}, review=${sourceResult.heldForReview}, historical=${sourceResult.quarantinedHistorical}, refreshed=${sourceResult.refreshed}, skipped=${sourceResult.skipped}, errors=${sourceResult.errors}`);
     }
 
     return NextResponse.json({

@@ -37,7 +37,7 @@ const MAX_NEWS_AGE_H = 26;
 
 /**
  * Daily event-health watchdog + recurring-series top-up.
- * Runs at 02:30 UTC (09:30 Đà Lạt), after both scrape crons.
+ * Runs at 02:30 UTC (09:30 Đà Lạt), between recurring scrape/process cycles.
  */
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
@@ -290,6 +290,7 @@ interface ContentHealth {
   // Kept in the response for compatibility; automatic promotion is disabled.
   promotedPostId: null;
   newsBacklog: number;
+  newsReviewQueue: number;
   retriedArticles: number;
   pipelineErrors24h: number;
 }
@@ -310,6 +311,7 @@ async function checkContentHealth(
     newsStale: false,
     promotedPostId: null,
     newsBacklog: 0,
+    newsReviewQueue: 0,
     retriedArticles: 0,
     pipelineErrors24h: 0,
   };
@@ -330,14 +332,15 @@ async function checkContentHealth(
     const newestNewsAgeHours = async (): Promise<number | null> => {
       const { data } = await supabase
         .from("blog_posts")
-        .select("published_at")
+        .select("source_published_at, published_at")
         .eq("category_id", newsCategory.id)
         .eq("status", "published")
         .not("published_at", "is", null)
-        .order("published_at", { ascending: false })
+        .order("source_published_at", { ascending: false, nullsFirst: false })
         .limit(1);
-      const ts = data?.[0]?.published_at
-        ? new Date(data[0].published_at).getTime()
+      const newsDate = data?.[0]?.source_published_at ?? data?.[0]?.published_at;
+      const ts = newsDate
+        ? new Date(newsDate).getTime()
         : null;
       return ts === null ? null : (Date.now() - ts) / 3600_000;
     };
@@ -368,6 +371,17 @@ async function checkContentHealth(
       problems.push(
         `content health: news work queue query failed: ${backlogError.message}`,
       );
+    }
+
+    const { count: reviewCount, error: reviewError } = await supabase
+      .from("news_raw_articles")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "review");
+    health.newsReviewQueue = reviewCount ?? 0;
+    if (reviewError) {
+      problems.push(`content health: editorial review queue query failed: ${reviewError.message}`);
+    } else if (health.newsReviewQueue > 0) {
+      problems.push(`${health.newsReviewQueue} news candidate(s) await editorial review`);
     }
   }
 

@@ -23,6 +23,7 @@ const SOURCE_OPTIONS: { value: BlogPostSource | ""; label: string }[] = [
   { value: "manual", label: "Manual" },
   { value: "github_release", label: "GitHub Release" },
   { value: "daily_summary", label: "Daily Summary" },
+  { value: "news_scrape", label: "News" },
 ];
 
 export function BlogPostFilters({ currentStatus, currentSource }: BlogPostFiltersProps) {

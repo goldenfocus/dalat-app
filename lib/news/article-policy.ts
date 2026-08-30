@@ -229,13 +229,14 @@ export function resolveNewsPublicationStatus(
   return suggestedStatus === 'published' ? 'published' : 'experimental';
 }
 
-/** Preserve historical publication identity while allowing a draft's first launch. */
+/** News is dated by accepted source reporting, never by import or approval time. */
 export function resolveNewsPublishedAt(
   existing: { status: string; published_at: string | null } | null,
   nextStatus: string,
-  now: string
+  sourcePublishedAt: string | null
 ): string | null {
-  if (!existing) return nextStatus === 'published' ? now : null;
-  if (existing.published_at) return existing.published_at;
-  return existing.status === 'draft' && nextStatus === 'published' ? now : null;
+  const wasPublic = existing?.status === 'published' || existing?.status === 'experimental';
+  const willBePublic = nextStatus === 'published' || nextStatus === 'experimental';
+  if (wasPublic || willBePublic) return sourcePublishedAt ?? existing?.published_at ?? null;
+  return null;
 }

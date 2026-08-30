@@ -4,7 +4,11 @@
  */
 
 import { aiChatJson } from '@/lib/ai/provider';
-import type { ScrapedArticle, ArticleCluster } from './types';
+import type {
+  ScrapedArticle,
+  ArticleCluster,
+  NewsEditorialDisposition,
+} from './types';
 import { NEWS_CLUSTERING_SYSTEM, buildClusteringPrompt } from './news-prompt';
 
 interface ClusteringResult {
@@ -12,7 +16,15 @@ interface ClusteringResult {
   topic: string;
   dalat_relevance: number;
   newsworthiness: number;
+  editorial_disposition?: string;
+  editorial_reason?: string;
 }
+
+const EDITORIAL_DISPOSITIONS = new Set<NewsEditorialDisposition>([
+  'current-news',
+  'evergreen',
+  'reject',
+]);
 
 /** Maximum retries for transient API errors */
 const MAX_RETRIES = 3;
@@ -44,7 +56,12 @@ async function extractTopicKeywords(
     try {
       const result = await aiChatJson<ClusteringResult>({
         system: NEWS_CLUSTERING_SYSTEM,
-        prompt: buildClusteringPrompt(article.title, article.content),
+        prompt: buildClusteringPrompt(
+          article.title,
+          article.content,
+          article.publishedAt,
+          article.retrievedAt
+        ),
         maxTokens: 256,
         temperature: 0.2,
         timeoutMs: 30_000,
@@ -61,6 +78,14 @@ async function extractTopicKeywords(
       }
       if (typeof result.newsworthiness !== 'number') {
         result.newsworthiness = 0.5;
+      }
+      if (!EDITORIAL_DISPOSITIONS.has(result.editorial_disposition as NewsEditorialDisposition)) {
+        result.editorial_disposition = result.newsworthiness >= 0.5
+          ? 'current-news'
+          : 'evergreen';
+      }
+      if (typeof result.editorial_reason !== 'string' || !result.editorial_reason.trim()) {
+        result.editorial_reason = `Classifier marked this as ${result.editorial_disposition}`;
       }
 
       return result;
@@ -132,6 +157,8 @@ export async function clusterArticles(
     topic: string;
     relevance: number;
     newsworthiness: number;
+    editorialDisposition: NewsEditorialDisposition;
+    editorialReason: string;
   }> = [];
 
   for (const article of articles) {
@@ -164,6 +191,8 @@ export async function clusterArticles(
       topic: result.topic,
       relevance: result.dalat_relevance,
       newsworthiness: result.newsworthiness,
+      editorialDisposition: result.editorial_disposition as NewsEditorialDisposition,
+      editorialReason: result.editorial_reason!,
     });
   }
 
@@ -176,6 +205,7 @@ export async function clusterArticles(
     const current = articlesWithKeywords[i];
     const clusterArticles = [current.article];
     const allKeywords = new Set(current.keywords);
+    const clusterMembers = [current];
     assigned.add(i);
 
     // Find similar articles
@@ -188,6 +218,7 @@ export async function clusterArticles(
       if (similarity >= 0.4) {
         clusterArticles.push(candidate.article);
         candidate.keywords.forEach(k => allKeywords.add(k));
+        clusterMembers.push(candidate);
         assigned.add(j);
       }
     }
@@ -197,6 +228,16 @@ export async function clusterArticles(
       topicFingerprint: generateFingerprint([...allKeywords]),
       keywords: [...allKeywords],
       articles: clusterArticles,
+      editorialReview: {
+        disposition: clusterMembers.some(member => member.editorialDisposition === 'current-news')
+          ? 'current-news'
+          : clusterMembers.some(member => member.editorialDisposition === 'evergreen')
+            ? 'evergreen'
+            : 'reject',
+        reason: [...new Set(clusterMembers.map(member => member.editorialReason))].join(' '),
+        dalatRelevance: Math.max(...clusterMembers.map(member => member.relevance)),
+        newsworthiness: Math.max(...clusterMembers.map(member => member.newsworthiness)),
+      },
     });
   }
 

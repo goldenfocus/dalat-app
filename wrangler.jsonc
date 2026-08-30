@@ -56,16 +56,16 @@
     }
   ],
   // Mirrors vercel.json crons; cloudflare/worker.ts maps expression -> path.
-  // news-process stays at 3,15 UTC (before the legacy Vercel project's 4,16
-  // run) so the working pipeline drains the queue first.
+  // Fresh news discovery runs every two hours; processing follows 30 minutes
+  // later so a source page has time to settle before extraction.
   "triggers": {
     "crons": [
       "0 20 * * *",
       "0 1 * * *",
       "0 3 * * *",
       "0 16 * * *",
-      "0 2,14 * * *",
-      "0 3,15 * * *",
+      "5 */2 * * *",
+      "35 */2 * * *",
       "*/5 * * * *",
       "30 20 * * *",
       "7 * * * *",

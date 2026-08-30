@@ -10,22 +10,35 @@ Return a JSON object with exactly these fields:
   "keywords": ["keyword1", "keyword2", "keyword3"],
   "topic": "one-line topic summary",
   "dalat_relevance": 0.0-1.0,
-  "newsworthiness": 0.0-1.0
+  "newsworthiness": 0.0-1.0,
+  "editorial_disposition": "current-news|evergreen|reject",
+  "editorial_reason": "one concise sentence"
 }
 
 Rules:
 - Extract 3-5 keywords that identify the specific news story
 - Keywords should be specific enough to cluster related articles (e.g., "Langbiang marathon 2026" not just "sports")
 - dalat_relevance: How specifically about Đà Lạt is this (0.0 = generic Vietnam news, 1.0 = very Đà Lạt specific)
-- newsworthiness: How newsworthy is this (0.0 = advertorial/fluff, 1.0 = major local news)`;
+- newsworthiness: How newsworthy is this (0.0 = advertorial/fluff, 1.0 = major local news)
+- current-news: a concrete new event, decision, incident, announcement, opening, closure, result, or material update
+- evergreen: a profile, travel inspiration, general guide, seasonal description, or promotional feature without a new development
+- reject: irrelevant, thin, duplicated, sensational without substance, or not meaningfully about Đà Lạt
+- Do not call something current merely because it was retrieved recently; use the supplied source publication time and content`;
 
-export function buildClusteringPrompt(title: string, contentPreview: string): string {
+export function buildClusteringPrompt(
+  title: string,
+  contentPreview: string,
+  publishedAt?: string | null,
+  retrievedAt?: string | null
+): string {
   return `Analyze this Vietnamese news article:
 
 Title: ${title}
+Source publication time: ${publishedAt ?? 'missing'}
+Retrieved time: ${retrievedAt ?? 'missing'}
 Content (first 500 chars): ${contentPreview.slice(0, 500)}
 
-Extract topic keywords and assess relevance.`;
+Extract topic keywords, assess relevance, and make an editorial classification.`;
 }
 
 export const NEWS_CLAIM_EXTRACTION_SYSTEM = `You are a strict evidence extractor.

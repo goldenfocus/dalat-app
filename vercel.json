@@ -23,11 +23,11 @@
     },
     {
       "path": "/api/cron/news-scrape",
-      "schedule": "0 2,14 * * *"
+      "schedule": "5 */2 * * *"
     },
     {
       "path": "/api/cron/news-process",
-      "schedule": "0 3,15 * * *"
+      "schedule": "35 */2 * * *"
     },
     {
       "path": "/api/cron/refresh-fallback-covers",

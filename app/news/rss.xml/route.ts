@@ -23,6 +23,7 @@ export async function GET() {
         meta_description,
         cover_image_url,
         published_at,
+        source_published_at,
         updated_at,
         source_urls,
         news_tags,
@@ -30,7 +31,8 @@ export async function GET() {
       `)
       .eq('blog_categories.slug', 'news')
       .eq('status', 'published')
-      .order('published_at', { ascending: false })
+      .gte('source_published_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
+      .order('source_published_at', { ascending: false })
       .limit(50);
 
     if (error) {
@@ -46,8 +48,9 @@ export async function GET() {
     const items = feedPosts.map((post: any) => {
       const postUrl = localeUrl('en', `/blog/news/${encodeURIComponent(post.slug)}`);
       const description = post.meta_description || (post.story_content || '').slice(0, 300);
-      const pubDate = post.published_at
-        ? new Date(post.published_at).toUTCString()
+      const publicationDate = post.source_published_at ?? post.published_at;
+      const pubDate = publicationDate
+        ? new Date(publicationDate).toUTCString()
         : new Date().toUTCString();
       const tags = (post.news_tags || []) as string[];
 

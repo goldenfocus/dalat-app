@@ -93,15 +93,16 @@ describe('durable news article policy', () => {
     expect(resolveNewsPublicationStatus('deprecated', 'published')).toBe('deprecated');
   });
 
-  it('dates only a genuine first publication and never redates a public correction', () => {
-    const now = '2026-08-28T12:00:00.000Z';
-    expect(resolveNewsPublishedAt(null, 'published', now)).toBe(now);
-    expect(resolveNewsPublishedAt({ status: 'draft', published_at: null }, 'published', now)).toBe(now);
-    expect(resolveNewsPublishedAt({ status: 'experimental', published_at: null }, 'published', now)).toBeNull();
+  it('uses the accepted source date instead of import or approval time', () => {
+    const sourceDate = '2026-08-27T06:00:00.000Z';
+    expect(resolveNewsPublishedAt(null, 'draft', sourceDate)).toBeNull();
+    expect(resolveNewsPublishedAt(null, 'published', sourceDate)).toBe(sourceDate);
+    expect(resolveNewsPublishedAt({ status: 'draft', published_at: null }, 'published', sourceDate)).toBe(sourceDate);
+    expect(resolveNewsPublishedAt({ status: 'experimental', published_at: null }, 'published', sourceDate)).toBe(sourceDate);
     expect(resolveNewsPublishedAt({
       status: 'published',
       published_at: '2026-08-20T00:00:00.000Z',
-    }, 'published', now)).toBe('2026-08-20T00:00:00.000Z');
+    }, 'published', sourceDate)).toBe(sourceDate);
   });
 
   it('updates provenance for the same source URL without losing other sources', () => {

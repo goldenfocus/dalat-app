@@ -20,6 +20,12 @@ import {
   stampNewsSourceEnvelope,
 } from '@/lib/news/article-policy';
 import { storedSourceUrls } from '@/lib/news/legacy-recovery';
+import {
+  evaluateNewsFreshness,
+  editorialReviewApprovesNewArticle,
+  newestSourcePublication,
+  resolveEditorialPublicationCandidate,
+} from '@/lib/news/freshness-policy';
 import type { NewsContentOutput, ScrapedArticle } from '@/lib/news/types';
 
 interface ExistingNewsPost {
@@ -87,22 +93,13 @@ export async function GET(request: Request) {
       .eq('status', 'processing')
       .or(`processed_at.is.null,processed_at.lt.${staleLeaseBefore}`);
 
-    // 0b. Recover recent articles the LEGACY Vercel deployment poisoned:
-    // its crons still run with dead AI keys and mark everything 'skipped'.
-    // Re-evaluating a genuinely irrelevant article costs seconds on the
-    // free local model. Remove once the legacy project is deleted.
-    await supabase
-      .from('news_raw_articles')
-      .update({ status: 'pending' })
-      .eq('status', 'skipped')
-      .gte('scraped_at', new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString());
-
     // 1. Load pending raw articles
     const { data: pendingArticles, error: fetchError } = await supabase
       .from('news_raw_articles')
       .select('*')
       .eq('status', 'pending')
-      .order('scraped_at', { ascending: true })
+      .order('published_at', { ascending: false, nullsFirst: false })
+      .order('scraped_at', { ascending: false })
       // Small batches: keyword extraction runs ~8s/article on the local
       // model and deferred articles get re-clustered next run, so a big
       // batch spends the whole time budget clustering instead of writing.
@@ -117,10 +114,62 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: 'No pending articles', skipped: true });
     }
 
+    // Defense in depth for rows created by an older deployment: linked rows
+    // may reverify an established URL at any age, but a new URL needs a real,
+    // recent source timestamp before it can consume the generation pipeline.
+    const processableArticles = pendingArticles.filter((article) => {
+      if (article.blog_post_id) return true;
+      return evaluateNewsFreshness(article.published_at).autoPublishEligible;
+    });
+    const heldArticles = pendingArticles.filter((article) => {
+      if (article.blog_post_id) return false;
+      const disposition = evaluateNewsFreshness(article.published_at).disposition;
+      return disposition !== 'fresh' && disposition !== 'historical';
+    });
+    const historicalArticles = pendingArticles.filter((article) => {
+      if (article.blog_post_id) return false;
+      return evaluateNewsFreshness(article.published_at).disposition === 'historical';
+    });
+    const reviewedAt = new Date().toISOString();
+    if (heldArticles.length > 0) {
+      await supabase
+        .from('news_raw_articles')
+        .update({
+          status: 'review',
+          processed_at: reviewedAt,
+          editorial_disposition: 'needs-review',
+          editorial_review_reason: 'Freshness gate requires an editor before processing',
+          editorial_reviewed_at: reviewedAt,
+        })
+        .in('id', heldArticles.map(article => article.id))
+        .eq('status', 'pending');
+    }
+    if (historicalArticles.length > 0) {
+      await supabase
+        .from('news_raw_articles')
+        .update({
+          status: 'skipped',
+          processed_at: reviewedAt,
+          editorial_disposition: 'historical',
+          editorial_review_reason: 'Historical backlog cannot enter Latest News',
+          editorial_reviewed_at: reviewedAt,
+        })
+        .in('id', historicalArticles.map(article => article.id))
+        .eq('status', 'pending');
+    }
+    if (processableArticles.length === 0) {
+      return NextResponse.json({
+        message: 'No genuinely fresh pending articles',
+        held_for_review: heldArticles.length,
+        historical_quarantined: historicalArticles.length,
+        skipped: true,
+      });
+    }
+
     // Atomically lease only rows that are still pending. Overlapping runs may
     // read the same candidates, but exactly one receives each claimed row.
     const leaseStartedAt = new Date().toISOString();
-    const pendingIds = pendingArticles.map((article) => article.id);
+    const pendingIds = processableArticles.map((article) => article.id);
     const { data: rawArticles, error: claimError } = await supabase
       .from('news_raw_articles')
       .update({
@@ -269,6 +318,8 @@ export async function GET(request: Request) {
     const MIN_CLUSTER_PROCESSING_MS = 45_000;
     let postsCreated = 0;
     let postsUpdated = 0;
+    let editorialHeld = 0;
+    let editorialRejected = 0;
     let errors = clusteringFailed.length;
     let deferred = 0;
 
@@ -360,6 +411,34 @@ export async function GET(request: Request) {
             throw new Error(
               `Possible duplicate of /${fingerprintMatches![0].slug}; source identity does not match, manual review required`
             );
+          }
+        }
+
+        // A dedicated editorial classifier reviews topic value before factual
+        // verification/generation. It may hold or reject a new URL, but it can
+        // never override the deterministic source-date gate above. Established
+        // URLs bypass this creation gate so corrections remain possible.
+        if (!existingPost) {
+          const review = cluster.editorialReview;
+          const approved = editorialReviewApprovesNewArticle(review);
+          if (!approved) {
+            const rejected = review.disposition === 'reject';
+            await supabase
+              .from('news_raw_articles')
+              .update({
+                status: rejected ? 'skipped' : 'review',
+                cluster_id: null,
+                processed_at: new Date().toISOString(),
+                editorial_disposition: review.disposition,
+                editorial_review_reason: review.reason,
+                editorial_reviewed_at: new Date().toISOString(),
+              })
+              .in('source_url', clusterSourceUrls)
+              .eq('status', 'processing')
+              .eq('cluster_id', runId);
+            if (rejected) editorialRejected++;
+            else editorialHeld++;
+            continue;
           }
         }
 
@@ -462,22 +541,41 @@ export async function GET(request: Request) {
           evidence.acceptedFactFingerprint,
           contentUpdatedAt
         );
+        const sourcePublishedAt = newestSourcePublication(
+          evidence.sourceUrls.map(source => source.published_at)
+        );
+        const freshness = evaluateNewsFreshness(sourcePublishedAt);
+        const publicationCandidate = resolveEditorialPublicationCandidate({
+          freshness,
+          review: cluster.editorialReview,
+          verificationStatus: quality.suggestedStatus,
+          existingUrl: existingPost !== null,
+        });
         const nextStatus = resolveNewsPublicationStatus(
           existingPost?.status ?? null,
-          quality.suggestedStatus
+          publicationCandidate
         );
 
         const postValues = {
           source_urls: mergedSources,
           // Corroboration can change while the accepted fact fingerprint stays
-          // stable. Persist the resulting confidence/status without rewriting
-          // the established article or changing its original publication time.
+          // stable. Persist confidence/status without rewriting the article.
           quality_score: quality.total,
           status: nextStatus,
-          // A draft's first promotion is a real publication. Already-public
-          // experimental/published URLs preserve their historical timestamp
-          // exactly, including a legacy null, so corrections never look new.
-          published_at: resolveNewsPublishedAt(existingPost, nextStatus, now),
+          source_published_at: sourcePublishedAt,
+          first_seen_at: existingPost ? undefined : now,
+          editorial_disposition: existingPost
+            ? 'update'
+            : publicationCandidate === 'published'
+              ? 'current-news'
+              : 'needs-review',
+          editorial_review_reason: freshness.autoPublishEligible
+            ? cluster.editorialReview.reason
+            : freshness.reason,
+          editorial_reviewed_at: now,
+          // The newest accepted source is the news peg. Import, approval, and
+          // reverification times never make an old story look newly published.
+          published_at: resolveNewsPublishedAt(existingPost, nextStatus, sourcePublishedAt),
           ...(factsChanged && content && linkedStory !== null && linkedTechnical !== null
             ? {
                 title: content.title,
@@ -570,6 +668,9 @@ export async function GET(request: Request) {
             cluster_id: cluster.clusterId,
             topic_fingerprint: cluster.topicFingerprint,
             topic_keywords: cluster.keywords,
+            editorial_disposition: existingPost ? 'update' : cluster.editorialReview.disposition,
+            editorial_review_reason: cluster.editorialReview.reason,
+            editorial_reviewed_at: now,
           })
           .in('source_url', clusterSourceUrls)
           .eq('status', 'processing')
@@ -649,6 +750,8 @@ export async function GET(request: Request) {
         created: postsCreated,
         updated: postsUpdated,
         skipped: skipped.length,
+        editorialHeld,
+        editorialRejected,
         clusteringFailed: clusteringFailed.length,
         deferred: deferred + clusteringDeferred.length,
         errors,
@@ -661,6 +764,8 @@ export async function GET(request: Request) {
       clusters: clusters.length,
       posts_created: postsCreated,
       posts_updated: postsUpdated,
+      editorial_held: editorialHeld,
+      editorial_rejected: editorialRejected,
       clusters_deferred: deferred + clusteringDeferred.length,
       errors,
       elapsed_s: Math.round((Date.now() - startedAt) / 1000),

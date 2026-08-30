@@ -60,6 +60,16 @@ export interface ArticleCluster {
   topicFingerprint: string;
   keywords: string[];
   articles: ScrapedArticle[];
+  editorialReview: NewsEditorialReview;
+}
+
+export type NewsEditorialDisposition = 'current-news' | 'evergreen' | 'reject';
+
+export interface NewsEditorialReview {
+  disposition: NewsEditorialDisposition;
+  reason: string;
+  dalatRelevance: number;
+  newsworthiness: number;
 }
 
 export interface NewsProcessResult {
