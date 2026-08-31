@@ -102,6 +102,18 @@ describe("Activity Graph scoring", () => {
     expect(result.hardGateFailures).toEqual([]);
   });
 
+  it("allows a server-verified scout submission to reach its 97-point threshold", () => {
+    const scoutSource = { ...source, fetch_mode: "manual", auto_publish_threshold: 97 };
+    const result = scoreActivity(
+      activity,
+      scoutSource,
+      evaluateDalatLocality(activity),
+      new Date("2026-08-28T00:00:00Z"),
+    );
+    expect(result.score).toBe(100);
+    expect(result.hardGateFailures).toEqual([]);
+  });
+
   it("does not treat the widened Lâm Đồng province as Đà Lạt", () => {
     expect(
       evaluateDalatLocality({

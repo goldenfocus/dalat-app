@@ -484,7 +484,7 @@ async function keepSystemStaleCandidateUnlisted(
   };
 }
 
-async function processActivity(
+export async function ingestVerifiedActivity(
   supabase: SupabaseClient,
   source: ActivitySource,
   activity: ExtractedActivity,
@@ -765,7 +765,7 @@ export async function syncActivitySource(
         }
         result.activitiesSeen++;
         try {
-          const processed = await processActivity(
+          const processed = await ingestVerifiedActivity(
             supabase,
             source,
             activity,

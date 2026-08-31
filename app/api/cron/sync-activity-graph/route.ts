@@ -87,6 +87,10 @@ export async function GET(request: Request) {
       .select("*")
       .in("status", ["active", "degraded"])
       .eq("policy_status", "approved")
+      // `manual` sources are refreshed by the autonomous scout. They still
+      // participate in global stale expiry, but have no deterministic crawler
+      // for this route to execute.
+      .neq("fetch_mode", "manual")
       .lte("next_check_at", startedAt.toISOString())
       .order("trust_tier", { ascending: true })
       .order("next_check_at", { ascending: true })

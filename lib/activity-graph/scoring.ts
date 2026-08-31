@@ -148,6 +148,9 @@ export function scoreActivity(
     deterministicParser: [
       "json_ld_sitemap",
       "verified_recurring_page",
+      // Scout submissions are fetched again by the server and every required
+      // quote is checked against that page before projection.
+      "manual",
     ].includes(source.fetch_mode)
       ? 15
       : 8,
