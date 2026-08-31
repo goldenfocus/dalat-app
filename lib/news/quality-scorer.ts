@@ -32,9 +32,39 @@ function clamp01(value: number): number {
   return Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
 }
 
+const ROUTINE_NEWS_PREFIXES = new Set([
+  'announcement', 'culture', 'economy', 'education', 'event', 'organization',
+  'organizer', 'place', 'project', 'road', 'service', 'tourism', 'traffic',
+  'transport', 'venue',
+]);
+
+/**
+ * A fresh routine bulletin may publish from one established newsroom when it
+ * contains at least two independently verified atomic facts. Incidents, people,
+ * health, safety, weather, and government/policy claims remain on the normal
+ * official-source or independent-corroboration path.
+ */
+export function isRoutineNewsBulletinEligible(
+  verification: Pick<VerifiedClaimLedger, 'metrics' | 'acceptedClaims' | 'factGroups'>
+): boolean {
+  if (verification.factGroups.length < 2 || verification.acceptedClaims.length < 2) return false;
+  if (
+    verification.metrics.freshness < 0.9
+    || verification.metrics.agreement < 0.9
+  ) return false;
+  if (!verification.acceptedClaims.every((claim) => claim.confidence >= 0.9)) return false;
+  if (!verification.acceptedClaims.every((claim) => claim.sourceTier === 'A' || claim.sourceTier === 'B')) {
+    return false;
+  }
+  return verification.factGroups.every((fact) => {
+    const prefix = fact.normalizedKey.split('.')[0];
+    return ROUTINE_NEWS_PREFIXES.has(prefix);
+  });
+}
+
 /** Score a verified ledger without requiring article generation first. */
 export function calculateVerificationQualityScore(
-  verification: Pick<VerifiedClaimLedger, 'metrics'> | null | undefined
+  verification: Pick<VerifiedClaimLedger, 'metrics' | 'acceptedClaims' | 'factGroups'> | null | undefined
 ): QualityScore {
   const metrics = verification?.metrics ?? ZERO_METRICS;
   const breakdown: VerificationMetrics = {
@@ -46,10 +76,16 @@ export function calculateVerificationQualityScore(
   };
   const total = Object.values(breakdown).reduce((sum, value) => sum + value, 0);
 
+  const routineBulletinEligible = verification
+    ? isRoutineNewsBulletinEligible(verification)
+    : false;
+
   return {
     total,
     breakdown,
-    suggestedStatus: total >= NEWS_AUTO_PUBLISH_THRESHOLD ? 'published' : 'draft',
+    suggestedStatus: total >= NEWS_AUTO_PUBLISH_THRESHOLD || routineBulletinEligible
+      ? 'published'
+      : 'draft',
   };
 }
 

@@ -134,12 +134,19 @@ export function countEvidenceWords(fragment: string): number {
 }
 
 /**
- * Evidence matching deliberately has no semantic/fuzzy step. The only
- * allowances are Unicode normalization, case, and collapsed whitespace.
+ * Evidence matching deliberately has no semantic/fuzzy step. We compare the
+ * same ordered words after normalizing Unicode, case, punctuation, and source
+ * parentheticals. This tolerates newsroom boilerplate such as an inserted
+ * province name without accepting paraphrases.
  */
 export function evidenceAppearsInSource(fragment: string, sourceText: string): boolean {
-  const normalizedFragment = normalizeText(fragment).toLowerCase();
-  const normalizedSource = normalizeText(sourceText).toLowerCase();
+  // Still lexical rather than semantic/fuzzy: compare the same ordered words
+  // after removing only parentheticals, accents, case, and punctuation.
+  const comparable = (value: string) => normalizeSemanticText(
+    value.replace(/\([^)]*\)/gu, ' ')
+  );
+  const normalizedFragment = comparable(fragment);
+  const normalizedSource = comparable(sourceText);
   return normalizedFragment.length > 0 && normalizedSource.includes(normalizedFragment);
 }
 
@@ -192,7 +199,7 @@ const CLAIM_FIELD_EVIDENCE_PATTERNS: Record<string, RegExp> = {
   number: /\b(?:number|total|count|figure|so\s+luong|tong|con\s+so)\b/u,
   opening_hours: /\b(?:opening\s+hours|open\s+from|opens?|closes?|hours|gio\s+mo\s+cua|mo\s+cua|dong\s+cua)\b/u,
   overflow_capacity: /\b(?:overflow\s+capacity|additional\s+capacity|extra\s+guests?|suc\s+chua\s+bo\s+sung|cho\s+bo\s+sung)\b/u,
-  percentage: /\b(?:percent|percentage|ty\s+le|phan\s+tram)\b|%/u,
+  percentage: /\b(?:percent|percentage|increased?|decreased?|ty\s+le|phan\s+tram|tang|giam)\b|%/u,
   phone: /\b(?:phone|telephone|tel|hotline|dien\s+thoai|lien\s+he)\b/u,
   price: /\b(?:price|priced|cost|admission|ticket|gia|gia\s+ve|vnd|usd|eur|gbp)\b|[$€£₫]/u,
   requirement: /\b(?:requirement|required|must|need\s+to|yeu\s+cau|bat\s+buoc|can)\b/u,
@@ -229,7 +236,7 @@ const CLAIM_PREFIX_EVIDENCE_PATTERNS: Record<string, RegExp> = {
   road: /\b(?:road|street|highway|route|duong|quoc\s+lo|tinh\s+lo)\b/u,
   safety: /\b(?:safety|safe|warning|risk|an\s+toan|canh\s+bao|rui\s+ro)\b/u,
   service: /\b(?:service|facility|program|dich\s+vu|tien\s+ich|chuong\s+trinh)\b/u,
-  tourism: /\b(?:tourism|tourist|visitor|travel|du\s+lich|du\s+khach|tham\s+quan)\b/u,
+  tourism: /\b(?:tourism|tourist|visitor|travel|du\s+lich|du\s+khach|luot\s+khach|luu\s+tru|dat\s+phong|tham\s+quan)\b/u,
   traffic: /\b(?:traffic|congestion|vehicle|giao\s+thong|un\s+tac|phuong\s+tien)\b/u,
   transport: /\b(?:transport|bus|train|flight|airport|transit|van\s+tai|xe\s+buyt|tau|chuyen\s+bay|san\s+bay)\b/u,
   venue: /\b(?:venue|property|homestay|hotel|resort|hostel|cafe|restaurant|museum|park|lake|mountain|dia\s+diem|co\s+so|khach\s+san|nha\s+hang|bao\s+tang|cong\s+vien|ho|nui)\b/u,
@@ -255,12 +262,13 @@ function normalizedDateMention(rawClause: string, isoDate: string): string | nul
   const patterns = [
     /\b\d{4}-\d{1,2}-\d{1,2}\b/gu,
     /\b\d{1,2}[/.]\d{1,2}[/.]\d{4}\b/gu,
+    /\b\d{1,2}[-/.]\d{1,2}\b/gu,
     /\b\d{1,2}\s+[A-Za-z]+\s+\d{4}\b/gu,
     /\b[A-Za-z]+\s+\d{1,2}(?:,)?\s+\d{4}\b/gu,
   ];
   for (const pattern of patterns) {
     for (const match of rawClause.matchAll(pattern)) {
-      if (extractCanonicalDates(match[0]).has(isoDate)) {
+      if (extractCanonicalDates(match[0], Number(isoDate.slice(0, 4))).has(isoDate)) {
         return normalizeSemanticText(match[0]);
       }
     }
@@ -647,7 +655,7 @@ function canonicalDate(year: number, month: number, day: number): string | null 
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-function extractCanonicalDates(value: string): Set<string> {
+function extractCanonicalDates(value: string, fallbackYear?: number): Set<string> {
   const dates = new Set<string>();
   for (const match of value.matchAll(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/gu)) {
     const date = canonicalDate(Number(match[1]), Number(match[2]), Number(match[3]));
@@ -656,6 +664,16 @@ function extractCanonicalDates(value: string): Set<string> {
   for (const match of value.matchAll(/\b(\d{1,2})[/.](\d{1,2})[/.](\d{4})\b/gu)) {
     const date = canonicalDate(Number(match[3]), Number(match[2]), Number(match[1]));
     if (date) dates.add(date);
+  }
+  if (fallbackYear) {
+    for (const match of value.matchAll(/\b(\d{1,2})[-/.](\d{1,2})\b/gu)) {
+      // Ignore the day/month tail of a full date already handled above.
+      const before = value.slice(Math.max(0, (match.index ?? 0) - 5), match.index ?? 0);
+      const after = value.slice((match.index ?? 0) + match[0].length, (match.index ?? 0) + match[0].length + 5);
+      if (/\d{4}[-/.]$/u.test(before) || /^[-/.]\d{4}\b/u.test(after)) continue;
+      const date = canonicalDate(fallbackYear, Number(match[2]), Number(match[1]));
+      if (date) dates.add(date);
+    }
   }
   for (const match of value.toLowerCase().matchAll(/\b(\d{1,2})\s+([a-z]+)\s+(\d{4})\b/gu)) {
     const month = MONTH_NUMBERS[match[2]];
@@ -827,9 +845,15 @@ export function buildVerifiedClaimLedger(
     const normalizedIsoDate = /^\d{4}-\d{2}-\d{2}$/u.test(value)
       ? canonicalDate(Number(value.slice(0, 4)), Number(value.slice(5, 7)), Number(value.slice(8, 10)))
       : null;
+    const publishedAtYear = source.publishedAt
+      ? new Date(source.publishedAt).getUTCFullYear()
+      : NaN;
     const canonicalDateAppearsInEvidence = isDateKey
       && normalizedIsoDate !== null
-      && extractCanonicalDates(evidenceFragment).has(normalizedIsoDate);
+      && extractCanonicalDates(
+        evidenceFragment,
+        Number.isInteger(publishedAtYear) ? publishedAtYear : undefined
+      ).has(normalizedIsoDate);
     const normalizedValueIsSupported = exactValueAppearsInEvidence || canonicalDateAppearsInEvidence;
     if (!normalizedValueIsSupported) {
       rejectedClaims.push(rejected(

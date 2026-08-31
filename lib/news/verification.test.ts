@@ -84,6 +84,31 @@ describe('verified news claim ledger', () => {
     });
   });
 
+  it('matches the same ordered evidence words across source parentheticals and punctuation', () => {
+    expect(evidenceAppearsInSource(
+      'lực lượng Công an tỉnh Lâm Đồng phong tỏa hiện trường',
+      'Lực lượng Công an tỉnh Lâm Đồng (tỉnh Lâm Đồng) phong tỏa hiện trường.'
+    )).toBe(true);
+    expect(evidenceAppearsInSource(
+      'lực lượng phong tỏa Công an',
+      'Lực lượng Công an tỉnh Lâm Đồng phong tỏa hiện trường.'
+    )).toBe(false);
+  });
+
+  it('normalizes a Vietnamese day-month using the trusted source publication year', () => {
+    const evidence = 'Sự kiện du lịch diễn ra ngày 30-8.';
+    const sources = [source(1, evidence, {
+      publishedAt: '2026-08-30T03:00:00.000Z',
+    })];
+    const ledger = buildVerifiedClaimLedger([
+      claim(1, 'event.start_date', '2026-08-30', 'Sự kiện du lịch diễn ra ngày 30-8'),
+      claim(1, 'event.end_date', '2026-09-30', 'Sự kiện du lịch diễn ra ngày 30-8'),
+    ], sources, NOW);
+
+    expect(ledger.acceptedClaims.map(item => item.normalizedValue)).toEqual(['2026-08-30']);
+    expect(ledger.rejectedClaims[0].reason).toBe('value-not-supported');
+  });
+
   it('rejects evidence fragments longer than 20 words', () => {
     const longEvidence = 'one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twenty-one';
     const sources = [source(1, longEvidence)];
@@ -188,9 +213,10 @@ describe('verified news claim ledger', () => {
   });
 
   it('accepts short exact Vietnamese tourism and revenue facts without unit conversion', () => {
-    const evidence = 'Lâm Đồng đón hơn 16,46 triệu lượt khách du lịch. Doanh thu du lịch đạt 45.600 tỉ đồng.';
+    const evidence = 'Lâm Đồng đón hơn 16,46 triệu lượt khách. Đặt phòng du lịch tăng khoảng 40%. Doanh thu du lịch đạt 45.600 tỉ đồng.';
     const ledger = buildVerifiedClaimLedger([
-      claim(1, 'tourism.attendance', '16,46 triệu lượt khách', 'Lâm Đồng đón hơn 16,46 triệu lượt khách du lịch'),
+      claim(1, 'tourism.attendance', '16,46 triệu lượt khách', 'Lâm Đồng đón hơn 16,46 triệu lượt khách'),
+      claim(1, 'tourism.percentage', '40%', 'Đặt phòng du lịch tăng khoảng 40%'),
       claim(1, 'economy.amount', '45.600 tỉ đồng', 'Doanh thu du lịch đạt 45.600 tỉ đồng'),
     ], [source(1, evidence)], NOW);
 
@@ -199,6 +225,7 @@ describe('verified news claim ledger', () => {
       value: item.value,
     }))).toEqual([
       { key: 'tourism.attendance', value: '16,46 triệu lượt khách' },
+      { key: 'tourism.percentage', value: '40%' },
       { key: 'economy.amount', value: '45.600 tỉ đồng' },
     ]);
   });

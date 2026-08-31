@@ -5,9 +5,21 @@ describe('news processing batch selection', () => {
   it('keeps the request bounded while pairing corroborating publisher headlines', () => {
     const candidates = [
       { id: 'newest', title: 'Đà Lạt đông khách dịp lễ 2.9 nhưng vẫn thông thoáng' },
+      { id: 'tourism-b', title: "Du lịch Đà Lạt xuất hiện 'hiệu ứng' chưa từng có dịp lễ 2-9" },
       { id: 'death-a', title: 'Phát hiện thi thể nữ kế toán ở hồ Xuân Hương - Đà Lạt' },
       { id: 'death-b', title: 'Ph&#xE1;t hi&#x1EC7;n thi th&#x1EC3; n&#x1EEF; k&#x1EBF; to&#xE1;n ban qu&#x1EA3;n l&#xFD; d&#x1EF1; &#xE1;n &#x1EDF; h&#x1ED3; Xu&#xE2;n H&#x1B0;&#x1A1;ng' },
       { id: 'flight', title: 'Chuyến bay Cần Thơ hoãn đến hai lần' },
+    ];
+
+    expect(selectNewsProcessingBatch(candidates).map(candidate => candidate.id))
+      .toEqual(['newest', 'tourism-b']);
+  });
+
+  it('still pairs sensitive corroborating headlines when no routine pair exists', () => {
+    const candidates = [
+      { id: 'newest', title: 'Đà Lạt đông khách dịp lễ 2.9' },
+      { id: 'death-a', title: 'Phát hiện thi thể nữ kế toán ở hồ Xuân Hương - Đà Lạt' },
+      { id: 'death-b', title: 'Phát hiện thi thể nữ kế toán tại hồ Xuân Hương' },
     ];
 
     expect(selectNewsProcessingBatch(candidates).map(candidate => candidate.id))

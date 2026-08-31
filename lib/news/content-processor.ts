@@ -17,6 +17,7 @@ import { buildAcceptedFactFingerprint } from './article-policy';
 import {
   NEWS_CLAIM_EXTRACTION_SYSTEM,
   buildClaimExtractionPrompt,
+  buildClaimRepairPrompt,
 } from './news-prompt';
 import { renderVerifiedNews } from './verified-renderer';
 import {
@@ -96,28 +97,54 @@ async function extractVerifiedLedger(
   const processingTimestamp = processingTime.toISOString();
   const sources = createClaimExtractionSources(cluster.articles, processingTimestamp);
 
-  const ledger = await withRetry('claim extraction', deadlineAt, async () => {
-    const responseText = await aiChat({
-      system: NEWS_CLAIM_EXTRACTION_SYSTEM,
-      prompt: buildClaimExtractionPrompt(sources),
-      json: true,
-      maxTokens: 2_500,
-      temperature: 0.1,
-      timeoutMs: PROVIDER_TIMEOUT_MS,
-      deadlineAt,
-    });
-    const candidates = parseClaimCandidates(parseJsonResponse(responseText));
-    if (candidates.length === 0) {
-      throw new Error('Claim extractor returned no claim candidates');
-    }
+  let prompt = buildClaimExtractionPrompt(sources);
+  const bestLedgerRef: { current: VerifiedClaimLedger | null } = { current: null };
+  let ledger: VerifiedClaimLedger;
 
-    const candidateLedger = buildVerifiedClaimLedger(candidates, sources, processingTime);
-    if (candidateLedger.acceptedClaims.length === 0) {
+  try {
+    ledger = await withRetry('claim extraction', deadlineAt, async () => {
+      const responseText = await aiChat({
+        system: NEWS_CLAIM_EXTRACTION_SYSTEM,
+        prompt,
+        json: true,
+        maxTokens: 2_500,
+        temperature: 0.1,
+        timeoutMs: PROVIDER_TIMEOUT_MS,
+        deadlineAt,
+      });
+      const candidates = parseClaimCandidates(parseJsonResponse(responseText));
+      if (candidates.length === 0) {
+        throw new Error('Claim extractor returned no claim candidates');
+      }
+
+      const candidateLedger = buildVerifiedClaimLedger(candidates, sources, processingTime);
+      if (
+        !bestLedgerRef.current
+        || candidateLedger.factGroups.length > bestLedgerRef.current.factGroups.length
+        || (
+          candidateLedger.factGroups.length === bestLedgerRef.current.factGroups.length
+          && candidateLedger.acceptedClaims.length > bestLedgerRef.current.acceptedClaims.length
+        )
+      ) {
+        bestLedgerRef.current = candidateLedger;
+      }
+      if (candidateLedger.factGroups.length >= 2) return candidateLedger;
+
       const reasons = candidateLedger.rejectedClaims.map((claim) => claim.reason).join(', ');
-      throw new Error(`Claim extractor produced no supported facts (${reasons || 'unknown reason'})`);
+      prompt = buildClaimRepairPrompt(sources, candidateLedger.rejectedClaims);
+      throw new Error(
+        `Claim extractor produced only ${candidateLedger.factGroups.length} supported facts (${reasons || 'no additional candidates'})`
+      );
+    });
+  } catch (error) {
+    // A sparse but valid ledger remains useful for the normal corroboration or
+    // official-source path. The routine single-newsroom exception still needs
+    // two high-confidence facts and therefore cannot be reached through this fallback.
+    if (bestLedgerRef.current && bestLedgerRef.current.acceptedClaims.length > 0) {
+      ledger = bestLedgerRef.current;
     }
-    return candidateLedger;
-  });
+    else throw error;
+  }
 
   return { ledger, sources };
 }
