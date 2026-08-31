@@ -3,7 +3,8 @@
  *
  *   1. Local Ollama (qwen3:14b) on the Mac mini, via Cloudflare tunnel — primary
  *   2. Cloudflare Workers AI (Llama 3.3 70B) — free tier
- *   3. OpenRouter free models — last resort
+ *   3. OpenRouter free models
+ *   4. Anthropic — production safety net when the zero-credit providers are unavailable
  *
  * All providers are prompt-in/text-out. Callers that need JSON should pass
  * `json: true` and parse defensively (models may still wrap output in fences).
@@ -31,6 +32,7 @@ const OPENROUTER_FREE_MODELS = [
 ];
 
 const CF_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
 
 class ProviderError extends Error {
   constructor(provider: string, cause: string) {
@@ -161,10 +163,44 @@ async function openRouter(opts: AIChatOptions): Promise<string> {
   throw lastError;
 }
 
+async function anthropicAI(opts: AIChatOptions): Promise<string> {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new ProviderError('anthropic', 'ANTHROPIC_API_KEY not configured');
+
+  const system = opts.json ? jsonNudge(opts.system) : opts.system;
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: opts.maxTokens ?? 2048,
+      temperature: opts.temperature ?? 0.4,
+      ...(system ? { system } : {}),
+      messages: [{ role: 'user', content: opts.prompt }],
+    }),
+    signal: AbortSignal.timeout(requestTimeoutMs(opts)),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new ProviderError('anthropic', `status ${res.status}: ${data?.error?.message ?? 'request failed'}`.slice(0, 240));
+  }
+  const text = Array.isArray(data.content)
+    ? data.content.find((block: { type?: string; text?: string }) => block.type === 'text')?.text
+    : undefined;
+  if (!text || !text.trim()) throw new ProviderError('anthropic', 'empty response');
+  return text;
+}
+
 const CHAIN: Array<{ name: string; run: (opts: AIChatOptions) => Promise<string> }> = [
   { name: 'local', run: localOllama },
   { name: 'cloudflare', run: cloudflareAI },
   { name: 'openrouter', run: openRouter },
+  { name: 'anthropic', run: anthropicAI },
 ];
 
 /**
