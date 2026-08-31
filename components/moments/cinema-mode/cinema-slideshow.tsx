@@ -342,6 +342,12 @@ export function CinemaSlideshow({
     play();
   }, [goTo, play]);
 
+  const handleVideoPlayRequest = useCallback(() => {
+    play();
+    showFlash("play");
+    showControlsTemporarily();
+  }, [play, showControlsTemporarily, showFlash]);
+
   const handleAddMoment = useCallback(() => {
     triggerHaptic("selection");
     exit();
@@ -379,10 +385,12 @@ export function CinemaSlideshow({
 
           {currentMoment.content_type === "video" && (
             <CinemaVideoSlide
+              key={currentMoment.id}
               moment={currentMoment}
               isActive={!isEnded}
               isTransitioning={isTransitioning}
               isPaused={isPaused}
+              onRequestPlay={handleVideoPlayRequest}
               onEnded={onVideoEnded}
               onTimeUpdate={onVideoTimeUpdate}
             />
