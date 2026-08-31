@@ -2,12 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./ingest", () => ({ ingestVerifiedActivity: vi.fn() }));
 
-import { validateScoutSubmission } from "./scout-submit";
+import { validateScoutSubmission, type ScoutSubmission } from "./scout-submit";
 
 const NOW = new Date("2026-08-30T00:00:00.000Z");
-const PAGE = "Autumn yoga retreat 2026-10-03 09:00 Da Lat, Lam Dong Public enrollment is open.";
+const PAGE = "Autumn yoga retreat 2026-10-03 09:00 Da Lat, Lam Dong Public enrollment is open. Community yoga every Tuesday at 18:00.";
 
-function submission() {
+function submission(): ScoutSubmission {
   return {
     source: {
       name: "Example Yoga Da Lat",
@@ -87,5 +87,52 @@ describe("autonomous scout submission validation", () => {
     input.activity.startsAt = "2026-10-03T09:00:00+07:00";
     input.activity.timePrecision = "date_only";
     expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("exact future start time");
+  });
+
+  it("accepts a fully evidenced recurring activity without inventing a dated start", () => {
+    const input = submission();
+    input.activity.sourceUid = "https://example.test/courses/community-yoga";
+    input.activity.sourceUrl = "https://example.test/courses/community-yoga";
+    input.activity.kind = "recurring_activity";
+    input.activity.title = "Community yoga";
+    input.activity.startsAt = null;
+    input.activity.endsAt = null;
+    input.activity.timePrecision = "recurring";
+    input.activity.rrule = "FREQ=WEEKLY;BYDAY=TU";
+    input.activity.startsAtTime = "18:00:00";
+    input.activity.firstOccurrence = "2026-08-04";
+    input.activity.evidence = [
+      { fieldPath: "title", rawValue: "Community yoga", evidenceText: "Community yoga", locator: "body", confidence: 100 },
+      { fieldPath: "rrule", rawValue: "FREQ=WEEKLY;BYDAY=TU", evidenceText: "every Tuesday", locator: "body", confidence: 100 },
+      { fieldPath: "starts_at_time", rawValue: "18:00", evidenceText: "18:00", locator: "body", confidence: 100 },
+      { fieldPath: "address", rawValue: "Da Lat, Lam Dong", evidenceText: "Da Lat, Lam Dong", locator: "body", confidence: 100 },
+      { fieldPath: "public_access", rawValue: "Public enrollment is open", evidenceText: "Public enrollment is open", locator: "body", confidence: 100 },
+    ];
+
+    expect(validateScoutSubmission(input, PAGE, NOW).activity.rrule).toBe("FREQ=WEEKLY;BYDAY=TU");
+  });
+
+  it("rejects recurring activities with incomplete or expired schedules", () => {
+    const input = submission();
+    input.activity.kind = "recurring_activity";
+    input.activity.startsAt = null;
+    input.activity.endsAt = null;
+    input.activity.timePrecision = "recurring";
+    input.activity.rrule = "FREQ=WEEKLY;BYDAY=TU";
+    input.activity.startsAtTime = "18:00:00";
+    input.activity.firstOccurrence = "2026-08-04";
+    input.activity.rruleUntil = "2026-08-29T23:59:59+07:00";
+    input.activity.evidence = [
+      { fieldPath: "title", rawValue: "Community yoga", evidenceText: "Community yoga", locator: "body", confidence: 100 },
+      { fieldPath: "rrule", rawValue: "FREQ=WEEKLY;BYDAY=TU", evidenceText: "every Tuesday", locator: "body", confidence: 100 },
+      { fieldPath: "starts_at_time", rawValue: "18:00", evidenceText: "18:00", locator: "body", confidence: 100 },
+      { fieldPath: "address", rawValue: "Da Lat, Lam Dong", evidenceText: "Da Lat, Lam Dong", locator: "body", confidence: 100 },
+      { fieldPath: "public_access", rawValue: "Public enrollment is open", evidenceText: "Public enrollment is open", locator: "body", confidence: 100 },
+    ];
+
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("future occurrence");
+    input.activity.rruleUntil = null;
+    input.activity.evidence = input.activity.evidence.filter((row) => row.fieldPath !== "starts_at_time");
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("recurring schedule evidence");
   });
 });

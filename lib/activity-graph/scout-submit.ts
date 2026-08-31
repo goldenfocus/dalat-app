@@ -4,6 +4,7 @@ import { z } from "zod";
 import { fetchSourceText, type FetchedSourceDocument } from "./fetch";
 import { ingestVerifiedActivity } from "./ingest";
 import type { ActivitySource, ExtractedActivity } from "./types";
+import { isValidRRule } from "@/lib/recurrence";
 
 const ISO_DATE_TIME = z.string().datetime({ offset: true }).or(z.null());
 
@@ -75,7 +76,7 @@ const activitySchema = z.object({
 export const scoutSubmissionSchema = z.object({ source: sourceSchema, activity: activitySchema });
 export type ScoutSubmission = z.infer<typeof scoutSubmissionSchema>;
 
-const REQUIRED_EVIDENCE = ["title", "starts_at", "public_access"];
+const REQUIRED_BASE_EVIDENCE = ["title", "public_access"];
 const PRIVATE_SOCIAL_HOSTS = [
   "facebook.com", "fb.com", "zalo.me", "whatsapp.com", "wa.me",
   "telegram.org", "t.me", "instagram.com", "tiktok.com",
@@ -112,15 +113,41 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
   if (!["scheduled", "rescheduled"].includes(submission.activity.eventStatus)) {
     throw new Error("Only scheduled or rescheduled activities can be submitted");
   }
-  if (submission.activity.timePrecision !== "exact" || !submission.activity.startsAt) {
-    throw new Error("Autonomous publication requires an exact future start time");
-  }
-  if (new Date(submission.activity.startsAt).getTime() <= now.getTime()) {
-    throw new Error("Autonomous publication requires a future occurrence");
-  }
   const fields = new Set(submission.activity.evidence.map((row) => row.fieldPath));
-  for (const field of REQUIRED_EVIDENCE) {
+  for (const field of REQUIRED_BASE_EVIDENCE) {
     if (!fields.has(field)) throw new Error(`Missing required evidence: ${field}`);
+  }
+  if (submission.activity.kind === "recurring_activity") {
+    const recurrence = submission.activity;
+    if (
+      recurrence.timePrecision !== "recurring" ||
+      recurrence.startsAt !== null ||
+      !recurrence.rrule ||
+      !isValidRRule(recurrence.rrule) ||
+      !recurrence.startsAtTime ||
+      !recurrence.firstOccurrence
+    ) {
+      throw new Error("Autonomous recurring publication requires a complete exact recurrence");
+    }
+    if (!fields.has("rrule") || !fields.has("starts_at_time")) {
+      throw new Error("Missing required recurring schedule evidence");
+    }
+    if (
+      recurrence.rruleUntil &&
+      new Date(recurrence.rruleUntil).getTime() <= now.getTime()
+    ) {
+      throw new Error("Autonomous publication requires a recurrence with a future occurrence");
+    }
+  } else {
+    if (submission.activity.timePrecision !== "exact" || !submission.activity.startsAt) {
+      throw new Error("Autonomous publication requires an exact future start time");
+    }
+    if (new Date(submission.activity.startsAt).getTime() <= now.getTime()) {
+      throw new Error("Autonomous publication requires a future occurrence");
+    }
+    if (!fields.has("starts_at")) {
+      throw new Error("Missing required evidence: starts_at");
+    }
   }
   if (!fields.has("address") && !fields.has("location_name")) {
     throw new Error("Missing required locality evidence");

@@ -2,9 +2,9 @@
 
 The daily activity scout may publish a finding only by sending JSON to `npm run activity-graph:submit-scout`.
 
-Each object is `{ "source": { ... }, "activity": { ... } }`. All source URLs must be canonical first-party HTTPS URLs on one origin. An activity needs a future exact ISO start time, explicit Đà Lạt address or coordinates, `publicAccess: "confirmed"`, and page quotes in `evidence` for `title`, `starts_at`, `public_access`, and `address` or `location_name`.
+Each object is `{ "source": { ... }, "activity": { ... } }`. All source URLs must be canonical first-party HTTPS URLs on one origin. A one-off activity needs a future exact ISO start time. A recurring activity needs an exact valid RRULE, clock time, and first occurrence; it uses `timePrecision: "recurring"` and leaves `startsAt` null. Every activity also needs an explicit Đà Lạt address or coordinates, `publicAccess: "confirmed"`, and page quotes in `evidence` for `title`, `public_access`, locality, and either `starts_at` or both `rrule` and `starts_at_time`.
 
-Every evidence object includes `fieldPath`, `rawValue`, `evidenceText`, `locator`, and 0–100 `confidence`. Submission fetches the page itself and rejects any quote missing from that page. It also rejects private or login-gated social sources, unconfirmed access, outside/unknown locality, past or approximate schedules, cancellations, duplicates, and activities below the 97-point threshold.
+Every evidence object includes `fieldPath`, `rawValue`, `evidenceText`, `locator`, and 0–100 `confidence`. Submission fetches the page itself and rejects any quote missing from that page. It also rejects private or login-gated social sources, unconfirmed access, outside/unknown locality, past or approximate one-off schedules, incomplete or expired recurring schedules, cancellations, duplicates, and activities below the 97-point threshold.
 
 The first accepted activity from a canonical origin creates an active `manual` source. The daily scout refreshes these sources by resubmitting evidence; the background web crawler deliberately does not crawl them. Stale activities unlist automatically when refreshes stop. Official media remains reference-only unless a separate owner-authorized media policy permits reuse.
 
