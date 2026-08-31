@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { noStoreJson } from '@/lib/http/no-store-json';
 import { ALL_SCRAPERS } from '@/lib/news/processors';
 import { scrapeKnownArticle } from '@/lib/news/base-scraper';
 import {
@@ -19,6 +19,8 @@ import {
   evaluateNewsFreshness,
   freshnessQueueStatus,
 } from '@/lib/news/freshness-policy';
+
+const NextResponse = { json: noStoreJson };
 
 // Lazy init
 function getSupabase() {

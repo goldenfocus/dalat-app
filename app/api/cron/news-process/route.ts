@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { noStoreJson } from '@/lib/http/no-store-json';
 import { clusterArticles } from '@/lib/news/clusterer';
 import {
   generateNewsContent,
@@ -27,6 +27,8 @@ import {
   resolveEditorialPublicationCandidate,
 } from '@/lib/news/freshness-policy';
 import type { NewsContentOutput, ScrapedArticle } from '@/lib/news/types';
+
+const NextResponse = { json: noStoreJson };
 
 interface ExistingNewsPost {
   id: string;

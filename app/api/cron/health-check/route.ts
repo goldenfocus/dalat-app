@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { noStoreJson } from "@/lib/http/no-store-json";
 import { sendTelegram } from "@/lib/alerts/telegram";
 import {
   pauseStaleActivityGraphSeries,
@@ -18,6 +18,8 @@ import {
 } from "@/lib/events/indexing-health";
 import { getEventsIndexingReadiness } from "@/lib/translations-readiness";
 import type { EventSeries } from "@/lib/types";
+
+const NextResponse = { json: noStoreJson };
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
