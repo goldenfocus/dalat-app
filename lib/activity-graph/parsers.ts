@@ -320,7 +320,10 @@ function classifyEvent(
   if (/workshop|lớp học|class|khóa học/.test(text)) return "workshop";
   if (/triển lãm|exhibition|gallery/.test(text)) return "exhibition";
   if (/chợ|market|bazaar/.test(text)) return "market";
-  if (/run|trail|marathon|cycling|đạp xe|chạy bộ|thể thao/.test(text))
+  // Keep English activity words token-bound. A bare `/run/` also matches
+  // Vietnamese names such as "Trung Quân", which previously mislabeled
+  // concerts as sports and corrupted category-diversity reporting.
+  if (/\b(?:run|trail|marathon|cycling)\b|đạp xe|chạy bộ|thể thao/.test(text))
     return "sports";
   if (
     /concert|live|acoustic|show|biểu diễn|ca sĩ|music|âm nhạc|đêm nhạc/.test(

@@ -57,6 +57,24 @@ describe("Activity Graph deterministic parsers", () => {
     expect(activity.structuredPayload).toHaveProperty("mediaCandidates");
   });
 
+  it("does not classify the Vietnamese artist name Trung Quân as a run", () => {
+    const [activity] = extractSchemaOrgEvents(
+      `<script type="application/ld+json">{"@type":"Event","name":"TRUNG QUÂN - ĐÀ LẠT","startDate":"2026-09-19T17:00:00+07:00","location":{"name":"Mây Lang Thang - Đà Lạt"},"url":"/shows/tq-1909"}</script>`,
+      "https://maylangthang.com.vn/shows/tq-1909",
+    );
+
+    expect(activity.kind).toBe("event");
+  });
+
+  it("still classifies standalone English sports terms", () => {
+    const [activity] = extractSchemaOrgEvents(
+      `<script type="application/ld+json">{"@type":"Event","name":"Đà Lạt Trail Run","startDate":"2026-11-06T05:00:00+07:00","location":{"name":"Đà Lạt"},"url":"/trail-run"}</script>`,
+      "https://sports.example.com/trail-run",
+    );
+
+    expect(activity.kind).toBe("sports");
+  });
+
   it("interprets offset-less schema.org datetimes in Asia/Ho_Chi_Minh", () => {
     const [activity] = extractSchemaOrgEvents(
       `<script type="application/ld+json">{"@type":"Event","name":"Local Night","startDate":"2026-09-02T19:30:00","endDate":"2026-09-02T21:30:00","url":"/local-night"}</script>`,
