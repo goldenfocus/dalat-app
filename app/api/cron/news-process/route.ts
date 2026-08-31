@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { noStoreJson } from '@/lib/http/no-store-json';
 import { clusterArticles } from '@/lib/news/clusterer';
 import {
@@ -747,6 +748,14 @@ export async function GET(request: Request) {
     const allFailed = clusters.length === 0
       && clusteringFailed.length > 0
       && skipped.length + clusteringFailed.length + clusteringDeferred.length === rawArticles.length;
+    if (postsCreated + postsUpdated > 0) {
+      // Make the fresh row visible on the very next request. Without this,
+      // the database can be current while the public News route serves its
+      // previous five-minute full-route cache.
+      revalidateTag('news', 'max');
+      revalidatePath('/[locale]/news', 'page');
+      revalidatePath('/[locale]/news/tag/[tag]', 'page');
+    }
     await logPipelineEvent(supabase, {
       runId,
       stage: 'news-process',

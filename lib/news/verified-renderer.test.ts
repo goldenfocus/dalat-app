@@ -98,4 +98,33 @@ describe('fail-closed verified news renderer', () => {
     empty.factGroups = [];
     expect(() => renderVerifiedNews(empty)).toThrow('empty verified fact ledger');
   });
+
+  it('uses a tourism attendance fact before a generic economy amount', () => {
+    const verification = ledger();
+    verification.factGroups = [
+      {
+        id: 'fact-economy',
+        normalizedKey: 'economy.amount',
+        normalizedValue: '45.600 ti dong',
+        value: '45.600 tỉ đồng',
+        claimIds: ['claim-economy'],
+        sourceIndexes: [1],
+        sourceUrls: ['https://tuoitre.vn/story.htm'],
+        confidence: 0.98,
+      },
+      {
+        id: 'fact-tourism',
+        normalizedKey: 'tourism.attendance',
+        normalizedValue: '16,46 trieu luot khach',
+        value: '16,46 triệu lượt khách',
+        claimIds: ['claim-tourism'],
+        sourceIndexes: [1],
+        sourceUrls: ['https://tuoitre.vn/story.htm'],
+        confidence: 0.98,
+      },
+    ];
+
+    expect(renderVerifiedNews(verification).title)
+      .toBe('Tourism attendance: 16,46 triệu lượt khách');
+  });
 });
