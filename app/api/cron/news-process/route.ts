@@ -28,6 +28,7 @@ import {
 } from '@/lib/news/freshness-policy';
 import type { NewsContentOutput, ScrapedArticle } from '@/lib/news/types';
 import { stripHtml } from '@/lib/news/base-scraper';
+import { selectNewsProcessingBatch } from '@/lib/news/batch-selector';
 
 const NextResponse = { json: noStoreJson };
 
@@ -101,15 +102,15 @@ export async function GET(request: Request) {
       .or(`processed_at.is.null,processed_at.lt.${staleLeaseBefore}`);
 
     // 1. Load pending raw articles
-    const { data: pendingArticles, error: fetchError } = await supabase
+    const { data: pendingCandidates, error: fetchError } = await supabase
       .from('news_raw_articles')
       .select('*')
       .eq('status', 'pending')
       .order('published_at', { ascending: false, nullsFirst: false })
       .order('scraped_at', { ascending: false })
-      // Include enough adjacent fresh reporting for two independent
-      // publishers covering the same story to meet the corroboration gate.
-      // The route deadline still defers any clusters it cannot finish.
+      // Inspect enough adjacent reporting to find a corroborating pair, but
+      // process at most two articles so the endpoint stays below the proxy's
+      // request timeout.
       .limit(8);
 
     if (fetchError) {
@@ -117,9 +118,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
-    if (!pendingArticles || pendingArticles.length === 0) {
+    if (!pendingCandidates || pendingCandidates.length === 0) {
       return NextResponse.json({ message: 'No pending articles', skipped: true });
     }
+
+    const pendingArticles = selectNewsProcessingBatch(pendingCandidates, 2);
 
     // Defense in depth for rows created by an older deployment: linked rows
     // may reverify an established URL at any age, but a new URL needs a real,

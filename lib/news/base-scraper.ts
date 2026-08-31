@@ -5,6 +5,7 @@
 
 import { getSourceByArticleUrl, getSourceById } from './sources';
 import type { NewsProcessResult, ScrapedArticle } from './types';
+import { decodeHTML } from 'entities';
 
 const USER_AGENT = 'Mozilla/5.0 (compatible; DalatApp/1.0; +https://dalat.app)';
 
@@ -99,33 +100,15 @@ export async function fetchWithDelay(
  * Strip HTML tags and normalize whitespace
  */
 export function stripHtml(html: string): string {
-  return html
+  return decodeHTML(html
     // Remove script and style elements
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     // Remove HTML tags
-    .replace(/<[^>]+>/g, ' ')
-    // Decode common named entities first, then numeric entities used heavily
-    // by Vietnamese publishers. Leaving strings such as &#273; in persisted
-    // source text makes an exact evidence fragment impossible to verify after
-    // the model returns the visible Vietnamese characters.
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;|&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&#(?:x([0-9a-f]+)|([0-9]+));?/gi, (entity, hex, decimal) => {
-      const codePoint = Number.parseInt(hex ?? decimal, hex ? 16 : 10);
-      if (!Number.isInteger(codePoint) || codePoint < 0 || codePoint > 0x10ffff) {
-        return entity;
-      }
-      try {
-        return String.fromCodePoint(codePoint);
-      } catch {
-        return entity;
-      }
-    })
+    .replace(/<[^>]+>/g, ' '))
+    // Decode the full HTML entity set. Vietnamese news bodies commonly mix
+    // numeric entities with names such as &agrave; and &ocirc;; partial decoding
+    // still breaks exact evidence matching.
     // Normalize whitespace
     .replace(/\s+/g, ' ')
     .trim();
