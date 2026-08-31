@@ -19,6 +19,10 @@ const TITLE_KEY_PRIORITY = [
   'organizer.name',
   'place.name',
   'person.name',
+  'tourism.attendance',
+  'traffic.status',
+  'transport.status',
+  'economy.amount',
   'event.start_date',
   'announcement.date',
 ];
