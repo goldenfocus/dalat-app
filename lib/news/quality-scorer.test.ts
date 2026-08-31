@@ -125,4 +125,57 @@ describe('verification-based publication score', () => {
     expect(ledger.metrics.corroboration).toBe(0);
     expect(quality.suggestedStatus).toBe('draft');
   });
+
+  it('publishes a fresh routine bulletin with three exact facts from one Tier B newsroom', () => {
+    const evidence = [
+      'Tourism attendance reached 1,000 visitors.',
+      'The tourism economy reported revenue of 45.600 billion VND.',
+      'Tỷ lệ đặt phòng du lịch tăng 40%.',
+    ].join(' ');
+    const sources = [source(1, evidence)];
+    const ledger = buildVerifiedClaimLedger([
+      { ...claim(1, 'Tourism attendance reached 1,000 visitors'), key: 'tourism.attendance', value: '1,000 visitors' },
+      { ...claim(1, 'The tourism economy reported revenue of 45.600 billion VND'), key: 'economy.amount', value: '45.600 billion VND' },
+      { ...claim(1, 'Tỷ lệ đặt phòng du lịch tăng 40%'), key: 'tourism.percentage', value: '40%' },
+    ], sources, NOW);
+    const quality = calculateQualityScore(content(ledger));
+
+    expect(ledger.factGroups).toHaveLength(3);
+    expect(ledger.metrics.corroboration).toBe(0);
+    expect(quality.total).toBeLessThan(NEWS_AUTO_PUBLISH_THRESHOLD);
+    expect(quality.suggestedStatus).toBe('published');
+  });
+
+  it('publishes a concise routine bulletin with two high-confidence exact facts', () => {
+    const evidence = [
+      'Lâm Đồng đón hơn 16,46 triệu lượt khách.',
+      'Doanh thu du lịch đạt 45.600 tỉ đồng.',
+    ].join(' ');
+    const sources = [source(1, evidence)];
+    const ledger = buildVerifiedClaimLedger([
+      { ...claim(1, 'Lâm Đồng đón hơn 16,46 triệu lượt khách'), key: 'tourism.attendance', value: '16,46 triệu lượt khách' },
+      { ...claim(1, 'Doanh thu du lịch đạt 45.600 tỉ đồng'), key: 'economy.amount', value: '45.600 tỉ đồng' },
+    ], sources, NOW);
+
+    expect(ledger.factGroups).toHaveLength(2);
+    expect(calculateQualityScore(content(ledger)).suggestedStatus).toBe('published');
+  });
+
+  it('keeps a single-source sensitive bulletin in draft even with three exact facts', () => {
+    const evidence = [
+      'The incident count was 3.',
+      'The incident was located at Xuân Hương Lake.',
+      'The incident date was 27/08/2026.',
+    ].join(' ');
+    const sources = [source(1, evidence)];
+    const ledger = buildVerifiedClaimLedger([
+      { ...claim(1, 'The incident count was 3'), key: 'incident.count', value: '3' },
+      { ...claim(1, 'The incident was located at Xuân Hương Lake'), key: 'incident.location', value: 'Xuân Hương Lake' },
+      { ...claim(1, 'The incident date was 27/08/2026'), key: 'incident.date', value: '2026-08-27' },
+    ], sources, NOW);
+    const quality = calculateQualityScore(content(ledger));
+
+    expect(ledger.factGroups).toHaveLength(3);
+    expect(quality.suggestedStatus).toBe('draft');
+  });
 });

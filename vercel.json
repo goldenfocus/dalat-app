@@ -26,7 +26,7 @@
       "schedule": "5 */2 * * *"
     },
     {
-      "path": "/api/cron/news-process?generation=2",
+      "path": "/api/cron/news-process?generation=3",
       "schedule": "35 */2 * * *"
     },
     {

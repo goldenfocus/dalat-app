@@ -6,13 +6,17 @@ const TITLE_STOP_WORDS = new Set([
   'thanh', 'tinh', 'tren', 'va', 'voi',
 ]);
 
-function titleTokens(title: string): Set<string> {
-  return new Set(stripHtml(title)
+function titleWords(title: string): string[] {
+  return stripHtml(title)
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .match(/[a-z0-9]+/g)
-    ?.filter(token => token.length >= 2 && !TITLE_STOP_WORDS.has(token)) ?? []);
+    .match(/[a-z0-9]+/g) ?? [];
+}
+
+function titleTokens(title: string): Set<string> {
+  return new Set(titleWords(title)
+    .filter(token => token.length >= 2 && !TITLE_STOP_WORDS.has(token)));
 }
 
 function overlapScore(left: Set<string>, right: Set<string>): number {
@@ -20,6 +24,24 @@ function overlapScore(left: Set<string>, right: Set<string>): number {
   let intersection = 0;
   for (const token of left) if (right.has(token)) intersection++;
   return intersection / Math.min(left.size, right.size);
+}
+
+const SENSITIVE_TITLE_TERMS = new Set([
+  'arrest', 'attack', 'body', 'charged', 'collision', 'crime', 'dead', 'death',
+  'died', 'drowning', 'explicit', 'fatal', 'fire', 'flood', 'hospital', 'injured',
+  'killed', 'landslide', 'missing', 'murder', 'police', 'storm', 'victim',
+  'bao', 'bat', 'benh', 'chet', 'chay', 'cuu', 'nan', 'ngap', 'sat',
+  'thuong', 'tich', 'vong', 'xac',
+]);
+
+const SENSITIVE_TITLE_PHRASES = [
+  'thi the', 'tu vong', 'cong an', 'mat tich', 'hoa hoan', 'tai nan',
+];
+
+function titleLooksSensitive(title: string, tokens: Set<string>): boolean {
+  const normalizedTitle = titleWords(title).join(' ');
+  return [...tokens].some(token => SENSITIVE_TITLE_TERMS.has(token))
+    || SENSITIVE_TITLE_PHRASES.some(phrase => normalizedTitle.includes(phrase));
 }
 
 /**
@@ -38,6 +60,8 @@ export function selectNewsProcessingBatch<T extends { title: string }>(
   const tokens = candidates.map(candidate => titleTokens(candidate.title));
   let bestPair: [number, number] | null = null;
   let bestScore = 0;
+  let bestRoutinePair: [number, number] | null = null;
+  let bestRoutineScore = 0;
 
   for (let left = 0; left < candidates.length - 1; left++) {
     for (let right = left + 1; right < candidates.length; right++) {
@@ -46,9 +70,23 @@ export function selectNewsProcessingBatch<T extends { title: string }>(
         bestScore = score;
         bestPair = [left, right];
       }
+      if (
+        !titleLooksSensitive(candidates[left].title, tokens[left])
+        && !titleLooksSensitive(candidates[right].title, tokens[right])
+        && score > bestRoutineScore
+      ) {
+        bestRoutineScore = score;
+        bestRoutinePair = [left, right];
+      }
     }
   }
 
+  // Routine headlines are often phrased differently by competing newsrooms;
+  // two specific shared words are enough to put them in the same bounded pass.
+  // The verifier still needs matching accepted facts before publication.
+  if (bestRoutinePair && bestRoutineScore >= 0.2) {
+    return bestRoutinePair.map(index => candidates[index]);
+  }
   if (!bestPair || bestScore < 1 / 3) return candidates.slice(0, maxBatchSize);
   return bestPair.map(index => candidates[index]);
 }
