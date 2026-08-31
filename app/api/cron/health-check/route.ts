@@ -20,6 +20,8 @@ import { getEventsIndexingReadiness } from "@/lib/translations-readiness";
 import type { EventSeries } from "@/lib/types";
 
 export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // The customer promise: the homepage must never look dead.
 // Watches what visitors see, not the plumbing.

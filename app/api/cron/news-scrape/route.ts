@@ -29,6 +29,8 @@ function getSupabase() {
 }
 
 export const maxDuration = 300; // 5 min timeout
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const REVERIFY_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
 

@@ -64,6 +64,8 @@ function getSupabase() {
 }
 
 export const maxDuration = 300;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
@@ -103,7 +105,7 @@ export async function GET(request: Request) {
       // Small batches: keyword extraction runs ~8s/article on the local
       // model and deferred articles get re-clustered next run, so a big
       // batch spends the whole time budget clustering instead of writing.
-      .limit(6);
+      .limit(2);
 
     if (fetchError) {
       console.error('[news-process] Failed to fetch articles:', fetchError);
