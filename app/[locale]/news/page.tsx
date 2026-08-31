@@ -67,6 +67,22 @@ const getTrendingNews = unstable_cache(
   { revalidate: 600, tags: ['news'] }
 );
 
+const getArchivedNews = unstable_cache(
+  async () => {
+    const supabase = createStaticClient();
+    if (!supabase) return [];
+
+    const { data } = await supabase.rpc('get_news_archive_posts', {
+      p_limit: PAGE_SIZE,
+      p_offset: 0,
+    });
+
+    return data || [];
+  },
+  ['news-archive-posts'],
+  { revalidate: 300, tags: ['news'] }
+);
+
 export default async function NewsPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'news' });
@@ -75,11 +91,16 @@ export default async function NewsPage({ params }: Props) {
     getNewsPosts(),
     getTrendingNews(),
   ]);
+  // The archive is a deliberately separate fallback. Old source dates never
+  // enter Latest News, but established URLs remain discoverable and useful
+  // while the current-news verification queue is temporarily empty.
+  const archivedPosts = posts.length === 0 ? await getArchivedNews() : [];
 
   // Fetch translations for all posts + trending in a single batch
   const allIds = [
     ...posts.map((p: any) => p.id),
     ...trending.map((t: any) => t.id),
+    ...archivedPosts.map((p: any) => p.id),
   ].filter(Boolean);
   const uniqueIds = [...new Set(allIds)];
   const freshAfterByPostId = uniqueIds.length > 0 && locale !== 'en'
@@ -110,6 +131,15 @@ export default async function NewsPage({ params }: Props) {
     return {
       ...item,
       title: tr?.title || item.title,
+    };
+  });
+
+  const translatedArchivedPosts = archivedPosts.map((post: any) => {
+    const tr = translations.get(post.id);
+    return {
+      ...post,
+      title: tr?.title || post.title,
+      story_content: tr?.story_content || post.story_content,
     };
   });
 
@@ -157,11 +187,33 @@ export default async function NewsPage({ params }: Props) {
         <NewsTagFilter />
       </div>
 
-      {posts.length === 0 ? (
+      {posts.length === 0 && translatedArchivedPosts.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-12 text-center text-muted-foreground">
           <Newspaper className="mx-auto h-12 w-12 mb-3 opacity-30" />
           <p>{t('noNews')}</p>
         </div>
+      ) : posts.length === 0 ? (
+        <section aria-labelledby="news-archive-heading">
+          <h2
+            id="news-archive-heading"
+            className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+          >
+            {t('older')}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {translatedArchivedPosts.map((post: any) => (
+              <NewsCompactCard
+                key={post.id}
+                slug={post.slug}
+                title={post.title}
+                coverImageUrl={post.cover_image_url}
+                publishedAt={post.published_at}
+                newsTags={post.news_tags || []}
+                sourceName={getSourceName(post)}
+              />
+            ))}
+          </div>
+        </section>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* Main content */}
