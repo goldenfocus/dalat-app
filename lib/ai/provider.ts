@@ -4,7 +4,8 @@
  *   1. Local Ollama (qwen3:14b) on the Mac mini, via Cloudflare tunnel — primary
  *   2. Cloudflare Workers AI (Llama 3.3 70B) — free tier
  *   3. OpenRouter free models
- *   4. Anthropic — production safety net when the zero-credit providers are unavailable
+ *   4. OpenAI — production safety net when the zero-credit providers are unavailable
+ *   5. Anthropic — final configured fallback
  *
  * All providers are prompt-in/text-out. Callers that need JSON should pass
  * `json: true` and parse defensively (models may still wrap output in fences).
@@ -32,6 +33,7 @@ const OPENROUTER_FREE_MODELS = [
 ];
 
 const CF_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+const OPENAI_MODEL = 'gpt-4.1-mini';
 const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
 
 class ProviderError extends Error {
@@ -196,10 +198,45 @@ async function anthropicAI(opts: AIChatOptions): Promise<string> {
   return text;
 }
 
+async function openAI(opts: AIChatOptions): Promise<string> {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new ProviderError('openai', 'OPENAI_API_KEY not configured');
+
+  const messages: { role: string; content: string }[] = [];
+  const system = opts.json ? jsonNudge(opts.system) : opts.system;
+  if (system) messages.push({ role: 'system', content: system });
+  messages.push({ role: 'user', content: opts.prompt });
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      messages,
+      max_tokens: opts.maxTokens ?? 2048,
+      temperature: opts.temperature ?? 0.4,
+      ...(opts.json ? { response_format: { type: 'json_object' } } : {}),
+    }),
+    signal: AbortSignal.timeout(requestTimeoutMs(opts)),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new ProviderError('openai', `status ${res.status}: ${data?.error?.message ?? 'request failed'}`.slice(0, 240));
+  }
+  const text: string | undefined = data.choices?.[0]?.message?.content;
+  if (!text || !text.trim()) throw new ProviderError('openai', 'empty response');
+  return text;
+}
+
 const CHAIN: Array<{ name: string; run: (opts: AIChatOptions) => Promise<string> }> = [
   { name: 'local', run: localOllama },
   { name: 'cloudflare', run: cloudflareAI },
   { name: 'openrouter', run: openRouter },
+  { name: 'openai', run: openAI },
   { name: 'anthropic', run: anthropicAI },
 ];
 
