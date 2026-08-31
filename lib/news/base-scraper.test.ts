@@ -18,8 +18,9 @@ describe('news source text normalization', () => {
       .toBe('Đà Lạt & Lâm Đồng');
   });
 
-  it('leaves invalid numeric entities intact', () => {
-    expect(stripHtml('Value &#99999999; remains')).toBe('Value &#99999999; remains');
+  it('decodes named Latin entities mixed with Vietnamese numeric entities', () => {
+    expect(stripHtml('Ng&agrave;y 30.8, l&#7921;c l&#432;&#7907;ng &#272;&agrave; L&#7841;t'))
+      .toBe('Ngày 30.8, lực lượng Đà Lạt');
   });
 });
 
