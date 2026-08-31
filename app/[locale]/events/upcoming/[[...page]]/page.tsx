@@ -10,6 +10,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { getEventTranslationsBatch } from "@/lib/translations";
+import { takeDistinctEventChoices } from "@/lib/events/distinct-choices";
 import type { Event, EventCounts, ContentLocale } from "@/lib/types";
 import type { Metadata } from "next";
 
@@ -70,23 +71,29 @@ async function getUpcomingEvents(limit: number, offset: number) {
     return [];
   }
 
-  // Try the new paginated RPC first, fallback to basic query
-  const { data, error } = await supabase.rpc("get_upcoming_events_paginated", {
+  // The RPC collapses a recurring series before applying pagination, so one
+  // busy series cannot crowd distinct events off the page.
+  const { data, error } = await supabase.rpc("get_upcoming_event_choices_paginated", {
     p_limit: limit,
     p_offset: offset,
   });
 
-  // Fallback if RPC doesn't exist yet
+  // Keep unmigrated/local environments consistent with the production RPC.
+  // Fetch before slicing: deduplicating a 24-row page after the query would
+  // still let one recurring series crowd out the other choices.
   if (error?.code === "PGRST202") {
     const { data: fallbackData } = await supabase
       .from("events")
       .select("*")
       .eq("status", "published")
       .gt("starts_at", new Date().toISOString())
-      .order("starts_at", { ascending: true })
-      .range(offset, offset + limit - 1);
+      .order("starts_at", { ascending: true });
 
-    return (fallbackData as Event[]) || [];
+    const allChoices = takeDistinctEventChoices(
+      (fallbackData as Event[]) || [],
+      fallbackData?.length || 0
+    );
+    return allChoices.slice(offset, offset + limit);
   }
 
   if (error) {
@@ -104,18 +111,22 @@ async function getUpcomingEventsCount() {
     return 0;
   }
 
-  // Try the new count RPC first
-  const { data, error } = await supabase.rpc("get_upcoming_events_count");
+  // This counts distinct choices, not generated occurrences.
+  const { data, error } = await supabase.rpc("get_upcoming_event_choices_count");
 
-  // Fallback if RPC doesn't exist yet
+  // Mirror the distinct-series semantics when the migration is unavailable.
   if (error?.code === "PGRST202") {
-    const { count } = await supabase
+    const { data: fallbackData } = await supabase
       .from("events")
-      .select("*", { count: "exact", head: true })
+      .select("id, series_id, starts_at")
       .eq("status", "published")
-      .gt("starts_at", new Date().toISOString());
+      .gt("starts_at", new Date().toISOString())
+      .order("starts_at", { ascending: true });
 
-    return count || 0;
+    return takeDistinctEventChoices(
+      fallbackData || [],
+      fallbackData?.length || 0
+    ).length;
   }
 
   if (error) {
