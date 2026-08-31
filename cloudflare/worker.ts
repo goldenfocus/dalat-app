@@ -19,7 +19,7 @@ const CRON_ROUTES: Record<string, string[]> = {
   "0 3 * * *": ["/api/cron/backfill-embeddings?limit=20&delay=5000"],
   "0 16 * * *": ["/api/cron/mark-no-shows"],
   "5 */2 * * *": ["/api/cron/news-scrape"],
-  "35 */2 * * *": ["/api/cron/news-process"],
+  "35 */2 * * *": ["/api/cron/news-process?generation=2"],
   "*/5 * * * *": ["/api/cron/process-notifications"],
   "30 20 * * *": ["/api/cron/refresh-fallback-covers"],
   "7 * * * *": ["/api/cron/ghost-boost"],
