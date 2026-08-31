@@ -187,6 +187,22 @@ describe('verified news claim ledger', () => {
     expect(ledger.acceptedClaims[0].normalizedKey).toBe('event.organizer');
   });
 
+  it('accepts short exact Vietnamese tourism and revenue facts without unit conversion', () => {
+    const evidence = 'Lâm Đồng đón hơn 16,46 triệu lượt khách du lịch. Doanh thu du lịch đạt 45.600 tỉ đồng.';
+    const ledger = buildVerifiedClaimLedger([
+      claim(1, 'tourism.attendance', '16,46 triệu lượt khách', 'Lâm Đồng đón hơn 16,46 triệu lượt khách du lịch'),
+      claim(1, 'economy.amount', '45.600 tỉ đồng', 'Doanh thu du lịch đạt 45.600 tỉ đồng'),
+    ], [source(1, evidence)], NOW);
+
+    expect(ledger.acceptedClaims.map((item) => ({
+      key: item.normalizedKey,
+      value: item.value,
+    }))).toEqual([
+      { key: 'tourism.attendance', value: '16,46 triệu lượt khách' },
+      { key: 'economy.amount', value: '45.600 tỉ đồng' },
+    ]);
+  });
+
   it('rejects negated relationship statements instead of inverting them', () => {
     const cases = [
       ['venue.owner', 'John Doe', 'The venue is not owned by John Doe'],

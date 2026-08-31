@@ -60,15 +60,32 @@ Return JSON with exactly this shape:
 
 Rules:
 - source_index is the one-based index supplied with the source.
-- Use one of these stable key families: event.*, venue.*, organizer.*, organization.*,
-  person.*, place.*, tourism.*, transport.*, weather.*, government.*, project.*,
-  road.*, service.*, announcement.*, incident.*, traffic.*, education.*, health.*,
-  safety.*, culture.*, environment.*, economy.*, policy.*, or quote.<speaker>.
+- normalized_key must contain exactly one dot in the form family.field (except
+  quote.<speaker>). Never create nested keys such as economy.tourism.count or
+  transport.airport.name.
+- Use one of these stable key families: event, venue, organizer, organization,
+  person, place, tourism, transport, weather, government, project, road,
+  service, announcement, incident, traffic, education, health, safety,
+  culture, environment, economy, or policy.
+- The field after the dot must be one of: address, amount, area, attendance,
+  authority, capacity, category, cause, contact, cost, count, date, deadline,
+  description, distance, duration, eligibility, end_date, end_time, fee,
+  forecast, founder, height, impact, length, location, name, number,
+  opening_hours, operator, organizer, owner, percentage, phone, price,
+  requirement, route, schedule, start_date, start_time, status, temperature,
+  time, title, type, venue, website, or width.
 - Use venue.name for any hotel, homestay, cafe, restaurant, property, or business name.
 - Use event.start_date for an event date. Do not invent synonymous keys.
-- Use a concise normalized value.
+- Copy normalized_value verbatim as the shortest complete value span from
+  evidence_fragment, not the whole sentence or factual clause.
+  The only exception is a full source date, which may become YYYY-MM-DD when
+  the fragment itself contains the day, month, and year.
+- Never convert units or rewrite numbers: keep "16,46 triệu lượt khách" rather
+  than 16460000, and keep "45.600 tỉ đồng" rather than 45600000000000.
+- Example: for "đặt phòng tăng khoảng 40%", use tourism.percentage with value
+  "40%" and keep the whole short clause as evidence_fragment.
 - One row belongs to one source. Repeat a claim for each source that supports it.
-- evidence_fragment is mandatory, copied exactly from that source, and at most 20 words.
+- evidence_fragment is mandatory, copied exactly from that source, and at most 14 words.
 - The fragment must keep the value, the factual field cue, and its subject
   (for example event, venue, incident, road) together in one clause.
 - Never combine distant passages into one evidence fragment.
@@ -76,6 +93,7 @@ Rules:
 - Do not emit relative values such as today, tomorrow, this week, or recently.
 - Quotes use a key beginning quote.<speaker> and the exact quoted words as the value.
 - Do not infer, reconcile, calculate, translate a number, or add local context.
+- Prefer 3-8 strong atomic claims over a long speculative inventory.
 - Omit promotional opinions, predictions, and anything the text does not prove.`;
 
 const MAX_EXTRACTION_SOURCE_CHARS = 8_000;

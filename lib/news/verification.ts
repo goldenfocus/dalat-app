@@ -165,9 +165,9 @@ const CLAIM_UNCERTAINTY_OR_HISTORICAL = /\b(?:alleged|allegedly|reportedly|purpo
 // trade recall for factual safety; unmapped fields fail closed.
 const CLAIM_FIELD_EVIDENCE_PATTERNS: Record<string, RegExp> = {
   address: /\b(?:address|located\s+at|dia\s+chi|toa\s+lac|tai)\b/u,
-  amount: /\b(?:amount|total|sum|value|tong|so\s+tien|gia\s+tri|vnd|usd|eur|gbp)\b|[$€£₫]/u,
+  amount: /\b(?:amount|total|sum|value|tong|so\s+tien|gia\s+tri|doanh\s+thu|ti|trieu|dong|vnd|usd|eur|gbp)\b|[$€£₫]/u,
   area: /\b(?:area|square\s+meters?|hectares?|acre|dien\s+tich|m2|ha)\b/u,
-  attendance: /\b(?:attendance|attended|participants?|visitors?|guests?|spectators?|nguoi\s+tham\s+du|khach|luot\s+nguoi)\b/u,
+  attendance: /\b(?:attendance|attended|participants?|visitors?|guests?|spectators?|nguoi\s+tham\s+du|khach|luot\s+(?:nguoi|khach))\b/u,
   capacity: /\b(?:capacity|accommodates?|admits?|seats?|guests?|suc\s+chua|cho\s+ngoi|toi\s+da)\b/u,
   category: /\b(?:category|classified|classification|hang\s+muc|phan\s+loai|loai)\b/u,
   cause: /\b(?:cause|caused|because|due\s+to|reason|resulted\s+from|nguyen\s+nhan|do|vi)\b/u,
@@ -213,7 +213,7 @@ const CLAIM_FIELD_EVIDENCE_PATTERNS: Record<string, RegExp> = {
 const CLAIM_PREFIX_EVIDENCE_PATTERNS: Record<string, RegExp> = {
   announcement: /\b(?:announcement|announced|notice|statement|thong\s+bao|cong\s+bo)\b/u,
   culture: /\b(?:culture|cultural|heritage|art|music|van\s+hoa|di\s+san|nghe\s+thuat|am\s+nhac)\b/u,
-  economy: /\b(?:economy|economic|business|market|kinh\s+te|doanh\s+nghiep|thi\s+truong)\b/u,
+  economy: /\b(?:economy|economic|business|market|kinh\s+te|doanh\s+nghiep|doanh\s+thu|thi\s+truong)\b/u,
   education: /\b(?:education|school|student|university|giao\s+duc|truong|hoc\s+sinh|sinh\s+vien)\b/u,
   environment: /\b(?:environment|environmental|pollution|forest|moi\s+truong|o\s+nhiem|rung)\b/u,
   event: /\b(?:event|festival|concert|race|exhibition|workshop|ceremony|su\s+kien|le\s+hoi|buoi\s+hoa\s+nhac|cuoc\s+dua|trien\s+lam|hoi\s+thao)\b/u,
@@ -276,7 +276,9 @@ function valueBearingEvidenceClauses(
   const normalizedValue = normalizeSemanticText(value);
   const isoDate = /^\d{4}-\d{2}-\d{2}$/u.test(value) ? value : null;
   return evidenceFragment
-    .split(/(?:[.!?;:\n]+|,|\b(?:but|while|whereas|however|although|and|nhung|trong\s+khi|tuy\s+nhien|va)\b)/iu)
+    // Treat punctuation between digits as part of a Vietnamese number or
+    // date (16,46; 45.600; 12.09), not as a clause boundary.
+    .split(/(?:(?<!\d)[.!?;:,]|[.!?;:,](?!\d)|[\r\n]+|\b(?:but|while|whereas|however|although|and|nhung|trong\s+khi|tuy\s+nhien|va)\b)/iu)
     .map((rawClause) => ({ rawClause, clause: normalizeSemanticText(rawClause) }))
     .filter(({ clause }) => Boolean(clause))
     .flatMap(({ rawClause, clause }) => {
@@ -455,6 +457,11 @@ function claimFieldTemplateIsSupported(
   ]);
 }
 
+const STRICT_DIRECTIONAL_CLAIM_FIELDS = new Set([
+  'address', 'cause', 'date', 'end_date', 'end_time', 'location', 'name',
+  'start_date', 'start_time', 'status', 'time', 'title', 'venue',
+]);
+
 /**
  * A value merely appearing in a fragment does not prove the model-selected
  * relationship key. Require explicit directional wording around that exact
@@ -517,9 +524,22 @@ export function claimKeyIsSupportedByEvidence(
   return clauses.some((clause) => {
     if (CLAIM_NEGATION_OR_DENIAL.test(clause)) return false;
     if (field !== 'forecast' && CLAIM_UNCERTAINTY_OR_HISTORICAL.test(clause)) return false;
-    const prefixSupported = CLAIM_PREFIX_EVIDENCE_PATTERNS[prefix]?.test(clause) ?? false;
+    const prefixPattern = CLAIM_PREFIX_EVIDENCE_PATTERNS[prefix];
+    const fieldPattern = CLAIM_FIELD_EVIDENCE_PATTERNS[field];
+    const prefixSupported = prefixPattern?.test(clause)
+      || prefixPattern?.test(completeEvidence)
+      || false;
     if (!prefixSupported) return false;
     if (!isRelationshipField) {
+      // For non-directional atomic fields, an exact short source fragment with
+      // the subject family, field cue, and verbatim value is sufficient. The
+      // surrounding source statement has already passed the denial and
+      // uncertainty checks above. Directional fields keep their stricter
+      // word-order templates so names, causes, locations, dates, and statuses
+      // cannot be attached to the wrong subject.
+      if (!STRICT_DIRECTIONAL_CLAIM_FIELDS.has(field)) {
+        return fieldPattern?.test(completeEvidence) ?? false;
+      }
       return claimFieldTemplateIsSupported(prefix, field, clause, normalizedValue);
     }
     return patterns[field as ClaimRelationshipField]
