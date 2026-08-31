@@ -3,14 +3,16 @@
 //
 // IMPORTANT: Update SW_VERSION when deploying new features
 // This triggers the update flow for all users
-const SW_VERSION = '1.0.9';
+const SW_VERSION = '1.0.10';
 
 const APP_URL = self.location.origin;
 
 // Cache names. PAGES_CACHE is keyed by SW_VERSION so cached HTML (which
 // references content-hashed chunk URLs) is evicted whenever the SW updates.
 const STATIC_CACHE = 'dalat-static-v1';
-const IMAGE_CACHE = 'dalat-images-v1';
+// Tie image cache lifetime to the worker. A newly published official event
+// image must not lose to a previously cached generic fallback.
+const IMAGE_CACHE = `dalat-images-${SW_VERSION}`;
 const PAGES_CACHE = `dalat-pages-${SW_VERSION}`;
 
 // Max entries in the page-shell cache (oldest evicted first)
@@ -27,6 +29,13 @@ const isCacheablePage = (pathname) => {
     return false;
   }
   return path === '/' || /^\/(?:events|venues|map|moments)(?:\/|$)/.test(path);
+};
+
+// Event details are factual, time-sensitive records. Cache them for offline
+// use, but always ask the network first so updated official hero images win.
+const isEventDetailPage = (pathname) => {
+  const path = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '');
+  return /^\/events\/[^/]+\/?$/.test(path);
 };
 
 // Never cache page HTML on localhost — dev server HTML must stay fresh
@@ -145,6 +154,26 @@ self.addEventListener('fetch', (event) => {
     url.origin === self.location.origin &&
     isCacheablePage(url.pathname)
   ) {
+    if (isEventDetailPage(url.pathname)) {
+      event.respondWith(
+        fetch(request)
+          .then(response => {
+            if (response.ok && !response.redirected) {
+              event.waitUntil(
+                caches.open(PAGES_CACHE).then(cache => putPage(cache, request, response.clone()))
+              );
+            }
+            return response;
+          })
+          .catch(() =>
+            caches.open(PAGES_CACHE).then(cache =>
+              cache.match(request).then(cached => cached || Response.error())
+            )
+          )
+      );
+      return;
+    }
+
     event.respondWith(
       caches.open(PAGES_CACHE).then(cache =>
         cache.match(request).then(cached => {
