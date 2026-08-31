@@ -5,10 +5,22 @@ import {
   isRegisteredSourceArticleUrl,
   normalizePublishedDate,
   scrapeKnownArticle,
+  stripHtml,
 } from './base-scraper';
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe('news source text normalization', () => {
+  it('decodes decimal and hexadecimal Vietnamese entities for exact evidence matching', () => {
+    expect(stripHtml('&#272;&#224; L&#7841;t &amp; L&#xE2;m &#x110;&#x1ED3;ng'))
+      .toBe('Đà Lạt & Lâm Đồng');
+  });
+
+  it('leaves invalid numeric entities intact', () => {
+    expect(stripHtml('Value &#99999999; remains')).toBe('Value &#99999999; remains');
+  });
 });
 
 describe('news publication-date safety', () => {

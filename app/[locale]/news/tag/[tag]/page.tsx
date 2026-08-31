@@ -79,6 +79,26 @@ export default async function NewsTagPage({ params }: Props) {
 
   const posts = await getTaggedPosts();
 
+  const getTaggedArchive = unstable_cache(
+    async () => {
+      const supabase = createStaticClient();
+      if (!supabase) return [];
+
+      const { data } = await supabase.rpc('get_news_archive_posts', {
+        p_tag: tag,
+        p_limit: 30,
+        p_offset: 0,
+      });
+
+      return data || [];
+    },
+    [`news-tag-archive-${tag}`],
+    { revalidate: 300, tags: ['news'] }
+  );
+
+  const archivedPosts = posts.length === 0 ? await getTaggedArchive() : [];
+  const visiblePosts = posts.length > 0 ? posts : archivedPosts;
+
   const getSourceName = (post: any) => {
     const sources = post.source_urls as any[];
     return sources?.[0]?.publisher || '';
@@ -108,24 +128,34 @@ export default async function NewsTagPage({ params }: Props) {
         <NewsTagFilter activeTag={tag} />
       </div>
 
-      {posts.length === 0 ? (
+      {visiblePosts.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-12 text-center text-muted-foreground">
           <p>{t('noNews')}</p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post: any) => (
-            <NewsCompactCard
-              key={post.id}
-              slug={post.slug}
-              title={post.title}
-              coverImageUrl={post.cover_image_url}
-              publishedAt={post.published_at}
-              newsTags={post.news_tags || []}
-              sourceName={getSourceName(post)}
-            />
-          ))}
-        </div>
+        <section aria-labelledby={posts.length === 0 ? 'news-archive-heading' : undefined}>
+          {posts.length === 0 && (
+            <h2
+              id="news-archive-heading"
+              className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              {t('older')}
+            </h2>
+          )}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {visiblePosts.map((post: any) => (
+              <NewsCompactCard
+                key={post.id}
+                slug={post.slug}
+                title={post.title}
+                coverImageUrl={post.cover_image_url}
+                publishedAt={post.published_at}
+                newsTags={post.news_tags || []}
+                sourceName={getSourceName(post)}
+              />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

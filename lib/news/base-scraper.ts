@@ -105,13 +105,27 @@ export function stripHtml(html: string): string {
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     // Remove HTML tags
     .replace(/<[^>]+>/g, ' ')
-    // Decode common HTML entities
+    // Decode common named entities first, then numeric entities used heavily
+    // by Vietnamese publishers. Leaving strings such as &#273; in persisted
+    // source text makes an exact evidence fragment impossible to verify after
+    // the model returns the visible Vietnamese characters.
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+    .replace(/&apos;|&#39;/g, "'")
     .replace(/&nbsp;/g, ' ')
+    .replace(/&#(?:x([0-9a-f]+)|([0-9]+));?/gi, (entity, hex, decimal) => {
+      const codePoint = Number.parseInt(hex ?? decimal, hex ? 16 : 10);
+      if (!Number.isInteger(codePoint) || codePoint < 0 || codePoint > 0x10ffff) {
+        return entity;
+      }
+      try {
+        return String.fromCodePoint(codePoint);
+      } catch {
+        return entity;
+      }
+    })
     // Normalize whitespace
     .replace(/\s+/g, ' ')
     .trim();

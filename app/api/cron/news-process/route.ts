@@ -27,6 +27,7 @@ import {
   resolveEditorialPublicationCandidate,
 } from '@/lib/news/freshness-policy';
 import type { NewsContentOutput, ScrapedArticle } from '@/lib/news/types';
+import { stripHtml } from '@/lib/news/base-scraper';
 
 const NextResponse = { json: noStoreJson };
 
@@ -50,8 +51,10 @@ function rawRowToArticle(row: Record<string, unknown>): ScrapedArticle {
     sourceId: String(row.source_id ?? ''),
     sourceUrl: String(row.source_url ?? ''),
     sourceName: String(row.source_name ?? ''),
-    title: String(row.title ?? ''),
-    content: String(row.content ?? ''),
+    // Normalize again at consumption time so already-ingested rows benefit
+    // from scraper fixes without mutating their source snapshot first.
+    title: stripHtml(String(row.title ?? '')),
+    content: stripHtml(String(row.content ?? '')),
     imageUrls: Array.isArray(row.image_urls) ? row.image_urls.map(String) : [],
     publishedAt: typeof row.published_at === 'string' ? row.published_at : null,
     retrievedAt: typeof row.scraped_at === 'string' ? row.scraped_at : undefined,
@@ -104,10 +107,10 @@ export async function GET(request: Request) {
       .eq('status', 'pending')
       .order('published_at', { ascending: false, nullsFirst: false })
       .order('scraped_at', { ascending: false })
-      // Small batches: keyword extraction runs ~8s/article on the local
-      // model and deferred articles get re-clustered next run, so a big
-      // batch spends the whole time budget clustering instead of writing.
-      .limit(2);
+      // Include enough adjacent fresh reporting for two independent
+      // publishers covering the same story to meet the corroboration gate.
+      // The route deadline still defers any clusters it cannot finish.
+      .limit(8);
 
     if (fetchError) {
       console.error('[news-process] Failed to fetch articles:', fetchError);
