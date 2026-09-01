@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 interface Props {
   eventId: string;
@@ -22,18 +23,19 @@ export function ConfirmAttendanceHandler({ eventId }: Props) {
   const [status, setStatus] = useState<'idle' | 'confirming' | 'confirmed' | 'cancel-reason' | 'cancelled' | 'error'>('idle');
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
 
-  useEffect(() => {
-    const confirm = searchParams?.get('confirm');
-    const cancel = searchParams?.get('cancel');
+  const cleanupUrl = useCallback(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('confirm');
+    url.searchParams.delete('cancel');
+    router.replace(url.pathname);
+  }, [router]);
 
-    if (confirm === 'yes') {
-      handleConfirmation(true);
-    } else if (confirm === 'no' || cancel === 'true') {
-      setStatus('cancel-reason');
-    }
-  }, [searchParams]);
+  const handleDismiss = useCallback(() => {
+    setStatus('idle');
+    cleanupUrl();
+  }, [cleanupUrl]);
 
-  async function handleConfirmation(confirmed: boolean, reason?: string) {
+  const handleConfirmation = useCallback(async (confirmed: boolean, reason?: string) => {
     setStatus('confirming');
     const supabase = createClient();
 
@@ -57,14 +59,37 @@ export function ConfirmAttendanceHandler({ eventId }: Props) {
     setStatus(confirmed ? 'confirmed' : 'cancelled');
     cleanupUrl();
     router.refresh();
-  }
+  }, [cleanupUrl, eventId, router]);
 
-  function cleanupUrl() {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('confirm');
-    url.searchParams.delete('cancel');
-    router.replace(url.pathname);
-  }
+  useEffect(() => {
+    const confirm = searchParams?.get('confirm');
+    const cancel = searchParams?.get('cancel');
+
+    if (confirm !== 'yes' && confirm !== 'no' && cancel !== 'true') return;
+
+    const timeout = window.setTimeout(() => {
+      if (confirm === 'yes') {
+        void handleConfirmation(true);
+      } else {
+        setStatus('cancel-reason');
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [handleConfirmation, searchParams]);
+
+  useEffect(() => {
+    if (status === 'idle' || status === 'confirming') return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        handleDismiss();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleDismiss, status]);
 
   function handleCancelWithReason() {
     if (selectedReason) {
@@ -72,16 +97,31 @@ export function ConfirmAttendanceHandler({ eventId }: Props) {
     }
   }
 
-  function handleDismiss() {
-    setStatus('idle');
-    cleanupUrl();
-  }
-
   if (status === 'idle') return null;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-card border rounded-lg p-6 max-w-sm mx-4 text-center space-y-4">
+    <div
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+      onClick={(event) => {
+        if (event.target === event.currentTarget && status !== 'confirming') {
+          handleDismiss();
+        }
+      }}
+    >
+      <div className="relative bg-card border rounded-lg p-6 max-w-sm mx-4 text-center space-y-4">
+        {status !== 'confirming' && (
+          <button
+            type="button"
+            onClick={handleDismiss}
+            className="absolute right-2 top-2 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        )}
+
         {status === 'confirming' && (
           <p className="text-muted-foreground">Processing...</p>
         )}
