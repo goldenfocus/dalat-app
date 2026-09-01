@@ -5,7 +5,7 @@ vi.mock("./ingest", () => ({ ingestVerifiedActivity: vi.fn() }));
 import { validateScoutSubmission, type ScoutSubmission } from "./scout-submit";
 
 const NOW = new Date("2026-08-30T00:00:00.000Z");
-const PAGE = "Autumn yoga retreat 2026-10-03 09:00 Da Lat, Lam Dong Public enrollment is open. Community yoga every Tuesday at 18:00.";
+const PAGE = "Autumn yoga retreat 2026-09-10 09:00 Da Lat, Lam Dong Public enrollment is open. Community yoga every Tuesday at 18:00.";
 
 function submission(): ScoutSubmission {
   return {
@@ -21,8 +21,8 @@ function submission(): ScoutSubmission {
       kind: "workshop",
       title: "Autumn yoga retreat",
       description: null,
-      startsAt: "2026-10-03T09:00:00+07:00",
-      endsAt: "2026-10-03T11:00:00+07:00",
+      startsAt: "2026-09-10T09:00:00+07:00",
+      endsAt: "2026-09-10T11:00:00+07:00",
       timePrecision: "exact",
       rrule: null,
       startsAtTime: null,
@@ -45,7 +45,7 @@ function submission(): ScoutSubmission {
       eventStatus: "scheduled",
       evidence: [
         { fieldPath: "title", rawValue: "Autumn yoga retreat", evidenceText: "Autumn yoga retreat", locator: "body", confidence: 100 },
-        { fieldPath: "starts_at", rawValue: "2026-10-03 09:00", evidenceText: "2026-10-03 09:00", locator: "body", confidence: 100 },
+        { fieldPath: "starts_at", rawValue: "2026-09-10 09:00", evidenceText: "2026-09-10 09:00", locator: "body", confidence: 100 },
         { fieldPath: "address", rawValue: "Da Lat, Lam Dong", evidenceText: "Da Lat, Lam Dong", locator: "body", confidence: 100 },
         { fieldPath: "public_access", rawValue: "Public enrollment is open", evidenceText: "Public enrollment is open", locator: "body", confidence: 100 },
       ],
@@ -84,7 +84,7 @@ describe("autonomous scout submission validation", () => {
     const input = submission();
     input.activity.startsAt = "2026-08-29T09:00:00+07:00";
     expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("future occurrence");
-    input.activity.startsAt = "2026-10-03T09:00:00+07:00";
+    input.activity.startsAt = "2026-09-10T09:00:00+07:00";
     input.activity.timePrecision = "date_only";
     expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("exact future start time");
   });
@@ -134,5 +134,11 @@ describe("autonomous scout submission validation", () => {
     input.activity.rruleUntil = null;
     input.activity.evidence = input.activity.evidence.filter((row) => row.fieldPath !== "starts_at_time");
     expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("recurring schedule evidence");
+  });
+
+  it("rejects a fully evidenced activity beyond the near-term discovery window", () => {
+    const input = submission();
+    input.activity.startsAt = "2027-03-10T09:00:00+07:00";
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("next 45 days");
   });
 });

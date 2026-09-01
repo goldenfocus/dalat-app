@@ -77,6 +77,7 @@ export const scoutSubmissionSchema = z.object({ source: sourceSchema, activity: 
 export type ScoutSubmission = z.infer<typeof scoutSubmissionSchema>;
 
 const REQUIRED_BASE_EVIDENCE = ["title", "public_access"];
+const SCOUT_NEAR_TERM_WINDOW_MS = 45 * 86_400_000;
 const PRIVATE_SOCIAL_HOSTS = [
   "facebook.com", "fb.com", "zalo.me", "whatsapp.com", "wa.me",
   "telegram.org", "t.me", "instagram.com", "tiktok.com",
@@ -144,6 +145,14 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
     }
     if (new Date(submission.activity.startsAt).getTime() <= now.getTime()) {
       throw new Error("Autonomous publication requires a future occurrence");
+    }
+    if (
+      new Date(submission.activity.startsAt).getTime() >
+      now.getTime() + SCOUT_NEAR_TERM_WINDOW_MS
+    ) {
+      throw new Error(
+        "Autonomous publication is limited to the next 45 days; prioritize this month",
+      );
     }
     if (!fields.has("starts_at")) {
       throw new Error("Missing required evidence: starts_at");
