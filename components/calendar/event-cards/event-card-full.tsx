@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
 import { MapPin, Clock } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
@@ -14,8 +15,9 @@ interface EventCardFullProps {
 }
 
 export function EventCardFull({ event, isPast }: EventCardFullProps) {
-  const startTime = formatInDaLat(event.starts_at, "h:mm a");
-  const endTime = event.ends_at ? formatInDaLat(event.ends_at, "h:mm a") : null;
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
+  const startTime = timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a");
+  const endTime = !timeTbd && event.ends_at ? formatInDaLat(event.ends_at, "h:mm a") : null;
 
   return (
     <Link

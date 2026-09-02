@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
@@ -75,6 +76,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
   const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null);
   const displayTitle = translatedTitle || event.title;
   const pastProof = getPastProof(social);
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
     <Link
@@ -172,7 +174,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
             <span>
               {formatInDaLat(event.starts_at, "EEEE, MMMM d", locale)} &middot;{" "}
-              {formatInDaLat(event.starts_at, "h:mm a", locale)}
+              {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
             </span>
           </div>
 

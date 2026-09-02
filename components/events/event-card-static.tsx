@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import { decodeUnicodeEscapes } from "@/lib/utils";
@@ -54,6 +55,7 @@ export function EventCardStatic({
   locale,
   labels,
 }: EventCardStaticProps) {
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
   const spotsText = event.capacity
     ? `${counts?.going_spots ?? 0}/${event.capacity}`
     : `${counts?.going_spots ?? 0}`;
@@ -152,7 +154,7 @@ export function EventCardStatic({
               <Calendar className="w-4 h-4" />
               <span>
                 {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} &middot;{" "}
-                {formatInDaLat(event.starts_at, "h:mm a", locale)}
+                {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
               </span>
             </div>
 

@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
@@ -71,6 +72,7 @@ export const EventListCard = memo(function EventListCard({
   const imageIsVideo = isVideoUrl(coverUrl);
   const displayTitle = translatedTitle || event.title;
   const pastProof = getPastProof(social);
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
     <Link
@@ -128,8 +130,8 @@ export const EventListCard = memo(function EventListCard({
           <Calendar className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
           <span className="truncate">
             {hideDate
-              ? formatInDaLat(event.starts_at, "h:mm a", locale)
-              : `${formatInDaLat(event.starts_at, "EEE, MMM d", locale)} · ${formatInDaLat(event.starts_at, "h:mm a", locale)}`}
+              ? (timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale))
+              : `${formatInDaLat(event.starts_at, "EEE, MMM d", locale)} · ${timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}`}
           </span>
         </div>
 

@@ -6,6 +6,7 @@ import type {
   ExtractedActivity,
   LocalityResult,
 } from "./types";
+import { isLamVienTbdActivity } from "./lam-vien-tbd";
 
 const DALAT_CENTER = { latitude: 11.9404, longitude: 108.4583 };
 const DALAT_RADIUS_KM = 35;
@@ -139,6 +140,7 @@ export function scoreActivity(
   locality: LocalityResult,
   now: Date = new Date(),
 ): ConfidenceResult {
+  const lamVienTbd = isLamVienTbdActivity(activity);
   const components: Record<string, number> = {
     sourceAuthority:
       ({ 1: 25, 2: 22, 3: 17, 4: 10, 5: 5 } as Record<number, number>)[
@@ -156,14 +158,16 @@ export function scoreActivity(
       : 8,
     scheduleCertainty:
       activity.timePrecision === "exact" ||
-      activity.timePrecision === "recurring"
+      activity.timePrecision === "recurring" ||
+      lamVienTbd
         ? 15
         : 0,
     localityCertainty: locality.status === "confirmed" ? 10 : 0,
     canonicalSource: sameOrigin(activity.sourceUrl, source.canonical_url)
       ? 5
       : 0,
-    publicAccess: activity.publicAccess === "confirmed" ? 5 : 0,
+    publicAccess:
+      activity.publicAccess === "confirmed" || lamVienTbd ? 5 : 0,
   };
   const penalties: Record<string, number> = {
     cancelledOrPostponed: ["cancelled", "postponed"].includes(
@@ -183,7 +187,7 @@ export function scoreActivity(
     hardGateFailures.push("auto_publish_disabled");
   if (locality.status !== "confirmed")
     hardGateFailures.push(`locality_${locality.status}`);
-  if (activity.publicAccess !== "confirmed")
+  if (activity.publicAccess !== "confirmed" && !lamVienTbd)
     hardGateFailures.push("public_access_unconfirmed");
   if (!sameOrigin(activity.sourceUrl, source.canonical_url))
     hardGateFailures.push("cross_origin_source_url");
@@ -199,7 +203,10 @@ export function scoreActivity(
       hardGateFailures.push("incomplete_recurrence");
     }
   } else {
-    if (!activity.startsAt || activity.timePrecision !== "exact") {
+    if (
+      !activity.startsAt ||
+      (activity.timePrecision !== "exact" && !lamVienTbd)
+    ) {
       hardGateFailures.push("exact_start_required");
     } else if (new Date(activity.startsAt).getTime() <= now.getTime()) {
       hardGateFailures.push("past_occurrence");

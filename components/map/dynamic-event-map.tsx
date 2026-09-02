@@ -17,6 +17,7 @@ export type MapEvent = Pick<
   | "location_name"
   | "image_url"
   | "ai_tags"
+  | "source_metadata"
 >;
 
 function MapSkeleton() {

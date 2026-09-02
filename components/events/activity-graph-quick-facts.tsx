@@ -1,4 +1,5 @@
 import {
+  BadgeDollarSign,
   CalendarDays,
   CheckCircle2,
   ExternalLink,
@@ -7,6 +8,7 @@ import {
   TicketCheck,
 } from "lucide-react";
 import type { Locale } from "@/lib/types";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 
 type ReservationRequirement =
   | "not_required"
@@ -24,6 +26,8 @@ interface QuickFactsCopy {
   where: string;
   booking: string;
   access: string;
+  price: string;
+  priceUnknown: string;
   lastConfirmed: string;
   officialSource: string;
   reservation: Record<
@@ -41,6 +45,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "Where",
     booking: "Booking",
     access: "Access",
+    price: "Price",
+    priceUnknown: "Unknown",
     lastConfirmed: "Last confirmed",
     officialSource: "Official source",
     reservation: {
@@ -60,6 +66,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "Ở đâu",
     booking: "Đặt chỗ",
     access: "Quyền vào",
+    price: "Giá",
+    priceUnknown: "Chưa rõ",
     lastConfirmed: "Xác nhận lần cuối",
     officialSource: "Nguồn chính thức",
     reservation: {
@@ -79,6 +87,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "장소",
     booking: "예약",
     access: "입장",
+    price: "가격",
+    priceUnknown: "미정",
     lastConfirmed: "최근 확인",
     officialSource: "공식 출처",
     reservation: {
@@ -98,6 +108,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "地点",
     booking: "预约",
     access: "入场",
+    price: "价格",
+    priceUnknown: "未知",
     lastConfirmed: "最近确认",
     officialSource: "官方来源",
     reservation: {
@@ -117,6 +129,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "Где",
     booking: "Бронирование",
     access: "Доступ",
+    price: "Цена",
+    priceUnknown: "Неизвестно",
     lastConfirmed: "Последнее подтверждение",
     officialSource: "Официальный источник",
     reservation: {
@@ -136,6 +150,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "Où",
     booking: "Réservation",
     access: "Accès",
+    price: "Prix",
+    priceUnknown: "Inconnu",
     lastConfirmed: "Dernière confirmation",
     officialSource: "Source officielle",
     reservation: {
@@ -155,6 +171,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "場所",
     booking: "予約",
     access: "入場",
+    price: "料金",
+    priceUnknown: "未定",
     lastConfirmed: "最終確認",
     officialSource: "公式情報源",
     reservation: {
@@ -174,6 +192,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "Di mana",
     booking: "Tempahan",
     access: "Akses",
+    price: "Harga",
+    priceUnknown: "Tidak diketahui",
     lastConfirmed: "Pengesahan terakhir",
     officialSource: "Sumber rasmi",
     reservation: {
@@ -193,6 +213,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "ที่ไหน",
     booking: "การจอง",
     access: "การเข้าร่วม",
+    price: "ราคา",
+    priceUnknown: "ยังไม่ทราบ",
     lastConfirmed: "ยืนยันล่าสุด",
     officialSource: "แหล่งข้อมูลทางการ",
     reservation: {
@@ -212,6 +234,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "Wo",
     booking: "Reservierung",
     access: "Zugang",
+    price: "Preis",
+    priceUnknown: "Unbekannt",
     lastConfirmed: "Zuletzt bestätigt",
     officialSource: "Offizielle Quelle",
     reservation: {
@@ -231,6 +255,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "Dónde",
     booking: "Reserva",
     access: "Acceso",
+    price: "Precio",
+    priceUnknown: "Desconocido",
     lastConfirmed: "Última confirmación",
     officialSource: "Fuente oficial",
     reservation: {
@@ -250,6 +276,8 @@ const COPY: Record<Locale, QuickFactsCopy> = {
     where: "Di mana",
     booking: "Reservasi",
     access: "Akses",
+    price: "Harga",
+    priceUnknown: "Belum diketahui",
     lastConfirmed: "Terakhir dikonfirmasi",
     officialSource: "Sumber resmi",
     reservation: {
@@ -379,6 +407,7 @@ interface ActivityGraphQuickFactsProps {
   address: string | null;
   reservationRequirement: ReservationRequirement;
   publicAccess: PublicAccess;
+  priceType: "free" | "paid" | "donation" | null;
   lastConfirmedAt: string | null;
   sourceMetadata: Record<string, unknown> | null;
 }
@@ -392,11 +421,17 @@ export function ActivityGraphQuickFacts({
   address,
   reservationRequirement,
   publicAccess,
+  priceType,
   lastConfirmedAt,
   sourceMetadata,
 }: ActivityGraphQuickFactsProps) {
   const copy = getActivityGraphQuickFactsCopy(locale);
-  const when = formatWhen(startsAt, endsAt, locale, timeZone);
+  const when = hasLamVienTbdSchedule(sourceMetadata)
+    ? `${new Intl.DateTimeFormat(LOCALE_TAGS[locale], {
+        dateStyle: "full",
+        timeZone: safeTimeZone(timeZone),
+      }).format(new Date(startsAt))} · TBD`
+    : formatWhen(startsAt, endsAt, locale, timeZone);
   const locationParts = [locationName, address].filter(
     (part, index, parts): part is string =>
       typeof part === "string" &&
@@ -411,10 +446,14 @@ export function ActivityGraphQuickFacts({
     reservationRequirement && reservationRequirement !== "unknown"
       ? copy.reservation[reservationRequirement]
       : null;
+  const lamVienTbd = hasLamVienTbdSchedule(sourceMetadata);
   const access =
     publicAccess && publicAccess !== "unknown"
       ? copy.publicAccess[publicAccess]
-      : null;
+      : lamVienTbd
+        ? "TBD"
+        : null;
+  const priceUnknown = lamVienTbd && priceType === null;
 
   return (
     <section
@@ -482,6 +521,18 @@ export function ActivityGraphQuickFacts({
                 {copy.access}
               </dt>
               <dd className="mt-1 text-sm font-medium">{access}</dd>
+            </div>
+          </div>
+        )}
+
+        {priceUnknown && (
+          <div className="flex gap-3 border-t px-5 py-4">
+            <BadgeDollarSign className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <div>
+              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {copy.price}
+              </dt>
+              <dd className="mt-1 text-sm font-medium">{copy.priceUnknown}</dd>
             </div>
           </div>
         )}

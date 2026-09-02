@@ -42,6 +42,7 @@ function toCardEvent(event: EventWithSeriesData): CardEvent {
     capacity: event.capacity,
     sponsor_tier: event.sponsor_tier,
     source_locale: event.source_locale,
+    source_metadata: event.source_metadata,
   };
 }
 

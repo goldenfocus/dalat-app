@@ -16,6 +16,7 @@ const baseProps = {
   address: "519 Thôn Măng Lin, Đà Lạt",
   reservationRequirement: "required" as const,
   publicAccess: "confirmed" as const,
+  priceType: "free" as const,
   lastConfirmedAt: "2026-08-28T09:00:00.000Z",
   sourceMetadata: {
     source_url: "https://maylangthang.com.vn/shows/hanhi3008",
@@ -68,6 +69,28 @@ describe("ActivityGraphQuickFacts", () => {
     expect(screen.queryByText("When")).not.toBeInTheDocument();
   });
 
+  it("shows TBD admission and unknown price for a date-known Lam Vien notice", () => {
+    render(
+      <ActivityGraphQuickFacts
+        {...baseProps}
+        startsAt="2026-09-12T16:59:59.000Z"
+        endsAt={null}
+        publicAccess="unknown"
+        priceType={null}
+        sourceMetadata={{
+          source_url: "https://official.example.vn/lam-vien-notice",
+          schedule_policy: "lam_vien_date_known_time_tbd",
+        }}
+      />,
+    );
+
+    expect(screen.getAllByText(/TBD/)).toHaveLength(2);
+    expect(screen.getByText("Access")).toBeInTheDocument();
+    expect(screen.getByText("Price")).toBeInTheDocument();
+    expect(screen.getByText("Unknown")).toBeInTheDocument();
+    expect(screen.queryByText(/11:59/)).not.toBeInTheDocument();
+  });
+
   it("has deterministic copy for all twelve product locales", () => {
     expect(ACTIVITY_GRAPH_QUICK_FACT_LOCALES).toHaveLength(12);
 
@@ -75,6 +98,7 @@ describe("ActivityGraphQuickFacts", () => {
       const copy = getActivityGraphQuickFactsCopy(locale);
       expect(copy.title).toBeTruthy();
       expect(copy.officialSource).toBeTruthy();
+      expect(copy.priceUnknown).toBeTruthy();
       expect(copy.reservation.required).toBeTruthy();
       expect(copy.publicAccess.confirmed).toBeTruthy();
     }

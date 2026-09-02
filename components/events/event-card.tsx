@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
@@ -100,6 +101,7 @@ export const EventCard = memo(function EventCard({
   const imageIsVideo = isVideoUrl(event.image_url);
   const displayTitle = translatedTitle || event.title;
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
     <div
@@ -261,7 +263,7 @@ export const EventCard = memo(function EventCard({
 
               <div className="flex items-center gap-2.5">
                 <Clock className="w-4 h-4 flex-shrink-0 text-white/70" />
-                <span>{formatInDaLat(event.starts_at, "h:mm a", locale)}</span>
+                <span>{timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}</span>
               </div>
 
               {event.location_name && (

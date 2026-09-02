@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { useLazyVideo } from "@/lib/hooks/use-lazy-video";
@@ -57,6 +58,7 @@ export const EventCardFramed = memo(function EventCardFramed({
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
   const goingSpots = counts?.going_spots ?? 0;
   const pastProof = getPastProof(social);
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
     <Link
@@ -176,7 +178,7 @@ export const EventCardFramed = memo(function EventCardFramed({
             <div className="flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>
-                {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} · {formatInDaLat(event.starts_at, "h:mm a", locale)}
+                {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} · {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
               </span>
             </div>
 

@@ -3,6 +3,7 @@ import { Link } from "@/lib/i18n/routing";
 import { MapPin, Users, Clock, Radio } from "lucide-react";
 import { LazyVideoCover } from "@/components/events/lazy-video-cover";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import { decodeUnicodeEscapes } from "@/lib/utils";
@@ -184,6 +185,7 @@ export function resolveHeroTimeDisplay(
     endsAt: (time: string) => string;
   }
 ): string {
+  if (hasLamVienTbdSchedule(event.source_metadata)) return "TBD";
   const startTime = new Date(event.starts_at);
   const now = new Date();
   const minutesAgo = Math.floor(

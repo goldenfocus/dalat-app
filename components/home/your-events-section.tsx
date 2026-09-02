@@ -6,6 +6,7 @@ import { Link } from "@/lib/i18n/routing";
 import { CalendarCheck, ChevronRight, ChevronDown, Music, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import { triggerHaptic } from "@/lib/haptics";
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
@@ -334,7 +335,9 @@ function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents
 
   // Format date and time in Da Lat timezone
   const dateStr = formatInDaLat(event.starts_at, "EEE, MMM d", locale);
-  const timeStr = formatInDaLat(event.starts_at, "h:mm a", locale);
+  const timeStr = hasLamVienTbdSchedule(event.source_metadata)
+    ? "TBD"
+    : formatInDaLat(event.starts_at, "h:mm a", locale);
 
   // RSVP status badge
   const statusConfig = {

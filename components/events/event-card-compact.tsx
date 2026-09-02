@@ -6,6 +6,7 @@ import { useRouter } from "@/lib/i18n/routing";
 import { useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
@@ -75,6 +76,7 @@ export const EventCardCompact = memo(function EventCardCompact({
   const imageIsVideo = isVideoUrl(coverUrl);
   const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null);
   const displayTitle = translatedTitle || event.title;
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
     <div
@@ -201,7 +203,7 @@ export const EventCardCompact = memo(function EventCardCompact({
 
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3 h-3 flex-shrink-0" />
-                <span>{formatInDaLat(event.starts_at, "h:mm a", locale)}</span>
+                <span>{timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}</span>
               </div>
 
               {event.location_name && (

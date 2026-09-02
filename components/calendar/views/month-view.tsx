@@ -23,6 +23,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
 
@@ -223,7 +224,9 @@ export function MonthView({
                               {event.title}
                             </h4>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {formatInDaLat(event.starts_at, "h:mm a")}
+                              {hasLamVienTbdSchedule(event.source_metadata)
+                                ? "TBD"
+                                : formatInDaLat(event.starts_at, "h:mm a")}
                               {event.location_name && ` · ${decodeUnicodeEscapes(event.location_name)}`}
                             </p>
                           </div>
@@ -360,7 +363,9 @@ export function MonthView({
                               {event.title}
                             </h4>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {formatInDaLat(event.starts_at, "h:mm a")}
+                              {hasLamVienTbdSchedule(event.source_metadata)
+                                ? "TBD"
+                                : formatInDaLat(event.starts_at, "h:mm a")}
                               {event.location_name && ` · ${decodeUnicodeEscapes(event.location_name)}`}
                             </p>
                           </div>

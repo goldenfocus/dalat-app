@@ -2,6 +2,7 @@
 import { ImageResponse } from "next/og";
 import { createStaticClient } from "@/lib/supabase/server";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import {
   buildCollageSourceUrl,
   selectEventPreviewImages,
@@ -32,6 +33,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     cover_moment_id: string | null;
     location_name: string | null;
     starts_at: string;
+    source_metadata: Record<string, unknown> | null;
   } | null = null;
 
   if (supabase) {
@@ -40,13 +42,18 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
     const { data } = await supabase
       .from("events")
-      .select("id, title, image_url, cover_moment_id, location_name, starts_at")
+      .select("id, title, image_url, cover_moment_id, location_name, starts_at, source_metadata")
       .eq("slug", effectiveSlug)
       .single();
     event = data;
   }
 
   const title = event?.title || "ĐàLạt.app";
+  const eventDate = event
+    ? hasLamVienTbdSchedule(event.source_metadata)
+      ? `${formatInDaLat(event.starts_at, "EEE, MMM d")} · TBD`
+      : formatInDaLat(event.starts_at, "EEE, MMM d · h:mm a")
+    : "";
   let heroImageUrl = event?.image_url ?? null;
 
   if (event && !heroImageUrl && supabase) {
@@ -135,7 +142,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
                 gap: 16,
               }}
             >
-              <span>{formatInDaLat(event.starts_at, "EEE, MMM d · h:mm a")}</span>
+              <span>{eventDate}</span>
               {event.location_name && (
                 <>
                   <span style={{ opacity: 0.6 }}>·</span>
@@ -165,7 +172,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
     );
   } else {
     // Fallback for events without images
-    const eventDate = event ? formatInDaLat(event.starts_at, "EEE, MMM d · h:mm a") : "";
     const location = event?.location_name || "Đà Lạt";
 
     imageResponse = new ImageResponse(

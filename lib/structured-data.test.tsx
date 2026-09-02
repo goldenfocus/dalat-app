@@ -66,6 +66,22 @@ describe("generateEventSchema", () => {
     );
   });
 
+  it("emits a date without an invented time for a Lâm Viên TBD schedule", () => {
+    const schema = generateEventSchema(
+      makeEvent({
+        starts_at: "2026-09-12T23:59:59+07:00",
+        ends_at: null,
+        source_metadata: {
+          schedule_policy: "lam_vien_date_known_time_tbd",
+        },
+      }),
+      "en",
+    );
+
+    expect(schema.startDate).toBe("2026-09-12");
+    expect(schema).not.toHaveProperty("endDate");
+  });
+
   it("omits offers when pricing is unknown", () => {
     const schema = generateEventSchema(
       makeEvent({ price_type: null, ticket_tiers: null }),

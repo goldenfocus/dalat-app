@@ -25,6 +25,7 @@ import {
 } from "@/lib/cache/server-cache";
 import { takeDistinctEventChoices } from "@/lib/events/distinct-choices";
 import { formatInDaLatAsync } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import { isVideoUrl } from "@/lib/media-utils";
 import {
@@ -113,7 +114,9 @@ export default async function ThingsToDoInDalatPage({ params }: PageProps) {
   ]);
   const eventDates = await Promise.all(
     events.map((event) =>
-      formatInDaLatAsync(event.starts_at, "EEE, MMM d · HH:mm", locale),
+      hasLamVienTbdSchedule(event.source_metadata)
+        ? formatInDaLatAsync(event.starts_at, "EEE, MMM d '· TBD'", locale)
+        : formatInDaLatAsync(event.starts_at, "EEE, MMM d · HH:mm", locale),
     ),
   );
   const schemas = buildThingsToDoSchemas(locale);

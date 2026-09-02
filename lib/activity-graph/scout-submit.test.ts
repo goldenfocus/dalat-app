@@ -5,7 +5,7 @@ vi.mock("./ingest", () => ({ ingestVerifiedActivity: vi.fn() }));
 import { validateScoutSubmission, type ScoutSubmission } from "./scout-submit";
 
 const NOW = new Date("2026-08-30T00:00:00.000Z");
-const PAGE = "Autumn yoga retreat 2026-09-10 09:00 Da Lat, Lam Dong Public enrollment is open. Community yoga every Tuesday at 18:00.";
+const PAGE = "Autumn yoga retreat 2026-09-10 09:00 Da Lat, Lam Dong Public enrollment is open. Community yoga every Tuesday at 18:00. Lễ khai mạc diễn ra ngày 12 September 2026 tại Quảng trường Lâm Viên.";
 
 function submission(): ScoutSubmission {
   return {
@@ -140,5 +140,36 @@ describe("autonomous scout submission validation", () => {
     const input = submission();
     input.activity.startsAt = "2027-03-10T09:00:00+07:00";
     expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("next 45 days");
+  });
+
+  it("admits an official Lâm Viên Square notice with date known and time/access TBD", () => {
+    const input = submission();
+    input.activity.sourceUid = "https://example.test/courses/lam-vien-opening";
+    input.activity.sourceUrl = "https://example.test/courses/lam-vien-opening";
+    input.activity.title = "Lễ khai mạc";
+    input.activity.startsAt = "2026-09-12T23:59:59+07:00";
+    input.activity.endsAt = null;
+    input.activity.timePrecision = "tba";
+    input.activity.locationName = "Quảng trường Lâm Viên";
+    input.activity.address = "Quảng trường Lâm Viên, Đà Lạt, Lâm Đồng";
+    input.activity.publicAccess = "unknown";
+    input.activity.reservationRequirement = "unknown";
+    input.activity.evidence = [
+      { fieldPath: "title", rawValue: "Lễ khai mạc", evidenceText: "Lễ khai mạc", locator: "body", confidence: 100 },
+      { fieldPath: "starts_at", rawValue: "12 September 2026", evidenceText: "12 September 2026", locator: "body", confidence: 100 },
+      { fieldPath: "address", rawValue: "Quảng trường Lâm Viên", evidenceText: "Quảng trường Lâm Viên", locator: "body", confidence: 100 },
+      { fieldPath: "event_status", rawValue: "scheduled", evidenceText: "diễn ra", locator: "body", confidence: 100 },
+    ];
+
+    expect(validateScoutSubmission(input, PAGE, NOW).activity.timePrecision).toBe("tba");
+  });
+
+  it("does not let a non-Lâm Viên activity bypass exact time and public-access evidence", () => {
+    const input = submission();
+    input.activity.startsAt = "2026-09-12T23:59:59+07:00";
+    input.activity.endsAt = null;
+    input.activity.timePrecision = "tba";
+    input.activity.publicAccess = "unknown";
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("exact future start time");
   });
 });

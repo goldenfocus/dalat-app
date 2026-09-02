@@ -5,6 +5,7 @@ import { fetchSourceText, type FetchedSourceDocument } from "./fetch";
 import { ingestVerifiedActivity } from "./ingest";
 import type { ActivitySource, ExtractedActivity } from "./types";
 import { isValidRRule } from "@/lib/recurrence";
+import { isLamVienTbdActivity } from "./lam-vien-tbd";
 
 const ISO_DATE_TIME = z.string().datetime({ offset: true }).or(z.null());
 
@@ -64,7 +65,7 @@ const activitySchema = z.object({
   })).max(20).nullable(),
   ticketUrl: z.url().nullable(),
   reservationRequirement: z.enum(["not_required", "recommended", "required", "unknown"]).nullable(),
-  publicAccess: z.literal("confirmed"),
+  publicAccess: z.enum(["confirmed", "unknown"]),
   sourcePublishedAt: ISO_DATE_TIME,
   sourceUpdatedAt: ISO_DATE_TIME,
   eventStatus: z.enum(["scheduled", "cancelled", "postponed", "rescheduled", "unknown"]),
@@ -115,7 +116,10 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
     throw new Error("Only scheduled or rescheduled activities can be submitted");
   }
   const fields = new Set(submission.activity.evidence.map((row) => row.fieldPath));
-  for (const field of REQUIRED_BASE_EVIDENCE) {
+  const lamVienTbd =
+    submission.activity.kind !== "recurring_activity" &&
+    isLamVienTbdActivity(submission.activity);
+  for (const field of lamVienTbd ? ["title"] : REQUIRED_BASE_EVIDENCE) {
     if (!fields.has(field)) throw new Error(`Missing required evidence: ${field}`);
   }
   if (submission.activity.kind === "recurring_activity") {
@@ -140,7 +144,10 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
       throw new Error("Autonomous publication requires a recurrence with a future occurrence");
     }
   } else {
-    if (submission.activity.timePrecision !== "exact" || !submission.activity.startsAt) {
+    if (
+      (!lamVienTbd && submission.activity.timePrecision !== "exact") ||
+      !submission.activity.startsAt
+    ) {
       throw new Error("Autonomous publication requires an exact future start time");
     }
     if (new Date(submission.activity.startsAt).getTime() <= now.getTime()) {
@@ -156,6 +163,9 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
     }
     if (!fields.has("starts_at")) {
       throw new Error("Missing required evidence: starts_at");
+    }
+    if (!lamVienTbd && submission.activity.publicAccess !== "confirmed") {
+      throw new Error("Autonomous publication requires confirmed public access");
     }
   }
   if (!fields.has("address") && !fields.has("location_name")) {

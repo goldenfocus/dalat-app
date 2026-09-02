@@ -58,6 +58,7 @@ import { EventMediaDisplay } from "@/components/events/event-media-display";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { getEventDateDisplay } from "@/lib/events/event-date-range";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import { EventTribeAttach } from "@/components/events/event-tribe-attach";
@@ -111,7 +112,7 @@ export async function generateMetadata({
   const { data: event } = await supabase
     .from("events")
     .select(
-      "id, title, description, location_name, starts_at, source_locale, updated_at",
+      "id, title, description, location_name, starts_at, source_locale, source_metadata, updated_at",
     )
     .eq("slug", slug)
     .single();
@@ -170,7 +171,9 @@ export async function generateMetadata({
   );
   const localeIsReady = isValidContentLocale(locale) && readyLocales.includes(locale);
 
-  const eventDate = formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a");
+  const eventDate = hasLamVienTbdSchedule(event.source_metadata)
+    ? `${formatInDaLat(event.starts_at, "EEE, MMM d")} · TBD`
+    : formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a");
 
   // Use keyword-enriched description that ensures Đà Lạt context
   const { buildSeoDescription } = await import("@/lib/seo/dalat-keywords");
@@ -1155,6 +1158,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     endDate: formattedEndDate,
     endTime: formattedEndTime,
   } = await getEventDateDisplay(event.starts_at, event.ends_at, locale as Locale);
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
     <CelebrationProvider>
@@ -1496,6 +1500,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   address={event.address}
                   reservationRequirement={event.reservation_requirement ?? null}
                   publicAccess={event.public_access ?? null}
+                  priceType={event.price_type ?? null}
                   lastConfirmedAt={event.last_confirmed_at ?? null}
                   sourceMetadata={event.source_metadata ?? null}
                 />
@@ -1569,8 +1574,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                           {formattedStartDate}
                         </time>
                         <p className="text-sm text-muted-foreground">
-                          {formattedStartTime}
-                          {!spansMultipleDays &&
+                          {timeTbd ? "TBD" : formattedStartTime}
+                          {!timeTbd && !spansMultipleDays &&
                             formattedEndTime &&
                             ` - ${formattedEndTime}`}
                         </p>

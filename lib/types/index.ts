@@ -593,6 +593,7 @@ export type CardEvent = Pick<
   | "capacity"
   | "sponsor_tier"
   | "source_locale"
+  | "source_metadata"
 >;
 
 /**

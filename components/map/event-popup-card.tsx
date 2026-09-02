@@ -5,6 +5,7 @@ import { X, Route } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { triggerHaptic } from "@/lib/haptics";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { MapEvent } from "./dynamic-event-map";
 
@@ -38,7 +39,9 @@ export function EventPopupCard({ event, onClose }: EventPopupCardProps) {
             {event.title}
           </h3>
           <p className="text-xs text-muted-foreground">
-            {formatInDaLat(event.starts_at, "EEE, MMM d · h:mm a")}
+            {hasLamVienTbdSchedule(event.source_metadata)
+              ? `${formatInDaLat(event.starts_at, "EEE, MMM d")} · TBD`
+              : formatInDaLat(event.starts_at, "EEE, MMM d · h:mm a")}
           </p>
           {event.location_name && (
             <p className="text-xs text-muted-foreground mt-1 line-clamp-1">

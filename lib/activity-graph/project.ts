@@ -19,6 +19,7 @@ import {
   projectedActivityMedia,
   sourceAllowsOfficialMedia,
 } from "./media";
+import { isLamVienTbdActivity } from "./lam-vien-tbd";
 import {
   freshnessScore,
   scoreEventDuplicate,
@@ -400,6 +401,9 @@ function refreshedSourceMetadata(
     source_url: input.activity.sourceUrl,
     activity_attributes: input.activity.attributes,
     time_precision: input.activity.timePrecision,
+    ...(isLamVienTbdActivity(input.activity)
+      ? { schedule_policy: "lam_vien_date_known_time_tbd" }
+      : {}),
     media_candidate_count: input.activity.mediaCandidates?.length ?? 0,
     media_policy:
       typeof input.source.metadata?.media_policy === "string"

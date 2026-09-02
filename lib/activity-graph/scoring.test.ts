@@ -155,6 +155,27 @@ describe("Activity Graph scoring", () => {
     expect(result.hardGateFailures).toContain("public_access_unconfirmed");
   });
 
+  it("permits only a date-known Lâm Viên Square notice to use TBD time/access", () => {
+    const lamVien = {
+      ...activity,
+      startsAt: "2026-09-12T23:59:59+07:00",
+      endsAt: null,
+      timePrecision: "tba" as const,
+      locationName: "Quảng trường Lâm Viên",
+      address: "Quảng trường Lâm Viên, Đà Lạt, Lâm Đồng",
+      publicAccess: "unknown" as const,
+    };
+    const result = scoreActivity(
+      lamVien,
+      { ...source, fetch_mode: "manual", auto_publish_threshold: 97 },
+      evaluateDalatLocality(lamVien),
+      new Date("2026-08-28T00:00:00Z"),
+    );
+
+    expect(result.score).toBe(100);
+    expect(result.hardGateFailures).toEqual([]);
+  });
+
   it("uses an exponential confirmation half-life", () => {
     expect(
       freshnessScore(

@@ -2,7 +2,10 @@ import { createClient } from "@supabase/supabase-js";
 import { config as loadEnv } from "dotenv";
 import { ingestScoutSubmission } from "@/lib/activity-graph/scout-submit";
 
-loadEnv({ path: ".env.local", quiet: true });
+loadEnv({
+  path: process.env.ACTIVITY_GRAPH_ENV_FILE ?? ".env.local",
+  quiet: true,
+});
 
 function supabaseRootUrl(value: string): string {
   const url = new URL(value);

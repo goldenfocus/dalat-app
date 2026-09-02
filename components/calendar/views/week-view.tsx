@@ -11,6 +11,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import type { Event } from "@/lib/types";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { triggerHaptic } from "@/lib/haptics";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
 
@@ -150,7 +151,9 @@ export function WeekView({
                             {event.title}
                           </h4>
                           <p className="text-xs text-muted-foreground mt-1">
-                            {formatInDaLat(event.starts_at, "h:mm a")}
+                            {hasLamVienTbdSchedule(event.source_metadata)
+                              ? "TBD"
+                              : formatInDaLat(event.starts_at, "h:mm a")}
                             {event.location_name && ` · ${decodeUnicodeEscapes(event.location_name)}`}
                           </p>
                         </div>

@@ -18,6 +18,8 @@ import type {
   Venue,
   VenueType,
 } from "@/lib/types";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
+import { formatInDaLat } from "@/lib/timezone";
 import type { BlogPostFull } from "@/lib/types/blog";
 
 const SITE_URL = "https://dalat.app";
@@ -91,6 +93,7 @@ export function generateEventSchema(
   imageMetadata?: { alt?: string | null; description?: string | null },
   localizedContent?: { title?: string | null; description?: string | null },
 ) {
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
   const eventUrl = localizedSiteUrl(locale, `/events/${event.slug}`);
   const offerUrl =
     event.source_platform === "activity-graph" && event.external_chat_url
@@ -196,8 +199,10 @@ export function generateEventSchema(
     name: localizedTitle,
     ...(localizedDescription && { description: localizedDescription }),
     url: eventUrl,
-    startDate: event.starts_at,
-    ...(event.ends_at && { endDate: event.ends_at }),
+    startDate: timeTbd
+      ? formatInDaLat(event.starts_at, "yyyy-MM-dd")
+      : event.starts_at,
+    ...(!timeTbd && event.ends_at && { endDate: event.ends_at }),
     eventStatus,
     eventAttendanceMode: event.is_online
       ? hasPhysicalLocation

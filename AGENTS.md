@@ -17,3 +17,7 @@ If neither owner-authorized imagery nor a safe event-specific illustrative image
 ## Activity Graph discovery horizon
 
 The daily scout prioritizes activities happening this calendar month and admits only an exact future start within the next 45 days. A recurring series must have a near-term occurrence. Hold longer-range listings until they are near; never pad the current activity graph with months-away calendar entries.
+
+## Lâm Viên Square date-known exception
+
+Publish official Lâm Viên Square notices with a verified future date even when the exact start time, admission detail, or price is absent. Set `timePrecision: "tba"`, render the time and unknown admission as `TBD`, and render an unknown price as `Unknown`; never guess a time, price, or claim public entry. This exception is limited to Lâm Viên Square and does not relax the evidence contract anywhere else.

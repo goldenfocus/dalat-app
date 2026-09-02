@@ -7,6 +7,7 @@ import { MapPin, Users, Clock, Radio } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { useLazyVideo } from "@/lib/hooks/use-lazy-video";
@@ -41,6 +42,7 @@ export const EventHeroCard = memo(function EventHeroCard({
   const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null, { eager: true });
   const displayTitle = translatedTitle || event.title;
   const goingSpots = counts?.going_spots ?? 0;
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   // "now" stays null on the server and first client render: the homepage HTML
   // is ISR + edge-cached (minutes stale), so clock-derived text would fail
@@ -54,7 +56,9 @@ export const EventHeroCard = memo(function EventHeroCard({
     : null;
 
   // Time display: "Started X min ago" or "Ends at X:XX PM"
-  const timeDisplay = minutesAgo !== null && minutesAgo < 60
+  const timeDisplay = timeTbd
+    ? "TBD"
+    : minutesAgo !== null && minutesAgo < 60
     ? tHome("happeningNow.startedAgo", { minutes: minutesAgo })
     : event.ends_at
       ? tHome("happeningNow.endsAt", { time: formatInDaLat(event.ends_at, "h:mm a", locale) })

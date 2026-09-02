@@ -8,6 +8,7 @@ import { EventDefaultImage } from "@/components/events/event-default-image";
 import { ImmersiveImage } from "@/components/events/immersive-image";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { decodeUnicodeEscapes } from "@/lib/utils";
@@ -51,6 +52,7 @@ export const EventCardImmersive = memo(function EventCardImmersive({ event, coun
   const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
   const imageIsVideo = isVideoUrl(event.image_url);
   const displayTitle = translatedTitle || event.title;
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
     <Link
@@ -109,7 +111,7 @@ export const EventCardImmersive = memo(function EventCardImmersive({ event, coun
                 <Calendar className="w-4 h-4 flex-shrink-0" />
                 <span className="text-sm">
                   {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} &middot;{" "}
-                  {formatInDaLat(event.starts_at, "h:mm a", locale)}
+                  {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
                 </span>
               </div>
 

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { LazyVideoCover } from "@/components/events/lazy-video-cover";
 import { formatInDaLat } from "@/lib/timezone";
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
 import { optimizedImageUrl } from "@/lib/image-cdn";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
@@ -66,6 +67,7 @@ export function EventCardFramedServer({
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
   const goingSpots = counts?.going_spots ?? 0;
   const pastProof = getPastProof(social);
+  const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   // Resolve CDN URL on the server — no function props across client boundaries
   const resolvedCover =
@@ -196,7 +198,7 @@ export function EventCardFramedServer({
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>
                 {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} ·{" "}
-                {formatInDaLat(event.starts_at, "h:mm a", locale)}
+                {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
               </span>
             </div>
 
