@@ -594,6 +594,7 @@ export type CardEvent = Pick<
   | "sponsor_tier"
   | "source_locale"
   | "source_metadata"
+  | "source_platform"
 >;
 
 /**

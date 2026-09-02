@@ -12,7 +12,11 @@ import { isVideoUrl } from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { useLazyVideo } from "@/lib/hooks/use-lazy-video";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import { getCardCoverUrl, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
+import {
+  getCardCoverUrl,
+  shouldShowGoingCount,
+  type EventSocial,
+} from "@/lib/events/social-proof";
 import type { CardEvent, EventCounts, Locale } from "@/lib/types";
 
 interface EventHeroCardProps {
@@ -39,7 +43,10 @@ export const EventHeroCard = memo(function EventHeroCard({
   const coverUrl = getCardCoverUrl(event.image_url, social);
   const hasCustomImage = !!coverUrl;
   const imageIsVideo = isVideoUrl(coverUrl);
-  const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null, { eager: true });
+  const { videoRef, videoFailed } = useLazyVideo(
+    imageIsVideo ? coverUrl : null,
+    { eager: true },
+  );
   const displayTitle = translatedTitle || event.title;
   const goingSpots = counts?.going_spots ?? 0;
   const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
@@ -59,10 +66,12 @@ export const EventHeroCard = memo(function EventHeroCard({
   const timeDisplay = timeTbd
     ? "TBD"
     : minutesAgo !== null && minutesAgo < 60
-    ? tHome("happeningNow.startedAgo", { minutes: minutesAgo })
-    : event.ends_at
-      ? tHome("happeningNow.endsAt", { time: formatInDaLat(event.ends_at, "h:mm a", locale) })
-      : formatInDaLat(event.starts_at, "h:mm a", locale);
+      ? tHome("happeningNow.startedAgo", { minutes: minutesAgo })
+      : event.ends_at
+        ? tHome("happeningNow.endsAt", {
+            time: formatInDaLat(event.ends_at, "h:mm a", locale),
+          })
+        : formatInDaLat(event.starts_at, "h:mm a", locale);
 
   const spotsText = event.capacity
     ? `${counts?.going_spots ?? 0}/${event.capacity}`
@@ -87,7 +96,11 @@ export const EventHeroCard = memo(function EventHeroCard({
                 <video
                   ref={videoRef}
                   className={`absolute inset-0 w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
-                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                  style={
+                    event.image_fit === "cover" && event.focal_point
+                      ? { objectPosition: event.focal_point }
+                      : undefined
+                  }
                   muted
                   loop
                   playsInline
@@ -114,17 +127,21 @@ export const EventHeroCard = memo(function EventHeroCard({
                     fill
                     sizes="(max-width: 640px) 100vw, 40vw"
                     className={`group-hover:scale-105 transition-transform duration-500 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
-                    style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                    style={
+                      event.image_fit === "cover" && event.focal_point
+                        ? { objectPosition: event.focal_point }
+                        : undefined
+                    }
                     priority
                   />
                 </>
               )
-            ) : (
+            ) : event.source_platform !== "activity-graph" ? (
               <EventDefaultImage
                 title={displayTitle}
                 className="absolute inset-0 w-full h-full object-cover"
               />
-            )}
+            ) : null}
 
             {/* Gradient overlay for mobile (text over image) */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:hidden" />
@@ -150,14 +167,18 @@ export const EventHeroCard = memo(function EventHeroCard({
               {/* Time indicator */}
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
-                <span className="text-foreground font-medium">{timeDisplay}</span>
+                <span className="text-foreground font-medium">
+                  {timeDisplay}
+                </span>
               </div>
 
               {/* Location */}
               {event.location_name && (
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-4 h-4" />
-                  <span className="line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
+                  <span className="line-clamp-1">
+                    {decodeUnicodeEscapes(event.location_name)}
+                  </span>
                 </div>
               )}
 
@@ -165,7 +186,9 @@ export const EventHeroCard = memo(function EventHeroCard({
               {shouldShowGoingCount(goingSpots) && (
                 <div className="flex items-center gap-1.5">
                   <Users className="w-4 h-4" />
-                  <span>{spotsText} {t("going")}</span>
+                  <span>
+                    {spotsText} {t("going")}
+                  </span>
                 </div>
               )}
             </div>

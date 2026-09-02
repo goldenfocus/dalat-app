@@ -43,6 +43,7 @@ function toCardEvent(event: EventWithSeriesData): CardEvent {
     sponsor_tier: event.sponsor_tier,
     source_locale: event.source_locale,
     source_metadata: event.source_metadata,
+    source_platform: event.source_platform,
   };
 }
 
@@ -224,8 +225,13 @@ export async function EventFeedScrollable({
           </EventGridWithViews>
         ) : (
           <div className="rounded-2xl border border-border/70 bg-muted/30 px-5 py-8 text-center sm:px-8 sm:py-10">
-            <Calendar className="mx-auto h-8 w-8 text-muted-foreground/60" aria-hidden="true" />
-            <h3 className="mt-3 text-base font-semibold">{t("comingUp.emptyTitle")}</h3>
+            <Calendar
+              className="mx-auto h-8 w-8 text-muted-foreground/60"
+              aria-hidden="true"
+            />
+            <h3 className="mt-3 text-base font-semibold">
+              {t("comingUp.emptyTitle")}
+            </h3>
             <p className="mx-auto mt-1 max-w-lg text-sm leading-relaxed text-muted-foreground">
               {t("comingUp.emptyDescription")}
             </p>

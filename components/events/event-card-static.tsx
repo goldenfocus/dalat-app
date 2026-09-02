@@ -66,23 +66,23 @@ export function EventCardStatic({
 
   const isPast = isEventPast(event.starts_at, event.ends_at);
 
-  const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
+  const hasCustomImage =
+    !!event.image_url && !isDefaultImageUrl(event.image_url);
   const imageIsVideo = isVideoUrl(event.image_url);
   const displayTitle = translatedTitle || event.title;
 
   return (
-    <Link
-      href={`/events/${event.slug}`}
-      className="block touch-manipulation"
-    >
+    <Link href={`/events/${event.slug}`} className="block touch-manipulation">
       <Card className="overflow-hidden rounded-xl hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] active:opacity-90">
         {/* Image area */}
         <div className="w-full aspect-[4/5] relative overflow-hidden group">
           {/* Capacity badge - shows spots when event has a cap */}
           {event.capacity ? (
-            <div className={`absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1 ${
-              isFull ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
-            }`}>
+            <div
+              className={`absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1 ${
+                isFull ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
+              }`}
+            >
               <Users className="w-3 h-3" />
               {counts?.going_spots ?? 0}/{event.capacity}
             </div>
@@ -99,7 +99,11 @@ export function EventCardStatic({
               <video
                 src={event.image_url!}
                 className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
-                style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                style={
+                  event.image_fit === "cover" && event.focal_point
+                    ? { objectPosition: event.focal_point }
+                    : undefined
+                }
                 muted
                 loop
                 playsInline
@@ -112,7 +116,12 @@ export function EventCardStatic({
                 {event.image_fit !== "cover" && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={optimizedImageUrl(event.image_url!, { width: 400, quality: 70 }) || event.image_url!}
+                    src={
+                      optimizedImageUrl(event.image_url!, {
+                        width: 400,
+                        quality: 70,
+                      }) || event.image_url!
+                    }
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60"
                     aria-hidden="true"
@@ -120,21 +129,30 @@ export function EventCardStatic({
                 )}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={optimizedImageUrl(event.image_url!, { width: 400, quality: 70 }) || event.image_url!}
+                  src={
+                    optimizedImageUrl(event.image_url!, {
+                      width: 400,
+                      quality: 70,
+                    }) || event.image_url!
+                  }
                   alt={displayTitle}
                   className={`absolute inset-0 w-full h-full transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
-                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                  style={
+                    event.image_fit === "cover" && event.focal_point
+                      ? { objectPosition: event.focal_point }
+                      : undefined
+                  }
                   fetchPriority="high"
                   decoding="async"
                 />
               </>
             )
-          ) : (
+          ) : event.source_platform !== "activity-graph" ? (
             <EventDefaultImage
               title={displayTitle}
               className="object-cover w-full h-full"
             />
-          )}
+          ) : null}
           {/* Series badge */}
           {seriesRrule && (
             <div className="absolute top-2 left-2">
@@ -154,14 +172,18 @@ export function EventCardStatic({
               <Calendar className="w-4 h-4" />
               <span>
                 {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} &middot;{" "}
-                {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
+                {timeTbd
+                  ? "TBD"
+                  : formatInDaLat(event.starts_at, "h:mm a", locale)}
               </span>
             </div>
 
             {event.location_name && (
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                <span className="line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
+                <span className="line-clamp-1">
+                  {decodeUnicodeEscapes(event.location_name)}
+                </span>
               </div>
             )}
 

@@ -111,7 +111,7 @@ export function EventHeroCardServer({
                   />
                 </>
               )
-            ) : (
+            ) : event.source_platform !== "activity-graph" ? (
               <Image
                 src={DEFAULT_IMAGE_URL}
                 alt={displayTitle}
@@ -122,7 +122,7 @@ export function EventHeroCardServer({
                 placeholder="blur"
                 blurDataURL={BLUR_DATA_URL}
               />
-            )}
+            ) : null}
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:hidden" />
           </div>
@@ -183,13 +183,13 @@ export function resolveHeroTimeDisplay(
   tHome: {
     startedAgo: (minutes: number) => string;
     endsAt: (time: string) => string;
-  }
+  },
 ): string {
   if (hasLamVienTbdSchedule(event.source_metadata)) return "TBD";
   const startTime = new Date(event.starts_at);
   const now = new Date();
   const minutesAgo = Math.floor(
-    (now.getTime() - startTime.getTime()) / (1000 * 60)
+    (now.getTime() - startTime.getTime()) / (1000 * 60),
   );
 
   if (minutesAgo < 60) {

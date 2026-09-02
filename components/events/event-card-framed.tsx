@@ -14,7 +14,12 @@ import { isVideoUrl } from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { useLazyVideo } from "@/lib/hooks/use-lazy-video";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
-import { getCardCoverUrl, getPastProof, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
+import {
+  getCardCoverUrl,
+  getPastProof,
+  shouldShowGoingCount,
+  type EventSocial,
+} from "@/lib/events/social-proof";
 import type { CardEvent, EventCounts, Locale } from "@/lib/types";
 
 // Tiny gradient placeholder for perceived instant loading
@@ -53,7 +58,9 @@ export const EventCardFramed = memo(function EventCardFramed({
   const hasCustomImage = !!coverUrl;
   const isFallbackCover = hasCustomImage && coverUrl !== event.image_url;
   const imageIsVideo = isVideoUrl(coverUrl);
-  const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null);
+  const { videoRef, videoFailed } = useLazyVideo(
+    imageIsVideo ? coverUrl : null,
+  );
   const displayTitle = translatedTitle || event.title;
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
   const goingSpots = counts?.going_spots ?? 0;
@@ -66,106 +73,124 @@ export const EventCardFramed = memo(function EventCardFramed({
       className="block touch-manipulation"
       prefetch={false}
     >
-      <Card className={cn(
-        "overflow-hidden rounded-xl transition-all duration-200 active:scale-[0.98] active:opacity-90",
-        isSponsored
-          ? "border-2 border-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:border-amber-400"
-          : "border-border/50 hover:border-foreground/20 hover:shadow-lg"
-      )}>
+      <Card
+        className={cn(
+          "overflow-hidden rounded-xl transition-all duration-200 active:scale-[0.98] active:opacity-90",
+          isSponsored
+            ? "border-2 border-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:border-amber-400"
+            : "border-border/50 hover:border-foreground/20 hover:shadow-lg",
+        )}
+      >
         {/* Image container - edge to edge, no frame */}
         <div className="relative aspect-[4/5] overflow-hidden group">
-            {/* Capacity badge - never advertises a near-zero count; below the
+          {/* Capacity badge - never advertises a near-zero count; below the
                 threshold it shows open spots instead */}
-            {event.capacity ? (
-              shouldShowGoingCount(goingSpots) ? (
-                <div className={cn(
+          {event.capacity ? (
+            shouldShowGoingCount(goingSpots) ? (
+              <div
+                className={cn(
                   "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
-                  goingSpots >= event.capacity ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
-                )}>
-                  <Users className="w-3 h-3" />
-                  {goingSpots}/{event.capacity}
-                </div>
-              ) : (
-                <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center gap-1">
-                  <Users className="w-3 h-3" />
-                  {t("spotsAvailable", { count: event.capacity - goingSpots })}
-                </div>
-              )
-            ) : (
-              /* Popular badge (only for non-sponsored events with 20+ attendees, no cap) */
-              !isSponsored && goingSpots >= 20 && (
-                <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
-                  {t("popular")}
-                </div>
-              )
-            )}
-
-            {/* Series badge */}
-            {seriesRrule && (
-              <div className="absolute top-2 left-2 z-10">
-                <SeriesBadge rrule={seriesRrule} variant="overlay" />
+                  goingSpots >= event.capacity
+                    ? "bg-orange-500/90"
+                    : "bg-black/60 backdrop-blur-sm",
+                )}
+              >
+                <Users className="w-3 h-3" />
+                {goingSpots}/{event.capacity}
               </div>
-            )}
+            ) : (
+              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                {t("spotsAvailable", { count: event.capacity - goingSpots })}
+              </div>
+            )
+          ) : (
+            /* Popular badge (only for non-sponsored events with 20+ attendees, no cap) */
+            !isSponsored &&
+            goingSpots >= 20 && (
+              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+                {t("popular")}
+              </div>
+            )
+          )}
 
-            {/* Image */}
-            {hasCustomImage && !videoFailed ? (
-              imageIsVideo ? (
-                <video
-                  ref={videoRef}
-                  className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
-                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
-                  muted
-                  loop
-                  playsInline
-                  preload="none"
-                  aria-hidden="true"
-                />
-              ) : (
-                <>
-                  {/* Blurred background for contain mode - creates soft color extension */}
-                  {event.image_fit !== "cover" && (
-                    <Image
-                      loader={cloudflareLoader}
-                      src={coverUrl!}
-                      alt=""
-                      fill
-                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
-                      className="object-cover blur-xl scale-110 opacity-60"
-                      aria-hidden="true"
-                    />
-                  )}
-                  {/* Main image */}
+          {/* Series badge */}
+          {seriesRrule && (
+            <div className="absolute top-2 left-2 z-10">
+              <SeriesBadge rrule={seriesRrule} variant="overlay" />
+            </div>
+          )}
+
+          {/* Image */}
+          {hasCustomImage && !videoFailed ? (
+            imageIsVideo ? (
+              <video
+                ref={videoRef}
+                className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
+                style={
+                  event.image_fit === "cover" && event.focal_point
+                    ? { objectPosition: event.focal_point }
+                    : undefined
+                }
+                muted
+                loop
+                playsInline
+                preload="none"
+                aria-hidden="true"
+              />
+            ) : (
+              <>
+                {/* Blurred background for contain mode - creates soft color extension */}
+                {event.image_fit !== "cover" && (
                   <Image
                     loader={cloudflareLoader}
                     src={coverUrl!}
-                    alt={displayTitle}
+                    alt=""
                     fill
                     sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
-                    className={`transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
-                    style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
-                    priority={priority}
-                    fetchPriority={priority ? "high" : "auto"}
-                    placeholder="blur"
-                    blurDataURL={BLUR_DATA_URL}
+                    className="object-cover blur-xl scale-110 opacity-60"
+                    aria-hidden="true"
                   />
-                </>
-              )
-            ) : (
-              <EventDefaultImage
-                title={displayTitle}
-                className="object-cover w-full h-full"
-              />
-            )}
+                )}
+                {/* Main image */}
+                <Image
+                  loader={cloudflareLoader}
+                  src={coverUrl!}
+                  alt={displayTitle}
+                  fill
+                  sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
+                  className={`transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
+                  style={
+                    event.image_fit === "cover" && event.focal_point
+                      ? { objectPosition: event.focal_point }
+                      : undefined
+                  }
+                  priority={priority}
+                  fetchPriority={priority ? "high" : "auto"}
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
+                />
+              </>
+            )
+          ) : event.source_platform !== "activity-graph" ? (
+            <EventDefaultImage
+              title={displayTitle}
+              className="object-cover w-full h-full"
+            />
+          ) : null}
 
-            {/* Photographer credit for fallback covers (real moment from a past occurrence) */}
-            {isFallbackCover && social?.fallback_photo_credit && (
-              <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full">
-                {t("photoBy", { name: social.fallback_photo_credit })}
-              </div>
-            )}
+          {/* Photographer credit for fallback covers (real moment from a past occurrence) */}
+          {isFallbackCover && social?.fallback_photo_credit && (
+            <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full">
+              {t("photoBy", { name: social.fallback_photo_credit })}
+            </div>
+          )}
 
           {/* Hover overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" aria-hidden="true" />
+          <div
+            className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"
+            aria-hidden="true"
+          />
         </div>
 
         {/* Info panel - title always visible, not overlaid */}
@@ -178,14 +203,19 @@ export const EventCardFramed = memo(function EventCardFramed({
             <div className="flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>
-                {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} · {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
+                {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} ·{" "}
+                {timeTbd
+                  ? "TBD"
+                  : formatInDaLat(event.starts_at, "h:mm a", locale)}
               </span>
             </div>
 
             {event.location_name && (
               <div className="flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                <span className="truncate">{decodeUnicodeEscapes(event.location_name)}</span>
+                <span className="truncate">
+                  {decodeUnicodeEscapes(event.location_name)}
+                </span>
               </div>
             )}
 
@@ -194,9 +224,15 @@ export const EventCardFramed = memo(function EventCardFramed({
               <div className="flex items-center gap-2">
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                 <span className="truncate">
-                  {pastProof.kind === "both" && t("pastProofBoth", { went: pastProof.went, photos: pastProof.photos })}
-                  {pastProof.kind === "photos" && t("pastProofPhotos", { photos: pastProof.photos })}
-                  {pastProof.kind === "went" && t("pastProofWent", { went: pastProof.went })}
+                  {pastProof.kind === "both" &&
+                    t("pastProofBoth", {
+                      went: pastProof.went,
+                      photos: pastProof.photos,
+                    })}
+                  {pastProof.kind === "photos" &&
+                    t("pastProofPhotos", { photos: pastProof.photos })}
+                  {pastProof.kind === "went" &&
+                    t("pastProofWent", { went: pastProof.went })}
                 </span>
               </div>
             )}

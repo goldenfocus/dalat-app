@@ -34,7 +34,13 @@ function isEventPast(startsAt: string, endsAt: string | null): boolean {
   return defaultEnd < now;
 }
 
-export const EventCardImmersive = memo(function EventCardImmersive({ event, counts, seriesRrule, priority = false, translatedTitle }: EventCardImmersiveProps) {
+export const EventCardImmersive = memo(function EventCardImmersive({
+  event,
+  counts,
+  seriesRrule,
+  priority = false,
+  translatedTitle,
+}: EventCardImmersiveProps) {
   const locale = useLocale() as Locale;
   const t = useTranslations("events");
 
@@ -49,7 +55,8 @@ export const EventCardImmersive = memo(function EventCardImmersive({ event, coun
   const isPast = isEventPast(event.starts_at, event.ends_at);
 
   // Treat default image URLs as "no image" to use responsive EventDefaultImage
-  const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
+  const hasCustomImage =
+    !!event.image_url && !isDefaultImageUrl(event.image_url);
   const imageIsVideo = isVideoUrl(event.image_url);
   const displayTitle = translatedTitle || event.title;
   const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
@@ -68,7 +75,11 @@ export const EventCardImmersive = memo(function EventCardImmersive({ event, coun
               <video
                 src={event.image_url!}
                 className={`absolute inset-0 w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
-                style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                style={
+                  event.image_fit === "cover" && event.focal_point
+                    ? { objectPosition: event.focal_point }
+                    : undefined
+                }
                 muted
                 loop
                 playsInline
@@ -84,13 +95,13 @@ export const EventCardImmersive = memo(function EventCardImmersive({ event, coun
                 focalPoint={event.focal_point}
               />
             )
-          ) : (
+          ) : event.source_platform !== "activity-graph" ? (
             <EventDefaultImage
               title={displayTitle}
               className="absolute inset-0 w-full h-full object-cover"
               priority
             />
-          )}
+          ) : null}
           {/* Series badge - positioned with safe area for notch */}
           {seriesRrule && (
             <div className="absolute top-[env(safe-area-inset-top,12px)] left-4 z-10 pt-3">
@@ -110,15 +121,20 @@ export const EventCardImmersive = memo(function EventCardImmersive({ event, coun
               <div className="flex items-center gap-2.5 drop-shadow-md">
                 <Calendar className="w-4 h-4 flex-shrink-0" />
                 <span className="text-sm">
-                  {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} &middot;{" "}
-                  {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
+                  {formatInDaLat(event.starts_at, "EEE, MMM d", locale)}{" "}
+                  &middot;{" "}
+                  {timeTbd
+                    ? "TBD"
+                    : formatInDaLat(event.starts_at, "h:mm a", locale)}
                 </span>
               </div>
 
               {event.location_name && (
                 <div className="flex items-center gap-2.5 drop-shadow-md">
                   <MapPin className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-sm line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
+                  <span className="text-sm line-clamp-1">
+                    {decodeUnicodeEscapes(event.location_name)}
+                  </span>
                 </div>
               )}
 

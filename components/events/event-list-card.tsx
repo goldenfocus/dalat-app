@@ -14,7 +14,12 @@ import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { usePrefetch } from "@/lib/prefetch";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import { getCardCoverUrl, getPastProof, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
+import {
+  getCardCoverUrl,
+  getPastProof,
+  shouldShowGoingCount,
+  type EventSocial,
+} from "@/lib/events/social-proof";
 import type { CardEvent, EventCounts, Locale } from "@/lib/types";
 
 const BLUR_DATA_URL =
@@ -107,12 +112,12 @@ export const EventListCard = memo(function EventListCard({
               blurDataURL={BLUR_DATA_URL}
             />
           )
-        ) : (
+        ) : event.source_platform !== "activity-graph" ? (
           <EventDefaultImage
             title={displayTitle}
             className="object-cover w-full h-full"
           />
-        )}
+        ) : null}
         {seriesRrule && (
           <div className="absolute top-1 left-1">
             <SeriesBadge rrule={seriesRrule} variant="overlay" />
@@ -122,15 +127,15 @@ export const EventListCard = memo(function EventListCard({
 
       {/* Details */}
       <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
-        <h3 className="font-semibold text-base line-clamp-1">
-          {displayTitle}
-        </h3>
+        <h3 className="font-semibold text-base line-clamp-1">{displayTitle}</h3>
 
         <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
           <Calendar className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
           <span className="truncate">
             {hideDate
-              ? (timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale))
+              ? timeTbd
+                ? "TBD"
+                : formatInDaLat(event.starts_at, "h:mm a", locale)
               : `${formatInDaLat(event.starts_at, "EEE, MMM d", locale)} · ${timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}`}
           </span>
         </div>
@@ -138,7 +143,9 @@ export const EventListCard = memo(function EventListCard({
         {event.location_name && (
           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
             <MapPin className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-            <span className="truncate">{decodeUnicodeEscapes(event.location_name)}</span>
+            <span className="truncate">
+              {decodeUnicodeEscapes(event.location_name)}
+            </span>
           </div>
         )}
 
@@ -154,15 +161,23 @@ export const EventListCard = memo(function EventListCard({
           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
             <Users className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
             <span className="truncate">
-              {pastProof.kind === "both" && t("pastProofBoth", { went: pastProof.went, photos: pastProof.photos })}
-              {pastProof.kind === "photos" && t("pastProofPhotos", { photos: pastProof.photos })}
-              {pastProof.kind === "went" && t("pastProofWent", { went: pastProof.went })}
+              {pastProof.kind === "both" &&
+                t("pastProofBoth", {
+                  went: pastProof.went,
+                  photos: pastProof.photos,
+                })}
+              {pastProof.kind === "photos" &&
+                t("pastProofPhotos", { photos: pastProof.photos })}
+              {pastProof.kind === "went" &&
+                t("pastProofWent", { went: pastProof.went })}
             </span>
           </div>
         ) : event.capacity && !isPast ? (
           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
             <Users className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
-            <span>{t("spotsAvailable", { count: event.capacity - goingSpots })}</span>
+            <span>
+              {t("spotsAvailable", { count: event.capacity - goingSpots })}
+            </span>
           </div>
         ) : null}
       </div>

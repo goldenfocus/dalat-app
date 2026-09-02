@@ -74,7 +74,9 @@ export const EventCardCompact = memo(function EventCardCompact({
   const coverUrl = getCardCoverUrl(event.image_url, social);
   const hasCustomImage = !!coverUrl;
   const imageIsVideo = isVideoUrl(coverUrl);
-  const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null);
+  const { videoRef, videoFailed } = useLazyVideo(
+    imageIsVideo ? coverUrl : null,
+  );
   const displayTitle = translatedTitle || event.title;
   const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
@@ -109,7 +111,11 @@ export const EventCardCompact = memo(function EventCardCompact({
                 <video
                   ref={videoRef}
                   className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
-                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                  style={
+                    event.image_fit === "cover" && event.focal_point
+                      ? { objectPosition: event.focal_point }
+                      : undefined
+                  }
                   muted
                   loop
                   playsInline
@@ -137,7 +143,11 @@ export const EventCardCompact = memo(function EventCardCompact({
                     fill
                     sizes="(max-width: 640px) 50vw, 33vw"
                     className={`transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
-                    style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                    style={
+                      event.image_fit === "cover" && event.focal_point
+                        ? { objectPosition: event.focal_point }
+                        : undefined
+                    }
                     priority={priority}
                     fetchPriority={priority ? "high" : "auto"}
                     placeholder="blur"
@@ -145,16 +155,19 @@ export const EventCardCompact = memo(function EventCardCompact({
                   />
                 </>
               )
-            ) : (
+            ) : event.source_platform !== "activity-graph" ? (
               <EventDefaultImage
                 title={displayTitle}
                 className="object-cover w-full h-full"
               />
-            )}
+            ) : null}
           </div>
 
           {/* Gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" aria-hidden="true" />
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+            aria-hidden="true"
+          />
 
           {/* Title only - cleaner front face */}
           <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
@@ -164,7 +177,10 @@ export const EventCardCompact = memo(function EventCardCompact({
           </div>
 
           {/* Hover/active state overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/20 transition-colors" aria-hidden="true" />
+          <div
+            className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/20 transition-colors"
+            aria-hidden="true"
+          />
         </div>
 
         {/* Back face - Details */}
@@ -203,7 +219,11 @@ export const EventCardCompact = memo(function EventCardCompact({
 
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3 h-3 flex-shrink-0" />
-                <span>{timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}</span>
+                <span>
+                  {timeTbd
+                    ? "TBD"
+                    : formatInDaLat(event.starts_at, "h:mm a", locale)}
+                </span>
               </div>
 
               {event.location_name && (
@@ -214,7 +234,7 @@ export const EventCardCompact = memo(function EventCardCompact({
               )}
             </div>
 
-{/* Hint removed - card is small and tapping again is intuitive */}
+            {/* Hint removed - card is small and tapping again is intuitive */}
           </div>
         </div>
       </div>

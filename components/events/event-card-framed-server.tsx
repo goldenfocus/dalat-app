@@ -86,7 +86,7 @@ export function EventCardFramedServer({
           "overflow-hidden rounded-xl transition-all duration-200 active:scale-[0.98] active:opacity-90",
           isSponsored
             ? "border-2 border-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:border-amber-400"
-            : "border-border/50 hover:border-foreground/20 hover:shadow-lg"
+            : "border-border/50 hover:border-foreground/20 hover:shadow-lg",
         )}
       >
         <div className="relative aspect-[4/5] overflow-hidden group">
@@ -97,7 +97,7 @@ export function EventCardFramedServer({
                   "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
                   goingSpots >= event.capacity
                     ? "bg-orange-500/90"
-                    : "bg-black/60 backdrop-blur-sm"
+                    : "bg-black/60 backdrop-blur-sm",
                 )}
               >
                 <Users className="w-3 h-3" />
@@ -163,7 +163,7 @@ export function EventCardFramedServer({
                 />
               </>
             )
-          ) : (
+          ) : event.source_platform !== "activity-graph" ? (
             <Image
               src={DEFAULT_IMAGE_URL}
               alt={displayTitle}
@@ -174,7 +174,7 @@ export function EventCardFramedServer({
               placeholder="blur"
               blurDataURL={BLUR_DATA_URL}
             />
-          )}
+          ) : null}
 
           {isFallbackCover && social?.fallback_photo_credit && (
             <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full">
@@ -198,7 +198,9 @@ export function EventCardFramedServer({
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>
                 {formatInDaLat(event.starts_at, "EEE, MMM d", locale)} ·{" "}
-                {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
+                {timeTbd
+                  ? "TBD"
+                  : formatInDaLat(event.starts_at, "h:mm a", locale)}
               </span>
             </div>
 

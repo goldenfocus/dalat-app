@@ -97,7 +97,8 @@ export const EventCard = memo(function EventCard({
 
   const isPast = isEventPast(event.starts_at, event.ends_at);
 
-  const hasCustomImage = !!event.image_url && !isDefaultImageUrl(event.image_url);
+  const hasCustomImage =
+    !!event.image_url && !isDefaultImageUrl(event.image_url);
   const imageIsVideo = isVideoUrl(event.image_url);
   const displayTitle = translatedTitle || event.title;
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
@@ -125,7 +126,8 @@ export const EventCard = memo(function EventCard({
           className={cn(
             "relative w-full rounded-xl overflow-hidden [backface-visibility:hidden] group",
             isFlipped ? "invisible" : "",
-            isSponsored && "ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+            isSponsored &&
+              "ring-2 ring-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)]",
           )}
           aria-hidden={isFlipped}
         >
@@ -133,16 +135,19 @@ export const EventCard = memo(function EventCard({
           <div className="w-full aspect-[4/5] relative overflow-hidden">
             {/* Capacity badge - shows spots when event has a cap */}
             {event.capacity ? (
-              <div className={cn(
-                "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
-                isFull ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
-              )}>
+              <div
+                className={cn(
+                  "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
+                  isFull ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm",
+                )}
+              >
                 <Users className="w-3 h-3" />
                 {counts?.going_spots ?? 0}/{event.capacity}
               </div>
             ) : (
               /* Popular badge (only for non-sponsored events with 20+ attendees, no cap) */
-              !isSponsored && (counts?.going_spots ?? 0) >= 20 && (
+              !isSponsored &&
+              (counts?.going_spots ?? 0) >= 20 && (
                 <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
                   {t("popular")}
                 </div>
@@ -153,7 +158,11 @@ export const EventCard = memo(function EventCard({
                 <video
                   src={event.image_url!}
                   className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
-                  style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                  style={
+                    event.image_fit === "cover" && event.focal_point
+                      ? { objectPosition: event.focal_point }
+                      : undefined
+                  }
                   muted
                   loop
                   playsInline
@@ -184,9 +193,15 @@ export const EventCard = memo(function EventCard({
                     sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
                     className={cn(
                       "transition-transform group-hover:scale-105",
-                      event.image_fit === "cover" ? "object-cover" : "object-contain"
+                      event.image_fit === "cover"
+                        ? "object-cover"
+                        : "object-contain",
                     )}
-                    style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                    style={
+                      event.image_fit === "cover" && event.focal_point
+                        ? { objectPosition: event.focal_point }
+                        : undefined
+                    }
                     priority={priority}
                     fetchPriority={priority ? "high" : "auto"}
                     placeholder="blur"
@@ -194,12 +209,12 @@ export const EventCard = memo(function EventCard({
                   />
                 </>
               )
-            ) : (
+            ) : event.source_platform !== "activity-graph" ? (
               <EventDefaultImage
                 title={displayTitle}
                 className="object-cover w-full h-full"
               />
-            )}
+            ) : null}
             {/* Series badge */}
             {seriesRrule && (
               <div className="absolute top-2 left-2">
@@ -208,12 +223,15 @@ export const EventCard = memo(function EventCard({
             )}
 
             {/* Gradient overlay for text readability - lighter when showing full image */}
-            <div className={cn(
-              "absolute inset-0",
-              showFullImage
-                ? "bg-gradient-to-t from-black/70 via-transparent to-transparent"
-                : "bg-gradient-to-t from-black/80 via-black/20 to-transparent"
-            )} aria-hidden="true" />
+            <div
+              className={cn(
+                "absolute inset-0",
+                showFullImage
+                  ? "bg-gradient-to-t from-black/70 via-transparent to-transparent"
+                  : "bg-gradient-to-t from-black/80 via-black/20 to-transparent",
+              )}
+              aria-hidden="true"
+            />
 
             {/* Title overlay at bottom */}
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
@@ -223,7 +241,10 @@ export const EventCard = memo(function EventCard({
             </div>
 
             {/* Hover/active state overlay */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/20 transition-colors" aria-hidden="true" />
+            <div
+              className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/20 transition-colors"
+              aria-hidden="true"
+            />
           </div>
         </div>
 
@@ -258,18 +279,26 @@ export const EventCard = memo(function EventCard({
             <div className="flex flex-col gap-2.5 text-sm text-white/90">
               <div className="flex items-center gap-2.5">
                 <Calendar className="w-4 h-4 flex-shrink-0 text-white/70" />
-                <span>{formatInDaLat(event.starts_at, "EEE, MMM d", locale)}</span>
+                <span>
+                  {formatInDaLat(event.starts_at, "EEE, MMM d", locale)}
+                </span>
               </div>
 
               <div className="flex items-center gap-2.5">
                 <Clock className="w-4 h-4 flex-shrink-0 text-white/70" />
-                <span>{timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}</span>
+                <span>
+                  {timeTbd
+                    ? "TBD"
+                    : formatInDaLat(event.starts_at, "h:mm a", locale)}
+                </span>
               </div>
 
               {event.location_name && (
                 <div className="flex items-center gap-2.5">
                   <MapPin className="w-4 h-4 flex-shrink-0 text-white/70" />
-                  <span className="line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
+                  <span className="line-clamp-1">
+                    {decodeUnicodeEscapes(event.location_name)}
+                  </span>
                 </div>
               )}
 
@@ -292,7 +321,10 @@ export const EventCard = memo(function EventCard({
               {/* Friends attending */}
               {friendsAttending && friendsAttending.total_count > 0 && (
                 <div className="mt-1 pl-6">
-                  <FriendsAttendingDisplay data={friendsAttending} variant="compact" />
+                  <FriendsAttendingDisplay
+                    data={friendsAttending}
+                    variant="compact"
+                  />
                 </div>
               )}
             </div>

@@ -15,7 +15,12 @@ import { cloudflareLoader } from "@/lib/image-cdn";
 import { useLazyVideo } from "@/lib/hooks/use-lazy-video";
 import { usePrefetch } from "@/lib/prefetch";
 import { decodeUnicodeEscapes } from "@/lib/utils";
-import { getCardCoverUrl, getPastProof, shouldShowGoingCount, type EventSocial } from "@/lib/events/social-proof";
+import {
+  getCardCoverUrl,
+  getPastProof,
+  shouldShowGoingCount,
+  type EventSocial,
+} from "@/lib/events/social-proof";
 import type { CardEvent, EventCounts, Locale } from "@/lib/types";
 
 const BLUR_DATA_URL =
@@ -73,7 +78,9 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
   const hasCustomImage = !!coverUrl;
   const isFallbackCover = hasCustomImage && coverUrl !== event.image_url;
   const imageIsVideo = isVideoUrl(coverUrl);
-  const { videoRef, videoFailed } = useLazyVideo(imageIsVideo ? coverUrl : null);
+  const { videoRef, videoFailed } = useLazyVideo(
+    imageIsVideo ? coverUrl : null,
+  );
   const displayTitle = translatedTitle || event.title;
   const pastProof = getPastProof(social);
   const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
@@ -93,7 +100,11 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
             <video
               ref={videoRef}
               className={`w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
-              style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+              style={
+                event.image_fit === "cover" && event.focal_point
+                  ? { objectPosition: event.focal_point }
+                  : undefined
+              }
               muted
               loop
               playsInline
@@ -121,7 +132,11 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
                 fill
                 sizes="(max-width: 640px) 100vw, 50vw"
                 className={`transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
-                style={event.image_fit === "cover" && event.focal_point ? { objectPosition: event.focal_point } : undefined}
+                style={
+                  event.image_fit === "cover" && event.focal_point
+                    ? { objectPosition: event.focal_point }
+                    : undefined
+                }
                 priority={priority}
                 fetchPriority={priority ? "high" : "auto"}
                 placeholder="blur"
@@ -129,12 +144,12 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
               />
             </>
           )
-        ) : (
+        ) : event.source_platform !== "activity-graph" ? (
           <EventDefaultImage
             title={displayTitle}
             className="object-cover w-full h-full"
           />
-        )}
+        ) : null}
       </div>
 
       {/* Series badge - top left */}
@@ -153,7 +168,8 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
 
       {/* Photographer credit for fallback covers */}
       {isFallbackCover && social?.fallback_photo_credit && (
-        <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full"
+        <div
+          className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full"
           style={goingSpots >= 20 ? { top: "3.25rem" } : undefined}
         >
           {t("photoBy", { name: social.fallback_photo_credit })}
@@ -161,7 +177,10 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
       )}
 
       {/* Gradient overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
+        aria-hidden="true"
+      />
 
       {/* Text content - bottom */}
       <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">
@@ -174,14 +193,18 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
             <Calendar className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
             <span>
               {formatInDaLat(event.starts_at, "EEEE, MMMM d", locale)} &middot;{" "}
-              {timeTbd ? "TBD" : formatInDaLat(event.starts_at, "h:mm a", locale)}
+              {timeTbd
+                ? "TBD"
+                : formatInDaLat(event.starts_at, "h:mm a", locale)}
             </span>
           </div>
 
           {event.location_name && (
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
-              <span className="line-clamp-1">{decodeUnicodeEscapes(event.location_name)}</span>
+              <span className="line-clamp-1">
+                {decodeUnicodeEscapes(event.location_name)}
+              </span>
             </div>
           )}
 
@@ -205,22 +228,33 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
               <span className="line-clamp-1">
-                {pastProof.kind === "both" && t("pastProofBoth", { went: pastProof.went, photos: pastProof.photos })}
-                {pastProof.kind === "photos" && t("pastProofPhotos", { photos: pastProof.photos })}
-                {pastProof.kind === "went" && t("pastProofWent", { went: pastProof.went })}
+                {pastProof.kind === "both" &&
+                  t("pastProofBoth", {
+                    went: pastProof.went,
+                    photos: pastProof.photos,
+                  })}
+                {pastProof.kind === "photos" &&
+                  t("pastProofPhotos", { photos: pastProof.photos })}
+                {pastProof.kind === "went" &&
+                  t("pastProofWent", { went: pastProof.went })}
               </span>
             </div>
           ) : event.capacity && !isPast ? (
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
-              <span>{t("spotsAvailable", { count: event.capacity - goingSpots })}</span>
+              <span>
+                {t("spotsAvailable", { count: event.capacity - goingSpots })}
+              </span>
             </div>
           ) : null}
         </div>
       </div>
 
       {/* Hover/active state overlay */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/20 transition-colors" aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-black/0 group-hover:bg-black/10 group-active:bg-black/20 transition-colors"
+        aria-hidden="true"
+      />
     </Link>
   );
 });

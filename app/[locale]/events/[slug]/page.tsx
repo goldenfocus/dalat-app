@@ -32,7 +32,11 @@ import {
   generateEventSchema,
   generateBreadcrumbSchema,
 } from "@/lib/structured-data";
-import { buildAlternates, localeUrl, resolveEventIndexableLocales } from "@/lib/metadata";
+import {
+  buildAlternates,
+  localeUrl,
+  resolveEventIndexableLocales,
+} from "@/lib/metadata";
 import { getEventIndexingReadiness } from "@/lib/translations-readiness";
 import { buildSocialCardImageUrl } from "@/lib/events/share-preview";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
@@ -167,9 +171,10 @@ export async function generateMetadata({
   const readyLocales = resolveEventIndexableLocales(
     readinessLocales,
     sourceLocale,
-    readinessQueryFailed
+    readinessQueryFailed,
   );
-  const localeIsReady = isValidContentLocale(locale) && readyLocales.includes(locale);
+  const localeIsReady =
+    isValidContentLocale(locale) && readyLocales.includes(locale);
 
   const eventDate = hasLamVienTbdSchedule(event.source_metadata)
     ? `${formatInDaLat(event.starts_at, "EEE, MMM d")} · TBD`
@@ -205,7 +210,11 @@ export async function generateMetadata({
     description,
     keywords,
     // Without this, the page inherits the locale layout's homepage canonical
-    alternates: buildAlternates(locale as Locale, `/events/${slug}`, readyLocales),
+    alternates: buildAlternates(
+      locale as Locale,
+      `/events/${slug}`,
+      readyLocales,
+    ),
     robots: localeIsReady
       ? {
           index: true,
@@ -994,7 +1003,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     const localePrefix = locale === "en" ? "" : `/${locale}`;
     const queryString = preservedQuery.toString();
     permanentRedirect(
-      `${localePrefix}/events/${result.newSlug}${queryString ? `?${queryString}` : ""}`
+      `${localePrefix}/events/${result.newSlug}${queryString ? `?${queryString}` : ""}`,
     );
   }
 
@@ -1157,7 +1166,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     startTime: formattedStartTime,
     endDate: formattedEndDate,
     endTime: formattedEndTime,
-  } = await getEventDateDisplay(event.starts_at, event.ends_at, locale as Locale);
+  } = await getEventDateDisplay(
+    event.starts_at,
+    event.ends_at,
+    locale as Locale,
+  );
   const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
@@ -1370,12 +1383,12 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                         creditUrl={activityMediaCreditUrl}
                       />
                     </div>
-                  ) : (
+                  ) : event.source_platform !== "activity-graph" ? (
                     <EventDefaultImage
                       title={eventTranslations.title}
                       priority
                     />
-                  )}
+                  ) : null}
 
                   {/* Title and description */}
                   <div>
@@ -1570,31 +1583,40 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                             {t("starts")}
                           </p>
                         )}
-                        <time dateTime={event.starts_at} className="font-medium">
+                        <time
+                          dateTime={event.starts_at}
+                          className="font-medium"
+                        >
                           {formattedStartDate}
                         </time>
                         <p className="text-sm text-muted-foreground">
                           {timeTbd ? "TBD" : formattedStartTime}
-                          {!timeTbd && !spansMultipleDays &&
+                          {!timeTbd &&
+                            !spansMultipleDays &&
                             formattedEndTime &&
                             ` - ${formattedEndTime}`}
                         </p>
                       </div>
-                      {spansMultipleDays && event.ends_at && formattedEndDate && (
-                        <div className="border-l-2 border-border pl-3">
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            {t("ends")}
-                          </p>
-                          <time dateTime={event.ends_at} className="font-medium">
-                            {formattedEndDate}
-                          </time>
-                          {formattedEndTime && (
-                            <p className="text-sm text-muted-foreground">
-                              {formattedEndTime}
+                      {spansMultipleDays &&
+                        event.ends_at &&
+                        formattedEndDate && (
+                          <div className="border-l-2 border-border pl-3">
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                              {t("ends")}
                             </p>
-                          )}
-                        </div>
-                      )}
+                            <time
+                              dateTime={event.ends_at}
+                              className="font-medium"
+                            >
+                              {formattedEndDate}
+                            </time>
+                            {formattedEndTime && (
+                              <p className="text-sm text-muted-foreground">
+                                {formattedEndTime}
+                              </p>
+                            )}
+                          </div>
+                        )}
                     </div>
                   </div>
 
