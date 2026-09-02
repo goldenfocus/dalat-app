@@ -258,6 +258,7 @@ type ActivityDescriptionFacts = Pick<
   | "kind"
   | "startsAt"
   | "endsAt"
+  | "timePrecision"
   | "startsAtTime"
   | "durationMinutes"
   | "locationName"
@@ -292,12 +293,19 @@ export function activityDescriptionForLocale(
     const parts = instantParts(activity, selected);
     if (parts) {
       sentences.push(
-        interpolate(parts.end ? copy.dated : copy.datedStart, {
-          ...values,
-          date: parts.date,
-          start: parts.start,
-          end: parts.end ?? "",
-        }),
+        interpolate(
+          activity.timePrecision === "tba"
+            ? copy.datedStart
+            : parts.end
+              ? copy.dated
+              : copy.datedStart,
+          {
+            ...values,
+            date: parts.date,
+            start: activity.timePrecision === "tba" ? "TBD" : parts.start,
+            end: activity.timePrecision === "tba" ? "" : (parts.end ?? ""),
+          },
+        ),
       );
     }
   }
@@ -357,6 +365,7 @@ export function activitySeriesDescriptionForLocale(
       kind: "recurring_activity",
       startsAt: null,
       endsAt: null,
+      timePrecision: "recurring",
       startsAtTime: series.starts_at_time,
       durationMinutes: series.duration_minutes,
       locationName: series.location_name,

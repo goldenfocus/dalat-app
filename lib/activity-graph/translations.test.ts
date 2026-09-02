@@ -68,6 +68,29 @@ describe("sourceDescriptionForLocale", () => {
     expect(vi).toContain("Nên đặt chỗ trước");
   });
 
+  it("never exposes the private date anchor as a clock time", () => {
+    const description = activityDescriptionForLocale(
+      "vi",
+      {
+        ...activity,
+        kind: "sports",
+        title: "Lễ khai mạc",
+        startsAt: "2026-09-12T23:59:59+07:00",
+        endsAt: null,
+        timePrecision: "tba",
+        startsAtTime: null,
+        locationName: "Quảng trường Lâm Viên",
+        address: "Quảng trường Lâm Viên",
+        reservationRequirement: "unknown",
+        attributes: {},
+      },
+      "Cục Thể dục thể thao Việt Nam",
+    );
+
+    expect(description).toContain("TBD");
+    expect(description).not.toContain("23:59");
+  });
+
   it("keeps recurring-series pages as rich as their occurrences", () => {
     const description = activitySeriesDescriptionForLocale(
       "en",
