@@ -6,7 +6,10 @@ import type {
   ExtractedActivity,
   LocalityResult,
 } from "./types";
-import { isLamVienTbdActivity } from "./lam-vien-tbd";
+import {
+  isLamVienSquareActivity,
+  isLamVienTbdActivity,
+} from "./lam-vien-tbd";
 
 const DALAT_CENTER = { latitude: 11.9404, longitude: 108.4583 };
 const DALAT_RADIUS_KM = 35;
@@ -71,6 +74,14 @@ export function evaluateDalatLocality(
           confidence: 100,
           reason: `${distance.toFixed(1)} km outside the Đà Lạt activity radius`,
         };
+  }
+
+  if (isLamVienSquareActivity(activity)) {
+    return {
+      status: "confirmed",
+      confidence: 100,
+      reason: "Official notice explicitly names Quảng trường Lâm Viên",
+    };
   }
 
   const locationText = normalizeForMatch(

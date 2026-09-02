@@ -162,7 +162,7 @@ describe("Activity Graph scoring", () => {
       endsAt: null,
       timePrecision: "tba" as const,
       locationName: "Quảng trường Lâm Viên",
-      address: "Quảng trường Lâm Viên, Đà Lạt, Lâm Đồng",
+      address: "Quảng trường Lâm Viên",
       publicAccess: "unknown" as const,
     };
     const result = scoreActivity(
@@ -172,6 +172,7 @@ describe("Activity Graph scoring", () => {
       new Date("2026-08-28T00:00:00Z"),
     );
 
+    expect(evaluateDalatLocality(lamVien).status).toBe("confirmed");
     expect(result.score).toBe(100);
     expect(result.hardGateFailures).toEqual([]);
   });
