@@ -104,10 +104,8 @@ export function activityProjectionImage(options: {
   currentMetadata: Record<string, unknown> | null | undefined;
   media: ProjectedActivityMedia | null;
   mediaAllowed: boolean;
-  fallbackUrl: string;
-}): string {
-  const { currentUrl, currentMetadata, media, mediaAllowed, fallbackUrl } =
-    options;
+}): string | null {
+  const { currentUrl, currentMetadata, media, mediaAllowed } = options;
   const previousOfficialUrl = currentMetadata?.activity_media_url;
   const sourceControlled =
     typeof previousOfficialUrl === "string" &&
@@ -126,7 +124,7 @@ export function activityProjectionImage(options: {
   // A source-level policy revocation immediately removes source-controlled
   // media, while organizer-uploaded custom images remain untouched.
   if (!currentUrl || isActivityFactArt(currentUrl) || sourceControlled) {
-    return fallbackUrl;
+    return null;
   }
   return currentUrl;
 }

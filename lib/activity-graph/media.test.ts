@@ -91,7 +91,6 @@ describe("Activity Graph official media projection", () => {
         currentMetadata: {},
         media,
         mediaAllowed: true,
-        fallbackUrl: "https://dalat.app/activity-art/events/acoustic.png",
       }),
     ).toBe(media.url);
     expect(
@@ -102,7 +101,6 @@ describe("Activity Graph official media projection", () => {
         },
         media,
         mediaAllowed: true,
-        fallbackUrl: "https://dalat.app/activity-art/events/acoustic.png",
       }),
     ).toBe(media.url);
     expect(activityMediaMetadata(media)).toMatchObject({
@@ -112,14 +110,12 @@ describe("Activity Graph official media projection", () => {
   });
 
   it("preserves organizer uploads but revokes tracked official media", () => {
-    const fallbackUrl = "https://dalat.app/activity-art/events/acoustic.png";
     expect(
       activityProjectionImage({
         currentUrl: "https://cdn.dalat.app/organizer/custom.webp",
         currentMetadata: {},
         media: projectedActivityMedia(source, activity),
         mediaAllowed: true,
-        fallbackUrl,
       }),
     ).toBe("https://cdn.dalat.app/organizer/custom.webp");
     expect(
@@ -130,8 +126,15 @@ describe("Activity Graph official media projection", () => {
         },
         media: null,
         mediaAllowed: false,
-        fallbackUrl,
       }),
-    ).toBe(fallbackUrl);
+    ).toBeNull();
+    expect(
+      activityProjectionImage({
+        currentUrl: "https://dalat.app/activity-art/events/acoustic.png",
+        currentMetadata: {},
+        media: null,
+        mediaAllowed: false,
+      }),
+    ).toBeNull();
   });
 });

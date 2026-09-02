@@ -12,7 +12,6 @@ import {
 } from "@/lib/series/materialize";
 import { pingIndexNow } from "@/lib/seo/indexnow";
 import { locales } from "@/lib/i18n/routing";
-import { activityFactArtUrl } from "./fact-art";
 import {
   activityMediaMetadata,
   activityProjectionImage,
@@ -615,7 +614,6 @@ async function refreshLinkedActivity(
           currentMetadata,
           media,
           mediaAllowed: sourceAllowsOfficialMedia(input.source),
-          fallbackUrl: activityFactArtUrl("event", event.slug),
         }),
       };
       const { error } = await input.supabase
@@ -696,7 +694,6 @@ async function refreshLinkedActivity(
           currentMetadata,
           media,
           mediaAllowed: sourceAllowsOfficialMedia(input.source),
-          fallbackUrl: activityFactArtUrl("series", series.slug),
         }),
       };
       const { error: pauseError } = await input.supabase
@@ -793,7 +790,6 @@ async function createEvent(
       currentMetadata,
       media,
       mediaAllowed: sourceAllowsOfficialMedia(input.source),
-      fallbackUrl: activityFactArtUrl("event", slug),
     }),
     starts_at: input.activity.startsAt,
     ends_at: input.activity.endsAt,
@@ -893,7 +889,6 @@ async function createSeries(
       currentMetadata,
       media,
       mediaAllowed: sourceAllowsOfficialMedia(input.source),
-      fallbackUrl: activityFactArtUrl("series", slug),
     }),
     location_name: input.activity.locationName,
     address: input.activity.address,

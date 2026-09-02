@@ -629,8 +629,7 @@ describe("Activity Graph projection crash recovery", () => {
           method: "update",
           values: expect.objectContaining({
             status: "draft",
-            image_url:
-              "https://dalat.app/activity-art/events/official-acoustic-night.png",
+            image_url: null,
           }),
         }),
         expect.objectContaining({
