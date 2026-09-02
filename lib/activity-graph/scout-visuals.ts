@@ -213,7 +213,10 @@ export async function syncScoutPromoMedia(options: {
       original_filename: item.originalFilename,
       file_size: item.fileSize,
       mime_type: item.mimeType,
-      title: item.title,
+      title:
+        item.provenance === "ai_generated"
+          ? `AI-generated illustration — ${item.title}`
+          : item.title,
       caption: item.caption,
       sort_order: index,
       is_ai_suggested: item.provenance === "ai_generated",
