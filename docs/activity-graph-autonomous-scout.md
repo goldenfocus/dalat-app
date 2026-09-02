@@ -6,7 +6,7 @@ Each object is `{ "source": { ... }, "activity": { ... } }`. All source URLs mus
 
 Every evidence object includes `fieldPath`, `rawValue`, `evidenceText`, `locator`, and 0–100 `confidence`. Submission fetches the page itself and rejects any quote missing from that page. Outside the documented Lâm Viên exception, it rejects unconfirmed access and approximate one-off schedules. It always rejects private or login-gated social sources, outside/unknown locality, missing verified future dates, incomplete or expired recurring schedules, cancellations, duplicates, and activities below the 97-point threshold.
 
-The first accepted activity from a canonical origin creates an active `manual` source. The daily scout refreshes these sources by resubmitting evidence; the background web crawler deliberately does not crawl them. Stale activities unlist automatically when refreshes stop. Official media remains reference-only unless a separate owner-authorized media policy permits reuse.
+The first accepted activity from a canonical origin creates an active `manual` source. The daily scout refreshes these sources by resubmitting evidence; the background web crawler deliberately does not crawl them. Stale activities unlist automatically when refreshes stop. A complete submission includes a visual bundle: one visible hero plus 2–4 distinct promo images. Prefer explicitly owner-authorized source media with attribution; otherwise generate event-specific ultra-realistic illustrative media and disclose it as AI-generated in alt text and captions. Missing compliant visual media is a publication blocker. Official media remains reference-only unless a separate owner-authorized media policy permits reuse.
 
 Use this complete shape (replace every value with source-proven facts; do not submit a partial object):
 
@@ -47,13 +47,71 @@ Use this complete shape (replace every value with source-proven facts; do not su
     "sourceUpdatedAt": null,
     "eventStatus": "scheduled",
     "evidence": [
-      {"fieldPath":"title","rawValue":"Exact title","evidenceText":"Exact title","locator":"body","confidence":100},
-      {"fieldPath":"starts_at","rawValue":"3 Oct 2026, 09:00","evidenceText":"3 Oct 2026, 09:00","locator":"body","confidence":100},
-      {"fieldPath":"address","rawValue":"Đà Lạt, Lâm Đồng, Vietnam","evidenceText":"Đà Lạt, Lâm Đồng, Vietnam","locator":"body","confidence":100},
-      {"fieldPath":"public_access","rawValue":"Book now","evidenceText":"Book now","locator":"body","confidence":100}
+      {
+        "fieldPath": "title",
+        "rawValue": "Exact title",
+        "evidenceText": "Exact title",
+        "locator": "body",
+        "confidence": 100
+      },
+      {
+        "fieldPath": "starts_at",
+        "rawValue": "3 Oct 2026, 09:00",
+        "evidenceText": "3 Oct 2026, 09:00",
+        "locator": "body",
+        "confidence": 100
+      },
+      {
+        "fieldPath": "address",
+        "rawValue": "Đà Lạt, Lâm Đồng, Vietnam",
+        "evidenceText": "Đà Lạt, Lâm Đồng, Vietnam",
+        "locator": "body",
+        "confidence": 100
+      },
+      {
+        "fieldPath": "public_access",
+        "rawValue": "Book now",
+        "evidenceText": "Book now",
+        "locator": "body",
+        "confidence": 100
+      }
     ],
     "structuredPayload": {},
     "attributes": {}
+  },
+  "visuals": {
+    "hero": {
+      "localPath": "public/images/activity-graph/example-hero.png",
+      "title": "Illustrative event hero",
+      "altText": "AI-generated illustrative image of the verified event in Đà Lạt",
+      "caption": "AI-generated illustrative image by DaLat.app; not an actual event photograph.",
+      "provenance": "ai_generated",
+      "sourceUrl": null,
+      "authorizationUrl": null,
+      "authorizationEvidenceText": null
+    },
+    "promo": [
+      {
+        "localPath": "public/images/activity-graph/example-promo-1.png",
+        "title": "Illustrative event detail",
+        "altText": "AI-generated illustrative image of the verified event activity",
+        "caption": "AI-generated illustrative image by DaLat.app; not an actual event photograph.",
+        "provenance": "ai_generated",
+        "sourceUrl": null,
+        "authorizationUrl": null,
+        "authorizationEvidenceText": null
+      },
+      {
+        "localPath": "public/images/activity-graph/example-promo-2.png",
+        "title": "Illustrative event atmosphere",
+        "altText": "AI-generated illustrative image of the verified event atmosphere",
+        "caption": "AI-generated illustrative image by DaLat.app; not an actual event photograph.",
+        "provenance": "ai_generated",
+        "sourceUrl": null,
+        "authorizationUrl": null,
+        "authorizationEvidenceText": null
+      }
+    ]
   }
 }
 ```

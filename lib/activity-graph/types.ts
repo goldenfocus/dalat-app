@@ -67,6 +67,24 @@ export interface ActivityMediaCandidate {
   title?: string;
 }
 
+export interface ActivityCuratedMediaItem {
+  url: string;
+  title: string;
+  altText: string;
+  caption: string;
+  provenance: "ai_generated" | "owner_authorized_source";
+  sourceUrl: string;
+  authorizationUrl: string | null;
+  originalFilename: string;
+  fileSize: number;
+  mimeType: "image/png" | "image/jpeg" | "image/webp";
+}
+
+export interface ActivityCuratedMedia {
+  hero: ActivityCuratedMediaItem;
+  promo: ActivityCuratedMediaItem[];
+}
+
 export interface ExtractedActivity {
   sourceUid: string;
   sourceUrl: string;
@@ -110,6 +128,11 @@ export interface ExtractedActivity {
   structuredPayload: Record<string, unknown>;
   attributes: Record<string, boolean | string | number | null>;
   mediaCandidates?: ActivityMediaCandidate[];
+  /**
+   * Populated only by the governed scout submission command after local-file,
+   * disclosure, provenance, and upload validation. Source parsers never set it.
+   */
+  curatedMedia?: ActivityCuratedMedia;
 }
 
 export interface LocalityResult {

@@ -1,5 +1,6 @@
 import type {
   ActivityMediaCandidate,
+  ActivityCuratedMediaItem,
   ActivitySource,
   ExtractedActivity,
 } from "./types";
@@ -11,6 +12,10 @@ export interface ProjectedActivityMedia {
   attribution: string;
   role: ActivityMediaCandidate["role"];
   policy: string;
+  altText?: string;
+  caption?: string;
+  provenance?: ActivityCuratedMediaItem["provenance"];
+  items?: ActivityCuratedMediaItem[];
 }
 
 function safeHttpsUrl(value: unknown): URL | null {
@@ -48,6 +53,24 @@ export function projectedActivityMedia(
   source: ActivitySource,
   activity: ExtractedActivity,
 ): ProjectedActivityMedia | null {
+  if (activity.curatedMedia) {
+    const { hero, promo } = activity.curatedMedia;
+    return {
+      url: hero.url,
+      gallery: promo.map((item) => item.url),
+      sourceUrl: hero.sourceUrl,
+      attribution:
+        hero.provenance === "ai_generated"
+          ? "AI-generated illustrative image by DaLat.app"
+          : "Owner-authorized event image",
+      role: "primary",
+      policy: hero.provenance,
+      altText: hero.altText,
+      caption: hero.caption,
+      provenance: hero.provenance,
+      items: [hero, ...promo],
+    };
+  }
   if (!sourceAllowsOfficialMedia(source)) return null;
 
   const canonical = safeHttpsUrl(source.canonical_url);
@@ -140,5 +163,11 @@ export function activityMediaMetadata(
     activity_media_attribution: media.attribution,
     activity_media_role: media.role,
     activity_media_policy: media.policy,
+    ...(media.altText ? { activity_media_alt: media.altText } : {}),
+    ...(media.caption ? { activity_media_caption: media.caption } : {}),
+    ...(media.provenance
+      ? { activity_media_provenance: media.provenance }
+      : {}),
+    ...(media.items ? { activity_media_items: media.items } : {}),
   };
 }

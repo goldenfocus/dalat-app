@@ -5,7 +5,8 @@ vi.mock("./ingest", () => ({ ingestVerifiedActivity: vi.fn() }));
 import { validateScoutSubmission, type ScoutSubmission } from "./scout-submit";
 
 const NOW = new Date("2026-08-30T00:00:00.000Z");
-const PAGE = "Autumn yoga retreat 2026-09-10 09:00 Da Lat, Lam Dong Public enrollment is open. Community yoga every Tuesday at 18:00. Lễ khai mạc diễn ra ngày 12 September 2026 tại Quảng trường Lâm Viên.";
+const PAGE =
+  "Autumn yoga retreat 2026-09-10 09:00 Da Lat, Lam Dong Public enrollment is open. Community yoga every Tuesday at 18:00. Lễ khai mạc diễn ra ngày 12 September 2026 tại Quảng trường Lâm Viên.";
 
 function submission(): ScoutSubmission {
   return {
@@ -44,26 +45,108 @@ function submission(): ScoutSubmission {
       sourceUpdatedAt: null,
       eventStatus: "scheduled",
       evidence: [
-        { fieldPath: "title", rawValue: "Autumn yoga retreat", evidenceText: "Autumn yoga retreat", locator: "body", confidence: 100 },
-        { fieldPath: "starts_at", rawValue: "2026-09-10 09:00", evidenceText: "2026-09-10 09:00", locator: "body", confidence: 100 },
-        { fieldPath: "address", rawValue: "Da Lat, Lam Dong", evidenceText: "Da Lat, Lam Dong", locator: "body", confidence: 100 },
-        { fieldPath: "public_access", rawValue: "Public enrollment is open", evidenceText: "Public enrollment is open", locator: "body", confidence: 100 },
+        {
+          fieldPath: "title",
+          rawValue: "Autumn yoga retreat",
+          evidenceText: "Autumn yoga retreat",
+          locator: "body",
+          confidence: 100,
+        },
+        {
+          fieldPath: "starts_at",
+          rawValue: "2026-09-10 09:00",
+          evidenceText: "2026-09-10 09:00",
+          locator: "body",
+          confidence: 100,
+        },
+        {
+          fieldPath: "address",
+          rawValue: "Da Lat, Lam Dong",
+          evidenceText: "Da Lat, Lam Dong",
+          locator: "body",
+          confidence: 100,
+        },
+        {
+          fieldPath: "public_access",
+          rawValue: "Public enrollment is open",
+          evidenceText: "Public enrollment is open",
+          locator: "body",
+          confidence: 100,
+        },
       ],
       structuredPayload: {},
       attributes: {},
+    },
+    visuals: {
+      hero: {
+        localPath: "public/images/activity-graph/autumn-yoga-hero.png",
+        title: "Illustrative yoga hero",
+        altText: "AI-generated illustrative image of a yoga workshop in Da Lat",
+        caption:
+          "AI-generated illustrative image by DaLat.app; not an actual event photograph.",
+        provenance: "ai_generated",
+        sourceUrl: null,
+        authorizationUrl: null,
+        authorizationEvidenceText: null,
+      },
+      promo: [
+        {
+          localPath: "public/images/activity-graph/autumn-yoga-promo-1.png",
+          title: "Illustrative yoga practice",
+          altText:
+            "AI-generated illustrative image of group yoga practice in Da Lat",
+          caption:
+            "AI-generated illustrative image by DaLat.app; not an actual event photograph.",
+          provenance: "ai_generated",
+          sourceUrl: null,
+          authorizationUrl: null,
+          authorizationEvidenceText: null,
+        },
+        {
+          localPath: "public/images/activity-graph/autumn-yoga-promo-2.png",
+          title: "Illustrative yoga gathering",
+          altText:
+            "AI-generated illustrative image of a calm yoga gathering in Da Lat",
+          caption:
+            "AI-generated illustrative image by DaLat.app; not an actual event photograph.",
+          provenance: "ai_generated",
+          sourceUrl: null,
+          authorizationUrl: null,
+          authorizationEvidenceText: null,
+        },
+      ],
     },
   };
 }
 
 describe("autonomous scout submission validation", () => {
   it("accepts a first-party, future, fully evidenced activity", () => {
-    expect(validateScoutSubmission(submission(), PAGE, NOW).activity.title).toBe("Autumn yoga retreat");
+    expect(
+      validateScoutSubmission(submission(), PAGE, NOW).activity.title,
+    ).toBe("Autumn yoga retreat");
+  });
+
+  it("rejects an activity without a hero and promo visual bundle", () => {
+    const input = submission() as unknown as Record<string, unknown>;
+    delete input.visuals;
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow();
+  });
+
+  it("rejects generated media that hides its AI provenance", () => {
+    const input = submission();
+    input.visuals.hero.altText =
+      "A realistic photograph of people practicing yoga in Da Lat";
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "AI visuals must be disclosed",
+    );
   });
 
   it("rejects a cross-origin activity page", () => {
     const input = submission();
     input.activity.sourceUrl = "https://tickets.example.test/autumn-yoga";
-    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("same-origin");
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "same-origin",
+    );
   });
 
   it("rejects private social sources even when the URLs agree", () => {
@@ -71,22 +154,30 @@ describe("autonomous scout submission validation", () => {
     input.source.canonicalUrl = "https://www.facebook.com/example";
     input.source.discoveryUrl = "https://www.facebook.com/example/events";
     input.activity.sourceUrl = "https://www.facebook.com/example/events/1";
-    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("Private or login-gated social");
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "Private or login-gated social",
+    );
   });
 
   it("rejects any evidence quote that is not present in the page", () => {
     const input = submission();
     input.activity.evidence[0].evidenceText = "Invented title";
-    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("Evidence is not present");
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "Evidence is not present",
+    );
   });
 
   it("rejects a past or imprecise occurrence before it can enter the graph", () => {
     const input = submission();
     input.activity.startsAt = "2026-08-29T09:00:00+07:00";
-    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("future occurrence");
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "future occurrence",
+    );
     input.activity.startsAt = "2026-09-10T09:00:00+07:00";
     input.activity.timePrecision = "date_only";
-    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("exact future start time");
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "exact future start time",
+    );
   });
 
   it("accepts a fully evidenced recurring activity without inventing a dated start", () => {
@@ -102,14 +193,46 @@ describe("autonomous scout submission validation", () => {
     input.activity.startsAtTime = "18:00:00";
     input.activity.firstOccurrence = "2026-08-04";
     input.activity.evidence = [
-      { fieldPath: "title", rawValue: "Community yoga", evidenceText: "Community yoga", locator: "body", confidence: 100 },
-      { fieldPath: "rrule", rawValue: "FREQ=WEEKLY;BYDAY=TU", evidenceText: "every Tuesday", locator: "body", confidence: 100 },
-      { fieldPath: "starts_at_time", rawValue: "18:00", evidenceText: "18:00", locator: "body", confidence: 100 },
-      { fieldPath: "address", rawValue: "Da Lat, Lam Dong", evidenceText: "Da Lat, Lam Dong", locator: "body", confidence: 100 },
-      { fieldPath: "public_access", rawValue: "Public enrollment is open", evidenceText: "Public enrollment is open", locator: "body", confidence: 100 },
+      {
+        fieldPath: "title",
+        rawValue: "Community yoga",
+        evidenceText: "Community yoga",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "rrule",
+        rawValue: "FREQ=WEEKLY;BYDAY=TU",
+        evidenceText: "every Tuesday",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "starts_at_time",
+        rawValue: "18:00",
+        evidenceText: "18:00",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "address",
+        rawValue: "Da Lat, Lam Dong",
+        evidenceText: "Da Lat, Lam Dong",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "public_access",
+        rawValue: "Public enrollment is open",
+        evidenceText: "Public enrollment is open",
+        locator: "body",
+        confidence: 100,
+      },
     ];
 
-    expect(validateScoutSubmission(input, PAGE, NOW).activity.rrule).toBe("FREQ=WEEKLY;BYDAY=TU");
+    expect(validateScoutSubmission(input, PAGE, NOW).activity.rrule).toBe(
+      "FREQ=WEEKLY;BYDAY=TU",
+    );
   });
 
   it("rejects recurring activities with incomplete or expired schedules", () => {
@@ -123,23 +246,61 @@ describe("autonomous scout submission validation", () => {
     input.activity.firstOccurrence = "2026-08-04";
     input.activity.rruleUntil = "2026-08-29T23:59:59+07:00";
     input.activity.evidence = [
-      { fieldPath: "title", rawValue: "Community yoga", evidenceText: "Community yoga", locator: "body", confidence: 100 },
-      { fieldPath: "rrule", rawValue: "FREQ=WEEKLY;BYDAY=TU", evidenceText: "every Tuesday", locator: "body", confidence: 100 },
-      { fieldPath: "starts_at_time", rawValue: "18:00", evidenceText: "18:00", locator: "body", confidence: 100 },
-      { fieldPath: "address", rawValue: "Da Lat, Lam Dong", evidenceText: "Da Lat, Lam Dong", locator: "body", confidence: 100 },
-      { fieldPath: "public_access", rawValue: "Public enrollment is open", evidenceText: "Public enrollment is open", locator: "body", confidence: 100 },
+      {
+        fieldPath: "title",
+        rawValue: "Community yoga",
+        evidenceText: "Community yoga",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "rrule",
+        rawValue: "FREQ=WEEKLY;BYDAY=TU",
+        evidenceText: "every Tuesday",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "starts_at_time",
+        rawValue: "18:00",
+        evidenceText: "18:00",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "address",
+        rawValue: "Da Lat, Lam Dong",
+        evidenceText: "Da Lat, Lam Dong",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "public_access",
+        rawValue: "Public enrollment is open",
+        evidenceText: "Public enrollment is open",
+        locator: "body",
+        confidence: 100,
+      },
     ];
 
-    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("future occurrence");
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "future occurrence",
+    );
     input.activity.rruleUntil = null;
-    input.activity.evidence = input.activity.evidence.filter((row) => row.fieldPath !== "starts_at_time");
-    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("recurring schedule evidence");
+    input.activity.evidence = input.activity.evidence.filter(
+      (row) => row.fieldPath !== "starts_at_time",
+    );
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "recurring schedule evidence",
+    );
   });
 
   it("rejects a fully evidenced activity beyond the near-term discovery window", () => {
     const input = submission();
     input.activity.startsAt = "2027-03-10T09:00:00+07:00";
-    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("next 45 days");
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "next 45 days",
+    );
   });
 
   it("admits an official Lâm Viên Square notice with date known and time/access TBD", () => {
@@ -155,13 +316,39 @@ describe("autonomous scout submission validation", () => {
     input.activity.publicAccess = "unknown";
     input.activity.reservationRequirement = "unknown";
     input.activity.evidence = [
-      { fieldPath: "title", rawValue: "Lễ khai mạc", evidenceText: "Lễ khai mạc", locator: "body", confidence: 100 },
-      { fieldPath: "starts_at", rawValue: "12 September 2026", evidenceText: "12 September 2026", locator: "body", confidence: 100 },
-      { fieldPath: "address", rawValue: "Quảng trường Lâm Viên", evidenceText: "Quảng trường Lâm Viên", locator: "body", confidence: 100 },
-      { fieldPath: "event_status", rawValue: "scheduled", evidenceText: "diễn ra", locator: "body", confidence: 100 },
+      {
+        fieldPath: "title",
+        rawValue: "Lễ khai mạc",
+        evidenceText: "Lễ khai mạc",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "starts_at",
+        rawValue: "12 September 2026",
+        evidenceText: "12 September 2026",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "address",
+        rawValue: "Quảng trường Lâm Viên",
+        evidenceText: "Quảng trường Lâm Viên",
+        locator: "body",
+        confidence: 100,
+      },
+      {
+        fieldPath: "event_status",
+        rawValue: "scheduled",
+        evidenceText: "diễn ra",
+        locator: "body",
+        confidence: 100,
+      },
     ];
 
-    expect(validateScoutSubmission(input, PAGE, NOW).activity.timePrecision).toBe("tba");
+    expect(
+      validateScoutSubmission(input, PAGE, NOW).activity.timePrecision,
+    ).toBe("tba");
   });
 
   it("does not let a non-Lâm Viên activity bypass exact time and public-access evidence", () => {
@@ -170,6 +357,8 @@ describe("autonomous scout submission validation", () => {
     input.activity.endsAt = null;
     input.activity.timePrecision = "tba";
     input.activity.publicAccess = "unknown";
-    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow("exact future start time");
+    expect(() => validateScoutSubmission(input, PAGE, NOW)).toThrow(
+      "exact future start time",
+    );
   });
 });

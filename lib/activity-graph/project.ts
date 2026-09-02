@@ -405,17 +405,22 @@ function refreshedSourceMetadata(
       : {}),
     media_candidate_count: input.activity.mediaCandidates?.length ?? 0,
     media_policy:
-      typeof input.source.metadata?.media_policy === "string"
+      media?.policy ??
+      (typeof input.source.metadata?.media_policy === "string"
         ? input.source.metadata.media_policy
-        : "reference_only",
-    media_reuse_allowed: sourceAllowsOfficialMedia(input.source),
+        : "reference_only"),
+    media_reuse_allowed:
+      Boolean(media) || sourceAllowsOfficialMedia(input.source),
     ...activityMediaMetadata(media),
     confidence: input.confidence.score,
     locality: input.locality,
     published_automatically: true,
     verified_at: now,
   };
-  if (!sourceAllowsOfficialMedia(input.source)) {
+  if (
+    !sourceAllowsOfficialMedia(input.source) &&
+    !input.activity.curatedMedia
+  ) {
     delete metadata.activity_media_url;
     delete metadata.activity_media_gallery;
     delete metadata.activity_media_source_url;
@@ -569,7 +574,9 @@ async function refreshLinkedActivity(
   if (link.event_id) {
     const { data: event, error: eventLookupError } = await input.supabase
       .from("events")
-      .select("id,source_platform,source_metadata,slug,image_url")
+      .select(
+        "id,source_platform,source_metadata,slug,image_url,image_alt,image_description",
+      )
       .eq("id", link.event_id)
       .maybeSingle();
     if (eventLookupError || !event) {
@@ -615,6 +622,8 @@ async function refreshLinkedActivity(
           media,
           mediaAllowed: sourceAllowsOfficialMedia(input.source),
         }),
+        image_alt: media?.altText ?? event.image_alt,
+        image_description: media?.caption ?? event.image_description,
       };
       const { error } = await input.supabase
         .from("events")
@@ -764,7 +773,7 @@ async function createEvent(
     throw new Error("Cannot project an event without startsAt");
   const { data: existing, error: existingError } = await input.supabase
     .from("events")
-    .select("id,slug,image_url,source_metadata")
+    .select("id,slug,image_url,image_alt,image_description,source_metadata")
     .eq("activity_graph_candidate_id", input.candidateId)
     .maybeSingle();
   if (existingError)
@@ -791,6 +800,8 @@ async function createEvent(
       media,
       mediaAllowed: sourceAllowsOfficialMedia(input.source),
     }),
+    image_alt: media?.altText ?? existing?.image_alt,
+    image_description: media?.caption ?? existing?.image_description,
     starts_at: input.activity.startsAt,
     ends_at: input.activity.endsAt,
     timezone: input.activity.timezone,

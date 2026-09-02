@@ -6,17 +6,26 @@ import { ingestVerifiedActivity } from "./ingest";
 import type { ActivitySource, ExtractedActivity } from "./types";
 import { isValidRRule } from "@/lib/recurrence";
 import { isLamVienTbdActivity } from "./lam-vien-tbd";
+import {
+  syncScoutPromoMedia,
+  uploadScoutVisualBundle,
+  type ScoutVisualAssetInput,
+} from "./scout-visuals";
 
 const ISO_DATE_TIME = z.string().datetime({ offset: true }).or(z.null());
 
 const sourceSchema = z.object({
   name: z.string().trim().min(2).max(160),
-  canonicalUrl: z.url().refine((value) => new URL(value).protocol === "https:", {
-    message: "canonicalUrl must use HTTPS",
-  }),
-  discoveryUrl: z.url().refine((value) => new URL(value).protocol === "https:", {
-    message: "discoveryUrl must use HTTPS",
-  }),
+  canonicalUrl: z
+    .url()
+    .refine((value) => new URL(value).protocol === "https:", {
+      message: "canonicalUrl must use HTTPS",
+    }),
+  discoveryUrl: z
+    .url()
+    .refine((value) => new URL(value).protocol === "https:", {
+      message: "discoveryUrl must use HTTPS",
+    }),
   pagePathPrefix: z.string().trim().min(1).max(500).default("/"),
 });
 
@@ -30,23 +39,100 @@ const evidenceSchema = z.object({
   explicit: z.boolean().optional(),
 });
 
+const AI_DISCLOSURE =
+  /\bai[- ]generated\b|\bai illustration\b|minh họa do ai tạo/i;
+
+const visualAssetSchema = z
+  .object({
+    localPath: z
+      .string()
+      .trim()
+      .min(1)
+      .max(1_000)
+      .refine(
+        (value) => !value.startsWith("/"),
+        "localPath must be project-relative",
+      )
+      .refine(
+        (value) => value.startsWith("public/images/activity-graph/"),
+        "localPath must be under public/images/activity-graph",
+      ),
+    title: z.string().trim().min(3).max(160),
+    altText: z.string().trim().min(20).max(300),
+    caption: z.string().trim().min(30).max(600),
+    provenance: z.enum(["ai_generated", "owner_authorized_source"]),
+    sourceUrl: z.url().nullable(),
+    authorizationUrl: z.url().nullable(),
+    authorizationEvidenceText: z.string().trim().min(10).max(500).nullable(),
+  })
+  .superRefine((value, context) => {
+    if (value.provenance === "ai_generated") {
+      if (
+        !AI_DISCLOSURE.test(value.altText) ||
+        !AI_DISCLOSURE.test(value.caption)
+      ) {
+        context.addIssue({
+          code: "custom",
+          message:
+            "AI visuals must be disclosed as AI-generated in alt text and caption",
+        });
+      }
+      return;
+    }
+    if (
+      !value.sourceUrl ||
+      !value.authorizationUrl ||
+      !value.authorizationEvidenceText
+    ) {
+      context.addIssue({
+        code: "custom",
+        message:
+          "Owner-authorized visuals require source and authorization evidence",
+      });
+    }
+  });
+
+const visualBundleSchema = z.object({
+  hero: visualAssetSchema,
+  promo: z.array(visualAssetSchema).min(2).max(4),
+});
+
 const activitySchema = z.object({
   sourceUid: z.string().trim().min(1).max(1_000),
   sourceUrl: z.url().refine((value) => new URL(value).protocol === "https:", {
     message: "sourceUrl must use HTTPS",
   }),
   kind: z.enum([
-    "event", "recurring_activity", "exhibition", "workshop", "class",
-    "performance", "market", "religious_activity", "sports",
-    "community_activity", "seasonal_activity", "bookable_experience", "other",
+    "event",
+    "recurring_activity",
+    "exhibition",
+    "workshop",
+    "class",
+    "performance",
+    "market",
+    "religious_activity",
+    "sports",
+    "community_activity",
+    "seasonal_activity",
+    "bookable_experience",
+    "other",
   ]),
   title: z.string().trim().min(3).max(240),
   description: z.string().trim().max(8_000).nullable(),
   startsAt: ISO_DATE_TIME,
   endsAt: ISO_DATE_TIME,
-  timePrecision: z.enum(["exact", "approximate", "date_only", "tba", "recurring"]),
+  timePrecision: z.enum([
+    "exact",
+    "approximate",
+    "date_only",
+    "tba",
+    "recurring",
+  ]),
   rrule: z.string().trim().max(500).nullable(),
-  startsAtTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/).nullable(),
+  startsAtTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}(:\d{2})?$/)
+    .nullable(),
   durationMinutes: z.number().int().positive().nullable(),
   firstOccurrence: z.string().date().nullable(),
   rruleUntil: ISO_DATE_TIME,
@@ -57,31 +143,60 @@ const activitySchema = z.object({
   organizerName: z.string().trim().max(240).nullable(),
   organizerUrl: z.url().nullable(),
   priceType: z.enum(["free", "paid", "donation"]).nullable(),
-  ticketTiers: z.array(z.object({
-    name: z.string().trim().min(1).max(160),
-    price: z.number().min(0),
-    currency: z.string().trim().min(3).max(8),
-    description: z.string().trim().max(500).optional(),
-  })).max(20).nullable(),
+  ticketTiers: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1).max(160),
+        price: z.number().min(0),
+        currency: z.string().trim().min(3).max(8),
+        description: z.string().trim().max(500).optional(),
+      }),
+    )
+    .max(20)
+    .nullable(),
   ticketUrl: z.url().nullable(),
-  reservationRequirement: z.enum(["not_required", "recommended", "required", "unknown"]).nullable(),
+  reservationRequirement: z
+    .enum(["not_required", "recommended", "required", "unknown"])
+    .nullable(),
   publicAccess: z.enum(["confirmed", "unknown"]),
   sourcePublishedAt: ISO_DATE_TIME,
   sourceUpdatedAt: ISO_DATE_TIME,
-  eventStatus: z.enum(["scheduled", "cancelled", "postponed", "rescheduled", "unknown"]),
+  eventStatus: z.enum([
+    "scheduled",
+    "cancelled",
+    "postponed",
+    "rescheduled",
+    "unknown",
+  ]),
   evidence: z.array(evidenceSchema).min(4).max(40),
   structuredPayload: z.record(z.string(), z.unknown()).default({}),
-  attributes: z.record(z.string(), z.union([z.boolean(), z.string(), z.number(), z.null()])).default({}),
+  attributes: z
+    .record(
+      z.string(),
+      z.union([z.boolean(), z.string(), z.number(), z.null()]),
+    )
+    .default({}),
 });
 
-export const scoutSubmissionSchema = z.object({ source: sourceSchema, activity: activitySchema });
+export const scoutSubmissionSchema = z.object({
+  source: sourceSchema,
+  activity: activitySchema,
+  visuals: visualBundleSchema,
+});
 export type ScoutSubmission = z.infer<typeof scoutSubmissionSchema>;
 
 const REQUIRED_BASE_EVIDENCE = ["title", "public_access"];
 const SCOUT_NEAR_TERM_WINDOW_MS = 45 * 86_400_000;
 const PRIVATE_SOCIAL_HOSTS = [
-  "facebook.com", "fb.com", "zalo.me", "whatsapp.com", "wa.me",
-  "telegram.org", "t.me", "instagram.com", "tiktok.com",
+  "facebook.com",
+  "fb.com",
+  "zalo.me",
+  "whatsapp.com",
+  "wa.me",
+  "telegram.org",
+  "t.me",
+  "instagram.com",
+  "tiktok.com",
 ];
 
 function normalizePageText(value: string): string {
@@ -90,10 +205,19 @@ function normalizePageText(value: string): string {
 
 function sourceSlug(name: string, canonicalUrl: string): string {
   const host = new URL(canonicalUrl).hostname.replace(/^www\./, "");
-  const base = `${name}-${host}`
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/đ/g, "d")
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 52) || "activity-source";
-  const suffix = createHash("sha256").update(canonicalUrl).digest("hex").slice(0, 8);
+  const base =
+    `${name}-${host}`
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/đ/g, "d")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 52) || "activity-source";
+  const suffix = createHash("sha256")
+    .update(canonicalUrl)
+    .digest("hex")
+    .slice(0, 8);
   return `${base}-${suffix}`;
 }
 
@@ -104,23 +228,50 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
   const discovery = new URL(submission.source.discoveryUrl);
   if (
     PRIVATE_SOCIAL_HOSTS.some(
-      (host) => canonical.hostname === host || canonical.hostname.endsWith(`.${host}`),
+      (host) =>
+        canonical.hostname === host || canonical.hostname.endsWith(`.${host}`),
     )
   ) {
-    throw new Error("Private or login-gated social sources cannot be submitted");
+    throw new Error(
+      "Private or login-gated social sources cannot be submitted",
+    );
   }
-  if (page.origin !== canonical.origin || discovery.origin !== canonical.origin) {
-    throw new Error("Scout source and activity URLs must be canonical same-origin URLs");
+  if (
+    page.origin !== canonical.origin ||
+    discovery.origin !== canonical.origin
+  ) {
+    throw new Error(
+      "Scout source and activity URLs must be canonical same-origin URLs",
+    );
+  }
+  for (const visual of [submission.visuals.hero, ...submission.visuals.promo]) {
+    if (visual.provenance === "owner_authorized_source") {
+      const sourceUrl = new URL(visual.sourceUrl!);
+      const authorizationUrl = new URL(visual.authorizationUrl!);
+      if (
+        sourceUrl.origin !== canonical.origin ||
+        authorizationUrl.origin !== canonical.origin
+      ) {
+        throw new Error(
+          "Owner-authorized visual evidence must be canonical same-origin evidence",
+        );
+      }
+    }
   }
   if (!["scheduled", "rescheduled"].includes(submission.activity.eventStatus)) {
-    throw new Error("Only scheduled or rescheduled activities can be submitted");
+    throw new Error(
+      "Only scheduled or rescheduled activities can be submitted",
+    );
   }
-  const fields = new Set(submission.activity.evidence.map((row) => row.fieldPath));
+  const fields = new Set(
+    submission.activity.evidence.map((row) => row.fieldPath),
+  );
   const lamVienTbd =
     submission.activity.kind !== "recurring_activity" &&
     isLamVienTbdActivity(submission.activity);
   for (const field of lamVienTbd ? ["title"] : REQUIRED_BASE_EVIDENCE) {
-    if (!fields.has(field)) throw new Error(`Missing required evidence: ${field}`);
+    if (!fields.has(field))
+      throw new Error(`Missing required evidence: ${field}`);
   }
   if (submission.activity.kind === "recurring_activity") {
     const recurrence = submission.activity;
@@ -132,7 +283,9 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
       !recurrence.startsAtTime ||
       !recurrence.firstOccurrence
     ) {
-      throw new Error("Autonomous recurring publication requires a complete exact recurrence");
+      throw new Error(
+        "Autonomous recurring publication requires a complete exact recurrence",
+      );
     }
     if (!fields.has("rrule") || !fields.has("starts_at_time")) {
       throw new Error("Missing required recurring schedule evidence");
@@ -141,14 +294,18 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
       recurrence.rruleUntil &&
       new Date(recurrence.rruleUntil).getTime() <= now.getTime()
     ) {
-      throw new Error("Autonomous publication requires a recurrence with a future occurrence");
+      throw new Error(
+        "Autonomous publication requires a recurrence with a future occurrence",
+      );
     }
   } else {
     if (
       (!lamVienTbd && submission.activity.timePrecision !== "exact") ||
       !submission.activity.startsAt
     ) {
-      throw new Error("Autonomous publication requires an exact future start time");
+      throw new Error(
+        "Autonomous publication requires an exact future start time",
+      );
     }
     if (new Date(submission.activity.startsAt).getTime() <= now.getTime()) {
       throw new Error("Autonomous publication requires a future occurrence");
@@ -165,7 +322,9 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
       throw new Error("Missing required evidence: starts_at");
     }
     if (!lamVienTbd && submission.activity.publicAccess !== "confirmed") {
-      throw new Error("Autonomous publication requires confirmed public access");
+      throw new Error(
+        "Autonomous publication requires confirmed public access",
+      );
     }
   }
   if (!fields.has("address") && !fields.has("location_name")) {
@@ -174,12 +333,18 @@ function validateSubmissionRules(input: unknown, now: Date): ScoutSubmission {
   return submission;
 }
 
-export function validateScoutSubmission(input: unknown, pageText: string, now: Date = new Date()): ScoutSubmission {
+export function validateScoutSubmission(
+  input: unknown,
+  pageText: string,
+  now: Date = new Date(),
+): ScoutSubmission {
   const submission = validateSubmissionRules(input, now);
   const normalizedPage = normalizePageText(pageText);
   for (const row of submission.activity.evidence) {
     if (!normalizedPage.includes(normalizePageText(row.evidenceText))) {
-      throw new Error(`Evidence is not present in the fetched source page: ${row.fieldPath}`);
+      throw new Error(
+        `Evidence is not present in the fetched source page: ${row.fieldPath}`,
+      );
     }
   }
   return submission;
@@ -207,32 +372,58 @@ function sourceRecord(submission: ScoutSubmission): Omit<ActivitySource, "id"> {
     venue_id: null,
     metadata: {
       managed_by: "daily_activity_scout_v1",
-      policy_note: "Autonomously admitted after canonical, same-origin, future schedule, explicit locality, public-access, and page-evidence checks.",
+      policy_note:
+        "Autonomously admitted after canonical, same-origin, future schedule, explicit locality, public-access, and page-evidence checks.",
       media_policy: "reference_only",
       media_reuse_allowed: false,
     },
   };
 }
 
-async function resolveSource(supabase: SupabaseClient, submission: ScoutSubmission): Promise<ActivitySource> {
+async function resolveSource(
+  supabase: SupabaseClient,
+  submission: ScoutSubmission,
+): Promise<ActivitySource> {
   const record = sourceRecord(submission);
   const { data: existing, error: existingError } = await supabase
-    .from("activity_sources").select("*").eq("canonical_url", record.canonical_url).maybeSingle();
-  if (existingError) throw new Error(`Source lookup failed: ${existingError.message}`);
+    .from("activity_sources")
+    .select("*")
+    .eq("canonical_url", record.canonical_url)
+    .maybeSingle();
+  if (existingError)
+    throw new Error(`Source lookup failed: ${existingError.message}`);
   if (existing) {
     if (existing.fetch_mode !== "manual") return existing as ActivitySource;
     const { data, error } = await supabase
       .from("activity_sources")
-      .update({ name: record.name, discovery_url: record.discovery_url, page_path_prefix: record.page_path_prefix,
-        status: "active", policy_status: "approved", auto_publish_enabled: true, auto_publish_threshold: 97,
-        next_check_at: new Date().toISOString() })
-      .eq("id", existing.id).select("*").single();
-    if (error || !data) throw new Error(`Source refresh failed: ${error?.message ?? "no source returned"}`);
+      .update({
+        name: record.name,
+        discovery_url: record.discovery_url,
+        page_path_prefix: record.page_path_prefix,
+        status: "active",
+        policy_status: "approved",
+        auto_publish_enabled: true,
+        auto_publish_threshold: 97,
+        next_check_at: new Date().toISOString(),
+      })
+      .eq("id", existing.id)
+      .select("*")
+      .single();
+    if (error || !data)
+      throw new Error(
+        `Source refresh failed: ${error?.message ?? "no source returned"}`,
+      );
     return data as ActivitySource;
   }
   const { data, error } = await supabase
-    .from("activity_sources").insert({ ...record, next_check_at: new Date().toISOString() }).select("*").single();
-  if (error || !data) throw new Error(`Source admission failed: ${error?.message ?? "no source returned"}`);
+    .from("activity_sources")
+    .insert({ ...record, next_check_at: new Date().toISOString() })
+    .select("*")
+    .single();
+  if (error || !data)
+    throw new Error(
+      `Source admission failed: ${error?.message ?? "no source returned"}`,
+    );
   return data as ActivitySource;
 }
 
@@ -244,28 +435,88 @@ export interface ScoutSubmissionResult {
   published: boolean;
 }
 
-export async function ingestScoutSubmission(supabase: SupabaseClient, input: unknown, now: Date = new Date()): Promise<ScoutSubmissionResult> {
+export async function ingestScoutSubmission(
+  supabase: SupabaseClient,
+  input: unknown,
+  now: Date = new Date(),
+): Promise<ScoutSubmissionResult> {
   // Fetch before creating any database row. A scout cannot use an unreachable,
   // cross-origin, or private-network page as evidence.
   const preliminary = validateSubmissionRules(input, now);
-  const provisional = sourceRecord(preliminary) as ActivitySource & { id: string };
+  const provisional = sourceRecord(preliminary) as ActivitySource & {
+    id: string;
+  };
   const document: FetchedSourceDocument = await fetchSourceText(
     { ...provisional, id: "00000000-0000-4000-8000-000000000000" },
     preliminary.activity.sourceUrl,
     { timeoutMs: 15_000 },
   );
   const submission = validateScoutSubmission(input, document.text, now);
+  for (const visual of [
+    submission.visuals.hero,
+    ...submission.visuals.promo,
+  ] as ScoutVisualAssetInput[]) {
+    if (visual.provenance !== "owner_authorized_source") continue;
+    const authorizationDocument =
+      visual.authorizationUrl === submission.activity.sourceUrl
+        ? document
+        : await fetchSourceText(
+            { ...provisional, id: "00000000-0000-4000-8000-000000000000" },
+            visual.authorizationUrl!,
+            { timeoutMs: 15_000 },
+          );
+    if (
+      !normalizePageText(authorizationDocument.text).includes(
+        normalizePageText(visual.authorizationEvidenceText!),
+      )
+    ) {
+      throw new Error(
+        "Visual reuse authorization evidence is not present on the canonical page",
+      );
+    }
+  }
+  const curatedMedia = await uploadScoutVisualBundle({
+    sourceUid: submission.activity.sourceUid,
+    activitySourceUrl: submission.activity.sourceUrl,
+    visuals: submission.visuals,
+  });
   const source = await resolveSource(supabase, submission);
   const processed = await ingestVerifiedActivity(
-    supabase, source, { ...submission.activity, timezone: "Asia/Ho_Chi_Minh" } as ExtractedActivity, document, now,
+    supabase,
+    source,
+    {
+      ...submission.activity,
+      timezone: "Asia/Ho_Chi_Minh",
+      curatedMedia,
+    } as ExtractedActivity,
+    document,
+    now,
   );
-  const { error } = await supabase.from("activity_sources").update({
-    last_checked_at: now.toISOString(), last_success_at: now.toISOString(), consecutive_failures: 0,
-    error_detail: null, last_error_at: null, next_check_at: new Date(now.getTime() + 86_400_000).toISOString(),
-  }).eq("id", source.id);
+  if (processed.projection?.status === "published") {
+    await syncScoutPromoMedia({
+      supabase,
+      eventId: processed.projection.eventId,
+      eventSeriesId: processed.projection.eventSeriesId,
+      media: curatedMedia,
+    });
+  }
+  const { error } = await supabase
+    .from("activity_sources")
+    .update({
+      last_checked_at: now.toISOString(),
+      last_success_at: now.toISOString(),
+      consecutive_failures: 0,
+      error_detail: null,
+      last_error_at: null,
+      next_check_at: new Date(now.getTime() + 86_400_000).toISOString(),
+    })
+    .eq("id", source.id);
   if (error) throw new Error(`Source health update failed: ${error.message}`);
   return {
-    sourceId: source.id, sourceSlug: source.slug, title: submission.activity.title,
-    decision: processed.projection?.decision ?? null, published: processed.projection?.status === "published",
+    sourceId: source.id,
+    sourceSlug: source.slug,
+    title: submission.activity.title,
+    decision: processed.projection?.decision ?? null,
+    published: processed.projection?.status === "published",
   };
 }

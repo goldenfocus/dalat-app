@@ -8,11 +8,12 @@ This is a hard user requirement for every public Activity Graph event page.
 - First choice: an actual event image from a canonical organizer or venue source, only when the owner has authorized reuse. Keep the source URL and any required attribution with the media record.
 - If authentic owner-authorized event imagery is unavailable, create an event-specific, ultra-realistic AI illustrative image. It must be a high-converting visual hook grounded in the verified event context, with natural people/place/action; no text, logos, watermarks, poster layout, or invented factual claims.
 - Never present AI imagery as documentary event photography. Its alt text and promo caption must say that it is AI-generated illustrative imagery and not an actual event photo.
-- Where the page supports it, add 2–4 distinct, relevant images to `promo_material` / the promo gallery. Apply the same provenance and disclosure rules to every item.
+- Every published event must have a visible hero image. Missing media is a publication blocker, including during refreshes; never publish or refresh an event into an image-free state.
+- Add 2–4 distinct, relevant images to `promo_media` / the promo gallery for every event. Apply the same provenance and disclosure rules to every item.
 - On a source refresh or reprocessing run, preserve owner-authorized and compliant generated media. Do not replace them with fact-art or generic fallbacks.
 - Before handoff, inspect the live public DaLat.app route: verify the hero and each promo-gallery image are visually appropriate, truthful, and correctly disclosed.
 
-If neither owner-authorized imagery nor a safe event-specific illustrative image is available, leave the visual unset and report the gap; do not substitute generic art.
+If owner-authorized imagery is unavailable, generate a safe event-specific illustrative image before publication. Withhold the event if neither compliant path can be completed; do not substitute generic art or publish an empty hero.
 
 ## Activity Graph discovery horizon
 

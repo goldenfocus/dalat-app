@@ -83,6 +83,75 @@ describe("Activity Graph official media projection", () => {
     ).toBeNull();
   });
 
+  it("projects a governed generated hero and promo gallery with disclosure", () => {
+    const generated = projectedActivityMedia(
+      {
+        ...source,
+        metadata: {
+          media_policy: "reference_only",
+          media_reuse_allowed: false,
+        },
+      },
+      {
+        ...activity,
+        curatedMedia: {
+          hero: {
+            url: "https://cdn.dalat.app/event-materials/activity-graph/event/hero.png",
+            title: "Illustrative hero",
+            altText: "AI-generated illustrative image of the verified activity",
+            caption:
+              "AI-generated illustrative image by DaLat.app; not an actual event photograph.",
+            provenance: "ai_generated",
+            sourceUrl: activity.sourceUrl,
+            authorizationUrl: null,
+            originalFilename: "hero.png",
+            fileSize: 100_000,
+            mimeType: "image/png",
+          },
+          promo: [
+            {
+              url: "https://cdn.dalat.app/event-materials/activity-graph/event/promo-1.png",
+              title: "Illustrative promo one",
+              altText:
+                "AI-generated illustrative image of the verified activity",
+              caption:
+                "AI-generated illustrative image by DaLat.app; not an actual event photograph.",
+              provenance: "ai_generated",
+              sourceUrl: activity.sourceUrl,
+              authorizationUrl: null,
+              originalFilename: "promo-1.png",
+              fileSize: 100_000,
+              mimeType: "image/png",
+            },
+            {
+              url: "https://cdn.dalat.app/event-materials/activity-graph/event/promo-2.png",
+              title: "Illustrative promo two",
+              altText:
+                "AI-generated illustrative image of the verified activity",
+              caption:
+                "AI-generated illustrative image by DaLat.app; not an actual event photograph.",
+              provenance: "ai_generated",
+              sourceUrl: activity.sourceUrl,
+              authorizationUrl: null,
+              originalFilename: "promo-2.png",
+              fileSize: 100_000,
+              mimeType: "image/png",
+            },
+          ],
+        },
+      },
+    );
+    expect(generated).toMatchObject({
+      url: expect.stringContaining("hero.png"),
+      gallery: [
+        expect.stringContaining("promo-1.png"),
+        expect.stringContaining("promo-2.png"),
+      ],
+      provenance: "ai_generated",
+      altText: expect.stringContaining("AI-generated"),
+    });
+  });
+
   it("replaces fact-art and rotates source-controlled images", () => {
     const media = projectedActivityMedia(source, activity)!;
     expect(
