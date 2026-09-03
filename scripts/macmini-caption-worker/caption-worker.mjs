@@ -137,7 +137,7 @@ async function downloadMedia(url, destBase) {
 // "claude is temporarily unusable" — quota window, expired login, network.
 // These must never burn job attempts: the jobs get released, not failed.
 function looksUnavailable(text) {
-  return /rate.?limit|quota|usage limit|limit reached|overloaded|too many requests|429|not logged in|\/login|unauthorized|authentication|ENOTFOUND|ECONNREFUSED|fetch failed/i.test(
+  return /rate.?limit|quota|usage limit|limit reached|overloaded|too many requests|429|not logged in|\/login|unauthorized|authenticat|oauth|session expired|ENOTFOUND|ECONNREFUSED|fetch failed/i.test(
     text || ''
   );
 }
