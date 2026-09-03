@@ -143,7 +143,11 @@ function looksUnavailable(text) {
 }
 
 /** Run one headless claude session; returns the final text output. */
+let claudeRetryAfter = 0;
 async function runClaude(prompt) {
+  if (Date.now() < claudeRetryAfter) {
+    throw Object.assign(new Error('claude unavailable; using fallback during cooldown'), { unavailable: true });
+  }
   const result = await runProcess(
     CLAUDE_BIN,
     ['-p', '--model', CLAUDE_MODEL, '--allowedTools', 'Read'],
@@ -160,6 +164,7 @@ async function runClaude(prompt) {
     const stderr = (result.stderr || result.stdout || '').slice(-500);
     const err = new Error(`claude exited ${result.status}${result.signal ? ` (signal ${result.signal})` : ''}: ${stderr}`);
     err.unavailable = looksUnavailable(stderr) || looksUnavailable(result.stdout);
+    if (err.unavailable) claudeRetryAfter = Date.now() + QUOTA_BACKOFF_MINUTES * 60_000;
     throw err;
   }
   const out = (result.stdout || '').trim();
