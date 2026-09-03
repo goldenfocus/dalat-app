@@ -497,7 +497,7 @@ async function processBatch(jobs) {
       if (OLLAMA_FALLBACK_MODEL) {
         try {
           const output = await ollamaText(job.prompt);
-          if (await completeJob(job, output, 'ollama', OLLAMA_FALLBACK_MODEL)) anyCompleted = true;
+          if (await completeJob(job, output, 'ollama', env.OLLAMA_TEXT_MODEL || OLLAMA_FALLBACK_MODEL)) anyCompleted = true;
         } catch (err) {
           log(`[caption-worker] ollama recap failed id=${job.id}:`, err.message);
           await releaseJob(job.id, `claude unavailable; ollama recap: ${err.message}`);
