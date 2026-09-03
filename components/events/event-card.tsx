@@ -1,5 +1,7 @@
 "use client";
 
+import { eventImageAlt } from "@/lib/events/image-alt";
+
 import { memo } from "react";
 import Image from "next/image";
 import { useRouter } from "@/lib/i18n/routing";
@@ -188,7 +190,7 @@ export const EventCard = memo(function EventCard({
                   <Image
                     loader={cloudflareLoader}
                     src={event.image_url!}
-                    alt={displayTitle}
+                    alt={eventImageAlt(event, displayTitle)}
                     fill
                     sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
                     className={cn(

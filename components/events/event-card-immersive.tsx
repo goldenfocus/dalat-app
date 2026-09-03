@@ -1,5 +1,7 @@
 "use client";
 
+import { eventImageAlt } from "@/lib/events/image-alt";
+
 import { memo } from "react";
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
@@ -89,7 +91,7 @@ export const EventCardImmersive = memo(function EventCardImmersive({
             ) : (
               <ImmersiveImage
                 src={event.image_url!}
-                alt={displayTitle}
+                alt={eventImageAlt(event, displayTitle)}
                 priority={priority}
                 imageFit={event.image_fit}
                 focalPoint={event.focal_point}

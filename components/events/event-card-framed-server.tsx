@@ -1,3 +1,4 @@
+import { eventImageAlt } from "@/lib/events/image-alt";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
@@ -149,7 +150,7 @@ export function EventCardFramedServer({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={resolvedCover!}
-                  alt={displayTitle}
+                  alt={isFallbackCover ? displayTitle : eventImageAlt(event, displayTitle)}
                   className={`absolute inset-0 w-full h-full transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
                   style={
                     event.image_fit === "cover" && event.focal_point
@@ -166,7 +167,7 @@ export function EventCardFramedServer({
           ) : event.source_platform !== "activity-graph" ? (
             <Image
               src={DEFAULT_IMAGE_URL}
-              alt={displayTitle}
+              alt={isFallbackCover ? displayTitle : eventImageAlt(event, displayTitle)}
               fill
               sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover w-full h-full"

@@ -1,5 +1,7 @@
 "use client";
 
+import { eventImageAlt } from "@/lib/events/image-alt";
+
 import { memo } from "react";
 import Image from "next/image";
 import { useRouter } from "@/lib/i18n/routing";
@@ -139,7 +141,7 @@ export const EventCardCompact = memo(function EventCardCompact({
                   <Image
                     loader={cloudflareLoader}
                     src={coverUrl!}
-                    alt={displayTitle}
+                    alt={eventImageAlt(event, displayTitle)}
                     fill
                     sizes="(max-width: 640px) 50vw, 33vw"
                     className={`transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}

@@ -15,6 +15,7 @@ import { locales } from "@/lib/i18n/routing";
 import {
   activityMediaMetadata,
   activityProjectionImage,
+  hasCuratedActivityMedia,
   projectedActivityMedia,
   sourceAllowsOfficialMedia,
 } from "./media";
@@ -391,6 +392,7 @@ function refreshedSourceMetadata(
   now: string,
 ): Record<string, unknown> {
   const media = projectedActivityMedia(input.source, input.activity);
+  const preserveCurated = hasCuratedActivityMedia(existing) && !media?.provenance;
   const metadata: Record<string, unknown> = {
     ...(existing ?? {}),
     activity_source_id: input.source.id,
@@ -411,7 +413,7 @@ function refreshedSourceMetadata(
         : "reference_only"),
     media_reuse_allowed:
       Boolean(media) || sourceAllowsOfficialMedia(input.source),
-    ...activityMediaMetadata(media),
+    ...activityMediaMetadata(preserveCurated ? null : media),
     confidence: input.confidence.score,
     locality: input.locality,
     published_automatically: true,
@@ -419,7 +421,8 @@ function refreshedSourceMetadata(
   };
   if (
     !sourceAllowsOfficialMedia(input.source) &&
-    !input.activity.curatedMedia
+    !input.activity.curatedMedia &&
+    !preserveCurated
   ) {
     delete metadata.activity_media_url;
     delete metadata.activity_media_gallery;

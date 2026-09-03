@@ -117,8 +117,23 @@ export function projectedActivityMedia(
 }
 
 export function isActivityFactArt(url: unknown): url is string {
+  if (typeof url !== "string") return false;
+  try {
+    return /\/activity-art\//i.test(decodeURIComponent(url));
+  } catch {
+    return /\/activity-art\//i.test(url);
+  }
+}
+
+/** Curated assets have their own provenance, independent of source scraping policy. */
+export function hasCuratedActivityMedia(
+  metadata: Record<string, unknown> | null | undefined,
+): boolean {
   return (
-    typeof url === "string" && url.startsWith("https://dalat.app/activity-art/")
+    typeof metadata?.activity_media_url === "string" &&
+    !isActivityFactArt(metadata.activity_media_url) &&
+    (metadata.activity_media_provenance === "ai_generated" ||
+      metadata.activity_media_provenance === "owner_authorized_source")
   );
 }
 
@@ -133,6 +148,17 @@ export function activityProjectionImage(options: {
   const sourceControlled =
     typeof previousOfficialUrl === "string" &&
     previousOfficialUrl === currentUrl;
+
+  // A later scrape without a curated bundle must not erase or replace a
+  // reviewed cover merely because the source disallows copying its images.
+  if (
+    currentUrl &&
+    sourceControlled &&
+    hasCuratedActivityMedia(currentMetadata) &&
+    !media?.provenance
+  ) {
+    return currentUrl;
+  }
 
   if (media) {
     if (!currentUrl || isActivityFactArt(currentUrl) || sourceControlled) {

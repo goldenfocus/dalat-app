@@ -1,5 +1,7 @@
 "use client";
 
+import { eventImageAlt } from "@/lib/events/image-alt";
+
 import { memo } from "react";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
@@ -156,7 +158,7 @@ export const EventCardFramed = memo(function EventCardFramed({
                 <Image
                   loader={cloudflareLoader}
                   src={coverUrl!}
-                  alt={displayTitle}
+                  alt={isFallbackCover ? displayTitle : eventImageAlt(event, displayTitle)}
                   fill
                   sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw"
                   className={`transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}

@@ -1,3 +1,4 @@
+import { eventImageAlt } from "@/lib/events/image-alt";
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -135,7 +136,7 @@ export function EventCardStatic({
                       quality: 70,
                     }) || event.image_url!
                   }
-                  alt={displayTitle}
+                  alt={eventImageAlt(event, displayTitle)}
                   className={`absolute inset-0 w-full h-full transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
                   style={
                     event.image_fit === "cover" && event.focal_point

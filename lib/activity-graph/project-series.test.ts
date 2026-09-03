@@ -160,13 +160,23 @@ function existingSeries(
 }
 
 function linkedSeriesClient(
-  options: { sourcePlatform?: string | null; failInsert?: boolean } = {},
+  options: { sourcePlatform?: string | null; failInsert?: boolean; curated?: boolean } = {},
 ) {
   const series = existingSeries(
     Object.hasOwn(options, "sourcePlatform")
       ? (options.sourcePlatform ?? null)
       : "activity-graph",
   );
+  if (options.curated) {
+    series.image_url = "https://cdn.dalat.app/event-materials/activity-graph/yoga/hero.jpg";
+    series.source_metadata = {
+      activity_media_url: series.image_url,
+      activity_media_provenance: "ai_generated",
+      activity_media_alt: "AI-generated illustration of yoga; not an actual event photo.",
+      activity_media_caption: "AI-generated illustration; not an actual event photo.",
+      activity_media_gallery: ["https://cdn.dalat.app/event-materials/activity-graph/yoga/promo.jpg"],
+    };
+  }
   const writes: Write[] = [];
   const rpc = vi
     .fn()
@@ -304,6 +314,28 @@ describe("linked Activity Graph series refresh", () => {
   beforeEach(() => {
     mocks.pingIndexNow.mockReset().mockResolvedValue(undefined);
     mocks.upsertTranslations.mockReset().mockResolvedValue(undefined);
+  });
+
+  it("preserves curated cover and disclosure through a source refresh and occurrence top-up", async () => {
+    const db = linkedSeriesClient({ curated: true });
+    await refresh(db.client);
+    const template = db.writes.find((write) => write.table === "event_series" && !Array.isArray(write.values) && write.values.title);
+    expect(template?.values).toMatchObject({
+      image_url: "https://cdn.dalat.app/event-materials/activity-graph/yoga/hero.jpg",
+      source_metadata: {
+        activity_media_provenance: "ai_generated",
+        activity_media_alt: expect.stringContaining("AI-generated"),
+        activity_media_gallery: [expect.stringContaining("promo.jpg")],
+      },
+    });
+    const occurrences = db.writes.filter((write) => write.table === "events").flatMap((write) => Array.isArray(write.values) ? write.values : [write.values]).filter((row) => row.title);
+    expect(occurrences.length).toBeGreaterThan(0);
+    for (const row of occurrences) {
+      expect(row).toMatchObject({
+        image_url: "https://cdn.dalat.app/event-materials/activity-graph/yoga/hero.jpg",
+        source_metadata: { activity_media_provenance: "ai_generated", activity_media_alt: expect.stringContaining("AI-generated") },
+      });
+    }
   });
 
   it("reconciles drift in place, preserves matching IDs, and resumes last", async () => {

@@ -1,3 +1,4 @@
+import { eventImageAlt } from "@/lib/events/image-alt";
 import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
@@ -264,8 +265,8 @@ export default async function SeriesPage({ params }: PageProps) {
               <div className="aspect-[2/1] relative">
                 <img
                   src={coverImage}
-                  alt={series.title}
-                  className={`w-full h-full rounded-t-lg ${coverImage.includes("/activity-art/") ? "object-contain bg-gradient-to-br from-muted to-background" : "object-cover"}`}
+                  alt={eventImageAlt(series, series.title)}
+                  className="w-full h-full rounded-t-lg object-cover"
                 />
                 {officialMediaCredit && officialMediaSourceUrl && (
                   <a

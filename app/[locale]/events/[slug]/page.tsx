@@ -1,3 +1,4 @@
+import { eventImageAlt } from "@/lib/events/image-alt";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import { Suspense } from "react";
@@ -1340,7 +1341,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                       <EventMediaDisplay
                         src={event.image_url}
                         alt={
-                          eventTranslations.imageAlt || eventTranslations.title
+                          eventImageAlt(event, eventTranslations.imageAlt || eventTranslations.title)
                         }
                         credit={activityMediaCredit}
                         creditUrl={activityMediaCreditUrl}
@@ -1376,7 +1377,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                       <EventMediaDisplay
                         src={event.image_url}
                         alt={
-                          eventTranslations.imageAlt || eventTranslations.title
+                          eventImageAlt(event, eventTranslations.imageAlt || eventTranslations.title)
                         }
                         priority
                         credit={activityMediaCredit}

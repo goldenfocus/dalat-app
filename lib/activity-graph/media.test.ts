@@ -178,6 +178,26 @@ describe("Activity Graph official media projection", () => {
     });
   });
 
+  it("keeps curated images when a later scrape lacks a bundle or offers a source image", () => {
+    const currentUrl = "https://cdn.dalat.app/event-materials/activity-graph/yoga/hero.jpg";
+    for (const provenance of ["ai_generated", "owner_authorized_source"]) {
+      for (const media of [null, projectedActivityMedia(source, activity)]) {
+        expect(activityProjectionImage({
+          currentUrl,
+          currentMetadata: { activity_media_url: currentUrl, activity_media_provenance: provenance },
+          media,
+          mediaAllowed: false,
+        })).toBe(currentUrl);
+      }
+    }
+  });
+
+  it("removes relative, preview-host and encoded legacy templates", () => {
+    for (const currentUrl of ["/activity-art/series/yoga.png", "https://preview.example/activity-art/events/yoga.png", "https://cdn.example/image/https%3A%2F%2Fdalat.app%2Factivity-art%2Fevents%2Fyoga.png"]) {
+      expect(activityProjectionImage({ currentUrl, currentMetadata: {}, media: null, mediaAllowed: true })).toBeNull();
+    }
+  });
+
   it("preserves organizer uploads but revokes tracked official media", () => {
     expect(
       activityProjectionImage({
