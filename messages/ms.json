@@ -1,14 +1,16 @@
 {
   "recap": {
     "howItWent": "Bagaimana ia berlangsung",
-    "aiNote": "Diringkaskan oleh AI daripada detik yang dikongsi",
+    "aiNote": "Dijana secara automatik daripada foto dan rakaman yang dikongsi. AI boleh membuat kesilapan.",
     "wentCount": "{count} hadir",
     "momentsCount": "{count} detik",
     "positiveFeedback": "{percent}% menyukainya",
     "generate": "Jana imbasan",
     "enqueued": "AI sedang menulis imbasan — semak semula sebentar lagi",
     "publish": "Terbitkan imbasan",
-    "draftNotice": "Draf — hanya moderator boleh lihat"
+    "draftNotice": "Draf — hanya moderator boleh lihat",
+    "automaticPending": "Ringkasan akan muncul secara automatik selepas foto dan rakaman dianalisis.",
+    "viewMoments": "Lihat detik acara"
   },
   "notFound": {
     "title": "Sesat dalam kabus?",

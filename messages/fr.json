@@ -1,14 +1,16 @@
 {
   "recap": {
     "howItWent": "Comment c'était",
-    "aiNote": "Résumé par IA à partir des moments partagés",
+    "aiNote": "Créé automatiquement à partir des photos et enregistrements partagés. L’IA peut faire des erreurs.",
     "wentCount": "{count} présents",
     "momentsCount": "{count} moments",
     "positiveFeedback": "{percent}% ont adoré",
     "generate": "Générer le récap",
     "enqueued": "L'IA rédige le récap — revenez dans quelques minutes",
     "publish": "Publier le récap",
-    "draftNotice": "Brouillon — visible uniquement par les modérateurs"
+    "draftNotice": "Brouillon — visible uniquement par les modérateurs",
+    "automaticPending": "Le récapitulatif apparaîtra automatiquement après l’analyse des photos et des enregistrements.",
+    "viewMoments": "Voir les moments de l’événement"
   },
   "notFound": {
     "title": "Perdu dans la brume ?",

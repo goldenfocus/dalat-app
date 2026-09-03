@@ -50,6 +50,11 @@ export async function POST(request: NextRequest) {
 
   if (result.outcome === "skipped") {
     switch (result.reason) {
+      case "not_ended":
+      case "awaiting_media":
+        return NextResponse.json({ pending: true, reason: result.reason }, { status: 202 });
+      case "retry_exhausted":
+        return NextResponse.json({ error: "Recap processing is delayed" }, { status: 503 });
       case "not_found":
         return NextResponse.json({ error: "Event not found" }, { status: 404 });
       case "private":
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
       case "too_few_captioned":
         return NextResponse.json(
           {
-            error: `Need at least 3 captioned moments (have ${result.eligibleMoments ?? 0})`,
+            error: `Need at least one analyzed moment (have ${result.eligibleMoments ?? 0})`,
           },
           { status: 400 }
         );

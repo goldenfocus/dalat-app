@@ -1,14 +1,16 @@
 {
   "recap": {
     "howItWent": "How it went",
-    "aiNote": "Summarized by AI from the moments people shared",
+    "aiNote": "Created automatically from shared photos and recordings. AI may make mistakes.",
     "wentCount": "{count} went",
     "momentsCount": "{count} moments",
     "positiveFeedback": "{percent}% loved it",
     "generate": "Generate recap",
     "enqueued": "The recap is being written — check back in a few minutes",
     "publish": "Publish recap",
-    "draftNotice": "Draft — only moderators can see this"
+    "draftNotice": "Draft — only moderators can see this",
+    "automaticPending": "A recap will appear automatically once the photos and recordings have been analyzed.",
+    "viewMoments": "Explore the event moments"
   },
   "notFound": {
     "title": "Lost in the mist?",

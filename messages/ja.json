@@ -1,14 +1,16 @@
 {
   "recap": {
     "howItWent": "あの日のようす",
-    "aiNote": "参加者のモーメントからAIがまとめました",
+    "aiNote": "共有された写真と録音・動画から自動生成されました。AIは誤ることがあります。",
     "wentCount": "{count}人が参加",
     "momentsCount": "モーメント{count}件",
     "positiveFeedback": "{percent}%が高評価",
     "generate": "リキャップを生成",
     "enqueued": "AIがリキャップを作成中です — 数分後にご確認ください",
     "publish": "リキャップを公開",
-    "draftNotice": "下書き — モデレーターのみ表示"
+    "draftNotice": "下書き — モデレーターのみ表示",
+    "automaticPending": "写真と録音・動画の分析が終わると、振り返りが自動で表示されます。",
+    "viewMoments": "イベントの思い出を見る"
   },
   "notFound": {
     "title": "霧の中で迷子ですか？",

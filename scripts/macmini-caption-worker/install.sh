@@ -50,8 +50,12 @@ else
 DALAT_BASE_URL=https://dalat.app
 ADMIN_API_KEY=$ADMIN_API_KEY
 POLL_SECONDS=60
-BATCH_SIZE=10
+BATCH_SIZE=1
 CLAUDE_MODEL=claude-haiku-4-5-20251001
+# Required for audio/video jobs: existing multilingual whisper.cpp model path
+WHISPER_MODEL=
+# Optional Silero voice activity model, to suppress silence hallucinations
+WHISPER_VAD_MODEL=
 # Uncomment after \`ollama pull qwen2.5vl:7b\` to enable the local fallback:
 # OLLAMA_FALLBACK_MODEL=qwen2.5vl:7b
 EOF

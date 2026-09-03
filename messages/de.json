@@ -1,14 +1,16 @@
 {
   "recap": {
     "howItWent": "So war's",
-    "aiNote": "Von KI zusammengefasst aus den geteilten Momenten",
+    "aiNote": "Automatisch aus geteilten Fotos und Aufnahmen erstellt. KI kann Fehler machen.",
     "wentCount": "{count} waren da",
     "momentsCount": "{count} Momente",
     "positiveFeedback": "{percent}% fanden es toll",
     "generate": "Recap erstellen",
     "enqueued": "Die KI schreibt das Recap — schau in ein paar Minuten wieder vorbei",
     "publish": "Recap veröffentlichen",
-    "draftNotice": "Entwurf — nur für Moderatoren sichtbar"
+    "draftNotice": "Entwurf — nur für Moderatoren sichtbar",
+    "automaticPending": "Der Rückblick erscheint automatisch, sobald die Fotos und Aufnahmen analysiert wurden.",
+    "viewMoments": "Momente der Veranstaltung ansehen"
   },
   "notFound": {
     "title": "Im Nebel verirrt?",

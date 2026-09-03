@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   selectRecapMoments,
@@ -6,20 +7,11 @@ import {
   type RecapMomentRow,
 } from "./recap-input";
 
-/**
- * Shared recap enqueue — used by the moderator button
- * (/api/blog/generate-recap, replace mode) and the auto-enqueue cron
- * (/api/cron/enqueue-recaps, insert-only). One fence, two callers: the
- * privacy checks and the ≥3-captioned-moments floor live here so the cron
- * can never drift looser than the button.
- */
-
-/** Auto-enqueue scan window: events that ended between MIN_AGE_HOURS and
- * WINDOW_DAYS ago. The 24h floor lets the post-event photo wave upload and
- * get captioned before the recap is written; the 14-day ceiling keeps the
- * scan small — stragglers stay reachable via the moderator button. */
 export const AUTO_RECAP_WINDOW_DAYS = 14;
-export const AUTO_RECAP_MIN_AGE_HOURS = 24;
+export const AUTO_RECAP_MIN_AGE_HOURS = 0;
+const UPLOAD_QUIET_MS = 15 * 60_000;
+const RETRY_AFTER_MS = 60 * 60_000;
+const MAX_RETRY_ROUNDS = 3;
 
 export interface AutoRecapEventRow {
   id: string;
@@ -31,166 +23,236 @@ export interface AutoRecapEventRow {
   tribe_visibility: string | null;
 }
 
-/** Pure window + privacy filter for the cron. Eligibility that needs the
- * database (captioned-moment count, existing job/draft) is checked later. */
-export function selectAutoRecapCandidates(
-  events: AutoRecapEventRow[],
-  now: Date
-): AutoRecapEventRow[] {
-  const newest = now.getTime() - AUTO_RECAP_MIN_AGE_HOURS * 3_600_000;
-  const oldest = now.getTime() - AUTO_RECAP_WINDOW_DAYS * 86_400_000;
-  return events.filter((e) => {
-    if (e.status !== "published") return false;
-    // Privacy fence: secret-address and members-only tribe events never get
-    // recaps (their moments settle 'skipped' too — this is the explicit layer).
-    if (e.has_private_details) return false;
-    if (e.tribe_id && e.tribe_visibility === "members_only") return false;
-    const endedAt = new Date(e.ends_at ?? e.starts_at).getTime();
-    return endedAt >= oldest && endedAt <= newest;
-  });
+export function isRecapEventPublic(
+  event: Pick<
+    AutoRecapEventRow,
+    "status" | "has_private_details" | "tribe_id" | "tribe_visibility"
+  >,
+): boolean {
+  return (
+    event.status === "published" &&
+    !event.has_private_details &&
+    !(event.tribe_id && event.tribe_visibility === "members_only")
+  );
 }
 
+export function hasEventEnded(
+  event: Pick<AutoRecapEventRow, "starts_at" | "ends_at">,
+  now = new Date(),
+): boolean {
+  const end = event.ends_at
+    ? Date.parse(event.ends_at)
+    : Date.parse(event.starts_at) + 4 * 3_600_000;
+  return Number.isFinite(end) && end <= now.getTime();
+}
+
+// No age cutoff: uploading moments to an older event must still produce a recap.
+export function selectAutoRecapCandidates(
+  events: AutoRecapEventRow[],
+  now: Date,
+): AutoRecapEventRow[] {
+  return events.filter(
+    (event) => isRecapEventPublic(event) && hasEventEnded(event, now),
+  );
+}
+
+type SkipReason =
+  | "not_found"
+  | "private"
+  | "not_ended"
+  | "awaiting_media"
+  | "too_few_captioned"
+  | "already_queued"
+  | "retry_exhausted";
 export type EnqueueRecapResult =
   | {
       outcome: "enqueued";
-      stats: { eligibleMoments: number; photoCount: number; videoCount: number };
+      stats: {
+        eligibleMoments: number;
+        photoCount: number;
+        videoCount: number;
+      };
     }
-  | {
-      outcome: "skipped";
-      reason: "not_found" | "private" | "too_few_captioned" | "already_queued";
-      eligibleMoments?: number;
-    }
+  | { outcome: "skipped"; reason: SkipReason; eligibleMoments?: number }
   | { outcome: "error"; message: string };
 
-/**
- * Build the recap prompt for one event and enqueue it on caption_jobs.
- * `replace: true` (moderator regenerate) deletes any prior recap job first;
- * without it a concurrent duplicate lands on the partial unique index and
- * comes back as 'already_queued'.
- */
-export async function enqueueRecapJob(
+type RecapInput =
+  | {
+      outcome: "ready";
+      prompt: string;
+      stats: {
+        eligibleMoments: number;
+        photoCount: number;
+        videoCount: number;
+      };
+    }
+  | Exclude<EnqueueRecapResult, { outcome: "enqueued" }>;
+
+/** Reused at completion: late uploads and privacy changes cannot publish stale evidence. */
+export async function prepareRecapInput(
   admin: SupabaseClient,
   eventId: string,
-  opts: { replace?: boolean } = {}
-): Promise<EnqueueRecapResult> {
-  const { data: event, error: eventError } = await admin
+  now = new Date(),
+): Promise<RecapInput> {
+  const { data: event, error } = await admin
     .from("events")
     .select(
-      "id, title, slug, description, location_name, starts_at, ends_at, ai_tags, has_private_details, tribe_id, tribe_visibility, organizers(name), venues(name)"
+      "id, title, slug, status, description, location_name, starts_at, ends_at, ai_tags, has_private_details, tribe_id, tribe_visibility, organizers(name), venues(name)",
     )
     .eq("id", eventId)
-    .single();
-
-  // PGRST116 = zero rows. Any other error is infrastructure, not absence —
-  // collapsing them into not_found would hide a DB outage as a routine skip.
-  if (eventError && eventError.code !== "PGRST116") {
-    return { outcome: "error", message: `event fetch: ${eventError.message}` };
-  }
+    .maybeSingle();
+  if (error)
+    return { outcome: "error", message: `event fetch: ${error.message}` };
   if (!event) return { outcome: "skipped", reason: "not_found" };
-  // Defense in depth: both exclusions also hold structurally (privacy-gated
-  // moments settle 'skipped' captionless), but the fence is explicit here so
-  // NO caller — button or cron — can drift looser than the other.
-  if (event.has_private_details) return { outcome: "skipped", reason: "private" };
-  if (event.tribe_id && event.tribe_visibility === "members_only") {
+  if (!isRecapEventPublic(event))
     return { outcome: "skipped", reason: "private" };
+  if (!hasEventEnded(event, now))
+    return { outcome: "skipped", reason: "not_ended" };
+
+  const rows: RecapMomentRow[] = [];
+  let awaitingMedia = false;
+  // Read ALL moments in deterministic order, never silently omit everything after 50.
+  for (let offset = 0; ; offset += 500) {
+    const { data, error: momentsError } = await admin
+      .from("moments")
+      .select(
+        "id, content_type, created_at, moment_metadata(processing_status, ai_description, ai_title, scene_description, mood, detected_objects, ai_tags, video_summary, audio_summary, video_transcript, audio_transcript)",
+      )
+      .eq("event_id", eventId)
+      .eq("status", "published")
+      .in("content_type", ["photo", "video", "audio", "image"])
+      .order("created_at")
+      .order("id")
+      .range(offset, offset + 499);
+    if (momentsError)
+      return {
+        outcome: "error",
+        message: `moments fetch: ${momentsError.message}`,
+      };
+    for (const moment of data ?? []) {
+      const meta =
+        moment.moment_metadata as unknown as Partial<RecapMomentRow> | null;
+      if (now.getTime() - Date.parse(moment.created_at) < UPLOAD_QUIET_MS)
+        awaitingMedia = true;
+      if (
+        meta?.processing_status !== "skipped" &&
+        (meta?.processing_status !== "completed" ||
+          !meta.ai_description?.trim())
+      )
+        awaitingMedia = true;
+      if (
+        meta?.processing_status === "completed" &&
+        ((moment.content_type === "video" && meta.video_transcript == null) ||
+          (moment.content_type === "audio" && meta.audio_transcript == null))
+      )
+        awaitingMedia = true;
+      rows.push({
+        ...meta,
+        id: moment.id,
+        content_type: moment.content_type,
+        processing_status: meta?.processing_status ?? null,
+        ai_description: meta?.ai_description ?? null,
+      } as RecapMomentRow);
+    }
+    if (!data || data.length < 500) break;
   }
-
-  const { data: moments, error: momentsError } = await admin
-    .from("moments")
-    .select(
-      "content_type, moment_metadata(processing_status, ai_description, ai_title, scene_description, mood, detected_objects, ai_tags, video_summary, audio_summary)"
-    )
-    .eq("event_id", eventId)
-    .eq("status", "published")
-    .in("content_type", ["photo", "video", "audio", "image"])
-    .limit(50);
-
-  const rows: RecapMomentRow[] = (moments ?? []).map((m) => {
-    const meta = m.moment_metadata as unknown as Partial<RecapMomentRow> | null;
-    return {
-      content_type: m.content_type,
-      processing_status: meta?.processing_status ?? null,
-      ai_description: meta?.ai_description ?? null,
-      ai_title: meta?.ai_title ?? null,
-      scene_description: meta?.scene_description ?? null,
-      mood: meta?.mood ?? null,
-      detected_objects: meta?.detected_objects ?? null,
-      ai_tags: meta?.ai_tags ?? null,
-      video_summary: meta?.video_summary ?? null,
-      audio_summary: meta?.audio_summary ?? null,
-    };
-  });
-
-  if (momentsError) {
-    // A broken moments query must not read as "0 captioned moments" — that
-    // would kill the flywheel silently (aggregator-v1's `catch → []` lesson).
-    return { outcome: "error", message: `moments fetch: ${momentsError.message}` };
-  }
-
+  if (awaitingMedia) return { outcome: "skipped", reason: "awaiting_media" };
   const eligible = selectRecapMoments(rows);
-  if (eligible.length < 3) {
+  if (!eligible.length)
     return {
       outcome: "skipped",
       reason: "too_few_captioned",
-      eligibleMoments: eligible.length,
+      eligibleMoments: 0,
     };
-  }
-
-  const photoCount = eligible.filter(
-    (m) => m.content_type === "photo" || m.content_type === "image"
-  ).length;
-  const videoCount = eligible.filter((m) => m.content_type === "video").length;
-
-  const prompt = buildRecapPrompt({
-    event: {
-      title: event.title,
-      description: event.description,
-      location_name: event.location_name,
-      starts_at: event.starts_at,
-      ends_at: event.ends_at,
-      ai_tags: event.ai_tags,
-    },
-    moments: eligible,
-    venueName: (event.venues as unknown as { name: string } | null)?.name || null,
-    organizerName:
-      (event.organizers as unknown as { name: string } | null)?.name || null,
-    momentCount: eligible.length,
-    photoCount,
-    videoCount,
-  });
-
-  if (opts.replace) {
-    // The 23505 → already_queued interpretation below is only sound if this
-    // delete is KNOWN to have succeeded — a swallowed delete failure would
-    // make a dead completed job look like a won race.
-    const { error: deleteError } = await admin
-      .from("caption_jobs")
-      .delete()
-      .eq("event_id", eventId)
-      .eq("content_type", "recap");
-    if (deleteError) {
-      return { outcome: "error", message: `recap job delete: ${deleteError.message}` };
-    }
-  }
-
-  const { error: insertError } = await admin.from("caption_jobs").insert({
-    content_type: "recap",
-    event_id: eventId,
-    moment_id: null,
-    media_urls: [],
-    prompt,
-    prompt_version: RECAP_PROMPT_VERSION,
-  });
-
-  if (insertError) {
-    if (insertError.code === "23505") {
-      return { outcome: "skipped", reason: "already_queued" };
-    }
-    return { outcome: "error", message: insertError.message };
-  }
-
-  return {
-    outcome: "enqueued",
-    stats: { eligibleMoments: eligible.length, photoCount, videoCount },
+  const stats = {
+    eligibleMoments: eligible.length,
+    photoCount: eligible.filter((m) =>
+      ["photo", "image"].includes(m.content_type),
+    ).length,
+    videoCount: eligible.filter((m) => m.content_type === "video").length,
   };
+  const prompt = buildRecapPrompt({
+    event,
+    moments: eligible,
+    venueName:
+      (event.venues as unknown as { name: string } | null)?.name ?? null,
+    organizerName:
+      (event.organizers as unknown as { name: string } | null)?.name ?? null,
+    momentCount: eligible.length,
+    photoCount: stats.photoCount,
+    videoCount: stats.videoCount,
+  });
+  return { outcome: "ready", prompt, stats };
+}
+
+/** One job per event; compare actual evidence to refresh only when it changes. */
+export async function enqueueRecapJob(
+  admin: SupabaseClient,
+  eventId: string,
+  opts: { replace?: boolean } = {},
+): Promise<EnqueueRecapResult> {
+  const input = await prepareRecapInput(admin, eventId);
+  if (input.outcome !== "ready") return input;
+  const { data: existing, error: lookupError } = await admin
+    .from("caption_jobs")
+    .select("id, status, prompt, prompt_version, retry_rounds, completed_at")
+    .eq("event_id", eventId)
+    .eq("content_type", "recap")
+    .maybeSingle();
+  if (lookupError) return { outcome: "error", message: lookupError.message };
+  const changed =
+    existing &&
+    (existing.prompt !== input.prompt ||
+      existing.prompt_version !== RECAP_PROMPT_VERSION);
+  if (existing) {
+    if (["pending", "processing"].includes(existing.status))
+      return { outcome: "skipped", reason: "already_queued" };
+    if (!changed && !opts.replace) {
+      if (existing.status === "done")
+        return { outcome: "skipped", reason: "already_queued" };
+      if ((existing.retry_rounds ?? 0) >= MAX_RETRY_ROUNDS)
+        return { outcome: "skipped", reason: "retry_exhausted" };
+      if (
+        existing.completed_at &&
+        Date.now() - Date.parse(existing.completed_at) < RETRY_AFTER_MS
+      )
+        return { outcome: "skipped", reason: "already_queued" };
+    }
+  }
+  const payload = {
+    prompt: input.prompt,
+    prompt_version: RECAP_PROMPT_VERSION,
+    status: "pending",
+    attempts: 0,
+    retry_rounds:
+      changed || opts.replace ? 0 : (existing?.retry_rounds ?? -1) + 1,
+    claimed_at: null,
+    completed_at: null,
+    error: null,
+    result: null,
+  };
+  const query = existing
+    ? admin
+        .from("caption_jobs")
+        .update({ ...payload, id: randomUUID() })
+        .eq("id", existing.id)
+        .eq("status", existing.status)
+        .select("id")
+    : admin
+        .from("caption_jobs")
+        .insert({
+          ...payload,
+          content_type: "recap",
+          event_id: eventId,
+          moment_id: null,
+          media_urls: [],
+        })
+        .select("id");
+  const { data, error: saveError } = await query;
+  if (saveError)
+    return saveError.code === "23505"
+      ? { outcome: "skipped", reason: "already_queued" }
+      : { outcome: "error", message: saveError.message };
+  if (!data?.length) return { outcome: "skipped", reason: "already_queued" };
+  return { outcome: "enqueued", stats: input.stats };
 }

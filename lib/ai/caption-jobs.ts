@@ -26,7 +26,7 @@ const CAPTION_WORKER_NAME = "caption-worker";
 // The worker polls every ~60s but a claude -p batch can hold it for minutes.
 const HEARTBEAT_STALE_MS = 15 * 60 * 1000;
 /** A failed job earns another round of worker attempts after this long. */
-const RETRY_AFTER_MS = 24 * 60 * 60 * 1000;
+const RETRY_AFTER_MS = 60 * 60 * 1000;
 /** Rounds of (3 worker attempts) before the moment settles as given up. */
 const MAX_RETRY_ROUNDS = 3;
 
@@ -63,7 +63,10 @@ export async function touchCaptionWorkerHeartbeat(): Promise<void> {
   const admin = getImageJobsAdmin();
   const { error } = await admin
     .from("worker_heartbeats")
-    .upsert({ worker: CAPTION_WORKER_NAME, last_seen: new Date().toISOString() });
+    .upsert({
+      worker: CAPTION_WORKER_NAME,
+      last_seen: new Date().toISOString(),
+    });
   if (error) {
     console.error("[caption-jobs] Heartbeat write failed:", error);
     throw new Error(`Heartbeat write failed: ${error.message}`);
@@ -77,7 +80,7 @@ export async function touchCaptionWorkerHeartbeat(): Promise<void> {
  * clause, not archaeology.
  */
 export async function enqueueCaptionJob(
-  moment: CaptionableMoment
+  moment: CaptionableMoment,
 ): Promise<{ outcome: EnqueueCaptionOutcome }> {
   const admin = getImageJobsAdmin();
 
@@ -86,7 +89,7 @@ export async function enqueueCaptionJob(
   // success-shaped outcome.
   const { data: existing, error: lookupError } = await admin
     .from("caption_jobs")
-    .select("id, status, retry_rounds, completed_at")
+    .select("id, status, retry_rounds, completed_at, prompt_version")
     .eq("moment_id", moment.id)
     .maybeSingle();
   if (lookupError) {
@@ -94,6 +97,28 @@ export async function enqueueCaptionJob(
   }
 
   if (existing) {
+    if (
+      existing.status === "done" &&
+      ["video", "audio"].includes(moment.content_type) &&
+      existing.prompt_version !== VIDEO_PROMPT_VERSION
+    ) {
+      const { error } = await admin
+        .from("caption_jobs")
+        .update({
+          status: "pending",
+          attempts: 0,
+          retry_rounds: 0,
+          claimed_at: null,
+          completed_at: null,
+          prompt_version: VIDEO_PROMPT_VERSION,
+          prompt: buildVideoAnalysisPrompt(null),
+          transcript: null,
+        })
+        .eq("id", existing.id)
+        .eq("status", "done");
+      if (error) throw new Error(error.message);
+      return { outcome: "retry_reset" };
+    }
     if (existing.status !== "failed") {
       return { outcome: "queued_before" };
     }
@@ -150,23 +175,37 @@ export async function enqueueCaptionJob(
         if (durationError) {
           console.error(
             `[caption-jobs] duration persist failed for ${moment.id}:`,
-            durationError.message
+            durationError.message,
           );
         }
       }
     }
 
-    const transcriptResult = await getCloudflareTranscript(moment.cf_video_uid!);
-    transcript = transcriptResult?.text || null;
+    const transcriptResult = await getCloudflareTranscript(
+      moment.cf_video_uid!,
+    );
+    transcript = transcriptResult?.text ?? null;
     transcriptLanguage = transcriptResult?.language || null;
     mediaUrls = getKeyFrameUrls(
       moment.cf_playback_url!,
-      keyFrameTimestamps(durationSeconds)
-    ).slice(0, 3);
+      keyFrameTimestamps(durationSeconds),
+    );
     if (mediaUrls.length === 0) {
       throw new Error("Could not derive key frame URLs from playback URL");
     }
     prompt = buildVideoAnalysisPrompt(transcript);
+    promptVersion = VIDEO_PROMPT_VERSION;
+  } else if (moment.content_type === "audio") {
+    mediaUrls = [];
+    prompt = buildVideoAnalysisPrompt(null)
+      .replace(
+        "The attached images are key frames (in chronological order) from one video",
+        "This is an audio recording",
+      )
+      .replace(
+        "Analyze the VIDEO they represent",
+        "Analyze the recording transcript",
+      );
     promptVersion = VIDEO_PROMPT_VERSION;
   } else {
     const imageUrl = moment.media_url || moment.file_url;
@@ -180,7 +219,9 @@ export async function enqueueCaptionJob(
 
   const { error: insertError } = await admin.from("caption_jobs").insert({
     moment_id: moment.id,
-    content_type: moment.content_type === "video" ? "video" : "image",
+    content_type: ["video", "audio"].includes(moment.content_type)
+      ? moment.content_type
+      : "image",
     media_urls: mediaUrls,
     transcript,
     transcript_language: transcriptLanguage,

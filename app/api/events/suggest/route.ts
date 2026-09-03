@@ -8,7 +8,7 @@ export const runtime = "nodejs";
  * that queue would be misleading. Keep the endpoint explicit and side-effect
  * free for old clients and cached forms.
  */
-export async function POST(_request?: Request) {
+export async function POST(_request: Request) {
   return NextResponse.json(
     {
       code: "suggestions_retired",

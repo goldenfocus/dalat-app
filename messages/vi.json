@@ -1,14 +1,16 @@
 {
   "recap": {
     "howItWent": "Buổi hôm ấy thế nào",
-    "aiNote": "AI tóm tắt từ những khoảnh khắc mọi người chia sẻ",
+    "aiNote": "Tự động tạo từ ảnh và các bản ghi được chia sẻ. AI có thể mắc lỗi.",
     "wentCount": "{count} người tham gia",
     "momentsCount": "{count} khoảnh khắc",
     "positiveFeedback": "{percent}% yêu thích",
     "generate": "Tạo recap",
     "enqueued": "AI đang viết recap — quay lại sau vài phút nhé",
     "publish": "Đăng recap",
-    "draftNotice": "Bản nháp — chỉ moderator nhìn thấy"
+    "draftNotice": "Bản nháp — chỉ moderator nhìn thấy",
+    "automaticPending": "Bản tổng kết sẽ tự động xuất hiện sau khi ảnh và các bản ghi được phân tích.",
+    "viewMoments": "Xem khoảnh khắc sự kiện"
   },
   "notFound": {
     "title": "Lạc giữa sương mù?",

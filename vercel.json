@@ -43,11 +43,11 @@
     },
     {
       "path": "/api/cron/process-moments?limit=50&delay=1500",
-      "schedule": "15 */4 * * *"
+      "schedule": "*/10 * * * *"
     },
     {
       "path": "/api/cron/enqueue-recaps",
-      "schedule": "45 21 * * *"
+      "schedule": "*/15 * * * *"
     }
   ]
 }

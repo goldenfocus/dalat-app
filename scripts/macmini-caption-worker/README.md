@@ -9,3 +9,27 @@ fallback. Raw model output is validated server-side by
 Deploy: copy this directory to the mini, run `./install.sh` (asks for
 `ADMIN_API_KEY` once). Logs: `~/Library/Logs/dalat-caption-worker.log`.
 Restart: `launchctl kickstart -k gui/$(id -u)/com.goldenfocus.dalat-caption-worker`.
+
+
+Automatic event recaps use this same worker. The application enqueues after
+media completion and reconciles every 15 minutes; it waits until the event has
+ended, uploads have been quiet for 15 minutes, and every supported moment has
+finished analysis. Recaps publish on the original event page automatically;
+new or removed moments refresh the evidence. Private events remain excluded.
+
+Audio and video require existing `ffmpeg` and `whisper-cli` installations.
+Set `WHISPER_MODEL` to a multilingual whisper.cpp model (for example,
+`ggml-large-v3-turbo.bin`) and `WHISPER_VAD_MODEL` to a Silero VAD model.
+The worker extracts the entire audio track and detects its language locally;
+no speech is represented by an empty transcript, distinct from a missing one.
+Existing ready Stream captions are reused when present. All video frames and
+full transcripts feed analysis, and all completed moments feed the recap.
+
+Set `OLLAMA_FALLBACK_MODEL=qwen2.5vl:7b` for local image/video analysis and
+optionally `OLLAMA_TEXT_MODEL=qwen3:14b` for recap generation. Keep `BATCH_SIZE=1`
+for predictable processing latency. Active claims renew every minute during
+long downloads, transcription and inference. Claude authentication/quota
+errors activate the local fallback instead of consuming real failure attempts.
+Deploy both `caption-worker.mjs` and `local-audio.mjs`, preserving `worker.env`,
+then restart the existing launchd service. Apply the audio-job constraint
+migration before deploying the application and updated worker.

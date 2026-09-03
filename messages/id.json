@@ -1,14 +1,16 @@
 {
   "recap": {
     "howItWent": "Bagaimana acaranya",
-    "aiNote": "Dirangkum AI dari momen yang dibagikan",
+    "aiNote": "Dibuat otomatis dari foto dan rekaman yang dibagikan. AI dapat membuat kesalahan.",
     "wentCount": "{count} hadir",
     "momentsCount": "{count} momen",
     "positiveFeedback": "{percent}% menyukainya",
     "generate": "Buat rangkuman",
     "enqueued": "AI sedang menulis rangkuman — cek lagi beberapa menit lagi",
     "publish": "Terbitkan rangkuman",
-    "draftNotice": "Draf — hanya terlihat oleh moderator"
+    "draftNotice": "Draf — hanya terlihat oleh moderator",
+    "automaticPending": "Rangkuman akan muncul otomatis setelah foto dan rekaman dianalisis.",
+    "viewMoments": "Lihat momen acara"
   },
   "notFound": {
     "title": "Tersesat dalam kabut?",

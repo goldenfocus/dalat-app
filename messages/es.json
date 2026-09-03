@@ -1,14 +1,16 @@
 {
   "recap": {
     "howItWent": "Cómo estuvo",
-    "aiNote": "Resumido por IA a partir de los momentos compartidos",
+    "aiNote": "Creado automáticamente a partir de fotos y grabaciones compartidas. La IA puede cometer errores.",
     "wentCount": "{count} asistieron",
     "momentsCount": "{count} momentos",
     "positiveFeedback": "Al {percent}% le encantó",
     "generate": "Generar resumen",
     "enqueued": "La IA está escribiendo el resumen — vuelve en unos minutos",
     "publish": "Publicar resumen",
-    "draftNotice": "Borrador — solo visible para moderadores"
+    "draftNotice": "Borrador — solo visible para moderadores",
+    "automaticPending": "El resumen aparecerá automáticamente tras analizar las fotos y grabaciones.",
+    "viewMoments": "Ver los momentos del evento"
   },
   "notFound": {
     "title": "¿Perdido en la niebla?",

@@ -289,8 +289,8 @@ export async function collectTranslationWork(
   // --- Blog posts (last — long content) ---
   const { data: posts, error: postsError } = await supabase
     .from("blog_posts")
-    .select("id, title, story_content, technical_content, meta_description, source, source_urls, source_locale, status, updated_at")
-    .in("status", ["published", "experimental"])
+    .select("id, title, story_content, technical_content, meta_description, source, source_urls, source_locale, status, updated_at, event_id, recap_published_at")
+    .or("status.in.(published,experimental),and(status.eq.draft,event_id.not.is.null,recap_published_at.not.is.null)")
     // Corrections keep the established published_at (and URL). Prioritize the
     // row revision so an old but newly corrected article enters the bounded
     // sweep instead of being starved behind newer publication dates.
@@ -303,6 +303,7 @@ export async function collectTranslationWork(
     if (
       post.status !== "published"
       && !(post.status === "experimental" && post.source === "news_scrape")
+      && !(post.status === "draft" && post.event_id && post.recap_published_at)
     ) continue;
     const fields = [
       { field_name: "title", text: post.title },

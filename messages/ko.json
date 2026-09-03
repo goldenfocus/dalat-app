@@ -1,14 +1,16 @@
 {
   "recap": {
     "howItWent": "그날의 이야기",
-    "aiNote": "참석자들이 공유한 순간을 AI가 요약했어요",
+    "aiNote": "공유된 사진과 녹음·영상으로 자동 작성되었습니다. AI는 실수할 수 있습니다.",
     "wentCount": "{count}명 참여",
     "momentsCount": "순간 {count}개",
     "positiveFeedback": "{percent}%가 좋아했어요",
     "generate": "리캡 생성",
     "enqueued": "AI가 리캡을 작성 중이에요 — 잠시 후 다시 확인해 주세요",
     "publish": "리캡 게시",
-    "draftNotice": "초안 — 운영자만 볼 수 있어요"
+    "draftNotice": "초안 — 운영자만 볼 수 있어요",
+    "automaticPending": "사진과 녹음·영상 분석이 끝나면 요약이 자동으로 표시됩니다.",
+    "viewMoments": "행사 순간 보기"
   },
   "notFound": {
     "title": "안개 속에서 길을 잃으셨나요?",

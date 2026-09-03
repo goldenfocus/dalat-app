@@ -31,14 +31,21 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { jobId, error: jobError, release } = body as {
+  const {
+    jobId,
+    error: jobError,
+    release,
+  } = body as {
     jobId?: string;
     error?: string;
     release?: boolean;
   };
 
   if (!jobId) {
-    return NextResponse.json({ error: "Missing required field: jobId" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing required field: jobId" },
+      { status: 400 },
+    );
   }
 
   const admin = getImageJobsAdmin();
@@ -66,7 +73,10 @@ export async function POST(request: Request) {
       })
       .eq("id", jobId);
     if (releaseError) {
-      return NextResponse.json({ error: releaseError.message }, { status: 500 });
+      return NextResponse.json(
+        { error: releaseError.message },
+        { status: 500 },
+      );
     }
     return NextResponse.json({ ok: true, released: true });
   }
@@ -86,14 +96,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
-  if (exhausted) {
+  if (exhausted && job.moment_id) {
     const { error: metadataError } = await admin.rpc("upsert_moment_metadata", {
       p_moment_id: job.moment_id,
       p_processing_status: "failed",
       p_processing_error: message,
     });
     if (metadataError) {
-      console.error(`[caption-jobs] failed-status upsert failed for ${job.moment_id}:`, metadataError);
+      console.error(
+        `[caption-jobs] failed-status upsert failed for ${job.moment_id}:`,
+        metadataError,
+      );
     }
   }
 

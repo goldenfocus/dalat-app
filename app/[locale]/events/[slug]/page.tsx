@@ -1,7 +1,7 @@
 import { eventImageAlt } from "@/lib/events/image-alt";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
-import { Suspense } from "react";
+import { Suspense, cache } from "react";
 import type { Metadata } from "next";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
@@ -26,6 +26,7 @@ import {
   getBlogTranslations,
 } from "@/lib/translations";
 import { getImageJobsAdmin } from "@/lib/ai/image-jobs";
+import { hasEventEnded, isRecapEventPublic } from "@/lib/blog/enqueue-recap";
 import { EventRecapCard } from "@/components/events/event-recap-card";
 import { hasRoleLevel, type ContentLocale, type Locale } from "@/lib/types";
 import {
@@ -117,7 +118,7 @@ export async function generateMetadata({
   const { data: event } = await supabase
     .from("events")
     .select(
-      "id, title, description, location_name, starts_at, source_locale, source_metadata, updated_at",
+      "id, title, description, location_name, starts_at, source_locale, source_metadata, updated_at, ends_at, status, has_private_details, tribe_id, tribe_visibility",
     )
     .eq("slug", slug)
     .single();
@@ -183,12 +184,18 @@ export async function generateMetadata({
 
   // Use keyword-enriched description that ensures Đà Lạt context
   const { buildSeoDescription } = await import("@/lib/seo/dalat-keywords");
-  const description = buildSeoDescription(eventDescription, {
-    contentType: "event",
-    title,
-    location_name: event.location_name,
-    date: eventDate,
-  });
+  const publishedRecap =
+    isRecapEventPublic(event) && hasEventEnded(event)
+      ? await getEventRecap(event.id, locale)
+      : null;
+  const description =
+    publishedRecap?.metaDescription ||
+    buildSeoDescription(eventDescription, {
+      contentType: "event",
+      title,
+      location_name: event.location_name,
+      date: eventDate,
+    });
 
   // Use absolute URL with locale for proper link previews on messaging apps
   // (en lives at the root — /en/... 307-redirects, which breaks canonicals)
@@ -564,15 +571,18 @@ type EventRecap = {
   blogPostId: string;
   story: string;
   recapPublishedAt: string | null;
+  metaDescription: string | null;
+  updatedAt: string;
+  language: string;
 };
 
 /**
  * Recap posts are storage-only drafts (status='draft'), invisible through
  * RLS to everyone but admins — so this read uses the service-role client.
  * Visibility is enforced in render: public sees the card only when
- * recap_published_at is set; moderators see drafts in place.
+ * recap_published_at is set automatically after evidence validation.
  */
-async function getEventRecap(
+const getEventRecap = cache(async function getEventRecap(
   eventId: string,
   locale: string,
 ): Promise<EventRecap | null> {
@@ -581,13 +591,15 @@ async function getEventRecap(
     const { data: post } = await admin
       .from("blog_posts")
       .select(
-        "id, title, story_content, meta_description, source_locale, recap_published_at",
+        "id, title, story_content, meta_description, source_locale, recap_published_at, updated_at",
       )
       .eq("event_id", eventId)
       .maybeSingle();
-    if (!post?.story_content) return null;
+    if (!post?.story_content || !post.recap_published_at) return null;
 
     let story = post.story_content as string;
+    let language = post.source_locale || "en";
+    let metaDescription = post.meta_description as string | null;
     if (isValidContentLocale(locale)) {
       const translated = await getBlogTranslations(post.id, locale, {
         title: post.title,
@@ -595,18 +607,26 @@ async function getEventRecap(
         technical_content: "",
         meta_description: post.meta_description,
         source_locale: post.source_locale,
+        fresh_after: post.updated_at,
       });
+      if (translated.translated_story_content !== post.story_content)
+        language = locale;
       story = translated.translated_story_content || story;
+      metaDescription =
+        translated.translated_meta_description || metaDescription;
     }
     return {
       blogPostId: post.id,
       story,
       recapPublishedAt: post.recap_published_at,
+      metaDescription,
+      updatedAt: post.updated_at,
+      language,
     };
   } catch {
     return null;
   }
-}
+});
 
 async function getMomentCounts(eventId: string): Promise<MomentCounts | null> {
   const supabase = await createClient();
@@ -1032,6 +1052,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getTranslations("nav"),
   ]);
 
+  const tRecap = await getTranslations("recap");
   const currentUserId = await getCurrentUserId();
   const currentUserRole = await getCurrentUserRole(currentUserId);
 
@@ -1116,9 +1137,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const isAdmin = currentUserRole
     ? hasRoleLevel(currentUserRole, "admin")
     : false;
-  const isModerator = currentUserRole
-    ? hasRoleLevel(currentUserRole, "moderator")
-    : false;
   const canManageEvent = isCreator || isAdmin;
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
 
@@ -1178,7 +1196,46 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     <CelebrationProvider>
       <main className="min-h-screen">
         {/* JSON-LD Structured Data for SEO/AEO */}
-        <JsonLd data={[eventSchema, breadcrumbSchema]} />
+        <JsonLd
+          data={[
+            eventSchema,
+            breadcrumbSchema,
+            ...(isPast && isRecapEventPublic(event) && recap?.recapPublishedAt
+              ? [
+                  {
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "@id": `${localeUrl(locale as Locale, `/events/${event.slug}`)}#recap`,
+                    headline: `${eventTranslations.title} — ${locale === "en" ? "Event recap" : tRecap("howItWent")}`,
+                    description: recap.metaDescription,
+                    articleBody: recap.story.replace(/[#*_`]/g, ""),
+                    datePublished: recap.recapPublishedAt,
+                    dateModified: recap.updatedAt,
+                    inLanguage: recap.language,
+                    mainEntityOfPage: localeUrl(
+                      locale as Locale,
+                      `/events/${event.slug}`,
+                    ),
+                    about: {
+                      "@type": "Event",
+                      name: eventTranslations.title,
+                      url: localeUrl(locale as Locale, `/events/${event.slug}`),
+                    },
+                    author: {
+                      "@type": "Organization",
+                      name: "ĐàLạt.app",
+                      url: "https://dalat.app",
+                    },
+                    publisher: {
+                      "@type": "Organization",
+                      name: "ĐàLạt.app",
+                      url: "https://dalat.app",
+                    },
+                  },
+                ]
+              : []),
+          ]}
+        />
 
         {/* Structured data for event materials (audio, video, etc.) */}
         <EventMaterialsStructuredData
@@ -1284,25 +1341,22 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   />
 
                   {/* "How it went" — AI recap card (secret-address events never get one) */}
-                  {!event.has_private_details &&
-                    (!!recap?.recapPublishedAt || isModerator) && (
-                      <EventRecapCard
-                        eventId={event.id}
-                        story={recap?.story ?? null}
-                        blogPostId={recap?.blogPostId ?? null}
-                        isPublished={!!recap?.recapPublishedAt}
-                        isModerator={isModerator}
-                        wentCount={counts?.going_spots ?? 0}
-                        momentsCount={momentCounts?.published_count ?? 0}
-                        positivePercent={
-                          feedbackStats &&
-                          feedbackStats.total >= 10 &&
-                          feedbackStats.positive_percentage !== null
-                            ? Math.round(feedbackStats.positive_percentage)
-                            : null
-                        }
-                      />
-                    )}
+                  {isRecapEventPublic(event) && (
+                    <EventRecapCard
+                      eventSlug={event.slug}
+                      story={recap?.story ?? null}
+                      storyLanguage={recap?.language ?? "en"}
+                      wentCount={counts?.going_spots ?? 0}
+                      momentsCount={momentCounts?.published_count ?? 0}
+                      positivePercent={
+                        feedbackStats &&
+                        feedbackStats.total >= 10 &&
+                        feedbackStats.positive_percentage !== null
+                          ? Math.round(feedbackStats.positive_percentage)
+                          : null
+                      }
+                    />
+                  )}
 
                   {/* Playlist link - right after moments for past events */}
                   {playlistSummary && (
@@ -1456,26 +1510,22 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   )}
 
                   {/* "How it went" — AI recap card (secret-address events never get one) */}
-                  {isPast &&
-                    !event.has_private_details &&
-                    (!!recap?.recapPublishedAt || isModerator) && (
-                      <EventRecapCard
-                        eventId={event.id}
-                        story={recap?.story ?? null}
-                        blogPostId={recap?.blogPostId ?? null}
-                        isPublished={!!recap?.recapPublishedAt}
-                        isModerator={isModerator}
-                        wentCount={counts?.going_spots ?? 0}
-                        momentsCount={momentCounts?.published_count ?? 0}
-                        positivePercent={
-                          feedbackStats &&
-                          feedbackStats.total >= 10 &&
-                          feedbackStats.positive_percentage !== null
-                            ? Math.round(feedbackStats.positive_percentage)
-                            : null
-                        }
-                      />
-                    )}
+                  {isPast && isRecapEventPublic(event) && (
+                    <EventRecapCard
+                      eventSlug={event.slug}
+                      story={recap?.story ?? null}
+                      storyLanguage={recap?.language ?? "en"}
+                      wentCount={counts?.going_spots ?? 0}
+                      momentsCount={momentCounts?.published_count ?? 0}
+                      positivePercent={
+                        feedbackStats &&
+                        feedbackStats.total >= 10 &&
+                        feedbackStats.positive_percentage !== null
+                          ? Math.round(feedbackStats.positive_percentage)
+                          : null
+                      }
+                    />
+                  )}
 
                   {/* Playlist link - right after moments */}
                   {playlistSummary && (

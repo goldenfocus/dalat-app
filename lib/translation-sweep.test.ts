@@ -16,7 +16,7 @@ type QueryResult = {
 
 function makeBuilder(result: QueryResult) {
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "not", "order", "limit", "in", "range"]) {
+  for (const method of ["select", "eq", "not", "order", "limit", "in", "range", "or"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder.then = (
@@ -196,5 +196,16 @@ describe("translation source revision guard", () => {
       title: "Corrected title",
       story_content: "Corrected facts",
     })).toBe(false);
+  });
+});
+
+
+describe("automatically published event recap translations", () => {
+  it("includes published recaps stored as drafts, while excluding unpublished drafts", async () => {
+    const post = { id: "recap", event_id: "event", status: "draft", recap_published_at: "2026-09-01T12:00:00Z", title: "Event recap", story_content: "Recorded discussion", technical_content: "", meta_description: "Meetup in Đà Lạt", source: "manual", source_locale: "en", updated_at: "2026-09-02T12:00:00Z" };
+    const client = { from: vi.fn((table: string) => makeBuilder({ data: table === "blog_posts" ? [post, { ...post, id: "unpublished", recap_published_at: null }, { ...post, id: "ordinary-draft", event_id: null }] : [], error: null })) } as unknown as TestClient;
+    const work = await collectTranslationWork(client, 20);
+    expect(work.filter((item) => item.contentType === "blog").map((item) => item.contentId)).toEqual(["recap"]);
+    expect(work.find((item) => item.contentId === "recap")?.sourceUpdatedAt).toBe(new Date(post.updated_at).toISOString());
   });
 });
