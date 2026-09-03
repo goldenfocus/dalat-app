@@ -234,7 +234,20 @@ ${job.prompt}`;
 // ── ollama local VLM (fallback) ────────────────────────────────────────
 
 async function ollamaCaption(prompt, imagePaths) {
-  const images = imagePaths.map((p) => readFileSync(p).toString('base64'));
+  const images = [];
+  for (const path of imagePaths) {
+    // Bound local vision input; full-resolution phone photos can consume the
+    // context window before the model has room to return its JSON analysis.
+    // Keep original uploads and Claude inputs intact.
+    const preview = `${path}.ollama.jpg`;
+    const resized = await runProcess(env.FFMPEG_BIN || '/opt/homebrew/bin/ffmpeg', [
+      '-nostdin', '-y', '-loglevel', 'error', '-i', path,
+      '-vf', "scale=w='min(1280,iw)':h='min(1280,ih)':force_original_aspect_ratio=decrease",
+      '-frames:v', '1', preview,
+    ], { timeout: 60_000 });
+    if (resized.status !== 0) throw new Error(`Vision preview failed: ${resized.stderr.slice(-300)}`);
+    images.push(readFileSync(preview).toString('base64'));
+  }
   const res = await fetch(`${OLLAMA_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
