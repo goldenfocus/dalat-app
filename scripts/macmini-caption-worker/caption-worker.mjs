@@ -22,6 +22,7 @@
  */
 
 import { runProcess, transcribeMedia } from './local-audio.mjs';
+import { compactRecapPrompt } from './recap-context.mjs';
 import { readFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -263,12 +264,17 @@ async function ollamaCaption(prompt, imagePaths) {
   if (!res.ok) throw new Error(`ollama ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`);
   const data = await res.json();
   const text = data?.message?.content?.trim();
-  if (!text) throw new Error('ollama produced no output');
+  if (!text) throw Object.assign(new Error('ollama produced no output'), { invalidOutput: true });
   return text;
 }
 
 /** Text-only ollama chat (recap fallback — no images). */
 async function ollamaText(prompt) {
+  const compact = await compactRecapPrompt(prompt, (chunk) => ollamaTextRequest(chunk, 1200));
+  return ollamaTextRequest(compact);
+}
+
+async function ollamaTextRequest(prompt, numPredict = 3000) {
   const res = await fetch(`${OLLAMA_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -276,7 +282,7 @@ async function ollamaText(prompt) {
       model: env.OLLAMA_TEXT_MODEL || OLLAMA_FALLBACK_MODEL,
       stream: false,
       format: 'json',
-      options: { temperature: 0.2, num_predict: 3000, num_ctx: 32768 },
+      options: { temperature: 0.2, num_predict: numPredict, num_ctx: 32768 },
       messages: [{ role: 'user', content: prompt }],
     }),
     signal: AbortSignal.timeout(5 * 60 * 1000),
@@ -284,7 +290,7 @@ async function ollamaText(prompt) {
   if (!res.ok) throw new Error(`ollama ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`);
   const data = await res.json();
   const text = data?.message?.content?.trim();
-  if (!text) throw new Error('ollama produced no output');
+  if (!text) throw Object.assign(new Error('ollama produced no output'), { invalidOutput: true });
   return text;
 }
 
@@ -397,6 +403,7 @@ async function processBatch(jobs) {
 
     let claudeUnavailable = false;
     let anyCompleted = false;
+    let providerBackoff = false;
 
     const captionOne = async (job, mediaPaths) => {
       // 1. claude -p (subscription) — skipped for the rest of the batch
@@ -428,8 +435,11 @@ async function processBatch(jobs) {
           return;
         } catch (err) {
           log(`[caption-worker] ollama failed id=${job.id}:`, err.message);
-          if (claudeUnavailable) {
+          if (err.invalidOutput) {
+            await reportFailure(job.id, `ollama: ${err.message}`);
+          } else if (claudeUnavailable) {
             // Neither provider could genuinely run — refund the claim.
+            providerBackoff = true;
             await releaseJob(job.id, `claude unavailable; ollama: ${err.message}`);
           } else {
             await reportFailure(job.id, `ollama: ${err.message}`);
@@ -439,6 +449,7 @@ async function processBatch(jobs) {
       }
       // 3. no fallback configured.
       if (claudeUnavailable) {
+        providerBackoff = true;
         await releaseJob(job.id, 'claude unavailable, no fallback configured');
       } else {
         await reportFailure(job.id, 'all caption providers failed');
@@ -518,14 +529,19 @@ async function processBatch(jobs) {
           if (await completeJob(job, output, 'ollama', env.OLLAMA_TEXT_MODEL || OLLAMA_FALLBACK_MODEL)) anyCompleted = true;
         } catch (err) {
           log(`[caption-worker] ollama recap failed id=${job.id}:`, err.message);
-          await releaseJob(job.id, `claude unavailable; ollama recap: ${err.message}`);
+          if (err.invalidOutput) await reportFailure(job.id, `ollama recap: ${err.message}`);
+          else {
+            providerBackoff = true;
+            await releaseJob(job.id, `claude unavailable; ollama recap: ${err.message}`);
+          }
         }
       } else {
+        providerBackoff = true;
         await releaseJob(job.id, 'claude unavailable, no fallback configured');
       }
     }
 
-    return claudeUnavailable && !anyCompleted ? 'backoff' : 'ok';
+    return providerBackoff && !anyCompleted ? 'backoff' : 'ok';
   } finally {
     clearInterval(leaseTimer);
     try {
