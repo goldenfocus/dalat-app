@@ -23,3 +23,19 @@ for (const audit of ['{"approved":false,"reasons":["Personal medical disclosure"
     await assert.rejects(writeReviewedRecap('Recorded evidence', async () => ++call < 3 ? '{"story_content":"draft"}' : audit), error => error.invalidOutput === true);
   });
 }
+
+test('a rejected draft uses specific audit feedback and must pass a fresh audit', async () => {
+  const responses = [
+    '{"story_content":"Draft"}',
+    '{"story_content":"Unsupported crowd size"}',
+    '{"approved":false,"reasons":["Remove unsupported crowd size"]}',
+    '{"story_content":"Corrected recorded discussion"}',
+    '{"approved":true,"reasons":[]}',
+  ];
+  const prompts = [];
+  const output = await writeReviewedRecap('Actual recording evidence', async prompt => { prompts.push(prompt); return responses.shift(); });
+  assert.ok(prompts[3].includes('Remove unsupported crowd size'));
+  assert.ok(prompts[4].includes('Corrected recorded discussion'));
+  assert.equal(JSON.parse(output).story_content, 'Corrected recorded discussion');
+  assert.equal(prompts.length, 5);
+});

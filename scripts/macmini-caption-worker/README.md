@@ -33,11 +33,12 @@ errors activate the local fallback instead of consuming real failure attempts.
 Local vision uses derivatives capped at 1280 pixels; original media is retained.
 Every recap first extracts public topics from all evidence chunks. The advertised
 agenda, inferred mood, and tags are excluded. Writing is followed by correction
-and a separate factual/privacy audit; rejected drafts use the retry budget and
-stay unpublished. The completion API requires the worker's publication-review
+and a separate factual/privacy audit. Audit feedback allows two automatic
+corrections; drafts that still fail use the retry budget and stay unpublished.
+The completion API requires the worker's publication-review
 receipt, so older workers cannot publish unreviewed output. Historical events
-with large transcripts cannot
-overflow the local model context. Invalid model output uses the retry budget
+with large transcripts cannot overflow the local model context. Invalid model
+output uses the retry budget
 instead of blocking the queue indefinitely.
 Deploy `caption-worker.mjs`, `local-audio.mjs`, and `recap-context.mjs`, preserving `worker.env`,
 then restart the existing launchd service. Apply the audio-job constraint
