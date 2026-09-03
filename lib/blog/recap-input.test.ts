@@ -57,6 +57,12 @@ describe("buildRecapPrompt — content policy", () => {
     videoCount: 1,
   });
 
+  it("excludes advertised activities, inferred mood, and SEO tags from evidence", () => {
+    expect(prompt).not.toContain("Monthly builders night");
+    expect(prompt).not.toContain("Mood:");
+    expect(prompt).not.toContain("Tags:");
+  });
+
   it("never contains a detected_text section", () => {
     expect(prompt).not.toMatch(/Text found:/);
     expect(prompt).not.toMatch(/detected_text/);
@@ -79,12 +85,18 @@ describe("buildRecapPrompt — content policy", () => {
 
 describe("parseRecapOutput", () => {
   const valid = {
+    publication_review: { version: "recap-review-v1", approved: true },
     story_content: "What a night in Đà Lạt...",
     meta_description: "A recap of the Đà Lạt tech meetup",
     seo_keywords: ["dalat", "tech meetup"],
     social_share_text: "We built things!",
     suggested_cta_text: "See the photos",
   };
+
+  it("rejects older worker output without a publication review", () => {
+    const { publication_review: _drop, ...unreviewed } = valid;
+    expect(() => parseRecapOutput(JSON.stringify(unreviewed))).toThrow("publication review");
+  });
 
   it("parses clean JSON", () => {
     expect(parseRecapOutput(JSON.stringify(valid)).story_content).toContain("Đà Lạt");

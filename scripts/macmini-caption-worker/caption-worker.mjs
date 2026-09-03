@@ -270,11 +270,11 @@ async function ollamaCaption(prompt, imagePaths) {
 
 /** Text-only ollama chat (recap fallback — no images). */
 async function ollamaText(prompt) {
-  const compact = await compactRecapPrompt(prompt, (chunk) => ollamaTextRequest(chunk, 1200));
+  const compact = await compactRecapPrompt(prompt, (chunk) => ollamaTextRequest(chunk));
   return writeReviewedRecap(compact, (input) => ollamaTextRequest(input));
 }
 
-async function ollamaTextRequest(prompt, numPredict = 3000) {
+async function ollamaTextRequest(prompt, numPredict = 4000) {
   const res = await fetch(`${OLLAMA_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -512,7 +512,8 @@ async function processBatch(jobs) {
     for (const job of recapJobs) {
       if (!claudeUnavailable) {
         try {
-          const output = await writeReviewedRecap(job.prompt, runClaude);
+          const evidence = await compactRecapPrompt(job.prompt, runClaude);
+          const output = await writeReviewedRecap(evidence, runClaude);
           if (await completeJob(job, output, 'claude-code', CLAUDE_MODEL)) anyCompleted = true;
           continue;
         } catch (err) {

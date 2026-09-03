@@ -9,9 +9,16 @@ test('splitting retains every character, including the last recording', () => {
   assert.ok(chunks.every(chunk => chunk.length <= 12_000));
 });
 
-test('short recaps use their original full evidence directly', async () => {
-  const prompt = 'Short complete evidence';
-  assert.equal(await compactRecapPrompt(prompt, () => { throw new Error('Unexpected summary'); }), prompt);
+test('even short recordings receive privacy extraction and omit the advertised agenda', async () => {
+  const prompt = 'Rules\nDescription: Planned concert\nLocal date (Asia/Ho_Chi_Minh): 1 September 2026\n## AI-Analyzed Moments\nActual conversation';
+  let source;
+  const result = await compactRecapPrompt(prompt, async input => {
+    source = input;
+    return JSON.stringify({ evidence: 'A recorded public topic.' });
+  });
+  assert.ok(source.includes('Actual conversation'));
+  assert.ok(result.includes('A recorded public topic.'));
+  assert.ok(!result.includes('Planned concert'));
 });
 
 test('long recaps read all evidence and retain the instructions', async () => {
