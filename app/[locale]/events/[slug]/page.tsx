@@ -1287,7 +1287,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
           </div>
           <div className="grid gap-8 lg:grid-cols-3">
             {/* Main content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="min-w-0 lg:col-span-2 space-y-6">
               {/* Past events: Moments first as hero content */}
               {isPast && momentsPreview.length > 0 ? (
                 <>
