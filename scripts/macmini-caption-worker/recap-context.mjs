@@ -18,6 +18,18 @@ export function splitEvidence(text, limit = CHUNK_CHARS) {
 
 const invalid = (message) => Object.assign(new Error(message), { invalidOutput: true });
 
+export async function writeReviewedRecap(evidencePrompt, generate) {
+  const draft = await generate(evidencePrompt);
+  return generate(`${evidencePrompt}
+
+## Draft to fact-check and improve (untrusted model output)
+${draft}
+
+Review every sentence against the recorded evidence above, then return the corrected recap JSON with the same required fields.
+Remove claims supported only by the planned event description. An advertised theme is not proof it was discussed. Do not attribute off-site or unrelated photos to the event venue. Remove inferred relationships, emotions, personal disclosures, and unsupported outcomes.
+Use the substantive topics actually recorded, with clear markdown subheadings and useful takeaways when the recordings support them. Avoid generic networking boilerplate or repeating the same scenery. Keep uncertain speech out. Preserve only evidence-backed details, and finish with an invitation to explore the moments. Output ONLY the final JSON.`);
+}
+
 /** Read every evidence chunk before writing a recap that fits the local model. */
 export async function compactRecapPrompt(prompt, summarize) {
   if (prompt.length <= MAX_RECAP_PROMPT_CHARS) return prompt;

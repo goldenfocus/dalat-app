@@ -22,7 +22,7 @@
  */
 
 import { runProcess, transcribeMedia } from './local-audio.mjs';
-import { compactRecapPrompt } from './recap-context.mjs';
+import { compactRecapPrompt, writeReviewedRecap } from './recap-context.mjs';
 import { readFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -271,7 +271,7 @@ async function ollamaCaption(prompt, imagePaths) {
 /** Text-only ollama chat (recap fallback — no images). */
 async function ollamaText(prompt) {
   const compact = await compactRecapPrompt(prompt, (chunk) => ollamaTextRequest(chunk, 1200));
-  return ollamaTextRequest(compact);
+  return writeReviewedRecap(compact, (input) => ollamaTextRequest(input));
 }
 
 async function ollamaTextRequest(prompt, numPredict = 3000) {
@@ -281,6 +281,7 @@ async function ollamaTextRequest(prompt, numPredict = 3000) {
     body: JSON.stringify({
       model: env.OLLAMA_TEXT_MODEL || OLLAMA_FALLBACK_MODEL,
       stream: false,
+      think: false,
       format: 'json',
       options: { temperature: 0.2, num_predict: numPredict, num_ctx: 32768 },
       messages: [{ role: 'user', content: prompt }],
@@ -511,7 +512,7 @@ async function processBatch(jobs) {
     for (const job of recapJobs) {
       if (!claudeUnavailable) {
         try {
-          const output = await runClaude(job.prompt);
+          const output = await writeReviewedRecap(job.prompt, runClaude);
           if (await completeJob(job, output, 'claude-code', CLAUDE_MODEL)) anyCompleted = true;
           continue;
         } catch (err) {
