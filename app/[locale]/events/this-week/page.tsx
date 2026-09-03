@@ -6,6 +6,7 @@ export const maxDuration = 60;
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildLocales, type Locale } from "@/lib/i18n/routing";
 import { createStaticClient } from "@/lib/supabase/server";
+import { withReviewedMedia } from "@/lib/events/with-reviewed-media";
 import { EventCard } from "@/components/events/event-card";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
@@ -48,7 +49,7 @@ async function getEventsThisWeek() {
     return [];
   }
 
-  return (events ?? []) as Event[];
+  return withReviewedMedia(supabase, (events ?? []) as Event[]);
 }
 
 async function getEventCounts(eventIds: string[]) {
