@@ -15,10 +15,20 @@ const url = process.argv[2] ?? "https://dalat.app/";
 const origin = new URL(url).origin;
 
 // Full response: final status + headers + compressed body bytes.
-function fetchBr(target) {
+function fetchBr(target, extraHeaders = []) {
   const raw = execFileSync(
     "curl",
-    ["-siL", "--max-time", "30", "-A", "perf-ratchet", "-H", "Accept-Encoding: br", target],
+    [
+      "-siL",
+      "--max-time",
+      "30",
+      "-A",
+      "perf-ratchet",
+      "-H",
+      "Accept-Encoding: br",
+      ...extraHeaders.flatMap((header) => ["-H", header]),
+      String(target),
+    ],
     { maxBuffer: 64 * 1024 * 1024 }
   );
   // -i with -L emits one header block per hop before the final body.
@@ -162,6 +172,41 @@ if (cfStatus === "HIT") {
   fail(`cf-cache-status=${cfStatus} on second fetch (expected HIT)`);
 } else {
   console.log(`WARN: cf-cache-status=${cfStatus} on second fetch (not enforced yet)`);
+}
+
+// RSC_VARIANT_ISOLATION — Cloudflare must never store a React Flight response
+// under the HTML cache key. Prime a unique URL with RSC first, then request HTML;
+// this reproduces the Sep 2026 incident deterministically if the cache rule regresses.
+const variantProbeUrl = new URL(url);
+variantProbeUrl.searchParams.set(
+  "cache_variant_probe",
+  `${Date.now()}-${process.pid}-${Math.random().toString(16).slice(2)}`
+);
+
+try {
+  const rscProbe = fetchBr(variantProbeUrl, ["RSC: 1", "Accept: */*"]);
+  const rscType = rscProbe.headers["content-type"] ?? "(none)";
+  if (rscProbe.status !== 200 || !rscType.startsWith("text/x-component")) {
+    fail(
+      `RSC probe returned HTTP ${rscProbe.status} with content-type=${rscType} ` +
+        `(expected 200 text/x-component)`
+    );
+  }
+
+  const htmlProbe = fetchBr(variantProbeUrl, [
+    "Accept: text/html,application/xhtml+xml",
+  ]);
+  const htmlType = htmlProbe.headers["content-type"] ?? "(none)";
+  if (htmlProbe.status !== 200 || !htmlType.startsWith("text/html")) {
+    fail(
+      `HTML request after RSC probe returned HTTP ${htmlProbe.status} with ` +
+        `content-type=${htmlType} (Cloudflare cache-key collision)`
+    );
+  } else {
+    console.log(`PASS: RSC and HTML cache variants stay isolated`);
+  }
+} catch (err) {
+  fail(`could not verify RSC/HTML cache isolation: ${err.message}`);
 }
 
 if (failed) process.exit(1);
