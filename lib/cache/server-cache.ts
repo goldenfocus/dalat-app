@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { createStaticClient } from "@/lib/supabase/server";
 import { getTonightBounds, getWeekendBounds } from "@/lib/events/discovery-windows";
+import { withReviewedMedia } from "@/lib/events/with-reviewed-media";
 import type {
   Event,
   EventWithSeriesData,
@@ -58,13 +59,13 @@ export const getCachedEventsByLifecycle = unstable_cache(
       }
 
       // RPC returns series_slug, series_rrule, is_recurring directly
-      return (data as EventWithSeriesData[]) || [];
+      return withReviewedMedia(supabase, (data as EventWithSeriesData[]) || []);
     } catch (err) {
       console.error("Exception in getCachedEventsByLifecycle:", err);
       return [];
     }
   },
-  ["events-by-lifecycle-v8"], // v8: force refresh after manual event insertions
+  ["events-by-lifecycle-v9"], // v9: include reviewed image descriptions
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.events],
@@ -89,9 +90,9 @@ export const getCachedEventsThisWeek = unstable_cache(
       return [];
     }
 
-    return (data as Event[]) || [];
+    return withReviewedMedia(supabase, (data as Event[]) || []);
   },
-  ["events-this-week-v2"],
+  ["events-this-week-v3"],
   {
     revalidate: 300, // 5 minutes
     tags: [CACHE_TAGS.events, CACHE_TAGS.eventsLifecycle("upcoming")],
