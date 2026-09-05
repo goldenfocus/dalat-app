@@ -22,6 +22,7 @@
  */
 
 import { runProcess, transcribeMedia } from './local-audio.mjs';
+import { compactRecapPrompt, writeReviewedRecap } from './recap-context.mjs';
 import { readFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -137,13 +138,17 @@ async function downloadMedia(url, destBase) {
 // "claude is temporarily unusable" — quota window, expired login, network.
 // These must never burn job attempts: the jobs get released, not failed.
 function looksUnavailable(text) {
-  return /rate.?limit|quota|usage limit|limit reached|overloaded|too many requests|429|not logged in|\/login|unauthorized|authentication|ENOTFOUND|ECONNREFUSED|fetch failed/i.test(
+  return /rate.?limit|quota|usage limit|limit reached|overloaded|too many requests|429|not logged in|\/login|unauthorized|authenticat|oauth|session expired|ENOTFOUND|ECONNREFUSED|fetch failed/i.test(
     text || ''
   );
 }
 
 /** Run one headless claude session; returns the final text output. */
+let claudeRetryAfter = 0;
 async function runClaude(prompt) {
+  if (Date.now() < claudeRetryAfter) {
+    throw Object.assign(new Error('claude unavailable; using fallback during cooldown'), { unavailable: true });
+  }
   const result = await runProcess(
     CLAUDE_BIN,
     ['-p', '--model', CLAUDE_MODEL, '--allowedTools', 'Read'],
@@ -160,6 +165,7 @@ async function runClaude(prompt) {
     const stderr = (result.stderr || result.stdout || '').slice(-500);
     const err = new Error(`claude exited ${result.status}${result.signal ? ` (signal ${result.signal})` : ''}: ${stderr}`);
     err.unavailable = looksUnavailable(stderr) || looksUnavailable(result.stdout);
+    if (err.unavailable) claudeRetryAfter = Date.now() + QUOTA_BACKOFF_MINUTES * 60_000;
     throw err;
   }
   const out = (result.stdout || '').trim();
@@ -229,7 +235,20 @@ ${job.prompt}`;
 // ── ollama local VLM (fallback) ────────────────────────────────────────
 
 async function ollamaCaption(prompt, imagePaths) {
-  const images = imagePaths.map((p) => readFileSync(p).toString('base64'));
+  const images = [];
+  for (const path of imagePaths) {
+    // Bound local vision input; full-resolution phone photos can consume the
+    // context window before the model has room to return its JSON analysis.
+    // Keep original uploads and Claude inputs intact.
+    const preview = `${path}.ollama.jpg`;
+    const resized = await runProcess(env.FFMPEG_BIN || '/opt/homebrew/bin/ffmpeg', [
+      '-nostdin', '-y', '-loglevel', 'error', '-i', path,
+      '-vf', "scale=w='min(1280,iw)':h='min(1280,ih)':force_original_aspect_ratio=decrease",
+      '-frames:v', '1', preview,
+    ], { timeout: 60_000 });
+    if (resized.status !== 0) throw new Error(`Vision preview failed: ${resized.stderr.slice(-300)}`);
+    images.push(readFileSync(preview).toString('base64'));
+  }
   const res = await fetch(`${OLLAMA_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -245,20 +264,26 @@ async function ollamaCaption(prompt, imagePaths) {
   if (!res.ok) throw new Error(`ollama ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`);
   const data = await res.json();
   const text = data?.message?.content?.trim();
-  if (!text) throw new Error('ollama produced no output');
+  if (!text) throw Object.assign(new Error('ollama produced no output'), { invalidOutput: true });
   return text;
 }
 
 /** Text-only ollama chat (recap fallback — no images). */
 async function ollamaText(prompt) {
+  const compact = await compactRecapPrompt(prompt, (chunk) => ollamaTextRequest(chunk));
+  return writeReviewedRecap(compact, (input) => ollamaTextRequest(input));
+}
+
+async function ollamaTextRequest(prompt, numPredict = 4000) {
   const res = await fetch(`${OLLAMA_URL}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: env.OLLAMA_TEXT_MODEL || OLLAMA_FALLBACK_MODEL,
       stream: false,
+      think: false,
       format: 'json',
-      options: { temperature: 0.2, num_predict: 3000, num_ctx: 32768 },
+      options: { temperature: 0.2, num_predict: numPredict, num_ctx: 32768 },
       messages: [{ role: 'user', content: prompt }],
     }),
     signal: AbortSignal.timeout(5 * 60 * 1000),
@@ -266,7 +291,7 @@ async function ollamaText(prompt) {
   if (!res.ok) throw new Error(`ollama ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`);
   const data = await res.json();
   const text = data?.message?.content?.trim();
-  if (!text) throw new Error('ollama produced no output');
+  if (!text) throw Object.assign(new Error('ollama produced no output'), { invalidOutput: true });
   return text;
 }
 
@@ -379,6 +404,7 @@ async function processBatch(jobs) {
 
     let claudeUnavailable = false;
     let anyCompleted = false;
+    let providerBackoff = false;
 
     const captionOne = async (job, mediaPaths) => {
       // 1. claude -p (subscription) — skipped for the rest of the batch
@@ -410,8 +436,11 @@ async function processBatch(jobs) {
           return;
         } catch (err) {
           log(`[caption-worker] ollama failed id=${job.id}:`, err.message);
-          if (claudeUnavailable) {
+          if (err.invalidOutput) {
+            await reportFailure(job.id, `ollama: ${err.message}`);
+          } else if (claudeUnavailable) {
             // Neither provider could genuinely run — refund the claim.
+            providerBackoff = true;
             await releaseJob(job.id, `claude unavailable; ollama: ${err.message}`);
           } else {
             await reportFailure(job.id, `ollama: ${err.message}`);
@@ -421,6 +450,7 @@ async function processBatch(jobs) {
       }
       // 3. no fallback configured.
       if (claudeUnavailable) {
+        providerBackoff = true;
         await releaseJob(job.id, 'claude unavailable, no fallback configured');
       } else {
         await reportFailure(job.id, 'all caption providers failed');
@@ -482,7 +512,8 @@ async function processBatch(jobs) {
     for (const job of recapJobs) {
       if (!claudeUnavailable) {
         try {
-          const output = await runClaude(job.prompt);
+          const evidence = await compactRecapPrompt(job.prompt, runClaude);
+          const output = await writeReviewedRecap(evidence, runClaude);
           if (await completeJob(job, output, 'claude-code', CLAUDE_MODEL)) anyCompleted = true;
           continue;
         } catch (err) {
@@ -500,14 +531,19 @@ async function processBatch(jobs) {
           if (await completeJob(job, output, 'ollama', env.OLLAMA_TEXT_MODEL || OLLAMA_FALLBACK_MODEL)) anyCompleted = true;
         } catch (err) {
           log(`[caption-worker] ollama recap failed id=${job.id}:`, err.message);
-          await releaseJob(job.id, `claude unavailable; ollama recap: ${err.message}`);
+          if (err.invalidOutput) await reportFailure(job.id, `ollama recap: ${err.message}`);
+          else {
+            providerBackoff = true;
+            await releaseJob(job.id, `claude unavailable; ollama recap: ${err.message}`);
+          }
         }
       } else {
+        providerBackoff = true;
         await releaseJob(job.id, 'claude unavailable, no fallback configured');
       }
     }
 
-    return claudeUnavailable && !anyCompleted ? 'backoff' : 'ok';
+    return providerBackoff && !anyCompleted ? 'backoff' : 'ok';
   } finally {
     clearInterval(leaseTimer);
     try {
