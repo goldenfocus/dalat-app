@@ -1263,6 +1263,11 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           throw postError;
         }
 
+        if (data?.moment_id && isCloudflareVideo) {
+          void fetch(`/api/moments/${data.moment_id}/video-status`, { method: "POST" })
+            .catch((error) => console.warn("Initial video status check failed", error));
+        }
+
         if (data?.moment_id && textContent) {
           triggerTranslation("moment", data.moment_id, [
             { field_name: "text_content", text: textContent },

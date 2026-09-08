@@ -461,6 +461,11 @@ export function useBulkUpload(eventId: string, userId: string, _godModeUserId?: 
       });
 
       if (error) throw error;
+      if (cfVideoUid && momentId) {
+        void fetch(`/api/moments/${momentId}/video-status`, { method: "POST" })
+          .catch((error) => console.warn("Initial video status check failed", error));
+      }
+
 
       dispatch({
         type: "UPDATE_FILE",

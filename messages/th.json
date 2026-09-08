@@ -1716,6 +1716,7 @@
     "viewMoreMoments": "ดูอีก {count} โมเมนต์",
     "videoUploading": "กำลังอัปโหลดวิดีโอ...",
     "videoProcessing": "กำลังประมวลผลวิดีโอ...",
+    "videoProcessingFailed": "ไม่สามารถประมวลผลวิดีโอนี้ได้",
     "videoProcessingHint": "โดยปกติจะใช้เวลา 30-60 วินาที กรุณากลับมาใหม่ในภายหลัง!",
     "searchPlaceholder": "ค้นหาโมเมนต์... (เช่น สุนัข, พระอาทิตย์ตก)",
     "searchHint": "ค้นหาด้วยภาพโดย AI",

@@ -1716,6 +1716,7 @@
     "viewMoreMoments": "Lihat {count} momen lagi",
     "videoUploading": "Mengunggah video...",
     "videoProcessing": "Memproses video...",
+    "videoProcessingFailed": "Video ini tidak dapat diproses.",
     "videoProcessingHint": "Ini biasanya memakan waktu 30-60 detik. Periksa kembali nanti!",
     "searchPlaceholder": "Cari momen... (cth: anjing, matahari terbenam)",
     "searchHint": "Pencarian visual berbasis AI",

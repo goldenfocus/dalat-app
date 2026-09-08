@@ -1597,6 +1597,7 @@
     "viewMoreMoments": "Xem thêm {count} khoảnh khắc",
     "videoUploading": "Đang tải video lên...",
     "videoProcessing": "Đang xử lý video...",
+    "videoProcessingFailed": "Không thể xử lý video này.",
     "videoProcessingHint": "Quá trình này thường mất 30-60 giây. Hãy quay lại sau!",
     "searchPlaceholder": "Tìm kiếm... (vd: chó, hoàng hôn)",
     "searchHint": "Tìm kiếm bằng AI",

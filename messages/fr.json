@@ -1730,6 +1730,7 @@
     "viewMoreMoments": "Voir {count} moments de plus",
     "videoUploading": "Téléchargement de la vidéo...",
     "videoProcessing": "Traitement de la vidéo...",
+    "videoProcessingFailed": "Cette vidéo n’a pas pu être traitée.",
     "videoProcessingHint": "Cela prend généralement 30-60 secondes. Revenez bientôt !",
     "searchPlaceholder": "Rechercher des moments... (ex: chiens, coucher de soleil)",
     "searchHint": "Recherche visuelle par IA",

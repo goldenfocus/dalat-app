@@ -1716,6 +1716,7 @@
     "viewMoreMoments": "{count} weitere Moments anzeigen",
     "videoUploading": "Video wird hochgeladen...",
     "videoProcessing": "Video wird verarbeitet...",
+    "videoProcessingFailed": "Dieses Video konnte nicht verarbeitet werden.",
     "videoProcessingHint": "Dies dauert normalerweise 30-60 Sekunden. Schauen Sie gleich wieder vorbei!",
     "searchPlaceholder": "Moments suchen... (z.B. Hunde, Sonnenuntergang)",
     "searchHint": "KI-gestützte visuelle Suche",

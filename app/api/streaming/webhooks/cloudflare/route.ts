@@ -80,15 +80,6 @@ export async function POST(request: Request) {
           console.log('VOD video ready:', videoUid);
 
           try {
-            // Kick off MP4 rendition generation so the download button works
-            // as soon as (or shortly after) the video is watchable. Non-fatal:
-            // the download route also enables lazily as a fallback.
-            try {
-              await enableVideoDownloads(videoUid);
-            } catch (err) {
-              console.error('[video.ready] enableVideoDownloads failed:', err);
-            }
-
             // Get video details - includes correct playback URLs from Cloudflare
             const videoDetails = await getVideoDetails(videoUid);
 
@@ -116,9 +107,17 @@ export async function POST(request: Request) {
               .maybeSingle();
 
             if (error) {
-              console.error('Failed to update moment video status:', error);
+              throw error;
             } else if (moment) {
               console.log('Updated moment:', moment.id, 'to ready status with thumbnail');
+              // Kick off MP4 rendition generation so the download button works
+              // as soon as (or shortly after) the video is watchable. Non-fatal:
+              // the download route also enables lazily as a fallback.
+              try {
+                await enableVideoDownloads(videoUid);
+              } catch (err) {
+                console.error('[video.ready] enableVideoDownloads failed:', err);
+              }
 
               // Send push notification to the user: "Your video is ready!"
               // Get event details for the notification
@@ -141,12 +140,17 @@ export async function POST(request: Request) {
                 });
               }
             } else {
-              // Cloudflare retries webhooks, so an already-ready moment is a
-              // normal idempotent no-op.
-              console.log('No pending moment found for video UID:', videoUid);
+              // A short clip can finish before the uploader creates its moment.
+              // Ask Cloudflare to retry instead of permanently losing completion.
+              const { data: existing, error: lookupError } = await supabase
+                .from('moments').select('id').eq('cf_video_uid', videoUid).maybeSingle();
+              if (lookupError || !existing) {
+                return NextResponse.json({ error: 'Moment not created yet' }, { status: 503 });
+              }
             }
           } catch (err) {
             console.error('Error processing video.ready:', err);
+            return NextResponse.json({ error: 'Video update failed' }, { status: 503 });
           }
         }
         break;

@@ -1,4 +1,5 @@
 "use client";
+import { useVideoStatus } from "@/lib/hooks/use-video-status";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -96,11 +97,12 @@ export function MomentLightbox({
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchDiff, setTouchDiff] = useState(0);
   const t = useTranslations("moments.lightbox");
+  const videoText = useTranslations("moments");
   const { share: nativeShare, copied: shared } = useShare();
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const moment = moments[currentIndex];
+  const moment = useVideoStatus(moments[currentIndex]);
   const hasPrev = currentIndex > 0;
 
   // Mixed-event lightboxes (search results) carry the slug per moment; a single
@@ -395,8 +397,8 @@ export function MomentLightbox({
             ) : moment.cf_video_uid ? (
               <div className="aspect-video flex items-center justify-center bg-muted/20 rounded-lg">
                 <div className="text-white/70 text-center">
-                  <div className="w-12 h-12 border-2 border-white/50 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                  <p>Video processing...</p>
+                  {moment.video_status !== "error" && <div className="w-12 h-12 border-2 border-white/50 border-t-transparent rounded-full animate-spin mx-auto mb-3" />}
+                  <p>{videoText(moment.video_status === "error" ? "videoProcessingFailed" : "videoProcessing")}</p>
                 </div>
               </div>
             ) : null}

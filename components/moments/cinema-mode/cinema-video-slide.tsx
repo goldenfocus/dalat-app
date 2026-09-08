@@ -1,7 +1,9 @@
 "use client";
+import { useTranslations } from "next-intl";
+import { useVideoStatus } from "@/lib/hooks/use-video-status";
 
 import { useRef, useEffect, useState } from "react";
-import { Loader2, Play } from "lucide-react";
+import { Loader2, Play, AlertCircle } from "lucide-react";
 import { MomentVideoPlayer } from "../moment-video-player";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { requestVideoPlayback } from "@/lib/cinema/video-playback";
@@ -22,7 +24,7 @@ interface CinemaVideoSlideProps {
 }
 
 export function CinemaVideoSlide({
-  moment,
+  moment: initialMoment,
   isActive,
   isTransitioning,
   isPaused,
@@ -30,6 +32,8 @@ export function CinemaVideoSlide({
   onEnded,
   onTimeUpdate,
 }: CinemaVideoSlideProps) {
+  const t = useTranslations("moments");
+  const moment = useVideoStatus(initialMoment, isActive);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isBuffering, setIsBuffering] = useState(false);
   const [isMediaReady, setIsMediaReady] = useState(false);
@@ -94,7 +98,7 @@ export function CinemaVideoSlide({
       video.removeEventListener("pause", handlePause);
       video.removeEventListener("canplay", handleCanPlay);
     };
-  }, [isActive, isPaused, moment.id, onTimeUpdate, soundOn]);
+  }, [isActive, isPaused, moment.id, moment.video_status, onTimeUpdate, soundOn]);
 
   const handleManualPlay = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -110,17 +114,17 @@ export function CinemaVideoSlide({
   // Show video processing state
   if (moment.video_status === "processing" || moment.video_status === "uploading" || moment.video_status === "error") {
     const statusLabel = moment.video_status === "uploading"
-      ? "Uploading"
+      ? t("videoUploading")
       : moment.video_status === "error"
-        ? "Processing failed"
-        : "Processing";
+        ? t("videoProcessingFailed")
+        : t("videoProcessing");
 
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-white/50 animate-spin" />
+          {moment.video_status === "error" ? <AlertCircle className="w-8 h-8 text-white/50" /> : <Loader2 className="w-8 h-8 text-white/50 animate-spin" />}
           <p className="text-white/50 text-sm">
-            {statusLabel} video...
+            {statusLabel}
           </p>
         </div>
       </div>

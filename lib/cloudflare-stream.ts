@@ -92,6 +92,7 @@ async function cloudflareRequest<T>(
 
   const response = await fetch(url, {
     ...options,
+    signal: options.signal ?? AbortSignal.timeout(10000),
     headers: {
       Authorization: `Bearer ${apiToken}`,
       'Content-Type': 'application/json',
@@ -345,6 +346,7 @@ export interface DirectUploadResponse {
  */
 export interface CloudflareVideoDetails {
   uid: string;
+  readyToStream?: boolean;
   status: {
     state: 'pendingupload' | 'queued' | 'inprogress' | 'ready' | 'error';
     pctComplete?: string;

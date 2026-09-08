@@ -183,6 +183,11 @@ export function useUploadQueue({
       });
 
       if (error) throw error;
+      if (cfVideoUid && momentId) {
+        void fetch(`/api/moments/${momentId}/video-status`, { method: "POST" })
+          .catch((error) => console.warn("Initial video status check failed", error));
+      }
+
 
       if (mountedRef.current) {
         dispatch({

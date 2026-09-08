@@ -1716,6 +1716,7 @@
     "viewMoreMoments": "あと{count}件のモーメントを見る",
     "videoUploading": "動画をアップロード中...",
     "videoProcessing": "動画を処理中...",
+    "videoProcessingFailed": "この動画を処理できませんでした。",
     "videoProcessingHint": "通常30〜60秒かかります。しばらくお待ちください！",
     "searchPlaceholder": "モーメントを検索...（例：犬、夕日）",
     "searchHint": "AI搭載ビジュアル検索",

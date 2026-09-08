@@ -1716,6 +1716,7 @@
     "viewMoreMoments": "View {count} more moments",
     "videoUploading": "Video uploading...",
     "videoProcessing": "Video processing...",
+    "videoProcessingFailed": "This video could not be processed.",
     "videoProcessingHint": "This usually takes 30-60 seconds. Check back shortly!",
     "searchPlaceholder": "Search moments... (e.g., dogs, sunset)",
     "searchHint": "AI-powered visual search",

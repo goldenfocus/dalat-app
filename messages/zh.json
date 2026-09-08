@@ -1713,6 +1713,7 @@
     "viewMoreMoments": "查看更多 {count} 个动态",
     "videoUploading": "视频上传中...",
     "videoProcessing": "视频处理中...",
+    "videoProcessingFailed": "无法处理此视频。",
     "videoProcessingHint": "通常需要30-60秒，请稍后再查看！",
     "searchPlaceholder": "搜索动态... (如：狗狗、日落)",
     "searchHint": "AI智能图像搜索",

@@ -1716,6 +1716,7 @@
     "viewMoreMoments": "Показать ещё {count} моментов",
     "videoUploading": "Загрузка видео...",
     "videoProcessing": "Обработка видео...",
+    "videoProcessingFailed": "Не удалось обработать это видео.",
     "videoProcessingHint": "Обычно это занимает 30-60 секунд. Загляните позже!",
     "searchPlaceholder": "Поиск моментов... (напр., собаки, закат)",
     "searchHint": "Визуальный поиск на базе ИИ",
