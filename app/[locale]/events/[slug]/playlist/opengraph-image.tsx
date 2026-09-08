@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { ImageResponse } from "next/og";
 import { createStaticClient } from "@/lib/supabase/server";
 import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
@@ -12,7 +13,8 @@ interface Props {
 }
 
 export default async function OGImage({ params }: Props) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
+  const t = await getTranslations({ locale, namespace: "playlist" });
   const supabase = createStaticClient();
 
   let event: {
@@ -54,14 +56,14 @@ export default async function OGImage({ params }: Props) {
           .select("title, artist, thumbnail_url, duration_seconds")
           .eq("playlist_id", playlist.id)
           .order("sort_order")
-          .limit(4);
+          .order("created_at");
 
         tracks = tracksData || [];
       }
     }
   }
 
-  const eventTitle = event?.title || "Playlist";
+  const eventTitle = event?.title || t("title");
   const trackCount = tracks.length;
   const totalDuration = tracks.reduce((acc, t) => acc + (t.duration_seconds || 0), 0);
   const durationMinutes = Math.round(totalDuration / 60);
@@ -187,7 +189,7 @@ export default async function OGImage({ params }: Props) {
                   <circle cx="6" cy="18" r="3" />
                   <circle cx="18" cy="16" r="3" />
                 </svg>
-                Playlist
+                {t("title")}
               </div>
             </div>
 
@@ -214,11 +216,11 @@ export default async function OGImage({ params }: Props) {
                 color: "rgba(255,255,255,0.8)",
               }}
             >
-              <span>{trackCount} track{trackCount !== 1 ? "s" : ""}</span>
+              <span>{t("tracks", { count: trackCount })}</span>
               {durationMinutes > 0 && (
                 <>
                   <span style={{ opacity: 0.5 }}>•</span>
-                  <span>{durationMinutes} min</span>
+                  <span>{t("totalDuration", { minutes: durationMinutes })}</span>
                 </>
               )}
             </div>

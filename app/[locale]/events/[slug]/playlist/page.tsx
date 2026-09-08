@@ -189,8 +189,6 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       images: [
         {
           url: ogImageUrl,
-          width: 1200,
-          height: 630,
           alt: isKaraokeMode
             ? `Karaoke ${currentTrack?.title || event.title}`
             : `${event.title} playlist`,
@@ -296,7 +294,11 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
           <PlaylistShareButton
             title={`${event.title} - ${t("title")}`}
             url={playlistUrl}
-            trackCount={tracks.length}
+            description={t("metaDescription", {
+              count: tracks.length,
+              eventTitle: event.title,
+              duration: "",
+            })}
           />
         </div>
 
@@ -305,7 +307,9 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
           {isKaraokeMode ? (
             <>
               <h1 className="text-2xl font-bold mb-1">
-                🎤 Karaoke: {event.title}
+                <Link href={`/events/${event.slug}`} className="inline-flex min-h-11 items-center rounded-lg py-1 hover:underline active:opacity-70 transition-opacity">
+                  🎤 Karaoke: {event.title}
+                </Link>
               </h1>
               <p className="text-muted-foreground text-sm mb-2">
                 {eventDate}
@@ -317,7 +321,11 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold mb-1">{event.title}</h1>
+              <h1 className="text-2xl font-bold mb-1">
+                <Link href={`/events/${event.slug}`} className="inline-flex min-h-11 items-center rounded-lg py-1 hover:underline active:opacity-70 transition-opacity">
+                  {event.title}
+                </Link>
+              </h1>
               <p className="text-muted-foreground text-sm">
                 {eventDate}
                 {event.location_name && ` · ${event.location_name}`}

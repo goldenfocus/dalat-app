@@ -8,18 +8,17 @@ import { useShare } from "@/lib/hooks/use-share";
 interface PlaylistShareButtonProps {
   title: string;
   url: string;
-  trackCount: number;
+  description: string;
 }
 
-export function PlaylistShareButton({ title, url, trackCount }: PlaylistShareButtonProps) {
-  const t = useTranslations("playlist");
+export function PlaylistShareButton({ title, url, description }: PlaylistShareButtonProps) {
   const tc = useTranslations("common");
   const { share, copied } = useShare();
 
   const handleShare = () =>
     share({
       title,
-      text: `${title}\n${t("tracks", { count: trackCount })}`,
+      text: description,
       url,
     });
 
