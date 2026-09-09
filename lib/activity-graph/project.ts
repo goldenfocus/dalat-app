@@ -1,3 +1,4 @@
+import { explainActivity } from "./editorial";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EventSeries } from "@/lib/types";
 import {
@@ -995,7 +996,10 @@ export async function projectActivity(
       `Refreshed confidence ${input.confidence.score} below source threshold ${input.source.auto_publish_threshold}`,
     );
   }
-  if (link) return refreshLinkedActivity(input, link);
+  if (link) {
+    input = { ...input, activity: await explainActivity(input.activity) };
+    return refreshLinkedActivity(input, link);
+  }
 
   if (input.confidence.hardGateFailures.length > 0) {
     const permanentlyRejected = input.confidence.hardGateFailures.some(
@@ -1086,6 +1090,7 @@ export async function projectActivity(
   }
   if (best) await writeMergeDecision(input, best, "kept_distinct");
 
+  input = { ...input, activity: await explainActivity(input.activity) };
   const createdBy = await resolveCreatedBy(input.supabase);
   if (input.activity.kind === "recurring_activity") {
     const series = await createSeries(input, organizerId, createdBy);

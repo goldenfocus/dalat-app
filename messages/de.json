@@ -361,6 +361,8 @@
     "refreshPage": "Seite neu laden"
   },
   "events": {
+    "activitySource": "Quelle",
+    "activityLastConfirmed": "Zuletzt bestätigt",
     "starts": "Beginn",
     "ends": "Ende",
     "popular": "Beliebt",

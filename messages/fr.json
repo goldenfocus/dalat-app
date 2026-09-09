@@ -361,6 +361,8 @@
     "refreshPage": "Rafraîchir la page"
   },
   "events": {
+    "activitySource": "Source",
+    "activityLastConfirmed": "Dernière confirmation",
     "starts": "Début",
     "ends": "Fin",
     "popular": "Populaire",

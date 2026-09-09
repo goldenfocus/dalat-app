@@ -361,6 +361,8 @@
     "refreshPage": "ページを再読み込み"
   },
   "events": {
+    "activitySource": "情報源",
+    "activityLastConfirmed": "最終確認",
     "starts": "開始",
     "ends": "終了",
     "popular": "人気",

@@ -399,6 +399,7 @@ function officialSourceUrl(
 }
 
 interface ActivityGraphQuickFactsProps {
+  showAttribution?: boolean;
   locale: Locale;
   startsAt: string;
   endsAt: string | null;
@@ -413,6 +414,7 @@ interface ActivityGraphQuickFactsProps {
 }
 
 export function ActivityGraphQuickFacts({
+  showAttribution = true,
   locale,
   startsAt,
   endsAt,
@@ -538,7 +540,7 @@ export function ActivityGraphQuickFacts({
         )}
       </dl>
 
-      {(confirmedAt || sourceUrl) && (
+      {showAttribution && (confirmedAt || sourceUrl) && (
         <div className="flex flex-col gap-3 border-t bg-muted/20 px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
           {confirmedAt && (
             <span className="inline-flex items-center gap-2 text-muted-foreground">

@@ -361,6 +361,8 @@
     "refreshPage": "Обновить страницу"
   },
   "events": {
+    "activitySource": "Источник",
+    "activityLastConfirmed": "Последнее подтверждение",
     "starts": "Начало",
     "ends": "Окончание",
     "popular": "Популярное",

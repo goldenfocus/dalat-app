@@ -1,3 +1,4 @@
+import type { ExtractedActivity as EditorialActivity } from "./types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { projectActivity } from "./project";
@@ -14,6 +15,8 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
   writes: [] as Array<{ table: string; values: Record<string, unknown> }>,
 }));
+
+vi.mock("./editorial", () => ({ explainActivity: async (activity: EditorialActivity) => activity }));
 
 vi.mock("@/lib/seo/indexnow", () => ({ pingIndexNow: mocks.pingIndexNow }));
 vi.mock("@/lib/i18n/routing", () => ({ locales: ["en", "vi"] }));

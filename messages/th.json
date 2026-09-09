@@ -361,6 +361,8 @@
     "refreshPage": "รีเฟรชหน้า"
   },
   "events": {
+    "activitySource": "แหล่งข้อมูล",
+    "activityLastConfirmed": "ยืนยันล่าสุด",
     "starts": "เริ่ม",
     "ends": "สิ้นสุด",
     "popular": "ยอดนิยม",

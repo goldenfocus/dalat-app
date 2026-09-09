@@ -355,6 +355,8 @@
     "refreshPage": "刷新页面"
   },
   "events": {
+    "activitySource": "信息来源",
+    "activityLastConfirmed": "最近确认",
     "starts": "开始",
     "ends": "结束",
     "popular": "热门",

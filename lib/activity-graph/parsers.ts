@@ -513,11 +513,9 @@ export function extractSchemaOrgEvents(
           sourceUrl,
           kind: classifyEvent(title, description),
           title,
-          // Public projections use a small, original summary rather than copying
-          // a publisher's full description. The source payload remains evidence.
-          description: organizerName
-            ? `Thông tin hoạt động chính thức từ ${organizerName}. Xem nguồn để biết chi tiết mới nhất.`
-            : "Thông tin hoạt động từ nguồn chính thức. Xem nguồn để biết chi tiết mới nhất.",
+          // Retain source evidence for the editorial summarizer; it writes
+          // original public copy instead of reproducing the publisher's text.
+          description,
           startsAt: start.toISOString(),
           endsAt:
             end && !Number.isNaN(end.getTime()) ? end.toISOString() : null,

@@ -361,6 +361,8 @@
     "refreshPage": "Refresh page"
   },
   "events": {
+    "activitySource": "Source",
+    "activityLastConfirmed": "Last confirmed",
     "starts": "Starts",
     "ends": "Ends",
     "popular": "Popular",

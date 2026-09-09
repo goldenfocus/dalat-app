@@ -113,3 +113,7 @@ describe("sourceDescriptionForLocale", () => {
     expect(description).toContain("moves indoors");
   });
 });
+
+it("keeps attribution out of the event description", () => {
+  expect(activityDescriptionForLocale("en", activity, "Publisher")).not.toContain("Verified from");
+});

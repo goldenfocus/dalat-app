@@ -361,6 +361,8 @@
     "refreshPage": "페이지 새로고침"
   },
   "events": {
+    "activitySource": "출처",
+    "activityLastConfirmed": "최근 확인",
     "starts": "시작",
     "ends": "종료",
     "popular": "인기",

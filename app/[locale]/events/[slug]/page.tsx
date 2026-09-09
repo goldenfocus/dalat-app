@@ -1,3 +1,4 @@
+import { ActivitySourceFooter } from "@/components/events/activity-source-footer";
 import { eventImageAlt } from "@/lib/events/image-alt";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
@@ -1296,6 +1297,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     <h1 className="text-3xl font-bold mb-2">
                       {eventTranslations.title}
                     </h1>
+                    {eventTranslations.title !== eventTranslations.originalTitle && (
+                      <p lang={eventTranslations.sourceLocale ?? undefined} className="mb-3 text-base leading-relaxed text-muted-foreground">
+                        {eventTranslations.originalTitle}
+                      </p>
+                    )}
                     {/* Series context */}
                     {event.event_series && (
                       <Link
@@ -1321,12 +1327,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                       eventTranslations.sourceLocale && (
                         <TranslatedFrom
                           sourceLocale={eventTranslations.sourceLocale}
-                          originalText={
-                            eventTranslations.title !==
-                            eventTranslations.originalTitle
-                              ? eventTranslations.originalTitle
-                              : undefined
-                          }
                           className="mb-4"
                         />
                       )}
@@ -1407,7 +1407,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   {eventTranslations.description && (
                     <ExpandableText
                       text={eventTranslations.description}
-                      maxLines={4}
+                      maxLines={event.source_platform === "activity-graph" ? 8 : 4}
                     />
                   )}
 
@@ -1450,6 +1450,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     <h1 className="text-3xl font-bold mb-2">
                       {eventTranslations.title}
                     </h1>
+                    {eventTranslations.title !== eventTranslations.originalTitle && (
+                      <p lang={eventTranslations.sourceLocale ?? undefined} className="mb-3 text-base leading-relaxed text-muted-foreground">
+                        {eventTranslations.originalTitle}
+                      </p>
+                    )}
                     {/* Series context - show if this event is part of a recurring series */}
                     {event.event_series && (
                       <Link
@@ -1475,19 +1480,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                       eventTranslations.sourceLocale && (
                         <TranslatedFrom
                           sourceLocale={eventTranslations.sourceLocale}
-                          originalText={
-                            eventTranslations.title !==
-                            eventTranslations.originalTitle
-                              ? eventTranslations.originalTitle
-                              : undefined
-                          }
                           className="mb-4"
                         />
                       )}
                     {eventTranslations.description && (
                       <ExpandableText
                         text={eventTranslations.description}
-                        maxLines={4}
+                        maxLines={event.source_platform === "activity-graph" ? 8 : 4}
                       />
                     )}
 
@@ -1556,6 +1555,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
               {event.source_platform === "activity-graph" && (
                 <ActivityGraphQuickFacts
+                  showAttribution={false}
                   locale={locale as Locale}
                   startsAt={event.starts_at}
                   endsAt={event.ends_at}
@@ -1607,6 +1607,14 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 interested={interested}
                 isPast={isPast}
               />
+
+              {event.source_platform === "activity-graph" && (
+                <ActivitySourceFooter
+                  locale={locale}
+                  sourceMetadata={event.source_metadata ?? null}
+                  lastConfirmedAt={event.last_confirmed_at ?? null}
+                />
+              )}
 
               {/* Comments Section */}
               <EventCommentsSection

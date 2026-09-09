@@ -361,6 +361,8 @@
     "refreshPage": "Muat ulang halaman"
   },
   "events": {
+    "activitySource": "Sumber",
+    "activityLastConfirmed": "Terakhir dikonfirmasi",
     "starts": "Mulai",
     "ends": "Selesai",
     "popular": "Populer",

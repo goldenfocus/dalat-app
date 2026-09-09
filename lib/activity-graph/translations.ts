@@ -1,3 +1,4 @@
+import { batchTranslateFields, translateFieldsToLocale } from "@/lib/google-translate";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EventSeries } from "@/lib/types";
 import type { ExtractedActivity } from "./types";
@@ -321,7 +322,7 @@ export function activityDescriptionForLocale(
   if (activity.attributes.rain_suitable === true) {
     sentences.push(copy.rainSuitable);
   }
-  sentences.push(interpolate(copy.source, values));
+  // Source attribution is rendered separately in the event footer.
 
   return sentences.join(" ");
 }
@@ -397,31 +398,29 @@ export async function upsertActivityEventTranslations(
   sourceName: string,
 ): Promise<void> {
   if (eventIds.length === 0) return;
+  const original = { title: activity.title, description: sourceDescription(activity, sourceName) };
+  // Establish a readable English fallback first. Using its explicit cultural
+  // terms as the pivot avoids ambiguous Vietnamese festival names in other locales.
+  const english = await translateFieldsToLocale(Object.entries(original).map(([field_name, text]) => ({ field_name, text })), "en");
+  if (!english.title || !english.description) {
+    throw new Error("English activity translation is incomplete; retry before publication");
+  }
+  const { translations } = await batchTranslateFields(Object.entries(english).map(([field_name, text]) => ({ field_name, text })), "en");
+  translations.vi = original;
+  // Never fill failed locales with Vietnamese and mark them as translated.
+  // Missing fields remain missing so the translation sweep can retry them.
   const rows = eventIds.flatMap((eventId) =>
-    LOCALES.flatMap((locale) => [
-      {
+    LOCALES.flatMap((locale) =>
+      Object.entries(translations[locale] ?? {}).map(([field, text]) => ({
         content_type: "event",
         content_id: eventId,
         source_locale: "vi",
         target_locale: locale,
-        field_name: "title",
-        translated_text: activity.title,
+        field_name: field,
+        translated_text: text,
         translation_status: "auto",
-      },
-      {
-        content_type: "event",
-        content_id: eventId,
-        source_locale: "vi",
-        target_locale: locale,
-        field_name: "description",
-        translated_text: activityDescriptionForLocale(
-          locale,
-          activity,
-          sourceName,
-        ),
-        translation_status: "auto",
-      },
-    ]),
+      })),
+    ),
   );
   const { error } = await supabase.from("content_translations").upsert(rows, {
     onConflict: "content_type,content_id,target_locale,field_name",
@@ -435,5 +434,5 @@ export function sourceDescription(
   activity: ExtractedActivity,
   sourceName: string,
 ): string {
-  return activityDescriptionForLocale("vi", activity, sourceName);
+  return activity.description?.trim() || activityDescriptionForLocale("vi", activity, sourceName);
 }

@@ -52,7 +52,7 @@ export function ExpandableText({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-primary hover:underline text-sm mt-1 px-0"
+          className="-ml-3 mt-1 min-h-11 rounded-lg px-3 py-2 text-sm text-primary hover:underline active:scale-95 transition-all"
         >
           {isExpanded ? t("showLess") : t("readMore")}
         </button>

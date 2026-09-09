@@ -361,6 +361,8 @@
     "refreshPage": "Tải lại trang"
   },
   "events": {
+    "activitySource": "Nguồn thông tin",
+    "activityLastConfirmed": "Xác nhận lần cuối",
     "starts": "Bắt đầu",
     "ends": "Kết thúc",
     "popular": "Phổ biến",
