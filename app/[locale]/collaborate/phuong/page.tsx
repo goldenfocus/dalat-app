@@ -10,7 +10,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   return {
-    title: "Thu + Zan × Dalat.app",
+    title: "Phuong + Zan × Dalat.app",
     description:
       locale === "vi"
         ? "Cùng tìm một điều đáng thử."
@@ -22,29 +22,29 @@ export async function generateMetadata({
       googleBot: { index: false, follow: false, noimageindex: true },
     },
     alternates: {
-      canonical: `https://dalat.app${locale === "en" ? "" : `/${locale}`}/thu`,
+      canonical: `https://phuong.dalat.app${locale === "en" ? "/" : `/${locale}`}`,
       languages: {
-        en: "https://dalat.app/thu",
-        vi: "https://dalat.app/vi/thu",
+        en: "https://phuong.dalat.app/",
+        vi: "https://phuong.dalat.app/vi",
       },
     },
     openGraph: {
-      title: "Thu + Zan × Dalat.app",
+      title: "Phuong + Zan × Dalat.app",
       description: "A collaboration workshop",
       images: [],
     },
-    twitter: { card: "summary", title: "Thu + Zan × Dalat.app", images: [] },
+    twitter: { card: "summary", title: "Phuong + Zan × Dalat.app", images: [] },
   };
 }
 
-export default async function ThuPage({
+export default async function PhuongPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("thu");
+  const t = await getTranslations("phuong");
   // Route-specific server dictionary: do not add meeting copy to the global client shell.
   const copy = t.raw("canvas") as WorkshopCopy;
   return <Workshop copy={copy} language={locale === "vi" ? "vi" : "en"} />;

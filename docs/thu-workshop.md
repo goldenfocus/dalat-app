@@ -1,4 +1,12 @@
-# Thu collaboration workshop — 2026-09-10
+# Phuong collaboration workshop — 2026-09-10
+
+## Subdomain move
+
+The current URL is https://phuong.dalat.app (Vietnamese: /vi), attached to the same Vercel project. Host middleware rewrites locale roots to app/[locale]/collaborate/phuong and sends ordinary public-page links to dalat.app. Cloudflare DNS uses Vercel’s recommended DNS-only CNAME. No separate app or Worker is deployed. Both the host and internal route carry noindex headers. This remains unlisted, not access-controlled.
+
+The /thu workshop route is removed without a redirect, and migration 20260910_002 releases only its workshop reservation after deployment. The existing /phuong profile is untouched. Personal mentions use Phuong in EN/VI; Vietnamese “Thu phí” (charge fees) remains unchanged. The old localStorage key is retained and old owner labels migrate, but browser storage cannot automatically cross domains. Existing notes on dalat.app are not deleted or transmitted. Service worker version: 1.0.20.
+
+## Original implementation record
 
 ## Inspection and scope
 

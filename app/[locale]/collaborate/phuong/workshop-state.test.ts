@@ -1,14 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { emptyMeeting, readMeeting } from "./workshop-state";
-import en from "@/messages/thu/en.json";
-import vi from "@/messages/thu/vi.json";
+import en from "@/messages/phuong/en.json";
+import vi from "@/messages/phuong/vi.json";
 
 describe("meeting storage", () => {
+  it("updates the previous owner label without changing meeting notes", () => {
+    const result = readMeeting(JSON.stringify({ owner: "Thu", experiment: "Thu's notes", roles: { 0: 1 } }));
+    expect(result.owner).toBe("Phuong");
+    expect(result.experiment).toBe("Thu's notes");
+    expect(result.roles).toEqual({ 0: 1 });
+  });
   it("round trips choices and Vietnamese notes", () => {
     const meeting = {
       ...emptyMeeting(),
       experiment: "Tìm ba ban tổ chức",
-      owner: "Thu",
+      owner: "Phuong",
       roles: { 0: 0, 14: 2 },
       level: 2,
     };

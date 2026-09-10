@@ -146,7 +146,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/:locale(en|vi|ko|zh|ru|fr|ja|ms|th|de|es|id)?/thu",
+        source: "/:path*",
+        has: [{ type: "host", value: "phuong.dalat.app" }],
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
+        source: "/:locale(en|vi|ko|zh|ru|fr|ja|ms|th|de|es|id)?/collaborate/phuong",
         headers: [
           { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
           { key: "Referrer-Policy", value: "no-referrer" },

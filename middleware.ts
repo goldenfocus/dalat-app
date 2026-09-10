@@ -1,11 +1,30 @@
 import { updateSession } from "@/lib/supabase/proxy";
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { locales } from "@/lib/i18n/routing";
 
 // Edge middleware (NOT proxy.ts): the OpenNext Cloudflare adapter only
 // supports edge middleware, and in Next 16 proxy.ts always compiles to the
 // unsupported Node runtime. Exactly ONE of middleware.ts/proxy.ts may exist
 // — both at once crashes the app (enforced by the prebuild script).
 export async function middleware(request: NextRequest) {
+  // One application, a dedicated meeting host, and no claimed public username.
+  if (request.nextUrl.hostname === "phuong.dalat.app") {
+    const segment = request.nextUrl.pathname.replace(/^\/|\/$/g, "");
+    if (!segment || locales.includes(segment as (typeof locales)[number])) {
+      const locale = segment || "en";
+      const destination = request.nextUrl.clone();
+      destination.pathname = `/${locale}/collaborate/phuong`;
+      const headers = new Headers(request.headers);
+      headers.set("x-next-intl-locale", locale);
+      return NextResponse.rewrite(destination, { request: { headers } });
+    }
+    // Shared shell links go to the real app, not duplicate public pages here.
+    const destination = request.nextUrl.clone();
+    destination.hostname = "dalat.app";
+    destination.protocol = "https:";
+    destination.port = "";
+    return NextResponse.redirect(destination);
+  }
   return await updateSession(request);
 }
 

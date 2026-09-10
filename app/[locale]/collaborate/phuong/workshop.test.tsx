@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { Workshop } from "./workshop";
 import { STORAGE_KEY } from "./workshop-state";
-import en from "@/messages/thu/en.json";
+import en from "@/messages/phuong/en.json";
 vi.mock("@/lib/i18n/routing", () => ({
   Link: ({
     locale: _locale,

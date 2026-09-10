@@ -11,8 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/lib/i18n/routing";
-import type EnglishCopy from "@/messages/thu/en.json";
+import type EnglishCopy from "@/messages/phuong/en.json";
 import {
   emptyMeeting,
   readMeeting,
@@ -27,7 +26,7 @@ const anchors = [
   "vision",
   "today",
   "opportunity",
-  "thu",
+  "phuong",
   "conversation",
   "zero",
   "experiment",
@@ -148,7 +147,7 @@ export function Workshop({
     );
     const a = document.createElement("a");
     a.href = url;
-    a.download = `dalat-thu-${language}-meeting.txt`;
+    a.download = `dalat-phuong-${language}-meeting.txt`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -158,23 +157,21 @@ export function Workshop({
         <div className="thu-toolbar-inner">
           <span className="thu-wordmark">
             <Leaf size={16} aria-hidden="true" /> DALAT.APP{" "}
-            <span> / THU + ZAN</span>
+            <span> / PHUONG + ZAN</span>
           </span>
           <div className="thu-languages" aria-label="Language / Ngôn ngữ">
-            <Link
-              href="/thu"
-              locale="en"
+            <a
+              href="https://phuong.dalat.app/"
               aria-current={language === "en" ? "page" : undefined}
             >
               ENGLISH
-            </Link>
-            <Link
-              href="/thu"
-              locale="vi"
+            </a>
+            <a
+              href="https://phuong.dalat.app/vi"
               aria-current={language === "vi" ? "page" : undefined}
             >
               TIẾNG VIỆT
-            </Link>
+            </a>
           </div>
         </div>
         <nav
@@ -250,15 +247,15 @@ export function Workshop({
             <p>{c.builtText}</p>
             <div className="thu-actions">
               {urls.map((url, i) => (
-                <Link
+                <a
                   key={url}
-                  href={url}
+                  href={`https://dalat.app${language === "vi" ? "/vi" : ""}${url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="thu-text-link"
                 >
                   {c.liveLinks[i]} ↗
-                </Link>
+                </a>
               ))}
             </div>
           </div>
@@ -287,7 +284,7 @@ export function Workshop({
             <Cards rows={c.graphCards} />
           </details>
         </section>
-        <section id="thu" className="thu-section">
+        <section id="phuong" className="thu-section">
           <Heading n="04" title={c.rolesTitle} text={c.rolesText} />
           <p className="thu-selection" aria-live="polite">
             {selected} / 15 {c.selected}
@@ -505,7 +502,7 @@ export function Workshop({
                     }
                   >
                     <option value="">{c.owners[0]}</option>
-                    <option value="Thu">Thu</option>
+                    <option value="Phuong">Phuong</option>
                     <option value="Zan">Zan</option>
                   </select>
                 ) : key === "deadline" || key === "checkin" ? (
@@ -591,7 +588,7 @@ export function Workshop({
         <footer className="thu-closing">
           <Leaf size={28} aria-hidden="true" />
           <p>{c.closing}</p>
-          <span>THU + ZAN × DALAT.APP</span>
+          <span>PHUONG + ZAN × DALAT.APP</span>
         </footer>
       </div>
     </div>

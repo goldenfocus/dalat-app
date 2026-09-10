@@ -1,3 +1,4 @@
+// Keep the historical key for existing records; storage is isolated per origin.
 export const STORAGE_KEY = "dalat.thu.workshop.v1";
 export interface Meeting {
   roles: Record<number, number>;
@@ -42,7 +43,8 @@ export function readMeeting(raw: string | null): Meeting {
       if (typeof value[key] === "string")
         result[key] = value[key].slice(0, 3000);
     }
-    if (!["", "Thu", "Zan"].includes(result.owner)) result.owner = "";
+    if (result.owner === "Thu") result.owner = "Phuong";
+    if (!["", "Phuong", "Zan"].includes(result.owner)) result.owner = "";
     if (Number.isInteger(value.level) && value.level >= 0 && value.level <= 5)
       result.level = value.level;
     if (value.roles && typeof value.roles === "object") {

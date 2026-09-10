@@ -19,9 +19,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
     messages: {
       ...(await import(`@/messages/${locale}.json`)).default,
       // This unlisted workshop has reviewed EN/VI copy; other locales explicitly use English.
-      thu: {
+      phuong: {
         canvas: (
-          await import(`@/messages/thu/${locale === "vi" ? "vi" : "en"}.json`)
+          await import(`@/messages/phuong/${locale === "vi" ? "vi" : "en"}.json`)
         ).default,
       },
     },

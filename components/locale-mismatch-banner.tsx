@@ -71,6 +71,7 @@ export function LocaleMismatchBanner() {
 
   // Detect browser locale on client mount
   React.useEffect(() => {
+    if (window.location.hostname === "phuong.dalat.app") return;
     const detected = detectBrowserLocale();
     setBrowserLocale(detected);
 
@@ -91,7 +92,7 @@ export function LocaleMismatchBanner() {
   const shouldShow = browserLocale && browserLocale !== urlLocale && !isDismissed;
 
   // The bilingual workshop intentionally switches language while people sit together.
-  if (!shouldShow || pathname === "/thu") return null;
+  if (!shouldShow || pathname === "/collaborate/phuong") return null;
 
   return (
     // On mobile (lg:hidden), position above the floating RSVP bar which sits at bottom-[calc(4rem+env(safe-area-inset-bottom))]
