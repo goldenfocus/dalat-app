@@ -1,0 +1,424 @@
+{
+  "eyebrow": "A conversation. A possibility. A first step.",
+  "title": "Thu + Zan",
+  "subtitle": "What could we build together?",
+  "intro": "A living workshop for Dalat.app. Find what gives you energy, imagine something bigger, and leave with one small experiment you can own.",
+  "date": "Đà Lạt · 10 September 2026",
+  "privacy": "Unlisted meeting canvas · Anyone with this link can read it. Keep private contacts and sensitive notes elsewhere.",
+  "start": "Begin the conversation",
+  "jump": "Go to our decision",
+  "nav": [
+    "Welcome",
+    "Dream",
+    "Today",
+    "Opportunity",
+    "Thu",
+    "Conversation",
+    "Customer zero",
+    "Experiment",
+    "Money",
+    "Future",
+    "Decision"
+  ],
+  "visionTitle": "A city that finds itself. And remembers itself.",
+  "visionText": "Everything happening in Đà Lạt. The people creating it. The moments worth keeping. A discovery layer before an event, a place to participate during it, and a living memory afterward.",
+  "loop": [
+    "Discover",
+    "Attend",
+    "Connect",
+    "Capture",
+    "Remember",
+    "Discover again"
+  ],
+  "dreamLabel": "THE LIVING MAP OF ĐÀ LẠT",
+  "todayTitle": "Big capability. Early days.",
+  "todayCards": [
+    [
+      "Our starting point",
+      "Small audience, limited activity, no meaningful revenue yet. These are founder-reported conditions, not an analytics audit."
+    ],
+    [
+      "Our advantage",
+      "Product infrastructure, multilingual access, automation, and fast experiments. Capital can support learning; attention is scarcer."
+    ],
+    [
+      "Our constraint",
+      "Organizers do not yet instinctively publish here. Zan still does too much. Twelve languages are infrastructure, not twelve active audiences."
+    ]
+  ],
+  "builtTitle": "Already here. Try it together.",
+  "builtText": "Repository inspection found event pages, Moments galleries and professional uploads, venue and organizer profiles, RSVP/check-in flows, and organizer tools. Availability is not evidence of adoption.",
+  "liveLinks": [
+    "Open the September 8 workshop",
+    "Explore venues",
+    "See event memories",
+    "Open organizer tools"
+  ],
+  "opportunityTitle": "The event opens the door. The memory brings us back.",
+  "aha": "Thu photographed the September 8 AI workshop, then uploaded the photos herself. That was the moment the product clicked. Could participation turn into a reason to return?",
+  "hypothesis": "HYPOTHESIS TO TEST · NOT PROVEN",
+  "flywheelTitle": "The flywheel",
+  "flywheel": [
+    "Organizer publishes",
+    "People discover & attend",
+    "Photos make an archive",
+    "Attendees return & share",
+    "Related people, places, events",
+    "Organizer publishes again"
+  ],
+  "flywheelMeasure": "Test the link: after a consent-based gallery message, do attendees return—and does an organizer publish their next event? A photo view alone is not retention.",
+  "archiveTitle": "Not just “what’s on?” Also: “we were here.”",
+  "archiveText": "A meaningful evening should not disappear into a chat thread or a forgotten Drive folder. Connect its date, place, organizer, story and media. Include attendees only with appropriate consent. Over years, small moments become the memory of a city.",
+  "archiveFuture": "Imagine: “On this day in Đà Lạt…” · A venue’s history · A community growing through the years. Future concepts, not current promises.",
+  "networkDetails": "Explore the other loops",
+  "networks": [
+    [
+      "Events",
+      "More useful events → more attendees → a reason for organizers to publish again."
+    ],
+    [
+      "Archives",
+      "More history → more sharing and search discovery → new people → new organizers."
+    ],
+    [
+      "Venues",
+      "Events link to a venue → a richer profile → discovery → more relevant events. A community node, not just a map pin."
+    ],
+    [
+      "Organizers",
+      "Publishing → reusable history and followers → next event → a more valuable profile. Earn repeat use; keep sharing and exit easy."
+    ],
+    [
+      "Thu",
+      "Trusted relationships → organizers try the app → a stronger network → more opportunities → deeper city knowledge."
+    ]
+  ],
+  "graphDetails": "People + places: what could make them useful?",
+  "graphCards": [
+    [
+      "Venues with context",
+      "Upcoming and past events, real community photos, atmosphere, vegetarian options, laptop and language friendliness, accessibility, capacity, noise, groups, outdoor seating, parking and bicycles. Validate these details with the venue; do not invent ratings."
+    ],
+    [
+      "People who create things you love",
+      "Organizer bio, identity verification where available, organizations, event history, media, communities, categories, languages and intentional contact links. Following, reputation and reviews need careful design; paid promotion must never buy a rating."
+    ]
+  ],
+  "rolesTitle": "Where do you feel a spark?",
+  "rolesText": "Choose by energy, not by a job title. Tap a response on any card; tap it again to clear. We are exploring strengths—not offering a salary, equity, partnership or permanent position.",
+  "choices": [
+    "Love it",
+    "Curious",
+    "Not me"
+  ],
+  "roles": [
+    [
+      "City scout",
+      "Find one worthwhile event we have missed."
+    ],
+    [
+      "Organizer onboarding",
+      "Help someone publish their own next event."
+    ],
+    [
+      "Event coordinator",
+      "Own the run sheet and resolve ordinary issues."
+    ],
+    [
+      "Photographer",
+      "Work from a brief and deliver a curated story."
+    ],
+    [
+      "Media producer",
+      "Bring the right photo, video and design people together."
+    ],
+    [
+      "Community builder",
+      "Help recurring attendees feel connected."
+    ],
+    [
+      "Partnership lead",
+      "Build useful relationships with venues and businesses."
+    ],
+    [
+      "Event archivist",
+      "Make a complete, accurate, findable memory."
+    ],
+    [
+      "Storytelling lead",
+      "Turn a local happening into a story people care about."
+    ],
+    [
+      "Organizer success",
+      "Find what makes an organizer come back."
+    ],
+    [
+      "AI operations",
+      "Turn messy messages into drafts humans can verify."
+    ],
+    [
+      "Local network builder",
+      "Know who actually makes things happen."
+    ],
+    [
+      "Event programming",
+      "Shape one repeatable gathering with a clear purpose."
+    ],
+    [
+      "Commercial partnerships",
+      "Explore sponsors after value is demonstrated."
+    ],
+    [
+      "City ambassador",
+      "Represent the app honestly in local communities."
+    ]
+  ],
+  "progression": "One project → a repeatable responsibility → organizer relationships → perhaps an area of leadership. A path to explore, not a promised promotion.",
+  "conversationTitle": "First, understand the person.",
+  "conversationText": "Pick a question that feels alive. Follow the story. We do not need to finish a questionnaire.",
+  "prompts": [
+    [
+      "What gives you energy?",
+      "If money were not the immediate problem, what would you enjoy building? Creating, organizing, selling, connecting, leading, photography, media, solving chaos—or something else? In public or behind the scenes?"
+    ],
+    [
+      "Tell me about your best event.",
+      "What did YOU own? What went wrong? What did you solve yourself, and where did you need help? What would you change? Who hired you, and how were you paid?"
+    ],
+    [
+      "Who is your team, really?",
+      "Friends, freelancers, employees or partners? Who can reliably do photo, video, design, social media, PR, promotion, MC, DJ or production? Which work have you delivered together?"
+    ],
+    [
+      "Who would answer your message today?",
+      "Which organizers and venues do you personally know? What do they run, how often, and what is next? How strong is the relationship? Keep names and private contact details in a separate, agreed place."
+    ],
+    [
+      "What could you own for seven days?",
+      "Choose a result you could deliver without daily supervision. What would you decide yourself? When would you ask for help? What would you like AI to handle?"
+    ],
+    [
+      "What would a good year feel like?",
+      "What would you like to learn? What does financial independence mean to you? Freelance flexibility, an agency, your own event/media company, leadership, a salary, project fees, commissions—or a mix?"
+    ]
+  ],
+  "zeroTitle": "Customer zero: start with something real.",
+  "zeroText": "Zan already hosts technology, AI and builder gatherings. Use one as a controlled sandbox for publishing, preparation, check-in, a clear media brief, a curated archive and consent-based follow-up. Agree a project scope and compensation separately before work begins.",
+  "zeroWarning": "INTERNAL VALIDATION ≠ MARKET VALIDATION. Zan can prove a workflow works. An independent organizer must prove someone else wants it.",
+  "minimalTitle": "The minimal-Zan test",
+  "minutes": "≤ 30 min",
+  "minimalText": "Supervision per week for the agreed responsibility. Log setup and rescue time too. Success means correct information, an approved media brief, a complete archive, ordinary problems resolved, and a checklist someone else can reuse.",
+  "autonomyTitle": "If Zan disappears for seven days, what continues?",
+  "levels": [
+    "Every click explained",
+    "Detailed tasks provided",
+    "Outcome defined; Thu executes",
+    "Thu spots problems and proposes fixes",
+    "Thu owns an area and reports results",
+    "Thu builds systems and trains others"
+  ],
+  "autonomyNote": "Choose a starting point together. Level 2 is a useful first experiment; Level 5 is not an expectation today. Ownership includes decision rights and a clear escalation path.",
+  "experimentTitle": "Seven days. One result.",
+  "experimentText": "Recommended: map the people who make Đà Lạt happen—and test one handoff. Start with five organizers and five venues Thu already knows, not a city-wide directory.",
+  "week": [
+    [
+      "Days 1–2 · Map",
+      "Record event type, frequency, next known event and relationship strength. Use a private, agreed contact sheet. Unknown is an acceptable answer."
+    ],
+    [
+      "Days 3–4 · Listen",
+      "Have three permission-based conversations. Ask about discovery, publishing, photo delivery and next-event follow-up. No hard sell."
+    ],
+    [
+      "Days 5–6 · Hand off",
+      "Invite one interested organizer to create or correct their own page. Only publish verified details with permission. If no event is ready, validate a draft and record why."
+    ],
+    [
+      "Day 7 · Learn",
+      "Bring one repeatable checklist, three concrete pain points, the handoff result and a log of Zan’s time. Decide continue, change or stop."
+    ]
+  ],
+  "organizerQuestionsTitle": "A conversation with an organizer",
+  "organizerQuestions": "How do people find you? Where do you post? What takes too much time? What do you already pay for: design, photography, promotion, guests or coordination? Where do photos go? How do attendees find them and hear about the next event? Would you maintain a page if it took two minutes? Would multilingual discovery help? What would make this worth remembering?",
+  "aiTitle": "AI handles structure. Humans bring truth.",
+  "aiInput": "“Party Friday 7pm, acoustic music, 100k, message me.”",
+  "aiOutput": "Draft: acoustic evening · 19:00 · quoted price: 100k (confirm currency and inclusions). Still missing: exact calendar date, venue/address, organizer, booking contact and photo permission. Never guess these.",
+  "aiSteps": [
+    "Incoming message",
+    "AI draft + missing questions",
+    "Organizer confirms facts",
+    "Human approves",
+    "Publish + translate",
+    "Media → recap → next event"
+  ],
+  "aiNote": "Workflow concept, not a connected inbox on this page. AI can prepare title, description, categories, VI/EN copy, other translations, social captions, SEO and image suggestions. Each collaborator uses their own authorized access; no shared personal subscriptions.",
+  "moneyTitle": "Free infrastructure first. Monetize value later.",
+  "moneyText": "Keep basic publishing, profiles, discovery, sharing, photos and basic RSVP accessible while habits form. This is a strategic direction, not a new pricing promise. Optional services can earn money before a large audience exists.",
+  "moneyStages": [
+    [
+      "Now · services",
+      "Traction, habit and relationships. Test a tightly scoped photo, coordination or media package. Charge for a delivered result; track costs and founder time. Subsidies should buy evidence."
+    ],
+    [
+      "Next · tools",
+      "Only after repeat use: organizer subscriptions, automation, analytics, CRM, attendee messaging and enhanced profiles. Require a real pain point and willingness to pay."
+    ],
+    [
+      "Transactions · volume required",
+      "Ticket or booking fees, commissions and paid upgrades only when transactions justify operations and compliance. No payment implementation here."
+    ],
+    [
+      "Audience · reach required",
+      "Clearly labeled sponsored events, venues, guides and tourism campaigns only after measurable relevant reach. Never sell imaginary exposure."
+    ],
+    [
+      "Network · a distant option",
+      "Organizer operating system, local business software, hospitality integrations, city partnerships, APIs or reusable city infrastructure. Evidence before expansion."
+    ]
+  ],
+  "packagesTitle": "Optional event packages · possibilities to test",
+  "packages": [
+    [
+      "Before",
+      "Page setup, information cleanup, multilingual copy, graphics, posters, teasers, social assets, consultation, venue coordination and RSVP preparation."
+    ],
+    [
+      "During",
+      "Check-in, guests, photography, video, livestream, interviews, MC, production, stage coordination and sponsor activation."
+    ],
+    [
+      "After",
+      "Curated gallery, highlights, recap, consent-based follow-up, testimonials, clips, next-event announcement, archive and useful analytics."
+    ]
+  ],
+  "futureTitle": "Start small. Keep the horizon wide.",
+  "futureLabel": "THE BIG DREAM — NOT A PROMISE",
+  "future": [
+    [
+      "1 year",
+      "A useful local habit",
+      "Imagine hundreds or thousands of events indexed and remembered, organizers maintaining their pages, richer venues and recurring communities. Multilingual discovery earns real use. A small team and mostly automated ingestion reduce Zan’s work. Thu may own an operational area if the collaboration works. Monetization experiments produce evidence."
+    ],
+    [
+      "5 years",
+      "A city that knows its communities",
+      "“Where is live jazz?” “Where do builders meet?” “What happened at last year’s festival?” Events, people, venues, reviews, media and recommendations connect. An organizer operating system or AI concierge might become useful. Expansion only if the local model works."
+    ],
+    [
+      "10 years",
+      "The memory of many cities",
+      "What if each city had a living graph of people, places, events, communities, businesses, stories and relationships? A local digital nervous system that helps answer what is happening, who to meet and what changed over time. Đà Lạt could be the prototype."
+    ]
+  ],
+  "metricsTitle": "Measure what compounds.",
+  "northStars": [
+    "Active organizers who publish again",
+    "Minutes of Zan time per event"
+  ],
+  "metricsText": "Define “active”: an organizer publishes a verified event, then another within their normal event cycle. Seven days can test a handoff, not establish a repeat rate. Record eligible organizers and the follow-up window before comparing.",
+  "metricsMore": "Also track conversations → onboarding → self-published events; repeat rate; archive/media completeness; consent-based gallery returns and shares; repeat attendance; organizer satisfaction and referrals; venues validated; autonomous tasks; turnaround; accuracy. Record counts and denominators. Raw account totals are not the goal.",
+  "guardrailsTitle": "Keep the community. Make it easier to discover and remember.",
+  "guardrails": [
+    [
+      "Tell the truth",
+      "No fake traction, guaranteed reach or unagreed salary, equity, partnership or title."
+    ],
+    [
+      "Earn permission",
+      "No spam or forced moves from Facebook, Zalo or WhatsApp. Respect event visibility, photo consent, removal requests and private contact details."
+    ],
+    [
+      "Protect trust",
+      "Separate sponsorship from organic reviews. Use individual authorized AI accounts. Keep sensitive notes off this link and shared devices."
+    ],
+    [
+      "Protect attention",
+      "One experiment, clear decision rights, defined escalation. Ten organizers publishing again matter more than a hundred events entered by Zan. Do not build everything."
+    ]
+  ],
+  "gardenTitle": "Idea garden",
+  "gardenText": "Not a roadmap. Park possibilities here so today’s experiment stays small. Existing features may overlap; try them before building more.",
+  "garden": [
+    "Organizer dashboard",
+    "Photo archives",
+    "Organizer & venue profiles",
+    "Venue reviews",
+    "Consent-based attendee tags",
+    "Follow organizers / venues",
+    "Tonight / this weekend",
+    "Community integrations",
+    "Livestream",
+    "AI recaps & translation",
+    "CRM",
+    "Photo / video / promoter marketplace",
+    "Event services",
+    "Local sponsorships",
+    "Giveaways & RSVP rewards",
+    "Community & professional profiles",
+    "Can help / need help",
+    "Friendship, business, activities",
+    "Personal city feed",
+    "AI concierge & audio guide",
+    "Historical timelines",
+    "Venue & organizer history",
+    "City calendar",
+    "Automatic ingestion & poster extraction",
+    "QR check-in",
+    "Ticketing & memberships",
+    "Premium tools & analytics",
+    "API & tourism partnerships"
+  ],
+  "challengeTitle": "Codex’s challenge",
+  "challenges": [
+    [
+      "Use what is already built.",
+      "The repository already includes Moments, organizer tools and venue profiles. Test the September 8 archive and an organizer handoff before adding a dashboard."
+    ],
+    [
+      "A relationship is not yet a distribution channel.",
+      "Hypothesis: Thu’s strongest contribution may be organizer trust and coordination. Three specific conversations tell us more than a broad claim to a media network."
+    ],
+    [
+      "Do not confuse a happy customer zero with a market.",
+      "Zan’s event can validate delivery. An independent organizer doing the next step without rescue is stronger evidence of demand."
+    ],
+    [
+      "Sell outcomes before exposure.",
+      "At low traction, a curated archive or reliable coordination has clearer value than promoted placement. Hypothesis: scoped services are the earliest plausible revenue. Track margin and Zan’s time."
+    ],
+    [
+      "Make the seven-day test falsifiable.",
+      "Three conversations, one attempted self-service handoff, one checklist, at most 30 minutes of Zan’s supervision. If nobody wants the handoff, preserve that result and change the offer."
+    ],
+    [
+      "A short URL is convenient, not private.",
+      "/thu currently has no resolved entity, but lives in the public profile URL space. Keep this unlisted canvas temporary; use authenticated access if confidential negotiations become necessary."
+    ]
+  ],
+  "decisionTitle": "Leave with one thing worth trying.",
+  "decisionText": "We do not need to know Thu’s permanent role today. Find one strength, give it room, learn from a real result.",
+  "fields": [
+    "Our first experiment",
+    "One accountable owner",
+    "Done by",
+    "Success looks like",
+    "Zan’s maximum involvement",
+    "Next check-in · Đà Lạt time (UTC+7)",
+    "Decision rights / when to ask for help"
+  ],
+  "owners": [
+    "Choose together",
+    "Thu",
+    "Zan"
+  ],
+  "saveNote": "Saved only in this browser, shared across English and Vietnamese. Not synced or sent to the team. Avoid sensitive notes. Clear after using a shared device.",
+  "saved": "Saved on this device",
+  "saveError": "Browser storage unavailable. Keep this tab open and export your decision before leaving.",
+  "export": "Download meeting notes",
+  "reset": "Clear this meeting",
+  "resetConfirm": "Clear role choices and decision fields from this browser? This cannot be undone.",
+  "selected": "roles explored",
+  "closing": "Dalat.app should help the city organize itself—and remember itself.",
+  "confirmReset": "Yes, clear meeting",
+  "cancel": "Keep my notes"
+}

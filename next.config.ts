@@ -146,6 +146,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/:locale(en|vi|ko|zh|ru|fr|ja|ms|th|de|es|id)?/thu",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
         // Static assets - cache for 1 year (immutable)
         source: "/:all*(svg|jpg|jpeg|png|gif|ico|webp|avif|woff|woff2)",
         headers: [

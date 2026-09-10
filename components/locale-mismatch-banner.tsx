@@ -90,7 +90,8 @@ export function LocaleMismatchBanner() {
   // - User has permanently dismissed
   const shouldShow = browserLocale && browserLocale !== urlLocale && !isDismissed;
 
-  if (!shouldShow) return null;
+  // The bilingual workshop intentionally switches language while people sit together.
+  if (!shouldShow || pathname === "/thu") return null;
 
   return (
     // On mobile (lg:hidden), position above the floating RSVP bar which sits at bottom-[calc(4rem+env(safe-area-inset-bottom))]

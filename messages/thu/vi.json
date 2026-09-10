@@ -1,0 +1,424 @@
+{
+  "eyebrow": "Một cuộc trò chuyện. Một cơ hội. Một bước khởi đầu.",
+  "title": "Thu + Zan",
+  "subtitle": "Mình có thể cùng nhau tạo nên điều gì?",
+  "intro": "Một buổi cùng nghĩ, cùng thử với Dalat.app. Tìm điều khiến Thu hào hứng, hình dung xa hơn, rồi chọn một thử nghiệm nhỏ mà Thu có thể chủ động dẫn dắt.",
+  "date": "Đà Lạt · 10 tháng 9, 2026",
+  "privacy": "Không đưa vào danh mục công khai · Ai có đường dẫn đều xem được. Đừng ghi thông tin liên hệ riêng hay nội dung nhạy cảm ở đây.",
+  "start": "Bắt đầu trò chuyện",
+  "jump": "Đến phần quyết định",
+  "nav": [
+    "Chào Thu",
+    "Ước mơ",
+    "Hiện tại",
+    "Cơ hội",
+    "Vai trò",
+    "Trò chuyện",
+    "Khách đầu tiên",
+    "Thử nghiệm",
+    "Doanh thu",
+    "Tương lai",
+    "Quyết định"
+  ],
+  "visionTitle": "Để thành phố kết nối với chính mình. Và lưu giữ ký ức của mình.",
+  "visionText": "Những gì đang diễn ra ở Đà Lạt. Những người tạo nên chúng. Những khoảnh khắc đáng lưu giữ. Giúp mọi người tìm thấy sự kiện trước khi diễn ra, tham gia khi có mặt, và nhớ lại sau đó.",
+  "loop": [
+    "Khám phá",
+    "Tham dự",
+    "Kết nối",
+    "Ghi lại",
+    "Lưu giữ",
+    "Khám phá tiếp"
+  ],
+  "dreamLabel": "BẢN ĐỒ SỐNG CỦA ĐÀ LẠT",
+  "todayTitle": "Nền tảng nhiều tiềm năng. Hành trình mới bắt đầu.",
+  "todayCards": [
+    [
+      "Điểm xuất phát",
+      "Người dùng còn ít, hoạt động chưa nhiều, chưa có doanh thu đáng kể. Đây là đánh giá của người sáng lập, chưa phải kiểm toán dữ liệu."
+    ],
+    [
+      "Lợi thế",
+      "Sản phẩm đã có nền tảng, hỗ trợ nhiều ngôn ngữ, có tự động hóa và khả năng thử nhanh. Vốn có thể hỗ trợ học hỏi; thời gian và sự tập trung mới là nguồn lực khan hiếm."
+    ],
+    [
+      "Điểm nghẽn",
+      "Ban tổ chức chưa có thói quen đăng sự kiện ở đây. Zan vẫn làm quá nhiều. Có 12 ngôn ngữ không đồng nghĩa có 12 cộng đồng người dùng."
+    ]
+  ],
+  "builtTitle": "Đã có sẵn. Cùng mở thử nhé.",
+  "builtText": "Trong mã nguồn đã có trang sự kiện, thư viện Moments và tải ảnh chuyên nghiệp, hồ sơ địa điểm và ban tổ chức, luồng RSVP/điểm danh, cùng công cụ cho ban tổ chức. Có tính năng chưa có nghĩa là mọi người đã dùng thường xuyên.",
+  "liveLinks": [
+    "Mở workshop ngày 8/9",
+    "Khám phá địa điểm",
+    "Xem ký ức sự kiện",
+    "Mở công cụ ban tổ chức"
+  ],
+  "opportunityTitle": "Sự kiện mở cánh cửa. Ký ức kéo mình quay lại.",
+  "aha": "Thu chụp ảnh workshop AI ngày 8/9, rồi tự tải ảnh lên. Chính lúc đó, giá trị của ứng dụng trở nên rõ ràng hơn. Liệu cảm giác “mình đã ở đó” có khiến mọi người muốn quay lại?",
+  "hypothesis": "GIẢ THUYẾT CẦN THỬ · CHƯA ĐƯỢC KIỂM CHỨNG",
+  "flywheelTitle": "Vòng lặp tạo đà",
+  "flywheel": [
+    "Ban tổ chức đăng sự kiện",
+    "Mọi người tìm thấy và tham dự",
+    "Ảnh tạo thành kho ký ức",
+    "Người tham dự quay lại và chia sẻ",
+    "Gặp thêm người, nơi và sự kiện phù hợp",
+    "Ban tổ chức tiếp tục đăng"
+  ],
+  "flywheelMeasure": "Kiểm tra mắt xích: sau khi gửi thư viện ảnh cho người đồng ý nhận, họ có quay lại không—và ban tổ chức có đăng sự kiện tiếp theo không? Một lượt xem ảnh chưa chứng minh được sự gắn bó.",
+  "archiveTitle": "Không chỉ “có gì vui?” Mà còn: “mình đã ở đây.”",
+  "archiveText": "Một buổi gặp đáng nhớ không nên chìm trong đoạn chat hay thư mục Drive bị quên. Kết nối ngày tháng, địa điểm, ban tổ chức, câu chuyện và hình ảnh. Chỉ gắn thông tin người tham dự khi có sự đồng ý phù hợp. Qua nhiều năm, những khoảnh khắc nhỏ trở thành ký ức của cả thành phố.",
+  "archiveFuture": "Hình dung: “Ngày này năm ấy ở Đà Lạt…” · Lịch sử một địa điểm · Hành trình lớn lên của một cộng đồng. Ý tưởng tương lai, chưa phải lời hứa về tính năng.",
+  "networkDetails": "Khám phá những vòng lặp khác",
+  "networks": [
+    [
+      "Sự kiện",
+      "Nhiều sự kiện hữu ích → thêm người tham dự → ban tổ chức có lý do đăng tiếp."
+    ],
+    [
+      "Kho ký ức",
+      "Lịch sử phong phú hơn → thêm chia sẻ và tìm kiếm → người mới → ban tổ chức mới."
+    ],
+    [
+      "Địa điểm",
+      "Sự kiện liên kết địa điểm → hồ sơ sinh động hơn → được khám phá → thêm sự kiện phù hợp. Một điểm kết nối cộng đồng, không chỉ là ghim trên bản đồ."
+    ],
+    [
+      "Ban tổ chức",
+      "Đăng sự kiện → tích lũy lịch sử và người theo dõi → sự kiện tiếp theo → hồ sơ có giá trị hơn. Khiến họ muốn quay lại; vẫn dễ chia sẻ và rời đi."
+    ],
+    [
+      "Thu",
+      "Quan hệ tin cậy → ban tổ chức dùng thử → mạng lưới lớn hơn → thêm cơ hội → hiểu thành phố sâu hơn."
+    ]
+  ],
+  "graphDetails": "Con người + địa điểm: điều gì khiến hồ sơ thật sự hữu ích?",
+  "graphCards": [
+    [
+      "Địa điểm có bối cảnh",
+      "Sự kiện sắp tới và đã qua, ảnh cộng đồng thực tế, không khí, món chay, chỗ dùng laptop, ngôn ngữ, khả năng tiếp cận, sức chứa, độ ồn, chỗ cho nhóm, ngoài trời, đỗ xe và xe đạp. Xác nhận với địa điểm; không tự tạo đánh giá."
+    ],
+    [
+      "Những người tạo ra điều mình yêu thích",
+      "Giới thiệu ban tổ chức, xác minh khi có, đơn vị liên quan, lịch sử sự kiện, hình ảnh, cộng đồng, lĩnh vực, ngôn ngữ và cách liên hệ có chủ đích. Theo dõi, uy tín và đánh giá cần thiết kế kỹ; quảng cáo không được mua điểm đánh giá."
+    ]
+  ],
+  "rolesTitle": "Điều gì khiến Thu thấy hào hứng?",
+  "rolesText": "Chọn theo điều mình thích, không theo chức danh. Chạm một lựa chọn; chạm lại để bỏ chọn. Mình đang tìm hiểu thế mạnh—chưa thỏa thuận lương, cổ phần, quan hệ đối tác hay vị trí lâu dài.",
+  "choices": [
+    "Rất thích",
+    "Muốn thử",
+    "Không hợp"
+  ],
+  "roles": [
+    [
+      "Người tìm sự kiện",
+      "Tìm một sự kiện hay mà ứng dụng chưa biết."
+    ],
+    [
+      "Hướng dẫn ban tổ chức",
+      "Giúp họ tự đăng sự kiện tiếp theo."
+    ],
+    [
+      "Điều phối sự kiện",
+      "Nắm lịch vận hành và tự xử lý vấn đề thông thường."
+    ],
+    [
+      "Nhiếp ảnh gia",
+      "Chụp theo brief và chọn ảnh kể được câu chuyện."
+    ],
+    [
+      "Sản xuất truyền thông",
+      "Kết nối đúng người chụp ảnh, quay phim và thiết kế."
+    ],
+    [
+      "Gắn kết cộng đồng",
+      "Giúp người tham dự thường xuyên kết nối với nhau."
+    ],
+    [
+      "Phát triển đối tác",
+      "Xây dựng quan hệ hữu ích với địa điểm và doanh nghiệp."
+    ],
+    [
+      "Lưu giữ sự kiện",
+      "Tạo một kho ký ức đầy đủ, chính xác, dễ tìm."
+    ],
+    [
+      "Kể chuyện địa phương",
+      "Biến hoạt động địa phương thành câu chuyện đáng quan tâm."
+    ],
+    [
+      "Đồng hành cùng ban tổ chức",
+      "Tìm điều khiến họ muốn quay lại."
+    ],
+    [
+      "Vận hành với AI",
+      "Biến tin nhắn rời rạc thành bản nháp để con người kiểm chứng."
+    ],
+    [
+      "Kết nối mạng lưới địa phương",
+      "Biết ai là người thật sự đứng sau các hoạt động."
+    ],
+    [
+      "Xây dựng chương trình",
+      "Thiết kế một buổi gặp có mục đích và có thể tổ chức đều đặn."
+    ],
+    [
+      "Đối tác thương mại",
+      "Tìm hiểu nhà tài trợ sau khi đã chứng minh giá trị."
+    ],
+    [
+      "Đại diện cộng đồng",
+      "Giới thiệu ứng dụng chân thật trong các cộng đồng địa phương."
+    ]
+  ],
+  "progression": "Một dự án → một phần việc có thể lặp lại → quan hệ với ban tổ chức → có thể dẫn dắt một mảng. Đây là hướng để tìm hiểu, không phải lời hứa thăng tiến.",
+  "conversationTitle": "Trước hết, hiểu con người.",
+  "conversationText": "Chọn câu hỏi khiến mình muốn kể. Cứ đi theo câu chuyện. Không cần trả lời hết như điền bảng khảo sát.",
+  "prompts": [
+    [
+      "Điều gì tiếp thêm năng lượng cho Thu?",
+      "Nếu chưa phải lo tiền ngay, Thu muốn xây dựng điều gì? Sáng tạo, tổ chức, bán hàng, kết nối, dẫn dắt, chụp ảnh, làm truyền thông, xử lý rối ren—hay điều gì khác? Thích xuất hiện hay đứng sau hậu trường?"
+    ],
+    [
+      "Kể về sự kiện Thu tự hào nhất nhé.",
+      "Thu trực tiếp chịu trách nhiệm phần nào? Chuyện gì không như ý? Thu tự giải quyết được gì, và cần ai hỗ trợ? Nếu làm lại sẽ đổi gì? Ai thuê Thu, và trả phí theo cách nào?"
+    ],
+    [
+      "Đội của Thu gồm những ai?",
+      "Bạn bè, cộng tác viên, nhân viên hay đối tác? Ai làm tốt ảnh, video, thiết kế, mạng xã hội, PR, quảng bá, MC, DJ hoặc sản xuất? Mọi người đã hoàn thành việc gì cùng nhau?"
+    ],
+    [
+      "Hôm nay Thu nhắn thì ai sẽ trả lời?",
+      "Thu quen trực tiếp ban tổ chức và địa điểm nào? Họ làm gì, thường xuyên không, sắp có sự kiện nào? Mức độ thân quen ra sao? Lưu tên và liên hệ riêng ở nơi khác mà hai bên đã thống nhất."
+    ],
+    [
+      "Thu muốn chủ động nhận việc gì trong bảy ngày?",
+      "Chọn một kết quả Thu có thể làm mà không cần hướng dẫn hằng ngày. Thu sẽ tự quyết điều gì? Khi nào cần hỏi? Thu muốn AI giúp phần nào?"
+    ],
+    [
+      "Một năm tốt đẹp với Thu sẽ như thế nào?",
+      "Thu muốn học gì? Tự chủ tài chính có ý nghĩa gì? Làm tự do, mở agency, công ty sự kiện/truyền thông, vai trò dẫn dắt, lương cố định, phí dự án, hoa hồng—hay kết hợp?"
+    ]
+  ],
+  "zeroTitle": "Khách hàng đầu tiên: bắt đầu từ việc thật.",
+  "zeroText": "Zan đã tổ chức các buổi gặp về công nghệ, AI và cộng đồng làm sản phẩm. Dùng một buổi làm nơi thử quy trình: đăng sự kiện, chuẩn bị, điểm danh, brief hình ảnh rõ ràng, kho ảnh chọn lọc và liên hệ lại khi được đồng ý. Thống nhất phạm vi và thù lao riêng trước khi bắt đầu.",
+  "zeroWarning": "THỬ NỘI BỘ ≠ KIỂM CHỨNG THỊ TRƯỜNG. Sự kiện của Zan giúp kiểm tra quy trình. Cần ban tổ chức độc lập để biết người khác có thật sự cần không.",
+  "minimalTitle": "Thử thách giảm việc cho Zan",
+  "minutes": "≤ 30 phút",
+  "minimalText": "Thời gian giám sát mỗi tuần cho phần việc đã thống nhất. Ghi cả thời gian hướng dẫn ban đầu và xử lý sự cố. Thành công là thông tin đúng, brief ảnh được thống nhất, kho lưu trữ hoàn chỉnh, vấn đề thường gặp được tự xử lý và có checklist người khác dùng lại được.",
+  "autonomyTitle": "Nếu Zan vắng mặt bảy ngày, việc gì vẫn chạy?",
+  "levels": [
+    "Hướng dẫn từng thao tác",
+    "Giao việc thật chi tiết",
+    "Thống nhất kết quả; Thu chủ động làm",
+    "Thu phát hiện vấn đề và đề xuất cách xử lý",
+    "Thu phụ trách một mảng và báo cáo kết quả",
+    "Thu xây quy trình và hướng dẫn người khác"
+  ],
+  "autonomyNote": "Cùng chọn điểm bắt đầu. Mức 2 phù hợp để thử lần đầu; hôm nay không kỳ vọng mức 5. Có trách nhiệm cần đi kèm quyền quyết định và biết khi nào phải nhờ hỗ trợ.",
+  "experimentTitle": "Bảy ngày. Một kết quả.",
+  "experimentText": "Đề xuất: tìm hiểu những người tạo nên hoạt động ở Đà Lạt—và thử một lần bàn giao. Bắt đầu với năm ban tổ chức và năm địa điểm Thu đã biết, chưa cần làm danh bạ cả thành phố.",
+  "week": [
+    [
+      "Ngày 1–2 · Lập bản đồ",
+      "Ghi loại sự kiện, tần suất, sự kiện tiếp theo đã biết và mức độ quan hệ. Dùng bảng liên hệ riêng đã thống nhất. Chưa biết thì ghi chưa biết."
+    ],
+    [
+      "Ngày 3–4 · Lắng nghe",
+      "Trò chuyện với ba người đồng ý trao đổi. Hỏi về cách được biết đến, đăng tin, gửi ảnh và mời dự sự kiện tiếp theo. Không ép bán."
+    ],
+    [
+      "Ngày 5–6 · Thử bàn giao",
+      "Mời một ban tổ chức có hứng thú tự tạo hoặc sửa trang của họ. Chỉ đăng thông tin đã xác minh khi được cho phép. Nếu chưa có sự kiện, kiểm tra bản nháp và ghi lý do."
+    ],
+    [
+      "Ngày 7 · Rút kinh nghiệm",
+      "Mang về một checklist dùng lại được, ba vấn đề cụ thể, kết quả bàn giao và thời gian Zan đã dùng. Quyết định tiếp tục, đổi hướng hay dừng."
+    ]
+  ],
+  "organizerQuestionsTitle": "Trò chuyện cùng ban tổ chức",
+  "organizerQuestions": "Mọi người biết đến sự kiện bằng cách nào? Anh/chị đăng ở đâu? Việc gì tốn thời gian nhất? Đang trả phí cho thiết kế, ảnh, quảng bá, khách mời hay điều phối? Ảnh được lưu ở đâu? Người tham dự tìm ảnh và biết sự kiện tiếp theo thế nào? Nếu chỉ mất hai phút, anh/chị có tự cập nhật trang không? Nhiều ngôn ngữ có hữu ích không? Điều gì khiến anh/chị nhớ đến ứng dụng này?",
+  "aiTitle": "AI sắp xếp thông tin. Con người giữ sự thật.",
+  "aiInput": "“Tối thứ Sáu 7 giờ, nhạc acoustic, 100k, nhắn mình nhé.”",
+  "aiOutput": "Bản nháp: đêm acoustic · 19:00 · giá được báo: 100k (xác nhận đơn vị tiền và bao gồm gì). Còn thiếu: ngày cụ thể, địa điểm/địa chỉ, ban tổ chức, cách đặt chỗ và quyền dùng ảnh. Không tự đoán.",
+  "aiSteps": [
+    "Tin nhắn đầu vào",
+    "AI soạn nháp + hỏi phần thiếu",
+    "Ban tổ chức xác nhận",
+    "Con người duyệt",
+    "Đăng + dịch",
+    "Ảnh → tổng kết → sự kiện tiếp"
+  ],
+  "aiNote": "Đây là mô hình quy trình, chưa kết nối hộp thư trên trang này. AI có thể soạn tên, mô tả, phân loại, nội dung Việt/Anh, bản dịch khác, bài mạng xã hội, SEO và gợi ý ảnh. Mỗi người dùng quyền truy cập được cấp riêng; không chia sẻ tài khoản cá nhân.",
+  "moneyTitle": "Hạ tầng miễn phí trước. Thu phí từ giá trị sau.",
+  "moneyText": "Giữ việc đăng sự kiện, hồ sơ cơ bản, khám phá, chia sẻ, ảnh và RSVP cơ bản dễ tiếp cận khi thói quen đang hình thành. Đây là hướng chiến lược, chưa phải cam kết giá mới. Dịch vụ tùy chọn có thể tạo thu nhập trước khi có lượng người dùng lớn.",
+  "moneyStages": [
+    [
+      "Bây giờ · dịch vụ",
+      "Tạo thói quen và quan hệ. Thử gói ảnh, điều phối hoặc truyền thông có phạm vi rõ. Thu phí theo kết quả bàn giao; tính chi phí và thời gian của Zan. Hỗ trợ vốn phải giúp học được điều cụ thể."
+    ],
+    [
+      "Tiếp theo · công cụ",
+      "Chỉ sau khi dùng lặp lại: gói ban tổ chức, tự động hóa, phân tích, CRM, nhắn người tham dự và hồ sơ nâng cao. Cần vấn đề thật và ý muốn trả tiền."
+    ],
+    [
+      "Giao dịch · cần quy mô",
+      "Phí vé, đặt chỗ, hoa hồng và nâng cấp chỉ khi giao dịch đủ để gánh vận hành và tuân thủ. Trang này không triển khai thanh toán."
+    ],
+    [
+      "Lượng người xem · cần bằng chứng",
+      "Sự kiện, địa điểm, cẩm nang và chiến dịch du lịch được tài trợ phải ghi rõ, và chỉ phù hợp khi có lượng tiếp cận liên quan đo được. Không bán độ phủ tưởng tượng."
+    ],
+    [
+      "Mạng lưới · khả năng xa hơn",
+      "Hệ điều hành cho ban tổ chức, phần mềm doanh nghiệp địa phương, tích hợp lưu trú, hợp tác thành phố, API hay nền tảng cho nơi khác. Có bằng chứng rồi mới mở rộng."
+    ]
+  ],
+  "packagesTitle": "Gói dịch vụ tùy chọn · những khả năng để thử",
+  "packages": [
+    [
+      "Trước sự kiện",
+      "Tạo trang, chuẩn hóa thông tin, nội dung nhiều ngôn ngữ, thiết kế, poster, teaser, bài mạng xã hội, tư vấn, phối hợp địa điểm và chuẩn bị RSVP."
+    ],
+    [
+      "Trong sự kiện",
+      "Điểm danh, đón khách, ảnh, video, phát trực tiếp, phỏng vấn, MC, sản xuất, điều phối sân khấu và hoạt động nhà tài trợ."
+    ],
+    [
+      "Sau sự kiện",
+      "Ảnh chọn lọc, video nổi bật, tổng kết, liên hệ lại khi được đồng ý, cảm nhận khách, clip, giới thiệu lần tới, lưu trữ và phân tích hữu ích."
+    ]
+  ],
+  "futureTitle": "Bắt đầu nhỏ. Giữ tầm nhìn rộng.",
+  "futureLabel": "ƯỚC MƠ LỚN — KHÔNG PHẢI LỜI HỨA",
+  "future": [
+    [
+      "1 năm",
+      "Một thói quen hữu ích tại địa phương",
+      "Hình dung hàng trăm hoặc hàng nghìn sự kiện được ghi nhận và lưu giữ, ban tổ chức tự chăm trang, địa điểm phong phú và cộng đồng gặp nhau đều đặn. Khám phá đa ngôn ngữ có người dùng thật. Nhóm nhỏ và nhập tin phần lớn tự động giảm việc cho Zan. Thu có thể phụ trách một mảng nếu hợp tác phù hợp. Thử doanh thu để có bằng chứng."
+    ],
+    [
+      "5 năm",
+      "Một thành phố hiểu cộng đồng của mình",
+      "“Ở đâu có jazz?” “Người làm sản phẩm gặp nhau ở đâu?” “Lễ hội năm ngoái có gì?” Sự kiện, con người, địa điểm, đánh giá, hình ảnh và gợi ý kết nối với nhau. Công cụ vận hành cho ban tổ chức hoặc trợ lý AI có thể trở nên hữu ích. Chỉ mở rộng khi mô hình địa phương hoạt động tốt."
+    ],
+    [
+      "10 năm",
+      "Ký ức của nhiều thành phố",
+      "Nếu mỗi thành phố có một mạng lưới sống gồm người, nơi, sự kiện, cộng đồng, doanh nghiệp, câu chuyện và quan hệ thì sao? Một hệ thần kinh số địa phương giúp biết đang có gì, nên gặp ai và điều gì đã thay đổi. Đà Lạt có thể là nơi thử đầu tiên."
+    ]
+  ],
+  "metricsTitle": "Đo điều tạo giá trị lâu dài.",
+  "northStars": [
+    "Ban tổ chức hoạt động và tự đăng lần tiếp theo",
+    "Số phút Zan phải làm cho mỗi sự kiện"
+  ],
+  "metricsText": "Định nghĩa “hoạt động”: ban tổ chức đăng một sự kiện đã xác minh, rồi đăng tiếp trong chu kỳ thông thường của họ. Bảy ngày kiểm tra được bàn giao, chưa đủ chứng minh tỷ lệ quay lại. Ghi rõ nhóm đủ điều kiện và thời gian theo dõi trước khi so sánh.",
+  "metricsMore": "Theo dõi thêm: trò chuyện → tham gia → tự đăng; tỷ lệ quay lại; mức đầy đủ của kho ảnh; lượt quay lại và chia sẻ sau lời mời có đồng ý; tham dự lặp lại; hài lòng và giới thiệu; địa điểm được xác minh; việc tự hoàn thành; thời gian xử lý; độ chính xác. Ghi cả số lượng và mẫu số. Tổng tài khoản không phải mục tiêu.",
+  "guardrailsTitle": "Giữ cộng đồng của mình. Để mọi người dễ tìm thấy và nhớ đến hơn.",
+  "guardrails": [
+    [
+      "Nói thật",
+      "Không phóng đại người dùng, đảm bảo độ phủ hay hứa lương, cổ phần, quan hệ đối tác, chức danh chưa thống nhất."
+    ],
+    [
+      "Tôn trọng sự đồng ý",
+      "Không spam hay ép rời Facebook, Zalo, WhatsApp. Tôn trọng độ riêng tư sự kiện, quyền hình ảnh, yêu cầu gỡ ảnh và liên hệ riêng."
+    ],
+    [
+      "Giữ niềm tin",
+      "Tách tài trợ khỏi đánh giá tự nhiên. Mỗi người có tài khoản AI được cấp quyền riêng. Không để ghi chú nhạy cảm trên đường dẫn này hay thiết bị dùng chung."
+    ],
+    [
+      "Giữ sự tập trung",
+      "Một thử nghiệm, quyền quyết định rõ, biết lúc nào cần hỗ trợ. Mười ban tổ chức đăng tiếp có giá trị hơn một trăm sự kiện Zan tự nhập. Đừng xây mọi thứ."
+    ]
+  ],
+  "gardenTitle": "Vườn ý tưởng",
+  "gardenText": "Không phải lộ trình. Để ý tưởng ở đây để thử nghiệm hôm nay vẫn gọn. Một số đã có phần tương tự; dùng thử trước khi xây thêm.",
+  "garden": [
+    "Bảng điều hành ban tổ chức",
+    "Kho ảnh",
+    "Hồ sơ ban tổ chức và địa điểm",
+    "Đánh giá địa điểm",
+    "Gắn thẻ người tham dự có đồng ý",
+    "Theo dõi ban tổ chức / địa điểm",
+    "Tối nay / cuối tuần",
+    "Kết nối cộng đồng",
+    "Phát trực tiếp",
+    "AI tổng kết và dịch",
+    "CRM",
+    "Kết nối người chụp / quay / quảng bá",
+    "Dịch vụ sự kiện",
+    "Tài trợ địa phương",
+    "Quà tặng và thưởng RSVP",
+    "Hồ sơ cộng đồng và nghề nghiệp",
+    "Có thể giúp / cần giúp",
+    "Bạn bè, kinh doanh, hoạt động",
+    "Bảng tin cá nhân",
+    "Trợ lý AI và hướng dẫn âm thanh",
+    "Dòng thời gian lịch sử",
+    "Lịch sử địa điểm và ban tổ chức",
+    "Lịch thành phố",
+    "Tự nhập tin và đọc poster",
+    "Điểm danh QR",
+    "Vé và thành viên",
+    "Công cụ nâng cao và phân tích",
+    "API và hợp tác du lịch"
+  ],
+  "challengeTitle": "Góc phản biện của Codex",
+  "challenges": [
+    [
+      "Dùng những gì đã xây.",
+      "Mã nguồn đã có Moments, công cụ ban tổ chức và hồ sơ địa điểm. Thử kho ảnh ngày 8/9 và một lần bàn giao trước khi xây thêm bảng điều hành."
+    ],
+    [
+      "Quen biết chưa phải kênh phân phối.",
+      "Giả thuyết: đóng góp mạnh nhất của Thu có thể là sự tin cậy và điều phối. Ba cuộc trò chuyện cụ thể cho biết nhiều hơn lời nói chung về mạng lưới truyền thông."
+    ],
+    [
+      "Khách hàng đầu tiên hài lòng chưa chứng minh thị trường.",
+      "Sự kiện Zan kiểm tra được chất lượng bàn giao. Một ban tổ chức độc lập tự làm bước tiếp theo mà không cần giải cứu là bằng chứng mạnh hơn."
+    ],
+    [
+      "Bán kết quả trước khi bán độ phủ.",
+      "Khi ít người dùng, kho ảnh chọn lọc hoặc điều phối đáng tin có giá trị rõ hơn vị trí quảng cáo. Giả thuyết: dịch vụ gọn là nguồn thu sớm hợp lý nhất. Tính cả lợi nhuận và thời gian Zan."
+    ],
+    [
+      "Đặt tiêu chí để có thể kết luận thử nghiệm không thành công.",
+      "Ba cuộc trò chuyện, một lần thử bàn giao tự thao tác, một checklist, tối đa 30 phút Zan giám sát. Nếu không ai muốn thử, ghi nhận đúng và đổi đề xuất."
+    ],
+    [
+      "Đường dẫn ngắn tiện, nhưng không riêng tư.",
+      "Hiện /thu chưa trỏ đến hồ sơ nào, nhưng dùng chung không gian URL hồ sơ công khai. Nên coi trang này là tạm thời; dùng truy cập có đăng nhập nếu cần thương lượng bảo mật."
+    ]
+  ],
+  "decisionTitle": "Ra về với một điều đáng thử.",
+  "decisionText": "Hôm nay chưa cần quyết định vai trò lâu dài của Thu. Tìm một thế mạnh, trao quyền để thử, rồi học từ kết quả thật.",
+  "fields": [
+    "Thử nghiệm đầu tiên",
+    "Một người chịu trách nhiệm chính",
+    "Hoàn thành trước",
+    "Thành công là",
+    "Mức tham gia tối đa của Zan",
+    "Lần trao đổi tiếp theo · giờ Đà Lạt (UTC+7)",
+    "Quyền tự quyết / khi nào cần hỏi"
+  ],
+  "owners": [
+    "Cùng chọn",
+    "Thu",
+    "Zan"
+  ],
+  "saveNote": "Chỉ lưu trên trình duyệt này, dùng chung giữa tiếng Anh và tiếng Việt. Không đồng bộ hay gửi cho nhóm. Tránh ghi nội dung nhạy cảm. Xóa sau khi dùng thiết bị chung.",
+  "saved": "Đã lưu trên thiết bị này",
+  "saveError": "Không thể lưu trên trình duyệt. Giữ tab này mở và tải quyết định trước khi rời trang.",
+  "export": "Tải ghi chú buổi gặp",
+  "reset": "Xóa dữ liệu buổi gặp",
+  "resetConfirm": "Xóa lựa chọn vai trò và quyết định khỏi trình duyệt này? Không thể hoàn tác.",
+  "selected": "vai trò đã khám phá",
+  "closing": "Dalat.app giúp thành phố tự kết nối, tự tổ chức—và lưu giữ ký ức của mình.",
+  "confirmReset": "Đồng ý xóa",
+  "cancel": "Giữ ghi chú"
+}
