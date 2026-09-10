@@ -420,5 +420,23 @@
   "selected": "roles explored",
   "closing": "Dalat.app should help the city organize itself—and remember itself.",
   "confirmReset": "Yes, clear meeting",
-  "cancel": "Keep my notes"
+  "cancel": "Keep my notes",
+  "answers": {
+    "loading": "Loading your answers…",
+    "loadError": "Your answers could not be loaded.",
+    "retry": "Try again",
+    "writingAs": "Writing as",
+    "privacy": "Saved answers are private to your account. Shared access for Zan and Phương will be enabled only after their accounts are confirmed.",
+    "loginNote": "Sign in with your Dalat.app account to answer here and save across devices. Answers show who wrote them.",
+    "login": "Sign in to answer",
+    "yourAnswer": "Your answer",
+    "placeholder": "Write in whichever language feels natural…",
+    "saving": "Saving…",
+    "save": "Save answer",
+    "saveError": "Could not save. Your text is still here; please retry.",
+    "expired": "Your login changed or expired. Copy your unsaved text, then sign in again and reload.",
+    "unsaved": "Unsaved changes",
+    "saved": "Saved",
+    "empty": "No answer saved yet"
+  }
 }

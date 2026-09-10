@@ -20,6 +20,11 @@ export async function middleware(request: NextRequest) {
       headers.set("x-next-intl-locale", locale);
       return NextResponse.rewrite(destination, { request: { headers } });
     }
+    // Keep authentication cookies on this host; reuse the existing login/onboarding flow.
+    const path = request.nextUrl.pathname.replace(new RegExp(`^/(${locales.join("|")})(?=/|$)`), "");
+    if (path.startsWith("/auth/") || path === "/onboarding" || path.startsWith("/onboarding/")) {
+      return await updateSession(request);
+    }
     // Shared shell links go to the real app, not duplicate public pages here.
     const destination = request.nextUrl.clone();
     destination.hostname = "dalat.app";

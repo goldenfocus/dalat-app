@@ -846,3 +846,16 @@
     height: auto;
   }
 }
+
+/* Account-private conversation answers, separate from the local meeting plan. */
+.thu-answer-intro { padding: 1.5rem 0; border-bottom: 1px solid hsl(var(--foreground) / .2); }
+.thu-answer-intro p { max-width: 65ch; margin-bottom: .8rem; }
+.thu-answer-intro button:not([data-slot]) { text-decoration: underline; }
+.thu-answer-editor { margin: 0 0 2rem 3rem; max-width: 52rem; }
+.thu-answer-editor label { display: block; font-weight: 600; margin-bottom: .75rem; }
+.thu-answer-editor textarea { width: 100%; min-height: 9rem; resize: vertical; padding: 1rem; border: 1px solid currentColor; border-radius: .75rem; background: transparent; color: inherit; font: inherit; line-height: 1.6; }
+.thu-answer-editor textarea:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+.thu-answer-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin-top: .75rem; }
+.thu-answer-actions [role="status"] { font-size: .875rem; flex: 1 1 12rem; }
+.thu-answer-actions small { opacity: .65; }
+@media (max-width: 640px) { .thu-answer-editor { margin-left: 0; } }

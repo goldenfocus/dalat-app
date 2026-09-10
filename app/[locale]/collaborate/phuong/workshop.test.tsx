@@ -6,7 +6,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { Workshop } from "./workshop";
 import { STORAGE_KEY } from "./workshop-state";
@@ -20,6 +20,7 @@ vi.mock("@/lib/i18n/routing", () => ({
     <a {...props}>{children}</a>
   ),
 }));
+beforeEach(() => { vi.stubGlobal("fetch", vi.fn(async () => ({ status: 401 }))); });
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();

@@ -52,3 +52,28 @@ Check the actual date/deadline and device timezone before the meeting. Review Vi
 ## QA
 
 Production build and TypeScript passed. Full Vitest run: 103 files, 666 tests passed; two additional component tests passed afterward (including malformed-storage, bilingual round-trip, translation-coverage, reset and blocked-storage tests). Full lint: zero errors, 484 existing warnings. Focused changed-file lint is checked separately. Browser QA covers EN/VI, 390px mobile and desktop, light/dark, role selection, persistence on reload/language change, navigation targets and notes export/reset. Final production verification is recorded in the delivery receipt.
+
+## Account-private conversation answers (2026-09-10)
+
+The six conversation prompts now use `workshop-answers.tsx` and the non-cacheable
+`/api/workshop-answers` endpoint. Existing Dalat.app authentication runs on the
+workshop host, including onboarding; its existing Supabase redirect allowlist
+already includes `https://*.dalat.app/**`. Cookies are not copied across domains.
+
+Migration `20260910_003_workshop_answers.sql` stores one response per question and
+user. RLS restricts all reads/writes to the author. The server derives the author
+from the authenticated session and rejects stale account context. No public
+comments, notifications, automated translation or service-role reads are used.
+Participants' usernames have not yet been confirmed: responses are author-private,
+not shared between Zan and Phương. Any future sharing must explicitly authorize
+both accounts and add narrowly scoped policies; knowing this page's URL grants no
+access to answers. Site/database operators retain their normal infrastructure access.
+
+Save is explicit, supports editing/clearing, and persists across devices. Unsaved
+text stays in memory and navigation warns before leaving. Existing role selections
+and decision fields still use browser-local storage. EN/VI/FR include the answer UI.
+
+Validation: API/UI tests cover anonymous access, author spoofing, stale sessions,
+input validation, save behavior and errors. A transaction against production
+verified RLS read isolation, forged-author denial and own updates, then rolled
+back all probe content. Actual OAuth/email login should be checked by each user.

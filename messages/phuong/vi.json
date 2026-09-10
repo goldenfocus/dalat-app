@@ -420,5 +420,23 @@
   "selected": "vai trò đã khám phá",
   "closing": "Dalat.app giúp thành phố tự kết nối, tự tổ chức—và lưu giữ ký ức của mình.",
   "confirmReset": "Đồng ý xóa",
-  "cancel": "Giữ ghi chú"
+  "cancel": "Giữ ghi chú",
+  "answers": {
+    "loading": "Đang tải câu trả lời…",
+    "loadError": "Chưa tải được câu trả lời của bạn.",
+    "retry": "Thử lại",
+    "writingAs": "Người trả lời:",
+    "privacy": "Câu trả lời đã lưu chỉ hiển thị với tài khoản của bạn. Quyền xem chung cho Zan và Phương sẽ chỉ được bật sau khi xác nhận đúng tài khoản của hai người.",
+    "loginNote": "Đăng nhập bằng tài khoản Dalat.app để trả lời ngay tại đây và lưu trên nhiều thiết bị. Mỗi câu trả lời đều có tên người viết.",
+    "login": "Đăng nhập để trả lời",
+    "yourAnswer": "Câu trả lời của bạn",
+    "placeholder": "Cứ viết bằng ngôn ngữ bạn thấy thoải mái nhất…",
+    "saving": "Đang lưu…",
+    "save": "Lưu câu trả lời",
+    "saveError": "Chưa lưu được. Nội dung vẫn còn ở đây, bạn thử lại nhé.",
+    "expired": "Phiên đăng nhập đã đổi hoặc hết hạn. Hãy sao chép nội dung chưa lưu, rồi đăng nhập lại và tải lại trang.",
+    "unsaved": "Có thay đổi chưa lưu",
+    "saved": "Đã lưu",
+    "empty": "Chưa có câu trả lời được lưu"
+  }
 }

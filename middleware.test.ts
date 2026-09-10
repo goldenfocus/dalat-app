@@ -18,6 +18,11 @@ describe("workshop subdomain", () => {
     expect(response.headers.get("x-middleware-rewrite")).toBe(`https://phuong.dalat.app/${locale}/collaborate/phuong`);
     expect(response.headers.get("x-middleware-request-x-next-intl-locale")).toBe(locale);
   });
+  it.each(["/en/auth/login", "/vi/auth/login", "/auth/forgot-password", "/vi/onboarding"])("keeps %s authentication on the workshop host", async path => {
+    const request = new NextRequest(`https://phuong.dalat.app${path}`);
+    await middleware(request);
+    expect(updateSession).toHaveBeenCalledWith(request);
+  });
   it("keeps public content on the main domain", async () => {
     const response = await middleware(new NextRequest("https://phuong.dalat.app/vi/venues?view=map"));
     expect(response.headers.get("location")).toBe("https://dalat.app/vi/venues?view=map");

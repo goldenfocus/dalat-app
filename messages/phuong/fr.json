@@ -156,5 +156,23 @@
   "selected": "rôles explorés",
   "closing": "Dalat.app devrait aider la ville à s’organiser — et à se souvenir.",
   "confirmReset": "Oui, effacer",
-  "cancel": "Garder mes notes"
+  "cancel": "Garder mes notes",
+  "answers": {
+    "loading": "Chargement de vos réponses…",
+    "loadError": "Impossible de charger vos réponses.",
+    "retry": "Réessayer",
+    "writingAs": "Réponse de",
+    "privacy": "Les réponses enregistrées sont privées à votre compte. Le partage entre Zan et Phương sera activé uniquement après confirmation de leurs comptes.",
+    "loginNote": "Connectez-vous à votre compte Dalat.app pour répondre ici et retrouver vos réponses sur vos appareils. Chaque réponse indique son auteur.",
+    "login": "Se connecter pour répondre",
+    "yourAnswer": "Votre réponse",
+    "placeholder": "Écrivez dans la langue qui vous vient naturellement…",
+    "saving": "Enregistrement…",
+    "save": "Enregistrer la réponse",
+    "saveError": "Impossible d’enregistrer. Votre texte est toujours ici ; réessayez.",
+    "expired": "Votre connexion a changé ou a expiré. Copiez votre texte non enregistré, puis reconnectez-vous et rechargez la page.",
+    "unsaved": "Modifications non enregistrées",
+    "saved": "Enregistré",
+    "empty": "Aucune réponse enregistrée"
+  }
 }

@@ -19,6 +19,7 @@ import {
   type Meeting,
 } from "./workshop-state";
 import "./workshop.css";
+import { WorkshopAnswers } from "./workshop-answers";
 
 export type WorkshopCopy = typeof EnglishCopy;
 const anchors = [
@@ -338,17 +339,7 @@ export function Workshop({
             title={c.conversationTitle}
             text={c.conversationText}
           />
-          <div className="thu-prompts">
-            {c.prompts.map(([question, text], i) => (
-              <details key={question}>
-                <summary>
-                  <span className="thu-prompt-number">{i + 1}</span>
-                  {question}
-                </summary>
-                <p>{text}</p>
-              </details>
-            ))}
-          </div>
+          <WorkshopAnswers copy={c} language={language} />
         </section>
         <section id="zero" className="thu-section">
           <Heading n="06" title={c.zeroTitle} text={c.zeroText} />
