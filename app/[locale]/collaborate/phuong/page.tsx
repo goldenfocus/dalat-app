@@ -10,11 +10,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   return {
-    title: "Phuong + Zan × Dalat.app",
+    title: "Phương + Zan × Dalat.app",
     description:
       locale === "vi"
         ? "Cùng tìm một điều đáng thử."
-        : "Find one thing worth trying together.",
+        : locale === "fr" ? "Trouvons une chose qui mérite d’être essayée ensemble." : "Find one thing worth trying together.",
     robots: {
       index: false,
       follow: false,
@@ -26,18 +26,19 @@ export async function generateMetadata({
       languages: {
         en: "https://phuong.dalat.app/",
         vi: "https://phuong.dalat.app/vi",
+        fr: "https://phuong.dalat.app/fr",
       },
     },
     openGraph: {
-      title: "Phuong + Zan × Dalat.app",
-      description: "A collaboration workshop",
+      title: "Phương + Zan × Dalat.app",
+      description: locale === "fr" ? "Un atelier de collaboration" : locale === "vi" ? "Buổi trao đổi về hợp tác" : "A collaboration workshop",
       images: [],
     },
-    twitter: { card: "summary", title: "Phuong + Zan × Dalat.app", images: [] },
+    twitter: { card: "summary", title: "Phương + Zan × Dalat.app", images: [] },
   };
 }
 
-export default async function PhuongPage({
+export default async function PhươngPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -47,5 +48,5 @@ export default async function PhuongPage({
   const t = await getTranslations("phuong");
   // Route-specific server dictionary: do not add meeting copy to the global client shell.
   const copy = t.raw("canvas") as WorkshopCopy;
-  return <Workshop copy={copy} language={locale === "vi" ? "vi" : "en"} />;
+  return <Workshop copy={copy} language={locale === "vi" || locale === "fr" ? locale : "en"} />;
 }

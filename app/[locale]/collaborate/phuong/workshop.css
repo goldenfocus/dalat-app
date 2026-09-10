@@ -161,69 +161,45 @@
   text-decoration: underline;
   text-underline-offset: 5px;
 }
-.thu-landscape {
-  height: 480px;
-  background: #dfe5d8;
+.thu-portraits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
   position: relative;
-  border-radius: 220px 220px 12px 12px;
+  align-items: start;
+}
+.thu-portraits figure { margin: 0; min-width: 0; }
+.thu-portraits figure:last-child { margin-top: 52px; }
+.thu-portrait-photo {
+  position: relative;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
-  color: #214f42;
+  border-radius: 100px 100px 20px 20px;
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
 }
-.thu-sun {
-  position: absolute;
-  left: 43%;
-  top: 55px;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: #e6c782;
-}
-.thu-hill {
-  position: absolute;
-  width: 160%;
-  height: 65%;
-  border-radius: 50%;
-  transform: rotate(-22deg);
-}
-.thu-hill-back {
-  bottom: -50px;
-  left: -80px;
-  background: #729889;
-}
-.thu-hill-front {
-  bottom: -155px;
-  left: -30px;
-  background: #214f42;
-  transform: rotate(20deg);
-}
-.thu-mountain {
-  width: 90%;
-  height: 190px;
-  position: absolute;
-  left: 5%;
-  top: 125px;
-  color: #3e6d58;
-  opacity: 0.65;
-}
-.thu-landscape-label {
-  position: absolute;
-  bottom: 37px;
-  left: 32px;
-  color: #fff7e4;
+.thu-portrait-photo img { object-fit: cover; object-position: center; }
+.thu-portraits figcaption {
   font-family: Georgia, serif;
-  font-size: 37px;
-  letter-spacing: 0.03em;
-  line-height: 1;
+  font-size: 26px;
+  padding-top: 16px;
+  text-align: center;
 }
-.thu-landscape-label span {
-  font: 9px system-ui;
-  letter-spacing: 0.13em;
-}
-.thu-orbit {
+.thu-portrait-plus {
   position: absolute;
-  right: 26px;
-  bottom: 42px;
-  color: #e4c77f;
+  z-index: 1;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-size: 25px;
+  font-weight: 300;
 }
 .thu-privacy {
   font-size: 12px;
@@ -679,9 +655,6 @@
   .thu-hero {
     gap: 30px;
   }
-  .thu-landscape {
-    height: 400px;
-  }
   .thu-role-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -727,35 +700,12 @@
   .thu-hero h1 {
     font-size: 60px;
   }
-  .thu-landscape {
-    height: 270px;
-    border-radius: 140px 140px 12px 12px;
-    max-width: 380px;
-    width: 100%;
-    margin: 0 auto;
-  }
-  .thu-sun {
-    width: 65px;
-    height: 65px;
-    top: 30px;
-  }
-  .thu-mountain {
-    height: 130px;
-    top: 75px;
-  }
-  .thu-hill-back {
-    bottom: -15px;
-  }
-  .thu-hill-front {
-    bottom: -90px;
-  }
-  .thu-landscape-label {
-    bottom: 25px;
-    font-size: 30px;
-  }
-  .thu-orbit {
-    bottom: 27px;
-  }
+  .thu-portraits { order: -1; gap: 18px; width: 100%; max-width: 380px; margin: 0 auto; }
+  .thu-portraits figure:last-child { margin-top: 24px; }
+  .thu-portrait-photo { aspect-ratio: 4 / 5; }
+  .thu-portraits figcaption { font-size: 22px; padding-top: 10px; }
+  .thu-toolbar-inner { flex-wrap: wrap; }
+  .thu-languages { font-size: 10px; }
   .thu-privacy {
     padding: 0 0 30px;
   }
@@ -878,7 +828,7 @@
 }
 @media print {
   .thu-toolbar,
-  .thu-landscape,
+  .thu-portraits,
   .thu-actions {
     display: none;
   }

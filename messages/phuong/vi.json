@@ -1,14 +1,14 @@
 {
   "eyebrow": "Một cuộc trò chuyện. Một cơ hội. Một bước khởi đầu.",
-  "title": "Phuong + Zan",
+  "title": "Phương + Zan",
   "subtitle": "Mình có thể cùng nhau tạo nên điều gì?",
-  "intro": "Một buổi cùng nghĩ, cùng thử với Dalat.app. Tìm điều khiến Phuong hào hứng, hình dung xa hơn, rồi chọn một thử nghiệm nhỏ mà Phuong có thể chủ động dẫn dắt.",
+  "intro": "Một buổi cùng nghĩ, cùng thử với Dalat.app. Tìm điều khiến Phương hào hứng, hình dung xa hơn, rồi chọn một thử nghiệm nhỏ mà Phương có thể chủ động dẫn dắt.",
   "date": "Đà Lạt · 10 tháng 9, 2026",
   "privacy": "Không đưa vào danh mục công khai · Ai có đường dẫn đều xem được. Đừng ghi thông tin liên hệ riêng hay nội dung nhạy cảm ở đây.",
   "start": "Bắt đầu trò chuyện",
   "jump": "Đến phần quyết định",
   "nav": [
-    "Chào Phuong",
+    "Chào Phương",
     "Ước mơ",
     "Hiện tại",
     "Cơ hội",
@@ -55,7 +55,7 @@
     "Mở công cụ ban tổ chức"
   ],
   "opportunityTitle": "Sự kiện mở cánh cửa. Ký ức kéo mình quay lại.",
-  "aha": "Phuong chụp ảnh workshop AI ngày 8/9, rồi tự tải ảnh lên. Chính lúc đó, giá trị của ứng dụng trở nên rõ ràng hơn. Liệu cảm giác “mình đã ở đó” có khiến mọi người muốn quay lại?",
+  "aha": "Phương chụp ảnh workshop AI ngày 8/9, rồi tự tải ảnh lên. Chính lúc đó, giá trị của ứng dụng trở nên rõ ràng hơn. Liệu cảm giác “mình đã ở đó” có khiến mọi người muốn quay lại?",
   "hypothesis": "GIẢ THUYẾT CẦN THỬ · CHƯA ĐƯỢC KIỂM CHỨNG",
   "flywheelTitle": "Vòng lặp tạo đà",
   "flywheel": [
@@ -89,7 +89,7 @@
       "Đăng sự kiện → tích lũy lịch sử và người theo dõi → sự kiện tiếp theo → hồ sơ có giá trị hơn. Khiến họ muốn quay lại; vẫn dễ chia sẻ và rời đi."
     ],
     [
-      "Phuong",
+      "Phương",
       "Quan hệ tin cậy → ban tổ chức dùng thử → mạng lưới lớn hơn → thêm cơ hội → hiểu thành phố sâu hơn."
     ]
   ],
@@ -104,7 +104,7 @@
       "Giới thiệu ban tổ chức, xác minh khi có, đơn vị liên quan, lịch sử sự kiện, hình ảnh, cộng đồng, lĩnh vực, ngôn ngữ và cách liên hệ có chủ đích. Theo dõi, uy tín và đánh giá cần thiết kế kỹ; quảng cáo không được mua điểm đánh giá."
     ]
   ],
-  "rolesTitle": "Điều gì khiến Phuong thấy hào hứng?",
+  "rolesTitle": "Điều gì khiến Phương thấy hào hứng?",
   "rolesText": "Chọn theo điều mình thích, không theo chức danh. Chạm một lựa chọn; chạm lại để bỏ chọn. Mình đang tìm hiểu thế mạnh—chưa thỏa thuận lương, cổ phần, quan hệ đối tác hay vị trí lâu dài.",
   "choices": [
     "Rất thích",
@@ -178,28 +178,28 @@
   "conversationText": "Chọn câu hỏi khiến mình muốn kể. Cứ đi theo câu chuyện. Không cần trả lời hết như điền bảng khảo sát.",
   "prompts": [
     [
-      "Điều gì tiếp thêm năng lượng cho Phuong?",
-      "Nếu chưa phải lo tiền ngay, Phuong muốn xây dựng điều gì? Sáng tạo, tổ chức, bán hàng, kết nối, dẫn dắt, chụp ảnh, làm truyền thông, xử lý rối ren—hay điều gì khác? Thích xuất hiện hay đứng sau hậu trường?"
+      "Điều gì tiếp thêm năng lượng cho Phương?",
+      "Nếu chưa phải lo tiền ngay, Phương muốn xây dựng điều gì? Sáng tạo, tổ chức, bán hàng, kết nối, dẫn dắt, chụp ảnh, làm truyền thông, xử lý rối ren—hay điều gì khác? Thích xuất hiện hay đứng sau hậu trường?"
     ],
     [
-      "Kể về sự kiện Phuong tự hào nhất nhé.",
-      "Phuong trực tiếp chịu trách nhiệm phần nào? Chuyện gì không như ý? Phuong tự giải quyết được gì, và cần ai hỗ trợ? Nếu làm lại sẽ đổi gì? Ai thuê Phuong, và trả phí theo cách nào?"
+      "Kể về sự kiện Phương tự hào nhất nhé.",
+      "Phương trực tiếp chịu trách nhiệm phần nào? Chuyện gì không như ý? Phương tự giải quyết được gì, và cần ai hỗ trợ? Nếu làm lại sẽ đổi gì? Ai thuê Phương, và trả phí theo cách nào?"
     ],
     [
-      "Đội của Phuong gồm những ai?",
+      "Đội của Phương gồm những ai?",
       "Bạn bè, cộng tác viên, nhân viên hay đối tác? Ai làm tốt ảnh, video, thiết kế, mạng xã hội, PR, quảng bá, MC, DJ hoặc sản xuất? Mọi người đã hoàn thành việc gì cùng nhau?"
     ],
     [
-      "Hôm nay Phuong nhắn thì ai sẽ trả lời?",
-      "Phuong quen trực tiếp ban tổ chức và địa điểm nào? Họ làm gì, thường xuyên không, sắp có sự kiện nào? Mức độ thân quen ra sao? Lưu tên và liên hệ riêng ở nơi khác mà hai bên đã thống nhất."
+      "Hôm nay Phương nhắn thì ai sẽ trả lời?",
+      "Phương quen trực tiếp ban tổ chức và địa điểm nào? Họ làm gì, thường xuyên không, sắp có sự kiện nào? Mức độ thân quen ra sao? Lưu tên và liên hệ riêng ở nơi khác mà hai bên đã thống nhất."
     ],
     [
-      "Phuong muốn chủ động nhận việc gì trong bảy ngày?",
-      "Chọn một kết quả Phuong có thể làm mà không cần hướng dẫn hằng ngày. Phuong sẽ tự quyết điều gì? Khi nào cần hỏi? Phuong muốn AI giúp phần nào?"
+      "Phương muốn chủ động nhận việc gì trong bảy ngày?",
+      "Chọn một kết quả Phương có thể làm mà không cần hướng dẫn hằng ngày. Phương sẽ tự quyết điều gì? Khi nào cần hỏi? Phương muốn AI giúp phần nào?"
     ],
     [
-      "Một năm tốt đẹp với Phuong sẽ như thế nào?",
-      "Phuong muốn học gì? Tự chủ tài chính có ý nghĩa gì? Làm tự do, mở agency, công ty sự kiện/truyền thông, vai trò dẫn dắt, lương cố định, phí dự án, hoa hồng—hay kết hợp?"
+      "Một năm tốt đẹp với Phương sẽ như thế nào?",
+      "Phương muốn học gì? Tự chủ tài chính có ý nghĩa gì? Làm tự do, mở agency, công ty sự kiện/truyền thông, vai trò dẫn dắt, lương cố định, phí dự án, hoa hồng—hay kết hợp?"
     ]
   ],
   "zeroTitle": "Khách hàng đầu tiên: bắt đầu từ việc thật.",
@@ -212,14 +212,14 @@
   "levels": [
     "Hướng dẫn từng thao tác",
     "Giao việc thật chi tiết",
-    "Thống nhất kết quả; Phuong chủ động làm",
-    "Phuong phát hiện vấn đề và đề xuất cách xử lý",
-    "Phuong phụ trách một mảng và báo cáo kết quả",
-    "Phuong xây quy trình và hướng dẫn người khác"
+    "Thống nhất kết quả; Phương chủ động làm",
+    "Phương phát hiện vấn đề và đề xuất cách xử lý",
+    "Phương phụ trách một mảng và báo cáo kết quả",
+    "Phương xây quy trình và hướng dẫn người khác"
   ],
   "autonomyNote": "Cùng chọn điểm bắt đầu. Mức 2 phù hợp để thử lần đầu; hôm nay không kỳ vọng mức 5. Có trách nhiệm cần đi kèm quyền quyết định và biết khi nào phải nhờ hỗ trợ.",
   "experimentTitle": "Bảy ngày. Một kết quả.",
-  "experimentText": "Đề xuất: tìm hiểu những người tạo nên hoạt động ở Đà Lạt—và thử một lần bàn giao. Bắt đầu với năm ban tổ chức và năm địa điểm Phuong đã biết, chưa cần làm danh bạ cả thành phố.",
+  "experimentText": "Đề xuất: tìm hiểu những người tạo nên hoạt động ở Đà Lạt—và thử một lần bàn giao. Bắt đầu với năm ban tổ chức và năm địa điểm Phương đã biết, chưa cần làm danh bạ cả thành phố.",
   "week": [
     [
       "Ngày 1–2 · Lập bản đồ",
@@ -297,7 +297,7 @@
     [
       "1 năm",
       "Một thói quen hữu ích tại địa phương",
-      "Hình dung hàng trăm hoặc hàng nghìn sự kiện được ghi nhận và lưu giữ, ban tổ chức tự chăm trang, địa điểm phong phú và cộng đồng gặp nhau đều đặn. Khám phá đa ngôn ngữ có người dùng thật. Nhóm nhỏ và nhập tin phần lớn tự động giảm việc cho Zan. Phuong có thể phụ trách một mảng nếu hợp tác phù hợp. Thử doanh thu để có bằng chứng."
+      "Hình dung hàng trăm hoặc hàng nghìn sự kiện được ghi nhận và lưu giữ, ban tổ chức tự chăm trang, địa điểm phong phú và cộng đồng gặp nhau đều đặn. Khám phá đa ngôn ngữ có người dùng thật. Nhóm nhỏ và nhập tin phần lớn tự động giảm việc cho Zan. Phương có thể phụ trách một mảng nếu hợp tác phù hợp. Thử doanh thu để có bằng chứng."
     ],
     [
       "5 năm",
@@ -376,7 +376,7 @@
     ],
     [
       "Quen biết chưa phải kênh phân phối.",
-      "Giả thuyết: đóng góp mạnh nhất của Phuong có thể là sự tin cậy và điều phối. Ba cuộc trò chuyện cụ thể cho biết nhiều hơn lời nói chung về mạng lưới truyền thông."
+      "Giả thuyết: đóng góp mạnh nhất của Phương có thể là sự tin cậy và điều phối. Ba cuộc trò chuyện cụ thể cho biết nhiều hơn lời nói chung về mạng lưới truyền thông."
     ],
     [
       "Khách hàng đầu tiên hài lòng chưa chứng minh thị trường.",
@@ -396,7 +396,7 @@
     ]
   ],
   "decisionTitle": "Ra về với một điều đáng thử.",
-  "decisionText": "Hôm nay chưa cần quyết định vai trò lâu dài của Phuong. Tìm một thế mạnh, trao quyền để thử, rồi học từ kết quả thật.",
+  "decisionText": "Hôm nay chưa cần quyết định vai trò lâu dài của Phương. Tìm một thế mạnh, trao quyền để thử, rồi học từ kết quả thật.",
   "fields": [
     "Thử nghiệm đầu tiên",
     "Một người chịu trách nhiệm chính",
@@ -408,10 +408,10 @@
   ],
   "owners": [
     "Cùng chọn",
-    "Phuong",
+    "Phương",
     "Zan"
   ],
-  "saveNote": "Chỉ lưu trên trình duyệt này, dùng chung giữa tiếng Anh và tiếng Việt. Không đồng bộ hay gửi cho nhóm. Tránh ghi nội dung nhạy cảm. Xóa sau khi dùng thiết bị chung.",
+  "saveNote": "Chỉ lưu trên trình duyệt này, dùng chung giữa ba ngôn ngữ. Không đồng bộ hay gửi cho nhóm. Tránh ghi nội dung nhạy cảm. Xóa sau khi dùng thiết bị chung.",
   "saved": "Đã lưu trên thiết bị này",
   "saveError": "Không thể lưu trên trình duyệt. Giữ tab này mở và tải quyết định trước khi rời trang.",
   "export": "Tải ghi chú buổi gặp",

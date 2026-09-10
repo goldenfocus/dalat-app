@@ -7,9 +7,9 @@ import {
   Check,
   Compass,
   Leaf,
-  Mountain,
   Sparkles,
 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import type EnglishCopy from "@/messages/phuong/en.json";
 import {
@@ -98,7 +98,7 @@ export function Workshop({
   language,
 }: {
   copy: WorkshopCopy;
-  language: "en" | "vi";
+  language: "en" | "vi" | "fr";
 }) {
   const [meeting, setMeeting] = useState<Meeting>(emptyMeeting);
   const [ready, setReady] = useState(false);
@@ -157,7 +157,7 @@ export function Workshop({
         <div className="thu-toolbar-inner">
           <span className="thu-wordmark">
             <Leaf size={16} aria-hidden="true" /> DALAT.APP{" "}
-            <span> / PHUONG + ZAN</span>
+            <span> / PHƯƠNG + ZAN</span>
           </span>
           <div className="thu-languages" aria-label="Language / Ngôn ngữ">
             <a
@@ -172,11 +172,14 @@ export function Workshop({
             >
               TIẾNG VIỆT
             </a>
+            <a href="https://phuong.dalat.app/fr" aria-current={language === "fr" ? "page" : undefined}>
+              FRANÇAIS
+            </a>
           </div>
         </div>
         <nav
           aria-label={
-            language === "vi" ? "Các phần buổi gặp" : "Meeting sections"
+            language === "vi" ? "Các phần buổi gặp" : language === "fr" ? "Les étapes de l’atelier" : "Meeting sections"
           }
         >
           {anchors.map((id, i) => (
@@ -209,19 +212,20 @@ export function Workshop({
               </a>
             </div>
           </div>
-          <div className="thu-landscape" aria-hidden="true">
-            <div className="thu-sun" />
-            <div className="thu-hill thu-hill-back" />
-            <div className="thu-hill thu-hill-front" />
-            <Mountain className="thu-mountain" strokeWidth={0.7} />
-            <div className="thu-landscape-label">
-              ĐÀ LẠT
-              <br />
-              <span>11.9404° N · 108.4583° E</span>
-            </div>
-            <div className="thu-orbit">
-              <Leaf size={25} />
-            </div>
+          <div className="thu-portraits">
+            <figure>
+              <div className="thu-portrait-photo">
+                <Image src="/workshops/phuong/phuong.png" alt="Phương" fill priority sizes="(max-width: 600px) 45vw, 240px" />
+              </div>
+              <figcaption>Phương</figcaption>
+            </figure>
+            <span className="thu-portrait-plus" aria-hidden="true">+</span>
+            <figure>
+              <div className="thu-portrait-photo">
+                <Image src="/workshops/phuong/zan.jpg" alt="Zan" fill priority sizes="(max-width: 600px) 45vw, 240px" />
+              </div>
+              <figcaption>Zan</figcaption>
+            </figure>
           </div>
         </section>
         <p className="thu-privacy">{c.privacy}</p>
@@ -249,7 +253,7 @@ export function Workshop({
               {urls.map((url, i) => (
                 <a
                   key={url}
-                  href={`https://dalat.app${language === "vi" ? "/vi" : ""}${url}`}
+                  href={`https://dalat.app${language === "en" ? "" : `/${language}`}${url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="thu-text-link"
@@ -448,7 +452,7 @@ export function Workshop({
               <summary>
                 {language === "vi"
                   ? "Các chỉ số hỗ trợ"
-                  : "Supporting measures"}
+                  : language === "fr" ? "Autres indicateurs" : "Supporting measures"}
               </summary>
               <p>{c.metricsMore}</p>
             </details>
@@ -456,7 +460,7 @@ export function Workshop({
         </section>
         <section className="thu-section">
           <Heading
-            n={language === "vi" ? "NGUYÊN TẮC" : "GUARDRAILS"}
+            n={language === "vi" ? "NGUYÊN TẮC" : language === "fr" ? "GARDE-FOUS" : "GUARDRAILS"}
             title={c.guardrailsTitle}
           />
           <Cards rows={c.guardrails} />
@@ -502,7 +506,7 @@ export function Workshop({
                     }
                   >
                     <option value="">{c.owners[0]}</option>
-                    <option value="Phuong">Phuong</option>
+                    <option value="Phương">Phương</option>
                     <option value="Zan">Zan</option>
                   </select>
                 ) : key === "deadline" || key === "checkin" ? (
@@ -588,7 +592,7 @@ export function Workshop({
         <footer className="thu-closing">
           <Leaf size={28} aria-hidden="true" />
           <p>{c.closing}</p>
-          <span>PHUONG + ZAN × DALAT.APP</span>
+          <span>PHƯƠNG + ZAN × DALAT.APP</span>
         </footer>
       </div>
     </div>

@@ -1,5 +1,9 @@
 # Phuong collaboration workshop — 2026-09-10
 
+## Portrait and name update
+
+The hero now pairs the original user-provided portrait of Phương (the clearer September 10 attachment) with Zan’s provided forest portrait. The CSS landscape and coordinates are removed. Images use responsive Next Image rendering; no generated or retouched portrait is used. The earlier chat screenshot is not published. Display names use Phương across EN/VI/FR; URL slugs remain ASCII. French copy is now fully available at /fr through next-intl. Existing owner values Thu and Phuong migrate to Phương without changing freeform notes. Service worker: 1.0.21.
+
 ## Subdomain move
 
 The current URL is https://phuong.dalat.app (Vietnamese: /vi), attached to the same Vercel project. Host middleware rewrites locale roots to app/[locale]/collaborate/phuong and sends ordinary public-page links to dalat.app. Cloudflare DNS uses Vercel’s recommended DNS-only CNAME. No separate app or Worker is deployed. Both the host and internal route carry noindex headers. This remains unlisted, not access-controlled.

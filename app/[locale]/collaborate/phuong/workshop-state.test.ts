@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import { emptyMeeting, readMeeting } from "./workshop-state";
 import en from "@/messages/phuong/en.json";
 import vi from "@/messages/phuong/vi.json";
+import fr from "@/messages/phuong/fr.json";
 
 describe("meeting storage", () => {
-  it("updates the previous owner label without changing meeting notes", () => {
-    const result = readMeeting(JSON.stringify({ owner: "Thu", experiment: "Thu's notes", roles: { 0: 1 } }));
-    expect(result.owner).toBe("Phuong");
+  it.each(["Thu", "Phuong"])("updates the previous owner label %s without changing meeting notes", (owner) => {
+    const result = readMeeting(JSON.stringify({ owner, experiment: "Thu's notes", roles: { 0: 1 } }));
+    expect(result.owner).toBe("Phương");
     expect(result.experiment).toBe("Thu's notes");
     expect(result.roles).toEqual({ 0: 1 });
   });
@@ -14,7 +15,7 @@ describe("meeting storage", () => {
     const meeting = {
       ...emptyMeeting(),
       experiment: "Tìm ba ban tổ chức",
-      owner: "Phuong",
+      owner: "Phương",
       roles: { 0: 0, 14: 2 },
       level: 2,
     };
@@ -39,16 +40,20 @@ describe("meeting storage", () => {
     expect(result.experiment).toHaveLength(3000);
   });
 });
-describe("bilingual meeting coverage", () => {
+describe("three-language meeting coverage", () => {
   it("has matching keys and all selectable roles and decisions", () => {
     expect(Object.keys(vi).sort()).toEqual(Object.keys(en).sort());
-    for (const copy of [en, vi]) {
+    expect(Object.keys(fr).sort()).toEqual(Object.keys(en).sort());
+    for (const copy of [en, vi, fr]) {
       expect(copy.roles).toHaveLength(15);
       expect(copy.fields).toHaveLength(7);
       expect(copy.choices).toHaveLength(3);
       expect(copy.levels).toHaveLength(6);
     }
     for (const key of Object.keys(en) as (keyof typeof en)[])
-      if (Array.isArray(en[key])) expect(vi[key]).toHaveLength(en[key].length);
+      if (Array.isArray(en[key])) {
+        expect(vi[key]).toHaveLength(en[key].length);
+        expect(fr[key]).toHaveLength(en[key].length);
+      }
   });
 });
