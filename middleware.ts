@@ -8,7 +8,9 @@ import { locales } from "@/lib/i18n/routing";
 // — both at once crashes the app (enforced by the prebuild script).
 export async function middleware(request: NextRequest) {
   // One application, a dedicated meeting host, and no claimed public username.
-  if (request.nextUrl.hostname === "phuong.dalat.app") {
+  const hostname = request.headers.get("host")?.split(":")[0].toLowerCase()
+    || request.nextUrl.hostname;
+  if (hostname === "phuong.dalat.app") {
     const segment = request.nextUrl.pathname.replace(/^\/|\/$/g, "");
     if (!segment || locales.includes(segment as (typeof locales)[number])) {
       const locale = segment || "en";

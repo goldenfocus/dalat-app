@@ -9,6 +9,10 @@ import { middleware } from "./middleware";
 import { updateSession } from "@/lib/supabase/proxy";
 
 describe("workshop subdomain", () => {
+  it("uses the incoming host when the server URL is internal", async () => {
+    const response = await middleware(new NextRequest("http://localhost:3021/vi", { headers: { host: "phuong.dalat.app" } }));
+    expect(response.headers.get("x-middleware-rewrite")).toBe("http://localhost:3021/vi/collaborate/phuong");
+  });
   it.each([["/", "en"], ["/vi", "vi"], ["/en", "en"]])("rewrites %s in the same application", async (path, locale) => {
     const response = await middleware(new NextRequest(`https://phuong.dalat.app${path}`));
     expect(response.headers.get("x-middleware-rewrite")).toBe(`https://phuong.dalat.app/${locale}/collaborate/phuong`);
