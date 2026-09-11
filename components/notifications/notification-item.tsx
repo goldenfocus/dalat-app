@@ -2,7 +2,7 @@
 
 import { formatDistanceToNow } from 'date-fns';
 import { Bell, Calendar, Users, CheckCircle2, XCircle } from 'lucide-react';
-import type { Notification, NotificationType } from '@/lib/notifications/types';
+import type { Notification } from '@/lib/notifications/types';
 import { isUnread } from '@/lib/notifications/staleness';
 import { cn } from '@/lib/utils';
 
@@ -11,7 +11,7 @@ interface NotificationItemProps {
   onRead?: (id: string) => void | Promise<void>;
 }
 
-function getNotificationIcon(type: NotificationType) {
+function getNotificationIcon(type: Notification["type"]) {
   switch (type) {
     case 'rsvp_confirmation':
     case 'waitlist_promotion':

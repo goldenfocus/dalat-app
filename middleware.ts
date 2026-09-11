@@ -12,6 +12,14 @@ export async function middleware(request: NextRequest) {
     || request.nextUrl.hostname;
   if (hostname === "phuong.dalat.app") {
     const segment = request.nextUrl.pathname.replace(/^\/|\/$/g, "");
+    const archiveMatch=segment.match(new RegExp(`^(?:(${locales.join("|")})/)?archive/v1$`));
+    if (archiveMatch) {
+      const locale=archiveMatch[1] || "en";
+      const destination=request.nextUrl.clone();
+      destination.pathname=`/${locale}/collaborate/phuong/archive/v1`;
+      const headers=new Headers(request.headers);headers.set("x-next-intl-locale",locale);
+      return NextResponse.rewrite(destination,{request:{headers}});
+    }
     if (!segment || locales.includes(segment as (typeof locales)[number])) {
       const locale = segment || "en";
       const destination = request.nextUrl.clone();

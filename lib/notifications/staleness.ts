@@ -1,4 +1,4 @@
-import type { Notification, NotificationType } from './types';
+import type { Notification } from './types';
 
 /**
  * Notifications that have gone stale still appear in the list — they just stop
@@ -21,7 +21,7 @@ const DAY = 24 * HOUR;
  * about another person (a new follower, a comment, your photo becoming an event
  * cover) is just as good to discover a month later, so it waits for you.
  */
-const TTL_BY_TYPE: Partial<Record<NotificationType, number>> = {
+const TTL_BY_TYPE: Partial<Record<Notification["type"], number>> = {
   // The event is happening right now, or just did.
   final_reminder_2h: 6 * HOUR,
   event_starting_nudge: 6 * HOUR,

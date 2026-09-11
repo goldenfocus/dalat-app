@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { PhuongV2 } from "./v2";
-import type { V2Copy } from "./v2";
+import { Workshop } from "../../workshop";
+import type { WorkshopCopy } from "../../workshop";
 
 export async function generateMetadata({
   params,
@@ -22,11 +22,11 @@ export async function generateMetadata({
       googleBot: { index: false, follow: false, noimageindex: true },
     },
     alternates: {
-      canonical: `https://phuong.dalat.app${locale === "en" ? "/" : `/${locale}`}`,
+      canonical: `https://phuong.dalat.app${locale === "en" ? "" : `/${locale}`}/archive/v1`,
       languages: {
-        en: "https://phuong.dalat.app/",
-        vi: "https://phuong.dalat.app/vi",
-        fr: "https://phuong.dalat.app/fr",
+        en: "https://phuong.dalat.app/archive/v1",
+        vi: "https://phuong.dalat.app/vi/archive/v1",
+        fr: "https://phuong.dalat.app/fr/archive/v1",
       },
     },
     openGraph: {
@@ -47,6 +47,6 @@ export default async function PhươngPage({
   setRequestLocale(locale);
   const t = await getTranslations("phuong");
   // Route-specific server dictionary: do not add meeting copy to the global client shell.
-  const copy = t.raw("v2") as V2Copy;
-  return <PhuongV2 copy={copy} language={locale === "vi" || locale === "fr" ? locale : "en"} />;
+  const copy = t.raw("canvas") as WorkshopCopy;
+  return <><div className="p-4 text-center text-sm border-b"><a href={`https://phuong.dalat.app${locale === "en" ? "/" : `/${locale}`}`}>{locale === "vi" ? "← Thử nghiệm hiện tại · V2" : locale === "fr" ? "← L’expérience actuelle · V2" : "← Current experiment · V2"}</a></div><Workshop copy={copy} language={locale === "vi" || locale === "fr" ? locale : "en"} /></>;
 }

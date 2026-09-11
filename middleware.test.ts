@@ -23,6 +23,10 @@ describe("workshop subdomain", () => {
     await middleware(request);
     expect(updateSession).toHaveBeenCalledWith(request);
   });
+  it.each([["/archive/v1","en"],["/vi/archive/v1","vi"],["/fr/archive/v1","fr"]])("preserves archived workshop %s",async(path,locale)=>{
+    const response=await middleware(new NextRequest(`https://phuong.dalat.app${path}`));
+    expect(response.headers.get("x-middleware-rewrite")).toBe(`https://phuong.dalat.app/${locale}/collaborate/phuong/archive/v1`);
+  });
   it("keeps public content on the main domain", async () => {
     const response = await middleware(new NextRequest("https://phuong.dalat.app/vi/venues?view=map"));
     expect(response.headers.get("location")).toBe("https://dalat.app/vi/venues?view=map");

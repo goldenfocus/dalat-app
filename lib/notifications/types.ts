@@ -82,7 +82,7 @@ export interface PushNotificationContent extends NotificationContent {
 export interface Notification {
   id: string;
   user_id: string;
-  type: NotificationType;
+  type: NotificationType | 'collaboration_update';
   title: string;
   body: string | null;
   primary_action_url: string | null;

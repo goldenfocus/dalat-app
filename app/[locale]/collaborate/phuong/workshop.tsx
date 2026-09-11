@@ -162,18 +162,18 @@ export function Workshop({
           </span>
           <div className="thu-languages" aria-label="Language / Ngôn ngữ">
             <a
-              href="https://phuong.dalat.app/"
+              href="https://phuong.dalat.app/archive/v1"
               aria-current={language === "en" ? "page" : undefined}
             >
               ENGLISH
             </a>
             <a
-              href="https://phuong.dalat.app/vi"
+              href="https://phuong.dalat.app/vi/archive/v1"
               aria-current={language === "vi" ? "page" : undefined}
             >
               TIẾNG VIỆT
             </a>
-            <a href="https://phuong.dalat.app/fr" aria-current={language === "fr" ? "page" : undefined}>
+            <a href="https://phuong.dalat.app/fr/archive/v1" aria-current={language === "fr" ? "page" : undefined}>
               FRANÇAIS
             </a>
           </div>

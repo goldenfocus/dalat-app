@@ -20,6 +20,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
       ...(await import(`@/messages/${locale}.json`)).default,
       // This unlisted workshop has EN/VI/FR copy; other locales explicitly use English.
       phuong: {
+        v2: (await import(`@/messages/phuong/v2/${locale === "vi" || locale === "fr" ? locale : "en"}.json`)).default,
         canvas: (
           await import(`@/messages/phuong/${locale === "vi" || locale === "fr" ? locale : "en"}.json`)
         ).default,
