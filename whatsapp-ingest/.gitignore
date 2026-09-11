@@ -1,0 +1,8 @@
+# Runtime / local only — never commit
+whatsapp-ingest
+store.db
+store.db-*
+.tools/
+*.exe
+.env
+.env.*
