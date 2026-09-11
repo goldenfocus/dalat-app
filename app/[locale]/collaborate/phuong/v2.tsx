@@ -10,6 +10,7 @@ import {
 } from "@/lib/phuong/plan";
 import type English from "@/messages/phuong/v2/en.json";
 import "./v2.css";
+import { IdeaMenu } from "./ideas";
 export type V2Copy = typeof English;
 type Action = {
   id: string;
@@ -196,7 +197,7 @@ export function PhuongV2({
     <div className="pv">
       <nav className="pv-top" aria-label="Workshop">
         <a href="#idea">{c.quick}</a>
-        <a href="#planner">{c.details}</a>
+        <a href={access === "ready" ? "#ideas" : "#planner"}>{c.details}</a>
         <a href={`${prefix}/archive/v1`}>{c.archive}</a>
         <div className="pv-languages">
           {[
@@ -219,7 +220,7 @@ export function PhuongV2({
           <p className="pv-kicker">{c.kicker}</p>
           <h1>{c.title}</h1>
           <p>{c.intro}</p>
-          <a className="pv-cta" href="#planner">
+          <a className="pv-cta" href={access === "ready" ? "#ideas" : "#planner"}>
             {c.details} ↘
           </a>
         </div>
@@ -253,6 +254,7 @@ export function PhuongV2({
         </div>
       </section>
       <p className="pv-image-note">{c.aiPortraits}</p>
+      {access === "ready" && <IdeaMenu copy={c.ideas} />}
       <section className="pv-glass pv-planner" id="planner">
         <p className="pv-kicker">ĐƯỜNG 1 CHILL · ĐÀ LẠT</p>
         {access !== "ready" ? (
@@ -279,7 +281,7 @@ export function PhuongV2({
         ) : (
           <>
             <p className="pv-private">
-              {role === "zan" ? c.review : c.privacy}
+              {role === "zan" ? c.reviewer : c.editor}
             </p>
             <div className="pv-stepper">
               {c.steps.map((s, i) => (

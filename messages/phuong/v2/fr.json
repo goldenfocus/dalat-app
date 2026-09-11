@@ -141,5 +141,96 @@
   },
   "byPhuong": "Phương",
   "byZan": "Zan",
-  "aiPortraits": "Portraits d’anniversaire imaginés par IA"
+  "aiPortraits": "Portraits d’anniversaire imaginés par IA",
+  "reviewer": "Vous consultez les réponses de Phương. Elle seule peut modifier ces champs. Vous pouvez tous les deux voter sur les idées et écrire des messages ci-dessous.",
+  "editor": "Ce sont tes réponses, Phương : tu peux écrire ici et enregistrer. Yan peut les lire ; vous pouvez tous les deux voter et laisser des messages.",
+  "ideas": {
+    "title": "Un petit menu d’idées",
+    "intro": "Qu’est-ce qui donnerait envie de venir et de faire connaissance ? Choisissons ensemble. Deux ou trois bonnes idées suffisent.",
+    "note": "Des propositions, pas des offres confirmées. Yan / Dalat.app propose de financer le verre de bienvenue, les photos et quelques bouchées ; il faut convenir du budget total, des quantités et de l’accord du lieu. Un vote ne dépense rien et ne publie rien.",
+    "more": "Encore quelques petites idées",
+    "up": "J’aime",
+    "down": "Pas cette fois",
+    "unsure": "À voir",
+    "empty": "Pas encore de vote",
+    "saving": "Enregistrement…",
+    "saved": "Votre vote est enregistré.",
+    "error": "Impossible d’enregistrer. Réessayez.",
+    "loadError": "Les votes n’ont pas pu être chargés.",
+    "refresh": "Actualiser les votes",
+    "you": "Vous",
+    "hint": "Chaque clic enregistre votre propre vote. Les deux noms restent visibles. Actualisez pour voir les derniers votes ; proposez une autre idée dans le message ci-dessous.",
+    "items": {
+      "drink": {
+        "title": "RSVP → un verre de bienvenue",
+        "description": "S’inscrire sur Dalat.app, puis venir pointer pour recevoir un verre offert par Yan. Prévoir une option sans alcool. Confirmer le plafond, le choix et le prix avant.",
+        "effort": "Petit budget · plafond à définir"
+      },
+      "photos": {
+        "title": "Venir pour la soirée, revenir pour les photos",
+        "description": "Un photographe discret et un lien vers la galerie après la soirée, financés par Yan. Demander avant de photographier. Les photos restent accessibles sans RSVP ni inscription forcée.",
+        "effort": "Tarif photo à confirmer"
+      },
+      "meet": {
+        "title": "Rencontrer trois nouvelles personnes",
+        "description": "Une personne accueille ceux qui viennent seuls. Trois amorces facultatives : son prénom, un lieu préféré à Đà Lạt, une chose qu’on aimerait apprendre.",
+        "effort": "Presque gratuit · une personne anime"
+      },
+      "bites": {
+        "title": "Quelques bonnes bouchées",
+        "description": "Dalat.app pourrait offrir un petit plateau de bouchées végétariennes. Convenir des portions et du coût avec le lieu ; indiquer les ingrédients et allergènes.",
+        "effort": "Petit budget · accord du lieu"
+      },
+      "bingo": {
+        "title": "Bingo des rencontres",
+        "description": "Une petite carte bilingue : trouver quelqu’un qui jardine, parle trois langues ou connaît un café secret. Chercher la conversation, pas une collection de contacts.",
+        "effort": "Impression seulement"
+      },
+      "photo-challenge": {
+        "title": "La photo des nouveaux amis",
+        "description": "Des équipes mixtes créent une photo drôle et originale. Accord de toutes les personnes avant de la soumettre. On vote pour la photo la plus joyeuse, pas la personne la plus belle. Petit prix facultatif.",
+        "effort": "Presque gratuit · prix facultatif"
+      },
+      "language": {
+        "title": "Apprends-moi une phrase",
+        "description": "En duo, apprendre une phrase utile en vietnamien ou en anglais, puis changer après cinq minutes. Tous les niveaux sont bienvenus ; on peut passer son tour.",
+        "effort": "Gratuit"
+      },
+      "local-tips": {
+        "title": "Le mur des secrets locaux",
+        "description": "Écrire un lieu ou une activité préférée dans l’une des deux langues. Un bénévole aide à traduire. Des amorces de conversation et un petit guide de la ville.",
+        "effort": "Papier + crayons"
+      },
+      "teams": {
+        "title": "Mini quiz Đà Lạt",
+        "description": "Trois manches courtes en équipes vietnamiennes/internationales. Cuisine, lieux et anecdotes ; chaque question est lue dans les deux langues.",
+        "effort": "Gratuit · préparer 6 questions"
+      },
+      "music": {
+        "title": "Une chanson de chez moi",
+        "description": "Chacun propose une chanson qui compte pour lui. Le lieu en choisit quelques-unes, à un volume qui permet de discuter.",
+        "effort": "Gratuit · musique choisie par le lieu"
+      },
+      "name-tags": {
+        "title": "Bonjour, je m’appelle…",
+        "description": "Étiquettes facultatives : prénom, langues parlées ou à pratiquer et un intérêt. Aucun statut amoureux imposé ni question intime.",
+        "effort": "Étiquettes + crayons"
+      },
+      "postcards": {
+        "title": "Carte postale à un nouvel ami",
+        "description": "Dessiner ou écrire une carte de Đà Lạt en deux minutes et l’échanger avec une nouvelle connaissance. Les dessins amusants sont bienvenus ; aucun talent requis.",
+        "effort": "Papier + crayons"
+      },
+      "birthday": {
+        "title": "Un petit moment d’anniversaire",
+        "description": "Si Phương le souhaite : petit gâteau, quelques mots et une photo de groupe pour les volontaires. Cinq minutes, puis la soirée reprend.",
+        "effort": "Budget gâteau facultatif"
+      },
+      "body-art": {
+        "title": "Performance de peinture corporelle",
+        "description": "Option plus ambitieuse : Dalat.app pourrait payer un modèle adulte et un artiste professionnels. Convenir des honoraires, de la couverture du corps, du consentement, des photos et de l’accord du lieu. Du maquillage visage/mains serait-il plus simple ?",
+        "effort": "Plus coûteux · pas essentiel au premier essai"
+      }
+    }
+  }
 }

@@ -14,7 +14,7 @@ No public navigation or sitemap entry was added; metadata remains noindex.
 ## Reuse and deliberate cuts
 Existing Supabase authentication, next-intl dictionaries, design tokens, Button,
 Next Image, original portraits, notifications table/Realtime/bell are reused.
-Portrait faces are untouched; party hats are CSS overlays.
+V1 retains original photos. At the user’s subsequent request, V2 uses AI-imagined birthday portraits with translated disclosure; the old CSS hats were removed.
 
 EventForm already includes FlyerBuilder, image queue/upload, venue linking,
 translations, RSVP and celebration links. It currently inserts published events
@@ -60,3 +60,14 @@ Each participant should sign in on phuong.dalat.app (sessions are host-scoped).
 Phương can save her choice; Zan should see it and the bell notification. Confirm
 venue address/record, date, start time, drink economics, consent and public media
 before using the normal event publishing tools. The planner is not an event draft.
+
+## Shared idea menu
+Fourteen proposed activities/incentives in EN/VI/FR, four initially visible.
+`phuong_idea_votes` stores one up/down/unsure vote per participant and stable idea
+ID. Both members read both votes; RLS restricts inserts/updates to the authenticated
+author. `/api/phuong-ideas` verifies membership and derives the author from the
+session, never the request body. Each click saves explicitly; no preselected votes,
+notifications, commitments or purchases. Votes refresh on window focus or the
+Refresh button. Plan fields remain Phương-only, now explained beside the form.
+Validated both roles, impersonation denial and outsider denial with rolled-back
+production transactions. No real votes were submitted for either participant.

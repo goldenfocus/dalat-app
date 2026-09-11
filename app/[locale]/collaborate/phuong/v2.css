@@ -450,4 +450,96 @@
   }
 }
 
-.pv-image-note { text-align: center; font-size: .75rem; opacity: .65; margin: -15px 0 25px; }
+.pv-image-note {
+  text-align: center;
+  font-size: 0.75rem;
+  opacity: 0.65;
+  margin: -15px 0 25px;
+}
+
+.pv-idea-menu {
+  padding: 55px 0;
+  scroll-margin-top: 90px;
+}
+.pv-idea-menu > p {
+  max-width: 800px;
+}
+.pv-idea-notice {
+  border-left: 3px solid #739c89;
+  padding-left: 18px;
+  font-size: 0.9rem;
+}
+.pv-idea-help {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+.pv-idea-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.pv-idea-card {
+  padding: 25px;
+  border: 1px solid hsl(var(--foreground) / 0.15);
+  border-radius: 24px;
+  background: hsl(var(--background) / 0.45);
+}
+.pv-idea-card h3 {
+  font-size: 1.35rem;
+  margin: 8px 0 12px;
+}
+.pv-idea-card p {
+  font-size: 0.95rem;
+}
+.pv-idea-card .pv-idea-effort {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin: 0;
+}
+.pv-vote-people {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+  margin: 22px 0 14px;
+}
+.pv-vote-people strong {
+  margin-right: 8px;
+}
+.pv-vote-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pv-vote-buttons button,
+.pv-vote-refresh {
+  border: 1px solid hsl(var(--foreground) / 0.25);
+  border-radius: 12px;
+  padding: 10px 13px;
+  min-height: 44px;
+  font-size: 0.85rem;
+}
+.pv-vote-buttons button[aria-pressed="true"] {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+.pv-vote-buttons button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.pv-idea-more {
+  margin-top: 22px;
+}
+.pv-idea-more summary {
+  padding: 20px 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+@media (max-width: 700px) {
+  .pv-idea-grid {
+    grid-template-columns: 1fr;
+  }
+  .pv-idea-card {
+    padding: 20px;
+  }
+}

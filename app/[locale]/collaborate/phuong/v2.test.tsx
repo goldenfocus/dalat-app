@@ -7,6 +7,7 @@ import {
   cleanup,
 } from "@testing-library/react";
 import { afterEach, it, expect, vi } from "vitest";
+vi.mock("./ideas", () => ({ IdeaMenu: () => null }));
 import { PhuongV2 } from "./v2";
 import en from "@/messages/phuong/v2/en.json";
 import { emptyPlan } from "@/lib/phuong/plan";
@@ -41,6 +42,8 @@ it("offers alternate date and saves only after an explicit action", async () => 
   render(<PhuongV2 copy={en} language="en" />);
   fireEvent.click(await screen.findByRole("button", { name: en.choices[2] }));
   expect(screen.getByLabelText(en.date)).toBeInTheDocument();
+  expect(screen.getByLabelText(en.plans)).toBeEnabled();
+  fireEvent.change(screen.getByLabelText(en.plans), { target: { value: "No plans yet" } });
   fireEvent.input(screen.getByLabelText(en.date), {
     target: { value: "2026-09-26" },
   });
@@ -53,7 +56,7 @@ it("offers alternate date and saves only after an explicit action", async () => 
   expect(JSON.parse(post![1]!.body as string)).toMatchObject({
     action: "decision",
     expectedVersion: 0,
-    plan: { birthday: "date", date: "2026-09-26" },
+    plan: { birthday: "date", date: "2026-09-26", birthdayPlans: "No plans yet" },
   });
 });
 it("keeps birthday private and does not show party configuration without opting in", async () => {

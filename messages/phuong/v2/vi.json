@@ -141,5 +141,96 @@
   },
   "byPhuong": "Phương",
   "byZan": "Zan",
-  "aiPortraits": "Ảnh sinh nhật được AI sáng tạo"
+  "aiPortraits": "Ảnh sinh nhật được AI sáng tạo",
+  "reviewer": "Bạn đang xem câu trả lời của Phương. Chỉ Phương sửa được các ô này. Cả hai đều có thể chọn ý tưởng và viết lời nhắn bên dưới.",
+  "editor": "Đây là phần trả lời của Phương—Phương có thể nhập và lưu tại đây. Yan xem được; cả hai đều có thể chọn ý tưởng và để lại lời nhắn.",
+  "ideas": {
+    "title": "Một “thực đơn” ý tưởng nhỏ",
+    "intro": "Điều gì khiến mọi người muốn đến và thoải mái làm quen? Cùng chọn vài món mình thích nhé. Hai hoặc ba ý tưởng hay là đủ rồi.",
+    "note": "Đây là ý tưởng để bàn, chưa phải ưu đãi đã chốt. Yan / Dalat.app đề xuất tài trợ đồ uống chào mừng, chụp ảnh và món ăn nhẹ; cần thống nhất tổng ngân sách, số lượng và sự đồng ý của quán trước. Bấm chọn không có nghĩa là chi tiền hay đăng sự kiện.",
+    "more": "Xem thêm vài ý tưởng nhỏ",
+    "up": "Thích đó",
+    "down": "Lần này thôi",
+    "unsure": "Chưa chắc",
+    "empty": "Chưa chọn",
+    "saving": "Đang lưu lựa chọn…",
+    "saved": "Đã lưu lựa chọn của bạn.",
+    "error": "Chưa lưu được. Thử lại nhé.",
+    "loadError": "Chưa tải được các lựa chọn.",
+    "refresh": "Cập nhật lựa chọn",
+    "you": "Bạn",
+    "hint": "Mỗi lần bấm sẽ lưu lựa chọn riêng của bạn. Cả hai đều thấy tên người chọn. Bấm cập nhật để xem lựa chọn mới nhất; có ý tưởng khác thì nhắn ở ô bên dưới nhé.",
+    "items": {
+      "drink": {
+        "title": "Đăng ký tham dự → một ly chào mừng",
+        "description": "Đăng ký trên Dalat.app, rồi đến điểm danh để nhận một ly do Yan tài trợ. Có lựa chọn không cồn. Thống nhất số lượng, loại đồ uống và chi phí trước nhé.",
+        "effort": "Ngân sách nhỏ · cần chốt số lượng"
+      },
+      "photos": {
+        "title": "Đến chơi, rồi quay lại xem ảnh",
+        "description": "Có người chụp ảnh tự nhiên và gửi đường dẫn thư viện sau buổi gặp, do Yan tài trợ. Hỏi ý kiến trước khi chụp. Xem ảnh không bắt buộc RSVP hay tạo tài khoản.",
+        "effort": "Cần chốt phí chụp ảnh"
+      },
+      "meet": {
+        "title": "Làm quen với ba người mới",
+        "description": "Một người đón khách đi một mình. Ba câu gợi chuyện tùy chọn: tên bạn, một nơi thích ở Đà Lạt, một điều muốn học.",
+        "effort": "Gần như miễn phí · một người dẫn"
+      },
+      "bites": {
+        "title": "Vài món nhỏ ngon lành",
+        "description": "Dalat.app có thể tài trợ một khay đồ ăn chay nhẹ. Chốt số phần và giá với quán; ghi rõ nguyên liệu và chất có thể gây dị ứng.",
+        "effort": "Ngân sách nhỏ · hỏi ý kiến quán"
+      },
+      "bingo": {
+        "title": "Bingo làm quen",
+        "description": "Tấm thẻ Việt–Anh nhỏ: tìm người trồng cây, nói ba ngôn ngữ hoặc biết một quán cà phê ít người biết. Mục tiêu là trò chuyện, không phải xin thật nhiều số điện thoại.",
+        "effort": "Chỉ tốn in thẻ"
+      },
+      "photo-challenge": {
+        "title": "Bức ảnh bạn mới vui nhất",
+        "description": "Nhóm hỗn hợp cùng tạo một bức ảnh vui, sáng tạo. Chỉ gửi khi mọi người trong ảnh đồng ý. Chọn ảnh vui nhất, không chấm ai đẹp nhất. Có thể có quà nhỏ.",
+        "effort": "Gần như miễn phí · quà tùy chọn"
+      },
+      "language": {
+        "title": "Dạy mình một câu nhé",
+        "description": "Từng cặp dạy nhau một câu tiếng Việt hoặc tiếng Anh hữu ích, rồi đổi bạn sau năm phút. Trình độ nào cũng được, không muốn tham gia cũng không sao.",
+        "effort": "Miễn phí"
+      },
+      "local-tips": {
+        "title": "Bức tường bí kíp địa phương",
+        "description": "Viết một địa điểm hay hoạt động yêu thích bằng tiếng Việt hoặc tiếng Anh. Có người hỗ trợ dịch. Vừa gợi chuyện, vừa thành cẩm nang thành phố nho nhỏ.",
+        "effort": "Giấy + bút"
+      },
+      "teams": {
+        "title": "Đố vui Đà Lạt",
+        "description": "Ba vòng ngắn với đội gồm người Việt và bạn quốc tế. Món ăn, địa danh, chuyện thú vị của thành phố; đọc câu hỏi bằng cả hai ngôn ngữ.",
+        "effort": "Miễn phí · chuẩn bị 6 câu"
+      },
+      "music": {
+        "title": "Một bài hát từ quê mình",
+        "description": "Mỗi người gợi ý một bài hát có ý nghĩa với mình. Quán chọn vài bài vào danh sách phát; âm lượng vừa đủ để vẫn trò chuyện được.",
+        "effort": "Miễn phí · quán chọn nhạc"
+      },
+      "name-tags": {
+        "title": "Chào bạn, mình là…",
+        "description": "Nhãn tên tùy chọn, ghi ngôn ngữ mình nói hoặc muốn luyện và một sở thích. Không ép dán nhãn độc thân hay hỏi chuyện tình cảm.",
+        "effort": "Nhãn dán + bút"
+      },
+      "postcards": {
+        "title": "Bưu thiếp cho bạn mới",
+        "description": "Vẽ hoặc viết bưu thiếp Đà Lạt trong hai phút rồi đổi với người vừa quen. Vẽ buồn cười càng vui, không cần có năng khiếu.",
+        "effort": "Giấy + bút"
+      },
+      "birthday": {
+        "title": "Một khoảnh khắc sinh nhật nhỏ",
+        "description": "Nếu Phương thích: bánh nhỏ, lời chúc ngắn và ảnh nhóm cho ai muốn tham gia. Năm phút thôi, rồi tiếp tục buổi tối.",
+        "effort": "Ngân sách bánh tùy chọn"
+      },
+      "body-art": {
+        "title": "Biểu diễn vẽ nghệ thuật trên cơ thể",
+        "description": "Ý tưởng mở rộng: Dalat.app có thể thuê người mẫu trưởng thành và họa sĩ chuyên nghiệp. Cần chốt thù lao, trang phục/độ che phủ, sự đồng ý, quyền chụp ảnh và phù hợp với quán. Hay vẽ mặt/tay đơn giản sẽ hợp hơn?",
+        "effort": "Chi phí cao hơn · chưa cần cho buổi đầu"
+      }
+    }
+  }
 }
