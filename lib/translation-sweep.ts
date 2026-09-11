@@ -128,6 +128,23 @@ export function getVenueTranslatableFields(description: string | null | undefine
     : [];
 }
 
+/**
+ * Review-published events must not wait behind failing blog translations.
+ * Drain events first; only then process moments/blogs/redo.
+ */
+export function partitionSweepWork<T extends { contentType: string }>(work: T[]): {
+  events: T[];
+  rest: T[];
+} {
+  const events: T[] = [];
+  const rest: T[] = [];
+  for (const item of work) {
+    if (item.contentType === "event") events.push(item);
+    else rest.push(item);
+  }
+  return { events, rest };
+}
+
 type EventTranslationCandidate = {
   id: string;
   title: string;

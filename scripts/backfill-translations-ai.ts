@@ -41,6 +41,7 @@ import {
   CAPTION_FIELDS,
   TranslationWorkItem,
   blogTranslationSourceStillMatches,
+  partitionSweepWork,
 } from "@/lib/translation-sweep";
 import { CONTENT_LOCALES, ContentLocale } from "@/lib/types";
 import { notifyEventTranslationCompletion } from "@/lib/seo/indexnow-events";
@@ -734,9 +735,18 @@ async function main() {
       round++;
       const units = work.reduce((n, w) => n + w.missingLocales.length, 0);
       lastSweepUnits = units;
-      console.log(`Round ${round}: ${work.length} items, ${units} locale-units pending`);
+      const { events, rest } = partitionSweepWork(work);
+      // Events first, then re-collect. A Review publish must not sit behind
+      // Cloudflare 408 / OpenRouter blog failures in the same sweep round.
+      const batch = events.length > 0 ? events : rest;
+      console.log(
+        `Round ${round}: ${work.length} items, ${units} locale-units pending` +
+          (events.length > 0 && rest.length > 0
+            ? ` — draining ${events.length} event(s), deferring ${rest.length} non-event item(s)`
+            : ""),
+      );
       const before = rowsWritten;
-      for (const item of work) {
+      for (const item of batch) {
         await processItem(item, true);
         maybeReport();
       }
