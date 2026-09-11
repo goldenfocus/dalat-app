@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { triggerTranslationServer } from "@/lib/translations";
 import {
   evaluateEventIndexingReadiness,
   type EventIndexingSource,
@@ -250,12 +251,34 @@ export async function publishReviewEvent(
     throw new Error(`Publish failed: ${error.message}`);
   }
 
+  // Queue translation only after the public status flip. Scout/WhatsApp ingest
+  // leave drafts untranslated on purpose: Review does not invent locale copy,
+  // and a second trigger at draft-create would race if the queue later
+  // invalidates rows. WhatsApp drafts share this publish hook.
+  // triggerTranslationServer is the same compatibility boundary Luma/Facebook
+  // await — the Mac mini worker discovers missing content_translations rows.
+  await queuePublishedEventTranslation(event);
+
   return {
     passed: true,
     published: true,
     reasons: [],
     event: { id: event.id, slug: event.slug, status: "published" },
   };
+}
+
+function queuePublishedEventTranslation(event: ReviewEventSnapshot) {
+  const fieldsToTranslate: { field_name: "title" | "description"; text: string }[] = [];
+  if (event.title?.trim()) {
+    fieldsToTranslate.push({ field_name: "title", text: event.title });
+  }
+  if (event.description?.trim()) {
+    fieldsToTranslate.push({ field_name: "description", text: event.description });
+  }
+  if (fieldsToTranslate.length === 0) {
+    return Promise.resolve({ ok: true, localesWritten: 0 });
+  }
+  return triggerTranslationServer("event", event.id, fieldsToTranslate);
 }
 
 export async function qaReviewEvent(
