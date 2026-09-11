@@ -9,6 +9,14 @@ vi.mock("./utils", async () => {
   };
 });
 
+vi.mock("./safe-url", async () => {
+  const actual = await vi.importActual<typeof import("./safe-url")>("./safe-url");
+  return {
+    ...actual,
+    isSafePublicHttpUrl: vi.fn(async () => true),
+  };
+});
+
 import { ingestScoutEvent, resolveTimestamp } from "./scout-ingest";
 import { scoutIngestSchema } from "./scout-schema";
 import { downloadAndUploadImage } from "./utils";
@@ -16,12 +24,17 @@ import { downloadAndUploadImage } from "./utils";
 const futureStart = "2026-09-20T19:00:00+07:00";
 const now = new Date("2026-09-11T05:00:00.000Z");
 
-const validPayload = {
+const factsOnlyPayload = {
   title: "Sunset hike Langbiang",
   description: "Canonical facts from source:\n19:00 20/09 at Langbiang, Đà Lạt.",
   starts_at: futureStart,
   location_name: "Langbiang, Đà Lạt",
   source_url: "https://ticketbox.vn/event/sunset-hike",
+};
+
+const validPayload = {
+  ...factsOnlyPayload,
+  source_image_urls: ["https://ticketbox.vn/media/cover.jpg"],
 };
 
 function createSupabaseMock(options: {
@@ -90,6 +103,46 @@ describe("scoutIngestSchema", () => {
   it("requires a start or a date", () => {
     const { starts_at: _starts, ...rest } = validPayload;
     expect(scoutIngestSchema.safeParse(rest).success).toBe(false);
+  });
+
+  it("rejects when images and visual_gap_reason are all missing", () => {
+    const parsed = scoutIngestSchema.safeParse(factsOnlyPayload);
+    expect(parsed.success).toBe(false);
+    if (parsed.success) return;
+    expect(parsed.error.issues.some((issue) =>
+      issue.message.includes("visual_gap_reason"),
+    )).toBe(true);
+  });
+
+  it("rejects empty image arrays without visual_gap_reason", () => {
+    expect(
+      scoutIngestSchema.safeParse({
+        ...factsOnlyPayload,
+        source_image_urls: [],
+        promo_image_urls: [],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("accepts visual_gap_reason without images", () => {
+    const parsed = scoutIngestSchema.safeParse({
+      ...factsOnlyPayload,
+      visual_gap_reason: "Organizer page has no reusable image",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("accepts source_image_urls", () => {
+    expect(scoutIngestSchema.safeParse(validPayload).success).toBe(true);
+  });
+
+  it("accepts promo_image_urls without source images", () => {
+    expect(
+      scoutIngestSchema.safeParse({
+        ...factsOnlyPayload,
+        promo_image_urls: ["https://ticketbox.vn/media/promo.jpg"],
+      }).success,
+    ).toBe(true);
   });
 });
 
@@ -183,5 +236,70 @@ describe("ingestScoutEvent", () => {
     const result = await ingestScoutEvent(supabase as never, parsed, { now });
     expect(result).toMatchObject({ ok: false, status: 422, code: "beyond_horizon" });
     expect(supabase.inserts).toHaveLength(0);
+  });
+
+  it("writes visual_gap metadata when only visual_gap_reason is provided", async () => {
+    const supabase = createSupabaseMock({ existing: null });
+    const parsed = scoutIngestSchema.parse({
+      ...factsOnlyPayload,
+      visual_gap_reason: "Organizer page has no reusable image",
+    });
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.created).toBe(true);
+    const insert = supabase.inserts[0] as {
+      row: {
+        image_url: string | null;
+        source_metadata: {
+          needs_review: boolean;
+          visual_gap: { reason: string; documented_at: string } | null;
+          hero_present: boolean;
+        };
+      };
+    };
+    expect(insert.row.image_url).toBeNull();
+    expect(insert.row.source_metadata.needs_review).toBe(true);
+    expect(insert.row.source_metadata.hero_present).toBe(false);
+    expect(insert.row.source_metadata.visual_gap).toEqual({
+      reason: "Organizer page has no reusable image",
+      documented_at: expect.any(String),
+    });
+    expect(downloadAndUploadImage).not.toHaveBeenCalled();
+  });
+
+  it("accepts source_image_urls and stores a hero", async () => {
+    const supabase = createSupabaseMock({ existing: null });
+    const parsed = scoutIngestSchema.parse(validPayload);
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const insert = supabase.inserts[0] as {
+      row: {
+        image_url: string | null;
+        source_metadata: { visual_gap: unknown; hero_present: boolean };
+      };
+    };
+    expect(insert.row.image_url).toBe("https://cdn.dalat.app/event-media/x.jpg");
+    expect(insert.row.source_metadata.hero_present).toBe(true);
+    expect(insert.row.source_metadata.visual_gap).toBeNull();
+    expect(downloadAndUploadImage).toHaveBeenCalled();
+  });
+
+  it("does not write a draft when image download fails and visual_gap_reason is absent", async () => {
+    vi.mocked(downloadAndUploadImage).mockResolvedValueOnce(null);
+    const supabase = createSupabaseMock({ existing: null });
+    const parsed = scoutIngestSchema.parse(validPayload);
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+
+    expect(result).toMatchObject({
+      ok: false,
+      status: 400,
+      code: "missing_visual",
+    });
+    expect(supabase.inserts).toHaveLength(0);
+    expect(supabase.updates).toHaveLength(0);
   });
 });

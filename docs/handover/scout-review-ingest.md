@@ -57,6 +57,8 @@ Required:
 - `source_url` — public http(s), used for idempotency
 - `starts_at` (ISO) **or** `date` (`YYYY-MM-DD`) plus optional `time` (`HH:MM`, Asia/Ho_Chi_Minh)
 - `venue` or `location_name`
+- at least one of: non-empty `source_image_urls[]`, non-empty `promo_image_urls[]`,
+  or `visual_gap_reason` (do not invent images)
 
 Optional: `ends_at`, `address`, `google_maps_url`, `source_platform` (not
 `activity-graph`), `source_locale`, `source_image_urls[]`, `promo_image_urls[]`,
@@ -67,6 +69,11 @@ Behavior:
 
 - Re-posts of the same canonical `source_url` do not create a second row.
 - Past events and starts more than 45 days out are rejected (`422`).
+- Missing images **and** missing `visual_gap_reason` is rejected (`400`) before
+  any draft write. Empty image arrays do not count.
+- After fetch/upload, if there is still no hero and no `visual_gap_reason`, the
+  write is rejected (`400`). A documented gap writes
+  `source_metadata.visual_gap` and leaves `image_url` empty.
 - Source/promo images are fetched only after an SSRF-safe public-URL check,
   then uploaded like other import utils. AI imagery must be disclosed in alt
   and caption (the API fills the AGENTS.md disclosure if the caller omitted it).
