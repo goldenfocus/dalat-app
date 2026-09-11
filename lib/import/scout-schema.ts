@@ -73,6 +73,17 @@ export const scoutIngestSchema = z
         message: "Activity Graph is a separate auto-publish lane",
       });
     }
+    const hasSourceImages = (value.source_image_urls?.length ?? 0) > 0;
+    const hasPromoImages = (value.promo_image_urls?.length ?? 0) > 0;
+    const hasVisualGapReason = Boolean(value.visual_gap_reason);
+    if (!hasSourceImages && !hasPromoImages && !hasVisualGapReason) {
+      context.addIssue({
+        code: "custom",
+        path: ["source_image_urls"],
+        message:
+          "Provide source_image_urls, promo_image_urls, or visual_gap_reason",
+      });
+    }
   });
 
 export type ScoutIngestInput = z.infer<typeof scoutIngestSchema>;

@@ -16,6 +16,13 @@ vi.mock("@/lib/import/utils", async () => {
   return { ...actual, downloadAndUploadImage: mocks.downloadAndUploadImage };
 });
 
+vi.mock("@/lib/import/safe-url", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/import/safe-url")>(
+    "@/lib/import/safe-url",
+  );
+  return { ...actual, isSafePublicHttpUrl: vi.fn(async () => true) };
+});
+
 import { POST } from "./route";
 
 const payload = {
@@ -24,6 +31,7 @@ const payload = {
   starts_at: "2026-09-20T19:00:00+07:00",
   location_name: "Langbiang, Đà Lạt",
   source_url: "https://ticketbox.vn/event/sunset-hike",
+  source_image_urls: ["https://ticketbox.vn/media/cover.jpg"],
   publish: true,
 };
 
@@ -76,6 +84,9 @@ describe("POST /api/import/scout", () => {
   beforeEach(() => {
     mocks.createClient.mockReset();
     mocks.downloadAndUploadImage.mockReset();
+    mocks.downloadAndUploadImage.mockResolvedValue(
+      "https://cdn.dalat.app/event-media/x.jpg",
+    );
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role");
     vi.stubEnv("IMPORT_CREATED_BY", "00000000-0000-4000-8000-000000000001");
@@ -112,6 +123,17 @@ describe("POST /api/import/scout", () => {
       }),
     );
     expect(response.status).toBe(401);
+    expect(mocks.createClient).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 before a DB write when images and visual_gap_reason are missing", async () => {
+    vi.stubEnv("SCOUT_INGEST_KEY", "scout-secret");
+    const { source_image_urls: _images, ...withoutVisuals } = payload;
+    const response = await POST(request(withoutVisuals, "Bearer scout-secret"));
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: "Invalid payload",
+    });
     expect(mocks.createClient).not.toHaveBeenCalled();
   });
 

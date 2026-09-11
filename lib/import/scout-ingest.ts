@@ -117,6 +117,14 @@ export async function ingestScoutEvent(
     : null;
 
   const visuals = await attachVisuals(slug, input);
+  if (!visuals.heroUrl && !input.visual_gap_reason) {
+    return {
+      ok: false,
+      status: 400,
+      error: "Hero image is missing and no visual_gap_reason was provided",
+      code: "missing_visual",
+    };
+  }
   const metadata = buildMetadata(input, sourceUrl, existing?.source_metadata, visuals);
 
   const row = {
@@ -336,9 +344,7 @@ function buildMetadata(
     visual_gap:
       !visuals.heroUrl && input.visual_gap_reason
         ? { reason: input.visual_gap_reason, documented_at: new Date().toISOString() }
-        : visuals.heroUrl
-          ? null
-          : prior.visual_gap ?? null,
+        : null,
     hero_present: Boolean(visuals.heroUrl),
     promo_count: visuals.promo.length,
   };
