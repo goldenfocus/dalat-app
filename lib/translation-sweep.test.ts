@@ -6,6 +6,7 @@ import {
   getMissingTranslationLocales,
   getVenueTranslatableFields,
   partitionSweepWork,
+  shouldDrainDeferredSweepWork,
   translationCoverageIsCurrent,
   translationSourceStillMatches,
 } from "./translation-sweep";
@@ -254,6 +255,13 @@ describe("event sweep enqueue after Review publish", () => {
       "evt-2",
     ]);
     expect(rest.map((item) => item.contentType)).toEqual(["blog", "moment"]);
+  });
+
+  it("does not starve blogs when events write zero rows", () => {
+    expect(shouldDrainDeferredSweepWork(2, 5, 0)).toBe(true);
+    expect(shouldDrainDeferredSweepWork(2, 5, 3)).toBe(false);
+    expect(shouldDrainDeferredSweepWork(0, 5, 0)).toBe(true);
+    expect(shouldDrainDeferredSweepWork(2, 0, 0)).toBe(false);
   });
 
   it("loads EVENT_IDS priority rows even when scanLimit is 0", async () => {

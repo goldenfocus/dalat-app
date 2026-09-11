@@ -18,8 +18,14 @@ describe("inferSourceLocale", () => {
     );
   });
 
-  it("recognizes Hangul / Han / Cyrillic / Thai", () => {
-    expect(inferSourceLocale("달랏 라이브")).toBe("ko");
+  it("does not treat a Đà Lạt place name as Vietnamese source copy", () => {
+    expect(
+      inferSourceLocale("Sunset hike Langbiang", "19:00 at Langbiang, Đà Lạt."),
+    ).toBeNull();
+  });
+
+  it("recognizes Hangul / Han / Cyrillic / Thai even when Đà Lạt is mentioned", () => {
+    expect(inferSourceLocale("달랏 라이브 in Đà Lạt")).toBe("ko");
     expect(inferSourceLocale("大叻现场")).toBe("zh");
     expect(inferSourceLocale("Концерт в Далате")).toBe("ru");
     expect(inferSourceLocale("คอนเสิร์ตที่ดาลัด")).toBe("th");
