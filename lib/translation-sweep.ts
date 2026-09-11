@@ -240,10 +240,11 @@ export async function collectTranslationWork(
   const events = await loadEventTranslationCandidates(supabase, scanLimit, options.priorityEventIds);
 
   for (const event of events) {
-    const fields = [
-      { field_name: "title", text: event.title },
-      { field_name: "description", text: event.description },
-    ].filter((f) => f.text && f.text.trim().length > 0);
+    const fields: { field_name: string; text: string }[] = [];
+    if (event.title?.trim()) fields.push({ field_name: "title", text: event.title });
+    if (event.description?.trim()) {
+      fields.push({ field_name: "description", text: event.description });
+    }
     if (fields.length === 0) continue;
     candidates.push({ contentType: "event", contentId: event.id, sourceLocale: event.source_locale, fields });
   }

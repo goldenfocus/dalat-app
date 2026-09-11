@@ -15,11 +15,12 @@ export function inferSourceLocale(
 ): ContentLocale | null {
   const text = `${title} ${description ?? ""}`;
   if (VIETNAMESE_UNIQUE.test(text)) return "vi";
-  if (/\p{Script=Hangul}/u.test(text)) return "ko";
-  if (/\p{Script=Hiragana}|\p{Script=Katakana}/u.test(text)) return "ja";
-  if (/\p{Script=Han}/u.test(text)) return "zh";
-  if (/\p{Script=Cyrillic}/u.test(text)) return "ru";
-  if (/\p{Script=Thai}/u.test(text)) return "th";
+  // Explicit ranges — avoid \p{Script=…} so SWC/es2017 minifiers stay happy.
+  if (/[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]/.test(text)) return "ko";
+  if (/[\u3040-\u30FF]/.test(text)) return "ja";
+  if (/[\u4E00-\u9FFF]/.test(text)) return "zh";
+  if (/[\u0400-\u04FF]/.test(text)) return "ru";
+  if (/[\u0E00-\u0E7F]/.test(text)) return "th";
   return null;
 }
 

@@ -178,9 +178,11 @@ describe("ingestScoutEvent", () => {
     if (!result.ok) return;
     expect(result.status).toBe("draft");
     expect(result.created).toBe(true);
-    const insert = supabase.inserts[0] as { row: { status: string; publish?: boolean } };
+    const insert = supabase.inserts[0] as {
+      row: { status: string; source_locale: string | null; publish?: boolean };
+    };
     expect(insert.row.status).toBe("draft");
-    expect((insert.row as { source_locale: string | null }).source_locale).toBe("vi");
+    expect(insert.row.source_locale).toBe("vi");
   });
 
   it("leaves source_locale null when the script is ambiguous Latin", async () => {
