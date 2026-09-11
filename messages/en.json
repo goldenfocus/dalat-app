@@ -1036,7 +1036,13 @@
     "vibrationOnly": "Vibration only",
     "silent": "Silent",
     "iosInstallRequired": "Install app for notifications",
-    "iosInstallDescription": "To receive push notifications on iPhone, tap the Share button and select \"Add to Home Screen\", then enable notifications."
+    "iosInstallDescription": "To receive push notifications on iPhone, tap the Share button and select \"Add to Home Screen\", then enable notifications.",
+    "testButton": "Send test notification",
+    "testSending": "Sending…",
+    "testSent": "Accepted by {count} device(s). Check your notifications; Focus or silent mode may suppress the alert.",
+    "testNoDevice": "No device accepted the test. Try turning notifications off and on again on this device.",
+    "testError": "Could not send the test. Please try again.",
+    "testHint": "Sends to your registered devices. On iPhone, allow Dalat.app in Settings → Focus → Apps. This does not override Silent mode."
   },
   "userMenu": {
     "editProfile": "Edit profile",

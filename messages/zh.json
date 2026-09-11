@@ -936,7 +936,13 @@
     "vibrationOnly": "仅振动",
     "silent": "静音",
     "iosInstallRequired": "安装应用以接收通知",
-    "iosInstallDescription": "要在 iPhone 上接收推送通知，请点击分享按钮并选择\"添加到主屏幕\"，然后启用通知。"
+    "iosInstallDescription": "要在 iPhone 上接收推送通知，请点击分享按钮并选择\"添加到主屏幕\"，然后启用通知。",
+    "testButton": "发送测试通知",
+    "testSending": "正在发送…",
+    "testSent": "已被 {count} 台设备接受。请检查通知；专注模式或静音模式可能抑制提醒。",
+    "testNoDevice": "没有设备接受测试。请尝试在此设备上关闭通知后重新开启。",
+    "testError": "无法发送测试，请重试。",
+    "testHint": "发送至已注册的设备。iPhone：设置 → 专注模式 → App → 允许 Dalat.app。这不会覆盖静音模式。"
   },
   "userMenu": {
     "editProfile": "编辑资料",

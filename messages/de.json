@@ -942,7 +942,13 @@
     "vibrationOnly": "Nur Vibration",
     "silent": "Lautlos",
     "iosInstallRequired": "App installieren für Benachrichtigungen",
-    "iosInstallDescription": "Um Push-Benachrichtigungen auf dem iPhone zu erhalten, tippen Sie auf die Teilen-Taste und wählen Sie \"Zum Home-Bildschirm\", dann aktivieren Sie Benachrichtigungen."
+    "iosInstallDescription": "Um Push-Benachrichtigungen auf dem iPhone zu erhalten, tippen Sie auf die Teilen-Taste und wählen Sie \"Zum Home-Bildschirm\", dann aktivieren Sie Benachrichtigungen.",
+    "testButton": "Testbenachrichtigung senden",
+    "testSending": "Wird gesendet…",
+    "testSent": "Von {count} Gerät(en) angenommen. Prüfe deine Mitteilungen; Fokus oder der Lautlosmodus können den Hinweis unterdrücken.",
+    "testNoDevice": "Kein Gerät hat den Test angenommen. Schalte Mitteilungen auf diesem Gerät aus und wieder ein.",
+    "testError": "Test konnte nicht gesendet werden. Bitte erneut versuchen.",
+    "testHint": "Sendet an deine registrierten Geräte. Auf dem iPhone: Einstellungen → Fokus → Apps → Dalat.app erlauben. Der Lautlosmodus bleibt wirksam."
   },
   "userMenu": {
     "editProfile": "Profil bearbeiten",

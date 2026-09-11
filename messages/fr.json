@@ -956,7 +956,13 @@
     "vibrationOnly": "Vibration uniquement",
     "silent": "Silencieux",
     "iosInstallRequired": "Installez l'appli pour les notifications",
-    "iosInstallDescription": "Pour recevoir des notifications push sur iPhone, appuyez sur le bouton Partager et sélectionnez \"Sur l'écran d'accueil\", puis activez les notifications."
+    "iosInstallDescription": "Pour recevoir des notifications push sur iPhone, appuyez sur le bouton Partager et sélectionnez \"Sur l'écran d'accueil\", puis activez les notifications.",
+    "testButton": "Envoyer une notification test",
+    "testSending": "Envoi…",
+    "testSent": "Acceptée par {count} appareil(s). Vérifiez vos notifications ; Concentration ou le mode silencieux peuvent masquer ou couper l’alerte.",
+    "testNoDevice": "Aucun appareil n’a accepté le test. Essayez de désactiver puis réactiver les notifications sur cet appareil.",
+    "testError": "Impossible d’envoyer le test. Réessayez.",
+    "testHint": "Envoi à vos appareils inscrits. Sur iPhone : Réglages → Concentration → Apps → autoriser Dalat.app. Cela ne contourne pas le mode silencieux."
   },
   "userMenu": {
     "editProfile": "Modifier le profil",

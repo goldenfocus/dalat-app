@@ -942,7 +942,13 @@
     "vibrationOnly": "Chỉ rung",
     "silent": "Im lặng",
     "iosInstallRequired": "Cài đặt ứng dụng để nhận thông báo",
-    "iosInstallDescription": "Để nhận thông báo đẩy trên iPhone, nhấn nút Chia sẻ và chọn \"Thêm vào Màn hình chính\", sau đó bật thông báo."
+    "iosInstallDescription": "Để nhận thông báo đẩy trên iPhone, nhấn nút Chia sẻ và chọn \"Thêm vào Màn hình chính\", sau đó bật thông báo.",
+    "testButton": "Gửi thông báo thử",
+    "testSending": "Đang gửi…",
+    "testSent": "Đã gửi tới {count} thiết bị. Kiểm tra thông báo; chế độ Tập trung hoặc im lặng có thể ẩn hoặc tắt tiếng cảnh báo.",
+    "testNoDevice": "Chưa thiết bị nào nhận được thông báo thử. Thử tắt rồi bật lại thông báo trên thiết bị này.",
+    "testError": "Chưa gửi được. Vui lòng thử lại.",
+    "testHint": "Gửi tới các thiết bị đã đăng ký. Trên iPhone, cho phép Dalat.app trong Cài đặt → Tập trung → Ứng dụng. Chế độ im lặng vẫn có hiệu lực."
   },
   "userMenu": {
     "editProfile": "Chỉnh sửa hồ sơ",

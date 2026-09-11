@@ -942,7 +942,13 @@
     "vibrationOnly": "진동만",
     "silent": "무음",
     "iosInstallRequired": "알림을 받으려면 앱 설치 필요",
-    "iosInstallDescription": "iPhone에서 푸시 알림을 받으려면 공유 버튼을 누르고 \"홈 화면에 추가\"를 선택한 다음 알림을 활성화하세요."
+    "iosInstallDescription": "iPhone에서 푸시 알림을 받으려면 공유 버튼을 누르고 \"홈 화면에 추가\"를 선택한 다음 알림을 활성화하세요.",
+    "testButton": "테스트 알림 보내기",
+    "testSending": "보내는 중…",
+    "testSent": "기기 {count}대에서 접수했습니다. 알림을 확인하세요. 집중 모드나 무음 모드에서는 알림이 표시되지 않거나 소리가 나지 않을 수 있습니다.",
+    "testNoDevice": "테스트를 접수한 기기가 없습니다. 이 기기에서 알림을 껐다가 다시 켜 보세요.",
+    "testError": "보내지 못했습니다. 다시 시도하세요.",
+    "testHint": "등록된 기기로 보냅니다. iPhone: 설정 → 집중 모드 → 앱 → Dalat.app 허용. 무음 모드는 해제되지 않습니다."
   },
   "userMenu": {
     "editProfile": "프로필 편집",

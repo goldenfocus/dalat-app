@@ -942,7 +942,13 @@
     "vibrationOnly": "Getaran sahaja",
     "silent": "Senyap",
     "iosInstallRequired": "Pasang aplikasi untuk pemberitahuan",
-    "iosInstallDescription": "Untuk menerima pemberitahuan push di iPhone, ketik butang Kongsi dan pilih \"Tambah ke Skrin Utama\", kemudian aktifkan pemberitahuan."
+    "iosInstallDescription": "Untuk menerima pemberitahuan push di iPhone, ketik butang Kongsi dan pilih \"Tambah ke Skrin Utama\", kemudian aktifkan pemberitahuan.",
+    "testButton": "Hantar pemberitahuan ujian",
+    "testSending": "Menghantar…",
+    "testSent": "Diterima oleh {count} peranti. Semak pemberitahuan; Fokus atau mod senyap mungkin menyenyapkan amaran.",
+    "testNoDevice": "Tiada peranti menerima ujian. Cuba matikan dan hidupkan semula pemberitahuan pada peranti ini.",
+    "testError": "Ujian tidak dapat dihantar. Cuba lagi.",
+    "testHint": "Dihantar ke peranti berdaftar. Pada iPhone: Seting → Fokus → App → benarkan Dalat.app. Mod senyap masih berkuat kuasa."
   },
   "userMenu": {
     "editProfile": "Edit profil",

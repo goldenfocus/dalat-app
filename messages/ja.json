@@ -942,7 +942,13 @@
     "vibrationOnly": "バイブのみ",
     "silent": "サイレント",
     "iosInstallRequired": "通知を受け取るにはアプリをインストール",
-    "iosInstallDescription": "iPhoneでプッシュ通知を受け取るには、共有ボタンをタップして「ホーム画面に追加」を選択し、通知を有効にしてください。"
+    "iosInstallDescription": "iPhoneでプッシュ通知を受け取るには、共有ボタンをタップして「ホーム画面に追加」を選択し、通知を有効にしてください。",
+    "testButton": "テスト通知を送信",
+    "testSending": "送信中…",
+    "testSent": "{count} 台の端末で受け付けられました。通知を確認してください。集中モードや消音モードで通知が抑制される場合があります。",
+    "testNoDevice": "テストを受け付けた端末がありません。この端末で通知を一度オフにしてからオンにしてください。",
+    "testError": "送信できませんでした。もう一度お試しください。",
+    "testHint": "登録済み端末に送信します。iPhone：設定 → 集中モード → アプリ → Dalat.appを許可。消音モードは解除されません。"
   },
   "userMenu": {
     "editProfile": "プロフィールを編集",

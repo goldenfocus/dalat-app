@@ -123,3 +123,17 @@ function detectPlatform(endpoint: string | null): string {
   if (endpoint.includes('wns.windows.com')) return 'Windows';
   return 'Chrome';
 }
+
+/** Explicit settings action; return only delivery counts, not diagnostics. */
+export async function POST(request: Request) {
+  const origin = request.headers.get('origin');
+  if (origin && origin !== new URL(request.url).origin) {
+    return NextResponse.json({ error: 'Invalid origin' }, { status: 403 });
+  }
+  const response = await GET(new Request(new URL('/api/test-push', request.url)));
+  const data = await response.json();
+  return NextResponse.json(response.ok ? { result: data.result } : { error: data.error }, {
+    status: response.status,
+    headers: { 'Cache-Control': 'private, no-store' },
+  });
+}

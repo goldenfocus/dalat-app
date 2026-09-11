@@ -57,6 +57,8 @@ export function NotificationSettings() {
   const [mode, setMode] = useState<NotificationMode>("sound_and_vibration");
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testStatus, setTestStatus] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -94,6 +96,18 @@ export function NotificationSettings() {
         body: JSON.stringify({ mode: newMode }),
       });
     });
+  };
+
+  const handleTest = async () => {
+    setTesting(true);
+    setTestStatus("");
+    try {
+      const response = await fetch("/api/test-push", { method: "POST" });
+      if (!response.ok) throw new Error();
+      const { result } = await response.json();
+      setTestStatus(result.sent > 0 ? t("testSent", { count: result.sent }) : t("testNoDevice"));
+    } catch { setTestStatus(t("testError")); }
+    finally { setTesting(false); }
   };
 
   // Show skeleton during hydration to prevent mismatch
@@ -201,6 +215,13 @@ export function NotificationSettings() {
       {/* Notification mode selector - only shown when subscribed */}
       {isSubscribed && (
         <div className="space-y-3 pt-2">
+          <button type="button" onClick={handleTest} disabled={testing || isLoading || isPending}
+            className="w-full min-h-11 flex items-center justify-center gap-2 rounded-lg border border-primary px-4 py-3 text-sm font-medium text-primary disabled:opacity-50">
+            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellRing className="h-4 w-4" />}
+            {testing ? t("testSending") : t("testButton")}
+          </button>
+          <p role="status" aria-live="polite" className="text-sm text-muted-foreground">{testStatus}</p>
+          <p className="text-xs text-muted-foreground">{t("testHint")}</p>
           <p className="text-sm font-medium text-foreground">
             {t("notificationStyle")}
           </p>

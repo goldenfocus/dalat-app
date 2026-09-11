@@ -942,7 +942,13 @@
     "vibrationOnly": "Getaran saja",
     "silent": "Senyap",
     "iosInstallRequired": "Pasang aplikasi untuk notifikasi",
-    "iosInstallDescription": "Untuk menerima notifikasi push di iPhone, ketuk tombol Bagikan dan pilih \"Tambahkan ke Layar Utama\", lalu aktifkan notifikasi."
+    "iosInstallDescription": "Untuk menerima notifikasi push di iPhone, ketuk tombol Bagikan dan pilih \"Tambahkan ke Layar Utama\", lalu aktifkan notifikasi.",
+    "testButton": "Kirim notifikasi uji",
+    "testSending": "Mengirim…",
+    "testSent": "Diterima oleh {count} perangkat. Periksa notifikasi; Fokus atau mode hening dapat membisukan peringatan.",
+    "testNoDevice": "Tidak ada perangkat yang menerima uji. Coba matikan lalu aktifkan kembali notifikasi di perangkat ini.",
+    "testError": "Gagal mengirim uji. Coba lagi.",
+    "testHint": "Dikirim ke perangkat terdaftar. Di iPhone: Pengaturan → Fokus → App → izinkan Dalat.app. Mode hening tetap berlaku."
   },
   "userMenu": {
     "editProfile": "Edit profil",

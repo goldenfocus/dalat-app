@@ -942,7 +942,13 @@
     "vibrationOnly": "Solo vibración",
     "silent": "Silencioso",
     "iosInstallRequired": "Instala la app para notificaciones",
-    "iosInstallDescription": "Para recibir notificaciones push en iPhone, toca el botón Compartir y selecciona \"Añadir a pantalla de inicio\", luego activa las notificaciones."
+    "iosInstallDescription": "Para recibir notificaciones push en iPhone, toca el botón Compartir y selecciona \"Añadir a pantalla de inicio\", luego activa las notificaciones.",
+    "testButton": "Enviar notificación de prueba",
+    "testSending": "Enviando…",
+    "testSent": "Aceptada por {count} dispositivo(s). Revisa las notificaciones; Concentración o el modo silencio pueden silenciar el aviso.",
+    "testNoDevice": "Ningún dispositivo aceptó la prueba. Desactiva y vuelve a activar las notificaciones en este dispositivo.",
+    "testError": "No se pudo enviar. Inténtalo de nuevo.",
+    "testHint": "Se envía a tus dispositivos registrados. En iPhone: Ajustes → Modos de concentración → Apps → permitir Dalat.app. No anula el modo silencio."
   },
   "userMenu": {
     "editProfile": "Editar perfil",
