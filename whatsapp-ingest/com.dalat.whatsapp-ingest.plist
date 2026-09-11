@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Always-on launchd job for the dalat.app WhatsApp draft ingest (Mac mini).
+  Mirrors scripts/import-worker / cover-worker ops style.
+
+  Install: see whatsapp-ingest/README.md
+  Fill __REPO_PATH__ (absolute clone path) before load.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.dalat.whatsapp-ingest</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-lc</string>
+    <string>cd __REPO_PATH__/whatsapp-ingest &amp;&amp; export PATH="$PWD/.tools/go/bin:$PATH" GOPATH="$PWD/.tools/gopath" GOMODCACHE="$PWD/.tools/gopath/pkg/mod" &amp;&amp; exec ./whatsapp-ingest</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__REPO_PATH__/whatsapp-ingest</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/dalat-whatsapp-ingest.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/dalat-whatsapp-ingest.err</string>
+</dict>
+</plist>

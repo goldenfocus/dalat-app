@@ -50,6 +50,11 @@ func TestExtractStartTime(t *testing.T) {
 			want: time.Date(2027, 8, 20, 18, 0, 0, 0, testLoc),
 		},
 		{
+			name: "hour-only h separator",
+			text: "Acoustic night 12/9 20h tại cafe",
+			want: time.Date(2026, 9, 12, 20, 0, 0, 0, testLoc),
+		},
+		{
 			name:    "no date is an error",
 			text:    "Mọi ngưởi nhớ giữ gìn vệ sinh chung nhé",
 			wantErr: true,
@@ -84,5 +89,46 @@ func TestFirstLine(t *testing.T) {
 	}
 	if got := firstLine("   \n  "); got != "" {
 		t.Errorf("got %q", got)
+	}
+	if got := firstLine("20/09 19:00\nSunset Hike"); got != "Sunset Hike" {
+		t.Errorf("skipped date-only title, got %q", got)
+	}
+}
+
+func TestExtractLocation(t *testing.T) {
+	if got := extractLocation("Acoustic night 12/9 20h tại cafe"); got != "cafe" {
+		t.Errorf("got %q", got)
+	}
+	if got := extractLocation("Yoga in the park 03/09 at 7am"); got != "" {
+		t.Errorf("treated a clock time as a venue: %q", got)
+	}
+	if got := extractLocation("Full moon gathering 06/09"); got != "" {
+		t.Errorf("invented location %q", got)
+	}
+}
+
+func TestToRowMarksNeedsReview(t *testing.T) {
+	start := time.Date(2026, 9, 12, 20, 0, 0, 0, testLoc)
+	draft := &eventDraft{
+		Slug:        "wa-abcd",
+		Title:       "Acoustic night",
+		Description: "Acoustic night 12/9 20h tại cafe",
+		Location:    "cafe",
+		StartsAt:    start,
+		Meta: map[string]any{
+			"group_jid":  "120363@g.us",
+			"message_id": "ABCD",
+		},
+	}
+	row := draft.toRow("profile-1")
+	if row["status"] != "draft" {
+		t.Fatalf("status=%v", row["status"])
+	}
+	if row["external_chat_url"] != "whatsapp:120363@g.us/ABCD" {
+		t.Fatalf("external_chat_url=%v", row["external_chat_url"])
+	}
+	meta, _ := row["source_metadata"].(map[string]any)
+	if meta["needs_review"] != true {
+		t.Fatalf("needs_review=%v", meta["needs_review"])
 	}
 }

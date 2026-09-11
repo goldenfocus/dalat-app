@@ -63,6 +63,8 @@ NEXT_PUBLIC_APP_URL=https://dalat.app
 
 **Note:** Server-side code uses `NEXT_PUBLIC_SUPABASE_URL` directly—no separate `SUPABASE_URL` needed. The `NEXT_PUBLIC_` prefix just means it's safe to expose to the browser; it works fine server-side too.
 
+Automated Scout / WhatsApp drafts and the Review publish+QA gate: `docs/handover/scout-review-ingest.md`. That lane is separate from Activity Graph.
+
 ## Push Notifications
 
 Push notifications are enabled by default for logged-in users. The system uses:

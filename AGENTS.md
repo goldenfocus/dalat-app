@@ -22,3 +22,7 @@ The daily scout prioritizes activities happening this calendar month and admits 
 ## Lâm Viên Square date-known exception
 
 Publish official Lâm Viên Square notices with a verified future date even when the exact start time, admission detail, or price is absent. Set `timePrecision: "tba"`, render the time and unknown admission as `TBD`, and render an unknown price as `Unknown`; never guess a time, price, or claim public entry. This exception is limited to Lâm Viên Square and does not relax the evidence contract anywhere else.
+
+## Scout / Review ingest (separate from Activity Graph)
+
+Community and WhatsApp discoveries land as drafts through `POST /api/import/scout` or `whatsapp-ingest/`, then Dalat Review publishes via `POST /api/import/review`. Do not mix those submissions into the Activity Graph auto-publish lane. Pipeline, env vars, and bot call shapes: `docs/handover/scout-review-ingest.md`.
