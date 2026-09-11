@@ -155,12 +155,35 @@ describe("publishReviewEvent translation trigger", () => {
       published: true,
       event: { id: draft.id, status: "published" },
     });
-    expect(supabase.updates[0]).toMatchObject({ status: "published" });
+    expect(supabase.updates[0]).toMatchObject({
+      status: "published",
+      source_locale: "en",
+      updated_at: now.toISOString(),
+    });
     expect(mocks.triggerTranslationServer).toHaveBeenCalledOnce();
     expect(mocks.triggerTranslationServer).toHaveBeenCalledWith("event", draft.id, [
       { field_name: "title", text: draft.title },
       { field_name: "description", text: draft.description },
     ]);
+  });
+
+  it("persists an inferred source_locale when the draft stored null", async () => {
+    const supabase = mockSupabase();
+    const draft = event({
+      source_locale: null,
+      title: "Hà Nhi live in Dalat tại La Maritza",
+      description: "Đêm nhạc tại Đà Lạt. Canonical facts from the organizer page.",
+    });
+
+    const result = await publishReviewEvent(supabase as never, draft, { now });
+
+    expect(result.published).toBe(true);
+    expect(supabase.updates[0]).toMatchObject({
+      status: "published",
+      source_locale: "vi",
+      updated_at: now.toISOString(),
+    });
+    expect(mocks.triggerTranslationServer).toHaveBeenCalledOnce();
   });
 
   it("does not trigger translation when evaluate fails", async () => {

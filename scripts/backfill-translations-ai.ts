@@ -49,6 +49,12 @@ import { getBlogTranslationCutoff } from "@/lib/news/article-policy";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://aljcmodwjqlznzcydyor.supabase.co";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const SCAN_LIMIT = Number(process.env.SCAN_LIMIT) || 200;
+/** Comma-separated event UUIDs to translate first (Review-publish repair). */
+const PRIORITY_EVENT_IDS = (process.env.EVENT_IDS ?? "")
+  .split(",")
+  .map((id) => id.trim())
+  .filter(Boolean);
+const EVENT_IDS_ONLY = PRIORITY_EVENT_IDS.length > 0 && process.env.EVENT_IDS_ONLY !== "0";
 
 const CLAUDE_BIN = process.env.CLAUDE_BIN || "";
 const CLAUDE_MODEL = process.env.CLAUDE_MODEL || "claude-haiku-4-5-20251001";
@@ -713,12 +719,17 @@ async function main() {
   }
   console.log(
     `[backfill] claude=${CLAUDE_BIN ? CLAUDE_MODEL : "off"} scan_limit=${SCAN_LIMIT} ` +
+      `priority_events=${PRIORITY_EVENT_IDS.length} event_ids_only=${EVENT_IDS_ONLY} ` +
       `redo=${redoConfigured ? `[${REDO_SINCE} .. ${REDO_BEFORE})` : "off"} forever=${RUN_FOREVER}`
   );
 
   let round = 0;
   while (true) {
-    const work = await collectTranslationWork(supabase, SCAN_LIMIT);
+    const work = await collectTranslationWork(
+      supabase,
+      EVENT_IDS_ONLY ? 0 : SCAN_LIMIT,
+      { priorityEventIds: PRIORITY_EVENT_IDS },
+    );
     if (work.length > 0) {
       round++;
       const units = work.reduce((n, w) => n + w.missingLocales.length, 0);

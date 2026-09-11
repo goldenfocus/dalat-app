@@ -1,0 +1,39 @@
+import { describe, expect, it } from "vitest";
+import {
+  asContentLocale,
+  inferSourceLocale,
+  resolveStoredSourceLocale,
+} from "./source-locale";
+
+describe("inferSourceLocale", () => {
+  it("recognizes Vietnamese-unique letters without calling a model", () => {
+    expect(
+      inferSourceLocale("Hà Nhi live in Dalat tại La Maritza", "Đêm nhạc tại Đà Lạt"),
+    ).toBe("vi");
+  });
+
+  it("does not guess Latin-only copy (worker detectLanguage later)", () => {
+    expect(inferSourceLocale("Sunset hike Langbiang", "19:00 at Langbiang, Da Lat.")).toBe(
+      null,
+    );
+  });
+
+  it("recognizes Hangul / Han / Cyrillic / Thai", () => {
+    expect(inferSourceLocale("달랏 라이브")).toBe("ko");
+    expect(inferSourceLocale("大叻现场")).toBe("zh");
+    expect(inferSourceLocale("Концерт в Далате")).toBe("ru");
+    expect(inferSourceLocale("คอนเสิร์ตที่ดาลัด")).toBe("th");
+  });
+});
+
+describe("resolveStoredSourceLocale", () => {
+  it("keeps a valid stored locale over the script hint", () => {
+    expect(resolveStoredSourceLocale("en", "Đêm nhạc tại Đà Lạt")).toBe("en");
+  });
+
+  it("rejects junk stored values and falls back to the script hint", () => {
+    expect(resolveStoredSourceLocale("xx", "Đêm nhạc tại Đà Lạt")).toBe("vi");
+    expect(asContentLocale("EN")).toBe("en");
+    expect(asContentLocale("nope")).toBeNull();
+  });
+});

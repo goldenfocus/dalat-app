@@ -128,14 +128,86 @@ export function getVenueTranslatableFields(description: string | null | undefine
     : [];
 }
 
+type EventTranslationCandidate = {
+  id: string;
+  title: string;
+  description: string | null;
+  source_locale: ContentLocale | null;
+};
+
+/**
+ * Union of newest-created events, recently updated published events, and any
+ * explicit Review-publish ids. Deduped; priority ids come first.
+ */
+export async function loadEventTranslationCandidates(
+  supabase: SupabaseClient,
+  scanLimit: number,
+  priorityEventIds: string[] = [],
+): Promise<EventTranslationCandidate[]> {
+  const byId = new Map<string, EventTranslationCandidate>();
+
+  const priorityIds = [...new Set(priorityEventIds.filter((id) => id.length > 0))];
+  if (priorityIds.length > 0) {
+    const { data, error } = await supabase
+      .from("events")
+      .select("id, title, description, source_locale")
+      .in("id", priorityIds);
+    if (error) {
+      throw new Error(`[translation-sweep] priority events query failed: ${error.message}`);
+    }
+    for (const event of data ?? []) byId.set(event.id, event);
+  }
+
+  if (scanLimit > 0) {
+    const { data: newest, error: newestError } = await supabase
+      .from("events")
+      .select("id, title, description, source_locale")
+      .order("created_at", { ascending: false })
+      .limit(scanLimit);
+    if (newestError) {
+      throw new Error(`[translation-sweep] events query failed: ${newestError.message}`);
+    }
+
+    const { data: recentlyPublished, error: publishedError } = await supabase
+      .from("events")
+      .select("id, title, description, source_locale")
+      .eq("status", "published")
+      .order("updated_at", { ascending: false })
+      .limit(scanLimit);
+    if (publishedError) {
+      throw new Error(`[translation-sweep] published events query failed: ${publishedError.message}`);
+    }
+
+    for (const event of [...(recentlyPublished ?? []), ...(newest ?? [])]) {
+      if (!byId.has(event.id)) byId.set(event.id, event);
+    }
+  }
+
+  const ordered: EventTranslationCandidate[] = [];
+  for (const id of priorityIds) {
+    const event = byId.get(id);
+    if (event) ordered.push(event);
+  }
+  for (const event of byId.values()) {
+    if (!priorityIds.includes(event.id)) ordered.push(event);
+  }
+  return ordered;
+}
+
 /**
  * Collect content whose 12-locale translation coverage is incomplete,
  * newest first. Short user-facing content comes before blogs — a single long
  * post can eat minutes per locale and would starve everything behind it.
  */
+export interface CollectTranslationWorkOptions {
+  /** Reviewed/published event ids that must enter the sweep even if older than SCAN_LIMIT. */
+  priorityEventIds?: string[];
+}
+
 export async function collectTranslationWork(
   supabase: SupabaseClient,
-  scanLimit: number
+  scanLimit: number,
+  options: CollectTranslationWorkOptions = {},
 ): Promise<TranslationWorkItem[]> {
   const candidates: Omit<TranslationWorkItem, "missingLocales">[] = [];
 
@@ -144,15 +216,13 @@ export async function collectTranslationWork(
   // sweep — the exact aggregator-v1 `catch -> []` failure this repo has
   // already lived through.
 
-  // --- Events (newest first) ---
-  const { data: events, error: eventsError } = await supabase
-    .from("events")
-    .select("id, title, description, source_locale")
-    .order("created_at", { ascending: false })
-    .limit(scanLimit);
-  if (eventsError) throw new Error(`[translation-sweep] events query failed: ${eventsError.message}`);
+  // --- Events ---
+  // Newest-by-created_at alone misses Review-published scout/WhatsApp drafts
+  // whose created_at is older than SCAN_LIMIT. Also load recently updated
+  // published rows so a status flip is a durable enqueue signal.
+  const events = await loadEventTranslationCandidates(supabase, scanLimit, options.priorityEventIds);
 
-  for (const event of events ?? []) {
+  for (const event of events) {
     const fields = [
       { field_name: "title", text: event.title },
       { field_name: "description", text: event.description },
@@ -161,6 +231,7 @@ export async function collectTranslationWork(
     candidates.push({ contentType: "event", contentId: event.id, sourceLocale: event.source_locale, fields });
   }
 
+  if (scanLimit > 0) {
   // --- Moments: user-written text (source = the user's language) ---
   const { data: moments, error: momentsError } = await supabase
     .from("moments")
@@ -319,6 +390,7 @@ export async function collectTranslationWork(
       fields,
       sourceUpdatedAt: getBlogTranslationCutoff(post),
     });
+  }
   }
 
   // One paged query pass for existing coverage of ALL candidates, keyed per

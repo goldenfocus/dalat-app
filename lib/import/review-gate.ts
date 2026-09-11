@@ -9,6 +9,7 @@ import { CONTENT_LOCALES } from "@/lib/types";
 import { evaluateDiscoveryHorizon } from "./horizon";
 import { eventLooksLocalToDalat } from "./locality";
 import { isPersistedSourceRef } from "./safe-url";
+import { resolveStoredSourceLocale } from "./source-locale";
 
 export type ReviewReasonCode =
   | "missing_title"
@@ -234,16 +235,31 @@ export async function publishReviewEvent(
     return { ...evaluation, published: false };
   }
 
+  const reviewedAt = (options.now ?? new Date()).toISOString();
   const metadata = {
     ...(event.source_metadata ?? {}),
     needs_review: false,
-    reviewed_at: (options.now ?? new Date()).toISOString(),
+    reviewed_at: reviewedAt,
     review_result: "published",
   };
 
+  // Persist a real source_locale when a cheap script hint can set one.
+  // Null source_locale blocks every locale in Review QA / indexing readiness.
+  // Bump updated_at so lib/translation-sweep's published-by-updated_at query
+  // cannot miss a draft whose created_at is older than SCAN_LIMIT.
+  const sourceLocale = resolveStoredSourceLocale(
+    event.source_locale,
+    event.title,
+    event.description,
+  );
   const { error } = await supabase
     .from("events")
-    .update({ status: "published", source_metadata: metadata })
+    .update({
+      status: "published",
+      source_metadata: metadata,
+      updated_at: reviewedAt,
+      ...(sourceLocale ? { source_locale: sourceLocale } : {}),
+    })
     .eq("id", event.id)
     .eq("status", "draft");
 
@@ -251,12 +267,11 @@ export async function publishReviewEvent(
     throw new Error(`Publish failed: ${error.message}`);
   }
 
-  // Queue translation only after the public status flip. Scout/WhatsApp ingest
-  // leave drafts untranslated on purpose: Review does not invent locale copy,
-  // and a second trigger at draft-create would race if the queue later
-  // invalidates rows. WhatsApp drafts share this publish hook.
-  // triggerTranslationServer is the same compatibility boundary Luma/Facebook
-  // await — the Mac mini worker discovers missing content_translations rows.
+  // triggerTranslationServer is a compatibility shim (logs only). The durable
+  // enqueue is: published row + missing content_translations + recent
+  // updated_at. Do not also trigger on scout ingest — WhatsApp/scout drafts
+  // share this publish hook, and a draft-time call would race if the shim
+  // later invalidates rows. Review never writes locale strings itself.
   await queuePublishedEventTranslation(event);
 
   return {

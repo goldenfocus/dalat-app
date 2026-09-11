@@ -200,6 +200,75 @@ describe("translation source revision guard", () => {
 });
 
 
+describe("event sweep enqueue after Review publish", () => {
+  it("includes a recently updated published event that is outside the created_at window", async () => {
+    const published = {
+      id: "ca20f4a9-0990-4112-9822-52f8c014c62e",
+      title: "Hà Nhi live in Dalat tại La Maritza",
+      description: "Đêm nhạc tại Đà Lạt.",
+      source_locale: "vi",
+    };
+    const newest = {
+      id: "newer-unrelated",
+      title: "Newer event",
+      description: "Also needs locales",
+      source_locale: "en",
+    };
+    const client = {
+      from: vi.fn((table: string) => {
+        if (table !== "events") return makeBuilder({ data: [], error: null });
+        const builder = makeBuilder({ data: [], error: null });
+        let status: string | null = null;
+        builder.eq = vi.fn((column: string, value: unknown) => {
+          if (column === "status") status = String(value);
+          return builder;
+        });
+        builder.then = (
+          resolve: (value: QueryResult) => unknown,
+          reject?: (reason: unknown) => unknown,
+        ) =>
+          Promise.resolve({
+            data: status === "published" ? [published] : [newest],
+            error: null,
+          }).then(resolve, reject);
+        return builder;
+      }),
+    } as unknown as TestClient;
+
+    const work = await collectTranslationWork(client, 20);
+    const eventIds = work.filter((item) => item.contentType === "event").map((item) => item.contentId);
+    expect(eventIds).toContain(published.id);
+    expect(eventIds).toContain(newest.id);
+  });
+
+  it("loads EVENT_IDS priority rows even when scanLimit is 0", async () => {
+    const priority = {
+      id: "ca20f4a9-0990-4112-9822-52f8c014c62e",
+      title: "Hà Nhi live in Dalat tại La Maritza",
+      description: "Đêm nhạc tại Đà Lạt.",
+      source_locale: null,
+    };
+    const client = {
+      from: vi.fn((table: string) => {
+        if (table !== "events") return makeBuilder({ data: [], error: null });
+        return makeBuilder({ data: [priority], error: null });
+      }),
+    } as unknown as TestClient;
+
+    const work = await collectTranslationWork(client, 0, {
+      priorityEventIds: [priority.id],
+    });
+    expect(work).toEqual([
+      expect.objectContaining({
+        contentType: "event",
+        contentId: priority.id,
+        sourceLocale: null,
+        missingLocales: CONTENT_LOCALES,
+      }),
+    ]);
+  });
+});
+
 describe("automatically published event recap translations", () => {
   it("includes published recaps stored as drafts, while excluding unpublished drafts", async () => {
     const post = { id: "recap", event_id: "event", status: "draft", recap_published_at: "2026-09-01T12:00:00Z", title: "Event recap", story_content: "Recorded discussion", technical_content: "", meta_description: "Meetup in Đà Lạt", source: "manual", source_locale: "en", updated_at: "2026-09-02T12:00:00Z" };
