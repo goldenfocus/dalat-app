@@ -89,6 +89,7 @@ export function PhuongV2({
     const isMessage = action === "message";
     if (!isMessage && !plan.birthday) {
       setStep(0);
+      setStatus(c.chooseFirst);
       return;
     }
     setBusy(true);
@@ -123,7 +124,7 @@ export function PhuongV2({
         setMessageStatus(role === "phuong" ? c.messageSaved : c.saved);
       } else {
         setBaseline(JSON.stringify(plan));
-        setStatus(c.saved);
+        setStatus(action === "brief" ? c.sentToZan : c.saved);
       }
       const latest = await fetch("/api/phuong-plan", { cache: "no-store" });
       if (latest.ok) setActions((await latest.json()).actions);
@@ -453,11 +454,6 @@ export function PhuongV2({
                     {chips("activities", c.activityChoices)}
                     {field("notes", c.notes)}
                     <p className="pv-private">{c.publishNote}</p>
-                    {editable && (
-                      <Button disabled={busy} onClick={() => submit("brief")}>
-                        {busy ? c.saving : c.brief}
-                      </Button>
-                    )}
                     <p>
                       <a
                         href={`https://dalat.app${prefix}/events/new`}
@@ -478,9 +474,13 @@ export function PhuongV2({
               <span role="status">
                 {status || (dirty ? c.unsaved : version > 0 ? c.saved : "")}
               </span>
-              <button disabled={step === 2} onClick={() => setStep(step + 1)}>
-                {c.next} →
-              </button>
+              {step < 2 ? (
+                <button onClick={() => setStep(step + 1)}>{c.next} →</button>
+              ) : editable ? (
+                <Button disabled={busy} onClick={() => submit("brief")}>
+                  {busy ? c.saving : c.sendToZan}
+                </Button>
+              ) : null}
             </div>
           </>
         )}

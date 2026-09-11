@@ -232,5 +232,8 @@
         "effort": "Plus coûteux · pas essentiel au premier essai"
       }
     }
-  }
+  },
+  "sendToZan": "Envoyer à Zan",
+  "sentToZan": "Enregistré et envoyé à Zan. Il verra ton plan et recevra une notification dans l’application.",
+  "chooseFirst": "Choisis d’abord une option ci-dessus, même « peut-être » ou garder ton anniversaire privé."
 }

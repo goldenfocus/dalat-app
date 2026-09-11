@@ -42,8 +42,7 @@ Phương's explicit decision, baseline, brief, results or message submissions cr
 one in-app notification for @yan in the same transaction. An idempotency UUID
 prevents retry duplicates. Notifications contain generic status text and a private
 planner link, never business figures or message content. Passive views/typing send
-nothing. Email, push and Telegram are not enabled by this feature. No launch/test
-message was sent; transactional security probes and notifications were rolled back.
+nothing. Email and Telegram are not enabled. Collaboration submissions also queue push-only delivery through the existing five-minute notification worker; retries and device notification preferences are reused. The transaction trigger queues one item per action ID, without private text. One labelled push setup test was accepted by three registered devices; no participant answers were submitted for it. Transactional transactional security probes and notifications were rolled back.
 
 ## Validation
 Production database transaction verified participant access, outsider denial,
@@ -71,3 +70,10 @@ notifications, commitments or purchases. Votes refresh on window focus or the
 Refresh button. Plan fields remain Phương-only, now explained beside the form.
 Validated both roles, impersonation denial and outsider denial with rolled-back
 production transactions. No real votes were submitted for either participant.
+
+## Final-step cleanup
+The final step has no dead Next button. Phương gets Send to Zan, which saves the
+private plan and notifies Zan even when she chooses to keep the birthday private.
+If no choice is made, the page returns to step one with a clear prompt. Zan has
+no self-notification button. The floating Moments upload button is suppressed
+for the collaboration route and phuong.dalat.app host, including the archive.

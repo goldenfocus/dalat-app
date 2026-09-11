@@ -232,5 +232,8 @@
         "effort": "Higher cost · not a first-night essential"
       }
     }
-  }
+  },
+  "sendToZan": "Send to Zan",
+  "sentToZan": "Saved and sent to Zan. He’ll see your plan and receive an in-app notification.",
+  "chooseFirst": "Choose an option above first—even “maybe” or keeping your birthday private is fine."
 }

@@ -1347,6 +1347,15 @@ function eventAddressRevealTemplate(payload: EventAddressRevealPayload): Templat
 
 export function getNotificationTemplate(payload: NotificationPayload): TemplateResult {
   switch (payload.type) {
+    case 'collaboration_update': {
+      const content = {
+        title: 'Phương × Dalat.app',
+        body: 'Phương shared an update in your private planner.',
+        primaryActionUrl: 'https://phuong.dalat.app',
+        primaryActionLabel: 'Open private planner',
+      };
+      return { inApp: content, push: { ...content, tag: `phuong-${payload.actionId}` } };
+    }
     case 'rsvp_confirmation':
       return rsvpConfirmationTemplate(payload);
     case 'confirm_attendance_24h':

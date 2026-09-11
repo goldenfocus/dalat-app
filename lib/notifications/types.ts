@@ -5,6 +5,7 @@ import type { Locale } from '@/lib/types';
 // ============================================
 
 export type NotificationType =
+  | 'collaboration_update'
   | 'rsvp_confirmation'
   | 'confirm_attendance_24h'
   | 'final_reminder_2h'
@@ -351,7 +352,13 @@ export interface EventAddressRevealPayload extends EventNotificationPayload {
   arrivalNotes: string | null;
 }
 
+export interface CollaborationUpdatePayload extends BaseNotificationPayload {
+  type: 'collaboration_update';
+  actionId: string;
+}
+
 export type NotificationPayload =
+  | CollaborationUpdatePayload
   | RsvpConfirmationPayload
   | ConfirmAttendance24hPayload
   | FinalReminder2hPayload

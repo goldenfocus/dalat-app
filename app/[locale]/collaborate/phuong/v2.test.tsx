@@ -81,3 +81,15 @@ it("Zan can review but cannot edit Phuong’s answers", async () => {
     screen.queryByRole("button", { name: en.save }),
   ).not.toBeInTheDocument();
 });
+it("ends with Send to Zan and submits even a private-birthday decision", async () => {
+  const fetcher = vi.fn(async (_url: unknown, options?: RequestInit) => options?.method === "POST" ? { ok: true, json: async () => ({ version: 1 }) } : session());
+  vi.stubGlobal("fetch", fetcher);
+  render(<PhuongV2 copy={en} language="en" />);
+  fireEvent.click(await screen.findByRole("button", { name: en.choices[4] }));
+  fireEvent.click(screen.getByRole("button", { name: "3. " + en.steps[2] }));
+  expect(screen.queryByRole("button", { name: en.next + " →" })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: en.sendToZan }));
+  await screen.findByText(en.sentToZan);
+  const post = fetcher.mock.calls.find(c => c[1]?.method === "POST");
+  expect(JSON.parse(post![1]!.body as string)).toMatchObject({ action: "brief", plan: { birthday: "private" } });
+});

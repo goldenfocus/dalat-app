@@ -32,6 +32,7 @@ function getEventSlugFromPath(pathname: string): string | null {
 export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
   const t = useTranslations("moments");
   const [isOpen, setIsOpen] = useState(false);
+  const [isWorkshopHost, setIsWorkshopHost] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [recentEvents, setRecentEvents] = useState<RecentEventForUpload[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +46,7 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
 
   // Check authentication
   useEffect(() => {
+    setIsWorkshopHost(window.location.hostname === "phuong.dalat.app");
     const checkAuth = async () => {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
@@ -100,11 +102,12 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
     '/auth/',
     '/onboarding',
     '/admin/',
+    '/collaborate/phuong',
   ];
 
   const shouldHide = hiddenPaths.some(path => (pathname ?? "").includes(path));
 
-  if (shouldHide || isAuthenticated === false || isAuthenticated === null) {
+  if (isWorkshopHost || shouldHide || isAuthenticated === false || isAuthenticated === null) {
     return null;
   }
 

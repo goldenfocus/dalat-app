@@ -232,5 +232,8 @@
         "effort": "Chi phí cao hơn · chưa cần cho buổi đầu"
       }
     }
-  }
+  },
+  "sendToZan": "Gửi cho Zan",
+  "sentToZan": "Đã lưu và gửi cho Zan. Zan sẽ xem được kế hoạch và nhận thông báo trong ứng dụng.",
+  "chooseFirst": "Chọn một phương án ở trên trước nhé—“chưa chắc” hoặc giữ sinh nhật riêng tư đều được."
 }
