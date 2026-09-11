@@ -128,11 +128,13 @@ Deterministic checks (no generated facts):
   logs only). Review does **not** write locale strings.
 
 The durable enqueue the Mac mini worker cannot miss is: published row +
-missing `content_translations` + recent `updated_at`. Translation is **not**
-triggered at scout ingest — WhatsApp drafts share this publish hook, and a
-draft-time call would race if the shim later invalidates rows. Failures leave
-the row as `draft`, do not call translation, and return
-`{ passed: false, reasons: [...] }`.
+missing `content_translations` + recent `updated_at`. The worker drains
+**events before blogs** (`partitionSweepWork`) so Cloudflare/OpenRouter blog
+failures cannot starve a Review publish, and `EVENT_IDS=` skips the blog
+scan entirely. Translation is **not** triggered at scout ingest — WhatsApp
+drafts share this publish hook, and a draft-time call would race if the shim
+later invalidates rows. Failures leave the row as `draft`, do not call
+translation, and return `{ passed: false, reasons: [...] }`.
 
 ### `qa`
 

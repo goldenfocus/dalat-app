@@ -5,6 +5,7 @@ import {
   collectTranslationWork,
   getMissingTranslationLocales,
   getVenueTranslatableFields,
+  partitionSweepWork,
   translationCoverageIsCurrent,
   translationSourceStillMatches,
 } from "./translation-sweep";
@@ -239,6 +240,20 @@ describe("event sweep enqueue after Review publish", () => {
     const eventIds = work.filter((item) => item.contentType === "event").map((item) => item.contentId);
     expect(eventIds).toContain(published.id);
     expect(eventIds).toContain(newest.id);
+  });
+
+  it("drains events before blogs so Review publish is not stuck behind redo", () => {
+    const { events, rest } = partitionSweepWork([
+      { contentType: "blog", contentId: "post-1" },
+      { contentType: "event", contentId: "ca20f4a9-0990-4112-9822-52f8c014c62e" },
+      { contentType: "moment", contentId: "m-1" },
+      { contentType: "event", contentId: "evt-2" },
+    ]);
+    expect(events.map((item) => item.contentId)).toEqual([
+      "ca20f4a9-0990-4112-9822-52f8c014c62e",
+      "evt-2",
+    ]);
+    expect(rest.map((item) => item.contentType)).toEqual(["blog", "moment"]);
   });
 
   it("loads EVENT_IDS priority rows even when scanLimit is 0", async () => {
