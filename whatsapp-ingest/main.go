@@ -11,6 +11,8 @@
 //	IMPORT_CREATED_BY            (profile UUID; defaults to resolving username "yan")
 //	WHATSAPP_GROUP_JIDS          (comma-separated group JID allowlist;
 //	                              empty = discovery mode: log every group + JID, ingest nothing)
+//	REVIEW_HOOK_URL              (optional POST target after a draft upsert)
+//	REVIEW_INGEST_KEY            (optional Bearer for REVIEW_HOOK_URL)
 //
 // First run prints a QR code — scan it from the bot phone (Linked devices).
 // The session persists in ./store.db, later runs reconnect silently.
@@ -57,10 +59,12 @@ func main() {
 	logf("draft events will be owned by profile %s", createdBy)
 
 	bot := &ingestBot{
-		supa:      supa,
-		createdBy: createdBy,
-		allowlist: cfg.groupAllowlist,
-		groupName: map[types.JID]string{},
+		supa:          supa,
+		createdBy:     createdBy,
+		allowlist:     cfg.groupAllowlist,
+		groupName:     map[types.JID]string{},
+		reviewHookURL: cfg.reviewHookURL,
+		reviewHookKey: cfg.reviewHookKey,
 	}
 
 	dbLog := waLog.Stdout("Database", "WARN", true)
@@ -116,6 +120,8 @@ type config struct {
 	supabaseURL        string
 	supabaseServiceKey string
 	importCreatedBy    string
+	reviewHookURL      string
+	reviewHookKey      string
 	groupAllowlist     map[types.JID]bool
 }
 
@@ -126,6 +132,8 @@ func loadConfig() (*config, error) {
 		supabaseURL:        strings.TrimRight(os.Getenv("NEXT_PUBLIC_SUPABASE_URL"), "/"),
 		supabaseServiceKey: os.Getenv("SUPABASE_SERVICE_ROLE_KEY"),
 		importCreatedBy:    os.Getenv("IMPORT_CREATED_BY"),
+		reviewHookURL:      strings.TrimSpace(os.Getenv("REVIEW_HOOK_URL")),
+		reviewHookKey:      os.Getenv("REVIEW_INGEST_KEY"),
 		groupAllowlist:     map[types.JID]bool{},
 	}
 	if cfg.supabaseURL == "" || cfg.supabaseServiceKey == "" {
@@ -158,11 +166,13 @@ func (b *ingestBot) handleEvent(evt any) {
 }
 
 type ingestBot struct {
-	client    *whatsmeow.Client
-	supa      *supabaseClient
-	createdBy string
-	allowlist map[types.JID]bool
-	groupName map[types.JID]string
+	client        *whatsmeow.Client
+	supa          *supabaseClient
+	createdBy     string
+	allowlist     map[types.JID]bool
+	groupName     map[types.JID]string
+	reviewHookURL string
+	reviewHookKey string
 }
 
 func (b *ingestBot) handleMessage(msg *events.Message) {
@@ -215,11 +225,26 @@ func (b *ingestBot) handleMessage(msg *events.Message) {
 		}
 	}
 
-	if err := b.supa.insertEvent(context.Background(), draft.toRow(b.createdBy)); err != nil {
+	row := draft.toRow(b.createdBy)
+	saved, err := b.supa.insertEvent(context.Background(), row)
+	if err != nil {
 		logf("insert failed for %q: %v", draft.Title, err)
 		return
 	}
 	logf("draft created: %q starting %s", draft.Title, draft.StartsAt)
+	if b.reviewHookURL != "" && saved != nil {
+		payload := map[string]any{
+			"type":            "draft_ready",
+			"id":              saved.ID,
+			"slug":            saved.Slug,
+			"title":           draft.Title,
+			"status":          "draft",
+			"source_platform": "whatsapp",
+		}
+		if err := b.supa.notifyReviewHook(context.Background(), b.reviewHookURL, b.reviewHookKey, payload); err != nil {
+			logf("review hook failed (draft kept): %v", err)
+		}
+	}
 }
 
 func (b *ingestBot) lookupGroupName(jid types.JID) string {

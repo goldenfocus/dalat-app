@@ -28,8 +28,10 @@ type eventDraft struct {
 var (
 	// Numeric dates: 15/9, 15-09-2026, 15.09.26 — day-first (Vietnam convention).
 	dateRe = regexp.MustCompile(`\b\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?\b`)
-	// Times: 19:30, 19h30, 7pm, 9am.
-	timeRe = regexp.MustCompile(`(?i)\b((?:[01]?\d|2[0-3])[:hH]([0-5]\d)|([1-9]|1[0-2])\s*(am|pm))\b`)
+	// Times: 19:30, 19h30, 19h, 7pm, 9am.
+	timeRe = regexp.MustCompile(`(?i)\b((?:[01]?\d|2[0-3])[:hH]([0-5]\d)?|([1-9]|1[0-2])\s*(am|pm))\b`)
+	// Venue cues that already appear in the source text — never invent a place.
+	locationRe = regexp.MustCompile(`(?i)(?:tại\s+|at\s+|venue:\s*|địa điểm:\s*)([^,\n.]{3,80})`)
 )
 
 const defaultEventLocation = "Asia/Ho_Chi_Minh"
@@ -82,6 +84,7 @@ func buildDraft(msg *events.Message, text, groupName string) (*eventDraft, error
 		draft.StartsAt = start
 		draft.TimeInferred = timeInferred
 		draft.Title = firstLine(text)
+		draft.Location = extractLocation(text)
 	}
 
 	if draft.Title == "" {
@@ -107,16 +110,18 @@ func extractStartTime(text string, loc *time.Location, ref time.Time) (time.Time
 
 	hour, min, timeInferred := 0, 0, true
 	if m := timeRe.FindStringSubmatch(text); m != nil {
-		if m[2] != "" { // 19:30 / 19h30
-			fmt.Sscanf(m[1], "%d", &hour)
-			fmt.Sscanf(m[2], "%d", &min)
-		} else { // 7pm / 9am
+		if m[3] != "" { // 7pm / 9am
 			fmt.Sscanf(m[3], "%d", &hour)
 			if strings.EqualFold(m[4], "pm") && hour != 12 {
 				hour += 12
 			}
 			if strings.EqualFold(m[4], "am") && hour == 12 {
 				hour = 0
+			}
+		} else { // 19:30 / 19h30 / 19h
+			fmt.Sscanf(m[1], "%d", &hour)
+			if m[2] != "" {
+				fmt.Sscanf(m[2], "%d", &min)
 			}
 		}
 		timeInferred = false
@@ -136,15 +141,37 @@ func extractStartTime(text string, loc *time.Location, ref time.Time) (time.Time
 func firstLine(text string) string {
 	for line := range strings.Lines(text) {
 		line = strings.TrimSpace(line)
-		if line != "" {
-			const maxTitle = 100
-			if len(line) > maxTitle {
-				line = strings.TrimSpace(line[:maxTitle])
-			}
-			return line
+		if line == "" || isDateOrTimeOnly(line) {
+			continue
 		}
+		const maxTitle = 100
+		if len(line) > maxTitle {
+			line = strings.TrimSpace(line[:maxTitle])
+		}
+		return line
 	}
 	return ""
+}
+
+func isDateOrTimeOnly(line string) bool {
+	stripped := dateRe.ReplaceAllString(line, "")
+	stripped = timeRe.ReplaceAllString(stripped, "")
+	stripped = strings.TrimSpace(stripped)
+	return stripped == ""
+}
+
+// extractLocation returns a venue already written in the message. Empty when
+// the announcement does not name a place — callers must not invent Đà Lạt.
+func extractLocation(text string) string {
+	m := locationRe.FindStringSubmatch(text)
+	if m == nil {
+		return ""
+	}
+	loc := strings.TrimSpace(m[1])
+	if loc == "" || isDateOrTimeOnly(loc) || timeRe.MatchString(loc) {
+		return ""
+	}
+	return loc
 }
 
 // toRow maps the draft onto the events table columns.
@@ -170,18 +197,24 @@ func (d *eventDraft) toRow(createdBy string) map[string]any {
 	if d.Location != "" {
 		row["location_name"] = d.Location
 	}
+	meta := d.Meta
+	if meta == nil {
+		meta = map[string]any{}
+	}
 	if d.ExternalURL != "" {
 		row["external_chat_url"] = d.ExternalURL
+	} else if groupJID, _ := meta["group_jid"].(string); groupJID != "" {
+		if msgID, _ := meta["message_id"].(string); msgID != "" {
+			row["external_chat_url"] = "whatsapp:" + groupJID + "/" + msgID
+		}
 	}
 	if d.ImageURL != "" {
 		row["image_url"] = d.ImageURL
 		row["image_alt"] = d.ImageAlt
 	}
-	meta := d.Meta
-	if meta == nil {
-		meta = map[string]any{}
-	}
 	meta["time_inferred"] = d.TimeInferred
+	meta["needs_review"] = true
+	meta["ingest_lane"] = "scout-review"
 	row["source_metadata"] = meta
 	return row
 }
