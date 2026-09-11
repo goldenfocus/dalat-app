@@ -4,6 +4,9 @@ import { CONTENT_LOCALES, type ContentLocale } from "@/lib/types";
 const VIETNAMESE_UNIQUE =
   /[ăđơưạảãặắằẳẵấầẩẫậẹẻẽếềểễệỉịọỏõốồổỗộớờởỡợụủũứừửữựỳỵỷỹ]/i;
 
+/** Place names that appear on almost every Đà Lạt listing, including English copy. */
+const LOCALITY_PLACE_NAMES = /đà\s*lạt|lâm\s*đồng|đàlạt/gi;
+
 /**
  * Cheap script hint for scout/review rows. Does not call a model and does not
  * invent translations. Returns null when the script is ambiguous so the Mac
@@ -14,13 +17,15 @@ export function inferSourceLocale(
   description?: string | null,
 ): ContentLocale | null {
   const text = `${title} ${description ?? ""}`;
-  if (VIETNAMESE_UNIQUE.test(text)) return "vi";
-  // Explicit ranges — avoid \p{Script=…} so SWC/es2017 minifiers stay happy.
+  // Distinctive non-Latin scripts first — a Korean poster that mentions
+  // "Đà Lạt" must not be classified as Vietnamese.
   if (/[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]/.test(text)) return "ko";
   if (/[\u3040-\u30FF]/.test(text)) return "ja";
   if (/[\u4E00-\u9FFF]/.test(text)) return "zh";
   if (/[\u0400-\u04FF]/.test(text)) return "ru";
   if (/[\u0E00-\u0E7F]/.test(text)) return "th";
+  const withoutPlaceNames = text.replace(LOCALITY_PLACE_NAMES, " ");
+  if (VIETNAMESE_UNIQUE.test(withoutPlaceNames)) return "vi";
   return null;
 }
 

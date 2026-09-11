@@ -182,7 +182,7 @@ describe("ingestScoutEvent", () => {
       row: { status: string; source_locale: string | null; publish?: boolean };
     };
     expect(insert.row.status).toBe("draft");
-    expect(insert.row.source_locale).toBe("vi");
+    expect(insert.row.source_locale).toBeNull();
   });
 
   it("leaves source_locale null when the script is ambiguous Latin", async () => {

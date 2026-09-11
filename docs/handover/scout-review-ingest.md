@@ -62,7 +62,7 @@ Required:
 
 Optional: `ends_at`, `address`, `google_maps_url`, `source_platform` (not
 `activity-graph`), `source_locale` (Vietnamese-unique letters infer `vi` when
-omitted), `source_image_urls[]`, `promo_image_urls[]`,
+omitted, ignoring Đà Lạt / Lâm Đồng place names), `source_image_urls[]`, `promo_image_urls[]`,
 `visual_provenance` (`owner_authorized_source` \| `ai_generated`), `image_alt`,
 `image_caption`, `visual_gap_reason`, `organizer_name`.
 
@@ -119,7 +119,9 @@ Deterministic checks (no generated facts):
 `publish` sets `status=published` only when every check passes. It then:
 
 - persists a real `source_locale` when a cheap script hint can set one
-  (Vietnamese-unique letters → `vi`; Scout payload / WhatsApp `vi` kept as-is).
+  (Vietnamese-unique letters → `vi` after ignoring Đà Lạt / Lâm Đồng place
+  names; Scout payload / WhatsApp `vi` kept as-is). English copy that only
+  mentions the city stays null for the worker to detectLanguage.
   Null `source_locale` blocks every locale in QA / indexing readiness.
 - bumps `updated_at` so `lib/translation-sweep.ts` can see the row among
   recently updated **published** events (newest-`created_at` alone misses

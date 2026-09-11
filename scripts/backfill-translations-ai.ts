@@ -42,6 +42,7 @@ import {
   TranslationWorkItem,
   blogTranslationSourceStillMatches,
   partitionSweepWork,
+  shouldDrainDeferredSweepWork,
 } from "@/lib/translation-sweep";
 import { CONTENT_LOCALES, ContentLocale } from "@/lib/types";
 import { notifyEventTranslationCompletion } from "@/lib/seo/indexnow-events";
@@ -736,19 +737,31 @@ async function main() {
       const units = work.reduce((n, w) => n + w.missingLocales.length, 0);
       lastSweepUnits = units;
       const { events, rest } = partitionSweepWork(work);
-      // Events first, then re-collect. A Review publish must not sit behind
-      // Cloudflare 408 / OpenRouter blog failures in the same sweep round.
-      const batch = events.length > 0 ? events : rest;
+      // Events first so a Review publish is not stuck behind blog 408s.
+      // If events write nothing, still drain rest — one stuck event must not
+      // starve moments/blogs forever.
       console.log(
         `Round ${round}: ${work.length} items, ${units} locale-units pending` +
           (events.length > 0 && rest.length > 0
-            ? ` — draining ${events.length} event(s), deferring ${rest.length} non-event item(s)`
+            ? ` — draining ${events.length} event(s) first`
             : ""),
       );
       const before = rowsWritten;
-      for (const item of batch) {
+      for (const item of events) {
         await processItem(item, true);
         maybeReport();
+      }
+      const eventRowsWritten = rowsWritten - before;
+      if (shouldDrainDeferredSweepWork(events.length, rest.length, eventRowsWritten)) {
+        if (events.length > 0) {
+          console.warn(
+            `[backfill] ${events.length} event(s) wrote 0 rows — draining ${rest.length} deferred item(s)`,
+          );
+        }
+        for (const item of rest) {
+          await processItem(item, true);
+          maybeReport();
+        }
       }
       lastSweepUnits = Math.max(0, units - (rowsWritten - before));
       if (rowsWritten === before) {

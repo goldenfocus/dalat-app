@@ -145,6 +145,17 @@ export function partitionSweepWork<T extends { contentType: string }>(work: T[])
   return { events, rest };
 }
 
+/** Drain deferred work when there are no events, or events wrote nothing. */
+export function shouldDrainDeferredSweepWork(
+  eventCount: number,
+  restCount: number,
+  eventRowsWritten: number,
+): boolean {
+  if (restCount === 0) return false;
+  if (eventCount === 0) return true;
+  return eventRowsWritten === 0;
+}
+
 type EventTranslationCandidate = {
   id: string;
   title: string;
