@@ -127,6 +127,34 @@ describe("ingestScoutEvent", () => {
     expect(result.created).toBe(true);
     const insert = supabase.inserts[0] as { row: { status: string; publish?: boolean } };
     expect(insert.row.status).toBe("draft");
+    expect((insert.row as { source_locale: string | null }).source_locale).toBe("vi");
+  });
+
+  it("leaves source_locale null when the script is ambiguous Latin", async () => {
+    const supabase = createSupabaseMock({ existing: null });
+    const parsed = scoutIngestSchema.parse({
+      ...validPayload,
+      title: "Sunset hike Langbiang",
+      description: "Canonical facts from source: 19:00 20/09 at Langbiang, Da Lat.",
+    });
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+    expect(result.ok).toBe(true);
+    const insert = supabase.inserts[0] as { row: { source_locale: string | null } };
+    expect(insert.row.source_locale).toBeNull();
+  });
+
+  it("stores a script-inferred source_locale on Vietnamese scout copy", async () => {
+    const supabase = createSupabaseMock({ existing: null });
+    const parsed = scoutIngestSchema.parse({
+      ...validPayload,
+      title: "Hà Nhi live in Dalat tại La Maritza",
+      description: "Đêm nhạc tại Đà Lạt.",
+    });
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+    expect(result.ok).toBe(true);
+    const insert = supabase.inserts[0] as { row: { source_locale: string | null; status: string } };
+    expect(insert.row.status).toBe("draft");
+    expect(insert.row.source_locale).toBe("vi");
   });
 
   it("is idempotent on source_url for an existing draft", async () => {

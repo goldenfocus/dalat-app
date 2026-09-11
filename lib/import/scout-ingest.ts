@@ -15,6 +15,7 @@ import {
   type ScoutIngestInput,
 } from "./scout-schema";
 import { canonicalizeSourceUrl, isSafePublicHttpUrl } from "./safe-url";
+import { resolveStoredSourceLocale } from "./source-locale";
 
 const DALAT_TZ = "Asia/Ho_Chi_Minh";
 
@@ -138,7 +139,9 @@ export async function ingestScoutEvent(
     organizer_id: organizerId,
     created_by: existing?.created_by ?? createdBy,
     source_platform: input.source_platform?.trim() || "scout",
-    source_locale: input.source_locale?.trim() || null,
+    source_locale:
+      resolveStoredSourceLocale(input.source_locale, input.title, input.description) ??
+      null,
     source_metadata: metadata,
   };
 

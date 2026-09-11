@@ -59,7 +59,8 @@ Required:
 - `venue` or `location_name`
 
 Optional: `ends_at`, `address`, `google_maps_url`, `source_platform` (not
-`activity-graph`), `source_locale`, `source_image_urls[]`, `promo_image_urls[]`,
+`activity-graph`), `source_locale` (Vietnamese-unique letters infer `vi` when
+omitted), `source_image_urls[]`, `promo_image_urls[]`,
 `visual_provenance` (`owner_authorized_source` \| `ai_generated`), `image_alt`,
 `image_caption`, `visual_gap_reason`, `organizer_name`.
 
@@ -108,14 +109,23 @@ Deterministic checks (no generated facts):
 - hero image **or** a documented `source_metadata.visual_gap`
 - not an Activity Graph row
 
-`publish` sets `status=published` only when every check passes, then awaits
-`triggerTranslationServer` (same compatibility boundary as Luma/Facebook
-importers) so serverless work finishes before the response. Missing
-`content_translations` rows are the durable queue for the Mac mini worker.
-Translation is **not** triggered at scout ingest: drafts are not public,
-WhatsApp drafts share this publish hook, and a second call at draft-create
-would race if the queue later invalidates rows. Failures leave the row as
-`draft`, do not call translation, and return `{ passed: false, reasons: [...] }`.
+`publish` sets `status=published` only when every check passes. It then:
+
+- persists a real `source_locale` when a cheap script hint can set one
+  (Vietnamese-unique letters → `vi`; Scout payload / WhatsApp `vi` kept as-is).
+  Null `source_locale` blocks every locale in QA / indexing readiness.
+- bumps `updated_at` so `lib/translation-sweep.ts` can see the row among
+  recently updated **published** events (newest-`created_at` alone misses
+  old scout/WhatsApp drafts).
+- awaits `triggerTranslationServer` (Luma/Facebook compatibility shim; it
+  logs only). Review does **not** write locale strings.
+
+The durable enqueue the Mac mini worker cannot miss is: published row +
+missing `content_translations` + recent `updated_at`. Translation is **not**
+triggered at scout ingest — WhatsApp drafts share this publish hook, and a
+draft-time call would race if the shim later invalidates rows. Failures leave
+the row as `draft`, do not call translation, and return
+`{ passed: false, reasons: [...] }`.
 
 ### `qa`
 
@@ -137,9 +147,15 @@ events?status=eq.draft&source_metadata->>needs_review=eq.true
 ```
 
 Typical Review loop: poll → `evaluate` → fix fact/image gaps → `publish`
-(queues translation) → `qa` → wait for the Mac mini worker /
-`scripts/backfill-translations-ai.ts` if locales are still missing → `qa`
-again. Review never invents locale strings.
+(durable enqueue) → `qa` → wait for the Mac mini worker if locales are
+still missing → `qa` again. Review never invents locale strings.
+
+One-off repair (uses stored title/description; do not invent copy):
+
+```bash
+cd ~/dalat-app-seo-worker
+EVENT_IDS=<event-uuid> npx tsx --tsconfig tsconfig.json scripts/backfill-translations-ai.ts
+```
 
 ## WhatsApp service
 
