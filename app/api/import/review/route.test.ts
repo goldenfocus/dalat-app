@@ -2,10 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
+  triggerTranslationServer: vi.fn(async () => ({ ok: true, localesWritten: 0 })),
 }));
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: mocks.createClient,
+}));
+
+vi.mock("@/lib/translations", () => ({
+  triggerTranslationServer: mocks.triggerTranslationServer,
 }));
 
 import { POST } from "./route";
@@ -90,6 +95,7 @@ function mockSupabase(event: typeof draft | null, options: { duplicate?: boolean
 describe("POST /api/import/review", () => {
   beforeEach(() => {
     mocks.createClient.mockReset();
+    mocks.triggerTranslationServer.mockClear();
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role");
   });
@@ -129,6 +135,7 @@ describe("POST /api/import/review", () => {
       passed: true,
       event: { slug: "sunset-hike", status: "draft" },
     });
+    expect(mocks.triggerTranslationServer).not.toHaveBeenCalled();
   });
 
   it("publishes only when quality checks pass", async () => {
@@ -150,6 +157,11 @@ describe("POST /api/import/review", () => {
       table: "events",
       row: { status: "published" },
     });
+    expect(mocks.triggerTranslationServer).toHaveBeenCalledOnce();
+    expect(mocks.triggerTranslationServer).toHaveBeenCalledWith("event", draft.id, [
+      { field_name: "title", text: draft.title },
+      { field_name: "description", text: draft.description },
+    ]);
   });
 
   it("keeps a failing draft unpublished and returns reasons", async () => {
@@ -174,6 +186,7 @@ describe("POST /api/import/review", () => {
       "not_dalat_locality",
     );
     expect(supabase.updates).toHaveLength(0);
+    expect(mocks.triggerTranslationServer).not.toHaveBeenCalled();
   });
 
   it("reports translation and image gaps on qa without inventing content", async () => {

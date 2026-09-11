@@ -115,8 +115,14 @@ Deterministic checks (no generated facts):
 - hero image **or** a documented `source_metadata.visual_gap`
 - not an Activity Graph row
 
-`publish` sets `status=published` only when every check passes. Failures leave
-the row as `draft` and return `{ passed: false, reasons: [...] }`.
+`publish` sets `status=published` only when every check passes, then awaits
+`triggerTranslationServer` (same compatibility boundary as Luma/Facebook
+importers) so serverless work finishes before the response. Missing
+`content_translations` rows are the durable queue for the Mac mini worker.
+Translation is **not** triggered at scout ingest: drafts are not public,
+WhatsApp drafts share this publish hook, and a second call at draft-create
+would race if the queue later invalidates rows. Failures leave the row as
+`draft`, do not call translation, and return `{ passed: false, reasons: [...] }`.
 
 ### `qa`
 
@@ -126,14 +132,21 @@ After publish. Reports only — does not write translations or images.
 - title + description completeness via `evaluateEventIndexingReadiness`
 - hero present; promo gallery 2–4 items; AI disclosure if `visual_provenance=ai_generated`
 
+Immediately after publish, `readyLocales` may still be empty until the Mac
+mini worker writes locale rows. Re-run `qa` after the worker sweep;
+`translations.passed` is true only when every non-source locale has
+substantive title + description. Image checks are independent.
+
 Poll drafts instead of (or in addition to) the WhatsApp hook:
 
 ```
 events?status=eq.draft&source_metadata->>needs_review=eq.true
 ```
 
-Typical Review loop: poll → `evaluate` → fix gaps (translations/images via
-existing workers / CTO tools) → `publish` → `qa` → fix remaining gaps.
+Typical Review loop: poll → `evaluate` → fix fact/image gaps → `publish`
+(queues translation) → `qa` → wait for the Mac mini worker /
+`scripts/backfill-translations-ai.ts` if locales are still missing → `qa`
+again. Review never invents locale strings.
 
 ## WhatsApp service
 

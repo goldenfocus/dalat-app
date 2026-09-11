@@ -1,5 +1,18 @@
-import { describe, expect, it } from "vitest";
-import { evaluateDraftQuality, type ReviewEventSnapshot } from "./review-gate";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  triggerTranslationServer: vi.fn(async () => ({ ok: true, localesWritten: 0 })),
+}));
+
+vi.mock("@/lib/translations", () => ({
+  triggerTranslationServer: mocks.triggerTranslationServer,
+}));
+
+import {
+  evaluateDraftQuality,
+  publishReviewEvent,
+  type ReviewEventSnapshot,
+} from "./review-gate";
 
 const now = new Date("2026-09-11T05:00:00.000Z");
 
@@ -94,5 +107,96 @@ describe("evaluateDraftQuality", () => {
       now,
     });
     expect(reasons.map((reason) => reason.code)).toContain("duplicate_published");
+  });
+});
+
+function mockSupabase(options: { duplicate?: boolean } = {}) {
+  const updates: unknown[] = [];
+  const from = vi.fn(() => {
+    const builder: Record<string, unknown> = {};
+    const chain = () => builder;
+    builder.select = vi.fn(chain);
+    builder.update = vi.fn((row: unknown) => {
+      updates.push(row);
+      return builder;
+    });
+    builder.eq = vi.fn(chain);
+    builder.neq = vi.fn(chain);
+    builder.ilike = vi.fn(chain);
+    builder.gte = vi.fn(chain);
+    builder.lt = vi.fn(chain);
+    builder.limit = vi.fn(chain);
+    builder.maybeSingle = vi.fn(async () => ({
+      data: options.duplicate ? { id: "other" } : null,
+      error: null,
+    }));
+    builder.then = (
+      resolve: (value: { data: unknown; error: null }) => unknown,
+      reject: (reason: unknown) => unknown,
+    ) => Promise.resolve({ data: null, error: null }).then(resolve, reject);
+    return builder;
+  });
+  return { from, updates };
+}
+
+describe("publishReviewEvent translation trigger", () => {
+  beforeEach(() => {
+    mocks.triggerTranslationServer.mockClear();
+  });
+
+  it("awaits triggerTranslationServer once after a successful publish", async () => {
+    const draft = event();
+    const supabase = mockSupabase();
+
+    const result = await publishReviewEvent(supabase as never, draft, { now });
+
+    expect(result).toMatchObject({
+      passed: true,
+      published: true,
+      event: { id: draft.id, status: "published" },
+    });
+    expect(supabase.updates[0]).toMatchObject({ status: "published" });
+    expect(mocks.triggerTranslationServer).toHaveBeenCalledOnce();
+    expect(mocks.triggerTranslationServer).toHaveBeenCalledWith("event", draft.id, [
+      { field_name: "title", text: draft.title },
+      { field_name: "description", text: draft.description },
+    ]);
+  });
+
+  it("does not trigger translation when evaluate fails", async () => {
+    const supabase = mockSupabase();
+    const result = await publishReviewEvent(
+      supabase as never,
+      event({
+        title: "HCMC rooftop party",
+        description: "District 1 only",
+        location_name: "Saigon",
+        address: "D1",
+      }),
+      { now },
+    );
+
+    expect(result.published).toBe(false);
+    expect(result.passed).toBe(false);
+    expect(result.reasons.map((reason) => reason.code)).toContain("not_dalat_locality");
+    expect(supabase.updates).toHaveLength(0);
+    expect(mocks.triggerTranslationServer).not.toHaveBeenCalled();
+  });
+
+  it("does not trigger translation when the event is not a draft", async () => {
+    const supabase = mockSupabase();
+    const result = await publishReviewEvent(
+      supabase as never,
+      event({ status: "published" }),
+      { now },
+    );
+
+    expect(result).toMatchObject({
+      passed: false,
+      published: false,
+      reasons: [{ code: "not_a_draft" }],
+    });
+    expect(supabase.updates).toHaveLength(0);
+    expect(mocks.triggerTranslationServer).not.toHaveBeenCalled();
   });
 });
