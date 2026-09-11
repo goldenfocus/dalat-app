@@ -225,10 +225,9 @@ export function PhuongV2({
         </div>
         <div className="pv-portraits" aria-label="Phương + Zan">
           <figure>
-            <span className="pv-hat" aria-hidden="true" />
             <Image
-              src="/workshops/phuong/phuong.png"
-              alt="Phương"
+              src="/workshops/phuong/phuong-birthday.png"
+              alt={`Phương · ${c.aiPortraits}`}
               width={360}
               height={420}
               priority
@@ -239,10 +238,9 @@ export function PhuongV2({
             +
           </span>
           <figure>
-            <span className="pv-hat pv-hat-gold" aria-hidden="true" />
             <Image
-              src="/workshops/phuong/zan.jpg"
-              alt="Zan"
+              src="/workshops/phuong/zan-birthday.png"
+              alt={`Zan · ${c.aiPortraits}`}
               width={360}
               height={420}
               priority
@@ -254,6 +252,7 @@ export function PhuongV2({
           </span>
         </div>
       </section>
+      <p className="pv-image-note">{c.aiPortraits}</p>
       <section className="pv-glass pv-planner" id="planner">
         <p className="pv-kicker">ĐƯỜNG 1 CHILL · ĐÀ LẠT</p>
         {access !== "ready" ? (
