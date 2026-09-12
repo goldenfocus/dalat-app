@@ -35,6 +35,11 @@ function request(
 }
 
 describe('locale routing', () => {
+  it('leaves auth continuation at its root handler for every browser language', async () => {
+    const response = await updateSession(request('/auth/continue?intent=abc', { acceptLanguage: 'fr-FR' }));
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('x-middleware-rewrite')).toBeNull();
+  });
   beforeEach(() => {
     vi.mocked(createServerClient).mockReset();
   });
