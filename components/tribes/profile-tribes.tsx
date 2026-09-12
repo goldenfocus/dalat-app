@@ -44,7 +44,7 @@ export async function ProfileTribes({ userId }: ProfileTribesProps) {
         {tribes.map((tribe) => (
           <Link
             key={tribe.id}
-            href={`/tribes/${tribe.slug}`}
+            href={`/communities/${tribe.slug}`}
             className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted active:scale-[0.99] transition-all"
           >
             <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-primary/10 flex items-center justify-center shrink-0">

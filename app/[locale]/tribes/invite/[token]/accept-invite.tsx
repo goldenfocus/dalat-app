@@ -33,7 +33,7 @@ export function AcceptInvite({
           {t("inviteAlreadyMemberNote")}
         </p>
         <Button
-          onClick={() => router.push(`/${locale}/tribes/${tribeSlug}`)}
+          onClick={() => router.push(`/${locale}/communities/${tribeSlug}`)}
           className="w-full px-4 py-3"
         >
           {t("viewTribe")}
@@ -62,7 +62,7 @@ export function AcceptInvite({
           setError(t("inviteAcceptFailed"));
           return;
         }
-        router.push(`/${locale}/tribes/${data.slug ?? tribeSlug}`);
+        router.push(`/${locale}/communities/${data.slug ?? tribeSlug}`);
       } catch {
         setError(t("inviteAcceptFailed"));
       }

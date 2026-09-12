@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { notifyTribeJoinRequest } from '@/lib/notifications';
 
 interface RouteParams { params: Promise<{ slug: string }>; }
 
@@ -11,76 +10,14 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
-  const body = await request.json();
-  const { invite_code, message } = body;
-
-  let tribe;
-  if (invite_code) {
-    const { data } = await supabase.rpc('get_tribe_by_code', { p_code: invite_code });
-    tribe = data?.[0];
-    if (!tribe) return NextResponse.json({ error: 'Invalid or expired invite code' }, { status: 400 });
-  } else {
-    const { data } = await supabase.from('tribes').select('*').eq('slug', slug).single();
-    tribe = data;
-  }
-
-  if (!tribe) return NextResponse.json({ error: 'Tribe not found' }, { status: 404 });
-
-  // Check if user is banned
-  const { data: isBanned } = await supabase.rpc('is_tribe_banned', { p_tribe_id: tribe.id, p_user_id: user.id });
-  if (isBanned) return NextResponse.json({ error: 'You are banned from this tribe' }, { status: 403 });
-
-  const { data: existing } = await supabase.from('tribe_members').select('id, status').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
-  if (existing) {
-    if (existing.status === 'banned') return NextResponse.json({ error: 'You are banned from this tribe' }, { status: 403 });
-    return NextResponse.json({ error: 'Already a member' }, { status: 400 });
-  }
-
-  switch (tribe.access_type) {
-    case 'public': {
-      // The insert result was previously discarded, so an RLS or constraint
-      // rejection still returned {success:true,status:'joined'} — a failed
-      // join was indistinguishable from a successful one.
-      const { error: joinError } = await supabase
-        .from('tribe_members')
-        .insert({ tribe_id: tribe.id, user_id: user.id });
-      if (joinError) {
-        console.error('Tribe join failed:', joinError);
-        return NextResponse.json({ error: joinError.message }, { status: 500 });
-      }
-      return NextResponse.json({ success: true, status: 'joined' });
-    }
-
-    case 'request':
-      const { error: reqError } = await supabase.from('tribe_requests').insert({ tribe_id: tribe.id, user_id: user.id, message: message?.trim() || null });
-      if (reqError?.code === '23505') return NextResponse.json({ error: 'Request already pending' }, { status: 400 });
-      if (reqError) return NextResponse.json({ error: reqError.message }, { status: 500 });
-
-      // Notify admins
-      const { data: admins } = await supabase.from('tribe_members').select('user_id').eq('tribe_id', tribe.id).in('role', ['leader', 'admin']);
-      const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', user.id).single();
-      if (admins?.length) {
-        await notifyTribeJoinRequest(admins.map(a => a.user_id), profile?.display_name || 'Someone', tribe.name, tribe.slug);
-      }
-
-      return NextResponse.json({ success: true, status: 'requested' });
-
-    case 'invite_only':
-    case 'secret': {
-      if (!invite_code) return NextResponse.json({ error: 'Invite code required' }, { status: 400 });
-      const { error: inviteJoinError } = await supabase
-        .from('tribe_members')
-        .insert({ tribe_id: tribe.id, user_id: user.id });
-      if (inviteJoinError) {
-        console.error('Tribe invite join failed:', inviteJoinError);
-        return NextResponse.json({ error: inviteJoinError.message }, { status: 500 });
-      }
-      return NextResponse.json({ success: true, status: 'joined' });
-    }
-
-    default:
-      return NextResponse.json({ error: 'Invalid access type' }, { status: 400 });
-  }
+  const body = await request.json().catch(() => ({}));
+  const { data, error } = await supabase.rpc('join_community', {
+    p_slug: slug,
+    p_invite_code: typeof body.invite_code === 'string' ? body.invite_code : null,
+    p_message: typeof body.message === 'string' ? body.message : null,
+  });
+  if (error) return NextResponse.json({ error: error.message }, { status: error.code === '42501' ? 403 : 400 });
+  return NextResponse.json(data);
 }
 
 export async function DELETE(request: Request, { params }: RouteParams) {
@@ -109,7 +46,8 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     }
   }
 
-  await supabase.from('tribe_members').delete().eq('tribe_id', tribe.id).eq('user_id', user.id);
+  const { error } = await supabase.from('tribe_members').delete().eq('tribe_id', tribe.id).eq('user_id', user.id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 403 });
 
   return NextResponse.json({ success: true });
 }

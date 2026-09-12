@@ -5,7 +5,7 @@ import { slugify } from "@/lib/utils";
  * Route segments that live under /tribes/ — a tribe with one of these slugs
  * would be shadowed by the real page and never reachable.
  */
-const RESERVED_TRIBE_SLUGS = new Set(["new", "join"]);
+const RESERVED_TRIBE_SLUGS = new Set(["new", "join", "invite"]);
 
 const MAX_TRIBE_SLUG_LENGTH = 60;
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { startSignupIntent } from "@/lib/auth/start-intent";
+import { useCommunityRsvp, CommunityRsvpChoice } from "./community-rsvp";
 import { useState, useTransition, createContext, useContext, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -116,6 +118,7 @@ export function useRsvpActions(
   onShowQuestionnaire?: () => void
 ) {
   const router = useRouter();
+  const communityContext = useCommunityRsvp();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [lastRsvpId, setLastRsvpId] = useState<string | null>(null);
@@ -126,7 +129,9 @@ export function useRsvpActions(
 
   async function handleRsvp() {
     if (!isLoggedIn) {
-      router.push("/auth/login");
+      setError(null);
+      try { await startSignupIntent({ kind: "event", slug: communityContext.eventSlug || window.location.pathname.split("/").pop()!, joinCommunity: communityContext.join }); }
+      catch { setError("Could not continue. Please try again."); }
       return;
     }
 
@@ -160,6 +165,10 @@ export function useRsvpActions(
           return;
         }
 
+        if (communityContext.join && communityContext.community) {
+          const { error: joinError } = await supabase.rpc("join_community", { p_slug: communityContext.community.slug });
+          if (joinError) setError("Your RSVP is saved. Community membership could not be completed; you can retry on the community page.");
+        }
         const rsvpId = data?.rsvp_id;
         setLastRsvpId(rsvpId || null);
 
@@ -191,7 +200,7 @@ export function useRsvpActions(
 
   async function handleInterested() {
     if (!isLoggedIn) {
-      router.push("/auth/login");
+      router.push(`/auth/login?next=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
 
@@ -311,6 +320,15 @@ export function RsvpButton({
 
   const { isPending, error, handleRsvp, handleInterested, handleCancel, performRsvp, hasActiveQuestionnaire } =
     useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire);
+
+  useEffect(() => {
+    if (isLoggedIn && hasActiveQuestionnaire && !currentRsvp && !isEventPast(startsAt, endsAt) && new URLSearchParams(window.location.search).get("resumeRsvp") === "1") {
+      setShowQuestionnaire(true);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("resumeRsvp");
+      window.history.replaceState(null, "", url);
+    }
+  }, [isLoggedIn, hasActiveQuestionnaire, currentRsvp, startsAt, endsAt]);
 
   // Handle questionnaire submission
   const handleQuestionnaireSubmit = useCallback(async (responses: Record<string, string | string[]>) => {
@@ -461,6 +479,7 @@ export function RsvpButton({
           <p className="text-sm text-blue-600 font-medium text-center">
             {t("youreInterested")}
           </p>
+          <CommunityRsvpChoice />
           <Button
             onClick={handleRsvp}
             disabled={isPending}
@@ -487,6 +506,7 @@ export function RsvpButton({
       {celebrationPortal}
       {questionnaireSheet}
       <div className="space-y-3">
+        <CommunityRsvpChoice />
         <Button
           onClick={handleRsvp}
           disabled={isPending}

@@ -18,7 +18,7 @@ export async function TribesStrip() {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-xl font-semibold">{t("findYourTribe")}</h2>
         <Link
-          href="/tribes"
+          href="/communities"
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 -mr-3 rounded-lg"
         >
           {t("seeAll")}

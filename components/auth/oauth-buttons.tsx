@@ -1,5 +1,6 @@
 "use client";
 
+import { callbackUrl } from "@/lib/auth/continuation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -18,7 +19,7 @@ export function GoogleButton() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl(window.location.origin, new URLSearchParams(window.location.search)),
         queryParams: { prompt: "select_account" },
       },
     });

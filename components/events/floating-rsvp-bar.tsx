@@ -1,5 +1,6 @@
 "use client";
 
+import { CommunityRsvpChoice } from "./community-rsvp";
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -195,7 +196,8 @@ export function FloatingRsvpBar({
         />
       )}
       <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 lg:hidden">
-        <div className="mx-4 mb-2">
+        <div className="mx-4 mb-2 bg-background rounded-xl">
+          {!isGoing && !isWaitlist && <CommunityRsvpChoice id="floating-join-community" />}
           <div className="bg-background/95 backdrop-blur-sm border rounded-xl shadow-lg px-4 py-3 flex items-center justify-between gap-3">
             {statusText ? (
               <>

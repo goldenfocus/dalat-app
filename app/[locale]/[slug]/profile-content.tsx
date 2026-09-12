@@ -1,3 +1,4 @@
+import { ProfileJoinButton } from "@/components/profile/profile-join-button";
 import { ExperienceList } from "@/components/experiences/list";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
@@ -231,6 +232,20 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
     getTranslations("common"),
   ]);
 
+  const profileOwner = await isCurrentUser(profile.id);
+  if (profile.is_private && !profileOwner) {
+    return <div className="mx-auto max-w-lg px-6 py-20 text-center space-y-4">
+      <UserAvatar src={profile.avatar_url} alt={profile.display_name || ""} size="lg" />
+      <h1 className="text-2xl font-semibold">{t("privateProfileTitle")}</h1>
+      <p className="text-muted-foreground">{t("privateProfileDescription")}</p>
+    </div>;
+  }
+  if (profile.is_private && profileOwner) {
+    const supabase = await createClient();
+    const { data } = await supabase.from("private_profile_details").select("bio").eq("user_id", profile.id).maybeSingle();
+    profile.bio = data?.bio ?? null;
+  }
+
   const [events, isOwner, isLoggedIn, bioTranslations, momentsData, followData, loyaltyData] = await Promise.all([
     getUserEvents(profile.id),
     isCurrentUser(profile.id),
@@ -252,6 +267,7 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
+      {!isLoggedIn && !profile.is_ghost && profile.username && <div className="mb-6"><ProfileJoinButton username={profile.username} /></div>}
       {/* Claim profile banner for ghost profiles */}
       {showClaimBanner && (
         <ClaimProfileBanner

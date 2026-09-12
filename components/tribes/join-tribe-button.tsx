@@ -1,5 +1,6 @@
 "use client";
 
+import { startSignupIntent } from "@/lib/auth/start-intent";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -55,7 +56,9 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
   // Handle join action
   async function handleJoin(inviteCode?: string) {
     if (!isAuthenticated) {
-      router.push(`/auth/login?redirect=/tribes/${tribe.slug}`);
+      setSubmitting(true);
+      try { await startSignupIntent({ kind: "community", slug: tribe.slug, inviteCode }); }
+      catch { setError(t("joinFailed")); setSubmitting(false); }
       return;
     }
 

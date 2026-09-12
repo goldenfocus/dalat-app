@@ -63,7 +63,7 @@ export function TribeForm({ locale }: TribeFormProps) {
           return;
         }
 
-        router.push(`/${locale}/tribes/${data.tribe.slug}`);
+        router.push(`/${locale}/communities/${data.tribe.slug}`);
       } catch (err) {
         console.error("Tribe create error:", err);
         setError(t("createFailed"));

@@ -14,7 +14,7 @@ interface PageProps {
 
 interface SlugResolution {
   found: boolean;
-  entity_type?: "venue" | "organizer" | "profile";
+  entity_type?: "venue" | "organizer" | "profile" | "community";
   entity_id?: string;
   is_redirect?: boolean;
   canonical_slug?: string;
@@ -145,6 +145,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   switch (resolution.entity_type) {
+    case "community": {
+      const { data: community } = await supabase.from("tribes").select("slug").eq("id", resolution.entity_id).maybeSingle();
+      if (!community) return { title: "Community not found" };
+      const { generateMetadata } = await import("../tribes/[slug]/page");
+      return generateMetadata({ params: Promise.resolve({ slug: community.slug, locale }), searchParams: Promise.resolve({}) });
+    }
     case "profile": {
       const { data: profile } = await supabase
         .from("profiles")
@@ -153,6 +159,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         .single();
 
       if (!profile) return { title: "Profile not found" };
+      if (profile.is_private) return {
+        title: "Private profile | DaLat.app",
+        description: "This profile is private.",
+        robots: { index: false, follow: false },
+        openGraph: { title: "Private profile", description: "This profile is private.", images: [] },
+        twitter: { card: "summary", title: "Private profile", description: "This profile is private.", images: [] },
+      };
 
       const { data: events } = await supabase
         .from("events")
@@ -230,6 +243,13 @@ export default async function UnifiedSlugPage({ params }: PageProps) {
 
   if (!resolution.found || !resolution.entity_type || !resolution.entity_id) {
     notFound();
+  }
+
+  if (resolution.entity_type === "community") {
+    const db = await createClient();
+    const { data: community } = await db.from("tribes").select("slug").eq("id", resolution.entity_id).maybeSingle();
+    if (!community) notFound();
+    redirect(`/${locale}/communities/${community.slug}`);
   }
 
   // Handle redirects (non-primary slugs that should redirect to canonical)

@@ -57,6 +57,7 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
         </div>
 
+
         {/* Content */}
         <div className="max-w-4xl mx-auto px-4 -mt-16 relative">
           <div className="flex flex-col md:flex-row md:items-end gap-4">

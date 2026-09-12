@@ -1,3 +1,5 @@
+import { safeCommunityImage } from '@/lib/communities/share-preview';
+import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { isReservedTribeSlug, normalizeTribeSlug } from '@/lib/tribes/slug';
@@ -35,7 +37,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       is_member: membership?.status === 'active',
       user_role: membership?.role,
       user_status: membership?.status,
-      invite_code: membership?.role === 'leader' || membership?.role === 'admin' ? tribe.invite_code : null,
+      invite_code: (membership?.status === 'active' && (membership.role === 'leader' || membership.role === 'admin')) ? tribe.invite_code : null,
     },
   });
 }
@@ -54,21 +56,26 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
   if (!tribe) return NextResponse.json({ error: 'Tribe not found' }, { status: 404 });
 
-  const { data: membership, error: membershipError } = await supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
+  const { data: membership, error: membershipError } = await supabase.from('tribe_members').select('role, status').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
   if (membershipError && membershipError.code !== 'PGRST116') {
     console.error("Tribe membership fetch error:", membershipError);
     return NextResponse.json({ error: 'Failed to load membership' }, { status: 500 });
   }
-  const isAdmin = tribe.created_by === user.id || membership?.role === 'leader' || membership?.role === 'admin';
+  const isAdmin = tribe.created_by === user.id || (membership?.status === 'active' && (membership.role === 'leader' || membership.role === 'admin'));
   if (!isAdmin) return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
 
   const body = await request.json();
   const { name, description, access_type, cover_image_url, is_listed } = body;
 
-  // avatar_url lives inside the settings jsonb — merge, never clobber other keys
-  const settingsUpdate = 'avatar_url' in body
-    ? { settings: { ...(tribe.settings ?? {}), avatar_url: body.avatar_url || null } }
-    : {};
+  const mediaKeys = ['avatar_url','featured_photo_url'] as const;
+  for (const key of mediaKeys) {
+    if (body[key] && !safeCommunityImage(body[key])) return NextResponse.json({ error: 'Use an uploaded community image' },{status:400});
+  }
+  if (body.cover_image_url && !safeCommunityImage(body.cover_image_url)) return NextResponse.json({ error: 'Use an uploaded community image' },{status:400});
+  const settings = { ...(tribe.settings ?? {}) };
+  for (const key of mediaKeys) if (key in body) settings[key] = body[key] || null;
+  if (typeof body.cover_is_ai === 'boolean') settings.cover_is_ai = body.cover_is_ai;
+  const settingsUpdate = { settings };
 
   // Leaders may rename the URL. Unlike creation there's no auto-suffix — they asked
   // for this exact slug, so a clash is an error they need to see, not a silent rename.
@@ -109,6 +116,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Failed to update tribe" }, { status: 500 });
   }
 
+  revalidatePath(`/communities/${slug}`);
+  revalidatePath(`/tribes/${slug}`);
   return NextResponse.json({ tribe: updated });
 }
 
