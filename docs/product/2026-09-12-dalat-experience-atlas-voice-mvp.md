@@ -175,7 +175,7 @@ Where is the existing OpenRouter credential stored? Can the real account serve t
 
 ## 19. Implementation status and verification
 
-Work occurs in isolated branch `feat/experience-voice-mvp`, preserving unrelated main-checkout changes. Additive schema applied successfully through the established targeted SQL helper. Initial TypeScript and focused ESLint checks pass (intentional direct-image warnings; gated images must not be cached by an optimizer). Detailed browser/provider/deployment receipt is appended after verification. **At this draft point, production delivery and voice smoke test are not yet confirmed.**
+Work occurs in isolated branch `feat/experience-voice-mvp`, preserving unrelated main-checkout changes. Additive schema applied successfully through the established targeted SQL helper. Initial TypeScript and focused ESLint checks pass (intentional direct-image warnings; gated images must not be cached by an optimizer). The browser/provider/deployment receipts below distinguish the delivered manual journey from the still-blocked AI activation.
 
 ### Verification receipt (September 12)
 
@@ -195,4 +195,13 @@ Until then, tomorrow's usable fallback is **original photos + retained recording
 
 ### Committed release gate
 
-The feature was rebased onto current remote main without carrying unrelated, locally unlanded commits. The current repository guidance and service-worker changes were preserved; the next service-worker version is **1.0.29** (the application package is otherwise unversioned). A separate clean checkout with `npm ci` verified the committed tree: **126 test files / 791 tests passed**, all prebuild gates passed, and the production build passed. Media registration now rejects an ID belonging to another draft and retries its own registration without rewriting the original. Locale-aware draft creation defaults to the Đà Lạt calendar date, and captions can be edited manually. Production deployment is the next gate, not implied by these local results.
+The feature was rebased onto current remote main without carrying unrelated, locally unlanded commits. The current repository guidance and service-worker changes were preserved; the next service-worker version is **1.0.29** (the application package is otherwise unversioned). A separate clean checkout with `npm ci` verified the committed tree: **126 test files / 791 tests passed**, all prebuild gates passed, and the production build passed. Media registration now rejects an ID belonging to another draft and retries its own registration without rewriting the original. Locale-aware draft creation defaults to the Đà Lạt calendar date, and captions can be edited manually. The production receipt below records the subsequent deployment and live checks.
+
+
+### Production receipt (September 12, 2026)
+
+- Landed feature commit `3b5f032a` and verification documentation commit `28d53c067e3ad798b75a3cc1b274966a0585e2da` on main. Vercel deployment `dalat-r5lc74fbj-vibeyangs-projects.vercel.app` reached **Ready** with `https://dalat.app` assigned. Live `sw.js` reports **1.0.29**.
+- **Live entry:** https://dalat.app/experiences/new (sign in through the existing account flow). Existing users can also open Experiences from the menu.
+- Repeated the authenticated 390 × 844 journey against production with two distinct clearly labeled fixture photographs and browser test-device audio. Confirmed recording stop while offline, refresh recovery, direct uploads, retained notes after provider failure, editor image decode, manual edits, venue confirmation, explicit publication, anonymous public photo decode, profile/venue/category connections, private original/audio/transcript access, cross-draft media registration rejection, unpublish revocation and deletion. No browser runtime exceptions; temporary accounts/content/files removed.
+- Inspected production mobile screenshots of the entry, review editor and published page. Initial automation clicked before page hydration and missed navigation; allowing initialization resolved this without a server or data change. Physical iPhone/Safari remains untested.
+- **Delivered:** durable photo/recording capture and manual reviewed publication. **Not yet delivered:** a credentialed successful transcription/AI draft. The missing OpenRouter key remains the exact activation blocker described above; no provider smoke-test success or full AI-assisted readiness is claimed.
