@@ -27,7 +27,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
   const response = new ImageResponse(<div style={{width:'100%',height:'100%',display:'flex',background:'#18352e',color:'white'}}>
     <div style={{display:'flex',position:'relative',width:secondary.length?800:1200,height:630}}>
       {hero && <img src={hero.image} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />}
-      <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',justifyContent:'space-between',padding:44,background:'linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.08) 35%,rgba(0,0,0,0.8))'}}>
+      <div style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',display:'flex',flexDirection:'column',justifyContent:'space-between',padding:44,background:'linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.08) 35%,rgba(0,0,0,0.8))'}}>
         <div style={{fontSize:24}}>DaLat.app · Communities</div>
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
           <div style={{fontSize:58,fontWeight:700,lineHeight:1.08}}>{community.name.slice(0,85)}</div>
