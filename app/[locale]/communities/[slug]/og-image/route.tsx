@@ -36,7 +36,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
       </div>
     </div>
     {secondary.length>0 && <div style={{width:400,height:630,display:'flex',flexDirection:'column'}}>
-      {secondary.map(({ image, source },index)=><div key={index} style={{display:'flex',position:'relative',height:630/secondary.length,borderLeft:'6px solid #18352e',borderBottom:index===0&&secondary.length>1?'6px solid #18352e':undefined}}>
+      {secondary.map(({ image, source },index)=><div key={index} style={{display:'flex',position:'relative',height:630/secondary.length,borderLeft:'6px solid #18352e',borderBottom:index===0&&secondary.length>1?'6px solid #18352e':'0px solid transparent'}}>
         <img src={image} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
         {source===next?.image_url && <div style={{display:'flex',position:'absolute',bottom:0,left:0,right:0,background:'rgba(0,0,0,0.75)',fontSize:24,padding:18}}>{next.title.slice(0,85)}</div>}
       </div>)}
