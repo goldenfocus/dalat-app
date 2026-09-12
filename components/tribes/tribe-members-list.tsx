@@ -14,14 +14,17 @@ import type { TribeMember, Profile } from "@/lib/types";
 interface TribeMembersListProps {
   tribeSlug: string;
   isAdmin: boolean;
+  isOwner?: boolean;
 }
 
 type MemberWithProfile = TribeMember & { profiles: Profile };
 
-export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) {
+export function TribeMembersList({ tribeSlug, isAdmin, isOwner = false }: TribeMembersListProps) {
   const t = useTranslations("tribes");
   const router = useRouter();
   const [members, setMembers] = useState<MemberWithProfile[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [showBlocked, setShowBlocked] = useState(false);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showTransferModal, setShowTransferModal] = useState(false);
@@ -29,11 +32,11 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
 
   useEffect(() => {
     fetchMembers();
-  }, []);
+  }, [showBlocked]);
 
   async function fetchMembers() {
     setLoading(true);
-    const res = await fetch(`/api/tribes/${tribeSlug}/members`);
+    const res = await fetch(`/api/tribes/${tribeSlug}/members${isAdmin && showBlocked ? "?banned=true" : ""}`);
     if (res.ok) {
       const data = await res.json();
       setMembers(data.members || []);
@@ -44,23 +47,27 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
 
   async function handleRoleChange(userId: string, newRole: "member" | "admin" | "leader") {
     setProcessingId(userId);
-    await fetch(`/api/tribes/${tribeSlug}/members`, {
+    setError(null);
+    const res = await fetch(`/api/tribes/${tribeSlug}/members`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user_id: userId, role: newRole }),
     });
+    if (!res.ok) setError(t("memberActionFailed"));
     await fetchMembers();
     setProcessingId(null);
     router.refresh();
   }
 
-  async function handleBan(userId: string) {
+  async function handleBan(userId: string, unblock = false) {
     setProcessingId(userId);
-    await fetch(`/api/tribes/${tribeSlug}/members`, {
+    setError(null);
+    const res = await fetch(`/api/tribes/${tribeSlug}/members`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: userId, status: "banned" }),
+      body: JSON.stringify({ user_id: userId, status: unblock ? "active" : "banned" }),
     });
+    if (!res.ok) setError(t("memberActionFailed"));
     await fetchMembers();
     setProcessingId(null);
     router.refresh();
@@ -68,7 +75,9 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
 
   async function handleRemove(userId: string) {
     setProcessingId(userId);
-    await fetch(`/api/tribes/${tribeSlug}/members?user_id=${userId}`, { method: "DELETE" });
+    setError(null);
+    const res = await fetch(`/api/tribes/${tribeSlug}/members?user_id=${userId}`, { method: "DELETE" });
+    if (!res.ok) setError(t("memberActionFailed"));
     await fetchMembers();
     setProcessingId(null);
     router.refresh();
@@ -100,6 +109,8 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
 
   return (
     <>
+      {error && <p role="alert" className="text-sm text-destructive mb-3">{error}</p>}
+      {isAdmin && <Button variant="outline" size="sm" className="mb-3" onClick={()=>setShowBlocked(!showBlocked)} aria-pressed={showBlocked}>{t("showBlocked")}</Button>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {members.map((member) => (
           <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
@@ -114,11 +125,11 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
               <div className="flex items-center gap-1">
                 {roleIcon[member.role]}
                 <Badge variant={roleBadgeVariant[member.role]} className="text-xs">
-                  {t(member.role)}
+                  {member.status === "banned" ? t("blocked") : t(member.role)}
                 </Badge>
               </div>
             </div>
-            {isAdmin && member.role !== "leader" && (
+            {isAdmin && member.role !== "leader" && (isOwner || member.role === "member") && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -135,21 +146,21 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {member.role === "member" && (
+                  {isOwner && member.role === "member" && (
                     <DropdownMenuItem onClick={() => handleRoleChange(member.user_id, "admin")}>
                       <Shield className="w-4 h-4 mr-2" />
-                      Promote to Admin
+                      {t("promoteAdmin")}
                     </DropdownMenuItem>
                   )}
-                  {member.role === "admin" && (
+                  {isOwner && member.role === "admin" && (
                     <DropdownMenuItem onClick={() => handleRoleChange(member.user_id, "member")}>
                       <UserCheck className="w-4 h-4 mr-2" />
-                      Demote to Member
+                      {t("demoteMember")}
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => handleBan(member.user_id)} className="text-orange-600">
+                  <DropdownMenuItem onClick={() => handleBan(member.user_id, member.status === "banned")} className="text-orange-600">
                     <Ban className="w-4 h-4 mr-2" />
-                    {t("banMember")}
+                    {member.status === "banned" ? t("unblockMember") : t("banMember")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleRemove(member.user_id)} className="text-destructive">
                     <UserMinus className="w-4 h-4 mr-2" />
@@ -170,7 +181,7 @@ export function TribeMembersList({ tribeSlug, isAdmin }: TribeMembersListProps) 
         </p>
       )}
 
-      {isAdmin && (
+      {isOwner && (
         <div className="mt-4">
           <Button
             variant="outline"

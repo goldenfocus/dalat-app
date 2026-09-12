@@ -17,6 +17,10 @@ export async function POST(request: Request, { params }: RouteParams) {
     p_message: typeof body.message === 'string' ? body.message : null,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: error.code === '42501' ? 403 : 400 });
+  if (data.status === 'joined' && typeof body.visit_id === 'string' && /^[0-9a-f-]{36}$/i.test(body.visit_id)) {
+    const {data: community}=await supabase.from('tribes').select('id').eq('slug',slug).maybeSingle();
+    if(community)await supabase.rpc('complete_community_visit',{p_visit_id:body.visit_id,p_community_id:community.id});
+  }
   return NextResponse.json(data);
 }
 

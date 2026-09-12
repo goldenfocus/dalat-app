@@ -6,6 +6,7 @@ import { locales } from '@/lib/i18n/locales';
 import { z } from 'zod';
 const schema = z.object({
   kind: z.enum(['community', 'event', 'profile']), slug: z.string().min(1).max(180),
+  visitId: z.uuid().optional(),
   inviteCode: z.string().max(64).optional(), joinCommunity: z.boolean().optional(),
   locale: z.enum(locales).default('en'),
 });
@@ -40,7 +41,9 @@ export async function POST(request: Request) {
   const tokenHash = createHash('sha256').update(secret).digest('hex');
   const admin = serviceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
   await admin.from('signup_intents').delete().lt('expires_at',new Date().toISOString());
+  const { data: visit } = body.visitId && communityId ? await admin.from("community_visits").select("id").eq("id",body.visitId).eq("community_id",communityId).maybeSingle() : { data: null };
   const { data, error } = await admin.from('signup_intents').insert({
+    visit_id: visit?.id || null,
     kind: body.kind, target_id: targetId, community_id: communityId, inviter_id: inviterId,
     join_community: body.kind === 'community' || !!body.joinCommunity,
     invite_code: body.inviteCode || null, token_hash: tokenHash, next_path: next, label, locale: body.locale,

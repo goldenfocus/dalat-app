@@ -9,6 +9,7 @@ import type { Profile, Organizer, Locale } from "@/lib/types";
 import { getTranslationsWithFallback } from "@/lib/translations";
 
 interface PageProps {
+  searchParams?: Promise<Record<string,string|string[]|undefined>>;
   params: Promise<{ slug: string; locale: string }>;
 }
 
@@ -230,7 +231,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function UnifiedSlugPage({ params }: PageProps) {
+export default async function UnifiedSlugPage({ params, searchParams }: PageProps) {
   const { slug: rawSlug, locale } = await params;
   // Handle @ prefix (for profile URLs like /@username)
   const slug = decodeURIComponent(rawSlug).replace(/^@/, "").toLowerCase();
@@ -249,7 +250,10 @@ export default async function UnifiedSlugPage({ params }: PageProps) {
     const db = await createClient();
     const { data: community } = await db.from("tribes").select("slug").eq("id", resolution.entity_id).maybeSingle();
     if (!community) notFound();
-    redirect(`/${locale}/communities/${community.slug}`);
+    const incoming = await searchParams;
+    const tags = new URLSearchParams();
+    for (const key of ["utm_source", "utm_campaign"]) if (typeof incoming?.[key] === "string") tags.set(key, incoming[key]);
+    redirect(`/${locale}/communities/${community.slug}${tags.size ? `?${tags}` : ""}`);
   }
 
   // Handle redirects (non-primary slugs that should redirect to canonical)

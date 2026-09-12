@@ -1,5 +1,6 @@
 "use client";
 
+import { trackCommunityActivity, currentCommunityVisit } from "@/lib/communities/activity";
 import { startSignupIntent } from "@/lib/auth/start-intent";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -55,6 +56,7 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
 
   // Handle join action
   async function handleJoin(inviteCode?: string) {
+    await trackCommunityActivity(tribe.slug, "join_click");
     if (!isAuthenticated) {
       setSubmitting(true);
       try { await startSignupIntent({ kind: "community", slug: tribe.slug, inviteCode }); }
@@ -69,7 +71,7 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
       const res = await fetch(`/api/tribes/${tribe.slug}/membership`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invite_code: inviteCode, message: message.trim() || null }),
+        body: JSON.stringify({ invite_code: inviteCode, message: message.trim() || null, visit_id: currentCommunityVisit(tribe.slug)?.id }),
       });
 
       const data = await res.json();

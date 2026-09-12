@@ -76,6 +76,8 @@ export async function GET(request: Request, { params }: RouteParams) {
     });
   }
 
+  if (includeBanned && !(tribe.created_by === user?.id || (viewerMembership?.status === "active" && ["leader","admin"].includes(viewerMembership.role)))) return NextResponse.json({error:"Not authorized"},{status:403});
+
   let query = supabase
     .from('tribe_members')
     .select(`*, profiles:user_id(id, display_name, avatar_url, username)`)

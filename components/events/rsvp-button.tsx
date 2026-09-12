@@ -1,5 +1,6 @@
 "use client";
 
+import { currentCommunityVisit } from "@/lib/communities/activity";
 import { startSignupIntent } from "@/lib/auth/start-intent";
 import { useCommunityRsvp, CommunityRsvpChoice } from "./community-rsvp";
 import { useState, useTransition, createContext, useContext, useEffect, useRef, useCallback } from "react";
@@ -130,7 +131,7 @@ export function useRsvpActions(
   async function handleRsvp() {
     if (!isLoggedIn) {
       setError(null);
-      try { await startSignupIntent({ kind: "event", slug: communityContext.eventSlug || window.location.pathname.split("/").pop()!, joinCommunity: communityContext.join }); }
+      try { await startSignupIntent({ kind: "event", slug: communityContext.eventSlug || window.location.pathname.split("/").pop()!, joinCommunity: communityContext.join, communitySlug: communityContext.community?.slug }); }
       catch { setError("Could not continue. Please try again."); }
       return;
     }
@@ -167,6 +168,13 @@ export function useRsvpActions(
 
         if (communityContext.join && communityContext.community) {
           const { error: joinError } = await supabase.rpc("join_community", { p_slug: communityContext.community.slug });
+          if (!joinError) {
+            const visit = currentCommunityVisit(communityContext.community.slug);
+            if (visit) {
+              const { data: community } = await supabase.from("tribes").select("id").eq("slug",communityContext.community.slug).maybeSingle();
+              if (community) await supabase.rpc("complete_community_visit",{p_visit_id:visit.id,p_community_id:community.id});
+            }
+          }
           if (joinError) setError("Your RSVP is saved. Community membership could not be completed; you can retry on the community page.");
         }
         const rsvpId = data?.rsvp_id;

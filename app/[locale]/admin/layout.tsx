@@ -65,7 +65,9 @@ export default async function AdminLayout({
   const t = await getTranslations("admin");
 
   // Build nav items based on role (using icon names for serialization)
+  const communityT = await getTranslations("tribes");
   const navItems = [
+    { href: "/admin/communities", label: communityT("insights"), icon: "Users", show: isAdmin },
     { href: "/admin", label: t("navDashboard"), icon: "LayoutDashboard", show: true },
     {
       href: "/admin/homepage",

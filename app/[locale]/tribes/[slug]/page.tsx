@@ -1,3 +1,4 @@
+import { CommunityActivity } from "@/components/tribes/community-activity";
 import { CommunityActionNotice } from "@/components/events/community-rsvp";
 import { CommunityNextEvent } from "@/components/tribes/community-next-event";
 import { isUpcomingGathering } from "@/lib/communities/share-preview";
@@ -113,11 +114,13 @@ export default async function TribePage({ params, searchParams }: PageProps) {
     supabase.rpc("get_tribe_moment_count", { p_tribe_id: tribe.id }),
   ]);
 
+  const { data: siteAdmin } = user ? await supabase.rpc("is_admin") : { data: false };
   const nextEvent = events?.find(e => isUpcomingGathering(e));
   const groups = (momentGroups ?? []) as EventMomentsGroup[];
 
   return (
     <main className="min-h-screen">
+      <CommunityActivity slug={slug} />
       <TribeHeader
         tribe={clientTribe}
         membership={membership}
@@ -126,6 +129,7 @@ export default async function TribePage({ params, searchParams }: PageProps) {
         momentCount={momentCount ?? 0}
       />
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {(isAdmin || siteAdmin) && <Link href={`/communities/${slug}/insights`} className="inline-flex rounded-lg border px-4 py-2 text-sm font-medium">{t("insights")}</Link>}
         <CommunityActionNotice status={(await searchParams).communityStatus === 'joined' && membership ? 'joined' : (await searchParams).communityStatus === 'requested' && pendingRequest ? 'requested' : undefined} />
         {!membership && <JoinTribeButton tribe={clientTribe} pendingRequest={pendingRequest} isAuthenticated={!!user} />}
         {nextEvent && <CommunityNextEvent event={nextEvent} locale={locale} communitySlug={slug} />}
@@ -158,7 +162,7 @@ export default async function TribePage({ params, searchParams }: PageProps) {
           // Discoverable tribes show their roster to everyone — seeing who runs
           // a tribe and who's in it is the whole reason to join one. invite_only
           // and secret tribes stay members-only.
-          membersSlot={(membership || isDiscoverable) ? <TribeMembersList tribeSlug={slug} isAdmin={isAdmin} /> : undefined}
+          membersSlot={(membership || isDiscoverable) ? <TribeMembersList tribeSlug={slug} isAdmin={isAdmin} isOwner={tribe.created_by === user?.id} /> : undefined}
         />
       </div>
     </main>
