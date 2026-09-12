@@ -1,3 +1,4 @@
+import { ExperienceList } from "@/components/experiences/list";
 import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
@@ -650,6 +651,7 @@ export default async function VenuePage({ params }: PageProps) {
         ) : null}
 
         {/* Community Photos Section */}
+        <ExperienceList venueId={venue.id} />
         <VenueCommunityPhotos venueId={venue.id} locale={locale} />
 
         {/* Hours Section */}

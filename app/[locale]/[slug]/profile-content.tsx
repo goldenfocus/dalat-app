@@ -1,3 +1,4 @@
+import { ExperienceList } from "@/components/experiences/list";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { Calendar, Play } from "lucide-react";
@@ -430,6 +431,7 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
       </div>
 
       {/* Tribes this user belongs to (public/listed only) */}
+      <ExperienceList authorId={profile.id} />
       <ProfileTribes userId={profile.id} />
 
       {/* User Moments Timeline */}

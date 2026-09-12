@@ -1,3 +1,4 @@
+import { ExperienceList } from "@/components/experiences/list";
 import { Link } from "@/lib/i18n/routing";
 import {
   Calendar,
@@ -674,6 +675,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         ) : null}
 
         {/* Community Photos Section */}
+        <ExperienceList venueId={venue.id} />
         <VenueCommunityPhotos venueId={venue.id} locale={locale} />
 
         {/* Hours Section */}

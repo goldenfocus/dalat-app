@@ -108,6 +108,7 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
             <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover/profile:opacity-100 transition-opacity" />
           </Link>
         </div>
+        <DropdownMenuItem asChild><Link href="/experiences">{t("experiences")}</Link></DropdownMenuItem>
         <DropdownMenuSeparator />
 
         {/* Profile settings */}
