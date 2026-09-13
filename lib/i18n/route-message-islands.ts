@@ -149,7 +149,7 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
     // useTranslations("invite"). Without it registered here the chip input
     // renders raw keys — and only once the modal is opened, which no prebuild
     // guard can catch.
-    namespaces: ["tribes", "invite", "rsvpCelebration", "calendar"],
+    namespaces: ["feed", "tribes", "invite", "rsvpCelebration", "calendar"],
   },
   {
     test: (p) => inSection(p, "profile"),

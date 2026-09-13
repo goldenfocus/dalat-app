@@ -168,7 +168,7 @@ export function TribeHeader({ tribe, membership, isAdmin, canViewInsights = isAd
                 </div>
               )}
 
-              {membership && (
+              {membership && membership.role !== "member" && (
                 <Badge variant="secondary" className="mt-3">
                   {t(membership.role)}
                 </Badge>

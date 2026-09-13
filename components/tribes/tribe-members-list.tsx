@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Link } from "@/lib/i18n/routing";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2, MoreVertical, Crown, Shield, UserMinus, Ban, UserCheck } from "lucide-react";
@@ -39,7 +40,10 @@ export function TribeMembersList({ tribeSlug, isAdmin, isOwner = false }: TribeM
     const res = await fetch(`/api/tribes/${tribeSlug}/members${isAdmin && showBlocked ? "?banned=true" : ""}`);
     if (res.ok) {
       const data = await res.json();
-      setMembers(data.members || []);
+      const rank: Record<string, number> = { leader: 0, admin: 1, member: 2 };
+      setMembers([...(data.members || [])].sort((a: MemberWithProfile, b: MemberWithProfile) =>
+        (rank[a.role] ?? 2) - (rank[b.role] ?? 2) || Date.parse(a.joined_at) - Date.parse(b.joined_at)
+      ));
       setTotal(data.total ?? data.members?.length ?? 0);
     }
     setLoading(false);
@@ -114,6 +118,7 @@ export function TribeMembersList({ tribeSlug, isAdmin, isOwner = false }: TribeM
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {members.map((member) => (
           <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+            <Link href={`/${member.profiles.username || member.user_id}`} className="flex min-w-0 flex-1 items-center gap-3 rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Avatar className="w-10 h-10">
               <AvatarImage src={member.profiles.avatar_url || undefined} />
               <AvatarFallback>{member.profiles.display_name?.charAt(0) || "?"}</AvatarFallback>
@@ -122,13 +127,14 @@ export function TribeMembersList({ tribeSlug, isAdmin, isOwner = false }: TribeM
               <p className="font-medium truncate">
                 {member.profiles.display_name || member.profiles.username || "Unknown"}
               </p>
-              <div className="flex items-center gap-1">
+              {(member.role !== "member" || member.status === "banned") && <div className="flex items-center gap-1">
                 {roleIcon[member.role]}
                 <Badge variant={roleBadgeVariant[member.role]} className="text-xs">
                   {member.status === "banned" ? t("blocked") : t(member.role)}
                 </Badge>
-              </div>
+              </div>}
             </div>
+            </Link>
             {isAdmin && member.role !== "leader" && (isOwner || member.role === "member") && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

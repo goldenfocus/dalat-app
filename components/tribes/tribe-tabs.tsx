@@ -57,7 +57,7 @@ export function TribeTabs({ momentsSlot, eventsSlot, membersSlot }: TribeTabsPro
                 aria-selected={isActive}
                 onClick={() => { setActive(tab.key); const url = new URL(window.location.href); url.hash = tab.key; window.history.replaceState(window.history.state, "", url); }}
                 className={`
-                  scroll-mt-28 flex-1 flex items-center justify-center gap-2 px-3 py-3.5
+                  scroll-mt-28 min-w-0 flex-1 flex items-center justify-center gap-1 px-1 sm:gap-2 sm:px-3 py-3.5
                   text-sm font-medium border-b-2 -mb-px
                   transition-colors touch-manipulation active:scale-[0.98]
                   ${isActive
