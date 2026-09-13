@@ -71,12 +71,13 @@ export function FloatingRsvpBar({
     setShowQuestionnaire(true);
   }, []);
 
-  const { isPending, handleRsvp, handleCancel, performRsvp, hasActiveQuestionnaire } = useRsvpActions(
+  const { isPending, confirmedStatus, handleRsvp, handleCancel, performRsvp, hasActiveQuestionnaire } = useRsvpActions(
     eventId,
     isLoggedIn,
     handleCelebrationTrigger,
     questionnaire,
-    handleShowQuestionnaire
+    handleShowQuestionnaire,
+    currentRsvp?.status
   );
 
   // Handle questionnaire submission
@@ -96,9 +97,10 @@ export function FloatingRsvpBar({
 
   const isPast = isEventPast(startsAt, endsAt);
   const isFull = capacity ? goingSpots >= capacity : false;
-  const isGoing = currentRsvp?.status === "going";
-  const isWaitlist = currentRsvp?.status === "waitlist";
-  const isInterested = currentRsvp?.status === "interested";
+  const status = confirmedStatus === undefined ? currentRsvp?.status : confirmedStatus;
+  const isGoing = status === "going";
+  const isWaitlist = status === "waitlist";
+  const isInterested = status === "interested";
 
   // Don't show for past events
   if (isPast) {
