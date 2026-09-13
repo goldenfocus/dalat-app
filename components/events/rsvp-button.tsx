@@ -1,4 +1,5 @@
 "use client";
+import { prepareCelebrationAudio } from "@/lib/communities/celebration-audio";
 
 import { currentCommunityVisit } from "@/lib/communities/activity";
 import { startSignupIntent } from "@/lib/auth/start-intent";
@@ -129,6 +130,7 @@ export function useRsvpActions(
     questionnaire.questions.length > 0;
 
   async function handleRsvp() {
+    prepareCelebrationAudio();
     if (!isLoggedIn) {
       setError(null);
       try { await startSignupIntent({ kind: "event", slug: communityContext.eventSlug || window.location.pathname.split("/").pop()!, joinCommunity: communityContext.join, communitySlug: communityContext.community?.slug }); }
@@ -337,6 +339,16 @@ export function RsvpButton({
       window.history.replaceState(null, "", url);
     }
   }, [isLoggedIn, hasActiveQuestionnaire, currentRsvp, startsAt, endsAt]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (isLoggedIn && currentRsvp?.status === "going" && url.searchParams.get("rsvpStatus") === "going") {
+      url.searchParams.delete("rsvpStatus");
+      window.history.replaceState(window.history.state, "", url);
+      setShowCelebration(true);
+      celebration.setCelebrating(true);
+    }
+  }, [isLoggedIn, currentRsvp?.status, celebration]);
 
   // Handle questionnaire submission
   const handleQuestionnaireSubmit = useCallback(async (responses: Record<string, string | string[]>) => {

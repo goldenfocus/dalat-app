@@ -130,7 +130,7 @@ export default async function TribePage({ params, searchParams }: PageProps) {
       />
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {(isAdmin || siteAdmin) && <Link href={`/communities/${slug}/insights`} className="inline-flex rounded-lg border px-4 py-2 text-sm font-medium">{t("insights")}</Link>}
-        <CommunityActionNotice status={(await searchParams).communityStatus === 'joined' && membership ? 'joined' : (await searchParams).communityStatus === 'requested' && pendingRequest ? 'requested' : undefined} />
+        <CommunityActionNotice community={{slug: tribe.slug, name: tribe.name}} status={(await searchParams).communityStatus === 'joined' && membership ? 'joined' : (await searchParams).communityStatus === 'requested' && pendingRequest ? 'requested' : undefined} />
         {!membership && <JoinTribeButton tribe={clientTribe} pendingRequest={pendingRequest} isAuthenticated={!!user} />}
         {nextEvent && <CommunityNextEvent event={nextEvent} locale={locale} communitySlug={slug} />}
         <TribeTabs

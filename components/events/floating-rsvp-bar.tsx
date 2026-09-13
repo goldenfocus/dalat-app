@@ -106,12 +106,12 @@ export function FloatingRsvpBar({
   }
 
   // Hide during celebration
-  if (celebration.isCelebrating) {
+  if (celebration.isCelebrating && !showCelebration) {
     return null;
   }
 
   // Hide when sidebar RSVP card is visible (no need for duplicate buttons)
-  if (celebration.isRsvpCardVisible) {
+  if (celebration.isRsvpCardVisible && !showCelebration) {
     return null;
   }
 
@@ -195,7 +195,7 @@ export function FloatingRsvpBar({
           onComplete={handleCelebrationComplete}
         />
       )}
-      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 lg:hidden">
+      <div hidden={showCelebration} className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 lg:hidden">
         <div className="mx-4 mb-2 bg-background rounded-xl">
           {!isGoing && !isWaitlist && <CommunityRsvpChoice id="floating-join-community" />}
           <div className="bg-background/95 backdrop-blur-sm border rounded-xl shadow-lg px-4 py-3 flex items-center justify-between gap-3">

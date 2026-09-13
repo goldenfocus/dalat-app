@@ -37,9 +37,9 @@ export async function GET(request: Request) {
     });
   }
   const destination = new URL(localizedPath(safeReturnPath(data.next_path),locale),url.origin);
-  if (data.community_status) destination.searchParams.set('communityStatus',data.community_status);
+  if (data.just_completed && data.community_status) destination.searchParams.set('communityStatus',data.community_status);
   if (data.rsvp_pending) destination.searchParams.set('resumeRsvp','1');
-  if (data.rsvp_status) destination.searchParams.set('rsvpStatus',data.rsvp_status);
+  if (data.just_completed && data.rsvp_status) destination.searchParams.set('rsvpStatus',data.rsvp_status);
   const response = NextResponse.redirect(destination);
   // Keep the browser binding until expiry so callback replay remains harmless and useful.
   response.headers.set('Cache-Control','private, no-store');

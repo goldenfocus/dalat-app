@@ -1,6 +1,7 @@
 'use client';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { RsvpCelebration } from './rsvp-celebration';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 interface Community { slug: string; name: string }
@@ -19,9 +20,18 @@ export function CommunityRsvpChoice({ id = 'also-join-community' }: { id?: strin
     <Label htmlFor={id} className="text-sm leading-relaxed cursor-pointer">{t('alsoJoin',{name:community.name})}</Label>
   </div>;
 }
-export function CommunityActionNotice({ status }: { status?: string }) {
+export function CommunityActionNotice({ status, community }: { status?: string; community?: Community }) {
   const t=useTranslations('tribes');
+  const [celebrate, setCelebrate] = useState(false);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (community && status === 'joined' && url.searchParams.get('communityStatus') === 'joined') {
+      url.searchParams.delete('communityStatus');
+      window.history.replaceState(window.history.state, '', url);
+      setCelebrate(true);
+    }
+  }, [status, community]);
   const keys: Record<string,string>={joined:'joinSuccess',requested:'pendingRequest',failed:'rsvpJoinFailed'};
   if (!status || !keys[status]) return null;
-  return <p role="status" className="rounded-lg border p-4 text-sm">{t(keys[status])}</p>;
+  return <>{celebrate && community && <RsvpCelebration kind="community" eventUrl={`${window.location.origin}/communities/${community.slug}`} eventTitle={community.name} eventDescription={null} startsAt="" onComplete={() => setCelebrate(false)} />}<p role="status" className="rounded-lg border p-4 text-sm">{t(keys[status])}</p></>;
 }
