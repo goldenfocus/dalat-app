@@ -1,7 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { autofill, restoreAutofill } from "@/lib/experiences/autofill";
-import { publicationReady } from "@/lib/experiences/publication";
+import { needsPeopleReminder } from "@/lib/experiences/sensitive-media";
+import {
+  publicationReady,
+  confirmPublication,
+} from "@/lib/experiences/publication";
+import { AttributedText } from "./attributed-text";
 import { LiveInterview } from "./live-interview";
 import { recordingMime } from "@/lib/experiences/recording";
 import type { LiveTurn } from "@/lib/experiences/live-schema";
@@ -44,6 +49,7 @@ type Pending = {
 };
 type Recovery = { story: Story; notes: string; pending: Pending[] };
 export type InitialExperienceData = {
+  username?: string | null;
   story: Story;
   notes: string;
   transcript: string;
@@ -52,7 +58,12 @@ export type InitialExperienceData = {
   media: Media[];
   published: boolean;
   conversation: LiveTurn[];
-  photoHints?: { venues: Venue[]; hasLocation: boolean; date: string | null };
+  photoHints?: {
+    venues: Venue[];
+    hasLocation: boolean;
+    date: string | null;
+    basis?: string;
+  };
 };
 type Venue = { id: string; name: string; address: string };
 function PendingPhoto({ blob, alt }: { blob: Blob; alt: string }) {
@@ -744,7 +755,12 @@ export function ExperienceEditor({
               <h3 className="text-xl font-semibold">
                 {story.title || t.draft}
               </h3>
-              <p className="whitespace-pre-wrap">{story.narrative}</p>
+              <p className="whitespace-pre-wrap">
+                <AttributedText
+                  text={story.narrative}
+                  username={initial.username}
+                />
+              </p>
               <p className="text-sm text-muted-foreground">
                 {t[story.category]} · {story.visit_date}
               </p>
@@ -782,7 +798,9 @@ export function ExperienceEditor({
             )}
             {!!photoHints?.venues.length && !story.venue_confirmed && (
               <div className="rounded-xl border p-4 space-y-2">
-                <p>{t.photoPlaces}</p>
+                <p>
+                  {photoHints.basis === "name" ? t.namePlaces : t.photoPlaces}
+                </p>
                 {photoHints.venues.map((v) => (
                   <Button
                     variant="outline"
@@ -810,15 +828,6 @@ export function ExperienceEditor({
                   <p className="text-sm text-muted-foreground">
                     {story.venue_address}
                   </p>
-                )}
-                {!story.venue_confirmed && (
-                  <Button
-                    className="w-full"
-                    variant="outline"
-                    onClick={() => field("venue_confirmed", true)}
-                  >
-                    {t.confirmPlaceAction}
-                  </Button>
                 )}
                 <Button
                   variant="ghost"
@@ -932,7 +941,7 @@ export function ExperienceEditor({
                 onClick={() =>
                   run(t.searching, async () => {
                     const r = await api(
-                      `/api/venues/search?q=${encodeURIComponent(story.venue_name)}`,
+                      `/api/experiences/venues?q=${encodeURIComponent(story.venue_name)}`,
                     );
                     setVenues(r.venues);
                     if (!r.venues.length) setMessage(t.pendingVenue);
@@ -983,15 +992,6 @@ export function ExperienceEditor({
                   {t.pendingVenue}
                 </p>
               )}
-              <label className="flex gap-3 items-start py-2">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-5 w-5 shrink-0"
-                  checked={story.venue_confirmed}
-                  onChange={(e) => field("venue_confirmed", e.target.checked)}
-                />
-                {t.confirmVenue}
-              </label>
               {story.photos
                 .filter((p) => story.selected_media.includes(p.id))
                 .map((p) => (
@@ -1070,6 +1070,23 @@ export function ExperienceEditor({
             </fieldset>
           </details>
           <section hidden={!reviewing} className="space-y-4">
+            {story.selected_media.length > 0 &&
+              needsPeopleReminder(
+                [
+                  story.title,
+                  story.narrative,
+                  ...story.tags,
+                  ...story.photos.map((p) => p.alt + " " + p.caption),
+                ].join(" "),
+              ) && (
+                <aside className="rounded-xl border p-4 text-sm space-y-2">
+                  <p className="font-medium">{t.peopleReminderTitle}</p>
+                  <p>{t.peopleReminder}</p>
+                  <Button variant="outline" onClick={() => setReviewing(false)}>
+                    {t.reviewPhotos}
+                  </Button>
+                </aside>
+              )}
             <p className="text-sm text-muted-foreground">{t.publishConsent}</p>
             <p className="text-sm text-muted-foreground">{t.publishNotice}</p>
             <div className="flex gap-3">
@@ -1091,10 +1108,7 @@ export function ExperienceEditor({
                 disabled={!!busy || recording || liveActive}
                 onClick={() =>
                   run(t.publishing, async () => {
-                    const reviewed = {
-                      ...latest.current.story,
-                      permission_confirmed: true,
-                    };
+                    const reviewed = confirmPublication(latest.current.story);
                     if (
                       !publicationReady(
                         reviewed,

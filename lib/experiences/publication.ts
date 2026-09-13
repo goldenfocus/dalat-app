@@ -12,3 +12,12 @@ export function publicationReady(
     story.visit_date <= today
   );
 }
+
+// Called only by the explicit Publish action after showing the generated preview.
+export function confirmPublication(story: z.infer<typeof saveSchema>) {
+  return {
+    ...story,
+    permission_confirmed: true,
+    venue_confirmed: !!(story.venue_id || story.venue_name.trim()),
+  };
+}

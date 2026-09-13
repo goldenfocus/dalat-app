@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 export function StartExperience({
   label,
   errorLabel,
+  from,
 }: {
   label: string;
   errorLabel: string;
+  from?: string;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -26,7 +28,7 @@ export function StartExperience({
             const r = await fetch("/api/experiences", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ locale }),
+              body: JSON.stringify({ locale, ...(from ? { from } : {}) }),
             });
             if (!r.ok) throw Error();
             const { id } = await r.json();

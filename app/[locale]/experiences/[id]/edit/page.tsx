@@ -18,18 +18,26 @@ export default async function EditExperience({
     getMessages(),
   ]);
   if (!owned) notFound();
-  const [{ data: source }, { data: media }] = await Promise.all([
-    owned.db
-      .from("experience_sources")
-      .select("notes,transcript,optional_question,generation,live_conversation")
-      .eq("experience_id", id)
-      .single(),
-    owned.db
-      .from("experience_media")
-      .select("id,kind,mime,preview_path,capture_mode")
-      .eq("experience_id", id)
-      .order("created_at"),
-  ]);
+  const [{ data: source }, { data: media }, { data: profile }] =
+    await Promise.all([
+      owned.db
+        .from("experience_sources")
+        .select(
+          "notes,transcript,optional_question,generation,live_conversation",
+        )
+        .eq("experience_id", id)
+        .single(),
+      owned.db
+        .from("experience_media")
+        .select("id,kind,mime,preview_path,capture_mode")
+        .eq("experience_id", id)
+        .order("created_at"),
+      owned.db
+        .from("profiles")
+        .select("username")
+        .eq("id", owned.user.id)
+        .maybeSingle(),
+    ]);
   const suggestion = storySchema.safeParse(source?.generation?.story);
   return (
     <ExperienceEditor
@@ -38,6 +46,7 @@ export default async function EditExperience({
       }
       aiAvailable={!!process.env.OPENROUTER_API_KEY?.trim()}
       initial={{
+        username: profile?.username || null,
         story: saveSchema.parse(owned.experience),
         notes: source?.notes || "",
         transcript: source?.transcript || "",

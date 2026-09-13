@@ -1,3 +1,5 @@
+import { AttributedText } from "@/components/experiences/attributed-text";
+import { attributedPlainText } from "@/lib/experiences/attribution";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -94,7 +96,7 @@ export default async function ExperiencePage({ params }: Props) {
     "@type": "Article",
     headline: e.title,
     description: e.summary,
-    articleBody: e.narrative,
+    articleBody: attributedPlainText(e.narrative, author?.username),
     inLanguage: e.original_language,
     datePublished: e.published_at,
     dateModified: e.updated_at,
@@ -133,18 +135,69 @@ export default async function ExperiencePage({ params }: Props) {
         <h1 className="text-3xl sm:text-5xl leading-tight font-semibold tracking-tight">
           {e.title || t("draft")}
         </h1>
-        <p className="text-lg text-muted-foreground">{e.summary}</p>
+        <p className="text-lg text-muted-foreground">
+          <AttributedText text={e.summary} username={author?.username} />
+        </p>
         <p className="text-sm">
           {t("by")}{" "}
           <Link
             className="underline"
             href={`/${author?.username || e.author_id}`}
           >
-            {author?.display_name || author?.username || t("by")}
+            {author?.username
+              ? `@${author.username}`
+              : author?.display_name || t("by")}
           </Link>{" "}
           · {t("visited")} <time dateTime={e.visit_date}>{e.visit_date}</time>
         </p>
       </header>
+      {e.status === "published" && (
+        <section
+          className="rounded-2xl border bg-muted/30 p-5 space-y-3"
+          aria-label={t("canDoToo")}
+        >
+          <h2 className="text-xl font-semibold">{t("canDoToo")}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t("availabilityUnknown")}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {venue?.slug ? (
+              <Link
+                className="rounded-xl bg-primary px-4 py-3 text-primary-foreground"
+                href={`/${venue.slug}`}
+              >
+                {t("exploreVenue")}
+              </Link>
+            ) : e.category === "culture" ? (
+              <Link
+                className="rounded-xl bg-primary px-4 py-3 text-primary-foreground"
+                href="/events/upcoming"
+              >
+                {t("upcomingActions")}
+              </Link>
+            ) : null}
+            <Link
+              className="rounded-xl border px-4 py-3"
+              href={`/experiences/new?from=${id}`}
+            >
+              {e.venue_id ? t("experiencedToo") : t("newExperience")}
+            </Link>
+            {author?.username && (
+              <Link
+                className="min-h-11 py-3 underline"
+                href={`/${author.username}`}
+              >
+                {t("moreCreator")}
+              </Link>
+            )}
+          </div>
+        </section>
+      )}
+      {story.selected_media.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {t("datedEvidence")} · {e.visit_date}
+        </p>
+      )}
       {story.selected_media.map((m, i) => {
         const photo = story.photos.find((p) => p.id === m);
         return (
@@ -168,7 +221,7 @@ export default async function ExperiencePage({ params }: Props) {
         lang={e.original_language}
         className="whitespace-pre-wrap text-lg leading-relaxed"
       >
-        {e.narrative}
+        <AttributedText text={e.narrative} username={author?.username} />
       </article>
       {!!e.venue_name && (
         <section className="rounded-2xl border p-5 space-y-3">
@@ -203,16 +256,21 @@ export default async function ExperiencePage({ params }: Props) {
               <p className="text-xs text-muted-foreground">
                 {t(o.source_type)}
               </p>
-              <p>{o.value}</p>
+              <p>
+                <AttributedText text={o.value} username={author?.username} />
+              </p>
               <p className="text-sm text-muted-foreground">
-                {o.context} · {e.visit_date}
+                <AttributedText text={o.context} username={author?.username} />{" "}
+                · {e.visit_date}
               </p>
             </div>
           ))}
         </section>
       )}
       <footer className="border-t pt-5 space-y-3 text-sm text-muted-foreground">
-        <p>{t("provenance")}</p>
+        <p>
+          <AttributedText text={t("provenance")} username={author?.username} />
+        </p>
         {e.sponsorship && (
           <p>
             {t("sponsorship")}: {e.sponsorship}

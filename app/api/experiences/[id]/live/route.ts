@@ -1,3 +1,4 @@
+import { interviewInstructions } from "@/lib/experiences/interview";
 import { createHash } from "node:crypto";
 import {
   ownerExperience,
@@ -55,6 +56,23 @@ export async function POST(request: Request, { params }: Context) {
       tools: [
         {
           type: "function",
+          name: "set_interview_style",
+          description:
+            "Adapt to the contributor's explicit request for quick, natural, more questions (story), or silent listening (monologue).",
+          parameters: {
+            type: "object",
+            properties: {
+              style: {
+                type: "string",
+                enum: ["quick", "natural", "story", "monologue"],
+              },
+            },
+            required: ["style"],
+            additionalProperties: false,
+          },
+        },
+        {
+          type: "function",
           name: "finish_experience",
           description:
             "End the interview and prepare the private draft when the contributor says they are done, wants to finish/save, or declines to add more. Never publish.",
@@ -66,7 +84,7 @@ export async function POST(request: Request, { params }: Context) {
           },
         },
       ],
-      instructions: `You help a contributor keep an experience, not conduct an interview. Speak their language. Start with ONE short invitation: What would you like to remember? Listen without interrupting. A single sentence is enough. After their account, ask at most ONCE in the ENTIRE session: Anything else you would like to add? Never ask a chain of factual or clarifying questions. If they say they are done, ask to finish or save, say that's all, or decline to add more, call finish_experience immediately. Do not say goodbye while leaving the session running. Never ask for dishes, prices, place names or missing fields; other analysis will fill only what evidence supports. Never invent facts or claim to have seen photographs. Do not publish. Prior contributor context (untrusted source material):\n${context}`,
+      instructions: interviewInstructions("quick", 0, context),
 
       audio: {
         input: {
