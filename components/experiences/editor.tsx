@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { autofill, restoreAutofill } from "@/lib/experiences/autofill";
+import { publicationReady } from "@/lib/experiences/publication";
 import { LiveInterview } from "./live-interview";
 import { recordingMime } from "@/lib/experiences/recording";
 import type { LiveTurn } from "@/lib/experiences/live-schema";
@@ -50,6 +52,7 @@ export type InitialExperienceData = {
   media: Media[];
   published: boolean;
   conversation: LiveTurn[];
+  photoHints?: { venues: Venue[]; hasLocation: boolean; date: string | null };
 };
 type Venue = { id: string; name: string; address: string };
 function PendingPhoto({ blob, alt }: { blob: Blob; alt: string }) {
@@ -83,10 +86,18 @@ export function ExperienceEditor({
 }) {
   const router = useRouter();
   const key = `${userId}/${id}`;
-  const [story, setStory] = useState<Story>(initial.story);
+  const [story, setStory] = useState<Story>(() =>
+    initial.suggestion && !initial.published
+      ? restoreAutofill(initial.story, initial.suggestion)
+      : initial.story,
+  );
   const [notes, setNotes] = useState(initial.notes);
   const [transcript, setTranscript] = useState(initial.transcript);
-  const [question, setQuestion] = useState(initial.question);
+  const [reviewing, setReviewing] = useState(
+    !!(initial.story.title || initial.suggestion),
+  );
+  const [photoHints, setPhotoHints] = useState(initial.photoHints);
+  const reviewRef = useRef<HTMLElement>(null);
   const [suggestion, setSuggestion] = useState<ExperienceStory | null>(
     initial.suggestion,
   );
@@ -160,11 +171,27 @@ export function ExperienceEditor({
         );
         if (!active) return;
         if (recovered && !initial.published) {
-          setStory(recovered.story);
+          setStory(
+            initial.suggestion
+              ? restoreAutofill(recovered.story, initial.suggestion)
+              : recovered.story,
+          );
           setNotes(recovered.notes);
           setPending(recovered.pending || []);
         }
+        const restored =
+          recovered && !initial.published
+            ? recovered
+            : { story: initial.story, notes: initial.notes, pending: [] };
+        const filled =
+          initial.suggestion && !initial.published
+            ? restoreAutofill(restored.story, initial.suggestion)
+            : restored.story;
+        latest.current = { ...restored, story: filled };
+        setStory(filled);
         setReady(true);
+        if (initial.suggestion && !initial.published)
+          void save("save", filled).catch(() => setMessage(t.recovery));
       } catch {
         if (active) setMessage(t.recovery);
       }
@@ -390,11 +417,23 @@ export function ExperienceEditor({
     const result = await api(`/api/experiences/${id}/prepare`, "POST", {
       locale,
       ...(audio ? { audio_id: audio.id } : {}),
+    }).catch((error) => {
+      // Recovery keeps an editable preview and Save available after provider failure.
+      setReviewing(true);
+      throw error;
     });
     setTranscript(result.transcript);
+    const filled = autofill(latest.current.story, result.story, suggestion);
+    latest.current = { ...latest.current, story: filled };
+    setStory(filled);
     setSuggestion(result.story);
-    setQuestion(result.story.optional_question);
-    // The contributor chooses whether to replace existing edits with this suggestion.
+    setPhotoHints(result.photoHints);
+    await save("save", filled);
+    setReviewing(true);
+    setMessage(t.readyToReview);
+    requestAnimationFrame(() =>
+      reviewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
   }
   const inputClass =
     "w-full rounded-xl border bg-background px-4 py-3 text-base";
@@ -414,6 +453,23 @@ export function ExperienceEditor({
         <h1 className="text-3xl font-semibold tracking-tight">{t.create}</h1>
         <p className="text-muted-foreground">{t.promise}</p>
         <p className="text-sm text-muted-foreground">{t.experienceHint}</p>
+        {!published && !reviewing && (
+          <Button
+            variant="outline"
+            className="min-h-12 w-full"
+            disabled={recording || liveActive}
+            onClick={() =>
+              run(t.saving, async () => {
+                await persist(latest.current);
+                await uploadPending();
+                await save();
+                router.push("/experiences");
+              })
+            }
+          >
+            {t.saveClose}
+          </Button>
+        )}
         <p className="rounded-xl bg-muted/50 p-3 text-sm">
           {published ? t.publicNotice : t.privateNotice}
         </p>
@@ -440,6 +496,7 @@ export function ExperienceEditor({
       ) : (
         <>
           <fieldset
+            hidden={reviewing}
             disabled={!!busy || recording || liveActive}
             className="space-y-4 disabled:opacity-70"
           >
@@ -549,28 +606,35 @@ export function ExperienceEditor({
               </Button>
             )}
           </fieldset>
-          <section className="space-y-4">
+          <section hidden={reviewing} className="space-y-4">
             <h2 className="text-lg font-medium">2 · {t.tellStory}</h2>
             <p className="text-sm text-muted-foreground">{t.voiceHint}</p>
-            <Button
-              size="lg"
-              disabled={!!busy || liveActive}
-              variant={recording ? "destructive" : "outline"}
-              className="w-full min-h-14 rounded-2xl"
-              onClick={() => (recording ? recorder.current?.stop() : record())}
-            >
-              {recording ? (
-                <>
-                  <Square className="mr-2" />
-                  {t.stop} · {seconds}s
-                </>
-              ) : (
-                <>
-                  <Mic className="mr-2" />
-                  {t.record}
-                </>
-              )}
-            </Button>
+            <details>
+              <summary className="min-h-11 py-3 cursor-pointer">
+                {t.recordInstead}
+              </summary>
+              <Button
+                size="lg"
+                disabled={!!busy || liveActive}
+                variant={recording ? "destructive" : "outline"}
+                className="w-full min-h-14 rounded-2xl"
+                onClick={() =>
+                  recording ? recorder.current?.stop() : record()
+                }
+              >
+                {recording ? (
+                  <>
+                    <Square className="mr-2" />
+                    {t.stop} · {seconds}s
+                  </>
+                ) : (
+                  <>
+                    <Mic className="mr-2" />
+                    {t.record}
+                  </>
+                )}
+              </Button>
+            </details>
             {message && (
               <p role="status" className="text-sm text-muted-foreground">
                 {message}
@@ -604,53 +668,58 @@ export function ExperienceEditor({
                 onFinish={() => run(t.preparing, generate)}
               />
             )}
-            {media
-              .filter((m) => m.kind === "audio")
-              .map((m) => (
-                <div key={m.id} className="space-y-2">
-                  <audio
-                    controls
-                    preload="metadata"
-                    className="w-full"
-                    onError={() =>
-                      setAudioErrors((current) =>
-                        current.includes(m.id) ? current : [...current, m.id],
-                      )
-                    }
-                    src={`/api/experiences/${id}/media/${m.id}`}
-                  />
-                  {audioErrors.includes(m.id) && (
-                    <p className="text-sm" role="status">
-                      {t.audioRecovery}
-                    </p>
-                  )}
-                  <a
-                    className="inline-flex min-h-11 items-center text-sm underline"
-                    href={`/api/experiences/${id}/media/${m.id}?original=1`}
-                    download
-                  >
-                    {t.downloadAudio}
-                  </a>
-                </div>
-              ))}
-            <label className="block space-y-2">
-              <span>{t.notes}</span>
-              <textarea
-                disabled={!!busy || recording || liveActive}
-                className={inputClass}
-                rows={4}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                maxLength={18000}
-              />
-            </label>
+            <details>
+              <summary className="min-h-11 py-3 cursor-pointer">
+                {t.notesAndRecordings}
+              </summary>
+              {media
+                .filter((m) => m.kind === "audio")
+                .map((m) => (
+                  <div key={m.id} className="space-y-2">
+                    <audio
+                      controls
+                      preload="none"
+                      className="w-full"
+                      onError={() =>
+                        setAudioErrors((current) =>
+                          current.includes(m.id) ? current : [...current, m.id],
+                        )
+                      }
+                      src={`/api/experiences/${id}/media/${m.id}`}
+                    />
+                    {audioErrors.includes(m.id) && (
+                      <p className="text-sm" role="status">
+                        {t.audioRecovery}
+                      </p>
+                    )}
+                    <a
+                      className="inline-flex min-h-11 items-center text-sm underline"
+                      href={`/api/experiences/${id}/media/${m.id}?original=1`}
+                      download
+                    >
+                      {t.downloadAudio}
+                    </a>
+                  </div>
+                ))}
+              <label className="block space-y-2">
+                <span>{t.notes}</span>
+                <textarea
+                  disabled={!!busy || recording || liveActive}
+                  className={inputClass}
+                  rows={4}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  maxLength={18000}
+                />
+              </label>
+            </details>
             <p className="text-xs text-muted-foreground">{t.aiNotice}</p>
             <Button
               disabled={!!busy || recording || liveActive}
               className="w-full min-h-12"
               onClick={() => run(t.preparing, generate)}
             >
-              {t.prepare}
+              {t.finishAction}
               <ArrowRight className="ml-2" size={18} />
             </Button>
             {transcript && (
@@ -663,273 +732,345 @@ export function ExperienceEditor({
                 </p>
               </details>
             )}
-            {suggestion && (
-              <div className="rounded-2xl border p-5 space-y-3">
-                <h3 className="font-semibold">{suggestion.title}</h3>
-                <p className="whitespace-pre-wrap">{suggestion.narrative}</p>
+          </section>
+          <section
+            ref={reviewRef}
+            hidden={!reviewing}
+            className="scroll-mt-32 space-y-5"
+          >
+            <h2 className="text-2xl font-semibold">{t.readyToReview}</h2>
+            <p className="text-sm text-muted-foreground">{t.reviewHint}</p>
+            <div className="rounded-2xl border p-5 space-y-3">
+              <h3 className="text-xl font-semibold">
+                {story.title || t.draft}
+              </h3>
+              <p className="whitespace-pre-wrap">{story.narrative}</p>
+              <p className="text-sm text-muted-foreground">
+                {t[story.category]} · {story.visit_date}
+              </p>
+              {story.tags.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {story.tags.map((tag) => `#${tag}`).join(" ")}
+                </p>
+              )}
+              <div className="grid grid-cols-3 gap-2">
+                {media
+                  .filter(
+                    (m) =>
+                      m.kind === "photo" && story.selected_media.includes(m.id),
+                  )
+                  .map((m) => (
+                    <img
+                      key={m.id}
+                      className="aspect-square rounded-lg object-cover"
+                      src={`/api/experiences/${id}/media/${m.id}`}
+                      alt={
+                        story.photos.find((p) => p.id === m.id)?.alt ||
+                        t.originalPhoto
+                      }
+                    />
+                  ))}
+              </div>
+            </div>
+            {photoHints?.date && photoHints.date !== story.visit_date && (
+              <Button
+                variant="outline"
+                onClick={() => field("visit_date", photoHints.date!)}
+              >
+                {t.usePhotoDate} · {photoHints.date}
+              </Button>
+            )}
+            {!!photoHints?.venues.length && !story.venue_confirmed && (
+              <div className="rounded-xl border p-4 space-y-2">
+                <p>{t.photoPlaces}</p>
+                {photoHints.venues.map((v) => (
+                  <Button
+                    variant="outline"
+                    className="w-full min-h-12 h-auto whitespace-normal text-left"
+                    key={v.id}
+                    onClick={() =>
+                      setStory((current) => ({
+                        ...current,
+                        venue_id: v.id,
+                        venue_name: v.name,
+                        venue_address: v.address || "",
+                        venue_confirmed: true,
+                      }))
+                    }
+                  >
+                    {v.name} · {v.address}
+                  </Button>
+                ))}
+              </div>
+            )}
+            {story.venue_name && (
+              <div className="rounded-xl border p-4 space-y-3">
+                <p>{story.venue_name}</p>
+                {story.venue_address && (
+                  <p className="text-sm text-muted-foreground">
+                    {story.venue_address}
+                  </p>
+                )}
+                {!story.venue_confirmed && (
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => field("venue_confirmed", true)}
+                  >
+                    {t.confirmPlaceAction}
+                  </Button>
+                )}
                 <Button
-                  disabled={!!busy}
-                  onClick={() => {
-                    setStory((s) => ({
-                      ...s,
-                      ...suggestion,
-                      photos: s.selected_media.map(
-                        (id) =>
-                          suggestion.photos.find((p) => p.id === id) ||
-                          s.photos.find((p) => p.id === id) || {
-                            id,
-                            alt: "",
-                            caption: "",
-                          },
-                      ),
+                  variant="ghost"
+                  onClick={() =>
+                    setStory((current) => ({
+                      ...current,
                       venue_id: null,
+                      venue_name: "",
+                      venue_address: "",
                       venue_confirmed: false,
-                    }));
-                    setSuggestion(null);
-                  }}
+                    }))
+                  }
                 >
-                  {t.useDraft}
+                  {t.leavePlaceOff}
                 </Button>
               </div>
             )}
-            {question && (
-              <aside className="rounded-xl bg-muted p-4 text-sm">
-                <strong>{t.optional}</strong>
-                <p className="mt-2">{question}</p>
-                <p className="mt-2 text-muted-foreground">{t.answerHint}</p>
-              </aside>
+            {!story.venue_name && (
+              <p className="text-sm text-muted-foreground">{t.placeOptional}</p>
             )}
+            <Button variant="outline" onClick={() => setReviewing(false)}>
+              {t.addMore}
+            </Button>
           </section>
-          <fieldset
-            disabled={!!busy || recording || liveActive}
-            className="space-y-5"
-          >
-            <legend className="text-lg font-medium mb-3">3 · {t.review}</legend>
-            <label className="block space-y-2">
-              <span>{t.title}</span>
-              <input
-                className={inputClass}
-                value={story.title}
-                maxLength={160}
-                onChange={(e) => field("title", e.target.value)}
-              />
-            </label>
-            <label className="block space-y-2">
-              <span>{t.story}</span>
-              <textarea
-                className={inputClass}
-                rows={8}
-                aria-label={t.story}
-                value={story.narrative}
-                maxLength={12000}
-                onChange={(e) => field("narrative", e.target.value)}
-              />
-            </label>
-            <label className="block space-y-2">
-              <span>{t.summary}</span>
-              <textarea
-                className={inputClass}
-                rows={2}
-                aria-label={t.summary}
-                value={story.summary}
-                maxLength={500}
-                onChange={(e) => field("summary", e.target.value)}
-              />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="space-y-2">
-                <span>{t.visitDate}</span>
+          <details hidden={!reviewing} className="rounded-xl border p-4">
+            <summary className="cursor-pointer min-h-11 font-medium">
+              {t.editDetails}
+            </summary>
+            <fieldset disabled={recording || liveActive} className="space-y-5">
+              <legend className="text-lg font-medium mb-3">
+                3 · {t.review}
+              </legend>
+              <label className="block space-y-2">
+                <span>{t.title}</span>
                 <input
                   className={inputClass}
-                  type="date"
-                  value={story.visit_date}
-                  onChange={(e) => field("visit_date", e.target.value)}
+                  value={story.title}
+                  maxLength={160}
+                  onChange={(e) => field("title", e.target.value)}
                 />
               </label>
-              <label className="space-y-2">
-                <span>{t.category}</span>
-                <select
-                  aria-label={t.category}
+              <label className="block space-y-2">
+                <span>{t.story}</span>
+                <textarea
                   className={inputClass}
-                  value={story.category}
-                  onChange={(e) =>
-                    field("category", e.target.value as Story["category"])
-                  }
-                >
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {t[c]}
-                    </option>
-                  ))}
-                </select>
+                  rows={8}
+                  aria-label={t.story}
+                  value={story.narrative}
+                  maxLength={12000}
+                  onChange={(e) => field("narrative", e.target.value)}
+                />
               </label>
-            </div>
-            <label className="block space-y-2">
-              <span>{t.venue}</span>
-              <input
-                className={inputClass}
-                value={story.venue_name}
-                maxLength={200}
-                onChange={(e) => {
-                  setStory((s) => ({
-                    ...s,
-                    venue_name: e.target.value,
-                    venue_id: null,
-                    venue_confirmed: false,
-                  }));
-                  setVenues([]);
-                }}
-              />
-            </label>
-            <Button
-              variant="outline"
-              onClick={() =>
-                run(t.searching, async () => {
-                  const r = await api(
-                    `/api/venues/search?q=${encodeURIComponent(story.venue_name)}`,
-                  );
-                  setVenues(r.venues);
-                  if (!r.venues.length) setMessage(t.pendingVenue);
-                })
-              }
-            >
-              {t.findVenue}
-            </Button>
-            {venues.map((v) => (
-              <button
-                className="block w-full rounded-xl border p-4 text-left"
-                key={v.id}
-                onClick={() => {
-                  setStory((s) => ({
-                    ...s,
-                    venue_id: v.id,
-                    venue_name: v.name,
-                    venue_address: v.address || "",
-                    venue_confirmed: false,
-                  }));
-                  setVenues([]);
-                }}
-              >
-                <strong>{v.name}</strong>
-                <span className="block text-sm text-muted-foreground">
-                  {v.address}
-                </span>
-              </button>
-            ))}
-            <label className="block space-y-2">
-              <span>{t.address}</span>
-              <input
-                className={inputClass}
-                disabled={!!story.venue_id}
-                maxLength={400}
-                value={story.venue_address}
-                onChange={(e) =>
-                  setStory((s) => ({
-                    ...s,
-                    venue_address: e.target.value,
-                    venue_confirmed: false,
-                  }))
+              <label className="block space-y-2">
+                <span>{t.summary}</span>
+                <textarea
+                  className={inputClass}
+                  rows={2}
+                  aria-label={t.summary}
+                  value={story.summary}
+                  maxLength={500}
+                  onChange={(e) => field("summary", e.target.value)}
+                />
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="space-y-2">
+                  <span>{t.visitDate}</span>
+                  <input
+                    className={inputClass}
+                    type="date"
+                    value={story.visit_date}
+                    onChange={(e) => field("visit_date", e.target.value)}
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span>{t.category}</span>
+                  <select
+                    aria-label={t.category}
+                    className={inputClass}
+                    value={story.category}
+                    onChange={(e) =>
+                      field("category", e.target.value as Story["category"])
+                    }
+                  >
+                    {categories.map((c) => (
+                      <option key={c} value={c}>
+                        {t[c]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label className="block space-y-2">
+                <span>{t.venue}</span>
+                <input
+                  className={inputClass}
+                  value={story.venue_name}
+                  maxLength={200}
+                  onChange={(e) => {
+                    setStory((s) => ({
+                      ...s,
+                      venue_name: e.target.value,
+                      venue_id: null,
+                      venue_confirmed: false,
+                    }));
+                    setVenues([]);
+                  }}
+                />
+              </label>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  run(t.searching, async () => {
+                    const r = await api(
+                      `/api/venues/search?q=${encodeURIComponent(story.venue_name)}`,
+                    );
+                    setVenues(r.venues);
+                    if (!r.venues.length) setMessage(t.pendingVenue);
+                  })
                 }
-              />
-            </label>
-            {!story.venue_id && (
-              <p className="text-xs text-muted-foreground">{t.pendingVenue}</p>
-            )}
-            <label className="flex gap-3 items-start py-2">
-              <input
-                type="checkbox"
-                className="mt-1 h-5 w-5 shrink-0"
-                checked={story.venue_confirmed}
-                onChange={(e) => field("venue_confirmed", e.target.checked)}
-              />
-              {t.confirmVenue}
-            </label>
-            {story.photos
-              .filter((p) => story.selected_media.includes(p.id))
-              .map((p) => (
-                <div key={p.id} className="space-y-3">
-                  <label className="block space-y-2">
-                    <span>{t.photoDescription}</span>
-                    <input
-                      className={inputClass}
-                      value={p.alt}
-                      maxLength={300}
-                      onChange={(e) =>
-                        field(
-                          "photos",
-                          story.photos.map((x) =>
-                            x.id === p.id ? { ...x, alt: e.target.value } : x,
-                          ),
-                        )
-                      }
-                    />
-                  </label>
-                  <label className="block space-y-2">
-                    <span>{t.photoCaption}</span>
-                    <input
-                      className={inputClass}
-                      value={p.caption}
-                      maxLength={400}
-                      onChange={(e) =>
-                        field(
-                          "photos",
-                          story.photos.map((x) =>
-                            x.id === p.id
-                              ? { ...x, caption: e.target.value }
-                              : x,
-                          ),
-                        )
-                      }
-                    />
-                  </label>
-                </div>
+              >
+                {t.findVenue}
+              </Button>
+              {venues.map((v) => (
+                <button
+                  className="block w-full rounded-xl border p-4 text-left"
+                  key={v.id}
+                  onClick={() => {
+                    setStory((s) => ({
+                      ...s,
+                      venue_id: v.id,
+                      venue_name: v.name,
+                      venue_address: v.address || "",
+                      venue_confirmed: false,
+                    }));
+                    setVenues([]);
+                  }}
+                >
+                  <strong>{v.name}</strong>
+                  <span className="block text-sm text-muted-foreground">
+                    {v.address}
+                  </span>
+                </button>
               ))}
-            {story.observations.length > 0 && (
-              <details>
-                <summary className="py-3">{t.observations}</summary>
-                {story.observations.map((o, i) => (
-                  <div className="border-b py-3" key={i}>
-                    <p>
-                      {o.value} {o.context}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t[o.source_type]} · {o.evidence}
-                    </p>
-                    <button
-                      className="min-h-11 underline"
-                      onClick={() =>
-                        field(
-                          "observations",
-                          story.observations.filter((_, n) => n !== i),
-                        )
-                      }
-                    >
-                      {t.remove}
-                    </button>
+              <label className="block space-y-2">
+                <span>{t.address}</span>
+                <input
+                  className={inputClass}
+                  disabled={!!story.venue_id}
+                  maxLength={400}
+                  value={story.venue_address}
+                  onChange={(e) =>
+                    setStory((s) => ({
+                      ...s,
+                      venue_address: e.target.value,
+                      venue_confirmed: false,
+                    }))
+                  }
+                />
+              </label>
+              {!story.venue_id && (
+                <p className="text-xs text-muted-foreground">
+                  {t.pendingVenue}
+                </p>
+              )}
+              <label className="flex gap-3 items-start py-2">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-5 w-5 shrink-0"
+                  checked={story.venue_confirmed}
+                  onChange={(e) => field("venue_confirmed", e.target.checked)}
+                />
+                {t.confirmVenue}
+              </label>
+              {story.photos
+                .filter((p) => story.selected_media.includes(p.id))
+                .map((p) => (
+                  <div key={p.id} className="space-y-3">
+                    <label className="block space-y-2">
+                      <span>{t.photoDescription}</span>
+                      <input
+                        className={inputClass}
+                        value={p.alt}
+                        maxLength={300}
+                        onChange={(e) =>
+                          field(
+                            "photos",
+                            story.photos.map((x) =>
+                              x.id === p.id ? { ...x, alt: e.target.value } : x,
+                            ),
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="block space-y-2">
+                      <span>{t.photoCaption}</span>
+                      <input
+                        className={inputClass}
+                        value={p.caption}
+                        maxLength={400}
+                        onChange={(e) =>
+                          field(
+                            "photos",
+                            story.photos.map((x) =>
+                              x.id === p.id
+                                ? { ...x, caption: e.target.value }
+                                : x,
+                            ),
+                          )
+                        }
+                      />
+                    </label>
                   </div>
                 ))}
-              </details>
-            )}
-            <label className="block space-y-2">
-              <span>{t.sponsorship}</span>
-              <input
-                className={inputClass}
-                maxLength={300}
-                value={story.sponsorship}
-                onChange={(e) => field("sponsorship", e.target.value)}
-              />
-            </label>
-            <label className="flex gap-3 items-start py-2">
-              <input
-                type="checkbox"
-                className="mt-1 h-5 w-5 shrink-0"
-                checked={story.permission_confirmed}
-                onChange={(e) =>
-                  field("permission_confirmed", e.target.checked)
-                }
-              />
-              <span>{t.permissions}</span>
-            </label>
+              {story.observations.length > 0 && (
+                <details>
+                  <summary className="py-3">{t.observations}</summary>
+                  {story.observations.map((o, i) => (
+                    <div className="border-b py-3" key={i}>
+                      <p>
+                        {o.value} {o.context}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t[o.source_type]} · {o.evidence}
+                      </p>
+                      <button
+                        className="min-h-11 underline"
+                        onClick={() =>
+                          field(
+                            "observations",
+                            story.observations.filter((_, n) => n !== i),
+                          )
+                        }
+                      >
+                        {t.remove}
+                      </button>
+                    </div>
+                  ))}
+                </details>
+              )}
+              <label className="block space-y-2">
+                <span>{t.sponsorship}</span>
+                <input
+                  className={inputClass}
+                  maxLength={300}
+                  value={story.sponsorship}
+                  onChange={(e) => field("sponsorship", e.target.value)}
+                />
+              </label>
+            </fieldset>
+          </details>
+          <section hidden={!reviewing} className="space-y-4">
+            <p className="text-sm text-muted-foreground">{t.publishConsent}</p>
             <p className="text-sm text-muted-foreground">{t.publishNotice}</p>
             <div className="flex gap-3">
               <Button
@@ -939,21 +1080,33 @@ export function ExperienceEditor({
                   run(t.saving, async () => {
                     await uploadPending();
                     await save();
+                    router.push("/experiences");
                   })
                 }
               >
-                {t.saveDraft}
+                {t.saveClose}
               </Button>
               <Button
                 className="flex-1 min-h-12"
-                disabled={
-                  pending.length > 0 ||
-                  !story.permission_confirmed ||
-                  !story.venue_confirmed
-                }
+                disabled={!!busy || recording || liveActive}
                 onClick={() =>
                   run(t.publishing, async () => {
-                    await save("publish");
+                    const reviewed = {
+                      ...latest.current.story,
+                      permission_confirmed: true,
+                    };
+                    if (
+                      !publicationReady(
+                        reviewed,
+                        new Date().toLocaleDateString("en-CA", {
+                          timeZone: "Asia/Ho_Chi_Minh",
+                        }),
+                      )
+                    ) {
+                      setMessage(t.checkReview);
+                      return;
+                    }
+                    await save("publish", reviewed);
                     await Promise.all([
                       clearLocalDraft(key),
                       clearLocalDraft(`${key}/live`),
@@ -966,13 +1119,7 @@ export function ExperienceEditor({
                 {t.publish}
               </Button>
             </div>
-            <Link
-              href={`/experiences/${id}`}
-              className="block py-3 text-center underline"
-            >
-              {t.preview}
-            </Link>
-          </fieldset>
+          </section>
         </>
       )}
       <div role="status" aria-live="polite" className="text-sm">

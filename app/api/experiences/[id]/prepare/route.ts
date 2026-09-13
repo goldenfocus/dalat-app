@@ -1,3 +1,4 @@
+import { photoContext } from "@/lib/experiences/photo-context";
 import {
   liveConversationSchema,
   liveEvidence,
@@ -101,17 +102,22 @@ export async function POST(
     ]
       .filter(Boolean)
       .join("\n\n");
-    if (!text.trim()) throw new Error("no_story");
     const { data: media } = await admin
       .from("experience_media")
-      .select("id,preview_path")
+      .select("id,preview_path,path")
       .eq("experience_id", id)
       .eq("kind", "photo")
       .in("id", owned.experience.selected_media)
-      .limit(6);
+      .limit(12);
     const photos = [];
+    const contexts = [];
     for (const p of media || []) {
       if (!p.preview_path) continue;
+      const original = await admin.storage.from(bucket).download(p.path);
+      if (original.data)
+        contexts.push(
+          await photoContext(new Uint8Array(await original.data.arrayBuffer())),
+        );
       const { data: file } = await admin.storage
         .from(bucket)
         .download(p.preview_path);
@@ -121,6 +127,35 @@ export async function POST(
           url: `data:image/jpeg;base64,${Buffer.from(await file.arrayBuffer()).toString("base64")}`,
         });
     }
+    if (!text.trim() && !photos.length) throw new Error("no_story");
+    const nearby = new Map<
+      string,
+      { id: string; name: string; address: string }
+    >();
+    for (const context of contexts) {
+      if (!context.gps) continue;
+      const { latitude: lat, longitude: lng } = context.gps;
+      const { data: candidates } = await owned.db
+        .from("venues")
+        .select("id,name,address,latitude,longitude")
+        .gte("latitude", lat - 0.0018)
+        .lte("latitude", lat + 0.0018)
+        .gte("longitude", lng - 0.0019)
+        .lte("longitude", lng + 0.0019)
+        .limit(8);
+      for (const candidate of candidates || [])
+        nearby.set(candidate.id, {
+          id: candidate.id,
+          name: candidate.name,
+          address: candidate.address || "",
+        });
+    }
+    const dates = [...new Set(contexts.map((c) => c.date).filter(Boolean))];
+    const photoHints = {
+      venues: [...nearby.values()].slice(0, 5),
+      hasLocation: contexts.some((c) => !!c.gps),
+      date: dates.length === 1 ? dates[0] : null,
+    };
     const generated = await structureExperience(
       text,
       input.data.locale,
@@ -133,6 +168,7 @@ export async function POST(
         optional_question: generated.story.optional_question,
         generation: {
           ...generated,
+          photoHints,
           transcription,
           created_at: new Date().toISOString(),
         },
@@ -141,7 +177,7 @@ export async function POST(
     if (error) throw new Error("save_failed");
     // Generation is a suggestion. It never overwrites the contributor's saved story or publishes it.
     return NextResponse.json(
-      { story: generated.story, transcript },
+      { story: generated.story, transcript, photoHints },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch {

@@ -193,11 +193,19 @@ export function LiveInterview({
       pc.addTrack(mic.getAudioTracks()[0], mic);
       const dc = pc.createDataChannel("oai-events");
       channel.current = dc;
+      let spokenResponses = 0;
       dc.onmessage = ({ data }) => {
         let event;
         try {
           event = JSON.parse(data);
         } catch {
+          return;
+        }
+        if (
+          event.type === "response.function_call_arguments.done" &&
+          event.name === "finish_experience"
+        ) {
+          void finish(true);
           return;
         }
         if (event.type === "input_audio_buffer.committed")
@@ -224,6 +232,20 @@ export function LiveInterview({
           event.type === "response.output_audio_transcript.done" &&
           event.transcript?.trim()
         ) {
+          spokenResponses += 1;
+          // After the invitation and one optional closing question, listen without
+          // generating further questions. The visible Finish action remains available.
+          if (spokenResponses >= 2 && dc.readyState === "open")
+            dc.send(
+              JSON.stringify({
+                type: "session.update",
+                session: {
+                  type: "realtime",
+                  instructions:
+                    "Listen to the contributor. Do not ask any further questions. If they say they are done, call finish_experience. Otherwise acknowledge briefly without a question. Never publish.",
+                },
+              }),
+            );
           keep({
             id: event.item_id,
             role: "assistant",
@@ -271,7 +293,7 @@ export function LiveInterview({
           type: "response.create",
           response: {
             instructions:
-              "Briefly invite the contributor to tell their experience. Ask just one opening question, then listen.",
+              "Say only: What would you like to remember? Use the contributor's language, then listen.",
           },
         }),
       );
@@ -286,7 +308,6 @@ export function LiveInterview({
   }
   return (
     <section className="rounded-2xl border bg-muted/30 p-4 space-y-3">
-      <h3 className="font-medium">{t.liveTitle}</h3>
       <p className="text-sm text-muted-foreground">{t.liveHint}</p>
       <Button
         className="w-full min-h-12"
@@ -312,12 +333,12 @@ export function LiveInterview({
               ? t.liveFinish
               : t.liveStart}
       </Button>
-      <audio
-        ref={audio}
-        autoPlay
-        controls
-        className={phase === "idle" ? "hidden" : "w-full"}
-      />
+      <audio ref={audio} autoPlay className="hidden" />
+      {message === t.livePlay && (
+        <Button variant="outline" onClick={() => void audio.current?.play()}>
+          {t.livePlay}
+        </Button>
+      )}
       {message && (
         <p role="status" className="text-sm">
           {message}

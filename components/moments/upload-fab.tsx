@@ -1,4 +1,5 @@
 "use client";
+import { isExperienceEditorPath } from "@/lib/experiences/navigation";
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -49,14 +50,18 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
     setIsWorkshopHost(window.location.hostname === "phuong.dalat.app");
     const checkAuth = async () => {
       const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setIsAuthenticated(!!session?.user);
     };
     checkAuth();
 
     // Listen for auth changes
     const supabase = createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
       checkAuth();
     });
 
@@ -71,23 +76,28 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
       setIsLoading(true);
       try {
         const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         const user = session?.user;
         if (!user) return;
 
-        const { data, error } = await supabase.rpc('get_user_recent_events_for_upload', {
-          p_user_id: user.id,
-          p_limit: 10,
-        });
+        const { data, error } = await supabase.rpc(
+          "get_user_recent_events_for_upload",
+          {
+            p_user_id: user.id,
+            p_limit: 10,
+          },
+        );
 
         if (error) {
-          console.error('Error fetching recent events:', error);
+          console.error("Error fetching recent events:", error);
           return;
         }
 
         setRecentEvents(data || []);
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
       } finally {
         setIsLoading(false);
       }
@@ -98,16 +108,23 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
 
   // Hide on certain pages
   const hiddenPaths = [
-    '/moments/new',
-    '/auth/',
-    '/onboarding',
-    '/admin/',
-    '/collaborate/phuong',
+    "/moments/new",
+    "/auth/",
+    "/onboarding",
+    "/admin/",
+    "/collaborate/phuong",
   ];
 
-  const shouldHide = hiddenPaths.some(path => (pathname ?? "").includes(path));
+  const shouldHide =
+    isExperienceEditorPath(pathname ?? "") ||
+    hiddenPaths.some((path) => (pathname ?? "").includes(path));
 
-  if (isWorkshopHost || shouldHide || isAuthenticated === false || isAuthenticated === null) {
+  if (
+    isWorkshopHost ||
+    shouldHide ||
+    isAuthenticated === false ||
+    isAuthenticated === null
+  ) {
     return null;
   }
 
@@ -137,7 +154,7 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
           "hover:bg-primary/90 active:scale-95 transition-all",
           // Position above bottom nav (5rem = 80px)
           "bottom-[calc(5rem+env(safe-area-inset-bottom)+1rem)] right-4",
-          className
+          className,
         )}
         aria-label={t("shareYourMoment")}
       >

@@ -6,12 +6,9 @@ export function publicationReady(
 ) {
   return (
     story.permission_confirmed &&
-    story.venue_confirmed &&
-    !!story.venue_name.trim() &&
-    (!!story.venue_id || !!story.venue_address.trim()) &&
+    (!(story.venue_name.trim() || story.venue_id) || story.venue_confirmed) &&
     !!story.title.trim() &&
-    story.narrative.trim().length >= 40 &&
-    story.selected_media.length > 0 &&
+    (story.narrative.trim().length > 0 || story.selected_media.length > 0) &&
     story.visit_date <= today
   );
 }
