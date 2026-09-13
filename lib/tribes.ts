@@ -51,3 +51,20 @@ export const getDiscoverTribes = unstable_cache(
   ["discover-tribes"],
   { revalidate: 300 }
 );
+
+/** Homepage only: active members excluding site administrators, largest first. */
+export const getActiveHomepageTribes = unstable_cache(
+  async (): Promise<DiscoverTribe[]> => {
+    const supabase = createStaticClient();
+    if (!supabase) return [];
+
+    const { data, error } = await supabase.rpc("get_active_homepage_communities");
+    if (error) {
+      console.error("Error fetching active homepage communities:", error);
+      return [];
+    }
+    return (data ?? []) as DiscoverTribe[];
+  },
+  ["active-homepage-communities"],
+  { revalidate: 300 }
+);
