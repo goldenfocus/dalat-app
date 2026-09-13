@@ -381,12 +381,12 @@ export function PromoMediaSection({
       {pastMoments.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
               <Images className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <span className="text-sm font-medium text-muted-foreground">{t("pastMomentsTitle")}</span>
-              <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground truncate">
+              <Link href={`/events/${sourceEvent.event_slug}`} className="max-w-full text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring break-words">
                 {sourceEvent.event_title}
-              </span>
+              </Link>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
               {promo.length === 0 && isOwner && canManageInline && (

@@ -23,17 +23,17 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
   const t = useTranslations("nav");
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="container flex h-14 max-w-6xl items-center justify-between mx-auto px-4">
-        <div className="flex items-center gap-1.5">
-          <Link href="/" className="font-bold text-lg">
+      <div className="container flex h-14 max-w-6xl items-center justify-between mx-auto px-2 min-[360px]:px-4">
+        <div className="flex items-center gap-0.5 min-[360px]:gap-1.5">
+          <Link href="/" className="font-bold text-base min-[360px]:text-lg">
             ĐàLạt.app
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0 min-[360px]:gap-1">
             <DeferredLocalePicker />
             <ThemeToggle />
           </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0 min-[360px]:gap-1">
           <Link
             href="/map"
             className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"

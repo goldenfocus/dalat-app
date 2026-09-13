@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { NextResponse, after } from 'next/server';
+import { POST as sendInterestedNotifications } from '@/app/api/notifications/interested/route';
 import { POST as sendRsvpNotifications } from '@/app/api/notifications/rsvp/route';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
@@ -33,6 +34,13 @@ export async function GET(request: Request) {
       await sendRsvpNotifications(new Request(new URL('/api/notifications/rsvp',url.origin), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventId: data.event_id, rsvpStatus: 'going' }),
+      }));
+    });
+  }
+  if (data.just_completed && data.rsvp_status === 'interested' && data.event_id) {
+    after(async () => {
+      await sendInterestedNotifications(new Request(new URL('/api/notifications/interested',url.origin), {
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventId:data.event_id}),
       }));
     });
   }

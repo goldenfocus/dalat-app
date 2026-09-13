@@ -2,7 +2,7 @@
 import { currentCommunityVisit } from '@/lib/communities/activity';
 export type SignupIntent =
   | { kind: 'community'; slug: string; inviteCode?: string }
-  | { kind: 'event'; slug: string; joinCommunity?: boolean; communitySlug?: string }
+  | { kind: 'event'; slug: string; eventAction?: 'going' | 'interested'; joinCommunity?: boolean; communitySlug?: string }
   | { kind: 'profile'; slug: string };
 export async function startSignupIntent(intent: SignupIntent): Promise<void> {
   const response = await fetch('/api/auth/intent', {

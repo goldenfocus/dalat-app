@@ -1203,8 +1203,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
-    <CommunityRsvpProvider eventSlug={event.slug}
-      community={!viewerInTribe && event.tribes && ["public","request"].includes(event.tribes.access_type) ? { slug: event.tribes.slug, name: event.tribes.name } : null}
+    <CommunityRsvpProvider eventSlug={event.slug} alreadyMember={viewerInTribe}
+      community={event.tribes && ["public","request"].includes(event.tribes.access_type) ? { slug: event.tribes.slug, name: event.tribes.name } : null}
       initiallyJoin={(await searchParams).fromCommunity === event.tribes?.slug}>
     <CelebrationProvider>
       <main className="min-h-screen">
@@ -1298,9 +1298,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               </>
             )}
           </div>
-          <div className="grid gap-8 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* Main content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="min-w-0 lg:col-span-2 space-y-6">
               {/* Past events: Moments first as hero content */}
               {isPast && momentsPreview.length > 0 ? (
                 <>
@@ -1640,7 +1640,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4">
               {/* RSVP card */}
               <Card>
                 <CardContent className="p-4 space-y-4">

@@ -32,10 +32,10 @@ export async function TribeChip({
   const avatarUrl = tribe.cover_image_url ?? tribe.settings?.avatar_url ?? null;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
       <Link
         href={`/communities/${tribe.slug}`}
-        className="group flex items-center gap-2.5 min-h-11 px-3 py-2 -ml-3 rounded-lg hover:bg-muted active:scale-[0.98] transition-all"
+        className="group flex min-w-0 max-w-full flex-[1_1_12rem] items-center gap-2.5 min-h-11 px-3 py-2 rounded-lg hover:bg-muted active:scale-[0.98] transition-all"
       >
         {avatarUrl ? (
           <Image
@@ -65,7 +65,7 @@ export async function TribeChip({
       </Link>
 
       {showJoin && tribe.access_type === "public" && (
-        <TribeChipJoinButton slug={tribe.slug} />
+        <TribeChipJoinButton slug={tribe.slug} name={tribe.name} />
       )}
     </div>
   );

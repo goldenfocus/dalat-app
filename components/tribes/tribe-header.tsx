@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Settings, Lock, Globe, Eye, EyeOff, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -76,33 +77,33 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
               )}
             </div>
 
-            <div className="flex-1 pb-4">
-              <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 pb-4">
+              <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-bold">{tribe.name}</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold"><Link href={`/communities/${tribe.slug}`} className="rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors">{tribe.name}</Link></h1>
                   {/* Profile-style stat row: members / events / moments */}
-                  <div className="flex items-center gap-4 mt-2 text-muted-foreground">
-                    <span className="flex items-baseline gap-1.5">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-muted-foreground">
+                    <a href={membership || (["public", "request"].includes(tribe.access_type) && tribe.is_listed) ? "#members" : undefined} className="flex min-h-11 items-center gap-1.5 rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors">
                       <span className="font-semibold text-foreground">{memberCount}</span>
                       {t("members").toLowerCase()}
-                    </span>
-                    <span className="flex items-baseline gap-1.5">
+                    </a>
+                    <a href="#events" className="flex min-h-11 items-center gap-1.5 rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors">
                       <span className="font-semibold text-foreground">{eventCount}</span>
                       {t("events").toLowerCase()}
-                    </span>
+                    </a>
                     {momentCount > 0 && (
-                      <span className="flex items-baseline gap-1.5">
+                      <a href="#moments" className="flex min-h-11 items-center gap-1.5 rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors">
                         <span className="font-semibold text-foreground">{momentCount}</span>
                         {t("moments").toLowerCase()}
-                      </span>
+                      </a>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 mt-2 text-muted-foreground">
+                  {["invite_only", "secret"].includes(tribe.access_type) && <div className="flex items-center gap-3 mt-2 text-muted-foreground">
                     <Badge variant="outline" className="gap-1">
                       {accessIcon[tribe.access_type]}
                       {t(tribe.access_type)}
                     </Badge>
-                  </div>
+                  </div>}
                 </div>
 
                 {/* Share is for everyone — it's how a tribe grows. Admin-only
