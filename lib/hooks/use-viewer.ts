@@ -78,5 +78,5 @@ export function useViewer() {
       window.removeEventListener("focus", onFocus);
     };
   }, [pathname]);
-  return state;
+  return { ...state, isLoading: state === empty };
 }
