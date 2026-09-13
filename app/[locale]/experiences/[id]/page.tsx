@@ -108,7 +108,9 @@ export default async function ExperiencePage({ params }: Props) {
     image: e.selected_media.map(
       (m: string) => `https://dalat.app/experience-media/${id}/${m}`,
     ),
-    about: { "@type": "Place", name: e.venue_name },
+    ...(e.venue_name
+      ? { about: { "@type": "Place", name: e.venue_name } }
+      : {}),
     url,
   };
   return (
@@ -168,29 +170,31 @@ export default async function ExperiencePage({ params }: Props) {
       >
         {e.narrative}
       </article>
-      <section className="rounded-2xl border p-5 space-y-3">
-        <h2 className="text-xl font-semibold">
-          {venue ? (
-            <Link href={`/${venue.slug}`} className="underline">
-              {venue.name}
-            </Link>
-          ) : (
-            e.venue_name
+      {!!e.venue_name && (
+        <section className="rounded-2xl border p-5 space-y-3">
+          <h2 className="text-xl font-semibold">
+            {venue ? (
+              <Link href={`/${venue.slug}`} className="underline">
+                {venue.name}
+              </Link>
+            ) : (
+              e.venue_name
+            )}
+          </h2>
+          <p>{e.venue_address}</p>
+          {!venue && (
+            <p className="text-sm text-muted-foreground">{t("pending")}</p>
           )}
-        </h2>
-        <p>{e.venue_address}</p>
-        {!venue && (
-          <p className="text-sm text-muted-foreground">{t("pending")}</p>
-        )}
-        <a
-          className="inline-block min-h-11 py-2 underline"
-          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.venue_name + " " + e.venue_address)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t("directions")}
-        </a>
-      </section>
+          <a
+            className="inline-block min-h-11 py-2 underline"
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.venue_name + " " + e.venue_address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t("directions")}
+          </a>
+        </section>
+      )}
       {!!story.observations.length && (
         <section className="space-y-3">
           <h2 className="text-lg font-medium">{t("observations")}</h2>

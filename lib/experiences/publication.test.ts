@@ -20,15 +20,47 @@ describe("explicit publication gates", () => {
   it.each([
     { permission_confirmed: false },
     { venue_confirmed: false },
-    { selected_media: [] },
-    { narrative: " " },
     { title: "" },
-    { venue_name: "" },
-    { venue_address: "" },
     { visit_date: "2026-09-13" },
   ])("rejects incomplete or future evidence: %j", (patch) =>
     expect(publicationReady({ ...story, ...patch }, "2026-09-12")).toBe(false),
   );
+  it("allows a short sentence or photo alone without requiring a location", () => {
+    expect(
+      publicationReady(
+        {
+          ...story,
+          venue_id: null,
+          venue_name: "",
+          venue_address: "",
+          venue_confirmed: false,
+          narrative: "",
+          selected_media: story.selected_media,
+        },
+        "2026-09-12",
+      ),
+    ).toBe(true);
+    expect(
+      publicationReady(
+        {
+          ...story,
+          venue_id: null,
+          venue_name: "",
+          venue_address: "",
+          venue_confirmed: false,
+          narrative: "Lovely.",
+          selected_media: [],
+        },
+        "2026-09-12",
+      ),
+    ).toBe(true);
+    expect(
+      publicationReady(
+        { ...story, narrative: "", selected_media: [] },
+        "2026-09-12",
+      ),
+    ).toBe(false);
+  });
   it("allows an existing venue without duplicating its address", () =>
     expect(
       publicationReady(

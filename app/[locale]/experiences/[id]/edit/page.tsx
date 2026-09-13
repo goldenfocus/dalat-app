@@ -45,6 +45,7 @@ export default async function EditExperience({
         suggestion: suggestion.success ? suggestion.data : null,
         media: media || [],
         published: owned.experience.status === "published",
+        photoHints: source?.generation?.photoHints,
         conversation:
           liveConversationSchema.safeParse(source?.live_conversation).data ||
           [],
