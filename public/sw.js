@@ -3,7 +3,7 @@
 //
 // IMPORTANT: Update SW_VERSION when deploying new features
 // This triggers the update flow for all users
-const SW_VERSION = '1.0.35';
+const SW_VERSION = '1.0.36';
 
 const APP_URL = self.location.origin;
 
