@@ -1,3 +1,4 @@
+import { suggestsEventDiscovery } from "@/lib/experiences/actions";
 import { AttributedText } from "@/components/experiences/attributed-text";
 import { attributedPlainText } from "@/lib/experiences/attribution";
 import { cache } from "react";
@@ -168,7 +169,7 @@ export default async function ExperiencePage({ params }: Props) {
               >
                 {t("exploreVenue")}
               </Link>
-            ) : e.category === "culture" ? (
+            ) : suggestsEventDiscovery(e.category, `${e.title} ${e.summary} ${e.narrative}`) ? (
               <Link
                 className="rounded-xl bg-primary px-4 py-3 text-primary-foreground"
                 href="/events/upcoming"
