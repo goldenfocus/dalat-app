@@ -1,3 +1,4 @@
+import { suggestsEventDiscovery } from "@/lib/experiences/actions";
 import { AttributedText } from "./attributed-text";
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/lib/i18n/routing";
@@ -102,7 +103,7 @@ export async function ExperienceList({
                   {t("exploreVenue")}
                 </Link>
               )}
-              {!e.venue?.slug && e.category === "culture" && (
+              {!e.venue?.slug && suggestsEventDiscovery(e.category, `${e.title} ${e.summary}`) && (
                 <Link
                   className="min-h-11 py-3 underline"
                   href="/events/upcoming"
