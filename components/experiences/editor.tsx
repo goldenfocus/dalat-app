@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { autofill } from "@/lib/experiences/autofill";
+import { autofill, restoreAutofill } from "@/lib/experiences/autofill";
 import { publicationReady } from "@/lib/experiences/publication";
 import { LiveInterview } from "./live-interview";
 import { recordingMime } from "@/lib/experiences/recording";
@@ -88,7 +88,7 @@ export function ExperienceEditor({
   const key = `${userId}/${id}`;
   const [story, setStory] = useState<Story>(() =>
     initial.suggestion && !initial.published
-      ? autofill(initial.story, initial.suggestion)
+      ? restoreAutofill(initial.story, initial.suggestion)
       : initial.story,
   );
   const [notes, setNotes] = useState(initial.notes);
@@ -173,7 +173,7 @@ export function ExperienceEditor({
         if (recovered && !initial.published) {
           setStory(
             initial.suggestion
-              ? autofill(recovered.story, initial.suggestion)
+              ? restoreAutofill(recovered.story, initial.suggestion)
               : recovered.story,
           );
           setNotes(recovered.notes);
@@ -185,7 +185,7 @@ export function ExperienceEditor({
             : { story: initial.story, notes: initial.notes, pending: [] };
         const filled =
           initial.suggestion && !initial.published
-            ? autofill(restored.story, initial.suggestion)
+            ? restoreAutofill(restored.story, initial.suggestion)
             : restored.story;
         latest.current = { ...restored, story: filled };
         setStory(filled);

@@ -20,18 +20,21 @@ export function autofill(
       current.venue_confirmed
     )
       continue;
-    if (!current[key].trim() || current[key] === previous?.[key])
+    if ((!previous && !current[key].trim()) || current[key] === previous?.[key])
       next[key] = generated[key];
   }
-  if (current.category === "other" || current.category === previous?.category)
+  if (
+    (!previous && current.category === "other") ||
+    current.category === previous?.category
+  )
     next.category = generated.category;
   if (
-    !current.tags.length ||
+    (!previous && !current.tags.length) ||
     JSON.stringify(current.tags) === JSON.stringify(previous?.tags)
   )
     next.tags = generated.tags;
   if (
-    !current.observations.length ||
+    (!previous && !current.observations.length) ||
     JSON.stringify(current.observations) ===
       JSON.stringify(previous?.observations)
   )
@@ -64,4 +67,12 @@ export function autofill(
       : old;
   });
   return next;
+}
+
+// Completed stories may contain deliberate empty fields; reopening must not restore them.
+export function restoreAutofill(
+  current: Draft,
+  generated: ExperienceStory,
+): Draft {
+  return current.narrative.trim() ? current : autofill(current, generated);
 }

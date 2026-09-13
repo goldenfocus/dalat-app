@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { autofill } from "./autofill";
+import { autofill, restoreAutofill } from "./autofill";
 import { emptyStory } from "./schema";
 const draft = {
   ...emptyStory("en"),
@@ -57,4 +57,16 @@ describe("automatic draft handoff", () => {
     expect(next.title).toBe("Updated");
     expect(next.narrative).toBe("My corrected story");
   });
+});
+
+it("does not restore deliberately removed places or observations on reopening", () => {
+  const edited = { ...draft, ...generated, venue_name: "", observations: [] };
+  expect(
+    restoreAutofill(edited, { ...generated, venue_name: "Old place" }),
+  ).toEqual(edited);
+});
+it("preserves a cleared AI place during regeneration", () => {
+  const prior = { ...generated, venue_name: "Old place" };
+  const edited = { ...draft, ...generated, venue_name: "" };
+  expect(autofill(edited, prior, prior).venue_name).toBe("");
 });
