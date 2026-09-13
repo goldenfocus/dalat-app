@@ -2048,7 +2048,19 @@
     "memberActionFailed": "Không thể cập nhật thành viên. Vui lòng thử lại.",
     "statsHint": "30 ngày qua. Lượt truy cập là ước tính, không tính quản trị viên. Bắt đầu theo dõi từ bản phát hành này.",
     "campaignHint": "Chọn kênh bạn sẽ chia sẻ liên kết.",
-    "conversionHint": "Chỉ tính thành viên mới được xác nhận từ lượt truy cập. Nguồn cho biết loại liên kết, không chứng minh ai đã chia sẻ."
+    "conversionHint": "Chỉ tính thành viên mới được xác nhận từ lượt truy cập. Nguồn cho biết loại liên kết, không chứng minh ai đã chia sẻ.",
+    "memberMenu": {
+      "mute": "Tắt thông báo cộng đồng",
+      "unmute": "Bật thông báo cộng đồng",
+      "muted": "Đã tắt thông báo cộng đồng",
+      "unmuted": "Đã bật thông báo cộng đồng",
+      "edit": "Chỉnh sửa cộng đồng",
+      "manage": "Quản lý thành viên",
+      "failed": "Không thể lưu thay đổi. Vui lòng thử lại.",
+      "left": "Bạn đã rời cộng đồng",
+      "transferFirst": "Hãy chuyển quyền sở hữu cho thành viên khác trước khi rời đi trong mục Quản lý thành viên.",
+      "leaveDescription": "Rời cộng đồng này? Đăng ký tham dự sự kiện của bạn sẽ được giữ nguyên. Tham gia lại cộng đồng riêng tư có thể cần được duyệt hoặc có lời mời mới."
+    }
   },
   "feed": {
     "title": "Bảng tin",

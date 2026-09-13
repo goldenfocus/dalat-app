@@ -2045,7 +2045,19 @@
     "memberActionFailed": "No se pudo actualizar este miembro. Inténtalo de nuevo.",
     "statsHint": "Últimos 30 días. Visitas estimadas, sin administradores. El seguimiento comienza con esta versión.",
     "campaignHint": "Elige el canal donde compartirás este enlace.",
-    "conversionHint": "Se cuentan adhesiones nuevas confirmadas y vinculadas a una visita. La fuente del enlace no demuestra quién lo compartió."
+    "conversionHint": "Se cuentan adhesiones nuevas confirmadas y vinculadas a una visita. La fuente del enlace no demuestra quién lo compartió.",
+    "memberMenu": {
+      "mute": "Silenciar notificaciones",
+      "unmute": "Activar notificaciones",
+      "muted": "Notificaciones de la comunidad silenciadas",
+      "unmuted": "Notificaciones de la comunidad activadas",
+      "edit": "Editar comunidad",
+      "manage": "Gestionar miembros",
+      "failed": "No se pudo guardar el cambio. Inténtalo de nuevo.",
+      "left": "Has salido de la comunidad",
+      "transferFirst": "Transfiere la propiedad a otro miembro en Gestionar miembros antes de salir.",
+      "leaveDescription": "¿Salir de esta comunidad? Tus confirmaciones de asistencia no cambiarán. Volver a una comunidad privada puede requerir aprobación o una nueva invitación."
+    }
   },
   "feed": {
     "title": "Feed",

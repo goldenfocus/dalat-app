@@ -2045,7 +2045,19 @@
     "memberActionFailed": "Mitglied konnte nicht aktualisiert werden. Erneut versuchen.",
     "statsHint": "Letzte 30 Tage. Geschätzte Besuche ohne Community- und Website-Admins. Erfassung ab dieser Version.",
     "campaignHint": "Wähle den Kanal zum Teilen des Links.",
-    "conversionHint": "Gezählt werden bestätigte neue Mitgliedschaften nach einem Besuch. Die Quelle zeigt den Linktyp, nicht wer ihn geteilt hat."
+    "conversionHint": "Gezählt werden bestätigte neue Mitgliedschaften nach einem Besuch. Die Quelle zeigt den Linktyp, nicht wer ihn geteilt hat.",
+    "memberMenu": {
+      "mute": "Community-Benachrichtigungen stummschalten",
+      "unmute": "Community-Benachrichtigungen aktivieren",
+      "muted": "Community-Benachrichtigungen stummgeschaltet",
+      "unmuted": "Community-Benachrichtigungen aktiviert",
+      "edit": "Community bearbeiten",
+      "manage": "Mitglieder verwalten",
+      "failed": "Änderung konnte nicht gespeichert werden. Bitte erneut versuchen.",
+      "left": "Du hast die Community verlassen",
+      "transferFirst": "Übertrage zuerst die Eigentümerschaft unter Mitglieder verwalten an ein anderes Mitglied.",
+      "leaveDescription": "Diese Community verlassen? Deine Veranstaltungszusagen bleiben bestehen. Für einen erneuten Beitritt zu einer privaten Community ist eventuell eine Genehmigung oder neue Einladung nötig."
+    }
   },
   "feed": {
     "title": "Feed",

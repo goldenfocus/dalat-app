@@ -2159,7 +2159,19 @@
     "memberActionFailed": "Could not update this member. Please try again.",
     "statsHint": "Last 30 days. Visits are estimates and exclude community managers and site admins. Tracking starts with this release.",
     "campaignHint": "Choose the channel where you will share this link.",
-    "conversionHint": "Joined visits count confirmed memberships linked to a visit. Existing members are excluded. Sources describe links, not proof of who shared them."
+    "conversionHint": "Joined visits count confirmed memberships linked to a visit. Existing members are excluded. Sources describe links, not proof of who shared them.",
+    "memberMenu": {
+      "mute": "Mute community notifications",
+      "unmute": "Unmute community notifications",
+      "muted": "Community notifications muted",
+      "unmuted": "Community notifications enabled",
+      "edit": "Edit community",
+      "manage": "Manage members",
+      "failed": "Could not save your change. Please try again.",
+      "left": "You left the community",
+      "transferFirst": "Transfer ownership to another member before leaving. You can do this in Manage members.",
+      "leaveDescription": "Leave this community? Your event RSVPs will stay unchanged. Rejoining a private community may require approval or a new invitation."
+    }
   },
   "feed": {
     "title": "Feed",

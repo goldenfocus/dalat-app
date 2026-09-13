@@ -67,10 +67,16 @@ export default async function TribePage({ params, searchParams }: PageProps) {
 
   let membership = null;
   let pendingRequest = null;
+  let notificationsMuted = false;
 
   if (user) {
     const { data: mem } = await supabase.from("tribe_members").select("*").eq("tribe_id", tribe.id).eq("user_id", user.id).single();
     membership = mem?.status === "active" ? mem : null;
+    if (membership) {
+      const { data: preference } = await supabase.from("community_notification_preferences")
+        .select("muted").eq("tribe_id", tribe.id).eq("user_id", user.id).maybeSingle();
+      notificationsMuted = preference?.muted === true;
+    }
     if (!membership) {
       const { data: req } = await supabase.from("tribe_requests").select("*").eq("tribe_id", tribe.id).eq("user_id", user.id).eq("status", "pending").single();
       pendingRequest = req;
@@ -125,6 +131,7 @@ export default async function TribePage({ params, searchParams }: PageProps) {
       <TribeHeader
         tribe={clientTribe}
         membership={membership}
+        notificationsMuted={notificationsMuted}
         isAdmin={isAdmin}
         canViewInsights={!!(isAdmin || siteAdmin)}
         eventCount={events?.length ?? 0}

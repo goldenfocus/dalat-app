@@ -34,24 +34,18 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   const { data: tribe } = await supabase.from('tribes').select('id, created_by').eq('slug', slug).single();
   if (!tribe) return NextResponse.json({ error: 'Tribe not found' }, { status: 404 });
 
-  // Check if user is the only leader
-  const { data: membership } = await supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
-
-  if (membership?.role === 'leader') {
-    const { data: otherLeaders } = await supabase
-      .from('tribe_members')
-      .select('id')
-      .eq('tribe_id', tribe.id)
-      .eq('role', 'leader')
-      .neq('user_id', user.id);
-
-    if (!otherLeaders?.length) {
-      return NextResponse.json({ error: 'You must transfer leadership before leaving' }, { status: 400 });
-    }
+  if (tribe.created_by === user.id) {
+    return NextResponse.json({ error: 'Transfer ownership before leaving', code: 'transfer_required' }, { status: 409 });
+  }
+  const { data: membership, error: membershipError } = await supabase.from('tribe_members')
+    .select('id, status').eq('tribe_id', tribe.id).eq('user_id', user.id).maybeSingle();
+  if (membershipError || !membership || membership.status !== 'active') {
+    return NextResponse.json({ error: 'Active membership required' }, { status: 403 });
   }
 
-  const { error } = await supabase.from('tribe_members').delete().eq('tribe_id', tribe.id).eq('user_id', user.id);
+  const { data: removed, error } = await supabase.from('tribe_members').delete().eq('tribe_id', tribe.id).eq('user_id', user.id).select('id');
   if (error) return NextResponse.json({ error: error.message }, { status: 403 });
 
+  if (!removed?.length) return NextResponse.json({ error: 'Membership was not removed' }, { status: 409 });
   return NextResponse.json({ success: true });
 }

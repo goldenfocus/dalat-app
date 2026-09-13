@@ -2048,7 +2048,19 @@
     "memberActionFailed": "无法更新成员，请重试。",
     "statsHint": "最近30天。访问量为估算，不包含管理员。从本版本开始统计。",
     "campaignHint": "选择分享此链接的渠道。",
-    "conversionHint": "仅统计与访问关联的已确认新成员。来源不代表分享者身份。"
+    "conversionHint": "仅统计与访问关联的已确认新成员。来源不代表分享者身份。",
+    "memberMenu": {
+      "mute": "关闭社区通知",
+      "unmute": "开启社区通知",
+      "muted": "已关闭社区通知",
+      "unmuted": "已开启社区通知",
+      "edit": "编辑社区",
+      "manage": "管理成员",
+      "failed": "无法保存更改，请重试。",
+      "left": "你已退出社区",
+      "transferFirst": "退出前，请在管理成员中将所有权转让给其他成员。",
+      "leaveDescription": "退出此社区？你的活动报名将保持不变。重新加入私人社区可能需要批准或新的邀请。"
+    }
   },
   "feed": {
     "title": "动态",

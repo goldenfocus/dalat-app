@@ -2045,7 +2045,19 @@
     "memberActionFailed": "Tidak dapat mengemas kini ahli. Cuba lagi.",
     "statsHint": "30 hari lalu. Anggaran lawatan tidak termasuk pentadbir. Penjejakan bermula dengan keluaran ini.",
     "campaignHint": "Pilih saluran untuk berkongsi pautan ini.",
-    "conversionHint": "Hanya keahlian baharu yang disahkan selepas lawatan dikira. Sumber pautan tidak membuktikan siapa yang berkongsinya."
+    "conversionHint": "Hanya keahlian baharu yang disahkan selepas lawatan dikira. Sumber pautan tidak membuktikan siapa yang berkongsinya.",
+    "memberMenu": {
+      "mute": "Senyapkan pemberitahuan komuniti",
+      "unmute": "Aktifkan pemberitahuan komuniti",
+      "muted": "Pemberitahuan komuniti disenyapkan",
+      "unmuted": "Pemberitahuan komuniti diaktifkan",
+      "edit": "Sunting komuniti",
+      "manage": "Urus ahli",
+      "failed": "Perubahan tidak dapat disimpan. Sila cuba lagi.",
+      "left": "Anda telah keluar daripada komuniti",
+      "transferFirst": "Pindahkan pemilikan kepada ahli lain melalui Urus ahli sebelum keluar.",
+      "leaveDescription": "Keluar daripada komuniti ini? RSVP acara anda kekal. Menyertai semula komuniti peribadi mungkin memerlukan kelulusan atau jemputan baharu."
+    }
   },
   "feed": {
     "title": "Suapan",

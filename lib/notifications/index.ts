@@ -32,6 +32,7 @@ import { getNotificationTemplate } from './templates';
 import { sendInAppNotification } from './channels/in-app';
 import { sendPushNotification } from './channels/push';
 import { sendEmailNotification } from './channels/email';
+import { isCommunityNotificationMuted } from './community-preferences';
 import { buildUnsubscribeUrl } from './unsubscribe';
 
 // Re-export types for convenience
@@ -94,6 +95,9 @@ export async function notify(
   payload: NotificationPayload,
   options: NotifyOptions = {}
 ): Promise<NotifyResult> {
+  if (await isCommunityNotificationMuted(createServiceClient(), payload)) {
+    return { success: true, channels: [] };
+  }
   const { channels: forcedChannels, skipPreferences, onlyChannels } = options;
 
   console.log(`[notify] Starting notification: ${payload.type} for user ${payload.userId}`);

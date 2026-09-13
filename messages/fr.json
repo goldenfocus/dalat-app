@@ -2059,7 +2059,19 @@
     "memberActionFailed": "Impossible de modifier ce membre. Réessayez.",
     "statsHint": "30 derniers jours. Visites estimées, hors gestionnaires et administrateurs du site. Mesure à partir de cette version.",
     "campaignHint": "Choisissez le canal où vous partagerez ce lien.",
-    "conversionHint": "Les adhésions liées aux visites sont confirmées. Les membres existants sont exclus. La source du lien ne prouve pas qui l’a partagé."
+    "conversionHint": "Les adhésions liées aux visites sont confirmées. Les membres existants sont exclus. La source du lien ne prouve pas qui l’a partagé.",
+    "memberMenu": {
+      "mute": "Couper les notifications",
+      "unmute": "Réactiver les notifications",
+      "muted": "Notifications de la communauté coupées",
+      "unmuted": "Notifications de la communauté activées",
+      "edit": "Modifier la communauté",
+      "manage": "Gérer les membres",
+      "failed": "Impossible d’enregistrer. Veuillez réessayer.",
+      "left": "Vous avez quitté la communauté",
+      "transferFirst": "Transférez la propriété à un autre membre avant de partir, depuis Gérer les membres.",
+      "leaveDescription": "Quitter cette communauté ? Vos inscriptions aux événements restent inchangées. Rejoindre une communauté privée peut nécessiter une approbation ou une nouvelle invitation."
+    }
   },
   "feed": {
     "title": "Fil",

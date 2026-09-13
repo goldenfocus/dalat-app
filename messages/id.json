@@ -2045,7 +2045,19 @@
     "memberActionFailed": "Tidak dapat memperbarui anggota. Coba lagi.",
     "statsHint": "30 hari terakhir. Perkiraan kunjungan tidak termasuk admin. Pelacakan dimulai pada rilis ini.",
     "campaignHint": "Pilih saluran tempat Anda membagikan tautan ini.",
-    "conversionHint": "Hanya keanggotaan baru terkonfirmasi yang terkait kunjungan dihitung. Sumber tautan tidak membuktikan siapa yang membagikannya."
+    "conversionHint": "Hanya keanggotaan baru terkonfirmasi yang terkait kunjungan dihitung. Sumber tautan tidak membuktikan siapa yang membagikannya.",
+    "memberMenu": {
+      "mute": "Bisukan notifikasi komunitas",
+      "unmute": "Aktifkan notifikasi komunitas",
+      "muted": "Notifikasi komunitas dibisukan",
+      "unmuted": "Notifikasi komunitas diaktifkan",
+      "edit": "Edit komunitas",
+      "manage": "Kelola anggota",
+      "failed": "Perubahan gagal disimpan. Silakan coba lagi.",
+      "left": "Anda telah keluar dari komunitas",
+      "transferFirst": "Alihkan kepemilikan kepada anggota lain melalui Kelola anggota sebelum keluar.",
+      "leaveDescription": "Keluar dari komunitas ini? RSVP acara Anda tetap tersimpan. Bergabung kembali ke komunitas privat mungkin memerlukan persetujuan atau undangan baru."
+    }
   },
   "feed": {
     "title": "Feed",

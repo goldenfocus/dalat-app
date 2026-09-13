@@ -4,9 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
-import { Settings, Lock, Globe, Eye, EyeOff, UserPlus, ChartNoAxesCombined } from "lucide-react";
+import { Lock, Globe, Eye, EyeOff, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { CommunityMemberMenu } from "./community-member-menu";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,12 +21,13 @@ interface TribeHeaderProps {
   membership: TribeMember | null;
   isAdmin: boolean;
   canViewInsights?: boolean;
+  notificationsMuted?: boolean;
   /** Counts shown in the profile-style stat row. */
   eventCount: number;
   momentCount: number;
 }
 
-export function TribeHeader({ tribe, membership, isAdmin, canViewInsights = isAdmin, eventCount, momentCount }: TribeHeaderProps) {
+export function TribeHeader({ tribe, membership, isAdmin, canViewInsights = isAdmin, notificationsMuted = false, eventCount, momentCount }: TribeHeaderProps) {
   const t = useTranslations("tribes");
   const [showSettings, setShowSettings] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
@@ -122,19 +123,9 @@ export function TribeHeader({ tribe, membership, isAdmin, canViewInsights = isAd
 
                     </>
                   )}
-                  {(isAdmin || canViewInsights) && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t("settings")}>
-                          <Settings className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {isAdmin && <DropdownMenuItem onSelect={() => setShowSettings(true)}><Settings className="w-4 h-4" />{t("settings")}</DropdownMenuItem>}
-                        {canViewInsights && <DropdownMenuItem asChild><Link href={`/communities/${tribe.slug}/insights`}><ChartNoAxesCombined className="w-4 h-4" />{t("insights")}</Link></DropdownMenuItem>}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                  <CommunityMemberMenu tribe={tribe} membership={membership} isAdmin={isAdmin}
+                    canViewInsights={canViewInsights} notificationsMuted={notificationsMuted}
+                    onEdit={() => setShowSettings(true)} />
                 </div>
               </div>
           <div className="mt-5 grid grid-cols-[6rem_minmax(0,1fr)] sm:grid-cols-[10rem_minmax(0,1fr)] items-stretch gap-4 sm:gap-6">
