@@ -7,6 +7,7 @@ import { useCommunityRsvp, CommunityRsvpChoice } from "./community-rsvp";
 import { useState, useTransition, createContext, useContext, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { EventFeedback } from "./event-feedback";
@@ -117,11 +118,29 @@ export function useRsvpActions(
   isLoggedIn: boolean,
   onRsvpSuccess?: () => void,
   questionnaire?: QuestionnaireData | null,
-  onShowQuestionnaire?: () => void
+  onShowQuestionnaire?: () => void,
+  currentStatus?: Rsvp["status"] | null
 ) {
   const router = useRouter();
   const communityContext = useCommunityRsvp();
-  const [isPending, startTransition] = useTransition();
+  const [transitionPending, startTransition] = useTransition();
+  const [interestedPending, setInterestedPending] = useState(false);
+  const interestedLock = useRef(false);
+  const [confirmedStatus, setConfirmedStatus] = useState<Rsvp["status"] | null | undefined>();
+  useEffect(() => { setConfirmedStatus(undefined); }, [eventId, currentStatus]);
+  const isPending = transitionPending || interestedPending;
+  // Bound both network and auth-lock waits. A timed-out write may have reached
+  // the server, so never claim it failed or retry it automatically.
+  async function boundedRpc(name: string, args: Record<string, unknown>) {
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+    try {
+      return await Promise.race([
+        createClient().rpc(name, args).abortSignal(controller.signal),
+        new Promise<never>((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error("Could not confirm the update. Please try again.")); }, 12000); }),
+      ]);
+    } finally { clearTimeout(timer!); }
+  }
   const [error, setError] = useState<string | null>(null);
   const [lastRsvpId, setLastRsvpId] = useState<string | null>(null);
 
@@ -151,15 +170,21 @@ export function useRsvpActions(
   async function joinSelectedCommunity(celebrate: boolean) {
     if (!communityContext.join || !communityContext.community || communityContext.member) return;
     const supabase = createClient();
-    const {data, error: joinError} = await supabase.rpc("join_community", {p_slug:communityContext.community.slug});
+    let result;
+    try { result = await boundedRpc("join_community", {p_slug:communityContext.community.slug}); }
+    catch { communityContext.setJoinStatus('failed'); return; }
+    const {data, error: joinError} = result;
     if (joinError) { communityContext.setJoinStatus('failed'); return; }
     if (data?.status === 'requested') { communityContext.setJoin(false); communityContext.setJoinStatus('requested'); return; }
     if (data?.status !== 'joined') return;
     communityContext.confirmJoin(celebrate);
     const visit = currentCommunityVisit(communityContext.community.slug);
     if (visit) {
-      const {data:community} = await supabase.from('tribes').select('id').eq('slug',communityContext.community.slug).maybeSingle();
-      if (community) await supabase.rpc('complete_community_visit',{p_visit_id:visit.id,p_community_id:community.id});
+      const slug = communityContext.community.slug;
+      void (async () => {
+        const {data:community} = await supabase.from('tribes').select('id').eq('slug',slug).maybeSingle();
+        if (community) await supabase.rpc('complete_community_visit',{p_visit_id:visit.id,p_community_id:community.id});
+      })().catch(console.error);
     }
   }
 
@@ -183,6 +208,7 @@ export function useRsvpActions(
           return;
         }
 
+        setConfirmedStatus(data?.status);
         await joinSelectedCommunity(false);
         const rsvpId = data?.rsvp_id;
         setLastRsvpId(rsvpId || null);
@@ -214,18 +240,19 @@ export function useRsvpActions(
   }
 
   async function handleInterested() {
-    prepareCelebrationAudio();
-    if (!isLoggedIn) {
-      try { await startSignupIntent({kind:"event",slug:communityContext.eventSlug || window.location.pathname.split("/").pop()!,eventAction:"interested",joinCommunity:communityContext.join,communitySlug:communityContext.community?.slug}); }
-      catch { setError("Could not continue. Please try again."); }
-      return;
-    }
-
+    if (interestedLock.current || isPending) return;
+    interestedLock.current = true;
+    setInterestedPending(true);
     setError(null);
-    const supabase = createClient();
+    prepareCelebrationAudio();
+    try {
+      if (!isLoggedIn) {
+        try { await startSignupIntent({kind:"event",slug:communityContext.eventSlug || window.location.pathname.split("/").pop()!,eventAction:"interested",joinCommunity:communityContext.join,communitySlug:communityContext.community?.slug}); }
+        catch { setError("Could not continue. Please try again."); }
+        return;
+      }
 
-    startTransition(async () => {
-      const { data, error: rpcError } = await supabase.rpc("mark_interested", {
+      const { data, error: rpcError } = await boundedRpc("mark_interested", {
         p_event_id: eventId,
       });
 
@@ -234,6 +261,7 @@ export function useRsvpActions(
         return;
       }
 
+      setConfirmedStatus("interested");
       await joinSelectedCommunity(true);
 
       // Always cancel old scheduled reminders for this RSVP state.
@@ -255,7 +283,12 @@ export function useRsvpActions(
       }).catch(console.error);
 
       router.refresh();
-    });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not confirm the update. Please try again.");
+    } finally {
+      interestedLock.current = false;
+      setInterestedPending(false);
+    }
   }
 
   async function handleCancel() {
@@ -272,6 +305,7 @@ export function useRsvpActions(
         return;
       }
 
+      setConfirmedStatus(null);
       // Always cancel scheduled reminders for this user.
       // If someone was promoted, this request also sends the promotion notification.
       fetch("/api/notifications/cancel", {
@@ -289,6 +323,8 @@ export function useRsvpActions(
 
   return {
     isPending,
+    interestedPending,
+    confirmedStatus,
     error,
     handleRsvp,
     handleInterested,
@@ -337,8 +373,8 @@ export function RsvpButton({
     setShowQuestionnaire(true);
   }, []);
 
-  const { isPending, error, handleRsvp, handleInterested, handleCancel, performRsvp, hasActiveQuestionnaire } =
-    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire);
+  const { isPending, interestedPending, confirmedStatus, error, handleRsvp, handleInterested, handleCancel, performRsvp, hasActiveQuestionnaire } =
+    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire, currentRsvp?.status);
 
   useEffect(() => {
     if (isLoggedIn && hasActiveQuestionnaire && !currentRsvp && !isEventPast(startsAt, endsAt) && new URLSearchParams(window.location.search).get("resumeRsvp") === "1") {
@@ -376,9 +412,10 @@ export function RsvpButton({
 
   const isPast = isEventPast(startsAt, endsAt);
   const isFull = capacity ? goingSpots >= capacity : false;
-  const isGoing = currentRsvp?.status === "going";
-  const isWaitlist = currentRsvp?.status === "waitlist";
-  const isInterested = currentRsvp?.status === "interested";
+  const status = confirmedStatus === undefined ? currentRsvp?.status : confirmedStatus;
+  const isGoing = status === "going";
+  const isWaitlist = status === "waitlist";
+  const isInterested = status === "interested";
 
   // Render celebration portal (always rendered, controlled by showCelebration state)
   const celebrationPortal = showCelebration && (
@@ -447,14 +484,14 @@ export function RsvpButton({
             variant="outline"
             className="w-full"
           >
-            {isPending ? "..." : t("cancelRsvp")}
+            {isPending && !interestedPending ? "..." : t("cancelRsvp")}
           </Button>
           <button
             onClick={handleInterested}
             disabled={isPending}
             className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
           >
-            {isPending ? "..." : t("justInterested")}
+            {interestedPending ? <span className="inline-flex items-center gap-2" role="status"><Loader2 className="h-4 w-4 animate-spin" />{t("justInterested")}</span> : t("justInterested")}
           </button>
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
@@ -483,14 +520,14 @@ export function RsvpButton({
             variant="outline"
             className="w-full"
           >
-            {isPending ? "..." : t("leaveWaitlist")}
+            {isPending && !interestedPending ? "..." : t("leaveWaitlist")}
           </Button>
           <button
             onClick={handleInterested}
             disabled={isPending}
             className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
           >
-            {isPending ? "..." : t("justInterested")}
+            {interestedPending ? <span className="inline-flex items-center gap-2" role="status"><Loader2 className="h-4 w-4 animate-spin" />{t("justInterested")}</span> : t("justInterested")}
           </button>
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
@@ -514,14 +551,14 @@ export function RsvpButton({
             disabled={isPending}
             className="w-full"
           >
-            {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
+            {isPending && !interestedPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
           </Button>
           <button
             onClick={handleCancel}
             disabled={isPending}
             className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
           >
-            {isPending ? "..." : t("notInterested")}
+            {isPending && !interestedPending ? "..." : t("notInterested")}
           </button>
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
@@ -541,7 +578,7 @@ export function RsvpButton({
           disabled={isPending}
           className="w-full"
         >
-          {isPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
+          {isPending && !interestedPending ? "..." : isFull ? t("joinWaitlist") : t("imGoing")}
         </Button>
         <Button
           onClick={handleInterested}
@@ -549,7 +586,7 @@ export function RsvpButton({
           variant="outline"
           className="w-full"
         >
-          {isPending ? "..." : t("interested")}
+          {interestedPending ? <span className="inline-flex items-center gap-2" role="status"><Loader2 className="h-4 w-4 animate-spin" />{t("interested")}</span> : t("interested")}
         </Button>
         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
       </div>
