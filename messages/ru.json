@@ -117,7 +117,8 @@
       "love": "любовью",
       "rssFeed": "RSS-лента",
       "discover": "Обзор"
-    }
+    },
+    "experiences": "Впечатления"
   },
   "eventSuggestion": {
     "title": "Поиск активностей теперь автоматизирован",
@@ -3512,7 +3513,7 @@
     "openPage": "Open experience",
     "unpublish": "Unpublish",
     "photos": "Your photographs",
-    "choosePhotos": "Add restaurant photographs",
+    "choosePhotos": "Добавить фотографии",
     "originalPhoto": "Contributor’s original photograph",
     "removePhoto": "Remove or restore photograph",
     "fileLimit": "Choose up to 12 photographs, each under 20 MB.",
@@ -3521,7 +3522,7 @@
     "recordingWaiting": "Recording saved on this device",
     "upload": "Upload saved files",
     "tellStory": "Tell the story",
-    "voiceHint": "Speak for 30–120 seconds. Stop whenever you like. Your first recording is enough; follow-up questions are optional. Keep this page open during upload.",
+    "voiceHint": "Speak naturally and stop when you are finished. For a conversation with optional questions, choose Live interview. Keep the app open while recording.",
     "stop": "Stop and keep recording",
     "record": "Record my experience",
     "notes": "Your notes or optional answer",
@@ -3571,7 +3572,7 @@
     "storageWarning": "Device storage is unavailable or full. Upload now and keep this page open to protect your recording.",
     "unsupported": "Recording is unavailable. Allow microphone access in Safari over HTTPS, or add your story as text.",
     "newExperience": "Create an experience",
-    "empty": "Your next visit could be the first story here.",
+    "empty": "Поделитесь первым впечатлением. Маленькая деталь вашего визита может помочь другим.",
     "by": "By",
     "visited": "Visited",
     "published": "Published",
@@ -3585,7 +3586,7 @@
     "edit": "Edit experience",
     "all": "All experiences",
     "discovery": "Small details. Real visits.",
-    "discoveryHint": "Explore what people actually tasted, visited and noticed.",
+    "discoveryHint": "Личные впечатления об отдыхе, прогулках, занятиях, еде, проживании и повседневных открытиях.",
     "originalLanguage": "Original language",
     "share": "Copy share link",
     "copied": "Link copied",
@@ -3594,6 +3595,23 @@
     "firsthand": "Reported firsthand",
     "impression": "Personal impression",
     "inferred": "AI inference",
-    "owner_supplied": "Owner statement"
+    "owner_supplied": "Owner statement",
+    "wellness": "Здоровье и отдых",
+    "experienceHint": "Расскажите о массаже, прогулке, занятии, обеде или другом памятном опыте.",
+    "myDrafts": "Ваши черновики",
+    "liveTitle": "Live interview",
+    "liveHint": "Talk naturally with an AI interviewer using OpenAI. It can ask one optional question at a time; you can interrupt or stop whenever you like. Your voice and private conversation are saved. Sessions can last up to 60 minutes; you can continue in the same draft. Keep the app open.",
+    "liveStart": "Start live interview",
+    "liveFinish": "Finish and prepare my draft",
+    "liveConnecting": "Connecting your interview…",
+    "liveRecovery": "The connection or saving was interrupted. Your captured audio and conversation are kept on this device. Reconnect, retry, or continue in writing.",
+    "livePlay": "Tap play to hear the interviewer.",
+    "liveTranscript": "Private interview transcript",
+    "liveYou": "You",
+    "liveAssistant": "Interviewer",
+    "audioRecovery": "Audio preview is unavailable. The original is still saved; download it or retry.",
+    "downloadAudio": "Download original recording",
+    "recordingInterrupted": "Recording stopped because the microphone or app was interrupted. Your captured audio is kept.",
+    "recordingLimit": "This recording reached the file-size limit and was kept. You can start another recording to continue."
   }
 }

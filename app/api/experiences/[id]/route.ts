@@ -166,7 +166,7 @@ export async function DELETE(request: Request, { params }: Context) {
     return NextResponse.json({ error: "Could not delete" }, { status: 503 });
   const { data: files, error: listError } = await admin.storage
     .from(bucket)
-    .list(`${owned.user.id}/${id}`, { limit: 100 });
+    .list(`${owned.user.id}/${id}`, { limit: 1000 });
   if (listError)
     return NextResponse.json(
       { error: "Could not delete files; please retry" },

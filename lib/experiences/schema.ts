@@ -4,6 +4,7 @@ import { CONTENT_LOCALES as locales } from "@/lib/types";
 export const categories = [
   "food",
   "coffee",
+  "wellness",
   "outdoors",
   "culture",
   "stay",
@@ -68,7 +69,7 @@ export const emptyStory = (locale: (typeof locales)[number]) => ({
   summary: "",
   venue_name: "",
   venue_address: "",
-  category: "food" as const,
+  category: "other" as const,
   tags: [],
   original_language: locale,
   observations: [],

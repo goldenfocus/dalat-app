@@ -16,6 +16,7 @@ export default async function NewExperience() {
       </p>
       <h1 className="text-4xl font-semibold tracking-tight">{t("create")}</h1>
       <p className="text-lg text-muted-foreground">{t("promise")}</p>
+      <p className="text-sm text-muted-foreground">{t("experienceHint")}</p>
       <p className="rounded-2xl bg-muted p-5 text-sm">{t("privateNotice")}</p>
       {user ? (
         <StartExperience

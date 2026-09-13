@@ -1,3 +1,4 @@
+import { mediaResponse } from "@/lib/experiences/media-response";
 import { createClient } from "@/lib/supabase/server";
 import { bucket, experienceAdmin } from "@/lib/experiences/server";
 export async function GET(
@@ -35,13 +36,10 @@ export async function GET(
     .storage.from(bucket)
     .download(path);
   if (error || !data) return new Response(null, { status: 404 });
-  return new Response(data, {
-    headers: {
-      "Content-Type":
-        original || media.kind === "audio" ? media.mime : "image/jpeg",
-      "Cache-Control": "private, no-store",
-      "X-Content-Type-Options": "nosniff",
-      ...(original ? { "Content-Disposition": "attachment" } : {}),
-    },
-  });
+  return mediaResponse(
+    data,
+    original || media.kind === "audio" ? media.mime : "image/jpeg",
+    request.headers.get("range"),
+    original,
+  );
 }

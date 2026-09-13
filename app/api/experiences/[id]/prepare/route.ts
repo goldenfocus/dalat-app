@@ -1,3 +1,7 @@
+import {
+  liveConversationSchema,
+  liveEvidence,
+} from "@/lib/experiences/live-schema";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
@@ -60,6 +64,7 @@ export async function POST(
         .eq("experience_id", id)
         .eq("id", input.data.audio_id)
         .eq("kind", "audio")
+        .eq("capture_mode", "record")
         .single();
       if (!audio) throw new Error("missing_audio");
       const { data: file } = await admin.storage
@@ -86,7 +91,16 @@ export async function POST(
         .eq("experience_id", id);
       if (error) throw new Error("save_failed");
     }
-    const text = [transcript, source?.notes || ""].filter(Boolean).join("\n\n");
+    const conversation = liveConversationSchema.safeParse(
+      source?.live_conversation,
+    );
+    const text = [
+      transcript,
+      conversation.success ? liveEvidence(conversation.data) : "",
+      source?.notes || "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
     if (!text.trim()) throw new Error("no_story");
     const { data: media } = await admin
       .from("experience_media")
