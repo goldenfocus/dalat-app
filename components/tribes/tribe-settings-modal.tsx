@@ -331,9 +331,9 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
 
             <div className="space-y-2">
               <Label htmlFor="tribe-slug">{t("settingsForm.url")}</Label>
-              <div className="flex items-center">
+              <div className="flex min-w-0 flex-wrap items-center gap-y-2">
                 <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input whitespace-nowrap">
-                  dalat.app/tribes/
+                  dalat.app/communities/
                 </span>
                 <Input
                   id="tribe-slug"
@@ -341,13 +341,24 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
                   onChange={(e) => setSlug(sanitizeSlug(e.target.value))}
                   onBlur={() => setSlug(finalizeSlug(slug))}
                   maxLength={60}
-                  className="rounded-l-none"
+                  className="min-w-0 flex-1 rounded-l-none"
                 />
               </div>
               {slug !== tribe.slug && (
                 <p className="text-xs text-muted-foreground">{t("settingsForm.urlHint")}</p>
               )}
             </div>
+
+            {tribe.short_slug && (
+              <div className="space-y-2">
+                <Label>{t("shareTribe")}</Label>
+                <Button type="button" variant="outline" className="h-auto min-h-11 w-full justify-between gap-2 whitespace-normal" onClick={() => copyText(`${window.location.origin}/${tribe.short_slug}`)}>
+                  <span className="min-w-0 break-all">dalat.app/{tribe.short_slug}</span>
+                  <Copy className="h-4 w-4 shrink-0" />
+                  <span className="sr-only">{copied ? t("copied") : t("copyLink")}</span>
+                </Button>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="tribe-description">{t("settingsForm.description")}</Label>

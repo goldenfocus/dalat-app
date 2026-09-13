@@ -4,8 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
-import { Settings, Lock, Globe, Eye, EyeOff, UserPlus } from "lucide-react";
+import { Settings, Lock, Globe, Eye, EyeOff, UserPlus, ChartNoAxesCombined } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TribeSettingsModal } from "./tribe-settings-modal";
@@ -18,12 +19,13 @@ interface TribeHeaderProps {
   tribe: Tribe & { profiles?: { display_name: string | null; avatar_url: string | null; username: string | null } };
   membership: TribeMember | null;
   isAdmin: boolean;
+  canViewInsights?: boolean;
   /** Counts shown in the profile-style stat row. */
   eventCount: number;
   momentCount: number;
 }
 
-export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCount }: TribeHeaderProps) {
+export function TribeHeader({ tribe, membership, isAdmin, canViewInsights = isAdmin, eventCount, momentCount }: TribeHeaderProps) {
   const t = useTranslations("tribes");
   const [showSettings, setShowSettings] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
@@ -133,15 +135,21 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
                           {t("joinRequests")}
                         </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setShowSettings(true)}
-                        className="p-2"
-                      >
-                        <Settings className="w-4 h-4" />
-                      </Button>
+
                     </>
+                  )}
+                  {(isAdmin || canViewInsights) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t("settings")}>
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {isAdmin && <DropdownMenuItem onSelect={() => setShowSettings(true)}><Settings className="w-4 h-4" />{t("settings")}</DropdownMenuItem>}
+                        {canViewInsights && <DropdownMenuItem asChild><Link href={`/communities/${tribe.slug}/insights`}><ChartNoAxesCombined className="w-4 h-4" />{t("insights")}</Link></DropdownMenuItem>}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </div>
               </div>
