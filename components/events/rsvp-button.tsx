@@ -1,4 +1,5 @@
 "use client";
+import { prepareCelebrationAudio } from "@/lib/communities/celebration-audio";
 
 import { currentCommunityVisit } from "@/lib/communities/activity";
 import { startSignupIntent } from "@/lib/auth/start-intent";
@@ -129,6 +130,7 @@ export function useRsvpActions(
     questionnaire.questions.length > 0;
 
   async function handleRsvp() {
+    prepareCelebrationAudio();
     if (!isLoggedIn) {
       setError(null);
       try { await startSignupIntent({ kind: "event", slug: communityContext.eventSlug || window.location.pathname.split("/").pop()!, joinCommunity: communityContext.join, communitySlug: communityContext.community?.slug }); }
@@ -144,6 +146,21 @@ export function useRsvpActions(
 
     // Otherwise, proceed with direct RSVP
     await performRsvp();
+  }
+
+  async function joinSelectedCommunity(celebrate: boolean) {
+    if (!communityContext.join || !communityContext.community || communityContext.member) return;
+    const supabase = createClient();
+    const {data, error: joinError} = await supabase.rpc("join_community", {p_slug:communityContext.community.slug});
+    if (joinError) { communityContext.setJoinStatus('failed'); return; }
+    if (data?.status === 'requested') { communityContext.setJoin(false); communityContext.setJoinStatus('requested'); return; }
+    if (data?.status !== 'joined') return;
+    communityContext.confirmJoin(celebrate);
+    const visit = currentCommunityVisit(communityContext.community.slug);
+    if (visit) {
+      const {data:community} = await supabase.from('tribes').select('id').eq('slug',communityContext.community.slug).maybeSingle();
+      if (community) await supabase.rpc('complete_community_visit',{p_visit_id:visit.id,p_community_id:community.id});
+    }
   }
 
   // Perform the actual RSVP (called directly or after questionnaire)
@@ -166,17 +183,7 @@ export function useRsvpActions(
           return;
         }
 
-        if (communityContext.join && communityContext.community) {
-          const { error: joinError } = await supabase.rpc("join_community", { p_slug: communityContext.community.slug });
-          if (!joinError) {
-            const visit = currentCommunityVisit(communityContext.community.slug);
-            if (visit) {
-              const { data: community } = await supabase.from("tribes").select("id").eq("slug",communityContext.community.slug).maybeSingle();
-              if (community) await supabase.rpc("complete_community_visit",{p_visit_id:visit.id,p_community_id:community.id});
-            }
-          }
-          if (joinError) setError("Your RSVP is saved. Community membership could not be completed; you can retry on the community page.");
-        }
+        await joinSelectedCommunity(false);
         const rsvpId = data?.rsvp_id;
         setLastRsvpId(rsvpId || null);
 
@@ -207,8 +214,10 @@ export function useRsvpActions(
   }
 
   async function handleInterested() {
+    prepareCelebrationAudio();
     if (!isLoggedIn) {
-      router.push(`/auth/login?next=${encodeURIComponent(window.location.pathname)}`);
+      try { await startSignupIntent({kind:"event",slug:communityContext.eventSlug || window.location.pathname.split("/").pop()!,eventAction:"interested",joinCommunity:communityContext.join,communitySlug:communityContext.community?.slug}); }
+      catch { setError("Could not continue. Please try again."); }
       return;
     }
 
@@ -224,6 +233,8 @@ export function useRsvpActions(
         setError(rpcError.message);
         return;
       }
+
+      await joinSelectedCommunity(true);
 
       // Always cancel old scheduled reminders for this RSVP state.
       // If someone was promoted from waitlist, this request also notifies them.
@@ -337,6 +348,16 @@ export function RsvpButton({
       window.history.replaceState(null, "", url);
     }
   }, [isLoggedIn, hasActiveQuestionnaire, currentRsvp, startsAt, endsAt]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (isLoggedIn && currentRsvp?.status === "going" && url.searchParams.get("rsvpStatus") === "going") {
+      url.searchParams.delete("rsvpStatus");
+      window.history.replaceState(window.history.state, "", url);
+      setShowCelebration(true);
+      celebration.setCelebrating(true);
+    }
+  }, [isLoggedIn, currentRsvp?.status, celebration]);
 
   // Handle questionnaire submission
   const handleQuestionnaireSubmit = useCallback(async (responses: Record<string, string | string[]>) => {

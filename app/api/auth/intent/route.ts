@@ -7,6 +7,7 @@ import { z } from 'zod';
 const schema = z.object({
   kind: z.enum(['community', 'event', 'profile']), slug: z.string().min(1).max(180),
   visitId: z.uuid().optional(),
+  eventAction: z.enum(['going','interested']).default('going'),
   inviteCode: z.string().max(64).optional(), joinCommunity: z.boolean().optional(),
   locale: z.enum(locales).default('en'),
 });
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
   await admin.from('signup_intents').delete().lt('expires_at',new Date().toISOString());
   const { data: visit } = body.visitId && communityId ? await admin.from("community_visits").select("id").eq("id",body.visitId).eq("community_id",communityId).maybeSingle() : { data: null };
   const { data, error } = await admin.from('signup_intents').insert({
+    event_action: body.kind === 'event' ? body.eventAction : 'going',
     visit_id: visit?.id || null,
     kind: body.kind, target_id: targetId, community_id: communityId, inviter_id: inviterId,
     join_community: body.kind === 'community' || !!body.joinCommunity,

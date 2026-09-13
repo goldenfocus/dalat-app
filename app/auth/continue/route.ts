@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { NextResponse, after } from 'next/server';
+import { POST as sendInterestedNotifications } from '@/app/api/notifications/interested/route';
 import { POST as sendRsvpNotifications } from '@/app/api/notifications/rsvp/route';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
@@ -36,10 +37,17 @@ export async function GET(request: Request) {
       }));
     });
   }
+  if (data.just_completed && data.rsvp_status === 'interested' && data.event_id) {
+    after(async () => {
+      await sendInterestedNotifications(new Request(new URL('/api/notifications/interested',url.origin), {
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventId:data.event_id}),
+      }));
+    });
+  }
   const destination = new URL(localizedPath(safeReturnPath(data.next_path),locale),url.origin);
-  if (data.community_status) destination.searchParams.set('communityStatus',data.community_status);
+  if (data.just_completed && data.community_status) destination.searchParams.set('communityStatus',data.community_status);
   if (data.rsvp_pending) destination.searchParams.set('resumeRsvp','1');
-  if (data.rsvp_status) destination.searchParams.set('rsvpStatus',data.rsvp_status);
+  if (data.just_completed && data.rsvp_status) destination.searchParams.set('rsvpStatus',data.rsvp_status);
   const response = NextResponse.redirect(destination);
   // Keep the browser binding until expiry so callback replay remains harmless and useful.
   response.headers.set('Cache-Control','private, no-store');
