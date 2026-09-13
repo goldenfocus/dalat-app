@@ -1,3 +1,5 @@
+import { TopicLinks } from "./topic-links";
+import { topicTerms, topicHref } from "@/lib/experiences/topics";
 import { suggestsEventDiscovery } from "@/lib/experiences/actions";
 import { AttributedText } from "./attributed-text";
 import { createClient } from "@/lib/supabase/server";
@@ -12,6 +14,8 @@ type ExperienceCard = {
   selected_media: string[];
   status: string;
   category: string;
+  tags: string[];
+  observations: { value: string; source_type: string }[];
   author: { display_name: string | null; username: string | null } | null;
   venue: { slug: string } | null;
 };
@@ -21,28 +25,46 @@ export async function ExperienceList({
   category,
   excludeId,
   showEmpty = false,
+  tag,
+  page = 1,
 }: {
   authorId?: string;
   venueId?: string;
   category?: string;
   excludeId?: string;
   showEmpty?: boolean;
+  tag?: string;
+  page?: number;
 }) {
   const db = await createClient();
   const t = await getTranslations("experiences");
-  let q = db
-    .from("experiences")
-    .select(
-      "id,title,summary,visit_date,venue_name,selected_media,status,category,author:profiles!experiences_author_id_fkey(display_name,username),venue:venues(slug)",
-    )
-    .eq("status", "published")
-    .order("published_at", { ascending: false })
-    .limit(24);
+  const columns =
+    "id,title,summary,visit_date,venue_name,selected_media,status,category,tags,observations,author:profiles!experiences_author_id_fkey(display_name,username),venue:venues(slug)";
+  let q = tag
+    ? db
+        .rpc("experiences_by_topic", {
+          p_terms: topicTerms(tag),
+          p_category: category || null,
+          p_offset: (page - 1) * 24,
+        })
+        .select(columns)
+    : db
+        .from("experiences")
+        .select(columns)
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(24);
   if (authorId) q = q.eq("author_id", authorId);
   if (venueId) q = q.eq("venue_id", venueId);
-  if (category) q = q.eq("category", category);
+  if (category && !tag) q = q.eq("category", category);
   if (excludeId) q = q.neq("id", excludeId);
-  const { data } = await q.returns<ExperienceCard[]>();
+  const { data: result, error } = await q;
+  const rows = Array.isArray(result)
+    ? (result as unknown as ExperienceCard[])
+    : null;
+  if (error) throw new Error("Experience discovery unavailable");
+  const more = !!tag && !!rows && rows.length > 24 && page < 417;
+  const data = rows?.slice(0, 24);
   if (!data?.length)
     return showEmpty ? (
       <section className="rounded-2xl border border-dashed p-8 text-center">
@@ -79,6 +101,7 @@ export async function ExperienceList({
               <h3 className="text-lg font-medium group-hover:underline">
                 <Link href={`/experiences/${e.id}`}>{e.title}</Link>
               </h3>
+              <TopicLinks tags={e.tags} observations={e.observations} />
               <p className="line-clamp-3 text-sm text-muted-foreground">
                 <AttributedText
                   text={e.summary}
@@ -103,18 +126,42 @@ export async function ExperienceList({
                   {t("exploreVenue")}
                 </Link>
               )}
-              {!e.venue?.slug && suggestsEventDiscovery(e.category, `${e.title} ${e.summary}`) && (
-                <Link
-                  className="min-h-11 py-3 underline"
-                  href="/events/upcoming"
-                >
-                  {t("upcomingActions")}
-                </Link>
-              )}
+              {!e.venue?.slug &&
+                suggestsEventDiscovery(
+                  e.category,
+                  `${e.title} ${e.summary}`,
+                ) && (
+                  <Link
+                    className="min-h-11 py-3 underline"
+                    href="/events/upcoming"
+                  >
+                    {t("upcomingActions")}
+                  </Link>
+                )}
             </div>
           </article>
         ))}
       </div>
+      {tag && (page > 1 || more) && (
+        <nav className="flex gap-4">
+          {page > 1 && (
+            <Link
+              className="rounded-xl border px-4 py-3"
+              href={topicHref(tag, category, page - 1)}
+            >
+              {t("previousResults")}
+            </Link>
+          )}
+          {more && (
+            <Link
+              className="rounded-xl border px-4 py-3"
+              href={topicHref(tag, category, page + 1)}
+            >
+              {t("moreResults")}
+            </Link>
+          )}
+        </nav>
+      )}
     </section>
   );
 }

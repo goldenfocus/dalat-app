@@ -3646,6 +3646,10 @@
     "independentAccount": "Ce sera votre propre expérience privée. Seul un lieu existant peut être proposé ; le récit, les photos et la date de l’autre personne ne sont pas copiés.",
     "datedEvidence": "Photos originales de la personne · texte assisté par IA. Menus, prix et accès peuvent avoir changé depuis cette expérience",
     "pastAccount": "Expérience passée",
-    "accessUnknown": "Disponibilité non vérifiée"
+    "accessUnknown": "Disponibilité non vérifiée",
+    "topicHint": "Expériences portant ce thème ou le décrivant lors d’une visite. Consultez la personne, la date et le lieu ; les conditions peuvent changer.",
+    "clearTopic": "Voir toutes les expériences",
+    "moreResults": "Plus d’expériences",
+    "previousResults": "Expériences précédentes"
   }
 }
