@@ -68,7 +68,7 @@ function whisperToLrc(response: WhisperVerboseResponse): string {
 async function transcribeWithWhisper(
   audioUrl: string
 ): Promise<{ text: string; language: string; lrc: string } | null> {
-  const openaiApiKey = process.env.OPENAI_API_KEY;
+  const openaiApiKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY);
 
   if (!openaiApiKey) {
     console.warn("OpenAI API key not configured, skipping Whisper transcription");

@@ -29,6 +29,7 @@ export async function POST(
       id: z.string().uuid(),
       mime: z.string().max(100),
       kind: z.enum(["photo", "audio"]),
+      capture_mode: z.enum(["record", "live"]).default("record"),
     })
     .safeParse(await request.json());
   if (!input.success)
@@ -63,8 +64,9 @@ export async function POST(
   const { count } = await admin
     .from("experience_media")
     .select("id", { head: true, count: "exact" })
-    .eq("experience_id", id);
-  if ((count || 0) >= 20)
+    .eq("experience_id", id)
+    .eq("kind", item.kind);
+  if ((count || 0) >= (item.kind === "photo" ? 12 : 100))
     return NextResponse.json(
       { error: "Photo and recording limit reached" },
       { status: 400 },
@@ -113,6 +115,7 @@ export async function POST(
     path,
     preview_path,
     kind: item.kind,
+    capture_mode: item.capture_mode,
     mime,
   });
   return saveError

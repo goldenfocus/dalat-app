@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
+import { isExperienceEditorPath } from "@/lib/experiences/navigation";
 
 /**
  * Listens for service worker updates and automatically reloads the page.
@@ -13,7 +14,7 @@ export function SwUpdateHandler() {
   const hadInitialController = useRef(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
       return;
     }
 
@@ -23,33 +24,44 @@ export function SwUpdateHandler() {
 
     // Listen for messages from the service worker
     const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'SW_UPDATED') {
+      if (event.data?.type === "SW_UPDATED") {
         // Only reload if this is an UPDATE (we had a previous controller)
         // Skip reload for first-time installs (fixes PageSpeed redirect penalty)
         if (hadInitialController.current) {
-          console.log(`[App] New version available: ${event.data.version}, reloading...`);
-          window.location.reload();
+          console.log(
+            `[App] New version available: ${event.data.version}, reloading...`,
+          );
+          // Apply the update on the next navigation; never interrupt a private recording.
+          if (!isExperienceEditorPath(window.location.pathname))
+            window.location.reload();
         } else {
-          console.log(`[App] First-time SW install: ${event.data.version}, skipping reload`);
+          console.log(
+            `[App] First-time SW install: ${event.data.version}, skipping reload`,
+          );
         }
       }
     };
 
-    navigator.serviceWorker.addEventListener('message', handleMessage);
+    navigator.serviceWorker.addEventListener("message", handleMessage);
 
     // Listen for controller change - only reload if this is an update, not first install
     const handleControllerChange = () => {
       if (hadInitialController.current) {
-        console.log('[App] Service worker controller changed, reloading...');
-        window.location.reload();
+        console.log("[App] Service worker controller changed, reloading...");
+        // Apply the update on the next navigation; never interrupt a private recording.
+        if (!isExperienceEditorPath(window.location.pathname))
+          window.location.reload();
       } else {
-        console.log('[App] First-time SW activation, skipping reload');
+        console.log("[App] First-time SW activation, skipping reload");
         // Now we have a controller, mark for future updates
         hadInitialController.current = true;
       }
     };
 
-    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+    navigator.serviceWorker.addEventListener(
+      "controllerchange",
+      handleControllerChange,
+    );
 
     // Check for updates periodically and immediately after a suspended PWA
     // becomes visible again (iOS pauses intervals while backgrounded).
@@ -64,18 +76,21 @@ export function SwUpdateHandler() {
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === "visible") {
         checkForUpdates();
       }
     };
 
     const updateInterval = setInterval(checkForUpdates, 5 * 60 * 1000);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      navigator.serviceWorker.removeEventListener('message', handleMessage);
-      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      navigator.serviceWorker.removeEventListener("message", handleMessage);
+      navigator.serviceWorker.removeEventListener(
+        "controllerchange",
+        handleControllerChange,
+      );
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       clearInterval(updateInterval);
     };
   }, []);

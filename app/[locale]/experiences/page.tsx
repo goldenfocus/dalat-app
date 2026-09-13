@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { ExperienceList } from "@/components/experiences/list";
 import { Link } from "@/lib/i18n/routing";
@@ -23,19 +24,6 @@ export default async function Experiences({
 }) {
   const { category } = await searchParams;
   const t = await getTranslations("experiences");
-  const db = await createClient();
-  const {
-    data: { user },
-  } = await db.auth.getUser();
-  const { data: drafts } = user
-    ? await db
-        .from("experiences")
-        .select("id,title,created_at")
-        .eq("author_id", user.id)
-        .eq("status", "draft")
-        .order("created_at", { ascending: false })
-        .limit(20)
-    : { data: [] };
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 space-y-8">
       <header className="space-y-3">
@@ -53,20 +41,9 @@ export default async function Experiences({
           {t("newExperience")}
         </Link>
       </header>
-      {!!drafts?.length && (
-        <section className="rounded-2xl border p-5 space-y-3">
-          <h2 className="font-medium">{t("privateNotice")}</h2>
-          {drafts.map((d) => (
-            <Link
-              key={d.id}
-              href={`/experiences/${d.id}/edit`}
-              className="block min-h-11 py-2 underline"
-            >
-              {d.title || t("draft")} · {d.created_at.slice(0, 10)}
-            </Link>
-          ))}
-        </section>
-      )}
+      <Suspense fallback={null}>
+        <PrivateDrafts />
+      </Suspense>
       <nav className="flex gap-2 flex-wrap">
         <Link href="/experiences" className="rounded-full border px-4 py-2">
           {t("all")}
@@ -81,13 +58,52 @@ export default async function Experiences({
           </Link>
         ))}
       </nav>
-      <ExperienceList
-        category={
-          categories.includes(category as (typeof categories)[number])
-            ? category
-            : undefined
+      <Suspense
+        fallback={
+          <p className="text-sm text-muted-foreground">{t("loading")}</p>
         }
-      />
+      >
+        <ExperienceList
+          showEmpty
+          category={
+            categories.includes(category as (typeof categories)[number])
+              ? category
+              : undefined
+          }
+        />
+      </Suspense>
     </main>
+  );
+}
+
+async function PrivateDrafts() {
+  const t = await getTranslations("experiences");
+  const db = await createClient();
+  const {
+    data: { user },
+  } = await db.auth.getUser();
+  const { data: drafts } = user
+    ? await db
+        .from("experiences")
+        .select("id,title,created_at")
+        .eq("author_id", user.id)
+        .eq("status", "draft")
+        .order("created_at", { ascending: false })
+        .limit(20)
+    : { data: [] };
+  if (!drafts?.length) return null;
+  return (
+    <section className="rounded-2xl border p-5 space-y-3">
+      <h2 className="font-medium">{t("myDrafts")}</h2>
+      {drafts.map((d) => (
+        <Link
+          key={d.id}
+          href={`/experiences/${d.id}/edit`}
+          className="block min-h-11 py-2 underline"
+        >
+          {d.title || t("draft")} · {d.created_at.slice(0, 10)}
+        </Link>
+      ))}
+    </section>
   );
 }

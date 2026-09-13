@@ -6,11 +6,13 @@ export async function ExperienceList({
   venueId,
   category,
   excludeId,
+  showEmpty = false,
 }: {
   authorId?: string;
   venueId?: string;
   category?: string;
   excludeId?: string;
+  showEmpty?: boolean;
 }) {
   const db = await createClient();
   const t = await getTranslations("experiences");
@@ -25,7 +27,12 @@ export async function ExperienceList({
   if (category) q = q.eq("category", category);
   if (excludeId) q = q.neq("id", excludeId);
   const { data } = await q;
-  if (!data?.length) return null;
+  if (!data?.length)
+    return showEmpty ? (
+      <section className="rounded-2xl border border-dashed p-8 text-center">
+        <p className="text-muted-foreground">{t("empty")}</p>
+      </section>
+    ) : null;
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold">{t("experiences")}</h2>

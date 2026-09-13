@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
     const audioBlob = new Blob([audioBuffer]);
 
     // Call Whisper API
-    const openaiApiKey = process.env.OPENAI_API_KEY;
+    const openaiApiKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY);
     if (!openaiApiKey) {
       return NextResponse.json(
         { error: "OpenAI API key not configured" },

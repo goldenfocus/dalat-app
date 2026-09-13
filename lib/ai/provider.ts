@@ -199,7 +199,7 @@ async function anthropicAI(opts: AIChatOptions): Promise<string> {
 }
 
 async function openAI(opts: AIChatOptions): Promise<string> {
-  const key = process.env.OPENAI_API_KEY;
+  const key = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY);
   if (!key) throw new ProviderError('openai', 'OPENAI_API_KEY not configured');
 
   const messages: { role: string; content: string }[] = [];

@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { LiveInterview } from "./live-interview";
+import { recordingMime } from "@/lib/experiences/recording";
+import type { LiveTurn } from "@/lib/experiences/live-schema";
 import {
   Camera,
   Mic,
@@ -14,8 +17,7 @@ import { Link, useRouter } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import {
   categories,
-  emptyStory,
-  saveSchema,
+  type saveSchema,
   type ExperienceStory,
 } from "@/lib/experiences/schema";
 import { localDraft, clearLocalDraft } from "@/lib/experiences/local-draft";
@@ -29,14 +31,26 @@ type Media = {
   kind: "audio" | "photo";
   mime: string;
   preview_path: string | null;
+  capture_mode?: "record" | "live";
 };
 type Pending = {
+  capture_mode?: "record" | "live";
   id: string;
   blob: Blob;
   kind: "audio" | "photo";
   mime: string;
 };
 type Recovery = { story: Story; notes: string; pending: Pending[] };
+export type InitialExperienceData = {
+  story: Story;
+  notes: string;
+  transcript: string;
+  question: string;
+  suggestion: ExperienceStory | null;
+  media: Media[];
+  published: boolean;
+  conversation: LiveTurn[];
+};
 type Venue = { id: string; name: string; address: string };
 function PendingPhoto({ blob, alt }: { blob: Blob; alt: string }) {
   const [src] = useState(() => URL.createObjectURL(blob));
@@ -56,36 +70,33 @@ export function ExperienceEditor({
   locale,
   labels: t,
   aiAvailable,
+  liveAvailable,
+  initial,
 }: {
   id: string;
   userId: string;
   locale: Locale;
   labels: Labels;
   aiAvailable: boolean;
+  liveAvailable: boolean;
+  initial: InitialExperienceData;
 }) {
   const router = useRouter();
   const key = `${userId}/${id}`;
-  const [story, setStory] = useState<Story>({
-    ...emptyStory(locale),
-    venue_id: null,
-    visit_date: new Date().toLocaleDateString("en-CA", {
-      timeZone: "Asia/Ho_Chi_Minh",
-    }),
-    selected_media: [],
-    permission_confirmed: false,
-    venue_confirmed: false,
-    sponsorship: "",
-  });
-  const [notes, setNotes] = useState("");
-  const [transcript, setTranscript] = useState("");
-  const [question, setQuestion] = useState("");
-  const [suggestion, setSuggestion] = useState<ExperienceStory | null>(null);
-  const [media, setMedia] = useState<Media[]>([]);
+  const [story, setStory] = useState<Story>(initial.story);
+  const [notes, setNotes] = useState(initial.notes);
+  const [transcript, setTranscript] = useState(initial.transcript);
+  const [question, setQuestion] = useState(initial.question);
+  const [suggestion, setSuggestion] = useState<ExperienceStory | null>(
+    initial.suggestion,
+  );
+  const [media, setMedia] = useState<Media[]>(initial.media);
   const [pending, setPending] = useState<Pending[]>([]);
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
   const [ready, setReady] = useState(false);
-  const [published, setPublished] = useState(false);
+  const [published, setPublished] = useState(initial.published);
+  const [liveActive, setLiveActive] = useState(false);
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -93,17 +104,32 @@ export function ExperienceEditor({
   const chunks = useRef<Blob[]>([]);
   const latest = useRef<Recovery>({ story, notes, pending });
   const recordingId = useRef("");
+  const stopReason = useRef("");
+  const [audioErrors, setAudioErrors] = useState<string[]>([]);
   const localWrite = useRef(Promise.resolve());
   latest.current = { story, notes, pending };
+  const waitingWrite = useRef<Recovery | null>(null);
+  const writingRecovery = useRef(false);
   function persist(value: Recovery) {
-    localWrite.current = localWrite.current
-      .catch(() => {})
-      .then(async () => {
-        await localDraft(key, value);
-      })
-      .catch(() => {
-        setMessage(t.storageWarning);
-      });
+    // Coalesce rapid audio updates instead of retaining a queue of ever-growing
+    // blobs and full photo selections on memory-constrained phones.
+    waitingWrite.current = value;
+    if (!writingRecovery.current) {
+      writingRecovery.current = true;
+      localWrite.current = (async () => {
+        try {
+          while (waitingWrite.current) {
+            const next = waitingWrite.current;
+            waitingWrite.current = null;
+            await localDraft(key, next);
+          }
+        } catch {
+          setMessage(t.storageWarning);
+        } finally {
+          writingRecovery.current = false;
+        }
+      })();
+    }
     return localWrite.current;
   }
   async function api(url: string, method = "GET", body?: unknown) {
@@ -127,27 +153,17 @@ export function ExperienceEditor({
     let active = true;
     (async () => {
       try {
-        const [response, recovered] = await Promise.all([
-          fetch(`/api/experiences/${id}`, { cache: "no-store" }),
-          localDraft<Recovery>(key).catch(() => undefined),
-        ]);
-        if (!response.ok) throw Error();
-        const data = await response.json();
-        if (!active) return;
-        const saved = saveSchema.parse(data.experience);
-        setPublished(data.experience.status === "published");
-        setMedia(data.media);
-        setTranscript(data.source?.transcript || "");
-        setQuestion(data.source?.optional_question || "");
-        setStory(
-          recovered && data.experience.status !== "published"
-            ? recovered.story
-            : saved,
+        // Owner-authorized data is already in the server-rendered page. Only
+        // device recovery remains; do not repeat auth and database reads over HTTP.
+        const recovered = await localDraft<Recovery>(key).catch(
+          () => undefined,
         );
-        setNotes(recovered?.notes ?? data.source?.notes ?? "");
-        setPending(recovered?.pending || []);
-        if (data.source?.generation?.story)
-          setSuggestion(data.source.generation.story);
+        if (!active) return;
+        if (recovered && !initial.published) {
+          setStory(recovered.story);
+          setNotes(recovered.notes);
+          setPending(recovered.pending || []);
+        }
         setReady(true);
       } catch {
         if (active) setMessage(t.recovery);
@@ -166,29 +182,49 @@ export function ExperienceEditor({
   useEffect(() => {
     if (!recording) return;
     const timer = setInterval(() => setSeconds((s) => s + 1), 1000);
-    const stop = setTimeout(() => {
-      if (recorder.current?.state === "recording") recorder.current.stop();
-    }, 120000);
     const hide = () => {
-      if (document.hidden && recorder.current?.state === "recording")
+      if (document.hidden && recorder.current?.state === "recording") {
+        stopReason.current = t.recordingInterrupted;
         recorder.current.stop();
+      }
     };
     document.addEventListener("visibilitychange", hide);
     return () => {
       clearInterval(timer);
-      clearTimeout(stop);
       document.removeEventListener("visibilitychange", hide);
     };
-  }, [recording]);
+  }, [recording, t.recordingInterrupted]);
   useEffect(() => {
     const before = (e: BeforeUnloadEvent) => {
-      if (recording || busy) {
+      if (recording || liveActive || busy) {
         e.preventDefault();
       }
     };
     window.addEventListener("beforeunload", before);
     return () => window.removeEventListener("beforeunload", before);
-  }, [recording, busy]);
+  }, [recording, liveActive, busy]);
+  useEffect(() => {
+    if (!(recording || liveActive) || !("wakeLock" in navigator)) return;
+    let released = false;
+    let lock: WakeLockSentinel | undefined;
+    const acquire = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const next = await navigator.wakeLock.request("screen");
+        if (released) await next.release();
+        else lock = next;
+      } catch {
+        /* Low battery or browser policy can deny the optional wake lock. */
+      }
+    };
+    void acquire();
+    document.addEventListener("visibilitychange", acquire);
+    return () => {
+      released = true;
+      document.removeEventListener("visibilitychange", acquire);
+      void lock?.release().catch(() => {});
+    };
+  }, [recording, liveActive]);
   function field<K extends keyof Story>(name: K, value: Story[K]) {
     setStory((s) => ({ ...s, [name]: value }));
   }
@@ -238,6 +274,7 @@ export function ExperienceEditor({
         id: file.id,
         mime: file.mime,
         kind: file.kind,
+        capture_mode: file.capture_mode || "record",
       });
       const next = {
         ...latest.current,
@@ -280,9 +317,7 @@ export function ExperienceEditor({
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true },
       });
-      const mime = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"].find(
-        (m) => MediaRecorder.isTypeSupported(m),
-      );
+      const mime = recordingMime();
       if (!mime) {
         stream.getTracks().forEach((t) => t.stop());
         setMessage(t.unsupported);
@@ -295,6 +330,7 @@ export function ExperienceEditor({
       recorder.current = r;
       chunks.current = [];
       recordingId.current = crypto.randomUUID();
+      stopReason.current = "";
       r.ondataavailable = (e) => {
         if (!e.data.size) return;
         chunks.current.push(e.data);
@@ -314,15 +350,21 @@ export function ExperienceEditor({
         latest.current = next;
         setPending(next.pending);
         void persist(next);
+        if (file.blob.size >= 18 * 1024 * 1024 && r.state === "recording") {
+          stopReason.current = t.recordingLimit;
+          r.stop();
+        }
       };
       r.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop());
         setRecording(false);
-        setMessage(t.recordingSaved);
+        setMessage(stopReason.current || t.recordingSaved);
         await localWrite.current;
         await run(t.preparing, generate);
+        if (stopReason.current) setMessage(stopReason.current);
       };
       r.onerror = () => {
+        stopReason.current = t.recovery;
         if (r.state === "recording") r.stop();
         stream.getTracks().forEach((t) => t.stop());
         setRecording(false);
@@ -342,6 +384,7 @@ export function ExperienceEditor({
     const audio = current.media.find(
       (m: Media) =>
         m.kind === "audio" &&
+        m.capture_mode !== "live" &&
         !(current.source?.transcribed_audio_ids || []).includes(m.id),
     );
     const result = await api(`/api/experiences/${id}/prepare`, "POST", {
@@ -355,14 +398,12 @@ export function ExperienceEditor({
   }
   const inputClass =
     "w-full rounded-xl border bg-background px-4 py-3 text-base";
-  if (!ready)
-    return (
-      <div className="p-8" role="status">
-        {message || t.loading}
-      </div>
-    );
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-28 pt-8 space-y-8">
+    <div
+      className="mx-auto max-w-2xl px-4 pb-28 pt-8 space-y-8"
+      inert={!ready}
+      aria-busy={!ready}
+    >
       <header className="space-y-3">
         <Link href="/experiences" className="text-sm text-muted-foreground">
           ← {t.experiences}
@@ -372,6 +413,7 @@ export function ExperienceEditor({
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">{t.create}</h1>
         <p className="text-muted-foreground">{t.promise}</p>
+        <p className="text-sm text-muted-foreground">{t.experienceHint}</p>
         <p className="rounded-xl bg-muted/50 p-3 text-sm">
           {published ? t.publicNotice : t.privateNotice}
         </p>
@@ -398,7 +440,7 @@ export function ExperienceEditor({
       ) : (
         <>
           <fieldset
-            disabled={!!busy || recording}
+            disabled={!!busy || recording || liveActive}
             className="space-y-4 disabled:opacity-70"
           >
             <legend className="text-lg font-medium mb-3">1 · {t.photos}</legend>
@@ -512,7 +554,7 @@ export function ExperienceEditor({
             <p className="text-sm text-muted-foreground">{t.voiceHint}</p>
             <Button
               size="lg"
-              disabled={!!busy}
+              disabled={!!busy || liveActive}
               variant={recording ? "destructive" : "outline"}
               className="w-full min-h-14 rounded-2xl"
               onClick={() => (recording ? recorder.current?.stop() : record())}
@@ -529,20 +571,72 @@ export function ExperienceEditor({
                 </>
               )}
             </Button>
+            {message && (
+              <p role="status" className="text-sm text-muted-foreground">
+                {message}
+              </p>
+            )}
+            {liveAvailable && (
+              <LiveInterview
+                id={id}
+                userId={userId}
+                labels={t}
+                initial={initial.conversation}
+                disabled={!!busy || recording || published}
+                onActive={setLiveActive}
+                onAudio={async (blob, mime) => {
+                  const file: Pending = {
+                    id: crypto.randomUUID(),
+                    blob,
+                    mime,
+                    kind: "audio",
+                    capture_mode: "live",
+                  };
+                  const next = {
+                    ...latest.current,
+                    pending: [...latest.current.pending, file],
+                  };
+                  latest.current = next;
+                  setPending(next.pending);
+                  await persist(next);
+                  await uploadPending();
+                }}
+                onFinish={() => run(t.preparing, generate)}
+              />
+            )}
             {media
               .filter((m) => m.kind === "audio")
               .map((m) => (
-                <audio
-                  key={m.id}
-                  controls
-                  className="w-full"
-                  src={`/api/experiences/${id}/media/${m.id}`}
-                />
+                <div key={m.id} className="space-y-2">
+                  <audio
+                    controls
+                    preload="metadata"
+                    className="w-full"
+                    onError={() =>
+                      setAudioErrors((current) =>
+                        current.includes(m.id) ? current : [...current, m.id],
+                      )
+                    }
+                    src={`/api/experiences/${id}/media/${m.id}`}
+                  />
+                  {audioErrors.includes(m.id) && (
+                    <p className="text-sm" role="status">
+                      {t.audioRecovery}
+                    </p>
+                  )}
+                  <a
+                    className="inline-flex min-h-11 items-center text-sm underline"
+                    href={`/api/experiences/${id}/media/${m.id}?original=1`}
+                    download
+                  >
+                    {t.downloadAudio}
+                  </a>
+                </div>
               ))}
             <label className="block space-y-2">
               <span>{t.notes}</span>
               <textarea
-                disabled={!!busy || recording}
+                disabled={!!busy || recording || liveActive}
                 className={inputClass}
                 rows={4}
                 value={notes}
@@ -552,7 +646,7 @@ export function ExperienceEditor({
             </label>
             <p className="text-xs text-muted-foreground">{t.aiNotice}</p>
             <Button
-              disabled={!!busy || recording}
+              disabled={!!busy || recording || liveActive}
               className="w-full min-h-12"
               onClick={() => run(t.preparing, generate)}
             >
@@ -606,7 +700,10 @@ export function ExperienceEditor({
               </aside>
             )}
           </section>
-          <fieldset disabled={!!busy || recording} className="space-y-5">
+          <fieldset
+            disabled={!!busy || recording || liveActive}
+            className="space-y-5"
+          >
             <legend className="text-lg font-medium mb-3">3 · {t.review}</legend>
             <label className="block space-y-2">
               <span>{t.title}</span>
@@ -622,6 +719,7 @@ export function ExperienceEditor({
               <textarea
                 className={inputClass}
                 rows={8}
+                aria-label={t.story}
                 value={story.narrative}
                 maxLength={12000}
                 onChange={(e) => field("narrative", e.target.value)}
@@ -632,6 +730,7 @@ export function ExperienceEditor({
               <textarea
                 className={inputClass}
                 rows={2}
+                aria-label={t.summary}
                 value={story.summary}
                 maxLength={500}
                 onChange={(e) => field("summary", e.target.value)}
@@ -650,6 +749,7 @@ export function ExperienceEditor({
               <label className="space-y-2">
                 <span>{t.category}</span>
                 <select
+                  aria-label={t.category}
                   className={inputClass}
                   value={story.category}
                   onChange={(e) =>
@@ -854,7 +954,10 @@ export function ExperienceEditor({
                 onClick={() =>
                   run(t.publishing, async () => {
                     await save("publish");
-                    await clearLocalDraft(key).catch(() => {});
+                    await Promise.all([
+                      clearLocalDraft(key),
+                      clearLocalDraft(`${key}/live`),
+                    ]).catch(() => {});
                     router.push(`/experiences/${id}`);
                     router.refresh();
                   })
@@ -886,11 +989,14 @@ export function ExperienceEditor({
         <summary className="py-3">{t.delete}</summary>
         <Button
           variant="destructive"
-          disabled={!!busy || recording}
+          disabled={!!busy || recording || liveActive}
           onClick={() =>
             run(t.saving, async () => {
               await api(`/api/experiences/${id}`, "DELETE");
-              await clearLocalDraft(key).catch(() => {});
+              await Promise.all([
+                clearLocalDraft(key),
+                clearLocalDraft(`${key}/live`),
+              ]).catch(() => {});
               router.push("/experiences");
             })
           }
@@ -898,6 +1004,6 @@ export function ExperienceEditor({
           {t.deleteConfirm}
         </Button>
       </details>
-    </main>
+    </div>
   );
 }

@@ -117,7 +117,8 @@
       "love": "tình yêu",
       "rssFeed": "Nguồn RSS",
       "discover": "Khám phá"
-    }
+    },
+    "experiences": "Trải nghiệm"
   },
   "eventSuggestion": {
     "title": "Khám phá hoạt động giờ đã tự động",
@@ -3588,7 +3589,7 @@
     "openPage": "Mở trang trải nghiệm",
     "unpublish": "Gỡ xuất bản",
     "photos": "Ảnh của bạn",
-    "choosePhotos": "Thêm ảnh nhà hàng",
+    "choosePhotos": "Thêm ảnh",
     "originalPhoto": "Ảnh gốc của người đóng góp",
     "removePhoto": "Bỏ chọn hoặc chọn lại ảnh",
     "fileLimit": "Chọn tối đa 12 ảnh, mỗi ảnh dưới 20 MB.",
@@ -3597,7 +3598,7 @@
     "recordingWaiting": "Bản ghi âm đã lưu trên thiết bị này",
     "upload": "Tải lên các tệp đã lưu",
     "tellStory": "Kể câu chuyện của bạn",
-    "voiceHint": "Kể trong 30–120 giây và dừng bất cứ lúc nào. Bản ghi đầu tiên đã đủ; câu hỏi bổ sung là tùy chọn. Giữ trang này mở khi tải lên.",
+    "voiceHint": "Hãy nói tự nhiên và dừng khi hoàn tất. Chọn phỏng vấn trực tiếp để trò chuyện với các câu hỏi tùy chọn. Giữ ứng dụng mở khi ghi âm.",
     "stop": "Dừng và giữ bản ghi âm",
     "record": "Ghi âm trải nghiệm",
     "notes": "Ghi chú hoặc câu trả lời bổ sung",
@@ -3647,7 +3648,7 @@
     "storageWarning": "Bộ nhớ thiết bị không khả dụng hoặc đã đầy. Hãy tải lên ngay và giữ trang mở để bảo vệ bản ghi âm.",
     "unsupported": "Không thể ghi âm. Cho phép Safari truy cập micrô qua HTTPS hoặc nhập câu chuyện bằng văn bản.",
     "newExperience": "Tạo trải nghiệm",
-    "empty": "Chuyến đi tiếp theo của bạn có thể là câu chuyện đầu tiên ở đây.",
+    "empty": "Hãy là người đầu tiên chia sẻ trải nghiệm. Một chi tiết nhỏ từ chuyến đi của bạn có thể giúp người khác.",
     "by": "Tác giả",
     "visited": "Ngày trải nghiệm",
     "published": "Xuất bản",
@@ -3661,7 +3662,7 @@
     "edit": "Chỉnh sửa trải nghiệm",
     "all": "Tất cả trải nghiệm",
     "discovery": "Chi tiết nhỏ. Trải nghiệm thật.",
-    "discoveryHint": "Khám phá những điều mọi người thực sự đã thưởng thức, ghé thăm và nhận thấy.",
+    "discoveryHint": "Khám phá trải nghiệm thực tế về thư giãn, đi dạo, lớp học, ăn uống, lưu trú và những điều mới mỗi ngày.",
     "originalLanguage": "Ngôn ngữ gốc",
     "share": "Sao chép liên kết chia sẻ",
     "copied": "Đã sao chép liên kết",
@@ -3670,6 +3671,23 @@
     "firsthand": "Ghi nhận trực tiếp",
     "impression": "Cảm nhận cá nhân",
     "inferred": "Suy luận của AI",
-    "owner_supplied": "Thông tin từ chủ địa điểm"
+    "owner_supplied": "Thông tin từ chủ địa điểm",
+    "wellness": "Sức khỏe & thư giãn",
+    "experienceHint": "Chia sẻ một buổi massage, chuyến đi dạo, lớp học, bữa ăn hay trải nghiệm đáng nhớ.",
+    "myDrafts": "Bản nháp của bạn",
+    "liveTitle": "Phỏng vấn trực tiếp",
+    "liveHint": "Trò chuyện tự nhiên với trợ lý AI qua OpenAI. Trợ lý có thể hỏi từng câu tùy chọn; bạn có thể ngắt lời hoặc dừng bất cứ lúc nào. Giọng nói và cuộc trò chuyện được lưu riêng tư. Mỗi phiên tối đa 60 phút; bạn có thể tiếp tục trong cùng bản nháp. Giữ ứng dụng mở.",
+    "liveStart": "Bắt đầu trò chuyện trực tiếp",
+    "liveFinish": "Kết thúc và chuẩn bị bản nháp",
+    "liveConnecting": "Đang kết nối…",
+    "liveRecovery": "The connection or saving was interrupted. Your captured audio and conversation are kept on this device. Reconnect, retry, or continue in writing.",
+    "livePlay": "Tap play to hear the interviewer.",
+    "liveTranscript": "Bản chép lời riêng tư",
+    "liveYou": "Bạn",
+    "liveAssistant": "Trợ lý",
+    "audioRecovery": "Audio preview is unavailable. The original is still saved; download it or retry.",
+    "downloadAudio": "Tải bản ghi âm gốc",
+    "recordingInterrupted": "Recording stopped because the microphone or app was interrupted. Your captured audio is kept.",
+    "recordingLimit": "This recording reached the file-size limit and was kept. You can start another recording to continue."
   }
 }

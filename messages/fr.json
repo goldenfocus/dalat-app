@@ -117,7 +117,8 @@
       "love": "amour",
       "rssFeed": "Flux RSS",
       "discover": "Découvrir"
-    }
+    },
+    "experiences": "Expériences"
   },
   "eventSuggestion": {
     "title": "La découverte d’activités est désormais automatique",
@@ -3512,7 +3513,7 @@
     "openPage": "Ouvrir l’expérience",
     "unpublish": "Retirer de la publication",
     "photos": "Vos photographies",
-    "choosePhotos": "Ajouter des photos du restaurant",
+    "choosePhotos": "Ajouter des photos",
     "originalPhoto": "Photographie originale de la personne qui contribue",
     "removePhoto": "Retirer ou sélectionner la photo",
     "fileLimit": "Choisissez jusqu’à 12 photos de moins de 20 Mo chacune.",
@@ -3521,7 +3522,7 @@
     "recordingWaiting": "Enregistrement conservé sur cet appareil",
     "upload": "Envoyer les fichiers conservés",
     "tellStory": "Racontez votre expérience",
-    "voiceHint": "Parlez pendant 30 à 120 secondes et arrêtez quand vous voulez. Le premier enregistrement suffit ; les questions complémentaires sont facultatives. Gardez cette page ouverte pendant l’envoi.",
+    "voiceHint": "Parlez naturellement et arrêtez quand vous avez terminé. Choisissez l’entretien en direct pour une conversation avec des questions facultatives. Gardez l’application ouverte.",
     "stop": "Arrêter et conserver l’enregistrement",
     "record": "Enregistrer mon expérience",
     "notes": "Vos notes ou votre réponse facultative",
@@ -3571,7 +3572,7 @@
     "storageWarning": "Le stockage de l’appareil est indisponible ou plein. Envoyez les fichiers maintenant et gardez cette page ouverte pour protéger votre enregistrement.",
     "unsupported": "L’enregistrement est indisponible. Autorisez le microphone dans Safari via HTTPS ou saisissez votre récit.",
     "newExperience": "Créer une expérience",
-    "empty": "Votre prochaine visite pourrait être la première histoire ici.",
+    "empty": "Partagez la première expérience. Un petit détail de votre visite peut aider quelqu’un.",
     "by": "Par",
     "visited": "Visite",
     "published": "Publication",
@@ -3585,7 +3586,7 @@
     "edit": "Modifier l’expérience",
     "all": "Toutes les expériences",
     "discovery": "Petits détails. Vraies visites.",
-    "discoveryHint": "Découvrez ce que les gens ont réellement goûté, visité et remarqué.",
+    "discoveryHint": "Découvrez des récits vécus : bien-être, balades, cours, repas, séjours et découvertes du quotidien.",
     "originalLanguage": "Langue originale",
     "share": "Copier le lien de partage",
     "copied": "Lien copié",
@@ -3594,6 +3595,23 @@
     "firsthand": "Observation directe",
     "impression": "Impression personnelle",
     "inferred": "Déduction de l’IA",
-    "owner_supplied": "Déclaration du propriétaire"
+    "owner_supplied": "Déclaration du propriétaire",
+    "wellness": "Bien-être",
+    "experienceHint": "Racontez un massage, une balade, un cours, un repas ou toute expérience à garder.",
+    "myDrafts": "Vos brouillons",
+    "liveTitle": "Entretien en direct",
+    "liveHint": "Discutez naturellement avec un assistant IA via OpenAI. Il pose une question facultative à la fois ; vous pouvez l’interrompre ou arrêter à tout moment. Votre voix et votre conversation restent privées. Les sessions durent jusqu’à 60 minutes ; vous pouvez continuer dans le même brouillon. Gardez l’application ouverte.",
+    "liveStart": "Commencer l’entretien en direct",
+    "liveFinish": "Terminer et préparer mon brouillon",
+    "liveConnecting": "Connexion en cours…",
+    "liveRecovery": "The connection or saving was interrupted. Your captured audio and conversation are kept on this device. Reconnect, retry, or continue in writing.",
+    "livePlay": "Tap play to hear the interviewer.",
+    "liveTranscript": "Transcription privée de l’entretien",
+    "liveYou": "Vous",
+    "liveAssistant": "Assistant",
+    "audioRecovery": "Audio preview is unavailable. The original is still saved; download it or retry.",
+    "downloadAudio": "Télécharger l’enregistrement original",
+    "recordingInterrupted": "Recording stopped because the microphone or app was interrupted. Your captured audio is kept.",
+    "recordingLimit": "This recording reached the file-size limit and was kept. You can start another recording to continue."
   }
 }

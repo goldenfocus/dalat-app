@@ -4,6 +4,7 @@ import { Link } from "@/lib/i18n/routing";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { CreateEventLink } from "@/components/auth/create-event-link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ContentNav } from "@/components/navigation/content-nav";
 import {
   DeferredHeaderSearch,
   DeferredLocalePicker,
@@ -75,6 +76,7 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
           <AuthButtonClient />
         </div>
       </div>
+      <ContentNav />
     </nav>
   );
 }
