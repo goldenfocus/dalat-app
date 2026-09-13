@@ -8,6 +8,24 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 describe("experience provider boundaries", () => {
+  it("uses a compilable structural wire schema while enforcing bounds locally", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "test-only");
+    const fetch = vi.fn().mockResolvedValue(Response.json({
+      choices: [{ message: { content: JSON.stringify({
+        ...emptyStory("en"), title: "x".repeat(161),
+      }) } }],
+    }));
+    vi.stubGlobal("fetch", fetch);
+    await expect(structureExperience("My lunch", "en", "2026-09-13", []))
+      .rejects.toThrow();
+    const schema = JSON.parse(fetch.mock.calls[0][1].body)
+      .response_format.json_schema.schema;
+    expect(schema.properties.title).toEqual({ type: "string" });
+    expect(schema.required).toContain("title");
+    expect(schema.additionalProperties).toBe(false);
+    expect(schema.properties.category.enum).toContain("food");
+    expect(JSON.stringify(schema)).not.toMatch(/maxLength|maxItems|minimum|pattern|format/);
+  });
   it("negotiates actual Safari/Chrome audio formats", () => {
     expect(audioFormat("audio/mp4;codecs=mp4a.40.2")).toBe("m4a");
     expect(audioFormat("audio/webm;codecs=opus")).toBe("webm");

@@ -196,3 +196,12 @@ Until then, tomorrow's usable fallback is **original photos + retained recording
 ### Committed release gate
 
 The feature was rebased onto current remote main without carrying unrelated, locally unlanded commits. The current repository guidance and service-worker changes were preserved; the next service-worker version is **1.0.29** (the application package is otherwise unversioned). A separate clean checkout with `npm ci` verified the committed tree: **126 test files / 791 tests passed**, all prebuild gates passed, and the production build passed. Media registration now rejects an ID belonging to another draft and retries its own registration without rewriting the original. Locale-aware draft creation defaults to the Đà Lạt calendar date, and captions can be edited manually. Production deployment is the next gate, not implied by these local results.
+
+
+### AI activation follow-up — September 13, 2026
+
+The user identified the existing credential at `~/.openrouter`. It was read without printing it and installed as sensitive, server-only `OPENROUTER_API_KEY` in the existing Vercel production project. No billing changes, key copies in source, or provider substitution. This supersedes the September 12 missing-key blocker once the new deployment is verified.
+
+A controlled private smoke test used 10.836 seconds of locally synthesized QA speech (explicitly not a real review) and a solid-color test image. `openai/whisper-large-v3` transcribed the speech through OpenRouter in 2.368 seconds, costing $0.00008127. Gemini initially rejected the deeply bounded JSON schema because its constrained decoder could not compile it. The provider wire schema now retains objects, required fields, enums and types while omitting decoder-expensive string/array/numeric/format bounds. The full original Zod contract still validates every response before storage, including length limits, UUIDs and confidence bounds. A regression test proves an overlong model title remains rejected.
+
+With that compatibility repair, `google/gemini-2.5-flash-lite` returned a validated photo-aware draft in 3.246 seconds, costing $0.0003444. These are small-fixture observations, not latency guarantees for 120-second recordings or actual restaurant photographs. Models and endpoints are unchanged. Physical iPhone/Safari and an authentic restaurant contribution still require the field test.

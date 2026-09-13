@@ -2,6 +2,22 @@ import "server-only";
 import { z } from "zod";
 import { storySchema } from "./schema";
 const base = "https://openrouter.ai/api/v1";
+// Gemini's constrained decoder cannot compile our large, bounded Zod schema.
+// Keep the wire schema structural; the full bounds are still enforced below
+// by storySchema.parse before any suggestion is returned or stored.
+function generationSchema(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(generationSchema);
+  if (!value || typeof value !== "object") return value;
+  const localConstraints = new Set([
+    "$schema", "maxLength", "minLength", "maxItems", "minItems",
+    "minimum", "maximum", "format", "pattern",
+  ]);
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => !localConstraints.has(key))
+      .map(([key, child]) => [key, generationSchema(child)]),
+  );
+}
 export const draftModel = () =>
   process.env.EXPERIENCE_DRAFT_MODEL || "google/gemini-2.5-flash-lite";
 export const transcriptionModel = () =>
@@ -43,7 +59,7 @@ export async function structureExperience(
   visitDate: string,
   photos: { id: string; url: string }[],
 ) {
-  const schema = z.toJSONSchema(storySchema);
+  const schema = generationSchema(z.toJSONSchema(storySchema));
   const model = draftModel();
   const body = {
     model,
