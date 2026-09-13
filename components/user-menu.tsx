@@ -2,6 +2,7 @@
 
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { User, Settings, ExternalLink, Shield, Building2, LogOut, Loader2, Newspaper, Trophy } from "lucide-react";
@@ -13,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { UserRole } from "@/lib/types";
+import { exitGodMode } from "@/lib/hooks/use-viewer";
 import { TierBadge } from "@/components/loyalty/tier-badge";
 
 interface UserMenuProps {
@@ -55,11 +57,12 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
   const handleExitGodMode = async () => {
     setIsExiting(true);
     try {
-      await fetch("/api/admin/exit-impersonation", { method: "POST" });
+      await exitGodMode();
       router.push("/admin/users");
       router.refresh();
     } catch (error) {
       console.error("Failed to exit God Mode:", error);
+      toast.error("Could not exit God mode. Please try again.");
       setIsExiting(false);
     }
   };

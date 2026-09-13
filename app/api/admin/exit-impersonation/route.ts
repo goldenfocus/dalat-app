@@ -38,7 +38,7 @@ export async function POST() {
   // Restore the admin session from the stashed refresh token. This overwrites
   // the target's auth cookies with a fresh admin session.
   const supabase = await createClient();
-  const { error: restoreError } = await supabase.auth.refreshSession({
+  const { data: restoredSession, error: restoreError } = await supabase.auth.refreshSession({
     refresh_token: adminRefresh,
   });
 
@@ -65,5 +65,9 @@ export async function POST() {
     return NextResponse.json({ error: "restore_failed" }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, restored: true });
+  const { data: profile } = restoredSession.user
+    ? await supabase.from("profiles").select("*").eq("id", restoredSession.user.id).single()
+    : { data: null };
+
+  return NextResponse.json({ ok: true, restored: true, profile });
 }

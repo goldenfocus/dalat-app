@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { getGodModeAdminTokenCookieName } from "@/lib/god-mode";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -7,6 +9,11 @@ import { createClient } from "@/lib/supabase/server";
  * Server-side throttling: only writes to DB if last action was >5 minutes ago.
  */
 export async function POST() {
+  // Admin impersonation is not activity by the target user.
+  if ((await cookies()).has(getGodModeAdminTokenCookieName())) {
+    return NextResponse.json({ ok: true, updated: false });
+  }
+
   const supabase = await createClient();
 
   const {

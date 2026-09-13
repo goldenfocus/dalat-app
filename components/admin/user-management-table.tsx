@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { enterGodMode } from "@/lib/hooks/use-viewer";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,8 @@ export function UserManagementTable({
       });
 
       if (res.ok) {
+        const target = users.find((user) => user.id === targetUserId);
+        if (target) enterGodMode(target);
         router.push("/");
         router.refresh();
       } else {
@@ -344,7 +347,7 @@ export function UserManagementTable({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleImpersonate(user.id)}
-                        disabled={impersonating === user.id}
+                        disabled={impersonating !== null}
                         className="h-8 w-8 p-0 text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10 shrink-0"
                         title={`View as ${user.display_name || user.username || "this user"}`}
                       >
