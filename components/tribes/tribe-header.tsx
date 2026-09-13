@@ -64,8 +64,8 @@ export function TribeHeader({ tribe, membership, isAdmin, canViewInsights = isAd
 
         {/* Keep the identity and counters entirely below the cover. */}
         <div className="max-w-4xl mx-auto px-4 pt-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0 w-full sm:w-auto flex-1">
                   <h1 className="text-3xl md:text-4xl font-bold tracking-tight break-words"><Link href={`/communities/${tribe.slug}`} className="rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors">{tribe.name}</Link></h1>
                   {/* Profile-style stat row: members / events / moments */}
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-muted-foreground">
