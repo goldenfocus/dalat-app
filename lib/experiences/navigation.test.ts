@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isExperienceEditorPath } from "./navigation";
+import { isExperienceEditorPath, isExperiencePath } from "./navigation";
 describe("PWA recording update guard", () => {
   it("protects localized new and existing drafts, while public browsing can update", () => {
     for (const path of [
@@ -17,4 +17,11 @@ describe("PWA recording update guard", () => {
     ])
       expect(isExperienceEditorPath(path)).toBe(false);
   });
+});
+
+it("keeps unrelated Moment creation off Experience surfaces", () => {
+  expect(isExperiencePath("/experiences")).toBe(true);
+  expect(isExperiencePath("/vi/experiences/abc")).toBe(true);
+  expect(isExperiencePath("/moments")).toBe(false);
+  expect(isExperiencePath("/experiences-other")).toBe(false);
 });

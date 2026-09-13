@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { publicationReady } from "./publication";
+import { publicationReady, confirmPublication } from "./publication";
 import { emptyStory } from "./schema";
 const story = {
   ...emptyStory("en"),
@@ -72,4 +72,16 @@ describe("explicit publication gates", () => {
         "2026-09-12",
       ),
     ).toBe(true));
+});
+
+it("explicit Publish confirms the preview without a separate place checkbox", () => {
+  const draft = {
+    ...story,
+    permission_confirmed: false,
+    venue_confirmed: false,
+  };
+  const reviewed = confirmPublication(draft);
+  expect(publicationReady(reviewed, "2026-09-12")).toBe(true);
+  expect(draft.permission_confirmed).toBe(false);
+  expect(draft.venue_confirmed).toBe(false);
 });

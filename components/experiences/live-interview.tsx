@@ -1,4 +1,10 @@
 "use client";
+import {
+  interviewInstructions,
+  interviewStyles,
+  monologueCommand,
+  type InterviewStyle,
+} from "@/lib/experiences/interview";
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +36,7 @@ export function LiveInterview({
   onFinish: () => Promise<void>;
 }) {
   const key = `${userId}/${id}/live`;
+  const [style, setStyle] = useState<InterviewStyle>("quick");
   const [turns, setTurns] = useState(initial);
   const [phase, setPhase] = useState<
     "idle" | "connecting" | "live" | "finishing"
@@ -194,6 +201,32 @@ export function LiveInterview({
       const dc = pc.createDataChannel("oai-events");
       channel.current = dc;
       let spokenResponses = 0;
+      let currentStyle: InterviewStyle = "quick";
+      setStyle("quick");
+      function changeStyle(next: InterviewStyle) {
+        currentStyle = next;
+        spokenResponses = 0;
+        setStyle(next);
+        dc.send(
+          JSON.stringify({
+            type: "session.update",
+            session: {
+              type: "realtime",
+              instructions: interviewInstructions(next),
+              audio: {
+                input: {
+                  turn_detection: {
+                    type: "semantic_vad",
+                    eagerness: "low",
+                    create_response: next !== "monologue",
+                    interrupt_response: true,
+                  },
+                },
+              },
+            },
+          }),
+        );
+      }
       dc.onmessage = ({ data }) => {
         let event;
         try {
@@ -206,6 +239,31 @@ export function LiveInterview({
           event.name === "finish_experience"
         ) {
           void finish(true);
+          return;
+        }
+        if (
+          event.type === "response.function_call_arguments.done" &&
+          event.name === "set_interview_style"
+        ) {
+          try {
+            const next = JSON.parse(event.arguments)?.style;
+            if (!interviewStyles.includes(next) || !event.call_id) return;
+            changeStyle(next);
+            dc.send(
+              JSON.stringify({
+                type: "conversation.item.create",
+                item: {
+                  type: "function_call_output",
+                  call_id: event.call_id,
+                  output: JSON.stringify({ style: next }),
+                },
+              }),
+            );
+            if (next !== "monologue")
+              dc.send(JSON.stringify({ type: "response.create" }));
+          } catch {
+            /* Invalid tool output cannot change the interview. */
+          }
           return;
         }
         if (event.type === "input_audio_buffer.committed")
@@ -221,6 +279,17 @@ export function LiveInterview({
               text: event.transcript,
               at: new Date().toISOString(),
             });
+          if (currentStyle === "monologue") {
+            const command = monologueCommand(event.transcript || "");
+            if (command === "finish") {
+              void finish(true);
+              return;
+            }
+            if (command === "story") {
+              changeStyle("story");
+              dc.send(JSON.stringify({ type: "response.create" }));
+            }
+          }
         }
         if (
           event.type === "conversation.item.input_audio_transcription.failed"
@@ -233,16 +302,22 @@ export function LiveInterview({
           event.transcript?.trim()
         ) {
           spokenResponses += 1;
-          // After the invitation and one optional closing question, listen without
-          // generating further questions. The visible Finish action remains available.
-          if (spokenResponses >= 2 && dc.readyState === "open")
+          const cap =
+            currentStyle === "quick"
+              ? 2
+              : currentStyle === "natural"
+                ? 4
+                : Infinity;
+          if (spokenResponses === cap && dc.readyState === "open")
             dc.send(
               JSON.stringify({
                 type: "session.update",
                 session: {
                   type: "realtime",
-                  instructions:
-                    "Listen to the contributor. Do not ask any further questions. If they say they are done, call finish_experience. Otherwise acknowledge briefly without a question. Never publish.",
+                  instructions: interviewInstructions(
+                    currentStyle,
+                    spokenResponses,
+                  ),
                 },
               }),
             );
@@ -309,6 +384,22 @@ export function LiveInterview({
   return (
     <section className="rounded-2xl border bg-muted/30 p-4 space-y-3">
       <p className="text-sm text-muted-foreground">{t.liveHint}</p>
+      {phase === "live" && (
+        <p className="text-xs text-muted-foreground">
+          {
+            t[
+              (
+                {
+                  quick: "modeQuick",
+                  natural: "modeNatural",
+                  story: "modeStory",
+                  monologue: "modeMonologue",
+                } as const
+              )[style]
+            ]
+          }
+        </p>
+      )}
       <Button
         className="w-full min-h-12"
         variant={phase === "live" ? "destructive" : "outline"}

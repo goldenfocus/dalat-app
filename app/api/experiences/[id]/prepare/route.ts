@@ -1,3 +1,4 @@
+import { venueCandidates } from "@/lib/experiences/venue-candidates";
 import { photoContext } from "@/lib/experiences/photo-context";
 import {
   liveConversationSchema,
@@ -162,13 +163,22 @@ export async function POST(
       owned.experience.visit_date,
       photos,
     );
+    const nameMatches = await venueCandidates(generated.story.venue_name);
+    const merged = new Map(
+      [...nameMatches, ...photoHints.venues].map((v) => [v.id, v]),
+    );
+    const venueHints = {
+      ...photoHints,
+      venues: [...merged.values()].slice(0, 5),
+      basis: nameMatches.length ? "name" : "photo",
+    };
     const { error } = await admin
       .from("experience_sources")
       .update({
         optional_question: generated.story.optional_question,
         generation: {
           ...generated,
-          photoHints,
+          photoHints: venueHints,
           transcription,
           created_at: new Date().toISOString(),
         },
@@ -177,7 +187,7 @@ export async function POST(
     if (error) throw new Error("save_failed");
     // Generation is a suggestion. It never overwrites the contributor's saved story or publishes it.
     return NextResponse.json(
-      { story: generated.story, transcript, photoHints },
+      { story: generated.story, transcript, photoHints: venueHints },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch {
