@@ -3722,6 +3722,10 @@
     "independentAccount": "Đây sẽ là trải nghiệm riêng tư của bạn. Chỉ gợi ý địa điểm đã có; không sao chép câu chuyện, ảnh hoặc ngày của người khác.",
     "datedEvidence": "Ảnh gốc của người chia sẻ · lời kể có AI hỗ trợ. Thực đơn, giá và điều kiện tham gia có thể đã thay đổi",
     "pastAccount": "Trải nghiệm đã qua",
-    "accessUnknown": "Chưa xác minh tình trạng hiện tại"
+    "accessUnknown": "Chưa xác minh tình trạng hiện tại",
+    "topicHint": "Trải nghiệm có chủ đề này hoặc ghi nhận trong lần ghé thăm. Xem người chia sẻ, ngày và địa điểm; điều kiện có thể thay đổi.",
+    "clearTopic": "Xem tất cả trải nghiệm",
+    "moreResults": "Thêm trải nghiệm",
+    "previousResults": "Trải nghiệm trước"
   }
 }

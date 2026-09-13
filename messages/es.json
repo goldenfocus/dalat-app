@@ -3646,6 +3646,10 @@
     "independentAccount": "This will be your own private experience. Only an existing place may be suggested; the other person’s story, photos and visit date are not copied.",
     "datedEvidence": "Original contributor photographs · AI-assisted wording. Menus, prices and access may have changed since this experience",
     "pastAccount": "Past experience",
-    "accessUnknown": "Availability unverified"
+    "accessUnknown": "Availability unverified",
+    "topicHint": "Experiences tagged with this topic or reporting it during a visit. Open an experience to see who shared it, when and where; conditions can change.",
+    "clearTopic": "Browse all experiences",
+    "moreResults": "More experiences",
+    "previousResults": "Previous experiences"
   }
 }

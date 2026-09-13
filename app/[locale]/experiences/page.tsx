@@ -1,3 +1,4 @@
+import { topic, topicHref } from "@/lib/experiences/topics";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { ExperienceList } from "@/components/experiences/list";
@@ -6,12 +7,17 @@ import { categories } from "@/lib/experiences/schema";
 import { createClient } from "@/lib/supabase/server";
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ tag?: string }>;
 }) {
   const { locale } = await params;
   return {
     title: "Firsthand experiences in Đà Lạt",
+    ...((await searchParams).tag
+      ? { robots: { index: false, follow: true } }
+      : {}),
     alternates: {
       canonical: `https://dalat.app${locale === "en" ? "" : "/" + locale}/experiences`,
     },
@@ -20,9 +26,19 @@ export async function generateMetadata({
 export default async function Experiences({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; tag?: string; page?: string }>;
 }) {
-  const { category } = await searchParams;
+  const query = await searchParams;
+  const category = categories.includes(
+    query.category as (typeof categories)[number],
+  )
+    ? query.category
+    : undefined;
+  const tag = topic(query.tag);
+  const page = Math.min(
+    417,
+    Math.max(1, Number.parseInt(query.page || "1", 10) || 1),
+  );
   const t = await getTranslations("experiences");
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 space-y-8">
@@ -31,9 +47,16 @@ export default async function Experiences({
           Đà Lạt · {t("experiences")}
         </p>
         <h1 className="text-4xl font-semibold tracking-tight">
-          {t("discovery")}
+          {tag ? `#${tag}` : t("discovery")}
         </h1>
-        <p className="text-muted-foreground">{t("discoveryHint")}</p>
+        <p className="text-muted-foreground">
+          {tag ? t("topicHint") : t("discoveryHint")}
+        </p>
+        {tag && (
+          <Link href="/experiences" className="block underline">
+            {t("clearTopic")}
+          </Link>
+        )}
         <Link
           href="/experiences/new"
           className="inline-flex rounded-xl bg-primary text-primary-foreground px-5 py-3"
@@ -41,17 +64,22 @@ export default async function Experiences({
           {t("newExperience")}
         </Link>
       </header>
-      <Suspense fallback={null}>
-        <PrivateDrafts />
-      </Suspense>
+      {!tag && (
+        <Suspense fallback={null}>
+          <PrivateDrafts />
+        </Suspense>
+      )}
       <nav className="flex gap-2 flex-wrap">
-        <Link href="/experiences" className="rounded-full border px-4 py-2">
+        <Link
+          href={tag ? topicHref(tag) : "/experiences"}
+          className="rounded-full border px-4 py-2"
+        >
           {t("all")}
         </Link>
         {categories.map((c) => (
           <Link
             key={c}
-            href={`/experiences?category=${c}`}
+            href={tag ? topicHref(tag, c) : `/experiences?category=${c}`}
             className={`rounded-full border px-4 py-2 ${category === c ? "bg-primary text-primary-foreground" : ""}`}
           >
             {t(c)}
@@ -65,6 +93,8 @@ export default async function Experiences({
       >
         <ExperienceList
           showEmpty
+          tag={tag}
+          page={page}
           category={
             categories.includes(category as (typeof categories)[number])
               ? category

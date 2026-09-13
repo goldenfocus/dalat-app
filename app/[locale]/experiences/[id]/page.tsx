@@ -1,3 +1,7 @@
+import {
+  TopicLinks,
+  ObservationText,
+} from "@/components/experiences/topic-links";
 import { suggestsEventDiscovery } from "@/lib/experiences/actions";
 import { AttributedText } from "@/components/experiences/attributed-text";
 import { attributedPlainText } from "@/lib/experiences/attribution";
@@ -152,6 +156,7 @@ export default async function ExperiencePage({ params }: Props) {
           · {t("visited")} <time dateTime={e.visit_date}>{e.visit_date}</time>
         </p>
       </header>
+      <TopicLinks tags={story.tags} observations={story.observations} />
       {e.status === "published" && (
         <section
           className="rounded-2xl border bg-muted/30 p-5 space-y-3"
@@ -169,7 +174,10 @@ export default async function ExperiencePage({ params }: Props) {
               >
                 {t("exploreVenue")}
               </Link>
-            ) : suggestsEventDiscovery(e.category, `${e.title} ${e.summary} ${e.narrative}`) ? (
+            ) : suggestsEventDiscovery(
+                e.category,
+                `${e.title} ${e.summary} ${e.narrative}`,
+              ) ? (
               <Link
                 className="rounded-xl bg-primary px-4 py-3 text-primary-foreground"
                 href="/events/upcoming"
@@ -258,7 +266,12 @@ export default async function ExperiencePage({ params }: Props) {
                 {t(o.source_type)}
               </p>
               <p>
-                <AttributedText text={o.value} username={author?.username} />
+                <ObservationText
+                  value={o.value}
+                  source={o.source_type}
+                  tags={story.tags}
+                  username={author?.username}
+                />
               </p>
               <p className="text-sm text-muted-foreground">
                 <AttributedText text={o.context} username={author?.username} />{" "}
