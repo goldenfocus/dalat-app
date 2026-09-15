@@ -26,14 +26,14 @@ export async function GET(request: Request, { params }: RouteParams) {
   const { data: { user } } = await supabase.auth.getUser();
   const viewerMembership = user
     ? await singleOrNull(
-        supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single()
+        supabase.from('tribe_members').select('role, status').eq('tribe_id', tribe.id).eq('user_id', user.id).single()
       )
     : null;
   // The creator is treated as an insider even without a tribe_members row.
   // tribe_members_select already grants them full visibility, and routing them
   // down the public path would blind the owner of a secret tribe to their own
   // roster if their membership row were ever missing.
-  const isInsider = !!viewerMembership || (!!user && tribe.created_by === user.id);
+  const isInsider = viewerMembership?.status === 'active' || (!!user && tribe.created_by === user.id);
 
   // Non-members get the public roster via a SECURITY DEFINER RPC. Going
   // through tribe_members directly would hit tribe_members_select RLS, which
@@ -75,6 +75,8 @@ export async function GET(request: Request, { params }: RouteParams) {
       total: tribe.member_count ?? members.length,
     });
   }
+
+  if (includeBanned && !(tribe.created_by === user?.id || (viewerMembership?.status === "active" && ["leader","admin"].includes(viewerMembership.role)))) return NextResponse.json({error:"Not authorized"},{status:403});
 
   let query = supabase
     .from('tribe_members')
@@ -119,16 +121,16 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
   // Membership check - null is valid (user might not be a member)
   const membership = await singleOrNull(
-    supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single()
+    supabase.from('tribe_members').select('role, status').eq('tribe_id', tribe.id).eq('user_id', user.id).single()
   );
-  const isAdmin = tribe.created_by === user.id || membership?.role === 'leader' || membership?.role === 'admin';
+  const isAdmin = tribe.created_by === user.id || (membership?.status === 'active' && (membership.role === 'leader' || membership.role === 'admin'));
   if (!isAdmin) return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
   if (user_id === tribe.created_by) return NextResponse.json({ error: 'Cannot modify creator' }, { status: 400 });
 
   // Only leaders can promote to leader or demote from leader
   if (role === 'leader' || role === 'admin') {
     const targetMember = await singleOrNull(
-      supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user_id).single()
+      supabase.from('tribe_members').select('role, status').eq('tribe_id', tribe.id).eq('user_id', user_id).single()
     );
     if (targetMember?.role === 'leader' && membership?.role !== 'leader' && tribe.created_by !== user.id) {
       return NextResponse.json({ error: 'Only leaders can modify other leaders' }, { status: 403 });
@@ -139,7 +141,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
   if (role) updates.role = role;
   if (status) updates.status = status;
 
-  await supabase.from('tribe_members').update(updates).eq('tribe_id', tribe.id).eq('user_id', user_id);
+  const { error } = await supabase.from('tribe_members').update(updates).eq('tribe_id', tribe.id).eq('user_id', user_id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 403 });
 
   return NextResponse.json({ success: true });
 }
@@ -165,13 +168,14 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   const tribe = tribeResult.data;
 
   const membership = await singleOrNull(
-    supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single()
+    supabase.from('tribe_members').select('role, status').eq('tribe_id', tribe.id).eq('user_id', user.id).single()
   );
-  const isAdmin = tribe.created_by === user.id || membership?.role === 'leader' || membership?.role === 'admin';
+  const isAdmin = tribe.created_by === user.id || (membership?.status === 'active' && (membership.role === 'leader' || membership.role === 'admin'));
   if (!isAdmin) return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
   if (user_id === tribe.created_by) return NextResponse.json({ error: 'Cannot remove creator' }, { status: 400 });
 
-  await supabase.from('tribe_members').delete().eq('tribe_id', tribe.id).eq('user_id', user_id);
+  const { error } = await supabase.from('tribe_members').delete().eq('tribe_id', tribe.id).eq('user_id', user_id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 403 });
 
   return NextResponse.json({ success: true });
 }

@@ -31,10 +31,10 @@ export function TransferLeadershipModal({ tribeSlug, members, open, onOpenChange
     setError(null);
 
     startTransition(async () => {
-      const res = await fetch(`/api/tribes/${tribeSlug}/members`, {
-        method: "PUT",
+      const res = await fetch(`/api/tribes/${tribeSlug}/ownership`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: selectedUserId, role: "leader" }),
+        body: JSON.stringify({ user_id: selectedUserId }),
       });
 
       if (!res.ok) {

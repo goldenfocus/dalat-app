@@ -10,7 +10,7 @@ export function TribeCard({ tribe }: { tribe: DiscoverTribe }) {
 
   return (
     <Link
-      href={`/tribes/${tribe.slug}`}
+      href={`/communities/${tribe.slug}`}
       className="group block rounded-xl border border-border overflow-hidden hover:border-primary/50 hover:bg-muted/50 transition-colors active:scale-[0.99]"
     >
       <div className={`relative h-24 bg-gradient-to-br ${gradientFor(tribe.name)}`}>

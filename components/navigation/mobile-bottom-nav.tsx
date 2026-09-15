@@ -1,8 +1,17 @@
 "use client";
+import { isExperienceEditorPath } from "@/lib/experiences/navigation";
 
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Building2, Calendar, MapPin, Newspaper, Film, Activity, Trophy } from "lucide-react";
+import {
+  Building2,
+  Calendar,
+  MapPin,
+  Newspaper,
+  Film,
+  Activity,
+  Trophy,
+} from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 
@@ -61,7 +70,7 @@ export function MobileBottomNav() {
   const normalizedPath = normalizePath(pathname ?? "/");
 
   // Hide nav on moments (fullscreen experience)
-  if (normalizedPath === "/moments") {
+  if (normalizedPath === "/moments" || isExperienceEditorPath(pathname ?? "")) {
     return null;
   }
 

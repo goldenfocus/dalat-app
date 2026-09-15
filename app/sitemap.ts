@@ -680,6 +680,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  const { data: experiences } = await supabase.from("experiences").select("id,original_language,updated_at").eq("status", "published").order("published_at", { ascending: false }).limit(5000);
+  for (const e of experiences || []) {
+    sitemapEntries.push({url: `https://dalat.app${e.original_language === "en" ? "" : "/" + e.original_language}/experiences/${e.id}`, lastModified: new Date(e.updated_at)});
+  }
   assertSitemapLimits(sitemapEntries);
   return sitemapEntries;
 }

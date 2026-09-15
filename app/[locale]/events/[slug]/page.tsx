@@ -1,3 +1,4 @@
+import { CommunityRsvpProvider, CommunityActionNotice } from "@/components/events/community-rsvp";
 import { ActivitySourceFooter } from "@/components/events/activity-source-footer";
 import { eventImageAlt } from "@/lib/events/image-alt";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -1129,6 +1130,14 @@ export default async function EventPage({ params, searchParams }: PageProps) {
       : [];
 
   const viewerInTribe = await isInTribe(event.tribe_id ?? null, currentUserId);
+  const requestedCommunityNotice = (await searchParams).communityStatus;
+  let communityNotice: string | undefined = requestedCommunityNotice === 'joined' && viewerInTribe ? 'joined' : undefined;
+  if (requestedCommunityNotice === 'requested' && event.tribe_id && currentUserId) {
+    const db = await createClient();
+    const { data } = await db.from('tribe_requests').select('id').eq('tribe_id',event.tribe_id).eq('user_id',currentUserId).eq('status','pending').maybeSingle();
+    if (data) communityNotice='requested';
+  }
+  if (requestedCommunityNotice === 'failed' && ['going','waitlist'].includes(currentRsvp?.status || '')) communityNotice='failed';
 
   // Destructure combined RSVP result
   const { attendees, waitlist, interested } = allRsvps;
@@ -1194,6 +1203,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
   return (
+    <CommunityRsvpProvider eventSlug={event.slug} alreadyMember={viewerInTribe}
+      community={event.tribes && ["public","request"].includes(event.tribes.access_type) ? { slug: event.tribes.slug, name: event.tribes.name } : null}
+      initiallyJoin={(await searchParams).fromCommunity === event.tribes?.slug}>
     <CelebrationProvider>
       <main className="min-h-screen">
         {/* JSON-LD Structured Data for SEO/AEO */}
@@ -1286,9 +1298,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               </>
             )}
           </div>
-          <div className="grid gap-8 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* Main content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="min-w-0 lg:col-span-2 space-y-6">
               {/* Past events: Moments first as hero content */}
               {isPast && momentsPreview.length > 0 ? (
                 <>
@@ -1628,7 +1640,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4">
               {/* RSVP card */}
               <Card>
                 <CardContent className="p-4 space-y-4">
@@ -1809,6 +1821,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   <hr />
 
                   {/* RSVP button - wrapped in observer to show/hide floating bar */}
+                  <CommunityActionNotice status={communityNotice} />
                   <RsvpCardObserver>
                     <RsvpButton
                       eventId={event.id}
@@ -2006,5 +2019,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         />
       </main>
     </CelebrationProvider>
+    </CommunityRsvpProvider>
   );
 }

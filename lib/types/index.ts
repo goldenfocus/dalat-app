@@ -179,6 +179,7 @@ export type OrganizerType =
   | "other";
 
 export interface Profile {
+  is_private?: boolean;
   id: string;
   username: string | null;
   display_name: string | null;
@@ -375,6 +376,7 @@ export interface TribeSettings {
 }
 
 export interface Tribe {
+  short_slug?: string | null;
   id: string;
   slug: string;
   name: string;

@@ -25,7 +25,7 @@ export function ShareButtons({
   const locale = useLocale();
   const { share, copyText, copied, canShare } = useShare();
 
-  const formattedDate = new Date(startsAt).toLocaleDateString(locale, {
+  const formattedDate = startsAt ? new Date(startsAt).toLocaleDateString(locale, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -33,7 +33,7 @@ export function ShareButtons({
     minute: "2-digit",
     hour12: true,
     timeZone: DALAT_TIMEZONE,
-  });
+  }) : null;
 
   const descriptionSnippet = eventDescription
     ? eventDescription.length <= 100
@@ -41,7 +41,7 @@ export function ShareButtons({
       : (eventDescription.slice(0, eventDescription.lastIndexOf(" ", 100)) || eventDescription.slice(0, 100)) + "..."
     : null;
 
-  const shareText = `🎉 ${t("youreInvited")}\n\n${eventTitle}\n📅 ${formattedDate}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`;
+  const shareText = `🎉 ${t("youreInvited")}\n\n${eventTitle}${formattedDate ? `\n📅 ${formattedDate}` : ""}${descriptionSnippet ? `\n\n${descriptionSnippet}` : ""}`;
 
   const handleNativeShare = () =>
     share({
@@ -58,7 +58,7 @@ export function ShareButtons({
       `🎉 ${t("youreInvited")}`,
       "",
       eventTitle,
-      `📅 ${formattedDate}`,
+      formattedDate ? `📅 ${formattedDate}` : null,
       descriptionSnippet ? "" : null,
       descriptionSnippet,
       "",

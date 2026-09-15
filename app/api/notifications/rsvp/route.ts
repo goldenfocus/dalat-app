@@ -14,13 +14,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const { eventId, rsvpStatus } = await request.json();
+  const { eventId } = await request.json();
 
   if (!eventId) {
     return NextResponse.json({ error: 'eventId required' }, { status: 400 });
   }
 
-  const [{ data: profile }, { data: event }] = await Promise.all([
+  const [{ data: profile }, { data: event }, { data: rsvp }] = await Promise.all([
     supabase
       .from('profiles')
       .select('locale, display_name')
@@ -31,11 +31,14 @@ export async function POST(request: Request) {
       .select('title, slug, description, starts_at, ends_at, location_name, google_maps_url, created_by')
       .eq('id', eventId)
       .single(),
+    supabase.from("rsvps").select("status").eq("event_id",eventId).eq("user_id",user.id).maybeSingle(),
   ]);
 
   if (!event) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });
   }
+
+  if (rsvp?.status !== "going") return NextResponse.json({ error: "Confirmed RSVP required" }, { status: 400 });
 
   const locale = (profile?.locale as Locale) || 'en';
 
@@ -54,7 +57,7 @@ export async function POST(request: Request) {
     console.log('[rsvp-notification] Confirmation sent:', result);
 
     // Notify organizer (if not self-RSVP and status is 'going')
-    if (rsvpStatus === 'going' && event.created_by !== user.id) {
+    if (event.created_by !== user.id) {
       const { data: organizerProfile } = await supabase
         .from('profiles')
         .select('locale')

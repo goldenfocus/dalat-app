@@ -14,8 +14,8 @@ export async function GET(request: Request, { params }: RouteParams) {
   const { data: tribe } = await supabase.from('tribes').select('id, created_by').eq('slug', slug).single();
   if (!tribe) return NextResponse.json({ error: 'Tribe not found' }, { status: 404 });
 
-  const { data: membership } = await supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
-  const isAdmin = tribe.created_by === user.id || membership?.role === 'leader' || membership?.role === 'admin';
+  const { data: membership } = await supabase.from('tribe_members').select('role, status').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
+  const isAdmin = tribe.created_by === user.id || (membership?.status === 'active' && (membership.role === 'leader' || membership.role === 'admin'));
   if (!isAdmin) return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
 
   const { data: requests, error } = await supabase
@@ -50,21 +50,19 @@ export async function PUT(request: Request, { params }: RouteParams) {
   const { data: tribe } = await supabase.from('tribes').select('id, name, slug, created_by').eq('slug', slug).single();
   if (!tribe) return NextResponse.json({ error: 'Tribe not found' }, { status: 404 });
 
-  const { data: membership } = await supabase.from('tribe_members').select('role').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
-  const isAdmin = tribe.created_by === user.id || membership?.role === 'leader' || membership?.role === 'admin';
+  const { data: membership } = await supabase.from('tribe_members').select('role, status').eq('tribe_id', tribe.id).eq('user_id', user.id).single();
+  const isAdmin = tribe.created_by === user.id || (membership?.status === 'active' && (membership.role === 'leader' || membership.role === 'admin'));
   if (!isAdmin) return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
 
   const { data: joinRequest } = await supabase.from('tribe_requests').select('*').eq('id', request_id).eq('tribe_id', tribe.id).eq('status', 'pending').single();
   if (!joinRequest) return NextResponse.json({ error: 'Request not found' }, { status: 404 });
 
-  if (action === 'approve') {
-    await supabase.from('tribe_members').insert({ tribe_id: tribe.id, user_id: joinRequest.user_id, invited_by: user.id });
-    await notifyTribeRequestApproved(joinRequest.user_id, tribe.name, tribe.slug);
-  } else {
-    await notifyTribeRequestRejected(joinRequest.user_id, tribe.name);
-  }
-
-  await supabase.from('tribe_requests').update({ status: action === 'approve' ? 'approved' : 'rejected', reviewed_by: user.id, reviewed_at: new Date().toISOString() }).eq('id', request_id);
+  const { error } = await supabase.rpc('review_community_request', {
+    p_slug: slug, p_request_id: request_id, p_approve: action === 'approve',
+  });
+  if (error) return NextResponse.json({ error: error.message }, { status: error.code === '42501' ? 403 : 400 });
+  if (action === 'approve') await notifyTribeRequestApproved(joinRequest.user_id, tribe.name, tribe.slug);
+  else await notifyTribeRequestRejected(joinRequest.user_id, tribe.name);
 
   return NextResponse.json({ success: true });
 }

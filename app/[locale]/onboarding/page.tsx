@@ -1,8 +1,10 @@
+import { safeReturnPath } from "@/lib/auth/continuation";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const next = safeReturnPath((await searchParams).next);
   const supabase = await createClient();
 
   const {
@@ -10,7 +12,7 @@ export default async function OnboardingPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/auth/login");
+    redirect(`/auth/login?next=${encodeURIComponent(next)}`);
   }
 
   // Check if user already has a username
@@ -21,7 +23,7 @@ export default async function OnboardingPage() {
     .single();
 
   if (profile?.username) {
-    redirect("/");
+    redirect(next);
   }
 
   // Get data from OAuth metadata if available
@@ -41,6 +43,7 @@ export default async function OnboardingPage() {
     <main className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <OnboardingFlow
+          redirectTo={next}
           userId={user.id}
           defaultDisplayName={defaultDisplayName}
           oauthAvatarUrl={oauthAvatarUrl}

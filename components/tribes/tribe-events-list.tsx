@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Calendar, MapPin } from "lucide-react";
@@ -15,6 +18,10 @@ interface TribeEventsListProps {
 
 export function TribeEventsList({ events, locale }: TribeEventsListProps) {
   const t = useTranslations("tribes");
+  const feed = useTranslations("feed");
+  const [showAll, setShowAll] = useState(false);
+  const sortedEvents = [...events].sort((a, b) => Date.parse(b.starts_at) - Date.parse(a.starts_at));
+  const visibleEvents = showAll ? sortedEvents : sortedEvents.slice(0, 3);
 
   if (events.length === 0) {
     return <p className="text-center py-8 text-muted-foreground">{t("noEvents")}</p>;
@@ -22,7 +29,7 @@ export function TribeEventsList({ events, locale }: TribeEventsListProps) {
 
   return (
     <div className="space-y-4">
-      {events.map((event) => {
+      {visibleEvents.map((event) => {
         const eventDate = new Date(event.starts_at);
         const formattedDate = eventDate.toLocaleDateString(locale, {
           weekday: "short", month: "short", day: "numeric", timeZone: DALAT_TIMEZONE,
@@ -38,22 +45,16 @@ export function TribeEventsList({ events, locale }: TribeEventsListProps) {
             className="block p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 transition-colors active:scale-[0.99]"
           >
             <div className="flex gap-4">
-              {/* Date badge */}
-              <div className="flex flex-col items-center justify-center w-14 h-14 bg-primary/10 rounded-lg shrink-0">
-                <span className="text-xs font-medium text-primary uppercase">
-                  {eventDate.toLocaleDateString(locale, { month: "short", timeZone: DALAT_TIMEZONE })}
-                </span>
-                <span className="text-xl font-bold text-primary">
-                  {eventDate.toLocaleDateString(locale, { day: "numeric", timeZone: DALAT_TIMEZONE })}
-                </span>
+              <div className="relative w-16 h-20 sm:w-20 sm:h-24 bg-muted rounded-lg overflow-hidden shrink-0">
+                {event.image_url ? <Image src={event.image_url} alt="" fill sizes="(max-width: 639px) 64px, 80px" className="object-cover" /> : <div className="flex h-full items-center justify-center"><Calendar className="h-6 w-6 text-muted-foreground" aria-hidden="true" /></div>}
               </div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold truncate">{event.title}</h3>
+                <h3 className="font-semibold line-clamp-2">{event.title}</h3>
 
                 <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
+                    <Calendar className="w-3.5 h-3.5 shrink-0" />
                     {t("dateAtTime", { date: formattedDate, time: formattedTime })}
                   </span>
                 </div>
@@ -81,6 +82,7 @@ export function TribeEventsList({ events, locale }: TribeEventsListProps) {
           </Link>
         );
       })}
+      {!showAll && sortedEvents.length > 3 && <Button variant="outline" className="min-h-11 w-full" onClick={() => setShowAll(true)}>{feed("viewAll")}</Button>}
     </div>
   );
 }

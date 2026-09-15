@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Grid3x3, Calendar, Users } from "lucide-react";
 
@@ -29,23 +29,35 @@ export function TribeTabs({ momentsSlot, eventsSlot, membersSlot }: TribeTabsPro
 
   // Moments lead when the tribe has a gallery; otherwise the page opens on events.
   const [active, setActive] = useState<TabKey>(tabs[0].key);
+  const hasMembers = Boolean(membersSlot);
+  const hasMoments = Boolean(momentsSlot);
+  useEffect(() => {
+    const selectHash = () => {
+      const key = window.location.hash.slice(1) as TabKey;
+      if (key === 'events' || (key === 'members' && hasMembers) || (key === 'moments' && hasMoments)) setActive(key);
+    };
+    selectHash();
+    window.addEventListener('hashchange', selectHash);
+    return () => window.removeEventListener('hashchange', selectHash);
+  }, [hasMembers, hasMoments]);
   const activeTab = tabs.find((tab) => tab.key === active) ?? tabs[0];
 
   return (
     <div>
       {/* Sticky tab bar -- stays reachable while scrolling a long gallery */}
-      <div className="sticky top-0 z-20 -mx-4 px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
+      <div className="sticky top-14 z-20 -mx-4 px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
         <div className="flex" role="tablist">
           {tabs.map((tab) => {
             const isActive = tab.key === activeTab.key;
             return (
               <button
                 key={tab.key}
+                id={tab.key}
                 role="tab"
                 aria-selected={isActive}
-                onClick={() => setActive(tab.key)}
+                onClick={() => { setActive(tab.key); const url = new URL(window.location.href); url.hash = tab.key; window.history.replaceState(window.history.state, "", url); }}
                 className={`
-                  flex-1 flex items-center justify-center gap-2 px-3 py-3.5
+                  scroll-mt-28 min-w-0 flex-1 flex items-center justify-center gap-1 px-1 sm:gap-2 sm:px-3 py-3.5
                   text-sm font-medium border-b-2 -mb-px
                   transition-colors touch-manipulation active:scale-[0.98]
                   ${isActive

@@ -1,5 +1,6 @@
 "use client";
 
+import { takeCelebrationAudio } from "@/lib/communities/celebration-audio";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
@@ -13,6 +14,7 @@ import { AddToCalendar } from "./add-to-calendar";
 const CELEBRATION_MUTE_KEY = "dalat-celebration-muted";
 
 interface RsvpCelebrationProps {
+  kind?: "event" | "community";
   eventUrl: string;
   eventTitle: string;
   eventDescription: string | null;
@@ -29,6 +31,7 @@ interface RsvpCelebrationProps {
 }
 
 export function RsvpCelebration({
+  kind = "event",
   eventUrl,
   eventTitle,
   eventDescription,
@@ -42,6 +45,7 @@ export function RsvpCelebration({
   enableSound = true,
 }: RsvpCelebrationProps) {
   const t = useTranslations("rsvpCelebration");
+  const communityText = useTranslations("tribes");
   const [currentPhrase, setCurrentPhrase] = useState("");
   const [isVisible, setIsVisible] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
@@ -56,6 +60,7 @@ export function RsvpCelebration({
   // Get celebration phrases from translations
   const getPhrases = useCallback(() => {
     try {
+      if (kind === "community") return [communityText("joinSuccess")];
       return t.raw("phrases") as string[];
     } catch {
       // Fallback phrases if translations not loaded
@@ -65,7 +70,7 @@ export function RsvpCelebration({
         "See you there!",
       ];
     }
-  }, [t]);
+  }, [t, kind, communityText]);
 
   // Get a random phrase
   const getRandomPhrase = useCallback(() => {
@@ -75,6 +80,7 @@ export function RsvpCelebration({
 
   // Fire confetti when card pops up
   const fireCardConfetti = useCallback(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const colors = [
       "#ff6b6b", "#ffd93d", "#6bcb77", "#4d96ff",
       "#ff9f43", "#a855f7", "#ec4899", "#14b8a6"
@@ -124,6 +130,7 @@ export function RsvpCelebration({
 
   // Fire fireworks effect
   const fireFireworks = useCallback(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const colors = [
       "#ff6b6b", // coral red
       "#ffd93d", // golden yellow
@@ -189,12 +196,13 @@ export function RsvpCelebration({
 
   // Play celebration sound
   const playSound = useCallback((muted: boolean) => {
-    if (!enableSound || muted) return;
+    if (!enableSound) return;
     try {
       // Create audio element for fireworks/celebration sound
-      const audio = new Audio("/sounds/celebration.mp3");
+      const audio = takeCelebrationAudio();
       audio.volume = 0.3;
       audioRef.current = audio;
+      if (muted) return;
       // Use a small timeout to ensure the audio context is ready after user interaction
       setTimeout(() => {
         audio.play().catch((err) => {
@@ -364,7 +372,7 @@ export function RsvpCelebration({
           {/* Title */}
           <div className="space-y-2">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
-              {t("title")}
+              {kind === "community" ? communityText("joinSuccess") : t("title")}
             </h2>
             <p className="text-sm text-muted-foreground">{eventTitle}</p>
           </div>
@@ -401,7 +409,7 @@ export function RsvpCelebration({
               showWhatsApp
             />
 
-            <AddToCalendar
+            {kind === "event" && <AddToCalendar
               title={eventTitle}
               description={eventDescription}
               locationName={locationName}
@@ -411,7 +419,7 @@ export function RsvpCelebration({
               endsAt={endsAt}
               url={eventUrl}
               inModal
-            />
+            />}
           </div>
         </div>
 

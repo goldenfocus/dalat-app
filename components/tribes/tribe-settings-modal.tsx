@@ -40,6 +40,9 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
   const [inviteCode, setInviteCode] = useState(tribe.invite_code);
   const [error, setError] = useState<string | null>(null);
 
+  const [featuredPhoto, setFeaturedPhoto] = useState<string | null>(typeof tribe.settings?.featured_photo_url === "string" ? tribe.settings.featured_photo_url : null);
+  const [featuredUploading,setFeaturedUploading] = useState(false);
+  const [coverIsAi,setCoverIsAi] = useState(tribe.settings?.cover_is_ai === true);
   const [coverUrl, setCoverUrl] = useState<string | null>(tribe.cover_image_url);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
@@ -97,6 +100,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
         entityId: `tribe-${tribe.id}`,
       });
       setCoverUrl(publicUrl);
+      setCoverIsAi(false);
     } catch {
       URL.revokeObjectURL(preview);
       setCoverPreview(null);
@@ -110,6 +114,15 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
     if (coverPreview) URL.revokeObjectURL(coverPreview);
     setCoverPreview(null);
     setCoverUrl(null);
+  }
+
+  async function uploadFeaturedPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file=e.target.files?.[0]; e.target.value="";
+    if (!file) return;
+    setFeaturedUploading(true); setError(null);
+    try { const { publicUrl } = await uploadFile("event-media",file,{entityId:tribe.id}); setFeaturedPhoto(publicUrl); }
+    catch { setError(t("settingsForm.saveFailed")); }
+    finally { setFeaturedUploading(false); }
   }
 
   async function handleSave() {
@@ -130,6 +143,8 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
             is_listed: isListed,
             cover_image_url: coverUrl,
             avatar_url: avatarUrl,
+            featured_photo_url: featuredPhoto,
+            cover_is_ai: coverIsAi,
           }),
         });
 
@@ -176,7 +191,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
 
   // Built lazily, not during render: this component is server-rendered as part
   // of the tribe header, and `window` does not exist there.
-  const inviteUrl = inviteCode ? `/tribes/join/${inviteCode}` : null;
+  const inviteUrl = inviteCode ? `/communities/join/${inviteCode}` : null;
 
   function handleCopyLink() {
     if (inviteUrl) copyText(`${window.location.origin}${inviteUrl}`);
@@ -316,9 +331,9 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
 
             <div className="space-y-2">
               <Label htmlFor="tribe-slug">{t("settingsForm.url")}</Label>
-              <div className="flex items-center">
+              <div className="flex min-w-0 flex-wrap items-center gap-y-2">
                 <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input whitespace-nowrap">
-                  dalat.app/tribes/
+                  dalat.app/communities/
                 </span>
                 <Input
                   id="tribe-slug"
@@ -326,13 +341,24 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
                   onChange={(e) => setSlug(sanitizeSlug(e.target.value))}
                   onBlur={() => setSlug(finalizeSlug(slug))}
                   maxLength={60}
-                  className="rounded-l-none"
+                  className="min-w-0 flex-1 rounded-l-none"
                 />
               </div>
               {slug !== tribe.slug && (
                 <p className="text-xs text-muted-foreground">{t("settingsForm.urlHint")}</p>
               )}
             </div>
+
+            {tribe.short_slug && (
+              <div className="space-y-2">
+                <Label>{t("shareTribe")}</Label>
+                <Button type="button" variant="outline" className="h-auto min-h-11 w-full justify-between gap-2 whitespace-normal" onClick={() => copyText(`${window.location.origin}/${tribe.short_slug}`)}>
+                  <span className="min-w-0 break-all">dalat.app/{tribe.short_slug}</span>
+                  <Copy className="h-4 w-4 shrink-0" />
+                  <span className="sr-only">{copied ? t("copied") : t("copyLink")}</span>
+                </Button>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="tribe-description">{t("settingsForm.description")}</Label>
@@ -413,7 +439,13 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <div className="space-y-3 border-t pt-4">
+          <Label htmlFor="community-featured-photo">{t("featuredPhoto")}</Label>
+          <p className="text-sm text-muted-foreground">{t("featuredPhotoHint")}</p>
+          {featuredPhoto && <div className="relative"><img src={featuredPhoto} alt={t("featuredPhoto")} className="h-24 w-full object-cover rounded-lg" /><Button type="button" variant="outline" size="sm" onClick={()=>setFeaturedPhoto(null)} className="mt-2">{t("removeFeaturedPhoto")}</Button></div>}
+          <Input id="community-featured-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadFeaturedPhoto} disabled={featuredUploading || isPending} />
+        </div>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="destructive"
               onClick={() => setShowDeleteModal(true)}
@@ -425,7 +457,7 @@ export function TribeSettingsModal({ tribe, open, onOpenChange }: TribeSettingsM
             <Button variant="outline" onClick={() => onOpenChange(false)} className="px-3 py-2">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={isPending || isUploadingCover || isUploadingAvatar} className="px-3 py-2">
+            <Button onClick={handleSave} disabled={isPending || featuredUploading || isUploadingCover || isUploadingAvatar} className="px-3 py-2">
               {isPending ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>

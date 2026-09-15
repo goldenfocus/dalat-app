@@ -64,6 +64,10 @@ export async function getEffectiveUser(): Promise<EffectiveUserResult> {
     .eq("id", user.id)
     .single();
 
+  if (profile?.is_private) {
+    const { data: details } = await supabase.from("private_profile_details").select("bio").eq("user_id", user.id).maybeSingle();
+    profile.bio = details?.bio ?? null;
+  }
   return { user, profile, godMode: INACTIVE_GOD_MODE };
 }
 

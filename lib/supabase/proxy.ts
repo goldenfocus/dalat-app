@@ -291,6 +291,7 @@ export async function updateSession(request: NextRequest) {
   const shouldSkipLocale =
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
+    pathname.startsWith('/auth/continue') ||
     pathname.startsWith('/auth/callback') ||
     pathname.startsWith('/auth/confirm') ||
     pathname.startsWith('/auth/verify') ||
