@@ -69,7 +69,6 @@ import { getEventDateDisplay } from "@/lib/events/event-date-range";
 import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
-import { EventTribeAttach } from "@/components/events/event-tribe-attach";
 import { MoreAtVenue } from "@/components/events/more-at-venue";
 import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
@@ -1936,26 +1935,16 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               {/* Hosting tribe — the read side of events.tribe_id. Safe to show
                 whenever set: members_only events are already hidden from
                 non-members by RLS. */}
-              {(event.tribes || canManageEvent) && (
+              {event.tribes && (
                 <Card>
                   <CardContent className="p-4">
-                    {event.tribes ? (
-                      <>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {tTribes("hostedByTribe")}
-                        </p>
-                        <TribeChip
-                          tribe={event.tribes}
-                          showJoin={isLoggedIn && !viewerInTribe}
-                        />
-                      </>
-                    ) : null}
-                    {canManageEvent && (
-                      <EventTribeAttach
-                        eventSlug={event.slug}
-                        currentTribeId={event.tribe_id ?? null}
-                      />
-                    )}
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {tTribes("hostedByTribe")}
+                    </p>
+                    <TribeChip
+                      tribe={event.tribes}
+                      showJoin={isLoggedIn && !viewerInTribe}
+                    />
                   </CardContent>
                 </Card>
               )}
