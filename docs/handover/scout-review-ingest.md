@@ -21,6 +21,9 @@ WhatsApp groups / Dalat Scout
         │
         ├─ POST /api/import/review  { action: "evaluate" | "publish" }
         │
+        ├─ POST /api/import/review  { action: "reject", reasons: [...] }
+        │     status stays draft; needs_review=false
+        │
         └─ POST /api/import/review  { action: "qa" }   after publish
 ```
 
@@ -57,30 +60,47 @@ Required:
 - `source_url` — public http(s), used for idempotency
 - `starts_at` (ISO) **or** `date` (`YYYY-MM-DD`) plus optional `time` (`HH:MM`, Asia/Ho_Chi_Minh)
 - `venue` or `location_name`
-- at least one of: non-empty `source_image_urls[]`, non-empty `promo_image_urls[]`,
-  or `visual_gap_reason` (do not invent images)
+- **visuals (do not invent or duplicate images):**
+  - at least **3 distinct** URLs across `source_image_urls[]` + `promo_image_urls[]`
+    (first distinct URL becomes the hero; the next 2–4 distinct URLs become
+    `promo_media`), **or**
+  - `visual_gap_reason` documenting why a full hero + 2–4 promo gallery cannot
+    be sent (0+ real URLs allowed with the reason)
 
 Optional: `ends_at`, `address`, `google_maps_url`, `source_platform` (not
-`activity-graph`), `source_locale` (Vietnamese-unique letters infer `vi` when
-omitted, ignoring Đà Lạt / Lâm Đồng place names), `source_image_urls[]`, `promo_image_urls[]`,
+`activity-graph`), `source_locale` (persisted as-is when it is a supported
+locale; otherwise Vietnamese-unique letters infer `vi`, ignoring Đà Lạt /
+Lâm Đồng place names), `source_image_urls[]`, `promo_image_urls[]`,
 `visual_provenance` (`owner_authorized_source` \| `ai_generated`), `image_alt`,
 `image_caption`, `visual_gap_reason`, `organizer_name`.
 
 Behavior:
 
 - Re-posts of the same canonical `source_url` do not create a second row.
+  A re-post after Review `reject` resets `needs_review=true` and clears
+  `review_result`.
+- Re-posts onto an already-**published** row refresh hero/promo only
+  (`attachVisuals` + `replacePromoMedia`). They update `image_url`,
+  `image_alt`, `source_metadata.promo_count`, and visual provenance, keep
+  `status=published`, and return `{ updated: true, duplicate: false }`.
+  Facts, review result, and translation enqueue metadata are not reset.
+  Cancelled rows stay a no-op `{ duplicate: true, updated: false }`.
 - Past events and starts more than 45 days out are rejected (`422`).
 - Missing images **and** missing `visual_gap_reason` is rejected (`400`) before
-  any draft write. Empty image arrays do not count.
+  any draft write. Empty image arrays do not count. One or two distinct URLs
+  without `visual_gap_reason` is also `400` — a single-image post must not
+  publish with an empty promo gallery.
 - After fetch/upload, if there is still no hero and no `visual_gap_reason`, the
-  write is rejected (`400`). A documented gap writes
-  `source_metadata.visual_gap` and leaves `image_url` empty.
+  write is rejected (`400`). If a hero exists but fewer than 2 distinct promo
+  images survived fetch, the write is rejected unless `visual_gap_reason` is
+  present. A documented gap writes `source_metadata.visual_gap` with
+  `covers: ["hero","promo"]` or `covers: ["promo"]`.
 - Source/promo images are fetched only after an SSRF-safe public-URL check,
   then uploaded like other import utils. AI imagery must be disclosed in alt
   and caption (the API fills the AGENTS.md disclosure if the caller omitted it).
 - Response: `{ id, slug, status, created, updated, duplicate }`.
 
-Example:
+Example (enough distinct images for hero + 2 promo):
 
 ```json
 {
@@ -91,7 +111,27 @@ Example:
   "location_name": "Langbiang, Đà Lạt",
   "source_url": "https://ticketbox.vn/event/sunset-hike",
   "source_platform": "scout",
-  "source_image_urls": ["https://ticketbox.vn/media/cover.jpg"]
+  "source_locale": "vi",
+  "source_image_urls": [
+    "https://ticketbox.vn/media/cover.jpg",
+    "https://ticketbox.vn/media/crowd.jpg",
+    "https://ticketbox.vn/media/trail.jpg"
+  ]
+}
+```
+
+Single real image plus a documented promo shortfall (no invented gallery):
+
+```json
+{
+  "title": "Sunset hike Langbiang",
+  "description": "Canonical facts from source:\n20 Sep 19:00 at Langbiang, Đà Lạt.",
+  "date": "2026-09-20",
+  "time": "19:00",
+  "location_name": "Langbiang, Đà Lạt",
+  "source_url": "https://ticketbox.vn/event/sunset-hike",
+  "source_image_urls": ["https://ticketbox.vn/media/cover.jpg"],
+  "visual_gap_reason": "Organizer posted only one reusable image"
 }
 ```
 
@@ -102,7 +142,16 @@ Authorization: Bearer <REVIEW_INGEST_KEY>
 Content-Type: application/json
 ```
 
-Body: `{ "action": "evaluate" | "publish" | "qa", "id"?: "<uuid>", "slug"?: "<slug>" }`.
+Body:
+
+```
+{
+  "action": "evaluate" | "publish" | "qa" | "reject",
+  "id"?: "<uuid>",
+  "slug"?: "<slug>",
+  "reasons"?: ["…"]   // required when action is reject; 1–20 non-empty strings
+}
+```
 
 ### `evaluate` / `publish`
 
@@ -114,7 +163,10 @@ Deterministic checks (no generated facts):
 - not a duplicate of another **published** title+date
 - inside the 45-day horizon
 - hero image **or** a documented `source_metadata.visual_gap`
+- promo gallery 2–4 items **or** a documented `source_metadata.visual_gap`
 - not an Activity Graph row
+
+Factual holds (locality, horizon, duplicate, source provenance) are unchanged.
 
 `publish` sets `status=published` only when every check passes. It then:
 
@@ -123,20 +175,32 @@ Deterministic checks (no generated facts):
   names; Scout payload / WhatsApp `vi` kept as-is). English copy that only
   mentions the city stays null for the worker to detectLanguage.
   Null `source_locale` blocks every locale in QA / indexing readiness.
-- bumps `updated_at` so `lib/translation-sweep.ts` can see the row among
-  recently updated **published** events (newest-`created_at` alone misses
-  old scout/WhatsApp drafts).
+- writes `source_metadata.translation_needed_at` (ISO) and bumps `updated_at`.
+  The Mac mini sweep **always** loads published rows with that key, including
+  when `scanLimit` is 0 and between blog items, so a mid-loop Cloudflare
+  blog failure cannot hide this event. `updated_at` recency remains a fallback.
 - awaits `triggerTranslationServer` (Luma/Facebook compatibility shim; it
   logs only). Review does **not** write locale strings.
 
-The durable enqueue the Mac mini worker cannot miss is: published row +
-missing `content_translations` + recent `updated_at`. The worker drains
-**events before blogs** (`partitionSweepWork`) so Cloudflare/OpenRouter blog
-failures cannot starve a Review publish, and `EVENT_IDS=` skips the blog
-scan entirely. Translation is **not** triggered at scout ingest — WhatsApp
-drafts share this publish hook, and a draft-time call would race if the shim
-later invalidates rows. Failures leave the row as `draft`, do not call
-translation, and return `{ passed: false, reasons: [...] }`.
+Translation is **not** triggered at scout ingest — WhatsApp drafts share this
+publish hook, and a draft-time call would race if the shim later invalidates
+rows. Failures leave the row as `draft`, do not call translation, and return
+`{ passed: false, reasons: [...] }`.
+
+### `reject`
+
+Holds a draft without inventing a human UI. Requires `reasons: string[]`.
+
+- `status` stays `draft`
+- `source_metadata.review_result = "rejected"`
+- `source_metadata.needs_review = false` (drops off the Review poll)
+- `source_metadata.rejected_at` and `source_metadata.reject_reasons` are stored
+- Response: `{ action: "reject", rejected: true, reasons: [{ message }], event }`
+- Refuses non-drafts (`rejected: false`, `code: "not_a_draft"`)
+
+Use this when evaluate passed but the listing must not go live (wrong city
+night time, near-dupe, etc.). Scout can re-POST the same `source_url` to
+re-open the draft.
 
 ### `qa`
 
@@ -145,6 +209,10 @@ After publish. Reports only — does not write translations or images.
 - 12 locales from `lib/types` / `messages/*.json` (`en vi ko zh ru fr ja ms th de es id`)
 - title + description completeness via `evaluateEventIndexingReadiness`
 - hero present; promo gallery 2–4 items; AI disclosure if `visual_provenance=ai_generated`
+- **documented promo exception:** when a hero exists and `visual_gap` covers
+  `promo`, `missing_promo` is not a failing image gap (do not invent images).
+  A documented gap with no hero still fails (`missing_hero` +
+  `documented_visual_gap`).
 
 Immediately after publish, `readyLocales` may still be empty until the Mac
 mini worker writes locale rows. Re-run `qa` after the worker sweep;
@@ -157,9 +225,15 @@ Poll drafts instead of (or in addition to) the WhatsApp hook:
 events?status=eq.draft&source_metadata->>needs_review=eq.true
 ```
 
-Typical Review loop: poll → `evaluate` → fix fact/image gaps → `publish`
-(durable enqueue) → `qa` → wait for the Mac mini worker if locales are
-still missing → `qa` again. Review never invents locale strings.
+Typical Review loop: poll → `evaluate` → `reject` (structured reasons) **or**
+fix fact/image gaps → `publish` (writes `translation_needed_at`) → `qa` →
+wait for the Mac mini worker if locales are still missing → `qa` again.
+Review never invents locale strings or images.
+
+The running forever worker re-collects `translation_needed_at` rows between
+blog/moment items. `EVENT_IDS=` is a **one-shot repair**, not the primary
+enqueue: it still skips the blog scan when set, and also drains any other
+`translation_needed_at` events.
 
 One-off repair (uses stored title/description; do not invent copy):
 
@@ -172,6 +246,11 @@ EVENT_IDS=<event-uuid> npx tsx --tsconfig tsconfig.json scripts/backfill-transla
 
 Runnable Go listener in `whatsapp-ingest/`. Mac mini launchd runbook and env
 table live in that README. The process must stay read-only on WhatsApp.
+
+WhatsApp drafts often have a single flyer. Review evaluate will hold them
+(`missing_promo`) until Scout re-submits 3 distinct images or a
+`visual_gap_reason`, or Review `reject`s with reasons. Do not invent promo
+images.
 
 ## Related code
 

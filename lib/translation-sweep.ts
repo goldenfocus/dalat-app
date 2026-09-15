@@ -163,18 +163,38 @@ type EventTranslationCandidate = {
   source_locale: ContentLocale | null;
 };
 
+export const TRANSLATION_NEEDED_AT_KEY = "translation_needed_at";
+
+export interface LoadEventTranslationCandidatesOptions {
+  /** EVENT_IDS one-shot repair. Always loaded, even when scanLimit is 0. */
+  priorityEventIds?: string[];
+  /**
+   * Load published rows whose source_metadata.translation_needed_at is set.
+   * Defaults to true so a Review publish cannot hide behind SCAN_LIMIT or a
+   * mid-loop blog failure. EVENT_IDS_ONLY one-shots keep this on so a repair
+   * run also drains the durable Review queue (still event-only).
+   */
+  includeTranslationNeeded?: boolean;
+}
+
 /**
- * Union of newest-created events, recently updated published events, and any
- * explicit Review-publish ids. Deduped; priority ids come first.
+ * Union of Review-publish queue rows, newest-created events, recently updated
+ * published events, and any explicit EVENT_IDS. Deduped; priority ids first,
+ * then translation-needed rows, then the scan windows.
  */
 export async function loadEventTranslationCandidates(
   supabase: SupabaseClient,
   scanLimit: number,
-  priorityEventIds: string[] = [],
+  priorityEventIdsOrOptions: string[] | LoadEventTranslationCandidatesOptions = [],
 ): Promise<EventTranslationCandidate[]> {
+  const options: LoadEventTranslationCandidatesOptions = Array.isArray(
+    priorityEventIdsOrOptions,
+  )
+    ? { priorityEventIds: priorityEventIdsOrOptions }
+    : priorityEventIdsOrOptions;
   const byId = new Map<string, EventTranslationCandidate>();
 
-  const priorityIds = [...new Set(priorityEventIds.filter((id) => id.length > 0))];
+  const priorityIds = [...new Set((options.priorityEventIds ?? []).filter((id) => id.length > 0))];
   if (priorityIds.length > 0) {
     const { data, error } = await supabase
       .from("events")
@@ -184,6 +204,27 @@ export async function loadEventTranslationCandidates(
       throw new Error(`[translation-sweep] priority events query failed: ${error.message}`);
     }
     for (const event of data ?? []) byId.set(event.id, event);
+  }
+
+  const includeTranslationNeeded = options.includeTranslationNeeded !== false;
+  const translationNeededIds: string[] = [];
+  if (includeTranslationNeeded) {
+    const { data, error } = await supabase
+      .from("events")
+      .select("id, title, description, source_locale")
+      .eq("status", "published")
+      .not(`source_metadata->${TRANSLATION_NEEDED_AT_KEY}`, "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(Math.max(scanLimit, 200));
+    if (error) {
+      throw new Error(
+        `[translation-sweep] translation-needed events query failed: ${error.message}`,
+      );
+    }
+    for (const event of data ?? []) {
+      translationNeededIds.push(event.id);
+      if (!byId.has(event.id)) byId.set(event.id, event);
+    }
   }
 
   if (scanLimit > 0) {
@@ -212,12 +253,19 @@ export async function loadEventTranslationCandidates(
   }
 
   const ordered: EventTranslationCandidate[] = [];
-  for (const id of priorityIds) {
+  const seen = new Set<string>();
+  for (const id of [...priorityIds, ...translationNeededIds]) {
     const event = byId.get(id);
-    if (event) ordered.push(event);
+    if (event && !seen.has(event.id)) {
+      seen.add(event.id);
+      ordered.push(event);
+    }
   }
   for (const event of byId.values()) {
-    if (!priorityIds.includes(event.id)) ordered.push(event);
+    if (!seen.has(event.id)) {
+      seen.add(event.id);
+      ordered.push(event);
+    }
   }
   return ordered;
 }
@@ -230,6 +278,23 @@ export async function loadEventTranslationCandidates(
 export interface CollectTranslationWorkOptions {
   /** Reviewed/published event ids that must enter the sweep even if older than SCAN_LIMIT. */
   priorityEventIds?: string[];
+  /** Load source_metadata.translation_needed_at rows. Defaults to true. */
+  includeTranslationNeeded?: boolean;
+}
+
+/**
+ * Event-only collect used between blog items so a Review publish is picked
+ * up before the next failing blog translation. scanLimit 0 skips blogs.
+ */
+export async function collectUrgentEventTranslationWork(
+  supabase: SupabaseClient,
+  options: CollectTranslationWorkOptions = {},
+): Promise<TranslationWorkItem[]> {
+  const work = await collectTranslationWork(supabase, 0, {
+    priorityEventIds: options.priorityEventIds,
+    includeTranslationNeeded: options.includeTranslationNeeded !== false,
+  });
+  return work.filter((item) => item.contentType === "event");
 }
 
 export async function collectTranslationWork(
@@ -246,9 +311,13 @@ export async function collectTranslationWork(
 
   // --- Events ---
   // Newest-by-created_at alone misses Review-published scout/WhatsApp drafts
-  // whose created_at is older than SCAN_LIMIT. Also load recently updated
-  // published rows so a status flip is a durable enqueue signal.
-  const events = await loadEventTranslationCandidates(supabase, scanLimit, options.priorityEventIds);
+  // whose created_at is older than SCAN_LIMIT. Review publish also writes
+  // source_metadata.translation_needed_at, which this collector always loads
+  // (even at scanLimit 0) so a mid-loop blog failure cannot hide the row.
+  const events = await loadEventTranslationCandidates(supabase, scanLimit, {
+    priorityEventIds: options.priorityEventIds,
+    includeTranslationNeeded: options.includeTranslationNeeded,
+  });
 
   for (const event of events) {
     const fields: { field_name: string; text: string }[] = [];

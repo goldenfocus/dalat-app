@@ -17,6 +17,24 @@ const httpUrl = z
 
 const visualProvenance = z.enum(["owner_authorized_source", "ai_generated"]);
 
+/** Hero plus a 2–4 item promo gallery. Do not invent or duplicate images. */
+export const MIN_DISTINCT_SCOUT_IMAGES = 3;
+
+export function distinctScoutImageUrls(input: {
+  source_image_urls?: string[] | undefined;
+  promo_image_urls?: string[] | undefined;
+}): string[] {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+  for (const url of [...(input.source_image_urls ?? []), ...(input.promo_image_urls ?? [])]) {
+    const normalized = url.trim();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    urls.push(normalized);
+  }
+  return urls;
+}
+
 export const scoutIngestSchema = z
   .object({
     title: z.string().trim().min(3).max(200),
@@ -73,15 +91,25 @@ export const scoutIngestSchema = z
         message: "Activity Graph is a separate auto-publish lane",
       });
     }
-    const hasSourceImages = (value.source_image_urls?.length ?? 0) > 0;
-    const hasPromoImages = (value.promo_image_urls?.length ?? 0) > 0;
+    const distinctImages = distinctScoutImageUrls(value);
     const hasVisualGapReason = Boolean(value.visual_gap_reason);
-    if (!hasSourceImages && !hasPromoImages && !hasVisualGapReason) {
+    if (distinctImages.length === 0 && !hasVisualGapReason) {
       context.addIssue({
         code: "custom",
         path: ["source_image_urls"],
         message:
           "Provide source_image_urls, promo_image_urls, or visual_gap_reason",
+      });
+    } else if (
+      distinctImages.length > 0 &&
+      distinctImages.length < MIN_DISTINCT_SCOUT_IMAGES &&
+      !hasVisualGapReason
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["source_image_urls"],
+        message:
+          "Provide at least 3 distinct source/promo image URLs (hero + 2–4 promo), or visual_gap_reason. Do not invent or duplicate images.",
       });
     }
   });
@@ -89,15 +117,23 @@ export const scoutIngestSchema = z
 export type ScoutIngestInput = z.infer<typeof scoutIngestSchema>;
 
 export const reviewIngestSchema = z.object({
-  action: z.enum(["evaluate", "publish", "qa"]),
+  action: z.enum(["evaluate", "publish", "qa", "reject"]),
   id: z.string().uuid().optional(),
   slug: z.string().trim().min(1).max(80).optional(),
+  reasons: z.array(z.string().trim().min(1).max(400)).max(20).optional(),
 }).superRefine((value, context) => {
   if (!value.id && !value.slug) {
     context.addIssue({
       code: "custom",
       path: ["id"],
       message: "Provide id or slug",
+    });
+  }
+  if (value.action === "reject" && (value.reasons?.length ?? 0) === 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["reasons"],
+      message: "Reject requires at least one reason",
     });
   }
 });

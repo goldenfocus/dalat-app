@@ -3,6 +3,7 @@ import { CONTENT_LOCALES } from "@/lib/types";
 import {
   blogTranslationSourceStillMatches,
   collectTranslationWork,
+  collectUrgentEventTranslationWork,
   getMissingTranslationLocales,
   getVenueTranslatableFields,
   partitionSweepWork,
@@ -299,5 +300,84 @@ describe("automatically published event recap translations", () => {
     const work = await collectTranslationWork(client, 20);
     expect(work.filter((item) => item.contentType === "blog").map((item) => item.contentId)).toEqual(["recap"]);
     expect(work.find((item) => item.contentId === "recap")?.sourceUpdatedAt).toBe(new Date(post.updated_at).toISOString());
+  });
+});
+
+describe("Review translation_needed_at enqueue", () => {
+  it("loads translation-needed events even when scanLimit is 0", async () => {
+    const needed = {
+      id: "22271ffc-d7ad-4afe-b582-72abbaf31a79",
+      title: "Phượng Linh Đà Lạt",
+      description: "Đêm nhạc tại Đà Lạt.",
+      source_locale: "vi",
+    };
+    const client = {
+      from: vi.fn((table: string) => {
+        if (table !== "events") return makeBuilder({ data: [], error: null });
+        const builder = makeBuilder({ data: [], error: null });
+        let translationNeeded = false;
+        builder.not = vi.fn((column: string) => {
+          if (String(column).includes("translation_needed_at")) translationNeeded = true;
+          return builder;
+        });
+        builder.then = (
+          resolve: (value: QueryResult) => unknown,
+          reject?: (reason: unknown) => unknown,
+        ) =>
+          Promise.resolve({
+            data: translationNeeded ? [needed] : [],
+            error: null,
+          }).then(resolve, reject);
+        return builder;
+      }),
+    } as unknown as TestClient;
+
+    const work = await collectTranslationWork(client, 0);
+    expect(work).toEqual([
+      expect.objectContaining({
+        contentType: "event",
+        contentId: needed.id,
+        sourceLocale: "vi",
+      }),
+    ]);
+  });
+
+  it("collects urgent Review events without scanning blogs", async () => {
+    const needed = {
+      id: "22271ffc-d7ad-4afe-b582-72abbaf31a79",
+      title: "Phượng Linh Đà Lạt",
+      description: "Đêm nhạc tại Đà Lạt.",
+      source_locale: "vi",
+    };
+    const client = {
+      from: vi.fn((table: string) => {
+        if (table === "blog_posts") {
+          return makeBuilder({
+            data: [{ id: "blog-1", title: "News", story_content: "x", technical_content: "", meta_description: "", source: "manual", source_locale: "en", status: "published", updated_at: "2026-09-15T00:00:00Z" }],
+            error: null,
+          });
+        }
+        if (table !== "events") return makeBuilder({ data: [], error: null });
+        const builder = makeBuilder({ data: [], error: null });
+        let translationNeeded = false;
+        builder.not = vi.fn((column: string) => {
+          if (String(column).includes("translation_needed_at")) translationNeeded = true;
+          return builder;
+        });
+        builder.then = (
+          resolve: (value: QueryResult) => unknown,
+          reject?: (reason: unknown) => unknown,
+        ) =>
+          Promise.resolve({
+            data: translationNeeded ? [needed] : [],
+            error: null,
+          }).then(resolve, reject);
+        return builder;
+      }),
+    } as unknown as TestClient;
+
+    const work = await collectUrgentEventTranslationWork(client);
+    expect(work.map((item) => item.contentType)).toEqual(["event"]);
+    expect(work[0]?.contentId).toBe(needed.id);
   });
 });

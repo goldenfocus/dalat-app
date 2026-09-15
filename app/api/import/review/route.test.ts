@@ -81,11 +81,16 @@ function mockSupabase(event: typeof draft | null, options: { duplicate?: boolean
       return { data: null, error: null };
     });
     builder.then = (
-      resolve: (value: { data: unknown; error: null }) => unknown,
+      resolve: (value: { data: unknown; count: number | null; error: null }) => unknown,
       reject: (reason: unknown) => unknown,
     ) => {
-      const data = table === "content_translations" || table === "promo_media" ? [] : null;
-      return Promise.resolve({ data, error: null }).then(resolve, reject);
+      if (table === "promo_media") {
+        return Promise.resolve({ data: [], count: 2, error: null }).then(resolve, reject);
+      }
+      if (table === "content_translations") {
+        return Promise.resolve({ data: [], count: 0, error: null }).then(resolve, reject);
+      }
+      return Promise.resolve({ data: null, count: null, error: null }).then(resolve, reject);
     };
     return builder;
   });
@@ -205,5 +210,55 @@ describe("POST /api/import/review", () => {
     expect(body.images.gaps.some((gap: { code: string }) => gap.code === "missing_promo")).toBe(
       true,
     );
+  });
+
+  it("rejects a draft with structured reasons and leaves it unpublished", async () => {
+    vi.stubEnv("REVIEW_INGEST_KEY", "review-secret");
+    const supabase = mockSupabase(draft);
+    mocks.createClient.mockReturnValue(supabase);
+
+    const response = await POST(
+      request(
+        {
+          action: "reject",
+          slug: "sunset-hike",
+          reasons: ["Wrong city night time", "Near-duplicate of an existing listing"],
+        },
+        "Bearer review-secret",
+      ),
+    );
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      action: "reject",
+      rejected: true,
+      event: { status: "draft" },
+      reasons: [
+        { message: "Wrong city night time" },
+        { message: "Near-duplicate of an existing listing" },
+      ],
+    });
+    expect(supabase.updates[0]).toMatchObject({
+      table: "events",
+      row: {
+        source_metadata: expect.objectContaining({
+          review_result: "rejected",
+          needs_review: false,
+          reject_reasons: [
+            "Wrong city night time",
+            "Near-duplicate of an existing listing",
+          ],
+        }),
+      },
+    });
+    expect(mocks.triggerTranslationServer).not.toHaveBeenCalled();
+  });
+
+  it("requires reasons when action is reject", async () => {
+    vi.stubEnv("REVIEW_INGEST_KEY", "review-secret");
+    const response = await POST(
+      request({ action: "reject", slug: "sunset-hike" }, "Bearer review-secret"),
+    );
+    expect(response.status).toBe(400);
+    expect(mocks.createClient).not.toHaveBeenCalled();
   });
 });
