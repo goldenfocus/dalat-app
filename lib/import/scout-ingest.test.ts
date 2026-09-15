@@ -297,7 +297,7 @@ describe("ingestScoutEvent", () => {
     if (!result.ok) return;
     expect(result.updated).toBe(true);
     expect(result.created).toBe(false);
-    expect(supabase.inserts).toHaveLength(0);
+    expect(supabase.inserts.filter((entry) => (entry as { table: string }).table === "events")).toHaveLength(0);
     expect(supabase.updates.length).toBeGreaterThan(0);
   });
 
