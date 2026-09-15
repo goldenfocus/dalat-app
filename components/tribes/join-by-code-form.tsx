@@ -44,7 +44,7 @@ export function JoinByCodeForm({ tribe, code, isAuthenticated, locale }: JoinByC
         return;
       }
 
-      router.push(`/${locale}/tribes/${tribe.slug}`);
+      router.push(`/${locale}/communities/${tribe.slug}`);
     });
   }
 

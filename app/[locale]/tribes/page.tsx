@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const t = await getTranslations({ locale, namespace: "tribes" });
   return generateLocalizedMetadata({
     locale,
-    path: "/tribes",
+    path: "/communities",
     title: t("discoverTitle"),
     description: t("discoverSubtitle"),
     keywords: [
@@ -48,7 +48,7 @@ export default async function TribesPage({ params }: PageProps) {
         data={generateBreadcrumbSchema(
           [
             { name: "Home", url: `https://dalat.app/${locale}` },
-            { name: t("discoverTitle"), url: `https://dalat.app/${locale}/tribes` },
+            { name: t("discoverTitle"), url: `https://dalat.app/${locale}/communities` },
           ],
           locale
         )}
@@ -58,7 +58,7 @@ export default async function TribesPage({ params }: PageProps) {
           <h1 className="text-3xl font-bold">{t("discoverTitle")}</h1>
           <p className="text-muted-foreground max-w-xl">{t("discoverSubtitle")}</p>
         </div>
-        <Link href="/tribes/new">
+        <Link href="/communities/new">
           <Button className="gap-2 active:scale-95 transition-all">
             <Plus className="w-4 h-4" />
             {t("startTribe")}
@@ -69,7 +69,7 @@ export default async function TribesPage({ params }: PageProps) {
       {tribes.length === 0 ? (
         <div className="text-center py-16 space-y-4">
           <p className="text-muted-foreground">{t("emptyTitle")}</p>
-          <Link href="/tribes/new">
+          <Link href="/communities/new">
             <Button size="lg" className="gap-2 active:scale-95 transition-all">
               <Plus className="w-4 h-4" />
               {t("emptyCta")}

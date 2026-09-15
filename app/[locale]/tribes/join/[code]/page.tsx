@@ -27,7 +27,7 @@ export default async function JoinByCodePage({ params }: PageProps) {
 
   if (user) {
     const { data: membership } = await supabase.from("tribe_members").select("id").eq("tribe_id", tribe.id).eq("user_id", user.id).single();
-    if (membership) redirect(`/${locale}/tribes/${tribe.slug}`);
+    if (membership) redirect(`/${locale}/communities/${tribe.slug}`);
   }
 
   return <main className="min-h-screen flex items-center justify-center p-4"><JoinByCodeForm tribe={tribe} code={code} isAuthenticated={!!user} locale={locale} /></main>;

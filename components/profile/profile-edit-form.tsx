@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AIEnhanceTextarea } from "@/components/ui/ai-enhance-textarea";
 import { AvatarUpload } from "./avatar-upload";
 import { AIAvatarDialog } from "./ai-avatar-dialog";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { triggerTranslation } from "@/lib/translations-client";
 import type { Profile } from "@/lib/types";
@@ -33,7 +34,19 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatar_url);
   const [username, setUsername] = useState(profile.username || "");
   const [displayName, setDisplayName] = useState(profile.display_name || "");
+  const [isPrivate, setIsPrivate] = useState(profile.is_private ?? false);
+  const [privacySaving, setPrivacySaving] = useState(false);
   const [bio, setBio] = useState(profile.bio || "");
+
+  async function savePrivacy(value: boolean) {
+    setPrivacySaving(true);
+    setError(null);
+    const { error } = await createClient().from("profiles").update({ is_private: value }).eq("id", profile.id);
+    setPrivacySaving(false);
+    if (error) { setError(t("privacySaveFailed")); return; }
+    setIsPrivate(value);
+    router.refresh();
+  }
 
   // Track last saved values to avoid redundant saves
   const lastSavedRef = useRef({
@@ -63,7 +76,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         updates.display_name = fields.displayName.trim() || null;
       }
       if (fields.bio !== undefined && fields.bio !== lastSavedRef.current.bio) {
-        updates.bio = fields.bio.trim() || null;
+        updates.bio = fields.bio.trim();
       }
 
       // Nothing to save
@@ -95,7 +108,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       if (fields.bio !== undefined) lastSavedRef.current.bio = fields.bio;
 
       // Trigger translation for bio if it changed
-      if (fields.bio && fields.bio.trim() !== (profile.bio || "")) {
+      if (!isPrivate && fields.bio && fields.bio.trim() !== (profile.bio || "")) {
         triggerTranslation("profile", profile.id, [
           { field_name: "bio", text: fields.bio.trim() },
         ]);
@@ -104,7 +117,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       setSaveStatus("saved");
       router.refresh();
     },
-    [profile.id, profile.bio, router]
+    [profile.id, profile.bio, router, isPrivate]
   );
 
   // Debounced username availability check
@@ -241,6 +254,13 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-8">
+          <div className="flex items-start justify-between gap-4 rounded-xl border p-4">
+            <div className="space-y-1">
+              <Label htmlFor="profile-private">{t("makePrivate")}</Label>
+              <p className="text-sm text-muted-foreground">{t("privacyHint")}</p>
+            </div>
+            <Switch id="profile-private" checked={isPrivate} onCheckedChange={savePrivacy} disabled={privacySaving || saveStatus === "saving"} />
+          </div>
           {/* Avatar */}
           <div className="space-y-3">
             <Label>{t("profilePhoto")}</Label>

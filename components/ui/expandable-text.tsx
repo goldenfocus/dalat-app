@@ -23,12 +23,13 @@ export function ExpandableText({
   // Check if text is actually truncated (needs "Read more" button)
   useEffect(() => {
     const element = textRef.current;
-    if (element) {
-      // Check if content overflows when clamped
-      const isOverflowing = element.scrollHeight > element.clientHeight;
-      setIsTruncated(isOverflowing);
-    }
-  }, [text, maxLines]);
+    if (!element || isExpanded) return;
+    const measure = () => setIsTruncated(element.scrollHeight > element.clientHeight + 1);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [text, maxLines, isExpanded]);
 
   return (
     <div className={className}>
@@ -51,6 +52,7 @@ export function ExpandableText({
       {isTruncated && (
         <button
           type="button"
+          aria-expanded={isExpanded}
           onClick={() => setIsExpanded(!isExpanded)}
           className="-ml-3 mt-1 min-h-11 rounded-lg px-3 py-2 text-sm text-primary hover:underline active:scale-95 transition-all"
         >

@@ -1,5 +1,9 @@
 "use client";
+import { prepareCelebrationAudio } from "@/lib/communities/celebration-audio";
 
+import { trackCommunityActivity, currentCommunityVisit } from "@/lib/communities/activity";
+import { startSignupIntent } from "@/lib/auth/start-intent";
+import { RsvpCelebration } from "@/components/events/rsvp-celebration";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -24,6 +28,7 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
   // so the button sat on "Joining..." long after the POST had succeeded.
   // We settle the button on the fetch response and let the refresh land after.
   const [submitting, setSubmitting] = useState(false);
+  const [celebrationDismissed, setCelebrationDismissed] = useState(false);
   const [outcome, setOutcome] = useState<"joined" | "requested" | null>(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [message, setMessage] = useState("");
@@ -54,8 +59,12 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
 
   // Handle join action
   async function handleJoin(inviteCode?: string) {
+    prepareCelebrationAudio();
+    await trackCommunityActivity(tribe.slug, "join_click");
     if (!isAuthenticated) {
-      router.push(`/auth/login?redirect=/tribes/${tribe.slug}`);
+      setSubmitting(true);
+      try { await startSignupIntent({ kind: "community", slug: tribe.slug, inviteCode }); }
+      catch { setError(t("joinFailed")); setSubmitting(false); }
       return;
     }
 
@@ -66,7 +75,7 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
       const res = await fetch(`/api/tribes/${tribe.slug}/membership`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invite_code: inviteCode, message: message.trim() || null }),
+        body: JSON.stringify({ invite_code: inviteCode, message: message.trim() || null, visit_id: currentCommunityVisit(tribe.slug)?.id }),
       });
 
       const data = await res.json();
@@ -77,11 +86,10 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
       }
 
       setShowRequestModal(false);
-      // Confirm to the user right now, then reconcile with the server in the
-      // background. The refresh swaps this component out for the real
-      // member-facing UI whenever it finishes.
+      // Keep the success celebration mounted until dismissed. A refresh would
+      // replace this join button with the member UI and cut it off.
       setOutcome(data.status === "requested" ? "requested" : "joined");
-      router.refresh();
+      if (data.status === "requested") router.refresh();
     } catch {
       setError(t("joinFailed"));
     } finally {
@@ -93,10 +101,11 @@ export function JoinTribeButton({ tribe, pendingRequest, isAuthenticated }: Join
   // refresh landing.
   if (outcome === "joined") {
     return (
+      <>{!celebrationDismissed && <RsvpCelebration kind="community" eventUrl={`${window.location.origin}/communities/${tribe.slug}`} eventTitle={tribe.name} eventDescription={tribe.description} startsAt="" onComplete={() => { setCelebrationDismissed(true); router.refresh(); }} />}
       <div className="flex items-center gap-2 p-4 bg-primary/10 rounded-lg text-primary">
         <Check className="w-5 h-5" />
         <span>{t("joinSuccess")}</span>
-      </div>
+      </div></>
     );
   }
 

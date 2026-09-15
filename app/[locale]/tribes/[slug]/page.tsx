@@ -1,3 +1,7 @@
+import { CommunityActivity } from "@/components/tribes/community-activity";
+import { CommunityActionNotice } from "@/components/events/community-rsvp";
+import { CommunityNextEvent } from "@/components/tribes/community-next-event";
+import { isUpcomingGathering } from "@/lib/communities/share-preview";
 import { notFound } from "next/navigation";
 import { Plus } from "lucide-react";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
@@ -19,7 +23,7 @@ import type { Locale } from "@/lib/i18n/routing";
 const EVENTS_PER_PAGE = 5;
 const MOMENTS_PER_EVENT = 6;
 
-interface PageProps { params: Promise<{ slug: string; locale: string }>; }
+interface PageProps { searchParams: Promise<{ communityStatus?: string }>; params: Promise<{ slug: string; locale: string }>; }
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug, locale } = await params;
@@ -35,11 +39,11 @@ export async function generateMetadata({ params }: PageProps) {
 
   const metadata = generateLocalizedMetadata({
     locale: locale as Locale,
-    path: `/tribes/${slug}`,
+    path: `/communities/${slug}`,
     title: tribe.name,
     description: tribe.description || `${tribe.name} — a community on ĐàLạt.app in Đà Lạt, Vietnam`,
-    image: tribe.cover_image_url || undefined,
-    keywords: [tribe.name, "tribe", "community", "Đà Lạt"],
+    image: isDiscoverable ? `https://dalat.app/${locale}/communities/${slug}/og-image` : undefined,
+    keywords: [tribe.name, "community", "Đà Lạt"],
   });
 
   if (!isDiscoverable) {
@@ -49,7 +53,7 @@ export async function generateMetadata({ params }: PageProps) {
   return metadata;
 }
 
-export default async function TribePage({ params }: PageProps) {
+export default async function TribePage({ params, searchParams }: PageProps) {
   const { slug, locale } = await params;
   const supabase = await createClient();
   const t = await getTranslations("tribes");
@@ -63,10 +67,16 @@ export default async function TribePage({ params }: PageProps) {
 
   let membership = null;
   let pendingRequest = null;
+  let notificationsMuted = false;
 
   if (user) {
     const { data: mem } = await supabase.from("tribe_members").select("*").eq("tribe_id", tribe.id).eq("user_id", user.id).single();
-    membership = mem;
+    membership = mem?.status === "active" ? mem : null;
+    if (membership) {
+      const { data: preference } = await supabase.from("community_notification_preferences")
+        .select("muted").eq("tribe_id", tribe.id).eq("user_id", user.id).maybeSingle();
+      notificationsMuted = preference?.muted === true;
+    }
     if (!membership) {
       const { data: req } = await supabase.from("tribe_requests").select("*").eq("tribe_id", tribe.id).eq("user_id", user.id).eq("status", "pending").single();
       pendingRequest = req;
@@ -75,14 +85,17 @@ export default async function TribePage({ params }: PageProps) {
 
   if (tribe.access_type === "secret" && !membership) notFound();
 
-  const isAdmin = membership?.role === "leader" || membership?.role === "admin" || tribe.created_by === user?.id;
+  const isAdmin = (membership?.status === "active" && (membership.role === "leader" || membership.role === "admin")) || tribe.created_by === user?.id;
 
   // invite_code grants membership on its own — /api/tribes/[slug]/membership
   // inserts the row for any valid code, with no approval step. RLS makes
   // invite_only tribes readable by anonymous visitors, so passing the whole row
   // to a client component published the code in the RSC payload to everyone who
   // could load the page. Strip it for non-admins before it crosses that boundary.
-  const clientTribe = isAdmin ? tribe : { ...tribe, invite_code: null };
+  const { data: inviteCode } = isAdmin
+    ? await supabase.rpc('get_community_invite_code', { p_tribe_id: tribe.id })
+    : { data: null };
+  const clientTribe = { ...tribe, invite_code: inviteCode };
 
   // Mirrors the browse filter in app/api/tribes/route.ts and the gate inside
   // get_tribe_public_members(): only already-discoverable tribes expose a roster.
@@ -107,19 +120,27 @@ export default async function TribePage({ params }: PageProps) {
     supabase.rpc("get_tribe_moment_count", { p_tribe_id: tribe.id }),
   ]);
 
+  const { data: siteAdmin } = user ? await supabase.rpc("is_admin") : { data: false };
+  const nextEvent = events?.find(e => isUpcomingGathering(e));
+  const {data: nextRsvp} = user && nextEvent ? await supabase.from('rsvps').select('status').eq('event_id',nextEvent.id).eq('user_id',user.id).maybeSingle() : {data:null};
   const groups = (momentGroups ?? []) as EventMomentsGroup[];
 
   return (
     <main className="min-h-screen">
+      <CommunityActivity slug={slug} />
       <TribeHeader
         tribe={clientTribe}
         membership={membership}
+        notificationsMuted={notificationsMuted}
         isAdmin={isAdmin}
+        canViewInsights={!!(isAdmin || siteAdmin)}
         eventCount={events?.length ?? 0}
         momentCount={momentCount ?? 0}
       />
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <CommunityActionNotice community={{slug: tribe.slug, name: tribe.name}} status={(await searchParams).communityStatus === 'joined' && membership ? 'joined' : (await searchParams).communityStatus === 'requested' && pendingRequest ? 'requested' : undefined} />
         {!membership && <JoinTribeButton tribe={clientTribe} pendingRequest={pendingRequest} isAuthenticated={!!user} />}
+        {nextEvent && <CommunityNextEvent rsvpStatus={nextRsvp?.status} event={nextEvent} locale={locale} communitySlug={slug} />}
         <TribeTabs
           // Omitting the slot hides the tab entirely, so a tribe with no gallery
           // keeps the original events-first page instead of showing an empty grid.
@@ -149,7 +170,7 @@ export default async function TribePage({ params }: PageProps) {
           // Discoverable tribes show their roster to everyone — seeing who runs
           // a tribe and who's in it is the whole reason to join one. invite_only
           // and secret tribes stay members-only.
-          membersSlot={(membership || isDiscoverable) ? <TribeMembersList tribeSlug={slug} isAdmin={isAdmin} /> : undefined}
+          membersSlot={(membership || isDiscoverable) ? <TribeMembersList tribeSlug={slug} isAdmin={isAdmin} isOwner={tribe.created_by === user?.id} /> : undefined}
         />
       </div>
     </main>

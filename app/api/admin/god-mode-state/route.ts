@@ -10,10 +10,6 @@ export async function GET() {
   // the impersonated target, so we return their profile for the banner.
   const impersonating = !!cookieStore.get(getGodModeAdminTokenCookieName())?.value;
 
-  if (!impersonating) {
-    return NextResponse.json({ isActive: false, targetProfile: null });
-  }
-
   const supabase = await createClient();
   const {
     data: { user },
@@ -33,5 +29,9 @@ export async function GET() {
     return NextResponse.json({ isActive: false, targetProfile: null });
   }
 
-  return NextResponse.json({ isActive: true, targetProfile });
+  return NextResponse.json({
+    isActive: impersonating,
+    profile: targetProfile,
+    targetProfile: impersonating ? targetProfile : null,
+  }, { headers: { "Cache-Control": "private, no-store" } });
 }

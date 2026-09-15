@@ -68,7 +68,7 @@ export function MyTribesDropdown({ locale }: MyTribesDropdownProps) {
           {tribes.map((membership) => (
             <Link
               key={membership.id}
-              href={`/${locale}/tribes/${membership.tribes.slug}`}
+              href={`/${locale}/communities/${membership.tribes.slug}`}
               className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-sm transition-colors"
             >
               <Avatar className="w-6 h-6">
@@ -94,7 +94,7 @@ export function MyTribesDropdown({ locale }: MyTribesDropdownProps) {
               {pendingRequests.map((request) => (
                 <Link
                   key={request.id}
-                  href={`/${locale}/tribes/${request.tribes.slug}`}
+                  href={`/${locale}/communities/${request.tribes.slug}`}
                   className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-sm transition-colors opacity-60"
                 >
                   <Avatar className="w-6 h-6">
@@ -116,7 +116,7 @@ export function MyTribesDropdown({ locale }: MyTribesDropdownProps) {
 
       <div className="border-t my-1" />
       <Link
-        href={`/${locale}/tribes/new`}
+        href={`/${locale}/communities/new`}
         className="flex items-center gap-2 px-3 py-2 hover:bg-muted rounded-sm transition-colors text-primary"
       >
         <Plus className="w-4 h-4" />

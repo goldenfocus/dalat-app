@@ -24,6 +24,7 @@ type QueryBuilder = {
   in: ReturnType<typeof vi.fn>;
   order: ReturnType<typeof vi.fn>;
   range: ReturnType<typeof vi.fn>;
+  limit: ReturnType<typeof vi.fn>;
   then: (resolve: (value: unknown) => unknown) => Promise<unknown>;
 };
 
@@ -33,6 +34,7 @@ function queryResult(data: unknown[]): QueryBuilder {
   builder.eq = vi.fn(() => builder);
   builder.in = vi.fn(() => builder);
   builder.order = vi.fn(() => builder);
+  builder.limit = vi.fn(() => builder);
   builder.range = vi.fn(async () => ({ data, error: null }));
   builder.then = (resolve) =>
     Promise.resolve({ data, error: null }).then(resolve);
@@ -103,6 +105,7 @@ describe("localizedEntries", () => {
 describe("sitemap event and recurring activity images", () => {
   let eventsQuery: QueryBuilder;
   let seriesQuery: QueryBuilder;
+  let experiencesQuery: QueryBuilder;
 
   beforeEach(() => {
     eventsQuery = queryResult([
@@ -131,7 +134,9 @@ describe("sitemap event and recurring activity images", () => {
       },
     ]);
 
+    experiencesQuery = queryResult([{id: "experience-one", original_language: "vi", updated_at: "2026-09-12T10:00:00Z"}]);
     const from = vi.fn((table: string) => {
+      if (table === "experiences") return experiencesQuery;
       if (table === "events") return eventsQuery;
       if (table === "event_series") return seriesQuery;
       return queryResult([]);
@@ -141,6 +146,12 @@ describe("sitemap event and recurring activity images", () => {
       from,
       rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
     });
+  });
+
+  it("indexes only published original-language experiences", async () => {
+    const entries = await sitemap();
+    expect(experiencesQuery.eq).toHaveBeenCalledWith("status", "published");
+    expect(entries.filter(e => e.url.includes("/experiences/"))).toEqual([{url:"https://dalat.app/vi/experiences/experience-one",lastModified:new Date("2026-09-12T10:00:00Z")}]);
   });
 
   it("includes active series with fact art in every canonical locale", async () => {

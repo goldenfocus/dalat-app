@@ -39,7 +39,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
   const { data: event, error: fetchError } = await supabase
     .from("events")
-    .select("id, created_by")
+    .select("id, created_by, tribe_id, tribe_visibility")
     .eq("slug", slug)
     .single();
 
@@ -97,13 +97,12 @@ export async function PATCH(request: Request, { params }: Params) {
     tribe = tribeRow;
   }
 
-  // Attaching is a promotion action, so it publishes to the feed. Narrowing an
-  // event to members_only stays in the full event form, which explains it.
+  // Association preserves the event audience; publishing is a separate action.
   const { error: updateError } = await supabase
     .from("events")
     .update(
       tribeId
-        ? { tribe_id: tribeId, tribe_visibility: "public" }
+        ? { tribe_id: tribeId, tribe_visibility: event.tribe_id === null ? "public" : event.tribe_visibility }
         : { tribe_id: null }
     )
     .eq("id", event.id);

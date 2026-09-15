@@ -1,5 +1,6 @@
 "use client";
 
+import { authContinuation, callbackUrl } from "@/lib/auth/continuation";
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
@@ -75,7 +76,7 @@ export function EmailAuthForm({ onSuccessChange }: EmailAuthFormProps) {
 
       if (!signInError) {
         // Success - redirect to home
-        window.location.href = "/";
+        window.location.href = authContinuation(new URLSearchParams(window.location.search));
         return;
       }
 
@@ -86,7 +87,7 @@ export function EmailAuthForm({ onSuccessChange }: EmailAuthFormProps) {
             email,
             password,
             options: {
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              emailRedirectTo: callbackUrl(window.location.origin, new URLSearchParams(window.location.search)),
               data: { locale },
             },
           });
@@ -106,7 +107,11 @@ export function EmailAuthForm({ onSuccessChange }: EmailAuthFormProps) {
           // This means user exists but entered wrong password
           setError(t("invalidCredentials"));
         } else {
-          // New account created - show celebration!
+          if (signUpData.session) {
+            window.location.href = authContinuation(new URLSearchParams(window.location.search));
+            return;
+          }
+          // Confirmation email sent.
           setSuccessEmail(email);
         }
       } else {
@@ -132,7 +137,7 @@ export function EmailAuthForm({ onSuccessChange }: EmailAuthFormProps) {
         type: "signup",
         email: successEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: callbackUrl(window.location.origin, new URLSearchParams(window.location.search)),
         },
       });
       setResent(true);

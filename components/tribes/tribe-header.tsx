@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
-import { Settings, Lock, Globe, Eye, EyeOff, UserPlus } from "lucide-react";
+import { Lock, Globe, Eye, EyeOff, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CommunityMemberMenu } from "./community-member-menu";
+import { ExpandableText } from "@/components/ui/expandable-text";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TribeSettingsModal } from "./tribe-settings-modal";
@@ -17,12 +20,14 @@ interface TribeHeaderProps {
   tribe: Tribe & { profiles?: { display_name: string | null; avatar_url: string | null; username: string | null } };
   membership: TribeMember | null;
   isAdmin: boolean;
+  canViewInsights?: boolean;
+  notificationsMuted?: boolean;
   /** Counts shown in the profile-style stat row. */
   eventCount: number;
   momentCount: number;
 }
 
-export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCount }: TribeHeaderProps) {
+export function TribeHeader({ tribe, membership, isAdmin, canViewInsights = isAdmin, notificationsMuted = false, eventCount, momentCount }: TribeHeaderProps) {
   const t = useTranslations("tribes");
   const [showSettings, setShowSettings] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
@@ -44,7 +49,7 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
     <>
       <div className="relative">
         {/* Cover Image */}
-        <div className="h-48 md:h-64 bg-gradient-to-br from-primary/20 to-primary/5 relative">
+        <div className="h-40 md:h-56 bg-gradient-to-br from-primary/20 to-primary/5 relative">
           {tribe.cover_image_url && (
             <Image
               src={tribe.cover_image_url}
@@ -57,56 +62,40 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
         </div>
 
-        {/* Content */}
-        <div className="max-w-4xl mx-auto px-4 -mt-16 relative">
-          <div className="flex flex-col md:flex-row md:items-end gap-4">
-            {/* Tribe avatar (letter fallback when none) */}
-            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-xl bg-primary/10 border-4 border-background flex items-center justify-center text-4xl font-bold text-primary overflow-hidden">
-              {tribe.settings?.avatar_url ? (
-                <Image
-                  src={tribe.settings.avatar_url}
-                  alt={tribe.name}
-                  fill
-                  sizes="128px"
-                  className="object-cover"
-                />
-              ) : (
-                tribe.name.charAt(0).toUpperCase()
-              )}
-            </div>
 
-            <div className="flex-1 pb-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold">{tribe.name}</h1>
+        {/* Keep the identity and counters entirely below the cover. */}
+        <div className="max-w-4xl mx-auto px-4 pt-6">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0 w-full sm:w-auto flex-1">
+                  <h1 className="text-3xl md:text-4xl font-bold tracking-tight break-words"><Link href={`/communities/${tribe.slug}`} className="rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors">{tribe.name}</Link></h1>
                   {/* Profile-style stat row: members / events / moments */}
-                  <div className="flex items-center gap-4 mt-2 text-muted-foreground">
-                    <span className="flex items-baseline gap-1.5">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-muted-foreground">
+                    <a href={membership || (["public", "request"].includes(tribe.access_type) && tribe.is_listed) ? "#members" : undefined} className="flex min-h-11 items-center gap-1.5 rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors">
                       <span className="font-semibold text-foreground">{memberCount}</span>
                       {t("members").toLowerCase()}
-                    </span>
-                    <span className="flex items-baseline gap-1.5">
+                    </a>
+                    <a href="#events" className="flex min-h-11 items-center gap-1.5 rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors">
                       <span className="font-semibold text-foreground">{eventCount}</span>
                       {t("events").toLowerCase()}
-                    </span>
+                    </a>
                     {momentCount > 0 && (
-                      <span className="flex items-baseline gap-1.5">
+                      <a href="#moments" className="flex min-h-11 items-center gap-1.5 rounded hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors">
                         <span className="font-semibold text-foreground">{momentCount}</span>
                         {t("moments").toLowerCase()}
-                      </span>
+                      </a>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 mt-2 text-muted-foreground">
+                  {["invite_only", "secret"].includes(tribe.access_type) && <div className="flex items-center gap-3 mt-2 text-muted-foreground">
                     <Badge variant="outline" className="gap-1">
                       {accessIcon[tribe.access_type]}
                       {t(tribe.access_type)}
                     </Badge>
-                  </div>
+                  </div>}
                 </div>
 
                 {/* Share is for everyone — it's how a tribe grows. Admin-only
                     actions stay gated behind isAdmin alongside it. */}
-                <div className="flex gap-2">
+                <div className="flex shrink-0 flex-wrap gap-2">
                   {/* Join code goes to admins only — it grants instant membership. */}
                   <TribeShareButton tribe={tribe} inviteCode={isAdmin ? tribe.invite_code : null} />
                   {isAdmin && (
@@ -131,23 +120,33 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
                           {t("joinRequests")}
                         </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setShowSettings(true)}
-                        className="p-2"
-                      >
-                        <Settings className="w-4 h-4" />
-                      </Button>
+
                     </>
                   )}
+                  <CommunityMemberMenu tribe={tribe} membership={membership} isAdmin={isAdmin}
+                    canViewInsights={canViewInsights} notificationsMuted={notificationsMuted}
+                    onEdit={() => setShowSettings(true)} />
                 </div>
               </div>
-
-              {tribe.description && (
-                <p className="mt-3 text-muted-foreground">{tribe.description}</p>
+          <div className="mt-5 grid grid-cols-[6rem_minmax(0,1fr)] sm:grid-cols-[10rem_minmax(0,1fr)] items-stretch gap-4 sm:gap-6">
+            {/* Tribe avatar (letter fallback when none) */}
+            <div className="relative min-h-24 sm:min-h-40 max-h-56 h-full w-full rounded-xl bg-primary/10 border-4 border-background flex items-center justify-center text-4xl font-bold text-primary overflow-hidden">
+              {tribe.settings?.avatar_url ? (
+                <Image
+                  src={tribe.settings.avatar_url}
+                  alt={tribe.name}
+                  fill
+                  sizes="(max-width: 639px) 96px, 160px"
+                  className="object-contain"
+                />
+              ) : (
+                tribe.name.charAt(0).toUpperCase()
               )}
+            </div>
 
+
+            <div className="min-w-0 sm:min-h-40">
+              {tribe.description && <ExpandableText text={tribe.description} maxLines={3} className="leading-relaxed" />}
               {tribe.profiles && (
                 <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
                   <Avatar className="w-5 h-5">
@@ -158,7 +157,7 @@ export function TribeHeader({ tribe, membership, isAdmin, eventCount, momentCoun
                 </div>
               )}
 
-              {membership && (
+              {membership && membership.role !== "member" && (
                 <Badge variant="secondary" className="mt-3">
                   {t(membership.role)}
                 </Badge>

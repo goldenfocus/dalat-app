@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     finalSlug = nextTribeSlugCandidate(finalSlug);
   }
 
-  await supabase.from('tribe_members').insert({ tribe_id: tribe.id, user_id: user.id, role: 'leader' });
+  // The database creates the owner membership in the same transaction.
 
   return NextResponse.json({ tribe });
 }

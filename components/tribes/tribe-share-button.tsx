@@ -1,5 +1,6 @@
 "use client";
 
+import { trackCommunityActivity } from "@/lib/communities/activity";
 import { useTranslations } from "next-intl";
 import { Share2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { useShare } from "@/lib/hooks/use-share";
 import type { Tribe } from "@/lib/types";
 
 interface TribeShareButtonProps {
-  tribe: Pick<Tribe, "name" | "slug" | "access_type">;
+  tribe: Pick<Tribe, "name" | "slug" | "access_type" | "short_slug">;
   /**
    * The tribe's join code — pass ONLY for admins. An invite code grants
    * instant membership (`/api/tribes/[slug]/membership` accepts any valid
@@ -33,8 +34,10 @@ export function TribeShareButton({ tribe, inviteCode }: TribeShareButtonProps) {
   if (tribe.access_type === "secret" && !inviteCode) return null;
 
   const handleShare = () => {
+    void trackCommunityActivity(tribe.slug, "share_click");
     // Built here, not during render — origin is empty on the server.
-    const path = inviteCode ? `/tribes/join/${inviteCode}` : `/tribes/${tribe.slug}`;
+    const privateInvite = inviteCode && (tribe.access_type === "invite_only" || tribe.access_type === "secret");
+    const path = privateInvite ? `/communities/join/${inviteCode}` : tribe.short_slug ? `/${tribe.short_slug}` : `/communities/${tribe.slug}`;
 
     return share({
       title: tribe.name,

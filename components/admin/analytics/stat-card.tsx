@@ -9,6 +9,7 @@ interface StatCardProps {
   subtitle?: string;
   icon: ReactNode;
   className?: string;
+  wrapTitle?: boolean;
 }
 
 export function StatCard({
@@ -17,6 +18,7 @@ export function StatCard({
   subtitle,
   icon,
   className,
+  wrapTitle = false,
 }: StatCardProps) {
   return (
     <div
@@ -27,13 +29,13 @@ export function StatCard({
     >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm text-muted-foreground truncate">{title}</p>
+          <p className={cn("text-sm text-muted-foreground", wrapTitle ? "leading-snug" : "truncate")}>{title}</p>
           <p className="text-2xl font-semibold tracking-tight mt-1">{value}</p>
           {subtitle && (
             <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
           )}
         </div>
-        <div className="shrink-0 rounded-lg bg-muted p-2.5">
+        <div className={cn("shrink-0 rounded-lg bg-muted p-2.5", wrapTitle && "hidden sm:block")}>
           {icon}
         </div>
       </div>
