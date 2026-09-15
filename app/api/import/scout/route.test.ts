@@ -31,7 +31,11 @@ const payload = {
   starts_at: "2026-09-20T19:00:00+07:00",
   location_name: "Langbiang, Đà Lạt",
   source_url: "https://ticketbox.vn/event/sunset-hike",
-  source_image_urls: ["https://ticketbox.vn/media/cover.jpg"],
+  source_image_urls: [
+    "https://ticketbox.vn/media/cover.jpg",
+    "https://ticketbox.vn/media/crowd.jpg",
+    "https://ticketbox.vn/media/trail.jpg",
+  ],
   publish: true,
 };
 
@@ -123,6 +127,24 @@ describe("POST /api/import/scout", () => {
       }),
     );
     expect(response.status).toBe(401);
+    expect(mocks.createClient).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 before a DB write when only one source image is sent", async () => {
+    vi.stubEnv("SCOUT_INGEST_KEY", "scout-secret");
+    const response = await POST(
+      request(
+        {
+          ...payload,
+          source_image_urls: ["https://ticketbox.vn/media/cover.jpg"],
+        },
+        "Bearer scout-secret",
+      ),
+    );
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      error: "Invalid payload",
+    });
     expect(mocks.createClient).not.toHaveBeenCalled();
   });
 

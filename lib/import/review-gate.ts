@@ -22,6 +22,7 @@ export type ReviewReasonCode =
   | "not_dalat_locality"
   | "duplicate_published"
   | "missing_image"
+  | "missing_promo"
   | "activity_graph_lane"
   | "not_a_draft"
   | "not_found";
@@ -63,6 +64,12 @@ export interface EvaluateResult {
 
 export interface PublishResult extends EvaluateResult {
   published: boolean;
+}
+
+export interface RejectResult {
+  rejected: boolean;
+  reasons: Array<{ message: string; code?: ReviewReasonCode }>;
+  event: { id: string; slug: string; status: string };
 }
 
 export interface TranslationGap {
@@ -111,7 +118,7 @@ export async function loadReviewEvent(
 
 export function evaluateDraftQuality(
   event: ReviewEventSnapshot,
-  options: { publishedDuplicate: boolean; now?: Date },
+  options: { publishedDuplicate: boolean; now?: Date; promoCount?: number },
 ): ReviewReason[] {
   const reasons: ReviewReason[] = [];
   if (event.source_platform === "activity-graph") {
@@ -179,16 +186,18 @@ export function evaluateDraftQuality(
       message: "A published event with the same title and date already exists",
     });
   }
-  const visualGap = event.source_metadata?.visual_gap;
-  const documentedGap =
-    visualGap &&
-    typeof visualGap === "object" &&
-    "reason" in visualGap &&
-    typeof (visualGap as { reason?: unknown }).reason === "string";
+  const documentedGap = isDocumentedVisualGap(event.source_metadata);
   if (!event.image_url?.trim() && !documentedGap) {
     reasons.push({
       code: "missing_image",
       message: "Hero image is missing and no visual gap is documented",
+    });
+  }
+  const promoCount = options.promoCount ?? 0;
+  if ((promoCount < 2 || promoCount > 4) && !documentedGap) {
+    reasons.push({
+      code: "missing_promo",
+      message: `Promo gallery has ${promoCount} image(s); visual-truth requires 2–4 distinct images, or a documented visual_gap`,
     });
   }
   return reasons;
@@ -200,9 +209,11 @@ export async function evaluateReviewEvent(
   options: { now?: Date } = {},
 ): Promise<EvaluateResult> {
   const publishedDuplicate = await hasPublishedDuplicate(supabase, event);
+  const promoCount = await countPromoMedia(supabase, event.id);
   const reasons = evaluateDraftQuality(event, {
     publishedDuplicate,
     now: options.now,
+    promoCount,
   });
   return {
     passed: reasons.length === 0,
@@ -241,6 +252,10 @@ export async function publishReviewEvent(
     needs_review: false,
     reviewed_at: reviewedAt,
     review_result: "published",
+    // Durable sweep signal: Mac mini collectTranslationWork always loads
+    // published rows with translation_needed_at, even during a blog-failure
+    // loop or when SCAN_LIMIT / created_at would miss this id.
+    translation_needed_at: reviewedAt,
   };
 
   // Persist a real source_locale when a cheap script hint can set one.
@@ -268,10 +283,10 @@ export async function publishReviewEvent(
   }
 
   // triggerTranslationServer is a compatibility shim (logs only). The durable
-  // enqueue is: published row + missing content_translations + recent
-  // updated_at. Do not also trigger on scout ingest — WhatsApp/scout drafts
-  // share this publish hook, and a draft-time call would race if the shim
-  // later invalidates rows. Review never writes locale strings itself.
+  // enqueue the running worker cannot miss is source_metadata.translation_needed_at
+  // plus missing content_translations. Do not also trigger on scout ingest —
+  // WhatsApp/scout drafts share this publish hook. Review never writes locale
+  // strings itself.
   await queuePublishedEventTranslation(event);
 
   return {
@@ -294,6 +309,95 @@ function queuePublishedEventTranslation(event: ReviewEventSnapshot) {
     return Promise.resolve({ ok: true, localesWritten: 0 });
   }
   return triggerTranslationServer("event", event.id, fieldsToTranslate);
+}
+
+export async function rejectReviewEvent(
+  supabase: SupabaseClient,
+  event: ReviewEventSnapshot,
+  reasons: string[],
+  options: { now?: Date } = {},
+): Promise<RejectResult> {
+  const cleaned = reasons.map((reason) => reason.trim()).filter(Boolean);
+  if (event.status !== "draft") {
+    return {
+      rejected: false,
+      reasons: [
+        {
+          code: "not_a_draft",
+          message: `Event status is ${event.status}, not draft`,
+        },
+      ],
+      event: { id: event.id, slug: event.slug, status: event.status },
+    };
+  }
+
+  const rejectedAt = (options.now ?? new Date()).toISOString();
+  const metadata = {
+    ...(event.source_metadata ?? {}),
+    needs_review: false,
+    review_result: "rejected",
+    rejected_at: rejectedAt,
+    reject_reasons: cleaned,
+  };
+  const { error } = await supabase
+    .from("events")
+    .update({
+      source_metadata: metadata,
+      updated_at: rejectedAt,
+    })
+    .eq("id", event.id)
+    .eq("status", "draft");
+
+  if (error) {
+    throw new Error(`Reject failed: ${error.message}`);
+  }
+
+  return {
+    rejected: true,
+    reasons: cleaned.map((message) => ({ message })),
+    event: { id: event.id, slug: event.slug, status: "draft" },
+  };
+}
+
+export function isDocumentedVisualGap(
+  metadata: Record<string, unknown> | null | undefined,
+): boolean {
+  const visualGap = metadata?.visual_gap;
+  return Boolean(
+    visualGap &&
+      typeof visualGap === "object" &&
+      "reason" in visualGap &&
+      typeof (visualGap as { reason?: unknown }).reason === "string",
+  );
+}
+
+export function visualGapCoversPromo(
+  metadata: Record<string, unknown> | null | undefined,
+): boolean {
+  if (!isDocumentedVisualGap(metadata)) return false;
+  const visualGap = metadata?.visual_gap as {
+    covers?: unknown;
+    reason?: unknown;
+  };
+  if (!Array.isArray(visualGap.covers)) {
+    // Legacy visual_gap objects documented a general visual shortfall.
+    return true;
+  }
+  return visualGap.covers.includes("promo");
+}
+
+async function countPromoMedia(
+  supabase: SupabaseClient,
+  eventId: string,
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("promo_media")
+    .select("id", { count: "exact", head: true })
+    .eq("event_id", eventId);
+  if (error) {
+    throw new Error(`Promo count failed: ${error.message}`);
+  }
+  return count ?? 0;
 }
 
 export async function qaReviewEvent(
@@ -340,23 +444,22 @@ export async function qaReviewEvent(
   const promoRows = promo ?? [];
   const imageGaps: ImageQaGap[] = [];
   const heroPresent = Boolean(event.image_url?.trim());
+  const documentedGap = isDocumentedVisualGap(event.source_metadata);
+  const promoCoveredByGap =
+    heroPresent && visualGapCoversPromo(event.source_metadata) && promoRows.length < 2;
   if (!heroPresent) {
     imageGaps.push({
       code: "missing_hero",
       message: "Published event is missing a hero image",
     });
   }
-  if (promoRows.length < 2 || promoRows.length > 4) {
+  if ((promoRows.length < 2 || promoRows.length > 4) && !promoCoveredByGap) {
     imageGaps.push({
       code: "missing_promo",
       message: `Promo gallery has ${promoRows.length} image(s); visual-truth requires 2–4`,
     });
   }
-  const documentedGap = Boolean(
-    event.source_metadata?.visual_gap &&
-      typeof event.source_metadata.visual_gap === "object",
-  );
-  if (documentedGap) {
+  if (documentedGap && !heroPresent) {
     imageGaps.push({
       code: "documented_visual_gap",
       message: "A visual gap was documented at ingest — still unresolved",

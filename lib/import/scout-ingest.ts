@@ -44,6 +44,8 @@ type ExistingEvent = {
   source_platform: string | null;
   source_metadata: Record<string, unknown> | null;
   created_by: string;
+  image_url: string | null;
+  image_alt: string | null;
 };
 
 export async function ingestScoutEvent(
@@ -98,7 +100,7 @@ export async function ingestScoutEvent(
     };
   }
 
-  if (existing && existing.status !== "draft") {
+  if (existing && existing.status !== "draft" && existing.status !== "published") {
     return {
       ok: true,
       id: existing.id,
@@ -126,6 +128,19 @@ export async function ingestScoutEvent(
       code: "missing_visual",
     };
   }
+  if (visuals.heroUrl && visuals.promo.length < 2 && !input.visual_gap_reason) {
+    return {
+      ok: false,
+      status: 400,
+      error:
+        "Promo gallery needs 2–4 distinct images after fetch; send more source/promo URLs or visual_gap_reason. Do not invent images.",
+      code: "missing_promo",
+    };
+  }
+  if (existing?.status === "published") {
+    return refreshPublishedVisuals(supabase, existing, input, sourceUrl, createdBy, visuals);
+  }
+
   const metadata = buildMetadata(input, sourceUrl, existing?.source_metadata, visuals);
 
   const row = {
@@ -161,9 +176,7 @@ export async function ingestScoutEvent(
     return { ok: false, status: 500, error: "Failed to write draft event" };
   }
 
-  if (visuals.promo.length > 0) {
-    await replacePromoMedia(supabase, saved.id, createdBy, visuals.promo);
-  }
+  await replacePromoMedia(supabase, saved.id, createdBy, visuals.promo);
 
   return {
     ok: true,
@@ -216,7 +229,7 @@ async function findExistingBySourceUrl(
 ): Promise<ExistingEvent | null> {
   const { data, error } = await supabase
     .from("events")
-    .select("id, slug, status, source_platform, source_metadata, created_by")
+    .select("id, slug, status, source_platform, source_metadata, created_by, image_url, image_alt")
     .eq("external_chat_url", sourceUrl)
     .limit(1)
     .maybeSingle();
@@ -328,6 +341,18 @@ async function safeDownload(url: string, slug: string): Promise<string | null> {
   return downloadAndUploadImage(url, slug);
 }
 
+function visualMetadata(
+  input: ScoutIngestInput,
+  visuals: { provenance: string; heroUrl: string | null; promo: PromoItem[] },
+): Record<string, unknown> {
+  return {
+    visual_provenance: visuals.provenance,
+    visual_gap: resolveVisualGap(input, visuals),
+    hero_present: Boolean(visuals.heroUrl),
+    promo_count: visuals.promo.length,
+  };
+}
+
 function buildMetadata(
   input: ScoutIngestInput,
   sourceUrl: string,
@@ -339,17 +364,87 @@ function buildMetadata(
     ...prior,
     ingest_lane: "scout-review",
     needs_review: true,
+    review_result: null,
+    rejected_at: null,
+    reject_reasons: null,
     source_url: sourceUrl,
     source_url_hash: createHash("sha256").update(sourceUrl).digest("hex"),
     imported_at: new Date().toISOString(),
     time_inferred: !input.starts_at && !input.time,
-    visual_provenance: visuals.provenance,
-    visual_gap:
-      !visuals.heroUrl && input.visual_gap_reason
-        ? { reason: input.visual_gap_reason, documented_at: new Date().toISOString() }
-        : null,
-    hero_present: Boolean(visuals.heroUrl),
-    promo_count: visuals.promo.length,
+    ...visualMetadata(input, visuals),
+  };
+}
+
+async function refreshPublishedVisuals(
+  supabase: SupabaseClient,
+  existing: ExistingEvent,
+  input: ScoutIngestInput,
+  sourceUrl: string,
+  createdBy: string,
+  visuals: {
+    heroUrl: string | null;
+    heroAlt: string | null;
+    promo: PromoItem[];
+    provenance: "owner_authorized_source" | "ai_generated";
+  },
+): Promise<ScoutIngestResult> {
+  const prior =
+    existing.source_metadata && typeof existing.source_metadata === "object"
+      ? existing.source_metadata
+      : {};
+  const heroUrl = visuals.heroUrl ?? existing.image_url;
+  const heroAlt = visuals.heroUrl ? visuals.heroAlt : existing.image_alt;
+  const metadata = {
+    ...prior,
+    source_url: sourceUrl,
+    source_url_hash: createHash("sha256").update(sourceUrl).digest("hex"),
+    ...visualMetadata(input, visuals),
+  };
+
+  const { data, error } = await supabase
+    .from("events")
+    .update({
+      image_url: heroUrl,
+      image_alt: heroAlt,
+      source_metadata: metadata,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", existing.id)
+    .eq("status", "published")
+    .select("id, slug, status")
+    .single();
+
+  if (error || !data) {
+    console.error("[scout-ingest] published visual refresh failed", error);
+    return { ok: false, status: 500, error: "Failed to refresh published event visuals" };
+  }
+
+  await replacePromoMedia(supabase, existing.id, createdBy, visuals.promo);
+
+  return {
+    ok: true,
+    id: data.id,
+    slug: data.slug,
+    status: "published",
+    created: false,
+    updated: true,
+    duplicate: false,
+  };
+}
+
+function resolveVisualGap(
+  input: ScoutIngestInput,
+  visuals: { heroUrl: string | null; promo: PromoItem[] },
+): { reason: string; documented_at: string; covers: Array<"hero" | "promo"> } | null {
+  if (!input.visual_gap_reason) return null;
+  const covers: Array<"hero" | "promo"> = [];
+  if (!visuals.heroUrl) covers.push("hero", "promo");
+  else if (visuals.promo.length < 2) covers.push("promo");
+  if (covers.length === 0) return null;
+  return {
+    reason: input.visual_gap_reason,
+    documented_at: new Date().toISOString(),
+    covers,
   };
 }
 
@@ -367,26 +462,28 @@ async function replacePromoMedia(
     console.error("[scout-ingest] promo cleanup failed", deleteError);
   }
 
-  const { error } = await supabase.from("promo_media").insert(
-    promo.map((item, index) => ({
-      event_id: eventId,
-      media_type: "image",
-      media_url: item.media_url,
-      thumbnail_url: item.media_url,
-      title: item.title,
-      caption: item.caption,
-      sort_order: index,
-      is_ai_suggested: item.is_ai_suggested,
-      created_by: createdBy,
-    })),
-  );
-  if (error) {
-    console.error("[scout-ingest] promo insert failed", error);
-    return;
+  if (promo.length > 0) {
+    const { error } = await supabase.from("promo_media").insert(
+      promo.map((item, index) => ({
+        event_id: eventId,
+        media_type: "image",
+        media_url: item.media_url,
+        thumbnail_url: item.media_url,
+        title: item.title,
+        caption: item.caption,
+        sort_order: index,
+        is_ai_suggested: item.is_ai_suggested,
+        created_by: createdBy,
+      })),
+    );
+    if (error) {
+      console.error("[scout-ingest] promo insert failed", error);
+      return;
+    }
   }
 
   await supabase
     .from("events")
-    .update({ has_promo_override: true })
+    .update({ has_promo_override: promo.length > 0 })
     .eq("id", eventId);
 }

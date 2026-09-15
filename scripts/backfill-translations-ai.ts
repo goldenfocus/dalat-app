@@ -38,6 +38,7 @@ import {
 } from "@/lib/google-translate";
 import {
   collectTranslationWork,
+  collectUrgentEventTranslationWork,
   CAPTION_FIELDS,
   TranslationWorkItem,
   blogTranslationSourceStillMatches,
@@ -759,6 +760,15 @@ async function main() {
           );
         }
         for (const item of rest) {
+          // Re-check Review-publish queue between blog/moment items so a
+          // Cloudflare 408 loop cannot miss a just-published event.
+          const urgentEvents = await collectUrgentEventTranslationWork(supabase, {
+            priorityEventIds: PRIORITY_EVENT_IDS,
+          });
+          for (const urgent of urgentEvents) {
+            await processItem(urgent, true);
+            maybeReport();
+          }
           await processItem(item, true);
           maybeReport();
         }

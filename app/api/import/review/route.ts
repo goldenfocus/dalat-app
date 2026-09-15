@@ -6,6 +6,7 @@ import {
   loadReviewEvent,
   publishReviewEvent,
   qaReviewEvent,
+  rejectReviewEvent,
 } from "@/lib/import/review-gate";
 import { reviewIngestSchema } from "@/lib/import/scout-schema";
 
@@ -54,6 +55,15 @@ export async function POST(request: Request) {
     if (parsed.data.action === "evaluate") {
       const evaluation = await evaluateReviewEvent(supabase, event);
       return NextResponse.json({ action: "evaluate", ...evaluation });
+    }
+
+    if (parsed.data.action === "reject") {
+      const rejected = await rejectReviewEvent(
+        supabase,
+        event,
+        parsed.data.reasons ?? [],
+      );
+      return NextResponse.json({ action: "reject", ...rejected });
     }
 
     const published = await publishReviewEvent(supabase, event);

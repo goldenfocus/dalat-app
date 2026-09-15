@@ -32,9 +32,15 @@ const factsOnlyPayload = {
   source_url: "https://ticketbox.vn/event/sunset-hike",
 };
 
+const sourceImages = [
+  "https://ticketbox.vn/media/cover.jpg",
+  "https://ticketbox.vn/media/crowd.jpg",
+  "https://ticketbox.vn/media/trail.jpg",
+];
+
 const validPayload = {
   ...factsOnlyPayload,
-  source_image_urls: ["https://ticketbox.vn/media/cover.jpg"],
+  source_image_urls: sourceImages,
 };
 
 function createSupabaseMock(options: {
@@ -132,6 +138,51 @@ describe("scoutIngestSchema", () => {
     expect(parsed.success).toBe(true);
   });
 
+  it("rejects a single source image without visual_gap_reason", () => {
+    const parsed = scoutIngestSchema.safeParse({
+      ...factsOnlyPayload,
+      source_image_urls: ["https://ticketbox.vn/media/cover.jpg"],
+    });
+    expect(parsed.success).toBe(false);
+    if (parsed.success) return;
+    expect(parsed.error.issues.some((issue) =>
+      issue.message.includes("3 distinct"),
+    )).toBe(true);
+  });
+
+  it("rejects two distinct images without visual_gap_reason", () => {
+    expect(
+      scoutIngestSchema.safeParse({
+        ...factsOnlyPayload,
+        source_image_urls: [
+          "https://ticketbox.vn/media/cover.jpg",
+          "https://ticketbox.vn/media/crowd.jpg",
+        ],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects duplicate URLs that only look like three images", () => {
+    const url = "https://ticketbox.vn/media/cover.jpg";
+    expect(
+      scoutIngestSchema.safeParse({
+        ...factsOnlyPayload,
+        source_image_urls: [url, url],
+        promo_image_urls: [url],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("accepts one source image when visual_gap_reason documents the promo shortfall", () => {
+    expect(
+      scoutIngestSchema.safeParse({
+        ...factsOnlyPayload,
+        source_image_urls: ["https://ticketbox.vn/media/cover.jpg"],
+        visual_gap_reason: "Organizer posted only one reusable image",
+      }).success,
+    ).toBe(true);
+  });
+
   it("accepts source_image_urls", () => {
     expect(scoutIngestSchema.safeParse(validPayload).success).toBe(true);
   });
@@ -140,7 +191,11 @@ describe("scoutIngestSchema", () => {
     expect(
       scoutIngestSchema.safeParse({
         ...factsOnlyPayload,
-        promo_image_urls: ["https://ticketbox.vn/media/promo.jpg"],
+        promo_image_urls: [
+          "https://ticketbox.vn/media/promo-1.jpg",
+          "https://ticketbox.vn/media/promo-2.jpg",
+          "https://ticketbox.vn/media/promo-3.jpg",
+        ],
       }).success,
     ).toBe(true);
   });
@@ -212,6 +267,18 @@ describe("ingestScoutEvent", () => {
     expect(insert.row.source_locale).toBe("vi");
   });
 
+  it("stores an explicit source_locale even when the script hint is null", async () => {
+    const supabase = createSupabaseMock({ existing: null });
+    const parsed = scoutIngestSchema.parse({
+      ...validPayload,
+      source_locale: "vi",
+    });
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+    expect(result.ok).toBe(true);
+    const insert = supabase.inserts[0] as { row: { source_locale: string | null } };
+    expect(insert.row.source_locale).toBe("vi");
+  });
+
   it("is idempotent on source_url for an existing draft", async () => {
     const supabase = createSupabaseMock({
       existing: {
@@ -234,15 +301,114 @@ describe("ingestScoutEvent", () => {
     expect(supabase.updates.length).toBeGreaterThan(0);
   });
 
-  it("does not duplicate a published event with the same source_url", async () => {
+  it("does not create a second row for a published event with the same source_url", async () => {
     const supabase = createSupabaseMock({
       existing: {
         id: "evt-1",
         slug: "sunset-hike-langbiang",
         status: "published",
         source_platform: "scout",
+        source_metadata: { review_result: "published", promo_count: 0 },
+        created_by: "00000000-0000-4000-8000-000000000001",
+        image_url: "https://cdn.dalat.app/event-media/old-hero.jpg",
+        image_alt: "Old hero",
+      },
+    });
+    const parsed = scoutIngestSchema.parse(validPayload);
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+
+    expect(result).toMatchObject({
+      ok: true,
+      duplicate: false,
+      status: "published",
+      created: false,
+      updated: true,
+    });
+    expect(supabase.inserts.filter((entry) => (entry as { table: string }).table === "events")).toHaveLength(0);
+  });
+
+  it("refreshes promo_media on a published event without changing status", async () => {
+    const supabase = createSupabaseMock({
+      existing: {
+        id: "22271ffc-d7ad-4afe-b582-72abbaf31a79",
+        slug: "phuong-linh-da-lat",
+        status: "published",
+        source_platform: "scout",
+        source_metadata: {
+          review_result: "published",
+          needs_review: false,
+          promo_count: 0,
+          translation_needed_at: "2026-09-15T00:00:00.000Z",
+        },
+        created_by: "00000000-0000-4000-8000-000000000001",
+        image_url: "https://cdn.dalat.app/event-media/old-hero.jpg",
+        image_alt: "Old hero",
+      },
+    });
+    const parsed = scoutIngestSchema.parse({
+      ...validPayload,
+      source_url: "https://ticketbox.vn/event/phuong-linh",
+      source_image_urls: [
+        "https://ticketbox.vn/media/hero.jpg",
+        "https://ticketbox.vn/media/promo-1.jpg",
+        "https://ticketbox.vn/media/promo-2.jpg",
+      ],
+    });
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+
+    expect(result).toMatchObject({
+      ok: true,
+      id: "evt-1",
+      status: "published",
+      created: false,
+      updated: true,
+      duplicate: false,
+    });
+    const eventUpdate = supabase.updates.find(
+      (entry) =>
+        (entry as { table?: string; row?: { image_url?: string } }).row?.image_url,
+    ) as {
+      table?: string;
+      row: {
+        status?: string;
+        image_url: string;
+        image_alt: string | null;
+        source_metadata: {
+          promo_count: number;
+          review_result: string;
+          needs_review: boolean;
+          translation_needed_at: string;
+          visual_provenance: string;
+        };
+      };
+    };
+    expect(eventUpdate.row.status).toBeUndefined();
+    expect(eventUpdate.row.image_url).toBe("https://cdn.dalat.app/event-media/x.jpg");
+    expect(eventUpdate.row.source_metadata.promo_count).toBe(2);
+    expect(eventUpdate.row.source_metadata.review_result).toBe("published");
+    expect(eventUpdate.row.source_metadata.needs_review).toBe(false);
+    expect(eventUpdate.row.source_metadata.translation_needed_at).toBe(
+      "2026-09-15T00:00:00.000Z",
+    );
+    expect(eventUpdate.row.source_metadata.visual_provenance).toBe("owner_authorized_source");
+    const promoInsert = supabase.inserts.find(
+      (entry) => (entry as { table: string }).table === "promo_media",
+    ) as { row: Array<{ media_url: string }> };
+    expect(promoInsert.row).toHaveLength(2);
+    expect(supabase.inserts.filter((entry) => (entry as { table: string }).table === "events")).toHaveLength(0);
+  });
+
+  it("does not rewrite a cancelled event with the same source_url", async () => {
+    const supabase = createSupabaseMock({
+      existing: {
+        id: "evt-1",
+        slug: "sunset-hike-langbiang",
+        status: "cancelled",
+        source_platform: "scout",
         source_metadata: {},
         created_by: "00000000-0000-4000-8000-000000000001",
+        image_url: "https://cdn.dalat.app/event-media/old-hero.jpg",
+        image_alt: "Old hero",
       },
     });
     const parsed = scoutIngestSchema.parse(validPayload);
@@ -251,10 +417,12 @@ describe("ingestScoutEvent", () => {
     expect(result).toMatchObject({
       ok: true,
       duplicate: true,
-      status: "published",
+      status: "cancelled",
       updated: false,
     });
     expect(supabase.inserts).toHaveLength(0);
+    expect(supabase.updates).toHaveLength(0);
+    expect(downloadAndUploadImage).not.toHaveBeenCalled();
   });
 
   it("skips events beyond the 45-day horizon", async () => {
@@ -295,8 +463,39 @@ describe("ingestScoutEvent", () => {
     expect(insert.row.source_metadata.visual_gap).toEqual({
       reason: "Organizer page has no reusable image",
       documented_at: expect.any(String),
+      covers: ["hero", "promo"],
     });
     expect(downloadAndUploadImage).not.toHaveBeenCalled();
+  });
+
+  it("documents a promo visual gap when only one source image exists", async () => {
+    const supabase = createSupabaseMock({ existing: null });
+    const parsed = scoutIngestSchema.parse({
+      ...factsOnlyPayload,
+      source_image_urls: ["https://ticketbox.vn/media/cover.jpg"],
+      visual_gap_reason: "Organizer posted only one reusable image",
+    });
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+    expect(result.ok).toBe(true);
+    const insert = supabase.inserts[0] as {
+      row: {
+        image_url: string | null;
+        source_metadata: {
+          visual_gap: { reason: string; covers: string[] } | null;
+          promo_count: number;
+        };
+      };
+    };
+    expect(insert.row.image_url).toBe("https://cdn.dalat.app/event-media/x.jpg");
+    expect(insert.row.source_metadata.promo_count).toBe(0);
+    expect(insert.row.source_metadata.visual_gap).toEqual({
+      reason: "Organizer posted only one reusable image",
+      documented_at: expect.any(String),
+      covers: ["promo"],
+    });
+    expect(supabase.inserts.some((entry) => (entry as { table: string }).table === "promo_media")).toBe(
+      false,
+    );
   });
 
   it("accepts source_image_urls and stores a hero", async () => {
@@ -315,7 +514,11 @@ describe("ingestScoutEvent", () => {
     expect(insert.row.image_url).toBe("https://cdn.dalat.app/event-media/x.jpg");
     expect(insert.row.source_metadata.hero_present).toBe(true);
     expect(insert.row.source_metadata.visual_gap).toBeNull();
-    expect(downloadAndUploadImage).toHaveBeenCalled();
+    expect(downloadAndUploadImage).toHaveBeenCalledTimes(3);
+    const promoInsert = supabase.inserts.find(
+      (entry) => (entry as { table: string }).table === "promo_media",
+    ) as { row: Array<{ media_url: string }> };
+    expect(promoInsert.row).toHaveLength(2);
   });
 
   it("does not write a draft when image download fails and visual_gap_reason is absent", async () => {
@@ -331,5 +534,22 @@ describe("ingestScoutEvent", () => {
     });
     expect(supabase.inserts).toHaveLength(0);
     expect(supabase.updates).toHaveLength(0);
+  });
+
+  it("does not write a draft when later promo downloads fail and no visual_gap_reason", async () => {
+    vi.mocked(downloadAndUploadImage)
+      .mockResolvedValueOnce("https://cdn.dalat.app/event-media/hero.jpg")
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null);
+    const supabase = createSupabaseMock({ existing: null });
+    const parsed = scoutIngestSchema.parse(validPayload);
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+
+    expect(result).toMatchObject({
+      ok: false,
+      status: 400,
+      code: "missing_promo",
+    });
+    expect(supabase.inserts).toHaveLength(0);
   });
 });
