@@ -3045,7 +3045,12 @@
     "importCopyHint": "Bỏ chọn để chọn từng bài. Bản sao giữ nguyên thứ tự; chỉnh sửa playlist mới không làm thay đổi bản gốc.",
     "importSelectionRequired": "Chọn playlist và ít nhất một bài, hoặc tắt nhập nhạc.",
     "importPreferenceError": "Đã lưu sự kiện nhưng chưa lưu được mặc định nhạc. Hãy chọn lại vào lần sau.",
-    "importFailedAfterCreation": "Đã tạo sự kiện nhưng chưa nhập được nhạc. Mở Chỉnh sửa → Playlist để tải nhạc lên. Đừng tạo lại sự kiện."
+    "importFailedAfterCreation": "Đã tạo sự kiện nhưng chưa nhập được nhạc. Mở Chỉnh sửa → Playlist để tải nhạc lên. Đừng tạo lại sự kiện.",
+    "importAppendHint": "Chọn nhạc từ các sự kiện trước của người tổ chức. Nhạc mới được thêm sau các bài hiện có; bài đã có sẽ được bỏ qua.",
+    "importNow": "Nhập nhạc đã chọn",
+    "importInProgress": "Đang nhập nhạc…",
+    "importComplete": "Đã thêm {count} bài. Bỏ qua {skipped} bài đã có.",
+    "importRetryError": "Chưa nhập được nhạc. Playlist hiện tại không thay đổi. Vui lòng thử lại."
   },
   "questionnaire": {
     "welcome": {

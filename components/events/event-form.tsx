@@ -1886,8 +1886,11 @@ export function EventForm({
                 <span>{tPlaylist("title") || "Playlist"}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
               </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
+              <CollapsibleContent className="pt-4 space-y-6">
+                <PlaylistImportInput value={musicImport} onChange={setMusicImport} userId={userId}
+                  eventId={event.id} disabled={isPending} onImported={() => router.refresh()} />
                 <PlaylistInput
+                  key={`${initialPlaylistId}-${initialPlaylistTracks.map(track => track.id).join(",")}`}
                   eventId={event.id}
                   initialPlaylistId={initialPlaylistId}
                   initialTracks={initialPlaylistTracks}

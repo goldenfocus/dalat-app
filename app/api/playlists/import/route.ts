@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { copyPlaylistTrack } from "@/lib/playlist-import";
+import { noStoreJson } from "@/lib/http/no-store-json";
 import { z } from "zod";
 
 const selectionSchema = z.object({
@@ -9,50 +9,51 @@ const selectionSchema = z.object({
   trackIds: z.array(z.string().uuid()).min(1).max(500).nullable(),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // Only reuse music from events this account created; RLS also enforces visibility.
-  const { data, error } = await supabase.from("event_playlists")
+  if (!user) return noStoreJson({ error: "Unauthorized" }, { status: 401 });
+  const eventId = request.nextUrl.searchParams.get("eventId");
+  let ownerId = user.id;
+  if (eventId) {
+    if (!z.string().uuid().safeParse(eventId).success) return noStoreJson({ error: "Invalid event" }, { status: 400 });
+    const { data: allowed } = await supabase.rpc("can_manage_event_playlist", { p_event_id: eventId });
+    if (!allowed) return noStoreJson({ error: "Forbidden" }, { status: 403 });
+    const { data: target } = await supabase.from("events").select("created_by").eq("id", eventId).single();
+    if (!target) return noStoreJson({ error: "Event not found" }, { status: 404 });
+    if (target.created_by !== user.id) {
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+      if (!profile || !["admin", "superadmin"].includes(profile.role)) return noStoreJson({ error: "Forbidden" }, { status: 403 });
+    }
+    ownerId = target.created_by;
+  }
+  let query = supabase.from("event_playlists")
     .select("id, title, events!inner(id, title, starts_at, created_by), playlist_tracks(id, title, artist, duration_seconds, sort_order)")
-    .eq("events.created_by", user.id)
+    .eq("events.created_by", ownerId)
+    .eq("events.status", "published")
     .lt("events.starts_at", new Date().toISOString());
-  if (error) return NextResponse.json({ error: "Could not load past playlists" }, { status: 500 });
-  return NextResponse.json({ playlists: data });
+  if (eventId) query = query.neq("event_id", eventId);
+  const { data, error } = await query;
+  if (error) return noStoreJson({ error: "Could not load past playlists" }, { status: 500 });
+  return noStoreJson({ playlists: data });
 }
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return noStoreJson({ error: "Unauthorized" }, { status: 401 });
   const parsed = selectionSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Invalid playlist selection" }, { status: 400 });
-  const { eventId, sourcePlaylistId, trackIds } = parsed.data;
-  const { data: allowed } = await supabase.rpc("can_manage_event_playlist", { p_event_id: eventId });
-  if (!allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  const { data: source, error: sourceError } = await supabase.from("event_playlists")
-    .select("id, title, description, events!inner(id, created_by, starts_at), playlist_tracks(*)")
-    .eq("id", sourcePlaylistId).eq("events.created_by", user.id)
-    .lt("events.starts_at", new Date().toISOString()).single();
-  if (sourceError || !source) return NextResponse.json({ error: "Source playlist is no longer available" }, { status: 404 });
-  const available = source.playlist_tracks as Record<string, unknown>[];
-  if (trackIds?.some(id => !available.some(track => track.id === id))) {
-    return NextResponse.json({ error: "A selected track is no longer available" }, { status: 409 });
+  if (!parsed.success) return noStoreJson({ error: "Invalid playlist selection" }, { status: 400 });
+  // The transaction validates target permissions and same-host source ownership,
+  // then appends missing files under a target-event lock. Retries cannot duplicate tracks.
+  const { data, error } = await supabase.rpc("import_event_playlist", {
+    p_event_id: parsed.data.eventId,
+    p_source_playlist_id: parsed.data.sourcePlaylistId,
+    p_track_ids: parsed.data.trackIds,
+  });
+  if (error) {
+    const status = error.code === "42501" ? 403 : error.code === "P0002" ? 404 : error.code === "22023" ? 400 : 500;
+    return noStoreJson({ error: status === 500 ? "Could not import tracks. Please try again." : error.message }, { status });
   }
-  const tracks = available.filter(track => !trackIds || trackIds.includes(track.id as string))
-    .sort((a, b) => Number(a.sort_order) - Number(b.sort_order) || String(a.created_at).localeCompare(String(b.created_at)));
-  if (!tracks.length) return NextResponse.json({ error: "The playlist has no tracks" }, { status: 400 });
-  const { data: playlist, error: playlistError } = await supabase.from("event_playlists")
-    .insert({ event_id: eventId, created_by: user.id, title: source.title, description: source.description })
-    .select("id").single();
-  if (playlistError || !playlist) return NextResponse.json({ error: "This event already has a playlist, or it could not be created" }, { status: 409 });
-  const { error: trackError } = await supabase.from("playlist_tracks")
-    .insert(tracks.map((track, index) => copyPlaylistTrack(track, playlist.id, index)));
-  if (trackError) {
-    // A bulk insert is atomic. Remove our empty playlist so the host can retry in edit.
-    await supabase.from("event_playlists").delete().eq("id", playlist.id);
-    return NextResponse.json({ error: "Could not import the tracks" }, { status: 500 });
-  }
-  return NextResponse.json({ playlistId: playlist.id, count: tracks.length });
+  return noStoreJson(data);
 }

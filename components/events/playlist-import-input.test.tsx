@@ -6,12 +6,27 @@ const state = vi.hoisted(() => ({ preference: {} as unknown }));
 vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
 vi.mock("@/lib/supabase/client", () => ({ createClient: () => ({ auth: { getUser: async () => ({ data: { user: { id: "owner", user_metadata: { ["event_music_import"]: state.preference } } } }) } }) }));
 import { PlaylistImportInput } from "./playlist-import-input";
-function Form() { const [value, onChange] = useState(emptyMusicImport); return <><PlaylistImportInput value={value} onChange={onChange} userId="owner" /><output data-testid="value">{JSON.stringify(value)}</output></>; }
+function Form({ eventId, onImported }: { eventId?: string; onImported?: () => void } = {}) { const [value, onChange] = useState(emptyMusicImport); return <><PlaylistImportInput value={value} onChange={onChange} userId="owner" eventId={eventId} onImported={onImported} /><output data-testid="value">{JSON.stringify(value)}</output></>; }
 beforeEach(() => {
   state.preference = { enabled: true, sourcePlaylistId: "past" };
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ playlists: [{ id: "past", title: "Music", events: { title: "Past event", starts_at: "2026-01-02" }, playlist_tracks: [{ id: "song", title: "Song", sort_order: 0 }] }] }) }));
 });
 describe("music import controls", () => {
+  it("offers immediate import while editing without changing account defaults or submitting the event form", async () => {
+    const onImported = vi.fn();
+    render(<Form eventId="existing-event" onImported={onImported} />);
+    await waitFor(() => expect(screen.getByRole("combobox")).toBeEnabled());
+    expect(fetch).toHaveBeenCalledWith("/api/playlists/import?eventId=existing-event");
+    expect(screen.queryByRole("checkbox", { name: /importPastMusic/ })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "past" } });
+    const button = screen.getByRole("button", { name: "importNow" });
+    expect(button).toHaveAttribute("type", "button");
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: async () => ({ count: 1, skipped: 1 }) } as Response);
+    fireEvent.click(button);
+    await waitFor(() => expect(onImported).toHaveBeenCalledOnce());
+    expect(screen.getByText("importComplete")).toHaveAttribute("role", "status");
+    expect(JSON.parse(screen.getByTestId("value").textContent!).enabled).toBe(false);
+  });
   it("restores the account default and lets the host choose individual tracks or disable it", async () => {
     render(<Form />);
     await waitFor(() => expect(screen.getByRole("combobox")).toHaveValue("past"));
