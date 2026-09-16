@@ -17,6 +17,7 @@ describe("slugify", () => {
     ["Đà Lạt Flower Festival", "da-lat-flower-festival"],
     ["Festival Hoa đà lạt", "festival-hoa-da-lat"],
     ["Phố Bên Đồi", "pho-ben-doi"],
+    ["Trung Quân Đà Lạt", "trung-quan-da-lat"],
   ])("transliterates Vietnamese text in %s", (input, expected) => {
     expect(slugify(input)).toBe(expected);
   });

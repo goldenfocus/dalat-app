@@ -186,41 +186,48 @@ describe("source inventory reconciliation", () => {
     );
   });
 
-  it("expires stale published candidates independently of inventory completeness", async () => {
-    const rpc = vi.fn().mockResolvedValue({
-      data: { unlisted: "3" },
-      error: null,
-    });
-    const supabase = { rpc } as unknown as SupabaseClient;
-
-    await expect(
-      expireStaleCandidates(supabase, "source-1", NOW),
-    ).resolves.toEqual({ unlisted: 3 });
-    expect(rpc).toHaveBeenCalledWith(
-      "expire_stale_activity_source_candidates",
-      {
-        p_source_id: "source-1",
-        p_checked_at: NOW.toISOString(),
-      },
-    );
-  });
-
-  it("runs freshness expiry but not disappearance reconciliation after a source-wide failure", async () => {
-    const sourceHealthUpdate = vi.fn();
-    const rpc = vi
-      .fn()
-      .mockResolvedValue({ data: { unlisted: 1 }, error: null });
+  it("looks up stale candidates for live confirmation instead of unlisting blindly", async () => {
+    const rpc = vi.fn();
+    const candidateQueries: string[] = [];
     const supabase = {
       rpc,
       from: vi.fn((table: string) => {
-        if (table !== "activity_sources")
+        if (table !== "activity_candidates") {
           throw new Error(`Unexpected table: ${table}`);
-        return {
-          update: (patch: Record<string, unknown>) => {
-            sourceHealthUpdate(patch);
-            return { eq: vi.fn().mockResolvedValue({ error: null }) };
-          },
-        };
+        }
+        return thenableQuery([], () => candidateQueries.push(table));
+      }),
+    } as unknown as SupabaseClient;
+
+    await expect(
+      expireStaleCandidates(supabase, "source-1", NOW),
+    ).resolves.toEqual({
+      unlisted: 0,
+      confirmed: 0,
+      freshnessReset: 0,
+      skipped: 0,
+      seenSourceUids: [],
+    });
+    expect(rpc).not.toHaveBeenCalled();
+    expect(candidateQueries).toHaveLength(2);
+  });
+
+  it("re-fetches stale source URLs after a source-wide failure and does not reconcile disappearances", async () => {
+    const sourceHealthUpdate = vi.fn();
+    const rpc = vi.fn();
+    const supabase = {
+      rpc,
+      from: vi.fn((table: string) => {
+        if (table === "activity_sources") {
+          return {
+            update: (patch: Record<string, unknown>) => {
+              sourceHealthUpdate(patch);
+              return { eq: vi.fn().mockResolvedValue({ error: null }) };
+            },
+          };
+        }
+        if (table === "activity_candidates") return thenableQuery([]);
+        throw new Error(`Unexpected table: ${table}`);
       }),
     } as unknown as SupabaseClient;
     const source = {
@@ -248,18 +255,11 @@ describe("source inventory reconciliation", () => {
 
     const result = await syncActivitySource(supabase, source, NOW);
 
-    expect(result.unlisted).toBe(1);
+    expect(result.unlisted).toBe(0);
     expect(result.errors).toContain(
       "Unsupported activity source mode: unsupported",
     );
-    expect(rpc).toHaveBeenCalledTimes(1);
-    expect(rpc).toHaveBeenCalledWith(
-      "expire_stale_activity_source_candidates",
-      {
-        p_source_id: "source-1",
-        p_checked_at: NOW.toISOString(),
-      },
-    );
+    expect(rpc).not.toHaveBeenCalled();
     expect(sourceHealthUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         consecutive_failures: 3,
@@ -270,3 +270,32 @@ describe("source inventory reconciliation", () => {
     );
   });
 });
+
+function thenableQuery(
+  data: unknown = [],
+  onStart?: () => void,
+): Record<string, unknown> {
+  onStart?.();
+  const resolved = { data, error: null };
+  const api: Record<string, unknown> = {};
+  const next = () => api;
+  for (const method of [
+    "select",
+    "eq",
+    "not",
+    "lte",
+    "in",
+    "is",
+    "or",
+    "order",
+    "limit",
+    "update",
+  ]) {
+    api[method] = next;
+  }
+  api.then = (
+    resolve: (value: typeof resolved) => unknown,
+    reject?: (reason: unknown) => unknown,
+  ) => Promise.resolve(resolved).then(resolve, reject);
+  return api;
+}

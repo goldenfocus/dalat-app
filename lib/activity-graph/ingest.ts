@@ -13,6 +13,10 @@ import {
   scoreActivity,
 } from "./scoring";
 import {
+  confirmOrExpireStaleCandidates,
+  type StaleConfirmResult,
+} from "./stale-confirm";
+import {
   ACTIVITY_GRAPH_VERSION,
   type ActivitySource,
   type ExtractedActivity,
@@ -581,22 +585,15 @@ export async function reconcileMissingCandidates(
 
 export async function expireStaleCandidates(
   supabase: SupabaseClient,
-  sourceId: string,
+  sourceId: string | undefined,
   now: Date,
-): Promise<{ unlisted: number }> {
-  const { data, error } = await supabase.rpc(
-    "expire_stale_activity_source_candidates",
-    {
-      p_source_id: sourceId,
-      p_checked_at: now.toISOString(),
-    },
-  );
-  if (error) {
-    throw new Error(`Source freshness expiration failed: ${error.message}`);
-  }
-  const result =
-    data && typeof data === "object" ? (data as { unlisted?: unknown }) : {};
-  return { unlisted: Number(result.unlisted) || 0 };
+  sources?: ActivitySource[],
+): Promise<StaleConfirmResult> {
+  return confirmOrExpireStaleCandidates(supabase, now, {
+    sourceId,
+    sources,
+    ingestActivity: ingestVerifiedActivity,
+  });
 }
 
 export function isInventoryReconciliationEligible(input: {
@@ -799,13 +796,47 @@ export async function syncActivitySource(
     if (usableActivities === 0) {
       throw new Error("Source run produced no usable parsed activities");
     }
+  } catch (error) {
+    sourceWideFailure = true;
+    const message = error instanceof Error ? error.message : String(error);
+    if (!result.errors.includes(message)) result.errors.push(message);
+  }
+
+  // Freshness expiry must still run after an incomplete or failed inventory,
+  // but never from stale_after alone. Re-fetch each stale source_url first:
+  // a live scheduled page resets freshness; 404/cancelled pages unlist.
+  try {
+    const confirmation = await expireStaleCandidates(
+      supabase,
+      source.id,
+      now,
+      [source],
+    );
+    result.unlisted += confirmation.unlisted;
+    for (const sourceUid of confirmation.seenSourceUids) {
+      seenSourceUids.add(sourceUid);
+    }
     if (
-      isInventoryReconciliationEligible({
-        inventoryComplete,
-        usableActivities,
-        errors: result.errors,
-      })
+      confirmation.unlisted > 0 ||
+      confirmation.confirmed > 0 ||
+      confirmation.freshnessReset > 0
     ) {
+      changed = true;
+    }
+  } catch (error) {
+    sourceWideFailure = true;
+    const message = error instanceof Error ? error.message : String(error);
+    if (!result.errors.includes(message)) result.errors.push(message);
+  }
+
+  if (
+    isInventoryReconciliationEligible({
+      inventoryComplete,
+      usableActivities,
+      errors: result.errors,
+    })
+  ) {
+    try {
       const reconciliation = await reconcileMissingCandidates(
         supabase,
         source.id,
@@ -814,25 +845,11 @@ export async function syncActivitySource(
       );
       result.unlisted += reconciliation.unlisted;
       if (reconciliation.unlisted > 0) changed = true;
+    } catch (error) {
+      sourceWideFailure = true;
+      const message = error instanceof Error ? error.message : String(error);
+      if (!result.errors.includes(message)) result.errors.push(message);
     }
-  } catch (error) {
-    sourceWideFailure = true;
-    const message = error instanceof Error ? error.message : String(error);
-    if (!result.errors.includes(message)) result.errors.push(message);
-  }
-
-  // Unlike disappearance counters, freshness expiry must still run after an
-  // incomplete or failed inventory. stale_after is the bounded guarantee that
-  // an unreachable source cannot leave future Activity Graph content public
-  // forever.
-  try {
-    const expiration = await expireStaleCandidates(supabase, source.id, now);
-    result.unlisted += expiration.unlisted;
-    if (expiration.unlisted > 0) changed = true;
-  } catch (error) {
-    sourceWideFailure = true;
-    const message = error instanceof Error ? error.message : String(error);
-    if (!result.errors.includes(message)) result.errors.push(message);
   }
 
   const previousConsecutiveFailures = Number(
