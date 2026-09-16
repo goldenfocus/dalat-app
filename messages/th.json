@@ -2969,12 +2969,12 @@
     "importCopyHint": "Uncheck to choose individual tracks. Copies keep the original order; editing this event’s playlist will not change the original.",
     "importSelectionRequired": "Choose a past playlist and at least one track, or turn off music import.",
     "importPreferenceError": "Your event was saved, but the music default could not be saved. Set it again next time.",
-    "importFailedAfterCreation": "Your event was created, but music could not be imported. Open Edit → Playlist to upload the tracks. Do not create the event again.",
+    "importFailedAfterCreation": "Your event was created, but music could not be imported. Open Edit → Playlist to try importing again. Do not create the event again.",
     "importAppendHint": "Choose music from this host’s past events. Imported tracks are added after existing music; files already in this playlist are skipped.",
     "importNow": "Import selected music",
     "importInProgress": "Importing music…",
     "importComplete": "Added {count} tracks. Skipped {skipped} already included tracks.",
-    "importRetryError": "Music could not be imported. Your existing playlist is unchanged. Try again."
+    "importRetryError": "Could not confirm the import. Refresh to check your playlist or try again. Existing tracks are preserved and duplicates are skipped."
   },
   "activity": {
     "title": "กิจกรรม",
