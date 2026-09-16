@@ -2957,7 +2957,19 @@
     "karaoke": {
       "metaTitle": "🎤 カラオケ {trackTitle} - {artist} | ダラットで歌おう",
       "metaDescription": "同期歌詞で{trackTitle}をカラオケで歌おう。ダラットのカラオケ、ベトナム音楽。{eventTitle}より。"
-    }
+    },
+    "importPastMusic": "Import music from a past event",
+    "importRemember": "Keep this setting and source playlist as my default for future events. Uncheck to turn it off.",
+    "importLoading": "Loading your past playlists…",
+    "importLoadError": "Could not load past playlists. Reload this page to try again.",
+    "importEmpty": "No past events with music yet. You can upload MP3s after creating your event.",
+    "importSource": "Past event",
+    "importChoose": "Choose an event…",
+    "importWholePlaylist": "Import the full playlist",
+    "importCopyHint": "Uncheck to choose individual tracks. Copies keep the original order; editing this event’s playlist will not change the original.",
+    "importSelectionRequired": "Choose a past playlist and at least one track, or turn off music import.",
+    "importPreferenceError": "Your event was saved, but the music default could not be saved. Set it again next time.",
+    "importFailedAfterCreation": "Your event was created, but music could not be imported. Open Edit → Playlist to upload the tracks. Do not create the event again."
   },
   "activity": {
     "title": "アクティビティ",

@@ -47,6 +47,9 @@ import {
   EventMaterialsInput,
   createMaterialsForEvent,
 } from "@/components/events/event-materials-input";
+import { toast } from "sonner";
+import { PlaylistImportInput } from "@/components/events/playlist-import-input";
+import { emptyMusicImport, MUSIC_IMPORT_PREFERENCE } from "@/lib/playlist-import";
 import { PlaylistInput } from "@/components/events/playlist-input";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
 import { TicketTierInput } from "@/components/events/ticket-tier-input";
@@ -301,6 +304,7 @@ export function EventForm({
   const tErrors = useTranslations("errors");
   const tPlaylist = useTranslations("playlist");
   const tSeries = useTranslations("series");
+  const [musicImport, setMusicImport] = useState(emptyMusicImport);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -714,6 +718,11 @@ export function EventForm({
       return;
     }
 
+    if (!event && musicImport.enabled && (!musicImport.sourcePlaylistId || musicImport.trackIds?.length === 0)) {
+      setError(tPlaylist("importSelectionRequired"));
+      return;
+    }
+
     // Convert Đà Lạt time to UTC for storage
     const startsAt = toUTCFromDaLat(date, time);
     const capacity = capacityStr
@@ -721,6 +730,33 @@ export function EventForm({
       : null;
 
     const supabase = createClient();
+    const importMusic = async (eventIds: string[]) => {
+      // Preferences belong to the authenticated account, never to an impersonated host.
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id === userId) {
+          const { error: preferenceError } = await supabase.auth.updateUser({ data: {
+            [MUSIC_IMPORT_PREFERENCE]: { enabled: musicImport.enabled, sourcePlaylistId: musicImport.sourcePlaylistId, trackIds: musicImport.trackIds },
+          } });
+          if (preferenceError) toast.error(tPlaylist("importPreferenceError"));
+        }
+      } catch {
+        toast.error(tPlaylist("importPreferenceError"));
+      }
+      if (!musicImport.enabled) return;
+      for (const eventId of eventIds) {
+        try {
+          const response = await fetch("/api/playlists/import", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId, sourcePlaylistId: musicImport.sourcePlaylistId, trackIds: musicImport.trackIds }),
+          });
+          if (!response.ok) throw new Error("Playlist import failed");
+        } catch {
+          // The event is already saved. Do not make the user submit it a second time.
+          toast.error(tPlaylist("importFailedAfterCreation"), { duration: 12000 });
+        }
+      }
+    };
     const originalDescription = event?.description?.trim() || null;
     const titleContentChanged = !event || title.trim() !== event.title.trim();
     const descriptionContentChanged =
@@ -1024,6 +1060,7 @@ export function EventForm({
               const seriesEventIds = seriesData.series?.id
                 ? await getSeriesEventIds(seriesData.series.id, "all")
                 : [seriesData.first_event_id];
+              await importMusic(seriesEventIds);
               triggerEventTranslation(
                 seriesEventIds,
                 title.trim(),
@@ -1132,6 +1169,8 @@ export function EventForm({
             );
             triggerAIProcessing(data.id);
             pingSearchEngines(["/events/upcoming", "/"]);
+
+            await importMusic([data.id]);
 
             // Show celebration modal instead of immediate redirect
             setCreatedEvent({
@@ -1837,6 +1876,8 @@ export function EventForm({
               </CollapsibleContent>
             </Collapsible>
           )}
+
+          {!isEditing && <PlaylistImportInput value={musicImport} onChange={setMusicImport} userId={userId} disabled={isPending} />}
 
           {/* Playlist (only when editing) */}
           {isEditing && event && (

@@ -2960,7 +2960,19 @@
     "karaoke": {
       "metaTitle": "🎤 노래방 {trackTitle} - {artist} | 달랏에서 함께 불러요",
       "metaDescription": "싱크 가사와 함께 {trackTitle} 노래방을 즐겨 보세요. 달랏 노래방, 베트남 음악. {eventTitle} 중에서."
-    }
+    },
+    "importPastMusic": "Import music from a past event",
+    "importRemember": "Keep this setting and source playlist as my default for future events. Uncheck to turn it off.",
+    "importLoading": "Loading your past playlists…",
+    "importLoadError": "Could not load past playlists. Reload this page to try again.",
+    "importEmpty": "No past events with music yet. You can upload MP3s after creating your event.",
+    "importSource": "Past event",
+    "importChoose": "Choose an event…",
+    "importWholePlaylist": "Import the full playlist",
+    "importCopyHint": "Uncheck to choose individual tracks. Copies keep the original order; editing this event’s playlist will not change the original.",
+    "importSelectionRequired": "Choose a past playlist and at least one track, or turn off music import.",
+    "importPreferenceError": "Your event was saved, but the music default could not be saved. Set it again next time.",
+    "importFailedAfterCreation": "Your event was created, but music could not be imported. Open Edit → Playlist to upload the tracks. Do not create the event again."
   },
   "activity": {
     "title": "활동",
