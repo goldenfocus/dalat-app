@@ -1,7 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { syncActivitySource } from "@/lib/activity-graph/ingest";
+import {
+  expireStaleCandidates,
+  syncActivitySource,
+} from "@/lib/activity-graph/ingest";
 import type { ActivitySource } from "@/lib/activity-graph/types";
 import { recordImportRun } from "@/lib/import/run-log";
 import { createEmptyResult } from "@/lib/import/utils";
@@ -63,11 +66,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { data: staleSweep, error: staleSweepError } = await supabase.rpc(
-      "expire_all_stale_activity_candidates",
-      { p_checked_at: startedAt.toISOString() },
-    );
-    if (staleSweepError) {
+    let globalUnlisted = 0;
+    try {
+      const staleSweep = await expireStaleCandidates(
+        supabase,
+        undefined,
+        startedAt,
+      );
+      globalUnlisted = staleSweep.unlisted;
+    } catch (staleSweepError) {
       console.error(
         "[activity-graph] Global freshness sweep failed:",
         staleSweepError,
@@ -77,10 +84,6 @@ export async function GET(request: Request) {
         { status: 503 },
       );
     }
-    const globalUnlisted =
-      staleSweep && typeof staleSweep === "object"
-        ? Number((staleSweep as { unlisted?: unknown }).unlisted) || 0
-        : 0;
 
     const { data: sourceRows, error: sourceError } = await supabase
       .from("activity_sources")
@@ -88,8 +91,8 @@ export async function GET(request: Request) {
       .in("status", ["active", "degraded"])
       .eq("policy_status", "approved")
       // `manual` sources are refreshed by the autonomous scout. They still
-      // participate in global stale expiry, but have no deterministic crawler
-      // for this route to execute.
+      // participate in the global live-confirm sweep above, but have no
+      // deterministic crawler for this route to execute.
       .neq("fetch_mode", "manual")
       .lte("next_check_at", startedAt.toISOString())
       .order("trust_tier", { ascending: true })
