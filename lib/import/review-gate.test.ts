@@ -104,14 +104,30 @@ describe("evaluateDraftQuality", () => {
     expect(reasons.map((reason) => reason.code)).toContain("not_dalat_locality");
   });
 
-  it("fails a missing hero unless a visual gap is documented", () => {
+  it("holds a missing hero even when visual_gap.covers includes hero", () => {
     const missing = evaluateDraftQuality(
       event({ image_url: null }),
       qualityOptions(),
     );
     expect(missing.map((reason) => reason.code)).toContain("missing_image");
 
-    const documented = evaluateDraftQuality(
+    const documentedHeroGap = evaluateDraftQuality(
+      event({
+        image_url: null,
+        source_metadata: {
+          source_url: "https://lululola.vn/acoustic-live-band",
+          visual_gap: {
+            reason: "Organizer page has no reusable image",
+            covers: ["hero", "promo"],
+          },
+        },
+      }),
+      qualityOptions({ promoCount: 0 }),
+    );
+    expect(documentedHeroGap.map((reason) => reason.code)).toContain("missing_image");
+    expect(documentedHeroGap.map((reason) => reason.code)).toContain("missing_promo");
+
+    const legacyGap = evaluateDraftQuality(
       event({
         image_url: null,
         source_metadata: {
@@ -121,11 +137,10 @@ describe("evaluateDraftQuality", () => {
       }),
       qualityOptions({ promoCount: 0 }),
     );
-    expect(documented.map((reason) => reason.code)).not.toContain("missing_image");
-    expect(documented.map((reason) => reason.code)).not.toContain("missing_promo");
+    expect(legacyGap.map((reason) => reason.code)).toContain("missing_image");
   });
 
-  it("fails a missing promo gallery unless a visual gap is documented", () => {
+  it("allows a promo gap only when a hero exists and visual_gap covers promo", () => {
     const missing = evaluateDraftQuality(event(), qualityOptions({ promoCount: 0 }));
     expect(missing.map((reason) => reason.code)).toContain("missing_promo");
 
@@ -141,6 +156,7 @@ describe("evaluateDraftQuality", () => {
       }),
       qualityOptions({ promoCount: 0 }),
     );
+    expect(documented.map((reason) => reason.code)).not.toContain("missing_image");
     expect(documented.map((reason) => reason.code)).not.toContain("missing_promo");
   });
 
@@ -267,6 +283,30 @@ describe("publishReviewEvent translation trigger", () => {
     expect(mocks.triggerTranslationServer).toHaveBeenCalledOnce();
   });
 
+  it("does not publish when a hero is missing even if visual_gap covers hero", async () => {
+    const supabase = mockSupabase({ promoCount: 0, promoRows: [] });
+    const result = await publishReviewEvent(
+      supabase as never,
+      event({
+        image_url: null,
+        source_metadata: {
+          source_url: "https://lululola.vn/acoustic-live-band",
+          visual_gap: {
+            reason: "Organizer page has no reusable image",
+            covers: ["hero", "promo"],
+          },
+        },
+      }),
+      { now },
+    );
+
+    expect(result.published).toBe(false);
+    expect(result.passed).toBe(false);
+    expect(result.reasons.map((reason) => reason.code)).toContain("missing_image");
+    expect(supabase.updates).toHaveLength(0);
+    expect(mocks.triggerTranslationServer).not.toHaveBeenCalled();
+  });
+
   it("does not trigger translation when evaluate fails", async () => {
     const supabase = mockSupabase();
     const result = await publishReviewEvent(
@@ -368,6 +408,26 @@ describe("qaReviewEvent images", () => {
     expect(result.images.passed).toBe(false);
     expect(result.images.promoCount).toBe(0);
     expect(result.images.gaps.map((gap) => gap.code)).toContain("missing_promo");
+  });
+
+  it("fails missing_hero when image_url is empty even if visual_gap covers hero", async () => {
+    const result = await qaReviewEvent(
+      mockSupabase({ promoCount: 0, promoRows: [] }) as never,
+      event({
+        image_url: null,
+        source_metadata: {
+          source_url: "https://lululola.vn/acoustic-live-band",
+          visual_gap: {
+            reason: "Organizer page has no reusable image",
+            covers: ["hero", "promo"],
+          },
+        },
+      }),
+    );
+    expect(result.images.heroPresent).toBe(false);
+    expect(result.images.gaps.map((gap) => gap.code)).toContain("missing_hero");
+    expect(result.images.gaps.map((gap) => gap.code)).toContain("documented_visual_gap");
+    expect(result.images.passed).toBe(false);
   });
 
   it("covers a missing promo gallery when hero exists and visual_gap documents it", async () => {

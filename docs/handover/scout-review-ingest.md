@@ -94,7 +94,9 @@ Behavior:
   write is rejected (`400`). If a hero exists but fewer than 2 distinct promo
   images survived fetch, the write is rejected unless `visual_gap_reason` is
   present. A documented gap writes `source_metadata.visual_gap` with
-  `covers: ["hero","promo"]` or `covers: ["promo"]`.
+  `covers: ["hero","promo"]` or `covers: ["promo"]`. Review evaluate /
+  publish still holds any draft with an empty `image_url` — `visual_gap`
+  never waives a missing hero (promo-only exception below).
 - Source/promo images are fetched only after an SSRF-safe public-URL check,
   then uploaded like other import utils. AI imagery must be disclosed in alt
   and caption (the API fills the AGENTS.md disclosure if the caller omitted it).
@@ -162,8 +164,10 @@ Deterministic checks (no generated facts):
 - Đà Lạt / Lâm Đồng locality heuristics on stored text
 - not a duplicate of another **published** title+date
 - inside the 45-day horizon
-- hero image **or** a documented `source_metadata.visual_gap`
-- promo gallery 2–4 items **or** a documented `source_metadata.visual_gap`
+- hero image required (`image_url`); a documented `source_metadata.visual_gap`
+  never waives a missing hero — even when `covers` includes `hero`
+- promo gallery 2–4 items, **or** a documented `source_metadata.visual_gap`
+  covering `promo` when a hero already exists (same promo-only exception as QA)
 - not an Activity Graph row
 
 Factual holds (locality, horizon, duplicate, source provenance) are unchanged.
@@ -209,10 +213,11 @@ After publish. Reports only — does not write translations or images.
 - 12 locales from `lib/types` / `messages/*.json` (`en vi ko zh ru fr ja ms th de es id`)
 - title + description completeness via `evaluateEventIndexingReadiness`
 - hero present; promo gallery 2–4 items; AI disclosure if `visual_provenance=ai_generated`
-- **documented promo exception:** when a hero exists and `visual_gap` covers
-  `promo`, `missing_promo` is not a failing image gap (do not invent images).
-  A documented gap with no hero still fails (`missing_hero` +
-  `documented_visual_gap`).
+- **documented promo exception (evaluate and QA):** when a hero exists and
+  `visual_gap` covers `promo`, `missing_promo` is not a failing image gap
+  (do not invent images). A documented gap with no hero still fails evaluate
+  (`missing_image`) and QA (`missing_hero` + `documented_visual_gap`).
+  `visual_gap` is a promo-only exception; it never waives a missing hero.
 
 Immediately after publish, `readyLocales` may still be empty until the Mac
 mini worker writes locale rows. Re-run `qa` after the worker sweep;
@@ -248,9 +253,9 @@ Runnable Go listener in `whatsapp-ingest/`. Mac mini launchd runbook and env
 table live in that README. The process must stay read-only on WhatsApp.
 
 WhatsApp drafts often have a single flyer. Review evaluate will hold them
-(`missing_promo`) until Scout re-submits 3 distinct images or a
-`visual_gap_reason`, or Review `reject`s with reasons. Do not invent promo
-images.
+(`missing_promo`) until Scout re-submits 3 distinct images, or a hero plus
+`visual_gap_reason` covering promo, or Review `reject`s with reasons. A
+documented gap never waives a missing hero. Do not invent promo images.
 
 ## Related code
 
