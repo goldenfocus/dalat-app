@@ -186,18 +186,22 @@ export function evaluateDraftQuality(
       message: "A published event with the same title and date already exists",
     });
   }
-  const documentedGap = isDocumentedVisualGap(event.source_metadata);
-  if (!event.image_url?.trim() && !documentedGap) {
+  const heroPresent = Boolean(event.image_url?.trim());
+  const promoCount = options.promoCount ?? 0;
+  // visual_gap may only waive missing_promo, and only when a hero exists.
+  // A documented gap that covers "hero" never waives a missing image_url.
+  const promoCoveredByGap =
+    heroPresent && visualGapCoversPromo(event.source_metadata) && promoCount < 2;
+  if (!heroPresent) {
     reasons.push({
       code: "missing_image",
-      message: "Hero image is missing and no visual gap is documented",
+      message: "Hero image is missing",
     });
   }
-  const promoCount = options.promoCount ?? 0;
-  if ((promoCount < 2 || promoCount > 4) && !documentedGap) {
+  if ((promoCount < 2 || promoCount > 4) && !promoCoveredByGap) {
     reasons.push({
       code: "missing_promo",
-      message: `Promo gallery has ${promoCount} image(s); visual-truth requires 2–4 distinct images, or a documented visual_gap`,
+      message: `Promo gallery has ${promoCount} image(s); visual-truth requires 2–4 distinct images, or a documented visual_gap covering promo when a hero exists`,
     });
   }
   return reasons;
