@@ -187,12 +187,6 @@ function emptyResult(): StaleConfirmResult {
   };
 }
 
-function applySourceFilter<
-  T extends { eq: (column: string, value: string) => T },
->(query: T, sourceId?: string): T {
-  return sourceId ? query.eq("source_id", sourceId) : query;
-}
-
 function isRecoverableSystemStale(
   candidate: StaleCandidateSnapshot,
   now: Date,
@@ -215,32 +209,34 @@ export async function confirmOrExpireStaleCandidates(
 ): Promise<StaleConfirmResult> {
   const result = emptyResult();
   const nowIso = now.toISOString();
-  const publishedQuery = applySourceFilter(
-    supabase
-      .from("activity_candidates")
-      .select(
-        "id,source_id,source_uid,source_url,activity_kind,status,unlist_origin,stale_after,starts_at",
-      )
-      .eq("status", "published")
-      .not("stale_after", "is", null)
-      .lte("stale_after", nowIso),
-    options.sourceId,
-  ).limit(MAX_STALE_CONFIRMS_PER_RUN);
-  const unlistedQuery = applySourceFilter(
-    supabase
-      .from("activity_candidates")
-      .select(
-        "id,source_id,source_uid,source_url,activity_kind,status,unlist_origin,stale_after,starts_at",
-      )
-      .eq("status", "unlisted")
-      .eq("unlist_origin", "system_stale")
-      .or(`starts_at.is.null,starts_at.gte.${nowIso}`),
-    options.sourceId,
-  ).limit(MAX_STALE_CONFIRMS_PER_RUN);
+  // Filter inline. A generic helper over PostgrestFilterBuilder makes
+  // `tsc` fail with "Type instantiation is excessively deep".
+  let publishedQuery = supabase
+    .from("activity_candidates")
+    .select(
+      "id,source_id,source_uid,source_url,activity_kind,status,unlist_origin,stale_after,starts_at",
+    )
+    .eq("status", "published")
+    .not("stale_after", "is", null)
+    .lte("stale_after", nowIso);
+  if (options.sourceId) {
+    publishedQuery = publishedQuery.eq("source_id", options.sourceId);
+  }
+  let unlistedQuery = supabase
+    .from("activity_candidates")
+    .select(
+      "id,source_id,source_uid,source_url,activity_kind,status,unlist_origin,stale_after,starts_at",
+    )
+    .eq("status", "unlisted")
+    .eq("unlist_origin", "system_stale")
+    .or(`starts_at.is.null,starts_at.gte.${nowIso}`);
+  if (options.sourceId) {
+    unlistedQuery = unlistedQuery.eq("source_id", options.sourceId);
+  }
 
   const [published, unlisted] = await Promise.all([
-    publishedQuery,
-    unlistedQuery,
+    publishedQuery.limit(MAX_STALE_CONFIRMS_PER_RUN),
+    unlistedQuery.limit(MAX_STALE_CONFIRMS_PER_RUN),
   ]);
   if (published.error) {
     throw new Error(`Stale candidate lookup failed: ${published.error.message}`);
