@@ -263,10 +263,10 @@ export async function triggerTranslation(
 /**
  * Server-side translation trigger.
  *
- * Translation is intentionally deferred to the Mac mini worker. The worker
- * discovers untranslated database rows, so saving the source content is the
- * queue operation; this function remains as a compatibility boundary for API
- * routes and importers that used to translate inline.
+ * Published events are translated on Vercel after the response
+ * (`schedulePublishedEventTranslation`). The cron sweep is the retry if that
+ * invocation does not finish. Other content types stay on the Mac mini worker,
+ * which discovers untranslated rows from saved source content.
  */
 export async function triggerTranslationServer(
   contentType: TranslationContentType,
@@ -276,7 +276,14 @@ export async function triggerTranslationServer(
 ): Promise<{ ok: boolean; localesWritten: number }> {
   const fieldsToTranslate = fields.filter(f => f.text && f.text.trim().length > 0);
   if (fieldsToTranslate.length === 0) return { ok: true, localesWritten: 0 };
-  console.log(`[triggerTranslationServer] Queued ${contentType}:${contentId} for the Mac mini worker`);
+  if (contentType === "event") {
+    // Loaded only on publish so event-page reads of this module do not pull
+    // the AI provider chain into every request.
+    const { schedulePublishedEventTranslation } = await import("@/lib/event-translation");
+    schedulePublishedEventTranslation(contentId);
+    return { ok: true, localesWritten: 0 };
+  }
+  console.warn(`[triggerTranslationServer] Queued ${contentType}:${contentId} for the Mac mini worker`);
   return { ok: true, localesWritten: 0 };
 }
 

@@ -46,6 +46,10 @@
       "schedule": "*/10 * * * *"
     },
     {
+      "path": "/api/cron/translate-events",
+      "schedule": "*/10 * * * *"
+    },
+    {
       "path": "/api/cron/enqueue-recaps",
       "schedule": "*/15 * * * *"
     }

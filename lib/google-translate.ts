@@ -37,7 +37,10 @@ export const TRANSLATE_SYSTEM =
 /**
  * Detect the language of a text
  */
-export async function detectLanguage(text: string): Promise<ContentLocale> {
+export async function detectLanguage(
+  text: string,
+  options?: { timeoutMs?: number },
+): Promise<ContentLocale> {
   try {
     const result = await aiChatJson<{ locale: string }>({
       system:
@@ -46,6 +49,7 @@ export async function detectLanguage(text: string): Promise<ContentLocale> {
       prompt: text.slice(0, 500),
       maxTokens: 20,
       temperature: 0,
+      timeoutMs: options?.timeoutMs,
     });
     const locale = (result.locale || '').toLowerCase().slice(0, 2);
     return CONTENT_LOCALES.includes(locale as ContentLocale) ? (locale as ContentLocale) : 'en';
@@ -73,7 +77,8 @@ export async function translateText(
  */
 export async function translateFieldsToLocale(
   fields: { field_name: string; text: string }[],
-  targetLocale: ContentLocale
+  targetLocale: ContentLocale,
+  options?: { timeoutMs?: number },
 ): Promise<Record<string, string>> {
   const input: Record<string, string> = {};
   for (const f of fields) input[f.field_name] = f.text;
@@ -82,7 +87,7 @@ export async function translateFieldsToLocale(
   // the local model; short fields come back in a few seconds.
   const totalChars = fields.reduce((n, f) => n + f.text.length, 0);
   const maxTokens = Math.min(8000, Math.max(512, Math.ceil(totalChars * 0.7)));
-  const timeoutMs = totalChars > 2000 ? 200_000 : 90_000;
+  const timeoutMs = options?.timeoutMs ?? (totalChars > 2000 ? 200_000 : 90_000);
 
   const result = await aiChatJson<Record<string, string>>({
     system: TRANSLATE_SYSTEM,

@@ -16,6 +16,7 @@ import {
 } from "./scout-schema";
 import { canonicalizeSourceUrl, isSafePublicHttpUrl } from "./safe-url";
 import { resolveStoredSourceLocale } from "./source-locale";
+import { schedulePublishedEventTranslation } from "@/lib/event-translation";
 
 const DALAT_TZ = "Asia/Ho_Chi_Minh";
 
@@ -394,12 +395,17 @@ async function refreshPublishedVisuals(
       : {};
   const heroUrl = visuals.heroUrl ?? existing.image_url;
   const heroAlt = visuals.heroUrl ? visuals.heroAlt : existing.image_alt;
-  const metadata = {
+  const metadata: Record<string, unknown> = {
     ...prior,
     source_url: sourceUrl,
     source_url_hash: createHash("sha256").update(sourceUrl).digest("hex"),
     ...visualMetadata(input, visuals),
   };
+  // Keep a same-day published re-post on the cron queue if after() does not
+  // finish. An existing stamp is preserved so a retry stays oldest-first.
+  if (typeof metadata.translation_needed_at !== "string" || !metadata.translation_needed_at) {
+    metadata.translation_needed_at = new Date().toISOString();
+  }
 
   const { data, error } = await supabase
     .from("events")
@@ -420,6 +426,7 @@ async function refreshPublishedVisuals(
   }
 
   await replacePromoMedia(supabase, existing.id, createdBy, visuals.promo);
+  schedulePublishedEventTranslation(data.id);
 
   return {
     ok: true,

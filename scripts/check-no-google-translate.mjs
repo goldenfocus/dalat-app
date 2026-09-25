@@ -1,5 +1,6 @@
-// Cost-safety ratchet: DALAT translation runs only on the Mac mini.
-// Fail the build if an API key or direct Google Translation endpoint returns.
+// Google Cloud Translation is forbidden. Event locale fan-out uses the
+// existing AI provider chain (lib/ai/provider.ts) on Vercel.
+// Fail the build if a Google Translation endpoint or API key returns.
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -30,7 +31,7 @@ function scan(dir) {
 for (const root of ROOTS) scan(root);
 
 if (bad.length > 0) {
-  console.error("⛔ Google Cloud Translation usage is forbidden; the Mac mini is the sole translator:");
+  console.error("⛔ Google Cloud Translation usage is forbidden:");
   for (const line of bad) console.error(`  ${line}`);
   process.exit(1);
 }

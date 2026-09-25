@@ -10,6 +10,8 @@ import {
 } from "@/lib/import/review-gate";
 import { reviewIngestSchema } from "@/lib/import/scout-schema";
 
+export const maxDuration = 300;
+
 function serviceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
