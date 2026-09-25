@@ -40,6 +40,12 @@ Set these in Vercel / `.env.local` / the Mac mini vault. Never commit values.
 | `IMPORT_CREATED_BY` | App + WhatsApp | Profile UUID owning drafts (default: username `yan`) |
 | `WHATSAPP_GROUP_JIDS` | WhatsApp Mac mini | Comma-separated `…@g.us` allowlist |
 | `REVIEW_HOOK_URL` | WhatsApp (optional) | Notify URL after a WhatsApp draft upsert. **Not** `/api/import/review`. |
+| `CRON_SECRET` | App (already set) | Bearer for `GET /api/cron/translate-events`. Not a new secret. |
+
+Event translation does not add a provider key. It uses the existing
+`lib/ai/provider.ts` chain. `OPENAI_API_KEY` (`gpt-4.1-mini`) and
+`ANTHROPIC_API_KEY` are the production safety net when Cloudflare or
+OpenRouter is down.
 
 Moderator cookie auth (`lib/import/moderator-authorization.ts`) is for humans
 only. These routes ignore cookies.
@@ -180,16 +186,49 @@ Factual holds (locality, horizon, duplicate, source provenance) are unchanged.
   mentions the city stays null for the worker to detectLanguage.
   Null `source_locale` blocks every locale in QA / indexing readiness.
 - writes `source_metadata.translation_needed_at` (ISO) and bumps `updated_at`.
-  The Mac mini sweep **always** loads published rows with that key, including
-  when `scanLimit` is 0 and between blog items, so a mid-loop Cloudflare
-  blog failure cannot hide this event. `updated_at` recency remains a fallback.
-- awaits `triggerTranslationServer` (Luma/Facebook compatibility shim; it
-  logs only). Review does **not** write locale strings.
+  That stamp is the durable retry queue for `/api/cron/translate-events`.
+- awaits `triggerTranslationServer`, which schedules Vercel `after()`
+  translation for this one event. Review does **not** write locale strings.
 
-Translation is **not** triggered at scout ingest — WhatsApp drafts share this
-publish hook, and a draft-time call would race if the shim later invalidates
-rows. Failures leave the row as `draft`, do not call translation, and return
-`{ passed: false, reasons: [...] }`.
+Translation of a **draft** is not triggered at scout ingest — WhatsApp drafts
+share the Review publish hook. A scout re-post of an already **published**
+row schedules the same Vercel translation (and sets `translation_needed_at`
+when that stamp is missing). Failures leave a new row as `draft`, do not
+call translation, and return `{ passed: false, reasons: [...] }`.
+
+### Event translation (Vercel, not the Mac mini)
+
+Published events get title + description for every non-source locale
+(`en vi ko zh ru fr ja ms th de es id`, minus `source_locale`) without
+waiting on the Mac mini worker.
+
+- **On publish:** Review `publish`, a scout re-post of a published row, and
+  Activity Graph auto-publish call `schedulePublishedEventTranslation`.
+  `after()` fills only missing locales for that event. The call is
+  idempotent: non-blank `content_translations` rows are left in place
+  (`ignoreDuplicates`, so a human-owned row is not overwritten).
+- **Cron:** `GET /api/cron/translate-events` every 10 minutes
+  (`vercel.json`). Auth is the existing `CRON_SECRET` bearer, same as the
+  other crons. No new secret and no new provider key.
+- **Provider:** `lib/google-translate.ts` → `lib/ai/provider.ts`
+  (local Ollama → Cloudflare Workers AI → OpenRouter free models →
+  OpenAI `gpt-4.1-mini` → Anthropic). OpenAI and Anthropic are the
+  production safety net already configured on Vercel. A dead provider
+  (Cloudflare 408, removed OpenRouter model) is skipped for 10 minutes
+  inside the process instead of stalling the sweep. The dead OpenRouter
+  free qwen model is not in the chain.
+- **Selection:** published rows with `translation_needed_at`, plus published
+  events that start today or later in Asia/Ho_Chi_Minh (so a same-day event
+  stays eligible after it begins). Soonest start first. Older flagged rows
+  run only after that window. Batch size defaults to 3 events. Blog and
+  moment jobs are not loaded.
+- **Done:** `translation_needed_at` is removed only when `source_locale` is
+  a real content locale and every non-source locale has non-blank title and
+  description. A partial failure leaves the stamp set for the next cron.
+
+The Mac mini worker (`scripts/backfill-translations-ai.ts`) may still
+translate events, but it is not the source of truth. It drains events before
+blogs and skips dead providers. Do not wait on it for a scout publish.
 
 ### `reject`
 
@@ -219,10 +258,11 @@ After publish. Reports only — does not write translations or images.
   (`missing_image`) and QA (`missing_hero` + `documented_visual_gap`).
   `visual_gap` is a promo-only exception; it never waives a missing hero.
 
-Immediately after publish, `readyLocales` may still be empty until the Mac
-mini worker writes locale rows. Re-run `qa` after the worker sweep;
-`translations.passed` is true only when every non-source locale has
-substantive title + description. Image checks are independent.
+Immediately after publish, `readyLocales` may still be empty for a few
+minutes while the Vercel `after()` job or the 10-minute cron writes locale
+rows. Re-run `qa` after that; `translations.passed` is true only when every
+non-source locale has substantive title + description. Image checks are
+independent.
 
 Poll drafts instead of (or in addition to) the WhatsApp hook:
 
@@ -231,14 +271,13 @@ events?status=eq.draft&source_metadata->>needs_review=eq.true
 ```
 
 Typical Review loop: poll → `evaluate` → `reject` (structured reasons) **or**
-fix fact/image gaps → `publish` (writes `translation_needed_at`) → `qa` →
-wait for the Mac mini worker if locales are still missing → `qa` again.
+fix fact/image gaps → `publish` (writes `translation_needed_at` and schedules
+Vercel translation) → `qa` → if locales are still missing, wait for the
+10-minute cron (or the in-flight `after()` job) → `qa` again.
 Review never invents locale strings or images.
 
-The running forever worker re-collects `translation_needed_at` rows between
-blog/moment items. `EVENT_IDS=` is a **one-shot repair**, not the primary
-enqueue: it still skips the blog scan when set, and also drains any other
-`translation_needed_at` events.
+`EVENT_IDS=` on the Mac mini is only a manual repair. The Vercel path does
+not need it.
 
 One-off repair (uses stored title/description; do not invent copy):
 

@@ -32,6 +32,7 @@ import {
   sourceDescription,
   upsertActivityEventTranslations,
 } from "./translations";
+import { schedulePublishedEventTranslations } from "@/lib/event-translation";
 import type {
   ActivitySource,
   ConfidenceResult,
@@ -575,6 +576,7 @@ async function refreshLinkedActivity(
   );
   let indexTarget: { kind: "event" | "series"; slug: string } | null = null;
   let occurrenceDates: string[] | null = null;
+  const translatedEventIds: string[] = [];
   if (link.event_id) {
     const { data: event, error: eventLookupError } = await input.supabase
       .from("events")
@@ -641,6 +643,7 @@ async function refreshLinkedActivity(
         input.activity,
         input.source.name,
       );
+      translatedEventIds.push(link.event_id);
       if (event.slug) indexTarget = { kind: "event", slug: event.slug };
     }
   }
@@ -732,6 +735,7 @@ async function refreshLinkedActivity(
         input.activity,
         input.source.name,
       );
+      translatedEventIds.push(...reconciliation.occurrenceIds);
       if (series.slug) indexTarget = { kind: "series", slug: series.slug };
     }
   }
@@ -762,6 +766,7 @@ async function refreshLinkedActivity(
       reason: "Administrative suppression won the publication race",
     };
   }
+  schedulePublishedEventTranslations(translatedEventIds);
   if (indexTarget) {
     await pingIndexNow(indexPaths(indexTarget.kind, indexTarget.slug));
   }
@@ -1073,6 +1078,7 @@ export async function projectActivity(
         reason: "Administrative suppression won the publication race",
       };
     }
+    schedulePublishedEventTranslations([result.eventId]);
     return result;
   }
   if (best && best.score >= 78) {
@@ -1149,6 +1155,7 @@ export async function projectActivity(
         reason: "Administrative suppression won the publication race",
       };
     }
+    schedulePublishedEventTranslations(occurrenceIds);
     await pingIndexNow(indexPaths("series", series.slug));
     return result;
   }
@@ -1182,6 +1189,7 @@ export async function projectActivity(
       reason: "Administrative suppression won the publication race",
     };
   }
+  schedulePublishedEventTranslations([event.id]);
   await pingIndexNow(indexPaths("event", event.slug));
   return result;
 }

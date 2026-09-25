@@ -9,6 +9,12 @@ vi.mock("./utils", async () => {
   };
 });
 
+const schedulePublishedEventTranslation = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/event-translation", () => ({
+  schedulePublishedEventTranslation,
+}));
+
 vi.mock("./safe-url", async () => {
   const actual = await vi.importActual<typeof import("./safe-url")>("./safe-url");
   return {
@@ -218,6 +224,7 @@ describe("ingestScoutEvent", () => {
   beforeEach(() => {
     vi.stubEnv("IMPORT_CREATED_BY", "00000000-0000-4000-8000-000000000001");
     vi.mocked(downloadAndUploadImage).mockClear();
+    schedulePublishedEventTranslation.mockClear();
   });
 
   afterEach(() => {
@@ -233,6 +240,7 @@ describe("ingestScoutEvent", () => {
     if (!result.ok) return;
     expect(result.status).toBe("draft");
     expect(result.created).toBe(true);
+    expect(schedulePublishedEventTranslation).not.toHaveBeenCalled();
     const insert = supabase.inserts[0] as {
       row: { status: string; source_locale: string | null; publish?: boolean };
     };
@@ -325,6 +333,7 @@ describe("ingestScoutEvent", () => {
       updated: true,
     });
     expect(supabase.inserts.filter((entry) => (entry as { table: string }).table === "events")).toHaveLength(0);
+    expect(schedulePublishedEventTranslation).toHaveBeenCalledWith("evt-1");
   });
 
   it("refreshes promo_media on a published event without changing status", async () => {
@@ -396,6 +405,34 @@ describe("ingestScoutEvent", () => {
     ) as { row: Array<{ media_url: string }> };
     expect(promoInsert.row).toHaveLength(2);
     expect(supabase.inserts.filter((entry) => (entry as { table: string }).table === "events")).toHaveLength(0);
+    expect(schedulePublishedEventTranslation).toHaveBeenCalledWith("evt-1");
+  });
+
+  it("stamps translation_needed_at on a published re-post that has none", async () => {
+    const supabase = createSupabaseMock({
+      existing: {
+        id: "evt-1",
+        slug: "sunset-hike-langbiang",
+        status: "published",
+        source_platform: "scout",
+        source_metadata: { review_result: "published", needs_review: false },
+        created_by: "00000000-0000-4000-8000-000000000001",
+        image_url: "https://cdn.dalat.app/event-media/old-hero.jpg",
+        image_alt: "Old hero",
+      },
+    });
+    const parsed = scoutIngestSchema.parse(validPayload);
+    const result = await ingestScoutEvent(supabase as never, parsed, { now });
+
+    expect(result).toMatchObject({ ok: true, status: "published", updated: true });
+    const eventUpdate = supabase.updates.find(
+      (entry) =>
+        (entry as { row?: { image_url?: string } }).row?.image_url,
+    ) as { row: { source_metadata: { translation_needed_at?: string } } };
+    expect(eventUpdate.row.source_metadata.translation_needed_at).toMatch(
+      /^\d{4}-\d{2}-\d{2}T/,
+    );
+    expect(schedulePublishedEventTranslation).toHaveBeenCalledWith("evt-1");
   });
 
   it("does not rewrite a cancelled event with the same source_url", async () => {

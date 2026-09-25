@@ -9,6 +9,14 @@ the final fallback.
 The production launchd job currently disables both optional paths. This
 avoids authentication/backoff delays and keeps provider choice explicit.
 
+Event title/description translation does **not** depend on this host.
+Vercel translates a published event in `after()` and retries every 10
+minutes via `GET /api/cron/translate-events`. That cron never loads blog
+jobs. This worker still drains events before blogs and skips a dead
+provider (Cloudflare 408, a removed OpenRouter model) instead of retrying
+it for the rest of the process. If this checkout is stale or offline,
+published events still get locales from Vercel.
+
 ## Deploy / update (from a laptop)
 
 Routine updates move only the clean checkout and restart the existing job. The

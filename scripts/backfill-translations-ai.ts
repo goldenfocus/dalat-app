@@ -48,6 +48,7 @@ import {
 import { CONTENT_LOCALES, ContentLocale } from "@/lib/types";
 import { notifyEventTranslationCompletion } from "@/lib/seo/indexnow-events";
 import { getBlogTranslationCutoff } from "@/lib/news/article-policy";
+import { isDeadProviderFailure } from "@/lib/ai/provider";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://aljcmodwjqlznzcydyor.supabase.co";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -497,12 +498,19 @@ async function processItem(item: TranslationWorkItem, allowFallback: boolean): P
     for (const locale of pending) {
       const t0 = Date.now();
       try {
-        const translated = await translateFieldsToLocale(item.fields, locale);
+        const translated = await translateFieldsToLocale(
+          item.fields,
+          locale,
+          item.contentType === "event" ? { timeoutMs: 20_000 } : undefined,
+        );
         if (!(await upsertLocale(item, src, locale, translated))) return;
         fallbackUnits++;
         console.log(`  ✓ ${tag} ${locale} (fallback-chain, ${Math.round((Date.now() - t0) / 1000)}s)`);
       } catch (err) {
-        console.error(`  ✗ ${tag} ${locale}: ${errStr(err)}`);
+        const detail = errStr(err);
+        console.error(
+          `  ✗ ${tag} ${locale}: ${isDeadProviderFailure(detail) ? "dead provider, skipped — " : ""}${detail}`,
+        );
       }
     }
   }

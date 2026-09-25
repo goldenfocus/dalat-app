@@ -286,11 +286,10 @@ export async function publishReviewEvent(
     throw new Error(`Publish failed: ${error.message}`);
   }
 
-  // triggerTranslationServer is a compatibility shim (logs only). The durable
-  // enqueue the running worker cannot miss is source_metadata.translation_needed_at
-  // plus missing content_translations. Do not also trigger on scout ingest —
-  // WhatsApp/scout drafts share this publish hook. Review never writes locale
-  // strings itself.
+  // Schedules Vercel after() translation for this event. The durable retry is
+  // source_metadata.translation_needed_at, drained by /api/cron/translate-events.
+  // Do not also trigger on scout draft ingest — WhatsApp/scout drafts share
+  // this publish hook. Review never writes locale strings itself.
   await queuePublishedEventTranslation(event);
 
   return {

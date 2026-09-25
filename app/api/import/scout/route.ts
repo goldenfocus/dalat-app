@@ -4,7 +4,7 @@ import { authorizeBearerSecret } from "@/lib/import/bearer-authorization";
 import { ingestScoutEvent } from "@/lib/import/scout-ingest";
 import { scoutIngestSchema } from "@/lib/import/scout-schema";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function serviceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

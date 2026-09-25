@@ -26,10 +26,11 @@ export interface AIChatOptions {
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 
+// qwen/qwen3-next-80b-a3b-instruct:free is dead upstream and was stalling
+// translation sweeps on timeouts. Do not put it back without a live check.
 const OPENROUTER_FREE_MODELS = [
   'openai/gpt-oss-120b:free',
   'meta-llama/llama-3.3-70b-instruct:free',
-  'qwen/qwen3-next-80b-a3b-instruct:free',
 ];
 
 const CF_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
@@ -40,6 +41,34 @@ class ProviderError extends Error {
   constructor(provider: string, cause: string) {
     super(`[ai-provider:${provider}] ${cause}`);
   }
+}
+
+/** How long a dead provider stays skipped inside this process. */
+const PROVIDER_COOLDOWN_MS = 10 * 60 * 1000;
+const providerCooledUntil = new Map<string, number>();
+
+/** Failures that mean "try the next provider" rather than a bad prompt. */
+export function isDeadProviderFailure(reason: string): boolean {
+  if (/not configured/i.test(reason)) return false;
+  return /\b408\b|\b429\b|\b502\b|\b503\b|\b504\b|timeout|timed out|aborted|rate.?limit|no endpoints|model.+not found|ECONNREFUSED|ENOTFOUND|fetch failed/i.test(
+    reason,
+  );
+}
+
+export function resetAiProviderCooldowns(): void {
+  providerCooledUntil.clear();
+}
+
+function providerCoolingDown(name: string): boolean {
+  return Date.now() < (providerCooledUntil.get(name) ?? 0);
+}
+
+function coolProvider(name: string, reason: string): void {
+  if (!isDeadProviderFailure(reason)) return;
+  providerCooledUntil.set(name, Date.now() + PROVIDER_COOLDOWN_MS);
+  console.warn(
+    `[ai-provider] skipping ${name} for ${PROVIDER_COOLDOWN_MS / 1000}s after: ${reason.slice(0, 180)}`,
+  );
 }
 
 function requestTimeoutMs(opts: AIChatOptions): number {
@@ -134,8 +163,12 @@ async function openRouter(opts: AIChatOptions): Promise<string> {
   messages.push({ role: 'user', content: opts.prompt });
 
   let lastError: Error = new ProviderError('openrouter', 'no models attempted');
+  let attempted = 0;
   for (const model of OPENROUTER_FREE_MODELS) {
     if (opts.deadlineAt !== undefined && Date.now() >= opts.deadlineAt) break;
+    const modelKey = `openrouter:${model}`;
+    if (providerCoolingDown(modelKey)) continue;
+    attempted++;
     try {
       const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -159,8 +192,13 @@ async function openRouter(opts: AIChatOptions): Promise<string> {
       return text;
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
-      // Free models are frequently rate-limited upstream; try the next one
+      // Free models are frequently rate-limited or removed upstream; skip the
+      // dead one for this process and try the next model.
+      coolProvider(modelKey, lastError.message);
     }
+  }
+  if (attempted === 0) {
+    throw new ProviderError('openrouter', 'all free models cooling down');
   }
   throw lastError;
 }
@@ -251,6 +289,10 @@ export async function aiChat(opts: AIChatOptions): Promise<string> {
       errors.push('[ai-provider:deadline] overall deadline exhausted');
       break;
     }
+    if (providerCoolingDown(provider.name)) {
+      errors.push(`[ai-provider:${provider.name}] cooling down`);
+      continue;
+    }
     try {
       const text = await provider.run(opts);
       if (provider.name !== 'local') {
@@ -258,7 +300,9 @@ export async function aiChat(opts: AIChatOptions): Promise<string> {
       }
       return text;
     } catch (err) {
-      errors.push(err instanceof Error ? err.message : String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      errors.push(message);
+      coolProvider(provider.name, message);
     }
   }
   throw new Error(`All AI providers failed: ${errors.join(' | ')}`);
