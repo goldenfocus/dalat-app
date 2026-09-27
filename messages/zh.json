@@ -153,6 +153,7 @@
     },
     "browseArchive": "浏览过去的活动",
     "seeAllUpcoming": "查看所有即将举行的活动",
+    "moreAtThisVenue": "此场地还有 {count} 场",
     "cityPulse": {
       "eyebrow": "此刻的城市",
       "title": "找到你的下一个安排",

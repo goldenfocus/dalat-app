@@ -153,6 +153,7 @@
     },
     "browseArchive": "Événements passés",
     "seeAllUpcoming": "Voir tous les événements à venir",
+    "moreAtThisVenue": "+{count} de plus à ce lieu",
     "cityPulse": {
       "eyebrow": "La ville, maintenant",
       "title": "Trouvez votre prochaine sortie",

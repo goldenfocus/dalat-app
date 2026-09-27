@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { EventGrid } from "./event-grid";
+import type { MoreAtVenueHomeLinkData } from "./more-at-venue-home-link";
 import { useEventViewPreferences } from "@/lib/hooks/use-local-storage";
 import type { CardEvent, EventCounts, EventSocial } from "@/lib/types";
 
@@ -13,6 +14,7 @@ interface EventGridWithViewsProps {
   eventTranslations: Record<string, { title?: string } | undefined>;
   seriesRrules?: Record<string, string>;
   social?: Record<string, EventSocial | undefined>;
+  moreAtVenue?: Record<string, MoreAtVenueHomeLinkData>;
 }
 
 /**
@@ -28,6 +30,7 @@ export function EventGridWithViews({
   eventTranslations,
   seriesRrules = {},
   social = {},
+  moreAtVenue,
 }: EventGridWithViewsProps) {
   const { mode, density } = useEventViewPreferences();
   // Avoid hydration mismatch: localStorage prefs only apply after mount.
@@ -53,6 +56,7 @@ export function EventGridWithViews({
       social={social}
       eventTranslations={translationMap}
       seriesRrules={seriesRrules}
+      moreAtVenue={moreAtVenue}
     />
   );
 }

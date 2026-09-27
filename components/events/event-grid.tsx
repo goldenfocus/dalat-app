@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { formatInDaLat } from "@/lib/timezone";
@@ -8,6 +8,10 @@ import { EventCardFramed } from "./event-card-framed";
 import { EventCardCompact } from "./event-card-compact";
 import { EventListCard } from "./event-list-card";
 import { EventImmersiveCard } from "./event-immersive-card";
+import {
+  MoreAtVenueHomeLink,
+  type MoreAtVenueHomeLinkData,
+} from "./more-at-venue-home-link";
 import {
   useEventViewPreferences,
   type EventDensity,
@@ -23,6 +27,8 @@ interface EventGridProps {
   social?: Record<string, EventSocial | undefined>;
   /** Force compact card display regardless of user preference */
   forceCompact?: boolean;
+  /** Homepage-only pointer to the rest of a venue's events. */
+  moreAtVenue?: Record<string, MoreAtVenueHomeLinkData>;
 }
 
 // Grid classes based on density
@@ -57,6 +63,22 @@ function groupEventsByDate(events: CardEvent[]): [string, CardEvent[]][] {
   return Array.from(groups.entries());
 }
 
+function MaybeVenueMore({
+  more,
+  children,
+}: {
+  more?: MoreAtVenueHomeLinkData;
+  children: ReactNode;
+}) {
+  if (!more) return <>{children}</>;
+  return (
+    <div className="min-w-0">
+      {children}
+      <MoreAtVenueHomeLink href={more.href} label={more.label} />
+    </div>
+  );
+}
+
 // Immersive grid based on density (controls how many per row on larger screens)
 const IMMERSIVE_CLASSES: Record<EventDensity, string> = {
   compact: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4",
@@ -75,6 +97,7 @@ export function EventGrid({
   seriesRrules = {},
   social = {},
   forceCompact = false,
+  moreAtVenue,
 }: EventGridProps) {
   const { mode, density } = useEventViewPreferences();
   const locale = useLocale() as Locale;
@@ -115,15 +138,16 @@ export function EventGrid({
                   ? undefined
                   : eventTranslations.get(event.id);
                 return (
-                  <EventListCard
-                    key={event.id}
-                    event={event}
-                    counts={counts[event.id]}
-                    social={social[event.id]}
-                    seriesRrule={seriesRrules[event.id]}
-                    translatedTitle={translation?.title}
-                    hideDate
-                  />
+                  <MaybeVenueMore key={event.id} more={moreAtVenue?.[event.id]}>
+                    <EventListCard
+                      event={event}
+                      counts={counts[event.id]}
+                      social={social[event.id]}
+                      seriesRrule={seriesRrules[event.id]}
+                      translatedTitle={translation?.title}
+                      hideDate
+                    />
+                  </MaybeVenueMore>
                 );
               })}
             </div>
@@ -142,15 +166,16 @@ export function EventGrid({
             ? undefined
             : eventTranslations.get(event.id);
           return (
-            <EventImmersiveCard
-              key={event.id}
-              event={event}
-              counts={counts[event.id]}
-              social={social[event.id]}
-              seriesRrule={seriesRrules[event.id]}
-              translatedTitle={translation?.title}
-              priority={index === 0}
-            />
+            <MaybeVenueMore key={event.id} more={moreAtVenue?.[event.id]}>
+              <EventImmersiveCard
+                event={event}
+                counts={counts[event.id]}
+                social={social[event.id]}
+                seriesRrule={seriesRrules[event.id]}
+                translatedTitle={translation?.title}
+                priority={index === 0}
+              />
+            </MaybeVenueMore>
           );
         })}
       </div>
@@ -167,15 +192,16 @@ export function EventGrid({
             ? undefined
             : eventTranslations.get(event.id);
           return (
-            <EventCardCompact
-              key={event.id}
-              event={event}
-              social={social[event.id]}
-              translatedTitle={translation?.title}
-              priority={index < 2}
-              isFlipped={flippedCardId === event.id}
-              onFlip={handleFlip}
-            />
+            <MaybeVenueMore key={event.id} more={moreAtVenue?.[event.id]}>
+              <EventCardCompact
+                event={event}
+                social={social[event.id]}
+                translatedTitle={translation?.title}
+                priority={index < 2}
+                isFlipped={flippedCardId === event.id}
+                onFlip={handleFlip}
+              />
+            </MaybeVenueMore>
           );
         })}
       </div>
@@ -191,15 +217,16 @@ export function EventGrid({
           ? undefined
           : eventTranslations.get(event.id);
         return (
-          <EventCardFramed
-            key={event.id}
-            event={event}
-            counts={counts[event.id]}
-            social={social[event.id]}
-            seriesRrule={seriesRrules[event.id]}
-            translatedTitle={translation?.title}
-            priority={index === 0}
-          />
+          <MaybeVenueMore key={event.id} more={moreAtVenue?.[event.id]}>
+            <EventCardFramed
+              event={event}
+              counts={counts[event.id]}
+              social={social[event.id]}
+              seriesRrule={seriesRrules[event.id]}
+              translatedTitle={translation?.title}
+              priority={index === 0}
+            />
+          </MaybeVenueMore>
         );
       })}
     </div>

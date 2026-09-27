@@ -153,6 +153,7 @@
     },
     "browseArchive": "Browse past events",
     "seeAllUpcoming": "See all upcoming events",
+    "moreAtThisVenue": "+{count} more at this venue",
     "cityPulse": {
       "eyebrow": "The city, right now",
       "title": "Find your next plan",
