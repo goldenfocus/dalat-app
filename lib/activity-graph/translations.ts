@@ -378,6 +378,101 @@ export function activitySeriesDescriptionForLocale(
   );
 }
 
+const PROPER_NAME_MIN_LENGTH = 3;
+
+/** Replace venue and business names with stable tokens the translator must keep. */
+export function shieldProperNames(
+  text: string,
+  names: Array<string | null | undefined>,
+): { text: string; names: string[] } {
+  const unique = [
+    ...new Set(
+      names
+        .map((name) => name?.trim())
+        .filter((name): name is string => Boolean(name && name.length >= PROPER_NAME_MIN_LENGTH)),
+    ),
+  ].sort((a, b) => b.length - a.length);
+  const protectedNames: string[] = [];
+  let shielded = text;
+  for (const name of unique) {
+    if (!shielded.includes(name)) continue;
+    const token = `⟦${protectedNames.length}⟧`;
+    shielded = shielded.split(name).join(token);
+    protectedNames.push(name);
+  }
+  return { text: shielded, names: protectedNames };
+}
+
+/** Restore shielded names. Null when the model dropped a token. */
+export function restoreProperNames(
+  text: string | null | undefined,
+  names: string[],
+): string | null {
+  if (typeof text !== "string" || !text.trim()) return null;
+  let restored = text;
+  for (let index = 0; index < names.length; index += 1) {
+    const token = `⟦${index}⟧`;
+    if (!restored.includes(token)) return null;
+    restored = restored.split(token).join(names[index]);
+  }
+  return restored.trim();
+}
+
+function activityProperNames(
+  activity: Pick<ExtractedActivity, "locationName" | "organizerName" | "address">,
+  sourceName: string,
+): Array<string | null | undefined> {
+  return [activity.locationName, activity.organizerName, activity.address, sourceName];
+}
+
+function droppedProperName(
+  source: string,
+  translated: string | null | undefined,
+  names: Array<string | null | undefined>,
+): boolean {
+  if (!translated?.trim()) return false;
+  return names.some((name) => {
+    const trimmed = name?.trim();
+    return Boolean(
+      trimmed &&
+        trimmed.length >= PROPER_NAME_MIN_LENGTH &&
+        source.includes(trimmed) &&
+        !translated.includes(trimmed),
+    );
+  });
+}
+
+interface StoredActivityTranslation {
+  content_id: string;
+  target_locale: string;
+  field_name: string;
+  translated_text: string | null;
+  translation_status: string | null;
+}
+
+async function loadStoredActivityTranslations(
+  supabase: SupabaseClient,
+  eventIds: string[],
+): Promise<Map<string, StoredActivityTranslation[]>> {
+  const byEvent = new Map<string, StoredActivityTranslation[]>();
+  if (eventIds.length === 0) return byEvent;
+  const { data, error } = await supabase
+    .from("content_translations")
+    .select("content_id, target_locale, field_name, translated_text, translation_status")
+    .eq("content_type", "event")
+    .in("content_id", eventIds)
+    .in("field_name", ["title", "description"]);
+  if (error) {
+    throw new Error(`Activity translation lookup failed: ${error.message}`);
+  }
+  for (const row of data ?? []) {
+    const list = byEvent.get(row.content_id) ?? [];
+    list.push(row as StoredActivityTranslation);
+    byEvent.set(row.content_id, list);
+  }
+  return byEvent;
+}
+
 /** Backward-compatible export used by small translation diagnostics. */
 export function sourceDescriptionForLocale(
   locale: string,
@@ -391,6 +486,36 @@ export function sourceDescriptionForLocale(
   return interpolate(COPY[selected].source, { source: sourceName });
 }
 
+const SOURCE_LOCALE = "vi";
+
+function storedField(
+  rows: StoredActivityTranslation[],
+  locale: string,
+  field: string,
+): StoredActivityTranslation | undefined {
+  return rows.find((row) => row.target_locale === locale && row.field_name === field);
+}
+
+/**
+ * Hourly Activity Graph refreshes call this for the same events. Write a cell
+ * only when it is blank, the source text changed, or an automatic translation
+ * dropped a proper name that is still in the source. Reviewed rows stay put.
+ */
+export function activityTranslationCellNeedsWrite(options: {
+  sourceChanged: boolean;
+  sourceText: string;
+  existing: Pick<StoredActivityTranslation, "translated_text" | "translation_status"> | undefined;
+  properNames: Array<string | null | undefined>;
+}): boolean {
+  const text = options.existing?.translated_text?.trim() ?? "";
+  if (!text) return true;
+  if (options.existing?.translation_status && options.existing.translation_status !== "auto") {
+    return false;
+  }
+  if (options.sourceChanged) return true;
+  return droppedProperName(options.sourceText, text, options.properNames);
+}
+
 export async function upsertActivityEventTranslations(
   supabase: SupabaseClient,
   eventIds: string[],
@@ -399,29 +524,114 @@ export async function upsertActivityEventTranslations(
 ): Promise<void> {
   if (eventIds.length === 0) return;
   const original = { title: activity.title, description: sourceDescription(activity, sourceName) };
+  const names = activityProperNames(activity, sourceName);
+  const existing = await loadStoredActivityTranslations(supabase, eventIds);
+  const sourceChangedByEvent = new Map<string, boolean>();
+  let anyWrite = false;
+  for (const eventId of eventIds) {
+    const rows = existing.get(eventId) ?? [];
+    const title = storedField(rows, SOURCE_LOCALE, "title")?.translated_text?.trim() ?? "";
+    const description = storedField(rows, SOURCE_LOCALE, "description")?.translated_text?.trim() ?? "";
+    const sourceChanged =
+      title !== original.title.trim() || description !== original.description.trim();
+    sourceChangedByEvent.set(eventId, sourceChanged);
+    const needsWrite = LOCALES.some((locale) =>
+      (["title", "description"] as const).some((field) =>
+        activityTranslationCellNeedsWrite({
+          sourceChanged,
+          sourceText: original[field],
+          existing: storedField(rows, locale, field),
+          properNames: names,
+        }),
+      ),
+    );
+    if (needsWrite) anyWrite = true;
+  }
+  if (!anyWrite) return;
+
+  const shieldedTitle = shieldProperNames(original.title, names);
+  const shieldedDescription = shieldProperNames(original.description, names);
+  const shieldedFields = [
+    { field_name: "title", text: shieldedTitle.text },
+    { field_name: "description", text: shieldedDescription.text },
+  ];
   // Establish a readable English fallback first. Using its explicit cultural
   // terms as the pivot avoids ambiguous Vietnamese festival names in other locales.
-  const english = await translateFieldsToLocale(Object.entries(original).map(([field_name, text]) => ({ field_name, text })), "en");
-  if (!english.title || !english.description) {
+  // Proper names stay tokenized through both hops so a venue is not rewritten
+  // as a literal phrase in the target language.
+  const english = await translateFieldsToLocale(shieldedFields, "en");
+  const englishTitle = restoreProperNames(english.title, shieldedTitle.names);
+  const englishDescription = restoreProperNames(english.description, shieldedDescription.names);
+  if (!englishTitle || !englishDescription) {
+    const repairing = eventIds.every((eventId) =>
+      LOCALES.some((locale) => storedField(existing.get(eventId) ?? [], locale, "title")?.translated_text?.trim()),
+    );
+    if (repairing) {
+      console.warn(
+        "[activity-graph] skipped translation refresh; English restore dropped a proper name",
+      );
+      return;
+    }
     throw new Error("English activity translation is incomplete; retry before publication");
   }
-  const { translations } = await batchTranslateFields(Object.entries(english).map(([field_name, text]) => ({ field_name, text })), "en");
-  translations.vi = original;
+  const { translations } = await batchTranslateFields(
+    [
+      { field_name: "title", text: shieldedTitle.text },
+      { field_name: "description", text: shieldedDescription.text },
+    ].map((field) =>
+      field.field_name === "title"
+        ? { field_name: "title", text: english.title ?? shieldedTitle.text }
+        : { field_name: "description", text: english.description ?? shieldedDescription.text },
+    ),
+    "en",
+  );
+  const restored: Record<string, Record<string, string>> = {};
+  for (const locale of LOCALES) {
+    if (locale === SOURCE_LOCALE) {
+      restored[locale] = original;
+      continue;
+    }
+    const translated = translations[locale];
+    if (!translated) continue;
+    const title = restoreProperNames(translated.title, shieldedTitle.names);
+    const description = restoreProperNames(translated.description, shieldedDescription.names);
+    const fields: Record<string, string> = {};
+    if (title) fields.title = title;
+    if (description) fields.description = description;
+    if (Object.keys(fields).length > 0) restored[locale] = fields;
+  }
+  restored.en = { title: englishTitle, description: englishDescription };
+
+  const rows = eventIds.flatMap((eventId) => {
+    const stored = existing.get(eventId) ?? [];
+    const sourceChanged = sourceChangedByEvent.get(eventId) === true;
+    return LOCALES.flatMap((locale) =>
+      Object.entries(restored[locale] ?? {}).flatMap(([field, text]) => {
+        if (
+          !activityTranslationCellNeedsWrite({
+            sourceChanged,
+            sourceText: original[field as "title" | "description"],
+            existing: storedField(stored, locale, field),
+            properNames: names,
+          })
+        ) {
+          return [];
+        }
+        return [{
+          content_type: "event",
+          content_id: eventId,
+          source_locale: SOURCE_LOCALE,
+          target_locale: locale,
+          field_name: field,
+          translated_text: text,
+          translation_status: "auto",
+        }];
+      }),
+    );
+  });
+  if (rows.length === 0) return;
   // Never fill failed locales with Vietnamese and mark them as translated.
   // Missing fields remain missing so the translation sweep can retry them.
-  const rows = eventIds.flatMap((eventId) =>
-    LOCALES.flatMap((locale) =>
-      Object.entries(translations[locale] ?? {}).map(([field, text]) => ({
-        content_type: "event",
-        content_id: eventId,
-        source_locale: "vi",
-        target_locale: locale,
-        field_name: field,
-        translated_text: text,
-        translation_status: "auto",
-      })),
-    ),
-  );
   const { error } = await supabase.from("content_translations").upsert(rows, {
     onConflict: "content_type,content_id,target_locale,field_name",
   });

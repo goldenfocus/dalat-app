@@ -1,7 +1,9 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { addMonths, format } from "date-fns";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
+import { schedulePublishedEventTranslations } from "@/lib/event-translation";
 import { generateSeriesInstances } from "@/lib/recurrence";
+import { TRANSLATION_NEEDED_AT_KEY } from "@/lib/translation-sweep";
 import type { EventSeries } from "@/lib/types";
 
 const DALAT_TIMEZONE = "Asia/Ho_Chi_Minh";
@@ -18,6 +20,31 @@ interface MaterializeOptions {
   now?: Date;
   strict?: boolean;
   occurrenceStatus?: "draft" | "published";
+  /** Filled with dates inserted by this call. Callers publish drafts, then schedule. */
+  insertedDates?: string[];
+}
+
+async function scheduleInsertedOccurrences(
+  supabase: SupabaseClient,
+  seriesId: string,
+  dates: string[],
+): Promise<void> {
+  if (dates.length === 0) return;
+  const { data, error } = await supabase
+    .from("events")
+    .select("id")
+    .eq("series_id", seriesId)
+    .in("series_instance_date", dates);
+  if (error) {
+    console.warn(
+      "[series-materialize] translation schedule lookup failed:",
+      error.message,
+    );
+    return;
+  }
+  schedulePublishedEventTranslations(
+    (data ?? []).map((row) => row.id as string).filter(Boolean),
+  );
 }
 
 export function dalatDateKey(date: Date): string {
@@ -267,7 +294,14 @@ export async function materializeSeriesOccurrences(
         ? { source_locale: "vi" }
         : {}),
       source_platform: series.source_platform ?? null,
-      source_metadata: series.source_metadata ?? {},
+      source_metadata: {
+        ...(series.source_metadata &&
+        typeof series.source_metadata === "object" &&
+        !Array.isArray(series.source_metadata)
+          ? series.source_metadata
+          : {}),
+        [TRANSLATION_NEEDED_AT_KEY]: now.toISOString(),
+      },
       activity_kind: series.activity_kind ?? null,
       public_access: series.public_access ?? null,
       reservation_requirement: series.reservation_requirement ?? null,
@@ -302,6 +336,12 @@ export async function materializeSeriesOccurrences(
     );
   }
 
+  const dates = missing.map((occurrence) => occurrence.date);
+  options.insertedDates?.push(...dates);
+  if (occurrenceStatus === "published") {
+    await scheduleInsertedOccurrences(supabase, series.id, dates);
+  }
+
   return eventInserts.length;
 }
 
@@ -325,6 +365,7 @@ export async function topUpSeriesOccurrences(
   const occurrenceDates = planSeriesOccurrences(series, monthsAhead, now).map(
     (occurrence) => occurrence.date,
   );
+  const insertedDates: string[] = [];
   const drafted = await materializeSeriesOccurrences(
     supabase,
     series,
@@ -333,6 +374,7 @@ export async function topUpSeriesOccurrences(
       now,
       strict: true,
       occurrenceStatus: "draft",
+      insertedDates,
     },
   );
   const { data, error } = await supabase.rpc(
@@ -352,5 +394,8 @@ export async function topUpSeriesOccurrences(
     "published" in data &&
     data.published === true,
   );
+  if (published) {
+    await scheduleInsertedOccurrences(supabase, series.id, insertedDates);
+  }
   return published ? drafted : 0;
 }

@@ -1,4 +1,8 @@
-import { explainActivity } from "./editorial";
+import {
+  activityExplanationFacts,
+  explainActivity,
+  shouldReuseStoredExplanation,
+} from "./editorial";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EventSeries } from "@/lib/types";
 import {
@@ -32,7 +36,10 @@ import {
   sourceDescription,
   upsertActivityEventTranslations,
 } from "./translations";
-import { schedulePublishedEventTranslations } from "@/lib/event-translation";
+import {
+  schedulePublishedEventTranslations,
+  withEventTranslationStamp,
+} from "@/lib/event-translation";
 import type {
   ActivitySource,
   ConfidenceResult,
@@ -61,6 +68,8 @@ interface ProjectInput {
   locality: LocalityResult;
   recordMergeDecision: boolean;
   now?: Date;
+  /** Fingerprint of the pre-explanation activity. Set before editorial reuse. */
+  explanationFacts?: Record<string, unknown>;
 }
 
 async function resolveCreatedBy(supabase: SupabaseClient): Promise<string> {
@@ -386,7 +395,19 @@ type LinkedOccurrence = {
   series_instance_date: string | null;
   is_exception: boolean | null;
   starts_at: string;
+  title?: string | null;
+  description?: string | null;
+  source_metadata?: Record<string, unknown> | null;
 };
+
+function sourceTextChanged(
+  current: { title?: string | null; description?: string | null } | null | undefined,
+  title: string,
+  description: string | null,
+): boolean {
+  if (!current) return true;
+  return (current.title ?? "") !== title || (current.description ?? "") !== (description ?? "");
+}
 
 function refreshedSourceMetadata(
   input: ProjectInput,
@@ -420,6 +441,9 @@ function refreshedSourceMetadata(
     locality: input.locality,
     published_automatically: true,
     verified_at: now,
+    ...(input.explanationFacts
+      ? { explanation_facts: input.explanationFacts }
+      : {}),
   };
   if (
     !sourceAllowsOfficialMedia(input.source) &&
@@ -445,7 +469,7 @@ async function reconcileActivityGraphSeries(
   const today = dalatDateKey(now);
   const { data: existing, error: existingError } = await input.supabase
     .from("events")
-    .select("id,series_instance_date,is_exception,starts_at")
+    .select("id,series_instance_date,is_exception,starts_at,title,description,source_metadata")
     .eq("series_id", currentSeries.id)
     .gte("series_instance_date", today);
   if (existingError) {
@@ -515,7 +539,21 @@ async function reconcileActivityGraphSeries(
         status: "draft",
         source_locale: "vi",
         source_platform: "activity-graph",
-        source_metadata: refreshedSeries.source_metadata ?? {},
+        source_metadata: withEventTranslationStamp(
+          {
+            ...((refreshedSeries.source_metadata as Record<string, unknown> | null) ??
+              {}),
+          },
+          {
+            neededAt: refreshedSeries.last_checked_at ?? new Date().toISOString(),
+            sourceTextChanged: sourceTextChanged(
+              occurrence,
+              refreshedSeries.title,
+              refreshedSeries.description,
+            ),
+            previousMetadata: occurrence.source_metadata,
+          },
+        ),
         activity_kind: refreshedSeries.activity_kind,
         public_access: refreshedSeries.public_access,
         reservation_requirement: refreshedSeries.reservation_requirement,
@@ -581,7 +619,7 @@ async function refreshLinkedActivity(
     const { data: event, error: eventLookupError } = await input.supabase
       .from("events")
       .select(
-        "id,source_platform,source_metadata,slug,image_url,image_alt,image_description",
+        "id,source_platform,source_metadata,slug,image_url,image_alt,image_description,title,description",
       )
       .eq("id", link.event_id)
       .maybeSingle();
@@ -596,10 +634,22 @@ async function refreshLinkedActivity(
         unknown
       > | null;
       const media = projectedActivityMedia(input.source, input.activity);
+      const description = sourceDescription(input.activity, input.source.name);
       const update: Record<string, unknown> = {
-        source_metadata: refreshedSourceMetadata(input, currentMetadata, now),
+        source_metadata: withEventTranslationStamp(
+          refreshedSourceMetadata(input, currentMetadata, now),
+          {
+            neededAt: now,
+            sourceTextChanged: sourceTextChanged(
+              event,
+              input.activity.title,
+              description,
+            ),
+            previousMetadata: currentMetadata,
+          },
+        ),
         title: input.activity.title,
-        description: sourceDescription(input.activity, input.source.name),
+        description,
         starts_at: input.activity.startsAt,
         ends_at: input.activity.endsAt,
         location_name: input.activity.locationName,
@@ -665,14 +715,22 @@ async function refreshLinkedActivity(
         unknown
       > | null;
       const media = projectedActivityMedia(input.source, input.activity);
-      const sourceMetadata = refreshedSourceMetadata(
-        input,
-        currentMetadata,
-        now,
+      const description = sourceDescription(input.activity, input.source.name);
+      const sourceMetadata = withEventTranslationStamp(
+        refreshedSourceMetadata(input, currentMetadata, now),
+        {
+          neededAt: now,
+          sourceTextChanged: sourceTextChanged(
+            series,
+            input.activity.title,
+            description,
+          ),
+          previousMetadata: currentMetadata,
+        },
       );
       const seriesUpdate: Partial<EventSeries> = {
         title: input.activity.title,
-        description: sourceDescription(input.activity, input.source.name),
+        description,
         location_name: input.activity.locationName,
         address: input.activity.address,
         google_maps_url: generateMapsUrl(
@@ -782,7 +840,7 @@ async function createEvent(
     throw new Error("Cannot project an event without startsAt");
   const { data: existing, error: existingError } = await input.supabase
     .from("events")
-    .select("id,slug,image_url,image_alt,image_description,source_metadata")
+    .select("id,slug,image_url,image_alt,image_description,source_metadata,title,description")
     .eq("activity_graph_candidate_id", input.candidateId)
     .maybeSingle();
   if (existingError)
@@ -798,11 +856,24 @@ async function createEvent(
     unknown
   > | null;
   const media = projectedActivityMedia(input.source, input.activity);
-  const sourceMetadata = refreshedSourceMetadata(input, currentMetadata, now);
+  const description = sourceDescription(input.activity, input.source.name);
+  const sourceMetadata = withEventTranslationStamp(
+    refreshedSourceMetadata(input, currentMetadata, now),
+    {
+      neededAt: now,
+      sourceTextChanged: sourceTextChanged(
+        existing,
+        input.activity.title,
+        description,
+      ),
+      previousMetadata: currentMetadata,
+      force: !existing,
+    },
+  );
   const values = {
     slug,
     title: input.activity.title,
-    description: sourceDescription(input.activity, input.source.name),
+    description,
     image_url: activityProjectionImage({
       currentUrl: existing?.image_url,
       currentMetadata,
@@ -899,11 +970,24 @@ async function createSeries(
     unknown
   > | null;
   const media = projectedActivityMedia(input.source, input.activity);
-  const sourceMetadata = refreshedSourceMetadata(input, currentMetadata, now);
+  const description = sourceDescription(input.activity, input.source.name);
+  const sourceMetadata = withEventTranslationStamp(
+    refreshedSourceMetadata(input, currentMetadata, now),
+    {
+      neededAt: now,
+      sourceTextChanged: sourceTextChanged(
+        existing,
+        input.activity.title,
+        description,
+      ),
+      previousMetadata: currentMetadata,
+      force: !existing,
+    },
+  );
   const values = {
     slug,
     title: input.activity.title,
-    description: sourceDescription(input.activity, input.source.name),
+    description,
     image_url: activityProjectionImage({
       currentUrl: existing?.image_url,
       currentMetadata,
@@ -956,6 +1040,60 @@ async function createSeries(
   return data as EventSeries;
 }
 
+async function loadStoredExplanation(
+  input: ProjectInput,
+  link: { event_id: string | null; event_series_id: string | null },
+): Promise<{
+  title: string | null;
+  description: string | null;
+  locationName: string | null;
+  facts: unknown;
+}> {
+  const table = link.event_series_id ? "event_series" : "events";
+  const id = link.event_series_id ?? link.event_id;
+  if (!id) {
+    return { title: null, description: null, locationName: null, facts: null };
+  }
+  const { data, error } = await input.supabase
+    .from(table)
+    .select("title, description, location_name, source_metadata")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) {
+    throw new Error(`Stored explanation lookup failed: ${error.message}`);
+  }
+  const metadata = data?.source_metadata as Record<string, unknown> | null;
+  return {
+    title: (data?.title as string | null) ?? null,
+    description: (data?.description as string | null) ?? null,
+    locationName: (data?.location_name as string | null) ?? null,
+    facts: metadata?.explanation_facts,
+  };
+}
+
+/**
+ * Editorial copy is regenerated only when evidenced facts change. An hourly
+ * refresh otherwise keeps the stored description so translation rows are not
+ * rewritten from a new paraphrase of the same event.
+ */
+async function withStableExplanation(
+  input: ProjectInput,
+  link: { event_id: string | null; event_series_id: string | null } | null,
+): Promise<ProjectInput> {
+  const explanationFacts = activityExplanationFacts(input.activity);
+  const next = { ...input, explanationFacts };
+  if (link) {
+    const stored = await loadStoredExplanation(next, link);
+    if (shouldReuseStoredExplanation(stored, next.activity) && stored.description) {
+      return {
+        ...next,
+        activity: { ...next.activity, description: stored.description },
+      };
+    }
+  }
+  return { ...next, activity: await explainActivity(next.activity) };
+}
+
 export async function projectActivity(
   input: ProjectInput,
 ): Promise<ProjectionResult> {
@@ -1002,7 +1140,7 @@ export async function projectActivity(
     );
   }
   if (link) {
-    input = { ...input, activity: await explainActivity(input.activity) };
+    input = await withStableExplanation(input, link);
     return refreshLinkedActivity(input, link);
   }
 
@@ -1096,7 +1234,7 @@ export async function projectActivity(
   }
   if (best) await writeMergeDecision(input, best, "kept_distinct");
 
-  input = { ...input, activity: await explainActivity(input.activity) };
+  input = await withStableExplanation(input, null);
   const createdBy = await resolveCreatedBy(input.supabase);
   if (input.activity.kind === "recurring_activity") {
     const series = await createSeries(input, organizerId, createdBy);

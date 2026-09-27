@@ -16,7 +16,13 @@ const mocks = vi.hoisted(() => ({
   writes: [] as Array<{ table: string; values: Record<string, unknown> }>,
 }));
 
-vi.mock("./editorial", () => ({ explainActivity: async (activity: EditorialActivity) => activity }));
+vi.mock("./editorial", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./editorial")>();
+  return {
+    ...actual,
+    explainActivity: async (activity: EditorialActivity) => activity,
+  };
+});
 
 vi.mock("@/lib/seo/indexnow", () => ({ pingIndexNow: mocks.pingIndexNow }));
 vi.mock("@/lib/i18n/routing", () => ({ locales: ["en", "vi"] }));

@@ -165,6 +165,14 @@ type EventTranslationCandidate = {
 
 export const TRANSLATION_NEEDED_AT_KEY = "translation_needed_at";
 
+/**
+ * Text extraction (`->>`) so a missing key and an explicit JSON null are both
+ * SQL NULL. `->` returns jsonb null, which `IS NOT NULL` treats as present.
+ */
+export function translationNeededAtColumn(): string {
+  return `source_metadata->>${TRANSLATION_NEEDED_AT_KEY}`;
+}
+
 export interface LoadEventTranslationCandidatesOptions {
   /** EVENT_IDS one-shot repair. Always loaded, even when scanLimit is 0. */
   priorityEventIds?: string[];
@@ -213,7 +221,7 @@ export async function loadEventTranslationCandidates(
       .from("events")
       .select("id, title, description, source_locale")
       .eq("status", "published")
-      .not(`source_metadata->${TRANSLATION_NEEDED_AT_KEY}`, "is", null)
+      .not(translationNeededAtColumn(), "is", null)
       .order("updated_at", { ascending: false })
       .limit(Math.max(scanLimit, 200));
     if (error) {

@@ -4,7 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { CACHE_TAGS } from "@/lib/cache/server-cache";
 import { addMonths, format } from "date-fns";
 import { fromZonedTime } from "date-fns-tz";
+import { schedulePublishedEventTranslations } from "@/lib/event-translation";
 import { generateSeriesInstances, isValidRRule } from "@/lib/recurrence";
+import { TRANSLATION_NEEDED_AT_KEY } from "@/lib/translation-sweep";
 import type { EventSeries } from "@/lib/types";
 import type { PostgrestError } from "@supabase/supabase-js";
 
@@ -286,6 +288,9 @@ export async function POST(request: Request) {
         ends_at: endsAt.toISOString(),
         status: "published" as const,
         source_locale: null,
+        source_metadata: {
+          [TRANSLATION_NEEDED_AT_KEY]: new Date().toISOString(),
+        },
         is_exception: false,
       };
     });
@@ -318,6 +323,9 @@ export async function POST(request: Request) {
 
       // Get the first event ID for sponsor linking
       firstEventId = createdEvents?.[0]?.id || null;
+      schedulePublishedEventTranslations(
+        (createdEvents ?? []).map((event) => event.id),
+      );
 
       // Update the series with generation watermark
       await supabase

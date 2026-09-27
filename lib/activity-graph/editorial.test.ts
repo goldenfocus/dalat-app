@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { explainActivity } from "./editorial";
+import { explainActivity, shouldReuseStoredExplanation } from "./editorial";
 import type { ExtractedActivity } from "./types";
 const chat = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/ai/provider", () => ({ aiChatJson: chat }));
@@ -16,6 +16,26 @@ describe("activity editorial copy", () => {
     expect(request.prompt).not.toContain("Invented lion dance");
     expect(request.system).toContain("another location");
     expect(result.description).toContain("\n\n");
+  });
+
+  it("reuses a stored explanation until the title or venue changes", () => {
+    const activity = {
+      title: "Live Acoustic • Dưới Tán Anh Đào",
+      locationName: "Dưới Tán Anh Đào",
+      description: "Nhạc acoustic trực tiếp.",
+    } as unknown as ExtractedActivity;
+    expect(shouldReuseStoredExplanation({
+      title: activity.title,
+      locationName: activity.locationName,
+      description: "Bản mô tả đã xuất bản.",
+      facts: null,
+    }, activity)).toBe(true);
+    expect(shouldReuseStoredExplanation({
+      title: "Tên cũ",
+      locationName: activity.locationName,
+      description: "Bản mô tả đã xuất bản.",
+      facts: null,
+    }, activity)).toBe(false);
   });
 
   it("rejects an empty explanation instead of publishing it", async () => {
