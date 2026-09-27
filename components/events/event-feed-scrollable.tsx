@@ -8,7 +8,12 @@ import {
 import { EventCardFramedServer } from "./event-card-framed-server";
 import { EventGridWithViews } from "./event-grid-with-views";
 import { EventViewToggle } from "./event-view-toggle";
+import {
+  MoreAtVenueHomeLink,
+  type MoreAtVenueHomeLinkData,
+} from "./more-at-venue-home-link";
 import { getPastProof, shouldShowGoingCount } from "@/lib/events/social-proof";
+import { takeSoonestEventPerVenue } from "@/lib/events/one-per-venue";
 import type {
   CardEvent,
   ContentLocale,
@@ -16,15 +21,62 @@ import type {
   Locale,
 } from "@/lib/types";
 import { getEventTranslationsBatch } from "@/lib/translations";
+import { createStaticClient } from "@/lib/supabase/server";
 import {
   getCachedEventsByLifecycle,
   getCachedEventCountsBatch,
   getCachedEventSocialBatch,
 } from "@/lib/cache/server-cache";
 
+const HAPPENING_LIMIT = 5;
+const UPCOMING_LIMIT = 12;
+// Series-deduped rows to read before venue collapse, so one nightly venue
+// cannot consume the visible slots.
+const HOME_FEED_CANDIDATE_LIMIT = 120;
+
 interface EventFeedScrollableProps {
   locale: Locale;
   happeningCount: number;
+}
+
+async function loadVenueSlugs(venueIds: string[]): Promise<Map<string, string>> {
+  if (venueIds.length === 0) return new Map();
+  const supabase = createStaticClient();
+  if (!supabase) return new Map();
+
+  const { data, error } = await supabase
+    .from("venues")
+    .select("id, slug")
+    .in("id", venueIds);
+
+  if (error || !data) return new Map();
+
+  const slugs = new Map<string, string>();
+  for (const venue of data) {
+    if (venue.id && venue.slug) slugs.set(venue.id, venue.slug);
+  }
+  return slugs;
+}
+
+function moreAtVenueLinks(
+  events: EventWithSeriesData[],
+  moreByEventId: Record<string, number>,
+  slugs: Map<string, string>,
+  labelFor: (count: number) => string,
+): Record<string, MoreAtVenueHomeLinkData> {
+  const links: Record<string, MoreAtVenueHomeLinkData> = {};
+  for (const event of events) {
+    const count = moreByEventId[event.id];
+    const venueId = event.venue_id?.trim();
+    if (!count || !venueId) continue;
+    const slug = slugs.get(venueId);
+    if (!slug) continue;
+    links[event.id] = {
+      href: `/venues/${slug}`,
+      label: labelFor(count),
+    };
+  }
+  return links;
 }
 
 /** Strip full RPC rows down to the fields cards actually render. */
@@ -58,12 +110,47 @@ export async function EventFeedScrollable({
   const t = await getTranslations("home");
   const tEvents = await getTranslations("events");
 
-  // Fetch happening events only if there are any
-  const happeningEvents =
-    happeningCount > 0 ? await getCachedEventsByLifecycle("happening", 5) : [];
+  // Over-fetch, then keep one soonest event per venue before the slot limit.
+  const [happeningCandidates, upcomingCandidates] = await Promise.all([
+    happeningCount > 0
+      ? getCachedEventsByLifecycle("happening", HOME_FEED_CANDIDATE_LIMIT)
+      : Promise.resolve([]),
+    getCachedEventsByLifecycle("upcoming", HOME_FEED_CANDIDATE_LIMIT),
+  ]);
+  const happeningPick = takeSoonestEventPerVenue(
+    happeningCandidates,
+    HAPPENING_LIMIT,
+  );
+  const upcomingPick = takeSoonestEventPerVenue(
+    upcomingCandidates,
+    UPCOMING_LIMIT,
+  );
+  const happeningEvents = happeningPick.events;
+  const upcomingEvents = upcomingPick.events;
 
-  // Always fetch upcoming events
-  const upcomingEvents = await getCachedEventsByLifecycle("upcoming", 12);
+  const venueIds = new Set<string>();
+  for (const event of [...happeningEvents, ...upcomingEvents]) {
+    const extra =
+      happeningPick.moreAtVenueByEventId[event.id] ??
+      upcomingPick.moreAtVenueByEventId[event.id];
+    const venueId = event.venue_id?.trim();
+    if (extra && venueId) venueIds.add(venueId);
+  }
+  const venueSlugs = await loadVenueSlugs([...venueIds]);
+  const moreAtVenue = {
+    ...moreAtVenueLinks(
+      happeningEvents,
+      happeningPick.moreAtVenueByEventId,
+      venueSlugs,
+      (count) => t("moreAtThisVenue", { count }),
+    ),
+    ...moreAtVenueLinks(
+      upcomingEvents,
+      upcomingPick.moreAtVenueByEventId,
+      venueSlugs,
+      (count) => t("moreAtThisVenue", { count }),
+    ),
+  };
 
   // Gather all event IDs for batch fetching
   const allEventIds = [
@@ -121,24 +208,29 @@ export async function EventFeedScrollable({
                 event.source_locale === locale
                   ? undefined
                   : eventTranslations.get(event.id);
+              const more = moreAtVenue[event.id];
               return (
-                <EventHeroCardServer
-                  key={event.id}
-                  event={event}
-                  counts={counts[event.id]}
-                  social={social[event.id]}
-                  translatedTitle={translation?.title}
-                  labels={{
-                    live: t("happeningNow.live"),
-                    tapToJoin: t("happeningNow.tapToJoin"),
-                    going: tEvents("going"),
-                    timeDisplay: resolveHeroTimeDisplay(event, locale, {
-                      startedAgo: (minutes) =>
-                        t("happeningNow.startedAgo", { minutes }),
-                      endsAt: (time) => t("happeningNow.endsAt", { time }),
-                    }),
-                  }}
-                />
+                <div key={event.id}>
+                  <EventHeroCardServer
+                    event={event}
+                    counts={counts[event.id]}
+                    social={social[event.id]}
+                    translatedTitle={translation?.title}
+                    labels={{
+                      live: t("happeningNow.live"),
+                      tapToJoin: t("happeningNow.tapToJoin"),
+                      going: tEvents("going"),
+                      timeDisplay: resolveHeroTimeDisplay(event, locale, {
+                        startedAgo: (minutes) =>
+                          t("happeningNow.startedAgo", { minutes }),
+                        endsAt: (time) => t("happeningNow.endsAt", { time }),
+                      }),
+                    }}
+                  />
+                  {more ? (
+                    <MoreAtVenueHomeLink href={more.href} label={more.label} />
+                  ) : null}
+                </div>
               );
             })}
           </div>
@@ -166,6 +258,7 @@ export async function EventFeedScrollable({
             social={social}
             eventTranslations={translationsRecord}
             seriesRrules={seriesRrules}
+            moreAtVenue={moreAtVenue}
           >
             {/* Default view: server-rendered framed cards — no hydration */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
@@ -177,48 +270,53 @@ export async function EventFeedScrollable({
                 const goingSpots = counts[event.id]?.going_spots ?? 0;
                 const pastProof = getPastProof(social[event.id]);
 
+                const more = moreAtVenue[event.id];
                 return (
-                  <EventCardFramedServer
-                    key={event.id}
-                    event={event}
-                    counts={counts[event.id]}
-                    social={social[event.id]}
-                    seriesRrule={seriesRrules[event.id]}
-                    translatedTitle={translation?.title}
-                    priority={index === 0}
-                    locale={locale}
-                    labels={{
-                      popular: popularLabel,
-                      spotsAvailable:
-                        event.capacity && !shouldShowGoingCount(goingSpots)
-                          ? tEvents("spotsAvailable", {
-                              count: event.capacity - goingSpots,
+                  <div key={event.id} className="min-w-0">
+                    <EventCardFramedServer
+                      event={event}
+                      counts={counts[event.id]}
+                      social={social[event.id]}
+                      seriesRrule={seriesRrules[event.id]}
+                      translatedTitle={translation?.title}
+                      priority={index === 0}
+                      locale={locale}
+                      labels={{
+                        popular: popularLabel,
+                        spotsAvailable:
+                          event.capacity && !shouldShowGoingCount(goingSpots)
+                            ? tEvents("spotsAvailable", {
+                                count: event.capacity - goingSpots,
+                              })
+                            : "",
+                        photoBy: social[event.id]?.fallback_photo_credit
+                          ? tEvents("photoBy", {
+                              name: social[event.id]!.fallback_photo_credit!,
                             })
                           : "",
-                      photoBy: social[event.id]?.fallback_photo_credit
-                        ? tEvents("photoBy", {
-                            name: social[event.id]!.fallback_photo_credit!,
-                          })
-                        : "",
-                      pastProofBoth:
-                        pastProof?.kind === "both"
-                          ? tEvents("pastProofBoth", {
-                              went: pastProof.went,
-                              photos: pastProof.photos,
-                            })
-                          : "",
-                      pastProofPhotos:
-                        pastProof?.kind === "photos"
-                          ? tEvents("pastProofPhotos", {
-                              photos: pastProof.photos,
-                            })
-                          : "",
-                      pastProofWent:
-                        pastProof?.kind === "went"
-                          ? tEvents("pastProofWent", { went: pastProof.went })
-                          : "",
-                    }}
-                  />
+                        pastProofBoth:
+                          pastProof?.kind === "both"
+                            ? tEvents("pastProofBoth", {
+                                went: pastProof.went,
+                                photos: pastProof.photos,
+                              })
+                            : "",
+                        pastProofPhotos:
+                          pastProof?.kind === "photos"
+                            ? tEvents("pastProofPhotos", {
+                                photos: pastProof.photos,
+                              })
+                            : "",
+                        pastProofWent:
+                          pastProof?.kind === "went"
+                            ? tEvents("pastProofWent", { went: pastProof.went })
+                            : "",
+                      }}
+                    />
+                    {more ? (
+                      <MoreAtVenueHomeLink href={more.href} label={more.label} />
+                    ) : null}
+                  </div>
                 );
               })}
             </div>
@@ -245,7 +343,7 @@ export async function EventFeedScrollable({
           </div>
         )}
 
-        {upcomingEvents.length >= 12 && (
+        {upcomingEvents.length >= UPCOMING_LIMIT && (
           <div className="text-center pt-4">
             <Link
               href="/events/upcoming"

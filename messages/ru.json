@@ -153,6 +153,7 @@
     },
     "browseArchive": "Прошедшие события",
     "seeAllUpcoming": "Смотреть все предстоящие события",
+    "moreAtThisVenue": "Ещё {count} в этом месте",
     "cityPulse": {
       "eyebrow": "Город прямо сейчас",
       "title": "Найдите следующий план",

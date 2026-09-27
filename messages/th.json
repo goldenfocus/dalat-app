@@ -153,6 +153,7 @@
     },
     "browseArchive": "กิจกรรมที่ผ่านมา",
     "seeAllUpcoming": "ดูกิจกรรมที่กำลังจะมาทั้งหมด",
+    "moreAtThisVenue": "อีก {count} รายการที่สถานที่นี้",
     "cityPulse": {
       "eyebrow": "เมืองในตอนนี้",
       "title": "หาแผนถัดไปของคุณ",

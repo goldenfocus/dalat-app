@@ -153,6 +153,7 @@
     },
     "browseArchive": "過去のイベント",
     "seeAllUpcoming": "今後のイベントをすべて見る",
+    "moreAtThisVenue": "この会場であと{count}件",
     "cityPulse": {
       "eyebrow": "今の街の様子",
       "title": "次の予定を見つけよう",

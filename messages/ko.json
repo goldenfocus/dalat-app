@@ -153,6 +153,7 @@
     },
     "browseArchive": "지난 이벤트 보기",
     "seeAllUpcoming": "예정된 모든 이벤트 보기",
+    "moreAtThisVenue": "이 장소에서 {count}개 더 보기",
     "cityPulse": {
       "eyebrow": "지금, 도시의 흐름",
       "title": "다음 계획을 찾아보세요",
