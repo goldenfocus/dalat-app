@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EventSeries } from "@/lib/types";
 import {
@@ -8,6 +8,11 @@ import {
   planSeriesOccurrences,
   topUpSeriesOccurrences,
 } from "./materialize";
+
+const schedulePublishedEventTranslations = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/event-translation", () => ({
+  schedulePublishedEventTranslations,
+}));
 
 function series(overrides: Partial<EventSeries> = {}): EventSeries {
   return {
@@ -72,6 +77,7 @@ function writeClient() {
       return builder;
     });
     builder.eq = vi.fn(() => builder);
+    builder.in = vi.fn(() => builder);
     builder.gte = vi.fn(() => builder);
     builder.order = vi.fn(() => builder);
     builder.limit = vi.fn(() => builder);
@@ -89,7 +95,9 @@ function writeClient() {
     });
     builder.then = (resolve) =>
       Promise.resolve({
-        data: selected === "venue_id" ? [] : [],
+        data: selected === "id"
+          ? [{ id: "55555555-5555-4555-8555-555555555555" }]
+          : [],
         error: null,
       }).then(resolve);
     return builder;
@@ -105,6 +113,10 @@ function writeClient() {
 
 describe("recurring series materialization safety", () => {
   const beforeTonight = new Date("2026-08-28T10:00:00.000Z"); // 17:00 in Đà Lạt
+
+  beforeEach(() => {
+    schedulePublishedEventTranslations.mockClear();
+  });
 
   it("includes today's daily occurrence when its Đà Lạt start time is still upcoming", () => {
     const planned = planSeriesOccurrences(series(), 1, beforeTonight);
@@ -156,8 +168,14 @@ describe("recurring series materialization safety", () => {
       series_instance_date: "2026-08-28",
       starts_at: "2026-08-28T12:30:00.000Z",
       status: "published",
+      source_metadata: {
+        translation_needed_at: beforeTonight.toISOString(),
+      },
     });
     expect(db.inserted[0]).not.toHaveProperty("source_locale");
+    expect(schedulePublishedEventTranslations).toHaveBeenCalledWith([
+      "55555555-5555-4555-8555-555555555555",
+    ]);
   });
 
   it("drafts graph top-ups before the atomic current-state publication gate", async () => {
@@ -184,6 +202,15 @@ describe("recurring series materialization safety", () => {
         p_published_at: beforeTonight.toISOString(),
       }),
     );
+    expect(db.inserted[0]).toMatchObject({
+      status: "draft",
+      source_metadata: {
+        translation_needed_at: beforeTonight.toISOString(),
+      },
+    });
+    expect(schedulePublishedEventTranslations).toHaveBeenCalledWith([
+      "55555555-5555-4555-8555-555555555555",
+    ]);
   });
 
   it("leaves raced admin-suppressed graph top-ups private", async () => {
@@ -197,6 +224,7 @@ describe("recurring series materialization safety", () => {
       topUpSeriesOccurrences(db.client, series(), 1, beforeTonight),
     ).resolves.toBe(0);
     expect(db.inserted[0]).toMatchObject({ status: "draft" });
+    expect(schedulePublishedEventTranslations).not.toHaveBeenCalled();
   });
 
   it("auto-pauses stale imported series and drafts future dates only", async () => {

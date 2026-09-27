@@ -7,7 +7,10 @@ import {
   translateFieldsToLocale,
 } from "@/lib/google-translate";
 import { notifyEventTranslationCompletion } from "@/lib/seo/indexnow-events";
-import { TRANSLATION_NEEDED_AT_KEY } from "@/lib/translation-sweep";
+import {
+  TRANSLATION_NEEDED_AT_KEY,
+  translationNeededAtColumn,
+} from "@/lib/translation-sweep";
 import { CONTENT_LOCALES, type ContentLocale } from "@/lib/types";
 
 const DALAT_TIMEZONE = "Asia/Ho_Chi_Minh";
@@ -19,10 +22,16 @@ const LOCALE_CONCURRENCY = 3;
 export const EVENT_TRANSLATION_FIELDS = ["title", "description"] as const;
 export type EventTranslationField = (typeof EVENT_TRANSLATION_FIELDS)[number];
 
-/** Events translated per cron invocation. Each event fans out to ~11 locales. */
-export const EVENT_TRANSLATION_BATCH_LIMIT = 3;
-/** Candidate scan before coverage filtering. The write batch stays smaller. */
-export const EVENT_TRANSLATION_SCAN_LIMIT = 40;
+/**
+ * Events translated per cron invocation. Each event fans out to 11 locales
+ * at concurrency 3. A 20s provider timeout is ~80s per event, so three events
+ * survive a timeout storm inside the 300s function. Five still fits when calls
+ * finish in well under that cap, and each locale is committed before the next
+ * so a timeout keeps the locales already written. The cron runs every 10 minutes.
+ */
+export const EVENT_TRANSLATION_BATCH_LIMIT = 5;
+/** Upcoming rows read per page while filling the incomplete batch. */
+export const EVENT_TRANSLATION_PAGE_SIZE = 80;
 
 export interface EventTranslationSourceField {
   field_name: EventTranslationField;
@@ -167,12 +176,19 @@ function translationRank(
   return { bucket: 1, sort: -start };
 }
 
+export interface EventTranslationFailure {
+  eventId: string;
+  locale?: string;
+  reason: string;
+}
+
 export interface EventTranslationRunResult {
   eventId: string;
   skipped?: "not_published" | "no_text";
   missingBefore: number;
   localesWritten: number;
   localesFailed: number;
+  failures: EventTranslationFailure[];
   cleared: boolean;
   complete: boolean;
 }
@@ -362,6 +378,7 @@ export async function translatePublishedEvent(
       missingBefore: 0,
       localesWritten: 0,
       localesFailed: 0,
+      failures: [],
       cleared: false,
       complete: false,
     };
@@ -375,6 +392,7 @@ export async function translatePublishedEvent(
       missingBefore: 0,
       localesWritten: 0,
       localesFailed: 0,
+      failures: [],
       cleared: false,
       complete: false,
     };
@@ -398,6 +416,7 @@ export async function translatePublishedEvent(
   );
   let localesWritten = 0;
   let localesFailed = 0;
+  const failures: EventTranslationFailure[] = [];
 
   await mapWithConcurrency(planned, LOCALE_CONCURRENCY, async (item) => {
     try {
@@ -415,10 +434,9 @@ export async function translatePublishedEvent(
       if (wrote > 0) localesWritten += 1;
     } catch (error) {
       localesFailed += 1;
-      console.error(
-        `[event-translation] ${eventId} ${item.locale}:`,
-        error instanceof Error ? error.message : error,
-      );
+      const reason = error instanceof Error ? error.message : String(error);
+      failures.push({ eventId, locale: item.locale, reason });
+      console.error(`[event-translation] ${eventId} ${item.locale}:`, reason);
     }
   });
 
@@ -451,51 +469,44 @@ export async function translatePublishedEvent(
     missingBefore: planned.length,
     localesWritten,
     localesFailed,
+    failures,
     cleared,
     complete,
   };
 }
 
-async function loadSweepCandidates(
+const EVENT_TRANSLATION_SELECT =
+  "id, title, description, source_locale, starts_at, status, source_metadata";
+
+async function loadEventPage(
   supabase: SupabaseClient,
+  mode: "flagged" | "upcoming",
   now: Date,
+  offset: number,
 ): Promise<EventTranslationRow[]> {
-  const windowStart = eventTranslationWindowStart(now).toISOString();
-  const select =
-    "id, title, description, source_locale, starts_at, status, source_metadata";
-
-  const flagged = await supabase
+  const pageEnd = offset + EVENT_TRANSLATION_PAGE_SIZE - 1;
+  const query = supabase
     .from("events")
-    .select(select)
-    .eq("status", "published")
-    .not(`source_metadata->${TRANSLATION_NEEDED_AT_KEY}`, "is", null)
+    .select(EVENT_TRANSLATION_SELECT)
+    .eq("status", "published");
+  const filtered =
+    mode === "flagged"
+      ? query.not(translationNeededAtColumn(), "is", null)
+      : query.gte("starts_at", eventTranslationWindowStart(now).toISOString());
+  const { data, error } = await filtered
     .order("starts_at", { ascending: true })
-    .limit(EVENT_TRANSLATION_SCAN_LIMIT);
-  if (flagged.error) {
-    throw new Error(`[event-translation] flagged query failed: ${flagged.error.message}`);
+    .range(offset, pageEnd);
+  if (error) {
+    throw new Error(`[event-translation] ${mode} query failed: ${error.message}`);
   }
-
-  const upcoming = await supabase
-    .from("events")
-    .select(select)
-    .eq("status", "published")
-    .gte("starts_at", windowStart)
-    .order("starts_at", { ascending: true })
-    .limit(EVENT_TRANSLATION_SCAN_LIMIT);
-  if (upcoming.error) {
-    throw new Error(`[event-translation] upcoming query failed: ${upcoming.error.message}`);
-  }
-
-  const byId = new Map<string, EventTranslationRow>();
-  for (const row of [...(flagged.data ?? []), ...(upcoming.data ?? [])] as EventTranslationRow[]) {
-    byId.set(row.id, row);
-  }
-  return [...byId.values()];
+  return (data ?? []) as EventTranslationRow[];
 }
 
 export interface EventTranslationSweepResult {
   scanned: number;
   selected: string[];
+  translated: number;
+  failed: EventTranslationFailure[];
   clearedWithoutWork: number;
   results: EventTranslationRunResult[];
 }
@@ -510,50 +521,121 @@ export async function sweepPublishedEventTranslations(
 ): Promise<EventTranslationSweepResult> {
   const now = options.now ?? new Date();
   const limit = options.limit ?? EVENT_TRANSLATION_BATCH_LIMIT;
-  const rows = await loadSweepCandidates(supabase, now);
-  const coverage = await loadTranslationRows(
-    supabase,
-    rows.map((row) => row.id),
-  );
-
+  const windowStart = eventTranslationWindowStart(now).getTime();
+  const seen = new Set<string>();
   const incomplete: Array<EventTranslationCandidate & { missing: number }> = [];
+  let scanned = 0;
   let clearedWithoutWork = 0;
-  for (const row of rows) {
+
+  const coveragePlan = (
+    row: EventTranslationRow,
+    coverage: Map<string, StoredEventTranslation[]>,
+  ) => {
     const fields = eventTranslationFields(row);
     const sourceLocale = isSupportedContentLocale(row.source_locale)
       ? row.source_locale
       : null;
     const neededAt = translationNeededAt(row.source_metadata);
-    if (fields.length === 0) continue;
-    const planned = planEventLocaleWrites(
-      { sourceLocale, fields },
-      coverage.get(row.id) ?? [],
-    );
-    if (
-      eventTranslationQueueClears({ sourceLocale, planned }) &&
-      neededAt
-    ) {
+    if (fields.length === 0) return null;
+    return {
+      sourceLocale,
+      neededAt,
+      planned: planEventLocaleWrites(
+        { sourceLocale, fields },
+        coverage.get(row.id) ?? [],
+      ),
+    };
+  };
+
+  const consider = async (
+    row: EventTranslationRow,
+    coverage: Map<string, StoredEventTranslation[]>,
+  ): Promise<"upcoming" | "other" | "done"> => {
+    if (seen.has(row.id)) return "done";
+    seen.add(row.id);
+    scanned += 1;
+    const plan = coveragePlan(row, coverage);
+    if (!plan) return "done";
+    if (eventTranslationQueueClears({ sourceLocale: plan.sourceLocale, planned: plan.planned }) && plan.neededAt) {
       if (await clearTranslationNeededAt(supabase, row.id)) clearedWithoutWork += 1;
-      continue;
+      return "done";
     }
-    if (planned.length === 0 && sourceLocale) continue;
+    if (plan.planned.length === 0 && plan.sourceLocale) return "done";
     incomplete.push({
       id: row.id,
       startsAt: row.starts_at,
-      translationNeededAt: neededAt,
-      missing: planned.length,
+      translationNeededAt: plan.neededAt,
+      missing: plan.planned.length,
     });
+    const start = startInstant(row.starts_at);
+    return start !== null && start >= windowStart ? "upcoming" : "other";
+  };
+
+  // Past and undated stamps only. In-window rows are selected by the
+  // soonest-first upcoming walk; complete ones are cleared here so a stamp
+  // does not linger until that walk reaches them.
+  for (let offset = 0; ; offset += EVENT_TRANSLATION_PAGE_SIZE) {
+    const page = await loadEventPage(supabase, "flagged", now, offset);
+    const coverage = await loadTranslationRows(
+      supabase,
+      page.map((row) => row.id),
+    );
+    for (const row of page) {
+      const start = startInstant(row.starts_at);
+      if (start !== null && start >= windowStart) {
+        const plan = coveragePlan(row, coverage);
+        if (
+          plan &&
+          eventTranslationQueueClears({ sourceLocale: plan.sourceLocale, planned: plan.planned }) &&
+          plan.neededAt
+        ) {
+          seen.add(row.id);
+          scanned += 1;
+          if (await clearTranslationNeededAt(supabase, row.id)) clearedWithoutWork += 1;
+        }
+        continue;
+      }
+      await consider(row, coverage);
+    }
+    if (page.length < EVENT_TRANSLATION_PAGE_SIZE) break;
+  }
+
+  // Soonest start first. Stop once this run's batch of incomplete upcoming
+  // events is full so a complete near-term page cannot hide a later night.
+  let upcomingIncomplete = 0;
+  for (let offset = 0; upcomingIncomplete < limit; offset += EVENT_TRANSLATION_PAGE_SIZE) {
+    const page = await loadEventPage(supabase, "upcoming", now, offset);
+    const fresh = page.filter((row) => !seen.has(row.id));
+    const coverage = await loadTranslationRows(
+      supabase,
+      fresh.map((row) => row.id),
+    );
+    for (const row of page) {
+      if ((await consider(row, coverage)) === "upcoming") upcomingIncomplete += 1;
+    }
+    if (page.length < EVENT_TRANSLATION_PAGE_SIZE) break;
   }
 
   const selected = selectEventTranslationBatch(incomplete, now, limit);
   const results: EventTranslationRunResult[] = [];
+  const failed: EventTranslationFailure[] = [];
   for (const candidate of selected) {
-    results.push(await translatePublishedEvent(supabase, candidate.id));
+    try {
+      const result = await translatePublishedEvent(supabase, candidate.id);
+      results.push(result);
+      failed.push(...result.failures);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      failed.push({ eventId: candidate.id, reason });
+      console.error(`[event-translation] ${candidate.id}:`, reason);
+    }
   }
 
   return {
-    scanned: rows.length,
+    scanned,
     selected: selected.map((candidate) => candidate.id),
+    translated: results.filter((result) => result.localesWritten > 0).length,
+    failed,
     clearedWithoutWork,
     results,
   };
@@ -571,6 +653,32 @@ async function runPublishedEventTranslation(eventId: string): Promise<void> {
       error instanceof Error ? error.message : error,
     );
   }
+}
+
+/**
+ * Stamp `translation_needed_at` when an event is created or its source text
+ * changes, and keep an in-progress stamp across refreshes that do not change
+ * the source. Explicit JSON nulls are dropped.
+ */
+export function withEventTranslationStamp(
+  metadata: Record<string, unknown>,
+  options: {
+    neededAt: string;
+    sourceTextChanged: boolean;
+    previousMetadata?: Record<string, unknown> | null;
+    force?: boolean;
+  },
+): Record<string, unknown> {
+  const next = { ...metadata };
+  const previous = options.previousMetadata?.[TRANSLATION_NEEDED_AT_KEY];
+  const previousStamp = typeof previous === "string" && previous.trim() ? previous : null;
+  if (options.force || options.sourceTextChanged) {
+    next[TRANSLATION_NEEDED_AT_KEY] = options.neededAt;
+    return next;
+  }
+  if (previousStamp) next[TRANSLATION_NEEDED_AT_KEY] = previousStamp;
+  else delete next[TRANSLATION_NEEDED_AT_KEY];
+  return next;
 }
 
 /**

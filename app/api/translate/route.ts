@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { CACHE_TAGS } from "@/lib/cache/server-cache";
 import { stampExistingNewsContentRevision } from "@/lib/news/article-policy";
+import { schedulePublishedEventTranslations } from "@/lib/event-translation";
 import { pingReadyEventsLocales } from "@/lib/seo/indexnow-events";
 import type {
   TranslationContentType,
@@ -311,6 +312,7 @@ export async function POST(request: Request) {
         throw new Error(`translation invalidation failed: ${invalidateError.message}`);
       }
 
+      schedulePublishedEventTranslations(eventIds);
       const readinessByEvent = await pingReadyEventsLocales(supabase, eventIds);
       for (const readiness of readinessByEvent.values()) {
         revalidateEventReadiness(readiness);

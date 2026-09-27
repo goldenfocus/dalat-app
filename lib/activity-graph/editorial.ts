@@ -1,6 +1,71 @@
 import { aiChatJson } from "@/lib/ai/provider";
 import type { ExtractedActivity } from "./types";
 
+/** Facts that should change the public description. Order is part of the hash. */
+export function activityExplanationFacts(
+  activity: Pick<
+    ExtractedActivity,
+    | "title"
+    | "kind"
+    | "locationName"
+    | "address"
+    | "startsAt"
+    | "endsAt"
+    | "timePrecision"
+    | "startsAtTime"
+    | "durationMinutes"
+    | "rrule"
+    | "reservationRequirement"
+    | "publicAccess"
+    | "priceType"
+    | "attributes"
+    | "description"
+  >,
+): Record<string, unknown> {
+  return {
+    title: activity.title,
+    kind: activity.kind,
+    locationName: activity.locationName,
+    address: activity.address,
+    startsAt: activity.startsAt,
+    endsAt: activity.endsAt,
+    timePrecision: activity.timePrecision,
+    startsAtTime: activity.startsAtTime,
+    durationMinutes: activity.durationMinutes,
+    rrule: activity.rrule,
+    reservationRequirement: activity.reservationRequirement,
+    publicAccess: activity.publicAccess,
+    priceType: activity.priceType,
+    attributes: activity.attributes,
+    sourceDescription: activity.description,
+  };
+}
+
+/**
+ * Keep a stored explanation across hourly refreshes. Re-explain only when the
+ * evidenced facts change, so the sync does not mint a new description every hour.
+ * Rows saved before a fingerprint existed are reused when the title and venue
+ * still match; the caller then stores the fingerprint.
+ */
+export function shouldReuseStoredExplanation(
+  stored: {
+    title?: string | null;
+    description?: string | null;
+    locationName?: string | null;
+    facts?: unknown;
+  },
+  activity: ExtractedActivity,
+): boolean {
+  if (!stored.description?.trim()) return false;
+  if (stored.facts == null) {
+    return (
+      (stored.title ?? "") === activity.title &&
+      (stored.locationName ?? "") === (activity.locationName ?? "")
+    );
+  }
+  return JSON.stringify(stored.facts) === JSON.stringify(activityExplanationFacts(activity));
+}
+
 /** Write original explanatory copy from evidence, never from generated images. */
 export async function explainActivity(activity: ExtractedActivity): Promise<ExtractedActivity> {
   const result = await aiChatJson<{ description: string }>({

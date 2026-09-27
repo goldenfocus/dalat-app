@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const parsedLimit = Number(requestUrl.searchParams.get("limit"));
   const limit = Number.isFinite(parsedLimit)
-    ? Math.min(5, Math.max(1, Math.floor(parsedLimit)))
+    ? Math.min(EVENT_TRANSLATION_BATCH_LIMIT, Math.max(1, Math.floor(parsedLimit)))
     : EVENT_TRANSLATION_BATCH_LIMIT;
 
   const supabase = createClient(url, key, {
@@ -41,7 +41,16 @@ export async function GET(request: Request) {
 
   try {
     const result = await sweepPublishedEventTranslations(supabase, { limit });
-    return NextResponse.json({ ok: true, ...result });
+    const body = {
+      ok: true,
+      scanned: result.scanned,
+      selected: result.selected,
+      translated: result.translated,
+      failed: result.failed,
+      clearedWithoutWork: result.clearedWithoutWork,
+    };
+    console.log("[translate-events]", body);
+    return NextResponse.json(body);
   } catch (error) {
     console.error("[translate-events]", error);
     return NextResponse.json(
