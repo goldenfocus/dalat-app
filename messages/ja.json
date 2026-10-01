@@ -365,6 +365,7 @@
   "events": {
     "activitySource": "情報源",
     "activityLastConfirmed": "最終確認",
+    "whatsappSourceCredit": "WhatsAppの{community}より",
     "starts": "開始",
     "ends": "終了",
     "popular": "人気",

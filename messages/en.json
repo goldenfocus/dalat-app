@@ -365,6 +365,7 @@
   "events": {
     "activitySource": "Source",
     "activityLastConfirmed": "Last confirmed",
+    "whatsappSourceCredit": "via {community} on WhatsApp",
     "starts": "Starts",
     "ends": "Ends",
     "popular": "Popular",

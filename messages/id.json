@@ -365,6 +365,7 @@
   "events": {
     "activitySource": "Sumber",
     "activityLastConfirmed": "Terakhir dikonfirmasi",
+    "whatsappSourceCredit": "via {community} di WhatsApp",
     "starts": "Mulai",
     "ends": "Selesai",
     "popular": "Populer",
