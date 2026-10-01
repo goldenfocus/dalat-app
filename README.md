@@ -81,6 +81,8 @@ Users can manage notifications in Settings.
 - `npx supabase migration list` - List migration status
 - For direct SQL, use the Management API (token is in macOS Keychain under "Supabase CLI")
 
+New public tables need an explicit Data API grant in the same migration. See `supabase/migrations/README.md`.
+
 ## Tech Stack
 
 - Next.js 16+ (App Router)
