@@ -29,10 +29,8 @@ import (
 
 	"github.com/mdp/qrterminal/v3"
 	"go.mau.fi/whatsmeow"
-	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
-	waLog "go.mau.fi/whatsmeow/util/log"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -41,6 +39,16 @@ import (
 const maxMessageAge = 24 * time.Hour
 
 func main() {
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "pair":
+			runPair(os.Args[2:])
+			return
+		case "groups":
+			runGroups(os.Args[2:])
+			return
+		}
+	}
 	ctx := context.Background()
 
 	cfg, err := loadConfig()
@@ -67,18 +75,7 @@ func main() {
 		reviewHookKey: cfg.reviewHookKey,
 	}
 
-	dbLog := waLog.Stdout("Database", "WARN", true)
-	container, err := sqlstore.New(ctx, "sqlite3", "file:store.db?_foreign_keys=on", dbLog)
-	if err != nil {
-		fatal("session store: %v", err)
-	}
-	deviceStore, err := container.GetFirstDevice(ctx)
-	if err != nil {
-		fatal("session store: %v", err)
-	}
-
-	clientLog := waLog.Stdout("Client", "INFO", true)
-	client := whatsmeow.NewClient(deviceStore, clientLog)
+	client := newWAClient(ctx)
 	bot.client = client
 	client.AddEventHandler(bot.handleEvent)
 

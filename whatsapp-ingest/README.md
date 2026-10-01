@@ -86,7 +86,28 @@ gitignored. Never commit secrets.
 6. Dalat Review polls drafts or receives `REVIEW_HOOK_URL`, then calls
    `POST /api/import/review`. See `docs/handover/scout-review-ingest.md`.
 
-If WhatsApp logs the session out, delete `store.db` and re-pair.
+### Pair with a phone-number code (no QR)
+
+```sh
+./whatsapp-ingest pair --phone 84123456789   # E.164 digits
+```
+
+Prints `PAIRING CODE: XXXX-XXXX`. On the bot phone: WhatsApp → Linked devices →
+Link a device → *Link with phone number instead*, enter the code. The process
+waits up to 10 minutes, prints a fresh code if the connection drops, then saves
+the session to `store.db` and exits. If you run it in the background, start it
+in its own session (e.g. `setsid`/`start_new_session`) so it survives the shell.
+
+### List joined groups
+
+```sh
+./whatsapp-ingest groups      # JID<TAB>name
+./whatsapp-ingest groups -v   # + community parent JID and flags
+```
+
+Stop the daemon first — never run two clients on one `store.db` at once.
+
+If WhatsApp logs the session out, move `store.db` aside and re-pair.
 
 ## Mac mini always-on (launchd)
 
