@@ -365,6 +365,7 @@
   "events": {
     "activitySource": "信息来源",
     "activityLastConfirmed": "最近确认",
+    "whatsappSourceCredit": "来自 WhatsApp 上的 {community}",
     "starts": "开始",
     "ends": "结束",
     "popular": "热门",

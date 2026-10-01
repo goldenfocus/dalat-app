@@ -365,6 +365,7 @@
   "events": {
     "activitySource": "แหล่งข้อมูล",
     "activityLastConfirmed": "ยืนยันล่าสุด",
+    "whatsappSourceCredit": "ผ่าน {community} บน WhatsApp",
     "starts": "เริ่ม",
     "ends": "สิ้นสุด",
     "popular": "ยอดนิยม",

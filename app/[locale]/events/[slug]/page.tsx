@@ -1,5 +1,7 @@
 import { CommunityRsvpProvider, CommunityActionNotice } from "@/components/events/community-rsvp";
 import { ActivitySourceFooter } from "@/components/events/activity-source-footer";
+import { WhatsAppSourceCredit } from "@/components/events/whatsapp-source-credit";
+import { isWhatsAppSourced } from "@/lib/events/whatsapp-source";
 import { eventImageAlt } from "@/lib/events/image-alt";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
@@ -1627,6 +1629,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 />
               )}
 
+              {isWhatsAppSourced(event.source_platform) && (
+                <WhatsAppSourceCredit locale={locale} />
+              )}
+
               {/* Comments Section */}
               <EventCommentsSection
                 eventId={event.id}
@@ -1803,8 +1809,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     </div>
                   )}
 
-                  {/* External link */}
-                  {event.external_chat_url && (
+                  {/* External link — never for WhatsApp-sourced events: their
+                      external_chat_url points at the raw group message. */}
+                  {event.external_chat_url && !isWhatsAppSourced(event.source_platform) && (
                     <a
                       href={event.external_chat_url}
                       target="_blank"
