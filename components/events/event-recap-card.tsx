@@ -1,11 +1,8 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Sparkles, Users, Camera, Heart, Loader2 } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { MarkdownRenderer } from "@/components/blog/markdown-renderer";
+import { EventRecapRefresh } from "./event-recap-refresh";
 
 interface EventRecapCardProps {
   story: string | null;
@@ -17,7 +14,7 @@ interface EventRecapCardProps {
 }
 
 /** Published automatically after the event's audio and images have been analyzed. */
-export function EventRecapCard({
+export async function EventRecapCard({
   story,
   eventSlug,
   storyLanguage = "en",
@@ -25,16 +22,8 @@ export function EventRecapCard({
   momentsCount,
   positivePercent,
 }: EventRecapCardProps) {
-  const t = useTranslations("recap");
-  const router = useRouter();
-  useEffect(() => {
-    if (story || !momentsCount) return;
-    const timer = setInterval(() => {
-      if (document.visibilityState === "visible") router.refresh();
-    }, 60_000);
-    return () => clearInterval(timer);
-  }, [story, momentsCount, router]);
   if (!story && !momentsCount) return null;
+  const t = await getTranslations("recap");
 
   return (
     <section
@@ -42,6 +31,7 @@ export function EventRecapCard({
       aria-labelledby="recap-heading"
       className="rounded-xl border bg-card p-5 space-y-4"
     >
+      {!story && <EventRecapRefresh />}
       <div className="flex items-center gap-2.5">
         <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
           <Sparkles className="w-4 h-4 text-primary" />
