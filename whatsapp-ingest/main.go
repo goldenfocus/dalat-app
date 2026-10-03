@@ -34,6 +34,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -57,8 +58,26 @@ func main() {
 		case "groups":
 			runGroups(os.Args[2:])
 			return
+		case "backfill":
+			runBackfillCommand(os.Args[2:])
+			return
 		}
 	}
+	var backfill *backfillConfig
+	if since := strings.TrimSpace(os.Getenv("WHATSAPP_BACKFILL_SINCE")); since != "" {
+		cfg, err := backfillConfigFromStrings(since, os.Getenv("WHATSAPP_BACKFILL_UNTIL"), time.Now())
+		if err != nil {
+			fatal("WHATSAPP_BACKFILL_SINCE: %v", err)
+		}
+		backfill = cfg
+	}
+	runDaemon(backfill, false)
+}
+
+// runDaemon connects, ingests live allowlisted messages, and optionally runs
+// one history backfill after the connection is up. With exitAfterBackfill
+// the process disconnects as soon as the backfill finishes.
+func runDaemon(backfill *backfillConfig, exitAfterBackfill bool) {
 	ctx := context.Background()
 
 	cfg, err := loadConfig()
@@ -86,6 +105,8 @@ func main() {
 		memory:        newGroupContext(),
 		extractor:     newExtractorFromEnv(),
 		media:         newEventMediaFromEnv(),
+		connected:     make(chan struct{}),
+		anchors:       newAnchorBook(anchorsPath),
 	}
 	if !bot.media.configured() {
 		logf("Cloudflare R2 is not configured — flyer heroes cannot be stored, so announcements will be skipped")
@@ -128,9 +149,27 @@ func main() {
 		logf("ingesting from %d allowlisted group(s)", len(bot.allowlist))
 	}
 
+	done := make(chan struct{})
+	if backfill != nil {
+		if len(bot.allowlist) == 0 {
+			fatal("backfill needs WHATSAPP_GROUP_JIDS")
+		}
+		go func() {
+			defer close(done)
+			bot.runBackfill(ctx, *backfill)
+		}()
+	}
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	<-c
+	if exitAfterBackfill && backfill != nil {
+		select {
+		case <-c:
+		case <-done:
+		}
+	} else {
+		<-c
+	}
 	client.Disconnect()
 }
 
@@ -176,9 +215,13 @@ func (b *ingestBot) handleEvent(evt any) {
 	switch v := evt.(type) {
 	case *events.Connected:
 		logf("connected to WhatsApp")
+		b.markConnected()
 	case *events.LoggedOut:
 		fatal("logged out by WhatsApp — delete store.db and run again to re-pair")
 	case *events.HistorySync:
+		if b.backfillClaims(v) {
+			return
+		}
 		b.handleHistory(v)
 	case *events.Message:
 		b.handleMessage(v)
@@ -196,6 +239,20 @@ type ingestBot struct {
 	memory        *groupContext
 	extractor     extractor
 	media         *eventMedia
+
+	groupMu       sync.Mutex
+	connected     chan struct{}
+	connectedOnce sync.Once
+	anchors       *anchorBook
+	backfillMu    sync.Mutex
+	backfill      *backfillSession
+}
+
+func (b *ingestBot) markConnected() {
+	if b.connected == nil {
+		return
+	}
+	b.connectedOnce.Do(func() { close(b.connected) })
 }
 
 func (b *ingestBot) handleHistory(evt *events.HistorySync) {
@@ -223,6 +280,21 @@ func (b *ingestBot) handleMessage(msg *events.Message) {
 	if time.Since(info.Timestamp) > maxMessageAge && !msg.IsEdit && !revoke {
 		return // replayed backlog, not a live announcement
 	}
+	if len(b.allowlist) > 0 && b.allowlist[info.Chat] && b.anchors != nil {
+		b.anchors.note(info)
+	}
+	b.processMessage(msg, b.memory, false)
+}
+
+// processMessage runs one group message through the event pipeline. Live
+// messages use the daemon's shared context window; a backfill passes its
+// own window so replayed history never interleaves with live chat.
+func (b *ingestBot) processMessage(msg *events.Message, memory *groupContext, fromHistory bool) (out ingestOutcome, ingested bool) {
+	info := msg.Info
+	if !info.IsGroup || info.IsFromMe {
+		return
+	}
+	revoke := isRevokeMessage(msg)
 
 	groupName := b.lookupGroupName(info.Chat)
 	if len(b.allowlist) > 0 && !b.allowlist[info.Chat] {
@@ -243,6 +315,7 @@ func (b *ingestBot) handleMessage(msg *events.Message) {
 
 	logf("message in %q from %s: %.80q", groupName, info.Sender, text)
 	in := inboundFromEvent(msg, text, groupName)
+	in.FromHistory = fromHistory
 	in.HasImage = hasImage
 	in.ImageMIME = mime
 	if hasImage {
@@ -263,42 +336,78 @@ func (b *ingestBot) handleMessage(msg *events.Message) {
 			in.ImageMIME = "image/jpeg"
 		}
 	}
-	b.ingest(in, false)
+	return b.ingestWithResult(memory, in, fromHistory), true
 }
 
 func (b *ingestBot) ingest(in inbound, fromHistory bool) {
+	b.ingestWithResult(b.memory, in, fromHistory)
+}
+
+// pipelineClock is the "current time" the context window and the event LLM
+// see. Live messages use the wall clock. Replayed history uses the time the
+// message was sent, so "tomorrow" and the 2h context window mean what they
+// meant then. The 45-day horizon always uses the wall clock.
+func pipelineClock(in inbound, fromHistory bool, now time.Time) time.Time {
+	if fromHistory && !in.Timestamp.IsZero() && in.Timestamp.Before(now) {
+		return in.Timestamp
+	}
+	return now
+}
+
+// ingestOutcome is what happened to one message; the backfill tallies it.
+type ingestOutcome struct {
+	Saved     bool
+	Created   bool
+	Cancelled bool
+	Untouched bool
+	Title     string
+	Slug      string
+	StartsAt  time.Time
+	Skip      string
+}
+
+func (b *ingestBot) ingestWithResult(memory *groupContext, in inbound, fromHistory bool) (out ingestOutcome) {
+	if memory == nil {
+		memory = b.memory
+	}
 	now := time.Now()
 	at := in.Timestamp
 	if at.IsZero() {
 		at = now
 	}
-	history := b.memory.recent(in.GroupJID, now)
-	draft, err := decide(in, history, b.extractor, now)
+	clock := pipelineClock(in, fromHistory, now)
+	history := memory.recent(in.GroupJID, clock)
+	draft, err := decide(in, history, b.extractor, clock)
 	remembered := memMsg{
 		ID: in.ID, Sender: in.Sender, Text: in.Text, QuotedID: in.QuotedID,
 		At: at, HasImage: in.HasImage || len(in.Image) > 0,
 		Image: in.Image, ImageMIME: in.ImageMIME,
 	}
 	if err != nil {
-		b.memory.add(in.GroupJID, remembered)
+		memory.add(in.GroupJID, remembered)
 		logf("skipped: %v", err)
+		out.Skip = err.Error()
 		return
 	}
+	out.Title, out.Slug, out.StartsAt = draft.Title, draft.Slug, draft.StartsAt
 	outsideHorizon := draft.StartsAt.Before(now.Add(-6*time.Hour)) || draft.StartsAt.After(now.Add(45*24*time.Hour))
 	if outsideHorizon && !draft.Cancelled {
-		b.memory.add(in.GroupJID, remembered)
+		memory.add(in.GroupJID, remembered)
 		if draft.StartsAt.Before(now) {
 			logf("skipped %q: starts in the past (%s)", draft.Title, draft.StartsAt)
+			out.Skip = "starts in the past"
 		} else {
 			logf("skipped %q: beyond the 45-day horizon (%s)", draft.Title, draft.StartsAt)
+			out.Skip = "beyond the 45-day horizon"
 		}
 		return
 	}
 	if outsideHorizon && draft.Cancelled {
 		existing, err := b.supa.lookupSlug(context.Background(), draft.Slug)
 		if err != nil || existing == nil || existing.Status != "draft" {
-			b.memory.add(in.GroupJID, remembered)
+			memory.add(in.GroupJID, remembered)
 			logf("skipped %q: cancellation is outside the horizon and there is no draft to update", draft.Title)
+			out.Skip = "cancellation outside horizon"
 			return
 		}
 	}
@@ -308,16 +417,18 @@ func (b *ingestBot) ingest(in inbound, fromHistory bool) {
 	if draft.ImageURL == "" && len(draft.Hero) > 0 && !draft.Cancelled {
 		imageURL, err := b.media.uploadEventImage(context.Background(), draft.Slug, draft.Hero, draft.HeroMIME, now)
 		if err != nil {
-			b.memory.add(in.GroupJID, remembered)
+			memory.add(in.GroupJID, remembered)
 			logf("skipped: flyer upload failed: %v", err)
+			out.Skip = "flyer upload failed"
 			return
 		}
 		draft.ImageURL = imageURL
 		draft.ImageAlt = ownerHeroAlt
 	}
 	if draft.ImageURL == "" && !draft.Cancelled {
-		b.memory.add(in.GroupJID, remembered)
+		memory.add(in.GroupJID, remembered)
 		logf("skipped: no flyer for hero")
+		out.Skip = "no flyer for hero"
 		return
 	}
 
@@ -325,21 +436,26 @@ func (b *ingestBot) ingest(in inbound, fromHistory bool) {
 	saved, err := b.supa.saveDraft(context.Background(), row)
 	if errors.Is(err, errNotMutable) {
 		logf("left %q untouched: slug %s is no longer a draft", draft.Title, draft.Slug)
+		out.Untouched = true
 		remembered.IsEvent = true
 		remembered.DraftSlug = draft.Slug
 		remembered.Draft = draft
-		b.memory.add(in.GroupJID, remembered)
+		memory.add(in.GroupJID, remembered)
 		return
 	}
 	if err != nil {
 		logf("insert failed for %q: %v", draft.Title, err)
-		b.memory.add(in.GroupJID, remembered)
+		memory.add(in.GroupJID, remembered)
+		out.Skip = "insert failed"
 		return
 	}
 	remembered.IsEvent = true
 	remembered.DraftSlug = draft.Slug
 	remembered.Draft = draft
-	b.memory.add(in.GroupJID, remembered)
+	memory.add(in.GroupJID, remembered)
+	out.Saved = true
+	out.Cancelled = draft.Cancelled
+	out.Created = saved != nil && saved.Created
 	switch {
 	case draft.Cancelled:
 		logf("draft cancelled: %q (%s)", draft.Title, draft.Slug)
@@ -361,17 +477,23 @@ func (b *ingestBot) ingest(in inbound, fromHistory bool) {
 			logf("review hook failed (draft kept): %v", err)
 		}
 	}
+	return out
 }
 
 func (b *ingestBot) lookupGroupName(jid types.JID) string {
-	if name, ok := b.groupName[jid]; ok {
+	b.groupMu.Lock()
+	name, ok := b.groupName[jid]
+	b.groupMu.Unlock()
+	if ok {
 		return name
 	}
-	name := "unknown"
+	name = "unknown"
 	if info, err := b.client.GetGroupInfo(context.Background(), jid); err == nil && info != nil {
 		name = info.Name
 	}
+	b.groupMu.Lock()
 	b.groupName[jid] = name
+	b.groupMu.Unlock()
 	return name
 }
 
