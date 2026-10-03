@@ -84,6 +84,17 @@ func TestExtractStartTime(t *testing.T) {
 			want: time.Date(2026, 10, 3, 20, 0, 0, 0, testLoc),
 		},
 		{
+			name: "spelled-out november is not october",
+			text: "Đêm nhạc ngày 3 tháng mười một lúc 19h",
+			want: time.Date(2026, 11, 3, 19, 0, 0, 0, testLoc),
+		},
+		{
+			name:         "spelled-out december",
+			text:         "Chợ đêm ngày 12 tháng mười hai",
+			want:         time.Date(2026, 12, 12, 0, 0, 0, 0, testLoc),
+			wantInferred: true,
+		},
+		{
 			name: "ordinal day of month",
 			text: "Market on the 3rd of October at 9am",
 			want: time.Date(2026, 10, 3, 9, 0, 0, 0, testLoc),

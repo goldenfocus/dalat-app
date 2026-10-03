@@ -43,9 +43,11 @@ var (
 	// "8 giờ", "8 giờ tối", "20 giờ".
 	vietHourRe = regexp.MustCompile(`(?i)\b(\d{1,2})\s*(?:g|giờ)\s*(tối|sáng|chiều|trưa|đêm)?\b`)
 	// Venue cues that already appear in the source text — never invent a place.
-	locationRe      = regexp.MustCompile(`(?i)(?:tại\s+|at\s+|venue\s*:\s*|địa điểm\s*:\s*|location\s*:\s*|địa chỉ\s*:\s*|where\s*:\s*)([^\n]{2,120})`)
-	monthDateRe     = regexp.MustCompile(`(?i)\b(?:(?:(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\.?\s+(\d{1,2})(?:st|nd|rd|th)?)|(?:(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\.?))\b`)
-	vietDayMonthRe  = regexp.MustCompile(`(?i)\b(?:ngày\s+)?(\d{1,2})\s+tháng\s+(\d{1,2}|một|hai|ba|tư|năm|sáu|bảy|tám|chín|mười|mười một|mười hai)\b`)
+	locationRe  = regexp.MustCompile(`(?i)(?:tại\s+|at\s+|venue\s*:\s*|địa điểm\s*:\s*|location\s*:\s*|địa chỉ\s*:\s*|where\s*:\s*)([^\n]{2,120})`)
+	monthDateRe = regexp.MustCompile(`(?i)\b(?:(?:(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\.?\s+(\d{1,2})(?:st|nd|rd|th)?)|(?:(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\.?))\b`)
+	// Longer month names must come first. `mười` is a prefix of `mười một`
+	// and `mười hai`, and a word boundary sits on the space between them.
+	vietDayMonthRe  = regexp.MustCompile(`(?i)\b(?:ngày\s+)?(\d{1,2})\s+tháng\s+(\d{1,2}|mười hai|mười một|một|hai|ba|tư|năm|sáu|bảy|tám|chín|mười)\b`)
 	weekdayPhraseRe = regexp.MustCompile(`(?i)\b(?:(this|next|weekly|every|hàng tuần|tới|tuần này|tuần tới|tuần sau)\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|thứ hai|thứ ba|thứ tư|thứ năm|thứ sáu|thứ bảy|thứ bay|chủ nhật|chu nhat|thứ\s*[2-7]|thu\s*[2-7])\b`)
 )
 
