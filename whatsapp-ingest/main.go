@@ -219,11 +219,13 @@ func (b *ingestBot) handleEvent(evt any) {
 	case *events.LoggedOut:
 		fatal("logged out by WhatsApp — delete store.db and run again to re-pair")
 	case *events.HistorySync:
+		b.logHistorySync(v)
 		if b.backfillClaims(v) {
 			return
 		}
 		b.handleHistory(v)
 	case *events.Message:
+		b.logPeerResponse(v)
 		b.handleMessage(v)
 	}
 }

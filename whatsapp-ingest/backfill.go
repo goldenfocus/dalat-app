@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/proto/waHistorySync"
 	"go.mau.fi/whatsmeow/proto/waWeb"
 	"go.mau.fi/whatsmeow/types"
@@ -188,6 +189,48 @@ func (b *ingestBot) backfillClaims(evt *events.HistorySync) bool {
 		return false
 	}
 	return session.deliver(evt.Data)
+}
+
+func (b *ingestBot) backfillActive() bool {
+	b.backfillMu.Lock()
+	defer b.backfillMu.Unlock()
+	return b.backfill != nil
+}
+
+// logHistorySync records every history blob while a backfill runs, so a
+// silent phone and an unrouted answer can be told apart in the log.
+func (b *ingestBot) logHistorySync(evt *events.HistorySync) {
+	if evt == nil || evt.Data == nil || !b.backfillActive() {
+		return
+	}
+	logf("backfill: history sync received type=%s conversations=%d chunk=%d progress=%d",
+		evt.Data.GetSyncType(), len(evt.Data.GetConversations()), evt.Data.GetChunkOrder(), evt.Data.GetProgress())
+}
+
+// logPeerResponse records the phone's peer-data answers (whatsmeow only acts
+// on some of them), including error codes for refused history requests.
+func (b *ingestBot) logPeerResponse(msg *events.Message) {
+	if msg == nil || msg.Message == nil || !msg.Info.IsFromMe || msg.Info.IsGroup || !b.backfillActive() {
+		return
+	}
+	pm := msg.Message.GetProtocolMessage()
+	if pm == nil {
+		return
+	}
+	resp := pm.GetPeerDataOperationRequestResponseMessage()
+	if resp == nil {
+		if pm.GetType() == waE2E.ProtocolMessage_HISTORY_SYNC_NOTIFICATION {
+			n := pm.GetHistorySyncNotification()
+			logf("backfill: phone sent a history sync notification type=%s chunk=%d", n.GetSyncType(), n.GetChunkOrder())
+		}
+		return
+	}
+	logf("backfill: phone peer response type=%s stanza=%s results=%d",
+		resp.GetPeerDataOperationRequestType(), resp.GetStanzaID(), len(resp.GetPeerDataOperationResult()))
+	for i, res := range resp.GetPeerDataOperationResult() {
+		logf("backfill: peer result #%d media-upload=%s full-history=%s", i+1,
+			res.GetMediaUploadResult(), res.GetFullHistorySyncOnDemandRequestResponse().GetResponseCode())
+	}
 }
 
 func (b *ingestBot) setBackfillSession(s *backfillSession) {
@@ -566,11 +609,13 @@ func (b *ingestBot) fetchGroupHistory(ctx context.Context, session *backfillSess
 	for page := 1; page <= cfg.MaxPages; page++ {
 		ch := session.wait(chat.String())
 		req := b.client.BuildHistorySyncRequest(&anchor, cfg.PageSize)
-		if _, err := b.client.SendPeerMessage(ctx, req); err != nil {
+		sent, err := b.client.SendPeerMessage(ctx, req)
+		if err != nil {
 			session.drop(chat.String())
 			logf("backfill %q: history request failed: %v", name, err)
 			break
 		}
+		logf("backfill %q page %d: asked the phone for %d message(s) before %s (request %s)", name, page, cfg.PageSize, anchor.ID, sent.ID)
 		var msgs []*waHistorySync.HistorySyncMsg
 		select {
 		case conv := <-ch:
