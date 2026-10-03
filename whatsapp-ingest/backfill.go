@@ -568,15 +568,29 @@ func (b *ingestBot) runBackfill(ctx context.Context, cfg backfillConfig) {
 	var items []historyItem
 
 	// Probe with the group that has the best anchor until the phone answers.
+	// Groups with no anchor at all are dropped: they say nothing about the phone.
 	deadline := time.Now().Add(cfg.PhoneWait)
 	var probe types.JID
 	for {
 		chats = orderChats(chats, b.anchors.has)
-		probe = chats[0]
-		res := b.fetchGroupHistory(ctx, session, probe, cfg)
-		tally.Fetched += res.Fetched
-		items = append(items, res.Kept...)
-		if res.Answered {
+		answered := false
+		for len(chats) > 0 {
+			probe = chats[0]
+			res := b.fetchGroupHistory(ctx, session, probe, cfg)
+			if res.NoAnchor {
+				chats = chats[1:]
+				continue
+			}
+			tally.Fetched += res.Fetched
+			items = append(items, res.Kept...)
+			answered = res.Answered
+			break
+		}
+		if len(chats) == 0 {
+			logf("backfill: no allowlisted group has a known message to start from; nothing to ask the phone")
+			return
+		}
+		if answered {
 			break
 		}
 		if cfg.PhoneWait <= 0 || time.Now().Add(cfg.ProbeEvery).After(deadline) {
@@ -595,7 +609,7 @@ func (b *ingestBot) runBackfill(ctx context.Context, cfg backfillConfig) {
 		res := b.fetchGroupHistory(ctx, session, chat, cfg)
 		tally.Fetched += res.Fetched
 		items = append(items, res.Kept...)
-		if !res.Answered {
+		if !res.Answered && !res.NoAnchor {
 			silent = append(silent, chat)
 		}
 	}
@@ -672,6 +686,7 @@ type groupFetch struct {
 	Fetched  int
 	Kept     []historyItem
 	Answered bool
+	NoAnchor bool // nothing to ask before; not a sign of a silent phone
 }
 
 func (b *ingestBot) fetchGroupHistory(ctx context.Context, session *backfillSession, chat types.JID, cfg backfillConfig) (res groupFetch) {
@@ -679,6 +694,7 @@ func (b *ingestBot) fetchGroupHistory(ctx context.Context, session *backfillSess
 	anchor, source, err := b.backfillAnchor(ctx, chat)
 	if err != nil {
 		logf("backfill %q: no anchor message, skipping group: %v", name, err)
+		res.NoAnchor = true
 		return res
 	}
 	logf("backfill %q: starting before message %s (%s)", name, anchor.ID, source)
