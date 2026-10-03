@@ -79,8 +79,14 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 	normalizeEdit(&in)
 	if in.Message != nil {
 		if draft, handled, err := applyNative(in, history); handled {
-			return draft, err
+			if err != nil || draft == nil || draft.Cancelled {
+				return draft, err
+			}
+			return draft, prepareReview(draft, in, history)
 		}
+	}
+	if isChitChat(in.Text) || isPersonalMealPlan(in.Text) {
+		return nil, fmt.Errorf("not an event")
 	}
 	if !in.HasImage && !mightBeEvent(in.Text) {
 		return nil, fmt.Errorf("not an event")
@@ -204,7 +210,7 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 	if strings.TrimSpace(draft.Title) == "" {
 		return nil, fmt.Errorf("no title extractable")
 	}
-	return draft, nil
+	return draft, prepareReview(draft, in, history)
 }
 
 func normalizeEdit(in *inbound) {
@@ -399,6 +405,9 @@ func cloneDraft(d *eventDraft) *eventDraft {
 		cp.Meta[k] = v
 	}
 	cp.MergedIDs = append([]string(nil), d.MergedIDs...)
+	if len(d.Hero) > 0 {
+		cp.Hero = append([]byte(nil), d.Hero...)
+	}
 	return &cp
 }
 

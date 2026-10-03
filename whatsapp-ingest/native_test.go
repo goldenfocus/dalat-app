@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -32,6 +33,7 @@ func TestNativeEventMessage(t *testing.T) {
 	draft, err := decide(inbound{
 		ID: "EVT1", GroupJID: "120363@g.us", GroupName: "Events & Offers",
 		Sender: "alice", Timestamp: ref, Message: msg,
+		HasImage: true, Image: testFlyerPNG(t), ImageMIME: "image/jpeg",
 	}, nil, nil, ref)
 	if err != nil {
 		t.Fatal(err)
@@ -42,7 +44,7 @@ func TestNativeEventMessage(t *testing.T) {
 	if !draft.StartsAt.Equal(start) || draft.EndsAt == nil || !draft.EndsAt.Equal(end) {
 		t.Fatalf("start=%s end=%v", draft.StartsAt, draft.EndsAt)
 	}
-	if draft.Location != "Cù Rú" || draft.Address != "2 Đ. Phạm Hồng Thái" {
+	if draft.Location != "Cù Rú" || !strings.Contains(draft.Address, "Phạm Hồng Thái") || !strings.Contains(draft.Address, "Đà Lạt") || !strings.Contains(draft.Address, "Lâm Đồng") {
 		t.Fatalf("loc=%q addr=%q", draft.Location, draft.Address)
 	}
 	if draft.ExternalURL != "https://chat.whatsapp.com/improv" {
@@ -61,7 +63,8 @@ func TestNativeEditAndCancelKeepSlug(t *testing.T) {
 	start := time.Date(2026, 10, 4, 12, 0, 0, 0, time.UTC)
 	original := &eventDraft{
 		Slug: "wa-evt1", Title: "Improv Playdate", StartsAt: start, Native: true,
-		Meta: map[string]any{"message_id": "EVT1"},
+		ImageURL: "https://cdn.dalat.app/event-media/wa-evt1/1.jpg",
+		Meta:     map[string]any{"message_id": "EVT1"},
 	}
 	history := []memMsg{{
 		ID: "EVT1", DraftSlug: "wa-evt1", Draft: original, IsEvent: true, At: ref,
@@ -146,12 +149,8 @@ func TestEventCoverAndInvite(t *testing.T) {
 			JoinLink:  proto.String("https://chat.whatsapp.com/standup"),
 		},
 	}}}
-	draft, err := decide(inbound{ID: "COVER", Message: cover, Timestamp: ref, GroupName: "Events"}, nil, nil, ref)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if draft.Title != "Stand-up Comedy Workshop" || !draft.Native {
-		t.Fatalf("%+v", draft)
+	if _, err := decide(inbound{ID: "COVER", Message: cover, Timestamp: ref, GroupName: "Events"}, nil, nil, ref); err == nil {
+		t.Fatal("cover without a public venue or flyer became a draft")
 	}
 
 	thumb := testFlyerPNG(t)
@@ -162,22 +161,31 @@ func TestEventCoverAndInvite(t *testing.T) {
 		JPEGThumbnail: thumb,
 		CallLink:      proto.String("https://chat.whatsapp.com/standup"),
 	}}
-	invited, err := decide(inbound{ID: "INV", Message: invite, Timestamp: ref, GroupName: "Events"}, nil, nil, ref)
+	if _, err := decide(inbound{ID: "INV", Message: invite, Timestamp: ref, GroupName: "Events"}, nil, nil, ref); err == nil {
+		t.Fatal("DM-for-location invite became a draft")
+	}
+
+	withVenue := &waE2E.Message{EventInviteMessage: &waE2E.EventInviteMessage{
+		EventTitle:    proto.String("Stand-up Comedy Workshop"),
+		Caption:       proto.String("at Cù Rú"),
+		StartTime:     proto.Int64(start.Unix()),
+		JPEGThumbnail: thumb,
+		CallLink:      proto.String("https://chat.whatsapp.com/standup"),
+	}}
+	invited, err := decide(inbound{ID: "INV2", Message: withVenue, Timestamp: ref, GroupName: "Events"}, nil, nil, ref)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if invited.Title != "Stand-up Comedy Workshop" || invited.ExternalURL == "" {
-		t.Fatalf("%+v", invited)
-	}
-	if invited.Location != "" {
-		t.Fatalf("invented location %q", invited.Location)
+	if invited.Location != "Cù Rú" || len(invited.Hero) == 0 {
+		t.Fatalf("loc=%q hero=%d", invited.Location, len(invited.Hero))
 	}
 }
 
 func TestTextEditRewritesTheSameDraft(t *testing.T) {
 	original, err := decide(inbound{
 		ID: "MSG1", Sender: "alice", Timestamp: ref, GroupName: "Events & Offers",
-		Text: "TECHNO CALLING\n\nOctober 3. From 8 pm \n\nLocation:\nCù Rú",
+		Text:     "TECHNO CALLING\n\nOctober 3. From 8 pm \n\nLocation:\nCù Rú",
+		HasImage: true, Image: testFlyerPNG(t), ImageMIME: "image/png",
 	}, nil, nil, ref)
 	if err != nil {
 		t.Fatal(err)

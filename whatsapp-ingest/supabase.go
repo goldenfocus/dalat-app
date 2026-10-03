@@ -9,7 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
+	"strings"
 	"time"
 )
 
@@ -30,22 +30,26 @@ func newSupabaseClient(base, key string) *supabaseClient {
 }
 
 type insertedEvent struct {
-	ID    string `json:"id"`
-	Slug  string `json:"slug"`
-	Title string `json:"title"`
+	ID       string `json:"id"`
+	Slug     string `json:"slug"`
+	Title    string `json:"title"`
+	Reopened bool   `json:"-"`
 }
 
 type storedEvent struct {
-	ID     string `json:"id"`
-	Slug   string `json:"slug"`
-	Status string `json:"status"`
+	ID             string         `json:"id"`
+	Slug           string         `json:"slug"`
+	Status         string         `json:"status"`
+	SourceMetadata map[string]any `json:"source_metadata"`
 }
 
-// saveDraft inserts a new draft or patches the same slug. Published and
-// cancelled rows are left alone so a replay cannot unpublish an event.
+// saveDraft inserts a new draft or patches the same slug or source URL.
+// A draft Review already rejected is reopened. Published and cancelled rows
+// are left alone so a replay cannot unpublish an event.
 func (s *supabaseClient) saveDraft(ctx context.Context, row map[string]any) (*insertedEvent, error) {
 	slug, _ := row["slug"].(string)
-	existing, err := s.lookupSlug(ctx, slug)
+	sourceURL := sourceURLFromRow(row)
+	existing, err := s.findExisting(ctx, slug, sourceURL)
 	if err != nil {
 		return nil, err
 	}
@@ -55,14 +59,81 @@ func (s *supabaseClient) saveDraft(ctx context.Context, row map[string]any) (*in
 	if existing == nil {
 		return s.insertEvent(ctx, row)
 	}
-	return s.patchEvent(ctx, existing.ID, row)
+	saved, err := s.patchEvent(ctx, existing.ID, patchableRow(row))
+	if err != nil {
+		return nil, err
+	}
+	if saved.Slug == "" {
+		saved.Slug = existing.Slug
+	}
+	saved.Reopened = reviewResult(existing) == "rejected"
+	return saved, nil
+}
+
+func sourceURLFromRow(row map[string]any) string {
+	if chat, _ := row["external_chat_url"].(string); chat != "" {
+		return chat
+	}
+	meta, _ := row["source_metadata"].(map[string]any)
+	if meta == nil {
+		return ""
+	}
+	source, _ := meta["source_url"].(string)
+	return source
+}
+
+func reviewResult(existing *storedEvent) string {
+	if existing == nil || existing.SourceMetadata == nil {
+		return ""
+	}
+	result, _ := existing.SourceMetadata["review_result"].(string)
+	return result
+}
+
+func patchableRow(row map[string]any) map[string]any {
+	patch := make(map[string]any, len(row))
+	for key, value := range row {
+		if key == "slug" || key == "created_by" {
+			continue
+		}
+		patch[key] = value
+	}
+	return patch
 }
 
 func (s *supabaseClient) lookupSlug(ctx context.Context, slug string) (*storedEvent, error) {
 	if slug == "" {
 		return nil, fmt.Errorf("missing slug")
 	}
-	endpoint := s.base + "/rest/v1/events?slug=eq." + url.QueryEscape(slug) + "&select=id,slug,status"
+	return s.lookupQuery(ctx, url.Values{
+		"slug":   {"eq." + slug},
+		"select": {"id,slug,status,source_metadata"},
+	})
+}
+
+// findExisting matches the idempotent slug or, when Review stored the same
+// source URL under that row, the source URL. A re-post must update the
+// rejected draft instead of inserting a second wa-<id> row.
+func (s *supabaseClient) findExisting(ctx context.Context, slug, sourceURL string) (*storedEvent, error) {
+	if slug != "" {
+		existing, err := s.lookupSlug(ctx, slug)
+		if err != nil || existing != nil {
+			return existing, err
+		}
+	}
+	if sourceURL == "" {
+		return nil, nil
+	}
+	quoted := `"` + strings.ReplaceAll(sourceURL, `"`, `\"`) + `"`
+	return s.lookupQuery(ctx, url.Values{
+		"or":     {`(external_chat_url.eq.` + quoted + `,source_metadata->>source_url.eq.` + quoted + `)`},
+		"select": {"id,slug,status,source_metadata"},
+		"limit":  {"1"},
+	})
+}
+
+func (s *supabaseClient) lookupQuery(ctx context.Context, query url.Values) (*storedEvent, error) {
+	endpoint := s.base + "/rest/v1/events?" + query.Encode()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -179,40 +250,6 @@ func (s *supabaseClient) notifyReviewHook(ctx context.Context, hookURL, bearer s
 		return fmt.Errorf("review hook: %s: %s", resp.Status, readSnippet(resp.Body))
 	}
 	return nil
-}
-
-// uploadFlyer stores a flyer image in the public event-media bucket under
-// whatsapp/{messageID} and returns its public URL.
-func (s *supabaseClient) uploadFlyer(ctx context.Context, msgID string, data []byte, mime string) (string, error) {
-	ext := ".jpg"
-	switch mime {
-	case "image/png":
-		ext = ".png"
-	case "image/webp":
-		ext = ".webp"
-	case "image/gif":
-		ext = ".gif"
-	}
-	objectPath := path.Join("whatsapp", msgID+ext)
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
-		s.base+"/storage/v1/object/event-media/"+objectPath, bytes.NewReader(data))
-	if err != nil {
-		return "", err
-	}
-	s.authHeaders(req)
-	req.Header.Set("Content-Type", mime)
-	req.Header.Set("x-upsert", "true")
-
-	resp, err := s.http.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode/100 != 2 {
-		return "", fmt.Errorf("upload flyer: %s: %s", resp.Status, readSnippet(resp.Body))
-	}
-	return s.base + "/storage/v1/object/public/event-media/" + objectPath, nil
 }
 
 // resolveProfileID looks up a profile UUID by username.

@@ -87,10 +87,19 @@ with `DOTENV_PATH`). See `env.example`.
 | `OPENROUTER_API_KEY` | Fallback vision/text provider (`google/gemini-2.5-flash-lite`). |
 | `WHATSAPP_EVENT_MODEL` | Optional model override for whichever provider answers. |
 | `WHATSAPP_EVENT_LLM` | Optional `openai`, `anthropic`, `openrouter`, or `off`. Default: try the three keys above. |
+| `CLOUDFLARE_R2_ACCESS_KEY_ID` | Flyer upload. Same R2 token Scout uses. Required for a hero. |
+| `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | R2 secret for that token. |
+| `CLOUDFLARE_R2_ENDPOINT` | R2 S3 endpoint. |
+| `CLOUDFLARE_R2_PUBLIC_URL` | Public CDN origin, `https://cdn.dalat.app`. |
+| `CLOUDFLARE_R2_BUCKET_NAME` | Optional. Default `dalat-app-media`. |
 
-No new key is required. The daemon reads `../.env.local`, so an `OPENAI_API_KEY`
-already used by the app is enough. Without any key, text dates still parse and
-flyer images that do not contain a date in the caption are skipped.
+The daemon reads `../.env.local`. An `OPENAI_API_KEY` the app already has is
+enough for vision. Flyer bytes are stored at
+`{CLOUDFLARE_R2_PUBLIC_URL}/event-media/{slug}/{timestamp}.ext`, the same path
+Scout writes, with `source_metadata.visual_provenance=owner_authorized_source`.
+Without R2, a message that needs a hero is skipped. Without an LLM key, text
+dates still parse and flyer images that do not contain a date in the caption
+are skipped.
 
 ## Build & run
 
@@ -183,9 +192,8 @@ Reload after a binary rebuild: `launchctl kickstart -k gui/$(id -u)/com.dalat.wh
 - Never send messages from this process (`Send*` APIs are unused on purpose).
 - Nothing in this repo polls `needs_review`. `REVIEW_HOOK_URL` only notifies;
   it does not publish. Drafts stay drafts until Dalat Review calls
-  `POST /api/import/review`. A draft still needs a venue and a hero image
-  before that call can publish it. The three drafts created on 1 Oct 2026
-  ("Improv Playdate", "Stand-up Comedy Workshop", "Lunch") are not published
-  by this process. "Lunch / Cơm tấm Nguyễn" is treated as a personal meal
-  plan when it is ordinary chat; a native WhatsApp event with that name is
-  still ingested because the sender created an event.
+  `POST /api/import/review`. A draft is saved with `needs_review` only when
+  it has a hero, a public venue, a firm date, and Đà Lạt / Lâm Đồng on the
+  address. "Lunch 12:15" plus a maps link, "DM for location", and a date the
+  message calls tentative are skipped. Re-sending the same message id or
+  source URL reopens a rejected draft.

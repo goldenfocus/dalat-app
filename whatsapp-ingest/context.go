@@ -23,6 +23,8 @@ type memMsg struct {
 	Draft     *eventDraft
 	At        time.Time
 	HasImage  bool
+	Image     []byte
+	ImageMIME string
 	IsEvent   bool
 }
 
@@ -39,6 +41,20 @@ func (g *groupContext) add(group string, msg memMsg) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	g.groups[group] = append(prune(g.groups[group], msg.At), msg)
+	trimStoredImages(g.groups[group])
+}
+
+func trimStoredImages(msgs []memMsg) {
+	kept := 0
+	for i := len(msgs) - 1; i >= 0; i-- {
+		if len(msgs[i].Image) == 0 {
+			continue
+		}
+		kept++
+		if kept > 4 {
+			msgs[i].Image = nil
+		}
+	}
 }
 
 func (g *groupContext) recent(group string, now time.Time) []memMsg {

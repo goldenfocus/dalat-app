@@ -172,6 +172,7 @@ func TestToRowMarksNeedsReview(t *testing.T) {
 		Title:       "Acoustic night",
 		Description: "Acoustic night 12/9 20h tại cafe",
 		Location:    "cafe",
+		ImageURL:    "https://cdn.dalat.app/event-media/wa-abcd/1.jpg",
 		StartsAt:    start,
 		Meta: map[string]any{
 			"group_jid":  "120363@g.us",
@@ -185,8 +186,20 @@ func TestToRowMarksNeedsReview(t *testing.T) {
 	if row["external_chat_url"] != "whatsapp:120363@g.us/ABCD" {
 		t.Fatalf("external_chat_url=%v", row["external_chat_url"])
 	}
+	if !strings.Contains(row["address"].(string), "Đà Lạt") || !strings.Contains(row["address"].(string), "Lâm Đồng") {
+		t.Fatalf("address=%v", row["address"])
+	}
 	meta, _ := row["source_metadata"].(map[string]any)
 	if meta["needs_review"] != true {
 		t.Fatalf("needs_review=%v", meta["needs_review"])
+	}
+	if meta["city"] != "Đà Lạt" || meta["province"] != "Lâm Đồng" {
+		t.Fatalf("locality=%v %v", meta["city"], meta["province"])
+	}
+	if meta["visual_provenance"] != "owner_authorized_source" {
+		t.Fatalf("provenance=%v", meta["visual_provenance"])
+	}
+	if strings.Contains(strings.ToLower(row["image_alt"].(string)), "ai-generated") {
+		t.Fatalf("alt discloses AI: %v", row["image_alt"])
 	}
 }

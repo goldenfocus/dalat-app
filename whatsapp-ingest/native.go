@@ -188,6 +188,10 @@ func nativeDraft(in inbound, payload nativePayload) *eventDraft {
 	draft.Cancelled = payload.Cancelled
 	draft.Latitude = payload.Latitude
 	draft.Longitude = payload.Longitude
+	if len(payload.CoverJPEG) > 0 {
+		draft.Hero = payload.CoverJPEG
+		draft.HeroMIME = "image/jpeg"
+	}
 	draft.Native = true
 	draft.Extraction = "native"
 	if payload.ExtraGuest {

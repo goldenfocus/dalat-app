@@ -17,6 +17,11 @@
 //	                              OPENROUTER_API_KEY are fallbacks)
 //	WHATSAPP_EVENT_LLM           (optional openai|anthropic|openrouter|off)
 //	WHATSAPP_EVENT_MODEL         (optional model override)
+//	CLOUDFLARE_R2_ACCESS_KEY_ID  (required to store a flyer as the hero)
+//	CLOUDFLARE_R2_SECRET_ACCESS_KEY
+//	CLOUDFLARE_R2_ENDPOINT
+//	CLOUDFLARE_R2_PUBLIC_URL     (https://cdn.dalat.app)
+//	CLOUDFLARE_R2_BUCKET_NAME    (optional, default dalat-app-media)
 //
 // First run prints a QR code — scan it from the bot phone (Linked devices).
 // The session persists in ./store.db, later runs reconnect silently.
@@ -80,6 +85,10 @@ func main() {
 		reviewHookKey: cfg.reviewHookKey,
 		memory:        newGroupContext(),
 		extractor:     newExtractorFromEnv(),
+		media:         newEventMediaFromEnv(),
+	}
+	if !bot.media.configured() {
+		logf("Cloudflare R2 is not configured — flyer heroes cannot be stored, so announcements will be skipped")
 	}
 	if bot.extractor == nil {
 		logf("event LLM is off (no OPENAI_API_KEY / ANTHROPIC_API_KEY / OPENROUTER_API_KEY, or WHATSAPP_EVENT_LLM=off) — text dates still parse; flyer images need a key")
@@ -186,6 +195,7 @@ type ingestBot struct {
 	reviewHookKey string
 	memory        *groupContext
 	extractor     extractor
+	media         *eventMedia
 }
 
 func (b *ingestBot) handleHistory(evt *events.HistorySync) {
@@ -267,6 +277,7 @@ func (b *ingestBot) ingest(in inbound, fromHistory bool) {
 	remembered := memMsg{
 		ID: in.ID, Sender: in.Sender, Text: in.Text, QuotedID: in.QuotedID,
 		At: at, HasImage: in.HasImage || len(in.Image) > 0,
+		Image: in.Image, ImageMIME: in.ImageMIME,
 	}
 	if err != nil {
 		b.memory.add(in.GroupJID, remembered)
@@ -294,13 +305,20 @@ func (b *ingestBot) ingest(in inbound, fromHistory bool) {
 	if fromHistory {
 		draft.Meta["from_history_sync"] = true
 	}
-	if len(in.Image) > 0 && draft.ImageURL == "" {
-		if imageURL, err := b.supa.uploadFlyer(context.Background(), in.ID, in.Image, in.ImageMIME); err != nil {
-			logf("flyer upload failed (continuing without image): %v", err)
-		} else {
-			draft.ImageURL = imageURL
-			draft.ImageAlt = fmt.Sprintf("Event flyer shared by the organizer in the %s WhatsApp group", in.GroupName)
+	if draft.ImageURL == "" && len(draft.Hero) > 0 && !draft.Cancelled {
+		imageURL, err := b.media.uploadEventImage(context.Background(), draft.Slug, draft.Hero, draft.HeroMIME, now)
+		if err != nil {
+			b.memory.add(in.GroupJID, remembered)
+			logf("skipped: flyer upload failed: %v", err)
+			return
 		}
+		draft.ImageURL = imageURL
+		draft.ImageAlt = ownerHeroAlt
+	}
+	if draft.ImageURL == "" && !draft.Cancelled {
+		b.memory.add(in.GroupJID, remembered)
+		logf("skipped: no flyer for hero")
+		return
 	}
 
 	row := draft.toRow(b.createdBy)
@@ -322,9 +340,12 @@ func (b *ingestBot) ingest(in inbound, fromHistory bool) {
 	remembered.DraftSlug = draft.Slug
 	remembered.Draft = draft
 	b.memory.add(in.GroupJID, remembered)
-	if draft.Cancelled {
+	switch {
+	case draft.Cancelled:
 		logf("draft cancelled: %q (%s)", draft.Title, draft.Slug)
-	} else {
+	case saved != nil && saved.Reopened:
+		logf("draft reopened: %q slug=%s", draft.Title, draft.Slug)
+	default:
 		logf("draft upserted: %q starting %s slug=%s", draft.Title, draft.StartsAt, draft.Slug)
 	}
 	if b.reviewHookURL != "" && saved != nil && saved.ID != "" && !draft.Cancelled {

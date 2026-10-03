@@ -292,12 +292,21 @@ EVENT_IDS=<event-uuid> npx tsx --tsconfig tsconfig.json scripts/backfill-transla
 Runnable Go listener in `whatsapp-ingest/`. Mac mini launchd runbook and env
 table live in that README. The process must stay read-only on WhatsApp.
 
-WhatsApp drafts often have a single flyer. The ingest writes
-`source_metadata.visual_gap` covering `promo` when it stored that flyer, which
-is the documented promo exception. Review evaluate still holds a draft with no
-hero, no venue, or no Đà Lạt locality. A documented gap never waives a missing
-hero. Do not invent promo images. There is no in-repo poller: a draft with
-`needs_review: true` sits until Dalat Review calls `POST /api/import/review`.
+WhatsApp drafts are written only when Review can pass the standing checks.
+The flyer or photo (from the message, or from the group window) is uploaded
+to Cloudflare R2 on the Scout path `event-media/{slug}/{timestamp}.ext` and
+stored as `image_url`, with `source_metadata.visual_provenance` set to
+`owner_authorized_source`. A single flyer still documents `visual_gap`
+covering `promo`. The address column includes Đà Lạt and Lâm Đồng, and
+`source_metadata.city` / `province` repeat that locality.
+`maps.app.goo.gl` and `goo.gl/maps` links are followed to a Google place
+before save. Chat such as "Lunch 12:15" plus a maps link, a venue that is
+only "DM for location", and a date the message calls tentative are skipped
+and do not set `needs_review`. Re-sending the same message id or source URL
+patches the existing draft, including one Review already rejected. A
+documented gap never waives a missing hero. Do not invent promo images.
+There is no in-repo poller: a draft with `needs_review: true` sits until
+Dalat Review calls `POST /api/import/review`.
 
 ## Related code
 
