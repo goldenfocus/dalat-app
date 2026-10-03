@@ -1,13 +1,15 @@
 package main
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
 
 var testLoc, _ = time.LoadLocation(defaultEventLocation)
 
-// ref is a fixed "now" for deterministic tests: Monday 2026-09-01 12:00 +07.
+// ref is a fixed "now" for deterministic tests: Tuesday 2026-09-01 12:00 +07.
+// 3 October 2026 is a Saturday, so the next Saturday after ref is 5 September.
 var ref = time.Date(2026, 9, 1, 12, 0, 0, 0, testLoc)
 
 func TestExtractStartTime(t *testing.T) {
@@ -59,6 +61,44 @@ func TestExtractStartTime(t *testing.T) {
 			text:    "Mọi ngưởi nhớ giữ gìn vệ sinh chung nhé",
 			wantErr: true,
 		},
+		{
+			name: "english month and from 8 pm",
+			text: "TECHNO CALLING\n\nOctober 3. From 8 pm \n\nLocation:\nCù Rú",
+			want: time.Date(2026, 10, 3, 20, 0, 0, 0, testLoc),
+		},
+		{
+			name:         "weekday plus explicit day month",
+			text:         "Morning vibes in Đà Lạt?\nJoin us this Saturday, 3 October for Morning Brew",
+			want:         time.Date(2026, 10, 3, 0, 0, 0, 0, testLoc),
+			wantInferred: true,
+		},
+		{
+			name:         "weekly saturday rolls to the next saturday",
+			text:         "WEEKLY SATURDAY COFFEE MEETUP WITH LIFE IN DA LAT COMMUNITY",
+			want:         time.Date(2026, 9, 5, 0, 0, 0, 0, testLoc),
+			wantInferred: true,
+		},
+		{
+			name: "vietnamese day month and evening hour",
+			text: "Acoustic thứ bảy, ngày 3 tháng 10 lúc 8 giờ tối",
+			want: time.Date(2026, 10, 3, 20, 0, 0, 0, testLoc),
+		},
+		{
+			name: "ordinal day of month",
+			text: "Market on the 3rd of October at 9am",
+			want: time.Date(2026, 10, 3, 9, 0, 0, 0, testLoc),
+		},
+		{
+			name: "tomorrow evening",
+			text: "See the show tomorrow at 8 pm",
+			want: time.Date(2026, 9, 2, 20, 0, 0, 0, testLoc),
+		},
+		{
+			name:         "tonight without a clock is 20:00",
+			text:         "Live set tonight",
+			want:         time.Date(2026, 9, 1, 20, 0, 0, 0, testLoc),
+			wantInferred: true,
+		},
 	}
 
 	for _, tc := range cases {
@@ -96,14 +136,21 @@ func TestFirstLine(t *testing.T) {
 }
 
 func TestExtractLocation(t *testing.T) {
-	if got := extractLocation("Acoustic night 12/9 20h tại cafe"); got != "cafe" {
+	if got, _ := extractLocation("Acoustic night 12/9 20h tại cafe"); got != "cafe" {
 		t.Errorf("got %q", got)
 	}
-	if got := extractLocation("Yoga in the park 03/09 at 7am"); got != "" {
+	if got, _ := extractLocation("Yoga in the park 03/09 at 7am"); got != "" {
 		t.Errorf("treated a clock time as a venue: %q", got)
 	}
-	if got := extractLocation("Full moon gathering 06/09"); got != "" {
+	if got, _ := extractLocation("Full moon gathering 06/09"); got != "" {
 		t.Errorf("invented location %q", got)
+	}
+	name, address := extractLocation("TECHNO CALLING\n\nOctober 3. From 8 pm \n\nLocation:\nCù Rú \n(2 Đ. Phạm Hồng Thái, Đà Lạt)")
+	if name != "Cù Rú" {
+		t.Errorf("name=%q", name)
+	}
+	if !strings.Contains(address, "Phạm Hồng Thái") {
+		t.Errorf("address=%q", address)
 	}
 }
 

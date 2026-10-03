@@ -4,12 +4,18 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 	"time"
 )
+
+// errNotMutable means the slug already belongs to a published or cancelled row.
+// The daemon only writes drafts.
+var errNotMutable = errors.New("event is not a draft; left unchanged")
 
 // supabaseClient talks to Supabase over PostgREST and the Storage API using the
 // service role key, mirroring how the repo's import-worker writes drafts.
@@ -27,6 +33,88 @@ type insertedEvent struct {
 	ID    string `json:"id"`
 	Slug  string `json:"slug"`
 	Title string `json:"title"`
+}
+
+type storedEvent struct {
+	ID     string `json:"id"`
+	Slug   string `json:"slug"`
+	Status string `json:"status"`
+}
+
+// saveDraft inserts a new draft or patches the same slug. Published and
+// cancelled rows are left alone so a replay cannot unpublish an event.
+func (s *supabaseClient) saveDraft(ctx context.Context, row map[string]any) (*insertedEvent, error) {
+	slug, _ := row["slug"].(string)
+	existing, err := s.lookupSlug(ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+	if existing != nil && existing.Status != "draft" {
+		return &insertedEvent{ID: existing.ID, Slug: existing.Slug, Title: ""}, errNotMutable
+	}
+	if existing == nil {
+		return s.insertEvent(ctx, row)
+	}
+	return s.patchEvent(ctx, existing.ID, row)
+}
+
+func (s *supabaseClient) lookupSlug(ctx context.Context, slug string) (*storedEvent, error) {
+	if slug == "" {
+		return nil, fmt.Errorf("missing slug")
+	}
+	endpoint := s.base + "/rest/v1/events?slug=eq." + url.QueryEscape(slug) + "&select=id,slug,status"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	s.authHeaders(req)
+	resp, err := s.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode/100 != 2 {
+		return nil, fmt.Errorf("lookup event: %s: %s", resp.Status, readSnippet(resp.Body))
+	}
+	var rows []storedEvent
+	if err := json.NewDecoder(resp.Body).Decode(&rows); err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+	return &rows[0], nil
+}
+
+func (s *supabaseClient) patchEvent(ctx context.Context, id string, row map[string]any) (*insertedEvent, error) {
+	body, err := json.Marshal(row)
+	if err != nil {
+		return nil, err
+	}
+	endpoint := s.base + "/rest/v1/events?id=eq." + url.QueryEscape(id)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	s.authHeaders(req)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Prefer", "return=representation")
+	resp, err := s.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode/100 != 2 {
+		return nil, fmt.Errorf("patch event: %s: %s", resp.Status, readSnippet(resp.Body))
+	}
+	var rows []insertedEvent
+	if err := json.NewDecoder(resp.Body).Decode(&rows); err != nil {
+		return nil, fmt.Errorf("patch event decode: %w", err)
+	}
+	if len(rows) == 0 {
+		return &insertedEvent{ID: id}, nil
+	}
+	return &rows[0], nil
 }
 
 // insertEvent upserts an events row on slug so reconnects and retries stay

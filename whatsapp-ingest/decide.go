@@ -1,0 +1,442 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"strings"
+	"time"
+
+	"go.mau.fi/whatsmeow/proto/waE2E"
+)
+
+// inbound is one allowlisted group message, already downloaded when it has an image.
+type inbound struct {
+	ID          string
+	GroupJID    string
+	GroupName   string
+	Sender      string
+	Text        string
+	QuotedID    string
+	QuotedText  string
+	ImageMIME   string
+	Timestamp   time.Time
+	HasImage    bool
+	Image       []byte
+	Message     *waE2E.Message
+	IsEdit      bool
+	FromHistory bool
+}
+
+func baseDraft(in inbound) *eventDraft {
+	shared := in.Timestamp
+	if shared.IsZero() {
+		shared = time.Now()
+	}
+	return &eventDraft{
+		Slug:        "wa-" + strings.ToLower(in.ID),
+		Description: strings.TrimSpace(in.Text),
+		Meta: map[string]any{
+			"channel":    "whatsapp-group",
+			"group_jid":  in.GroupJID,
+			"group_name": in.GroupName,
+			"sender":     in.Sender,
+			"message_id": in.ID,
+			"shared_at":  shared.UTC().Format(time.RFC3339),
+		},
+	}
+}
+
+func withCommunityLine(desc, group string) string {
+	name := strings.TrimSpace(group)
+	if name == "" {
+		name = "unknown"
+	}
+	line := fmt.Sprintf("Shared in the %q WhatsApp group of the Life in Đà Lạt community.", name)
+	desc = stripCommunity(desc)
+	if desc == "" {
+		return line
+	}
+	return desc + "\n\n" + line
+}
+
+func stripCommunity(desc string) string {
+	const marker = "\n\nShared in the "
+	if i := strings.Index(desc, marker); i >= 0 && strings.Contains(desc[i:], "Life in Đà Lạt community.") {
+		return strings.TrimSpace(desc[:i])
+	}
+	return strings.TrimSpace(desc)
+}
+
+func nativeFromInbound(in inbound) (*eventDraft, bool) {
+	draft, handled, err := applyNative(in, nil)
+	return draft, handled && err == nil && draft != nil
+}
+
+// decide turns one message plus the recent group window into a draft, or an
+// error the caller logs as a skip. It calls the LLM only for images and for
+// texts that pass mightBeEvent.
+func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDraft, error) {
+	normalizeEdit(&in)
+	if in.Message != nil {
+		if draft, handled, err := applyNative(in, history); handled {
+			return draft, err
+		}
+	}
+	if !in.HasImage && !mightBeEvent(in.Text) {
+		return nil, fmt.Errorf("not an event")
+	}
+
+	loc := mustLoc()
+	ref := in.Timestamp
+	if ref.IsZero() {
+		ref = now
+	}
+
+	var llm extractResult
+	llmOK := false
+	if ex != nil {
+		parsed, err := ex.Extract(context.Background(), extractRequest{
+			Text:      in.Text,
+			Context:   transcript(history, memMsg{ID: in.ID, Sender: in.Sender, Text: in.Text, HasImage: in.HasImage}),
+			GroupName: in.GroupName,
+			Image:     in.Image,
+			MIME:      in.ImageMIME,
+			Now:       now,
+		})
+		if err == nil {
+			llm = parsed
+			llmOK = true
+		}
+	}
+
+	if in.HasImage && llmOK && !llm.IsEvent && !mightBeEvent(in.Text) {
+		return nil, fmt.Errorf("image is not an event")
+	}
+	if llmOK && !llm.IsEvent && !in.HasImage && !hasCalendarSignal(in.Text) && !hasWeekdaySignal(in.Text) {
+		return nil, fmt.Errorf("not an event")
+	}
+
+	slug, anchorID, merged := anchorSlug(history, in.ID, in.Sender, in.QuotedID, in.Text, ref)
+	if in.IsEdit {
+		slug = "wa-" + strings.ToLower(in.ID)
+		anchorID = in.ID
+		if latestDraft(history, slug) != nil {
+			merged = true
+		}
+	}
+	if llmOK && llm.UpdatesMessageID != "" {
+		if linked, linkedID := quotedDraft(history, llm.UpdatesMessageID, 1); linked != "" {
+			slug, anchorID, merged = linked, linkedID, true
+		}
+	}
+
+	var draft *eventDraft
+	if merged {
+		if prev := latestDraft(history, slug); prev != nil {
+			draft = cloneDraft(prev)
+		}
+	}
+	if draft == nil {
+		draft = baseDraft(in)
+		draft.Slug = slug
+		draft.Meta["message_id"] = anchorID
+		merged = false
+	} else {
+		draft.Meta["message_id"] = anchorID
+		if in.ID != "" && !strings.EqualFold(in.ID, anchorID) {
+			draft.MergedIDs = append(draft.MergedIDs, in.ID)
+		}
+	}
+
+	corpus := in.Text
+	if in.QuotedText != "" {
+		corpus += "\n" + in.QuotedText
+	}
+	if llmOK && llm.IsEvent {
+		applyLLM(draft, llm, corpus, in.HasImage, loc)
+	}
+
+	if start, inferred, err := extractStartTime(in.Text, loc, ref); err == nil {
+		// A follow-up that actually names a day replaces the schedule. A
+		// message with only a venue leaves the previous start alone because
+		// extractStartTime fails when it cannot see a date.
+		draft.StartsAt = start
+		draft.TimeInferred = inferred
+	}
+	if location, address := venueFrom(in); location != "" {
+		draft.Location = location
+		if address != "" {
+			draft.Address = address
+		}
+	}
+	if in.IsEdit || !merged || draft.Title == "" || weakTitle(draft.Title) {
+		if llmOK && in.HasImage && strings.TrimSpace(llm.Title) != "" && !in.IsEdit {
+			draft.Title = strings.TrimSpace(llm.Title)
+		} else if title := firstLine(in.Text); title != "" {
+			draft.Title = title
+		}
+	}
+	if in.Text != "" {
+		if in.IsEdit {
+			draft.Description = in.Text
+		} else {
+			draft.Description = mergeText(stripCommunity(draft.Description), in.Text)
+		}
+	}
+	draft.Description = withCommunityLine(draft.Description, in.GroupName)
+	if textSaysCancelled(in.Text) || (llmOK && llm.Cancelled && (in.HasImage && llm.FromImage || textSaysCancelled(corpus))) {
+		draft.Cancelled = true
+	}
+	switch {
+	case in.HasImage && llmOK:
+		draft.Extraction = "vision"
+	case llmOK:
+		draft.Extraction = "llm"
+	default:
+		if draft.Extraction == "" {
+			draft.Extraction = "heuristic"
+		}
+	}
+
+	if draft.StartsAt.IsZero() {
+		return nil, fmt.Errorf("no date found in message")
+	}
+	if strings.TrimSpace(draft.Title) == "" {
+		return nil, fmt.Errorf("no title extractable")
+	}
+	return draft, nil
+}
+
+func normalizeEdit(in *inbound) {
+	if in == nil || in.Message == nil {
+		return
+	}
+	_, kind, original := unwrapPayload(in.Message)
+	if kind == nativeEdit && original != "" {
+		in.ID = original
+		in.IsEdit = true
+	}
+}
+
+func applyNative(in inbound, history []memMsg) (*eventDraft, bool, error) {
+	payload, ok := parseNativeMessage(in.Message)
+	if !ok {
+		return nil, false, nil
+	}
+	if payload.Kind == nativeRevoke {
+		slug := "wa-" + strings.ToLower(payload.OriginalID)
+		prev := latestDraft(history, slug)
+		if prev == nil {
+			return nil, true, fmt.Errorf("revoke of unknown event")
+		}
+		draft := cloneDraft(prev)
+		draft.Cancelled = true
+		draft.Meta["native_canceled"] = true
+		draft.Extraction = "native"
+		if in.ID != "" {
+			draft.MergedIDs = append(draft.MergedIDs, in.ID)
+		}
+		return draft, true, nil
+	}
+
+	draft := nativeDraft(in, payload)
+	if prev := latestDraft(history, draft.Slug); prev != nil {
+		merged := cloneDraft(prev)
+		if payload.Title != "" {
+			merged.Title = payload.Title
+		}
+		if !payload.Start.IsZero() {
+			merged.StartsAt = payload.Start
+			merged.TimeInferred = false
+		}
+		if payload.End != nil {
+			merged.EndsAt = payload.End
+		}
+		if payload.Location != "" {
+			merged.Location = payload.Location
+		}
+		if payload.Address != "" {
+			merged.Address = payload.Address
+		}
+		if payload.JoinLink != "" {
+			merged.ExternalURL = payload.JoinLink
+		}
+		if payload.Latitude != nil && payload.Longitude != nil {
+			merged.Latitude = payload.Latitude
+			merged.Longitude = payload.Longitude
+		}
+		if payload.Cancelled {
+			merged.Cancelled = true
+		}
+		merged.Description = withCommunityLine(mergeText(stripCommunity(merged.Description), payload.Text), in.GroupName)
+		merged.Native = true
+		merged.Extraction = "native"
+		merged.Meta["native_event"] = true
+		if payload.Kind == nativeEdit {
+			merged.Meta["native_edit"] = true
+		}
+		if in.ID != "" && !strings.EqualFold(in.ID, strings.TrimPrefix(merged.Slug, "wa-")) {
+			merged.MergedIDs = append(merged.MergedIDs, in.ID)
+		}
+		return merged, true, nil
+	}
+	if payload.Start.IsZero() && !payload.Cancelled {
+		return nil, true, fmt.Errorf("event message %q has no start time", payload.Title)
+	}
+	if draft.Title == "" {
+		return nil, true, fmt.Errorf("no title extractable")
+	}
+	return draft, true, nil
+}
+
+func venueFrom(in inbound) (string, string) {
+	if name, address := extractLocation(in.Text); name != "" {
+		return name, address
+	}
+	return extractLocation(in.QuotedText)
+}
+
+func applyLLM(draft *eventDraft, llm extractResult, corpus string, hasImage bool, loc *time.Location) {
+	imageFact := hasImage && llm.FromImage
+	if when, ok := groundedWhen(llm.Date, llm.Time, llm.DateEvidence, corpus, imageFact, loc); ok && draft.StartsAt.IsZero() {
+		draft.StartsAt = when
+		draft.TimeInferred = strings.TrimSpace(llm.Time) == ""
+	}
+	if llm.EndTime != "" {
+		if end, ok := groundedWhen(firstNonEmpty(llm.EndDate, llm.Date), llm.EndTime, llm.DateEvidence, corpus, imageFact, loc); ok {
+			draft.EndsAt = &end
+		}
+	}
+	if name, ok := groundedText(llm.Location, llm.LocationEvidence, corpus, imageFact); ok && draft.Location == "" && !isCityOnly(name) {
+		draft.Location = name
+	}
+	if addr, ok := groundedText(llm.Address, llm.LocationEvidence, corpus, imageFact); ok && draft.Address == "" && !isCityOnly(addr) {
+		draft.Address = addr
+	}
+	if price, ok := groundedText(llm.Price, llm.PriceEvidence, corpus, imageFact); ok && draft.PriceText == "" {
+		draft.PriceText = price
+	}
+	if org, ok := groundedText(llm.Organizer, llm.OrganizerEvidence, corpus, imageFact); ok && draft.Organizer == "" {
+		draft.Organizer = org
+	}
+}
+
+func groundedWhen(date, clock, evidence, corpus string, imageFact bool, loc *time.Location) (time.Time, bool) {
+	if strings.TrimSpace(date) == "" {
+		return time.Time{}, false
+	}
+	if !imageFact && !evidenceIn(corpus, evidence) {
+		return time.Time{}, false
+	}
+	return composeWhen(date, clock, loc)
+}
+
+func groundedText(value, evidence, corpus string, imageFact bool) (string, bool) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return "", false
+	}
+	if imageFact {
+		return value, true
+	}
+	if evidenceIn(corpus, value) || (evidenceIn(corpus, evidence) && evidenceIn(evidence, value)) {
+		return value, true
+	}
+	return "", false
+}
+
+func evidenceIn(corpus, evidence string) bool {
+	evidence = strings.TrimSpace(evidence)
+	if len([]rune(evidence)) < 2 {
+		return false
+	}
+	return strings.Contains(strings.ToLower(corpus), strings.ToLower(evidence))
+}
+
+func composeWhen(date, clock string, loc *time.Location) (time.Time, bool) {
+	date = strings.TrimSpace(date)
+	t, err := time.ParseInLocation("2006-01-02", date, loc)
+	if err != nil {
+		return time.Time{}, false
+	}
+	clock = strings.TrimSpace(clock)
+	if clock == "" {
+		return t, true
+	}
+	parsed, err := time.Parse("15:04", clock)
+	if err != nil {
+		return t, true
+	}
+	return time.Date(t.Year(), t.Month(), t.Day(), parsed.Hour(), parsed.Minute(), 0, 0, loc), true
+}
+
+func latestDraft(history []memMsg, slug string) *eventDraft {
+	var found *eventDraft
+	for i := range history {
+		if history[i].DraftSlug == slug && history[i].Draft != nil {
+			found = history[i].Draft
+		}
+	}
+	return found
+}
+
+func cloneDraft(d *eventDraft) *eventDraft {
+	cp := *d
+	if d.EndsAt != nil {
+		end := *d.EndsAt
+		cp.EndsAt = &end
+	}
+	if d.Latitude != nil {
+		lat := *d.Latitude
+		cp.Latitude = &lat
+	}
+	if d.Longitude != nil {
+		lng := *d.Longitude
+		cp.Longitude = &lng
+	}
+	cp.Meta = map[string]any{}
+	for k, v := range d.Meta {
+		cp.Meta[k] = v
+	}
+	cp.MergedIDs = append([]string(nil), d.MergedIDs...)
+	return &cp
+}
+
+func mergeText(base, extra string) string {
+	extra = strings.TrimSpace(extra)
+	base = strings.TrimSpace(base)
+	if extra == "" || base == extra {
+		return base
+	}
+	if base == "" {
+		return extra
+	}
+	if strings.Contains(base, extra) {
+		return base
+	}
+	return base + "\n\n" + extra
+}
+
+func weakTitle(title string) bool {
+	low := strings.ToLower(strings.TrimSpace(title))
+	return low == "" || strings.Contains(low, "poster") || strings.Contains(low, "flyer") || strings.Contains(low, "upcoming")
+}
+
+func textSaysCancelled(text string) bool {
+	low := strings.ToLower(text)
+	for _, cue := range []string{"cancelled", "canceled", "đã hủy", "hủy sự kiện", "huy su kien"} {
+		if strings.Contains(low, cue) {
+			return true
+		}
+	}
+	return false
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return value
+		}
+	}
+	return ""
+}

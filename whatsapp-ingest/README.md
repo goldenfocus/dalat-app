@@ -20,14 +20,42 @@ Graph auto-publish.
 2. Watches incoming group messages. Only messages from groups listed in
    `WHATSAPP_GROUP_JIDS` are ingested; everything else is ignored.
 3. Extracts event data:
-   - Native WhatsApp event messages → structured title/time/location directly.
-   - Text and flyer captions → heuristic day-first date/time extraction
-     (`15/9 19h00`, `03/09 at 7am`, `12/9 20h`, …). Messages with no date are skipped.
-   - Venue cues already in the text (`tại …`, `at …`) are copied; missing
-     places stay empty — the bot never invents Đà Lạt.
-   - Flyer images are downloaded and uploaded to the public `event-media`
-     storage bucket under `whatsapp/`, with organizer attribution in
-     `image_alt` and `source_metadata`.
+   - Native WhatsApp event messages, invites, edits, and cancellations →
+     structured title, description, start/end, location name/address,
+     coordinates, and join link. Edits and revokes update the original
+     message's draft (`wa-<original id>`). `isCanceled` becomes
+     `status: cancelled`.
+   - whatsmeow does **not** expose a group or community event-list RPC.
+     On history sync the daemon backfills native event messages in
+     allowlisted groups (still inside the 45-day horizon). It does not
+     replay ordinary chat, and it does not render screenshots. A PDF flyer
+     is caption-only: rendering would be the only way to read the page,
+     and this process does not render.
+   - Text uses a day-first parser for English and Vietnamese: month names
+     (`October 3`, `3rd of October`), `ngày 3 tháng 10`, weekdays
+     (`this Saturday`, `thứ bảy`, `WEEKLY SATURDAY`), and relative days
+     (`tonight`, `tomorrow`, `tối nay`) in Asia/Ho_Chi_Minh. A missing
+     clock is midnight, except tonight/tối nay which uses 20:00, and is
+     flagged `time_inferred`.
+   - Chit-chat (`yes`, `thank you`, `where do you sit?`) and short personal
+     meal plans (`Lunch / Cơm tấm Nguyễn` plus a time) are skipped. They
+     never call the model.
+   - Every image in an allowlisted group, including image-only posts, is
+     downloaded and sent to a vision model when a key is configured. The
+     model may supply a title, date, venue, price, or organizer only from
+     text it can see. A venue that is not in the conversation is dropped
+     unless `from_image` is set.
+   - The last 40 messages or two hours per group (replies included) are
+     kept in memory. A flyer followed by "tomorrow 8pm at Cù Rú", or a
+     reply to "can you repost the location?", updates the original draft
+     instead of inserting another row.
+   - Venue cues already in the text (`Location:`, `tại …`, `at …`) are
+     copied; missing places stay empty — the bot never invents Đà Lạt.
+   - Flyer images are uploaded to the public `event-media` bucket under
+     `whatsapp/`. A single flyer sets `source_metadata.visual_gap` covering
+     `promo` so Review can waive the gallery. It does not waive a missing
+     hero. The description records which group in the Life in Đà Lạt
+     community shared it.
 4. Skips events in the past or more than 45 days out (repo discovery-horizon
    rule), and messages older than 24 h (replayed backlog).
 5. Upserts a draft row into `events` (idempotent on `slug = wa-<messageID>`)
@@ -54,6 +82,15 @@ with `DOTENV_PATH`). See `env.example`.
 | `WHATSAPP_GROUP_JIDS` | Comma-separated group JID allowlist. **Empty = discovery mode**: logs every group message with its JID, ingests nothing. |
 | `REVIEW_HOOK_URL` | Optional notify URL after a draft upsert. Do **not** point this at `/api/import/review`. |
 | `REVIEW_INGEST_KEY` | Optional Bearer for `REVIEW_HOOK_URL` |
+| `OPENAI_API_KEY` | Vision/text extraction. Same key as `lib/ai/provider.ts`. Tried first. |
+| `ANTHROPIC_API_KEY` | Fallback vision/text provider (`claude-sonnet-4-20250514`). |
+| `OPENROUTER_API_KEY` | Fallback vision/text provider (`google/gemini-2.5-flash-lite`). |
+| `WHATSAPP_EVENT_MODEL` | Optional model override for whichever provider answers. |
+| `WHATSAPP_EVENT_LLM` | Optional `openai`, `anthropic`, `openrouter`, or `off`. Default: try the three keys above. |
+
+No new key is required. The daemon reads `../.env.local`, so an `OPENAI_API_KEY`
+already used by the app is enough. Without any key, text dates still parse and
+flyer images that do not contain a date in the caption are skipped.
 
 ## Build & run
 
@@ -139,6 +176,16 @@ Reload after a binary rebuild: `launchctl kickstart -k gui/$(id -u)/com.dalat.wh
   keep it read-only, and make sure group admins know the bot is there.
 - Heuristic date parsing can misread ambiguous text; drafts always keep the
   full original message in `description` so Review sees the source. Native
-  WhatsApp event messages are exact.
+  WhatsApp event messages are exact. Model output cannot add a venue, price,
+  or date that is not in the text, unless the call included a flyer image and
+  the model marked the fact `from_image`.
 - Date ambiguity is resolved day-first (Vietnam convention).
 - Never send messages from this process (`Send*` APIs are unused on purpose).
+- Nothing in this repo polls `needs_review`. `REVIEW_HOOK_URL` only notifies;
+  it does not publish. Drafts stay drafts until Dalat Review calls
+  `POST /api/import/review`. A draft still needs a venue and a hero image
+  before that call can publish it. The three drafts created on 1 Oct 2026
+  ("Improv Playdate", "Stand-up Comedy Workshop", "Lunch") are not published
+  by this process. "Lunch / Cơm tấm Nguyễn" is treated as a personal meal
+  plan when it is ordinary chat; a native WhatsApp event with that name is
+  still ingested because the sender created an event.

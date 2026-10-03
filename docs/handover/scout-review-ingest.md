@@ -39,7 +39,8 @@ Set these in Vercel / `.env.local` / the Mac mini vault. Never commit values.
 | `SUPABASE_SERVICE_ROLE_KEY` | App + WhatsApp | Server-side writes only |
 | `IMPORT_CREATED_BY` | App + WhatsApp | Profile UUID owning drafts (default: username `yan`) |
 | `WHATSAPP_GROUP_JIDS` | WhatsApp Mac mini | Comma-separated `…@g.us` allowlist |
-| `REVIEW_HOOK_URL` | WhatsApp (optional) | Notify URL after a WhatsApp draft upsert. **Not** `/api/import/review`. |
+| `REVIEW_HOOK_URL` | WhatsApp (optional) | Notify URL after a WhatsApp draft upsert. **Not** `/api/import/review`. Nothing in this repo polls `needs_review`; drafts stay drafts until Review calls this API. |
+| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `OPENROUTER_API_KEY` | WhatsApp vision | Same keys as `lib/ai/provider.ts`. Flyer images and announcement-shaped messages only. `WHATSAPP_EVENT_LLM=off` disables the call. |
 | `CRON_SECRET` | App (already set) | Bearer for `GET /api/cron/translate-events`. Not a new secret. |
 
 Event translation does not add a provider key. It uses the existing
@@ -291,10 +292,12 @@ EVENT_IDS=<event-uuid> npx tsx --tsconfig tsconfig.json scripts/backfill-transla
 Runnable Go listener in `whatsapp-ingest/`. Mac mini launchd runbook and env
 table live in that README. The process must stay read-only on WhatsApp.
 
-WhatsApp drafts often have a single flyer. Review evaluate will hold them
-(`missing_promo`) until Scout re-submits 3 distinct images, or a hero plus
-`visual_gap_reason` covering promo, or Review `reject`s with reasons. A
-documented gap never waives a missing hero. Do not invent promo images.
+WhatsApp drafts often have a single flyer. The ingest writes
+`source_metadata.visual_gap` covering `promo` when it stored that flyer, which
+is the documented promo exception. Review evaluate still holds a draft with no
+hero, no venue, or no Đà Lạt locality. A documented gap never waives a missing
+hero. Do not invent promo images. There is no in-repo poller: a draft with
+`needs_review: true` sits until Dalat Review calls `POST /api/import/review`.
 
 ## Related code
 
