@@ -34,6 +34,7 @@ type insertedEvent struct {
 	Slug     string `json:"slug"`
 	Title    string `json:"title"`
 	Reopened bool   `json:"-"`
+	Created  bool   `json:"-"`
 }
 
 type storedEvent struct {
@@ -57,7 +58,11 @@ func (s *supabaseClient) saveDraft(ctx context.Context, row map[string]any) (*in
 		return &insertedEvent{ID: existing.ID, Slug: existing.Slug, Title: ""}, errNotMutable
 	}
 	if existing == nil {
-		return s.insertEvent(ctx, row)
+		saved, err := s.insertEvent(ctx, row)
+		if saved != nil {
+			saved.Created = true
+		}
+		return saved, err
 	}
 	saved, err := s.patchEvent(ctx, existing.ID, patchableRow(row))
 	if err != nil {

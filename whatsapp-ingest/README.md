@@ -26,9 +26,10 @@ Graph auto-publish.
      message's draft (`wa-<original id>`). `isCanceled` becomes
      `status: cancelled`.
    - whatsmeow does **not** expose a group or community event-list RPC.
-     On history sync the daemon backfills native event messages in
-     allowlisted groups (still inside the 45-day horizon). It does not
-     replay ordinary chat, and it does not render screenshots. A PDF flyer
+     On an automatic history sync the daemon backfills native event
+     messages in allowlisted groups (still inside the 45-day horizon).
+     Ordinary chat from before the daemon connected is replayed only by
+     the explicit backfill below. It does not render screenshots. A PDF flyer
      is caption-only: rendering would be the only way to read the page,
      and this process does not render.
    - Text uses a day-first parser for English and Vietnamese: month names
@@ -118,6 +119,45 @@ go test ./...
 
 Runtime artifacts (`whatsapp-ingest` binary, `store.db`, `.tools/`) are
 gitignored. Never commit secrets.
+
+## History backfill
+
+WhatsApp keeps history on the paired phone only, so the backfill asks the
+phone for it (whatsmeow on-demand history sync: `BuildHistorySyncRequest` +
+`SendPeerMessage`, answered as an `ON_DEMAND` `events.HistorySync`). It walks
+each allowlisted group backwards 50 messages at a time from the newest known
+message until it passes `-since`, then replays everything oldest-first through
+the live pipeline: flyer vision, the per-group context window (on the
+message's own clock, so "tomorrow" means the day after it was sent), the R2
+hero, the needs_review gate, and the idempotent `wa-<message id>` slug. Past
+events are still skipped by the 45-day horizon; nothing is published.
+
+The phone must be online. Only one client may use `store.db`, so stop the
+launchd job while the one-shot runs:
+
+```bash
+launchctl bootout gui/$(id -u)/app.dalat.whatsapp-ingest
+./whatsapp-ingest backfill -since 2026-09-25 -dry-run   # list only
+./whatsapp-ingest backfill -since 2026-09-25 [-until 2026-10-03T02:07:00-04:00]
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/app.dalat.whatsapp-ingest.plist
+```
+
+`-since`/`-until` take `2026-09-25` (midnight Đà Lạt), `2026-09-25T08:00`
+(Đà Lạt clock) or RFC 3339. Other flags: `-page`, `-max-pages`, `-wait`,
+`-phone-wait 12h` (keep re-asking a silent phone every `-probe-every`,
+default 15m).
+
+Alternatively set `WHATSAPP_BACKFILL_SINCE` (and preferably
+`WHATSAPP_BACKFILL_UNTIL`) in the launchd job. The daemon then runs one
+backfill after connecting and keeps listening. If the phone is silent, it
+re-probes every 15 minutes for `WHATSAPP_BACKFILL_PHONE_WAIT` (default 24h).
+A finished run is recorded in `backfill-state.json`, so restarts do not replay
+it. Delete that file to run it again. The run ends with a `backfill done:` summary
+line plus one line per created/updated draft.
+
+The first request in a group starts before the newest live message the
+daemon saw (kept in `backfill-anchors.json`), or else before the newest
+message id in `store.db`'s message-secret table.
 
 ## First-time setup
 
