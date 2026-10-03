@@ -21,6 +21,9 @@ type eventDraft struct {
 	ExternalURL  string
 	ImageURL     string
 	ImageAlt     string
+	Hero         []byte
+	HeroMIME     string
+	MapsURL      string
 	StartsAt     time.Time
 	EndsAt       *time.Time
 	TimeInferred bool
@@ -529,8 +532,11 @@ func (d *eventDraft) toRow(createdBy string) map[string]any {
 	if d.Location != "" {
 		row["location_name"] = d.Location
 	}
-	if d.Address != "" {
-		row["address"] = d.Address
+	if d.Address != "" || publicVenue(d.Location) {
+		row["address"] = ensureLocalityAddress(d.Address)
+	}
+	if maps := d.googleMapsURL(); maps != "" {
+		row["google_maps_url"] = maps
 	}
 	if d.Latitude != nil && d.Longitude != nil {
 		row["latitude"] = *d.Latitude
@@ -548,15 +554,32 @@ func (d *eventDraft) toRow(createdBy string) map[string]any {
 	}
 	if d.ImageURL != "" {
 		row["image_url"] = d.ImageURL
-		row["image_alt"] = d.ImageAlt
+		alt := strings.TrimSpace(d.ImageAlt)
+		if alt == "" {
+			alt = ownerHeroAlt
+		}
+		row["image_alt"] = alt
+		meta["visual_provenance"] = "owner_authorized_source"
+		meta["hero_present"] = true
 		meta["visual_gap"] = map[string]any{
-			"reason": "WhatsApp organizer shared a single flyer; no additional images were posted",
-			"covers": []string{"promo"},
+			"reason":        "WhatsApp organizer shared a single flyer; no additional images were posted",
+			"covers":        []string{"promo"},
+			"documented_at": time.Now().UTC().Format(time.RFC3339),
 		}
 	}
+	meta["city"] = dalatCity
+	meta["province"] = lamDongProvince
 	meta["time_inferred"] = d.TimeInferred
-	meta["needs_review"] = !d.Cancelled
+	// A rejected draft is reopened by sending the full metadata again:
+	// needs_review goes back to true and the previous rejection is cleared.
+	meta["needs_review"] = reviewableDraft(d)
+	meta["review_result"] = nil
+	meta["rejected_at"] = nil
+	meta["reject_reasons"] = nil
 	meta["ingest_lane"] = "scout-review"
+	if chat, _ := row["external_chat_url"].(string); chat != "" {
+		meta["source_url"] = chat
+	}
 	if d.Extraction != "" {
 		meta["extraction"] = d.Extraction
 	}

@@ -104,6 +104,12 @@ func TestSingleFlyerDocumentsPromoGap(t *testing.T) {
 	if row["image_url"] == "" {
 		t.Fatal("missing hero")
 	}
+	if meta["visual_provenance"] != "owner_authorized_source" {
+		t.Fatalf("provenance=%v", meta["visual_provenance"])
+	}
+	if strings.Contains(strings.ToLower(row["image_alt"].(string)), "ai-generated") {
+		t.Fatalf("alt=%v", row["image_alt"])
+	}
 }
 
 func TestSaveDraftDoesNotClobberPublished(t *testing.T) {
@@ -151,6 +157,55 @@ func TestSaveDraftPatchesExistingDraft(t *testing.T) {
 	}
 	if saved.ID != "evt-1" {
 		t.Fatalf("%+v", saved)
+	}
+}
+
+func TestSaveDraftReopensRejectedDraft(t *testing.T) {
+	var patched bool
+	var body map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if strings.Contains(r.URL.RawQuery, "slug=eq.") && strings.Contains(r.URL.RawQuery, "wa-missing") {
+				_ = json.NewEncoder(w).Encode([]storedEvent{})
+				return
+			}
+			if strings.Contains(r.URL.RawQuery, "source_url") {
+				_ = json.NewEncoder(w).Encode([]storedEvent{{
+					ID: "evt-9", Slug: "wa-old", Status: "draft",
+					SourceMetadata: map[string]any{"review_result": "rejected", "needs_review": false},
+				}})
+				return
+			}
+			_ = json.NewEncoder(w).Encode([]storedEvent{{
+				ID: "evt-9", Slug: "wa-old", Status: "draft",
+				SourceMetadata: map[string]any{"review_result": "rejected"},
+			}})
+			return
+		}
+		patched = true
+		raw, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(raw, &body)
+		_ = json.NewEncoder(w).Encode([]insertedEvent{{ID: "evt-9", Slug: "wa-old"}})
+	}))
+	defer server.Close()
+	client := newSupabaseClient(server.URL, "service")
+	saved, err := client.saveDraft(context.Background(), map[string]any{
+		"slug": "wa-missing", "title": "TECHNO CALLING", "status": "draft",
+		"external_chat_url": "whatsapp:120363@g.us/OLD",
+		"source_metadata":   map[string]any{"source_url": "whatsapp:120363@g.us/OLD", "needs_review": true, "review_result": nil},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !patched || !saved.Reopened || saved.ID != "evt-9" {
+		t.Fatalf("patched=%v saved=%+v", patched, saved)
+	}
+	if _, ok := body["slug"]; ok {
+		t.Fatal("patch rewrote slug")
+	}
+	meta, _ := body["source_metadata"].(map[string]any)
+	if meta["needs_review"] != true {
+		t.Fatalf("needs_review=%v", meta["needs_review"])
 	}
 }
 

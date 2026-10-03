@@ -51,16 +51,18 @@ func TestDecideTextAnnouncements(t *testing.T) {
 		},
 		{
 			name:     "morning brew",
-			text:     "Morning vibes in Đà Lạt? ☕️🎧\nJoin us this Saturday, 3 October for Morning Brew & records",
+			text:     "Morning vibes in Đà Lạt? ☕️🎧\nJoin us this Saturday, 3 October for Morning Brew & records\nLocation: The Hideout",
 			wantDay:  3,
 			wantHour: 0,
+			wantLoc:  "The Hideout",
 			inferred: true,
 		},
 		{
 			name:     "weekly coffee",
-			text:     "WEEKLY SATURDAY COFFEE MEETUP WITH LIFE IN DA LAT COMMUNITY",
+			text:     "WEEKLY SATURDAY COFFEE MEETUP WITH LIFE IN DA LAT COMMUNITY\nLocation: Cù Rú",
 			wantDay:  5,
 			wantHour: 0,
+			wantLoc:  "Cù Rú",
 			inferred: true,
 		},
 	}
@@ -69,6 +71,7 @@ func TestDecideTextAnnouncements(t *testing.T) {
 			draft, err := decide(inbound{
 				ID: "MSG1", GroupJID: "120363@g.us", GroupName: "Events & Offers",
 				Sender: "alice", Text: tc.text, Timestamp: ref,
+				HasImage: true, Image: testFlyerPNG(t), ImageMIME: "image/png",
 			}, nil, nil, ref)
 			if err != nil {
 				t.Fatal(err)
@@ -99,7 +102,11 @@ func TestDecideTextAnnouncements(t *testing.T) {
 
 func TestDecideSkipsChitChatAndMealPlans(t *testing.T) {
 	ex := &fakeExtractor{result: extractResult{IsEvent: true, Date: "2026-10-03", FromImage: true, Title: "Invented"}}
-	for _, text := range []string{"yes", "thank you", "where do you sit?", "Lunch / Cơm tấm Nguyễn\n12/10 12:00"} {
+	for _, text := range []string{
+		"yes", "thank you", "where do you sit?",
+		"Lunch / Cơm tấm Nguyễn\n12/10 12:00",
+		"Lunch 12:15\nhttps://maps.app.goo.gl/abcDEF123",
+	} {
 		_, err := decide(inbound{ID: "X", Text: text, Timestamp: ref, GroupName: "Events"}, nil, ex, ref)
 		if err == nil {
 			t.Fatalf("created a draft for %q", text)
@@ -174,7 +181,8 @@ func TestDecideQuotedLocationUpdatesSameDraft(t *testing.T) {
 	original := &eventDraft{
 		Slug: "wa-fly", Title: "TECHNO CALLING", Description: "TECHNO CALLING",
 		StartsAt: start, Location: "",
-		Meta: map[string]any{"message_id": "FLY"},
+		ImageURL: "https://cdn.dalat.app/event-media/wa-fly/1.jpg",
+		Meta:     map[string]any{"message_id": "FLY"},
 	}
 	history := []memMsg{
 		{ID: "FLY", Sender: "alice", Text: "TECHNO CALLING", HasImage: true, IsEvent: true, DraftSlug: "wa-fly", Draft: original, At: ref},
@@ -206,17 +214,20 @@ func TestDecideQuotedLocationUpdatesSameDraft(t *testing.T) {
 }
 
 func TestDecideSeparateAnnouncements(t *testing.T) {
+	png := testFlyerPNG(t)
 	first, err := decide(inbound{
 		ID: "A", Sender: "alice", Timestamp: ref, GroupName: "Events",
-		Text: "TECHNO CALLING\n\nOctober 3. From 8 pm \n\nLocation:\nCù Rú",
+		Text:     "TECHNO CALLING\n\nOctober 3. From 8 pm \n\nLocation:\nCù Rú",
+		HasImage: true, Image: png, ImageMIME: "image/png",
 	}, nil, nil, ref)
 	if err != nil {
 		t.Fatal(err)
 	}
-	history := []memMsg{{ID: "A", Sender: "alice", Text: first.Description, DraftSlug: first.Slug, Draft: first, IsEvent: true, At: ref}}
+	history := []memMsg{{ID: "A", Sender: "alice", Text: first.Description, DraftSlug: first.Slug, Draft: first, IsEvent: true, At: ref, HasImage: true, Image: png, ImageMIME: "image/png"}}
 	second, err := decide(inbound{
 		ID: "B", Sender: "alice", Timestamp: ref.Add(time.Hour), GroupName: "Events",
-		Text: "Morning vibes in Đà Lạt?\nJoin us this Saturday, 3 October for Morning Brew & records",
+		Text:     "Morning vibes in Đà Lạt?\nJoin us this Saturday, 3 October for Morning Brew & records\nLocation: The Hideout",
+		HasImage: true, Image: png, ImageMIME: "image/png",
 	}, history, nil, ref)
 	if err != nil {
 		t.Fatal(err)
@@ -234,13 +245,14 @@ func TestVisionDoesNotInventVenueWithoutImageFlag(t *testing.T) {
 	}}
 	draft, err := decide(inbound{
 		ID: "T", Sender: "alice", Timestamp: ref, GroupName: "Events",
-		Text: "TECHNO CALLING\n\nOctober 3. From 8 pm",
+		Text:     "TECHNO CALLING\n\nOctober 3. From 8 pm\nLocation:\nCù Rú",
+		HasImage: true, Image: testFlyerPNG(t), ImageMIME: "image/png",
 	}, nil, ex, ref)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if draft.Location != "" {
-		t.Fatalf("invented location %q", draft.Location)
+	if draft.Location != "Cù Rú" {
+		t.Fatalf("location=%q", draft.Location)
 	}
 	if ex.calls != 1 {
 		t.Fatalf("calls=%d", ex.calls)
