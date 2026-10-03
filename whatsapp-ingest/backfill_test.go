@@ -274,3 +274,40 @@ func TestBackfillTally(t *testing.T) {
 		t.Fatalf("tally=%+v", tally)
 	}
 }
+
+func TestOrderChatsPrefersExactAnchors(t *testing.T) {
+	a := types.NewJID("120363400000000001", types.GroupServer)
+	b := types.NewJID("120363400000000002", types.GroupServer)
+	c := types.NewJID("120363400000000003", types.GroupServer)
+	live := map[types.JID]bool{c: true}
+	got := orderChats([]types.JID{b, c, a}, func(j types.JID) bool { return live[j] })
+	if got[0] != c || got[1] != a || got[2] != b {
+		t.Fatalf("got %v", got)
+	}
+}
+
+func TestBackfillStateSkipsAFinishedRun(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "state.json")
+	now := time.Date(2026, 10, 3, 8, 0, 0, 0, time.UTC)
+	cfg, err := backfillConfigFromStrings("2026-09-25", "2026-10-03T02:07:00-04:00", now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := readBackfillState(path); ok {
+		t.Fatal("no state yet")
+	}
+	writeBackfillState(path, backfillState{Since: cfg.Since, Until: cfg.Until, CompletedAt: now, Created: 3})
+	state, ok := readBackfillState(path)
+	if !ok || state.Created != 3 || !state.matches(*cfg) {
+		t.Fatalf("state=%+v ok=%v", state, ok)
+	}
+	other, _ := backfillConfigFromStrings("2026-09-20", "2026-10-03T02:07:00-04:00", now)
+	if state.matches(*other) {
+		t.Fatal("a different since is a new run")
+	}
+	// Without an explicit until (daemon restarts move "now"), since decides.
+	open, _ := backfillConfigFromStrings("2026-09-25", "", now.Add(time.Hour))
+	if !state.matches(*open) {
+		t.Fatal("same since without until should count as done")
+	}
+}

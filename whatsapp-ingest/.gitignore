@@ -11,3 +11,4 @@ backfill-anchors.json
 backfill-anchors.json.tmp
 wa-pair-qr.png
 *.log
+backfill-state.json

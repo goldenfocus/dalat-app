@@ -40,6 +40,13 @@ const (
 	defaultBackfillWait     = 90 * time.Second
 	backfillChunkGrace      = 4 * time.Second
 	backfillPagePause       = 2 * time.Second
+	defaultProbeEvery       = 15 * time.Minute
+	// defaultDaemonPhoneWait is how long the daemon keeps re-asking a silent
+	// phone when the backfill was requested through WHATSAPP_BACKFILL_SINCE.
+	defaultDaemonPhoneWait = 24 * time.Hour
+	// backfillStatePath records a finished run so a daemon restart with the
+	// same WHATSAPP_BACKFILL_* settings does not replay it again.
+	backfillStatePath = "backfill-state.json"
 	// anchorsPath keeps the newest live message per allowlisted group so a
 	// later backfill can start from a message the phone certainly has.
 	anchorsPath = "backfill-anchors.json"
@@ -52,6 +59,14 @@ type backfillConfig struct {
 	MaxPages int
 	Wait     time.Duration
 	DryRun   bool
+	// PhoneWait keeps probing for this long when the phone does not answer
+	// (0 = one attempt). ProbeEvery is the pause between probes.
+	PhoneWait  time.Duration
+	ProbeEvery time.Duration
+	// SkipIfDone skips a run backfill-state.json already records.
+	SkipIfDone bool
+	// UntilSet is false when Until defaulted to the start time.
+	UntilSet bool
 }
 
 // parseBackfillTime accepts 2006-01-02 (midnight in Đà Lạt), 2006-01-02T15:04
@@ -78,10 +93,11 @@ func parseBackfillTime(value string) (time.Time, error) {
 
 func backfillConfigFromStrings(since, until string, now time.Time) (*backfillConfig, error) {
 	cfg := &backfillConfig{
-		PageSize: defaultBackfillPageSize,
-		MaxPages: defaultBackfillMaxPages,
-		Wait:     defaultBackfillWait,
-		Until:    now,
+		PageSize:   defaultBackfillPageSize,
+		MaxPages:   defaultBackfillMaxPages,
+		Wait:       defaultBackfillWait,
+		Until:      now,
+		ProbeEvery: defaultProbeEvery,
 	}
 	start, err := parseBackfillTime(since)
 	if err != nil {
@@ -94,6 +110,7 @@ func backfillConfigFromStrings(since, until string, now time.Time) (*backfillCon
 			return nil, err
 		}
 		cfg.Until = end
+		cfg.UntilSet = true
 	}
 	if !cfg.Since.Before(cfg.Until) {
 		return nil, fmt.Errorf("since %s must be before until %s", cfg.Since.Format(time.RFC3339), cfg.Until.Format(time.RFC3339))
@@ -110,6 +127,8 @@ func runBackfillCommand(args []string) {
 	maxPages := fs.Int("max-pages", defaultBackfillMaxPages, "history requests per group")
 	wait := fs.Duration("wait", defaultBackfillWait, "how long to wait for the phone to answer one request")
 	dryRun := fs.Bool("dry-run", false, "fetch and list history without creating drafts")
+	phoneWait := fs.Duration("phone-wait", 0, "keep re-asking a silent phone for this long (e.g. 12h); 0 = one attempt")
+	probeEvery := fs.Duration("probe-every", defaultProbeEvery, "pause between probes while waiting for the phone")
 	_ = fs.Parse(args)
 	if strings.TrimSpace(*since) == "" {
 		fatal("backfill: -since is required, e.g. -since 2026-09-25")
@@ -128,6 +147,10 @@ func runBackfillCommand(args []string) {
 		cfg.Wait = *wait
 	}
 	cfg.DryRun = *dryRun
+	cfg.PhoneWait = *phoneWait
+	if *probeEvery > 0 {
+		cfg.ProbeEvery = *probeEvery
+	}
 	runDaemon(cfg, true)
 }
 
@@ -373,6 +396,11 @@ func (a *anchorBook) note(info types.MessageInfo) {
 	a.saveLocked()
 }
 
+func (a *anchorBook) has(chat types.JID) bool {
+	_, ok := a.get(chat)
+	return ok
+}
+
 func (a *anchorBook) seenLive(chat types.JID, id string) bool {
 	if a == nil {
 		return false
@@ -509,6 +537,13 @@ func (t *backfillTally) add(out ingestOutcome) {
 }
 
 func (b *ingestBot) runBackfill(ctx context.Context, cfg backfillConfig) {
+	if cfg.SkipIfDone {
+		if state, ok := readBackfillState(backfillStatePath); ok && state.matches(cfg) {
+			logf("backfill: %s → %s already finished at %s (delete %s to run it again)",
+				cfg.Since.Format(time.RFC3339), cfg.Until.Format(time.RFC3339), state.CompletedAt.Format(time.RFC3339), backfillStatePath)
+			return
+		}
+	}
 	select {
 	case <-b.connected:
 	case <-time.After(3 * time.Minute):
@@ -518,25 +553,59 @@ func (b *ingestBot) runBackfill(ctx context.Context, cfg backfillConfig) {
 	// Let the offline queue and app-state sync settle before asking the phone.
 	time.Sleep(10 * time.Second)
 
-	logf("backfill: replaying allowlisted history from %s to %s (page=%d max-pages=%d dry-run=%v)",
-		cfg.Since.Format(time.RFC3339), cfg.Until.Format(time.RFC3339), cfg.PageSize, cfg.MaxPages, cfg.DryRun)
+	logf("backfill: replaying allowlisted history from %s to %s (page=%d max-pages=%d dry-run=%v phone-wait=%s)",
+		cfg.Since.Format(time.RFC3339), cfg.Until.Format(time.RFC3339), cfg.PageSize, cfg.MaxPages, cfg.DryRun, cfg.PhoneWait)
 	session := newBackfillSession()
 	b.setBackfillSession(session)
+	defer b.setBackfillSession(nil)
 
 	chats := make([]types.JID, 0, len(b.allowlist))
 	for jid := range b.allowlist {
 		chats = append(chats, jid)
 	}
-	sort.Slice(chats, func(i, j int) bool { return chats[i].String() < chats[j].String() })
 
 	tally := backfillTally{}
 	var items []historyItem
-	for _, chat := range chats {
-		fetched, kept := b.fetchGroupHistory(ctx, session, chat, cfg)
-		tally.Fetched += fetched
-		items = append(items, kept...)
+
+	// Probe with the group that has the best anchor until the phone answers.
+	deadline := time.Now().Add(cfg.PhoneWait)
+	var probe types.JID
+	for {
+		chats = orderChats(chats, b.anchors.has)
+		probe = chats[0]
+		res := b.fetchGroupHistory(ctx, session, probe, cfg)
+		tally.Fetched += res.Fetched
+		items = append(items, res.Kept...)
+		if res.Answered {
+			break
+		}
+		if cfg.PhoneWait <= 0 || time.Now().Add(cfg.ProbeEvery).After(deadline) {
+			logf("backfill: the phone never answered a history request; no history fetched. Open WhatsApp on the paired phone (online, in the foreground) and run the backfill again")
+			return
+		}
+		logf("backfill: the phone did not answer; asking again in %s (until %s)", cfg.ProbeEvery, deadline.Format(time.RFC3339))
+		time.Sleep(cfg.ProbeEvery)
 	}
-	b.setBackfillSession(nil)
+
+	var silent []types.JID
+	for _, chat := range chats {
+		if chat == probe {
+			continue
+		}
+		res := b.fetchGroupHistory(ctx, session, chat, cfg)
+		tally.Fetched += res.Fetched
+		items = append(items, res.Kept...)
+		if !res.Answered {
+			silent = append(silent, chat)
+		}
+	}
+	// One more pass for groups that were silent: live chat may have given
+	// them an exact anchor meanwhile.
+	for _, chat := range silent {
+		res := b.fetchGroupHistory(ctx, session, chat, cfg)
+		tally.Fetched += res.Fetched
+		items = append(items, res.Kept...)
+	}
 
 	ordered := orderHistory(items)
 	tally.InWindow = len(ordered)
@@ -569,6 +638,10 @@ func (b *ingestBot) runBackfill(ctx context.Context, cfg backfillConfig) {
 		logf("backfill [dry-run] done: %d message(s) listed, no drafts written", tally.InWindow)
 		return
 	}
+	writeBackfillState(backfillStatePath, backfillState{
+		Since: cfg.Since, Until: cfg.Until, CompletedAt: time.Now(),
+		Fetched: tally.Fetched, Replayed: tally.Replayed, Created: len(tally.Created), Updated: len(tally.Updated),
+	})
 	logf("backfill done: fetched=%d in-window=%d replayed=%d created=%d updated=%d cancelled=%d untouched=%d",
 		tally.Fetched, tally.InWindow, tally.Replayed, len(tally.Created), len(tally.Updated), len(tally.Cancelled), len(tally.Untouched))
 	for _, out := range tally.Created {
@@ -595,17 +668,21 @@ func (b *ingestBot) runBackfill(ctx context.Context, cfg backfillConfig) {
 
 // fetchGroupHistory pages backwards through one group. It returns how many
 // messages the phone sent and the ones inside the window.
-func (b *ingestBot) fetchGroupHistory(ctx context.Context, session *backfillSession, chat types.JID, cfg backfillConfig) (int, []historyItem) {
+type groupFetch struct {
+	Fetched  int
+	Kept     []historyItem
+	Answered bool
+}
+
+func (b *ingestBot) fetchGroupHistory(ctx context.Context, session *backfillSession, chat types.JID, cfg backfillConfig) (res groupFetch) {
 	name := b.lookupGroupName(chat)
 	anchor, source, err := b.backfillAnchor(ctx, chat)
 	if err != nil {
 		logf("backfill %q: no anchor message, skipping group: %v", name, err)
-		return 0, nil
+		return res
 	}
 	logf("backfill %q: starting before message %s (%s)", name, anchor.ID, source)
 
-	fetched := 0
-	var kept []historyItem
 	for page := 1; page <= cfg.MaxPages; page++ {
 		ch := session.wait(chat.String())
 		req := b.client.BuildHistorySyncRequest(&anchor, cfg.PageSize)
@@ -626,8 +703,9 @@ func (b *ingestBot) fetchGroupHistory(ctx context.Context, session *backfillSess
 		case <-time.After(cfg.Wait):
 			session.drop(chat.String())
 			logf("backfill %q page %d: no answer from the phone after %s (is it online?)", name, page, cfg.Wait)
-			return fetched, kept
+			return res
 		}
+		res.Answered = true
 		// An answer can arrive in more than one chunk.
 	drain:
 		for {
@@ -640,9 +718,9 @@ func (b *ingestBot) fetchGroupHistory(ctx context.Context, session *backfillSess
 		}
 		session.drop(chat.String())
 
-		fetched += len(msgs)
+		res.Fetched += len(msgs)
 		for _, web := range windowMessages(msgs, cfg.Since, cfg.Until) {
-			kept = append(kept, historyItem{Chat: chat, Name: name, Web: web})
+			res.Kept = append(res.Kept, historyItem{Chat: chat, Name: name, Web: web})
 		}
 		next, ok := oldestAnchor(chat, msgs)
 		if !ok {
@@ -659,5 +737,57 @@ func (b *ingestBot) fetchGroupHistory(ctx context.Context, session *backfillSess
 		anchor = next
 		time.Sleep(backfillPagePause)
 	}
-	return fetched, kept
+	return res
+}
+
+// orderChats puts groups with an exact live anchor first, then by JID.
+func orderChats(chats []types.JID, hasLive func(types.JID) bool) []types.JID {
+	out := append([]types.JID(nil), chats...)
+	sort.SliceStable(out, func(i, j int) bool {
+		li, lj := hasLive(out[i]), hasLive(out[j])
+		if li != lj {
+			return li
+		}
+		return out[i].String() < out[j].String()
+	})
+	return out
+}
+
+type backfillState struct {
+	Since       time.Time `json:"since"`
+	Until       time.Time `json:"until"`
+	CompletedAt time.Time `json:"completed_at"`
+	Fetched     int       `json:"fetched"`
+	Replayed    int       `json:"replayed"`
+	Created     int       `json:"created"`
+	Updated     int       `json:"updated"`
+}
+
+func (s backfillState) matches(cfg backfillConfig) bool {
+	if !s.Since.Equal(cfg.Since) {
+		return false
+	}
+	return !cfg.UntilSet || s.Until.Equal(cfg.Until)
+}
+
+func readBackfillState(path string) (backfillState, bool) {
+	var state backfillState
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return state, false
+	}
+	if err := json.Unmarshal(data, &state); err != nil {
+		return state, false
+	}
+	return state, true
+}
+
+func writeBackfillState(path string, state backfillState) {
+	data, err := json.MarshalIndent(state, "", "  ")
+	if err == nil {
+		err = os.WriteFile(path, data, 0o600)
+	}
+	if err != nil {
+		logf("backfill: could not record completion in %s: %v", path, err)
+	}
 }

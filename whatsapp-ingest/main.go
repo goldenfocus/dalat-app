@@ -69,6 +69,15 @@ func main() {
 		if err != nil {
 			fatal("WHATSAPP_BACKFILL_SINCE: %v", err)
 		}
+		cfg.SkipIfDone = true
+		cfg.PhoneWait = defaultDaemonPhoneWait
+		if raw := strings.TrimSpace(os.Getenv("WHATSAPP_BACKFILL_PHONE_WAIT")); raw != "" {
+			wait, err := time.ParseDuration(raw)
+			if err != nil {
+				fatal("WHATSAPP_BACKFILL_PHONE_WAIT: %v", err)
+			}
+			cfg.PhoneWait = wait
+		}
 		backfill = cfg
 	}
 	runDaemon(backfill, false)

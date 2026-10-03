@@ -143,10 +143,16 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/app.dalat.whatsapp-inges
 ```
 
 `-since`/`-until` take `2026-09-25` (midnight Đà Lạt), `2026-09-25T08:00`
-(Đà Lạt clock) or RFC 3339. Other flags: `-page`, `-max-pages`, `-wait`.
-Alternatively set `WHATSAPP_BACKFILL_SINCE` (and optionally
-`WHATSAPP_BACKFILL_UNTIL`) for the daemon; it runs one backfill after
-connecting and keeps listening. The run ends with a `backfill done:` summary
+(Đà Lạt clock) or RFC 3339. Other flags: `-page`, `-max-pages`, `-wait`,
+`-phone-wait 12h` (keep re-asking a silent phone every `-probe-every`,
+default 15m).
+
+Alternatively set `WHATSAPP_BACKFILL_SINCE` (and preferably
+`WHATSAPP_BACKFILL_UNTIL`) in the launchd job. The daemon then runs one
+backfill after connecting and keeps listening. If the phone is silent, it
+re-probes every 15 minutes for `WHATSAPP_BACKFILL_PHONE_WAIT` (default 24h).
+A finished run is recorded in `backfill-state.json`, so restarts do not replay
+it. Delete that file to run it again. The run ends with a `backfill done:` summary
 line plus one line per created/updated draft.
 
 The first request in a group starts before the newest live message the
