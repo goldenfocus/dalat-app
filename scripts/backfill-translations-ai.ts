@@ -42,6 +42,7 @@ import {
   CAPTION_FIELDS,
   TranslationWorkItem,
   blogTranslationSourceStillMatches,
+  peopleTranslationSourceStillMatches,
   partitionSweepWork,
   shouldDrainDeferredSweepWork,
 } from "@/lib/translation-sweep";
@@ -292,7 +293,15 @@ function claudeTranslateItem(
 
 // ── shared upsert ───────────────────────────────────────────────────────
 
-async function blogSourceStillMatches(item: TranslationWorkItem): Promise<boolean> {
+async function sourceStillMatches(item: TranslationWorkItem): Promise<boolean> {
+  if (item.contentType === "people") {
+    const { data, error } = await supabase.from("people_profiles")
+      .select("enabled,help_offered,help_wanted,content_updated_at,profiles!inner(is_private,is_ghost)")
+      .eq("user_id", item.contentId).eq("profiles.is_private", false)
+      .or("is_ghost.eq.false,is_ghost.is.null", { referencedTable: "profiles" }).maybeSingle();
+    if (error) throw error;
+    return peopleTranslationSourceStillMatches(item, data);
+  }
   if (item.contentType !== "blog") return true;
   const { data, error } = await supabase
     .from("blog_posts")
@@ -337,7 +346,7 @@ async function upsertLocale(
 ): Promise<boolean> {
   // A translation job may run for minutes. Refuse text collected before a
   // factual correction instead of making its late upsert look freshly valid.
-  if (!(await blogSourceStillMatches(item))) return false;
+  if (!(await sourceStillMatches(item))) return false;
 
   const candidateFields = item.fields.filter((field) => translated[field.field_name]);
   if (candidateFields.length === 0) return true;
@@ -366,6 +375,7 @@ async function upsertLocale(
       field_name: field.field_name,
       translated_text: translated[field.field_name],
       translation_status: "auto",
+      ...(item.contentType === "people" ? { source_updated_at: item.sourceUpdatedAt } : {}),
     };
     const existing = existingByField.get(field.field_name);
 
@@ -398,6 +408,7 @@ async function upsertLocale(
         source_locale: src,
         translated_text: translated[field.field_name],
         translation_status: "auto",
+        ...(item.contentType === "people" ? { source_updated_at: item.sourceUpdatedAt } : {}),
       })
       .eq("content_type", item.contentType)
       .eq("content_id", item.contentId)
@@ -416,7 +427,7 @@ async function upsertLocale(
     // second exact check compensates by deleting only the precise auto rows
     // written by this stale attempt. Corrections update first, then invalidate
     // auto translations, covering the opposite interleaving as well.
-    if (!(await blogSourceStillMatches(item))) {
+    if (!(await sourceStillMatches(item))) {
       await removeStaleAutoRows(item, locale, writtenRows);
       return false;
     }

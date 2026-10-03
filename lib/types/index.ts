@@ -81,6 +81,7 @@ export const LOCALE_NAMES: Record<ContentLocale, string> = {
 // Translation types
 export type TranslationStatus = "auto" | "reviewed" | "edited";
 export type TranslationContentType =
+  | "people"
   | "event"
   | "moment"
   | "profile"
@@ -90,6 +91,8 @@ export type TranslationContentType =
   | "organizer"
   | "track";
 export type TranslationFieldName =
+  | "help_offered"
+  | "help_wanted"
   | "title"
   | "description"
   | "text_content"

@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
+import { isPeopleEnabled } from "@/lib/people/constants";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { CACHE_TAGS } from "@/lib/cache/server-cache";
@@ -255,6 +256,29 @@ export async function POST(request: Request) {
       { error: "No valid fields to translate" },
       { status: 400 }
     );
+  }
+
+  if (body.content_type === "people") {
+    if (!isPeopleEnabled()) return NextResponse.json({ code: "unavailable" }, { status: 404 });
+    if (body.content_id !== user.id || eventIds.length !== 1) {
+      return NextResponse.json({ code: "forbidden" }, { status: 403 });
+    }
+    if (suppliedFields.length !== body.fields.length || suppliedFields.length > 2 ||
+      suppliedFields.some((field) => !["help_offered", "help_wanted"].includes(field.field_name))) {
+      return NextResponse.json({ code: "invalid_fields" }, { status: 400 });
+    }
+    const { data: source, error } = await supabase.from("people_profiles")
+      .select("help_offered,help_wanted").eq("user_id", user.id).maybeSingle();
+    if (error) return NextResponse.json({ code: "unavailable" }, { status: 503 });
+    if (!source) return NextResponse.json({ code: "not_found" }, { status: 404 });
+    if (suppliedFields.some((field) => source[field.field_name as "help_offered" | "help_wanted"] !== field.text)) {
+      return NextResponse.json({ code: "source_changed" }, { status: 409 });
+    }
+    // Source edits already invalidate translations atomically in PostgreSQL.
+    // The existing sweep discovers missing fields even if this request is lost.
+    return NextResponse.json({ success: true, queued: true }, {
+      status: 202, headers: { "Cache-Control": "private, no-store" },
+    });
   }
 
   const fieldsToTranslate = suppliedFields.filter(

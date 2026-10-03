@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isPeopleEnabled } from "@/lib/people/constants";
 import { CONTENT_LOCALES, ContentLocale, TranslationContentType } from "@/lib/types";
 import {
   getBlogTranslationCutoff,
@@ -51,6 +52,18 @@ export function blogTranslationSourceStillMatches(
   return translationSourceStillMatches(item, {
     ...current,
     updated_at: getBlogTranslationCutoff(current),
+  });
+}
+
+/** People use a content revision independent of availability/settings changes. */
+export function peopleTranslationSourceStillMatches(
+  item: Pick<TranslationWorkItem, "sourceUpdatedAt" | "fields">,
+  current: CurrentTranslationSource | null
+): boolean {
+  if (!item.sourceUpdatedAt || !current || current.enabled !== true) return false;
+  return translationSourceStillMatches(item, {
+    ...current,
+    updated_at: current.content_updated_at as string | null,
   });
 }
 
@@ -422,6 +435,29 @@ export async function collectTranslationWork(
       sourceLocale: profile.bio_source_locale,
       fields: [{ field_name: "bio", text: profile.bio }],
     });
+  }
+
+  // People content is authenticated and opt-in. Never send private/draft rows
+  // to the translator. Enable this collector only after its migration lands.
+  if (isPeopleEnabled() || process.env.PEOPLE_TRANSLATIONS_ENABLED === "true") {
+    const { data: people, error: peopleError } = await supabase
+      .from("people_profiles")
+      .select("user_id,help_offered,help_wanted,source_locale,content_updated_at,profiles!inner(is_private,is_ghost)")
+      .eq("enabled", true)
+      .eq("profiles.is_private", false)
+      .or("is_ghost.eq.false,is_ghost.is.null", { referencedTable: "profiles" })
+      .order("content_updated_at", { ascending: false })
+      .limit(scanLimit);
+    if (peopleError) throw new Error(`[translation-sweep] people query failed: ${peopleError.message}`);
+    for (const person of people ?? []) {
+      const fields = [
+        { field_name: "help_offered", text: person.help_offered },
+        { field_name: "help_wanted", text: person.help_wanted },
+      ].filter((field) => field.text?.trim());
+      if (!fields.length) continue;
+      candidates.push({ contentType: "people", contentId: person.user_id,
+        sourceLocale: person.source_locale, sourceUpdatedAt: person.content_updated_at, fields });
+    }
   }
 
   // --- Venues ---

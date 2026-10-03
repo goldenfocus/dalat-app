@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Profile, UserRole } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { isPeopleEnabled } from "@/lib/people/constants";
 
 async function getProfile(userId: string): Promise<Profile | null> {
   try {
@@ -66,7 +67,9 @@ export default async function AdminLayout({
 
   // Build nav items based on role (using icon names for serialization)
   const communityT = await getTranslations("tribes");
+  const peopleT = await getTranslations("people");
   const navItems = [
+    { href: "/admin/people-reports", label: peopleT("reportsTitle"), icon: "ShieldCheck", show: isModerator && isPeopleEnabled() },
     { href: "/admin/communities", label: communityT("insights"), icon: "Users", show: isAdmin },
     { href: "/admin", label: t("navDashboard"), icon: "LayoutDashboard", show: true },
     {

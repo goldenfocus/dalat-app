@@ -2,11 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/lib/i18n/routing";
+import { isPeopleEnabled } from "@/lib/people/constants";
 
 const sections = [
   { key: "events", href: "/events/upcoming", prefix: "/events" },
   { key: "experiences", href: "/experiences", prefix: "/experiences" },
   { key: "moments", href: "/moments", prefix: "/moments" },
+  ...(isPeopleEnabled() ? [{ key: "people", href: "/people", prefix: "/people" }] : []),
 ] as const;
 
 export function ContentNav() {
@@ -22,7 +24,7 @@ export function ContentNav() {
               key={key}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center border-b-2 px-2 text-sm font-medium transition-colors sm:flex-none sm:px-5 ${active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
+              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center border-b-2 px-2 text-sm font-medium transition-colors active:scale-95 sm:flex-none sm:px-5 ${active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
             >
               {t(key)}
             </Link>

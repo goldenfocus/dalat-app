@@ -63,6 +63,10 @@ function isCoreOnlyPath(path: string): boolean {
 
 export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
   {
+    test: (p) => inSection(p, "people"),
+    namespaces: ["people", "profile", "settings"],
+  },
+  {
     test: (p) => inSection(p, "map"),
     namespaces: ["mapPage", "venues", "categories", "eventTags"],
   },
@@ -128,6 +132,7 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
       "questionnaire",
       "eventSettings",
       "streaming",
+      "people",
       // "How it went" recap card on past events
       "recap",
     ],
@@ -138,7 +143,7 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
   },
   {
     test: (p) => inSection(p, "settings", "protected"),
-    namespaces: ["settings", "profile", "onboarding"],
+    namespaces: ["settings", "profile", "onboarding", "people"],
   },
   {
     test: (p) => inSection(p, "tribes", "communities", "contacts"),
@@ -153,7 +158,7 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
   },
   {
     test: (p) => inSection(p, "profile"),
-    namespaces: ["profile", "loyalty"],
+    namespaces: ["profile", "loyalty", "people"],
   },
   {
     test: (p) => inSection(p, "news"),
@@ -172,6 +177,7 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
     test: (p) => inSection(p, "organizer", "admin"),
     namespaces: [
       "organizer",
+      "people",
       "eventForm",
       "eventSettings",
       "responseDashboard",

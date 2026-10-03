@@ -4,6 +4,11 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./lib/i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  // Meet People rollout: apply its migration before shipping this release.
+  // An explicit false at build time keeps the release switch available.
+  env: {
+    NEXT_PUBLIC_PEOPLE_ENABLED: process.env.NEXT_PUBLIC_PEOPLE_ENABLED ?? "true",
+  },
   outputFileTracingIncludes: {
     "/*/communities/*/og-image": ["./public/images/communities/**/*"],
   },

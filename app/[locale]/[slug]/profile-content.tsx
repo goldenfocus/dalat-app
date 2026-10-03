@@ -16,6 +16,7 @@ import { MomentsTimeline } from "@/components/moments/moments-timeline";
 import { FollowButton } from "@/components/profile/follow-button";
 import { TierBadge } from "@/components/loyalty/tier-badge";
 import { ProfileTribes } from "@/components/tribes/profile-tribes";
+import { PeopleProfileSection } from "@/components/people/people-profile-section";
 
 interface ProfileContentProps {
   profileId: string;
@@ -338,6 +339,8 @@ export async function ProfileContent({ profileId, locale }: ProfileContentProps)
           )}
         </div>
       </div>
+
+      <PeopleProfileSection userId={profile.id} locale={locale} />
 
       {/* Events */}
       <div className="space-y-8">
