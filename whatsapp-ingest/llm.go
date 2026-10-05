@@ -13,21 +13,25 @@ import (
 	"time"
 )
 
-// extractRequest is one vision or text call. Image is nil for text-only.
+// extractRequest is one vision or text call. Images is empty for text-only.
 type extractRequest struct {
 	Text      string
 	Context   string
 	GroupName string
-	Image     []byte
+	Image     []byte   // first / only image (kept for callers and tests)
+	Images    [][]byte // full burst when several photos share one candidate
 	MIME      string
 	Now       time.Time
 }
 
 // extractResult is the model JSON. Evidence strings have to appear in the
-// conversation before a text-only field is trusted. Flyer fields may set
-// FromImage when the words are visible only in the picture.
+// conversation or in readable_text before a field is trusted. FromImage is
+// only valid when is_event_flyer is true and the words were read from the image.
 type extractResult struct {
 	IsEvent           bool   `json:"is_event"`
+	IsEventFlyer      bool   `json:"is_event_flyer"`
+	ImageKind         string `json:"image_kind"`
+	ReadableText      string `json:"readable_text"`
 	Title             string `json:"title"`
 	Date              string `json:"date"`
 	Time              string `json:"time"`
@@ -105,18 +109,22 @@ func firstEnv(keys ...string) string {
 
 const extractSystem = `You extract public event announcements from a Đà Lạt WhatsApp group. Return one JSON object and nothing else.
 Rules:
-- is_event is true only for a meetup, show, ride, workshop, class, market, or similar announcement. False for chatter, thank-yous, questions, emoji, and private meal plans ("lunch", "cơm tấm") that are not invitations.
-- Never invent a venue, address, price, organizer, date, or time. Use empty strings when the conversation or image does not show that fact.
+- First classify any attached image: image_kind is one of flyer, photo_of_people, scenery, food, other. Put every character of event text you can actually read from the image into readable_text (OCR). If there is no readable event text, readable_text is "".
+- is_event_flyer is true only when the image is a promotional flyer/poster AND readable_text contains both an event title and a date. Uncaptioned photos of people, scenery, food, or selfies are never flyers.
+- is_event is true only when the caption announces a meetup/show/ride/workshop/class/market, OR is_event_flyer is true. False for chatter, thank-yous, questions, emoji, private meal plans ("lunch", "cơm tấm"), and photos with no event text.
+- Never invent a title, venue, address, price, organizer, date, or time. Use empty strings when the conversation and readable_text do not show that fact. Do not guess from scenery, clothing, group names, or prior knowledge.
 - date is YYYY-MM-DD in Asia/Ho_Chi_Minh. time and end_time are 24-hour HH:MM or "".
 - When the fact comes from the written conversation, date_evidence, time_evidence, location_evidence, price_evidence, and organizer_evidence must be exact substrings of that conversation.
-- When the fact is visible only on a flyer image, set from_image true and copy only text you can see. Do not guess a venue from the scenery.
+- When the fact is visible only on a flyer, set from_image true, set is_event_flyer true, and copy only text that appears in readable_text. Evidence fields must be exact substrings of readable_text.
 - If this message only adds details to an earlier announcement, set updates_message_id to that transcript message id. Otherwise "".
 - cancelled is true only when the source says the event is cancelled.
-- title is the event name. Do not use a caption such as "Poster with upcoming rides" when the image shows a real name.`
+- title is the event name read from the caption or readable_text. Do not invent a name for a photo of people.`
 
 func (c *llmClient) Extract(ctx context.Context, req extractRequest) (extractResult, error) {
-	if len(req.Image) > 8<<20 {
-		return extractResult{}, fmt.Errorf("image too large")
+	for _, img := range requestImages(req) {
+		if len(img) > 8<<20 {
+			return extractResult{}, fmt.Errorf("image too large")
+		}
 	}
 	prompt := buildExtractPrompt(req)
 	var errs []string
@@ -181,10 +189,26 @@ func buildExtractPrompt(req extractRequest) string {
 	if strings.TrimSpace(req.Text) != "" {
 		fmt.Fprintf(&b, "\nMessage text:\n%s\n", req.Text)
 	}
-	if len(req.Image) > 0 {
-		b.WriteString("\nA flyer image is attached. Read the text in the image.\n")
+	n := len(req.Images)
+	if n == 0 && len(req.Image) > 0 {
+		n = 1
+	}
+	if n == 1 {
+		b.WriteString("\nAn image is attached. Decide whether it is an event flyer with readable event text. Copy only text you can see into readable_text. Do not invent details.\n")
+	} else if n > 1 {
+		fmt.Fprintf(&b, "\n%d images from the same burst are attached. Decide whether any is an event flyer with readable event text. Copy only text you can see into readable_text. Do not invent details.\n", n)
 	}
 	return b.String()
+}
+
+func requestImages(req extractRequest) [][]byte {
+	if len(req.Images) > 0 {
+		return req.Images
+	}
+	if len(req.Image) > 0 {
+		return [][]byte{req.Image}
+	}
+	return nil
 }
 
 func mustLoc() *time.Location {
@@ -197,15 +221,15 @@ func mustLoc() *time.Location {
 
 func (c *llmClient) openAIChat(ctx context.Context, base, key, model, prompt string, req extractRequest, openRouter bool) (string, error) {
 	content := []map[string]any{{"type": "text", "text": prompt}}
-	if len(req.Image) > 0 {
-		mime := req.MIME
-		if mime == "" {
-			mime = "image/jpeg"
-		}
+	mime := req.MIME
+	if mime == "" {
+		mime = "image/jpeg"
+	}
+	for _, img := range requestImages(req) {
 		content = append(content, map[string]any{
 			"type": "image_url",
 			"image_url": map[string]string{
-				"url": "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(req.Image),
+				"url": "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(img),
 			},
 		})
 	}
@@ -260,17 +284,17 @@ func (c *llmClient) openAIChat(ctx context.Context, base, key, model, prompt str
 
 func (c *llmClient) anthropicChat(ctx context.Context, prompt string, req extractRequest) (string, error) {
 	content := []map[string]any{}
-	if len(req.Image) > 0 {
-		mime := req.MIME
-		if mime == "" {
-			mime = "image/jpeg"
-		}
+	mime := req.MIME
+	if mime == "" {
+		mime = "image/jpeg"
+	}
+	for _, img := range requestImages(req) {
 		content = append(content, map[string]any{
 			"type": "image",
 			"source": map[string]string{
 				"type":       "base64",
 				"media_type": mime,
-				"data":       base64.StdEncoding.EncodeToString(req.Image),
+				"data":       base64.StdEncoding.EncodeToString(img),
 			},
 		})
 	}

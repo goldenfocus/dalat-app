@@ -165,11 +165,58 @@ describe("evaluateDraftQuality", () => {
       event({
         external_chat_url: "whatsapp:120363@g.us/ABCD",
         source_platform: "whatsapp",
-        source_metadata: { message_id: "ABCD", group_jid: "120363@g.us" },
+        description: "TECHNO CALLING\nOctober 3 from 8pm at Cù Rú, Đà Lạt.",
+        source_metadata: {
+          message_id: "ABCD",
+          group_jid: "120363@g.us",
+          time_inferred: false,
+          source_text_evidence: "TECHNO CALLING\nOctober 3 from 8pm at Cù Rú",
+          is_event_flyer: true,
+          extraction: "vision",
+        },
       }),
       qualityOptions(),
     );
     expect(reasons.map((reason) => reason.code)).not.toContain("missing_source");
+    expect(reasons.map((reason) => reason.code)).not.toContain("missing_source_text");
+    expect(reasons.map((reason) => reason.code)).not.toContain("inferred_time");
+  });
+
+  it("holds WhatsApp drafts without source text or with inferred times", () => {
+    const noText = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        external_chat_url: "whatsapp:120363@g.us/SELFIE",
+        description: 'Shared in the "Garden of Mindfulness" WhatsApp group of the Life in Đà Lạt community.',
+        source_metadata: {
+          message_id: "SELFIE",
+          time_inferred: false,
+          extraction: "vision",
+          is_event_flyer: false,
+          image_kind: "photo_of_people",
+          personal_photo_hero: true,
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(noText.map((reason) => reason.code)).toEqual(
+      expect.arrayContaining(["missing_source_text", "personal_photo_hero"]),
+    );
+
+    const inferred = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        external_chat_url: "whatsapp:120363@g.us/CAP",
+        description: "Join us this Saturday at The Hideout, Đà Lạt",
+        source_metadata: {
+          message_id: "CAP",
+          time_inferred: true,
+          source_text_evidence: "Join us this Saturday at The Hideout",
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(inferred.map((reason) => reason.code)).toContain("inferred_time");
   });
 
   it("flags a published duplicate", () => {

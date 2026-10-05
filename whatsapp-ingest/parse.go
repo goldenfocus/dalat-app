@@ -13,29 +13,34 @@ import (
 
 // eventDraft is a parsed event announcement ready to become an events row.
 type eventDraft struct {
-	Slug         string
-	Title        string
-	Description  string
-	Location     string
-	Address      string
-	ExternalURL  string
-	ImageURL     string
-	ImageAlt     string
-	Hero         []byte
-	HeroMIME     string
-	MapsURL      string
-	StartsAt     time.Time
-	EndsAt       *time.Time
-	TimeInferred bool
-	PriceText    string
-	Organizer    string
-	Cancelled    bool
-	Latitude     *float64
-	Longitude    *float64
-	Extraction   string
-	MergedIDs    []string
-	Native       bool
-	Meta         map[string]any
+	Slug           string
+	Title          string
+	Description    string
+	Location       string
+	Address        string
+	ExternalURL    string
+	ImageURL       string
+	ImageAlt       string
+	Hero           []byte
+	HeroMIME       string
+	MapsURL        string
+	StartsAt       time.Time
+	EndsAt         *time.Time
+	TimeInferred   bool
+	PriceInferred  bool
+	PriceText      string
+	Organizer      string
+	Cancelled      bool
+	Latitude       *float64
+	Longitude      *float64
+	Extraction     string
+	MergedIDs      []string
+	Native         bool
+	IsEventFlyer   bool
+	ImageKind      string
+	ReadableText   string
+	PersonalPhoto  bool
+	Meta           map[string]any
 }
 
 var (
@@ -505,6 +510,17 @@ func isCityOnly(name string) bool {
 	}
 }
 
+
+// sourceCaption returns the user-authored description without the Life in
+// Đà Lạt community attribution line. Empty when the draft has no real caption.
+func sourceCaption(desc string) string {
+	caption := strings.TrimSpace(stripCommunity(desc))
+	if caption == "" || strings.HasPrefix(caption, "Shared in the ") {
+		return ""
+	}
+	return caption
+}
+
 // toRow maps the draft onto the events table columns.
 func (d *eventDraft) toRow(createdBy string) map[string]any {
 	status := "draft"
@@ -556,13 +572,23 @@ func (d *eventDraft) toRow(createdBy string) map[string]any {
 		row["image_url"] = d.ImageURL
 		alt := strings.TrimSpace(d.ImageAlt)
 		if alt == "" {
-			alt = ownerHeroAlt
+			if d.IsEventFlyer {
+				alt = flyerHeroAlt
+			} else if d.PersonalPhoto {
+				alt = personalPhotoAlt
+			} else {
+				alt = ownerHeroAlt
+			}
 		}
 		row["image_alt"] = alt
 		meta["visual_provenance"] = "owner_authorized_source"
 		meta["hero_present"] = true
+		gapReason := "WhatsApp shared a single image; no additional images were posted"
+		if d.IsEventFlyer {
+			gapReason = "WhatsApp organizer shared a single flyer; no additional images were posted"
+		}
 		meta["visual_gap"] = map[string]any{
-			"reason":        "WhatsApp organizer shared a single flyer; no additional images were posted",
+			"reason":        gapReason,
 			"covers":        []string{"promo"},
 			"documented_at": time.Now().UTC().Format(time.RFC3339),
 		}
@@ -570,6 +596,25 @@ func (d *eventDraft) toRow(createdBy string) map[string]any {
 	meta["city"] = dalatCity
 	meta["province"] = lamDongProvince
 	meta["time_inferred"] = d.TimeInferred
+	meta["price_inferred"] = d.PriceInferred
+	if d.ImageKind != "" {
+		meta["image_kind"] = d.ImageKind
+	}
+	if d.IsEventFlyer {
+		meta["is_event_flyer"] = true
+	} else if d.Extraction == "vision" {
+		meta["is_event_flyer"] = false
+	}
+	if d.ReadableText != "" {
+		meta["readable_text"] = d.ReadableText
+		meta["source_text_evidence"] = d.ReadableText
+	}
+	if caption := sourceCaption(d.Description); caption != "" {
+		meta["source_text_evidence"] = caption
+	}
+	if d.PersonalPhoto {
+		meta["personal_photo_hero"] = true
+	}
 	// A rejected draft is reopened by sending the full metadata again:
 	// needs_review goes back to true and the previous rejection is cleared.
 	meta["needs_review"] = reviewableDraft(d)

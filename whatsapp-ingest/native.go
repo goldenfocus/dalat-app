@@ -321,6 +321,27 @@ func inboundFromEvent(msg *events.Message, text, groupName string) inbound {
 	if msg.Message != nil {
 		in.Message = msg.Message
 		in.QuotedID, in.QuotedText = quotedRef(msg.Message)
+		in.AlbumParent = albumParentID(msg.Message)
 	}
 	return in
+}
+
+// albumParentID returns the WhatsApp MEDIA_ALBUM parent id when this message
+// is one frame of an album. Empty when the association is missing.
+func albumParentID(msg *waE2E.Message) string {
+	if msg == nil {
+		return ""
+	}
+	assoc := msg.GetMessageContextInfo().GetMessageAssociation()
+	if assoc == nil {
+		return ""
+	}
+	if assoc.GetAssociationType() != waE2E.MessageAssociation_MEDIA_ALBUM {
+		return ""
+	}
+	key := assoc.GetParentMessageKey()
+	if key == nil {
+		return ""
+	}
+	return key.GetID()
 }

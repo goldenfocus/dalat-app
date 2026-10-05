@@ -24,6 +24,9 @@ export type ReviewReasonCode =
   | "missing_image"
   | "missing_promo"
   | "activity_graph_lane"
+  | "missing_source_text"
+  | "inferred_time"
+  | "personal_photo_hero"
   | "not_a_draft"
   | "not_found";
 
@@ -204,7 +207,64 @@ export function evaluateDraftQuality(
       message: `Promo gallery has ${promoCount} image(s); visual-truth requires 2–4 distinct images, or a documented visual_gap covering promo when a hero exists`,
     });
   }
+  if (event.source_platform === "whatsapp") {
+    reasons.push(...evaluateWhatsAppDraftEvidence(event));
+  }
   return reasons;
+}
+
+/** WhatsApp drafts must carry real source text and literal times — never invented flyer vision. */
+export function evaluateWhatsAppDraftEvidence(event: ReviewEventSnapshot): ReviewReason[] {
+  const reasons: ReviewReason[] = [];
+  const meta = event.source_metadata ?? {};
+  if (!whatsappHasSourceTextEvidence(event)) {
+    reasons.push({
+      code: "missing_source_text",
+      message: "WhatsApp draft has no caption or readable flyer text evidence",
+    });
+  }
+  if (meta.time_inferred === true) {
+    reasons.push({
+      code: "inferred_time",
+      message: "WhatsApp draft time was inferred, not read from the caption or flyer text",
+    });
+  }
+  if (
+    meta.personal_photo_hero === true ||
+    meta.image_kind === "photo_of_people" ||
+    (meta.is_event_flyer === false &&
+      meta.extraction === "vision" &&
+      Boolean(event.image_url?.trim()))
+  ) {
+    reasons.push({
+      code: "personal_photo_hero",
+      message: "Hero looks like a personal photo of people or scenery, not an organizer flyer",
+    });
+  }
+  return reasons;
+}
+
+export function whatsappHasSourceTextEvidence(event: ReviewEventSnapshot): boolean {
+  const meta = event.source_metadata ?? {};
+  for (const key of ["source_text_evidence", "readable_text", "caption"] as const) {
+    const value = meta[key];
+    if (typeof value === "string" && value.trim().length >= 3 && !isCommunityAttribution(value)) {
+      return true;
+    }
+  }
+  const description = (event.description ?? "").trim();
+  if (!description) return false;
+  const withoutCommunity = description
+    .replace(/\n\nShared in the "[^"]+" WhatsApp group of the Life in Đà Lạt community\.?\s*$/u, "")
+    .trim();
+  if (!withoutCommunity || isCommunityAttribution(withoutCommunity)) {
+    return false;
+  }
+  return withoutCommunity.length >= 3;
+}
+
+function isCommunityAttribution(text: string): boolean {
+  return /^Shared in the ".+" WhatsApp group of the Life in Đà Lạt community\.?$/u.test(text.trim());
 }
 
 export async function evaluateReviewEvent(
