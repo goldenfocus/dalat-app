@@ -15,6 +15,10 @@ const (
 	// Same alt Scout writes for an owner-authorized hero. It must not say
 	// the picture is AI-generated.
 	ownerHeroAlt = "Event image from the organizer or venue source."
+	// Only used when vision confirms the image is an event flyer.
+	flyerHeroAlt = "Event flyer shared by the organizer in the WhatsApp group."
+	// Personal / non-flyer photos that somehow become a hero.
+	personalPhotoAlt = "Photo of people shared in a WhatsApp group, not an event flyer."
 )
 
 // prepareReview is the last step before a draft can be saved. It attaches a

@@ -10,22 +10,24 @@ const (
 	contextMaxMessages = 40
 	contextWindow      = 2 * time.Hour
 	imageFollowWindow  = 45 * time.Minute
+	photoBurstWindow   = 15 * time.Second
 )
 
 // memMsg is one allowlisted group message kept so a later reply can update
 // the same draft instead of becoming a second event.
 type memMsg struct {
-	ID        string
-	Sender    string
-	Text      string
-	QuotedID  string
-	DraftSlug string
-	Draft     *eventDraft
-	At        time.Time
-	HasImage  bool
-	Image     []byte
-	ImageMIME string
-	IsEvent   bool
+	ID          string
+	Sender      string
+	Text        string
+	QuotedID    string
+	DraftSlug   string
+	Draft       *eventDraft
+	At          time.Time
+	HasImage    bool
+	Image       []byte
+	ImageMIME   string
+	AlbumParent string
+	IsEvent     bool
 }
 
 type groupContext struct {
@@ -216,5 +218,101 @@ func transcript(history []memMsg, current memMsg) string {
 	if len(out) > 6000 {
 		out = out[len(out)-6000:]
 	}
+	return out
+}
+
+// photoBurst is same-sender images in a short window (or one WhatsApp album),
+// merged into a single vision candidate with a shared caption.
+type photoBurst struct {
+	AnchorID string
+	Caption  string
+	Images   [][]byte
+	MateIDs  []string
+}
+
+func collectPhotoBurst(history []memMsg, in inbound, at time.Time) photoBurst {
+	out := photoBurst{Caption: strings.TrimSpace(in.Text)}
+	if len(in.Image) > 0 {
+		out.Images = append(out.Images, in.Image)
+	}
+	if !in.HasImage && len(in.Image) == 0 {
+		return out
+	}
+	anchorID := in.ID
+	anchorAt := at
+	if at.IsZero() {
+		anchorAt = in.Timestamp
+	}
+	mates := []memMsg{}
+	for i := len(history) - 1; i >= 0; i-- {
+		msg := history[i]
+		if !msg.HasImage && len(msg.Image) == 0 {
+			continue
+		}
+		if !strings.EqualFold(msg.Sender, in.Sender) {
+			continue
+		}
+		sameAlbum := in.AlbumParent != "" && (strings.EqualFold(msg.AlbumParent, in.AlbumParent) || strings.EqualFold(msg.ID, in.AlbumParent))
+		delta := anchorAt.Sub(msg.At)
+		if delta < 0 {
+			delta = -delta
+		}
+		sameBurst := delta <= photoBurstWindow
+		if !sameAlbum && !sameBurst {
+			continue
+		}
+		mates = append(mates, msg)
+		if msg.At.Before(anchorAt) || (msg.At.Equal(anchorAt) && msg.ID < anchorID) {
+			anchorID = msg.ID
+			anchorAt = msg.At
+		}
+	}
+	if in.AlbumParent != "" {
+		for _, msg := range history {
+			if strings.EqualFold(msg.ID, in.AlbumParent) {
+				if anchorID == in.ID || msg.At.Before(anchorAt) {
+					anchorID = msg.ID
+					anchorAt = msg.At
+				}
+				break
+			}
+		}
+	}
+	// Rebuild caption + images oldest-first, then current.
+	ordered := append([]memMsg{}, mates...)
+	// reverse mates (we walked newest-first)
+	for i, j := 0, len(ordered)-1; i < j; i, j = i+1, j-1 {
+		ordered[i], ordered[j] = ordered[j], ordered[i]
+	}
+	images := [][]byte{}
+	caption := ""
+	mateIDs := []string{}
+	for _, msg := range ordered {
+		mateIDs = append(mateIDs, msg.ID)
+		if strings.TrimSpace(msg.Text) != "" {
+			if caption == "" {
+				caption = strings.TrimSpace(msg.Text)
+			} else if !strings.Contains(caption, strings.TrimSpace(msg.Text)) {
+				caption = caption + "\n" + strings.TrimSpace(msg.Text)
+			}
+		}
+		if len(msg.Image) > 0 {
+			images = append(images, msg.Image)
+		}
+	}
+	if strings.TrimSpace(in.Text) != "" {
+		if caption == "" {
+			caption = strings.TrimSpace(in.Text)
+		} else if !strings.Contains(caption, strings.TrimSpace(in.Text)) {
+			caption = caption + "\n" + strings.TrimSpace(in.Text)
+		}
+	}
+	if len(in.Image) > 0 {
+		images = append(images, in.Image)
+	}
+	out.AnchorID = anchorID
+	out.Caption = caption
+	out.Images = images
+	out.MateIDs = mateIDs
 	return out
 }

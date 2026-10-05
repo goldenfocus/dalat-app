@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 )
@@ -119,10 +120,14 @@ func TestDecideSkipsChitChatAndMealPlans(t *testing.T) {
 
 func TestDecideFlyerThenFollowUpSharesSlug(t *testing.T) {
 	png := testFlyerPNG(t)
+	readable := "Sunday canyon ride\n04/10 07:30\nLangbiang gate\n150.000đ\nMotorcycle Ride Squad"
 	ex := &fakeExtractor{result: extractResult{
-		IsEvent: true, FromImage: true, Title: "Sunday canyon ride",
+		IsEvent: true, IsEventFlyer: true, FromImage: true, ImageKind: "flyer",
+		Title: "Sunday canyon ride", ReadableText: readable,
 		Date: "2026-10-04", Time: "07:30", Location: "Langbiang gate",
 		Price: "150.000đ", Organizer: "Motorcycle Ride Squad",
+		DateEvidence: "04/10", TimeEvidence: "07:30", LocationEvidence: "Langbiang gate",
+		PriceEvidence: "150.000đ", OrganizerEvidence: "Motorcycle Ride Squad",
 	}}
 	flyer, err := decide(inbound{
 		ID: "FLY1", GroupJID: "g", GroupName: "Motorcycle Ride Squad",
@@ -257,6 +262,116 @@ func TestVisionDoesNotInventVenueWithoutImageFlag(t *testing.T) {
 	if ex.calls != 1 {
 		t.Fatalf("calls=%d", ex.calls)
 	}
+}
+
+
+func TestDecideSkipsUncaptionedPeoplePhoto(t *testing.T) {
+	ex := &fakeExtractor{result: extractResult{
+		IsEvent: true, IsEventFlyer: false, ImageKind: "photo_of_people",
+		Title: "Mindfulness Hiking Retreat", Date: "2026-10-10", Time: "07:00",
+		Location: "Pine Forest, Da Lat", Price: "500000 VND", FromImage: true,
+		ReadableText: "",
+	}}
+	_, err := decide(inbound{
+		ID: "SELFIE1", GroupJID: "g", GroupName: "Garden of Mindfulness",
+		Sender: "alice", Timestamp: ref, HasImage: true, Image: testFlyerPNG(t), ImageMIME: "image/png",
+	}, nil, ex, ref)
+	if err == nil {
+		t.Fatal("uncaptioned people photo became a draft")
+	}
+	if !strings.Contains(err.Error(), "not an event flyer") {
+		t.Fatalf("err=%v", err)
+	}
+}
+
+func TestDecidePhotoBurstMergesSameSender(t *testing.T) {
+	png := testFlyerPNG(t)
+	readable := "Sunday canyon ride\nSat 4 Oct 07:30\nLangbiang gate\n150.000đ"
+	ex := &fakeExtractor{result: extractResult{
+		IsEvent: true, IsEventFlyer: true, FromImage: true, ImageKind: "flyer",
+		Title: "Sunday canyon ride", ReadableText: readable,
+		Date: "2026-10-04", Time: "07:30", Location: "Langbiang gate",
+		DateEvidence: "4 Oct", TimeEvidence: "07:30", LocationEvidence: "Langbiang gate",
+		Price: "150.000đ", PriceEvidence: "150.000đ",
+	}}
+	first, err := decide(inbound{
+		ID: "A1", GroupJID: "g", GroupName: "Rides", Sender: "alice",
+		Timestamp: ref, HasImage: true, Image: png, ImageMIME: "image/png",
+		Text: "",
+	}, nil, ex, ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+	history := []memMsg{{
+		ID: "A1", Sender: "alice", HasImage: true, Image: png, ImageMIME: "image/png",
+		IsEvent: true, DraftSlug: first.Slug, Draft: first, At: ref,
+	}}
+	second, err := decide(inbound{
+		ID: "A2", GroupJID: "g", GroupName: "Rides", Sender: "alice",
+		Timestamp: ref.Add(5 * time.Second), HasImage: true, Image: png, ImageMIME: "image/png",
+	}, history, ex, ref.Add(5*time.Second))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if second.Slug != first.Slug {
+		t.Fatalf("burst did not merge: %s vs %s", second.Slug, first.Slug)
+	}
+	if len(ex.last.Images) < 2 {
+		t.Fatalf("vision saw %d images", len(ex.last.Images))
+	}
+	if !containsID(second.MergedIDs, "A2") && second.Slug == "wa-a1" {
+		// A2 should be recorded as merged when anchor is A1
+		if len(second.MergedIDs) == 0 {
+			t.Fatalf("merged=%v", second.MergedIDs)
+		}
+	}
+}
+
+func TestDecideVisionTimeWithoutEvidenceIsInferred(t *testing.T) {
+	readable := "Sunday canyon ride\n4 October\nLangbiang gate"
+	ex := &fakeExtractor{result: extractResult{
+		IsEvent: true, IsEventFlyer: true, FromImage: true, ImageKind: "flyer",
+		Title: "Sunday canyon ride", ReadableText: readable,
+		Date: "2026-10-04", Time: "07:00", Location: "Langbiang gate",
+		DateEvidence: "4 October", LocationEvidence: "Langbiang gate",
+		// TimeEvidence deliberately absent / not in readable text
+		TimeEvidence: "07:00",
+	}}
+	draft, err := decide(inbound{
+		ID: "FLY", GroupJID: "g", GroupName: "Rides", Sender: "alice",
+		Timestamp: ref, HasImage: true, Image: testFlyerPNG(t), ImageMIME: "image/png",
+	}, nil, ex, ref)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !draft.TimeInferred {
+		t.Fatal("invented clock must be time_inferred")
+	}
+	if !draft.IsEventFlyer {
+		t.Fatal("expected flyer")
+	}
+	draft.ImageURL = "https://cdn.example/flyer.png"
+	row := draft.toRow("profile")
+	meta := row["source_metadata"].(map[string]any)
+	if meta["time_inferred"] != true {
+		t.Fatalf("meta=%v", meta)
+	}
+	if meta["is_event_flyer"] != true {
+		t.Fatalf("flyer flag=%v", meta["is_event_flyer"])
+	}
+	alt, _ := row["image_alt"].(string)
+	if !strings.Contains(alt, "flyer") {
+		t.Fatalf("alt=%v", row["image_alt"])
+	}
+}
+
+func containsID(ids []string, id string) bool {
+	for _, existing := range ids {
+		if strings.EqualFold(existing, id) {
+			return true
+		}
+	}
+	return false
 }
 
 type fakeExtractor struct {

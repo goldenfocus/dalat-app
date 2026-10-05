@@ -392,7 +392,7 @@ func (b *ingestBot) ingestWithResult(memory *groupContext, in inbound, fromHisto
 	remembered := memMsg{
 		ID: in.ID, Sender: in.Sender, Text: in.Text, QuotedID: in.QuotedID,
 		At: at, HasImage: in.HasImage || len(in.Image) > 0,
-		Image: in.Image, ImageMIME: in.ImageMIME,
+		Image: in.Image, ImageMIME: in.ImageMIME, AlbumParent: in.AlbumParent,
 	}
 	if err != nil {
 		memory.add(in.GroupJID, remembered)
@@ -434,7 +434,14 @@ func (b *ingestBot) ingestWithResult(memory *groupContext, in inbound, fromHisto
 			return
 		}
 		draft.ImageURL = imageURL
-		draft.ImageAlt = ownerHeroAlt
+		switch {
+		case draft.IsEventFlyer:
+			draft.ImageAlt = flyerHeroAlt
+		case draft.PersonalPhoto:
+			draft.ImageAlt = personalPhotoAlt
+		default:
+			draft.ImageAlt = ownerHeroAlt
+		}
 	}
 	if draft.ImageURL == "" && !draft.Cancelled {
 		memory.add(in.GroupJID, remembered)

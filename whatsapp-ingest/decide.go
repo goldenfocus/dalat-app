@@ -22,6 +22,7 @@ type inbound struct {
 	Timestamp   time.Time
 	HasImage    bool
 	Image       []byte
+	AlbumParent string // WhatsApp MEDIA_ALBUM parent message id when present
 	Message     *waE2E.Message
 	IsEdit      bool
 	FromHistory bool
@@ -98,14 +99,17 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 		ref = now
 	}
 
+	burst := collectPhotoBurst(history, in, ref)
+
 	var llm extractResult
 	llmOK := false
 	if ex != nil {
 		parsed, err := ex.Extract(context.Background(), extractRequest{
-			Text:      in.Text,
-			Context:   transcript(history, memMsg{ID: in.ID, Sender: in.Sender, Text: in.Text, HasImage: in.HasImage}),
+			Text:      burst.Caption,
+			Context:   transcript(history, memMsg{ID: in.ID, Sender: in.Sender, Text: burst.Caption, HasImage: in.HasImage}),
 			GroupName: in.GroupName,
-			Image:     in.Image,
+			Image:     firstImage(burst.Images, in.Image),
+			Images:    burst.Images,
 			MIME:      in.ImageMIME,
 			Now:       now,
 		})
@@ -115,7 +119,10 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 		}
 	}
 
-	if in.HasImage && llmOK && !llm.IsEvent && !mightBeEvent(in.Text) {
+	if in.HasImage && !hasCaptionEventText(burst.Caption) && !(llmOK && flyerHasEventText(llm)) {
+		return nil, fmt.Errorf("image is not an event flyer")
+	}
+	if in.HasImage && llmOK && !llm.IsEvent && !hasCaptionEventText(burst.Caption) && !flyerHasEventText(llm) {
 		return nil, fmt.Errorf("image is not an event")
 	}
 	if llmOK && !llm.IsEvent && !in.HasImage && !hasCalendarSignal(in.Text) && !hasWeekdaySignal(in.Text) {
@@ -123,6 +130,11 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 	}
 
 	slug, anchorID, merged := anchorSlug(history, in.ID, in.Sender, in.QuotedID, in.Text, ref)
+	if burst.AnchorID != "" && burst.AnchorID != in.ID {
+		slug = "wa-" + strings.ToLower(burst.AnchorID)
+		anchorID = burst.AnchorID
+		merged = true
+	}
 	if in.IsEdit {
 		slug = "wa-" + strings.ToLower(in.ID)
 		anchorID = in.ID
@@ -161,8 +173,17 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 	if llmOK && llm.IsEvent {
 		applyLLM(draft, llm, corpus, in.HasImage, loc)
 	}
+	if llmOK {
+		stampVisionMeta(draft, llm, in.HasImage)
+	}
+	for _, mateID := range burst.MateIDs {
+		if mateID != "" && !strings.EqualFold(mateID, anchorID) && !strings.EqualFold(mateID, in.ID) {
+			draft.MergedIDs = appendUnique(draft.MergedIDs, mateID)
+		}
+	}
 
-	if start, inferred, err := extractStartTime(in.Text, loc, ref); err == nil {
+	captionForTime := firstNonEmpty(burst.Caption, in.Text)
+	if start, inferred, err := extractStartTime(captionForTime, loc, ref); err == nil {
 		// A follow-up that actually names a day replaces the schedule. A
 		// message with only a venue leaves the previous start alone because
 		// extractStartTime fails when it cannot see a date.
@@ -176,21 +197,21 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 		}
 	}
 	if in.IsEdit || !merged || draft.Title == "" || weakTitle(draft.Title) {
-		if llmOK && in.HasImage && strings.TrimSpace(llm.Title) != "" && !in.IsEdit {
+		if llmOK && in.HasImage && llm.IsEventFlyer && strings.TrimSpace(llm.Title) != "" && !in.IsEdit {
 			draft.Title = strings.TrimSpace(llm.Title)
-		} else if title := firstLine(in.Text); title != "" {
+		} else if title := firstLine(firstNonEmpty(burst.Caption, in.Text)); title != "" {
 			draft.Title = title
 		}
 	}
-	if in.Text != "" {
+	if caption := firstNonEmpty(burst.Caption, in.Text); caption != "" {
 		if in.IsEdit {
-			draft.Description = in.Text
+			draft.Description = caption
 		} else {
-			draft.Description = mergeText(stripCommunity(draft.Description), in.Text)
+			draft.Description = mergeText(stripCommunity(draft.Description), caption)
 		}
 	}
 	draft.Description = withCommunityLine(draft.Description, in.GroupName)
-	if textSaysCancelled(in.Text) || (llmOK && llm.Cancelled && (in.HasImage && llm.FromImage || textSaysCancelled(corpus))) {
+	if textSaysCancelled(in.Text) || (llmOK && llm.Cancelled && (in.HasImage && llm.FromImage && llm.IsEventFlyer || textSaysCancelled(corpus))) {
 		draft.Cancelled = true
 	}
 	switch {
@@ -303,52 +324,147 @@ func venueFrom(in inbound) (string, string) {
 }
 
 func applyLLM(draft *eventDraft, llm extractResult, corpus string, hasImage bool, loc *time.Location) {
-	imageFact := hasImage && llm.FromImage
-	if when, ok := groundedWhen(llm.Date, llm.Time, llm.DateEvidence, corpus, imageFact, loc); ok && draft.StartsAt.IsZero() {
+	readable := strings.TrimSpace(llm.ReadableText)
+	imageFact := hasImage && llm.FromImage && llm.IsEventFlyer && readable != ""
+	evidenceCorpus := corpus
+	if readable != "" {
+		evidenceCorpus = corpus + "\n" + readable
+	}
+	if when, ok := groundedWhen(llm.Date, llm.Time, llm.DateEvidence, evidenceCorpus, imageFact, readable, loc); ok && draft.StartsAt.IsZero() {
 		draft.StartsAt = when
-		draft.TimeInferred = strings.TrimSpace(llm.Time) == ""
+		draft.TimeInferred = !literalEvidence(evidenceCorpus, llm.TimeEvidence, llm.Time)
 	}
 	if llm.EndTime != "" {
-		if end, ok := groundedWhen(firstNonEmpty(llm.EndDate, llm.Date), llm.EndTime, llm.DateEvidence, corpus, imageFact, loc); ok {
+		if end, ok := groundedWhen(firstNonEmpty(llm.EndDate, llm.Date), llm.EndTime, llm.DateEvidence, evidenceCorpus, imageFact, readable, loc); ok {
 			draft.EndsAt = &end
 		}
 	}
-	if name, ok := groundedText(llm.Location, llm.LocationEvidence, corpus, imageFact); ok && draft.Location == "" && !isCityOnly(name) {
+	if name, ok := groundedText(llm.Location, llm.LocationEvidence, evidenceCorpus, imageFact, readable); ok && draft.Location == "" && !isCityOnly(name) {
 		draft.Location = name
 	}
-	if addr, ok := groundedText(llm.Address, llm.LocationEvidence, corpus, imageFact); ok && draft.Address == "" && !isCityOnly(addr) {
+	if addr, ok := groundedText(llm.Address, llm.LocationEvidence, evidenceCorpus, imageFact, readable); ok && draft.Address == "" && !isCityOnly(addr) {
 		draft.Address = addr
 	}
-	if price, ok := groundedText(llm.Price, llm.PriceEvidence, corpus, imageFact); ok && draft.PriceText == "" {
+	if price, ok := groundedText(llm.Price, llm.PriceEvidence, evidenceCorpus, imageFact, readable); ok && draft.PriceText == "" {
 		draft.PriceText = price
+		draft.PriceInferred = !literalEvidence(evidenceCorpus, llm.PriceEvidence, llm.Price)
 	}
-	if org, ok := groundedText(llm.Organizer, llm.OrganizerEvidence, corpus, imageFact); ok && draft.Organizer == "" {
+	if org, ok := groundedText(llm.Organizer, llm.OrganizerEvidence, evidenceCorpus, imageFact, readable); ok && draft.Organizer == "" {
 		draft.Organizer = org
 	}
 }
 
-func groundedWhen(date, clock, evidence, corpus string, imageFact bool, loc *time.Location) (time.Time, bool) {
+func stampVisionMeta(draft *eventDraft, llm extractResult, hasImage bool) {
+	if draft.Meta == nil {
+		draft.Meta = map[string]any{}
+	}
+	if hasImage {
+		draft.IsEventFlyer = llm.IsEventFlyer
+		draft.ImageKind = strings.TrimSpace(llm.ImageKind)
+		if draft.ImageKind == "" {
+			if llm.IsEventFlyer {
+				draft.ImageKind = "flyer"
+			} else {
+				draft.ImageKind = "other"
+			}
+		}
+		draft.ReadableText = strings.TrimSpace(llm.ReadableText)
+		draft.PersonalPhoto = isPersonalPhotoKind(draft.ImageKind) || (hasImage && !llm.IsEventFlyer && isPersonalPhotoKind(llm.ImageKind))
+		if isPersonalPhotoKind(draft.ImageKind) {
+			draft.PersonalPhoto = true
+		}
+		draft.Meta["is_event_flyer"] = llm.IsEventFlyer
+		draft.Meta["image_kind"] = draft.ImageKind
+		if draft.ReadableText != "" {
+			draft.Meta["readable_text"] = draft.ReadableText
+			draft.Meta["source_text_evidence"] = draft.ReadableText
+		}
+		if draft.PersonalPhoto {
+			draft.Meta["personal_photo_hero"] = true
+		}
+	}
+}
+
+func isPersonalPhotoKind(kind string) bool {
+	switch strings.ToLower(strings.TrimSpace(kind)) {
+	case "photo_of_people", "scenery", "food":
+		return true
+	default:
+		return false
+	}
+}
+
+func groundedWhen(date, clock, evidence, corpus string, imageFact bool, readable string, loc *time.Location) (time.Time, bool) {
 	if strings.TrimSpace(date) == "" {
 		return time.Time{}, false
 	}
-	if !imageFact && !evidenceIn(corpus, evidence) {
+	if imageFact {
+		if !evidenceIn(readable, evidence) && !evidenceIn(readable, date) && !evidenceIn(corpus, evidence) {
+			return time.Time{}, false
+		}
+	} else if !evidenceIn(corpus, evidence) {
 		return time.Time{}, false
 	}
 	return composeWhen(date, clock, loc)
 }
 
-func groundedText(value, evidence, corpus string, imageFact bool) (string, bool) {
+func groundedText(value, evidence, corpus string, imageFact bool, readable string) (string, bool) {
 	value = strings.TrimSpace(value)
 	if value == "" {
 		return "", false
 	}
 	if imageFact {
-		return value, true
+		if evidenceIn(readable, value) || evidenceIn(readable, evidence) || evidenceIn(corpus, value) {
+			return value, true
+		}
+		return "", false
 	}
 	if evidenceIn(corpus, value) || (evidenceIn(corpus, evidence) && evidenceIn(evidence, value)) {
 		return value, true
 	}
 	return "", false
+}
+
+func literalEvidence(corpus string, evidence, value string) bool {
+	if evidenceIn(corpus, evidence) {
+		return true
+	}
+	return evidenceIn(corpus, value)
+}
+
+func hasCaptionEventText(text string) bool {
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return false
+	}
+	return mightBeEvent(text) || hasCalendarSignal(text) || hasWeekdaySignal(text)
+}
+
+func flyerHasEventText(llm extractResult) bool {
+	return llm.IsEventFlyer &&
+		strings.TrimSpace(llm.Title) != "" &&
+		strings.TrimSpace(llm.Date) != "" &&
+		strings.TrimSpace(llm.ReadableText) != ""
+}
+
+func firstImage(images [][]byte, fallback []byte) []byte {
+	if len(images) > 0 && len(images[0]) > 0 {
+		return images[0]
+	}
+	return fallback
+}
+
+func appendUnique(ids []string, id string) []string {
+	id = strings.TrimSpace(id)
+	if id == "" {
+		return ids
+	}
+	for _, existing := range ids {
+		if strings.EqualFold(existing, id) {
+			return ids
+		}
+	}
+	return append(ids, id)
 }
 
 func evidenceIn(corpus, evidence string) bool {

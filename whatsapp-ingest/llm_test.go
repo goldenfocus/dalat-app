@@ -90,7 +90,7 @@ func TestExtractorDisabledWithoutKeys(t *testing.T) {
 func TestSingleFlyerDocumentsPromoGap(t *testing.T) {
 	draft := &eventDraft{
 		Slug: "wa-fly", Title: "Sunday canyon ride", Description: "Poster",
-		StartsAt: ref, ImageURL: "https://cdn.example/flyer.png",
+		StartsAt: ref, ImageURL: "https://cdn.example/flyer.png", IsEventFlyer: true,
 		ImageAlt: "Event flyer shared by the organizer in the Motorcycle Ride Squad WhatsApp group",
 		Meta:     map[string]any{"message_id": "FLY", "group_jid": "120363@g.us"},
 	}
