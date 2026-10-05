@@ -118,7 +118,10 @@ func (m *eventMedia) authorization(method, path, host, contentType, amzDate, pay
 		"x-amz-content-sha256:" + payloadHash + "\n" +
 		"x-amz-date:" + amzDate + "\n"
 	signed := "cache-control;content-type;host;x-amz-content-sha256;x-amz-date"
-	canonical := method + "\n" + path + "\n\n" + canonicalHeaders + signed + "\n" + payloadHash
+	// canonicalHeaders already ends in a newline. SigV4 still requires a blank
+	// line before SignedHeaders; botocore appends that extra newline in
+	// SigV4Auth.canonical_request. Without it R2 returns SignatureDoesNotMatch.
+	canonical := method + "\n" + path + "\n\n" + canonicalHeaders + "\n" + signed + "\n" + payloadHash
 	scope := date + "/" + region + "/s3/aws4_request"
 	hash := sha256.Sum256([]byte(canonical))
 	stringToSign := strings.Join([]string{
