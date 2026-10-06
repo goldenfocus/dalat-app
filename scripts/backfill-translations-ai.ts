@@ -34,7 +34,9 @@ import {
   translateFieldsToLocale,
   detectLanguage,
   TRANSLATE_SYSTEM,
+  TOKEN_INSTRUCTION,
   LOCALE_NAMES,
+  translationTokensMismatch,
 } from "@/lib/google-translate";
 import {
   collectTranslationWork,
@@ -231,11 +233,13 @@ function claudeTranslateItem(
   const input: Record<string, string> = {};
   for (const f of fields) input[f.field_name] = f.text;
   const totalChars = fields.reduce((n, f) => n + f.text.length, 0);
+  const usesTokens = fields.some((f) => /⟦\d+⟧/.test(f.text));
+  const system = usesTokens ? `${TRANSLATE_SYSTEM} ${TOKEN_INSTRUCTION}` : TRANSLATE_SYSTEM;
 
   const runChunk = (chunk: ContentLocale[]): Record<string, Record<string, string>> => {
     const names = chunk.map((l) => `${l} (${LOCALE_NAMES[l]})`).join(", ");
     const prompt =
-      `${TRANSLATE_SYSTEM}\n\n` +
+      `${system}\n\n` +
       `Translate every value of INPUT from ${LOCALE_NAMES[sourceLocale] ?? sourceLocale} into each of these languages: ${names}.\n` +
       `Respond with ONLY a JSON object — no prose, no markdown fences — of the shape ` +
       `{"<locale code>": {<the same keys as INPUT, with translated values>}} covering exactly these locale codes: ${chunk.join(", ")}. ` +
@@ -283,7 +287,11 @@ function claudeTranslateItem(
       const clean: Record<string, string> = {};
       for (const f of fields) {
         const t = values[f.field_name];
-        if (typeof t === "string" && t.trim()) clean[f.field_name] = t.trim();
+        // A ⟦n⟧ token the source never had (or one it dropped) means the
+        // model echoed placeholder syntax; leave the field pending.
+        if (typeof t === "string" && t.trim() && !translationTokensMismatch(f.text, t)) {
+          clean[f.field_name] = t.trim();
+        }
       }
       if (Object.keys(clean).length > 0) out[locale] = clean;
     }
