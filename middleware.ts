@@ -49,10 +49,10 @@ export const config = {
      * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico, manifest, sw.js, sitemap (PWA/SEO files)
+     * - favicon.ico, manifest(.json/.webmanifest), sw.js, sitemap (PWA/SEO files)
      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp, .ico
      * - audio/video - .mp3, .wav, .ogg, .mp4, .webm
      */
-    "/((?!api/|experience-media/|auth/callback|auth/confirm|auth/continue|_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|wav|ogg|mp4|webm|txt)$).*)",
+    "/((?!api/|experience-media/|auth/callback|auth/confirm|auth/continue|_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|manifest\\.json|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|wav|ogg|mp4|webm|txt)$).*)",
   ],
 };

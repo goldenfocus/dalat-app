@@ -38,7 +38,12 @@ const INTL_LOCALES: Record<ActivityLocale, string> = {
 interface ActivityCopy {
   dated: string;
   datedStart: string;
+  /** FREQ=DAILY only. */
   recurring: string;
+  /** FREQ=WEEKLY with BYDAY; {days} is a localized weekday list. */
+  recurringWeekly: string;
+  /** Any other or unknown cadence. Never claim "daily" without evidence. */
+  recurringRegular: string;
   reservationRequired: string;
   reservationRecommended: string;
   noCover: string;
@@ -51,6 +56,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     dated: "{title} takes place at {venue} on {date}, from {start} to {end}.",
     datedStart: "{title} takes place at {venue} on {date} at {start}.",
     recurring: "{title} runs daily at {venue}, from {start} to {end}.",
+    recurringWeekly: "{title} runs every {days} at {venue}, from {start} to {end}.",
+    recurringRegular: "{title} runs regularly at {venue}, from {start} to {end}.",
     reservationRequired: "Advance booking is required.",
     reservationRecommended: "Booking ahead is recommended at busy times.",
     noCover:
@@ -64,6 +71,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     dated: "{title} diễn ra tại {venue} vào {date}, từ {start} đến {end}.",
     datedStart: "{title} diễn ra tại {venue} vào {date} lúc {start}.",
     recurring: "{title} diễn ra hằng ngày tại {venue}, từ {start} đến {end}.",
+    recurringWeekly: "{title} diễn ra vào {days} hằng tuần tại {venue}, từ {start} đến {end}.",
+    recurringRegular: "{title} diễn ra định kỳ tại {venue}, từ {start} đến {end}.",
     reservationRequired: "Cần đặt chỗ trước.",
     reservationRecommended: "Nên đặt chỗ trước vào thời điểm đông khách.",
     noCover: "Nguồn chính thức cho biết không cần vé và không thu phí vào cửa.",
@@ -77,6 +86,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     datedStart: "{title}은(는) {date} {start}에 {venue}에서 열립니다.",
     recurring:
       "{title}은(는) 매일 {start}부터 {end}까지 {venue}에서 진행됩니다.",
+    recurringWeekly: "{title}은(는) 매주 {days} {start}부터 {end}까지 {venue}에서 진행됩니다.",
+    recurringRegular: "{title}은(는) 정기적으로 {start}부터 {end}까지 {venue}에서 진행됩니다.",
     reservationRequired: "사전 예약이 필요합니다.",
     reservationRecommended: "혼잡한 시기에는 미리 예약하는 것이 좋습니다.",
     noCover: "공식 안내에는 티켓이나 입장료가 없다고 명시되어 있습니다.",
@@ -88,6 +99,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     dated: "{title}将于{date}{start}至{end}在{venue}举行。",
     datedStart: "{title}将于{date}{start}在{venue}举行。",
     recurring: "{title}每天{start}至{end}在{venue}举行。",
+    recurringWeekly: "{title}每周{days}{start}至{end}在{venue}举行。",
+    recurringRegular: "{title}定期于{start}至{end}在{venue}举行。",
     reservationRequired: "需要提前预订。",
     reservationRecommended: "繁忙时段建议提前预订。",
     noCover: "官方信息注明无需门票或入场费。",
@@ -98,6 +111,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     dated: "{title} состоится {date} в {venue}, с {start} до {end}.",
     datedStart: "{title} состоится {date} в {start} в {venue}.",
     recurring: "{title} проходит ежедневно в {venue}, с {start} до {end}.",
+    recurringWeekly: "{title} проходит еженедельно ({days}) в {venue}, с {start} до {end}.",
+    recurringRegular: "{title} проходит регулярно в {venue}, с {start} до {end}.",
     reservationRequired: "Требуется предварительное бронирование.",
     reservationRecommended: "В загруженные дни лучше бронировать заранее.",
     noCover:
@@ -111,6 +126,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     dated: "{title} a lieu à {venue} le {date}, de {start} à {end}.",
     datedStart: "{title} a lieu à {venue} le {date} à {start}.",
     recurring: "{title} a lieu chaque jour à {venue}, de {start} à {end}.",
+    recurringWeekly: "{title} a lieu chaque semaine ({days}) à {venue}, de {start} à {end}.",
+    recurringRegular: "{title} a lieu régulièrement à {venue}, de {start} à {end}.",
     reservationRequired: "La réservation à l’avance est obligatoire.",
     reservationRecommended:
       "Il est conseillé de réserver pendant les périodes chargées.",
@@ -125,6 +142,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     dated: "{title}は{date}の{start}から{end}まで{venue}で開催されます。",
     datedStart: "{title}は{date}の{start}に{venue}で開催されます。",
     recurring: "{title}は毎日{start}から{end}まで{venue}で開催されます。",
+    recurringWeekly: "{title}は毎週{days}の{start}から{end}まで{venue}で開催されます。",
+    recurringRegular: "{title}は定期的に{start}から{end}まで{venue}で開催されます。",
     reservationRequired: "事前予約が必要です。",
     reservationRecommended: "混雑時は事前予約をおすすめします。",
     noCover: "公式情報ではチケットも入場料も不要と案内されています。",
@@ -138,6 +157,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     datedStart: "{title} berlangsung di {venue} pada {date} jam {start}.",
     recurring:
       "{title} berlangsung setiap hari di {venue}, dari {start} hingga {end}.",
+    recurringWeekly: "{title} berlangsung setiap minggu ({days}) di {venue}, dari {start} hingga {end}.",
+    recurringRegular: "{title} berlangsung secara berkala di {venue}, dari {start} hingga {end}.",
     reservationRequired: "Tempahan awal diperlukan.",
     reservationRecommended: "Tempahan awal disyorkan ketika waktu sibuk.",
     noCover: "Sumber rasmi menyatakan tiada tiket atau caj masuk.",
@@ -150,6 +171,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     dated: "{title} จัดที่ {venue} วันที่ {date} เวลา {start}–{end}",
     datedStart: "{title} จัดที่ {venue} วันที่ {date} เวลา {start}",
     recurring: "{title} จัดทุกวันที่ {venue} เวลา {start}–{end}",
+    recurringWeekly: "{title} จัดทุกสัปดาห์ ({days}) ที่ {venue} เวลา {start}–{end}",
+    recurringRegular: "{title} จัดเป็นประจำที่ {venue} เวลา {start}–{end}",
     reservationRequired: "ต้องจองล่วงหน้า",
     reservationRecommended: "แนะนำให้จองล่วงหน้าในช่วงที่มีผู้ใช้บริการมาก",
     noCover: "แหล่งข้อมูลทางการระบุว่าไม่ต้องใช้บัตรและไม่มีค่าเข้าชม",
@@ -161,6 +184,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     dated: "{title} findet am {date} von {start} bis {end} im {venue} statt.",
     datedStart: "{title} findet am {date} um {start} im {venue} statt.",
     recurring: "{title} findet täglich von {start} bis {end} im {venue} statt.",
+    recurringWeekly: "{title} findet wöchentlich ({days}) von {start} bis {end} im {venue} statt.",
+    recurringRegular: "{title} findet regelmäßig von {start} bis {end} im {venue} statt.",
     reservationRequired: "Eine Vorabreservierung ist erforderlich.",
     reservationRecommended:
       "Zu gut besuchten Zeiten wird eine Reservierung empfohlen.",
@@ -176,6 +201,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     datedStart: "{title} se celebra en {venue} el {date} a las {start}.",
     recurring:
       "{title} se celebra todos los días en {venue}, de {start} a {end}.",
+    recurringWeekly: "{title} se celebra cada semana ({days}) en {venue}, de {start} a {end}.",
+    recurringRegular: "{title} se celebra periódicamente en {venue}, de {start} a {end}.",
     reservationRequired: "Es necesario reservar con antelación.",
     reservationRecommended:
       "Se recomienda reservar en los periodos de mayor demanda.",
@@ -191,6 +218,8 @@ const COPY: Record<ActivityLocale, ActivityCopy> = {
     datedStart: "{title} berlangsung di {venue} pada {date} pukul {start}.",
     recurring:
       "{title} berlangsung setiap hari di {venue}, pukul {start}–{end}.",
+    recurringWeekly: "{title} berlangsung setiap minggu ({days}) di {venue}, pukul {start}–{end}.",
+    recurringRegular: "{title} berlangsung secara berkala di {venue}, pukul {start}–{end}.",
     reservationRequired: "Reservasi sebelumnya diperlukan.",
     reservationRecommended: "Reservasi lebih awal disarankan saat ramai.",
     noCover: "Sumber resmi menyatakan tidak ada tiket atau biaya masuk.",
@@ -253,6 +282,65 @@ function instantParts(
   };
 }
 
+const RRULE_WEEKDAYS = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"] as const;
+
+function rruleParts(rrule: string | null | undefined): Map<string, string> {
+  const parts = new Map<string, string>();
+  for (const segment of (rrule ?? "").replace(/^RRULE:/i, "").split(";")) {
+    const [key, value] = segment.split("=");
+    if (key && value) parts.set(key.trim().toUpperCase(), value.trim().toUpperCase());
+  }
+  return parts;
+}
+
+/** Only an explicit FREQ=DAILY (interval 1, no BYDAY filter) may say "daily". */
+export function isDailyRRule(rrule: string | null | undefined): boolean {
+  const parts = rruleParts(rrule);
+  return (
+    parts.get("FREQ") === "DAILY" &&
+    !parts.has("BYDAY") &&
+    (!parts.has("INTERVAL") || parts.get("INTERVAL") === "1")
+  );
+}
+
+/** Weekday codes for a plain weekly rule (interval 1), in Monday-first order. */
+export function rruleWeeklyDays(
+  rrule: string | null | undefined,
+): Array<(typeof RRULE_WEEKDAYS)[number]> | null {
+  const parts = rruleParts(rrule);
+  if (parts.get("FREQ") !== "WEEKLY") return null;
+  if (parts.has("INTERVAL") && parts.get("INTERVAL") !== "1") return null;
+  const byDay = parts.get("BYDAY");
+  if (!byDay) return null;
+  const codes = byDay.split(",").map((code) => code.trim());
+  if (codes.some((code) => !RRULE_WEEKDAYS.includes(code as never))) return null;
+  return RRULE_WEEKDAYS.filter((code) => codes.includes(code));
+}
+
+function localizedWeekdayList(
+  codes: Array<(typeof RRULE_WEEKDAYS)[number]>,
+  locale: ActivityLocale,
+): string {
+  const formatter = new Intl.DateTimeFormat(INTL_LOCALES[locale], {
+    weekday: "long",
+    timeZone: "UTC",
+  });
+  // 2026-01-05 is a Monday.
+  const names = codes.map((code) =>
+    formatter.format(
+      new Date(Date.UTC(2026, 0, 5 + RRULE_WEEKDAYS.indexOf(code))),
+    ),
+  );
+  try {
+    return new Intl.ListFormat(INTL_LOCALES[locale], {
+      style: "long",
+      type: "conjunction",
+    }).format(names);
+  } catch {
+    return names.join(", ");
+  }
+}
+
 type ActivityDescriptionFacts = Pick<
   ExtractedActivity,
   | "title"
@@ -260,6 +348,7 @@ type ActivityDescriptionFacts = Pick<
   | "startsAt"
   | "endsAt"
   | "timePrecision"
+  | "rrule"
   | "startsAtTime"
   | "durationMinutes"
   | "locationName"
@@ -289,7 +378,23 @@ export function activityDescriptionForLocale(
       `${String(Math.floor((endMinutes / 60) % 24)).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}:00`,
       selected,
     );
-    sentences.push(interpolate(copy.recurring, { ...values, start, end }));
+    const weekdays = rruleWeeklyDays(activity.rrule);
+    if (isDailyRRule(activity.rrule)) {
+      sentences.push(interpolate(copy.recurring, { ...values, start, end }));
+    } else if (weekdays) {
+      sentences.push(
+        interpolate(copy.recurringWeekly, {
+          ...values,
+          start,
+          end,
+          days: localizedWeekdayList(weekdays, selected),
+        }),
+      );
+    } else {
+      sentences.push(
+        interpolate(copy.recurringRegular, { ...values, start, end }),
+      );
+    }
   } else {
     const parts = instantParts(activity, selected);
     if (parts) {
@@ -350,6 +455,7 @@ export function activitySeriesDescriptionForLocale(
   series: Pick<
     EventSeries,
     | "title"
+    | "rrule"
     | "starts_at_time"
     | "duration_minutes"
     | "location_name"
@@ -367,6 +473,7 @@ export function activitySeriesDescriptionForLocale(
       startsAt: null,
       endsAt: null,
       timePrecision: "recurring",
+      rrule: series.rrule,
       startsAtTime: series.starts_at_time,
       durationMinutes: series.duration_minutes,
       locationName: series.location_name,

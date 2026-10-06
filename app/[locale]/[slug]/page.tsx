@@ -7,6 +7,7 @@ import { VenueContent } from "./venue-content";
 import { generateProfileMetadata, generateOrganizerMetadata, generateVenueMetadata } from "@/lib/metadata";
 import type { Profile, Organizer, Locale } from "@/lib/types";
 import { getTranslationsWithFallback } from "@/lib/translations";
+import { isUnroutableUnifiedSlug, isUuid } from "@/lib/slug-guard";
 
 interface PageProps {
   searchParams?: Promise<Record<string,string|string[]|undefined>>;
@@ -57,12 +58,11 @@ async function fallbackResolveSlug(slug: string): Promise<SlugResolution> {
     };
   }
 
-  // Try profile by ID (for profiles without username)
-  const { data: profileById } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", slug)
-    .single();
+  // Try profile by ID (for profiles without username). Only real UUIDs:
+  // anything else is a guaranteed Postgres "invalid input syntax for type uuid".
+  const { data: profileById } = isUuid(slug)
+    ? await supabase.from("profiles").select("id").eq("id", slug).single()
+    : { data: null };
 
   if (profileById) {
     return {
@@ -115,6 +115,7 @@ async function fallbackResolveSlug(slug: string): Promise<SlugResolution> {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug: rawSlug, locale } = await params;
   const slug = decodeURIComponent(rawSlug).replace(/^@/, "").toLowerCase();
+  if (isUnroutableUnifiedSlug(locale, slug)) return { title: "Not found" };
 
   // Use static client for metadata (no cookies) so OG tags appear in initial <head>
   const supabase = createStaticClient();
@@ -235,6 +236,8 @@ export default async function UnifiedSlugPage({ params, searchParams }: PageProp
   const { slug: rawSlug, locale } = await params;
   // Handle @ prefix (for profile URLs like /@username)
   const slug = decodeURIComponent(rawSlug).replace(/^@/, "").toLowerCase();
+  // /api/inngest, /zh/manifest.json, scanner paths: never query Supabase.
+  if (isUnroutableUnifiedSlug(locale, slug)) notFound();
 
   // Try unified resolution first, fall back to direct lookup
   let resolution = await resolveSlug(slug);
