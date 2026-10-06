@@ -89,7 +89,7 @@ export function useStreamStatus({
     channelRef.current = channel;
 
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
       channelRef.current = null;
     };
   }, [eventId, enabled]);

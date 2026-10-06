@@ -95,14 +95,21 @@ export function NotificationBell({ userId }: NotificationBellProps) {
         if (status === 'SUBSCRIBED') {
           // Realtime is working - no polling needed
           console.log('[notification-bell] Realtime connected');
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+          }
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          // Realtime failed - fall back to polling (expected in some environments)
+          // Realtime failed - fall back to polling (expected in some environments).
+          // supabase-js reports every failed rejoin, so start at most one poller.
           if (process.env.NODE_ENV === 'development') {
             console.info('[notification-bell] Realtime unavailable, using polling');
           }
-          pollInterval = setInterval(() => {
-            fetchNotifications();
-          }, 30000);
+          if (!pollInterval) {
+            pollInterval = setInterval(() => {
+              fetchNotifications();
+            }, 30000);
+          }
         } else if (err) {
           // Log other errors for debugging
           console.error('[notification-bell] Realtime error:', status, err.message);

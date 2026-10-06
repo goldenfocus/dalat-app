@@ -33,6 +33,7 @@ const UPCOMING_LIMIT = 12;
 // Series-deduped rows to read before venue collapse, so one nightly venue
 // cannot consume the visible slots.
 const HOME_FEED_CANDIDATE_LIMIT = 120;
+const FULL_UPCOMING_HREF = "/events/upcoming";
 
 interface EventFeedScrollableProps {
   locale: Locale;
@@ -67,12 +68,14 @@ function moreAtVenueLinks(
   const links: Record<string, MoreAtVenueHomeLinkData> = {};
   for (const event of events) {
     const count = moreByEventId[event.id];
+    if (!count) continue;
     const venueId = event.venue_id?.trim();
-    if (!count || !venueId) continue;
-    const slug = slugs.get(venueId);
-    if (!slug) continue;
+    const slug = venueId ? slugs.get(venueId) : undefined;
+    // Most scraped events have only a place name, no venue row. They are still
+    // grouped by that name, so point the hint at the full upcoming list rather
+    // than hiding how many events the venue has.
     links[event.id] = {
-      href: `/venues/${slug}`,
+      href: slug ? `/venues/${slug}` : FULL_UPCOMING_HREF,
       label: labelFor(count),
     };
   }
@@ -127,6 +130,9 @@ export async function EventFeedScrollable({
   );
   const happeningEvents = happeningPick.events;
   const upcomingEvents = upcomingPick.events;
+  // One-per-venue hides most rows when a few venues post many dates, so the
+  // "see all" link must follow hidden rows, not only a full grid.
+  const hasMoreUpcoming = upcomingCandidates.length > upcomingEvents.length;
 
   const venueIds = new Set<string>();
   for (const event of [...happeningEvents, ...upcomingEvents]) {
@@ -343,10 +349,10 @@ export async function EventFeedScrollable({
           </div>
         )}
 
-        {upcomingEvents.length >= UPCOMING_LIMIT && (
+        {hasMoreUpcoming && (
           <div className="text-center pt-4">
             <Link
-              href="/events/upcoming"
+              href={FULL_UPCOMING_HREF}
               className="inline-flex min-h-11 items-center px-3 text-sm text-foreground/70 hover:text-foreground active:scale-[0.98] transition-all underline-offset-4 hover:underline"
             >
               {t("seeAllUpcoming")} →

@@ -137,7 +137,7 @@ export function useChatSubscription({
 
     // Cleanup on unmount
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
       channelRef.current = null;
     };
   }, [eventId, enabled, fetchUserProfile]);
