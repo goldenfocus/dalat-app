@@ -296,7 +296,7 @@ async function getEvent(slug: string): Promise<GetEventResult> {
   const { data: event, error } = await supabase
     .from("events")
     .select(
-      "*, profiles(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule), venues(id, slug, name), tribes(id, slug, name, cover_image_url, access_type, settings)",
+      "*, profiles!events_created_by_fkey(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule), venues(id, slug, name), tribes(id, slug, name, cover_image_url, access_type, settings)",
     )
     .eq("slug", slug)
     .single();
