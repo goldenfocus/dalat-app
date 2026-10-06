@@ -840,7 +840,7 @@ async function createEvent(
     throw new Error("Cannot project an event without startsAt");
   const { data: existing, error: existingError } = await input.supabase
     .from("events")
-    .select("id,slug,image_url,image_alt,image_description,source_metadata,title,description")
+    .select("id,slug,image_url,image_alt,image_description,source_metadata,title,description,venue_id")
     .eq("activity_graph_candidate_id", input.candidateId)
     .maybeSingle();
   if (existingError)
@@ -895,7 +895,9 @@ async function createEvent(
       input.activity.locationName ?? undefined,
       "Đà Lạt",
     ),
-    venue_id: input.source.venue_id,
+    // A source without a fixed venue (e.g. a city events feed) must not erase
+    // a venue an editor linked on the canonical event.
+    venue_id: input.source.venue_id ?? existing?.venue_id ?? null,
     organizer_id: organizerId,
     external_chat_url: input.activity.ticketUrl ?? input.activity.sourceUrl,
     price_type: input.activity.priceType,

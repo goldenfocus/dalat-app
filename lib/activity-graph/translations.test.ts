@@ -3,6 +3,8 @@ import type { ExtractedActivity } from "./types";
 import {
   activityDescriptionForLocale,
   activitySeriesDescriptionForLocale,
+  isDailyRRule,
+  rruleWeeklyDays,
   sourceDescriptionForLocale,
 } from "./translations";
 
@@ -96,6 +98,7 @@ describe("sourceDescriptionForLocale", () => {
       "en",
       {
         title: activity.title,
+        rrule: activity.rrule!,
         starts_at_time: activity.startsAtTime!,
         duration_minutes: activity.durationMinutes!,
         location_name: activity.locationName,
@@ -116,4 +119,31 @@ describe("sourceDescriptionForLocale", () => {
 
 it("keeps attribution out of the event description", () => {
   expect(activityDescriptionForLocale("en", activity, "Publisher")).not.toContain("Verified from");
+});
+
+describe("recurring cadence wording", () => {
+  it("never calls a weekly Thursday/Sunday class daily", () => {
+    const weekly = { ...activity, rrule: "FREQ=WEEKLY;BYDAY=TH,SU" };
+    const en = activityDescriptionForLocale("en", weekly, "Giang Metta");
+    const vi = activityDescriptionForLocale("vi", weekly, "Giang Metta");
+    expect(en).toContain("runs every Thursday and Sunday");
+    expect(en).not.toContain("daily");
+    expect(vi).toContain("hằng tuần");
+    expect(vi).not.toContain("hằng ngày");
+  });
+
+  it("uses neutral wording for an unknown or irregular cadence", () => {
+    for (const rrule of [null, "FREQ=MONTHLY;BYDAY=1SA", "FREQ=DAILY;INTERVAL=2"]) {
+      const en = activityDescriptionForLocale("en", { ...activity, rrule }, "Publisher");
+      expect(en).toContain("runs regularly");
+      expect(en).not.toContain("daily");
+    }
+  });
+
+  it("parses daily and weekly rules", () => {
+    expect(isDailyRRule("FREQ=DAILY")).toBe(true);
+    expect(isDailyRRule("FREQ=DAILY;BYDAY=MO")).toBe(false);
+    expect(rruleWeeklyDays("FREQ=WEEKLY;BYDAY=SU,TH")).toEqual(["TH", "SU"]);
+    expect(rruleWeeklyDays("FREQ=WEEKLY;INTERVAL=2;BYDAY=TH")).toBeNull();
+  });
 });

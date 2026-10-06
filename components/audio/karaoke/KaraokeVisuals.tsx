@@ -246,14 +246,30 @@ export const KaraokeBackgroundSlideshow = memo(function KaraokeBackgroundSlidesh
         const supabase = createClient();
         const { data } = await supabase
           .from("moments")
-          .select("thumbnail_url")
+          // quality_score lives on moment_metadata (1:1 by moment_id), not moments.
+          .select("thumbnail_url, created_at, moment_metadata(quality_score)")
           .eq("event_id", playlist.eventId!)
           .not("thumbnail_url", "is", null)
-          .order("quality_score", { ascending: false })
-          .limit(8);
+          .order("created_at", { ascending: false })
+          .limit(40);
 
-        const momentUrls = (data ?? [])
-          .map((m: { thumbnail_url: string | null }) => m.thumbnail_url as string)
+        type MomentThumb = {
+          thumbnail_url: string | null;
+          moment_metadata:
+            | { quality_score: number | null }
+            | { quality_score: number | null }[]
+            | null;
+        };
+        const score = (m: MomentThumb) => {
+          const meta = Array.isArray(m.moment_metadata)
+            ? m.moment_metadata[0]
+            : m.moment_metadata;
+          return meta?.quality_score ?? 0.5;
+        };
+        const momentUrls = ((data ?? []) as MomentThumb[])
+          .sort((a, b) => score(b) - score(a))
+          .slice(0, 8)
+          .map((m) => m.thumbnail_url as string)
           .filter((url: string) => !storeImages.includes(url));
 
         setImages([...storeImages, ...momentUrls]);

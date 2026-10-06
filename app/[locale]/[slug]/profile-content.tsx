@@ -86,11 +86,11 @@ async function getUserLoyaltyTier(userId: string): Promise<{ tier: string; point
   const supabase = await createClient();
   const { data } = await supabase
     .from("user_loyalty_status")
-    .select("current_tier, total_points")
+    .select("current_tier, total_points_earned")
     .eq("user_id", userId)
     .single();
   if (!data) return null;
-  return { tier: data.current_tier, points: data.total_points };
+  return { tier: data.current_tier, points: data.total_points_earned };
 }
 
 const INITIAL_EVENTS = 5;
