@@ -31,9 +31,32 @@ export const TRANSLATE_SYSTEM =
   'Translate faithfully and naturally. Keep the original tone (warm, casual). ' +
   'Preserve markdown formatting, links, HTML tags, and emoji. ' +
   'Proper nouns (place names, business names, people): use the well-known form in the target language if one exists (e.g. 달랏 for Da Lat in Korean); otherwise KEEP them in their original spelling — never invent a transliteration, mix scripts inside one name, or translate a venue or business name into a literal descriptive phrase. ' +
-  'Tokens shaped ⟦0⟧ mark a protected proper name. Copy each ⟦n⟧ token through exactly, including the brackets; never translate, transliterate, or omit it. ' +
   'Write as a native speaker would, not word-for-word: use established local terms or loanwords for sports/equipment (e.g. Korean 그래블 바이크 for gravel bike, Japanese タンデム自転車 for tandem bike, Malay kayuhan — never pemanduan — for a bike ride), prefer natural collocations (French en bonne compagnie, not avec de bonne compagnie), and double-check grammatical agreement — gender, case, measure words (Russian "своё воскресное утро", never "свой воскресный утро"). ' +
   'Never add commentary. Never translate URLs or code.';
+
+/**
+ * Only sent when the input actually carries ⟦n⟧ tokens. Mentioning tokens on
+ * every request made the local model invent them: it replaced venue names with
+ * ⟦0⟧, ⟦1⟧ in hundreds of event, moment, and blog translations.
+ */
+export const TOKEN_INSTRUCTION =
+  'Tokens shaped ⟦0⟧ mark a protected proper name. Copy each ⟦n⟧ token through exactly, including the brackets; never translate, transliterate, or omit it.';
+
+const PROTECTED_TOKEN_RE = /⟦\d+⟧/g;
+
+function protectedTokens(text: string): string[] {
+  return [...new Set(text.match(PROTECTED_TOKEN_RE) ?? [])].sort();
+}
+
+/**
+ * A translation is unsafe to store when it contains a ⟦n⟧ token the source did
+ * not have (hallucinated) or drops one the source had (lost proper name).
+ */
+export function translationTokensMismatch(source: string, translated: string): boolean {
+  const expected = protectedTokens(source);
+  const actual = protectedTokens(translated);
+  return expected.length !== actual.length || expected.some((token, i) => token !== actual[i]);
+}
 
 /**
  * Detect the language of a text
@@ -90,8 +113,9 @@ export async function translateFieldsToLocale(
   const maxTokens = Math.min(8000, Math.max(512, Math.ceil(totalChars * 0.7)));
   const timeoutMs = options?.timeoutMs ?? (totalChars > 2000 ? 200_000 : 90_000);
 
+  const usesTokens = fields.some((f) => protectedTokens(f.text).length > 0);
   const result = await aiChatJson<Record<string, string>>({
-    system: TRANSLATE_SYSTEM,
+    system: usesTokens ? `${TRANSLATE_SYSTEM} ${TOKEN_INSTRUCTION}` : TRANSLATE_SYSTEM,
     prompt:
       `Translate every value in this JSON object to ${LOCALE_NAMES[targetLocale]}. ` +
       `Return a JSON object with exactly the same keys and only the translated values.\n\n` +
@@ -108,7 +132,7 @@ export async function translateFieldsToLocale(
   const missing: string[] = [];
   for (const f of fields) {
     const t = result[f.field_name];
-    if (typeof t === 'string' && t.trim()) {
+    if (typeof t === 'string' && t.trim() && !translationTokensMismatch(f.text, t)) {
       out[f.field_name] = t.trim();
     } else {
       missing.push(f.field_name);
