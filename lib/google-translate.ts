@@ -55,7 +55,14 @@ function protectedTokens(text: string): string[] {
 export function translationTokensMismatch(source: string, translated: string): boolean {
   const expected = protectedTokens(source);
   const actual = protectedTokens(translated);
-  return expected.length !== actual.length || expected.some((token, i) => token !== actual[i]);
+  if (expected.length !== actual.length || expected.some((token, i) => token !== actual[i])) return true;
+  // The model also wraps names in the bracket glyphs ("⟦Giang Metta Studio⟧");
+  // stray ⟦ or ⟧ the source never had is placeholder syntax leaking into copy.
+  return hasStrayBracket(translated) && !hasStrayBracket(source);
+}
+
+function hasStrayBracket(text: string): boolean {
+  return /[⟦⟧]/.test(text.replace(PROTECTED_TOKEN_RE, ''));
 }
 
 /**

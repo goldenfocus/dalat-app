@@ -15,6 +15,8 @@ describe("translationTokensMismatch", () => {
     expect(translationTokensMismatch("⟦0⟧ at ⟦1⟧", "⟦0⟧ à")).toBe(true);
     expect(translationTokensMismatch("⟦0⟧ at ⟦1⟧", "⟦1⟧ à ⟦0⟧")).toBe(false);
     expect(translationTokensMismatch("plain", "simple")).toBe(false);
+    expect(translationTokensMismatch("at Giang Metta Studio", "⟦Giang Metta Studio⟧에서")).toBe(true);
+    expect(translationTokensMismatch("at ⟦0⟧", "⟦0⟧에서")).toBe(false);
   });
 });
 
