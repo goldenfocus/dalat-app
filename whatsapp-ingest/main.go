@@ -9,6 +9,7 @@
 //	NEXT_PUBLIC_SUPABASE_URL     (required)
 //	SUPABASE_SERVICE_ROLE_KEY    (required)
 //	IMPORT_CREATED_BY            (profile UUID; defaults to resolving username "yan")
+//	IMPORT_ORGANIZER_ID          (optional organizers.id credited on every draft, e.g. Life in Đà Lạt)
 //	WHATSAPP_GROUP_JIDS          (comma-separated group JID allowlist;
 //	                              empty = discovery mode: log every group + JID, ingest nothing)
 //	REVIEW_HOOK_URL              (optional POST target after a draft upsert)
@@ -103,10 +104,14 @@ func runDaemon(backfill *backfillConfig, exitAfterBackfill bool) {
 		}
 	}
 	logf("draft events will be owned by profile %s", createdBy)
+	if cfg.importOrganizerID != "" {
+		logf("draft events will be credited to organizer %s", cfg.importOrganizerID)
+	}
 
 	bot := &ingestBot{
 		supa:          supa,
 		createdBy:     createdBy,
+		organizerID:   cfg.importOrganizerID,
 		allowlist:     cfg.groupAllowlist,
 		groupName:     map[types.JID]string{},
 		reviewHookURL: cfg.reviewHookURL,
@@ -187,6 +192,7 @@ type config struct {
 	supabaseURL        string
 	supabaseServiceKey string
 	importCreatedBy    string
+	importOrganizerID  string
 	reviewHookURL      string
 	reviewHookKey      string
 	groupAllowlist     map[types.JID]bool
@@ -199,6 +205,7 @@ func loadConfig() (*config, error) {
 		supabaseURL:        strings.TrimRight(os.Getenv("NEXT_PUBLIC_SUPABASE_URL"), "/"),
 		supabaseServiceKey: os.Getenv("SUPABASE_SERVICE_ROLE_KEY"),
 		importCreatedBy:    os.Getenv("IMPORT_CREATED_BY"),
+		importOrganizerID:  strings.TrimSpace(os.Getenv("IMPORT_ORGANIZER_ID")),
 		reviewHookURL:      strings.TrimSpace(os.Getenv("REVIEW_HOOK_URL")),
 		reviewHookKey:      os.Getenv("REVIEW_INGEST_KEY"),
 		groupAllowlist:     map[types.JID]bool{},
@@ -244,6 +251,7 @@ type ingestBot struct {
 	client        *whatsmeow.Client
 	supa          *supabaseClient
 	createdBy     string
+	organizerID   string
 	allowlist     map[types.JID]bool
 	groupName     map[types.JID]string
 	reviewHookURL string
@@ -456,6 +464,9 @@ func (b *ingestBot) ingestWithResult(memory *groupContext, in inbound, fromHisto
 		applyVenueMatch(draft, b.venues.get())
 	}
 	row := draft.toRow(b.createdBy)
+	if b.organizerID != "" {
+		row["organizer_id"] = b.organizerID
+	}
 	saved, err := b.supa.saveDraft(context.Background(), row)
 	if errors.Is(err, errNotMutable) {
 		logf("left %q untouched: slug %s is no longer a draft", draft.Title, draft.Slug)
