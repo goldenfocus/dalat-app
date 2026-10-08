@@ -2575,7 +2575,8 @@
     "noEvents": "暂无即将举行的活动",
     "eventCount": "{count, plural, one {# 个即将举行的活动} other {# 个即将举行的活动}}",
     "createEvent": "创建活动",
-    "seeAll": "查看所有即将举行的活动"
+    "seeAll": "查看所有即将举行的活动",
+    "moreDates": "还有 {count} 个场次"
   },
   "eventTags": {
     "music": "音乐",

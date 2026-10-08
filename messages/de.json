@@ -2572,7 +2572,8 @@
     "noEvents": "Noch keine kommenden Veranstaltungen",
     "eventCount": "{count, plural, one {# kommende Veranstaltung} other {# kommende Veranstaltungen}}",
     "createEvent": "Veranstaltung erstellen",
-    "seeAll": "Alle kommenden Veranstaltungen anzeigen"
+    "seeAll": "Alle kommenden Veranstaltungen anzeigen",
+    "moreDates": "{count, plural, one {+# weiterer Termin} other {+# weitere Termine}}"
   },
   "eventTags": {
     "music": "Musik",

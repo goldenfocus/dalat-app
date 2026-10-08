@@ -2631,7 +2631,8 @@
     "noEvents": "Belum ada acara mendatang",
     "eventCount": "{count, plural, one {# acara mendatang} other {# acara mendatang}}",
     "createEvent": "Buat acara",
-    "seeAll": "Lihat semua acara mendatang"
+    "seeAll": "Lihat semua acara mendatang",
+    "moreDates": "+{count} tanggal lainnya"
   },
   "eventTags": {
     "music": "Musik",

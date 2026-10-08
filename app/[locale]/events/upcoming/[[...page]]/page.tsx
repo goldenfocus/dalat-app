@@ -10,7 +10,11 @@ import { Pagination } from "@/components/ui/pagination";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { getEventTranslationsBatch } from "@/lib/translations";
-import { takeDistinctEventChoices } from "@/lib/events/distinct-choices";
+import {
+  groupRecurringChoices,
+  type RecurringChoiceGroup,
+} from "@/lib/events/recurring-choices";
+import type { MoreAtVenueHomeLinkData } from "@/components/events/more-at-venue-home-link";
 import type { Event, EventCounts, ContentLocale } from "@/lib/types";
 import type { Metadata } from "next";
 
@@ -64,77 +68,88 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-async function getUpcomingEvents(limit: number, offset: number) {
+// Upcoming published rows read before grouping. PostgREST caps a response at
+// 1000 rows; Đà Lạt has a few hundred upcoming rows at most.
+const UPCOMING_ROW_LIMIT = 1000;
+const FALLBACK_MORE_DATES_HREF = "/calendar";
+
+/**
+ * Every upcoming published row, grouped into distinct choices: a recurring
+ * show (a series, or standalone nightly rows with the same title at the same
+ * venue) is one choice shown at its soonest date. Pagination and the total
+ * count both run over these choices, so one nightly show cannot flood a page.
+ */
+async function getUpcomingChoices(): Promise<RecurringChoiceGroup<Event>[]> {
   const supabase = createStaticClient();
   if (!supabase) {
     console.error("[upcoming] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty page");
     return [];
   }
 
-  // The RPC collapses a recurring series before applying pagination, so one
-  // busy series cannot crowd distinct events off the page.
-  const { data, error } = await supabase.rpc("get_upcoming_event_choices_paginated", {
-    p_limit: limit,
-    p_offset: offset,
-  });
-
-  // Keep unmigrated/local environments consistent with the production RPC.
-  // Fetch before slicing: deduplicating a 24-row page after the query would
-  // still let one recurring series crowd out the other choices.
-  if (error?.code === "PGRST202") {
-    const { data: fallbackData } = await supabase
-      .from("events")
-      .select("*")
-      .eq("status", "published")
-      .gt("starts_at", new Date().toISOString())
-      .order("starts_at", { ascending: true });
-
-    const allChoices = takeDistinctEventChoices(
-      (fallbackData as Event[]) || [],
-      fallbackData?.length || 0
-    );
-    return allChoices.slice(offset, offset + limit);
-  }
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("status", "published")
+    .gt("starts_at", new Date().toISOString())
+    .order("starts_at", { ascending: true })
+    .limit(UPCOMING_ROW_LIMIT);
 
   if (error) {
     console.error("Error fetching upcoming events:", error);
     return [];
   }
 
-  return (data as Event[]) || [];
+  return groupRecurringChoices((data as Event[]) || []);
 }
 
-async function getUpcomingEventsCount() {
+/** Where "+N more dates" points: the venue page, else the series page, else the calendar. */
+async function getMoreDatesLinks(
+  groups: RecurringChoiceGroup<Event>[],
+  labelFor: (count: number) => string,
+): Promise<Record<string, MoreAtVenueHomeLinkData>> {
+  const repeating = groups.filter((group) => group.occurrences.length > 1);
+  if (repeating.length === 0) return {};
+
+  const venueIdFor = (group: RecurringChoiceGroup<Event>) =>
+    group.occurrences.find((event) => event.venue_id)?.venue_id ?? null;
+  const seriesIdFor = (group: RecurringChoiceGroup<Event>) =>
+    group.occurrences.find((event) => event.series_id)?.series_id ?? null;
+
+  const venueIds = [...new Set(repeating.map(venueIdFor).filter((id): id is string => Boolean(id)))];
+  const seriesIds = [...new Set(repeating.map(seriesIdFor).filter((id): id is string => Boolean(id)))];
+
+  const venueSlugs = new Map<string, string>();
+  const seriesSlugs = new Map<string, string>();
   const supabase = createStaticClient();
-  if (!supabase) {
-    console.error("[upcoming] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering zero count");
-    return 0;
+  if (supabase) {
+    const [venues, series] = await Promise.all([
+      venueIds.length
+        ? supabase.from("venues").select("id, slug").in("id", venueIds)
+        : Promise.resolve({ data: [] as { id: string; slug: string }[] }),
+      seriesIds.length
+        ? supabase.from("event_series").select("id, slug").in("id", seriesIds)
+        : Promise.resolve({ data: [] as { id: string; slug: string }[] }),
+    ]);
+    for (const row of venues.data ?? []) if (row.slug) venueSlugs.set(row.id, row.slug);
+    for (const row of series.data ?? []) if (row.slug) seriesSlugs.set(row.id, row.slug);
   }
 
-  // This counts distinct choices, not generated occurrences.
-  const { data, error } = await supabase.rpc("get_upcoming_event_choices_count");
-
-  // Mirror the distinct-series semantics when the migration is unavailable.
-  if (error?.code === "PGRST202") {
-    const { data: fallbackData } = await supabase
-      .from("events")
-      .select("id, series_id, starts_at")
-      .eq("status", "published")
-      .gt("starts_at", new Date().toISOString())
-      .order("starts_at", { ascending: true });
-
-    return takeDistinctEventChoices(
-      fallbackData || [],
-      fallbackData?.length || 0
-    ).length;
+  const links: Record<string, MoreAtVenueHomeLinkData> = {};
+  for (const group of repeating) {
+    const venueId = venueIdFor(group);
+    const seriesId = seriesIdFor(group);
+    const venueSlug = venueId ? venueSlugs.get(venueId) : undefined;
+    const seriesSlug = seriesId ? seriesSlugs.get(seriesId) : undefined;
+    links[group.event.id] = {
+      href: venueSlug
+        ? `/venues/${venueSlug}`
+        : seriesSlug
+          ? `/series/${seriesSlug}`
+          : FALLBACK_MORE_DATES_HREF,
+      label: labelFor(group.occurrences.length - 1),
+    };
   }
-
-  if (error) {
-    console.error("Error fetching event count:", error);
-    return 0;
-  }
-
-  return data || 0;
+  return links;
 }
 
 async function getEventCounts(eventIds: string[]) {
@@ -177,12 +192,13 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
   const page = getPageNumber(pageParam);
   const offset = (page - 1) * EVENTS_PER_PAGE;
 
-  // Fetch events and count in parallel
-  const [events, totalCount, t] = await Promise.all([
-    getUpcomingEvents(EVENTS_PER_PAGE, offset),
-    getUpcomingEventsCount(),
+  const [choices, t] = await Promise.all([
+    getUpcomingChoices(),
     getTranslations("upcomingEvents"),
   ]);
+  const totalCount = choices.length;
+  const pageChoices = choices.slice(offset, offset + EVENTS_PER_PAGE);
+  const events = pageChoices.map((choice) => choice.event);
 
   const totalPages = Math.ceil(totalCount / EVENTS_PER_PAGE);
 
@@ -192,10 +208,11 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
   }
 
   const eventIds = events.map((e) => e.id);
-  const [counts, social, eventTranslations] = await Promise.all([
+  const [counts, social, eventTranslations, moreDates] = await Promise.all([
     getEventCounts(eventIds),
     getCachedEventSocialBatch(eventIds),
     getEventTranslationsBatch(eventIds, locale as ContentLocale),
+    getMoreDatesLinks(pageChoices, (count) => t("moreDates", { count })),
   ]);
 
   // Breadcrumb structured data
@@ -274,6 +291,7 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
               counts={counts}
               social={social}
               eventTranslations={eventTranslations}
+              moreAtVenue={moreDates}
             />
           ) : (
             <div className="text-center py-12 text-muted-foreground">

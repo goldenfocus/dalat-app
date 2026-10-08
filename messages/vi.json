@@ -2447,7 +2447,8 @@
     "noEvents": "Chưa có sự kiện sắp tới",
     "eventCount": "{count, plural, one {# sự kiện sắp tới} other {# sự kiện sắp tới}}",
     "createEvent": "Tạo sự kiện",
-    "seeAll": "Xem tất cả sự kiện sắp tới"
+    "seeAll": "Xem tất cả sự kiện sắp tới",
+    "moreDates": "+{count} ngày diễn khác"
   },
   "streaming": {
     "goLive": "Phát trực tiếp",
