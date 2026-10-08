@@ -170,8 +170,9 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 	if in.QuotedText != "" {
 		corpus += "\n" + in.QuotedText
 	}
+	llmFirmTime := false
 	if llmOK && llm.IsEvent {
-		applyLLM(draft, llm, corpus, in.HasImage, loc)
+		llmFirmTime = applyLLM(draft, llm, corpus, in.HasImage, loc)
 	}
 	if llmOK {
 		stampVisionMeta(draft, llm, in.HasImage)
@@ -182,13 +183,20 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 		}
 	}
 
-	captionForTime := firstNonEmpty(burst.Caption, in.Text)
-	if start, inferred, err := extractStartTime(captionForTime, loc, ref); err == nil {
-		// A follow-up that actually names a day replaces the schedule. A
-		// message with only a venue leaves the previous start alone because
-		// extractStartTime fails when it cannot see a date.
+	// The date and the clock may come from different places: "Tomorrow" in
+	// the caption and "FRI OCT 9 FROM 6PM" on the flyer is tomorrow 18:00.
+	// A follow-up that names a day or a time replaces the schedule; one with
+	// neither leaves the previous start alone (extractSchedule fails).
+	timeSources := []string{firstNonEmpty(burst.Caption, in.Text)}
+	if draft.IsEventFlyer && strings.TrimSpace(draft.ReadableText) != "" {
+		timeSources = append(timeSources, draft.ReadableText)
+	}
+	if start, end, inferred, err := extractSchedule(timeSources, loc, ref); err == nil && !(inferred && llmFirmTime) {
 		draft.StartsAt = start
 		draft.TimeInferred = inferred
+		if !inferred {
+			draft.EndsAt = end
+		}
 	}
 	msgVenue := venueFromText(firstNonEmpty(in.Text, burst.Caption))
 	if msgVenue.Name == "" && msgVenue.Address == "" {
@@ -339,7 +347,9 @@ func applyNative(in inbound, history []memMsg) (*eventDraft, bool, error) {
 	return draft, true, nil
 }
 
-func applyLLM(draft *eventDraft, llm extractResult, corpus string, hasImage bool, loc *time.Location) {
+// applyLLM fills fields the model grounded in the conversation or flyer text.
+// It reports whether it set a start whose clock time is literally written.
+func applyLLM(draft *eventDraft, llm extractResult, corpus string, hasImage bool, loc *time.Location) (firmTime bool) {
 	readable := strings.TrimSpace(llm.ReadableText)
 	imageFact := hasImage && llm.FromImage && llm.IsEventFlyer && readable != ""
 	evidenceCorpus := corpus
@@ -348,7 +358,8 @@ func applyLLM(draft *eventDraft, llm extractResult, corpus string, hasImage bool
 	}
 	if when, ok := groundedWhen(llm.Date, llm.Time, llm.DateEvidence, evidenceCorpus, imageFact, readable, loc); ok && draft.StartsAt.IsZero() {
 		draft.StartsAt = when
-		draft.TimeInferred = !literalEvidence(evidenceCorpus, llm.TimeEvidence, llm.Time)
+		draft.TimeInferred = strings.TrimSpace(llm.Time) == "" || !literalEvidence(evidenceCorpus, llm.TimeEvidence, llm.Time)
+		firmTime = !draft.TimeInferred
 	}
 	if llm.EndTime != "" {
 		if end, ok := groundedWhen(firstNonEmpty(llm.EndDate, llm.Date), llm.EndTime, llm.DateEvidence, evidenceCorpus, imageFact, readable, loc); ok {
@@ -363,6 +374,7 @@ func applyLLM(draft *eventDraft, llm extractResult, corpus string, hasImage bool
 	if org, ok := groundedText(llm.Organizer, llm.OrganizerEvidence, evidenceCorpus, imageFact, readable); ok && draft.Organizer == "" {
 		draft.Organizer = org
 	}
+	return firmTime
 }
 
 func stampVisionMeta(draft *eventDraft, llm extractResult, hasImage bool) {
