@@ -106,6 +106,9 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
     fetchRecentEvents();
   }, [isOpen, isAuthenticated]);
 
+  // The floating RSVP bar only renders on the event page itself.
+  const isEventDetailPage = /^\/[a-z]{2}\/events\/[^/]+\/?$/.test(pathname ?? "");
+
   // Hide on certain pages
   const hiddenPaths = [
     "/moments/new",
@@ -151,9 +154,15 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
           "fixed z-40 flex items-center justify-center",
           "w-14 h-14 rounded-full",
           "bg-primary text-primary-foreground shadow-lg",
-          "hover:bg-primary/90 active:scale-95 transition-all",
-          // Position above bottom nav (5rem = 80px)
-          "bottom-[calc(5rem+env(safe-area-inset-bottom)+1rem)] right-4",
+          // Never transition position: iOS changes the safe-area inset while
+          // the address bar collapses, and animating `bottom` reads as jitter.
+          "hover:bg-primary/90 active:scale-95 transition-[background-color,box-shadow,transform] duration-150",
+          // Above the bottom nav (4rem) — and, on event pages, above the
+          // floating RSVP bar that sits on top of the nav — so it never covers
+          // the RSVP button.
+          isEventDetailPage
+            ? "bottom-[calc(9.5rem+env(safe-area-inset-bottom))] right-4"
+            : "bottom-[calc(5rem+env(safe-area-inset-bottom)+1rem)] right-4",
           className,
         )}
         aria-label={t("shareYourMoment")}
