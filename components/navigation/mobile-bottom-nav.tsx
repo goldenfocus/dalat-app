@@ -75,9 +75,12 @@ export function MobileBottomNav() {
   }
 
   return (
+    // Pinned to the layout viewport's bottom edge. Deliberately no backdrop
+    // blur or transform: on iOS either one makes WebKit
+    // re-composite the bar while the address bar collapses mid-scroll, which
+    // reads as the bar jumping. Height is fixed (4rem + safe area), never vh.
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:hidden"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label={tNav("primary")}
     >
       <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
