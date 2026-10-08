@@ -50,8 +50,19 @@ Graph auto-publish.
      kept in memory. A flyer followed by "tomorrow 8pm at Cù Rú", or a
      reply to "can you repost the location?", updates the original draft
      instead of inserting another row.
-   - Venue cues already in the text (`Location:`, `tại …`, `at …`) are
-     copied; missing places stay empty — the bot never invents Đà Lạt.
+   - Venues come only from text: a `Venue:` / `Location:` / `Địa điểm:` /
+     `📍` line, a capitalised name after `at` / `tại` ("at the Socialhouse"),
+     the model's `venue_name` / `street_address` when they appear in the
+     caption or the flyer's readable text, or a Google Maps link. Names are
+     normalized (no emoji, leading "the", trailing punctuation/filler) and
+     must look like a place name — description fragments are dropped and the
+     venue stays empty rather than guessed. The address is the parsed street
+     address plus Đà Lạt / Lâm Đồng; `google_maps_url` is a search for the
+     clean name + address. A name that matches a `venues` row (normalized,
+     ignoring a trailing "Dalat") links `venue_id`.
+   - No draft is created unless the caption or flyer text states a clock
+     time, a calendar date, or today/tonight/tomorrow. A bare weekday
+     ("the Saturday coffee meetup") is not enough.
    - Flyer images are uploaded to the public `event-media` bucket under
      `whatsapp/`. A single flyer sets `source_metadata.visual_gap` covering
      `promo` so Review can waive the gallery. It does not waive a missing

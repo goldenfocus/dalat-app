@@ -82,7 +82,8 @@ func TestLocalityAndMapsShortLink(t *testing.T) {
 	if meta["city"] != "Đà Lạt" || meta["province"] != "Lâm Đồng" {
 		t.Fatalf("city=%v province=%v", meta["city"], meta["province"])
 	}
-	if row["google_maps_url"] != "https://www.google.com/maps/place/C%C3%B9+R%C3%BA/@11.94059,108.45818,17z" {
+	// Built from the clean name + street, not the pasted link.
+	if row["google_maps_url"] != "https://www.google.com/maps/search/?api=1&query=C%C3%B9+R%C3%BA%2C+2+Ph%E1%BA%A1m+H%E1%BB%93ng+Th%C3%A1i%2C+%C4%90%C3%A0+L%E1%BA%A1t%2C+L%C3%A2m+%C4%90%E1%BB%93ng" {
 		t.Fatalf("maps=%v", row["google_maps_url"])
 	}
 	addr := row["address"].(string)

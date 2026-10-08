@@ -33,7 +33,7 @@ func prepareReview(draft *eventDraft, in inbound, history []memMsg) error {
 	corpus := strings.Join([]string{in.Text, in.QuotedText, stripCommunity(draft.Description)}, "\n")
 	applyMaps(draft, corpus)
 	if !publicVenue(draft.Location) {
-		if name, address := extractLocation(corpus); publicVenue(name) {
+		if name, address := extractLocation(corpus); plausibleVenueName(name) {
 			draft.Location = name
 			if strings.TrimSpace(draft.Address) == "" {
 				draft.Address = address
@@ -108,17 +108,19 @@ func (d *eventDraft) googleMapsURL() string {
 	if d == nil {
 		return ""
 	}
+	// A clean "name, street, Đà Lạt, Lâm Đồng" search beats a pasted Maps
+	// link full of tracking parameters, and never carries emoji or prose.
+	if publicVenue(d.Location) {
+		q := url.QueryEscape(d.Location + ", " + ensureLocalityAddress(d.Address))
+		return "https://www.google.com/maps/search/?api=1&query=" + q
+	}
 	if strings.TrimSpace(d.MapsURL) != "" {
 		return d.MapsURL
 	}
 	if d.Latitude != nil && d.Longitude != nil {
 		return fmt.Sprintf("https://www.google.com/maps?q=%f,%f", *d.Latitude, *d.Longitude)
 	}
-	if !publicVenue(d.Location) {
-		return ""
-	}
-	q := url.QueryEscape(d.Location + ", " + dalatCity + ", Vietnam")
-	return "https://www.google.com/maps/search/?api=1&query=" + q
+	return ""
 }
 
 var tentativeDateRe = regexp.MustCompile(`(?i)(?:\btentative\b|\btbc\b|date\s+(?:tba|tbd|tbc)|chưa\s+chốt|chua\s+chot|dự\s+kiến|du\s+kien|ngày\s+chưa|maybe\s+(?:this|next|on)?\s*(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|thứ))`)
@@ -254,11 +256,11 @@ func useMapsHit(draft *eventDraft, hit mapsHit) {
 	if draft.MapsURL == "" && hit.FinalURL != "" {
 		draft.MapsURL = hit.FinalURL
 	}
-	if !publicVenue(draft.Location) && publicVenue(hit.Name) {
+	if !publicVenue(draft.Location) && plausibleVenueName(hit.Name) {
 		draft.Location = hit.Name
 	}
-	if strings.TrimSpace(draft.Address) == "" && strings.TrimSpace(hit.Address) != "" && !isCityOnly(hit.Address) && !looksLikeURL(hit.Address) {
-		draft.Address = strings.TrimSpace(hit.Address)
+	if strings.TrimSpace(draft.Address) == "" && !isCityOnly(hit.Address) && !looksLikeURL(hit.Address) {
+		draft.Address = normalizeStreetAddress(hit.Address)
 	}
 	if draft.Latitude == nil && hit.Lat != nil && hit.Lng != nil {
 		lat, lng := *hit.Lat, *hit.Lng

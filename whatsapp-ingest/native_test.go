@@ -211,7 +211,7 @@ func TestTextEditRewritesTheSameDraft(t *testing.T) {
 		t.Fatalf("slug=%s", draft.Slug)
 	}
 	start := draft.StartsAt.In(testLoc)
-	if start.Day() != 4 || start.Hour() != 21 || draft.Location != "The Hideout" {
+	if start.Day() != 4 || start.Hour() != 21 || draft.Location != "Hideout" {
 		t.Fatalf("start=%s loc=%q title=%q", start, draft.Location, draft.Title)
 	}
 }

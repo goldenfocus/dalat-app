@@ -13,34 +13,35 @@ import (
 
 // eventDraft is a parsed event announcement ready to become an events row.
 type eventDraft struct {
-	Slug           string
-	Title          string
-	Description    string
-	Location       string
-	Address        string
-	ExternalURL    string
-	ImageURL       string
-	ImageAlt       string
-	Hero           []byte
-	HeroMIME       string
-	MapsURL        string
-	StartsAt       time.Time
-	EndsAt         *time.Time
-	TimeInferred   bool
-	PriceInferred  bool
-	PriceText      string
-	Organizer      string
-	Cancelled      bool
-	Latitude       *float64
-	Longitude      *float64
-	Extraction     string
-	MergedIDs      []string
-	Native         bool
-	IsEventFlyer   bool
-	ImageKind      string
-	ReadableText   string
-	PersonalPhoto  bool
-	Meta           map[string]any
+	Slug          string
+	Title         string
+	Description   string
+	Location      string
+	Address       string
+	VenueID       string
+	ExternalURL   string
+	ImageURL      string
+	ImageAlt      string
+	Hero          []byte
+	HeroMIME      string
+	MapsURL       string
+	StartsAt      time.Time
+	EndsAt        *time.Time
+	TimeInferred  bool
+	PriceInferred bool
+	PriceText     string
+	Organizer     string
+	Cancelled     bool
+	Latitude      *float64
+	Longitude     *float64
+	Extraction    string
+	MergedIDs     []string
+	Native        bool
+	IsEventFlyer  bool
+	ImageKind     string
+	ReadableText  string
+	PersonalPhoto bool
+	Meta          map[string]any
 }
 
 var (
@@ -49,9 +50,7 @@ var (
 	// Times: 19:30, 19h30, 19h, 7pm, 9am, 8 pm.
 	timeRe = regexp.MustCompile(`(?i)\b((?:[01]?\d|2[0-3])[:hH]([0-5]\d)?|([1-9]|1[0-2])\s*(am|pm))\b`)
 	// "8 giờ", "8 giờ tối", "20 giờ".
-	vietHourRe = regexp.MustCompile(`(?i)\b(\d{1,2})\s*(?:g|giờ)\s*(tối|sáng|chiều|trưa|đêm)?\b`)
-	// Venue cues that already appear in the source text — never invent a place.
-	locationRe  = regexp.MustCompile(`(?i)(?:tại\s+|at\s+|venue\s*:\s*|địa điểm\s*:\s*|location\s*:\s*|địa chỉ\s*:\s*|where\s*:\s*)([^\n]{2,120})`)
+	vietHourRe  = regexp.MustCompile(`(?i)\b(\d{1,2})\s*(?:g|giờ)\s*(tối|sáng|chiều|trưa|đêm)?\b`)
 	monthDateRe = regexp.MustCompile(`(?i)\b(?:(?:(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\.?\s+(\d{1,2})(?:st|nd|rd|th)?)|(?:(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\.?))\b`)
 	// Longer month names must come first. `mười` is a prefix of `mười một`
 	// and `mười hai`, and a word boundary sits on the space between them.
@@ -407,98 +406,16 @@ func isDateOrTimeOnly(line string) bool {
 	}
 }
 
-// extractLocation returns a venue already written in the message. Empty when
-// the announcement does not name a place — callers must not invent Đà Lạt.
+// extractLocation returns a venue already written in the message: a labelled
+// "Venue:" / "Location:" / "📍" line, or a capitalised name after "at" /
+// "tại". Empty when the announcement does not name a place — callers must not
+// invent Đà Lạt or fall back to description text.
 func extractLocation(text string) (name, address string) {
-	// Prefer an explicit label, whose value may sit on the next line.
-	if name, address, ok := labeledLocation(text); ok {
-		return name, address
-	}
-	m := locationRe.FindStringSubmatch(text)
-	if m == nil {
+	c := venueFromText(text)
+	if c.Name == "" {
 		return "", ""
 	}
-	return cleanVenue(m[1])
-}
-
-func labeledLocation(text string) (string, string, bool) {
-	lines := strings.Split(text, "\n")
-	labelRe := regexp.MustCompile(`(?i)^(location|venue|địa điểm|dia diem|địa chỉ|dia chi|where)\s*:\s*(.*)$`)
-	for i, line := range lines {
-		m := labelRe.FindStringSubmatch(strings.TrimSpace(line))
-		if m == nil {
-			continue
-		}
-		value := strings.TrimSpace(m[2])
-		valueIdx := i
-		if value == "" {
-			for j := i + 1; j < len(lines); j++ {
-				next := strings.TrimSpace(lines[j])
-				if next == "" {
-					continue
-				}
-				value = next
-				valueIdx = j
-				break
-			}
-		}
-		name, address := cleanVenue(value)
-		if name == "" {
-			continue
-		}
-		if address == "" {
-			for _, next := range lines[valueIdx+1:] {
-				next = strings.TrimSpace(next)
-				if next == "" {
-					continue
-				}
-				if strings.HasPrefix(next, "(") {
-					address = strings.Trim(next, "() ")
-				}
-				break
-			}
-		}
-		return name, address, true
-	}
-	return "", "", false
-}
-
-func cleanVenue(raw string) (name, address string) {
-	raw = strings.TrimSpace(raw)
-	raw = trimVenueTail(raw)
-	raw = strings.Trim(raw, ".,; ")
-	if raw == "" || isDateOrTimeOnly(raw) || timeRe.MatchString(raw) && len(strings.Fields(raw)) < 3 {
-		return "", ""
-	}
-	line, _, _ := strings.Cut(raw, "\n")
-	line = strings.TrimSpace(line)
-	if i := strings.Index(line, "("); i > 0 {
-		name = strings.TrimSpace(line[:i])
-		address = strings.Trim(line[i:], "() ")
-		address = strings.Trim(address, "., ")
-	} else {
-		name = line
-	}
-	if isCityOnly(name) || name == "" {
-		return "", ""
-	}
-	if len(name) > 80 {
-		name = strings.TrimSpace(name[:80])
-	}
-	return name, address
-}
-
-func trimVenueTail(raw string) string {
-	cutters := []*regexp.Regexp{
-		timeRe,
-		regexp.MustCompile(`(?i)\b(tomorrow|tonight|today|ngày mai|tối nay|hôm nay|this|next)\b.*$`),
-	}
-	for _, re := range cutters {
-		if loc := re.FindStringIndex(raw); loc != nil && loc[0] > 0 {
-			raw = strings.TrimSpace(raw[:loc[0]])
-		}
-	}
-	return raw
+	return c.Name, c.Address
 }
 
 func isCityOnly(name string) bool {
@@ -509,7 +426,6 @@ func isCityOnly(name string) bool {
 		return false
 	}
 }
-
 
 // sourceCaption returns the user-authored description without the Life in
 // Đà Lạt community attribution line. Empty when the draft has no real caption.
@@ -547,6 +463,9 @@ func (d *eventDraft) toRow(createdBy string) map[string]any {
 	}
 	if d.Location != "" {
 		row["location_name"] = d.Location
+	}
+	if d.VenueID != "" {
+		row["venue_id"] = d.VenueID
 	}
 	if d.Address != "" || publicVenue(d.Location) {
 		row["address"] = ensureLocalityAddress(d.Address)

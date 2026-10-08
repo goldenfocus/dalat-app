@@ -286,6 +286,29 @@ func (s *supabaseClient) resolveProfileID(ctx context.Context, username string) 
 	return rows[0].ID, nil
 }
 
+// fetchVenues lists the venues table for venue_id matching.
+func (s *supabaseClient) fetchVenues(ctx context.Context) ([]venueRef, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet,
+		s.base+"/rest/v1/venues?select=id,slug,name,address,latitude,longitude&limit=2000", nil)
+	if err != nil {
+		return nil, err
+	}
+	s.authHeaders(req)
+	resp, err := s.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode/100 != 2 {
+		return nil, fmt.Errorf("fetch venues: %s: %s", resp.Status, readSnippet(resp.Body))
+	}
+	var rows []venueRef
+	if err := json.NewDecoder(resp.Body).Decode(&rows); err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
 func (s *supabaseClient) authHeaders(req *http.Request) {
 	req.Header.Set("apikey", s.key)
 	req.Header.Set("Authorization", "Bearer "+s.key)

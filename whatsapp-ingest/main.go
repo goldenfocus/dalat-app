@@ -116,6 +116,7 @@ func runDaemon(backfill *backfillConfig, exitAfterBackfill bool) {
 		media:         newEventMediaFromEnv(),
 		connected:     make(chan struct{}),
 		anchors:       newAnchorBook(anchorsPath),
+		venues:        &venueCache{fetch: supa.fetchVenues},
 	}
 	if !bot.media.configured() {
 		logf("Cloudflare R2 is not configured — flyer heroes cannot be stored, so announcements will be skipped")
@@ -250,6 +251,7 @@ type ingestBot struct {
 	memory        *groupContext
 	extractor     extractor
 	media         *eventMedia
+	venues        *venueCache
 
 	groupMu       sync.Mutex
 	connected     chan struct{}
@@ -450,6 +452,9 @@ func (b *ingestBot) ingestWithResult(memory *groupContext, in inbound, fromHisto
 		return
 	}
 
+	if !draft.Cancelled {
+		applyVenueMatch(draft, b.venues.get())
+	}
 	row := draft.toRow(b.createdBy)
 	saved, err := b.supa.saveDraft(context.Background(), row)
 	if errors.Is(err, errNotMutable) {

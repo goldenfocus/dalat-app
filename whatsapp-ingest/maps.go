@@ -157,8 +157,13 @@ func parseMapsTarget(raw string) (mapsHit, bool) {
 		}
 	}
 	if hit.Name == "" && q != "" && !coordString(q) && publicVenue(q) {
-		if name, err := url.QueryUnescape(q); err == nil {
-			hit.Name = strings.TrimSpace(name)
+		name, addr := splitVenueValue(strings.TrimSpace(q))
+		if name = normalizeVenueName(name); plausibleVenueName(name) {
+			hit.Name = name
+		}
+		hit.Address = normalizeStreetAddress(addr)
+		if hit.Name == "" && hit.Address == "" && hit.Lat == nil {
+			return mapsHit{}, false
 		}
 	}
 	if ll := parsed.Query().Get("ll"); hit.Lat == nil {
@@ -166,7 +171,7 @@ func parseMapsTarget(raw string) (mapsHit, bool) {
 			hit.Lat, hit.Lng = &lat, &lng
 		}
 	}
-	if hit.Name == "" && hit.Lat == nil {
+	if hit.Name == "" && hit.Lat == nil && hit.Address == "" {
 		return mapsHit{}, false
 	}
 	return hit, true
