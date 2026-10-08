@@ -37,8 +37,10 @@ type extractResult struct {
 	Time              string `json:"time"`
 	EndDate           string `json:"end_date"`
 	EndTime           string `json:"end_time"`
-	Location          string `json:"location"`
-	Address           string `json:"address"`
+	VenueName         string `json:"venue_name"`
+	StreetAddress     string `json:"street_address"`
+	Location          string `json:"location"` // legacy alias of venue_name
+	Address           string `json:"address"`  // legacy alias of street_address
 	Price             string `json:"price"`
 	Organizer         string `json:"organizer"`
 	Cancelled         bool   `json:"cancelled"`
@@ -118,7 +120,11 @@ Rules:
 - When the fact is visible only on a flyer, set from_image true, set is_event_flyer true, and copy only text that appears in readable_text. Evidence fields must be exact substrings of readable_text.
 - If this message only adds details to an earlier announcement, set updates_message_id to that transcript message id. Otherwise "".
 - cancelled is true only when the source says the event is cancelled.
-- title is the event name read from the caption or readable_text. Do not invent a name for a photo of people.`
+- title is the event name read from the caption or readable_text. Do not invent a name for a photo of people.
+- venue_name is only the place's own name exactly as written in the caption or readable_text (for example "Q Coffee Roastery Dalat" or "Socialhouse"): no street, no "at the", no emoji. Never copy a phrase or sentence from the description into venue_name. "" when no place is named.
+- street_address is the house number and street (plus ward/city when written) copied from the caption or readable_text, for example "305 Đ. Tô Ngọc Vân, Xuân Hương, Đà Lạt". "" when no street address is written. Do not put the venue name in it.
+- location_evidence is the exact substring that names the venue or address.
+- JSON keys: is_event, is_event_flyer, image_kind, readable_text, title, date, time, end_date, end_time, venue_name, street_address, price, organizer, cancelled, updates_message_id, from_image, date_evidence, time_evidence, location_evidence, price_evidence, organizer_evidence.`
 
 func (c *llmClient) Extract(ctx context.Context, req extractRequest) (extractResult, error) {
 	for _, img := range requestImages(req) {
@@ -240,7 +246,7 @@ func (c *llmClient) openAIChat(ctx context.Context, base, key, model, prompt str
 			{"role": "user", "content": content},
 		},
 		"temperature":     0,
-		"max_tokens":      500,
+		"max_tokens":      1200,
 		"response_format": map[string]string{"type": "json_object"},
 	}
 	raw, err := json.Marshal(body)
@@ -301,7 +307,7 @@ func (c *llmClient) anthropicChat(ctx context.Context, prompt string, req extrac
 	content = append(content, map[string]any{"type": "text", "text": prompt})
 	body := map[string]any{
 		"model":       c.anthropicModel,
-		"max_tokens":  500,
+		"max_tokens":  1200,
 		"temperature": 0,
 		"system":      extractSystem,
 		"messages": []map[string]any{

@@ -190,11 +190,21 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 		draft.StartsAt = start
 		draft.TimeInferred = inferred
 	}
-	if location, address := venueFrom(in); location != "" {
-		draft.Location = location
-		if address != "" {
-			draft.Address = address
+	msgVenue := venueFromText(firstNonEmpty(in.Text, burst.Caption))
+	if msgVenue.Name == "" && msgVenue.Address == "" {
+		msgVenue = venueFromText(in.QuotedText)
+	}
+	var flyerVenue venueCandidate
+	if llmOK && llm.IsEvent && !(merged && draft.Location != "" && msgVenue.Name == "") {
+		flyerVenue = llmVenue(llm, corpus, in.HasImage)
+	}
+	if venue := chooseVenue(msgVenue, flyerVenue); venue.Name != "" {
+		draft.Location = venue.Name
+		if venue.Address != "" {
+			draft.Address = venue.Address
 		}
+	} else if venue.Address != "" && strings.TrimSpace(draft.Address) == "" {
+		draft.Address = venue.Address
 	}
 	if in.IsEdit || !merged || draft.Title == "" || weakTitle(draft.Title) {
 		if llmOK && in.HasImage && llm.IsEventFlyer && strings.TrimSpace(llm.Title) != "" && !in.IsEdit {
@@ -231,7 +241,20 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 	if strings.TrimSpace(draft.Title) == "" {
 		return nil, fmt.Errorf("no title extractable")
 	}
+	if !draft.Cancelled && !hasLiteralSchedule(scheduleEvidence(draft, in)) {
+		return nil, fmt.Errorf("no literal date or time in caption or flyer text")
+	}
 	return draft, prepareReview(draft, in, history)
+}
+
+// scheduleEvidence is the text a start time may come from: the caption (with
+// earlier merged captions), the quoted message, and a real flyer's OCR text.
+func scheduleEvidence(draft *eventDraft, in inbound) string {
+	parts := []string{stripCommunity(draft.Description), in.Text, in.QuotedText}
+	if draft.IsEventFlyer {
+		parts = append(parts, draft.ReadableText)
+	}
+	return strings.Join(parts, "\n")
 }
 
 func normalizeEdit(in *inbound) {
@@ -316,13 +339,6 @@ func applyNative(in inbound, history []memMsg) (*eventDraft, bool, error) {
 	return draft, true, nil
 }
 
-func venueFrom(in inbound) (string, string) {
-	if name, address := extractLocation(in.Text); name != "" {
-		return name, address
-	}
-	return extractLocation(in.QuotedText)
-}
-
 func applyLLM(draft *eventDraft, llm extractResult, corpus string, hasImage bool, loc *time.Location) {
 	readable := strings.TrimSpace(llm.ReadableText)
 	imageFact := hasImage && llm.FromImage && llm.IsEventFlyer && readable != ""
@@ -339,12 +355,7 @@ func applyLLM(draft *eventDraft, llm extractResult, corpus string, hasImage bool
 			draft.EndsAt = &end
 		}
 	}
-	if name, ok := groundedText(llm.Location, llm.LocationEvidence, evidenceCorpus, imageFact, readable); ok && draft.Location == "" && !isCityOnly(name) {
-		draft.Location = name
-	}
-	if addr, ok := groundedText(llm.Address, llm.LocationEvidence, evidenceCorpus, imageFact, readable); ok && draft.Address == "" && !isCityOnly(addr) {
-		draft.Address = addr
-	}
+	// Venue and street address are resolved by llmVenue / chooseVenue.
 	if price, ok := groundedText(llm.Price, llm.PriceEvidence, evidenceCorpus, imageFact, readable); ok && draft.PriceText == "" {
 		draft.PriceText = price
 		draft.PriceInferred = !literalEvidence(evidenceCorpus, llm.PriceEvidence, llm.Price)

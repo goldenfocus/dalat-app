@@ -147,8 +147,12 @@ func TestFirstLine(t *testing.T) {
 }
 
 func TestExtractLocation(t *testing.T) {
-	if got, _ := extractLocation("Acoustic night 12/9 20h tại cafe"); got != "cafe" {
+	if got, _ := extractLocation("Acoustic night 12/9 20h tại Cù Rú"); got != "Cù Rú" {
 		t.Errorf("got %q", got)
+	}
+	// A lower-case common noun after "tại"/"at" is prose, not a venue name.
+	if got, _ := extractLocation("Acoustic night 12/9 20h tại cafe"); got != "" {
+		t.Errorf("treated prose as a venue: %q", got)
 	}
 	if got, _ := extractLocation("Yoga in the park 03/09 at 7am"); got != "" {
 		t.Errorf("treated a clock time as a venue: %q", got)

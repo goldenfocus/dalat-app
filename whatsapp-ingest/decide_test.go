@@ -55,15 +55,7 @@ func TestDecideTextAnnouncements(t *testing.T) {
 			text:     "Morning vibes in Đà Lạt? ☕️🎧\nJoin us this Saturday, 3 October for Morning Brew & records\nLocation: The Hideout",
 			wantDay:  3,
 			wantHour: 0,
-			wantLoc:  "The Hideout",
-			inferred: true,
-		},
-		{
-			name:     "weekly coffee",
-			text:     "WEEKLY SATURDAY COFFEE MEETUP WITH LIFE IN DA LAT COMMUNITY\nLocation: Cù Rú",
-			wantDay:  5,
-			wantHour: 0,
-			wantLoc:  "Cù Rú",
+			wantLoc:  "Hideout", // leading "the" is stripped
 			inferred: true,
 		},
 	}
@@ -98,6 +90,19 @@ func TestDecideTextAnnouncements(t *testing.T) {
 				t.Fatalf("status=%v", row["status"])
 			}
 		})
+	}
+}
+
+// A bare weekday with no clock time or calendar date used to become a 00:00
+// start. Without a literal date or time there is no draft at all.
+func TestDecideSkipsBareWeekdayWithoutTime(t *testing.T) {
+	_, err := decide(inbound{
+		ID: "MSG1", GroupJID: "120363@g.us", GroupName: "Events & Offers",
+		Sender: "alice", Text: "WEEKLY SATURDAY COFFEE MEETUP WITH LIFE IN DA LAT COMMUNITY\nLocation: Cù Rú", Timestamp: ref,
+		HasImage: true, Image: testFlyerPNG(t), ImageMIME: "image/png",
+	}, nil, nil, ref)
+	if err == nil || !strings.Contains(err.Error(), "no literal date or time") {
+		t.Fatalf("err=%v", err)
 	}
 }
 
@@ -263,7 +268,6 @@ func TestVisionDoesNotInventVenueWithoutImageFlag(t *testing.T) {
 		t.Fatalf("calls=%d", ex.calls)
 	}
 }
-
 
 func TestDecideSkipsUncaptionedPeoplePhoto(t *testing.T) {
 	ex := &fakeExtractor{result: extractResult{
