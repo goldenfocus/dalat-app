@@ -96,7 +96,8 @@ with `DOTENV_PATH`). See `env.example`.
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (required) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key (required, server-side only) |
-| `IMPORT_CREATED_BY` | Profile UUID owning the drafts (default: resolves username `yan`) |
+| `IMPORT_CREATED_BY` | Profile UUID owning the drafts (default: resolves username `yan`). Production uses the `lifeindalat` service profile so events never show a person as creator. |
+| `IMPORT_ORGANIZER_ID` | Optional `organizers.id` credited on every draft (production: the Life in Dalat organizer, slug `lifeindalat`) |
 | `WHATSAPP_GROUP_JIDS` | Comma-separated group JID allowlist. **Empty = discovery mode**: logs every group message with its JID, ingests nothing. |
 | `REVIEW_HOOK_URL` | Optional notify URL after a draft upsert. Do **not** point this at `/api/import/review`. |
 | `REVIEW_INGEST_KEY` | Optional Bearer for `REVIEW_HOOK_URL` |
