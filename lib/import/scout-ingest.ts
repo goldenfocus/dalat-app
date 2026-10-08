@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { fromZonedTime } from "date-fns-tz";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import {
   downloadAndUploadImage,
   findOrCreateOrganizer,
@@ -17,6 +17,8 @@ import {
 import { canonicalizeSourceUrl, isSafePublicHttpUrl } from "./safe-url";
 import { resolveStoredSourceLocale } from "./source-locale";
 import { schedulePublishedEventTranslation } from "@/lib/event-translation";
+import { normalizeShowTitle } from "@/lib/events/recurring-choices";
+import { normalizeVenueName } from "@/lib/events/one-per-venue";
 
 const DALAT_TZ = "Asia/Ho_Chi_Minh";
 
@@ -143,6 +145,11 @@ export async function ingestScoutEvent(
   }
 
   const metadata = buildMetadata(input, sourceUrl, existing?.source_metadata, visuals);
+  // A new date of a show that already has a series joins it instead of
+  // becoming another standalone row (e.g. a venue's nightly acoustic set).
+  const seriesLink = existing
+    ? null
+    : await findSeriesForShow(supabase, input.title, locationName, startsAt);
 
   const row = {
     slug,
@@ -167,6 +174,13 @@ export async function ingestScoutEvent(
       resolveStoredSourceLocale(input.source_locale, input.title, input.description) ??
       null,
     source_metadata: metadata,
+    ...(seriesLink
+      ? {
+          series_id: seriesLink.seriesId,
+          series_instance_date: seriesLink.instanceDate,
+          ...(seriesLink.venueId ? { venue_id: seriesLink.venueId } : {}),
+        }
+      : {}),
   };
 
   const saved = existing
@@ -222,6 +236,70 @@ async function resolveCreatedBy(supabase: SupabaseClient): Promise<string> {
     throw new Error("IMPORT_CREATED_BY not set and no 'yan' profile found");
   }
   return data.id;
+}
+
+type SeriesLink = {
+  seriesId: string;
+  instanceDate: string;
+  venueId: string | null;
+};
+
+type SeriesCandidate = {
+  id: string;
+  title: string | null;
+  location_name: string | null;
+  venue_id: string | null;
+  status: string | null;
+  source_platform: string | null;
+};
+
+/**
+ * Match a scraped show to an existing creator-managed series by title (dates
+ * and numbering stripped) and place name. Returns null when there is no match
+ * or the series already has a row for that Đà Lạt date, so a lookup failure
+ * only ever falls back to the old standalone-row behavior.
+ */
+export async function findSeriesForShow(
+  supabase: SupabaseClient,
+  title: string,
+  locationName: string,
+  startsAt: Date,
+): Promise<SeriesLink | null> {
+  const showTitle = normalizeShowTitle(title);
+  const place = normalizeVenueName(locationName);
+  if (!showTitle || !place) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from("event_series")
+      .select("id, title, location_name, venue_id, status, source_platform")
+      .limit(1000);
+    if (error || !Array.isArray(data)) return null;
+
+    const match = (data as SeriesCandidate[]).find(
+      (series) =>
+        series.status !== "cancelled" &&
+        // Activity Graph series publish through their own freshness gate.
+        series.source_platform !== "activity-graph" &&
+        normalizeShowTitle(series.title) === showTitle &&
+        normalizeVenueName(series.location_name) === place,
+    );
+    if (!match) return null;
+
+    const instanceDate = formatInTimeZone(startsAt, DALAT_TZ, "yyyy-MM-dd");
+    const { data: taken, error: takenError } = await supabase
+      .from("events")
+      .select("id")
+      .eq("series_id", match.id)
+      .eq("series_instance_date", instanceDate)
+      .limit(1);
+    if (takenError || (Array.isArray(taken) && taken.length > 0)) return null;
+
+    return { seriesId: match.id, instanceDate, venueId: match.venue_id ?? null };
+  } catch (error) {
+    console.warn("[scout-ingest] series lookup failed", error);
+    return null;
+  }
 }
 
 async function findExistingBySourceUrl(

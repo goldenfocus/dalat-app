@@ -2458,7 +2458,8 @@
     "noEvents": "Pas encore d'événements à venir",
     "eventCount": "{count, plural, one {# événement à venir} other {# événements à venir}}",
     "createEvent": "Créer un événement",
-    "seeAll": "Voir tous les événements à venir"
+    "seeAll": "Voir tous les événements à venir",
+    "moreDates": "{count, plural, one {+# autre date} other {+# autres dates}}"
   },
   "streaming": {
     "goLive": "Passer en direct",

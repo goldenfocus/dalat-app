@@ -2478,7 +2478,8 @@
     "noEvents": "No upcoming events yet",
     "eventCount": "{count, plural, one {# upcoming event} other {# upcoming events}}",
     "createEvent": "Create an event",
-    "seeAll": "See all upcoming events"
+    "seeAll": "See all upcoming events",
+    "moreDates": "{count, plural, one {+# more date} other {+# more dates}}"
   },
   "streaming": {
     "goLive": "Go Live",

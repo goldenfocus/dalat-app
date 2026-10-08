@@ -2572,7 +2572,8 @@
     "noEvents": "今後のイベントはまだありません",
     "eventCount": "{count, plural, one {# 件の今後のイベント} other {# 件の今後のイベント}}",
     "createEvent": "イベントを作成",
-    "seeAll": "今後のイベントをすべて見る"
+    "seeAll": "今後のイベントをすべて見る",
+    "moreDates": "ほか {count} 日程"
   },
   "eventTags": {
     "music": "音楽",

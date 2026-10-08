@@ -2575,7 +2575,8 @@
     "noEvents": "예정된 이벤트가 아직 없습니다",
     "eventCount": "{count, plural, one {# 개의 예정된 이벤트} other {# 개의 예정된 이벤트}}",
     "createEvent": "이벤트 만들기",
-    "seeAll": "모든 예정된 이벤트 보기"
+    "seeAll": "모든 예정된 이벤트 보기",
+    "moreDates": "+{count}개 일정 더 보기"
   },
   "eventTags": {
     "music": "음악",
