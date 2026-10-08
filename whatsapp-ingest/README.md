@@ -35,9 +35,15 @@ Graph auto-publish.
    - Text uses a day-first parser for English and Vietnamese: month names
      (`October 3`, `3rd of October`), `ngày 3 tháng 10`, weekdays
      (`this Saturday`, `thứ bảy`, `WEEKLY SATURDAY`), and relative days
-     (`tonight`, `tomorrow`, `tối nay`) in Asia/Ho_Chi_Minh. A missing
-     clock is midnight, except tonight/tối nay which uses 20:00, and is
-     flagged `time_inferred`.
+     (`tonight`, `tomorrow`, `tối nay`) in Asia/Ho_Chi_Minh, resolved
+     against the message time. The date and the clock may come from
+     different sources: the caption first, then a flyer's readable text
+     ("Tomorrow" + "FRI OCT 9 FROM 6PM" is tomorrow 18:00, firm). Clocks:
+     `6PM`, `6 PM`, `8 p.m.`, `6:30pm`, `18:00`, `18h`, `18h30`, `từ 18h`,
+     `8 giờ tối`; ranges (`6pm–10pm`, `6-10pm`, `18h-22h`,
+     `10:00–11:30 AM`) set the end. Only when no clock exists anywhere is
+     the start midnight (tonight/tối nay: 20:00) and flagged
+     `time_inferred`.
    - Chit-chat (`yes`, `thank you`, `where do you sit?`) and short personal
      meal plans (`Lunch / Cơm tấm Nguyễn` plus a time) are skipped. They
      never call the model.

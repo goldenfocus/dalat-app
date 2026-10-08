@@ -129,56 +129,6 @@ func buildDraft(msg *events.Message, text, groupName string) (*eventDraft, error
 	return draft, nil
 }
 
-// extractStartTime finds a date in text, combines it with the first clock
-// time, and interprets the calendar day-first in loc. Year-less dates roll
-// forward to their next future occurrence relative to ref. A missing clock
-// is midnight except for "tonight" / "tối nay", which use 20:00. Both
-// defaults are flagged as inferred.
-func extractStartTime(text string, loc *time.Location, ref time.Time) (time.Time, bool, error) {
-	ref = ref.In(loc)
-	hour, min, timeFound := parseClock(text)
-	eveningHint := hasEveningHint(text)
-
-	if y, mo, d, ok := explicitCalendarDate(text, ref); ok {
-		if !timeFound && eveningHint {
-			hour, min = 20, 0
-			t := time.Date(y, mo, d, hour, min, 0, 0, loc)
-			return rollYear(t, ref, yearWasExplicit(text)), true, nil
-		}
-		t := time.Date(y, mo, d, hour, min, 0, 0, loc)
-		inferred := !timeFound
-		return rollYear(t, ref, yearWasExplicit(text)), inferred, nil
-	}
-
-	if rel, ok := relativeDay(text, ref, loc); ok {
-		h, m := hour, min
-		inferred := !timeFound
-		if !timeFound && (eveningHint || rel.evening) {
-			h, m = 20, 0
-			inferred = true
-		}
-		t := time.Date(rel.year, rel.month, rel.day, h, m, 0, 0, loc)
-		return t, inferred, nil
-	}
-
-	if wd, mode, ok := weekdayMention(text); ok {
-		day := upcomingWeekday(ref, wd, mode)
-		inferred := !timeFound
-		h, m := hour, min
-		if !timeFound && eveningHint {
-			h, m = 20, 0
-			inferred = true
-		}
-		t := time.Date(day.Year(), day.Month(), day.Day(), h, m, 0, 0, loc)
-		if t.Before(ref.Add(-6 * time.Hour)) {
-			t = t.AddDate(0, 0, 7)
-		}
-		return t, inferred, nil
-	}
-
-	return time.Time{}, false, fmt.Errorf("no date found in message")
-}
-
 func yearWasExplicit(text string) bool {
 	return regexp.MustCompile(`\b20\d{2}\b`).MatchString(text) ||
 		regexp.MustCompile(`\b\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}\b`).MatchString(text)
@@ -328,43 +278,6 @@ func upcomingWeekday(ref time.Time, wd time.Weekday, mode string) time.Time {
 		}
 	}
 	return time.Date(ref.Year(), ref.Month(), ref.Day(), 0, 0, 0, 0, ref.Location()).AddDate(0, 0, delta)
-}
-
-func parseClock(text string) (hour, min int, ok bool) {
-	if m := timeRe.FindStringSubmatch(text); m != nil {
-		if m[3] != "" {
-			fmt.Sscanf(m[3], "%d", &hour)
-			if strings.EqualFold(m[4], "pm") && hour != 12 {
-				hour += 12
-			}
-			if strings.EqualFold(m[4], "am") && hour == 12 {
-				hour = 0
-			}
-			return hour, 0, true
-		}
-		fmt.Sscanf(m[1], "%d", &hour)
-		if m[2] != "" {
-			fmt.Sscanf(m[2], "%d", &min)
-		}
-		return hour, min, true
-	}
-	if m := vietHourRe.FindStringSubmatch(text); m != nil {
-		fmt.Sscanf(m[1], "%d", &hour)
-		switch strings.ToLower(m[2]) {
-		case "tối", "đêm", "chiều":
-			if hour < 12 {
-				hour += 12
-			}
-		case "sáng":
-			if hour == 12 {
-				hour = 0
-			}
-		}
-		if hour >= 0 && hour <= 23 {
-			return hour, 0, true
-		}
-	}
-	return 0, 0, false
 }
 
 func hasEveningHint(text string) bool {
