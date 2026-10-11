@@ -463,6 +463,16 @@ func (b *ingestBot) ingestWithResult(memory *groupContext, in inbound, fromHisto
 	if !draft.Cancelled {
 		applyVenueMatch(draft, b.venues.get())
 	}
+	if !draft.Cancelled {
+		if rows, err := b.supa.sameDayEvents(context.Background(), draft.StartsAt); err != nil {
+			logf("repost check failed (continuing): %v", err)
+		} else if dup := matchRepost(draft, rows); dup != nil {
+			memory.add(in.GroupJID, remembered)
+			logf("skipped repost %q (%s): matches %s event %s", draft.Title, draft.Slug, dup.Status, dup.Slug)
+			out.Skip = "repost of " + dup.Slug
+			return
+		}
+	}
 	row := draft.toRow(b.createdBy)
 	if b.organizerID != "" {
 		row["organizer_id"] = b.organizerID
