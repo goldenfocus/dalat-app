@@ -133,11 +133,16 @@ export function isSubstantiveEventTranslation(
 
   // Logographic and some compact-script translations can carry the same
   // meaning in fewer Unicode code points than Latin-script source text.
+  // Hangul packs a syllable per code point, so a faithful Korean rendering of
+  // a short Latin-script description lands near 55-60% of its length; 0.65
+  // flagged correct ko translations of 80-90 character sources.
   const compressionFactor = targetLocale === "zh" || targetLocale === "ja"
     ? 0.45
-    : targetLocale === "ko" || targetLocale === "th"
-      ? 0.65
-      : 1;
+    : targetLocale === "ko"
+      ? 0.5
+      : targetLocale === "th"
+        ? 0.65
+        : 1;
   const minimumDescriptionLength = Math.min(
     MIN_EVENT_DESCRIPTION_LENGTH,
     Math.ceil(Math.max(sourceLength, MIN_EVENT_DESCRIPTION_LENGTH) * compressionFactor)

@@ -35,7 +35,7 @@ func baseDraft(in inbound) *eventDraft {
 	}
 	return &eventDraft{
 		Slug:        "wa-" + strings.ToLower(in.ID),
-		Description: strings.TrimSpace(in.Text),
+		Description: cleanFacts(in.Text),
 		Meta: map[string]any{
 			"channel":    "whatsapp-group",
 			"group_jid":  in.GroupJID,
@@ -221,12 +221,18 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 			draft.Title = title
 		}
 	}
-	if caption := firstNonEmpty(burst.Caption, in.Text); caption != "" {
+	flyerText := ""
+	if draft.IsEventFlyer {
+		flyerText = draft.ReadableText
+	}
+	if body := composeDescription(firstNonEmpty(burst.Caption, in.Text), flyerText); body != "" {
 		if in.IsEdit {
-			draft.Description = caption
+			draft.Description = body
 		} else {
-			draft.Description = mergeText(stripCommunity(draft.Description), caption)
+			draft.Description = mergeText(cleanFacts(stripCommunity(draft.Description)), body)
 		}
+	} else {
+		draft.Description = cleanFacts(stripCommunity(draft.Description))
 	}
 	draft.Description = withCommunityLine(draft.Description, in.GroupName)
 	if textSaysCancelled(in.Text) || (llmOK && llm.Cancelled && (in.HasImage && llm.FromImage && llm.IsEventFlyer || textSaysCancelled(corpus))) {

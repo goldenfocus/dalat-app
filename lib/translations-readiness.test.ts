@@ -274,3 +274,13 @@ describe("event translation indexing readiness", () => {
     expect(results.get("event-2")?.readyLocales).toEqual(["en", "ko"]);
   });
 });
+
+describe("Korean description length", () => {
+  it("accepts a faithful ko rendering of a short Latin source", async () => {
+    const { isSubstantiveEventTranslation } = await import("./translations-readiness");
+    const source = 'Shared in the "Games & Billiards 🀄️ ♦️ 🎱" WhatsApp group of the Life in Đà Lạt community.';
+    const ko = 'Đà Lạt 생활 커뮤니티의 "게임 & 당구 🀄️ ♦️ 🎱" WhatsApp 그룹에서 공유됨.';
+    expect(isSubstantiveEventTranslation("description", ko, source, "ko")).toBe(true);
+    expect(isSubstantiveEventTranslation("description", "공유됨.", source, "ko")).toBe(false);
+  });
+});
