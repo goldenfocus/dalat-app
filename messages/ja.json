@@ -2877,7 +2877,13 @@
       "previousPhoto": "前の写真",
       "nextPhoto": "次の写真"
     },
-    "editVenuePage": "スポットページを編集"
+    "editVenuePage": "スポットページを編集",
+    "googleReviewCount": "（Google クチコミ {count} 件）",
+    "directionsGoogle": "Google マップで経路を見る",
+    "fromGoogle": "Google より",
+    "readReviewsOnGoogle": "Google ですべてのクチコミを見る",
+    "googleAttribution": "Google と表示された評価・クチコミ・写真は Google マップからのものです。",
+    "googlePhotoBy": "撮影:"
   },
   "rsvpCelebration": {
     "title": "参加確定！",

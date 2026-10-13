@@ -16,6 +16,8 @@ import {
   Tag,
   BookOpen,
   ExternalLink,
+  Star,
+  Navigation,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
@@ -29,6 +31,7 @@ import { getTranslationsWithFallback } from "@/lib/translations";
 import { PhotoGallery } from "@/components/ui/photo-gallery";
 import { PastEventsSection } from "@/components/venues/past-events-section";
 import { VenueMap } from "@/components/venues/venue-map";
+import { VenueGallery, type VenueGalleryPhoto } from "@/components/venues/venue-gallery";
 import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
 import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { VenueShareButton } from "@/components/venues/venue-share-button";
@@ -230,6 +233,58 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
   const translatedDescription = venueTranslations.description ?? venue.description;
   const translatedAddress = venue.address?.replace(/\bWard\b/g, t("ward")) ?? null;
 
+  // Own photos first, then Google Places photos (proxied, attributed, never stored).
+  const placePhoto = (name: string, w: number) =>
+    `/api/places/photo?w=${w}&name=${encodeURIComponent(name)}`;
+  const gallery: VenueGalleryPhoto[] = [
+    ...(venue.cover_photo_url
+      ? [{ id: "cover", src: venue.cover_photo_url, thumb: venue.cover_photo_url, alt: venue.name }]
+      : []),
+    ...(venue.photos || [])
+      .filter((p) => p.url && p.url !== venue.cover_photo_url)
+      .map((p, i) => ({ id: `own-${i}`, src: p.url, thumb: p.url, alt: p.caption || venue.name, caption: p.caption || null })),
+    ...(venue.google_photos || []).slice(0, 8).map((p, i) => ({
+      id: `g-${i}`,
+      src: placePhoto(p.name, 1600),
+      thumb: placePhoto(p.name, 640),
+      alt: venue.name,
+      googleAuthors: p.attributions || [],
+    })),
+  ];
+  const heroImage = gallery[0]?.thumb ? (gallery[0].googleAuthors ? placePhoto(venue.google_photos![0].name, 1600) : gallery[0].src) : null;
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+    [venue.name, venue.address].filter(Boolean).join(", "),
+  )}${venue.google_place_id ? `&destination_place_id=${encodeURIComponent(venue.google_place_id)}` : ""}`;
+  const mapsUrl =
+    venue.google_maps_url ||
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([venue.name, venue.address].filter(Boolean).join(", "))}`;
+  const rating =
+    venue.google_rating != null ? (
+      <a
+        href={mapsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 text-sm"
+      >
+        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+        <span className="font-semibold">{venue.google_rating.toFixed(1)}</span>
+        <span className="opacity-80">
+          {t("googleReviewCount", { count: venue.google_user_rating_count || 0 })}
+        </span>
+      </a>
+    ) : null;
+  const hoursSpec = venue.operating_hours
+    ? Object.entries(venue.operating_hours)
+        .filter(([, h]) => h && h !== "closed")
+        .map(([day, h]) => ({
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: `https://schema.org/${day.charAt(0).toUpperCase()}${day.slice(1)}`,
+          opens: (h as { open: string }).open,
+          closes: (h as { close: string }).close,
+        }))
+    : [];
+  const ownImages = gallery.filter((g) => !g.googleAuthors).map((g) => g.src);
+
   const isUnclaimed = !venue.owner_id;
 
   const typeConfig = venue.venue_type ? getVenueTypeConfig(venue.venue_type) : null;
@@ -265,10 +320,12 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
       longitude: venue.longitude,
     },
     ...(venue.logo_url && { logo: venue.logo_url }),
-    ...(venue.cover_photo_url && { image: venue.cover_photo_url }),
+    ...(ownImages.length && { image: ownImages.slice(0, 10) }),
+    ...(hoursSpec.length && { openingHoursSpecification: hoursSpec }),
+    hasMap: mapsUrl,
     ...(venue.phone && { telephone: venue.phone }),
     ...(venue.email && { email: venue.email }),
-    ...(venue.website_url && { sameAs: [venue.website_url, venue.facebook_url, venue.instagram_url].filter(Boolean) }),
+    sameAs: [venue.google_maps_url, venue.website_url, venue.facebook_url, venue.instagram_url].filter(Boolean),
     ...(venue.price_range && { priceRange: venue.price_range }),
     ...(venue.is_verified && { isAccessibleForFree: venue.venue_type === "park" }),
   };
@@ -297,11 +354,11 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
       <JsonLd data={localBusinessSchema} />
 
       {/* Hero Section with Cover Photo */}
-      {venue.cover_photo_url ? (
+      {heroImage ? (
         <div className="relative">
           <div className="aspect-[16/9] sm:aspect-[2.5/1] bg-muted overflow-hidden">
             <img
-              src={venue.cover_photo_url}
+              src={heroImage}
               alt=""
               className="w-full h-full object-cover"
             />
@@ -338,6 +395,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                   <h1 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg">
                     {venue.name}
                   </h1>
+                  {rating && <div className="mt-1 text-white drop-shadow">{rating}</div>}
 
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
                     {typeConfig && TypeIcon && venue.venue_type && (
@@ -397,6 +455,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               <h1 className="text-2xl sm:text-3xl font-bold">
                 {venue.name}
               </h1>
+              {rating && <div className="mt-1">{rating}</div>}
 
               <div className="flex items-center gap-3 mt-2 flex-wrap">
                 {typeConfig && TypeIcon && venue.venue_type && (
@@ -511,11 +570,63 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
           )}
         </div>
 
+        {/* Directions — the first thing a visitor needs */}
+        <div className="mb-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <a
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-medium text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.99]"
+          >
+            <Navigation className="h-4 w-4" />
+            {t("directionsGoogle")}
+          </a>
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 font-medium hover:bg-muted"
+          >
+            <ExternalLink className="h-4 w-4" />
+            {t("openInGoogleMaps")}
+          </a>
+        </div>
+
+        <VenueGallery photos={gallery} venueName={venue.name} />
+
         {/* About section */}
         {translatedDescription && (
           <section className="mb-8">
             <h2 className="text-xl font-semibold mb-3">{t("about")}</h2>
             <p className="text-muted-foreground whitespace-pre-wrap">{translatedDescription}</p>
+          </section>
+        )}
+
+        {/* From Google (attributed, cached; not our own reviews) */}
+        {(venue.google_editorial_summary || (venue.google_reviews?.length ?? 0) > 0) && (
+          <section className="mb-8 space-y-3">
+            <h2 className="text-xl font-semibold">{t("fromGoogle")}</h2>
+            {venue.google_editorial_summary && (
+              <p className="text-muted-foreground">{venue.google_editorial_summary}</p>
+            )}
+            {(venue.google_reviews || []).slice(0, 3).map((r, i) => (
+              <figure key={i} className="rounded-xl border p-4">
+                <blockquote className="line-clamp-4 text-sm">{r.text}</blockquote>
+                <figcaption className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                  {r.rating != null && <span>{"★".repeat(Math.round(r.rating))}</span>}
+                  {r.authorUri ? (
+                    <a href={r.authorUri} target="_blank" rel="noopener noreferrer" className="underline">{r.author}</a>
+                  ) : (
+                    <span>{r.author}</span>
+                  )}
+                  {r.when && <span>· {r.when}</span>}
+                </figcaption>
+              </figure>
+            ))}
+            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-sm underline">
+              {t("readReviewsOnGoogle")}
+            </a>
+            <p className="text-xs text-muted-foreground">{t("googleAttribution")}</p>
           </section>
         )}
 
@@ -663,7 +774,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         />
 
         {/* Gallery Section */}
-        {(venue.photos && venue.photos.length > 0) || canManageVenue ? (
+        {canManageVenue ? (
           <section className="mb-8 pt-2">
             <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
               <Camera className="w-5 h-5" />

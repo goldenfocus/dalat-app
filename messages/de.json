@@ -2877,7 +2877,13 @@
       "previousPhoto": "Vorheriges Foto",
       "nextPhoto": "Nächstes Foto"
     },
-    "editVenuePage": "Ortsseite bearbeiten"
+    "editVenuePage": "Ortsseite bearbeiten",
+    "googleReviewCount": "({count} Google-Rezensionen)",
+    "directionsGoogle": "Route in Google Maps",
+    "fromGoogle": "Von Google",
+    "readReviewsOnGoogle": "Alle Rezensionen auf Google lesen",
+    "googleAttribution": "Mit Google gekennzeichnete Bewertungen, Rezensionen und Fotos stammen von Google Maps.",
+    "googlePhotoBy": "Foto von"
   },
   "rsvpCelebration": {
     "title": "Du bist dabei!",

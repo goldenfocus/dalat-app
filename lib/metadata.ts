@@ -231,6 +231,8 @@ export function generateVenueMetadata(
     address: string | null;
     tags?: string[] | null;
     cuisine_types?: string[] | null;
+    photos?: { url: string }[] | null;
+    google_photos?: { name: string }[] | null;
   },
   locale: Locale,
   _eventCount?: number
@@ -247,7 +249,14 @@ export function generateVenueMetadata(
     path: `/${venue.slug}`,
     title: venue.name,
     description,
-    image: venue.cover_photo_url || venue.logo_url || undefined,
+    image:
+      venue.cover_photo_url ||
+      venue.photos?.[0]?.url ||
+      (venue.google_photos?.[0]?.name
+        ? `https://dalat.app/api/places/photo?w=1200&name=${encodeURIComponent(venue.google_photos[0].name)}`
+        : null) ||
+      venue.logo_url ||
+      undefined,
     type: "profile",
     keywords: getVenueSeoKeywords(venue, locale),
   });

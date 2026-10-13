@@ -2880,7 +2880,13 @@
       "previousPhoto": "Ảnh trước",
       "nextPhoto": "Ảnh sau"
     },
-    "editVenuePage": "Sửa trang địa điểm"
+    "editVenuePage": "Sửa trang địa điểm",
+    "googleReviewCount": "({count} đánh giá Google)",
+    "directionsGoogle": "Chỉ đường trên Google Maps",
+    "fromGoogle": "Từ Google",
+    "readReviewsOnGoogle": "Đọc tất cả đánh giá trên Google",
+    "googleAttribution": "Điểm, đánh giá và ảnh có nhãn Google được lấy từ Google Maps.",
+    "googlePhotoBy": "Ảnh của"
   },
   "rsvpCelebration": {
     "title": "Bạn sẽ tham gia!",

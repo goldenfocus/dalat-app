@@ -2877,7 +2877,13 @@
       "previousPhoto": "Foto sebelumnya",
       "nextPhoto": "Foto seterusnya"
     },
-    "editVenuePage": "Sunting halaman tempat"
+    "editVenuePage": "Sunting halaman tempat",
+    "googleReviewCount": "({count} ulasan Google)",
+    "directionsGoogle": "Arah di Google Maps",
+    "fromGoogle": "Daripada Google",
+    "readReviewsOnGoogle": "Baca semua ulasan di Google",
+    "googleAttribution": "Penilaian, ulasan dan foto berlabel Google datang daripada Google Maps.",
+    "googlePhotoBy": "Foto oleh"
   },
   "rsvpCelebration": {
     "title": "Anda akan hadir!",

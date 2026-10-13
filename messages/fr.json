@@ -2891,7 +2891,13 @@
       "previousPhoto": "Photo précédente",
       "nextPhoto": "Photo suivante"
     },
-    "editVenuePage": "Modifier la page du lieu"
+    "editVenuePage": "Modifier la page du lieu",
+    "googleReviewCount": "({count} avis Google)",
+    "directionsGoogle": "Itinéraire dans Google Maps",
+    "fromGoogle": "Selon Google",
+    "readReviewsOnGoogle": "Lire tous les avis sur Google",
+    "googleAttribution": "Les notes, avis et photos marqués Google proviennent de Google Maps.",
+    "googlePhotoBy": "Photo de"
   },
   "rsvpCelebration": {
     "title": "Vous y allez !",
