@@ -39,6 +39,7 @@ type VenueRow = {
   google_rating: number | null;
   google_user_rating_count: number | null;
   google_photos: { name: string }[] | null;
+  google_place_id: string | null;
 };
 function venueImage(v: VenueRow | null, fallback: string | null) {
   if (v?.cover_photo_url) return v.cover_photo_url;
@@ -114,7 +115,7 @@ export default async function ExperiencePage({ params }: Props) {
       ? db
           .from("venues")
           .select(
-            "slug,name,address,google_maps_url,latitude,longitude,cover_photo_url,logo_url,photos,google_rating,google_user_rating_count,google_photos",
+            "slug,name,address,google_maps_url,latitude,longitude,cover_photo_url,logo_url,photos,google_rating,google_user_rating_count,google_photos,google_place_id",
           )
           .eq("id", e.venue_id)
           .maybeSingle()
@@ -127,10 +128,10 @@ export default async function ExperiencePage({ params }: Props) {
   }).format(new Date(`${e.visit_date}T00:00:00Z`));
   const placeName = venue?.name || e.venue_name;
   const placeAddress = venue?.address || e.venue_address;
-  const directionsUrl =
-    venue?.latitude != null && venue?.longitude != null
-      ? `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`
-      : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${placeName} ${placeAddress}`)}`;
+  // Name + address beats raw coordinates: OSM fallbacks can be street-level.
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+    [placeName, placeAddress].filter(Boolean).join(", "),
+  )}${venue?.google_place_id ? `&destination_place_id=${encodeURIComponent(venue.google_place_id)}` : ""}`;
   const venueThumb = venueImage(
     venue,
     story.selected_media[0] ? `/experience-media/${id}/${story.selected_media[0]}` : null,
