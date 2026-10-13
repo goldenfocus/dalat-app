@@ -60,7 +60,7 @@ export function VenueGallery({ photos, venueName }: { photos: VenueGalleryPhoto[
             aria-label={p.alt || venueName}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.thumb} alt={p.alt} loading={i < 2 ? "eager" : "lazy"} className="h-full w-full object-cover" />
+            <img src={p.thumb} alt={p.alt} loading={i < 2 ? "eager" : "lazy"} className="h-full w-full object-cover [content-visibility:visible]" />
             {p.googleAuthors && (
               <span className="absolute bottom-1.5 right-1.5 rounded bg-black/55 px-1.5 py-0.5 text-[10px] text-white">
                 Google

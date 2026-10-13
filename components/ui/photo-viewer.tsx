@@ -149,7 +149,7 @@ export function PhotoViewer({ photos, index, onIndexChange, shareUrl, shareTitle
           src={photo.src}
           alt={photo.alt}
           draggable={false}
-          className="absolute inset-0 m-auto max-h-full max-w-full object-contain transition-transform duration-75"
+          className="absolute inset-0 m-auto max-h-full max-w-full object-contain [content-visibility:visible] transition-transform duration-75"
           style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}
         />
         {index! > 0 && (
