@@ -1540,7 +1540,7 @@ export interface CloudflareStreamInput {
 // Comment Types
 // ============================================
 
-export type CommentTargetType = "event" | "moment";
+export type CommentTargetType = "event" | "moment" | "experience_media";
 
 export interface Comment {
   id: string;

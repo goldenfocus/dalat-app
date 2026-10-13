@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!["event", "moment"].includes(targetType)) {
+  if (!["event", "moment", "experience_media"].includes(targetType)) {
     return NextResponse.json(
       { error: "Invalid targetType" },
       { status: 400 }
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!["event", "moment"].includes(targetType)) {
+    if (!["event", "moment", "experience_media"].includes(targetType)) {
       return NextResponse.json(
         { error: "Invalid targetType" },
         { status: 400 }
