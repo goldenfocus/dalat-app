@@ -90,7 +90,7 @@ export function ExperiencePhotoGallery({ experienceId, title, authorId, userId, 
               alt={p.alt}
               fetchPriority={i === 0 ? "high" : undefined}
               loading={i === 0 ? "eager" : "lazy"}
-              className="w-full transition-transform duration-300 group-hover:scale-[1.01]"
+              className="block w-full [content-visibility:visible] transition-transform duration-300 group-hover:scale-[1.01]"
             />
             <span className="absolute right-3 top-3 rounded-full bg-black/50 p-2 text-white opacity-80">
               <Maximize2 className="h-4 w-4" />
