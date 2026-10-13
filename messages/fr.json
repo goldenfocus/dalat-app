@@ -1196,7 +1196,8 @@
     "statusArchived": "Archivé",
     "sourceManual": "Manuel",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Résumé quotidien"
+    "sourceDailySummary": "Résumé quotidien",
+    "navVenueClaims": "Revendications de lieux"
   },
   "verification": {
     "requestSubmitted": "Demande envoyée !",
@@ -2889,7 +2890,8 @@
       "close": "Fermer",
       "previousPhoto": "Photo précédente",
       "nextPhoto": "Photo suivante"
-    }
+    },
+    "editVenuePage": "Modifier la page du lieu"
   },
   "rsvpCelebration": {
     "title": "Vous y allez !",
@@ -3813,5 +3815,34 @@
     "download": "Télécharger",
     "like": "J’aime",
     "open": "Ouvrir la photo : {alt}"
+  },
+  "venueClaim": {
+    "title": "Revendiquer {name}",
+    "intro": "Vous possédez ou gérez ce lieu ? Dites-nous comment vous vérifier. Une fois validé, vous pourrez modifier la description, les photos, les horaires, les liens et le logo.",
+    "businessEmail": "E-mail professionnel",
+    "businessPhone": "Téléphone professionnel",
+    "note": "Tout ce qui nous aide à vous vérifier",
+    "notePlaceholder": "ex. Je suis le propriétaire ; appelez le numéro sur Google Maps",
+    "proofRequired": "Ajoutez un e-mail, un téléphone ou une note.",
+    "submit": "Envoyer la demande",
+    "sending": "Envoi…",
+    "sent": "Merci ! Nous examinerons votre demande et reviendrons vers vous.",
+    "alreadyPending": "Votre demande est en cours d’examen.",
+    "alreadyClaimed": "Ce lieu a déjà été revendiqué.",
+    "youOwn": "Vous gérez ce lieu.",
+    "failed": "Une erreur est survenue. Réessayez.",
+    "queueTitle": "Revendications de lieux",
+    "queueEmpty": "Aucune demande en attente.",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "approved": "Approuvé",
+    "rejected": "Refusé",
+    "editTitle": "Modifier {name}",
+    "photosHint": "Ajoutez ou réorganisez les photos depuis la page du lieu.",
+    "uploadLogo": "Téléverser le logo",
+    "closed": "Fermé",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré"
   }
 }

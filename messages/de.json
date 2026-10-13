@@ -1182,7 +1182,8 @@
     "statusArchived": "Archiviert",
     "sourceManual": "Manuell",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Tägliche Zusammenfassung"
+    "sourceDailySummary": "Tägliche Zusammenfassung",
+    "navVenueClaims": "Ortsanfragen"
   },
   "verification": {
     "requestSubmitted": "Anfrage gesendet!",
@@ -2875,7 +2876,8 @@
       "close": "Schließen",
       "previousPhoto": "Vorheriges Foto",
       "nextPhoto": "Nächstes Foto"
-    }
+    },
+    "editVenuePage": "Ortsseite bearbeiten"
   },
   "rsvpCelebration": {
     "title": "Du bist dabei!",
@@ -3813,5 +3815,34 @@
     "download": "Herunterladen",
     "like": "Gefällt mir",
     "open": "Foto öffnen: {alt}"
+  },
+  "venueClaim": {
+    "title": "{name} beanspruchen",
+    "intro": "Gehört oder leiten Sie diesen Ort? Sagen Sie uns, wie wir Sie verifizieren können. Nach der Freigabe können Sie Beschreibung, Fotos, Öffnungszeiten, Links und Logo bearbeiten.",
+    "businessEmail": "Geschäftliche E-Mail",
+    "businessPhone": "Geschäftliche Telefonnummer",
+    "note": "Alles, was uns bei der Verifizierung hilft",
+    "notePlaceholder": "z. B. Ich bin der Inhaber; rufen Sie die Nummer auf Google Maps an",
+    "proofRequired": "Bitte E-Mail, Telefonnummer oder Notiz angeben.",
+    "submit": "Anfrage senden",
+    "sending": "Wird gesendet…",
+    "sent": "Danke! Wir prüfen Ihre Anfrage und melden uns.",
+    "alreadyPending": "Ihre Anfrage wird geprüft.",
+    "alreadyClaimed": "Dieser Ort wurde bereits beansprucht.",
+    "youOwn": "Sie verwalten diesen Ort.",
+    "failed": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+    "queueTitle": "Ortsanfragen",
+    "queueEmpty": "Keine offenen Anfragen.",
+    "approve": "Freigeben",
+    "reject": "Ablehnen",
+    "approved": "Freigegeben",
+    "rejected": "Abgelehnt",
+    "editTitle": "{name} bearbeiten",
+    "photosHint": "Fotos fügen Sie auf der Ortsseite hinzu oder sortieren sie dort.",
+    "uploadLogo": "Logo hochladen",
+    "closed": "Geschlossen",
+    "save": "Speichern",
+    "saving": "Wird gespeichert…",
+    "saved": "Gespeichert"
   }
 }

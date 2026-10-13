@@ -1182,7 +1182,8 @@
     "statusArchived": "Archivado",
     "sourceManual": "Manual",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Resumen diario"
+    "sourceDailySummary": "Resumen diario",
+    "navVenueClaims": "Reclamaciones de lugares"
   },
   "verification": {
     "requestSubmitted": "¡Solicitud Enviada!",
@@ -2934,7 +2935,8 @@
       "close": "Cerrar",
       "previousPhoto": "Foto anterior",
       "nextPhoto": "Foto siguiente"
-    }
+    },
+    "editVenuePage": "Editar página del lugar"
   },
   "rsvpCelebration": {
     "title": "¡Vas a ir!",
@@ -3813,5 +3815,34 @@
     "download": "Descargar",
     "like": "Me gusta",
     "open": "Abrir foto: {alt}"
+  },
+  "venueClaim": {
+    "title": "Reclamar {name}",
+    "intro": "¿Eres dueño o gestionas este lugar? Dinos cómo verificarte. Tras la aprobación podrás editar la descripción, fotos, horarios, enlaces y logo.",
+    "businessEmail": "Correo del negocio",
+    "businessPhone": "Teléfono del negocio",
+    "note": "Cualquier dato que ayude a verificarte",
+    "notePlaceholder": "p. ej. Soy el dueño; llamen al número de Google Maps",
+    "proofRequired": "Añade un correo, un teléfono o una nota.",
+    "submit": "Enviar solicitud",
+    "sending": "Enviando…",
+    "sent": "¡Gracias! Revisaremos tu solicitud y te responderemos.",
+    "alreadyPending": "Tu solicitud está en revisión.",
+    "alreadyClaimed": "Este lugar ya ha sido reclamado.",
+    "youOwn": "Gestionas este lugar.",
+    "failed": "Algo salió mal. Inténtalo de nuevo.",
+    "queueTitle": "Reclamaciones de lugares",
+    "queueEmpty": "No hay solicitudes pendientes.",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "approved": "Aprobada",
+    "rejected": "Rechazada",
+    "editTitle": "Editar {name}",
+    "photosHint": "Añade o reordena fotos desde la página del lugar.",
+    "uploadLogo": "Subir logo",
+    "closed": "Cerrado",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Guardado"
   }
 }

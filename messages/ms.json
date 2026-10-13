@@ -1182,7 +1182,8 @@
     "statusArchived": "Diarkibkan",
     "sourceManual": "Manual",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Ringkasan Harian"
+    "sourceDailySummary": "Ringkasan Harian",
+    "navVenueClaims": "Tuntutan tempat"
   },
   "verification": {
     "requestSubmitted": "Permintaan Dihantar!",
@@ -2875,7 +2876,8 @@
       "close": "Tutup",
       "previousPhoto": "Foto sebelumnya",
       "nextPhoto": "Foto seterusnya"
-    }
+    },
+    "editVenuePage": "Sunting halaman tempat"
   },
   "rsvpCelebration": {
     "title": "Anda akan hadir!",
@@ -3813,5 +3815,34 @@
     "download": "Muat turun",
     "like": "Suka",
     "open": "Buka foto: {alt}"
+  },
+  "venueClaim": {
+    "title": "Tuntut {name}",
+    "intro": "Anda pemilik atau pengurus tempat ini? Beritahu kami cara mengesahkan anda. Selepas diluluskan, anda boleh menyunting penerangan, foto, waktu operasi, pautan dan logo.",
+    "businessEmail": "E-mel perniagaan",
+    "businessPhone": "Telefon perniagaan",
+    "note": "Apa-apa yang membantu pengesahan",
+    "notePlaceholder": "cth. Saya pemiliknya; hubungi nombor di Google Maps",
+    "proofRequired": "Tambah e-mel, nombor telefon atau nota.",
+    "submit": "Hantar permintaan",
+    "sending": "Menghantar…",
+    "sent": "Terima kasih! Kami akan menyemak dan menghubungi anda.",
+    "alreadyPending": "Tuntutan anda sedang disemak.",
+    "alreadyClaimed": "Tempat ini sudah dituntut.",
+    "youOwn": "Anda mengurus tempat ini.",
+    "failed": "Ralat berlaku. Cuba lagi.",
+    "queueTitle": "Tuntutan tempat",
+    "queueEmpty": "Tiada tuntutan tertunda.",
+    "approve": "Luluskan",
+    "reject": "Tolak",
+    "approved": "Diluluskan",
+    "rejected": "Ditolak",
+    "editTitle": "Sunting {name}",
+    "photosHint": "Tambah atau susun foto dari halaman tempat.",
+    "uploadLogo": "Muat naik logo",
+    "closed": "Tutup",
+    "save": "Simpan",
+    "saving": "Menyimpan…",
+    "saved": "Disimpan"
   }
 }

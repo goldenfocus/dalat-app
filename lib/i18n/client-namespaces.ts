@@ -23,6 +23,7 @@ export const CORE_CLIENT_NAMESPACES = [
   "translations",
   "tribes",
   "userMenu",
+  "venueClaim",
   "viewToggle",
 ] as const;
 
@@ -84,6 +85,7 @@ export const CLIENT_NAMESPACES = [
   "translations",
   "tribes",
   "userMenu",
+  "venueClaim",
   "venues",
   "viewToggle",
 ];
