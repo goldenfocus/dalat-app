@@ -63,6 +63,7 @@ export const CLIENT_NAMESPACES = [
   "onboarding",
   "organizer",
   "people",
+  "photoViewer",
   "playlist",
   "plusOnes",
   "pokerTable",
