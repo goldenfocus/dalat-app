@@ -70,8 +70,30 @@ async function uniqueSlug(db: SupabaseClient, base: string) {
   return `${root}-${Date.now().toString(36)}`;
 }
 
+/**
+ * Nominatim queries from most to least precise. Old ward names ("Phường 9",
+ * "P.3") were abolished in 2025 and confuse the geocoder, so a cleaned
+ * "<number street>, Đà Lạt" variant is tried before falling back to the
+ * street alone (street-level precision; directions then use name + address).
+ */
+export function geocodeQueries(name: string, address: string) {
+  const parts = address.split(/[,\-–]/).map((p) => p.trim()).filter(Boolean);
+  const street = parts[0] || "";
+  const noWard = parts
+    .filter((p) => !/^(p\.?|phường|ward|tp\.?|thành phố|tỉnh|lâm đồng|vietnam|việt nam|viet nam)\b/i.test(p))
+    .filter((p) => !/^\d{5,6}$/.test(p));
+  const qs = [
+    address,
+    noWard.length ? `${noWard.join(", ")}${/đà lạt|da lat|dalat/i.test(noWard.join(" ")) ? "" : ", Đà Lạt"}` : "",
+    `${name}, Đà Lạt`,
+    street ? `${street}, Đà Lạt` : "",
+    street ? `${street.replace(/^[\d/a-z]+\s+/i, "")}, Đà Lạt` : "",
+  ];
+  return [...new Set(qs.filter((q) => q.replace(/[, ]/g, "").length > 3))];
+}
+
 export type ResolveResult =
-  | { status: "linked" | "created"; venueId: string; slug: string; source: "google" | "osm" | "match" }
+  | { status: "linked" | "created"; venueId: string; slug: string; source: "google" | "osm" | "osm_street" | "match" }
   | { status: "skipped"; reason: string };
 
 /**
@@ -122,15 +144,17 @@ export async function resolveExperienceVenue(
   if (existing) return link(existing, "match");
 
   let lat = place?.lat, lng = place?.lng;
-  let geocodeSource: "google" | "osm" = "google";
+  let geocodeSource: "google" | "osm" | "osm_street" = "google";
   if (lat == null || lng == null) {
     geocodeSource = "osm";
-    const queries = [address, `${name}, ${address}`, `${name}, Đà Lạt`].filter((q) => q.replace(/[, ]/g, ""));
+    const queries = geocodeQueries(name, address);
     for (const q of queries) {
       const hit = await nominatimGeocode(q).catch(() => null);
       // Keep only hits inside greater Đà Lạt.
       if (hit && distanceMeters(hit, { lat: 11.9404, lng: 108.4583 }) < 30000) {
-        lat = hit.lat; lng = hit.lng; break;
+        lat = hit.lat; lng = hit.lng;
+        if (hit.streetOnly) geocodeSource = "osm_street";
+        break;
       }
       await new Promise((r) => setTimeout(r, 1100));
     }

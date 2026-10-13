@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { matchVenue, streetKey } from "./resolve-experience-venue";
+import { geocodeQueries, matchVenue, streetKey } from "./resolve-experience-venue";
 import { hoursFromPeriods } from "./places";
 
 const venues = [
@@ -32,5 +32,13 @@ describe("hoursFromPeriods", () => {
   });
   it("handles 24/7", () => {
     expect(hoursFromPeriods([{ open: { day: 0, hour: 0 } }])?.friday).toEqual({ open: "00:00", close: "23:59" });
+  });
+});
+
+describe("geocodeQueries", () => {
+  it("drops abolished wards and ends with the bare street", () => {
+    const q = geocodeQueries("Ẩm Thực Chay THIỆN Ý", "145 Phan Chu Trinh, Phường 9, Đà Lạt, Lâm Đồng, Vietnam");
+    expect(q).toContain("145 Phan Chu Trinh, Đà Lạt");
+    expect(q[q.length - 1]).toBe("Phan Chu Trinh, Đà Lạt");
   });
 });

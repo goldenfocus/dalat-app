@@ -160,8 +160,8 @@ export async function nominatimGeocode(query: string) {
     cache: "no-store",
   });
   if (!res.ok) return null;
-  const [hit] = (await res.json()) as { lat: string; lon: string }[];
-  return hit ? { lat: Number(hit.lat), lng: Number(hit.lon) } : null;
+  const [hit] = (await res.json()) as { lat: string; lon: string; addresstype?: string }[];
+  return hit ? { lat: Number(hit.lat), lng: Number(hit.lon), streetOnly: hit.addresstype === "road" } : null;
 }
 
 export function venueTypeFromGoogle(type: string | null, category?: string) {
