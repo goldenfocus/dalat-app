@@ -2880,7 +2880,13 @@
       "previousPhoto": "上一张照片",
       "nextPhoto": "下一张照片"
     },
-    "editVenuePage": "编辑地点页面"
+    "editVenuePage": "编辑地点页面",
+    "googleReviewCount": "（{count} 条 Google 评价）",
+    "directionsGoogle": "在 Google 地图中导航",
+    "fromGoogle": "来自 Google",
+    "readReviewsOnGoogle": "在 Google 上查看全部评价",
+    "googleAttribution": "标有 Google 的评分、评价和照片来自 Google 地图。",
+    "googlePhotoBy": "摄影："
   },
   "rsvpCelebration": {
     "title": "报名成功！",

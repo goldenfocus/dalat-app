@@ -173,7 +173,7 @@ export async function resolveExperienceVenue(
       address: place?.address || address || null,
       latitude: lat,
       longitude: lng,
-      venue_type: venueTypeFromGoogle(place?.primaryType || null, experience.category),
+      venue_type: venueTypeFromGoogle(place?.primaryType || null, experience.category, canonicalName),
       phone: place?.phone || null,
       website_url: place?.website || null,
       operating_hours: place?.hours || null,

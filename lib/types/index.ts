@@ -253,6 +253,21 @@ export interface OperatingHours {
   sunday?: { open: string; close: string } | "closed";
 }
 
+export interface GooglePlacePhoto {
+  name: string;
+  width?: number;
+  height?: number;
+  attributions: { name: string; uri?: string }[];
+}
+
+export interface GooglePlaceReview {
+  author: string;
+  authorUri?: string;
+  rating?: number;
+  text: string;
+  when?: string;
+}
+
 export interface VenuePhoto {
   url: string;
   caption?: string;
@@ -295,6 +310,14 @@ export interface Venue {
   tags: string[];
   cuisine_types: string[];
   photos: VenuePhoto[];
+
+  // Google Places cache (attributed; refreshed by /api/cron/venue-places)
+  google_rating?: number | null;
+  google_user_rating_count?: number | null;
+  google_editorial_summary?: string | null;
+  google_photos?: GooglePlacePhoto[] | null;
+  google_reviews?: GooglePlaceReview[] | null;
+  google_synced_at?: string | null;
 
   // Media
   logo_url: string | null;

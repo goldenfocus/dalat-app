@@ -164,8 +164,9 @@ export async function nominatimGeocode(query: string) {
   return hit ? { lat: Number(hit.lat), lng: Number(hit.lon), streetOnly: hit.addresstype === "road" } : null;
 }
 
-export function venueTypeFromGoogle(type: string | null, category?: string) {
+export function venueTypeFromGoogle(type: string | null, category?: string, name = "") {
   const t = type || "";
+  if (/\bchay\b|vegetarian|vegan|thuần chay/i.test(name)) return /vegan|thuần chay/i.test(name) ? "vegan" : "vegetarian";
   if (/vegan/.test(t)) return "vegan";
   if (/vegetarian/.test(t)) return "vegetarian";
   if (/cafe|coffee|tea|bakery/.test(t)) return "cafe";

@@ -2911,7 +2911,13 @@
       "previousPhoto": "Previous photo",
       "nextPhoto": "Next photo"
     },
-    "editVenuePage": "Edit venue page"
+    "editVenuePage": "Edit venue page",
+    "googleReviewCount": "({count} Google reviews)",
+    "directionsGoogle": "Directions in Google Maps",
+    "fromGoogle": "From Google",
+    "readReviewsOnGoogle": "Read all reviews on Google",
+    "googleAttribution": "Ratings, reviews and photos marked Google come from Google Maps.",
+    "googlePhotoBy": "Photo by"
   },
   "rsvpCelebration": {
     "title": "You're going!",

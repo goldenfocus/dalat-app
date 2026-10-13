@@ -2877,7 +2877,13 @@
       "previousPhoto": "รูปก่อนหน้า",
       "nextPhoto": "รูปถัดไป"
     },
-    "editVenuePage": "แก้ไขหน้าสถานที่"
+    "editVenuePage": "แก้ไขหน้าสถานที่",
+    "googleReviewCount": "({count} รีวิวบน Google)",
+    "directionsGoogle": "เส้นทางใน Google Maps",
+    "fromGoogle": "จาก Google",
+    "readReviewsOnGoogle": "อ่านรีวิวทั้งหมดบน Google",
+    "googleAttribution": "คะแนน รีวิว และรูปที่มีป้าย Google มาจาก Google Maps",
+    "googlePhotoBy": "ภาพโดย"
   },
   "rsvpCelebration": {
     "title": "คุณจะไป!",

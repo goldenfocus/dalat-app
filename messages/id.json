@@ -2936,7 +2936,13 @@
       "previousPhoto": "Foto sebelumnya",
       "nextPhoto": "Foto berikutnya"
     },
-    "editVenuePage": "Edit halaman tempat"
+    "editVenuePage": "Edit halaman tempat",
+    "googleReviewCount": "({count} ulasan Google)",
+    "directionsGoogle": "Petunjuk arah di Google Maps",
+    "fromGoogle": "Dari Google",
+    "readReviewsOnGoogle": "Baca semua ulasan di Google",
+    "googleAttribution": "Rating, ulasan, dan foto berlabel Google berasal dari Google Maps.",
+    "googlePhotoBy": "Foto oleh"
   },
   "rsvpCelebration": {
     "title": "Kamu akan hadir!",

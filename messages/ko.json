@@ -2880,7 +2880,13 @@
       "previousPhoto": "이전 사진",
       "nextPhoto": "다음 사진"
     },
-    "editVenuePage": "장소 페이지 수정"
+    "editVenuePage": "장소 페이지 수정",
+    "googleReviewCount": "(Google 리뷰 {count}개)",
+    "directionsGoogle": "Google 지도 길찾기",
+    "fromGoogle": "Google 정보",
+    "readReviewsOnGoogle": "Google에서 모든 리뷰 보기",
+    "googleAttribution": "Google 표시가 있는 평점, 리뷰, 사진은 Google 지도에서 가져왔습니다.",
+    "googlePhotoBy": "사진:"
   },
   "rsvpCelebration": {
     "title": "참석 확정!",

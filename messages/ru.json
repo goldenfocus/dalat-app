@@ -2877,7 +2877,13 @@
       "previousPhoto": "Предыдущее фото",
       "nextPhoto": "Следующее фото"
     },
-    "editVenuePage": "Редактировать страницу места"
+    "editVenuePage": "Редактировать страницу места",
+    "googleReviewCount": "({count} отзывов в Google)",
+    "directionsGoogle": "Маршрут в Google Картах",
+    "fromGoogle": "Из Google",
+    "readReviewsOnGoogle": "Все отзывы в Google",
+    "googleAttribution": "Оценки, отзывы и фото с пометкой Google взяты из Google Карт.",
+    "googlePhotoBy": "Фото:"
   },
   "rsvpCelebration": {
     "title": "Вы идёте!",
