@@ -3798,6 +3798,20 @@
     "topicHint": "Experiences tagged with this topic or reporting it during a visit. Open an experience to see who shared it, when and where; conditions can change.",
     "clearTopic": "Browse all experiences",
     "moreResults": "More experiences",
-    "previousResults": "Previous experiences"
+    "previousResults": "Previous experiences",
+    "visitedFreshness": "{date} に訪問 · 情報が変わっている可能性があります",
+    "viewVenue": "スポットを見る",
+    "directionsGoogle": "Google マップで経路を見る",
+    "googleReviews": "（Google で {count} 件）"
+  },
+  "photoViewer": {
+    "close": "閉じる",
+    "previous": "前の写真",
+    "next": "次の写真",
+    "share": "共有",
+    "linkCopied": "リンクをコピーしました",
+    "download": "ダウンロード",
+    "like": "いいね",
+    "open": "写真を開く: {alt}"
   }
 }

@@ -3798,6 +3798,20 @@
     "topicHint": "Experiences tagged with this topic or reporting it during a visit. Open an experience to see who shared it, when and where; conditions can change.",
     "clearTopic": "Browse all experiences",
     "moreResults": "More experiences",
-    "previousResults": "Previous experiences"
+    "previousResults": "Previous experiences",
+    "visitedFreshness": "Besucht am {date} · Angaben können sich geändert haben",
+    "viewVenue": "Ort ansehen",
+    "directionsGoogle": "Route in Google Maps",
+    "googleReviews": "({count} bei Google)"
+  },
+  "photoViewer": {
+    "close": "Schließen",
+    "previous": "Vorheriges Foto",
+    "next": "Nächstes Foto",
+    "share": "Teilen",
+    "linkCopied": "Link kopiert",
+    "download": "Herunterladen",
+    "like": "Gefällt mir",
+    "open": "Foto öffnen: {alt}"
   }
 }

@@ -3798,6 +3798,20 @@
     "topicHint": "Experiences tagged with this topic or reporting it during a visit. Open an experience to see who shared it, when and where; conditions can change.",
     "clearTopic": "Browse all experiences",
     "moreResults": "More experiences",
-    "previousResults": "Previous experiences"
+    "previousResults": "Previous experiences",
+    "visitedFreshness": "Dilawati {date} · maklumat mungkin telah berubah",
+    "viewVenue": "Lihat tempat",
+    "directionsGoogle": "Arah di Google Maps",
+    "googleReviews": "({count} di Google)"
+  },
+  "photoViewer": {
+    "close": "Tutup",
+    "previous": "Foto sebelumnya",
+    "next": "Foto seterusnya",
+    "share": "Kongsi",
+    "linkCopied": "Pautan disalin",
+    "download": "Muat turun",
+    "like": "Suka",
+    "open": "Buka foto: {alt}"
   }
 }

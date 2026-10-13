@@ -3798,6 +3798,20 @@
     "topicHint": "Experiences tagged with this topic or reporting it during a visit. Open an experience to see who shared it, when and where; conditions can change.",
     "clearTopic": "Browse all experiences",
     "moreResults": "More experiences",
-    "previousResults": "Previous experiences"
+    "previousResults": "Previous experiences",
+    "visitedFreshness": "เยี่ยมชมเมื่อ {date} · ข้อมูลอาจเปลี่ยนไปแล้ว",
+    "viewVenue": "ดูสถานที่",
+    "directionsGoogle": "เส้นทางใน Google Maps",
+    "googleReviews": "({count} รีวิวบน Google)"
+  },
+  "photoViewer": {
+    "close": "ปิด",
+    "previous": "รูปก่อนหน้า",
+    "next": "รูปถัดไป",
+    "share": "แชร์",
+    "linkCopied": "คัดลอกลิงก์แล้ว",
+    "download": "ดาวน์โหลด",
+    "like": "ถูกใจ",
+    "open": "เปิดรูป: {alt}"
   }
 }
