@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { resolveExperienceVenue } from "@/lib/venues/resolve-experience-venue";
 import { z } from "zod";
 import {
   ownerExperience,
@@ -143,6 +144,24 @@ export async function PATCH(request: Request, { params }: Context) {
     })
     .eq("id", id)
     .eq("author_id", owned.user.id);
+  if (!error && action === "publish" && !story.venue_id && story.venue_name.trim()) {
+    // Link or create the canonical venue after the response; publishing never waits on Google/OSM.
+    after(async () => {
+      try {
+        const result = await resolveExperienceVenue(admin, {
+          id,
+          author_id: owned.user.id,
+          venue_id: null,
+          venue_name: story.venue_name,
+          venue_address: story.venue_address,
+          category: story.category,
+        });
+        console.warn("[experience-venue]", id, JSON.stringify(result));
+      } catch (e) {
+        console.error("[experience-venue] failed", id, String(e).slice(0, 200));
+      }
+    });
+  }
   return error
     ? NextResponse.json({ error: "Draft could not be saved" }, { status: 503 })
     : NextResponse.json({
