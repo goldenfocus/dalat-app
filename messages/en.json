@@ -1276,7 +1276,8 @@
     "roleModerator": "Moderator",
     "roleOrganizer": "Organizer",
     "roleContributor": "Contributor",
-    "noData": "No data"
+    "noData": "No data",
+    "navVenueClaims": "Venue claims"
   },
   "verification": {
     "requestSubmitted": "Request Submitted!",
@@ -2909,7 +2910,8 @@
       "close": "Close",
       "previousPhoto": "Previous photo",
       "nextPhoto": "Next photo"
-    }
+    },
+    "editVenuePage": "Edit venue page"
   },
   "rsvpCelebration": {
     "title": "You're going!",
@@ -3889,5 +3891,34 @@
     "download": "Download",
     "like": "Like",
     "open": "Open photo: {alt}"
+  },
+  "venueClaim": {
+    "title": "Claim {name}",
+    "intro": "Own or manage this place? Tell us how to verify you. Once approved you can edit the description, photos, hours, links and logo.",
+    "businessEmail": "Business email",
+    "businessPhone": "Business phone",
+    "note": "Anything that helps us verify you",
+    "notePlaceholder": "e.g. I'm the owner; you can call the number on Google Maps",
+    "proofRequired": "Add an email, a phone number or a note.",
+    "submit": "Send claim request",
+    "sending": "Sending…",
+    "sent": "Thanks! We'll review your request and get back to you.",
+    "alreadyPending": "Your claim is pending review.",
+    "alreadyClaimed": "This venue has already been claimed.",
+    "youOwn": "You manage this venue.",
+    "failed": "Something went wrong. Please try again.",
+    "queueTitle": "Venue claims",
+    "queueEmpty": "No pending claims.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "editTitle": "Edit {name}",
+    "photosHint": "Add or reorder photos from the venue page.",
+    "uploadLogo": "Upload logo",
+    "closed": "Closed",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved"
   }
 }

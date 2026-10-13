@@ -1182,7 +1182,8 @@
     "statusArchived": "已归档",
     "sourceManual": "手动",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "每日摘要"
+    "sourceDailySummary": "每日摘要",
+    "navVenueClaims": "地点认领"
   },
   "verification": {
     "requestSubmitted": "请求已提交！",
@@ -2878,7 +2879,8 @@
       "close": "关闭",
       "previousPhoto": "上一张照片",
       "nextPhoto": "下一张照片"
-    }
+    },
+    "editVenuePage": "编辑地点页面"
   },
   "rsvpCelebration": {
     "title": "报名成功！",
@@ -3816,5 +3818,34 @@
     "download": "下载",
     "like": "赞",
     "open": "打开照片：{alt}"
+  },
+  "venueClaim": {
+    "title": "认领 {name}",
+    "intro": "您是这里的店主或管理者吗？告诉我们如何核实您的身份。通过后即可编辑介绍、照片、营业时间、链接和标志。",
+    "businessEmail": "商家邮箱",
+    "businessPhone": "商家电话",
+    "note": "有助于核实身份的信息",
+    "notePlaceholder": "例如：我是店主，可拨打 Google 地图上的电话",
+    "proofRequired": "请填写邮箱、电话或备注。",
+    "submit": "提交认领申请",
+    "sending": "提交中…",
+    "sent": "谢谢！我们会审核并回复您。",
+    "alreadyPending": "您的申请正在审核中。",
+    "alreadyClaimed": "该地点已被认领。",
+    "youOwn": "您正在管理该地点。",
+    "failed": "出错了，请重试。",
+    "queueTitle": "地点认领",
+    "queueEmpty": "暂无待审核申请。",
+    "approve": "通过",
+    "reject": "拒绝",
+    "approved": "已通过",
+    "rejected": "已拒绝",
+    "editTitle": "编辑 {name}",
+    "photosHint": "照片可在地点页面添加或排序。",
+    "uploadLogo": "上传标志",
+    "closed": "休息",
+    "save": "保存",
+    "saving": "保存中…",
+    "saved": "已保存"
   }
 }

@@ -1182,7 +1182,8 @@
     "statusArchived": "Diarsipkan",
     "sourceManual": "Manual",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Ringkasan Harian"
+    "sourceDailySummary": "Ringkasan Harian",
+    "navVenueClaims": "Klaim tempat"
   },
   "verification": {
     "requestSubmitted": "Permintaan Terkirim!",
@@ -2934,7 +2935,8 @@
       "close": "Tutup",
       "previousPhoto": "Foto sebelumnya",
       "nextPhoto": "Foto berikutnya"
-    }
+    },
+    "editVenuePage": "Edit halaman tempat"
   },
   "rsvpCelebration": {
     "title": "Kamu akan hadir!",
@@ -3813,5 +3815,34 @@
     "download": "Unduh",
     "like": "Suka",
     "open": "Buka foto: {alt}"
+  },
+  "venueClaim": {
+    "title": "Klaim {name}",
+    "intro": "Pemilik atau pengelola tempat ini? Beri tahu kami cara memverifikasi Anda. Setelah disetujui, Anda bisa mengedit deskripsi, foto, jam buka, tautan, dan logo.",
+    "businessEmail": "Email bisnis",
+    "businessPhone": "Telepon bisnis",
+    "note": "Apa pun yang membantu verifikasi",
+    "notePlaceholder": "mis. Saya pemiliknya; hubungi nomor di Google Maps",
+    "proofRequired": "Tambahkan email, nomor telepon, atau catatan.",
+    "submit": "Kirim permintaan",
+    "sending": "Mengirim…",
+    "sent": "Terima kasih! Kami akan meninjau dan menghubungi Anda.",
+    "alreadyPending": "Permintaan Anda sedang ditinjau.",
+    "alreadyClaimed": "Tempat ini sudah diklaim.",
+    "youOwn": "Anda mengelola tempat ini.",
+    "failed": "Terjadi kesalahan. Coba lagi.",
+    "queueTitle": "Klaim tempat",
+    "queueEmpty": "Tidak ada permintaan tertunda.",
+    "approve": "Setujui",
+    "reject": "Tolak",
+    "approved": "Disetujui",
+    "rejected": "Ditolak",
+    "editTitle": "Edit {name}",
+    "photosHint": "Tambah atau urutkan foto dari halaman tempat.",
+    "uploadLogo": "Unggah logo",
+    "closed": "Tutup",
+    "save": "Simpan",
+    "saving": "Menyimpan…",
+    "saved": "Tersimpan"
   }
 }

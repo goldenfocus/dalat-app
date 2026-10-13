@@ -214,7 +214,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
   }
 
   const { venue, organizer, upcoming_events, happening_now, past_events_count, recent_activity: _recent_activity } = venueData;
-  const [isLoggedIn, pastEvents, canManageVenue] = await Promise.all([
+  const [_isLoggedIn, pastEvents, canManageVenue] = await Promise.all([
     isUserLoggedIn(),
     getPastEvents(venue.id),
     canUserManageVenue(venue.owner_id),
@@ -231,7 +231,6 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
   const translatedAddress = venue.address?.replace(/\bWard\b/g, t("ward")) ?? null;
 
   const isUnclaimed = !venue.owner_id;
-  const showClaimBanner = isUnclaimed && isLoggedIn && !venue.is_verified;
 
   const typeConfig = venue.venue_type ? getVenueTypeConfig(venue.venue_type) : null;
   const TypeIcon = typeConfig?.icon;
@@ -430,17 +429,26 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
       )}
 
       <div className="container max-w-4xl mx-auto px-4 pt-6">
-        {/* Claim banner */}
-        {showClaimBanner && (
-          <div className="mb-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-            <p className="font-medium text-amber-800 dark:text-amber-200">
-              {t("claimVenue")}
-            </p>
-            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-              {t("claimDescription")}
-            </p>
-          </div>
-        )}
+        {/* Claim / manage */}
+        {isUnclaimed && !venue.is_verified ? (
+          <Link
+            href={`/venues/${venue.slug}/claim`}
+            className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30"
+          >
+            <span>
+              <span className="block font-medium text-amber-900 dark:text-amber-100">{t("claimVenue")}</span>
+              <span className="block text-sm text-amber-800/80 dark:text-amber-200/80">{t("claimDescription")}</span>
+            </span>
+            <BadgeCheck className="h-5 w-5 shrink-0 text-amber-700" />
+          </Link>
+        ) : canManageVenue ? (
+          <Link
+            href={`/venues/${venue.slug}/edit`}
+            className="mb-6 inline-flex min-h-11 items-center rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"
+          >
+            {t("editVenuePage")}
+          </Link>
+        ) : null}
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2 mb-6">

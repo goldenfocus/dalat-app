@@ -97,6 +97,12 @@ export default async function AdminLayout({
       show: isAdmin,
     },
     {
+      href: "/admin/venue-claims",
+      label: t("navVenueClaims"),
+      icon: "ShieldCheck",
+      show: isAdmin,
+    },
+    {
       href: "/admin/verifications",
       label: t("navVerifications"),
       icon: "ShieldCheck",

@@ -1182,7 +1182,8 @@
     "statusArchived": "Đã lưu trữ",
     "sourceManual": "Thủ công",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "Tóm tắt hàng ngày"
+    "sourceDailySummary": "Tóm tắt hàng ngày",
+    "navVenueClaims": "Yêu cầu nhận địa điểm"
   },
   "verification": {
     "requestSubmitted": "Đã gửi yêu cầu!",
@@ -2878,7 +2879,8 @@
       "close": "Đóng",
       "previousPhoto": "Ảnh trước",
       "nextPhoto": "Ảnh sau"
-    }
+    },
+    "editVenuePage": "Sửa trang địa điểm"
   },
   "rsvpCelebration": {
     "title": "Bạn sẽ tham gia!",
@@ -3889,5 +3891,34 @@
     "download": "Tải xuống",
     "like": "Thích",
     "open": "Mở ảnh: {alt}"
+  },
+  "venueClaim": {
+    "title": "Nhận quản lý {name}",
+    "intro": "Bạn là chủ hoặc quản lý nơi này? Cho chúng tôi biết cách xác minh bạn. Sau khi được duyệt, bạn có thể sửa mô tả, ảnh, giờ mở cửa, liên kết và logo.",
+    "businessEmail": "Email doanh nghiệp",
+    "businessPhone": "Số điện thoại doanh nghiệp",
+    "note": "Thông tin giúp chúng tôi xác minh bạn",
+    "notePlaceholder": "VD: Tôi là chủ quán; có thể gọi số trên Google Maps",
+    "proofRequired": "Hãy thêm email, số điện thoại hoặc ghi chú.",
+    "submit": "Gửi yêu cầu",
+    "sending": "Đang gửi…",
+    "sent": "Cảm ơn! Chúng tôi sẽ xem xét và phản hồi bạn.",
+    "alreadyPending": "Yêu cầu của bạn đang chờ duyệt.",
+    "alreadyClaimed": "Địa điểm này đã có người quản lý.",
+    "youOwn": "Bạn đang quản lý địa điểm này.",
+    "failed": "Đã có lỗi. Vui lòng thử lại.",
+    "queueTitle": "Yêu cầu nhận địa điểm",
+    "queueEmpty": "Không có yêu cầu nào đang chờ.",
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "approved": "Đã duyệt",
+    "rejected": "Đã từ chối",
+    "editTitle": "Sửa {name}",
+    "photosHint": "Thêm hoặc sắp xếp ảnh ngay trên trang địa điểm.",
+    "uploadLogo": "Tải logo lên",
+    "closed": "Đóng cửa",
+    "save": "Lưu",
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu"
   }
 }

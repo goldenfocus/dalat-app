@@ -1182,7 +1182,8 @@
     "statusArchived": "アーカイブ済み",
     "sourceManual": "手動",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "日次サマリー"
+    "sourceDailySummary": "日次サマリー",
+    "navVenueClaims": "スポットの申請"
   },
   "verification": {
     "requestSubmitted": "リクエストが送信されました！",
@@ -2875,7 +2876,8 @@
       "close": "閉じる",
       "previousPhoto": "前の写真",
       "nextPhoto": "次の写真"
-    }
+    },
+    "editVenuePage": "スポットページを編集"
   },
   "rsvpCelebration": {
     "title": "参加確定！",
@@ -3813,5 +3815,34 @@
     "download": "ダウンロード",
     "like": "いいね",
     "open": "写真を開く: {alt}"
+  },
+  "venueClaim": {
+    "title": "{name} を申請する",
+    "intro": "このお店のオーナーまたは管理者ですか？本人確認の方法を教えてください。承認後、紹介文・写真・営業時間・リンク・ロゴを編集できます。",
+    "businessEmail": "ビジネス用メール",
+    "businessPhone": "ビジネス用電話番号",
+    "note": "確認に役立つ情報",
+    "notePlaceholder": "例：オーナーです。Google マップの番号にお電話ください",
+    "proofRequired": "メール、電話番号、またはメモを入力してください。",
+    "submit": "申請を送信",
+    "sending": "送信中…",
+    "sent": "ありがとうございます！確認してご連絡します。",
+    "alreadyPending": "申請は審査中です。",
+    "alreadyClaimed": "このスポットはすでに申請済みです。",
+    "youOwn": "このスポットを管理しています。",
+    "failed": "問題が発生しました。もう一度お試しください。",
+    "queueTitle": "スポットの申請",
+    "queueEmpty": "保留中の申請はありません。",
+    "approve": "承認",
+    "reject": "却下",
+    "approved": "承認しました",
+    "rejected": "却下しました",
+    "editTitle": "{name} を編集",
+    "photosHint": "写真はスポットページで追加・並べ替えできます。",
+    "uploadLogo": "ロゴをアップロード",
+    "closed": "定休日",
+    "save": "保存",
+    "saving": "保存中…",
+    "saved": "保存しました"
   }
 }

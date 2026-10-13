@@ -1182,7 +1182,8 @@
     "statusArchived": "보관됨",
     "sourceManual": "수동",
     "sourceGithub": "GitHub",
-    "sourceDailySummary": "일일 요약"
+    "sourceDailySummary": "일일 요약",
+    "navVenueClaims": "장소 소유권 신청"
   },
   "verification": {
     "requestSubmitted": "요청이 제출되었습니다!",
@@ -2878,7 +2879,8 @@
       "close": "닫기",
       "previousPhoto": "이전 사진",
       "nextPhoto": "다음 사진"
-    }
+    },
+    "editVenuePage": "장소 페이지 수정"
   },
   "rsvpCelebration": {
     "title": "참석 확정!",
@@ -3816,5 +3818,34 @@
     "download": "다운로드",
     "like": "좋아요",
     "open": "사진 열기: {alt}"
+  },
+  "venueClaim": {
+    "title": "{name} 소유권 신청",
+    "intro": "이 장소의 소유자나 관리자인가요? 확인 방법을 알려주세요. 승인되면 설명, 사진, 영업시간, 링크, 로고를 수정할 수 있어요.",
+    "businessEmail": "업체 이메일",
+    "businessPhone": "업체 전화번호",
+    "note": "확인에 도움이 되는 내용",
+    "notePlaceholder": "예: 제가 사장입니다. Google 지도의 번호로 연락 주세요",
+    "proofRequired": "이메일, 전화번호 또는 메모를 입력하세요.",
+    "submit": "신청 보내기",
+    "sending": "보내는 중…",
+    "sent": "감사합니다! 검토 후 연락드릴게요.",
+    "alreadyPending": "신청이 검토 대기 중입니다.",
+    "alreadyClaimed": "이미 소유자가 있는 장소입니다.",
+    "youOwn": "이 장소를 관리하고 있어요.",
+    "failed": "문제가 발생했어요. 다시 시도해 주세요.",
+    "queueTitle": "장소 소유권 신청",
+    "queueEmpty": "대기 중인 신청이 없습니다.",
+    "approve": "승인",
+    "reject": "거절",
+    "approved": "승인됨",
+    "rejected": "거절됨",
+    "editTitle": "{name} 수정",
+    "photosHint": "사진은 장소 페이지에서 추가하거나 정렬하세요.",
+    "uploadLogo": "로고 업로드",
+    "closed": "휴무",
+    "save": "저장",
+    "saving": "저장 중…",
+    "saved": "저장됨"
   }
 }
