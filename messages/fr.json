@@ -3798,6 +3798,20 @@
     "topicHint": "Expériences portant ce thème ou le décrivant lors d’une visite. Consultez la personne, la date et le lieu ; les conditions peuvent changer.",
     "clearTopic": "Voir toutes les expériences",
     "moreResults": "Plus d’expériences",
-    "previousResults": "Expériences précédentes"
+    "previousResults": "Expériences précédentes",
+    "visitedFreshness": "Visité le {date} · les infos ont pu changer",
+    "viewVenue": "Voir le lieu",
+    "directionsGoogle": "Itinéraire dans Google Maps",
+    "googleReviews": "({count} sur Google)"
+  },
+  "photoViewer": {
+    "close": "Fermer",
+    "previous": "Photo précédente",
+    "next": "Photo suivante",
+    "share": "Partager",
+    "linkCopied": "Lien copié",
+    "download": "Télécharger",
+    "like": "J’aime",
+    "open": "Ouvrir la photo : {alt}"
   }
 }

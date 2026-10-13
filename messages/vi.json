@@ -3874,6 +3874,20 @@
     "topicHint": "Trải nghiệm có chủ đề này hoặc ghi nhận trong lần ghé thăm. Xem người chia sẻ, ngày và địa điểm; điều kiện có thể thay đổi.",
     "clearTopic": "Xem tất cả trải nghiệm",
     "moreResults": "Thêm trải nghiệm",
-    "previousResults": "Trải nghiệm trước"
+    "previousResults": "Trải nghiệm trước",
+    "visitedFreshness": "Ghé thăm {date} · thông tin có thể đã thay đổi",
+    "viewVenue": "Xem địa điểm",
+    "directionsGoogle": "Chỉ đường trên Google Maps",
+    "googleReviews": "({count} trên Google)"
+  },
+  "photoViewer": {
+    "close": "Đóng",
+    "previous": "Ảnh trước",
+    "next": "Ảnh tiếp",
+    "share": "Chia sẻ",
+    "linkCopied": "Đã sao chép liên kết",
+    "download": "Tải xuống",
+    "like": "Thích",
+    "open": "Mở ảnh: {alt}"
   }
 }

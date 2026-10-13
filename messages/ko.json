@@ -3801,6 +3801,20 @@
     "topicHint": "Experiences tagged with this topic or reporting it during a visit. Open an experience to see who shared it, when and where; conditions can change.",
     "clearTopic": "Browse all experiences",
     "moreResults": "More experiences",
-    "previousResults": "Previous experiences"
+    "previousResults": "Previous experiences",
+    "visitedFreshness": "{date} 방문 · 정보가 바뀌었을 수 있어요",
+    "viewVenue": "장소 보기",
+    "directionsGoogle": "Google 지도 길찾기",
+    "googleReviews": "(Google 리뷰 {count}개)"
+  },
+  "photoViewer": {
+    "close": "닫기",
+    "previous": "이전 사진",
+    "next": "다음 사진",
+    "share": "공유",
+    "linkCopied": "링크 복사됨",
+    "download": "다운로드",
+    "like": "좋아요",
+    "open": "사진 열기: {alt}"
   }
 }
