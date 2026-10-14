@@ -1,9 +1,35 @@
 package main
 
 import (
+	"regexp"
 	"strings"
 	"unicode"
 )
+
+// greetingRe matches salutation lines ("Hey everyone!", "Hi all", "Xin chào",
+// "Chào mọi người 👋") that open a post but are never the event name.
+var greetingRe = regexp.MustCompile(`(?i)^(hey|hi|hello|hiya|howdy|greetings|good (morning|afternoon|evening)|dear|xin chào|xin chao|chào|chao|kính chào|alo|yo)\b[\s,!.]*((?:\p{L}+\s+){0,2}(every(one|body)|all|y'?all|guys|folks|friends|fam|family|lovely people|people|community|team|mọi người|moi nguoi|cả nhà|ca nha|các bạn|cac ban|bạn|ban|nhé|nhe)\b)?[\s,!.]*(of [\p{L} ]{0,30})?[\s!.,]*$`)
+
+// isGreeting reports a salutation-only line, emoji ignored.
+func isGreeting(line string) bool {
+	core := strings.TrimSpace(stripEmoji(line))
+	core = strings.TrimFunc(core, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsPunct(r) && r != '\'' })
+	if core == "" {
+		return false
+	}
+	return greetingRe.MatchString(core)
+}
+
+// eventNouns mark a line (or phrase) that names the event itself.
+var eventNouns = `workshop|class|classes|night|festival|concert|party|session|show|meetup|meet-up|market|fair|tour|retreat|jam|exhibition|screening|talk|seminar|course|lesson|performance|gig|open mic|quiz|tournament|yoga|ceremony|celebration|đêm nhạc|lễ hội|hội chợ|triển lãm|lớp học|buổi`
+
+var eventNounRe = regexp.MustCompile(`(?i)(^|[^\p{L}])(` + eventNouns + `)([^\p{L}]|$)`)
+
+// eventPhraseRe pulls a capitalised name ending in an event noun out of a
+// sentence: "Matt and I are hosting a Kids’ Dance Workshop tonight" → "Kids’ Dance Workshop".
+var eventPhraseRe = regexp.MustCompile(`((?:\p{Lu}[\p{L}’'&.-]*\s+){1,5}(?i:` + eventNouns + `))\b`)
+
+func hasEventNoun(line string) bool { return eventNounRe.MatchString(line) }
 
 // promoCues are sentence openers and phrases that mark caption copy as
 // promotional chatter rather than an event name.
@@ -42,7 +68,7 @@ func isFluffTitle(line string) bool {
 	if line == "" {
 		return true
 	}
-	if letterShare(line) < 0.6 {
+	if letterShare(line) < 0.6 || isGreeting(line) {
 		return true
 	}
 	core := strings.TrimSpace(stripEmoji(line))
@@ -110,11 +136,52 @@ func chooseTitle(caption, llmTitle, readable string, flyer bool) string {
 			return h
 		}
 	}
-	if s := firstSubstantiveLine(caption); s != "" {
+	if s := heuristicTitle(caption); s != "" {
 		return s
 	}
 	if llmTitle != "" {
 		return llmTitle
 	}
 	return first
+}
+
+// heuristicTitle picks a title from caption text alone (no vision). It skips
+// greeting, promo and emoji lines; prefers a short line naming the event
+// ("Move, Play & Dance Workshop"), then a capitalised event phrase inside a
+// sentence ("Kids’ Dance Workshop"), then the first substantive line.
+func heuristicTitle(text string) string {
+	var lines []string
+	for line := range strings.Lines(text) {
+		line = strings.TrimSpace(line)
+		if line == "" || isDateOrTimeOnly(line) || isFluffTitle(line) {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	for _, line := range lines {
+		clean := strings.TrimSpace(trimLeadingSymbols(stripEmoji(line)))
+		if hasEventNoun(clean) && len(strings.Fields(clean)) <= 8 && !strings.ContainsAny(clean, "📅⏰📍") {
+			return clean
+		}
+	}
+	// Phrase search also covers promo sentences: the name often sits inside one.
+	for line := range strings.Lines(text) {
+		if isGreeting(line) {
+			continue
+		}
+		if m := eventPhraseRe.FindStringSubmatch(stripEmoji(line)); m != nil {
+			phrase := strings.TrimSpace(m[1])
+			if len(strings.Fields(phrase)) >= 2 {
+				return phrase
+			}
+		}
+	}
+	if len(lines) > 0 {
+		l := lines[0]
+		if len(l) > 100 {
+			l = strings.TrimSpace(l[:100])
+		}
+		return l
+	}
+	return ""
 }
