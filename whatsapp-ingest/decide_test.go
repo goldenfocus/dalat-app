@@ -165,7 +165,7 @@ func TestDecideFlyerThenFollowUpSharesSlug(t *testing.T) {
 	}}
 	follow, err := decide(inbound{
 		ID: "FOL1", GroupJID: "g", GroupName: "Motorcycle Ride Squad",
-		Sender: "bob", Text: "tomorrow 8pm at Cù Rú", Timestamp: ref.Add(10 * time.Minute),
+		Sender: "alice", Text: "tomorrow 8pm at Cù Rú", Timestamp: ref.Add(10 * time.Minute),
 	}, history, nil, ref.Add(10*time.Minute))
 	if err != nil {
 		t.Fatal(err)
