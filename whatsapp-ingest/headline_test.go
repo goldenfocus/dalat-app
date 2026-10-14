@@ -96,3 +96,30 @@ func TestDecideVCafeFlyer(t *testing.T) {
 		t.Fatalf("ends=%v", d.EndsAt)
 	}
 }
+
+const kidsDanceCaption = "Hey everyone! 😊💃\nMatt and I are hosting a Kids’ Dance Workshop tonight at INN Đà Lạt, and we’d love to welcome some little movers from the community! ❤️\n\n✨ Move, Play & Dance!\nA fun, playful session where kids can explore movement.\n📅 Tonight (Wednesday)\n⏰ 6:30–7:30 PM\n📍 INN Đà Lạt — 48/8 Hà Huy Tập"
+
+func TestGreetingLinesAreFluff(t *testing.T) {
+	for _, s := range []string{"Hey everyone! 😊💃", "Hi all", "Hello friends!", "Xin chào", "Chào mọi người 👋", "Hi everyone,", "Good morning Dalat fam!", "Hello lovely people of Dalat"} {
+		if !isFluffTitle(s) {
+			t.Errorf("want greeting fluff: %q", s)
+		}
+	}
+	for _, s := range []string{"Hello Kitty Party", "Hi-Fi Listening Night", "Chào Xuân 2027 Festival"} {
+		if isFluffTitle(s) {
+			t.Errorf("want title: %q", s)
+		}
+	}
+}
+
+func TestHeuristicTitleKidsDance(t *testing.T) {
+	if got := chooseTitle(kidsDanceCaption, "", "", false); got != "Kids’ Dance Workshop" {
+		t.Fatalf("got %q", got)
+	}
+	if got := heuristicTitle("Hi all!\n🎶 Jazz Night at the Lake\nFriday 8pm"); got != "Jazz Night at the Lake" {
+		t.Fatalf("short event line: got %q", got)
+	}
+	if got := heuristicTitle("Xin chào cả nhà\nĐêm nhạc Trịnh tối thứ Bảy\n20h"); got != "Đêm nhạc Trịnh tối thứ Bảy" {
+		t.Fatalf("vi: got %q", got)
+	}
+}

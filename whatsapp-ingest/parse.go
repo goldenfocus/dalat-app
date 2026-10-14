@@ -120,7 +120,7 @@ func buildDraft(msg *events.Message, text, groupName string) (*eventDraft, error
 	draft := baseDraft(in)
 	draft.StartsAt = start
 	draft.TimeInferred = timeInferred
-	draft.Title = firstLine(text)
+	draft.Title = chooseTitle(text, "", "", false)
 	draft.Location, draft.Address = extractLocation(text)
 	draft.Extraction = "heuristic"
 	if draft.Title == "" {
