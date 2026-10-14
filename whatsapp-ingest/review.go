@@ -181,7 +181,7 @@ func attachHero(draft *eventDraft, in inbound, history []memMsg) {
 		return
 	}
 	anchor := strings.TrimPrefix(strings.ToLower(draft.Slug), "wa-")
-	if bytes, mime, ok := imageFromHistory(history, anchor, draft.Slug, in.Timestamp); ok {
+	if bytes, mime, ok := imageFromHistory(history, anchor, draft.Slug, in.Sender, in.Timestamp); ok {
 		draft.Hero = bytes
 		draft.HeroMIME = mime
 	}
@@ -198,7 +198,10 @@ func inboundImage(in inbound) ([]byte, string) {
 	return nil, ""
 }
 
-func imageFromHistory(history []memMsg, anchor, slug string, at time.Time) ([]byte, string, bool) {
+// imageFromHistory finds the hero for a text-only message: an image already
+// tied to this draft, else a loose image from the SAME sender in this chat
+// posted at most heroFollowWindow earlier. Never another sender's image.
+func imageFromHistory(history []memMsg, anchor, slug, sender string, at time.Time) ([]byte, string, bool) {
 	var fallback memMsg
 	fallbackOK := false
 	for i := len(history) - 1; i >= 0; i-- {
@@ -213,7 +216,10 @@ func imageFromHistory(history []memMsg, anchor, slug string, at time.Time) ([]by
 		if msg.DraftSlug != "" && msg.DraftSlug != slug {
 			continue
 		}
-		if at.IsZero() || msg.At.IsZero() || at.Sub(msg.At) > imageFollowWindow || at.Before(msg.At) {
+		if sender == "" || !strings.EqualFold(msg.Sender, sender) {
+			continue
+		}
+		if at.IsZero() || msg.At.IsZero() || at.Sub(msg.At) > heroFollowWindow || at.Before(msg.At) {
 			continue
 		}
 		if !fallbackOK {

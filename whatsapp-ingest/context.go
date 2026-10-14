@@ -11,6 +11,9 @@ const (
 	contextWindow      = 2 * time.Hour
 	imageFollowWindow  = 45 * time.Minute
 	photoBurstWindow   = 15 * time.Second
+	// heroFollowWindow bounds how far back a text-only post may borrow its own
+	// sender's loose image as the hero.
+	heroFollowWindow = 10 * time.Minute
 )
 
 // memMsg is one allowlisted group message kept so a later reply can update
@@ -112,7 +115,7 @@ func anchorSlug(history []memMsg, id, sender, quotedID, text string, at time.Tim
 	if slug, anchor, ok := sameSenderDraft(history, sender, at); ok {
 		return slug, anchor, true
 	}
-	if slug, anchor, ok := recentImageDraft(history, at); ok {
+	if slug, anchor, ok := recentImageDraft(history, sender, at); ok {
 		return slug, anchor, true
 	}
 	if asksForLocation(text) {
@@ -157,10 +160,10 @@ func sameSenderDraft(history []memMsg, sender string, at time.Time) (string, str
 	return "", "", false
 }
 
-func recentImageDraft(history []memMsg, at time.Time) (string, string, bool) {
+func recentImageDraft(history []memMsg, sender string, at time.Time) (string, string, bool) {
 	for i := len(history) - 1; i >= 0; i-- {
 		msg := history[i]
-		if msg.DraftSlug == "" || !msg.HasImage {
+		if msg.DraftSlug == "" || !msg.HasImage || !strings.EqualFold(msg.Sender, sender) {
 			continue
 		}
 		if at.Sub(msg.At) > imageFollowWindow || at.Sub(msg.At) < 0 {
