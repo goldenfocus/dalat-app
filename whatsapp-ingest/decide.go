@@ -116,6 +116,8 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 		if err == nil {
 			llm = parsed
 			llmOK = true
+		} else {
+			logf("event LLM unavailable, falling back to heuristics: %s", redactSecrets(err.Error()))
 		}
 	}
 
