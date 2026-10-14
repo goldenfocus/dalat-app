@@ -231,6 +231,17 @@ func extractSchedule(sources []string, loc *time.Location, ref time.Time) (time.
 		}
 	}
 
+	// "Wednesday, 7pm" in the caption and "7PM–9PM" on the flyer: keep the
+	// caption's start and take the end from a range that starts at the same time.
+	if clock != nil && !clock.hasEnd {
+		for _, src := range sources {
+			if c, ok := findClock(src); ok && c.hasEnd && c.hour == clock.hour && c.minute == clock.minute {
+				clock.hasEnd, clock.endHour, clock.endMinute = true, c.endHour, c.endMinute
+				break
+			}
+		}
+	}
+
 	var day time.Time
 	found, evening, kind, yearExplicit := false, false, "", false
 	for _, src := range sources {
