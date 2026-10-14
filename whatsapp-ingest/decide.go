@@ -215,9 +215,12 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 		draft.Address = venue.Address
 	}
 	if in.IsEdit || !merged || draft.Title == "" || weakTitle(draft.Title) {
-		if llmOK && in.HasImage && llm.IsEventFlyer && strings.TrimSpace(llm.Title) != "" && !in.IsEdit {
-			draft.Title = strings.TrimSpace(llm.Title)
-		} else if title := firstLine(firstNonEmpty(burst.Caption, in.Text)); title != "" {
+		flyer := llmOK && in.HasImage && llm.IsEventFlyer && !in.IsEdit
+		llmTitle, readable := "", ""
+		if flyer {
+			llmTitle, readable = llm.Title, llm.ReadableText
+		}
+		if title := chooseTitle(firstNonEmpty(burst.Caption, in.Text), llmTitle, readable, flyer); title != "" {
 			draft.Title = title
 		}
 	}

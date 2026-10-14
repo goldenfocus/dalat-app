@@ -120,7 +120,8 @@ Rules:
 - When the fact is visible only on a flyer, set from_image true, set is_event_flyer true, and copy only text that appears in readable_text. Evidence fields must be exact substrings of readable_text.
 - If this message only adds details to an earlier announcement, set updates_message_id to that transcript message id. Otherwise "".
 - cancelled is true only when the source says the event is cancelled.
-- title is the event name read from the caption or readable_text. Do not invent a name for a photo of people.
+- title is the event name read from the caption or readable_text. When the flyer shows a headline (e.g. "ACOUSTIC MUSIC NIGHT" with performer names) prefer it over promotional caption copy ("Bring your favourite people…") or emoji lines; keep performer names, e.g. "Acoustic Music Night: Peter & Ernest". Do not invent a name for a photo of people.
+- When the flyer or caption shows a time range such as "7PM–9PM", time is the start and end_time is the end.
 - venue_name is only the place's own name exactly as written in the caption or readable_text (for example "Q Coffee Roastery Dalat" or "Socialhouse"): no street, no "at the", no emoji. Never copy a phrase or sentence from the description into venue_name. "" when no place is named.
 - street_address is the house number and street (plus ward/city when written) copied from the caption or readable_text, for example "305 Đ. Tô Ngọc Vân, Xuân Hương, Đà Lạt". "" when no street address is written. Do not put the venue name in it.
 - location_evidence is the exact substring that names the venue or address.
