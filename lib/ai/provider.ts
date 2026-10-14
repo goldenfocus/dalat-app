@@ -31,6 +31,10 @@ const DEFAULT_TIMEOUT_MS = 120_000;
 const OPENROUTER_FREE_MODELS = [
   'openai/gpt-oss-120b:free',
   'meta-llama/llama-3.3-70b-instruct:free',
+  // Paid, cheap fallback (same model the experience writer uses). The :free
+  // tier is often withdrawn; without this, translations stall whenever the
+  // OpenAI and Anthropic balances run out.
+  process.env.OPENROUTER_FALLBACK_MODEL || 'google/gemini-2.5-flash-lite',
 ];
 
 const CF_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
