@@ -44,8 +44,8 @@ func TestChooseTitlePrefersFlyerHeadlineOverFluff(t *testing.T) {
 	if got := chooseTitle(vcafeCaption, "", "", false); got == "" || isFluffTitle(got) || got[0:4] == "🍹" {
 		t.Fatalf("caption fallback: got %q", got)
 	}
-	// A real caption title still wins over the flyer.
-	if got := chooseTitle("Sunday canyon ride\ntomorrow 7am", "", "SOMETHING ELSE", true); got != "Sunday canyon ride" {
+	// The flyer headline wins over the caption; without a flyer the caption line is used.
+	if got := chooseTitle("Sunday canyon ride\ntomorrow 7am", "", "", false); got != "Sunday canyon ride" {
 		t.Fatalf("caption title: got %q", got)
 	}
 }

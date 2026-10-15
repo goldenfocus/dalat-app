@@ -293,11 +293,7 @@ func firstLine(text string) string {
 		if line == "" || isDateOrTimeOnly(line) {
 			continue
 		}
-		const maxTitle = 100
-		if len(line) > maxTitle {
-			line = strings.TrimSpace(line[:maxTitle])
-		}
-		return line
+		return truncateTitle(line, 100)
 	}
 	return ""
 }
@@ -365,7 +361,7 @@ func (d *eventDraft) toRow(createdBy string) map[string]any {
 		"starts_at":       d.StartsAt.UTC().Format(time.RFC3339),
 		"timezone":        defaultEventLocation,
 		"source_platform": "whatsapp",
-		"source_locale":   "vi",
+		"source_locale":   detectLocale(d.Title + "\n" + d.Description),
 		"source_metadata": map[string]any{
 			"channel":       "whatsapp-group",
 			"time_inferred": d.TimeInferred,

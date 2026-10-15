@@ -89,17 +89,11 @@ func isFluffTitle(line string) bool {
 // flyerHeadline is the first plausible title line of the flyer's readable text.
 func flyerHeadline(readable string) string {
 	for line := range strings.Lines(readable) {
-		line = strings.TrimSpace(line)
-		if line == "" || isDateOrTimeOnly(line) || isFluffTitle(line) {
+		line = cleanLine(line)
+		if skipTitleLine(line) || len([]rune(line)) < 4 {
 			continue
 		}
-		if len([]rune(line)) < 4 {
-			continue
-		}
-		if len(line) > 100 {
-			line = strings.TrimSpace(line[:100])
-		}
-		return line
+		return truncateTitle(line, 100)
 	}
 	return ""
 }
@@ -119,54 +113,139 @@ func firstSubstantiveLine(text string) string {
 	return ""
 }
 
-// chooseTitle picks the event title. The caption's first line wins unless it
-// is fluff; then the flyer's headline (model title, else first readable line)
-// wins, then the next substantive caption line, then the fluff line itself.
-func chooseTitle(caption, llmTitle, readable string, flyer bool) string {
-	first := firstLine(caption)
-	llmTitle = strings.TrimSpace(llmTitle)
-	if flyer && llmTitle != "" && !isFluffTitle(llmTitle) {
-		return llmTitle
+const shortTitle = 60
+
+var invisibleRe = regexp.MustCompile("[\u200b\u200c\u200d\u2060\ufeff\u00ad]")
+
+// cleanLine strips zero-width characters WhatsApp/Telegram copy-paste leaves in.
+func cleanLine(s string) string { return strings.TrimSpace(invisibleRe.ReplaceAllString(s, "")) }
+
+// labelRe matches "Price: …", "When - …", "Giá: …", "Địa điểm: …" detail lines.
+var labelRe = regexp.MustCompile(`(?i)^\s*(price|prices|time|times|when|where|date|dates|venue|location|address|entry|admission|fee|fees|cost|ticket|tickets|rsvp|contact|booking|register|registration|dress code|age|ages|giá|giá vé|vé|phí|thời gian|địa điểm|địa chỉ|ngày|giờ|liên hệ|đăng ký)\s*[:：–-]`)
+
+func isLabelLine(line string) bool {
+	return labelRe.MatchString(trimLeadingSymbols(stripEmoji(cleanLine(line))))
+}
+
+// truncateTitle cuts at a word boundary, never mid-word, and drops a dangling
+// separator.
+func truncateTitle(s string, max int) string {
+	s = cleanLine(s)
+	if len([]rune(s)) <= max {
+		return s
 	}
-	if first != "" && !isFluffTitle(first) {
-		return first
+	r := []rune(s)[:max+1]
+	cut := strings.LastIndexFunc(string(r), unicode.IsSpace)
+	out := string(r)
+	if cut > 0 {
+		out = out[:cut]
+	} else {
+		out = string(r[:max])
+	}
+	return strings.TrimRightFunc(out, func(r rune) bool { return unicode.IsSpace(r) || strings.ContainsRune(",;:-–—·|/&(", r) })
+}
+
+func isSentence(line string) bool {
+	core := cleanLine(stripEmoji(line))
+	if len([]rune(core)) > shortTitle {
+		return true
+	}
+	return len(strings.Fields(core)) >= 7 && strings.ContainsAny(core, ".?!,")
+}
+
+// isHeadlineCase: ALL CAPS ("THURSDAY GAME NIGHT") or Title Case ("Weekend Sketch Club").
+func isHeadlineCase(line string) bool {
+	words := strings.Fields(line)
+	if len(words) == 0 || len(words) > 9 {
+		return false
+	}
+	letters, upper, capWords, lexical := 0, 0, 0, 0
+	small := map[string]bool{"a": true, "an": true, "the": true, "and": true, "of": true, "at": true, "in": true, "on": true, "for": true, "with": true, "to": true, "&": true, "x": true, "by": true}
+	for _, w := range words {
+		rs := []rune(w)
+		first := -1
+		for i, r := range rs {
+			if unicode.IsLetter(r) {
+				letters++
+				if unicode.IsUpper(r) {
+					upper++
+				}
+				if first < 0 {
+					first = i
+				}
+			}
+		}
+		if first < 0 {
+			continue
+		}
+		if small[strings.ToLower(w)] {
+			continue
+		}
+		lexical++
+		if unicode.IsUpper(rs[first]) {
+			capWords++
+		}
+	}
+	if letters == 0 || lexical == 0 {
+		return false
+	}
+	if float64(upper)/float64(letters) > 0.8 {
+		return true
+	}
+	return lexical >= 2 && capWords == lexical
+}
+
+func skipTitleLine(line string) bool {
+	return line == "" || isDateOrTimeOnly(line) || isLabelLine(line) || isFluffTitle(line)
+}
+
+// chooseTitle picks the event title: the flyer's own title/headline first,
+// then a short caption first line, then the caption heuristics.
+func chooseTitle(caption, llmTitle, readable string, flyer bool) string {
+	llmTitle = cleanLine(llmTitle)
+	if flyer && llmTitle != "" && !isFluffTitle(llmTitle) && !isLabelLine(llmTitle) {
+		return truncateTitle(llmTitle, 100)
 	}
 	if flyer {
 		if h := flyerHeadline(readable); h != "" {
 			return h
 		}
 	}
+	first := cleanLine(firstLine(caption))
+	if first != "" && !skipTitleLine(first) && !isSentence(first) {
+		return truncateTitle(first, 100)
+	}
 	if s := heuristicTitle(caption); s != "" {
 		return s
 	}
 	if llmTitle != "" {
-		return llmTitle
+		return truncateTitle(llmTitle, 100)
 	}
-	return first
+	return truncateTitle(first, shortTitle)
 }
 
-// heuristicTitle picks a title from caption text alone (no vision). It skips
-// greeting, promo and emoji lines; prefers a short line naming the event
-// ("Move, Play & Dance Workshop"), then a capitalised event phrase inside a
-// sentence ("Kids’ Dance Workshop"), then the first substantive line.
+// heuristicTitle picks a title from caption text alone (no vision), skipping
+// greeting, promo, emoji and label lines. Preference: a short line naming
+// the event; a capitalised event phrase inside a sentence ("Kids’ Dance
+// Workshop"); a short ALL-CAPS / Title-Case line; any short line; then the first
+// substantive line cut at a word boundary.
 func heuristicTitle(text string) string {
 	var lines []string
 	for line := range strings.Lines(text) {
-		line = strings.TrimSpace(line)
-		if line == "" || isDateOrTimeOnly(line) || isFluffTitle(line) {
+		line = cleanLine(line)
+		if skipTitleLine(line) {
 			continue
 		}
-		lines = append(lines, line)
+		lines = append(lines, strings.TrimSpace(trimLeadingSymbols(stripEmoji(line))))
 	}
-	for _, line := range lines {
-		clean := strings.TrimSpace(trimLeadingSymbols(stripEmoji(line)))
-		if hasEventNoun(clean) && len(strings.Fields(clean)) <= 8 && !strings.ContainsAny(clean, "📅⏰📍") {
-			return clean
+	for _, l := range lines {
+		if hasEventNoun(l) && !isSentence(l) && !strings.ContainsAny(l, "📅⏰📍") {
+			return l
 		}
 	}
-	// Phrase search also covers promo sentences: the name often sits inside one.
 	for line := range strings.Lines(text) {
-		if isGreeting(line) {
+		line = cleanLine(line)
+		if isGreeting(line) || isLabelLine(line) {
 			continue
 		}
 		if m := eventPhraseRe.FindStringSubmatch(stripEmoji(line)); m != nil {
@@ -176,12 +255,43 @@ func heuristicTitle(text string) string {
 			}
 		}
 	}
-	if len(lines) > 0 {
-		l := lines[0]
-		if len(l) > 100 {
-			l = strings.TrimSpace(l[:100])
+	for _, l := range lines {
+		if !isSentence(l) && isHeadlineCase(l) {
+			return l
 		}
-		return l
+	}
+	for _, l := range lines {
+		if !isSentence(l) && len(strings.Fields(l)) >= 2 {
+			return l
+		}
+	}
+	if len(lines) > 0 {
+		return truncateTitle(lines[0], shortTitle)
 	}
 	return ""
+}
+
+// detectLocale guesses the post's language from its text: Vietnamese when
+// Vietnamese-only letters/diacritics make up a meaningful share, else English.
+func detectLocale(text string) string {
+	text = stripCommunity(text)
+	letters, vi := 0, 0
+	for _, r := range text {
+		if !unicode.IsLetter(r) {
+			continue
+		}
+		letters++
+		if strings.ContainsRune("ăâđêôơưĂÂĐÊÔƠƯàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵÀÁẢÃẠẰẮẲẴẶẦẤẨẪẬÈÉẺẼẸỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌỒỐỔỖỘỜỚỞỠỢÙÚỦŨỤỪỨỬỮỰỲÝỶỸỴ", r) {
+			vi++
+		}
+	}
+	if letters == 0 {
+		return "vi"
+	}
+	// Vietnamese prose runs ~20–40% marked letters; an English post that names
+	// "Đà Lạt" or a venue stays below 15%.
+	if float64(vi)/float64(letters) >= 0.15 {
+		return "vi"
+	}
+	return "en"
 }
