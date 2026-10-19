@@ -196,14 +196,42 @@ func isHeadlineCase(line string) bool {
 }
 
 func skipTitleLine(line string) bool {
-	return line == "" || isDateOrTimeOnly(line) || isLabelLine(line) || isFluffTitle(line)
+	return line == "" || isDateOrTimeOnly(line) || isLabelLine(line) || isFluffTitle(line) || isFragmentTitle(line)
+}
+
+var fragmentLead = map[string]bool{
+	"the": true, "a": true, "an": true, "this": true, "that": true, "these": true, "those": true,
+	"it": true, "its": true, "he": true, "she": true, "they": true, "we": true, "our": true,
+	"you": true, "your": true, "his": true, "her": true, "their": true, "my": true, "i": true,
+	"there": true, "here": true, "which": true, "who": true,
+}
+
+// isFragmentTitle refuses "The performance", "It", "Our event": under three
+// meaningful words led by an article or pronoun.
+func isFragmentTitle(line string) bool {
+	words := strings.Fields(strings.TrimSpace(trimLeadingSymbols(stripEmoji(cleanLine(line)))))
+	if len(words) == 0 {
+		return false
+	}
+	if !fragmentLead[strings.ToLower(strings.Trim(words[0], ".,:;!?'’\""))] {
+		return false
+	}
+	meaningful := 0
+	for _, w := range words {
+		w = strings.ToLower(strings.Trim(w, ".,:;!?'’\""))
+		if w == "" || fragmentLead[w] {
+			continue
+		}
+		meaningful++
+	}
+	return meaningful < 3
 }
 
 // chooseTitle picks the event title: the flyer's own title/headline first,
 // then a short caption first line, then the caption heuristics.
 func chooseTitle(caption, llmTitle, readable string, flyer bool) string {
 	llmTitle = cleanLine(llmTitle)
-	if flyer && llmTitle != "" && !isFluffTitle(llmTitle) && !isLabelLine(llmTitle) {
+	if flyer && llmTitle != "" && !isFluffTitle(llmTitle) && !isLabelLine(llmTitle) && !isFragmentTitle(llmTitle) {
 		return truncateTitle(llmTitle, 100)
 	}
 	if flyer {
@@ -250,7 +278,7 @@ func heuristicTitle(text string) string {
 		}
 		if m := eventPhraseRe.FindStringSubmatch(stripEmoji(line)); m != nil {
 			phrase := strings.TrimSpace(m[1])
-			if len(strings.Fields(phrase)) >= 2 {
+			if len(strings.Fields(phrase)) >= 2 && !isFragmentTitle(phrase) {
 				return phrase
 			}
 		}

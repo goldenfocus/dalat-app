@@ -110,8 +110,12 @@ func (d *eventDraft) googleMapsURL() string {
 	}
 	// A clean "name, street, Đà Lạt, Lâm Đồng" search beats a pasted Maps
 	// link full of tracking parameters, and never carries emoji or prose.
-	if publicVenue(d.Location) {
-		q := url.QueryEscape(d.Location + ", " + ensureLocalityAddress(d.Address))
+	// Only a real street address or a matched venue may feed the search; a
+	// bare name or caption prose ("1. Contact the organizers…") never does.
+	addr := strings.TrimSpace(d.Address)
+	realAddress := addr != "" && normalizeStreetAddress(addr) != "" && (looksLikeStreetAddress(addr) || d.VenueID != "")
+	if publicVenue(d.Location) && (realAddress || d.VenueID != "") {
+		q := url.QueryEscape(d.Location + ", " + ensureLocalityAddress(addrIf(realAddress, addr)))
 		return "https://www.google.com/maps/search/?api=1&query=" + q
 	}
 	if strings.TrimSpace(d.MapsURL) != "" {
@@ -273,4 +277,11 @@ func useMapsHit(draft *eventDraft, hit mapsHit) {
 		draft.Latitude = &lat
 		draft.Longitude = &lng
 	}
+}
+
+func addrIf(ok bool, addr string) string {
+	if ok {
+		return addr
+	}
+	return ""
 }
