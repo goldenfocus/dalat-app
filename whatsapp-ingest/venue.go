@@ -145,7 +145,11 @@ func looksLikeStreetAddress(s string) bool {
 		return false
 	}
 	fields := strings.Fields(s)
-	if len(fields) < 2 {
+	if len(fields) < 2 || addressIsProse(s) {
+		return false
+	}
+	// "1. Contact the organizers…" / "2) Book…" are list items, not house numbers.
+	if listMarkerRe.MatchString(fields[0]) {
 		return false
 	}
 	num := strings.TrimRight(fields[0], ",.")
@@ -168,6 +172,24 @@ func looksLikeStreetAddress(s string) bool {
 		mentionsLocality(s, "đà lạt", "da lat", "dalat", "lâm đồng", "lam dong")
 }
 
+var (
+	listMarkerRe = regexp.MustCompile(`^\d{1,2}[.)]$`)
+	sentenceRe   = regexp.MustCompile(`[\p{Ll}\d)][.!?]\s+\p{Lu}`)
+)
+
+// addressIsProse refuses caption sentences that merely start with a number:
+// a colon, a sentence break, or a long run of words before the first comma.
+func addressIsProse(s string) bool {
+	if strings.ContainsAny(s, ":;!?") || sentenceRe.MatchString(s) {
+		return true
+	}
+	if len([]rune(s)) > 140 {
+		return true
+	}
+	head, _, _ := strings.Cut(s, ",")
+	return len(strings.Fields(head)) > 8
+}
+
 // normalizeStreetAddress cleans an address copied from a caption, flyer or
 // Maps link. The city and province are added later by ensureLocalityAddress.
 func normalizeStreetAddress(raw string) string {
@@ -184,7 +206,10 @@ func normalizeStreetAddress(raw string) string {
 		}
 	}
 	s = strings.Trim(s, " ,")
-	if s == "" || isCityOnly(s) || looksLikeURL(s) {
+	if s == "" || isCityOnly(s) || looksLikeURL(s) || addressIsProse(s) {
+		return ""
+	}
+	if fields := strings.Fields(s); len(fields) > 0 && listMarkerRe.MatchString(fields[0]) {
 		return ""
 	}
 	return s
