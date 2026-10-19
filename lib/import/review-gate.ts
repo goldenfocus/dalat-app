@@ -6,6 +6,7 @@ import {
   type EventIndexingTranslationRow,
 } from "@/lib/translations-readiness";
 import { CONTENT_LOCALES } from "@/lib/types";
+import { isDuplicateOf } from "./duplicate-key";
 import { evaluateDiscoveryHorizon } from "./horizon";
 import { eventLooksLocalToDalat } from "./locality";
 import { isPersistedSourceRef } from "./safe-url";
@@ -82,7 +83,11 @@ export interface TranslationGap {
 }
 
 export interface ImageQaGap {
-  code: "missing_hero" | "missing_promo" | "missing_ai_disclosure" | "documented_visual_gap";
+  code:
+    | "missing_hero"
+    | "missing_promo"
+    | "missing_ai_disclosure"
+    | "documented_visual_gap";
   message: string;
 }
 
@@ -132,7 +137,10 @@ export function evaluateDraftQuality(
     return reasons;
   }
   if (!event.title?.trim() || event.title.trim().length < 3) {
-    reasons.push({ code: "missing_title", message: "Title is missing or too short" });
+    reasons.push({
+      code: "missing_title",
+      message: "Title is missing or too short",
+    });
   }
   if (!event.description?.trim()) {
     reasons.push({
@@ -143,7 +151,10 @@ export function evaluateDraftQuality(
   if (!event.starts_at) {
     reasons.push({ code: "missing_start", message: "starts_at is required" });
   } else {
-    const horizon = evaluateDiscoveryHorizon(new Date(event.starts_at), options.now);
+    const horizon = evaluateDiscoveryHorizon(
+      new Date(event.starts_at),
+      options.now,
+    );
     if (!horizon.ok) {
       reasons.push({
         code: horizon.code,
@@ -155,7 +166,10 @@ export function evaluateDraftQuality(
     }
   }
   if (!event.location_name?.trim() && !event.venue_id) {
-    reasons.push({ code: "missing_location", message: "Venue / location_name is required" });
+    reasons.push({
+      code: "missing_location",
+      message: "Venue / location_name is required",
+    });
   }
   const sourceRef =
     (typeof event.source_metadata?.source_url === "string"
@@ -194,7 +208,9 @@ export function evaluateDraftQuality(
   // visual_gap may only waive missing_promo, and only when a hero exists.
   // A documented gap that covers "hero" never waives a missing image_url.
   const promoCoveredByGap =
-    heroPresent && visualGapCoversPromo(event.source_metadata) && promoCount < 2;
+    heroPresent &&
+    visualGapCoversPromo(event.source_metadata) &&
+    promoCount < 2;
   if (!heroPresent) {
     reasons.push({
       code: "missing_image",
@@ -214,7 +230,9 @@ export function evaluateDraftQuality(
 }
 
 /** WhatsApp drafts must carry real source text and literal times — never invented flyer vision. */
-export function evaluateWhatsAppDraftEvidence(event: ReviewEventSnapshot): ReviewReason[] {
+export function evaluateWhatsAppDraftEvidence(
+  event: ReviewEventSnapshot,
+): ReviewReason[] {
   const reasons: ReviewReason[] = [];
   const meta = event.source_metadata ?? {};
   if (!whatsappHasSourceTextEvidence(event)) {
@@ -226,7 +244,8 @@ export function evaluateWhatsAppDraftEvidence(event: ReviewEventSnapshot): Revie
   if (meta.time_inferred === true) {
     reasons.push({
       code: "inferred_time",
-      message: "WhatsApp draft time was inferred, not read from the caption or flyer text",
+      message:
+        "WhatsApp draft time was inferred, not read from the caption or flyer text",
     });
   }
   if (
@@ -238,24 +257,38 @@ export function evaluateWhatsAppDraftEvidence(event: ReviewEventSnapshot): Revie
   ) {
     reasons.push({
       code: "personal_photo_hero",
-      message: "Hero looks like a personal photo of people or scenery, not an organizer flyer",
+      message:
+        "Hero looks like a personal photo of people or scenery, not an organizer flyer",
     });
   }
   return reasons;
 }
 
-export function whatsappHasSourceTextEvidence(event: ReviewEventSnapshot): boolean {
+export function whatsappHasSourceTextEvidence(
+  event: ReviewEventSnapshot,
+): boolean {
   const meta = event.source_metadata ?? {};
-  for (const key of ["source_text_evidence", "readable_text", "caption"] as const) {
+  for (const key of [
+    "source_text_evidence",
+    "readable_text",
+    "caption",
+  ] as const) {
     const value = meta[key];
-    if (typeof value === "string" && value.trim().length >= 3 && !isCommunityAttribution(value)) {
+    if (
+      typeof value === "string" &&
+      value.trim().length >= 3 &&
+      !isCommunityAttribution(value)
+    ) {
       return true;
     }
   }
   const description = (event.description ?? "").trim();
   if (!description) return false;
   const withoutCommunity = description
-    .replace(/\n\nShared in the "[^"]+" WhatsApp group of the Life in Đà Lạt community\.?\s*$/u, "")
+    .replace(
+      /\n\nShared in the "[^"]+" WhatsApp group of the Life in Đà Lạt community\.?\s*$/u,
+      "",
+    )
     .trim();
   if (!withoutCommunity || isCommunityAttribution(withoutCommunity)) {
     return false;
@@ -264,7 +297,9 @@ export function whatsappHasSourceTextEvidence(event: ReviewEventSnapshot): boole
 }
 
 function isCommunityAttribution(text: string): boolean {
-  return /^Shared in the ".+" WhatsApp group of the Life in Đà Lạt community\.?$/u.test(text.trim());
+  return /^Shared in the ".+" WhatsApp group of the Life in Đà Lạt community\.?$/u.test(
+    text.trim(),
+  );
 }
 
 export async function evaluateReviewEvent(
@@ -361,12 +396,18 @@ export async function publishReviewEvent(
 }
 
 function queuePublishedEventTranslation(event: ReviewEventSnapshot) {
-  const fieldsToTranslate: { field_name: "title" | "description"; text: string }[] = [];
+  const fieldsToTranslate: {
+    field_name: "title" | "description";
+    text: string;
+  }[] = [];
   if (event.title?.trim()) {
     fieldsToTranslate.push({ field_name: "title", text: event.title });
   }
   if (event.description?.trim()) {
-    fieldsToTranslate.push({ field_name: "description", text: event.description });
+    fieldsToTranslate.push({
+      field_name: "description",
+      text: event.description,
+    });
   }
   if (fieldsToTranslate.length === 0) {
     return Promise.resolve({ ok: true, localesWritten: 0 });
@@ -428,9 +469,9 @@ export function isDocumentedVisualGap(
   const visualGap = metadata?.visual_gap;
   return Boolean(
     visualGap &&
-      typeof visualGap === "object" &&
-      "reason" in visualGap &&
-      typeof (visualGap as { reason?: unknown }).reason === "string",
+    typeof visualGap === "object" &&
+    "reason" in visualGap &&
+    typeof (visualGap as { reason?: unknown }).reason === "string",
   );
 }
 
@@ -469,7 +510,9 @@ export async function qaReviewEvent(
 ): Promise<QaResult> {
   const { data: translationRows, error: translationError } = await supabase
     .from("content_translations")
-    .select("content_id, target_locale, field_name, translated_text, updated_at")
+    .select(
+      "content_id, target_locale, field_name, translated_text, updated_at",
+    )
     .eq("content_type", "event")
     .eq("content_id", event.id)
     .in("field_name", ["title", "description"]);
@@ -491,7 +534,9 @@ export async function qaReviewEvent(
     }));
 
   const sourceLocale = readiness.sourceLocale;
-  const expectedLocales = CONTENT_LOCALES.filter((locale) => locale !== sourceLocale);
+  const expectedLocales = CONTENT_LOCALES.filter(
+    (locale) => locale !== sourceLocale,
+  );
   const readyTranslated = readiness.locales
     .filter((locale) => !locale.isSourceLocale && locale.translationReady)
     .map((locale) => locale.locale);
@@ -509,7 +554,9 @@ export async function qaReviewEvent(
   const heroPresent = Boolean(event.image_url?.trim());
   const documentedGap = isDocumentedVisualGap(event.source_metadata);
   const promoCoveredByGap =
-    heroPresent && visualGapCoversPromo(event.source_metadata) && promoRows.length < 2;
+    heroPresent &&
+    visualGapCoversPromo(event.source_metadata) &&
+    promoRows.length < 2;
   if (!heroPresent) {
     imageGaps.push({
       code: "missing_hero",
@@ -548,7 +595,8 @@ export async function qaReviewEvent(
     }
   }
 
-  const translationsPassed = gaps.length === 0 && expectedLocales.length === readyTranslated.length;
+  const translationsPassed =
+    gaps.length === 0 && expectedLocales.length === readyTranslated.length;
   const imagesPassed = imageGaps.length === 0;
 
   return {
@@ -557,7 +605,9 @@ export async function qaReviewEvent(
     translations: {
       passed: translationsPassed,
       readyLocales: readyTranslated,
-      missingLocales: expectedLocales.filter((locale) => !readyTranslated.includes(locale)),
+      missingLocales: expectedLocales.filter(
+        (locale) => !readyTranslated.includes(locale),
+      ),
       gaps,
     },
     images: {
@@ -575,22 +625,46 @@ async function hasPublishedDuplicate(
 ): Promise<boolean> {
   const day = event.starts_at?.slice(0, 10);
   if (!day || !event.title) return false;
-  const next = nextDay(day);
+  // Widen by a day each side: starts_at is UTC and a Đà Lạt evening can sit
+  // on either UTC date. isDuplicateOf does the real matching.
   const { data, error } = await supabase
     .from("events")
-    .select("id")
-    .ilike("title", event.title)
+    .select("id, title, starts_at, venue_id, location_name")
     .eq("status", "published")
     .neq("id", event.id)
-    .gte("starts_at", day)
-    .lt("starts_at", next)
-    .limit(1)
-    .maybeSingle();
+    .gte("starts_at", prevDay(day))
+    .lt("starts_at", nextDay(nextDay(day)))
+    .limit(200);
   if (error) {
     console.error("[review-gate] duplicate lookup failed", error);
     return false;
   }
-  return Boolean(data);
+  const self = {
+    id: event.id,
+    title: event.title,
+    starts_at: event.starts_at,
+    venue_id: event.venue_id ?? null,
+    location_name: event.location_name ?? null,
+  };
+  return (data ?? []).some((other) => {
+    if (!sameLocalDay(self.starts_at, other.starts_at)) return false;
+    return isDuplicateOf(self, other);
+  });
+}
+
+function sameLocalDay(a: string | null, b: string | null): boolean {
+  if (!a || !b) return false;
+  const fmt = (v: string) =>
+    new Date(Date.parse(v)).toLocaleDateString("en-CA", {
+      timeZone: "Asia/Ho_Chi_Minh",
+    });
+  return fmt(a) === fmt(b);
+}
+
+function prevDay(dateStr: string): string {
+  const date = new Date(`${dateStr}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
 }
 
 function nextDay(dateStr: string): string {
