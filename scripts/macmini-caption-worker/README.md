@@ -22,7 +22,7 @@ Set `WHISPER_MODEL` to a multilingual whisper.cpp model (for example,
 `ggml-large-v3-turbo.bin`) and `WHISPER_VAD_MODEL` to a Silero VAD model.
 The worker extracts the entire audio track and detects its language locally;
 no speech is represented by an empty transcript, distinct from a missing one.
-Existing ready Stream captions are reused when present. All video frames and
+Existing ready Stream captions are reused when present. Sampled video frames and
 full transcripts feed analysis, and all completed moments feed the recap.
 
 Set `OLLAMA_FALLBACK_MODEL=qwen2.5vl:7b` for local image/video analysis and
@@ -30,6 +30,16 @@ optionally `OLLAMA_TEXT_MODEL=qwen3:14b` for recap generation. Keep `BATCH_SIZE=
 for predictable processing latency. Active claims renew every minute during
 long downloads, transcription and inference. Claude authentication/quota
 errors activate the local fallback instead of consuming real failure attempts.
-Deploy both `caption-worker.mjs` and `local-audio.mjs`, preserving `worker.env`,
+Local vision uses derivatives capped at 1280 pixels; original media is retained.
+Every recap first extracts public topics from all evidence chunks. The advertised
+agenda, inferred mood, and tags are excluded. Writing is followed by correction
+and a separate factual/privacy audit. Audit feedback allows two automatic
+corrections; drafts that still fail use the retry budget and stay unpublished.
+The completion API requires the worker's publication-review
+receipt, so older workers cannot publish unreviewed output. Historical events
+with large transcripts cannot overflow the local model context. Invalid model
+output uses the retry budget
+instead of blocking the queue indefinitely.
+Deploy `caption-worker.mjs`, `local-audio.mjs`, and `recap-context.mjs`, preserving `worker.env`,
 then restart the existing launchd service. Apply the audio-job constraint
 migration before deploying the application and updated worker.

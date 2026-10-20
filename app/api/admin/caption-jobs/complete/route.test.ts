@@ -22,6 +22,7 @@ vi.mock("@/lib/translations", () => ({
 import { POST } from "./route";
 
 const valid = JSON.stringify({
+  publication_review: { version: "recap-review-v1", approved: true },
   story_content:
     "The shared recordings from the Đà Lạt meetup show a discussion around a table.",
   meta_description: "A recorded discussion at the Đà Lạt meetup.",
@@ -126,6 +127,12 @@ describe("automatic recap publication", () => {
     const writes = database({ caption_jobs: [job] });
     mocks.prepare.mockResolvedValue(prepared);
     expect((await POST(request())).status).toBe(422);
+    expect(writes).toEqual([]);
+  });
+  it("cannot publish output from a worker that skipped publication review", async () => {
+    const writes = database({ caption_jobs: [job] });
+    const { publication_review: _drop, ...unreviewed } = JSON.parse(valid);
+    expect((await POST(request(JSON.stringify(unreviewed)))).status).toBe(422);
     expect(writes).toEqual([]);
   });
   it("rejects malformed output before any publication", async () => {

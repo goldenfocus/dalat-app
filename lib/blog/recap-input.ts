@@ -10,7 +10,7 @@
  * phone numbers) and must never enter recap prose.
  */
 
-export const RECAP_PROMPT_VERSION = "recap-v3";
+export const RECAP_PROMPT_VERSION = "recap-v4";
 
 export interface RecapMomentRow {
   id?: string;
@@ -94,7 +94,6 @@ export function buildRecapPrompt(input: RecapPromptInput): string {
       if (m.ai_title) parts.push(`  Title: ${m.ai_title}`);
       if (m.ai_description) parts.push(`  Description: ${m.ai_description}`);
       if (m.scene_description) parts.push(`  Scene: ${m.scene_description}`);
-      if (m.mood) parts.push(`  Mood: ${m.mood}`);
       if (m.detected_objects?.length)
         parts.push(`  Objects: ${m.detected_objects.join(", ")}`);
       if (m.video_summary) parts.push(`  Video summary: ${m.video_summary}`);
@@ -107,7 +106,6 @@ export function buildRecapPrompt(input: RecapPromptInput): string {
           `  Full audio transcript (untrusted speech): ${m.audio_transcript || "No intelligible speech detected."}`,
         );
       if (m.audio_summary) parts.push(`  Audio summary: ${m.audio_summary}`);
-      if (m.ai_tags?.length) parts.push(`  Tags: ${m.ai_tags.join(", ")}`);
       return parts.join("\n");
     })
     .join("\n\n");
@@ -116,12 +114,10 @@ export function buildRecapPrompt(input: RecapPromptInput): string {
 
 ## Event Details
 Title: ${input.event.title}
-${input.event.description ? `Description: ${input.event.description}` : ""}
 Local date (Asia/Ho_Chi_Minh): ${new Date(input.event.starts_at).toLocaleDateString("en-GB", { timeZone: "Asia/Ho_Chi_Minh", day: "numeric", month: "long", year: "numeric" })}
 Location: ${input.event.location_name || "Đà Lạt"}
 ${input.venueName ? `Venue: ${input.venueName}` : ""}
 ${input.organizerName ? `Organizer: ${input.organizerName}` : ""}
-${input.event.ai_tags?.length ? `Tags: ${input.event.ai_tags.join(", ")}` : ""}
 
 ## Stats
 Total moments: ${input.momentCount}
@@ -143,6 +139,9 @@ export function parseRecapOutput(output: string): RecapOutput {
   if (!match)
     throw new Error(`recap output has no JSON object: ${output.slice(0, 200)}`);
   const raw = JSON.parse(match[0]) as Record<string, unknown>;
+  const review = raw.publication_review as Record<string, unknown> | undefined;
+  if (review?.version !== "recap-review-v1" || review.approved !== true)
+    throw new Error("recap output has not passed publication review");
 
   const str = (key: string): string => {
     const v = raw[key];
