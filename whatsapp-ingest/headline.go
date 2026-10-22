@@ -145,8 +145,36 @@ func truncateTitle(s string, max int) string {
 	return strings.TrimRightFunc(out, func(r rune) bool { return unicode.IsSpace(r) || strings.ContainsRune(",;:-–—·|/&(", r) })
 }
 
+// dateWordRe covers weekday/month names (en + vi) and clock words that,
+// with digits and separators, make up a schedule line.
+var dateWordRe = regexp.MustCompile(`(?i)(^|[^\p{L}])(mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday|jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec|january|february|march|april|june|july|august|september|october|november|december|am|pm|a\.m\.|p\.m\.|st|nd|rd|th|from|to|until|till|tonight|today|tomorrow|thứ|chủ nhật|cn|hai|ba|tư|năm|sáu|bảy|tháng|ngày|giờ|lúc|đến|sáng|chiều|tối|h)([^\p{L}]|$)`)
+
+// isDateLine: a line made only of dates, times, weekday/month names and
+// separators ("📅 Sunday, October 25 | 10:00–11:30 AM"). Never a title.
+func isDateLine(line string) bool {
+	core := cleanLine(stripEmoji(line))
+	if core == "" || !strings.ContainsFunc(core, unicode.IsDigit) && !dateWordRe.MatchString(core) {
+		return false
+	}
+	rest := core
+	for i := 0; i < 3; i++ { // adjacent words share a boundary rune
+		rest = dateWordRe.ReplaceAllString(rest, "$1 $3")
+	}
+	rest = strings.Map(func(r rune) rune {
+		if unicode.IsDigit(r) || unicode.IsSpace(r) || unicode.IsPunct(r) || unicode.IsSymbol(r) {
+			return -1
+		}
+		return r
+	}, rest)
+	return rest == ""
+}
+
 func isSentence(line string) bool {
 	core := cleanLine(stripEmoji(line))
+	// A Title-Case heading with a colon or commas is still a heading.
+	if !strings.ContainsAny(core, ".!?") && len([]rune(core)) <= 90 && isHeadlineCase(core) {
+		return false
+	}
 	if len([]rune(core)) > shortTitle {
 		return true
 	}
@@ -156,7 +184,7 @@ func isSentence(line string) bool {
 // isHeadlineCase: ALL CAPS ("THURSDAY GAME NIGHT") or Title Case ("Weekend Sketch Club").
 func isHeadlineCase(line string) bool {
 	words := strings.Fields(line)
-	if len(words) == 0 || len(words) > 9 {
+	if len(words) == 0 || len(words) > 12 {
 		return false
 	}
 	letters, upper, capWords, lexical := 0, 0, 0, 0
@@ -196,7 +224,7 @@ func isHeadlineCase(line string) bool {
 }
 
 func skipTitleLine(line string) bool {
-	return line == "" || isDateOrTimeOnly(line) || isLabelLine(line) || isFluffTitle(line) || isFragmentTitle(line)
+	return line == "" || isDateOrTimeOnly(line) || isDateLine(line) || isLabelLine(line) || isFluffTitle(line) || isFragmentTitle(line)
 }
 
 var fragmentLead = map[string]bool{
@@ -214,6 +242,10 @@ func isFragmentTitle(line string) bool {
 		return false
 	}
 	if !fragmentLead[strings.ToLower(strings.Trim(words[0], ".,:;!?'’\""))] {
+		return false
+	}
+	// "The Symbiotic Circle: …" is a heading, not a fragment.
+	if strings.Contains(strings.Join(words, " "), ":") {
 		return false
 	}
 	meaningful := 0
@@ -241,7 +273,7 @@ func chooseTitle(caption, llmTitle, readable string, flyer bool) string {
 	}
 	first := cleanLine(firstLine(caption))
 	if first != "" && !skipTitleLine(first) && !isSentence(first) {
-		return truncateTitle(first, 100)
+		return truncateTitle(strings.TrimSpace(stripEmoji(first)), 100)
 	}
 	if s := heuristicTitle(caption); s != "" {
 		return s

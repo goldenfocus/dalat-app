@@ -290,7 +290,7 @@ func hasEveningHint(text string) bool {
 func firstLine(text string) string {
 	for line := range strings.Lines(text) {
 		line = strings.TrimSpace(line)
-		if line == "" || isDateOrTimeOnly(line) {
+		if line == "" || isDateOrTimeOnly(line) || isDateLine(line) {
 			continue
 		}
 		return truncateTitle(line, 100)
