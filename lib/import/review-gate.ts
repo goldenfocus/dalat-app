@@ -27,6 +27,7 @@ export type ReviewReasonCode =
   | "activity_graph_lane"
   | "missing_source_text"
   | "inferred_time"
+  | "time_text_mismatch"
   | "personal_photo_hero"
   | "not_a_draft"
   | "not_found";
@@ -249,6 +250,17 @@ export function evaluateWhatsAppDraftEvidence(
     });
   }
   if (
+    meta.time_inferred !== true &&
+    event.starts_at &&
+    whatsappPmTimeMismatch(event.starts_at, meta.source_text_evidence)
+  ) {
+    reasons.push({
+      code: "time_text_mismatch",
+      message:
+        "Source text gives PM times, but the stored start time matches none of the times in the text",
+    });
+  }
+  if (
     meta.personal_photo_hero === true ||
     meta.image_kind === "photo_of_people" ||
     (meta.is_event_flyer === false &&
@@ -262,6 +274,50 @@ export function evaluateWhatsAppDraftEvidence(
     });
   }
   return reasons;
+}
+
+/**
+ * True when the source text states PM times but the stored start (in Đà Lạt
+ * time, UTC+7) matches none of the clock hours written in that text, e.g.
+ * "DJs 6–10 PM" stored as 13:00.
+ */
+export function whatsappPmTimeMismatch(
+  startsAt: string,
+  evidence: unknown,
+): boolean {
+  if (typeof evidence !== "string" || !evidence.trim()) return false;
+  const text = evidence.toLowerCase();
+  if (!/\d\s*(?:pm|p\.m\.)/.test(text)) return false;
+  const start = new Date(startsAt);
+  if (Number.isNaN(start.getTime())) return false;
+  const localHour = (start.getUTCHours() + 7) % 24;
+
+  const hours = new Set<number>();
+  const to24 = (h: number, mer: string) =>
+    mer.startsWith("p") ? (h % 12) + 12 : mer.startsWith("a") ? h % 12 : h;
+  const mer = "(am|pm|a\\.m\\.|p\\.m\\.)";
+  for (const m of text.matchAll(
+    new RegExp(
+      `(?<!(?:buy|get|mua|tặng)\\s*)(?<!\\d)(\\d{1,2})(?::\\d{2})?\\s*${mer}?\\s*(?:-|–|—|~|to|until|till)\\s*(\\d{1,2})(?::\\d{2})?\\s*${mer}(?!\\s*(?:-|–|—|~|to|until|till)\\s*\\d)`,
+      "g",
+    ),
+  )) {
+    const startMer = m[2] ?? m[4];
+    hours.add(to24(Number(m[1]), startMer));
+    hours.add(to24(Number(m[3]), m[4]));
+  }
+  for (const m of text.matchAll(
+    new RegExp(`(\\d{1,2})(?::\\d{2})?\\s*${mer}`, "g"),
+  )) {
+    hours.add(to24(Number(m[1]), m[2]));
+  }
+  for (const m of text.matchAll(
+    /(?<![\d/.])(\d{1,2})(?::\d{2}|h\d{0,2})(?![\d])/g,
+  )) {
+    const h = Number(m[1]);
+    if (h <= 23) hours.add(h);
+  }
+  return hours.size > 0 && !hours.has(localHour);
 }
 
 export function whatsappHasSourceTextEvidence(

@@ -16,6 +16,7 @@ type clockHit struct {
 	hasEnd       bool
 	endHour      int
 	endMinute    int
+	rank         int // 0 main act, 1 neutral, 2 bar/happy-hour/promo line
 }
 
 const clockPart = `(\d{1,2})(?:(:)([0-5]\d)|([hH])([0-5]\d)?)?\s*(am\b|pm\b|a\.m\.|p\.m\.)?`
@@ -83,9 +84,12 @@ func dateSeparatorBefore(text string, pos int) bool {
 // "giờ".
 func findClock(text string) (clockHit, bool) {
 	var hits []clockHit
-	for _, m := range clockRangeRe.FindAllStringSubmatchIndex(text, -1) {
-		if dateSeparatorBefore(text, m[0]) {
+	for _, m := range rangeMatches(text) {
+		if dateSeparatorBefore(text, m[0]) || promoCountBefore(text, m[0]) {
 			continue
+		}
+		if rangeChainAfter.MatchString(text[m[15]:]) {
+			continue // "BUY 2 GET 1 - 5pm to 7pm": "1 - 5pm" is not a range, "5pm to 7pm" is
 		}
 		g := func(i int) string {
 			if m[2*i] < 0 {
@@ -192,9 +196,90 @@ func findClock(text string) (clockHit, bool) {
 	if len(hits) == 0 {
 		return clockHit{}, false
 	}
-	// Earliest position wins; at the same position a range beats a single time.
-	sort.SliceStable(hits, func(i, j int) bool { return hits[i].pos < hits[j].pos })
+	for i := range hits {
+		hits[i].rank = lineRank(text, hits[i].pos)
+	}
+	// A time on the main-act line (DJ, music, show) beats one on a neutral
+	// line, which beats bar-hours / happy-hour / promo lines. Within a rank the
+	// earliest position wins; at the same position a range beats a single time.
+	sort.SliceStable(hits, func(i, j int) bool {
+		if hits[i].rank != hits[j].rank {
+			return hits[i].rank < hits[j].rank
+		}
+		return hits[i].pos < hits[j].pos
+	})
 	return hits[0], true
+}
+
+var (
+	// The rest of the text right after a range's end clock: another
+	// connector and clock means the range's start was not a clock.
+	rangeChainAfter = regexp.MustCompile(`(?i)^\s*(?:-|–|—|~|to\b|until\b|till\b|đến|tới)\s*\d`)
+	promoCountRe    = regexp.MustCompile(`(?i)(?:^|[^\p{L}])(?:buy|get|mua|tặng|x)\s*$`)
+	mainActLineRe   = regexp.MustCompile(`(?i)(?:^|[^\p{L}])(?:djs?|music|live|show|perform\w*|concert|band|line-?up|set|gig|act|nhạc|biểu diễn|trình diễn)(?:[^\p{L}]|$)|🎧|🎶|🎵|🎤|🎸|🎷|🎹|🥁|🎭|💃`)
+	ancillaryLineRe = regexp.MustCompile(`(?i)happy\s*h?our|bar\s+open|opens?\s+at|closes?\b|close\s+at|doors?\b|mở cửa|đóng cửa|buy\s*\d|giảm giá|discount|promo|🍺|🍻|🍹`)
+)
+
+// rangeMatches is FindAllStringSubmatchIndex for clockRangeRe, but it rescans
+// from each match's end clock so "1 - 5pm to 7pm" also yields "5pm to 7pm".
+func rangeMatches(text string) [][]int {
+	var out [][]int
+	for off := 0; off < len(text); {
+		m := clockRangeRe.FindStringSubmatchIndex(text[off:])
+		if m == nil {
+			break
+		}
+		for i := range m {
+			if m[i] >= 0 {
+				m[i] += off
+			}
+		}
+		if off == 0 || !isWordByte(text[off-1]) || m[0] > off {
+			out = append(out, m)
+		}
+		next := m[14] // start of the end clock
+		if next <= off {
+			next = m[1]
+		}
+		off = next
+	}
+	return out
+}
+
+func isWordByte(b byte) bool {
+	return b == '_' || (b >= '0' && b <= '9') || (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
+}
+
+// promoCountBefore is true for "GET 1 - 5pm": the number is a quantity.
+func promoCountBefore(text string, pos int) bool {
+	start := pos - 12
+	if start < 0 {
+		start = 0
+	}
+	for start > 0 && start < pos && text[start]&0xC0 == 0x80 {
+		start--
+	}
+	return promoCountRe.MatchString(text[start:pos])
+}
+
+// lineRank classifies the line holding pos: 0 main act, 2 bar hours /
+// happy hour / promo, 1 anything else.
+func lineRank(text string, pos int) int {
+	ls := strings.LastIndexByte(text[:pos], '\n') + 1
+	le := strings.IndexByte(text[pos:], '\n')
+	if le < 0 {
+		le = len(text)
+	} else {
+		le += pos
+	}
+	line := text[ls:le]
+	switch {
+	case ancillaryLineRe.MatchString(line):
+		return 2
+	case mainActLineRe.MatchString(line):
+		return 0
+	}
+	return 1
 }
 
 // parseClock returns the first clock time in text.
