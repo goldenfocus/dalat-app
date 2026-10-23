@@ -463,6 +463,15 @@ func (b *ingestBot) ingestWithResult(memory *groupContext, in inbound, fromHisto
 	if !draft.Cancelled {
 		applyVenueMatch(draft, b.venues.get())
 	}
+	if !draft.Cancelled && draft.Meta["series_of"] == nil {
+		sender, _ := draft.Meta["sender"].(string)
+		if priors, err := b.supa.senderSeries(context.Background(), sender, draft.StartsAt.Add(-12*time.Hour)); err != nil {
+			logf("series lookup failed (continuing): %v", err)
+		} else if slug := applySeriesTitle(draft, priors); slug != "" {
+			logf("series title %q from %s", draft.Title, slug)
+			out.Title = draft.Title
+		}
+	}
 	if !draft.Cancelled {
 		if rows, err := b.supa.sameDayEvents(context.Background(), draft.StartsAt); err != nil {
 			logf("repost check failed (continuing): %v", err)

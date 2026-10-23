@@ -35,7 +35,10 @@ func TestTruncateTitleWordBoundary(t *testing.T) {
 func TestVuiVaTitlesNeverLabelsOrMidWord(t *testing.T) {
 	for _, c := range []string{sketchCaption, relatingCaption} {
 		got := chooseTitle(c, "", "", false)
-		if got == "" || isLabelLine(got) || len([]rune(got)) > shortTitle || strings.Contains(got, "\u200b") {
+		if got == "" {
+			continue // only chat sentences: decide holds a placeholder for Review
+		}
+		if isChatSentenceTitle(got) || isLabelLine(got) || len([]rune(got)) > shortTitle || strings.Contains(got, "\u200b") {
 			t.Fatalf("bad title %q", got)
 		}
 		words := strings.Fields(got)
