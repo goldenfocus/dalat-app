@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  triggerTranslationServer: vi.fn(async () => ({ ok: true, localesWritten: 0 })),
+  triggerTranslationServer: vi.fn(async () => ({
+    ok: true,
+    localesWritten: 0,
+  })),
 }));
 
 vi.mock("@/lib/translations", () => ({
@@ -14,6 +17,7 @@ import {
   qaReviewEvent,
   rejectReviewEvent,
   type ReviewEventSnapshot,
+  whatsappPmTimeMismatch,
 } from "./review-gate";
 import { reviewIngestSchema } from "./scout-schema";
 
@@ -21,9 +25,18 @@ const now = new Date("2026-09-11T05:00:00.000Z");
 
 describe("reviewIngestSchema", () => {
   it("accepts evaluate, publish, qa, and reject", () => {
-    expect(reviewIngestSchema.safeParse({ action: "evaluate", slug: "x" }).success).toBe(true);
-    expect(reviewIngestSchema.safeParse({ action: "publish", id: "11111111-1111-4111-8111-111111111111" }).success).toBe(true);
-    expect(reviewIngestSchema.safeParse({ action: "qa", slug: "x" }).success).toBe(true);
+    expect(
+      reviewIngestSchema.safeParse({ action: "evaluate", slug: "x" }).success,
+    ).toBe(true);
+    expect(
+      reviewIngestSchema.safeParse({
+        action: "publish",
+        id: "11111111-1111-4111-8111-111111111111",
+      }).success,
+    ).toBe(true);
+    expect(
+      reviewIngestSchema.safeParse({ action: "qa", slug: "x" }).success,
+    ).toBe(true);
     expect(
       reviewIngestSchema.safeParse({
         action: "reject",
@@ -34,19 +47,27 @@ describe("reviewIngestSchema", () => {
   });
 
   it("requires reasons for reject", () => {
-    const parsed = reviewIngestSchema.safeParse({ action: "reject", slug: "x" });
+    const parsed = reviewIngestSchema.safeParse({
+      action: "reject",
+      slug: "x",
+    });
     expect(parsed.success).toBe(false);
     if (parsed.success) return;
-    expect(parsed.error.issues.some((issue) => issue.path.includes("reasons"))).toBe(true);
+    expect(
+      parsed.error.issues.some((issue) => issue.path.includes("reasons")),
+    ).toBe(true);
   });
 });
 
-function event(overrides: Partial<ReviewEventSnapshot> = {}): ReviewEventSnapshot {
+function event(
+  overrides: Partial<ReviewEventSnapshot> = {},
+): ReviewEventSnapshot {
   return {
     id: "evt-1",
     slug: "sunset-hike",
     title: "Sunset hike Langbiang",
-    description: "Canonical facts from source: 20 Sep 19:00 at Langbiang, Đà Lạt.",
+    description:
+      "Canonical facts from source: 20 Sep 19:00 at Langbiang, Đà Lạt.",
     starts_at: "2026-09-20T12:00:00.000Z",
     ends_at: null,
     location_name: "Langbiang, Đà Lạt",
@@ -88,7 +109,9 @@ describe("evaluateDraftQuality", () => {
       event({ source_platform: "activity-graph" }),
       qualityOptions(),
     );
-    expect(reasons.map((reason) => reason.code)).toContain("activity_graph_lane");
+    expect(reasons.map((reason) => reason.code)).toContain(
+      "activity_graph_lane",
+    );
   });
 
   it("fails junk / non-local events", () => {
@@ -101,7 +124,9 @@ describe("evaluateDraftQuality", () => {
       }),
       qualityOptions(),
     );
-    expect(reasons.map((reason) => reason.code)).toContain("not_dalat_locality");
+    expect(reasons.map((reason) => reason.code)).toContain(
+      "not_dalat_locality",
+    );
   });
 
   it("holds a missing hero even when visual_gap.covers includes hero", () => {
@@ -124,8 +149,12 @@ describe("evaluateDraftQuality", () => {
       }),
       qualityOptions({ promoCount: 0 }),
     );
-    expect(documentedHeroGap.map((reason) => reason.code)).toContain("missing_image");
-    expect(documentedHeroGap.map((reason) => reason.code)).toContain("missing_promo");
+    expect(documentedHeroGap.map((reason) => reason.code)).toContain(
+      "missing_image",
+    );
+    expect(documentedHeroGap.map((reason) => reason.code)).toContain(
+      "missing_promo",
+    );
 
     const legacyGap = evaluateDraftQuality(
       event({
@@ -141,7 +170,10 @@ describe("evaluateDraftQuality", () => {
   });
 
   it("allows a promo gap only when a hero exists and visual_gap covers promo", () => {
-    const missing = evaluateDraftQuality(event(), qualityOptions({ promoCount: 0 }));
+    const missing = evaluateDraftQuality(
+      event(),
+      qualityOptions({ promoCount: 0 }),
+    );
     expect(missing.map((reason) => reason.code)).toContain("missing_promo");
 
     const documented = evaluateDraftQuality(
@@ -156,8 +188,12 @@ describe("evaluateDraftQuality", () => {
       }),
       qualityOptions({ promoCount: 0 }),
     );
-    expect(documented.map((reason) => reason.code)).not.toContain("missing_image");
-    expect(documented.map((reason) => reason.code)).not.toContain("missing_promo");
+    expect(documented.map((reason) => reason.code)).not.toContain(
+      "missing_image",
+    );
+    expect(documented.map((reason) => reason.code)).not.toContain(
+      "missing_promo",
+    );
   });
 
   it("accepts WhatsApp message provenance without a web URL", () => {
@@ -177,9 +213,43 @@ describe("evaluateDraftQuality", () => {
       }),
       qualityOptions(),
     );
-    expect(reasons.map((reason) => reason.code)).not.toContain("missing_source");
-    expect(reasons.map((reason) => reason.code)).not.toContain("missing_source_text");
+    expect(reasons.map((reason) => reason.code)).not.toContain(
+      "missing_source",
+    );
+    expect(reasons.map((reason) => reason.code)).not.toContain(
+      "missing_source_text",
+    );
     expect(reasons.map((reason) => reason.code)).not.toContain("inferred_time");
+  });
+
+  it("flags WhatsApp drafts whose stored time contradicts PM times in the text", () => {
+    const text =
+      "TECH CIRCUS !!!\nHAPPY OUR> BUY 2 GET 1 - 5pm to 7pm\n🎧 Three Bears · 6–10 PM\n🍺 Bar opens at 3 PM · Closes at 11 PM";
+    expect(whatsappPmTimeMismatch("2026-10-23T06:00:00Z", text)).toBe(true);
+    expect(whatsappPmTimeMismatch("2026-10-23T11:00:00Z", text)).toBe(false);
+    expect(whatsappPmTimeMismatch("2026-10-23T08:00:00Z", text)).toBe(false); // 3 PM bar open is in the text
+    expect(
+      whatsappPmTimeMismatch("2026-10-03T13:00:00Z", "from 8pm at Cù Rú"),
+    ).toBe(false);
+    expect(
+      whatsappPmTimeMismatch("2026-10-03T03:00:00Z", "Market 10:00, see you"),
+    ).toBe(false);
+    const reasons = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        starts_at: "2026-10-23T06:00:00Z",
+        description: text,
+        source_metadata: {
+          message_id: "TC",
+          time_inferred: false,
+          source_text_evidence: text,
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(reasons.map((reason) => reason.code)).toContain(
+      "time_text_mismatch",
+    );
   });
 
   it("holds WhatsApp drafts without source text or with inferred times", () => {
@@ -187,7 +257,8 @@ describe("evaluateDraftQuality", () => {
       event({
         source_platform: "whatsapp",
         external_chat_url: "whatsapp:120363@g.us/SELFIE",
-        description: 'Shared in the "Garden of Mindfulness" WhatsApp group of the Life in Đà Lạt community.',
+        description:
+          'Shared in the "Garden of Mindfulness" WhatsApp group of the Life in Đà Lạt community.',
         source_metadata: {
           message_id: "SELFIE",
           time_inferred: false,
@@ -220,8 +291,13 @@ describe("evaluateDraftQuality", () => {
   });
 
   it("flags a published duplicate", () => {
-    const reasons = evaluateDraftQuality(event(), qualityOptions({ publishedDuplicate: true }));
-    expect(reasons.map((reason) => reason.code)).toContain("duplicate_published");
+    const reasons = evaluateDraftQuality(
+      event(),
+      qualityOptions({ publishedDuplicate: true }),
+    );
+    expect(reasons.map((reason) => reason.code)).toContain(
+      "duplicate_published",
+    );
   });
 });
 
@@ -254,7 +330,11 @@ function mockSupabase(
       error: null,
     }));
     builder.then = (
-      resolve: (value: { data: unknown; count: number | null; error: null }) => unknown,
+      resolve: (value: {
+        data: unknown;
+        count: number | null;
+        error: null;
+      }) => unknown,
       reject: (reason: unknown) => unknown,
     ) => {
       if (table === "promo_media") {
@@ -271,7 +351,10 @@ function mockSupabase(
           error: null,
         }).then(resolve, reject);
       }
-      return Promise.resolve({ data: null, count: null, error: null }).then(resolve, reject);
+      return Promise.resolve({ data: null, count: null, error: null }).then(
+        resolve,
+        reject,
+      );
     };
     return builder;
   });
@@ -305,10 +388,14 @@ describe("publishReviewEvent translation trigger", () => {
       }),
     });
     expect(mocks.triggerTranslationServer).toHaveBeenCalledOnce();
-    expect(mocks.triggerTranslationServer).toHaveBeenCalledWith("event", draft.id, [
-      { field_name: "title", text: draft.title },
-      { field_name: "description", text: draft.description },
-    ]);
+    expect(mocks.triggerTranslationServer).toHaveBeenCalledWith(
+      "event",
+      draft.id,
+      [
+        { field_name: "title", text: draft.title },
+        { field_name: "description", text: draft.description },
+      ],
+    );
   });
 
   it("persists an inferred source_locale when the draft stored null", async () => {
@@ -316,7 +403,8 @@ describe("publishReviewEvent translation trigger", () => {
     const draft = event({
       source_locale: null,
       title: "Hà Nhi live in Dalat tại La Maritza",
-      description: "Đêm nhạc tại Đà Lạt. Canonical facts from the organizer page.",
+      description:
+        "Đêm nhạc tại Đà Lạt. Canonical facts from the organizer page.",
     });
 
     const result = await publishReviewEvent(supabase as never, draft, { now });
@@ -349,7 +437,9 @@ describe("publishReviewEvent translation trigger", () => {
 
     expect(result.published).toBe(false);
     expect(result.passed).toBe(false);
-    expect(result.reasons.map((reason) => reason.code)).toContain("missing_image");
+    expect(result.reasons.map((reason) => reason.code)).toContain(
+      "missing_image",
+    );
     expect(supabase.updates).toHaveLength(0);
     expect(mocks.triggerTranslationServer).not.toHaveBeenCalled();
   });
@@ -369,7 +459,9 @@ describe("publishReviewEvent translation trigger", () => {
 
     expect(result.published).toBe(false);
     expect(result.passed).toBe(false);
-    expect(result.reasons.map((reason) => reason.code)).toContain("not_dalat_locality");
+    expect(result.reasons.map((reason) => reason.code)).toContain(
+      "not_dalat_locality",
+    );
     expect(supabase.updates).toHaveLength(0);
     expect(mocks.triggerTranslationServer).not.toHaveBeenCalled();
   });
@@ -454,7 +546,9 @@ describe("qaReviewEvent images", () => {
     );
     expect(result.images.passed).toBe(false);
     expect(result.images.promoCount).toBe(0);
-    expect(result.images.gaps.map((gap) => gap.code)).toContain("missing_promo");
+    expect(result.images.gaps.map((gap) => gap.code)).toContain(
+      "missing_promo",
+    );
   });
 
   it("fails missing_hero when image_url is empty even if visual_gap covers hero", async () => {
@@ -473,7 +567,9 @@ describe("qaReviewEvent images", () => {
     );
     expect(result.images.heroPresent).toBe(false);
     expect(result.images.gaps.map((gap) => gap.code)).toContain("missing_hero");
-    expect(result.images.gaps.map((gap) => gap.code)).toContain("documented_visual_gap");
+    expect(result.images.gaps.map((gap) => gap.code)).toContain(
+      "documented_visual_gap",
+    );
     expect(result.images.passed).toBe(false);
   });
 
@@ -492,8 +588,12 @@ describe("qaReviewEvent images", () => {
     );
     expect(result.images.heroPresent).toBe(true);
     expect(result.images.promoCount).toBe(0);
-    expect(result.images.gaps.map((gap) => gap.code)).not.toContain("missing_promo");
-    expect(result.images.gaps.map((gap) => gap.code)).not.toContain("documented_visual_gap");
+    expect(result.images.gaps.map((gap) => gap.code)).not.toContain(
+      "missing_promo",
+    );
+    expect(result.images.gaps.map((gap) => gap.code)).not.toContain(
+      "documented_visual_gap",
+    );
     expect(result.images.passed).toBe(true);
   });
 });
