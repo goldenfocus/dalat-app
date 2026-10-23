@@ -6,6 +6,7 @@ vi.mock("@/lib/ai/provider", () => ({ aiChatJson: (...args: unknown[]) => aiChat
 import {
   TOKEN_INSTRUCTION,
   translateFieldsToLocale,
+  translationMaxTokens,
   translationTokensMismatch,
 } from "./google-translate";
 
@@ -39,5 +40,32 @@ describe("translateFieldsToLocale", () => {
     const out = await translateFieldsToLocale([{ field_name: "description", text: "At ⟦0⟧" }], "fr");
     expect(aiChatJson.mock.calls[1][0].system).toContain(TOKEN_INSTRUCTION);
     expect(out).toEqual({ description: "Au ⟦0⟧" });
+  });
+});
+
+describe("Thai output budget", () => {
+  it("gives token-heavy scripts more room than Latin targets", () => {
+    expect(translationMaxTokens(600, "th")).toBe(1800);
+    expect(translationMaxTokens(600, "fr")).toBe(512);
+    expect(translationMaxTokens(100, "th")).toBe(1024);
+    expect(translationMaxTokens(20_000, "th")).toBe(8000);
+  });
+
+  it("retries a truncated JSON response once with double the budget", async () => {
+    aiChatJson.mockReset();
+    aiChatJson
+      .mockRejectedValueOnce(new SyntaxError("Unterminated string in JSON at position 501"))
+      .mockResolvedValueOnce({ title: "ชมรมสเก็ตช์สุดสัปดาห์" });
+    const out = await translateFieldsToLocale([{ field_name: "title", text: "Weekend Sketch Club" }], "th");
+    expect(out).toEqual({ title: "ชมรมสเก็ตช์สุดสัปดาห์" });
+    expect(aiChatJson).toHaveBeenCalledTimes(2);
+    expect(aiChatJson.mock.calls[1][0].maxTokens).toBe(aiChatJson.mock.calls[0][0].maxTokens * 2);
+  });
+
+  it("does not retry provider failures", async () => {
+    aiChatJson.mockReset();
+    aiChatJson.mockRejectedValueOnce(new Error("All AI providers failed: 503"));
+    await expect(translateFieldsToLocale([{ field_name: "title", text: "Hi" }], "th")).rejects.toThrow("503");
+    expect(aiChatJson).toHaveBeenCalledTimes(1);
   });
 });

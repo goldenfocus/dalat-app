@@ -101,6 +101,33 @@ export async function translateText(
   return result.text ?? text;
 }
 
+const MAX_TRANSLATION_TOKENS = 8000;
+
+/**
+ * Output tokens per source character, by target script. Thai, CJK and
+ * Cyrillic text costs several tokens per character on the free models, so a
+ * flat 0.7x budget truncated Thai mid-string and the locale was dropped.
+ */
+const OUTPUT_TOKENS_PER_CHAR: Partial<Record<ContentLocale, number>> = {
+  th: 3,
+  ja: 2,
+  zh: 2,
+  ko: 2,
+  ru: 1.5,
+  vi: 1.2,
+};
+
+export function translationMaxTokens(totalChars: number, targetLocale: ContentLocale): number {
+  const perChar = OUTPUT_TOKENS_PER_CHAR[targetLocale] ?? 0.7;
+  const floor = perChar > 1 ? 1024 : 512;
+  return Math.min(MAX_TRANSLATION_TOKENS, Math.max(floor, Math.ceil(totalChars * perChar)));
+}
+
+function isTruncatedJsonError(err: unknown): boolean {
+  const message = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+  return /SyntaxError|Unterminated|Unexpected end of JSON|not valid JSON/i.test(message);
+}
+
 /**
  * Translate a set of named fields to one target locale in a single AI call.
  * Returns { field_name: translated_text }.
@@ -117,20 +144,30 @@ export async function translateFieldsToLocale(
   // Long content (blog bodies) needs generous output room and patience on
   // the local model; short fields come back in a few seconds.
   const totalChars = fields.reduce((n, f) => n + f.text.length, 0);
-  const maxTokens = Math.min(8000, Math.max(512, Math.ceil(totalChars * 0.7)));
+  const maxTokens = translationMaxTokens(totalChars, targetLocale);
   const timeoutMs = options?.timeoutMs ?? (totalChars > 2000 ? 200_000 : 90_000);
 
   const usesTokens = fields.some((f) => protectedTokens(f.text).length > 0);
-  const result = await aiChatJson<Record<string, string>>({
-    system: usesTokens ? `${TRANSLATE_SYSTEM} ${TOKEN_INSTRUCTION}` : TRANSLATE_SYSTEM,
-    prompt:
-      `Translate every value in this JSON object to ${LOCALE_NAMES[targetLocale]}. ` +
-      `Return a JSON object with exactly the same keys and only the translated values.\n\n` +
-      JSON.stringify(input),
-    maxTokens,
-    temperature: 0.2,
-    timeoutMs,
-  });
+  const request = (budget: number) =>
+    aiChatJson<Record<string, string>>({
+      system: usesTokens ? `${TRANSLATE_SYSTEM} ${TOKEN_INSTRUCTION}` : TRANSLATE_SYSTEM,
+      prompt:
+        `Translate every value in this JSON object to ${LOCALE_NAMES[targetLocale]}. ` +
+        `Return a JSON object with exactly the same keys and only the translated values.\n\n` +
+        JSON.stringify(input),
+      maxTokens: budget,
+      temperature: 0.2,
+      timeoutMs,
+    });
+  let result: Record<string, string>;
+  try {
+    result = await request(maxTokens);
+  } catch (err) {
+    // A response cut off at max_tokens is unparseable JSON ("Unterminated
+    // string"). Retry once with double the budget instead of losing the locale.
+    if (!isTruncatedJsonError(err) || maxTokens >= MAX_TRANSLATION_TOKENS) throw err;
+    result = await request(Math.min(MAX_TRANSLATION_TOKENS, maxTokens * 2));
+  }
 
   // Accept partial results: models occasionally omit a field on long
   // content. Present fields are upserted; coverage tracking retries the
