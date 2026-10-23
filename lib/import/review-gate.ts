@@ -28,6 +28,7 @@ export type ReviewReasonCode =
   | "missing_source_text"
   | "inferred_time"
   | "time_text_mismatch"
+  | "title_sentence_like"
   | "personal_photo_hero"
   | "not_a_draft"
   | "not_found";
@@ -250,6 +251,16 @@ export function evaluateWhatsAppDraftEvidence(
     });
   }
   if (
+    meta.title_needs_review === true ||
+    isChatSentenceTitle(event.title ?? "")
+  ) {
+    reasons.push({
+      code: "title_sentence_like",
+      message:
+        "Title is a chat sentence or a placeholder, not the event's name; use the flyer/series name",
+    });
+  }
+  if (
     meta.time_inferred !== true &&
     event.starts_at &&
     whatsappPmTimeMismatch(event.starts_at, meta.source_text_evidence)
@@ -274,6 +285,122 @@ export function evaluateWhatsAppDraftEvidence(
     });
   }
   return reasons;
+}
+
+const CHAT_CLAUSE_CUES = [
+  "which means",
+  "it's time",
+  "it is time",
+  "coming soon",
+  "don't miss",
+  "dont miss",
+  "do not miss",
+  "join us",
+  "see you",
+  "thank you",
+  "thanks for",
+  "looking forward",
+  "can't wait",
+  "cant wait",
+  "we'll",
+  "we will",
+  "i'll",
+  "i will",
+  "i'd",
+  "i'm ",
+  "we're",
+  "hope to",
+  "hope you",
+  "dm me",
+  "message me",
+  "let us know",
+];
+const DANGLING_END = new Set([
+  "and",
+  "or",
+  "but",
+  "so",
+  "to",
+  "some",
+  "the",
+  "a",
+  "an",
+  "of",
+  "with",
+  "for",
+  "which",
+  "that",
+  "because",
+  "if",
+  "my",
+  "your",
+  "our",
+  "their",
+  "is",
+  "are",
+  "will",
+  "was",
+  "were",
+  "be",
+  "it",
+  "we",
+  "you",
+  "i",
+  "very",
+  "really",
+  "as",
+  "than",
+  "và",
+  "hoặc",
+  "nhưng",
+  "của",
+  "để",
+  "với",
+]);
+
+/**
+ * Mirrors whatsapp-ingest isChatSentenceTitle: "Sunday is coming soon, which
+ * means it's time to rustle some", "Looking forward to seeing everyone tomorrow!".
+ */
+export function isChatSentenceTitle(title: string): boolean {
+  const core = title
+    .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")
+    .replace(/\p{Extended_Pictographic}|\ufe0f/gu, "")
+    .replace(/^[^\p{L}\p{N}]+/u, "")
+    .trim();
+  if (!core) return false;
+  const low = core.toLowerCase().replace(/[’‘]/g, "'");
+  if (CHAT_CLAUSE_CUES.some((cue) => low.includes(cue))) return true;
+  if (
+    /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday|today|tomorrow|tonight|this weekend|the weekend)('s|\s+is)\b/.test(
+      low,
+    )
+  ) {
+    return true;
+  }
+  const words = core.split(/\s+/);
+  const vi = (
+    core.match(
+      /[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/giu,
+    ) ?? []
+  ).length;
+  const letters = (core.match(/\p{L}/gu) ?? []).length || 1;
+  const limit = vi / letters >= 0.15 ? 14 : 8;
+  if (
+    words.length > limit &&
+    !/[|:–—]/.test(core) &&
+    (/[,.!?;]/.test(core) ||
+      /(^|[^\p{L}'])(i|we|us|you|my|our|your|it's|they|everyone)([^\p{L}']|$)/u.test(
+        low,
+      ))
+  ) {
+    return true;
+  }
+  if (/[,;]$/.test(core)) return true;
+  const last = words[words.length - 1]
+    .toLowerCase()
+    .replace(/^[.,;:!?'"’…]+|[.,;:!?'"’…]+$/g, "");
+  return words.length >= 3 && DANGLING_END.has(last);
 }
 
 /**

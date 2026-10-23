@@ -16,6 +16,7 @@ import {
   publishReviewEvent,
   qaReviewEvent,
   rejectReviewEvent,
+  isChatSentenceTitle,
   type ReviewEventSnapshot,
   whatsappPmTimeMismatch,
 } from "./review-gate";
@@ -220,6 +221,57 @@ describe("evaluateDraftQuality", () => {
       "missing_source_text",
     );
     expect(reasons.map((reason) => reason.code)).not.toContain("inferred_time");
+  });
+
+  it("flags WhatsApp drafts titled with a chat sentence or placeholder", () => {
+    for (const title of [
+      "Sunday is coming soon, which means it's time to rustle some",
+      "Looking forward to seeing everyone tomorrow!",
+      "Fresh coffee, good music and",
+    ]) {
+      expect(isChatSentenceTitle(title)).toBe(true);
+    }
+    for (const title of [
+      "Weekend Sketch Club",
+      "TECH CIRCUS !!!",
+      "MUSIC AND BRIDGES between the Visible and Invisible Worlds",
+      "Văn Mai Hương Live in DaLat | 24.10.2026 tại La Maritza",
+      "Coffee Meetup at ThichnMore Café",
+    ]) {
+      expect(isChatSentenceTitle(title)).toBe(false);
+    }
+    const sentence = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        title: "Sunday is coming soon, which means it's time to rustle some",
+        source_metadata: {
+          message_id: "AC31",
+          time_inferred: false,
+          source_text_evidence:
+            "Join us at Vui Va Cafe on 25 of October at 10:30 AM",
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(sentence.map((reason) => reason.code)).toContain(
+      "title_sentence_like",
+    );
+    const placeholder = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        title: "Event at Vui Va Cafe",
+        source_metadata: {
+          message_id: "AC31",
+          time_inferred: false,
+          title_needs_review: true,
+          source_text_evidence: "x at 10:30 AM",
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(placeholder.map((reason) => reason.code)).toContain(
+      "title_sentence_like",
+    );
   });
 
   it("flags WhatsApp drafts whose stored time contradicts PM times in the text", () => {

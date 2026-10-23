@@ -224,7 +224,7 @@ func isHeadlineCase(line string) bool {
 }
 
 func skipTitleLine(line string) bool {
-	return line == "" || isDateOrTimeOnly(line) || isDateLine(line) || isLabelLine(line) || isFluffTitle(line) || isFragmentTitle(line)
+	return line == "" || isDateOrTimeOnly(line) || isDateLine(line) || isLabelLine(line) || isFluffTitle(line) || isFragmentTitle(line) || isChatSentenceTitle(line)
 }
 
 var fragmentLead = map[string]bool{
@@ -263,7 +263,7 @@ func isFragmentTitle(line string) bool {
 // then a short caption first line, then the caption heuristics.
 func chooseTitle(caption, llmTitle, readable string, flyer bool) string {
 	llmTitle = cleanLine(llmTitle)
-	if flyer && llmTitle != "" && !isFluffTitle(llmTitle) && !isLabelLine(llmTitle) && !isFragmentTitle(llmTitle) {
+	if flyer && llmTitle != "" && !isFluffTitle(llmTitle) && !isLabelLine(llmTitle) && !isFragmentTitle(llmTitle) && !isChatSentenceTitle(llmTitle) {
 		return truncateTitle(llmTitle, 100)
 	}
 	if flyer {
@@ -278,10 +278,14 @@ func chooseTitle(caption, llmTitle, readable string, flyer bool) string {
 	if s := heuristicTitle(caption); s != "" {
 		return s
 	}
-	if llmTitle != "" {
+	if llmTitle != "" && !isChatSentenceTitle(llmTitle) {
 		return truncateTitle(llmTitle, 100)
 	}
-	return truncateTitle(first, shortTitle)
+	// Never publish a cut-off chat sentence: the caller marks the title for review.
+	if t := truncateTitle(first, shortTitle); t != "" && !skipTitleLine(t) && !isSentence(first) {
+		return t
+	}
+	return ""
 }
 
 // heuristicTitle picks a title from caption text alone (no vision), skipping
@@ -324,9 +328,6 @@ func heuristicTitle(text string) string {
 		if !isSentence(l) && len(strings.Fields(l)) >= 2 {
 			return l
 		}
-	}
-	if len(lines) > 0 {
-		return truncateTitle(lines[0], shortTitle)
 	}
 	return ""
 }

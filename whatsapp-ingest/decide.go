@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
+	"unicode"
 
 	"go.mau.fi/whatsmeow/proto/waE2E"
 )
@@ -216,14 +218,21 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 	} else if venue.Address != "" && strings.TrimSpace(draft.Address) == "" {
 		draft.Address = venue.Address
 	}
-	if in.IsEdit || !merged || draft.Title == "" || weakTitle(draft.Title) {
+	if in.IsEdit || !merged || draft.Title == "" || weakTitle(draft.Title) || draft.Meta["title_needs_review"] == true {
 		flyer := llmOK && in.HasImage && llm.IsEventFlyer && !in.IsEdit
 		llmTitle, readable := "", ""
 		if flyer {
 			llmTitle, readable = llm.Title, llm.ReadableText
 		}
-		if title := chooseTitle(firstNonEmpty(burst.Caption, in.Text), llmTitle, readable, flyer); title != "" {
+		caption := firstNonEmpty(burst.Caption, in.Text)
+		if title := chooseTitle(caption, llmTitle, readable, flyer); title != "" {
 			draft.Title = title
+			delete(draft.Meta, "title_needs_review")
+		} else if draft.Title == "" || draft.Meta["title_needs_review"] == true || isChatSentenceTitle(draft.Title) {
+			// Only chat sentences to pick from: hold a neutral placeholder for
+			// Review instead of publishing "Sunday is coming soon, which means …".
+			draft.Title = placeholderTitle(caption, draft.Location)
+			draft.Meta["title_needs_review"] = true
 		}
 	}
 	flyerText := ""
@@ -574,6 +583,27 @@ func mergeText(base, extra string) string {
 		return base
 	}
 	return base + "\n\n" + extra
+}
+
+var placeholderNounRe = regexp.MustCompile(`(?i)(^|[^\p{L}])(open mic|` + eventNouns + `|gathering|club)([^\p{L}]|$)`)
+
+// placeholderTitle names the kind of event and the venue ("Open Mic at Cù
+// Rú", "Event at Vui Va Cafe"); Review must still rename it.
+func placeholderTitle(caption, location string) string {
+	kind := "Event"
+	if m := placeholderNounRe.FindStringSubmatch(stripCommunity(caption)); m != nil {
+		words := strings.Fields(strings.ToLower(m[2]))
+		for i, w := range words {
+			r := []rune(w)
+			r[0] = unicode.ToUpper(r[0])
+			words[i] = string(r)
+		}
+		kind = strings.Join(words, " ")
+	}
+	if loc := strings.TrimSpace(location); loc != "" {
+		return truncateTitle(kind+" at "+loc, 100)
+	}
+	return kind
 }
 
 func weakTitle(title string) bool {

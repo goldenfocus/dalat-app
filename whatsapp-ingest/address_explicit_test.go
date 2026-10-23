@@ -69,7 +69,8 @@ func TestFragmentTitles(t *testing.T) {
 			t.Errorf("not a fragment: %q", s)
 		}
 	}
-	if got := chooseTitle(bocelliCaption, "", "", false); got == "The performance" || isFragmentTitle(got) || got == "" {
+	// The caption is all sentences: no title rather than a cut-off sentence.
+	if got := chooseTitle(bocelliCaption, "", "", false); got == "The performance" || isFragmentTitle(got) || isChatSentenceTitle(got) {
 		t.Fatalf("bocelli title %q", got)
 	}
 }
