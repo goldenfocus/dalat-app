@@ -123,9 +123,32 @@ export function translationMaxTokens(totalChars: number, targetLocale: ContentLo
   return Math.min(MAX_TRANSLATION_TOKENS, Math.max(floor, Math.ceil(totalChars * perChar)));
 }
 
+/** Scripts a translation must contain, so an English echo is not accepted as Thai. */
+const LOCALE_SCRIPT: Partial<Record<ContentLocale, RegExp>> = {
+  th: /[\u0E00-\u0E7F]/,
+  ko: /[\uAC00-\uD7AF]/,
+  ja: /[\u3040-\u30FF\u4E00-\u9FFF]/,
+  zh: /[\u4E00-\u9FFF]/,
+  ru: /[\u0400-\u04FF]/,
+};
+
+function usableTranslation(
+  fields: { field_name: string; text: string }[],
+  parsed: Record<string, string>,
+  targetLocale: ContentLocale,
+): boolean {
+  if (!parsed || typeof parsed !== 'object') return false;
+  const values = fields
+    .map((f) => parsed[f.field_name])
+    .filter((t): t is string => typeof t === 'string' && t.trim() !== '');
+  if (values.length === 0) return false;
+  const script = LOCALE_SCRIPT[targetLocale];
+  return !script || values.some((t) => script.test(t));
+}
+
 function isTruncatedJsonError(err: unknown): boolean {
   const message = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
-  return /SyntaxError|Unterminated|Unexpected end of JSON|not valid JSON/i.test(message);
+  return /SyntaxError|Unterminated|Unexpected end of JSON|not valid JSON|unusable response/i.test(message);
 }
 
 /**
@@ -158,6 +181,7 @@ export async function translateFieldsToLocale(
       maxTokens: budget,
       temperature: 0.2,
       timeoutMs,
+      validate: (parsed) => usableTranslation(fields, parsed, targetLocale),
     });
   let result: Record<string, string>;
   try {

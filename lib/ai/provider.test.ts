@@ -112,3 +112,46 @@ describe('aiChat production fallback', () => {
     expect(laterCalls.some(([url]) => String(url).includes('api.openai.com'))).toBe(true);
   });
 });
+
+describe('aiChatJson unusable replies', () => {
+  it('moves past a truncated Cloudflare reply to an OpenRouter free model with reasoning off', async () => {
+    for (const key of PROVIDER_ENV_KEYS) delete process.env[key];
+    process.env.CLOUDFLARE_ACCOUNT_ID = 'acct';
+    process.env.CLOUDFLARE_AI_TOKEN = 'cf-token';
+    process.env.OPENROUTER_API_KEY = 'or-key';
+
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        success: true,
+        result: { response: '{"title":"ชมรม' },
+      }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        choices: [{ message: { content: '{"title":"ชมรมสเก็ตช์"}' } }],
+      }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(aiChatJson<{ title: string }>({ prompt: 'Translate', maxTokens: 64 }))
+      .resolves.toEqual({ title: 'ชมรมสเก็ตช์' });
+    const [url, init] = fetchMock.mock.calls[1] as [string, RequestInit];
+    expect(url).toBe('https://openrouter.ai/api/v1/chat/completions');
+    const body = JSON.parse(String(init.body));
+    expect(body.model).toMatch(/:free$/);
+    expect(body.reasoning).toEqual({ enabled: false });
+  });
+
+  it('rejects a parseable reply that fails validation', async () => {
+    for (const key of PROVIDER_ENV_KEYS) delete process.env[key];
+    process.env.CLOUDFLARE_ACCOUNT_ID = 'acct';
+    process.env.CLOUDFLARE_AI_TOKEN = 'cf-token';
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      success: true,
+      result: { response: '{"title":""}' },
+    }), { status: 200 })));
+
+    await expect(aiChatJson<{ title: string }>({
+      prompt: 'Translate',
+      validate: (p) => Boolean(p.title),
+    })).rejects.toThrow(/unusable response/);
+  });
+});

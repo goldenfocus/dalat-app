@@ -17,6 +17,18 @@ provider (Cloudflare 408, a removed OpenRouter model) instead of retrying
 it for the rest of the process. If this checkout is stale or offline,
 published events still get locales from Vercel.
 
+## Secrets
+
+`run.sh` never exports a secret. It chmods `.env.local` to 600 and execs
+`node` directly with `load-env.mjs` preloaded; that module reads the file
+inside the node process (and refuses a file readable by group/other). Do not
+reintroduce `npx`/`npm exec` here: npm's process title overwrote the
+environment block, which made every token visible in `ps`.
+
+OpenRouter free models are listed in `lib/ai/provider.ts`
+(`OPENROUTER_FREE_MODELS` env overrides, comma-separated). Re-check
+`https://openrouter.ai/api/v1/models` for `:free` ids when one starts failing.
+
 ## Deploy / update (from a laptop)
 
 Routine updates move only the clean checkout and restart the existing job. The
