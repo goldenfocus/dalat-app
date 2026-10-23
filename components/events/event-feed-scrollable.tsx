@@ -123,10 +123,12 @@ export async function EventFeedScrollable({
   const happeningPick = takeSoonestEventPerVenue(
     happeningCandidates,
     HAPPENING_LIMIT,
+    { featuredFirst: true },
   );
   const upcomingPick = takeSoonestEventPerVenue(
     upcomingCandidates,
     UPCOMING_LIMIT,
+    { featuredFirst: true },
   );
   const happeningEvents = happeningPick.events;
   const upcomingEvents = upcomingPick.events;

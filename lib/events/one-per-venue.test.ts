@@ -234,3 +234,21 @@ describe("takeSoonestEventPerVenue", () => {
     expect(takeSoonestEventPerVenue(tied.events, 0).events).toEqual([]);
   });
 });
+
+describe("homepage featured placement", () => {
+  const rows = [
+    event({ id: "today", starts_at: "2026-10-23T10:00:00Z" }),
+    event({ id: "university", starts_at: "2026-10-24T10:00:00Z", sponsor_tier: 3, venue_id: "dlu" }),
+    event({ id: "earlier-at-dlu", starts_at: "2026-10-23T11:00:00Z", venue_id: "dlu" }),
+    event({ id: "premium", starts_at: "2026-10-24T09:00:00Z", sponsor_tier: 2 }),
+  ];
+  it("places featured events before the slot limit and collapses their venue", () => {
+    const result = takeSoonestEventPerVenue(rows, 2, { featuredFirst: true });
+    expect(result.events.map(e => e.id)).toEqual(["university", "premium"]);
+    expect(result.moreAtVenueByEventId).toEqual({ university: 1 });
+  });
+  it("leaves non-homepage callers chronological", () => {
+    expect(takeSoonestEventPerVenue(rows, 4).events.map(e => e.id))
+      .toEqual(["today", "earlier-at-dlu", "premium"]);
+  });
+});

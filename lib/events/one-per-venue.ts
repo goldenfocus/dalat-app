@@ -15,6 +15,7 @@ const COORD_DECIMALS = 3;
 export interface VenueDedupeEvent {
   id: string;
   starts_at: string;
+  sponsor_tier?: number | null;
   venue_id?: string | null;
   location_name?: string | null;
   latitude?: number | null;
@@ -81,12 +82,18 @@ function groupKey(
 export function takeSoonestEventPerVenue<T extends VenueDedupeEvent>(
   events: readonly T[],
   limit: number,
+  options: { featuredFirst?: boolean } = {},
 ): VenueDedupeResult<T> {
   if (limit <= 0 || events.length === 0) {
     return { events: [], moreAtVenueByEventId: {} };
   }
 
   const sorted = [...events].sort((a, b) => {
+    // Homepage editorial placement takes priority; other callers stay chronological.
+    if (options.featuredFirst) {
+      const byTier = (b.sponsor_tier ?? 0) - (a.sponsor_tier ?? 0);
+      if (byTier !== 0) return byTier;
+    }
     const byStart = a.starts_at.localeCompare(b.starts_at);
     return byStart !== 0 ? byStart : a.id.localeCompare(b.id);
   });
