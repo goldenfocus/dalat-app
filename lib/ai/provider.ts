@@ -22,6 +22,12 @@ export interface AIChatOptions {
   timeoutMs?: number;
   /** Absolute wall-clock deadline shared by the whole fallback chain. */
   deadlineAt?: number;
+  /**
+   * Reject a reply that came back but is unusable (truncated JSON, wrong
+   * script). The chain then tries the next model/provider instead of handing
+   * back text the caller will throw away.
+   */
+  accept?: (text: string) => boolean;
 }
 
 const DEFAULT_TIMEOUT_MS = 120_000;
@@ -29,8 +35,13 @@ const DEFAULT_TIMEOUT_MS = 120_000;
 // qwen/qwen3-next-80b-a3b-instruct:free is dead upstream and was stalling
 // translation sweeps on timeouts. Do not put it back without a live check.
 const OPENROUTER_FREE_MODELS = [
-  'openai/gpt-oss-120b:free',
-  'meta-llama/llama-3.3-70b-instruct:free',
+  // Checked against openrouter.ai/api/v1/models on 2026-10-23: the gpt-oss
+  // and llama-3.3 :free ids were withdrawn. Gemma 4 handles Thai and CJK.
+  ...(process.env.OPENROUTER_FREE_MODELS?.split(',').map((m) => m.trim()).filter(Boolean) ?? [
+    'google/gemma-4-31b-it:free',
+    'google/gemma-4-26b-a4b-it:free',
+    'nvidia/nemotron-3-super-120b-a12b:free',
+  ]),
   // Paid, cheap fallback (same model the experience writer uses). The :free
   // tier is often withdrawn; without this, translations stall whenever the
   // OpenAI and Anthropic balances run out.
@@ -186,6 +197,9 @@ async function openRouter(opts: AIChatOptions): Promise<string> {
           temperature: opts.temperature ?? 0.4,
           max_tokens: opts.maxTokens ?? 2048,
           ...(opts.json ? { response_format: { type: 'json_object' } } : {}),
+          // The free Nemotron models spend the whole budget "thinking" and
+          // return empty content unless reasoning is off.
+          ...(model.endsWith(':free') ? { reasoning: { enabled: false } } : {}),
         }),
         signal: AbortSignal.timeout(requestTimeoutMs(opts)),
       });
@@ -193,6 +207,7 @@ async function openRouter(opts: AIChatOptions): Promise<string> {
       if (data.error) throw new ProviderError('openrouter', `${model}: ${data.error.message ?? data.error}`.slice(0, 200));
       const text: string | undefined = data.choices?.[0]?.message?.content;
       if (!text || !text.trim()) throw new ProviderError('openrouter', `${model}: empty response`);
+      if (opts.accept && !opts.accept(text)) throw new ProviderError('openrouter', `${model}: unusable response`);
       return text;
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
@@ -299,6 +314,10 @@ export async function aiChat(opts: AIChatOptions): Promise<string> {
     }
     try {
       const text = await provider.run(opts);
+      if (opts.accept && !opts.accept(text)) {
+        errors.push(`[ai-provider:${provider.name}] unusable response`);
+        continue;
+      }
       if (provider.name !== 'local') {
         console.warn(`[ai-provider] served by fallback "${provider.name}" (${errors.join('; ').slice(0, 300)})`);
       }
@@ -315,8 +334,24 @@ export async function aiChat(opts: AIChatOptions): Promise<string> {
 /**
  * aiChat + lenient JSON extraction, for prompts that request a JSON object.
  */
-export async function aiChatJson<T>(opts: Omit<AIChatOptions, 'json'>): Promise<T> {
-  const raw = await aiChat({ ...opts, json: true });
+export async function aiChatJson<T>(
+  opts: Omit<AIChatOptions, 'json' | 'accept'> & { validate?: (parsed: T) => boolean },
+): Promise<T> {
+  const { validate, ...rest } = opts;
+  // A truncated or off-target JSON reply moves on to the next provider.
+  const accept = (raw: string) => {
+    try {
+      const parsed = parseJsonReply<T>(raw);
+      return validate ? validate(parsed) : true;
+    } catch {
+      return false;
+    }
+  };
+  const raw = await aiChat({ ...rest, json: true, accept });
+  return parseJsonReply<T>(raw);
+}
+
+function parseJsonReply<T>(raw: string): T {
   let text = raw.trim();
   if (text.startsWith('```json')) text = text.slice(7);
   else if (text.startsWith('```')) text = text.slice(3);
