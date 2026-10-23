@@ -89,8 +89,12 @@ export function takeSoonestEventPerVenue<T extends VenueDedupeEvent>(
   }
 
   const sorted = [...events].sort((a, b) => {
-    // Homepage editorial placement takes priority; other callers stay chronological.
+    // Keep Vietnam calendar dates chronological, then rank featured tiers within each day.
     if (options.featuredFirst) {
+      const vietnamDay = (date: string) =>
+        new Date(Date.parse(date) + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const byDay = vietnamDay(a.starts_at).localeCompare(vietnamDay(b.starts_at));
+      if (byDay !== 0) return byDay;
       const byTier = (b.sponsor_tier ?? 0) - (a.sponsor_tier ?? 0);
       if (byTier !== 0) return byTier;
     }

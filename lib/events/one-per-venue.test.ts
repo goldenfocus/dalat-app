@@ -235,20 +235,28 @@ describe("takeSoonestEventPerVenue", () => {
   });
 });
 
+
 describe("homepage featured placement", () => {
   const rows = [
     event({ id: "today", starts_at: "2026-10-23T10:00:00Z" }),
-    event({ id: "university", starts_at: "2026-10-24T10:00:00Z", sponsor_tier: 3, venue_id: "dlu" }),
-    event({ id: "earlier-at-dlu", starts_at: "2026-10-23T11:00:00Z", venue_id: "dlu" }),
+    event({ id: "university", starts_at: "2026-10-24T10:00:00Z", sponsor_tier: 3 }),
+    event({ id: "morning", starts_at: "2026-10-24T01:00:00Z" }),
     event({ id: "premium", starts_at: "2026-10-24T09:00:00Z", sponsor_tier: 2 }),
   ];
-  it("places featured events before the slot limit and collapses their venue", () => {
-    const result = takeSoonestEventPerVenue(rows, 2, { featuredFirst: true });
-    expect(result.events.map(e => e.id)).toEqual(["university", "premium"]);
-    expect(result.moreAtVenueByEventId).toEqual({ university: 1 });
+  it("keeps dates in order and ranks featured tiers before time within a day", () => {
+    const result = takeSoonestEventPerVenue(rows, 3, { featuredFirst: true });
+    expect(result.events.map(e => e.id)).toEqual(["today", "university", "premium"]);
   });
   it("leaves non-homepage callers chronological", () => {
     expect(takeSoonestEventPerVenue(rows, 4).events.map(e => e.id))
-      .toEqual(["today", "earlier-at-dlu", "premium"]);
+      .toEqual(["today", "morning", "premium", "university"]);
+  });
+  it("uses the Vietnam date across UTC midnight and preserves time for equal tiers", () => {
+    const result = takeSoonestEventPerVenue([
+      event({ id: "early", starts_at: "2026-10-23T18:00:00Z" }),
+      event({ id: "gold-later", starts_at: "2026-10-24T10:00:00Z", sponsor_tier: 3 }),
+      event({ id: "gold-earlier", starts_at: "2026-10-24T09:00:00Z", sponsor_tier: 3 }),
+    ], 3, { featuredFirst: true });
+    expect(result.events.map(e => e.id)).toEqual(["gold-earlier", "gold-later", "early"]);
   });
 });
