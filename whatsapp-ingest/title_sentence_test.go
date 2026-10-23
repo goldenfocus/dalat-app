@@ -103,4 +103,23 @@ func TestSeriesTitleFromSameSender(t *testing.T) {
 	if applySeriesTitle(d4, []seriesEvent{last}) != "" || d4.Title != "Life Drawing Marathon" {
 		t.Fatalf("kept: %q", d4.Title)
 	}
+
+	// The series match carries the earlier event's venue when the draft has none.
+	withVenue := last
+	withVenue.VenueID = "509df8cf-489f-42d9-b03b-21e0ae914277"
+	d5 := &eventDraft{Title: "Event at Vui Va Cafe", Location: "Vui Va Cafe", StartsAt: time.Date(2026, 11, 1, 3, 30, 0, 0, time.UTC), Description: "Bring paper!", Meta: map[string]any{"title_needs_review": true}}
+	if applySeriesTitle(d5, []seriesEvent{withVenue}) != last.Slug || d5.VenueID != withVenue.VenueID || d5.Location != "Vui Va Cafe" {
+		t.Fatalf("venue link: id=%q loc=%q", d5.VenueID, d5.Location)
+	}
+	// A named match at a different location keeps its own (unlinked) venue.
+	d6 := &eventDraft{Title: "Weekend Sketch Club", Location: "Dalat Flower Park", Description: "Weekend sketch club outdoors this time!", Meta: map[string]any{}}
+	if applySeriesTitle(d6, []seriesEvent{withVenue}) != last.Slug || d6.VenueID != "" {
+		t.Fatalf("elsewhere linked: %q", d6.VenueID)
+	}
+	// An already-matched venue is never overwritten.
+	d7 := &eventDraft{Title: "Event at Vui Va Cafe", VenueID: "other", Location: "Vui Va Cafe", StartsAt: time.Date(2026, 11, 1, 3, 30, 0, 0, time.UTC), Description: "Bring paper!", Meta: map[string]any{"title_needs_review": true}}
+	applySeriesTitle(d7, []seriesEvent{withVenue})
+	if d7.VenueID != "other" {
+		t.Fatalf("overwrote venue: %q", d7.VenueID)
+	}
 }

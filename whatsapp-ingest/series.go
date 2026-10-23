@@ -81,10 +81,26 @@ func applySeriesTitle(d *eventDraft, priors []seriesEvent) string {
 			d.Title = title
 			delete(d.Meta, "title_needs_review")
 			d.Meta["series_of"] = p.Slug
+			linkSeriesVenue(d, p, sameText)
 			return p.Slug
 		}
 	}
 	return ""
+}
+
+// linkSeriesVenue gives a series match the venue of the earlier event when the
+// draft has none, as long as the draft's own location does not point elsewhere.
+func linkSeriesVenue(d *eventDraft, p seriesEvent, sameText bool) {
+	if d.VenueID != "" || strings.TrimSpace(p.VenueID) == "" {
+		return
+	}
+	if strings.TrimSpace(d.Location) != "" && !sameText && !seriesSameVenue(d, p) {
+		return
+	}
+	d.VenueID = p.VenueID
+	if strings.TrimSpace(d.Location) == "" {
+		d.Location = p.LocationName
+	}
 }
 
 // normalizeSeriesText lowercases, drops digits, punctuation and emoji, and
