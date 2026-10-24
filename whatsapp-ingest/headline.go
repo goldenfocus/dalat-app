@@ -224,7 +224,7 @@ func isHeadlineCase(line string) bool {
 }
 
 func skipTitleLine(line string) bool {
-	return line == "" || isDateOrTimeOnly(line) || isDateLine(line) || isLabelLine(line) || isFluffTitle(line) || isFragmentTitle(line) || isChatSentenceTitle(line)
+	return line == "" || isDateOrTimeOnly(line) || isDateLine(line) || isLabelLine(line) || isFluffTitle(line) || isFragmentTitle(line) || isChatSentenceTitle(line) || isScheduleLine(line)
 }
 
 var fragmentLead = map[string]bool{
