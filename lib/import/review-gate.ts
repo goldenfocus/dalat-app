@@ -29,6 +29,7 @@ export type ReviewReasonCode =
   | "inferred_time"
   | "time_text_mismatch"
   | "title_sentence_like"
+  | "title_schedule_line"
   | "personal_photo_hero"
   | "not_a_draft"
   | "not_found";
@@ -260,6 +261,13 @@ export function evaluateWhatsAppDraftEvidence(
         "Title is a chat sentence or a placeholder, not the event's name; use the flyer/series name",
     });
   }
+  if (isScheduleLine(event.title ?? "")) {
+    reasons.push({
+      code: "title_schedule_line",
+      message:
+        "Title is a schedule/agenda line (time slot + activity), not the event's name; use the flyer/series name",
+    });
+  }
   if (
     meta.time_inferred !== true &&
     event.starts_at &&
@@ -357,6 +365,32 @@ const DANGLING_END = new Set([
   "để",
   "với",
 ]);
+
+const SCHED_TIME = String.raw`(?:\d{1,2}(?:[:.h]\d{2})\s*(?:[ap]\.?m\.?)?|\d{1,2}\s*[ap]\.?m\.?|\d{1,2}h(?:\d{2})?|\d{1,2}\s*giờ(?:\s*\d{2})?)`;
+const SCHED_RANGE = String.raw`(?:${SCHED_TIME}|\d{1,2})\s*(?:[-–—~]|to|until|đến)\s*${SCHED_TIME}`;
+const SCHED_SEP = String.raw`\s*(?:[-–—:•·|>→»]|onwards?\s*[-–—:•]?|trở đi\s*[-–—:•]?)\s*`;
+const SCHEDULE_SEP_RE = new RegExp(
+  String.raw`(?:^|[\s(])(?:from\s+|từ\s+)?(?:${SCHED_RANGE}|${SCHED_TIME})(?:\s*(?:onwards?|trở đi))?${SCHED_SEP}\p{L}`,
+  "iu",
+);
+const SCHEDULE_LEAD_RE = new RegExp(
+  String.raw`^(?:from\s+|từ\s+)?(?:${SCHED_RANGE}|${SCHED_TIME})\s+\p{L}`,
+  "iu",
+);
+
+/**
+ * Mirrors whatsapp-ingest isScheduleLine: "💃 6:30–7:30 PM — Dance class",
+ * "18h-19h: Yoga", "7:30 PM onwards — Social dancing" are agenda slots.
+ */
+export function isScheduleLine(title: string): boolean {
+  const core = title
+    .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")
+    .replace(/\p{Extended_Pictographic}|\ufe0f/gu, "")
+    .replace(/^[^\p{L}\p{N}]+/u, "")
+    .trim();
+  if (!core) return false;
+  return SCHEDULE_SEP_RE.test(core) || SCHEDULE_LEAD_RE.test(core);
+}
 
 /**
  * Mirrors whatsapp-ingest isChatSentenceTitle: "Sunday is coming soon, which

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 	"unicode"
@@ -77,6 +78,21 @@ func applySeriesTitle(d *eventDraft, priors []seriesEvent) string {
 		named := len(strings.Fields(title)) >= 2 && strings.Contains(normText, normalizeSeriesText(title))
 		sameText := p.Evidence != "" && seriesSimilarity(normText, normalizeSeriesText(p.Evidence)) >= 0.8
 		sameSlot := needsReview && seriesSameVenue(d, p) && sameWeeklySlot(d.StartsAt.In(loc), p.StartsAt.In(loc))
+		if core := seriesCoreTitle(title); !named && !sameText && !sameSlot && core != "" &&
+			(needsReview || strings.Contains(normalizeSeriesText(d.Title), normalizeSeriesText(core))) {
+			// "Dance Night with Jess & Matt" last week, "another Saturday
+			// Dance Night at INN" this week: same series, different guests.
+			if strings.Contains(normText, normalizeSeriesText(core)) && seriesSameVenue(d, p) {
+				venue := strings.TrimSpace(p.LocationName)
+				if venue == "" {
+					venue = strings.TrimSpace(d.Location)
+				}
+				if venue != "" && !strings.Contains(normalizeSeriesText(core), normalizeSeriesText(venue)) {
+					core += " at " + venue
+				}
+				title, named = core, true
+			}
+		}
 		if named || sameText || sameSlot {
 			d.Title = title
 			delete(d.Meta, "title_needs_review")
@@ -101,6 +117,19 @@ func linkSeriesVenue(d *eventDraft, p seriesEvent, sameText bool) {
 	if strings.TrimSpace(d.Location) == "" {
 		d.Location = p.LocationName
 	}
+}
+
+var seriesGuestRe = regexp.MustCompile(`(?i)\s+(?:with|w/|ft\.?|feat\.?|featuring|cùng|với)\s+.+$`)
+
+// seriesCoreTitle drops the guest part of a series title ("Dance Night with
+// Jess & Matt" -> "Dance Night"); "" when there is none or the core is a
+// single word.
+func seriesCoreTitle(title string) string {
+	core := strings.TrimSpace(seriesGuestRe.ReplaceAllString(title, ""))
+	if core == title || len(strings.Fields(core)) < 2 {
+		return ""
+	}
+	return core
 }
 
 // normalizeSeriesText lowercases, drops digits, punctuation and emoji, and

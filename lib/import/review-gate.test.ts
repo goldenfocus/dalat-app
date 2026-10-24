@@ -17,6 +17,7 @@ import {
   qaReviewEvent,
   rejectReviewEvent,
   isChatSentenceTitle,
+  isScheduleLine,
   type ReviewEventSnapshot,
   whatsappPmTimeMismatch,
 } from "./review-gate";
@@ -647,5 +648,32 @@ describe("qaReviewEvent images", () => {
       "documented_visual_gap",
     );
     expect(result.images.passed).toBe(true);
+  });
+});
+
+describe("isScheduleLine", () => {
+  it.each([
+    "6:30–7:30 PM — Dance class",
+    "💃 6:30–7:30 PM — Dance class",
+    "🕕 6:00 PM — Drinks, music & social time",
+    "🪩 7:30 PM onwards — Social dancing & party",
+    "18h-19h: Yoga",
+    "7pm - Open mic",
+    "19h30 • Live music",
+    "From 8pm: DJ set",
+    "10:00 - 12:00 Workshop: pottery",
+  ])("flags %s", (title) => {
+    expect(isScheduleLine(title)).toBe(true);
+  });
+
+  it.each([
+    "Dance Night at INN Đà Lạt",
+    "Dance Night with Jess & Matt",
+    "Weekend Sketch Club",
+    "TECH CIRCUS | Da Lat",
+    "24/7 Hackathon",
+    "Open Mic Night: Vol. 3",
+  ])("keeps %s", (title) => {
+    expect(isScheduleLine(title)).toBe(false);
   });
 });
