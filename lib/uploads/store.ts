@@ -41,7 +41,7 @@ export async function saveJob(job: UploadJob, file?: Blob): Promise<void> {
   // sometimes refuses Blob cloning entirely. Small ArrayBuffer parts survive
   // a full browser restart and never require reading a whole video into RAM.
   const chunked: ChunkedFile = { kind: 'chunks', prefix: `${job.id}:${crypto.randomUUID()}`,
-    count: Math.ceil(file.size / PART_SIZE), size: file.size, type: file.type || job.mime };
+    count: Math.ceil(file.size / PART_SIZE), size: file.size, type: job.mime || file.type };
   let written = 0;
   try {
     for (let index = 0; index < chunked.count; index++) {
