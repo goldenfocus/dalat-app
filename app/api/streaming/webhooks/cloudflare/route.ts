@@ -8,6 +8,7 @@ import {
   type CloudflareWebhookEvent,
 } from '@/lib/cloudflare-stream';
 import { notify } from '@/lib/notifications';
+import { reconcileUpload, type ServerUpload } from '@/lib/uploads/server';
 
 function getServiceClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -80,6 +81,12 @@ export async function POST(request: Request) {
           console.log('VOD video ready:', videoUid);
 
           try {
+            // The upload was registered before bytes left the phone. Publish
+            // even if Safari disappeared before the client completion call.
+            const { data: upload, error: uploadError } = await supabase.from('moment_uploads')
+              .select('*').eq('cf_video_uid', videoUid).maybeSingle();
+            if (uploadError) throw uploadError;
+            if (upload) await reconcileUpload(upload as ServerUpload);
             // Get video details - includes correct playback URLs from Cloudflare
             const videoDetails = await getVideoDetails(videoUid);
 

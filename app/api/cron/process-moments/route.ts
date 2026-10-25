@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { enqueueCaptionJob, isCaptionWorkerAlive } from "@/lib/ai/caption-jobs";
 import { sendTelegram } from "@/lib/alerts/telegram";
+import { recoverUnfinishedUploads } from "@/lib/uploads/server";
 
 export const maxDuration = 300;
 
@@ -96,6 +97,8 @@ export async function GET(request: Request) {
     MAX_BATCH,
   );
   const dryRun = searchParams.get("dryRun") === "true";
+
+  if (!dryRun) await recoverUnfinishedUploads();
 
   const supabase = getSupabase();
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { isMomentUploadActive } from "@/lib/uploads/activity";
 
 export const LIVE_DATA_REFRESH_INTERVAL_MS = 60_000;
 export const LIVE_DATA_REFRESH_THROTTLE_MS = 10_000;
@@ -56,8 +57,8 @@ export function AppFreshnessHandler() {
   );
 
   const refresh = useCallback(
-    (force = false) => {
-      if (!isLiveDataPath(pathname) || document.visibilityState !== "visible") {
+    (force = false, uploadFinished = false) => {
+      if (!isLiveDataPath(pathname) || document.visibilityState !== "visible" || (isMomentUploadActive() && !uploadFinished)) {
         return;
       }
 
@@ -90,10 +91,14 @@ export function AppFreshnessHandler() {
     };
 
     const handleOnline = () => refresh();
+    // A completed file is safe to render; the engine lives outside this route.
+    // This never refreshes the composer and is throttled for large batches.
+    const handleMomentAdded = () => refresh(false, true);
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("online", handleOnline);
+    window.addEventListener("dalat:moment-added", handleMomentAdded);
 
     const interval = window.setInterval(() => {
       refresh();
@@ -112,6 +117,7 @@ export function AppFreshnessHandler() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("online", handleOnline);
+      window.removeEventListener("dalat:moment-added", handleMomentAdded);
       window.clearInterval(interval);
       if (initialPwaRefresh !== null) window.clearTimeout(initialPwaRefresh);
     };

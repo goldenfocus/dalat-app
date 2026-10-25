@@ -99,6 +99,9 @@ function mockSupabase(event: typeof draft | null, options: { duplicate?: boolean
 
 describe("POST /api/import/review", () => {
   beforeEach(() => {
+    // Keep the September fixture in its intended discovery window.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-09-11T05:00:00Z'));
     mocks.createClient.mockReset();
     mocks.triggerTranslationServer.mockClear();
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
@@ -106,6 +109,7 @@ describe("POST /api/import/review", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllEnvs();
   });
 

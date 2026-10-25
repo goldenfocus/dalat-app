@@ -86,6 +86,9 @@ function mockSupabase() {
 
 describe("POST /api/import/scout", () => {
   beforeEach(() => {
+    // Keep the September fixture in its intended discovery window.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-09-11T05:00:00Z'));
     mocks.createClient.mockReset();
     mocks.downloadAndUploadImage.mockReset();
     mocks.downloadAndUploadImage.mockResolvedValue(
@@ -97,6 +100,7 @@ describe("POST /api/import/scout", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllEnvs();
   });
 
