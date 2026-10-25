@@ -3,7 +3,7 @@
 //
 // IMPORTANT: Update SW_VERSION when deploying new features
 // This triggers the update flow for all users
-const SW_VERSION = '1.0.46';
+const SW_VERSION = '1.0.47';
 
 const APP_URL = self.location.origin;
 
@@ -69,7 +69,16 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => cache.addAll(PRECACHE_ASSETS))
-      .then(() => self.skipWaiting())
+      .then(async () => {
+        // Older tabs do not have the new upload-aware reload guard. Let the
+        // worker wait for those composers to close rather than interrupting
+        // their in-memory queue during this very upgrade.
+        const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        const hasOpenUploader = windows.some(client =>
+          /\/moments\/(?:new|pro-upload)(?:\/|$)/.test(new URL(client.url).pathname)
+        );
+        if (!hasOpenUploader) await self.skipWaiting();
+      })
   );
 });
 

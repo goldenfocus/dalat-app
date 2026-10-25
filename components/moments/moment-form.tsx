@@ -115,6 +115,8 @@ interface MomentFormProps {
   /** Only set when superadmin is impersonating another user (God Mode) */
   godModeUserId?: string;
   onSuccess?: () => void;
+  /** The dedicated durable uploader owns photos and videos on the new page. */
+  nonMediaOnly?: boolean;
 }
 
 interface UploadItem {
@@ -168,13 +170,13 @@ interface YouTubePreview {
   thumbnailUrl: string;
 }
 
-export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSuccess }: MomentFormProps) {
+export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSuccess, nonMediaOnly = false }: MomentFormProps) {
   const t = useTranslations("moments");
   const locale = useLocale();
   const router = useRouter();
 
   // Input mode state
-  const [inputMode, setInputMode] = useState<InputMode>("media");
+  const [inputMode, setInputMode] = useState<InputMode>(nonMediaOnly ? "text" : "media");
 
   // Photo/Video uploads - two modes:
   // 1. Normal mode (≤5 files): Full preview cards with individual captions
@@ -1382,6 +1384,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
     <div className="space-y-4">
       {/* Input mode selector */}
       <div className="flex gap-1 p-1 bg-muted rounded-lg">
+        {!nonMediaOnly && (
         <button
           type="button"
           onClick={() => setInputMode("media")}
@@ -1395,6 +1398,7 @@ export function MomentForm({ eventId, eventSlug, userId, godModeUserId, onSucces
           <Camera className="w-4 h-4" />
           <span className="hidden sm:inline">{t("inputModes.media")}</span>
         </button>
+        )}
         <button
           type="button"
           onClick={() => setInputMode("youtube")}

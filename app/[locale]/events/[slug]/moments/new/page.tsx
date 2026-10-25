@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { MomentForm } from "@/components/moments";
+import { EventUploader } from "@/components/moments/event-uploader";
 import { getEffectiveUser } from "@/lib/god-mode";
 import type { Event, EventSettings } from "@/lib/types";
 
@@ -168,6 +169,7 @@ export default async function NewMomentPage({ params }: PageProps) {
   }
 
   const t = await getTranslations("moments");
+  const settings = await getEventSettings(event.id);
 
   return (
     <main className="min-h-screen">
@@ -178,13 +180,17 @@ export default async function NewMomentPage({ params }: PageProps) {
           <p className="text-muted-foreground">{event.title}</p>
         </div>
 
-        {/* Form - unified upload experience for all users */}
-        <MomentForm
+        <EventUploader eventId={event.id} eventSlug={event.slug} eventTitle={event.title}
+          userId={user.id} requiresApproval={!!settings?.moments_require_approval} />
+        <details className="mt-8 border-t pt-5">
+          <summary className="cursor-pointer py-2 text-sm text-muted-foreground">{t("uploader.otherWays")}</summary>
+          <div className="mt-4"><MomentForm
           eventId={event.id}
           eventSlug={event.slug}
           userId={user.id}
           godModeUserId={godMode.isActive ? godMode.targetUserId! : undefined}
-        />
+          nonMediaOnly
+        /></div></details>
       </div>
     </main>
   );

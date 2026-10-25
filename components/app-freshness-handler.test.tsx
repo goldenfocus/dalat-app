@@ -1,5 +1,6 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setMomentUploadActive } from '@/lib/uploads/activity';
 import {
   AppFreshnessHandler,
   LIVE_DATA_REFRESH_INTERVAL_MS,
@@ -42,6 +43,7 @@ describe("AppFreshnessHandler", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     refresh.mockReset();
+    setMomentUploadActive(false);
     pathname = "/";
     setVisibility("visible");
     Object.defineProperty(window, "matchMedia", {
@@ -84,6 +86,18 @@ describe("AppFreshnessHandler", () => {
     });
 
     expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it('does not refresh an active upload when the phone resumes or a minute elapses', () => {
+    setMomentUploadActive(true);
+    render(<AppFreshnessHandler />);
+    setVisibility('hidden'); document.dispatchEvent(new Event('visibilitychange'));
+    setVisibility('visible'); document.dispatchEvent(new Event('visibilitychange'));
+    act(() => { vi.advanceTimersByTime(LIVE_DATA_REFRESH_INTERVAL_MS); });
+    expect(refresh).not.toHaveBeenCalled();
+    setMomentUploadActive(false);
+    act(() => { vi.advanceTimersByTime(LIVE_DATA_REFRESH_INTERVAL_MS); });
+    expect(refresh).toHaveBeenCalledTimes(1);
   });
 
   it("reconciles an installed PWA shortly after its cached first paint", () => {

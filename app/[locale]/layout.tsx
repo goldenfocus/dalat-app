@@ -27,6 +27,7 @@ import {
   DeferredPerformanceMonitor,
   DeferredSwUpdateHandler,
   DeferredUploadFAB,
+  DeferredUploadTray,
 } from "@/components/deferred-chrome";
 
 const siteUrl = "https://dalat.app";
@@ -153,6 +154,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <DeferredMiniPlayer />
               <MobileBottomNav />
               <DeferredUploadFAB />
+              <DeferredUploadTray />
               <GlobalFooter />
               <DeferredGodModeIndicator />
             </div>

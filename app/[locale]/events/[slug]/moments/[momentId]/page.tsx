@@ -18,6 +18,7 @@ import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/st
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
 import { SetCoverButton } from "@/components/moments/set-cover-button";
 import { MomentDetailHeader } from "@/components/moments/moment-detail-header";
+import { MomentCaptionEditor } from "@/components/moments/moment-caption-editor";
 import { CommentsSection } from "@/components/comments";
 import { ReactionBar } from "@/components/reactions/reaction-bar";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
@@ -479,6 +480,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                 returnTo={`/events/${event.slug}/moments/${moment.id}`}
               />
 
+              {isOwner && <MomentCaptionEditor momentId={moment.id} initialCaption={moment.text_content} />}
               {/* Comments */}
               <Suspense fallback={<div className="h-32 animate-pulse bg-muted rounded-lg" />}>
                 <CommentsSection
