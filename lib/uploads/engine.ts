@@ -186,12 +186,16 @@ function put(url: string, file: Blob, signal: AbortSignal, progress: (value: num
     xhr.send(file);
   });
 }
-async function tusPut(url: string, file: Blob, signal: AbortSignal, progress: (value: number) => void): Promise<void> {
+async function tusPut(url: string, source: store.StoredSource, signal: AbortSignal, progress: (value: number) => void): Promise<void> {
   const tus = await import('tus-js-client');
   return new Promise((resolve, reject) => {
     const abort = () => { void upload.abort(); cleanup(); reject(new DOMException('Aborted', 'AbortError')); };
     const cleanup = () => signal.removeEventListener('abort', abort);
-    const upload = new tus.Upload(file, { uploadUrl: url, chunkSize: 8 * 1024 * 1024,
+    const upload = new tus.Upload(new Blob([]), { uploadUrl: url, uploadSize: source.size, chunkSize: 8 * 1024 * 1024,
+      fileReader: { openFile: async () => ({ size: source.size, close() {}, slice: async (start, end) => {
+        signal.throwIfAborted();
+        return { value: await source.slice(start, end), done: end >= source.size };
+      } }) },
       retryDelays: [0, 1000, 3000, 5000, 10000], storeFingerprintForResuming: false,
       onProgress: (done, total) => progress(done / total * 100),
       onError: error => {
@@ -215,21 +219,25 @@ async function processJob(original: UploadJob) {
   let job = original;
   try {
     await update(job.id, { phase: 'preparing', error: undefined });
-    let blob = volatileFiles.get(job.id) || await store.loadFile(job.id);
-    if (!blob) throw new Error('missing-file');
+    const source = job.isVideo ? await store.loadSource(job.id) : undefined;
+    let blob = job.isVideo ? undefined : volatileFiles.get(job.id) || await store.loadFile(job.id);
+    if (job.isVideo ? !source : !blob) throw new Error('missing-file');
     if (!job.prepared) {
-      const file = new File([blob], job.name, { type: job.mime, lastModified: job.lastModified || 0 });
-      const { hashUpload } = await import('./hash');
-      const hash = job.hash || await hashUpload(file, signal);
+      const originalBlob = blob;
+      const file = new File(blob ? [blob] : [], job.name, { type: job.mime, lastModified: job.lastModified || 0 });
+      const { hashUpload, hashByteRanges } = await import('./hash');
+      const hash = job.hash || (source ? await hashByteRanges(source.size,
+        async (start, end) => (await source.slice(start, end)).arrayBuffer(), signal) : await hashUpload(file, signal));
       const capturedAt = job.capturedAt ?? await (captureTimes.get(job.id) || extractCaptureTime(file));
       signal.throwIfAborted();
       if (!job.isVideo && !['image/heic', 'image/heif'].includes(job.mime)) {
         const { compressImage } = await import('@/lib/image-compression');
-        blob = (await compressImage(file)).file;
+        const compressed = await compressImage(file);
+        if (compressed.wasCompressed) blob = compressed.file;
       }
       signal.throwIfAborted();
-      job = { ...job, hash, capturedAt, prepared: true, size: blob.size, mime: blob.type || job.mime };
-      await store.saveJob(job, blob);
+      job = { ...job, hash, capturedAt, prepared: true, size: blob?.size ?? source!.size, mime: blob?.type || job.mime };
+      await store.saveJob(job, blob !== originalBlob ? blob : undefined);
       updateMemory(job.id, job);
     }
     signal.throwIfAborted();
@@ -245,17 +253,17 @@ async function processJob(original: UploadJob) {
       lastPaint = Date.now(); updateMemory(job.id, { progress: Math.min(99, Math.round(value)) });
     };
     if (job.isVideo) {
-      try { await tusPut(result.uploadUrl, blob, signal, progress); }
+      try { await tusPut(result.uploadUrl, source!, signal, progress); }
       catch (error) {
         if (!(error instanceof RequestError && [400, 404, 410].includes(error.status))) throw error;
         // An expired session cannot resume. Reconcile first, then renew only if incomplete.
         result = await api(prepareBody(job, true), signal);
         if (result.status !== 'waiting') { await settle(job, result); return; }
         await update(job.id, { uploadUrl: result.uploadUrl });
-        await tusPut(result.uploadUrl!, blob, signal, progress);
+        await tusPut(result.uploadUrl!, source!, signal, progress);
       }
     } else {
-      await put(result.uploadUrl, blob, signal, progress);
+      await put(result.uploadUrl, blob!.type === job.mime ? blob! : blob!.slice(0, blob!.size, job.mime), signal, progress);
     }
     await update(job.id, { phase: 'finishing', progress: 100 });
     // The server verifies storage and publishes atomically. Its reply may be
