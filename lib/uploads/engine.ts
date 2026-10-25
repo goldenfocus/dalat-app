@@ -247,7 +247,7 @@ async function processJob(original: UploadJob) {
     if (job.isVideo) {
       try { await tusPut(result.uploadUrl, blob, signal, progress); }
       catch (error) {
-        if (!(error instanceof RequestError && [404, 410].includes(error.status))) throw error;
+        if (!(error instanceof RequestError && [400, 404, 410].includes(error.status))) throw error;
         // An expired session cannot resume. Reconcile first, then renew only if incomplete.
         result = await api(prepareBody(job, true), signal);
         if (result.status !== 'waiting') { await settle(job, result); return; }

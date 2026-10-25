@@ -141,9 +141,12 @@ export async function prepareDestination(upload: ServerUpload, restart = false, 
       if (result.status === 'error' && isVideo) restart = true;
       else if (result.status !== 'waiting') return result;
     } catch (error) {
-      // Only an explicitly requested restart of an expired provider session may
-      // create a new video; a transient provider outage must not discard progress.
-      if (!(restart && isVideo && String(error).includes('404'))) throw error;
+      // Stream can remove an expired, unfinished reservation before the TUS
+      // client even gets a chance to HEAD its URL. Renew that reservation here,
+      // but never throw away resumable bytes on a transient provider outage.
+      const expired = /\b404\b|not found|does not exist|expired/i.test(String(error));
+      if (isVideo && expired && !upload.received_at && !upload.moment_id) restart = true;
+      else throw error;
     }
   }
   if (isVideo) {
