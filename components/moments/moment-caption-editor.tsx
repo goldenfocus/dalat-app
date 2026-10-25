@@ -39,7 +39,7 @@ export function MomentCaptionEditor({ momentId, initialCaption }: { momentId: st
   };
   if (!open) return <button className="inline-flex items-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground" onClick={() => void edit()}><Pencil className="h-3.5 w-3.5" />{t('editCaption')}</button>;
   return <div className="space-y-2 py-2">
-    <textarea value={text} onChange={e => setText(e.target.value)} maxLength={500} rows={3}
+    <textarea value={text} onChange={e => setText(e.target.value)} disabled={busy || !loaded} maxLength={500} rows={3}
       aria-label={t('editCaption')} placeholder={t('captionPlaceholder')} className="w-full resize-y rounded-xl border bg-background p-3 text-sm" />
     {error && <p role="alert" className="text-xs text-destructive">{t('captionError')}</p>}
     <div className="flex gap-2"><Button size="sm" onClick={() => void save()} disabled={busy || !loaded}>{busy && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}{t('saveCaption')}</Button><Button size="sm" variant="ghost" disabled={busy} onClick={() => setOpen(false)}>{t('cancel')}</Button></div>
