@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { getPublicMenu } from "@/lib/menu/queries";
 import { formatVnd } from "@/lib/menu/format";
+import { MenuIntl } from "./menu-intl";
 import { PreorderPanel, type ExistingPreorder } from "./preorder-panel";
 
 /**
@@ -84,14 +85,16 @@ export async function EventPreorderCard({
           </p>
         )}
 
-        <PreorderPanel
-          eventId={eventId}
-          venueName={venue.name}
-          sections={sections}
-          isLoggedIn={!!auth.user}
-          loginHref={loginHref}
-          existing={existing}
-        />
+        <MenuIntl>
+          <PreorderPanel
+            eventId={eventId}
+            venueName={venue.name}
+            sections={sections}
+            isLoggedIn={!!auth.user}
+            loginHref={loginHref}
+            existing={existing}
+          />
+        </MenuIntl>
 
         <Link
           href={`/venues/${venue.slug}/menu`}

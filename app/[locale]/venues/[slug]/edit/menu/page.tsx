@@ -8,6 +8,7 @@ import { venueEditor } from "@/lib/venues/access";
 import { getMenuForEditing } from "@/lib/menu/queries";
 import { MenuEditor } from "@/components/menu/menu-editor";
 import { PreorderList } from "@/components/menu/preorder-list";
+import { MenuIntl } from "@/components/menu/menu-intl";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 export const metadata: Metadata = { robots: { index: false } };
@@ -39,11 +40,13 @@ export default async function EditVenueMenuPage({ params }: Props) {
         <h1 className="text-2xl font-semibold">{t("managerTitle")}</h1>
         <p className="text-sm text-muted-foreground">{t("managerHint")}</p>
       </div>
-      <PreorderList venueId={venue.id} locale={locale} />
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">{t("menuTitle")}</h2>
-        <MenuEditor venueId={venue.id} initialSections={sections} preorderEnabled={!!venue.preorder_enabled} />
-      </section>
+      <MenuIntl>
+        <PreorderList venueId={venue.id} locale={locale} />
+        <section className="mt-10">
+          <h2 className="mb-3 text-xl font-semibold">{t("menuTitle")}</h2>
+          <MenuEditor venueId={venue.id} initialSections={sections} preorderEnabled={!!venue.preorder_enabled} />
+        </section>
+      </MenuIntl>
     </main>
   );
 }
